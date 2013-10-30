@@ -34,6 +34,9 @@ logger = logging.getLogger(__name__)
 version_number = 1
 VERSION = "Version"
 
+INDEX = "index"
+DATA = "data"
+
 # h5py is nice, but not being able to make zero-length selections is a pain.
 orig_hdf5_getitem = h5py.Dataset.__getitem__
 def new_getitem(self, args):
@@ -215,11 +218,12 @@ class HDF5Dict(object):
                         for feature_name in object_group.keys():
                             # some measurement objects are written at a higher level, and don't
                             # have an index (e.g. Relationship).
-                            d = self.indices[object_name, feature_name] = {}
                             if 'index' in object_group[feature_name].keys():
                                 hdf5_index = object_group[feature_name]['index'][:]
-                                for num_idx, start, stop in hdf5_index:
-                                    d[num_idx] = slice(start, stop)
+                                self.__cache_index(object_name, feature_name,
+                                                   hdf5_index)
+                            else:
+                                self.indices[object_name, feature_name] = {}
                 else:
                     image_numbers = np.array(image_numbers)
                     mask = np.zeros(np.max(image_numbers)+1, bool)
@@ -229,10 +233,9 @@ class HDF5Dict(object):
                         if object_name == 'Experiment':
                             self.top_group.copy(src_object_group, self.top_group)
                             for feature_name in src_object_group.keys():
-                                d = self.indices[object_name, feature_name] = {}
                                 hdf5_index = src_object_group[feature_name]['index'][:]
-                                for num_idx, start, stop in hdf5_index:
-                                    d[num_idx] = slice(start, stop)
+                                self.__cache_index(object_name, feature_name,
+                                                   hdf5_index)
                             continue
                         dest_object_group = self.top_group.require_group(object_name)
                         for feature_name in src_object_group.keys():
@@ -357,13 +360,13 @@ class HDF5Dict(object):
                 # if fetching more than 1/2 of indices
                 #
                 dataset = dataset[:]
-            return [None 
-                    if ((isinstance(dest, slice) and 
-                         dest.start is not None and 
-                         dest.start == dest.stop))
-                    else dataset[dest]
-                    for dest in [ indices.get(image_number, slice(0,0))
-                                  for image_number in num_idx]]
+            return [
+                None if ((isinstance(dest, slice) and 
+                          dest.start is not None and 
+                          dest.start == dest.stop))
+                else dataset[dest]
+                for dest in [indices.get(image_number, (slice(0,0), 0))[0]
+                             for image_number in num_idx]]
 
     @staticmethod
     def __all_null(vals):
@@ -415,10 +418,29 @@ class HDF5Dict(object):
             dtype = int,
             compression=None,
             chunks=(self.chunksize, 3), maxshape=(None, 3))
-        self.indices[object_name, feature_name] = \
-            dict([(image_number, slice(start, stop))
-                  for image_number, start, stop in index_slices])
-    
+        self.__cache_index(object_name, feature_name, index_slices)
+        
+    def __cache_index(self, object_name, feature_name, index_slices):
+        '''Cache the contents of an "index" dataset in self.indices
+        
+        self.indices is a dictionary indexed by object name and feature name
+        whose values are themselves dictionaries, indexed by image number.
+        The per-image values are the slice of the data in the "data" dataset
+        and the index of the entry in the "index" array. This allows efficient
+        retrieval of an image set's data; otherwise a complete scan of the
+        "index" array would be necessary.
+        
+        object_name, feature_name - names of the object and feature to slice
+        
+        index_slices - the contents of an "index" dataset or similarly structured
+                       Nx3 numpy array. The first column is the image number
+                       and the second and third are start and stop values
+                       for the slice.
+        '''
+        self.indices[object_name, feature_name ] = dict(
+            [(image_number, (slice(start, stop), i))
+             for i, (image_number, start, stop) in enumerate(index_slices)])
+        
     def __setitem__(self, idxs, vals):
         assert isinstance(idxs, tuple), \
                "Assigning to HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
@@ -470,17 +492,11 @@ class HDF5Dict(object):
             
             feature_group = self.top_group[object_name][feature_name]
             dataset = feature_group['data']
-            index_set = feature_group['index']
-            indices = self.get_indices(object_name, feature_name)
             assert isinstance(dataset, h5py.Dataset)
-            assert isinstance(index_set, h5py.Dataset)
             if all_null:
-                old_length = index_set.shape[0]
-                index_set.resize(old_length + len(num_idx), 0)
-                index_set[old_length:, 0] = num_idx
-                index_set[old_length:, 1:] = 0
-                indices.update([(image_number, slice(0,0))
-                                for image_number in num_idx])
+                index_slices = np.zeros((len(num_idx), 3), int)
+                index_slices[:, 0] = num_idx
+                self.__write_indices(object_name, feature_name, index_slices)
                 return
             if dataset.shape[0] == 0:
                 recast_dataset = True
@@ -524,11 +540,41 @@ class HDF5Dict(object):
             index_slices = np.column_stack(
                 [num_idx, old_dataset_len + data_offsets - data_lengths,
                  old_dataset_len + data_offsets])
-            old_index_slice_len = index_set.shape[0]
-            index_set.resize(old_index_slice_len + len(num_idx), 0)
-            index_set[old_index_slice_len:, :] = index_slices
-            indices.update([(index_number, slice(start, stop))
-                            for index_number, start, stop in index_slices])
+            self.__write_indices(object_name, feature_name, index_slices)
+            
+    def __write_indices(self, object_name, feature_name, index_slices):
+        '''Update the entries in the "index" dataset for the given index slices
+        
+        object_name, feature_name - the measurement being written
+        
+        index_slices - an N x 3 array of image number, start and stop
+        
+        updates both the "index" dataset and the indices cache.
+        '''
+        
+        if len(index_slices) == 0:
+            return
+        ds_index = self.top_group[object_name][feature_name][INDEX]
+        n_current = ds_index.shape[0]
+        slots = []
+        all_appended = True
+        indices = self.get_indices(object_name, feature_name)
+        append_index = n_current
+        for image_number, start, stop in index_slices:
+            if image_number in indices:
+                this_slot = indices[image_number][1]
+                all_appended = False
+            else:
+                this_slot = append_index
+                append_index += 1
+            slots.append(this_slot)
+            indices[image_number] = (slice(start, stop), this_slot)
+        ds_index.resize(append_index, 0)
+        if all_appended:
+            ds_index[n_current:, :] = index_slices
+        else:
+            for slot, row in zip(slots, index_slices):
+                ds_index[slot, :] = row
 
     def __delitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
@@ -545,7 +591,7 @@ class HDF5Dict(object):
         with self.lock:
             del self.get_indices(object_name, feature_name)[num_idx]
             # reserved value of -1 means deleted
-            idx = self.top_group[object_name][feature_name]['index']
+            idx = self.top_group[object_name][feature_name][INDEX]
             idx[np.flatnonzero(idx[:, 0] == num_idx), 0] = -1
             
     def has_data(self, object_name, feature_name, num_idx):
@@ -553,7 +599,7 @@ class HDF5Dict(object):
 
     def get_dataset(self, object_name, feature_name):
         with self.lock:
-            return self.top_group[object_name][feature_name]['data']
+            return self.top_group[object_name][feature_name][DATA]
 
     def has_object(self, object_name):
         with self.lock:
@@ -580,7 +626,7 @@ class HDF5Dict(object):
         object_name - name of object
         feature_name - name of feature
         '''
-        return self.top_group[object_name][feature_name]['data'].dtype
+        return self.top_group[object_name][feature_name][DATA].dtype
             
     def clear(self):
         with self.lock:
@@ -594,16 +640,13 @@ class HDF5Dict(object):
             self.level1_indices[object_name].pop(first_idx, None)
 
     def get_indices(self, object_name, feature_name):
-        result = self.indices.get((object_name, feature_name), None)
-        if result is None:
+        if (object_name, feature_name) not in self.indices:
             if not self.has_feature(object_name, feature_name):
                 return {}
-            result = dict(
-                [(index_number, slice(start, stop))
-                 for index_number, start, stop
-                 in self.top_group[object_name][feature_name]['index'][:, :]])
-            self.indices[object_name, feature_name] = result
-        return result
+            index_dataset = \
+                self.top_group[object_name][feature_name][INDEX][:, :]
+            self.__cache_index(object_name, feature_name, index_dataset)
+        return self.indices[object_name, feature_name]
             
     def top_level_names(self):
         with self.lock:
@@ -662,9 +705,7 @@ class HDF5Dict(object):
             idx = np.column_stack((idxs, offsets[:-1], offsets[1:]))
             dataset = np.hstack(values)
         
-            self.indices[object_name, feature_name] = dict([
-                (i, slice(start, end)) 
-                for i, start, end in idx])
+            self.__cache_index(object_name, feature_name, idx)
             feature_group = self.top_group[object_name][feature_name]
             feature_group.create_dataset(
                 'data', data = dataset, 
@@ -694,20 +735,18 @@ class HDF5Dict(object):
         with self.lock:
             feature_group = self.top_group.require_group(object_name).\
                 require_group(feature_name)
-            if "index" not in feature_group:
+            if INDEX not in feature_group:
                 # All values are None for the feature
                 return
-            index_array = feature_group["index"][:, :]
+            index_array = feature_group[INDEX][:, :]
             index_array[:, 0] = image_numbers[index_array[:, 0]]
             #
             # Reorder sequentially.
             #
             order = np.lexsort((index_array[:, 0], ))
             index_array = index_array[order, :]
-            feature_group["index"][:, :] = index_array
-            self.indices[object_name, feature_name] = dict([
-                (image_number, slice(start, stop))
-                for image_number, start, stop in index_array])
+            feature_group[INDEX][:, :] = index_array
+            self.__cache_index(object_name, feature_name, index_array)
                 
 class HDF5FileList(object):
     '''An HDF5FileList is a hierarchical directory structure backed by HDF5

@@ -131,6 +131,15 @@ class TestHDF5Dict(unittest.TestCase):
         data = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1]
         self.assertIsInstance(data[0], basestring)
         
+    def test_02_08_write_twice(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2)] = [1.2, 3.4]
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (2, 3)] = [5.6, 7.8]
+        
+        data = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2, 3)]
+        self.assertEqual(tuple(data), (1.2, 5.6, 7.8))
+        index = self.hdf5_dict.top_group[OBJECT_NAME][FEATURE_NAME][H5DICT.INDEX]
+        self.assertEqual(index.shape[0], 3)
+        
     def test_03_01_add_all(self):
         r = np.random.RandomState()
         r.seed(301)

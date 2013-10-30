@@ -445,15 +445,7 @@ class AnalysisRunner(object):
                     image_numbers, buf = self.received_measurements_queue.get()
                     image_numbers = [int(i) for i in image_numbers]
                     recd_measurements = cpmeas.load_measurements_from_buffer(buf)
-                    measurements.copy_relationships(recd_measurements)
-                    for o in recd_measurements.get_object_names():
-                        if o == cpmeas.EXPERIMENT:
-                            continue  # Written during prepare_run / post_run
-                        for feature in recd_measurements.get_feature_names(o):
-                            measurements[o, feature, image_numbers] \
-                                = recd_measurements[o, feature, image_numbers]
-                    for image_set_number in image_numbers:
-                        measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_DONE
+                    self.copy_recieved_measurements(recd_measurements, measurements, image_numbers)
                     recd_measurements.close()
                     del recd_measurements
 
@@ -519,6 +511,47 @@ class AnalysisRunner(object):
                 self.post_event(AnalysisFinished(measurements, was_cancelled))
             self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
+
+    def copy_recieved_measurements(self, 
+                                   recd_measurements, 
+                                   measurements, 
+                                   image_numbers):
+        '''Copy the received measurements to the local process' measurements
+        
+        recd_measurements - measurements received from worker
+        
+        measurements - local measurements = destination for copy
+        
+        image_numbers - image numbers processed by worker
+        '''
+        measurements.copy_relationships(recd_measurements)
+        for o in recd_measurements.get_object_names():
+            if o == cpmeas.EXPERIMENT:
+                continue  # Written during prepare_run / post_run
+            elif o == cpmeas.IMAGE:
+                # Some have been previously written. It's worth the time
+                # to check values and only write changes
+                for feature in recd_measurements.get_feature_names(o):
+                    if not measurements.has_feature(cpmeas.IMAGE, feature):
+                        f_image_numbers = image_numbers
+                    else:
+                        local_values = measurements[
+                            cpmeas.IMAGE, feature, image_numbers]
+                        remote_values = measurements[
+                            cpmeas.IMAGE, feature, image_numbers]
+                        f_image_numbers = [
+                            i for i, lv, rv in zip(
+                                image_numbers, local_values, remote_values)
+                            if lv != rv]
+                    if len(f_image_numbers) > 0:
+                        measurements[o, feature, f_image_numbers] \
+                            = recd_measurements[o, feature, f_image_numbers]
+            else:
+                for feature in recd_measurements.get_feature_names(o):
+                    measurements[o, feature, image_numbers] \
+                        = recd_measurements[o, feature, image_numbers]
+        for image_set_number in image_numbers:
+            measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_DONE
 
     def jobserver(self, analysis_id, start_signal):
         # this server subthread should be very lightweight, as it has to handle

@@ -187,9 +187,10 @@ class EditObjectsDialog(wx.Dialog):
             ijvx = ijvx[~matches, :]
         artist_save = [(a.get_data(), self.artists[a].copy())
                        for a in self.artists]
-        self.undo_stack.append((ijvx, self.last_artist_save))
+        self.undo_stack.append((ijvx, self.last_artist_save, self.last_to_keep))
         self.last_artist_save = artist_save
         self.last_ijv = ijv
+        self.last_to_keep = self.to_keep
         self.undo_button.Enable(True)
         
     def undo(self, event=None):
@@ -198,7 +199,7 @@ class EditObjectsDialog(wx.Dialog):
         # Mix what's on the undo ijv with what's in self.last_ijv
         # and remove any 0/1 pairs.
         #
-        ijvx, artist_save = self.undo_stack.pop()
+        ijvx, artist_save, self.to_keep = self.undo_stack.pop()
         ijvx = np.vstack((
             ijvx, np.column_stack(
                 (self.last_ijv, np.ones(self.last_ijv.shape[0],
@@ -214,6 +215,7 @@ class EditObjectsDialog(wx.Dialog):
         ijvx = ijvx[~matches, :]
         self.last_ijv = ijvx[:, :3]
         self.last_artist_save = artist_save
+        self.last_to_keep = self.to_keep
         temp = cpo.Objects()
         temp.ijv = self.last_ijv
         self.labels = [l for l, c in temp.get_labels(self.shape)]
@@ -227,7 +229,7 @@ class EditObjectsDialog(wx.Dialog):
         for (x, y), d in artist_save:
             object_number = d[self.K_LABEL]
             artist = Line2D(x, y,
-                            marker=['o']*len(x), markerfacecolor=['r']*len(x),
+                            marker='o', markerfacecolor='r',
                             markersize=6,
                             color=self.colormap[object_number, :],
                             animated = True)
@@ -661,6 +663,8 @@ class EditObjectsDialog(wx.Dialog):
                     if not np.any(k):
                         continue
                     mask = k[self.ol]
+                    if not np.any(mask):
+                        continue
                     intensity = np.zeros(self.shape, float)
                     intensity[self.oi[mask], self.oj[mask]] = 1
                     color = np.zeros((self.shape[0], self.shape[1], 3), float)
@@ -1739,6 +1743,7 @@ class EditObjectsDialog(wx.Dialog):
             self.undo_button.Enable(False)
         self.last_ijv = self.calculate_ijv()
         self.last_artist_save = {}
+        self.last_to_keep = self.to_keep
         if display:
             self.init_labels()
             self.display()

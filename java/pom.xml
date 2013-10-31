@@ -85,35 +85,60 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>2.6</version>
-          <configuration>
-            <artifactItems>
-              <artifactItem>
+   		  <executions>
+   		  <execution>
+   		     <id>copy-cellprofiler-java</id>
+   		     <phase>package</phase>
+   		     <goals>
+               <goal>copy</goal>
+   		     </goals>
+   		     <configuration>
+   		       <artifactItems>
+                <artifactItem>
 				  <groupId>org.cellprofiler</groupId>
   				  <artifactId>cellprofiler-java</artifactId>
                   <version>0.0.1-SNAPSHOT</version>
-                <overWrite>true</overWrite>
-              </artifactItem>
-              <artifactItem>
-			      <groupId>loci</groupId>
-			      <artifactId>bio-formats</artifactId>
-			      <version>${bioformats.version}</version>
-                <overWrite>false</overWrite>
-              </artifactItem>
-            </artifactItems>
-          </configuration>
-   		  <executions>	
+                  <overWrite>true</overWrite>
+                </artifactItem>
+			  </artifactItems>
+              <outputDirectory>${basedir}/../imagej/jars</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+              <stripVersion>true</stripVersion>
+			</configuration>
+   		  </execution>	
           <execution>
             <id>copy-dependencies</id>
             <phase>package</phase>
             <goals>
               <goal>copy-dependencies</goal>
-              <goal>copy</goal>
             </goals>
             <configuration>
+              <artifactItems>
+                <artifactItem>
+			      <groupId>loci</groupId>
+			      <artifactId>bio-formats</artifactId>
+			      <version>${bioformats.version}</version>
+                  <overWrite>false</overWrite>
+                </artifactItem>
+              </artifactItems>
               <outputDirectory>${basedir}/../imagej/jars</outputDirectory>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+          <execution>
+            <id>build-classpath</id>
+            <phase>package</phase>
+            <goals>
+            	<goal>build-classpath</goal>
+            </goals>
+            <configuration>
+                <outputFile>${basedir}/../imagej/jars/cellprofiler-java-dependencies-classpath.txt</outputFile>
+                <includeScope>runtime</includeScope>
+                <localRepo>${basedir}/../imagej/jars</localRepo>
             </configuration>
           </execution>
         </executions>          

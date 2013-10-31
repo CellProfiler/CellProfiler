@@ -84,6 +84,17 @@
               <overWriteIfNewer>true</overWriteIfNewer>
             </configuration>
           </execution>
+          <execution>
+            <id>build-classpath</id>
+            <phase>package</phase>
+            <goals>
+            	<goal>build-classpath</goal>
+            </goals>
+            <configuration>
+                <outputFile>${basedir}/jars/cellprofiler-dependencies-classpath.txt</outputFile>
+                <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
         </executions>          
       </plugin>
       <plugin>

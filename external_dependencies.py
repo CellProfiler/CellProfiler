@@ -74,6 +74,8 @@ files = [
      OMERO_CLIENTS_URL + '/ice.jar', None]]
 
 pom_folders = ["imagej", "java"]
+classpath_filenames = ("cellprofiler-dependencies-classpath.txt",
+                       "cellprofiler-java-dependencies-classpath.txt")
 
 def filehash(filename):
     sha1 = hashlib.sha1()
@@ -294,42 +296,20 @@ def get_cellprofiler_jars():
     #
     # Our jars come first because of patches
     #
-    our_jars = []
-    for pom_folder in pom_folders:
-        pom_dir = os.path.join(root, pom_folder)
-        # Get the name of the jar output by this pom
-        #
-        output = run_maven(
-            pom_dir,
-            goal = "help:evaluate",
-            aggressive_update=False,
-            return_stdout=True,
-            additional_args = ["-Dexpression=project.build.finalName"])
-        lines = filter(lambda x: not x.startswith("["), output.split("\n"))
-        if len(lines) > 0:
-            our_jars.append(lines[0].strip() + ".jar")
-        #
-        # Get the dependencies
-        #
-        if aggressive_update is None:
-            try:
-                output = run_maven(
-                    pom_dir,
-                    goal = "dependency:build-classpath",
-                    aggressive_update=aggressive_update,
-                    return_stdout=True)
-            except:
-                aggressive_update = True
-        if aggressive_update is not None:
-            output = run_maven(
-                pom_dir,
-                goal = "dependency:build-classpath",
-                aggressive_update=aggressive_update,
-                return_stdout=True)
-        lines = filter(lambda x: not x.startswith("["), output.split("\n"))
-        if len(lines) > 0:
-            jars.update([os.path.split(x)[1] for x in
-                         lines[0].strip().split(os.pathsep)])
+    jar_dir = os.path.join(root, "imagej", "jars")
+    our_jars = [os.path.join(jar_dir, "cellprofiler-java.jar")]
+    for filename in classpath_filenames:
+        path = os.path.join(jar_dir, filename)
+        if not os.path.isfile(path):
+            raise RuntimeError(
+                "Can't determine CellProfiler java dependencies because %s is missing. Please re-run external_dependencies with the -o switch" % path)
+        jar_line = open(path, "r").readline().strip()
+        jar_list = jar_line.split(os.pathsep)
+        jar_filenames = [os.path.split(jar_path)[1] for jar_path in jar_list]
+        if len(our_jars) > 0:
+            jar_set = set(our_jars)
+            jar_filenames = filter((lambda x: x not in jar_set), jar_filenames)
+        our_jars += jar_filenames
     return our_jars + sorted(jars)
 
 if __name__=="__main__":

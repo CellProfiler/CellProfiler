@@ -243,6 +243,19 @@ class TestHDF5Dict(unittest.TestCase):
                              "If the file can't be removed, it's a bug. "
                              "Clean up your trash: %s" % temp_filename)
             
+    def test_09_01_delete_imageset(self):
+        # Delete an image set's measurements from one image set
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2, 3)] = ["A", "B", "C"]
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2], "B")
+        del self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2]
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2], None)
+        
+    def test_09_02_delete_measurement(self):
+        # delete an entire measurement
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2, 3)] = ["A", "B", "C"]
+        self.assertTrue(self.hdf5_dict.has_feature(OBJECT_NAME, FEATURE_NAME))
+        del self.hdf5_dict[OBJECT_NAME, FEATURE_NAME]
+        self.assertFalse(self.hdf5_dict.has_feature(OBJECT_NAME, FEATURE_NAME))
         
 class TestHDF5FileList(unittest.TestCase):
     def setUp(self):

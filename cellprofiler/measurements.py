@@ -795,7 +795,7 @@ class Measurements(object):
                 self.hdf5_dict[object_name, OBJECT_NUMBER, n] =\
                     np.arange(1, len(d) + 1)
                 
-    def remove_measurement(self, object_name, feature_name, image_number):
+    def remove_measurement(self, object_name, feature_name, image_number=None):
         '''Remove the measurement for the given image number
         
         object_name - the measurement's object. If other than Image or Experiment,
@@ -803,7 +803,10 @@ class Measurements(object):
         feature_name - name of the measurement feature
         image_number - the image set's image number
         '''
-        del self.hdf5_dict[object_name, feature_name, image_number]
+        if image_number is None:
+            del self.hdf5_dict[object_name, feature_name]
+        else:
+            del self.hdf5_dict[object_name, feature_name, image_number]
         
     def clear(self):
         '''Remove all measurements'''

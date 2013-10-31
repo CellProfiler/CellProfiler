@@ -2015,6 +2015,11 @@ class Pipeline(object):
         """
         assert(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
+        if self.has_legacy_loaders():
+            # Legacy - there may be cached group number/group index
+            #          image measurements which may be incorrect.
+            m.remove_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX)
+            m.remove_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER)
         self.write_experiment_measurements(m)
         
         prepare_run_error_detected = [False]

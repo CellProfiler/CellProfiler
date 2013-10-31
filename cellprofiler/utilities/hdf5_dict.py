@@ -579,20 +579,32 @@ class HDF5Dict(object):
     def __delitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
         assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), "First two indices must be of type str."
-        assert isinstance(idxs[2], int) and idxs[2] >= 0, "Third index must be a non-negative integer"
-
-        object_name, feature_name, num_idx = idxs
-        feature_exists = self.has_feature(object_name, feature_name)
-        assert feature_exists
-
-        if not self.has_data(*idxs):
-            return
-
-        with self.lock:
-            del self.get_indices(object_name, feature_name)[num_idx]
-            # reserved value of -1 means deleted
-            idx = self.top_group[object_name][feature_name][INDEX]
-            idx[np.flatnonzero(idx[:, 0] == num_idx), 0] = -1
+        if len(idxs) == 3:
+            assert isinstance(idxs[2], int) and idxs[2] >= 0, "Third index must be a non-negative integer"
+    
+            object_name, feature_name, num_idx = idxs
+            feature_exists = self.has_feature(object_name, feature_name)
+            assert feature_exists
+    
+            if not self.has_data(*idxs):
+                return
+    
+            with self.lock:
+                del self.get_indices(object_name, feature_name)[num_idx]
+                # reserved value of -1 means deleted
+                idx = self.top_group[object_name][feature_name][INDEX]
+                idx[np.flatnonzero(idx[:, 0] == num_idx), 0] = -1
+        else:
+            # Delete the entire measurement
+            object_name, feature_name  = idxs
+            with self.lock:
+                if self.has_feature(object_name, feature_name):
+                    group = self.top_group[object_name][feature_name]
+                    del group[INDEX]
+                    del group[DATA]
+                    del self.top_group[object_name][feature_name]
+                    if (object_name, feature_name) in self.indices:
+                        del self.indices[object_name, feature_name]
             
     def has_data(self, object_name, feature_name, num_idx):
         return num_idx in self.get_indices(object_name, feature_name)

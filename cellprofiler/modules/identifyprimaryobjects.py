@@ -1083,11 +1083,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             else:
                 maxima_suppression_size = self.maxima_suppression_size.value
             reported_maxima_suppression_size = maxima_suppression_size
-        if maxima_suppression_size > 0:
-            maxima_mask = strel_disk(maxima_suppression_size-.5)
-        else:
-            # User wants to use thresholding and shrinking
-            maxima_mask = None
+        maxima_mask = strel_disk(max(1, maxima_suppression_size-.5))
         distance_transformed_image = None
         if self.unclump_method == UN_LOG:
             if self.wants_automatic_log_diameter.value:

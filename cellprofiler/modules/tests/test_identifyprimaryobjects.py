@@ -885,6 +885,52 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                     measurements = cpmeas.Measurements()
                     x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
     
+    def test_02_13_maxima_suppression_zero(self):
+        # Regression test for issue #877
+        # if maxima_suppression_size = 1 or 0, use a 4-connected structuring
+        # element.
+        #
+        img = np.array(
+            [[ 0,  0, 0, 0,  0,  0,  0,  0,  0, 0],
+             [ 0, .1, 0, 0, .1,  0,  0, .1,  0, 0],
+             [ 0, .1, 0, 0,  0, .2,  0,  0,  0, 0],
+             [ 0,  0, 0, 0,  0,  0,  0, .1,  0, 0],
+             [ 0,  0, 0, 0,  0,  0,  0,  0,  0, 0]])
+        expected = np.array(
+            [[ 0,  0, 0, 0,  0,  0,  0,  0,  0, 0],
+             [ 0,  1, 0, 0,  2,  0,  0,  3,  0, 0],
+             [ 0,  1, 0, 0,  0,  2,  0,  0,  0, 0],
+             [ 0,  0, 0, 0,  0,  0,  0,  4,  0, 0],
+             [ 0,  0, 0, 0,  0,  0,  0,  0,  0, 0]])
+        for distance in (0, 1):
+            x = ID.IdentifyPrimaryObjects()
+            x.image_name.value = "my_image"
+            x.object_name.value = "my_object"
+            x.exclude_size.value = False
+            x.size_range.value = (2,10)
+            x.fill_holes.value = False
+            x.smoothing_filter_size.value = 0
+            x.automatic_smoothing.value = 0
+            x.maxima_suppression_size.value = distance
+            x.automatic_suppression.value = False
+            x.manual_threshold.value = .05
+            x.unclump_method.value = ID.UN_INTENSITY
+            x.watershed_method.value = ID.WA_INTENSITY
+            x.threshold_scope.value = I.TS_MANUAL
+            x.threshold_smoothing_choice.value = I.TSM_NONE
+            pipeline = cellprofiler.pipeline.Pipeline()
+            x.module_num = 1
+            pipeline.add_module(x)
+            object_set = cpo.ObjectSet()
+            measurements = cpmeas.Measurements()
+            measurements.add(x.image_name.value, cpi.Image(img))
+            x.run(Workspace(pipeline, x, measurements, object_set, measurements,
+                            None))
+            output = object_set.get_objects(x.object_name.value)
+            self.assertEqual(output.count, 4)
+            self.assertTrue(np.all(output.segmented[expected == 0] == 0))
+            self.assertEqual(len(np.unique(output.segmented[expected == 1])), 1)
+            
     def test_04_01_load_matlab_12(self):
         """Test loading a Matlab version 12 IdentifyPrimAutomatic pipeline
         

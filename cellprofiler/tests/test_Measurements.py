@@ -793,6 +793,21 @@ class TestMeasurements(unittest.TestCase):
             self.assertTrue(cpmeas.IMAGE in object_names)
         finally:
             del m
+            
+    def test_15_03_relate_no_objects(self):
+        # regression test of issue #886 - add_relate_measurement called
+        #                                 with no objects
+        m = cpmeas.Measurements()
+        m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
+        m.add_image_measurement(cpmeas.GROUP_INDEX, 0)
+        m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
+        m.add_relate_measurement(1, "Foo", OBJECT_NAME, OBJECT_NAME,
+                                 np.zeros(3), np.zeros(3),
+                                 np.zeros(3), np.zeros(3))
+        m.add_relate_measurement(1, "Foo", OBJECT_NAME, OBJECT_NAME,
+                                 np.zeros(0), np.zeros(0),
+                                 np.zeros(0), np.zeros(0))
+        
         
     def test_16_01_get_feature_names(self):
         m = cpmeas.Measurements()

@@ -569,7 +569,8 @@ class Measurements(object):
         
         The leaves are vector datasets.
         '''
-
+        if len(image_numbers1) == 0:
+            return
         with self.hdf5_dict.lock:
             rgroup = self.get_relationship_hdf5_group(
                 module_number, relationship, object_name1, object_name2)

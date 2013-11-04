@@ -3315,7 +3315,8 @@ class Joiner(Setting):
                 self)
         for d in join:
             for column_name, value in d.items():
-                if column_name in self.entities and value not in entities[column_name]:
+                if column_name in self.entities and \
+                   value not in self.entities[column_name]:
                     raise ValidationError(
                         "%s is not a valid choice for %s" %
                         (value, column_name), self)

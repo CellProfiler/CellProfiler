@@ -179,7 +179,7 @@ M_GROUPING_TAGS = "_".join((C_METADATA, "GroupingTags"))
 
 '''Tags that are reserved for automatic population of metadata'''
 RESERVED_METADATA_TAGS = ( "C", "T", "Z", "ColorFormat", "ChannelName",
-                           C_SERIES, C_FRAME)
+                           C_SERIES, C_FRAME, C_URL)
 
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''

@@ -1322,16 +1322,16 @@ class ImageSetCtrlDropTarget(wx.FileDropTarget):
         self.grid = grid
         
     def OnEnter(self, x, y, result):
-        return grid.on_drop_enter(x, y, result)
+        return self.grid.on_drop_enter(x, y, result)
     
     def OnLeave(self):
-        return grid.on_drop_leave()
+        return self.grid.on_drop_leave()
     
     def OnDragOver(self, x, y, result):
-        return grid.on_drag_over(x, y, result)
+        return self.grid.on_drag_over(x, y, result)
     
     def OnDropFiles(self, x, y, filenames):
-        return grid.on_drop_files(x, y, filenames)
+        return self.grid.on_drop_files(x, y, filenames)
     
 class ImageSetController:
     '''Modifies the image set according to GUI notifications'''

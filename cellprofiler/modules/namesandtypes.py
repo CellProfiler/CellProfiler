@@ -411,7 +411,7 @@ class NamesAndTypes(cpm.CPModule):
             value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT))
         
         group.append("should_save_outlines", cps.Binary(
-            "Retain object outlines?", False, doc="""
+            "Retain outlines of loaded objects?", False, doc="""
             %(RETAINING_OUTLINES_HELP)s""" % globals()))
         
         group.append("save_outlines", cps.OutlineNameProvider(
@@ -542,8 +542,9 @@ class NamesAndTypes(cpm.CPModule):
                                                  LOAD_AS_GRAYSCALE_IMAGE):
                     result += [assignment.rescale]
                 elif assignment.load_as_choice == LOAD_AS_OBJECTS:
-                    result += [assignment.should_save_outlines, 
-                               assignment.save_outlines]
+                    result += [assignment.should_save_outlines]
+                    if assignment.should_save_outlines.value:
+                        result += [assignment.save_outlines]
                 if assignment.can_remove:
                     result += [assignment.remover]
             for single_image in self.single_images:

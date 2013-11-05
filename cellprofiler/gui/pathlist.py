@@ -25,6 +25,8 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect
 OMERO_SCHEME = "omero:"
 
+EVT_PLC_SELECTION_CHANGED = wx.PyEventBinder(wx.NewEventType())
+
 class PathListCtrl(wx.PyScrolledWindow):
     #
     # The width of the expander image (seems like all code samples have this
@@ -63,6 +65,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.Font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
         self.SetDoubleBuffered(True)
         self.selections = set()
+        self.notify_selection_changed()
         self.folder_items = []
         self.folder_names = []
         self.folder_counts = np.zeros(0, int)
@@ -169,6 +172,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.schmutzy = True
         self.selections = set()
         self.focus_item = None
+        self.notify_selection_changed()
         self.Refresh(eraseBackground=False)
         
     def get_show_disabled(self):
@@ -378,6 +382,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.selections = set() # indexes are all wrong now
         self.focus_item = None
         self.schmutzy = True
+        self.notify_selection_changed()
         self.Refresh(eraseBackground=False)
         
     FLAG_ENABLED_ONLY = 1
@@ -423,12 +428,46 @@ class PathListCtrl(wx.PyScrolledWindow):
         '''Return True if there are any selected items'''
         return len(self.selections) > 0
     
+    def clear_selections(self):
+        self.selections = set()
+        self.schmutzy = True
+        self.notify_selection_changed()
+        self.Refresh(eraseBackground=False)
+        
     def SelectAll(self):
         '''Select all items in the control'''
         self.selections =  set(range(len(self)))
         self.schmutzy = True
+        self.notify_selection_changed()
         self.Refresh(eraseBackground=False)
+        
+    def select_path(self, url):
+        '''Select the given URL if it is present in the list
+        
+        url - url to select if it is present
+        
+        returns True if the URL was selected
+        '''
+        folder, filename = self.splitpath(url)
+        idx = bisect.bisect_left(self.folder_names, folder)
+        if idx < len(self.folder_names) and self.folder_names[idx] == folder:
+            folder_item = self.folder_items[idx]
+        else:
+            return False
+        fp = folder_item.filenames
+        pidx = bisect.bisect_left(fp, filename)
+        if pidx >= len(fp) or fp[pidx] != filename:
+            return False
+        self.selections.add(self.folder_idxs[idx] + pidx + 1)
+        self.notify_selection_changed()
+        return True
     
+    def notify_selection_changed(self):
+        '''Publish a WX event that tells the world that the selection changed'''
+        event = wx.NotifyEvent(EVT_PLC_SELECTION_CHANGED.evtType[0])
+        event.EventObject = self
+        self.GetEventHandler().ProcessEvent(event)
+        
     def has_focus_item(self):
         '''Return True if an item is focused'''
         return self.focus_item is not None
@@ -678,9 +717,12 @@ class PathListCtrl(wx.PyScrolledWindow):
         treeitem_x = self.get_treeitem_x()
         
         if path_idx is None and event.GetX() < treeitem_x:
+            needs_selchange_evt = len(self.selections) > 0
             self.selections = set()
             item.opened = not item.opened
             self.schmutzy = True
+            if needs_selchange_evt:
+                self.notify_selection_changed()
             self.Refresh(eraseBackground=False)
             return
             
@@ -712,6 +754,7 @@ class PathListCtrl(wx.PyScrolledWindow):
                 self.selections = set()
                 item.opened = not item.opened
                 self.schmutzy = True
+                self.notify_selection_changed()
                 self.Refresh(eraseBackground=False)
             return
         if self.fn_do_menu_command is not None:
@@ -728,6 +771,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.focus_item = idx
         if self[idx][1] is not None:
             self.selections.add(idx)
+            self.notify_selection_changed()
         self.refresh_item(idx)
         event.Skip(True)
         
@@ -770,6 +814,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             self.selections.update(
                 [idx for idx in range(start, end) if self[idx][1] is not None])
         self.mouse_down_idx = None
+        self.notify_selection_changed()
         self.ReleaseMouse()
         
     def on_mouse_capture_lost(self, event):
@@ -784,14 +829,18 @@ class PathListCtrl(wx.PyScrolledWindow):
         event - key event
         direction - 1 for down,  -1 for up
         '''
+        needs_selchange_event = False
         if (self.focus_item in self.selections and
             not event.ShiftDown()):
             if len(self.selections) > 1:
                 self.Refresh(eraseBackground=False)
             self.selections = set()
+            needs_selchange_event = True
         self.refresh_item(self.focus_item)
         if (direction + self.focus_item < 0 or
             direction + self.focus_item >= len(self)):
+            if needs_selchange_event:
+                self.notify_selection_changed()
             return
         self.focus_item += direction
         # There should never be an empty directory, therefore, item # 1
@@ -801,6 +850,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             self.focus_item += direction
         self.scroll_into_view()
         self.selections.add(self.focus_item)
+        self.notify_selection_changed()
         self.refresh_item(self.focus_item)
         
     def on_key_down(self, event):

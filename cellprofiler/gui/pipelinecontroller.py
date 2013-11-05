@@ -58,6 +58,7 @@ import cellprofiler.utilities.walk_in_background as W
 from cellprofiler.gui.omerologin import OmeroLoginDlg
 from cellprofiler.icons import get_builtin_image
 from cellprofiler.gui.htmldialog import HTMLDialog
+from cellprofiler.gui.pathlist import EVT_PLC_SELECTION_CHANGED
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -1503,6 +1504,62 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             else:
                 urls.append(pathname2url(pathname))
         self.add_urls(urls)
+        
+    def pick_from_pathlist(self, selected_url, title = None, 
+                           instructions = None):
+        '''Pick a file from the pathlist control
+        
+        This function displays the pathlist control within a dialog box. The
+        single pathlist control is reparented to the dialog box during its
+        modal display.
+        
+        selected_url - select this URL in the pathlist control.
+        
+        returns the URL or None if the user cancelled.
+        '''
+        if title is None:
+            title = "Select an image file"
+        with wx.Dialog(
+            self.__frame, title = title, size = (640, 480),
+            style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER) as dlg:
+            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+            dlg.Sizer.AddSpacer(3)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 3)
+            if instructions is not None:
+                sizer.Add(wx.StaticText(dlg, label=instructions), 0, wx.EXPAND)
+                sizer.AddSpacer(2)
+            old_parent = self.__path_list_ctrl.Parent
+            self.__path_list_ctrl.Reparent(dlg)
+            try:
+                sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND)
+                button_sizer = wx.StdDialogButtonSizer()
+                ok_button = wx.Button(dlg, wx.ID_OK)
+                button_sizer.AddButton(ok_button)
+                button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+                button_sizer.Realize()
+                dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
+                self.__path_list_ctrl.clear_selections()
+                if selected_url is None:
+                    any_selected = False
+                else:
+                    any_selected = \
+                        self.__path_list_ctrl.select_path(selected_url)
+                ok_button.Enable(any_selected)
+                
+                def on_plc_change(event):
+                    ok_button.Enable(self.__path_list_ctrl.has_selections())
+                self.__path_list_ctrl.Bind(EVT_PLC_SELECTION_CHANGED,
+                                           on_plc_change)
+                result = dlg.ShowModal()
+                self.__path_list_ctrl.Unbind(EVT_PLC_SELECTION_CHANGED)
+                if result == wx.ID_OK:
+                    paths = self.__path_list_ctrl.get_paths(
+                        self.__path_list_ctrl.FLAG_SELECTED_ONLY)
+                    return None if len(paths) == 0 else paths[0]
+                return None
+            finally:
+                self.__path_list_ctrl.Reparent(old_parent)
                 
     def add_urls(self, urls):
         '''Add URLS to the pipeline and file list'''

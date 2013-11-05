@@ -2481,17 +2481,13 @@ class Pipeline(object):
                 self.add_image_plane_details(removed)
             self.__undo_stack.append((undo, "Remove images"))
         
-    def find_image_plane_details(self, exemplar):
+    def find_image_plane_details(self, exemplar, ipds = None):
         '''Return the image plane details record that matches the exemplar
         
         exemplar - an image plane details record with the desired URL,
                    series, index and channel
         '''
-        pos = bisect.bisect_left(self.image_plane_details, exemplar)
-        if (pos == len(self.image_plane_details) or 
-            cmp(self.image_plane_details[pos], exemplar)):
-            return None
-        return self.image_plane_details[pos]
+        return find_image_plane_details(exemplar, self.image_plane_details)
     
     def load_image_plane_details(self, workspace):
         '''Load the pipeline's image plane details from the workspace file list
@@ -3319,6 +3315,25 @@ class Pipeline(object):
 
         assert "Groups" in [m.module_name for m in self.modules()]
         return self.settings_hash(until_module="Groups", as_string=True)
+
+def find_image_plane_details(exemplar, ipds):
+    '''Find the ImagePlaneDetails instance matching the exemplar
+    
+    The point of this function is to retrieve the ImagePlaneDetails from
+    the list provided and, in doing so, get the attached metadata and the
+    Java IPD object as well.
+    
+    exemplar - an IPD with the URL, series, index and channel filled in
+    
+    ipds - an ordered list of ImagePlaneDetails instances
+    
+    Returns the match or None if not found
+    '''
+    pos = bisect.bisect_left(ipds, exemplar)
+    if (pos == len(ipds) or 
+        cmp(ipds[pos], exemplar)):
+        return None
+    return ipds[pos]
 
 class AbstractPipelineEvent(object):
     """Something that happened to the pipeline and was indicated to the listeners

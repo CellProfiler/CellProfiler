@@ -34,7 +34,7 @@ def example_images_directory():
         path = os.path.join(d,imagedir)
         if os.path.exists(path):
             return path
-    return None
+    raise Exception("Can't find example images; please set $CP_EXAMPLEIMAGES.")
 
 def testimages_directory():
     if os.environ.has_key('CP_TESTIMAGES'):
@@ -48,7 +48,7 @@ def testimages_directory():
     path = os.path.join(d, "TestImages")
     if os.path.exists(path):
         return path
-    return None
+    raise Exception("Can't find directory for test images; please set $CP_TESTIMAGES.")
     
 class testExampleImagesDirectory(unittest.TestCase):
     def test_00_00_got_something(self):

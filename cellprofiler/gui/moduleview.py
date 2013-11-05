@@ -1393,18 +1393,17 @@ class ModuleView:
         
     def make_image_plane_control(self, v, control):
         '''Make a control to pick an image plane from the file list'''
+        from cellprofiler.modules.loadimages import url2pathname
+        
         assert isinstance(v, cps.ImagePlane)
         if not control:
             control = wx.Panel(self.module_panel,
                                name = edit_control_name(v))
             control.Sizer = wx.BoxSizer(wx.HORIZONTAL)
-            url_control = wx.StaticText(
+            url_control = wx.TextCtrl(
                 control, 
-                style = wx.BORDER_SIMPLE,
+                style = wx.TE_READONLY,
                 name=text_control_name(v))
-            url_control.BackgroundStyle = wx.BG_STYLE_COLOUR
-            url_control.BackgroundColour = wx.SystemSettings.GetColour(
-                wx.SYS_COLOUR_WINDOW)
             control.Sizer.Add(url_control, 1, wx.EXPAND)
             control.Sizer.AddSpacer(2)
             browse_button = wx.Button(control, label = "Browse",
@@ -1420,7 +1419,10 @@ class ModuleView:
             browse_button.Bind(wx.EVT_BUTTON, on_button)
         else:
             url_control = control.FindWindowByName(text_control_name(v))
-        url_control.Label = v.url or ""
+        label = v.url or ""
+        if label.startswith("file:"):
+            label = url2pathname(label)
+        url_control.Value = label
         return control
             
     def make_text_control(self, v, control_name, control):

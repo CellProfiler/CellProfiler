@@ -582,7 +582,7 @@ class ImagePlane(Setting):
     @property
     def url(self):
         '''The URL portion of the image plane descriptor'''
-        return self.__get_field(0)
+        return self.__get_field(0).encode("utf-8")
     
     @property
     def series(self):

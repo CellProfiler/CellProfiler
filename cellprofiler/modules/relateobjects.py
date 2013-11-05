@@ -234,7 +234,7 @@ class RelateObjects(cpm.CPModule):
                     continue
                 data = m.get_current_measurement(self.sub_object_name.value,
                                                  feature_name)
-                if data is not None:
+                if data is not None and len(data) > 0:
                     if len(parents_of) > 0:
                         means = fix(scind.mean(data.astype(float), 
                                                parents_of, parent_indexes))

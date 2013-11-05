@@ -797,7 +797,7 @@ class AnalysisRunner(object):
         for worker in cls.workers:
             worker.wait()
         cls.workers = []
-        cls.deadman_swtiches = []
+        cls.deadman_switches = []
 
 
 def find_python():

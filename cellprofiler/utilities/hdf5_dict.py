@@ -295,7 +295,7 @@ class HDF5Dict(object):
         except Exception, e:
             self.hdf5_file.close()
             logger.exception("Failed during initial processing of %s" % self.filename)
-            raise e
+            raise
                             
     def __del__(self):
         logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)

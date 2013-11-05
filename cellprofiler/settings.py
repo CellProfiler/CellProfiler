@@ -649,7 +649,7 @@ class Number(Text):
         else:
             text_value = self.value_to_str(value)
         super(Number, self).__init__(text, text_value, *args, **kwargs)
-        self.__default = value
+        self.__default = self.str_to_value(text_value)
         self.__minval = minval
         self.__maxval = maxval
     

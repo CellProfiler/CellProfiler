@@ -31,6 +31,19 @@ by using <b>FilterObjects</b>, <b>EditObjectsManually</b> or the size criteria i
 <b>IdentifyPrimaryObjects</b>. A binary image can be obtained from an object set by using
 <b>ConvertObjectsToImage</b>.
 
+<p>At the end of the training run, a final display window is shown displaying the following
+statistical data:
+<ul>
+<li>A boxplot of the direction angle shape costs. The direction angles (which are between -&pi; and &pi;)
+are the angles between lines joining consective control points. The angle 0 corresponds to
+the case when two adjacent line segments are parallel (and thus belong to the same line).</li>
+<li>A cummulative boxplot of the worm lengths as determined by the model.</li>
+<li>A cummulative boxplot of the worm angles as determined by the model.</i></li>
+<li>A heatmap of the covariance matrix of the feature vectors. For <i>N</i> control points,
+the feature vector is of length <i>N</i>-1 and contains <i>N</i>-2 elements for each of the 
+angles between them, plus an element representing the worm length.</li>
+</ul></p>
+        
 <p><i>Untangling</i> involves untangles the worms using a provided worm model, built
 from a large number of samples of single worms. If the result of the untangling is 
 not satisfactory (e.g., it is unable to detect long worms or is too stringent about 
@@ -38,7 +51,7 @@ shape variation) and you do not wish to re-train, you can adjust the provided wo
 manually by opening the .xml file in a text editor 
 and changing the values for the fields defining worm length, area etc. You may also want to adjust the 
 "Maximum Complexity" module setting which controls how complex clusters the untangling will handle. 
-Large clusters (%gt; 6 worms) may be slow to process.</p>
+Large clusters (&gt; 6 worms) may be slow to process.</p>
 
 <h4>References</h4>
 <ul>
@@ -479,7 +492,7 @@ class UntangleWorms(cpm.CPModule):
             "Custom complexity", 400, 20,doc = """
             <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(C_CUSTOM)s" complexity are selected )</i>
             Enter the maximum number of segments of any cluster that should
-            be processed.""")
+            be processed."""%globals())
         
     def settings(self):
         return [self.image_name, self.overlap, self.overlap_objects,

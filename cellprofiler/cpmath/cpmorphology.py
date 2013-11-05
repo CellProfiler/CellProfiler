@@ -4504,7 +4504,8 @@ def get_outline_pts(labels, idxs):
     coord_counts = np.zeros(len(idxs), output_count.dtype)
     coord_counts[mapper[idx_of_first]] = output_count
     if len(idx_of_first) > 1:
-        coord_offsets[mapper[idx_of_first[1:]]] = np.cumsum(output_count[:-1])
+        coord_offsets[mapper[idx_of_first[1:]]] = np.cumsum(output_count[:-1],
+                                                            dtype=output_count.dtype)
     coords = np.column_stack((
         output / strides[0] - offset[0],
         output % strides[0] - offset[1]))

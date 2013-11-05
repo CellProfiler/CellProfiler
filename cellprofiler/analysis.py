@@ -723,7 +723,10 @@ class AnalysisRunner(object):
         for idx in range(num):
             if sys.platform == 'darwin':
                 close_all_on_exec()
-            
+
+            aw_args = ["--work-announce", cls.work_announce_address,
+                       "--plugins-directory", cpprefs.get_plugin_directory(),
+                       "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
             if hasattr(sys, 'frozen'):
@@ -740,20 +743,18 @@ class AnalysisRunner(object):
                            "Did not find CellProfiler in its expected place: %s" % cp_executable
                     assert os.access(cp_executable, os.EX_OK), \
                            "%s is not executable" % cp_executable
-                    args = ["arch", "-x86_64", "-i386", cp_executable, 
-                            "--work-announce", cls.work_announce_address,
-                            "--plugins-directory", cpprefs.get_plugin_directory(),
-                            "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
+                    args = (["arch", "-x86_64", "-i386", cp_executable] + 
+                            aw_args)
+                elif sys.platform == 'linux2':
+                    aw_path = os.path.join(os.path.dirname(__file__),
+                                           "analysis_worker.py")
+                    args = [sys.executable, aw_path] + aw_args
                 else:
                     aw_path = os.path.join(
                         os.path.split(
                             os.path.abspath(sys.argv[0]))[0],
                                            "analysis_worker")
-                    args = [aw_path,
-                            '--work-announce',
-                            cls.work_announce_address,
-                            "--plugins-directory", cpprefs.get_plugin_directory(),
-                            "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
+                    args = [aw_path] + aw_args
                     
                 worker = subprocess.Popen(args,
                                           env=find_worker_env(),
@@ -765,11 +766,7 @@ class AnalysisRunner(object):
                 worker = subprocess.Popen(
                     [find_python(),
                      '-u',  # unbuffered
-                     find_analysis_worker_source(),
-                     '--work-announce',
-                     cls.work_announce_address,
-                     "--plugins-directory", cpprefs.get_plugin_directory(),
-                     "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()],
+                     find_analysis_worker_source()] + aw_args,
                     env=find_worker_env(),
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,

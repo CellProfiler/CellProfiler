@@ -19,11 +19,16 @@ from cellprofiler.modules.tests import example_images_directory
 
 import CellProfiler
 
+if hasattr(sys, 'frozen'):
+    ARGLIST_START = ["CellProfiler.py"]
+else:
+    ARGLIST_START = ["CellProfiler.py", "-b"]
+
 class TestCellProfiler(unittest.TestCase):
     def test_01_01_html(self):
         path = tempfile.mkdtemp()
         try:
-            CellProfiler.main(["foo", "-b", "--html","-o",path])
+            CellProfiler.main(ARGLIST_START + ["--html","-o",path])
             filenames = os.listdir(path)
             self.assertTrue("index.html" in filenames)
         finally:
@@ -34,7 +39,7 @@ class TestCellProfiler(unittest.TestCase):
         fake_stdout = StringIO()
         sys.stdout = fake_stdout
         try:
-            CellProfiler.main(["foo", "-b", "--code-statistics"])
+            CellProfiler.main(ARGLIST_START + ["--code-statistics"])
         finally:
             sys.stdout = old_stdout
         fake_stdout.seek(0)
@@ -66,14 +71,13 @@ class TestCellProfiler(unittest.TestCase):
             pipeline_file = os.path.join(input_directory, "ExampleHT29.cp")
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
-            args = [ "CellProfiler.py",
-                "-c", "-r", "-b", 
-                "-i", input_directory,
-                "-o", output_directory,
-                "-p", pipeline_file,
-                "-d", done_file,
-                "-t", temp_directory,
-                measurements_file]
+            args = ARGLIST_START + ["-c", "-r", 
+                                    "-i", input_directory,
+                                    "-o", output_directory,
+                                    "-p", pipeline_file,
+                                    "-d", done_file,
+                                    "-t", temp_directory,
+                                    measurements_file]
             CellProfiler.main(args)
             import cellprofiler.preferences as cpprefs
             self.assertTrue(os.path.exists(measurements_file))
@@ -83,12 +87,11 @@ class TestCellProfiler(unittest.TestCase):
             # Re-run using the measurements file.
             #
             m2_file = os.path.join(output_directory, "M2.h5")
-            args = [ "CellProfiler.py",
-                     "-c", "-r", "-b",
-                     "-i", input_directory,
-                     "-o", output_directory,
-                     "-p", measurements_file,
-                     m2_file]
+            args = ARGLIST_START + ["-c", "-r", 
+                                    "-i", input_directory,
+                                    "-o", output_directory,
+                                    "-p", measurements_file,
+                                    m2_file]
             CellProfiler.main(args)
             self.assertTrue(os.path.exists(m2_file))
         finally:

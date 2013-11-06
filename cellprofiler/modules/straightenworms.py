@@ -36,6 +36,11 @@ measurements of transverse segments are designated as "L1of1" indicating that
 there is only one longitudinal stripe. Both mean intensity and standard
 deviation of intensity are measured per worm sub-area.
 
+<b>StraightenWorms</b> will straighten a color image. The module needs a
+grayscale image to make its intensity measurements. For a color image, the
+red, green and blue channels are averaged to yield a grayscale image. The
+intensity measurements are then made on that grayscale image.
+
 <h4>References</h4>
 <ul>
 <li>Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening <i>Caenorhabditis elegans</i> images."
@@ -853,6 +858,8 @@ class StraightenWorms(cpm.CPModule):
         for group in self.images:
             image_name = group.straightened_image_name.value
             straightened_image = image_set.get_image(image_name).pixel_data
+            if straightened_image.ndim == 3:
+                straightened_image = np.mean(straightened_image, 2)
             straightened_image = straightened_image[i_src, j_src]
             bin_number = (labels_src - 1 + 
                           nworms * j_dest + 
@@ -1167,13 +1174,16 @@ class StraightenWorms(cpm.CPModule):
                     else:
                         image = (image - imin) / (imax - imin)
                     image[labels == 0] = 1
-                    image = np.vstack([image] * 3)
+                    if image.ndim == 2:
+                        image = np.vstack([image] * 3)
                 else:
                     shape = (labels.shape[0], labels.shape[1], 3)
                     image = np.zeros(shape)
                     image[labels == 0, :] = 1
                     for i, straightened_image in enumerate(straightened_images[:3]):
                         pixel_data = straightened_image[self.K_PIXEL_DATA]
+                        if pixel_data.ndim == 3:
+                            pixel_data = np.mean(pixel_data, 2)
                         imin, imax = [fn(pixel_data[labels !=0])
                                       for fn in np.min, np.max]
                         if imin == imax:
@@ -1224,9 +1234,19 @@ class StraightenWorms(cpm.CPModule):
                         for key in self.K_PIXEL_DATA, self.K_MASK:
                             src = d[key]
                             dest = src.copy()
-                            dest[idest, jdest] = src[isrc, jsrc]
+                            ilim, jlim = src.shape[:2]
+                            mm = ((idest >= 0) & (idest < ilim) &
+                                  (jdest >= 0) & (jdest < jlim) &
+                                  (isrc >= 0) & (isrc < ilim) &
+                                  (jsrc >= 0) & (jsrc < jlim))
+                            dest[idest[mm], jdest[mm]] = src[isrc[mm], jsrc[mm]]
                             d[key] = dest
-                    labels[isrc, jsrc] = labels[idest, jdest]
+                    ilim, jlim = labels.shape
+                    mm = ((idest >= 0) & (idest < ilim) &
+                          (jdest >= 0) & (jdest < jlim) &
+                          (isrc >= 0) & (isrc < ilim) &
+                          (jsrc >= 0) & (jsrc < jlim))
+                    labels[isrc[mm], jsrc[mm]] = labels[idest[mm], jdest[mm]]
                     s = slice(outline_indexes[object_number],
                               outline_indexes[object_number+1])
                     outline_ij[s, 0] = imax - outline_ij[s, 0]

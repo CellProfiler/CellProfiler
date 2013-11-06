@@ -36,10 +36,21 @@ measurements of transverse segments are designated as "L1of1" indicating that
 there is only one longitudinal stripe. Both mean intensity and standard
 deviation of intensity are measured per worm sub-area.
 
-<b>StraightenWorms</b> will straighten a color image. The module needs a
+While <b>StraightenWorms</b> can straighten a color image, the module needs a
 grayscale image to make its intensity measurements. For a color image, the
 red, green and blue channels are averaged to yield a grayscale image. The
 intensity measurements are then made on that grayscale image.
+
+<h4>Available measurements</h4>
+
+<b>Object measurements:</b>
+<ul>
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary 
+object centroids. The centroid is calculated as the center of mass of the binary 
+representation of the object.</li>
+<li><i>Worm_MeanIntensity:</i> The average pixel intensity within a worm.</li>
+<li><i>Worm_StdIntensity:</i> The standard deviation of the pixel intensities within a worm.</li>
+</ul>
 
 <h4>References</h4>
 <ul>

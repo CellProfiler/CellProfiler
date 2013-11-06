@@ -231,6 +231,10 @@ class Objects(object):
             #
             v_color[overlap_counts == 0] = 1
             #
+            # Assign all absent objects to color -1
+            #
+            v_color[1:][self.areas == 0] = -1
+            #
             # The processing order is from most overlapping to least
             #
             processing_order = np.lexsort((np.arange(len(overlap_counts)), overlap_counts))
@@ -262,6 +266,8 @@ class Objects(object):
             #
             result = []
             for color in np.unique(v_color):
+                if color == -1:
+                    continue
                 ijv = self.__ijv[v_color[self.__ijv[:,2]] == color]
                 indices = np.arange(1, len(v_color))[v_color[1:] == color]
                 result.append((ijv_to_segmented(ijv), indices))

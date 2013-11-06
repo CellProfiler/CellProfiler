@@ -401,8 +401,12 @@ class StraightenWorms(cpm.CPModule):
         # Handle each of the worm splines separately
         #
         for i in range(nworms):
-            orig_labels = [x for x,y in orig_labels_and_indexes
-                           if i+1 in y]
+            if lengths[i] == 0:
+                continue
+            object_number = i+1
+            orig_labels = [
+                x for x, y in orig_labels_and_indexes
+                if object_number in y and object_number in x]
             if len(orig_labels) == 0:
                 continue
             orig_labels = orig_labels[0]
@@ -479,7 +483,7 @@ class StraightenWorms(cpm.CPModule):
                     jx[islice, jslice] = cj[iii] + nj[iii] * jjj
             mask = map_coordinates((orig_labels == i+1).astype(np.float32), 
                                    [ix[islice, jslice], jx[islice,jslice]]) > .5
-            labels[islice, jslice][mask] = i+1
+            labels[islice, jslice][mask] = object_number
         #
         # Now create one straightened image for each input image
         #
@@ -1175,7 +1179,7 @@ class StraightenWorms(cpm.CPModule):
                         image = (image - imin) / (imax - imin)
                     image[labels == 0] = 1
                     if image.ndim == 2:
-                        image = np.vstack([image] * 3)
+                        image = np.dstack([image] * 3)
                 else:
                     shape = (labels.shape[0], labels.shape[1], 3)
                     image = np.zeros(shape)

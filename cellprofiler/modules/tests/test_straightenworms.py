@@ -202,6 +202,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         objects = cpo.Objects()
         labels = np.zeros(image.shape, int)
         for i in range(control_points.shape[2]):
+            if lengths[i] == 0:
+                continue
             self.rebuild_worm_from_control_points_approx(
                 control_points[:,:,i], radii, labels, i+1)
         objects.segmented = labels
@@ -407,6 +409,33 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         np.testing.assert_almost_equal(pixels[0:19,0:11], image[16:35,10:21])
         expected = image[control_points[:,0,1],control_points[:,1,1]]
         samples = pixels[5:26:5,16]
+        np.testing.assert_almost_equal(expected, samples)
+        
+    def test_02_05_straighten_missing_worm(self):
+        r = np.random.RandomState()
+        r.seed(0)
+        image = r.uniform(size=(60, 30))
+        control_points = np.array([[[21, np.nan, 10],[15, np.nan, 10]],
+                                   [[23, np.nan, 13],[15, np.nan, 14]],
+                                   [[25, np.nan, 16],[15, np.nan, 18]],
+                                   [[27, np.nan, 19],[15, np.nan, 22]],
+                                   [[29, np.nan, 22],[15, np.nan, 26]]])
+        lengths = np.array([8, 0, 20])
+        radii = np.array([1, 3, 5, 3, 1])
+        workspace, module = self.make_workspace(control_points, lengths,
+                                                radii, image)
+        self.assertTrue(isinstance(module, S.StraightenWorms))
+        module.width.value = 11
+        module.run(workspace)
+        image_set = workspace.image_set
+        self.assertTrue(isinstance(image_set, cpi.ImageSet))
+        pixels = image_set.get_image(STRAIGHTENED_IMAGE_NAME).pixel_data
+        self.assertEqual(pixels.shape[1], 33)
+        self.assertEqual(pixels.shape[0], 31)
+        np.testing.assert_almost_equal(pixels[0:19,0:11], image[16:35,10:21])
+        expected = image[control_points[:,0,2].astype(int), 
+                         control_points[:,1,2].astype(int)]
+        samples = pixels[5:26:5, 27]
         np.testing.assert_almost_equal(expected, samples)
         
         

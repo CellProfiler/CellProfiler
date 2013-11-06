@@ -43,6 +43,7 @@ from cellprofiler.cpmath.cpmorphology import get_outline_pts, thicken
 from cellprofiler.cpmath.index import Indexes
 from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
 from cellprofiler.gui.cpfigure import CPNavigationToolbar
+from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint
 
 class EditObjectsDialog(wx.Dialog):
     '''This dialog can be invoked as an objects editor
@@ -148,6 +149,7 @@ class EditObjectsDialog(wx.Dialog):
         self.init_labels()
         self.display()
         self.Layout()
+        self.layout_sash()
         self.Raise()
         self.panel.SetFocus()
         
@@ -252,6 +254,7 @@ class EditObjectsDialog(wx.Dialog):
     def build_ui(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
+
         self.figure = matplotlib.figure.Figure()
         #
         # The following is a patch that tells the draw event handler not
@@ -266,11 +269,41 @@ class EditObjectsDialog(wx.Dialog):
                 finally:
                     self.Parent.inside_print = False
         self.panel = CanvasPatch(self, -1, self.figure)
-        sizer.Add(self.panel, 1, wx.EXPAND)
-        self.html_frame = wx.MiniFrame(
-            self, style = wx.DEFAULT_MINIFRAME_STYLE | 
-            wx.CLOSE_BOX | wx.SYSTEM_MENU | wx.RESIZE_BORDER)
-        self.html_panel = wx.html.HtmlWindow(self.html_frame)
+        self.toolbar = CPNavigationToolbar(self.panel)
+        self.sash_parent = wx.Panel(self)
+        #
+        # Need to reparent the canvas after instantiating the toolbar so
+        # the toolbar gets parented to the frame and the panel gets
+        # parented to some window that can be shared with the *^$# sash
+        # window.
+        #
+        self.panel.Reparent(self.sash_parent)
+        sizer.Add(self.toolbar, 0, wx.EXPAND)
+        sizer.Add(self.sash_parent, 1, wx.EXPAND)
+        #
+        # Make 3 axes
+        #
+        self.orig_axes = self.figure.add_subplot(1, 1, 1)
+        self.orig_axes.set_zorder(1) # preferentially select on click.
+        self.orig_axes._adjustable = 'box-forced'
+        self.orig_axes.set_title(
+            self.title,
+            fontname=cpprefs.get_title_font_name(),
+            fontsize=cpprefs.get_title_font_size())
+    
+        ########################################
+        #
+        # The help sash
+        #
+        ########################################
+        self.help_sash = wx.SashLayoutWindow(self.sash_parent)
+        self.help_sash.Bind(wx.EVT_SASH_DRAGGED, self.on_help_sash_drag)
+        sw_bind_to_evt_paint(self.help_sash)
+        self.help_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
+        self.help_sash.SetAlignment(wx.LAYOUT_BOTTOM)
+        self.help_sash.SetDefaultBorderSize(4)
+        self.help_sash.SetSashVisible(wx.SASH_TOP, True)
+        self.html_panel = wx.html.HtmlWindow(self.help_sash)
         if sys.platform == 'darwin':
             LEFT_MOUSE = "mouse"
             LEFT_MOUSE_BUTTON = "mouse button"
@@ -365,27 +398,18 @@ class EditObjectsDialog(wx.Dialog):
         You can exit from zoom or pan mode by pressing the
         appropriate button on the navigation toolbar.</p>
         """ % locals())
-        self.html_frame.Show(False)
-        self.html_frame.Bind(wx.EVT_CLOSE, self.on_help_close)
-
-        self.toolbar = CPNavigationToolbar(self.panel)
-        sizer.Add(self.toolbar, 0, wx.EXPAND)
+        self.help_sash.Hide()
+        
+        ###################################################
         #
-        # Make 3 axes
+        # The buttons on the bottom
         #
-        self.orig_axes = self.figure.add_subplot(1, 1, 1)
-        self.orig_axes.set_zorder(1) # preferentially select on click.
-        self.orig_axes._adjustable = 'box-forced'
-        self.orig_axes.set_title(
-            self.title,
-            fontname=cpprefs.get_title_font_name(),
-            fontsize=cpprefs.get_title_font_size())
-    
+        ###################################################
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         #
         # Need padding on top because tool bar is wonky about its height
         #
-        sizer.Add(sub_sizer, 0, wx.EXPAND | wx.TOP, 10)
+        sizer.Add(sub_sizer, 0, wx.EXPAND)
                 
         #########################################
         #
@@ -410,6 +434,8 @@ class EditObjectsDialog(wx.Dialog):
         reset_button.SetToolTipString(
             "Undo all editing and restore the original objects")
         sub_sizer.Add(reset_button)
+        self.help_button = wx.ToggleButton(self, wx.ID_HELP, label="Show Help")
+        sub_sizer.Add(self.help_button)
         self.Bind(wx.EVT_BUTTON, self.on_toggle, toggle_button)
         self.Bind(wx.EVT_MENU, self.on_toggle, id= self.ID_ACTION_TOGGLE)
         self.Bind(wx.EVT_BUTTON, self.on_keep, keep_button)
@@ -418,6 +444,7 @@ class EditObjectsDialog(wx.Dialog):
         self.Bind(wx.EVT_MENU, self.on_remove, id=self.ID_ACTION_REMOVE)
         self.Bind(wx.EVT_BUTTON, self.undo, id = wx.ID_UNDO)
         self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
+        self.help_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_help)
         self.Bind(wx.EVT_MENU, self.on_reset, id=self.ID_ACTION_RESET)
         self.Bind(wx.EVT_MENU, self.join_objects, id=self.ID_ACTION_JOIN)
         self.Bind(wx.EVT_MENU, self.convex_hull, id=self.ID_ACTION_CONVEX_HULL)
@@ -441,6 +468,7 @@ class EditObjectsDialog(wx.Dialog):
             (lambda event: self.set_label_display_mode(self.ID_LABELS_FILL)),
             id = self.ID_LABELS_FILL)
         self.figure.canvas.Bind(wx.EVT_PAINT, self.on_paint)
+        
 
         ######################################
         #
@@ -463,10 +491,9 @@ class EditObjectsDialog(wx.Dialog):
             self.EndModal(wx.CANCEL)
         self.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
         button_sizer.SetNegativeButton(cancel_button)
-        button_sizer.AddButton(wx.Button(self, wx.ID_HELP))
-        self.Bind(wx.EVT_BUTTON, self.on_help, id= wx.ID_HELP)
         self.Bind(wx.EVT_MENU, self.on_help, id=wx.ID_HELP)
         self.Bind(wx.EVT_CLOSE, self.on_close)
+        self.Bind(wx.EVT_SIZE, self.on_size)
         self.Bind(wx.EVT_CONTEXT_MENU, self.on_context_menu)
                           
         button_sizer.Realize()
@@ -1749,11 +1776,37 @@ class EditObjectsDialog(wx.Dialog):
             self.display()
         
     def on_help(self, event):
-        self.html_frame.Show(True)
+        if event.EventObject is self.help_button:
+            do_show = self.help_button.Value
+            self.help_button.Label = "Hide help" if do_show else "Show help"
+        else:
+            do_show = True
+        if not do_show:
+            self.help_sash.Show(False)
+        elif not self.help_sash.IsShown():
+            self.help_sash.Show(True)
+            w, h = self.GetClientSizeTuple()
+            self.help_sash.SetDefaultSize((w, h / 3))
+        self.layout_sash()
         
-    def on_help_close(self, event):
-        event.Veto()
-        self.html_frame.Show(False)
+    def on_help_sash_drag(self, event):
+        height = event.GetDragRect().height
+        w, h = self.GetClientSizeTuple()
+        self.help_sash.SetDefaultSize((w, height))
+        self.layout_sash()
+        
+    def layout_sash(self):
+        wx.LayoutAlgorithm().LayoutWindow(
+            self.sash_parent, self.panel)
+        if self.help_sash.IsShown():
+            self.help_sash.Layout()
+            self.help_sash.Refresh()
+        self.panel.draw()
+        self.panel.Refresh()
+        
+    def on_size(self, event):
+        self.Layout()
+        self.layout_sash()
         
     def make_control_points(self, object_number):
         '''Create an artist with control points for editing an object

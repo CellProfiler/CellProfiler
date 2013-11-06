@@ -445,6 +445,29 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         name = "Mean_%s_%s"%(CHILD_OBJECTS, IGNORED_MEASUREMENT)
         self.assertFalse(name in m.get_feature_names(PARENT_OBJECTS))
         
+    def test_03_02_empty_mean(self):
+        # Regression test - if there are no children, the per-parent means
+        #                   should still be populated
+        i,j = np.mgrid[0:20,0:20]
+        parent_labels = (i/10 + 1).astype(int) 
+        child_labels  = np.zeros(parent_labels.shape, int)
+        workspace, module = self.make_workspace(parent_labels, child_labels,
+                                                fake_measurement=True)
+        module.wants_per_parent_means.value = True
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        m.add_measurement(CHILD_OBJECTS,MEASUREMENT, np.zeros(0))
+        m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT, np.zeros(0, int))
+        module.run(workspace)
+        name = "Mean_%s_%s"%(CHILD_OBJECTS, MEASUREMENT)
+        self.assertTrue(name in m.get_feature_names(PARENT_OBJECTS))
+        data = m.get_current_measurement(PARENT_OBJECTS, name)
+        self.assertTrue(np.all(np.isnan(data)))
+        self.features_and_columns_match(workspace)
+        name = "Mean_%s_%s"%(CHILD_OBJECTS, IGNORED_MEASUREMENT)
+        self.assertFalse(name in m.get_feature_names(PARENT_OBJECTS))
+        
+        
     def test_04_00_distance_empty(self):
         '''Make sure we can handle labels matrices that are all zero'''
         empty_labels = np.zeros((10,20),int)

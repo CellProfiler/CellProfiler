@@ -240,10 +240,13 @@ class RelateObjects(cpm.CPModule):
                                                parents_of, parent_indexes))
                     else:
                         means = np.zeros((0,))
-                    mean_feature_name = FF_MEAN%(self.sub_object_name.value,
-                                                 feature_name)
-                    m.add_measurement(self.parent_name.value, mean_feature_name,
-                                      means)
+                else:
+                    # No child measurements - all NaN
+                    means = np.ones(len(parents_of)) * np.nan
+                mean_feature_name = FF_MEAN%(self.sub_object_name.value,
+                                             feature_name)
+                m.add_measurement(self.parent_name.value, mean_feature_name,
+                                  means)
         m.add_measurement(self.sub_object_name.value,
                           FF_PARENT%(self.parent_name.value),
                           parents_of)

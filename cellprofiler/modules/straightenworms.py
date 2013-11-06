@@ -321,6 +321,14 @@ class StraightenWorms(cpm.CPModule):
         if not os.path.exists(path):
             raise cps.ValidationError("Can't find file %s" % self.training_set_file_name.value,
                                       self.training_set_file_name)
+        if self.wants_measurements and self.number_of_segments == 1 and \
+           self.number_of_stripes == 1:
+            raise cps.ValidationError(
+                "No measurements will be produced if the number of "
+                "longitudinal stripes and the number of transverse segments "
+                "are both equal to one. Please turn measurements off or change "
+                "the number of stripes or segments.",
+                self.wants_measurements)
             
     def prepare_settings(self, setting_values):
         nimages = int(setting_values[IDX_IMAGE_COUNT])

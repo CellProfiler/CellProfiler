@@ -489,7 +489,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.number_of_stripes.value = 1
         
         expected_columns = (
-            [ (STRAIGHTENED_OBJECTS_NAME, 
+            [ (OBJECTS_NAME, 
                "_".join((S.C_WORM, ftr, image, module.get_scale_name(None, segno))), 
                cpmeas.COLTYPE_FLOAT)
               for ftr, image, segno in zip(
@@ -498,9 +498,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                   list(range(5)) * 4)] )
         
         columns = module.get_measurement_columns(workspace.pipeline)
-        columns = [ column for column in columns
-                    if column[0] == STRAIGHTENED_OBJECTS_NAME
-                    and column[1].split("_")[0] not in (I.C_COUNT, I.C_LOCATION, I.C_NUMBER) ]
+        columns = [ column for column in columns if column[0] == OBJECTS_NAME]
         for expected_column in expected_columns:
             self.assertTrue(any([all([x == y
                                       for x, y in zip(column, expected_column)])
@@ -510,19 +508,18 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                                       for x, y in zip(column, expected_column)])
                                      for expected_column in expected_columns]))
             
-        categories = module.get_categories(workspace.pipeline,
-                                           STRAIGHTENED_OBJECTS_NAME)
+        categories = module.get_categories(workspace.pipeline, OBJECTS_NAME)
         self.assertTrue(S.C_WORM in categories)
         
         features = module.get_measurements(workspace.pipeline,
-                                           STRAIGHTENED_OBJECTS_NAME, S.C_WORM)
+                                           OBJECTS_NAME, S.C_WORM)
         self.assertEqual(len(features), 2)
         self.assertTrue(S.FTR_MEAN_INTENSITY in features)
         self.assertTrue(S.FTR_STD_INTENSITY in features)
         
         for ftr in (S.FTR_MEAN_INTENSITY, S.FTR_STD_INTENSITY):
             images = module.get_measurement_images(workspace.pipeline,
-                                                   STRAIGHTENED_OBJECTS_NAME,
+                                                   OBJECTS_NAME,
                                                    S.C_WORM, ftr)
             self.assertEqual(len(images), 2)
             self.assertTrue(STRAIGHTENED_IMAGE_NAME in images)
@@ -532,7 +529,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                               [STRAIGHTENED_IMAGE_NAME] * 2 +
                               [AUX_STRAIGHTENED_IMAGE_NAME] * 2):
             scales = module.get_measurement_scales(workspace.pipeline,
-                                                   STRAIGHTENED_OBJECTS_NAME,
+                                                   OBJECTS_NAME,
                                                    S.C_WORM,
                                                    ftr, image)
             self.assertEqual(len(scales), 5)
@@ -550,7 +547,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.number_of_segments.value = 1
         module.number_of_stripes.value = 5
         expected_columns = (
-            [ (STRAIGHTENED_OBJECTS_NAME, 
+            [ (OBJECTS_NAME, 
                "_".join((S.C_WORM, ftr, image, module.get_scale_name(segno, None))),
                cpmeas.COLTYPE_FLOAT)
               for ftr, image, segno in zip(
@@ -559,9 +556,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                   list(range(5)) * 4)] )
         
         columns = module.get_measurement_columns(workspace.pipeline)
-        columns = [ column for column in columns
-                    if column[0] == STRAIGHTENED_OBJECTS_NAME
-                    and column[1].split("_")[0] not in (I.C_COUNT, I.C_LOCATION, I.C_NUMBER) ]
+        columns = [ column for column in columns if column[0] == OBJECTS_NAME]
         for expected_column in expected_columns:
             self.assertTrue(any([all([x == y
                                       for x, y in zip(column, expected_column)])
@@ -572,18 +567,18 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                                      for expected_column in expected_columns]))
             
         categories = module.get_categories(workspace.pipeline,
-                                           STRAIGHTENED_OBJECTS_NAME)
+                                           OBJECTS_NAME)
         self.assertTrue(S.C_WORM in categories)
         
         features = module.get_measurements(workspace.pipeline,
-                                           STRAIGHTENED_OBJECTS_NAME, S.C_WORM)
+                                           OBJECTS_NAME, S.C_WORM)
         self.assertEqual(len(features), 2)
         self.assertTrue(S.FTR_MEAN_INTENSITY in features)
         self.assertTrue(S.FTR_STD_INTENSITY in features)
         
         for ftr in (S.FTR_MEAN_INTENSITY, S.FTR_STD_INTENSITY):
             images = module.get_measurement_images(workspace.pipeline,
-                                                   STRAIGHTENED_OBJECTS_NAME,
+                                                   OBJECTS_NAME,
                                                    S.C_WORM, ftr)
             self.assertEqual(len(images), 2)
             self.assertTrue(STRAIGHTENED_IMAGE_NAME in images)
@@ -593,7 +588,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                               [STRAIGHTENED_IMAGE_NAME] * 2 +
                               [AUX_STRAIGHTENED_IMAGE_NAME] * 2):
             scales = module.get_measurement_scales(workspace.pipeline,
-                                                   STRAIGHTENED_OBJECTS_NAME,
+                                                   OBJECTS_NAME,
                                                    S.C_WORM,
                                                    ftr, image)
             self.assertEqual(len(scales), 5)
@@ -622,11 +617,9 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                         meas = "_".join((S.C_WORM, ftr, image, 
                                          module.get_scale_name(hscale, vscale)))
                         expected_columns.append(
-                            (STRAIGHTENED_OBJECTS_NAME, meas, cpmeas.COLTYPE_FLOAT))
+                            (OBJECTS_NAME, meas, cpmeas.COLTYPE_FLOAT))
         columns = module.get_measurement_columns(workspace.pipeline)
-        columns = [ column for column in columns
-                    if column[0] == STRAIGHTENED_OBJECTS_NAME
-                    and column[1].split("_")[0] not in (I.C_COUNT, I.C_LOCATION, I.C_NUMBER) ]
+        columns = [ column for column in columns if column[0] == OBJECTS_NAME]
         for expected_column in expected_columns:
             self.assertTrue(any([all([x == y
                                       for x, y in zip(column, expected_column)])
@@ -638,7 +631,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         for ftr in (S.FTR_MEAN_INTENSITY, S.FTR_STD_INTENSITY):
             for image in (STRAIGHTENED_IMAGE_NAME, AUX_STRAIGHTENED_IMAGE_NAME):
                 scales = module.get_measurement_scales(
-                    workspace.pipeline, STRAIGHTENED_OBJECTS_NAME, S.C_WORM, ftr, image)
+                    workspace.pipeline, OBJECTS_NAME, S.C_WORM, ftr, image)
                 self.assertEqual(len(scales), 11)
                 for vscale in vscales:
                     for hscale in hscales:
@@ -663,7 +656,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                 mname = "_".join((S.C_WORM, ftr,
                                   STRAIGHTENED_IMAGE_NAME,
                                   module.get_scale_name(None, i)))
-                v = m.get_current_measurement(STRAIGHTENED_OBJECTS_NAME, mname)
+                v = m.get_current_measurement(OBJECTS_NAME, mname)
                 self.assertEqual(len(v), 0)
         
     def test_04_01_measure_one_worm(self):
@@ -730,7 +723,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                 mname = "_".join((S.C_WORM, ftr,
                                   STRAIGHTENED_IMAGE_NAME, 
                                   module.get_scale_name(None, i)))
-                v = m.get_current_measurement(STRAIGHTENED_OBJECTS_NAME, mname)
+                v = m.get_current_measurement(OBJECTS_NAME, mname)
                 expected = function(image, segment, oo.segmented == 1)
                 self.assertEqual(len(v), 1)
                 self.assertAlmostEqual(v[0], expected)
@@ -806,7 +799,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             for ftr, expected in ((S.FTR_MEAN_INTENSITY, expected_means),
                                   (S.FTR_STD_INTENSITY, expected_sds)):
                 value = m.get_current_measurement(
-                    STRAIGHTENED_OBJECTS_NAME,
+                    OBJECTS_NAME,
                     "_".join((S.C_WORM, ftr, STRAIGHTENED_IMAGE_NAME,
                               module.get_scale_name(None, i))))
                 self.assertEqual(len(value), 1)
@@ -822,7 +815,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
             for ftr, expected in ((S.FTR_MEAN_INTENSITY, expected_means),
                                   (S.FTR_STD_INTENSITY, expected_sds)):
                 value = m.get_current_measurement(
-                    STRAIGHTENED_OBJECTS_NAME,
+                    OBJECTS_NAME,
                     "_".join((S.C_WORM, ftr, STRAIGHTENED_IMAGE_NAME,
                               module.get_scale_name(i, None))))
                 self.assertEqual(len(value), 1)
@@ -842,8 +835,7 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
                                       (S.FTR_STD_INTENSITY, expected_sds)):
                     mname = "_".join((S.C_WORM, ftr, STRAIGHTENED_IMAGE_NAME,
                                       module.get_scale_name(stripe, segment)))
-                    value = m.get_current_measurement(STRAIGHTENED_OBJECTS_NAME,
-                                                      mname)
+                    value = m.get_current_measurement(OBJECTS_NAME, mname)
                     self.assertEqual(len(value), 1)
                     self.assertAlmostEqual(value[0], expected[segment, stripe])
                     

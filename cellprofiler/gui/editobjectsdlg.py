@@ -434,7 +434,7 @@ class EditObjectsDialog(wx.Dialog):
         reset_button.SetToolTipString(
             "Undo all editing and restore the original objects")
         sub_sizer.Add(reset_button)
-        self.help_button = wx.ToggleButton(self, wx.ID_HELP, label="Show Help")
+        self.help_button = wx.Button(self, wx.ID_HELP, label="Show Help")
         sub_sizer.Add(self.help_button)
         self.Bind(wx.EVT_BUTTON, self.on_toggle, toggle_button)
         self.Bind(wx.EVT_MENU, self.on_toggle, id= self.ID_ACTION_TOGGLE)
@@ -444,7 +444,7 @@ class EditObjectsDialog(wx.Dialog):
         self.Bind(wx.EVT_MENU, self.on_remove, id=self.ID_ACTION_REMOVE)
         self.Bind(wx.EVT_BUTTON, self.undo, id = wx.ID_UNDO)
         self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
-        self.help_button.Bind(wx.EVT_TOGGLEBUTTON, self.on_help)
+        self.help_button.Bind(wx.EVT_BUTTON, self.on_help)
         self.Bind(wx.EVT_MENU, self.on_reset, id=self.ID_ACTION_RESET)
         self.Bind(wx.EVT_MENU, self.join_objects, id=self.ID_ACTION_JOIN)
         self.Bind(wx.EVT_MENU, self.convex_hull, id=self.ID_ACTION_CONVEX_HULL)
@@ -1776,14 +1776,11 @@ class EditObjectsDialog(wx.Dialog):
             self.display()
         
     def on_help(self, event):
-        if event.EventObject is self.help_button:
-            do_show = self.help_button.Value
-            self.help_button.Label = "Hide help" if do_show else "Show help"
-        else:
-            do_show = True
+        do_show = not self.help_sash.IsShown()
+        self.help_button.Label = "Hide help" if do_show else "Show help"
         if not do_show:
             self.help_sash.Show(False)
-        elif not self.help_sash.IsShown():
+        else:
             self.help_sash.Show(True)
             w, h = self.GetClientSizeTuple()
             self.help_sash.SetDefaultSize((w, h / 3))

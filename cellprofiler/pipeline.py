@@ -2100,6 +2100,7 @@ class Pipeline(object):
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
         """
+        from cellprofiler.cpmodule import CPModule
         if len(args) == 3:
             measurements, image_set_list, frame  = args
             workspace = cpw.Workspace(self,
@@ -2123,7 +2124,8 @@ class Pipeline(object):
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
-            if module.show_window:
+            if module.show_window and \
+               module.__class__.display_post_run != CPModule.display_post_run:
                 try:
                     workspace.post_run_display(module)
                 except Exception, instance:
@@ -2247,6 +2249,7 @@ class Pipeline(object):
         
         workspace - the last workspace run
         '''
+        from cellprofiler.cpmodule import CPModule
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
@@ -2258,7 +2261,8 @@ class Pipeline(object):
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
-            if module.show_window:
+            if module.show_window and \
+               module.__class__.display_post_group != CPModule.display_post_group:
                 try:
                     workspace.post_group_display(module)
                 except:

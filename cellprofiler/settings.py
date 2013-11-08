@@ -582,7 +582,10 @@ class ImagePlane(Setting):
     @property
     def url(self):
         '''The URL portion of the image plane descriptor'''
-        return self.__get_field(0).encode("utf-8")
+        uurl = self.__get_field(0)
+        if uurl is not None:
+            uurl = uurl.encode("utf-8")
+        return uurl
     
     @property
     def series(self):
@@ -598,6 +601,12 @@ class ImagePlane(Setting):
     def channel(self):
         '''The channel portion of the image plane descriptor'''
         return self.__get_int_field(3)
+    
+    def test_valid(self, pipeline):
+        if self.url is None:
+            raise ValidationError(
+                "This setting's URL is blank. Please select a valid image",
+                self)
     
 class AlphanumericText(Text):
     '''A setting for entering text values limited to alphanumeric + _ values

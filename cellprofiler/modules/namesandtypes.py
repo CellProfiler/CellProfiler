@@ -75,6 +75,7 @@ import hashlib
 import numpy as np
 import os
 import re
+import traceback
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
@@ -501,7 +502,7 @@ class NamesAndTypes(cpm.CPModule):
         group.append(
             "remover", 
             cps.RemoveSettingButton(
-            '', "Remove this image", self.assignments, group))
+            '', "Remove this image", self.single_images, group))
         
     def settings(self):
         result = [self.assignment_method, self.single_load_as_choice,
@@ -945,6 +946,8 @@ class NamesAndTypes(cpm.CPModule):
             
     def get_single_image_ipd(self, single_image, ipds):
         '''Get an image plane descriptor for this single_image group'''
+        if single_image.image_plane.url is None:
+            raise ValueError("Single image is not yet specified")
         ipd = cpp.find_image_plane_details(cpp.ImagePlaneDetails(
             single_image.image_plane.url,
             single_image.image_plane.series,
@@ -1213,7 +1216,15 @@ class NamesAndTypes(cpm.CPModule):
         else:
             self.ipd_columns = [self.filter_column(group) 
                                 for group in self.assignments]
-            self.append_single_image_columns(self.ipd_columns, self.ipds)
+            try:
+                self.append_single_image_columns(self.ipd_columns, self.ipds)
+            except ValueError, e:
+                # So sad... here, we have to slog through even if there's
+                # a configuration error but in prepare_run, the exception
+                # is not fatal.
+                for i in range(len(self.ipd_columns), 
+                               len(self.assignments) + len(self.single_images)):
+                    self.ipd_columns.append([None] * len(self.ipd_columns[0]))
             
             self.column_metadata_choices = [[]] * len(self.ipd_columns)
             self.column_names = [
@@ -1448,11 +1459,12 @@ class NamesAndTypes(cpm.CPModule):
         Scan the IPDs for the column and find metadata keys that are common
         to all.
         '''
-        if len(self.ipd_columns[idx]) == 0:
+        column = [x for x in self.ipd_columns[idx] if x is not None]
+        if len(column) == 0:
             self.column_metadata_choices[idx] = []
         else:
-            keys = set(self.ipd_columns[idx][0].metadata.keys())
-            for ipd in self.ipd_columns[idx][1:]:
+            keys = set(column[0].metadata.keys())
+            for ipd in column[1:]:
                 keys.intersection_update(ipd.metadata.keys())
             self.column_metadata_choices[idx] = list(keys)
             

@@ -559,8 +559,9 @@ class NamesAndTypes(cpm.CPModule):
                     LOAD_AS_COLOR_IMAGE, LOAD_AS_GRAYSCALE_IMAGE):
                     result += [single_image.rescale]
                 elif single_image.load_as_choice == LOAD_AS_OBJECTS:
-                    result += [single_image.should_save_outlines, 
-                               single_image.save_outlines]
+                    result += [single_image.should_save_outlines]
+                    if single_image.should_save_outlines.value:
+                        result += [single_image.save_outlines]
                 result += [single_image.remover]
             result += [self.add_assignment_divider, self.add_assignment_button]
             if len(self.assignments) > 1:

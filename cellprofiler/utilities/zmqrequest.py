@@ -37,8 +37,21 @@ def make_CP_encoder(buffers):
     stored in the input argument)'''
     def encoder(data, buffers=buffers):
         if isinstance(data, np.ndarray):
+            #
+            # Maybe it's nice to save memory by converting 64-bit to 32-bit
+            # but the purpose here is to fix a bug on the Mac where a
+            # 32-bit worker gets a 64-bit array or unsigned 32-bit array,
+            # tries to use it for indexing and fails because the integer
+            # is wider than a 32-bit pointer
+            #
+            info32 = np.iinfo(np.int32)
+            if data.dtype.kind == "i" and data.dtype.itemsize > 4 or\
+               data.dtype.kind == "u" and data.dtype.itemsize >= 4:
+                if np.min(data) >= info32.min and np.max(data) <= info32.max:
+                    data = data.astype(np.int32)
             idx = len(buffers)
             buffers.append(np.ascontiguousarray(data))
+            dtype = str(data.dtype)
             return {'__ndarray__': True,
                     'dtype': str(data.dtype),
                     'shape': data.shape,

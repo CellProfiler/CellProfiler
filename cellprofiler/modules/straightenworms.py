@@ -1180,7 +1180,7 @@ class StraightenWorms(cpm.CPModule):
             order = np.lexsort([outline_ij[:, 0], outline_ij[:, 1],
                                 outline_l])
             outline_ij = outline_ij[order, :]
-            outline_l = outline_l[order]
+            outline_l = outline_l[order].astype(int)
             outline_indexes = np.hstack(([0], np.cumsum(np.bincount(outline_l))))
             ii, jj = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
             half_width = self.width.value / 2

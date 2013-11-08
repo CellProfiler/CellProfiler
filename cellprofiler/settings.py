@@ -277,7 +277,7 @@ class DirectoryPath(Text):
             dir_choices = dir_choices + [URL_FOLDER_NAME]
         if value is None:
             value = DirectoryPath.static_join_string(
-                dir_choices[0], "None")
+                dir_choices[0], "")
         self.dir_choices = dir_choices
         self.allow_metadata = allow_metadata
         self.support_urls = support_urls
@@ -458,6 +458,9 @@ class DirectoryPath(Text):
             self.custom_path.find(r"\g<") != -1):
             raise ValidationError("Metadata not supported for this setting",
                                   self)
+        if self.dir_choice == ABSOLUTE_FOLDER_NAME and (
+            (self.custom_path is None) or (len(self.custom_path) == 0)):
+            raise ValidationError("Please enter a valid path", self)
 
 class FilenameText(Text):
     """A setting that displays a file name

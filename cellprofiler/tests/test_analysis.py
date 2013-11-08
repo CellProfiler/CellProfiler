@@ -284,7 +284,8 @@ class TestAnalysis(unittest.TestCase):
         '''Read the DisplayPostRunRequest messages during the post_run phase'''
         
         for module in pipeline.modules():
-            if module.show_window:
+            if module.show_window and\
+               module.__class__.display_post_run != cpm.CPModule.display_post_run:
                 result = self.event_queue.get()
                 self.assertIsInstance(
                     result, cpanalysis.DisplayPostRunRequest)

@@ -38,7 +38,7 @@ statistical data:
 are the angles between lines joining consective control points. The angle 0 corresponds to
 the case when two adjacent line segments are parallel (and thus belong to the same line).</li>
 <li>A cummulative boxplot of the worm lengths as determined by the model.</li>
-<li>A cummulative boxplot of the worm angles as determined by the model.</i></li>
+<li>A cummulative boxplot of the worm angles as determined by the model.</li>
 <li>A heatmap of the covariance matrix of the feature vectors. For <i>N</i> control points,
 the feature vector is of length <i>N</i>-1 and contains <i>N</i>-2 elements for each of the 
 angles between them, plus an element representing the worm length.</li>

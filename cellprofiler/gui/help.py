@@ -1767,6 +1767,8 @@ For the example above, do the following:
 <li>The tables below this setting will update themselves, and you should be able to visually confirm that 
 each well is defined as a group, each with 287 frames' worth of images.</li>
 </ul>
+Without this step, CellProfiler would not know where one movie ends and the next one begins, and would 
+process the images in all movies together as if they were constituents of only one movie.
 </li>
 </ul>
 </p>
@@ -1786,7 +1788,7 @@ supported files, see this <a href="http://loci.wisc.edu/bio-formats/formats">web
 general, we recommend saving stacks and movies in an open format such as .TIF.
 </p>
 
-<p><i>Example:</i>You have an image stack in STK format, in the form of ten frames at a single 
+<p><i>Example:</i>You have a single image stack in STK format, in the form of ten frames at a single 
 wavelength for DAPI.</p>
 <p>In this case, the procedure to set up the input modules to handle these this file is as follows
 (please note that this procedure is basically identical whether the file is for a time-lapse assay
@@ -1821,9 +1823,18 @@ For the above example, you could do the following:
 <li>Make a new rule <code>[Image][Is][Stack frame]</code> and name it <i>OrigDAPI</i>. This
 combination tells CellProfiler not to treat the image as a single file, but rather as a series of frames.</li>
 </ul>
+<li>In this case, since there is only one file, setting the <b>Groups</b> module is not needed. However, 
+if you wanted to process multiple files in one analysis run with this pipeline, you would need to 
+do the following: 
+<ul>
+<li>Select "URL" as the metadata category. </li>
+<li>The tables below this setting will update themselves, and you should be able to visually confirm 
+that each of the multiple files are defined as a group, each with 10 slices' worth of images. </li>
+</ul>
+</li>
 </ul>
 
-<p><i>Example:</i>You have a single Z-stack in Zeiss' LSM format, in the form of six slices
+<p><i>Example:</i>You have two Z-stacks in Zeiss' LSM format, in the form of six slices
 with two channels (DAPI, GFP) at each slice.</p>
 <p>In this case, the procedure to set up the input modules to handle these this file is as follows
 (please note that this procedure is basically identical whether the file is for a time-lapse assay
@@ -1862,15 +1873,27 @@ multiple channels, you will need to do this for each channel.
 <li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code> and name it <i>OrigGFP</i>.
 <li>Click the "Add" button to add another rule.</li>
 <li>In the "Assign channel by" setting, select "Metadata".</li>
-<li>Select "Z" for the <i>OrigDAPI</i> and <i>OrigGFP</i> channels.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right to add another row,
+<li>Select "URL" for the <i>OrigDAPI</i> and <i>OrigGFP</i> channels. The URL identifies the individual 
+stack, and selecting this parameter insures that the channels are matched within each stack, 
+rather than across stack.</li>
+<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right to add another row, 
+and select "Z" for each channel.</li>
+<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button on this row,
 and select "T" for each channel.</li>
-<li>Click "Update table" to confirm the channel matching. The corresponding <i>Z</i> and <i>T</i> for each
+<li>Click "Update table" to confirm the channel matching. The corresponding <i>URL</i>, <i>Z</i> and <i>T</i> for each
 channel should be matched to each other.</li>
 </ul></p>
 </li>
-<li>Unlike the individual file example above, the <b>Groups</b> module is not neeeded, since CellProfiler
-knows that each file is essentially its own group.</li>
+<li>In the <b>Groups</b> module, select the metadata that defines a distinct image stack. For the example above, 
+do the following: 
+<ul>
+<li>Select "URL" as the metadata category. </li>
+<li>The tables below this setting will update themselves, and you should be able to visually confirm 
+that each of the two image stacks are defined as a group, each with 6 slices' worth of images. </li>
+</ul>
+Without this step, CellProfiler would not know where one stack ends and the next one begins, and would 
+process the slices in all stacks together as if they were constituents of only one stack.
+</li>
 </ul>
 </p>
 """%globals()

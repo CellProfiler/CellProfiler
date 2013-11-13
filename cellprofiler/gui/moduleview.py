@@ -440,13 +440,15 @@ class ModuleView:
                                                 encode_label(v.text),
                                                 style=wx.ALIGN_RIGHT,
                                                 name=text_name)
-                sizer.Add(static_text,3,wx.EXPAND|wx.ALL,2)
+                text_sizer_item = sizer.Add(static_text, 3, wx.EXPAND|wx.ALL, 2)
                 if control:
                     control.Show()
                 self.__static_texts.append(static_text)
                 if isinstance(v,cps.Binary):
                     control = self.make_binary_control(v,control_name,control)
                     flag = wx.ALIGN_LEFT
+                    text_sizer_item.Flag = \
+                        wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL
                 elif isinstance(v, cps.MeasurementMultiChoice):
                     control = self.make_measurement_multichoice_control(
                         v, control_name, control)
@@ -653,7 +655,7 @@ class ModuleView:
             control.Bind(wx.EVT_RADIOBOX, callback)
         current_selection = control.GetStringSelection()
         if current_selection != v.value_text:
-            control.SetStringSelection(current_selection)
+            control.SetStringSelection(v.value_text)
         return control
 
     def make_name_subscriber_control(self, v, choices, control_name, control):
@@ -1858,17 +1860,16 @@ class ModuleView:
     def __on_column_sized(self,event):
         self.__module_panel.GetTopLevelParent().Layout()
     
-    def __on_checkbox_change(self,event,setting,control):
-        if not self.__handle_change:
-            return
-        proposed_value = (control.GetValue() and 'Yes') or 'No'
-        self.on_value_change(setting, control, proposed_value, event)
-    
     def __on_radiobox_change(self, event, setting, control):
         if not self.__handle_change:
             return
         self.on_value_change(
             setting, control, control.GetStringSelection(), event)
+    
+    def __on_combobox_change(self,event,setting,control):
+        if not self.__handle_change:
+            return
+        self.on_value_change(setting, control, control.GetValue(), event)
     
     def __on_multichoice_change(self, event, setting, control):
         if not self.__handle_change:
@@ -4162,13 +4163,22 @@ class ModuleSizer(wx.PySizer):
                         text = text.replace('\n',' ')
                         control.SetLabel(text)
                         control.Wrap(inner_text_width)
+                    row_height = self.get_row_height(i)
                     for j in range(self.__cols):
                         item = self.get_item(j, i)
+                        item_x = sum(widths[0:j])
+                        item_y = height
                         if (item.Flag & wx.EXPAND) == 0:
                             item_size = item.CalcMin()
+                            if item.Flag & wx.ALIGN_CENTER_VERTICAL:
+                                item_y = height + (row_height - item_size[1])/2
+                            if item.Flag & wx.ALIGN_CENTER_HORIZONTAL:
+                                item_x += (widths[j] - item_size[0])/2
+                            elif item.Flag & wx.ALIGN_RIGHT:
+                                item_x += widths[j] - item_size[0]
                         else:
                             item_size = wx.Size(widths[j], item.CalcMin()[1])
-                        item_location = wx.Point(sum(widths[0:j]), height)
+                        item_location = wx.Point(item_x, item_y)
                         item_location = panel.CalcScrolledPosition(item_location)
                         item.SetDimension(item_location, item_size)
                 height += self.get_row_height(i) + 2*height_border

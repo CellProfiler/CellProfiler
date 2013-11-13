@@ -1414,14 +1414,14 @@ class Pipeline(object):
         '''Convert a pipeline from legacy to using Images, NamesAndTypes etc'''
         if not self.can_convert_legacy_input_modules():
             return
-        from cellprofiler.modules.images import Images
+        from cellprofiler.modules.images import Images, FILTER_CHOICE_NONE
         from cellprofiler.modules.metadata import Metadata
         from cellprofiler.modules.namesandtypes import NamesAndTypes
         from cellprofiler.modules.groups import Groups
         with self.undoable_action("Legacy modules converted"):
             images, metadata, namesandtypes, groups = (
                 Images(), Metadata(), NamesAndTypes(), Groups())
-            images.wants_filter.value = False
+            images.filter_choice.value = FILTER_CHOICE_NONE
             for i, module in enumerate((images, metadata, namesandtypes, groups)):
                 module.set_module_num(i + 1)
                 module.show_window = cpprefs.get_headless()

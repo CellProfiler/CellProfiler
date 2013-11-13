@@ -104,8 +104,16 @@ from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
 from cellprofiler.utilities.hdf5_dict import HDF5FileList
 from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
 
+FILTER_CHOICE_NONE = "No filtering"
+FILTER_CHOICE_IMAGES = "Images only"
+FILTER_CHOICE_CUSTOM = "Custom"
+FILTER_CHOICE_ALL = [FILTER_CHOICE_NONE, FILTER_CHOICE_IMAGES, 
+                     FILTER_CHOICE_CUSTOM]
+
+FILTER_DEFAULT = 'and (extension does isimage) (directory doesnot containregexp "[\\\\\\\\/]\\\\.")'
+
 class Images(cpm.CPModule):
-    variable_revision_number = 1
+    variable_revision_number = 2
     module_name = "Images"
     category = "File Processing"
     
@@ -126,8 +134,9 @@ class Images(cpm.CPModule):
                       DirectoryPredicate(),
                       ExtensionPredicate()]
         
-        self.wants_filter = cps.Binary(
-            "Filter images based on matching rules?", True, doc = """
+        self.filter_choice = cps.Choice(
+            "Filter images?", FILTER_CHOICE_ALL, value=FILTER_CHOICE_IMAGES,
+            doc = """
             Check this setting to display and use rules to filter files for processing. 
             <p>By default, <b>Images</b> will pass all the files specified in the file list
             panel downstream to have a meaningful name assigned to it (so other modules can access it) or optionally, to 
@@ -137,8 +146,7 @@ class Images(cpm.CPModule):
             which contains a mixture of images that you want to analyze and other files that you want to ignore.</p>""")
             
         self.filter = cps.Filter("Select the rule criteria", predicates, 
-            'and (extension does isimage) (directory doesnot startwith ".")',
-            doc = """
+            FILTER_DEFAULT, doc = """
             Specify a set of rules to narrow down the files to be analyzed. 
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals())
         
@@ -190,18 +198,22 @@ class Images(cpm.CPModule):
             
     def filter_url(self, url):
         '''Return True if a URL passes the module's filter'''
-        if not self.wants_filter:
+        if self.filter_choice == FILTER_CHOICE_NONE:
             return True
-        
+        elif self.filter_choice == FILTER_CHOICE_IMAGES:
+            return evaluate_url(None, url)
         return evaluate_url(self.filter, url)
     
     def settings(self):
-        return [self.path_list_display, self.wants_filter, self.filter]
+        return [self.path_list_display, self.filter_choice, self.filter]
     
     def visible_settings(self):
-        result = [self.path_list_display, self.wants_filter]
-        if self.wants_filter:
+        result = [self.path_list_display, self.filter_choice]
+        if self.filter_choice == FILTER_CHOICE_CUSTOM:
             result += [self.filter, self.update_button]
+            self.path_list_display.using_filter = True
+        elif self.filter_choice == FILTER_CHOICE_IMAGES:
+            result += [self.update_button]
             self.path_list_display.using_filter = True
         else:
             self.path_list_display.using_filter = False
@@ -224,9 +236,13 @@ class Images(cpm.CPModule):
         '''Create an IPD for every url that passes the filter'''
         if workspace.pipeline.in_batch_mode():
             return True
-        if self.wants_filter:
+        if self.filter_choice != FILTER_CHOICE_NONE:
+            if self.filter_choice == FILTER_CHOICE_IMAGES:
+                expression = FILTER_DEFAULT
+            else:
+                expression = self.filter.value_text
             env = J.get_env()
-            jexpression = env.new_string_utf(self.filter.value_text)
+            jexpression = env.new_string_utf(expression)
             filter_fn = J.make_static_call(
                 "org/cellprofiler/imageset/filter/Filter",
                 "filter", "(Ljava/lang/String;Ljava/lang/String;)Z")
@@ -240,6 +256,28 @@ class Images(cpm.CPModule):
         
     def run(self, workspace):
         pass
+    
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
+        '''Upgrade pipeline settings from a previous revision
+        
+        setting_values - the text values of the module's settings
+        
+        variable_revision_number - revision # of module version that saved them
+
+        module_name / from_matlab - ignore please
+        
+        Returns upgraded setting values, revision number and matlab flag
+        '''
+        if variable_revision_number == 1:
+            # Changed from yes/no for filter to a choice
+            filter_choice = \
+                FILTER_CHOICE_CUSTOM if setting_values[1] == cps.YES else\
+                FILTER_CHOICE_NONE
+            setting_values = \
+                setting_values[:1] +[filter_choice] + setting_values[2:]
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab
     
 class DirectoryPredicate(cps.Filter.FilterPredicate):
     '''A predicate that only filters directories'''
@@ -452,12 +490,15 @@ class ImagePredicate(cps.Filter.FilterPredicate):
         self((cps.FileCollectionDisplay.NODE_FILE, 
               ["/imaging", "test.tif"], self.FakeModule()), *args)
 
-
 filter_class = None
 filter_method_id = None
 def evaluate_url(filtr, url):
     '''Evaluate a URL using a setting's filter
     
+    filtr - the filter setting to use for custom filtering or None to use
+            the canned filter expression
+            
+    url - URL to filter
     '''
     global filter_class, filter_method_id
     env = J.get_env()
@@ -473,7 +514,10 @@ def evaluate_url(filtr, url):
         if filter_method_id is None:
             raise JavaError("Could not find static method, org.cellprofiler.imageset.filter.Filter.filter(String, String)")
     try:
-        expression = filtr.value_text
+        if filtr is None:
+            expression = FILTER_DEFAULT
+        else:
+            expression = filtr.value_text
         if isinstance(expression, unicode):
             expression = expression.encode("utf-8")
         if isinstance(url, unicode):

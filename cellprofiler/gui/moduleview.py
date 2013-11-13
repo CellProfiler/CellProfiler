@@ -643,14 +643,17 @@ class ModuleView:
     def make_binary_control(self,v,control_name, control):
         """Make a checkbox control for a Binary setting"""
         if not control:
-            control = wx.CheckBox(self.__module_panel,-1,name=control_name)
+            control = wx.RadioBox(
+                self.__module_panel, 
+                choices = [cps.YES, cps.NO],
+                name=control_name)
             def callback(event, setting=v, control=control):
-                self.__on_checkbox_change(event, setting, control)
+                self.__on_radiobox_change(event, setting, control)
                 
-            self.__module_panel.Bind(wx.EVT_CHECKBOX,
-                                     callback,
-                                     control)
-        control.SetValue(v.is_yes)
+            control.Bind(wx.EVT_RADIOBOX, callback)
+        current_selection = control.GetStringSelection()
+        if current_selection != v.value_text:
+            control.SetStringSelection(current_selection)
         return control
 
     def make_name_subscriber_control(self, v, choices, control_name, control):
@@ -1861,10 +1864,11 @@ class ModuleView:
         proposed_value = (control.GetValue() and 'Yes') or 'No'
         self.on_value_change(setting, control, proposed_value, event)
     
-    def __on_combobox_change(self,event,setting,control):
+    def __on_radiobox_change(self, event, setting, control):
         if not self.__handle_change:
             return
-        self.on_value_change(setting, control, control.GetValue(), event)
+        self.on_value_change(
+            setting, control, control.GetStringSelection(), event)
     
     def __on_multichoice_change(self, event, setting, control):
         if not self.__handle_change:

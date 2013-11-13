@@ -805,7 +805,7 @@ def find_python():
         if sys.platform == "darwin":
             app_python = os.path.join(os.path.dirname(os.environ['ARGVZERO']), "python")
             return app_python
-    return 'python'
+    return sys.executable
 
 
 def find_worker_env():

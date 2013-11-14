@@ -2828,7 +2828,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 import subprocess
                 if sys.platform == 'darwin':
                     subprocess.call([
-                        "open", "-R", cpprefs.get_default_output_directory()])
+                        "open", cpprefs.get_default_output_directory()])
                 elif sys.platform == 'win32':
                     subprocess.call([
                         "cmd", "/C", "start", "explorer",

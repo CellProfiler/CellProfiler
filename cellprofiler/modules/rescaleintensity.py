@@ -185,12 +185,12 @@ class RescaleIntensity(cpm.CPModule):
             [R_MASK, R_SET_TO_ONE, R_SET_TO_CUSTOM, R_SCALE], doc = """
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
             There are several ways to handle values greater than the upper limit of the intensity range; 
-            Options are described in the Help for the equivalent lower limit question.""")
+            Options are described in the Help for the equivalent lower limit question."""%globals())
         
         self.custom_high_truncation = cps.Float(
-            "Custom value for pixels below upper limit",0, doc = """
+            "Custom value for pixels above upper limit",0, doc = """
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" and "%(R_SET_TO_CUSTOM)s are selected)</i><br>
-            Enter the custom value to be assigned to pixels with values above the upper limit.""")
+            Enter the custom value to be assigned to pixels with values above the upper limit."""%globals())
         
         self.matching_image_name = cps.ImageNameSubscriber(
             "Select image to match in maximum intensity", cps.NONE,doc = """

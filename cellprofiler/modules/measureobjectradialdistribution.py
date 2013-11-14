@@ -290,7 +290,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         
     
     def run(self, workspace):
-        stats = [("Image","Objects","Bin # (innermost=1)","Bin count","Fraction","Intensity","COV")]
+        header = ("Image","Objects","Bin # (innermost=1)","Bin count","Fraction","Intensity","COV")
+        stats = []
         d = {}
         for image in self.images:
             for o in self.objects:
@@ -306,37 +307,14 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                                          bin_count_settings,
                                          d)
         if self.show_window:
-            workspace.display_data.images = [d[key][0] for key in d.keys()]
-            workspace.display_data.names = d.keys()
+            workspace.display_data.header = header
             workspace.display_data.stats = stats
 
     def display(self, workspace, figure):
-        images = workspace.display_data.images
-        names = workspace.display_data.names
+        header = workspace.display_data.header
         stats = workspace.display_data.stats
-        figure.set_subplots((1, len(images)))
-        figure.figure.clf()
-        nimages = len(images)
-        shrink = .05
-        for i in range(len(images)):
-            rect = [shrink + float(i)/float(nimages),
-                    .5+shrink,
-                    (1.0-2*shrink)/float(nimages),
-                    .45*(1.0-2*shrink)]
-            axes = figure.figure.add_axes(rect)
-            axes.imshow(images[i], matplotlib.cm.Greys_r)
-            axes.set_title(names[i],
-                           fontname=cpprefs.get_title_font_name(),
-                           fontsize=cpprefs.get_title_font_size())
-        rect = [0.1,.1,.8,.35]
-        axes = figure.figure.add_axes(rect, frameon = False)
-        table = axes.table(cellText=stats,
-                           colWidths=[1.0/7.0]*7,
-                           loc='center',
-                           cellLoc='left')
-        axes.set_axis_off()
-        table.auto_set_font_size(False)
-        table.set_fontsize(cpprefs.get_table_font_size())
+        figure.set_subplots((1,1))
+        figure.subplot_table(0, 0, stats, col_labels=header)
 
     def do_measurements(self, workspace, image_name, object_name, 
                         center_object_name, center_choice,

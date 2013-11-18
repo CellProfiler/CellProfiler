@@ -59,6 +59,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME
 from loadimages import C_HEIGHT, C_WIDTH, C_PATH_NAME, C_MD5_DIGEST, C_URL
 from loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_URL
@@ -188,12 +189,12 @@ class LoadSingleImage(cpm.CPModule):
                     For instance, a microscope might acquire images using a 12-bit
                     A/D converter which outputs intensity values between zero and 4095,
                     but stores the values in a field that can take values up to 65535.
-                    Check this setting to rescale the image intensity so that
+                    <p>Select <i>%(YES)s</i> to rescale the image intensity so that
                     saturated values are rescaled to 1.0 by dividing all pixels
-                    in the image by the maximum possible intensity value. Uncheck this 
-                    setting to ignore the image metadata and rescale the image
+                    in the image by the maximum possible intensity value. </p>
+                    <p>Select <i>%(NO)s</i> to ignore the image metadata and rescale the image
                     to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-                    of bits used to store the image."""))
+                    of bits used to store the image.</p>"""%globals()))
 
         group.append("objects_name", cps.ObjectNameProvider(
                     'Name this loaded object',
@@ -204,8 +205,8 @@ class LoadSingleImage(cpm.CPModule):
         group.append("wants_outlines", cps.Binary(
                     "Retain outlines of loaded objects?", False, doc = """
                     <i>(Used only if objects are output)</i><br>
-                    Check this setting if you want to save an image of the outlines
-                    of the loaded objects."""))
+                    Select <i>%(YES)s</i> if you want to save an image of the outlines
+                    of the loaded objects."""%globals()))
         
         group.append("outlines_name", cps.OutlineNameProvider(
                     'Name the outlines',

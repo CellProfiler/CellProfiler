@@ -188,6 +188,7 @@ import cellprofiler.cpmodule
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpp
 from cellprofiler.cpmath.otsu import otsu
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
@@ -330,8 +331,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.exclude_size = cps.Binary(
             EXCLUDE_SIZE_SETTING_TEXT,
             True, doc='''
-            You can choose to discard objects outside the range you specified in the
-            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. Objects discarded 
+            Select <i>%(YES)s</i> to discard objects outside the range you specified in the
+            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. Select <i>%(NO)s</i> to ignore this
+            criterion.
+            <p>Objects discarded 
             based on size are outlined in magenta in the module's display. See also the
             <b>FilterObjects</b> module to further discard objects based on some
             other measurement.
@@ -345,9 +348,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 
             False, doc='''
-            Use caution when checking this box. Objects that are
-            smaller than the specified minimum diameter will be merged, if possible, with
-            other surrounding objects. This is helpful in cases when an object was
+            Select <i>%(YES)s</i> to cause objects that are
+            smaller than the specified minimum diameter to be merged, if possible, with
+            other surrounding objects. 
+            <p>This is helpful in cases when an object was
             incorrectly split into two objects, one of which is actually just a tiny
             piece of the larger object. However, this could be problematic if the other
             settings in the module are set poorly, producing many tiny objects; the module
@@ -355,12 +359,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             not notice that this is the case, since it may successfully piece together the
             objects again. It is therefore a good idea to run the
             module first without merging objects to make sure the settings are
-            reasonably effective.''')
+            reasonably effective.</p>'''%globals())
         
         self.exclude_border_objects = cps.Binary(
             "Discard objects touching the border of the image?", 
             True, doc='''
-            Check this box to discard objects that touch the border of the image.
+            Select <i>%(YES)s</i> to discard objects that touch the border of the image. 
+            Select <i>%(NO)s</i> to ignore this criterion.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
             Removing objects that touch the image border is useful when you do 
@@ -369,9 +374,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             a portion of an object would not be accurate.</dd>
             </dl>
             <p>Objects discarded due to border touching are outlined in yellow in the module's display.
-            Note that if a per-object thresholding method is used, objects that touch the 
-            border of the cropped region will be discarded with this setting
-            checked.</p>'''%globals())
+            Note that if a per-object thresholding method is used or if the image has been
+            previously cropped or masked, objects that touch the 
+            border of the cropped or masked region may also discarded.</p>'''%globals())
         
         self.create_threshold_settings()
         
@@ -479,11 +484,15 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             AUTOMATIC_SMOOTHING_SETTING_TEXT, 
             True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
-            This setting, along with the <i>Minimum allowed distance between local maxima</i> 
+            Select <i>%(YES)s</i> to automatically calculate the amount of smoothing 
+            applied to the image to assist in declumping. Select <i>%(NO)s</i> to
+            manually enter the smoothing filter size.
+            
+            <p>This setting, along with the <i>Minimum allowed distance between local maxima</i> 
             setting, affects whether objects
             close to each other are considered a single object or multiple objects.
             It does not affect the dividing lines between an object and the
-            background.
+            background.</p>
             
             <p>Please note that this smoothing setting is applied after thresholding,
             and is therefore distinct from the threshold smoothing method setting above, 
@@ -517,7 +526,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT, 
             True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
-            This setting, along with the <i>%(SMOOTHING_FILTER_SIZE_SETTING_TEXT)s</i> setting,
+            Select <i>%(YES)s</i> to automatically calculate the distance between
+            intensity maxima to assist in declumping. Select <i>%(NO)s</i> to
+            manually enter the permissible maxima distance.
+            
+            <p>This setting, along with the <i>%(SMOOTHING_FILTER_SIZE_SETTING_TEXT)s</i> setting,
             affects whether objects close to each other are considered a single object
             or multiple objects. It does not affect the dividing lines between an object and the
             background. Local maxima that are closer together than the minimum 
@@ -547,8 +560,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             'Speed up by using lower-resolution image to find local maxima?', 
             True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br> 
-            Note that if you have entered a minimum object diameter of 10 or less, checking
-            this box will have no effect.""")
+            Select <i>%(YES)s</i> to down-sample the image for declumping. This can be
+            helpful for saving processing time on large images.
+            <p>Note that if you have entered a minimum object diameter of 10 or less, checking
+            this box will have no effect.</p>"""%globals())
 
         self.should_save_outlines = cps.Binary(
             'Retain outlines of the identified objects?', False, doc="""
@@ -572,12 +587,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.wants_automatic_log_diameter = cps.Binary(
             WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT, True,doc="""
             <i>(Used only when applying the LoG thresholding method)</i><br>
-            Check this box to use the filtering diameter range above 
-            when constructing the LoG filter. Uncheck the
-            box in order to enter a size that is not related to the filtering 
+            <p>Select <i>%(YES)s</i> to use the filtering diameter range above 
+            when constructing the LoG filter. </p>
+            <p>Select <i>%(NO)s</i> in order to enter a size that is not related to the filtering 
             size. You may want to specify a custom size if you want to filter 
             using loose criteria, but have objects that are generally of 
-            similar sizes.""")
+            similar sizes.</p>"""%globals())
         
         self.log_diameter = cps.Float(
             'Enter LoG filter diameter', 

@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 
 S_FIRST = "After first cycle"
@@ -123,8 +124,8 @@ class SendEmail(cpm.CPModule):
         
         self.use_authentication = cps.Binary(
             "Username and password required to login?", False,doc="""
-            Check this box if you need to enter a username and password 
-            to authenticate.""")
+            Select <i>%(YES)s</i> if you need to enter a username and password 
+            to authenticate."""%globals())
         
         self.username = cps.Text(
             "Username", user,doc="""

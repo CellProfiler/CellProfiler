@@ -124,6 +124,7 @@ import scipy.ndimage as scind
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.cpmath.zernike as cpmz
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import ellipse_from_second_moments_ijv
@@ -190,10 +191,10 @@ class MeasureObjectSizeShape(cpm.CPModule):
         
         self.calculate_zernikes = cps.Binary(
             'Calculate the Zernike features?',True, doc="""
-            Check this box to calculate the Zernike shape features. Since the
+            Select <i>%(YES)s</i> to calculate the Zernike shape features. Since the
             first 10 Zernike polynomials (from order 0 to order 9) are
             calculated, this operation can be time consuming if the image
-            contains a lot of objects.""")
+            contains a lot of objects."""%globals())
     
     def add_object(self, can_remove = True):
         """Add a slot for another object"""

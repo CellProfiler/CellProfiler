@@ -52,6 +52,7 @@ from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import identify as I
@@ -119,9 +120,10 @@ class IdentifyDeadWorms(cpm.CPModule):
             This setting determines whether or not
             <b>IdentifyDeadWorms</b> automatically calculates the parameters
             used to determine whether two found-worm centers belong to the
-            same worm. Check this setting to have <b>IdentifyDeadWorms</b>
+            same worm. 
+            <p>Select <i>%(YES)s</i> to have <b>IdentifyDeadWorms</b>
             automatically calculate the distance from the worm length
-            and width. Uncheck the setting to set the distances manually.""")
+            and width. Select <i>%(NO)s</i> to set the distances manually.</p>"""%globals())
         
         self.space_distance = cps.Float(
             "Spatial distance", 5, minval = 1,doc = """

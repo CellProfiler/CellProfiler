@@ -50,6 +50,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.cpimage as cpi
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.identify import get_object_measurement_columns
@@ -144,7 +145,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         self.wants_image = cps.Binary(
             "Unify using a grayscale image?", False, doc="""
             <i>(Used only with the %(OPTION_UNIFY)s option)</i><br>
-            <i>%(OPTION_UNIFY)s</i> can use the objects' intensity features to determine whether two
+            Select <i>%(YES)s</i> to use the objects' intensity features to determine whether two
             objects should be unified. If you choose to use a grayscale image,
             <i>%(OPTION_UNIFY)s</i> will unify two objects only if they
             are within the distance you have specified <i>and</i> certain criteria about the objects

@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpp
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import \
@@ -220,8 +221,8 @@ class SaveImages(cpm.CPModule):
         
         self.wants_file_name_suffix = cps.Binary(
             "Append a suffix to the image file name?", False, doc = """
-            Check this setting to add a suffix to the image's file name.
-            Leave the setting unchecked to use the image name as-is.""")
+            Select <i>%(YES)s</i> to add a suffix to the image's file name.
+            Select <i>%(NO)s</i> to use the image name as-is."""%globals())
         
         self.file_name_suffix = cps.Text(
             "Text to append to the image name",
@@ -272,9 +273,10 @@ class SaveImages(cpm.CPModule):
         
         self.overwrite = cps.Binary(
             "Overwrite existing files without warning?",False,doc="""
-            Check this box to automatically overwrite a file if it already exists. Otherwise, you
-            will be prompted for confirmation first. If you are running the pipeline on a computing cluster,
-            you should uncheck this box since you will not be able to intervene and answer the confirmation prompt.""")
+            Select <i>%(YES)s</i> to automatically overwrite a file if it already exists. 
+            Select <i>%(NO)s</i> to be prompted for confirmation first. 
+            <p>If you are running the pipeline on a computing cluster,
+            select <i>%(YES)s</i> since you will not be able to intervene and answer the confirmation prompt.</p>"""%globals())
         
         self.when_to_save = cps.Choice(
             "When to save",
@@ -296,13 +298,13 @@ class SaveImages(cpm.CPModule):
         self.rescale = cps.Binary(
             "Rescale the images? ",False,doc="""
             <i>(Used only when saving non-MAT file images)</i><br>
-            Check this box if you want the image to occupy the full dynamic range of the bit 
+            Select <i>%(YES)s</i> if you want the image to occupy the full dynamic range of the bit 
             depth you have chosen. For example, if you save an image to an 8-bit file, the
             smallest grayscale value will be mapped to 0 and the largest value will be mapped 
             to 2<sup>8</sup>-1 = 255. 
             <p>This will increase the contrast of the output image but will also effectively 
             stretch the image data, which may not be desirable in some 
-            circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>""")
+            circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>"""%globals())
         
         self.gray_or_color = cps.Choice(
             "Save as grayscale or color image?",
@@ -332,21 +334,21 @@ class SaveImages(cpm.CPModule):
         
         self.update_file_names = cps.Binary(
             "Record the file and path information to the saved image?",False,doc="""
-            This setting stores filename and pathname data for each of the new files created 
-            via this module, as a per-image measurement. Instances in which this information may 
-            be useful include:
+            Select <i>%(YES)s</i>to store filename and pathname data for each of the new files created 
+            via this module as a per-image measurement. 
+            <p>Instances in which this information may be useful include:
             <ul>
             <li>Exporting measurements to a database, allowing 
             access to the saved image. If you are using the machine-learning tools or image
-            viewer in CellProfiler Analyst, for example, you will want to check this box if you want
-            the images you are saving via this module to be displayed along with the original images.</li>
+            viewer in CellProfiler Analyst, for example, you will want to enable this setting if you want
+            the saved images to be displayed along with the original images.</li>
             <li>Allowing downstream modules (e.g., <b>CreateWebPage</b>) to access  
             the newly saved files.</li>
-            </ul>""")
+            </ul></p>"""%globals())
         
         self.create_subdirectories = cps.Binary(
             "Create subfolders in the output folder?",False,doc = """
-            Subfolders will be created to match the input image folder structure.""")
+            Select <i>%(YES)s</i> to create subfolders to match the input image folder structure."""%globals())
         
         self.root_dir = cps.DirectoryPath(
             "Base image folder", doc = """

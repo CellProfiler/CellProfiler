@@ -50,6 +50,7 @@ import numpy as np
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 
 '''Number of settings saved/loaded per image measured'''
@@ -121,8 +122,7 @@ class MeasureImageIntensity(cpm.CPModule):
         group.append("wants_objects", cps.Binary(
             "Measure the intensity only from areas enclosed by objects?",
             False, doc = """
-            Check this option to restrict the pixels being measured to those within 
-            the boundaries of an object."""))
+            Select <i>%(YES)s</i> to measure only those pixels within an object of choice."""%globals()))
         
         group.append("object_name",cps.ObjectNameSubscriber(
             "Select the input objects",cps.NONE, doc = '''

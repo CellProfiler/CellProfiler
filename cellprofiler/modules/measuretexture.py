@@ -114,6 +114,7 @@ import scipy.ndimage as scind
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.haralick import Haralick, normalized_per_object
@@ -180,14 +181,15 @@ class MeasureTexture(cpm.CPModule):
         
         self.wants_gabor = cps.Binary(
             "Measure Gabor features?", True, doc =
-            """The Gabor features measure striped texture in an object. They
-            take a substantial time to calculate. Check this setting to
-            measure the Gabor features. Uncheck this setting to skip
-            the Gabor feature calculation if it is not informative for your
-            images""")
+            """The Gabor features measure striped texture in an object, and can 
+            take a substantial time to calculate. 
+            <p>Select <i>%(YES)s</i> to measure the Gabor features. Select 
+            <i>%(NO)s</i> to skip the Gabor feature calculation if it is not 
+            informative for your images.</p>"""%globals())
+        
         self.gabor_angles = cps.Integer("Number of angles to compute for Gabor",4,2, doc="""
-        <i>(Used only if Gabor features are measured)</i><br>
-        How many angles do you want to use for each Gabor texture measurement?
+            <i>(Used only if Gabor features are measured)</i><br>
+            Enter the number of angles to use for each Gabor texture measurement.
             The default value is 4 which detects bands in the horizontal, vertical and diagonal
             orientations.""")
 

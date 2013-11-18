@@ -53,6 +53,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.utilities.rules as cprules
@@ -298,7 +299,7 @@ class FilterObjects(cpm.CPModule):
         group.append("wants_minimum", cps.Binary(
             'Filter using a minimum measurement value?', True, doc = """
             <i>(Used only if %(FI_LIMITS)s is selected for filtering method)</i><br>
-            Check this box to filter the objects based on a minimum acceptable object
+            Select <i>%(YES)s</i> to filter the objects based on a minimum acceptable object
             measurement value. Objects which are greater than or equal to this value
             will be retained."""%globals()))
         
@@ -307,7 +308,7 @@ class FilterObjects(cpm.CPModule):
         group.append("wants_maximum", cps.Binary(
             'Filter using a maximum measurement value?', True, doc = """
             <i>(Used only if %(FI_LIMITS)s is selected for filtering method)</i><br>
-            Check this box to filter the objects based on a maximum acceptable object
+            Select <i>%(YES)s</i> to filter the objects based on a maximum acceptable object
             measurement value. Objects which are less than or equal to this value
             will be retained."""%globals()))
         

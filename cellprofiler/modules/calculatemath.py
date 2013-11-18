@@ -47,6 +47,7 @@ import numpy as np
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 from cellprofiler.modules.identify import R_PARENT, R_CHILD
 
 O_MULTIPLY = "Multiply"
@@ -203,7 +204,7 @@ class CalculateMath(cpm.CPModule):
         
         self.wants_log = cps.Binary(
             "Take log10 of result?", False,doc="""
-            Check this box if you want the log (base 10) of the result.""")
+            Select <i>%(YES)s</i> if you want the log (base 10) of the result."""%globals())
         
         self.final_multiplicand = cps.Float(
             "Multiply the result by",1,doc="""
@@ -221,8 +222,8 @@ class CalculateMath(cpm.CPModule):
 
         self.constrain_lower_bound = cps.Binary(
             "Constrain the result to a lower bound?",False,doc="""
-            Check this setting if you want the result to be 
-            constrained to a lower bound.""")
+            Select <i>%(YES)s</i> if you want the result to be 
+            constrained to a lower bound."""%globals())
 
         self.lower_bound = cps.Float(
             "Enter the lower bound",0,doc="""
@@ -230,8 +231,8 @@ class CalculateMath(cpm.CPModule):
 
         self.constrain_upper_bound = cps.Binary(
             "Constrain the result to an upper bound?",False,doc="""
-            Check this setting if you want the result to be 
-            constrained to an upper bound.""")
+            Select <i>%(YES)s</i> if you want the result to be 
+            constrained to an upper bound."""%globals())
 
         self.upper_bound = cps.Float(
             "Enter the upper bound",1,doc="""

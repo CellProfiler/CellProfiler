@@ -29,6 +29,7 @@ import numpy as np
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 
 class DisplayHistogram(cpm.CPModule):
     
@@ -95,9 +96,9 @@ class DisplayHistogram(cpm.CPModule):
         self.wants_xbounds = cps.Binary(
             'Specify min/max bounds for the X-axis?',
             False, doc ='''
-            You can specifiy minimum and maximum values for the 
+            Select <i>%(YES)s</i> to specify minimum and maximum values for the 
             plot on the X-axis. This is helpful if an outlier bin skews the
-            plot such that the bins of interest are no longer visible.''')
+            plot such that the bins of interest are no longer visible.'''%globals())
         
         self.xbounds = cps.FloatRange(
             'Minimum/maximum values for the X-axis')

@@ -71,6 +71,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
@@ -194,12 +195,13 @@ class ClassifyObjects(cpm.CPModule):
         
         self.wants_custom_names = cps.Binary(
             "Use custom names for the bins?", False,doc="""
-            Check this if you want to specify the names of each bin 
-            measurement. If you leave the box unchecked, the module will
-            create names based on the measurements. (For instance, for
+            Select <i>%(YES)s</i> if you want to specify the names of each bin 
+            measurement. <br>
+            Select <i>%(NO)s</i> to create names based on the 
+            measurements. For instance, for
             "Intensity_MeanIntensity_Green" and "Intensity_TotalIntensity_Blue",
             the module generates measurements such as
-            "Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low").""")
+            "Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low"."""%globals())
         
         self.low_low_custom_name = cps.AlphanumericText(
             "Enter the low-low bin name","low_low",doc="""
@@ -229,14 +231,14 @@ class ClassifyObjects(cpm.CPModule):
         
         self.wants_image = cps.Binary(
             "Retain an image of the classified objects?", False,doc="""
-            Checking this box will keep the image of the objects color-coded according
+            Select <i>%(YES)s</i> to retain the image of the objects color-coded according
             to their classification, for use later in the pipeline (for example,
-            to be saved by a <b>SaveImages</b> module).""")
+            to be saved by a <b>SaveImages</b> module)."""%globals())
         
         self.image_name = cps.ImageNameProvider(
             "Enter the image name",cps.NONE,doc="""
-            Enter the name to be given to the classified object
-            image.""")
+            <i>(Used only if the classified object image is to be retained for later use in the pipeline)</i> <br>
+            Enter the name to be given to the classified object image.""")
 
     def add_single_measurement(self, can_delete = True):
         '''Add a single measurement to the group of single measurements
@@ -291,9 +293,9 @@ class ClassifyObjects(cpm.CPModule):
         
         group.append("wants_low_bin",cps.Binary(
             "Use a bin for objects below the threshold?", False,doc="""
-            Check this box if you want to create a bin for objects
-            whose values fall below the low threshold. Leave the box unchecked
-            if you do not want a bin for these objects."""))
+            Select <i>%(YES)s</i> if you want to create a bin for objects
+            whose values fall below the low threshold. Select <i>%(NO)s</i>
+            if you do not want a bin for these objects."""%globals()))
         
         def min_upper_threshold():
             return group.low_threshold.value + np.finfo(float).eps
@@ -308,9 +310,9 @@ class ClassifyObjects(cpm.CPModule):
         
         group.append("wants_high_bin", cps.Binary(
             "Use a bin for objects above the threshold?", False,doc="""
-            Check this box if you want to create a bin for objects
-            whose values are above the high threshold. Leave the box unchecked
-            if you do not want a bin for these objects."""))
+            Select <i>%(YES)s</i> if you want to create a bin for objects
+            whose values are above the high threshold. <br>
+            Select <i>%(NO)s</i> if you do not want a bin for these objects."""%globals()))
         
         group.append("custom_thresholds", cps.Text(
             "Enter the custom thresholds separating the values between bins",
@@ -323,9 +325,10 @@ class ClassifyObjects(cpm.CPModule):
         
         group.append("wants_custom_names", cps.Binary(
             "Give each bin a name?", False,doc="""
-            This option lets you assign custom names to bins you have 
-            specified. If you leave this unchecked, the module will
-            assign names based on the measurements and the bin number."""))
+            Select <i>%(YES)s</i> to assign custom names to bins you have 
+            specified. 
+            <p>Select <i>%(NO)s</i> for the module to automatically
+            assign names based on the measurements and the bin number."""%globals()))
         
         group.append("bin_names", cps.Text(
             "Enter the bin names separated by commas",cps.NONE,doc="""
@@ -335,9 +338,9 @@ class ClassifyObjects(cpm.CPModule):
         
         group.append("wants_images", cps.Binary(
             "Retain an image of the classified objects?",False, doc="""
-            Checking this box will keep the image of the objects color-coded according
+            Select <i>%(YES)s</i> to keep an image of the objects which is color-coded according
             to their classification, for use later in the pipeline (for example,
-            to be saved by a <b>SaveImages</b> module)."""))
+            to be saved by a <b>SaveImages</b> module)."""%globals()))
         
         group.append("image_name", cps.ImageNameProvider(
             "Name the output image", "ClassifiedNuclei",doc="""

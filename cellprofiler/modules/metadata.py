@@ -99,6 +99,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.utilities.jutil as J
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
@@ -163,10 +164,10 @@ class Metadata(cpm.CPModule):
         
         self.wants_metadata = cps.Binary(
             "Extract metadata?", False,doc = """
-            If your file or path names or file headers contain information 
-            (i.e., metadata) you would like to extract and store along with your 
-            measurements, then check this box. See the main module
-            help for more details.""")
+            Select <i>%(YES)s</i> if your file or path names or file headers contain information 
+            (i.e., metadata) that you would like to extract and store along with your 
+            measurements. See the main module
+            help for more details."""%globals())
         
         self.extraction_methods = []
         self.add_extraction_method(False)
@@ -391,7 +392,7 @@ class Metadata(cpm.CPModule):
                  DirectoryPredicate(),
                  ExtensionPredicate()],
             'and (file does contain "")',doc = """
-            Check this setting to display and use rules to select files for metadata extraction.
+            Select <i>%(YES)s</i> to display and use rules to select files for metadata extraction.
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         
         group.append("csv_location", cps.PathnameOrURL(
@@ -413,10 +414,10 @@ class Metadata(cpm.CPModule):
             This setting controls whether row matching takes the
             metadata case into account when matching. If this setting is 
             not checked, metadata entries that only differ by case 
-            (for instance, "A01" and "a01") will not match. If this setting
-            is checked, then metadata entries that only differ by case
-            will match. Check this setting if your CSV metadata is not being
-            applied because the case does not match."""))
+            (for instance, "A01" and "a01") will not match. 
+            <p>Select <i>%(YES)s</i> to match metadata entries that only differ 
+            by case. If you note that your CSV metadata is not being
+            applied, your choice on this setting may be the culprit.</p>"""%globals()))
         
         group.append("update_metadata", cps.DoSomething(
             "", "Update metadata",

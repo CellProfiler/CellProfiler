@@ -22,6 +22,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 
 FLIP_NONE = 'Do not flip'
 FLIP_LEFT_TO_RIGHT = 'Left to right'
@@ -91,10 +92,11 @@ class FlipAndRotate(cpm.CPModule):
             "Crop away the rotated edges?", True, doc='''
             <i>(Used only when rotating images)</i> <br> 
             When an image is rotated, there will be black space at the 
-            corners/edges unless you choose to crop away the incomplete rows 
-            and columns of the image. This cropping will produce an image that 
+            corners/edges; select <i>%(YES)s</i> to crop away the incomplete rows 
+            and columns of the image, or select <i>%(NO)s</i> to leave it as-is.
+            <p>This cropping will produce an image that 
             is not exactly the same size as the original, which may affect 
-            downstream modules.''')
+            downstream modules.</p>'''%globals())
                 
         self.how_often = cps.Choice("Calculate rotation",
             IO_ALL, doc = '''

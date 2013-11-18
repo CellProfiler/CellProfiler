@@ -60,6 +60,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.workspace as cpw
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import triangle_areas
@@ -112,15 +113,16 @@ class EditObjectsManually(I.Identify):
             overlapping one object with another. Objects such as worms or
             the neurites of neurons may cross each other and might need to
             be edited with overlapping allowed, whereas a monolayer of cells
-            might be best edited with overlapping off. Check this setting to
-            allow overlaps or uncheck it to prevent them.""") 
+            might be best edited with overlapping off. <br>
+            Select <i>%(YES)s</i> to allow overlaps or select <i>%(NO)s</i> 
+            to prevent them."""%globals()) 
         
         self.wants_outlines = cps.Binary(
             "Retain outlines of the edited objects?", False,doc="""
-            Check this box if you want to keep images of the outlines
+            Select <i>%(YES)s</i> if you want to keep images of the outlines
             of the objects that remain after editing. This image
             can be saved by downstream modules or overlayed on other images
-            using the <b>OverlayOutlines</b> module.""")
+            using the <b>OverlayOutlines</b> module."""%globals())
         
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outline image", "EditedObjectOutlines", doc="""
@@ -148,9 +150,8 @@ class EditObjectsManually(I.Identify):
         
         self.wants_image_display = cps.Binary(
             "Display a guiding image?", True,doc = """
-            Check this setting to display an image and outlines
-            of the objects. Leave the setting unchecked if you do not
-            want a guide image while editing""")
+            Select <i>%(YES)s</i> to display an image and outlines of the objects. <br>
+            Select <i>%(NO)s</i> if you do not want a guide image while editing"""%globals())
         
         self.image_name = cps.ImageNameSubscriber(
             "Select the guiding image", cps.NONE,doc = """

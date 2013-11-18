@@ -25,6 +25,7 @@ from scipy.ndimage import distance_transform_edt
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"
@@ -51,10 +52,10 @@ class OverlayOutlines(cpm.CPModule):
         self.blank_image = cps.Binary(
             "Display outlines on a blank image?",
             False, doc="""
-            If you check this setting, the module will produce an
-            image of the outlines on a black background. If the
-            setting is unchecked, the module will overlay the 
-            outlines on an image of your choosing.""")
+            Select <i>%(YES)s</i> to produce an
+            image of the outlines on a black background. 
+            <p>Select <i>%(NO)s</i>, the module will overlay the 
+            outlines on an image of your choosing.</p>"""%globals())
         
         self.image_name = cps.ImageNameSubscriber(
             "Select image on which to display outlines",cps.NONE, doc="""

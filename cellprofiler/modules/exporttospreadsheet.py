@@ -54,6 +54,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 from cellprofiler.measurements import IMAGE, EXPERIMENT
 from cellprofiler.preferences import get_absolute_path, get_output_file_name
 from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE
@@ -125,8 +126,9 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.prepend_output_filename = cps.Binary(
             "Prepend the output file name to the data file names?", True, doc = """
+            Select <i>%(YES)s</i> to prepend the output file name to the exported spreadsheet file name. 
             This can be useful if you want to run a pipeline multiple 
-            times without overwriting the old results.""")
+            times without overwriting the old results."""%globals())
         
         self.directory = cps.DirectoryPath(
             "Output file location",
@@ -147,13 +149,13 @@ class ExportToSpreadsheet(cpm.CPModule):
         self.add_metadata = cps.Binary(
             "Add image metadata columns to your object data file?", False, doc = """"
             Image_Metadata_" columns are normally exported in the Image data file, but if you 
-            check this box they will also be exported with the Object data file(s).""")
+            select <i>%(YES)s</i>, they will also be exported with the Object data file(s)."""%globals())
         
         self.excel_limits = cps.Binary(
             "Limit output to a size that is allowed in Excel?", False, doc = """
-            If your output has more than 256 columns, a window will open
-            which allows you to select the columns you'd like to export. If your output exceeds
-            65,000 rows, you can still open the .csv in Excel, but not all rows will be visible.""")
+            If your output has more than 256 columns, select <i>%(YES)s</i> will open a window 
+            allowing you to select the columns you'd like to export. If your output exceeds
+            65,000 rows, you can still open the .csv in Excel, but not all rows will be visible."""%globals())
         
         self.nan_representation = cps.Choice(
             "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS], doc = """
@@ -170,8 +172,8 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.pick_columns = cps.Binary(
             "Select the measurements to export", False, doc = """
-            Checking this setting will open a window that allows you to select which measurements you want to export.
-            This is useful if you know exactly what measurements you want included in the final spreadheet(s). """)
+            Select <i>%(YES)s</i> to provide a button that allows you to select which measurements you want to export.
+            This is useful if you know exactly what measurements you want included in the final spreadheet(s). """%globals())
         
         self.columns = cps.MeasurementMultiChoice(
             "Press button to select measurements to export",doc = """
@@ -181,14 +183,14 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.wants_aggregate_means = cps.Binary(
             "Calculate the per-image mean values for object measurements?", False, doc = """
-            <b>ExportToSpreadsheet</b> can calculate population statistics over all the 
+            Select <i>%(YES)s</i> for <b>ExportToSpreadsheet</b> to calculate population statistics over all the 
             objects in each image and save that value as an aggregate 
             measurement in the Image file.  For instance, if you are measuring 
             the area of the Nuclei objects and you check the box for this option, <b>ExportToSpreadsheet</b> will 
             create a column in the Image file called "Mean_Nuclei_AreaShape_Area". 
             <p>You may not want to use <b>ExportToSpreadsheet</b> to calculate these 
             measurements if your pipeline generates a large number of per-object 
-            measurements; doing so might exceed Excel's limits on the number of columns (256). """)
+            measurements; doing so might exceed Excel's limits on the number of columns (256). """%globals())
         
         self.wants_aggregate_medians = cps.Binary("Calculate the per-image median values for object measurements?", False)
         
@@ -196,33 +198,45 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.wants_genepattern_file = cps.Binary(
             "Create a GenePattern GCT file?", False, doc="""
-            Create a GCT file compatible with <a href="http://www.broadinstitute.org/cancer/software/genepattern/">GenePattern</a>.
-            The GCT file format is a tab-delimited text file format that describes a gene expression dataset; the specifics of the
-            format are described <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">here</a>.
-            By converting your measurements into a GCT file, you can make use of GenePattern's data visualization and clustering methods.
+            Select <i>%(YES)s</i> to create a GCT file compatible with 
+            <a href="http://www.broadinstitute.org/cancer/software/genepattern/">GenePattern</a>.
+            The GCT file format is a tab-delimited text file format that describes a gene 
+            expression dataset; the specifics of the format are described 
+            <a href="http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html#gct">here</a>.
+            By converting your measurements into a GCT file, you can make 
+            use of GenePattern's data visualization and clustering methods.
             
-            <p>Each row in the GCT file represents (ordinarily) a gene and each column represents a sample (in this case, a per-image set
-            of measurements). In addition to any other spreadsheets desired, checking this box will produce a GCT file with the 
-            extension .gct, prepended with the text selection above. If per-image aggregate measurements are requested above, those 
-            measurements are included in the GCT file as well.</p>""")
+            <p>Each row in the GCT file represents (ordinarily) a gene and 
+            each column represents a sample (in this case, a per-image set
+            of measurements). In addition to any other spreadsheets desired, 
+            checking this box will produce a GCT file with the extension .gct, 
+            prepended with the text selection above. If per-image aggregate 
+            measurements are requested above, those measurements are included 
+            in the GCT file as well.</p>"""%globals())
         
         self.how_to_specify_gene_name = cps.Choice(
             "Select source of sample row name", 
             GP_NAME_OPTIONS, GP_NAME_METADATA, doc = """
             <i>(Used only if a GenePattern file is requested)</i><br>
-            The first column of the GCT file is the unique identifier for each sample, which is ordinarily the gene name. 
-            This information may be specified in one of two ways:
+            The first column of the GCT file is the unique identifier for each 
+            sample, which is ordinarily the gene name. This information may be 
+            specified in one of two ways:
             <ul>
-            <li><i>Metadata:</i> If you used <b>LoadData</b> or <b>LoadImages</b> to input your images, you may use a per-image data measurement 
-            (such as metadata) that corresponds to the identifier for this column. %(USING_METADATA_HELP_REF)s.</li>
-            <li><i>Image filename:</i> If the gene name is not available, the image filename can be used as a surrogate identifier.</li>
+            <li><i>Metadata:</i> If you used <b>LoadData</b> or <b>LoadImages</b> 
+            to input your images, you may use a per-image data measurement 
+            (such as metadata) that corresponds to the identifier for this column. 
+            %(USING_METADATA_HELP_REF)s.</li>
+            <li><i>Image filename:</i> If the gene name is not available, the image 
+            filename can be used as a surrogate identifier.</li>
             </ul>"""%globals())
         
         self.gene_name_column = cps.Measurement(
             "Select the metadata to use as the identifier",
             lambda : cpmeas.IMAGE, doc = """
-            <i>(Used only if a GenePattern file is requested and metadata is used to name each row)</i><br>
-            Choose the measurement that corresponds to the identifier, such as metadata from <b>LoadData</b>'s input file. 
+            <i>(Used only if a GenePattern file is requested and metadata is used 
+            to name each row)</i><br>
+            Choose the measurement that corresponds to the identifier, such as 
+            metadata from <b>LoadData</b>'s input file. 
             %(USING_METADATA_HELP_REF)s."""%globals())
         
         self.use_which_image_for_gene_name = cps.ImageNameSubscriber(
@@ -232,15 +246,17 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.wants_everything = cps.Binary(
             "Export all measurement types?", True, doc="""
-            <p>Check this setting to export every category of measurement.
+            Select <i>%(YES)s</i> to export every category of measurement.
             <b>ExportToSpreadsheet</b> will create one data file for each object produced
             in the pipeline, as well as per-image, per-experiment and object relationships, 
             if relevant. See <i>%(MEASUREMENT_NAMING_HELP)s</i> for more details on
-            the various measurement types.</p>
-            <p>If this box is checked, the module will use the object name as the file name, 
-            optionally prepending the output file name if specified above. 
-            Leave this box unchecked to specify which
-            objects should be exported or to override the automatic names.</p>"""%globals())
+            the various measurement types. The module will use the object name as the file name, 
+            optionally prepending the output file name if specified above.
+            <p>Select <i>%(NO)s</i> if you want to do either (or both) of two things:
+            <ul>
+            <li>Specify which objects should be exported;</li>
+            <li>Override the automatic nomenclature of the exported files.</li>
+            </ul></p>"""%globals())
         
         self.object_groups = []
         self.add_object_group()
@@ -250,8 +266,8 @@ class ExportToSpreadsheet(cpm.CPModule):
     def add_object_group(self,can_remove = True):
         group = cps.SettingsGroup()
         group.append(
-            "name", EEObjectNameSubscriber("Data to export",
-            doc="""<i>(Used only when Export all measurements? is left unchecked)</i><br>
+            "name", EEObjectNameSubscriber("Data to export",doc="""
+            <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
             Choose <i>Image</i>, <i>Experiment</i>, <i>Object relationships</i> 
             or an object name from the list. <b>ExportToSpreadsheet</b> will write out a
             file of measurements for the given category. See <i>%(MEASUREMENT_NAMING_HELP)s</i>
@@ -260,24 +276,26 @@ class ExportToSpreadsheet(cpm.CPModule):
         group.append(
             "previous_file", cps.Binary(
             "Combine these object measurements with those of the previous object?",False,doc="""
-            <i>(Used only when Export all measurements? is left unchecked)</i><br>Check this setting to create a file composed
+            <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
+            Select <i>%(YES)s</i> to create a file composed
             of measurements made on this object and the one directly
-            above it. Leave the box unchecked to create separate
-            files for this and the previous object."""))
+            above it.
+            <p>Select <i>%(NO)s</i> to create separate
+            files for this and the previous object.</p>"""%globals()))
         
         group.append("wants_automatic_file_name", cps.Binary(
             "Use the object name for the file name?", True,doc="""
-            <i>(Used only when Export all measurements? is left unchecked)</i><br>
-            Use the object name as selected above to generate a file
+            <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
+            Select <i>%(YES)s</i> to use the object name as selected above to generate a file
             name for the spreadsheet. For example, if you selected <i>Image</i>,
             above and have not checked the <i>Prepend output file name</i> option,
-            your output file will be named "Image.csv". You can name
-            the file yourself if you leave this box unchecked."""))
+            your output file will be named "Image.csv". 
+            <p>Select <i>%(NO)s</i> to name the file yourself.</p>"""%globals()))
         
         group.append("file_name", cps.Text(
             "File name", "DATA.csv",
             metadata = True,doc="""
-            <i>(Used only when Export all measurements? is left unchecked)</i><br>
+            <i>(Used only when "Export all measurements?" is set to "%(NO)s")</i><br>
             Enter a file name for the named objects' 
             measurements. <b>ExportToSpreadsheet</b> will
             prepend the name of the measurements file to this

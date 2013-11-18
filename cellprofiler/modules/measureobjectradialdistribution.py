@@ -51,6 +51,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.workspace as cpw
 
 from cellprofiler.cpmath.cpmorphology import distance_to_edge
@@ -183,15 +184,14 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
 
         group.append("wants_scaled", cps.Binary(
                 "Scale the bins?", True,doc ="""
-                If you check this setting, <b>MeasureObjectRadialDistribution</b>
-                will divide the object radially into the number of bins you specify.
-                If you leave the setting unchecked, <b>MeasureObjectRadialDistribution</b>
-                will ask for a maximum radial distance and will divide that distance
-                into the number of bins you specify. It is necessary to specify
-                a maximum distance so that each object will have the same measurements
-                (which might be zero for small objects) and so that the measurements
-                can be taken without knowing the maximum object radius before the
-                run starts."""))
+                <p>Select <i>%(YES)s</i> to divide the object radially into the number 
+                of bins that you specify. </p>
+                <p>Select <i>%(NO)s</i> to create the number of bins you specify based 
+                on distance. For this option, the user will be 
+                asked to specify a maximum distance so that each object will have the 
+                same measurements (which might be zero for small objects) and so that 
+                the measurements can be taken without knowing the maximum object radius 
+                before the run starts.</p>"""%globals()))
 
         group.append("bin_count", cps.Integer(
                 "Number of bins", 4, 2, doc="""

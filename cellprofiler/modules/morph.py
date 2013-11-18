@@ -398,6 +398,7 @@ logger = logging.getLogger(__name__)
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.filter import poisson_equation
@@ -606,19 +607,19 @@ class Morph(cpm.CPModule):
             """ % globals()))
         
         group.append("strel", cps.BinaryMatrix(
-            "Custom",
-            doc = """<i>(Used only for the %(SE_ARBITRARY)s structuring element).</i>
+            "Custom",doc = """
+            <i>(Used only for the %(SE_ARBITRARY)s structuring element).</i>
             This control lets you specify a custom structuring element.
             """ % globals()))
         
         group.append("rescale_values", cps.Binary(
             "Rescale values from 0 to 1?", True,doc = """
             <i>(Used only for the %(F_DISTANCE)s operation).</i>
-            <p>Checking this setting rescales the transformed values to lie between 0 and 1.
+            <p>Select <i>%(YES)s</i> to rescale the transformed values to lie between 0 and 1.
             This is the option to use if the distance transformed image is to be used
             for thresholding by an <b>Identify</b> module or the like, which assumes
             a 0-1 scaling.</p>
-            <p>Leaving this setting unchecked leaves the values in absolute pixel units.
+            <p>Select <i>%(NO)s</i> to leave the values in absolute pixel units.
             This useful in cases where the actual pixel distances are to be used
             downstream as input for a measurement module.</p>
             """ % globals()))        

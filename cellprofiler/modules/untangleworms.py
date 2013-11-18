@@ -92,6 +92,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.cpmath.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
 import identify as I
@@ -242,9 +243,7 @@ class UntangleWorms(cpm.CPModule):
         self.wants_overlapping_outlines = cps.Binary(
             "Retain outlines of the overlapping objects?", False, doc = """
             <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-            Check this setting to save an image of the outlines of the
-            objects with overlap. Leave the setting unchecked if you do
-            not need the outline image."""%globals())
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
         self.overlapping_outlines_colormap = cps.Colormap(
             "Outline colormap?",doc = """
@@ -257,10 +256,7 @@ class UntangleWorms(cpm.CPModule):
             "Name the overlapped outline image",
             "OverlappedWormOutlines",doc = """
             <i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-            This is the name of the outlines of the
-            overlapped worms. You can use this image to display the untangling
-            results, for instance, by composting the outlines image with
-            the <b>OverlayOutlines</b> module"""%globals())
+            This is the name of the outlines of the overlapped worms."""%globals())
         
         self.nonoverlapping_objects = cps.ObjectNameProvider(
             "Name the output non-overlapping worm objects", "NonOverlappingWorms",
@@ -276,9 +272,7 @@ class UntangleWorms(cpm.CPModule):
         self.wants_nonoverlapping_outlines = cps.Binary(
             "Retain outlines of the non-overlapping worms?", False,
             """<i>(Used only if "%(MODE_UNTANGLE)s" mode and "%(OO_BOTH)s" or "%(OO_WITH_OVERLAP)s" overlap style are selected)</i> <br>
-            Check this setting to save an image of the outlines of the
-            non-overlapping worms. Leave it unchecked if you do not need
-            the image of the outlines."""%globals())
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
         self.nonoverlapping_outlines_name =cps.OutlineNameProvider(
             "Name the non-overlapped outlines image",
@@ -320,9 +314,10 @@ class UntangleWorms(cpm.CPModule):
         
         self.wants_training_set_weights = cps.Binary(
             "Use training set weights?", True, doc = """
-            Check this setting to use the overlap and leftover
-            weights from the training set. Uncheck the setting to override
-            these weights.""")
+            Select <i>%(YES)s</i> to use the overlap and leftover
+            weights from the training set. 
+            <p>Select <i>%(NO)s</i> to override
+            these weights with user-specified values.</p>"""%globals())
         
         self.override_overlap_weight = cps.Float(
             "Overlap weight", 5, 0, doc = """

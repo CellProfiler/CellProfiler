@@ -177,6 +177,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
@@ -345,8 +346,8 @@ class LoadData(cpm.CPModule):
             "Press to view CSV file contents","View...", self.browse_csv)
         
         self.wants_images = cps.Binary("Load images based on this data?", True, doc="""
-            Check this box to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the 
-            <i>Image_PathName</i> fields (the latter is optional).""")
+            Select <i>%(YES)s</i> to have <b>LoadData</b> load images using the <i>Image_FileName</i> field and the 
+            <i>Image_PathName</i> fields (the latter is optional)."""%globals())
         
         self.rescale = cps.Binary(
             "Rescale intensities?", True,doc = """
@@ -356,12 +357,12 @@ class LoadData(cpm.CPModule):
             For instance, a microscope might acquire images using a 12-bit
             A/D converter which outputs intensity values between zero and 4095,
             but stores the values in a field that can take values up to 65535.
-            Check this setting to rescale the image intensity so that
+            <p>Select <i>%(YES)s</i> to rescale the image intensity so that
             saturated values are rescaled to 1.0 by dividing all pixels
-            in the image by the maximum possible intensity value. Uncheck this 
-            setting to ignore the image metadata and rescale the image
+            in the image by the maximum possible intensity value. </p>
+            <p>Select <i>%(NO)s</i> to ignore the image metadata and rescale the image
             to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-            of bits used to store the image.""")
+            of bits used to store the image.</p>"""%globals())
 
         self.image_directory = cps.DirectoryPath(
             "Base image location",
@@ -379,11 +380,11 @@ class LoadData(cpm.CPModule):
         
         self.wants_image_groupings = cps.Binary(
             "Group images by metadata?", False,doc = """
-            Use this option to break the image sets in an experiment into groups
+            Select <i>%(YES)s</i> to break the image sets in an experiment into groups
             that can be processed by different nodes on a computing cluster. Each set of
             files that share your selected metadata tags will be processed
             together. See <b>CreateBatchFiles</b> for details on submitting a 
-            CellProfiler pipeline to a computing cluster for processing.""")
+            CellProfiler pipeline to a computing cluster for processing."""%globals())
         
         self.metadata_fields = cps.MultiChoice(
             "Select metadata fields for grouping", None,doc="""
@@ -396,9 +397,9 @@ class LoadData(cpm.CPModule):
         self.wants_rows = cps.Binary(
             "Process just a range of rows?",
             False, doc="""
-            Check this box if you want to process a subset of the rows in the CSV file.
+            Select <i>%(YES)s</i> if you want to process a subset of the rows in the CSV file.
             Rows are numbered starting at 1 (but do not count the header line). 
-            <b>LoadData</b> will process up to and including the end row.""")
+            <b>LoadData</b> will process up to and including the end row."""%globals())
         
         self.row_range = cps.IntegerRange(
             "Rows to process",

@@ -43,6 +43,7 @@ import uuid
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
 import imagej.imagej2 as ij2
@@ -151,14 +152,14 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         
         self.wants_to_set_current_image = cps.Binary(
             "Input the currently active image in ImageJ?", True,doc="""
-            Check this setting if you want to set the currently 
+            Select <i>%(YES)s</i> if you want to set the currently 
             active ImageJ image using an image from a 
             prior CellProfiler module.
-            <p>Leave it unchecked to use the currently 
+            <p>Select <i>%(NO)s</i> to use the currently 
             active image in ImageJ. You may want to do this if you
             have an output image from a prior <b>RunImageJ</b>
             that you want to perform further operations upon
-            before retrieving the final result back to CellProfiler.</p>""")
+            before retrieving the final result back to CellProfiler.</p>"""%globals())
 
         self.current_input_image_name = cps.ImageNameSubscriber(
             "Select the input image",doc="""
@@ -171,13 +172,13 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
         self.wants_to_get_current_image = cps.Binary(
             "Retrieve the currently active image from ImageJ?", True,doc="""
-            Check this setting if you want to retrieve ImageJ's
+            Select <i>%(YES)s</i> if you want to retrieve ImageJ's
             currently active image after running the command or macro. 
-            <p>Leave the setting unchecked if the pipeline does not need to access
+            <p>Select <i>%(NO)s</i> if the pipeline does not need to access
             the current ImageJ image. For example, you might want to run
             further ImageJ operations with additional <b>RunImageJ</b>
             upon the current image prior to retrieving the final image 
-            back to CellProfiler.</p>""")
+            back to CellProfiler.</p>"""%globals())
 
         self.current_output_image_name = cps.ImageNameProvider(
             "Name the current output image", "ImageJImage",doc="""
@@ -190,9 +191,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         self.pause_before_proceeding = cps.Binary(
             "Wait for ImageJ before continuing?", False,doc = """
             Some ImageJ commands and macros are interactive; you
-            may want to adjust the image in ImageJ before continuing. Check
-            this box to stop CellProfiler while you adjust the image in
-            ImageJ. Leave the box unchecked to immediately use the image.
+            may want to adjust the image in ImageJ before continuing. 
+            Select <i>%(YES)s</i> to stop CellProfiler while you adjust the image in
+            ImageJ. Select <i>%(NO)s</i> to immediately use the image.
             <p>This command will not wait if CellProfiler is executed in
             batch mode. See <i>%(BATCH_PROCESSING_HELP_REF)s</i> for more
             details on batch processing.</p>"""%globals())
@@ -255,9 +256,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             You can retrieve the image that is currently active in ImageJ
             at the end of macro processing and use it later in CellProfiler.
             The image will only be available during the last cycle of the
-            image group. Check this setting to use the active image in CellProfiler
-            or leave it unchecked if you do not want to use the active image.
-            """)
+            image group. 
+            <p>Select <i>%(YES)s</i> to retrieve the active image for use in CellProfiler.
+            Select <i>%(NO)s</i> if you do not want to retrieve the active image.</p>
+            """%globals())
         
         self.post_group_output_image = cps.ImageNameProvider(
             "Name the group output image", "ImageJGroupImage",doc="""

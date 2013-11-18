@@ -145,6 +145,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import identify as cpmi
 from identify import FI_IMAGE_SIZE
 import cellprofiler.cpmath.threshold as cpthresh
@@ -292,26 +293,26 @@ class IdentifySecondaryObjects(cpmi.Identify):
         self.wants_discard_edge = cps.Binary(
             "Discard secondary objects touching the border of the image?",
             False,doc = """
-            This option will discard objects which have an edge
-            that falls on the border of the image. The objects are discarded
+            Select <i>%(YES)s</i> to discard secondary objects which touch
+            the image border. Select <i>%(NO)s</i> to retain objects regardless
+            of whether they touch the image edge or not.
+            <p>The objects are discarded
             with respect to downstream measurement modules, but they are retained in memory
             as "unedited objects"; this allows them to be considered in downstream modules that modify the
-            segmentation.""")
+            segmentation.</p>"""%globals())
         
         self.fill_holes = cps.Binary(
             "Fill holes in identified objects?", True,doc = """
-            Check this box to fill any holes inside objects.""")
+            Select <i>%(YES)s</i> to fill any holes inside objects."""%globals())
         
         self.wants_discard_primary = cps.Binary(
             "Discard the associated primary objects?",False,doc = """
             <i>(Used only if discarding secondary objects touching the image border)</i> <br>
             It might be appropriate to discard the primary object
             for any secondary object that touches the edge of the image.
-            The module will create a new set of objects that mirrors your
-            primary objects if you check this setting. The new objects
-            will be identical to the old, except that the new objects
-            will have objects removed if their associated secondary object
-            touches the edge of the image.""")
+            <p>Select <i>%(YES)s</i> to create a new set of objects that are identical 
+            to the original primary objects set, minus the objects for which the associated 
+            secondary object touches the image edge.</p>"""%globals())
             
         self.new_primary_objects_name = cps.ObjectNameProvider(
             "Name the new primary objects", "FilteredNuclei",doc = """
@@ -326,10 +327,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         self.wants_primary_outlines = cps.Binary(
             "Retain outlines of the new primary objects?", False,doc = """
             <i>(Used only if associated primary objects are discarded)</i><br>
-            The outlines of the new objects can be retained for later use in 
-            the pipeline. For example, a common use is for quality control purposes by overlaying them on 
-            your image of choice using the <b>OverlayOutlines</b> module and then saving the overlay image 
-            with the <b>SaveImages</b> module."""%globals())
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
         self.new_primary_outlines_name = cps.OutlineNameProvider(
             "Name the new primary object outlines", "FilteredNucleiOutlines",doc = """

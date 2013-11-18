@@ -91,6 +91,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.walk_in_background as W
 import cellprofiler.utilities.jutil as J
@@ -137,13 +138,27 @@ class Images(cpm.CPModule):
         self.filter_choice = cps.Choice(
             "Filter images?", FILTER_CHOICE_ALL, value=FILTER_CHOICE_IMAGES,
             doc = """
-            Check this setting to display and use rules to filter files for processing. 
-            <p>By default, <b>Images</b> will pass all the files specified in the file list
-            panel downstream to have a meaningful name assigned to it (so other modules can access it) or optionally, to 
-            define the relationships between images and associated metadata. Selecting this option will allow you to specify
-            a subset of the files from the file list panel by defining rules to filter the files. This 
-            approach is useful if, for example, you drag-and-dropped a folder onto the file list panel 
-            which contains a mixture of images that you want to analyze and other files that you want to ignore.</p>""")
+            The <b>Images</b> module will pass all the files specified in the file list
+            panel downstream to have a meaningful name assigned to it (so other modules can 
+            access it) or optionally, to define the relationships between images and associated 
+            metadata. Enabling file filtering will allow you to specify a subset of the files 
+            from the file list panel by defining rules to filter the files. This approach is 
+            useful if, for example, you drag-and-dropped a folder onto the file list panel 
+            which contains a mixture of images that you want to analyze and other files that 
+            you want to ignore.
+            <p>Several options are available for this setting:
+            <ul>
+            <li><i>%(FILTER_CHOICE_NONE)s:</i> Do not enable filtering; all files in the File list
+            panel will be passed to downstream modules for processing. This option can be
+            selected if you are sure that only images are specified in the list.</li>
+            <li><i>%(FILTER_CHOICE_IMAGES)s:</i> Only image files will be passed to downstream
+            modules. The permissible image formats are provided by a library called Bio-Formats; see 
+            <a href="http://loci.wisc.edu/bio-formats/formats">here</a> for the formats available.</li>
+            <li><i>%(FILTER_CHOICE_CUSTOM)s:</i> Specify custom rules for selecting a subset of 
+            the files from the File list panel. This approach is useful if, for example, you 
+            drag-and-dropped a folder onto the File list panel which contains a mixture of images 
+            that you want to analyze and other files that you want to ignore.</li>
+            </ul></p>"""%globals())
             
         self.filter = cps.Filter("Select the rule criteria", predicates, 
             FILTER_DEFAULT, doc = """

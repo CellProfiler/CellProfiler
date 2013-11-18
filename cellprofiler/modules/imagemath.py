@@ -30,6 +30,7 @@ from contrib.english import ordinal
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 
 O_ADD = "Add"
@@ -115,19 +116,19 @@ class ImageMath(cpm.CPModule):
         self.truncate_low = cps.Binary(
             "Set values less than 0 equal to 0?", True, doc="""
             Values outside the range 0 to 1 might not be handled well by other modules. 
-            Here you have the option of setting negative values to 0.""")
+            Select <i>%(YES)s</i> to set negative values to 0."""%globals())
         
         self.truncate_high = cps.Binary(
             "Set values greater than 1 equal to 1?", True, doc ="""
             Values outside the range 0 to 1 might not be handled well by other modules. 
-            Here you have the option of setting values greater than 1 to a maximum value of 1.""")
+            Select <i>%(YES)s</i> to set values greater than 1 to a maximum value of 1."""%globals())
         
         self.ignore_mask = cps.Binary(
             "Ignore the image masks?", False, doc = """
             Usually, the smallest mask of all image operands is applied after 
-            image math has been completed. Choosing to ignore the masks will set 
+            image math has been completed. Select <i>%(YES)s</i> to set 
             equal to zero all previously masked pixels and operate on the masked 
-            images as if no mask had been applied.""")
+            images as if no mask had been applied."""%globals())
         
         self.output_image_name = cps.ImageNameProvider(
             "Name the output image", "ImageAfterMath", doc="""

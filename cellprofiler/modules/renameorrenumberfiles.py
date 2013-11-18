@@ -33,10 +33,10 @@ sequence by CellProfiler:</p>
 <p>To renumber the files in the expected order, the numeric digits need to be 
 padded with zeros to the same length. In this case, you would want to:
 <ul>
-<li>Retain 16 characters at the beginning ("1DrosophilaDAPI_")</li>
-<li>Retain 4 characters at the end (".tif")</li>
-<li>"Renumber" as the handling method using 3 numerical digits</li>
-<li>Leave the text addition box unchecked</li>
+<li>Retain 16 characters at the beginning ("1DrosophilaDAPI_").</li>
+<li>Retain 4 characters at the end (".tif").</li>
+<li>"Renumber" as the handling method using 3 numerical digits.</li>
+<li>Set the text addition box to "No".</li>
 </ul>
 
 <table border = "1">
@@ -79,6 +79,7 @@ import os
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 
 A_RENUMBER = "Renumber"
 A_DELETE = "Delete"
@@ -147,10 +148,10 @@ class RenameOrRenumberFiles(cpm.CPModule):
         
         self.wants_text = cps.Binary(
             "Add text to the file name?", False,doc="""
-            You can check this setting if you want to add text
-            to the file name. If you chose <i>%(A_RENUMBER)s</i> above,
+            Select <i>%(YES)s</i> if you want to add text
+            to the file name. If you had chosen <i>%(A_RENUMBER)s</i> above,
             the module will add the text after your number.
-            If you chose <i>%(A_DELETE)s</i>, the module will replace
+            If you had chosen <i>%(A_DELETE)s</i>, the module will replace
             the deleted text with the text you enter here."""%globals())
         
         self.text_to_add = cps.Text(
@@ -160,10 +161,10 @@ class RenameOrRenumberFiles(cpm.CPModule):
         
         self.wants_to_replace_spaces = cps.Binary(
             "Replace spaces?", False,doc = """
-            Check this setting to replace spaces in the final
-            version of the file name with some other text. Leave it unchecked
-            if the file name can have spaces or if none of the file names
-            have spaces.""")
+            Select <i>%(YES)s</i> to replace spaces in the final
+            version of the file name with some other text. 
+            <p>Select <i>%(NO)s</i> if the file name can have spaces 
+            or if none of the file names have spaces.</p>"""%globals())
         
         self.space_replacement = cps.Text(
             "Space replacement", "_",doc = """

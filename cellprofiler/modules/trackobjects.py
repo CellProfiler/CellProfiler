@@ -91,6 +91,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.lapjv import lapjv
@@ -343,10 +344,10 @@ class TrackObjects(cpm.CPModule):
         self.wants_second_phase = cps.Binary(
             "Run the second phase of the LAP algorithm?", True, doc="""
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
-            Check this box to run the second phase of the LAP algorithm
-            after processing all images. Leave the box unchecked to omit the
-            second phase or to perform the second phase when running as a data
-            tool.
+            Select <i>%(YES)s</i> to run the second phase of the LAP algorithm
+            after processing all images. Select <i>%(NO)s</i> to omit the
+            second phase or to perform the second phase when running the module
+            as a data tool.
             <p>Since object tracks may start and end not only because of the true appearance 
             and disappearance of objects, but also because of apparent disappearances due
             to noise and limitations in imaging, you may want to run the second phase 
@@ -494,7 +495,7 @@ class TrackObjects(cpm.CPModule):
         
         self.wants_lifetime_filtering = cps.Binary(
             'Filter objects by lifetime?', False, doc = '''
-            Check this setting if you want objects to be filtered by their
+            Select <i>%(YES)s</i> if you want objects to be filtered by their
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
             as the results of a mis-segmentation. <br>
@@ -506,25 +507,27 @@ class TrackObjects(cpm.CPModule):
             <li>An object can be filtered only if it is tracked as an unique object.
             Splits continue the lifetime count from their parents, so the minimum
             lifetime value does not apply to them.</li>
-            </ul></p>''')
+            </ul></p>'''%globals())
         
         self.wants_minimum_lifetime = cps.Binary(
             'Filter using a minimum lifetime?', True, doc = '''
             <i>(Used only if objects are filtered by lifetime)</i><br>
-            Enter the minimum number of frames an object is permitted to persist. Objects
-            which last this number of frames or lower are filtered out.''')
+            Select <i>%(YES)s</i> to filter the object on the basis of a minimum number of frames.'''%globals())
         
         self.min_lifetime = cps.Integer(
-            'Minimum lifetime', 1, minval=1)
+            'Minimum lifetime', 1, minval=1,doc="""
+            Enter the minimum number of frames an object is permitted to persist. Objects
+            which last this number of frames or lower are filtered out.""")
         
         self.wants_maximum_lifetime = cps.Binary(
             'Filter using a maximum lifetime?', False, doc = '''
             <i>(Used only if objects are filtered by lifetime)</i><br>
-            Enter the maximum number of frames an object is permitted to persist. Objects
-            which last this number of frames or more are filtered out.''')
+            Select <i>%(YES)s</i> to filter the object on the basis of a maximum number of frames.'''%globals())
         
         self.max_lifetime = cps.Integer(
-            'Maximum lifetime', 100)
+            'Maximum lifetime', 100, doc="""
+            Enter the maximum number of frames an object is permitted to persist. Objects
+            which last this number of frames or more are filtered out.""")
         
         self.display_type = cps.Choice(
             'Select display option', DT_ALL, doc="""
@@ -538,8 +541,7 @@ class TrackObjects(cpm.CPModule):
 
         self.wants_image = cps.Binary(
             "Save color-coded image?", False, doc="""
-            Specify whether you want to retain a copy of the image showing the tracked objects. 
-            This image can be retained 
+            Select <i>%(YES)s</i> to retain the image showing the tracked objects 
             for later use in the pipeline. For example, a common use is for quality control purposes 
             saving the image with the <b>SaveImages</b> module.
             <p>Please note that if you are using the second phase of the %(TM_LAP)s method,

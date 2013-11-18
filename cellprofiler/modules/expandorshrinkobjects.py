@@ -46,6 +46,7 @@ from scipy.ndimage import distance_transform_edt
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
@@ -117,12 +118,14 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         self.wants_fill_holes = cps.Binary(
             "Fill holes in objects so that all objects shrink to a single point?",False, doc="""
             <i>(Used only if one of the "shrink" options selected)</i><br>
-            The shrink algorithm preserves each object's Euler number,
+            Select <i>%(YES)s</i> to ensure that each object will shrink
+            to a single point, by filling the holes in each object.
+            <p>Select <i>%(NO)s</i> to preserve the Euler number. in this case, the 
+            shrink algorithm preserves each object's Euler number,
             which means that it will erode an object with a hole to a ring in order to
-            keep the hole and it will erode an object with two holes to two rings
+            keep the hole. An object with two holes will be shrunk to two rings
             connected by a line in order to keep from breaking up the object or breaking
-            the hole. If you fill the holes in each object, then each object will shrink
-            to a single point.""")
+            the hole.</p>"""%globals())
         
         self.wants_outlines = cps.Binary(
             "Retain the outlines of the identified objects?",

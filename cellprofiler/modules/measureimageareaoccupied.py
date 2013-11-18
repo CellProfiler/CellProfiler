@@ -36,6 +36,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 from cellprofiler.cpmath.outline import outline
 
 C_AREA_OCCUPIED = "AreaOccupied"
@@ -95,7 +96,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
                     "Retain a binary image of the object regions?", 
                     False, doc="""
                     <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i><br>
-                    This setting is helpful if you would like to use a binary image 
+                    Select <i>%(YES)s</i> if you would like to use a binary image 
                     later in the pipeline, for example in <b>SaveImages</b>.  The image will 
                     display the object area that you have measured as the foreground 
                     in white and the background in black. """%globals())

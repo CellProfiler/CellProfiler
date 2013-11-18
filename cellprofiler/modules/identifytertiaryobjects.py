@@ -74,6 +74,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
@@ -113,14 +114,14 @@ class IdentifyTertiaryObjects(cpm.CPModule):
 
         self.shrink_primary = cps.Binary(
             "Shrink smaller object prior to subtraction?",True, doc="""
-            Checking this box will shrink the smaller object by 1 pixel before subtracting the objects.
+            Select <i>%(YES)s</i> to shrink the smaller object by 1 pixel before subtracting the objects.
             this approach will ensure that there is always a tertiary object produced, even if it is
             only 1 pixel wide.
-            <p>Unchecking this box will subtract the objects directly, which will ensure that no pixels
+            <p>Select <i>%(NO)s</i> to subtract the objects directly, which will ensure that no pixels
             are shared between the primary/secondary/tertiary objects and hence measurements for all
             three sets of objects will not use the same pixels multiple times. However, this may result 
             in the creation of objects with no area. Measurements can still be made on such objects, but
-            the results will be zero or not-a-number (NaN)</p>""")
+            the results will be zero or not-a-number (NaN)</p>"""%globals())
         
         self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?",False, doc="""
             %(RETAINING_OUTLINES_HELP)s"""%globals())

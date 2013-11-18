@@ -24,6 +24,7 @@ from scipy.ndimage import convolve
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.cpimage as cpi
 from cellprofiler.cpmath.filter import laplacian_of_gaussian
 from cellprofiler.cpmath.filter import roberts, canny, sobel, hsobel, vsobel
@@ -61,11 +62,12 @@ class EnhanceEdges(cpm.CPModule):
         self.wants_automatic_threshold = cps.Binary(
             "Automatically calculate the threshold?", True,doc = '''
             <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br> 
-            If you select automatic thresholding, it is done using a three-category
-            Otsu algorithm performed on the Sobel transform of the image.'''%globals())
+            Select <i>%(YES)s</i> to automatically calculate the threshold using a three-category
+            Otsu algorithm performed on the Sobel transform of the image.
+            <p>Select <i>%(NO)s</i> to manually enter the threshold value.</p>'''%globals())
         
         self.manual_threshold = cps.Float(
-            "Absolute threshold",.2,0,1, doc = '''
+            "Absolute threshold",0.2,0,1, doc = '''
             <i>(Used only with the %(M_CANNY)s option and manual thresholding)</i><br>
             The upper cutoff for Canny edges. All Sobel-transformed 
             pixels with this value or higher will be marked as an edge.
@@ -118,8 +120,9 @@ class EnhanceEdges(cpm.CPModule):
         self.wants_automatic_low_threshold = cps.Binary(
             "Calculate value for low threshold automatically?", True, doc="""
             <i>(Used only with the %(M_CANNY)s option and automatic thresholding)</i> <br>
-            Checking this box will automatically calculate the low / soft threshold cutoff for
-            the %(M_CANNY)s method."""%globals())
+            Select <i>%(YES)s</i> to automatically calculate the low / soft threshold cutoff for
+            the %(M_CANNY)s method.
+            <p>Select <i>%(NO)s</i> to manually enter the low threshold value.</p>"""%globals())
         
         self.low_threshold = cps.Float(
             "Low threshold value",0.1,0,1,doc="""

@@ -58,6 +58,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -165,11 +166,10 @@ class MeasureObjectNeighbors(cpm.CPModule):
         self.wants_percent_touching_image = cps.Binary(
             'Retain the image of objects colored by percent of touching pixels?',
             False,doc="""
-            An output image may be retained of the image of the input objects 
+            Select <i>%(YES)s</i> to keep an image of the input objects 
             colored by the percentage of the boundary touching their neighbors.
             A colormap of your choice is used to show the touching percentage of 
-            each object. Use the <b>SaveImages</b>
-            module to save this image to a file.""")
+            each object. Use the <b>SaveImages</b> module to save this image to a file."""%globals())
         
         self.touching_image_name = cps.ImageNameProvider(
             'Name the output image',

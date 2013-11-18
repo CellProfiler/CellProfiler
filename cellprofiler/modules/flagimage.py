@@ -44,6 +44,7 @@ import os
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.workspace as cpw
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 import cellprofiler.utilities.rules as cprules
@@ -126,18 +127,17 @@ class FlagImage(cpm.CPModule):
         group.append("wants_skip", 
                      cps.Binary(
                         "Skip image set if flagged?", False, doc = """
-                        <p>You can skip the remainder of the pipeline for image sets
-                        that are flagged by checking this setting. If you check this
-                        setting, CellProfiler will not run subsequent modules in the
+                        <p>Select <i>%(YES)s</i> to skip the remainder of the pipeline for image sets
+                        that are flagged. CellProfiler will not run subsequent modules in the
                         pipeline on the images in any image set that is flagged. 
-                        CellProfiler will continue to process the pipeline if you leave
-                        the setting unchecked.</p>
-                        <p>You may want to check this setting in order to filter out
-                        unwanted images during processing. For instance, you may want
+                        Select <i>%(NO)s</i> for CellProfiler to continue to process the pipeline regardless
+                        of flagging.</p>
+                        <p>You may want to skip processing in order to filter out
+                        unwanted images. For instance, you may want
                         to exclude out of focus images when running 
                         <b>CorrectIllumination_Calculate</b>. You can do this with a
                         pipeline that measures image quality and flags inappropriate
-                        images before it runs <b>CorrectIllumination_Calculate</b>.</p>"""))
+                        images before it runs <b>CorrectIllumination_Calculate</b>.</p>"""%globals()))
             
         group.append("add_measurement_button", 
                      cps.DoSomething("",
@@ -249,14 +249,14 @@ class FlagImage(cpm.CPModule):
         group.append("wants_minimum",
                      cps.Binary(
                          "Flag images based on low values?",True, doc = '''
-                         Images with measurements below this cutoff will be flagged.'''))
+                         Select <i>%(YES)s</i> to flag images with measurements below the specified cutoff.'''%globals()))
         
         group.append("minimum_value", cps.Float("Minimum value", 0))
         
         group.append("wants_maximum",
                      cps.Binary(
                          "Flag images based on high values?",True, doc = '''
-                         Images with measurements above this cutoff will be flagged.'''))
+                         Select <i>%(YES)s</i> to flag images with measurements above the specified cutoff.'''%globals()))
         
         group.append("maximum_value", cps.Float("Maximum value", 1))
         

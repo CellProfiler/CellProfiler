@@ -35,6 +35,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.cpmath.cpmorphology as cpmm
@@ -134,22 +135,23 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         self.dilate_objects = cps.Binary(
             "Dilate objects in the final averaged image?",False, doc = '''
             <i>(Used only if the Regular method is selected)</i><br>
-            Do you want to dilate objects in the final averaged image?
             For some applications, the incoming images are binary and each object
             should be dilated with a Gaussian filter in the final averaged
             (projection) image. This is for a sophisticated method of illumination
-            correction where model objects are produced.''')
+            correction where model objects are produced.
+            Select <i>%(YES)s</i> to dilate objects for this approach.
+            '''%globals())
         
         self.object_dilation_radius = cps.Integer(
             "Dilation radius",1,0,doc='''
-            <i>(Used only if the Regular method and dilation is selected)</i><br>
+            <i>(Used only if the "%(IC_REGULAR)s" method and dilation is selected)</i><br>
             This value should be roughly equal to the original radius of the objects''')
         
         self.block_size = cps.Integer(
             "Block size",60,1,doc = '''
-            <i>(Used only if Background is selected)</i><br>
+            <i>(Used only if "%(IC_BACKGROUND)s" is selected)</i><br>
             The block size should be large enough that every square block of pixels is likely 
-            to contain some background pixels, where no objects are located.''')
+            to contain some background pixels, where no objects are located.'''%globals())
         
         self.rescale_option = cps.Choice(
             "Rescale the illumination function?",
@@ -157,12 +159,12 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             The illumination function can be rescaled so that the pixel intensities
             are all equal to or greater than 1. You have the following options:
             <ul>
-            <li><i>Yes:</i> Rescaling is recommended if you plan to
-            use the <i>Regular</i> method (and hence, the <i>Division</i> option in 
+            <li><i>%(YES)s:</i> Rescaling is recommended if you plan to
+            use the <i>%(IC_REGULAR)s</i> method (and hence, the <i>%(DOS_DIVIDE)s</i> option in 
             <b>CorrectIlluminationApply</b>) so that the corrected images are in the 
             range 0 to 1.</li>
-            <li><i>No:</i> Rescaling is not recommended if you plan to use the <i>Background</i> 
-            method, which is paired with the <i>Subtract</i> option in <b>CorrectIlluminationApply</b>. 
+            <li><i>%(NO)s:</i> Rescaling is not recommended if you plan to use the <i>%(IC_BACKGROUND)s</i> 
+            method, which is paired with the <i>%(DOS_SUBTRACT)s</i> option in <b>CorrectIlluminationApply</b>. 
             Note that as a result of the illumination function being rescaled from 1 to
             infinity, the rescaling of each image might be dramatic if there is substantial 
             variation across the field of view, causing the corrected images
@@ -295,7 +297,8 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             prior to dilation or smoothing. It is an image produced during the calculations, not typically
             needed for downstream modules. It can be helpful to retain it in case you wish to try several 
             different smoothing methods without taking the time to recalculate the averaged image each time.
-            Use the <b>SaveImages</b> module to save it to your hard drive.''')
+            <p>Select <i>%(YES)s</i> to retain this averaged image. Use the <b>SaveImages</b> module to save 
+            it to your hard drive.</p>'''%globals())
         
         self.average_image_name = cps.ImageNameProvider(
             "Name the averaged image","IllumBlueAvg",doc = '''
@@ -306,7 +309,8 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             "Retain the dilated image?", False, doc = '''                                            
             The dilated image is the illumination function after dilation but prior to smoothing. 
             It is an image produced during the calculations, and is not typically needed for downstream modules.
-            Use the <b>SaveImages</b> module to save it to your hard drive.''')
+            <p>Select <i>%(YES)s</i> to retain this dilated image. Use the <b>SaveImages</b> module to save it 
+            to your hard drive.</p>'''%globals())
         
         self.dilated_image_name = cps.ImageNameProvider(
             "Name the dilated image","IllumBlueDilated",doc='''
@@ -316,10 +320,10 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         self.automatic_splines = cps.Binary(
             "Automatically calculate spline parameters?", True,doc = """
             <i>(Used only if %(SM_SPLINES)s are selected for the smoothing method)</i><br>
-            Leave this setting checked to automatically calculate
-            the parameters for spline fitting. Uncheck the setting to
-            specify the background mode, background threshold, scale,
-            maximum number of iterations and convergence."""%globals())
+            Select <i>%(YES)s</i> to automatically calculate
+            the parameters for spline fitting. 
+            <p>Select <i>%(NO)s</i> to specify the background mode, background threshold, scale,
+            maximum number of iterations and convergence.</p>"""%globals())
         
         self.spline_bg_mode = cps.Choice(
             "Background mode",

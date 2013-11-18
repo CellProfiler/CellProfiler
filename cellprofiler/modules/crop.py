@@ -41,6 +41,7 @@ import sys
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -237,13 +238,15 @@ class Crop(cpm.CPModule):
         self.use_plate_fix = cps.Binary(
             "Use Plate Fix?",False,doc = """
             <i>(Used only if %(SH_IMAGE)s selected as cropping shape)</i><br>
+            Select <i>%(YES)s</i> to attempt to regularize the edges around a previously-identified
+            plate object.
             <p>When attempting to crop based on a previously identified object
             such as a rectangular plate, the plate may not have
             precisely straight edges: there might be a tiny, almost unnoticeable
             "appendage" sticking out. Without Plate Fix, the <b>Crop</b>
             module would not crop the image tightly enough: it would retain the tiny appendage, leaving a lot
             of blank space around the plate and potentially causing problems with later
-            modules (especially IlluminationCorrection). </p>
+            modules (especially ones involving illumination correction). </p>
             <p>Plate Fix takes the
             identified object and crops to exclude any minor appendages (technically,
             any horizontal or vertical line where the object covers less than 50%% of

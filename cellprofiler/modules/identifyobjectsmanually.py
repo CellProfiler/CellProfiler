@@ -34,6 +34,7 @@ import cellprofiler.settings as cps
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import draw_line
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
+from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
@@ -59,14 +60,11 @@ class IdentifyObjectsManually(I.Identify):
         
         self.wants_outlines = cps.Binary(
             "Retain outlines of the identified objects?", False,doc = """
-            Check this setting to save the outlines around the objects
-            as a binary image.""")
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outlines", "CellOutlines",doc = """
-            <i>(Used only if outlines are to be saved)</i><br>
-            Enter a name to the image outlines. You can refer to
-            this image in subsequent modules, such as <b>SaveImages</b>.""")
+            %(NAMING_OUTLINES_HELP)s"""%globals())
         
     def settings(self):
         '''The settings as saved in the pipeline'''

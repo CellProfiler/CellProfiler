@@ -73,6 +73,7 @@ from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.cpmath.threshold as cpthresh
 from cellprofiler.cpmath.haralick import Haralick
 from cellprofiler.utilities import product
@@ -162,24 +163,25 @@ class MeasureImageQuality(cpm.CPModule):
              
         group.append("image_names", cps.ImageNameSubscriberMultiChoice(
             "Select the images to measure", doc = """
-            <i>(Used only if %(O_SELECT)s is chosen for selecting images)</i><br>
+            <i>(Used only if "%(O_SELECT)s" is chosen for selecting images)</i><br>
             Choose one or more images from this list. You can select multiple images by clicking 
             using the shift or command keys. In addition to loaded images, the list includes
             the images that were created by prior modules."""%globals()))
         
         group.append("include_image_scalings",cps.Binary(
             "Include the image rescaling value?",
-            True, doc = """Checking this setting adds the image's rescaling
+            True, doc = """
+            Select <i>%(YES)s</i> to add the image's rescaling
             value as a quality control metric. This value is set only for images
             that loaded using the <b>Input</b> modules. This is useful in confirming
             that all images are rescaled by the same value, since some acquisition 
             device vendors may output this value differently.
-            See <b>NamesAndTypes</b> for more information."""))
+            See <b>NamesAndTypes</b> for more information."""%globals()))
         
         group.append("check_blur", cps.Binary(
             "Calculate blur metrics?",
             True, doc = """
-            Check this setting to compute a series of blur metrics. The blur metrics are the
+            Select <i>%(YES)s</i> to compute a series of blur metrics. The blur metrics are the
             following, along with recomendations on their use:
             <ul>
             <li><i>%(F_POWER_SPECTRUM_SLOPE)s:</i> The power spectrum contains the frequency information
@@ -254,7 +256,7 @@ class MeasureImageQuality(cpm.CPModule):
         group.append("check_saturation", cps.Binary(
             "Calculate saturation metrics?",
             True, doc = """
-            Checking this option calculates the saturation metrics <i>%(F_PERCENT_MAXIMAL)s</i>
+            Select <i>%(YES)s</i> to calculate the saturation metrics <i>%(F_PERCENT_MAXIMAL)s</i>
             and <i>%(F_PERCENT_MINIMAL)s</i>, i.e., the percentage of pixels at
             the upper or lower limit of each individual image.  
             <p>For this calculation, the hard limits of 0 and 1 are not used because images often
@@ -268,10 +270,10 @@ class MeasureImageQuality(cpm.CPModule):
         group.append("check_intensity", cps.Binary(
             "Calculate intensity metrics?",
             True, doc = """
-            Checking this option will calculate image-based
+            Select <i>%(YES)s</i> to calculate image-based
             intensity measures, namely the mean, maximum, minimum, standard deviation
             and median absolute deviation of pixel intensities. These measures
-            are identical to those calculated by <b>MeasureImageIntensity</b>."""))
+            are identical to those calculated by <b>MeasureImageIntensity</b>."""%globals()))
         
         group.append("calculate_threshold", cps.Binary(
             "Calculate thresholds?",
@@ -285,7 +287,7 @@ class MeasureImageQuality(cpm.CPModule):
             "Use all thresholding methods?",
             False, doc = """
             <i>(Used only if image thresholds are calculcated)</i><br>
-            Calculate thresholds using all the available methods. Only the global methods
+            Select <i>%(YES)s</i> to calculate thresholds using all the available methods. Only the global methods
             are used. <br>
             While most methods are straightfoward, some methods have additional 
             parameters that require special handling:

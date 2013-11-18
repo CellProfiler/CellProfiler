@@ -17,6 +17,7 @@ based on a threshold which can be pre-selected or calculated automatically using
 from cellprofiler.cpmodule import CPModule
 from cellprofiler import cpimage
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 from identify import Identify, O_BACKGROUND, O_ENTROPY
 from identify import O_FOREGROUND, O_THREE_CLASS
 from identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
@@ -88,9 +89,8 @@ class ApplyThreshold(Identify):
         
         self.shift = cps.Binary(
             "Subtract the threshold value from the remaining pixel intensities?", False, doc ='''
-            <i>(Used only if the image is grayscale and pixels below a given intensity are to be set to zero)</i><br>
-            Use this setting if the dim pixels are to be shifted in value by 
-            the amount of the threshold.''')
+            <i>(Used only if the output image is %(GRAYSCALE)s and pixels below a given intensity are to be set to zero)</i><br>
+            Select <i>%(YES)s</i> to shift the value of the dim pixels by the threshold value.'''%globals())
         
         # if not binary and above threshold
         

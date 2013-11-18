@@ -87,6 +87,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.cpmath.cpmorphology as morph
 import cellprofiler.cpmath.index as INDEX
 import cellprofiler.preferences as cpprefs
@@ -202,11 +203,11 @@ class StraightenWorms(cpm.CPModule):
         
         self.wants_measurements = cps.Binary(
             "Measure intensity distribution?", True,doc = """
-            <b>StraightenWorms</b> can divide a worm into sections
+            Select <i>%(YES)s</i> to divide a worm into sections
             and measure the intensities of each section in each of the
             straightened images. These measurements can help classify
             phenotypes if the staining pattern across the segments differs
-            between phenotypes.""")
+            between phenotypes."""%globals())
         
         self.number_of_segments = cps.Integer(
             "Number of transverse segments", 4, 1,doc = """

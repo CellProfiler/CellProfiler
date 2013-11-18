@@ -55,6 +55,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 import cellprofiler.cpmath.propagate as propagate
@@ -95,9 +96,9 @@ class MeasureNeurons(cpm.CPModule):
         
         self.wants_branchpoint_image = cps.Binary(
             "Retain the branchpoint image?", False,doc="""
-            Check this setting if you want to save the color image of
+            Select <i>%(YES)s</i> if you want to save the color image of
             branchpoints and trunks. This is the image that is displayed
-            in the output window for this module.""")
+            in the output window for this module."""%globals())
         
         self.branchpoint_image_name = cps.ImageNameProvider(
             "Name the branchpoint image","BranchpointImage",doc="""
@@ -109,8 +110,8 @@ class MeasureNeurons(cpm.CPModule):
             "Fill small holes?", True, doc="""
             The algorithm reskeletonizes the image and this can leave
             artifacts caused by small holes in the image prior to skeletonizing.
-            These holes result in false trunks and branchpoints. Check this
-            setting to fill in these small holes prior to skeletonizing.""")
+            These holes result in false trunks and branchpoints. 
+            Select <i>%(YES)s</i> to fill in these small holes prior to skeletonizing."""%globals())
         
         self.maximum_hole_size = cps.Integer(
             "Maximum hole size:", 10, minval = 1,doc = """
@@ -120,10 +121,10 @@ class MeasureNeurons(cpm.CPModule):
             this size or smaller.""")
         
         self.wants_neuron_graph = cps.Binary(
-            "Do you want the neuron graph relationship?", False,doc = """
-            Check this setting to produce an edge file and a vertex
+            "Export the neuron graph relationships?", False,doc = """
+            Select <i>%(YES)s</i> to produce an edge file and a vertex
             file that give the relationships between trunks, branchpoints
-            and vertices""")
+            and vertices."""%globals())
         
         self.intensity_image_name = cps.ImageNameSubscriber(
             "Intensity image", cps.NONE,doc = """

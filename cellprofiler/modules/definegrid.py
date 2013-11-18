@@ -51,6 +51,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 
 NUM_TOP_LEFT = "Top left"
@@ -275,10 +276,9 @@ class DefineGrid(cpm.CPModule):
         self.wants_image = cps.Binary(
             "Retain an image of the grid for use later in the pipeline (for example, in SaveImages)?", 
             False, doc = """
-            Select whether you want to retain an image of the grid for use later in the pipeline.
+            Select <i>%(YES)s</i> to retain an image of the grid for use later in the pipeline.
             This module can create an annotated image of the grid
-            that can be saved using the <b>SaveImages</b> module. Check
-            this box if you want to save the annotated image. """)
+            that can be saved using the <b>SaveImages</b> module. """%globals())
         
         self.display_image_name = cps.ImageNameSubscriber(
             "Select the image on which to display the grid", 

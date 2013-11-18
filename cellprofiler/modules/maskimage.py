@@ -31,6 +31,7 @@ import numpy as np
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 
 IO_IMAGE = "Image"
 IO_OBJECTS = "Objects"
@@ -85,13 +86,13 @@ class MaskImage(cpm.CPModule):
             """This option reverses the foreground/background relationship of
             the mask. 
             <ul>
-            <li>If unchecked, the mask will be composed of the foregound 
+            <li>Select <i>%(NO)s</i> to produce the mask from the foregound 
             (white portion) of the masking image or the area within the masking 
             objects.</li>
-            <li>If checked, the mask will instead be composed of the 
+            <li>Select <i>%(YES)s</i>to instead produce the mask from the 
             <i>background</i> (black portions) of the masking image or the area 
             <i>outside</i> the masking objects.</li>
-            </ul>""")
+            </ul>"""%globals())
 
     def settings(self):
         """Return the settings in the order that they will be saved or loaded

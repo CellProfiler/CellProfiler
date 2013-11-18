@@ -65,6 +65,7 @@ import os
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 
 class Groups(cpm.CPModule):
@@ -86,9 +87,9 @@ class Groups(cpm.CPModule):
         
         self.wants_groups = cps.Binary(
             "Do you want to group your images?", False, doc = """
-            If you need to split your images into image subsets (or <i>groups</i>) such that each
-            group is processed independently of each other, then check this box. See the main module
-            help for more details.""")
+            Select <i>%(YES)s</i> if you need to split your images into image subsets (or <i>groups</i>) such that each
+            group is processed independently of each other. See the main module
+            help for more details."""%globals())
         
         self.grouping_text = cps.HTMLText(
             "", content="""

@@ -25,6 +25,7 @@ import zipfile
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.modules.loadimages import pathname2url
@@ -98,15 +99,15 @@ class CreateWebPage(cpm.CPModule):
         
         self.wants_thumbnails = cps.Binary(
             "Use thumbnail images?", False,doc="""
-            Check this option to display thumbnail images (small versions of the 
-            images) on the web page that link to the full images. Leave it 
-            unchecked to display the full image directly on the web page.
+            Select <i>%(YES)s</i> to display thumbnail images (small versions of the 
+            images) on the web page that link to the full images. <br>
+            Select <i>%(NO)s</i> to display the full image directly on the web page.
             <p>If you are going to use thumbnails, you will need to load
             them using <b>LoadImages</b> or <b>LoadData</b>; you can run a separate 
             pipeline prior to this one to create thumbnails from your originals  
             using the <b>Resize</b> and <b>SaveImages</b> modules. For some high-content
             screening systems, thumbnail files are automatically created and have
-            the text "thumb" in the name.</p>""")
+            the text "thumb" in the name.</p>"""%globals())
         
         self.thumbnail_image_name = cps.ImageNameSubscriber(
             "Select the thumbnail images", cps.NONE,doc="""
@@ -194,8 +195,8 @@ class CreateWebPage(cpm.CPModule):
             "Make a ZIP file containing the full-size images?", False,doc="""
             ZIP files are a common archive and data compression file format, making 
             it convenient to download all of the images represented on the web page with a single click.
-            Check this box to create a ZIP file that contains all your images, 
-            compressed to reduce file size.""")
+            Select <i>%(YES)s</i> to create a ZIP file that contains all your images, 
+            compressed to reduce file size."""%globals())
         
         self.zipfile_name = cps.Text(
             "Enter the ZIP file name", "Images.zip",

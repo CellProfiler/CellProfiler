@@ -27,6 +27,7 @@ import numpy as np
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 
 CC_GRAYSCALE = "Grayscale"
 CC_COLOR = "Color"
@@ -46,21 +47,21 @@ class InvertForPrinting(cpm.CPModule):
         
         self.wants_red_input = cps.Binary(
             "Use a red image?",True, doc = """
-            Check this box to specify an image to use for the red channel.""")
+            Select <i>%(YES)s</i> to specify an image to use for the red channel."""%globals())
         
         self.red_input_image = cps.ImageNameSubscriber(
             "Select the red image",cps.NONE)
         
         self.wants_green_input = cps.Binary(
             "Use a green image?",True, doc = """
-            Check this box to specify an image to use for the green channel.""")
+            Select <i>%(YES)s</i> to specify an image to use for the green channel."""%globals())
         
         self.green_input_image = cps.ImageNameSubscriber(
             "Select the green image", cps.NONE)
         
         self.wants_blue_input = cps.Binary(
             "Use a blue image?", True, doc = """
-            Check this box to specify an image to use for the blue channel.""")
+            Select <i>%(YES)s</i> to specify an image to use for the blue channel."""%globals())
         
         self.blue_input_image = cps.ImageNameSubscriber(
             "Select the blue image", cps.NONE)
@@ -75,19 +76,19 @@ class InvertForPrinting(cpm.CPModule):
             Specify whether you want to produce several grayscale images or one color image.""")
         
         self.wants_red_output = cps.Binary(
-            "Produce a red image?", True)
+            "Select <i>%(YES)s</i> to produce a red image."%globals(), True)
         
         self.red_output_image = cps.ImageNameProvider(
             "Name the red image", "InvertedRed")
         
         self.wants_green_output = cps.Binary(
-            "Produce a green image?", True)
+            "Select <i>%(YES)s</i> to produce a green image."%globals(), True)
         
         self.green_output_image = cps.ImageNameProvider(
             "Name the green image", "InvertedGreen")
         
         self.wants_blue_output = cps.Binary(
-            "Produce a blue image?", True)
+            "Select <i>%(YES)s</i> to produce a blue image."%globals(), True)
         
         self.blue_output_image = cps.ImageNameProvider(
             "Name the blue image", "InvertedBlue")

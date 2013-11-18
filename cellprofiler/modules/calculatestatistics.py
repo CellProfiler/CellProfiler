@@ -128,6 +128,7 @@ import os
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import standardize_default_folder_names, \
@@ -207,15 +208,15 @@ class CalculateStatistics(cpm.CPModule):
         
         group.append("log_transform",cps.Binary(
             "Log-transform the dose values?",False,doc = '''
-            This option allows you to log-transform the dose values 
-            before fitting a sigmoid curve. Check
-            this box if you have dose-response data. Leave the box unchecked
-            if your data values indicate only positive vs. negative controls.'''))
+            Select <i>%(YES)s</i> if you have dose-response data and you want to log-transform 
+            the dose values before fitting a sigmoid curve.
+            <p>Select <i>%(NO)s</i> if your data values indicate only positive vs. negative 
+            controls.</p>'''%globals()))
         
         group.append('wants_save_figure', cps.Binary(
-            '''Create dose/response plots?''',False,doc = '''
-            <a name='wants_save_figure'>Check this box if you want to create and save dose response plots. 
-            You will be asked for information on how to save the plots.</a>'''))
+            '''Create dose/response plots?''',False,doc = '''<a name='wants_save_figure'></a>
+            Select <i>%(YES)s</i> if you want to create and save 
+            dose response plots. You will be asked for information on how to save the plots.'''%globals()))
         
         group.append('figure_name', cps.Text(
             "Figure prefix","", doc = '''

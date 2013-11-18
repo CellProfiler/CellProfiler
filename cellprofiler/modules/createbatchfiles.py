@@ -43,6 +43,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 
@@ -82,9 +83,9 @@ class CreateBatchFiles(cpm.CPModule):
         '''Create the module settings and name the module'''
         self.wants_default_output_directory = cps.Binary(
             "Store batch files in default output folder?", True,doc="""
-            Check this box to store batch files in the Default Output folder. Uncheck
-            the box to enter the path to the folder that will be used to store
-            these files.""")
+            Select <i>%(YES)s</i> to store batch files in the Default Output folder. <br>
+            Select <i>%(NO)s</i> to enter the path to the folder that will be used to store
+            these files."""%globals())
         
         self.custom_output_directory = cps.Text(
             "Output folder path",
@@ -96,11 +97,11 @@ class CreateBatchFiles(cpm.CPModule):
         self.remote_host_is_windows = cps.Binary(
             "Are the cluster computers running Windows?",
             False,doc="""
-            Check this box if the cluster computers are running one of the Microsoft
-            Windows operating systems. If you check this box, <b>CreateBatchFiles</b> will
-            modify all paths to use the Windows file separator (backslash &#92;). If you
-            leave the box unchecked, <b>CreateBatchFiles</b> will modify all paths to use
-            the Unix or Macintosh file separator (slash &#47;).""")
+            Select <i>%(YES)s</i> if the cluster computers are running one of the Microsoft
+            Windows operating systems. In this case, <b>CreateBatchFiles</b> will
+            modify all paths to use the Windows file separator (backslash &#92;). <br>
+            Select <i>%(NO)s</i> for <b>CreateBatchFiles</b> to modify all paths to use
+            the Unix or Macintosh file separator (slash &#47;)."""%globals())
         
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
         self.distributed_mode = cps.Binary("Hidden: in distributed mode", False)

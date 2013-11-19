@@ -7,6 +7,17 @@
 
 #
 # CHANGELOG:
+# 0.2.2 - 2013.11.06: Sam Maclennan
+#         - Defined missing PACKAGEHOST
+#         - Added zmq and pyzmq to cp2 dependencies
+#         - Updated python version to 2.7.2
+#         - Updated Cython to 0.18
+#         - Updated atlas to 3.11.8
+#         - Updated hdf5 to 1.8.10
+#         - Updated scipy to 0.10.1
+#         - Updated matplotlib to 1.1.0
+#         - Changed several dead links to use CPPackageHost
+#
 # 0.2.1.leek - 2011.02.14: Lee Kamentsky
 #         - added gettext package (needed on my system because gettext was version 1.4 and needed 1.7)
 #         - need patch for ilastik: http://gitorious.org/ilastik/ilastik-0_5_05a/archive-tarball/v0.5.05a
@@ -130,11 +141,12 @@ CELLPROFILERPREFIX			?= $(PREFIX)
 CELLPROFILER_CO_URL			= https://github.com/CellProfiler/CellProfiler.git
 
 PACKAGEURL                              = http://cellprofiler.org/linked_files/CPPackageHost/
+PACKAGEHOST                              = http://cellprofiler.org/linked_files/CPPackageHost/
 
 #PYVERSION				= 2.5
-PYVERSION				= 2.6
+PYVERSION				= 2.7
 #PYTHONVERSION				= Python-$(PYVERSION).5
-PYTHONVERSION				= Python-$(PYVERSION).6
+PYTHONVERSION				= Python-$(PYVERSION).2
 PYTHONPREFIX				?= $(PREFIX)
 SITEPKGPREFIX				= $(PYTHONPREFIX)/lib/python$(PYVERSION)/site-packages
 SWIGVERSION				= swig-2.0.1
@@ -167,12 +179,12 @@ MYSQLPYTHONURL				= http://sourceforge.net/projects/mysql-python/
 PYTHONNOSEVERSION			= nose-0.11.3
 PYTHONNOSEURL				= http://code.google.com/p/python-nose/downloads/list
 DECORATORVERSION			= decorator-3.2.0
-CYTHONVERSION				= Cython-0.12.1
+CYTHONVERSION				= Cython-0.18
 #CYTHONVERSION				= Cython-0.14
 CYTHONPREFIX				?= $(PREFIX)
 CYTHONURL				= http://www.cython.org/#download
 #ATLASVERSION				= atlas3.9.33
-ATLASVERSION				= atlas3.9.34
+ATLASVERSION				= atlas3.11.8
 ATLASPREFIX				?= $(PREFIX)
 ATLASURL				= http://sourceforge.net/projects/math-atlas/files/
 LAPACKVERSION				= lapack-3.3.0
@@ -189,7 +201,7 @@ ILASTIKURL				= http://gitorious.org/ilastik/ilastik-0_5_05a/archive-tarball/v0.
 QIMGTOARRVERSION			= qimage2ndarray-1.0
 QIMGTOARRPREFIX				?= $(PREFIX)
 QIMGTOARRURL				= http://kogs-www.informatik.uni-hamburg.de/~meine/software/qimage2ndarray/
-HDF5VERSION				= hdf5-1.8.6
+HDF5VERSION				= hdf5-1.8.10
 HDF5PREFIX				?= $(PREFIX)
 H5PYVERSION				= h5py-1.3.1
 H5PYPREFIX				?= $(PREFIX)
@@ -199,7 +211,7 @@ FFTWPREFIX				?= $(PREFIX)
 NUMPYVERSION				= numpy-1.5.1
 NUMPYPREFIX				?= $(PREFIX)
 NUMPYURL				= http://sourceforge.net/projects/numpy/files/
-SCIPYVERSION				= scipy-0.8.0
+SCIPYVERSION				= scipy-0.10.1
 SCIPYPREFIX				?= $(PREFIX)
 SCIPYURL				= http://sourceforge.net/projects/scipy/files/
 UMFPACKVERSION				= UMFPACK-5.5.1
@@ -222,7 +234,7 @@ UFCONFIGVERSION				= UFconfig-3.6.0
 UFCONFIGURL				= http://www.cise.ufl.edu/research/sparse/UFconfig/
 AMDVERSION				= AMD-2.2.2
 AMDURL					= http://www.cise.ufl.edu/research/sparse/amd/current/
-MATPLOTLIBVERSION			= matplotlib-1.0.1
+MATPLOTLIBVERSION			= matplotlib-1.1.0
 MATPLOTLIBURL				= http://sourceforge.net/projects/matplotlib/files/matplotlib/
 WXPYTHONTOOLKIT_no			= --without-gtk --disable-unicode --disable-gtktest --with-x11
 WXPYTHONTOOLKIT_yes			= --with-gtk --enable-unicode
@@ -282,7 +294,12 @@ FONTCFGVERSION				= fontconfig-2.8.0
 FONTCFGPREFIX				= $(PREFIX)
 GETTEXTPREFIX                           = $(PREFIX)
 GETTEXTVERSION                          = gettext-0.18.1.1
-
+ZMQVERSION				= zeromq-3.2.4
+ZMQPREFIX				= $(PREFIX)
+ZMQURL					= http://zeromq.org
+PYZMQVERSION				= pyzmq-13.0.2
+PYZMQPREFIX				= $(PREFIX)
+PYZMQPREFIX				= http://zeromq.org/bindings:python
 
 default:				all
 all:					precheck cellprofiler
@@ -712,6 +729,31 @@ $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py$(PYVERSION)-linux-x86_64.
 					$(PYTHONPREFIX)/bin/python setup.py build && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
+zmq:					$(ZMQPREFIX)/lib/libzmq.la
+$(ZMQPREFIX)/lib/libzmq.la:		$(SRCDIR)/$(ZMQVERSION).tar.gz 
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(ZMQVERSION)" && \
+					tar -zxf "$(SRCDIR)/$(ZMQVERSION).tar.gz" && \
+					cd "$(ZMQVERSION)" && \
+					export CPPFLAGS="-I$(ZLIBPREFIX)/include $${CPPFLAGS}" && \
+					export LDFLAGS="-L$(ZLIBPREFIX)/lib $${LDFLAGS}" && \
+					export LD_LIBRARY_PATH="$(ZLIBPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+					./configure \
+						--prefix="$(ZMQPREFIX)" && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+
+pyzmq:					$(SITEPKGPREFIX)/$(PYZMQVERSION)-py$(PYVERSION).egg-info
+$(SITEPKGPREFIX)/$(PYZMQVERSION)-py$(PYVERSION).egg-info:	$(SRCDIR)/$(PYZMQVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(PYPIPREFIX)/bin/easy_install $(ZMQPREFIX)/lib/libzmq.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(PYZMQVERSION)" && \
+					tar -xzf "$(SRCDIR)/$(PYZMQVERSION).tar.gz" && \
+					cd "$(PYZMQVERSION)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+					$(PYTHONPREFIX)/bin/python setup.py configure --zmq="$(ZMQPREFIX)" && \
+					$(PYTHONPREFIX)/bin/python setup.py install
+
 pyopengl:				$(SITEPKGPREFIX)/$(PYOPENGLVERSION)-py$(PYVERSION).egg-info
 $(SITEPKGPREFIX)/$(PYOPENGLVERSION)-py$(PYVERSION).egg-info:	$(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(NUMPYPREFIX)/lib/python$(PYVERSION)/site-packages/$(NUMPYVERSION)-py$(PYVERSION).egg-info $(PYTHONPREFIX)/bin/pilfile.py
 					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
@@ -987,7 +1029,7 @@ $(SITEPKGPREFIX)/$(QIMGTOARRVERSION)-py$(PYVERSION).egg-info:	$(SRCDIR)/$(QIMGTO
 
 cp2:					cellprofiler
 cellprofiler:				$(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py
-$(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(WXPYTHONPREFIX)/bin/pywxrc $(SITEPKGPREFIX)/$(H5PYVERSION)-py$(PYVERSION)-linux-x86_64.egg $(SCIPYPREFIX)/lib/python$(PYVERSION)/site-packages/$(SCIPYVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/vigra/vigranumpycore.so $(SITEPKGPREFIX)/ilastik-$(ILASTIKMAJVERSION)-py$(PYVERSION).egg $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py$(PYVERSION).egg $(PYPIPREFIX)/bin/easy_install $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py$(PYVERSION)-linux-x86_64.egg $(PYSQLITEPREFIX)/lib/python$(PYVERSION)/site-packages/$(PYSQLITEVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py$(PYVERSION).egg $(PYTHONPREFIX)/bin/pilfile.py
+$(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(WXPYTHONPREFIX)/bin/pywxrc $(SITEPKGPREFIX)/$(H5PYVERSION)-py$(PYVERSION)-linux-x86_64.egg $(SCIPYPREFIX)/lib/python$(PYVERSION)/site-packages/$(SCIPYVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/vigra/vigranumpycore.so $(SITEPKGPREFIX)/ilastik-$(ILASTIKMAJVERSION)-py$(PYVERSION).egg $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py$(PYVERSION).egg $(PYPIPREFIX)/bin/easy_install $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py$(PYVERSION)-linux-x86_64.egg $(PYSQLITEPREFIX)/lib/python$(PYVERSION)/site-packages/$(PYSQLITEVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py$(PYVERSION).egg $(PYTHONPREFIX)/bin/pilfile.py $(ZMQPREFIX)/lib/libzmq.la $(SITEPKGPREFIX)/$(PYZMQVERSION)-py$(PYVERSION).egg-info
 					mkdir -p "$(CELLPROFILERPREFIX)" && \
 					cd "$(CELLPROFILERPREFIX)" && \
 					if test -d "./CellProfiler" ; then \
@@ -1232,7 +1274,7 @@ $(SRCDIR)/$(LAPACKVERSION).tgz:
 $(SRCDIR)/$(ATLASVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					ATLASVERSIONNR=$$(echo $(ATLASVERSION)|cut -d's' -f2) && \
-					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/math-atlas/Developer%20%28unstable%29/$${ATLASVERSIONNR}/$(ATLASVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(ATLASVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(NUMPYVERSION).tar.gz:
@@ -1320,7 +1362,7 @@ $(SRCDIR)/$(PYQTVERSION).tar.gz:
 
 $(SRCDIR)/$(QTVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://get.qt.nokia.com/qt/source/$(QTVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(QTVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(FFTWVERSION).tar.gz:
@@ -1336,7 +1378,7 @@ $(SRCDIR)/$(PYPIVERSION):
 
 $(SRCDIR)/$(DECORATORVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://pypi.python.org/packages/source/d/decorator/$(DECORATORVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(DECORATORVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz:
@@ -1361,7 +1403,7 @@ $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz:
 
 $(SRCDIR)/$(ZLIBVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://zlib.net/$(ZLIBVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(ZLIBVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(PNGVERSION).tar.bz2:
@@ -1391,7 +1433,7 @@ $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz:
 
 $(SRCDIR)/$(HDF5VERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://www.hdfgroup.org/ftp/HDF5/current/src/$(HDF5VERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "http://www.hdfgroup.org/ftp/HDF5/releases/$(HDF5VERSION)/src/$(HDF5VERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(H5PYVERSION).tar.gz:
@@ -1401,7 +1443,7 @@ $(SRCDIR)/$(H5PYVERSION).tar.gz:
 
 $(SRCDIR)/$(PCREVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/$(PCREVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/pcre/pcre/8.12/$(PCREVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(SWIGVERSION).tar.gz:
@@ -1411,7 +1453,7 @@ $(SRCDIR)/$(SWIGVERSION).tar.gz:
 
 $(SRCDIR)/$(ILASTIKVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://www.ilastik.org/download.php?cat=11_Download&file=$(ILASTIKVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(ILASTIKVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(GTKVERSION).tar.bz2:
@@ -1461,7 +1503,7 @@ $(SRCDIR)/$(FONTCFGVERSION).tar.gz:
 
 $(SRCDIR)/$(PYSQLITEVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://pysqlite.googlecode.com/files/$(PYSQLITEVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(PYSQLITEVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(SQLITEVERSION).tar.gz:
@@ -1471,7 +1513,7 @@ $(SRCDIR)/$(SQLITEVERSION).tar.gz:
 
 $(SRCDIR)/$(MYSQLVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "ftp://mirror.services.wisc.edu/mirrors/mysql/Downloads/MySQL-5.1/$(MYSQLVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(MYSQLVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(NCURSESVERSION).tar.gz:
@@ -1490,5 +1532,15 @@ $(SRCDIR)/$(GETTEXTVERSION).tar.gz:
 					wget $(WGETFLAGS) "http://ftp.gnu.org/pub/gnu/gettext/$(GETTEXTVERSION).tar.gz" && \
 					touch "$@"
 
-download:				$(SRCDIR)/findlibjvm.class $(SRCDIR)/$(LAPACKVERSION).tgz $(SRCDIR)/$(ATLASVERSION).tar.bz2 $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/$(SCIPYVERSION).tar.gz $(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(CAMDVERSION).tar.gz $(SRCDIR)/$(CCOLAMDVERSION).tar.gz $(SRCDIR)/$(COLAMDVERSION).tar.gz $(SRCDIR)/$(CHOLMODVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(SRCDIR)/PyOpenGL-$(PYOPENGLACCELVERSION).tar.gz $(SRCDIR)/$(SIPVERSION).tar.gz $(SRCDIR)/$(PYQTVERSION).tar.gz $(SRCDIR)/$(QTVERSION).tar.gz $(SRCDIR)/$(FFTWVERSION).tar.gz $(SRCDIR)/$(PYPIVERSION) $(SRCDIR)/$(DECORATORVERSION).tar.gz $(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(SRCDIR)/$(PILVERSION).tar.gz $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz $(SRCDIR)/$(ZLIBVERSION).tar.bz2 $(SRCDIR)/$(PNGVERSION).tar.bz2 $(SRCDIR)/$(TIFFVERSION).tar.gz $(SRCDIR)/$(CYTHONVERSION).tar.gz $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz $(SRCDIR)/$(HDF5VERSION).tar.bz2 $(SRCDIR)/$(H5PYVERSION).tar.gz $(SRCDIR)/$(PCREVERSION).tar.bz2 $(SRCDIR)/$(SWIGVERSION).tar.gz $(SRCDIR)/$(ILASTIKVERSION).tar.gz $(SRCDIR)/$(GTKVERSION).tar.bz2 $(SRCDIR)/$(GLIBVERSION).tar.bz2 $(SRCDIR)/$(PANGOVERSION).tar.bz2 $(SRCDIR)/$(CAIROVERSION).tar.gz $(SRCDIR)/$(ATKVERSION).tar.bz2 $(SRCDIR)/$(PIXMANVERSION).tar.gz $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2 $(SRCDIR)/$(FONTCFGVERSION).tar.gz $(SRCDIR)/$(PYSQLITEVERSION).tar.gz $(SRCDIR)/$(SQLITEVERSION).tar.gz $(SRCDIR)/$(MYSQLVERSION).tar.gz $(SRCDIR)/$(NCURSESVERSION).tar.gz $(SRCDIR)/$(BOOSTVERSION).tar.bz2 $(SRCDIR)/$(GETTEXTVERSION).tar.gz
+$(SRCDIR)/$(ZMQVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://download.zeromq.org/$(ZMQVERSION).tar.gz" && \
+					touch "$@"
+
+$(SRCDIR)/$(PYZMQVERSION).tar.gz:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "https://pypi.python.org/packages/source/p/pyzmq/$(PYZMQVERSION).tar.gz" && \
+					touch "$@"
+
+download:				$(SRCDIR)/findlibjvm.class $(SRCDIR)/$(LAPACKVERSION).tgz $(SRCDIR)/$(ATLASVERSION).tar.bz2 $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/$(SCIPYVERSION).tar.gz $(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(CAMDVERSION).tar.gz $(SRCDIR)/$(CCOLAMDVERSION).tar.gz $(SRCDIR)/$(COLAMDVERSION).tar.gz $(SRCDIR)/$(CHOLMODVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(SRCDIR)/PyOpenGL-$(PYOPENGLACCELVERSION).tar.gz $(SRCDIR)/$(SIPVERSION).tar.gz $(SRCDIR)/$(PYQTVERSION).tar.gz $(SRCDIR)/$(QTVERSION).tar.gz $(SRCDIR)/$(FFTWVERSION).tar.gz $(SRCDIR)/$(PYPIVERSION) $(SRCDIR)/$(DECORATORVERSION).tar.gz $(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(SRCDIR)/$(PILVERSION).tar.gz $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz $(SRCDIR)/$(ZLIBVERSION).tar.bz2 $(SRCDIR)/$(PNGVERSION).tar.bz2 $(SRCDIR)/$(TIFFVERSION).tar.gz $(SRCDIR)/$(CYTHONVERSION).tar.gz $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz $(SRCDIR)/$(HDF5VERSION).tar.bz2 $(SRCDIR)/$(H5PYVERSION).tar.gz $(SRCDIR)/$(PCREVERSION).tar.bz2 $(SRCDIR)/$(SWIGVERSION).tar.gz $(SRCDIR)/$(ILASTIKVERSION).tar.gz $(SRCDIR)/$(GTKVERSION).tar.bz2 $(SRCDIR)/$(GLIBVERSION).tar.bz2 $(SRCDIR)/$(PANGOVERSION).tar.bz2 $(SRCDIR)/$(CAIROVERSION).tar.gz $(SRCDIR)/$(ATKVERSION).tar.bz2 $(SRCDIR)/$(PIXMANVERSION).tar.gz $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2 $(SRCDIR)/$(FONTCFGVERSION).tar.gz $(SRCDIR)/$(PYSQLITEVERSION).tar.gz $(SRCDIR)/$(SQLITEVERSION).tar.gz $(SRCDIR)/$(MYSQLVERSION).tar.gz $(SRCDIR)/$(NCURSESVERSION).tar.gz $(SRCDIR)/$(BOOSTVERSION).tar.bz2 $(SRCDIR)/$(GETTEXTVERSION).tar.gz $(SRCDIR)/$(ZMQVERSION).tar.gz $(SRCDIR)/$(PYZMQVERSION).tar.gz
 

@@ -61,12 +61,38 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, I.Images))
-        self.assertTrue(module.wants_filter)
+        self.assertEqual(module.filter_choice, I.FILTER_CHOICE_CUSTOM)
         self.assertEqual(module.filter.value, 'or (directory does startwith "foo") (file does contain "bar")')
+        
+    def test_01_02_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120209212234
+ModuleCount:1
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    :{"ShowFiltered"\x3A false}
+    Filter choice:%s
+    Filter:or (directory does startwith "foo") (file does contain "bar")
+"""
+        for fc, fctext in ((I.FILTER_CHOICE_CUSTOM, "Custom"),
+                           (I.FILTER_CHOICE_IMAGES, "Images only"),
+                           (I.FILTER_CHOICE_NONE, "No filtering")):
+            pipeline = cpp.Pipeline()
+            def callback(caller, event):
+                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            pipeline.add_listener(callback)
+            pipeline.load(StringIO(data % fctext))
+            self.assertEqual(len(pipeline.modules()), 1)
+            module = pipeline.modules()[0]
+            self.assertTrue(isinstance(module, I.Images))
+            self.assertEqual(module.filter_choice, fc)
+            self.assertEqual(module.filter.value, 'or (directory does startwith "foo") (file does contain "bar")')
         
     def test_02_04_filter_url(self):
         module = I.Images()
-        module.wants_filter.value = True
+        module.filter_choice.value = I.FILTER_CHOICE_CUSTOM
         for url, filter_value, expected in (
             ("file:/TestImages/NikonTIF.tif",
              'and (file does startwith "Nikon") (extension does istif)', True),
@@ -79,6 +105,13 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
             module.filter.value = filter_value
             self.assertEqual(module.filter_url(url), expected)
             
-                    
+    def test_02_05_filter_standard(self):
+        module = I.Images()
+        module.filter_choice.value = I.FILTER_CHOICE_IMAGES
+        for url, expected in (
+            ("file:/TestImages/NikonTIF.tif", True),
+            ("file:/foo/.bar/baz.tif", False),
+            ("file:/TestImages/foo.bar", False)):
+            self.assertEqual(module.filter_url(url), expected)
         
         

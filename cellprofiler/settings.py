@@ -277,7 +277,7 @@ class DirectoryPath(Text):
             dir_choices = dir_choices + [URL_FOLDER_NAME]
         if value is None:
             value = DirectoryPath.static_join_string(
-                dir_choices[0], "None")
+                dir_choices[0], "")
         self.dir_choices = dir_choices
         self.allow_metadata = allow_metadata
         self.support_urls = support_urls
@@ -458,6 +458,9 @@ class DirectoryPath(Text):
             self.custom_path.find(r"\g<") != -1):
             raise ValidationError("Metadata not supported for this setting",
                                   self)
+        if self.dir_choice == ABSOLUTE_FOLDER_NAME and (
+            (self.custom_path is None) or (len(self.custom_path) == 0)):
+            raise ValidationError("Please enter a valid path", self)
 
 class FilenameText(Text):
     """A setting that displays a file name
@@ -518,19 +521,96 @@ class PathnameOrURL(Pathname):
         if not self.is_url():
             super(PathnameOrURL, self).test_valid(pipeline)
             
-class ImageFileSpecifier(Text):
-    """A setting for choosing an image file, including switching between substring, file globbing, and regular expressions,
-    and choosing different directories (or common defaults).
+class ImagePlane(Setting):
+    """A setting that specifies an image plane
+    
+    This setting lets the user pick an image plane. This might be an image
+    file, a URL, or a plane from an image stack.
+    
+    The text setting has four fields, delimited by a space character (which
+    is luckily disallowed in a URL:
+    
+    Field 1: URL
+    
+    Field 2: series (or None if a space is followed by another)
+    
+    Field 3: index (or None if blank)
+    
+    Field 4: channel (or None if blank)
     """
-    def __init__(self, text, value, *args, **kwargs):
-        if 'regexp' in kwargs:
-            self.regexp = kwargs['regexp']
-            del kwargs['regexp']
-        if 'default_dir' in kwargs:
-            self.default_dir = kwargs['default_dir']
-            del kwargs['default_dir']
-        super(ImageFileSpecifier,self).__init__(text, value, *args, **kwargs)
-
+    
+    def __init__(self, text, *args, **kwargs):
+        '''Initialize the setting
+        
+        text - informative text to display to the left
+        '''
+        super(ImagePlane, self).__init__(
+            text, ImagePlane.build(""), *args, **kwargs)
+        
+    @staticmethod
+    def build(url, series = None, index = None, channel = None):
+        '''Build the string representation of the setting
+        
+        url - the URL of the file containing the plane
+        
+        series - the series for a multi-series stack or None if the whole file
+        
+        index - the index of the frame for a multi-frame stack or None if
+                the whole stack
+                
+        channel - the channel of an interlaced color image or None if all
+                  channels
+        '''
+        if " " in url:
+            # Spaces are not legal characters in URLs, nevertheless, I try
+            # to accomodate
+            logger.warn(
+                "URLs should not contain spaces. %s is the offending URL" % url)
+            url = url.replace(" ", "%20")
+        return " ".join([str(x) if x is not None else "" 
+                         for x in url, series, index, channel])
+    
+    def __get_field(self, index):
+        f = self.value_text.split(" ")[index]
+        if len(f) == 0:
+            return None
+        return f
+    
+    def __get_int_field(self, index):
+        f = self.__get_field(index)
+        if f is None:
+            return f
+        return int(f)
+    
+    @property
+    def url(self):
+        '''The URL portion of the image plane descriptor'''
+        uurl = self.__get_field(0)
+        if uurl is not None:
+            uurl = uurl.encode("utf-8")
+        return uurl
+    
+    @property
+    def series(self):
+        '''The series portion of the image plane descriptor'''
+        return self.__get_int_field(1)
+    
+    @property
+    def index(self):
+        '''The index portion of the image plane descriptor'''
+        return self.__get_int_field(2)
+    
+    @property
+    def channel(self):
+        '''The channel portion of the image plane descriptor'''
+        return self.__get_int_field(3)
+    
+    def test_valid(self, pipeline):
+        if self.url is None:
+            raise ValidationError(
+                "This setting's URL is blank. Please select a valid image",
+                self)
+    
 class AlphanumericText(Text):
     '''A setting for entering text values limited to alphanumeric + _ values
     
@@ -581,7 +661,7 @@ class Number(Text):
         else:
             text_value = self.value_to_str(value)
         super(Number, self).__init__(text, text_value, *args, **kwargs)
-        self.__default = value
+        self.__default = self.str_to_value(text_value)
         self.__minval = minval
         self.__maxval = maxval
     
@@ -1829,6 +1909,60 @@ class DoSomething(Setting):
         """Call the callback in response to the user's request to do something"""
         self.__callback(*self.__args)
         
+class DoThings(Setting):
+    """Do one of several things, depending on which button is pressed
+    
+    This setting consolidates several possible actions into one setting.
+    Graphically, it displays as several buttons that are horizontally
+    adjacent.
+    """
+    save_to_pipeline = False
+    def __init__(self, text, labels_and_callbacks, *args, **kwargs):
+        '''Initializer
+        
+        text - text to display to left of setting
+        
+        labels_and_callbacks - a sequence of two tuples of button label
+        and callback to be called
+        
+        All additional function arguments are passed to the callback.
+        '''
+        super(DoThings, self).__init__(text, "n/a", **kwargs)
+        self.__args = tuple(args)
+        self.__labels_and_callbacks = labels_and_callbacks
+        
+    @property
+    def count(self):
+        '''The number of things to do
+        
+        returns the number of buttons to display = number of actions
+        that can be performed.
+        '''
+        return len(self.__labels_and_callbacks)
+        
+    def get_label(self, idx):
+        '''Retrieve one of the actions' labels
+        
+        idx - the index of the action
+        '''
+        return self.__labels_and_callbacks[idx][0]
+    
+    def set_label(self, idx, label):
+        '''Set the label for an action
+        
+        idx - the index of the action
+        
+        label - the label to display for that action
+        '''
+        self.__labels_and_callbacks[idx] = \
+            (label, self.__labels_and_callbacks[idx][1])
+        
+    def on_event_fired(self, idx):
+        '''Call the indexed action's callback
+        
+        idx - index of the action to fire
+        '''
+        self.__labels_and_callbacks[idx][1](*self.__args)
         
 class RemoveSettingButton(DoSomething):
     '''A button whose only purpose is to remove something from a list.'''

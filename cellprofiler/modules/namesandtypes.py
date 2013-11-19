@@ -75,6 +75,7 @@ import hashlib
 import numpy as np
 import os
 import re
+import traceback
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
@@ -132,11 +133,70 @@ the image as the raw, unscaled values. If you wish to make measurements
 on the unscaled image, use the <b>ImageMath</b> module to multiply the 
 scaled image by the actual image bit-depth."""%globals()
         
+LOAD_AS_CHOICE_HELP_TEXT = """
+    You can specify how these images should be treated:
+    <ul>
+    <li><i>%(LOAD_AS_GRAYSCALE_IMAGE)s:</i> An image in which each pixel 
+    represents a single intensity value. Most of the modules in CellProfiler
+    operate on images of this type. <br>
+    If this option is applied to a color image, the red, green and blue 
+    pixel intensities will be averaged to produce a single intensity value.</li>
+    <li><i>%(LOAD_AS_COLOR_IMAGE)s:</i> An image in which each pixel
+    repesents a red, green and blue (RGB) triplet of intensity values.
+    Please note that the object detection modules such as <b>IdentifyPrimaryObjects</b>
+    expect a grayscale image, so if you want to identify objects, you
+    should use the <b>ColorToGray</b> module in the analysis pipeline
+    to split the color image into its component channels.<br>
+    You can use the <i>%(LOAD_AS_GRAYSCALE_IMAGE)s</i> option to collapse the
+    color channels to a single grayscale value if you don't need CellProfiler
+    to treat the image as color.</li>
+    <li><i>%(LOAD_AS_MASK)s:</i> A <i>mask</i> is an image where some of the 
+    pixel intensity values are zero, and others are non-zero. The most common
+    use for a mask is to exclude particular image regions from consideration. By 
+    applying a mask to another image, the portion of the image that overlaps with
+    the non-zero regions of the mask are included. Those that overlap with the 
+    zeroed region are "hidden" and not included in downstream calculations.
+    For this option, the input image should be a binary image, i.e, foreground is 
+    white, background is black. The module will convert any nonzero values 
+    to 1, if needed. You can use this option to load a foreground/background 
+    segmentation produced by one of the <b>Identify</b> modules.</li>
+    <li><i>%(LOAD_AS_ILLUMINATION_FUNCTION)s:</i> An <i>illumination correction function</i>
+    is an image which has been generated for the purpose of correcting uneven 
+    illumination/lighting/shading or to reduce uneven background in images. Typically,
+    is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and 
+    <b>CorrectIlluminationApply</b> for more details. </li>
+    <li><i>%(LOAD_AS_OBJECTS)s:</i> Use this option if the input image 
+    is a label matrix and you want to obtain the objects that it defines. 
+    A label matrix is a grayscale or color image in which the connected 
+    regions share the same label, which defines how objects are represented 
+    in CellProfiler. The labels are integer values greater than or equal 
+    to 0. The elements equal to 0 are the background, whereas the elements 
+    equal to 1 make up one object, the elements equal to 2 make up a second 
+    object, and so on. This option allows you to use the objects 
+    immediately without needing to insert an <b>Identify</b> module to 
+    extract them first. See <b>IdentifyPrimaryObjects</b> for more details. <br>
+    This option can load objects created by the <b>SaveImages</b> module. These objects 
+    can take two forms, with different considerations for each:
+    <ul>
+    <li><i>Non-overalapping</i> objects are stored as a label matrix. This matrix should be 
+    saved as grayscale, rather than color.</li>
+    <li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of whichc consists of a 
+    grayscale label matrix. The frames are constructed so that objects that overlap are placed
+    in different frames.</li> 
+    </ul></li>
+    </ul>
+    """ %globals()
+
 IDX_ASSIGNMENTS_COUNT_V2 = 5
 IDX_ASSIGNMENTS_COUNT_V3 = 6
 IDX_ASSIGNMENTS_COUNT = 6
 
+IDX_SINGLE_IMAGES_COUNT_V5 = 7
+IDX_SINGLE_IMAGES_COUNT = 7
+
 IDX_FIRST_ASSIGNMENT_V3 = 7
+IDX_FIRST_ASSIGNMENT_V4 = 7
+IDX_FIRST_ASSIGNMENT_V5 = 8
 
 NUM_ASSIGNMENT_SETTINGS_V2 = 4
 NUM_ASSIGNMENT_SETTINGS_V3 = 5
@@ -149,7 +209,7 @@ IMAGE_NAMES = ["DNA", "GFP", "Actin"]
 OBJECT_NAMES = ["Cell", "Nucleus", "Cytoplasm", "Speckle"]
 
 class NamesAndTypes(cpm.CPModule):
-    variable_revision_number = 4
+    variable_revision_number = 5
     module_name = "NamesAndTypes"
     category = "File Processing"
     
@@ -198,14 +258,18 @@ class NamesAndTypes(cpm.CPModule):
             value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT)
         
         self.assignments = []
+        self.single_images = []
+        
         self.assignments_count = cps.HiddenCount( self.assignments,
                                                   "Assignments count")
+        self.single_images_count = cps.HiddenCount(
+            self.single_images, "Single images count")
         self.add_assignment(can_remove = False)
         
         self.add_assignment_divider = cps.Divider()
-        self.add_assignment_button = cps.DoSomething(
-            "", "Add another image",
-            self.add_assignment)
+        self.add_assignment_button = cps.DoThings(
+            "", (("Add another image", self.add_assignment),
+                 ("Add a single image", self.add_single_image)))
         
         self.matching_choice = cps.Choice(
             "Image set matching method",
@@ -300,6 +364,8 @@ class NamesAndTypes(cpm.CPModule):
         
     def add_assignment(self, can_remove = True):
         '''Add a rules assignment'''
+        unique_image_name = self.get_unique_image_name()
+        unique_object_name = self.get_unique_object_name()
         group = cps.SettingsGroup()
         self.assignments.append(group)
         
@@ -321,19 +387,6 @@ class NamesAndTypes(cpm.CPModule):
             Specify a filter using rules to narrow down the files to be analyzed. 
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         
-        unique_image_name = None
-        all_image_names = [
-            other_group.image_name for other_group in self.assignments[:-1]]
-        for image_name in IMAGE_NAMES:
-            if image_name not in all_image_names:
-                unique_image_name = image_name
-                break
-        else:
-            for i in xrange(1, 1000):
-                image_name = "Channel%d" % i
-                if image_name not in all_image_names:
-                    unique_image_name = image_name
-                    break
                     
         group.append("image_name", cps.FileImageNameProvider(
             "Name to assign these images", unique_image_name, doc = """
@@ -342,20 +395,6 @@ class NamesAndTypes(cpm.CPModule):
             name, and can be selected from any drop-down menu that
             requests an image selection."""))
         
-        unique_object_name = None
-        all_object_names = [
-            other_group.object_name for other_group in self.assignments[:-1]]
-        for object_name in OBJECT_NAMES:
-            if object_name not in all_object_names:
-                unique_object_name = object_name
-                break
-        else:
-            for i in xrange(1, 1000):
-                object_name = "Object%d" % i
-                if object_name not in all_object_names:
-                    unique_object_name = object_name
-                    break
-
         group.append("object_name", cps.ObjectNameProvider(
             "Name to assign these objects", unique_object_name,  doc = """
             Enter the name that you want to call this set of objects.
@@ -364,59 +403,8 @@ class NamesAndTypes(cpm.CPModule):
             requests an object selection."""))
         
         group.append("load_as_choice", cps.Choice(
-            "Select the image type", LOAD_AS_ALL, doc = """
-            You can specify how these images should be treated:
-            <ul>
-            <li><i>%(LOAD_AS_GRAYSCALE_IMAGE)s:</i> An image in which each pixel 
-            represents a single intensity value. Most of the modules in CellProfiler
-            operate on images of this type. <br>
-            If this option is applied to a color image, the red, green and blue 
-            pixel intensities will be averaged to produce a single intensity value.</li>
-            <li><i>%(LOAD_AS_COLOR_IMAGE)s:</i> An image in which each pixel
-            repesents a red, green and blue (RGB) triplet of intensity values.
-            Please note that the object detection modules such as <b>IdentifyPrimaryObjects</b>
-            expect a grayscale image, so if you want to identify objects, you
-            should use the <b>ColorToGray</b> module in the analysis pipeline
-            to split the color image into its component channels.<br>
-            You can use the <i>%(LOAD_AS_GRAYSCALE_IMAGE)s</i> option to collapse the
-            color channels to a single grayscale value if you don't need CellProfiler
-            to treat the image as color.</li>
-            <li><i>%(LOAD_AS_MASK)s:</i> A <i>mask</i> is an image where some of the 
-            pixel intensity values are zero, and others are non-zero. The most common
-            use for a mask is to exclude particular image regions from consideration. By 
-            applying a mask to another image, the portion of the image that overlaps with
-            the non-zero regions of the mask are included. Those that overlap with the 
-            zeroed region are "hidden" and not included in downstream calculations.
-            For this option, the input image should be a binary image, i.e, foreground is 
-            white, background is black. The module will convert any nonzero values 
-            to 1, if needed. You can use this option to load a foreground/background 
-            segmentation produced by one of the <b>Identify</b> modules.</li>
-            <li><i>%(LOAD_AS_ILLUMINATION_FUNCTION)s:</i> An <i>illumination correction function</i>
-            is an image which has been generated for the purpose of correcting uneven 
-            illumination/lighting/shading or to reduce uneven background in images. Typically,
-            is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and 
-            <b>CorrectIlluminationApply</b> for more details. </li>
-            <li><i>%(LOAD_AS_OBJECTS)s:</i> Use this option if the input image 
-            is a label matrix and you want to obtain the objects that it defines. 
-            A label matrix is a grayscale or color image in which the connected 
-            regions share the same label, which defines how objects are represented 
-            in CellProfiler. The labels are integer values greater than or equal 
-            to 0. The elements equal to 0 are the background, whereas the elements 
-            equal to 1 make up one object, the elements equal to 2 make up a second 
-            object, and so on. This option allows you to use the objects 
-            immediately without needing to insert an <b>Identify</b> module to 
-            extract them first. See <b>IdentifyPrimaryObjects</b> for more details. <br>
-            This option can load objects created by the <b>SaveImages</b> module. These objects 
-            can take two forms, with different considerations for each:
-            <ul>
-            <li><i>Non-overalapping</i> objects are stored as a label matrix. This matrix should be 
-            saved as grayscale, rather than color.</li>
-            <li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of whichc consists of a 
-            grayscale label matrix. The frames are constructed so that objects that overlap are placed
-            in different frames.</li> 
-            </ul></li>
-            </ul>
-            """%globals()))
+            "Select the image type", LOAD_AS_ALL, 
+            doc = LOAD_AS_CHOICE_HELP_TEXT))
         
         group.append("rescale", cps.Choice(
             "Set intensity range from", 
@@ -424,7 +412,7 @@ class NamesAndTypes(cpm.CPModule):
             value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT))
         
         group.append("should_save_outlines", cps.Binary(
-            "Retain object outlines?", False, doc="""
+            "Retain outlines of loaded objects?", False, doc="""
             %(RETAINING_OUTLINES_HELP)s""" % globals()))
         
         group.append("save_outlines", cps.OutlineNameProvider(
@@ -438,15 +426,100 @@ class NamesAndTypes(cpm.CPModule):
                 cps.RemoveSettingButton(
                 '', "Remove this image", self.assignments, group))
             
+    def get_unique_image_name(self):
+        '''Return an unused name for naming images'''
+        all_image_names = [
+            other_group.image_name for other_group in
+            self.assignments + self.single_images]
+        for image_name in IMAGE_NAMES:
+            if image_name not in all_image_names:
+                return image_name
+        else:
+            for i in xrange(1, 1000):
+                image_name = "Channel%d" % i
+                if image_name not in all_image_names:
+                    return image_name
+                
+    def get_unique_object_name(self):
+        '''Return an unused name for naming objects'''
+        all_object_names = [
+            other_group.object_name for other_group in 
+            self.assignments + self.single_images]
+        for object_name in OBJECT_NAMES:
+            if object_name not in all_object_names:
+                return object_name
+        else:
+            for i in xrange(1, 1000):
+                object_name = "Object%d" % i
+                if object_name not in all_object_names:
+                    return object_name
+    
+    def add_single_image(self):
+        '''Add another single image group to the settings'''
+        unique_image_name = self.get_unique_image_name()
+        unique_object_name = self.get_unique_object_name()
+        group = cps.SettingsGroup()
+        self.single_images.append(group)
+        
+        group.append("divider", cps.Divider())
+        group.append("image_plane", cps.ImagePlane(
+            "Single image",
+            doc = """Choose the single image to add to all image sets. You can
+            either drag an image onto the setting to select it and add it
+            to the image file list or you can press the "Browse" button to
+            select an existing image from the file list."""))
+        group.append("image_name", cps.FileImageNameProvider(
+            "Name to assign these images", unique_image_name, doc = """
+            Enter the name that you want to call this image.
+            After this point, this image will be referred to by this
+            name, and can be selected from any drop-down menu that
+            requests an image selection."""))
+        
+        group.append("object_name", cps.ObjectNameProvider(
+            "Name to assign these objects", unique_object_name,  doc = """
+            Enter the name that you want to call this set of objects.
+            After this point, this object will be referred to by this
+            name, and can be selected from any drop-down menu that
+            requests an object selection."""))
+        
+        group.append("load_as_choice", cps.Choice(
+            "Select the image type", LOAD_AS_ALL, 
+            doc = LOAD_AS_CHOICE_HELP_TEXT))
+        
+        group.append("rescale", cps.Choice(
+            "Set intensity range from", 
+            [INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE], 
+            value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT))
+        
+        group.append("should_save_outlines", cps.Binary(
+            "Retain object outlines?", False, doc=RETAINING_OUTLINES_HELP))
+        
+        group.append("save_outlines", cps.OutlineNameProvider(
+            "Name the outline image", "LoadedOutlines", 
+            doc = NAMING_OUTLINES_HELP))
+
+        group.can_remove = True
+        group.append(
+            "remover", 
+            cps.RemoveSettingButton(
+            '', "Remove this image", self.single_images, group))
+        
     def settings(self):
         result = [self.assignment_method, self.single_load_as_choice,
                   self.single_image_provider, self.join, self.matching_choice,
-                  self.single_rescale, self.assignments_count]
+                  self.single_rescale, self.assignments_count,
+                  self.single_images_count]
         for assignment in self.assignments:
             result += [assignment.rule_filter, assignment.image_name,
                        assignment.object_name, assignment.load_as_choice,
                        assignment.rescale, assignment.should_save_outlines,
                        assignment.save_outlines]
+        for single_image in self.single_images:
+            result += [
+                single_image.image_plane, single_image.image_name,
+                single_image.object_name, single_image.load_as_choice,
+                single_image.rescale, single_image.should_save_outlines,
+                single_image.save_outlines]
         return result
     
     def visible_settings(self):
@@ -470,10 +543,26 @@ class NamesAndTypes(cpm.CPModule):
                                                  LOAD_AS_GRAYSCALE_IMAGE):
                     result += [assignment.rescale]
                 elif assignment.load_as_choice == LOAD_AS_OBJECTS:
-                    result += [assignment.should_save_outlines, 
-                               assignment.save_outlines]
+                    result += [assignment.should_save_outlines]
+                    if assignment.should_save_outlines.value:
+                        result += [assignment.save_outlines]
                 if assignment.can_remove:
                     result += [assignment.remover]
+            for single_image in self.single_images:
+                result += [single_image.divider, single_image.image_plane]
+                if single_image.load_as_choice == LOAD_AS_OBJECTS:
+                    result += [single_image.object_name]
+                else:
+                    result += [single_image.image_name]
+                result += [single_image.load_as_choice]
+                if single_image.load_as_choice in (
+                    LOAD_AS_COLOR_IMAGE, LOAD_AS_GRAYSCALE_IMAGE):
+                    result += [single_image.rescale]
+                elif single_image.load_as_choice == LOAD_AS_OBJECTS:
+                    result += [single_image.should_save_outlines]
+                    if single_image.should_save_outlines.value:
+                        result += [single_image.save_outlines]
+                result += [single_image.remover]
             result += [self.add_assignment_divider, self.add_assignment_button]
             if len(self.assignments) > 1:
                 result += [self.matching_choice]
@@ -488,6 +577,11 @@ class NamesAndTypes(cpm.CPModule):
             del self.assignments[n_assignments:]
         while len(self.assignments) < n_assignments:
             self.add_assignment()
+        n_single_images = int(setting_values[IDX_SINGLE_IMAGES_COUNT])
+        if len(self.single_images) > n_single_images:
+            del self.single_images[n_single_images:]
+        while len(self.single_images) < n_single_images:
+            self.add_single_image()
             
     def post_pipeline_load(self, pipeline):
         '''Fix up metadata predicates after the pipeline loads'''
@@ -585,7 +679,7 @@ class NamesAndTypes(cpm.CPModule):
             load_choices = [self.single_load_as_choice.value]
         elif self.assignment_method == ASSIGN_RULES:
             load_choices = [ group.load_as_choice.value
-                             for group in self.assignments]
+                             for group in self.assignments + self.single_images]
             if (self.matching_method == MATCH_BY_METADATA):
                 m.set_metadata_tags(self.get_metadata_features())
             else:
@@ -726,6 +820,7 @@ class NamesAndTypes(cpm.CPModule):
                     if keep:
                         column.append(ipd)
                 columns.append(column)
+            self.append_single_image_columns(columns, ipds)
             column_lengths = [len(column) for column in columns]
             if any([l != column_lengths[0] for l in column_lengths]):
                 # TO_DO - better display of channels of different lengths
@@ -789,15 +884,27 @@ class NamesAndTypes(cpm.CPModule):
             getKey = J.make_call(
                 "org/cellprofiler/imageset/ImageSet",
                 "getKey", "()Ljava/util/List;")
-            columns = [[] for _ in range(len(self.assignments))]
+            columns = [[] for _ in range(
+                len(self.assignments)+len(self.single_images))]
             image_sets = {}
             d = {}
+            acolumns = columns[:len(self.assignments)]
+            scolumns = columns[len(self.assignments):]
+            anames = column_names[:len(self.assignments)]
+            snames = column_names[len(self.assignments):]
+            s_ipds = [
+                (self.get_single_image_ipd(single_image, ipds),)
+                for single_image in self.single_images]
             for image_set in J.iterate_collection(result):
                 image_set_ipds = getIPDs(image_set)
                 for column_name, column, ipd in zip(
-                    column_names, columns, image_set_ipds):
+                    anames, acolumns, image_set_ipds):
                     column.append(ipd)
                     d[column_name] = tuple() if ipd is None else (ipd, )
+                for column_name, column, ipd in zip(
+                    snames, scolumns, s_ipds):
+                    column.append(ipd[0])
+                    d[column_name] = ipd
                 key = tuple(J.iterate_collection(getKey(image_set), 
                                                  env.get_string_utf))
                 image_sets[key] = d
@@ -832,6 +939,26 @@ class NamesAndTypes(cpm.CPModule):
             self.image_sets = sorted(image_sets.iteritems())
             return columns
                 
+    def append_single_image_columns(self, columns, ipds):
+        max_len = np.max([len(x) for x in columns])
+        for single_image in self.single_images:
+            ipd = self.get_single_image_ipd(single_image, ipds)
+            columns.append([ipd] * max_len)
+            
+    def get_single_image_ipd(self, single_image, ipds):
+        '''Get an image plane descriptor for this single_image group'''
+        if single_image.image_plane.url is None:
+            raise ValueError("Single image is not yet specified")
+        ipd = cpp.find_image_plane_details(cpp.ImagePlaneDetails(
+            single_image.image_plane.url,
+            single_image.image_plane.series,
+            single_image.image_plane.index,
+            single_image.image_plane.channel), ipds)
+        if ipd is None:
+            raise ValueError("Could not find single image %s in file list", 
+                             single_image.image_plane.url)
+        return ipd
+            
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Alter pathnames in preparation for batch processing
         
@@ -845,7 +972,7 @@ class NamesAndTypes(cpm.CPModule):
         else:
             names = []
             is_image = []
-            for group in self.assignments:
+            for group in self.assignments+self.single_images:
                 if group.load_as_choice == LOAD_AS_OBJECTS:
                     names.append(group.object_name.value)
                     is_image.append(False)
@@ -868,7 +995,7 @@ class NamesAndTypes(cpm.CPModule):
             self.add_image_provider(workspace, name, load_choice,
                                     rescale)
         else:
-            for group in self.assignments:
+            for group in self.assignments + self.single_images:
                 if group.load_as_choice == LOAD_AS_OBJECTS:
                     self.add_objects(workspace, 
                                      group.object_name.value,
@@ -1035,7 +1162,7 @@ class NamesAndTypes(cpm.CPModule):
             self.update_all_columns()
         elif self.assignment_method == ASSIGN_RULES:
             self.update_all_metadata_predicates()
-            if len(self.ipd_columns) != len(self.assignments):
+            if len(self.ipd_columns) != len(self.assignments+self.single_images):
                 self.update_all_columns()
             else:
                 for i, group in enumerate(self.assignments):
@@ -1090,10 +1217,21 @@ class NamesAndTypes(cpm.CPModule):
         else:
             self.ipd_columns = [self.filter_column(group) 
                                 for group in self.assignments]
+            try:
+                self.append_single_image_columns(self.ipd_columns, self.ipds)
+            except ValueError, e:
+                # So sad... here, we have to slog through even if there's
+                # a configuration error but in prepare_run, the exception
+                # is not fatal.
+                for i in range(len(self.ipd_columns), 
+                               len(self.assignments) + len(self.single_images)):
+                    self.ipd_columns.append([None] * len(self.ipd_columns[0]))
+            
             self.column_metadata_choices = [[]] * len(self.ipd_columns)
             self.column_names = [
                 group.object_name.value if group.load_as_choice == LOAD_AS_OBJECTS
-                else group.image_name.value for group in self.assignments]
+                else group.image_name.value 
+                for group in self.assignments+self.single_images]
             for i in range(len(self.ipd_columns)):
                 self.update_column_metadata(i)
         self.update_all_metadata_predicates()
@@ -1114,7 +1252,7 @@ class NamesAndTypes(cpm.CPModule):
             return [self.single_image_provider.value]
         elif self.assignment_method == ASSIGN_RULES:
             return [group.image_name.value 
-                    for group in self.assignments
+                    for group in self.assignments + self.single_images
                     if group.load_as_choice != LOAD_AS_OBJECTS]
         return []
     
@@ -1122,7 +1260,7 @@ class NamesAndTypes(cpm.CPModule):
         '''Return the names of all objects produced by this module'''
         if self.assignment_method == ASSIGN_RULES:
             return [group.object_name.value
-                    for group in self.assignments
+                    for group in self.assignments + self.single_images
                     if group.load_as_choice == LOAD_AS_OBJECTS]
         return []
     
@@ -1130,7 +1268,7 @@ class NamesAndTypes(cpm.CPModule):
         if self.assignment_method == ASSIGN_ALL:
             return self.get_image_names()
         column_names = []
-        for group in self.assignments:
+        for group in self.assignments + self.single_images:
             if group.load_as_choice == LOAD_AS_OBJECTS:
                 column_names.append(group.object_name.value)
             else:
@@ -1271,6 +1409,12 @@ class NamesAndTypes(cpm.CPModule):
             setting_values = new_setting_values
             variable_revision_number = 4
             
+        if variable_revision_number == 4:
+            # Added single images (+ single image count)
+            setting_values = setting_values[:IDX_SINGLE_IMAGES_COUNT_V5] +\
+                ["0"] + setting_values[IDX_SINGLE_IMAGES_COUNT_V5:]
+            variable_revision_number = 5
+            
         return setting_values, variable_revision_number, from_matlab
     
     class FakeModpathResolver(object):
@@ -1316,11 +1460,12 @@ class NamesAndTypes(cpm.CPModule):
         Scan the IPDs for the column and find metadata keys that are common
         to all.
         '''
-        if len(self.ipd_columns[idx]) == 0:
+        column = [x for x in self.ipd_columns[idx] if x is not None]
+        if len(column) == 0:
             self.column_metadata_choices[idx] = []
         else:
-            keys = set(self.ipd_columns[idx][0].metadata.keys())
-            for ipd in self.ipd_columns[idx][1:]:
+            keys = set(column[0].metadata.keys())
+            for ipd in column[1:]:
                 keys.intersection_update(ipd.metadata.keys())
             self.column_metadata_choices[idx] = list(keys)
             

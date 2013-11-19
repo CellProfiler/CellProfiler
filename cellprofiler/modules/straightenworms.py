@@ -36,6 +36,22 @@ measurements of transverse segments are designated as "L1of1" indicating that
 there is only one longitudinal stripe. Both mean intensity and standard
 deviation of intensity are measured per worm sub-area.
 
+While <b>StraightenWorms</b> can straighten a color image, the module needs a
+grayscale image to make its intensity measurements. For a color image, the
+red, green and blue channels are averaged to yield a grayscale image. The
+intensity measurements are then made on that grayscale image.
+
+<h4>Available measurements</h4>
+
+<b>Object measurements:</b>
+<ul>
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary 
+object centroids. The centroid is calculated as the center of mass of the binary 
+representation of the object.</li>
+<li><i>Worm_MeanIntensity:</i> The average pixel intensity within a worm.</li>
+<li><i>Worm_StdIntensity:</i> The standard deviation of the pixel intensities within a worm.</li>
+</ul>
+
 <h4>References</h4>
 <ul>
 <li>Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening <i>Caenorhabditis elegans</i> images."
@@ -305,6 +321,14 @@ class StraightenWorms(cpm.CPModule):
         if not os.path.exists(path):
             raise cps.ValidationError("Can't find file %s" % self.training_set_file_name.value,
                                       self.training_set_file_name)
+        if self.wants_measurements and self.number_of_segments == 1 and \
+           self.number_of_stripes == 1:
+            raise cps.ValidationError(
+                "No measurements will be produced if the number of "
+                "longitudinal stripes and the number of transverse segments "
+                "are both equal to one. Please turn measurements off or change "
+                "the number of stripes or segments.",
+                self.wants_measurements)
             
     def prepare_settings(self, setting_values):
         nimages = int(setting_values[IDX_IMAGE_COUNT])
@@ -396,8 +420,12 @@ class StraightenWorms(cpm.CPModule):
         # Handle each of the worm splines separately
         #
         for i in range(nworms):
-            orig_labels = [x for x,y in orig_labels_and_indexes
-                           if i+1 in y]
+            if lengths[i] == 0:
+                continue
+            object_number = i+1
+            orig_labels = [
+                x for x, y in orig_labels_and_indexes
+                if object_number in y and object_number in x]
             if len(orig_labels) == 0:
                 continue
             orig_labels = orig_labels[0]
@@ -474,7 +502,7 @@ class StraightenWorms(cpm.CPModule):
                     jx[islice, jslice] = cj[iii] + nj[iii] * jjj
             mask = map_coordinates((orig_labels == i+1).astype(np.float32), 
                                    [ix[islice, jslice], jx[islice,jslice]]) > .5
-            labels[islice, jslice][mask] = i+1
+            labels[islice, jslice][mask] = object_number
         #
         # Now create one straightened image for each input image
         #
@@ -546,6 +574,7 @@ class StraightenWorms(cpm.CPModule):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         object_name = self.straightened_objects_name.value
+        input_object_name = self.objects_name.value
         nbins_vertical = self.number_of_segments.value
         nbins_horizontal = self.number_of_stripes.value
         params = self.read_params(workspace)
@@ -563,23 +592,23 @@ class StraightenWorms(cpm.CPModule):
                             measurement = "_".join(
                                 (C_WORM, ftr, image_name, 
                                  self.get_scale_name(None, b)))
-                            m.add_measurement(object_name, measurement,
-                                              np.zeros((0)))
+                            m.add_measurement(
+                                input_object_name, measurement, np.zeros((0)))
                     if nbins_horizontal > 1:
                         for b in range(nbins_horizontal):
                             measurement = "_".join(
                                 (C_WORM, ftr, image_name, 
                                  self.get_scale_name(b, None)))
-                            m.add_measurement(object_name, measurement,
-                                              np.zeros((0)))
+                            m.add_measurement(
+                                input_object_name, measurement, np.zeros((0)))
                         if nbins_vertical > 1:
                             for v in range(nbins_vertical):
                                 for h in range(nbins_horizontal):
                                     measurement = "_".join(
                                         (C_WORM, ftr, image_name, 
                                          self.get_scale_name(h, v)))
-                                    m.add_measurement(object_name, measurement,
-                                                      np.zeros((0)))
+                                    m.add_measurement(
+                                        input_object_name, measurement, np.zeros((0)))
                                     
         else:
             #
@@ -587,7 +616,7 @@ class StraightenWorms(cpm.CPModule):
             #
             object_set = workspace.object_set
             assert isinstance(object_set, cpo.ObjectSet)
-            orig_objects = object_set.get_objects(self.objects_name.value)
+            orig_objects = object_set.get_objects(input_object_name)
     
             i,j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
             min_i, max_i, _, _ = extrema(i, labels, orig_objects.indices)
@@ -849,10 +878,13 @@ class StraightenWorms(cpm.CPModule):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         object_name = self.straightened_objects_name.value
+        orig_name = self.objects_name.value
         nbins = len(scales)
         for group in self.images:
             image_name = group.straightened_image_name.value
             straightened_image = image_set.get_image(image_name).pixel_data
+            if straightened_image.ndim == 3:
+                straightened_image = np.mean(straightened_image, 2)
             straightened_image = straightened_image[i_src, j_src]
             bin_number = (labels_src - 1 + 
                           nworms * j_dest + 
@@ -885,8 +917,7 @@ class StraightenWorms(cpm.CPModule):
                         (bin_stds, FTR_STD_INTENSITY)):
                         measurement = "_".join(
                             (C_WORM, ftr, image_name, scales[i][j]))
-                        m.add_measurement(object_name, measurement,
-                                          values[i,j])
+                        m.add_measurement(orig_name, measurement, values[i,j])
         
                 
     def make_objects(self, workspace, labels, nworms):
@@ -948,8 +979,9 @@ class StraightenWorms(cpm.CPModule):
         if self.wants_measurements:
             nsegments = self.number_of_segments.value
             nstripes = self.number_of_stripes.value
+            worms_name = self.objects_name.value
             if nsegments > 1:
-                result += [(self.straightened_objects_name.value,
+                result += [(worms_name,
                             "_".join((C_WORM, ftr, 
                                       group.straightened_image_name.value,
                                       self.get_scale_name(None, segment))),
@@ -959,7 +991,7 @@ class StraightenWorms(cpm.CPModule):
                                       self.images,
                                       range(nsegments))]
             if nstripes > 1:
-                result += [(self.straightened_objects_name.value,
+                result += [(worms_name,
                             "_".join((C_WORM, ftr, 
                                       group.straightened_image_name.value,
                                       self.get_scale_name(stripe, None))),
@@ -969,7 +1001,7 @@ class StraightenWorms(cpm.CPModule):
                                       self.images,
                                       range(nstripes))]
             if nsegments > 1 and nstripes > 1:
-                result += [(self.straightened_objects_name.value,
+                result += [(worms_name,
                             "_".join((C_WORM, ftr,
                                       group.straightened_image_name.value,
                                       self.get_scale_name(stripe, segment))),
@@ -987,24 +1019,24 @@ class StraightenWorms(cpm.CPModule):
             result += [ C_COUNT ]
         elif object_name == self.straightened_objects_name:
             result += [ C_LOCATION, C_NUMBER]
-            if self.wants_measurements:
-                result += [ C_WORM ]
+        elif object_name == self.objects_name and self.wants_measurements:
+            result += [ C_WORM ]
         return result
     
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == C_COUNT:
             return [ self.straightened_objects_name.value]
-        elif object_name == self.straightened_objects_name.value:
+        elif object_name == self.straightened_objects_name:
             if category == C_LOCATION:
                 return [ FTR_CENTER_X, FTR_CENTER_Y ]
             elif category == C_NUMBER:
                 return [ FTR_OBJECT_NUMBER ]
-            elif category == C_WORM:
+        elif category == C_WORM and object_name == self.objects_name:
                 return [ FTR_MEAN_INTENSITY, FTR_STD_INTENSITY ]
         return []
     
     def get_measurement_images(self, pipeline, object_name, category, measurement):
-        if (object_name == self.straightened_objects_name and
+        if (object_name == self.objects_name and
             category == C_WORM and
             measurement in (FTR_MEAN_INTENSITY, FTR_STD_INTENSITY)):
             return [group.straightened_image_name.value
@@ -1148,7 +1180,7 @@ class StraightenWorms(cpm.CPModule):
             order = np.lexsort([outline_ij[:, 0], outline_ij[:, 1],
                                 outline_l])
             outline_ij = outline_ij[order, :]
-            outline_l = outline_l[order]
+            outline_l = outline_l[order].astype(int)
             outline_indexes = np.hstack(([0], np.cumsum(np.bincount(outline_l))))
             ii, jj = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
             half_width = self.width.value / 2
@@ -1167,13 +1199,16 @@ class StraightenWorms(cpm.CPModule):
                     else:
                         image = (image - imin) / (imax - imin)
                     image[labels == 0] = 1
-                    image = np.vstack([image] * 3)
+                    if image.ndim == 2:
+                        image = np.dstack([image] * 3)
                 else:
                     shape = (labels.shape[0], labels.shape[1], 3)
                     image = np.zeros(shape)
                     image[labels == 0, :] = 1
                     for i, straightened_image in enumerate(straightened_images[:3]):
                         pixel_data = straightened_image[self.K_PIXEL_DATA]
+                        if pixel_data.ndim == 3:
+                            pixel_data = np.mean(pixel_data, 2)
                         imin, imax = [fn(pixel_data[labels !=0])
                                       for fn in np.min, np.max]
                         if imin == imax:
@@ -1224,9 +1259,19 @@ class StraightenWorms(cpm.CPModule):
                         for key in self.K_PIXEL_DATA, self.K_MASK:
                             src = d[key]
                             dest = src.copy()
-                            dest[idest, jdest] = src[isrc, jsrc]
+                            ilim, jlim = src.shape[:2]
+                            mm = ((idest >= 0) & (idest < ilim) &
+                                  (jdest >= 0) & (jdest < jlim) &
+                                  (isrc >= 0) & (isrc < ilim) &
+                                  (jsrc >= 0) & (jsrc < jlim))
+                            dest[idest[mm], jdest[mm]] = src[isrc[mm], jsrc[mm]]
                             d[key] = dest
-                    labels[isrc, jsrc] = labels[idest, jdest]
+                    ilim, jlim = labels.shape
+                    mm = ((idest >= 0) & (idest < ilim) &
+                          (jdest >= 0) & (jdest < jlim) &
+                          (isrc >= 0) & (isrc < ilim) &
+                          (jsrc >= 0) & (jsrc < jlim))
+                    labels[isrc[mm], jsrc[mm]] = labels[idest[mm], jdest[mm]]
                     s = slice(outline_indexes[object_number],
                               outline_indexes[object_number+1])
                     outline_ij[s, 0] = imax - outline_ij[s, 0]

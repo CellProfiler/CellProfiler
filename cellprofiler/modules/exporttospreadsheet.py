@@ -399,8 +399,33 @@ class ExportToSpreadsheet(cpm.CPModule):
     
     def run(self, workspace):
         # all of the work is done in post_run()
-        pass
+        if self.show_window:
+            header = ["Objects", "Filename"]
+            columns = []
+            first = True
+            for i in range(len(self.object_groups)):
+                group = self.object_groups[i]
+                last_in_file = self.last_in_file(i)
+                if first:
+                    if group.wants_automatic_file_name:
+                        filename = "%s.csv" % group.name.value
+                    else:
+                        filename = group.file_name.value
+                    filename = self.make_full_filename(
+                        filename, workspace, 
+                        workspace.measurements.image_set_number)
+                    first = False
+                columns.append((group.name.value, filename))
+                if last_in_file:
+                    first = True
+            workspace.display_data.header = header
+            workspace.display_data.columns = columns
     
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1,))
+        figure.subplot_table(0, 0, 
+                             workspace.display_data.columns,
+                             col_labels = workspace.display_data.header)
     
     def run_as_data_tool(self, workspace):
         '''Run the module as a data tool

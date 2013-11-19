@@ -104,11 +104,17 @@ def text_control_name(v):
     """
     return "%s_text"%(str(v.key()))
 
-def button_control_name(v):
+def button_control_name(v, idx = None):
     """Return the name of a setting's button
+    
     v - the setting
+    
+    idx - if present, the index of one of several buttons for the setting
     """
-    return "%s_button"%(str(v.key()))
+    if idx is None:
+        return "%s_button"%(str(v.key()))
+    else:
+        return "%s_button_%d" % (str(v.key()), idx)
 
 def edit_control_name(v):
     """Return the name of a setting's edit control
@@ -485,6 +491,9 @@ class ModuleView:
                     control = self.make_callback_control(v, control_name,
                                                          control)
                     flag = wx.ALIGN_LEFT
+                elif isinstance(v, cps.DoThings):
+                    control = self.make_callback_controls(
+                        v, control_name, control)
                 elif isinstance(v,
                                 cps.IntegerOrUnboundedRange):
                     control = self.make_unbounded_range_control(v, control)
@@ -514,6 +523,8 @@ class ModuleView:
                                                                control)
                 elif isinstance(v, cps.Pathname):
                     control = self.make_pathname_control(v, control)
+                elif isinstance(v, cps.ImagePlane):
+                    control = self.make_image_plane_control(v, control)
                 elif isinstance(v, cps.Color):
                     control = self.make_color_control(v, control_name, control)
                 elif isinstance(v, cps.TreeChoice):
@@ -1090,6 +1101,40 @@ class ModuleView:
             control.Label = v.label
         return control
     
+    def make_callback_controls(self, v, control_name, control):
+        '''Make a panel of buttons for each of the setting's actions
+        
+        v - a DoThings setting
+        
+        control_name - the name that we apply to the panel
+        
+        control - either None or the panel containing the buttons
+        '''
+        assert isinstance(v, cps.DoThings)
+        if not control:
+            control = wx.Panel(self.module_panel, name = control_name)
+            control.BackgroundColour = cpprefs.get_background_color()
+            control.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+            for i in range(v.count):
+                if i != 0:
+                    control.Sizer.AddSpacer(2)
+                button = wx.Button(control,
+                                   name = button_control_name(v, i))
+                control.Sizer.Add(button, 0, wx.ALIGN_LEFT)
+                def callback(event, index=i):
+                    v.on_event_fired(index)
+                    setting_edited_event = SettingEditedEvent(
+                        v, self.__module, None, event)
+                    self.notify(setting_edited_event)
+                    self.__module.on_setting_changed(v, self.__pipeline)
+                    self.reset_view()
+                    
+                button.Bind(wx.EVT_BUTTON, callback)
+        for i in range(v.count):
+            button = control.FindWindowByName(button_control_name(v, i))
+            button.Label = v.get_label(i)
+        return control
+        
     def make_regexp_control(self, v, control):
         """Make a textbox control + regular expression button"""
         if not control:
@@ -1346,6 +1391,40 @@ class ModuleView:
             text_control.Value = v.value
         return control
         
+    def make_image_plane_control(self, v, control):
+        '''Make a control to pick an image plane from the file list'''
+        from cellprofiler.modules.loadimages import url2pathname
+        
+        assert isinstance(v, cps.ImagePlane)
+        if not control:
+            control = wx.Panel(self.module_panel,
+                               name = edit_control_name(v))
+            control.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+            url_control = wx.TextCtrl(
+                control, 
+                style = wx.TE_READONLY,
+                name=text_control_name(v))
+            control.Sizer.Add(url_control, 1, wx.EXPAND)
+            control.Sizer.AddSpacer(2)
+            browse_button = wx.Button(control, label = "Browse",
+                                      name = button_control_name(v))
+            control.Sizer.Add(browse_button, 0, wx.EXPAND)
+            
+            def on_button(event):
+                url = self.__frame.pipeline_controller.pick_from_pathlist(
+                    v.url, instructions = "Select an image file from the list below")
+                if url is not None:
+                    value = v.build(url)
+                    self.on_value_change(v, control, value, event)
+            browse_button.Bind(wx.EVT_BUTTON, on_button)
+        else:
+            url_control = control.FindWindowByName(text_control_name(v))
+        label = v.url or ""
+        if label.startswith("file:"):
+            label = url2pathname(label)
+        url_control.Value = label
+        return control
+            
     def make_text_control(self, v, control_name, control):
         """Make a textbox control"""
         if not control:

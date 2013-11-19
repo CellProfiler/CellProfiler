@@ -1414,14 +1414,14 @@ class Pipeline(object):
         '''Convert a pipeline from legacy to using Images, NamesAndTypes etc'''
         if not self.can_convert_legacy_input_modules():
             return
-        from cellprofiler.modules.images import Images
+        from cellprofiler.modules.images import Images, FILTER_CHOICE_NONE
         from cellprofiler.modules.metadata import Metadata
         from cellprofiler.modules.namesandtypes import NamesAndTypes
         from cellprofiler.modules.groups import Groups
         with self.undoable_action("Legacy modules converted"):
             images, metadata, namesandtypes, groups = (
                 Images(), Metadata(), NamesAndTypes(), Groups())
-            images.wants_filter.value = False
+            images.filter_choice.value = FILTER_CHOICE_NONE
             for i, module in enumerate((images, metadata, namesandtypes, groups)):
                 module.set_module_num(i + 1)
                 module.show_window = cpprefs.get_headless()
@@ -2100,6 +2100,7 @@ class Pipeline(object):
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
         """
+        from cellprofiler.cpmodule import CPModule
         if len(args) == 3:
             measurements, image_set_list, frame  = args
             workspace = cpw.Workspace(self,
@@ -2123,7 +2124,8 @@ class Pipeline(object):
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
-            if module.show_window:
+            if module.show_window and \
+               module.__class__.display_post_run != CPModule.display_post_run:
                 try:
                     workspace.post_run_display(module)
                 except Exception, instance:
@@ -2247,6 +2249,7 @@ class Pipeline(object):
         
         workspace - the last workspace run
         '''
+        from cellprofiler.cpmodule import CPModule
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
@@ -2258,7 +2261,8 @@ class Pipeline(object):
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
-            if module.show_window:
+            if module.show_window and \
+               module.__class__.display_post_group != CPModule.display_post_group:
                 try:
                     workspace.post_group_display(module)
                 except:
@@ -2481,17 +2485,13 @@ class Pipeline(object):
                 self.add_image_plane_details(removed)
             self.__undo_stack.append((undo, "Remove images"))
         
-    def find_image_plane_details(self, exemplar):
+    def find_image_plane_details(self, exemplar, ipds = None):
         '''Return the image plane details record that matches the exemplar
         
         exemplar - an image plane details record with the desired URL,
                    series, index and channel
         '''
-        pos = bisect.bisect_left(self.image_plane_details, exemplar)
-        if (pos == len(self.image_plane_details) or 
-            cmp(self.image_plane_details[pos], exemplar)):
-            return None
-        return self.image_plane_details[pos]
+        return find_image_plane_details(exemplar, self.image_plane_details)
     
     def load_image_plane_details(self, workspace):
         '''Load the pipeline's image plane details from the workspace file list
@@ -3319,6 +3319,25 @@ class Pipeline(object):
 
         assert "Groups" in [m.module_name for m in self.modules()]
         return self.settings_hash(until_module="Groups", as_string=True)
+
+def find_image_plane_details(exemplar, ipds):
+    '''Find the ImagePlaneDetails instance matching the exemplar
+    
+    The point of this function is to retrieve the ImagePlaneDetails from
+    the list provided and, in doing so, get the attached metadata and the
+    Java IPD object as well.
+    
+    exemplar - an IPD with the URL, series, index and channel filled in
+    
+    ipds - an ordered list of ImagePlaneDetails instances
+    
+    Returns the match or None if not found
+    '''
+    pos = bisect.bisect_left(ipds, exemplar)
+    if (pos == len(ipds) or 
+        cmp(ipds[pos], exemplar)):
+        return None
+    return ipds[pos]
 
 class AbstractPipelineEvent(object):
     """Something that happened to the pipeline and was indicated to the listeners

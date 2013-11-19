@@ -46,6 +46,14 @@ class TestAnalysisWorker(unittest.TestCase):
         cls.zmq_context = cpaw.the_zmq_context
         cls.notify_pub_socket = cls.zmq_context.socket(zmq.PUB)
         cls.notify_pub_socket.bind(cpaw.NOTIFY_ADDR)
+        #
+        # Install a bogus display_post_group method in FlipAndRotate
+        # to elicit a post-group interaction request
+        #
+        from cellprofiler.modules.flipandrotate import FlipAndRotate
+        def bogus_display_post_group(self, workspace, figure):
+            pass
+        FlipAndRotate.display_post_group = bogus_display_post_group
         
     @classmethod
     def tearDownClass(cls):

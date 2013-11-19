@@ -234,12 +234,18 @@ class PipelineListView(object):
         self.input_list_ctrl.always_draw_current_as_if_selected = True
         self.__input_controls.append(self.input_list_ctrl)
         self.__input_sizer.Add(self.input_list_ctrl, 1, wx.EXPAND)
+        self.add_transparent_window_for_tooltip(self.input_list_ctrl)
+
+    def add_transparent_window_for_tooltip(self, input_list_ctrl):
         #
         # You can't display a tooltip over a disabled window. But you can
         # display a tooltip over a transparent window in front of the disabled
         # window. 
         #
-        self.transparent_window = wx.Panel(self.__panel)
+        if sys.platform == 'linux2':
+            self.transparent_window = None
+            return # Doesn't work right.
+        transparent_window = wx.Panel(self.__panel)
         def on_background_paint(event):
             assert isinstance(event, wx.EraseEvent)
             dc = event.GetDC()
@@ -250,24 +256,25 @@ class PipelineListView(object):
             dc.SetBackgroundMode(wx.TRANSPARENT)
             dc.SetBrush(wx.TRANSPARENT_BRUSH)
             dc.SetPen(wx.TRANSPARENT_PEN)
-            r = self.transparent_window.GetRect()
+            r = transparent_window.GetRect()
             dc.DrawRectangle(0, 0, r.Width, r.Height)
             return True
-        self.transparent_window.Bind(wx.EVT_ERASE_BACKGROUND, on_background_paint)
+        transparent_window.Bind(wx.EVT_ERASE_BACKGROUND, on_background_paint)
         def on_fake_size(event):
             assert isinstance(event, wx.SizeEvent)
-            self.transparent_window.SetSize(event.Size)
+            transparent_window.SetSize(event.Size)
             event.Skip()
             
-        self.input_list_ctrl.Bind(wx.EVT_SIZE, on_fake_size)
+        input_list_ctrl.Bind(wx.EVT_SIZE, on_fake_size)
         def on_fake_move(event):
             assert isinstance(event, wx.MoveEvent)
-            self.transparent_window.Move(event.Position)
+            transparent_window.Move(event.Position)
             event.Skip()
             
-        self.input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
-        self.transparent_window.SetToolTipString(
+        input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
+        transparent_window.SetToolTipString(
             "The current pipeline is a legacy pipeline that does not use these modules")
+        self.transparent_window = transparent_window
         
     def show_input_panel(self, show):
         '''Show or hide the controls for input modules
@@ -292,7 +299,8 @@ class PipelineListView(object):
                 else:
                     idx += 1
                 
-        self.transparent_window.Show(not show)
+        if self.transparent_window:
+            self.transparent_window.Show(not show)
         
     def on_outputs_button(self, event):
         self.__frame.show_preferences(True)

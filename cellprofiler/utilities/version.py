@@ -97,6 +97,18 @@ def get_version():
             import logging
             logging.root.error("Could not parse SVN XML output while finding version.\n" + output)
 
+        # Version in directory name (e.g., from Github release)
+        match = re.match('^CellProfiler-(?P<version>.*)', 
+                         os.path.basename(cellprofiler_basedir))
+        if match:
+            version = match.group(1)
+            timestamp = min([os.path.mtime(os.path.join(cellprofiler_basedir, 
+                                                        filename))
+                             for filename in os.listdir(cellprofiler_basedir)
+                             if not os.path.isdir(os.path.join(cellprofiler_basedir, 
+                                                               filename))])
+            return '%s %s' % (datetime.datetime.utcfromtimestamp(float(timestamp)).isoformat('T'), version)
+
         # Give up
         return '%s Unknown rev.' % (datetime.datetime.utcnow().isoformat('T').split('.')[0])
     else:

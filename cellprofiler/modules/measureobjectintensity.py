@@ -450,8 +450,8 @@ class MeasureObjectIntensity(cpm.CPModule):
                         #
                         # Once again, for the MAD
                         #
-                        madimg = limg - median_intensity[llabels-1]
-                        order =  np.lexsort((limg, llabels))
+                        madimg = np.abs(limg - median_intensity[llabels-1])
+                        order =  np.lexsort((madimg, llabels))
                         qindex = indices.astype(float) + areas / 2.0
                         qfraction = qindex - np.floor(qindex)
                         qindex = qindex.astype(int)

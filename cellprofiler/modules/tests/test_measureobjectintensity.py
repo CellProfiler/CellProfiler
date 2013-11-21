@@ -475,7 +475,7 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertAlmostEqual(data[0],.50,2)
         feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.MAD_INTENSITY,'MyImage')
         data = m.get_current_measurement('MyObjects',feature_name)
-        self.assertAlmostEqual(data[0],0.0,2)
+        self.assertAlmostEqual(data[0],0.25,2)
         feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.UPPER_QUARTILE_INTENSITY,'MyImage')
         data = m.get_current_measurement('MyObjects',feature_name)
         self.assertAlmostEqual(data[0],.75,2)
@@ -548,10 +548,11 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertAlmostEqual(data[3],3.0/16.0,2)
         feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.MAD_INTENSITY,'MyImage')
         data = m.get_current_measurement('MyObjects',feature_name)
-        self.assertAlmostEqual(data[0],0.0,2)
-        self.assertAlmostEqual(data[1],0.0,2)
-        self.assertAlmostEqual(data[2],0.0,2)
-        self.assertAlmostEqual(data[3],0.0,2)
+        
+        self.assertAlmostEqual(data[0], 1.0/4.0, 2)
+        self.assertAlmostEqual(data[1], 1.0/8.0, 2)
+        self.assertAlmostEqual(data[2], 1.0/12.0, 2)
+        self.assertAlmostEqual(data[3], 1.0/16.0, 2)
         
     def test_03_07_median_intensity_masked(self):
         np.random.seed(37)

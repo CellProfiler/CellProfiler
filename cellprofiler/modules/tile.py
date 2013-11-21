@@ -245,6 +245,9 @@ class Tile(cpm.CPModule):
             result += [self.add_button]
         return result
 
+    def is_aggregation_module(self):
+        return self.tile_method == T_ACROSS_CYCLES
+    
     def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to handle a group of images when tiling'''
         d = self.get_dictionary(workspace.image_set_list)

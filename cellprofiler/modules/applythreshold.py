@@ -115,8 +115,6 @@ class ApplyThreshold(Identify):
             else:
                 vv.extend([self.dilation])
         vv += self.get_threshold_visible_settings()
-        if self.threshold_modifier == TM_PER_OBJECT:
-            vv.append(self.enclosing_objects_name)
         return vv
     
     def settings(self):

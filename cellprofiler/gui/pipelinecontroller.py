@@ -156,6 +156,10 @@ class PipelineController:
                         cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE):
             frame.Bind(wx.EVT_UPDATE_UI, self.on_update_pathlist_ui,
                        id = menu_id)
+        frame.Bind(wx.EVT_UPDATE_UI, self.on_update_module_enable,
+                   id = cpframe.ID_EDIT_ENABLE_MODULE)
+        frame.Bind(wx.EVT_MENU, self.on_module_enable, 
+                   id=cpframe.ID_EDIT_ENABLE_MODULE)
         
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_TOGGLE,self.on_debug_toggle)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
@@ -1793,6 +1797,33 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 self.stop_debugging()
                 if cpprefs.get_show_exiting_test_mode_dlg():
                     self.show_exiting_test_mode()
+    
+    def on_update_module_enable(self, event):
+        '''Update the UI for the ENABLE_MODULE menu item / button
+        
+        event - an UpdateUIEvent for the item
+        '''
+        active_module = self.__pipeline_list_view.get_active_module()
+        event.SetText("Disable Module" if active_module.enabled 
+                      else "Enable Module")
+        if active_module is None or active_module.is_input_module():
+            event.Enable(False)
+        else:
+            event.Enable(True)
+            
+    def on_module_enable(self, event):
+        '''Toggle the active module's enable state'''
+        active_module = self.__pipeline_list_view.get_active_module()
+        if active_module is None:
+            logger.warn("User managed to fire the enable/disable module event and no module was active")
+            return
+        if active_module.is_input_module():
+            logger.warn("User managed to fire the enable/disable module event when an input module was active")
+            return
+        if active_module.enabled:
+            self.__pipeline.disable_module(active_module)
+        else:
+            self.__pipeline.enable_module(active_module)
             
     def on_undo(self, event):
         wx.BeginBusyCursor()

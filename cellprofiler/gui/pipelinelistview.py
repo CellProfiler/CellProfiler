@@ -574,7 +574,8 @@ class PipelineListView(object):
             
     def __on_list_context_menu(self, event):
         from cellprofiler.gui.cpframe import \
-             ID_EDIT_DELETE, ID_EDIT_DUPLICATE, ID_HELP_MODULE
+             ID_EDIT_DELETE, ID_EDIT_DUPLICATE, ID_HELP_MODULE, \
+             ID_EDIT_ENABLE_MODULE
         
         if event.EventObject is not self.list_ctrl:
             return
@@ -588,6 +589,7 @@ class PipelineListView(object):
             menu.AppendSubMenu(sub_menu, "&Add")
             menu.Append(ID_EDIT_DELETE, "&Delete")
             menu.Append(ID_EDIT_DUPLICATE, "Duplicate")
+            menu.Append(ID_EDIT_ENABLE_MODULE, "Enable")
             menu.Append(ID_HELP_MODULE, "&Help")
             self.__frame.PopupMenu(menu)
             menu.Destroy()

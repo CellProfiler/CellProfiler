@@ -420,22 +420,32 @@ class ExportToSpreadsheet(cpm.CPModule):
         if self.show_window:
             header = ["Objects", "Filename"]
             columns = []
-            first = True
-            for i in range(len(self.object_groups)):
-                group = self.object_groups[i]
-                last_in_file = self.last_in_file(i)
-                if first:
-                    if group.wants_automatic_file_name:
-                        filename = "%s.csv" % group.name.value
-                    else:
-                        filename = group.file_name.value
-                    filename = self.make_full_filename(
+            if self.wants_everything:
+                for object_name in workspace.measurements.get_object_names():
+                    filename = "%s.%s" % \
+                        (object_name, 
+                         "csv" if self.delimiter == DELIMITER_COMMA else "txt")
+                    path = self.make_full_filename(
                         filename, workspace, 
                         workspace.measurements.image_set_number)
-                    first = False
-                columns.append((group.name.value, filename))
-                if last_in_file:
-                    first = True
+                    columns.append((object_name, path))
+            else:
+                first = True
+                for i in range(len(self.object_groups)):
+                    group = self.object_groups[i]
+                    last_in_file = self.last_in_file(i)
+                    if first:
+                        if group.wants_automatic_file_name:
+                            filename = "%s.csv" % group.name.value
+                        else:
+                            filename = group.file_name.value
+                        filename = self.make_full_filename(
+                            filename, workspace, 
+                            workspace.measurements.image_set_number)
+                        first = False
+                    columns.append((group.name.value, filename))
+                    if last_in_file:
+                        first = True
             workspace.display_data.header = header
             workspace.display_data.columns = columns
     
@@ -471,8 +481,11 @@ class ExportToSpreadsheet(cpm.CPModule):
         #
         if self.wants_everything:
             for object_name in workspace.measurements.get_object_names():
-                self.run_objects([object_name], 
-                                 "%s.%s" %(object_name, "csv" if self.delimiter == DELIMITER_COMMA else "txt"), workspace)
+                self.run_objects(
+                    [object_name], "%s.%s" %
+                    (object_name, 
+                     "csv" if self.delimiter == DELIMITER_COMMA else "txt"), 
+                    workspace)
             return
         
         object_names = []

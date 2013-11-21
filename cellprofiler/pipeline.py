@@ -457,7 +457,7 @@ class ImagePlaneDetails(object):
     def path(self):
         '''The file path if a file: URL, otherwise the URL'''
         if self.url.startswith("file:"):
-            return urllib.url2pathname(self.url[5:])
+            return urllib.url2pathname(self.url[5:]).decode('utf8')
         return self.url
     
     @staticmethod

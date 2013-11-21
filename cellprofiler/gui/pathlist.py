@@ -320,7 +320,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         For files, the user expects to see a path, not a URL
         '''
         if folder.startswith("file:"):
-            return urllib.url2pathname(folder[5:])
+            return urllib.url2pathname(folder[5:]).decode("utf8")
         return folder
     
     def recalc(self, dc = None):

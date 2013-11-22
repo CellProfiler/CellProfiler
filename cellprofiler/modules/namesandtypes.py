@@ -469,7 +469,7 @@ class NamesAndTypes(cpm.CPModule):
             to the image file list or you can press the "Browse" button to
             select an existing image from the file list."""))
         group.append("image_name", cps.FileImageNameProvider(
-            "Name to assign these images", unique_image_name, doc = """
+            "Name to assign this image", unique_image_name, doc = """
             Enter the name that you want to call this image.
             After this point, this image will be referred to by this
             name, and can be selected from any drop-down menu that

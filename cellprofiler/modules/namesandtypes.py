@@ -463,7 +463,7 @@ class NamesAndTypes(cpm.CPModule):
         
         group.append("divider", cps.Divider())
         group.append("image_plane", cps.ImagePlane(
-            "Single image",
+            "Single image location",
             doc = """Choose the single image to add to all image sets. You can
             either drag an image onto the setting to select it and add it
             to the image file list or you can press the "Browse" button to

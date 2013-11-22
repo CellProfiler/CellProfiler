@@ -111,7 +111,6 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
             logging.root.error("Previously displayed uncaught exception:",
                                exc_info=(type(exc), exc, tb))
         return ED_CONTINUE
-    previously_seen_error_locations.add((filename, line_number))
 
 
     dialog = wx.Dialog(frame, title="Pipeline error",
@@ -206,7 +205,10 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
                 if (filename, line_number) in previously_seen_error_locations:
                     previously_seen_error_locations.remove((filename, line_number))
         dialog.Bind(wx.EVT_BUTTON, handle_pdb, pdb_button)
-
+    dont_show_exception_checkbox = \
+        wx.CheckBox(dialog, label = "Don't show this error again")
+    dont_show_exception_checkbox.Value = False
+    sizer.Add(dont_show_exception_checkbox, 0, wx.ALIGN_LEFT |wx.ALL, 5)
     #
     # Handle the "stop" button being pressed
     #
@@ -264,6 +266,8 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
 
     dialog.Fit()
     dialog.ShowModal()
+    if dont_show_exception_checkbox.IsChecked():
+        previously_seen_error_locations.add((filename, line_number))
     return result[0]
 
 def on_report(event, dialog, traceback_text, pipeline):

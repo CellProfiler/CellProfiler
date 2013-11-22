@@ -47,7 +47,7 @@ from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED, PLATEVIEWER_
 from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
 import cellprofiler.utilities.version as version
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
-from errordialog import display_error_message, clear_old_errors
+from errordialog import display_error_message
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 from cellprofiler.modules.loadimages import pathname2url
@@ -1975,7 +1975,6 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.__module_view.disable()
             self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()
-            clear_old_errors()
             with cpp.Pipeline.PipelineListener(
                 self.__pipeline, self.on_prepare_run_error_event):
                 if not self.__pipeline.prepare_run(self.__workspace):

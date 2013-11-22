@@ -297,7 +297,7 @@ def get_cellprofiler_jars():
     # Our jars come first because of patches
     #
     jar_dir = os.path.join(root, "imagej", "jars")
-    our_jars = [os.path.join(jar_dir, "cellprofiler-java.jar")]
+    our_jars = ["cellprofiler-java.jar"]
     for filename in classpath_filenames:
         path = os.path.join(jar_dir, filename)
         if not os.path.isfile(path):

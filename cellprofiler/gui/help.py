@@ -314,7 +314,7 @@ The folder will be created according to the pathname you have typed.</p>"""
 
 USING_THE_OUTPUT_FILE_HELP = """
 <p>Please note that the output file will be deprecated in the future. This setting
-is temporarily present for those need HDF5 or MATLAB formats, and will be moved to 
+is temporarily present for those needing HDF5 or MATLAB formats, and will be moved to 
 Export modules in future versions of CellProfiler.</p>
 
 <p>The <i>output file</i> is a file where all information about the analysis as well 

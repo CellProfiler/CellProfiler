@@ -525,7 +525,7 @@ class PipelineController:
                 if not load_pipeline:
                     self.__workspace.measurements.clear()
                     self.__workspace.save_pipeline_to_measurements()
-                                
+                self.on_update_pathlist()
                 self.__dirty_workspace = False
                 self.set_title()
                 if self.__pipeline.message_for_user is not None:

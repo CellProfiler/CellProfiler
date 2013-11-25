@@ -766,6 +766,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.SetFocus()
         idx = self.get_mouse_idx(event)
         if idx == -1 or len(self.folder_items) == 0:
+            event.Skip(True)
             return
         
         self.focus_item = idx

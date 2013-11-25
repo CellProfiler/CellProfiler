@@ -171,6 +171,9 @@ C_OBJECTS_CHANNEL = "ObjectsChannel"
 '''The ChannelType experiment measurement category'''
 C_CHANNEL_TYPE = "ChannelType"
 
+'''The automatically-collected file location (as a URL)'''
+C_FILE_LOCATION = "File_Location"
+
 '''The experiment feature name used to store the image set's metadata tags'''
 M_METADATA_TAGS = "_".join((C_METADATA, "Tags"))
 
@@ -179,7 +182,7 @@ M_GROUPING_TAGS = "_".join((C_METADATA, "GroupingTags"))
 
 '''Tags that are reserved for automatic population of metadata'''
 RESERVED_METADATA_TAGS = ( "C", "T", "Z", "ColorFormat", "ChannelName",
-                           C_SERIES, C_FRAME, C_URL)
+                           C_SERIES, C_FRAME, C_FILE_LOCATION)
 
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''

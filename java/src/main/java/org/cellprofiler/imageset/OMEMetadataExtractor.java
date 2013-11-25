@@ -41,7 +41,7 @@ public class OMEMetadataExtractor implements MetadataExtractor<ImagePlane> {
 	final static public String MD_MONOCHROME = "monochrome";
 	final static public String MD_PLANAR = "Planar";
 	final static public String MD_CHANNEL_NAME = "ChannelName";
-	final static public String MD_URL = "URL";
+	final static public String MD_URL = "FileLocation";
 
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.MetadataExtractor#extract(java.lang.Object)

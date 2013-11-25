@@ -636,7 +636,19 @@ class AlphanumericText(Text):
         
         First letter = a-zA-Z and underbar, second is that + digit.
         '''
-        if self.first_must_be_alpha:
+        self.validate_alphanumeric_text(self.value, self, self.first_must_be_alpha)
+        
+    @staticmethod
+    def validate_alphanumeric_text(text, setting, first_must_be_alpha):
+        '''Validate text as alphanumeric, throwing a validation error if not
+        
+        text - text to be validated
+        
+        setting - blame this setting on failure
+        
+        first_must_be_alpha - True if the first letter has to be alpha or underbar
+        '''
+        if first_must_be_alpha:
             pattern = "^[A-Za-z_][A-Za-z_0-9]*$"
             error = (
                 'Names must start with an ASCII letter or underbar ("_")'
@@ -646,9 +658,9 @@ class AlphanumericText(Text):
             error = ('Only ASCII letters, digits and underbars ("_") can be '
                      'used here')
             
-        match = re.match(pattern, self.value)
+        match = re.match(pattern, text)
         if match is None:
-            raise ValidationError(error, self)
+            raise ValidationError(error, setting)
     
 class Number(Text):
     """A setting that allows only numeric input

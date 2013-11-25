@@ -400,6 +400,9 @@ class ClassifyObjects(cpm.CPModule):
                 raise cps.ValidationError(
                     "The number of bin names (%d) does not match the number of bins (%d)." %
                     (bin_name_count, bin_count), group.bin_names)
+            for bin_feature_name in bin_feature_names():
+                cps.AlphanumericText.validate_alphanumeric_text(
+                    bin_feature_name, group.bin_names, True)
             if group.bin_choice == BC_CUSTOM:
                 try:
                     [float(x.strip()) 

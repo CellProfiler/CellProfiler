@@ -87,6 +87,10 @@ class EditObjectsDialog(wx.Dialog):
     ID_CONTRAST_NORMALIZED = wx.NewId()
     ID_CONTRAST_LOG_NORMALIZED = wx.NewId()
     
+    ID_INTERPOLATION_NEAREST = wx.NewId()
+    ID_INTERPOLATION_BILINEAR = wx.NewId()
+    ID_INTERPOLATION_BICUBIC = wx.NewId()
+    
     ID_LABELS_OUTLINES = wx.NewId()
     ID_LABELS_FILL = wx.NewId()
     
@@ -138,6 +142,7 @@ class EditObjectsDialog(wx.Dialog):
         self.active_index = None
         self.mode = self.NORMAL_MODE
         self.scaling_mode = self.SM_NORMALIZED
+        self.interpolation_mode = cpprefs.get_interpolation_mode()
         self.label_display_mode = self.ID_LABELS_OUTLINES
         self.skip_right_button_up = False
         self.split_artist = None
@@ -453,6 +458,12 @@ class EditObjectsDialog(wx.Dialog):
                   id=self.ID_CONTRAST_NORMALIZED)
         self.Bind(wx.EVT_MENU, self.on_log_normalized_contrast,
                   id=self.ID_CONTRAST_LOG_NORMALIZED)
+        self.Bind(wx.EVT_MENU, self.on_nearest_neighbor_interpolation,
+                  id=self.ID_INTERPOLATION_NEAREST)
+        self.Bind(wx.EVT_MENU, self.on_bilinear_interpolation,
+                  id=self.ID_INTERPOLATION_BILINEAR)
+        self.Bind(wx.EVT_MENU, self.on_bicubic_interpolation,
+                  id=self.ID_INTERPOLATION_BICUBIC)
         self.Bind(wx.EVT_MENU, self.enter_freehand_draw_mode,
                   id=self.ID_MODE_FREEHAND)
         self.Bind(wx.EVT_MENU, self.enter_split_mode,
@@ -732,7 +743,7 @@ class EditObjectsDialog(wx.Dialog):
                         shape = cimage.shape[:2]).toarray()
                     cimage[has_color > 0, i] = (
                         rgbval[has_color > 0] / has_color[has_color > 0])
-        self.orig_axes.imshow(cimage)
+        self.orig_axes.imshow(cimage, interpolation = self.interpolation_mode)
         self.set_orig_axes_title()
         if set_lim:
             self.orig_axes.set_xlim((x0, x1))
@@ -904,6 +915,19 @@ class EditObjectsDialog(wx.Dialog):
                 contrast_menu.Check(mid, True)
         menu.AppendMenu(-1, "Contrast", contrast_menu)
         
+        interpolation_menu = wx.Menu("Interpolation")
+        for mid, state, help in (
+            (self.ID_INTERPOLATION_NEAREST, cpprefs.IM_NEAREST,
+             "Display images using the intensity of the nearest pixel (blocky)"),
+            (self.ID_INTERPOLATION_BILINEAR, cpprefs.IM_BILINEAR,
+             "Display images by blending the intensities of the four nearest pixels (smoother)"),
+            (self.ID_INTERPOLATION_BICUBIC, cpprefs.IM_BICUBIC,
+             "Display images by blending intensities using cubic spline interpolation (smoothest)")):
+            interpolation_menu.AppendRadioItem(mid, state, help)
+            if self.interpolation_mode == state:
+                interpolation_menu.Check(mid, True)
+        menu.AppendMenu(-1, "Interpolation", interpolation_menu)
+        
         label_menu = wx.Menu("Label appearance")
         for mid, label, help in (
             (self.ID_LABELS_OUTLINES, "Outlines", "Show the outlines of objects"),
@@ -960,6 +984,18 @@ class EditObjectsDialog(wx.Dialog):
         self.scaling_mode = self.SM_LOG_NORMALIZED
         self.display()
     
+    def on_nearest_neighbor_interpolation(self, event):
+        self.interpolation_mode = cpprefs.IM_NEAREST
+        self.display()
+        
+    def on_bilinear_interpolation(self, event):
+        self.interpolation_mode = cpprefs.IM_BILINEAR
+        self.display()
+        
+    def on_bicubic_interpolation(self, event):
+        self.interpolation_mode = cpprefs.IM_BICUBIC
+        self.display()
+        
     def on_mouse_button_up(self, event):
         if self.skip_right_button_up and event.button == 3:
             self.skip_right_button_up = False

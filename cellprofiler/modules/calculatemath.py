@@ -182,7 +182,7 @@ class CalculateMath(cpm.CPModule):
                 result += [self.operand_measurement, self.multiplicand, self.exponent]
                 return (result)
             
-        self.output_feature_name = cps.Text(
+        self.output_feature_name = cps.AlphanumericText(
             "Name the output measurement",
             "Measurement",doc="""
             Enter a name for the measurement calculated by this module.""")

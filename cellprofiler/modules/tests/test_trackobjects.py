@@ -1519,3 +1519,33 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         shape = image.pixel_data.shape
         self.assertEqual(shape[0], 640)
         self.assertEqual(shape[1], 480)
+        
+    def test_09_00_get_no_gap_pair_scores(self):
+        for F, L, max_gap in (
+            (np.zeros((0, 3)), np.zeros((0, 3)), 1),
+            (np.ones((1, 3)), np.ones((1, 3)), 1),
+            (np.ones((2, 3)), np.ones((2, 3)), 1)):
+            t = T.TrackObjects()
+            a, d = t.get_gap_pair_scores(F, L, max_gap)
+            self.assertEqual(tuple(a.shape), (0, 2))
+            self.assertEqual(len(d), 0)
+            
+    def test_09_01_get_gap_pair_scores(self):
+        L = np.array([[0.0, 0.0, 1],
+                      [1.0, 1.0, 5],
+                      [3.0, 3.0, 8],
+                      [2.0, 2.0, 9]])
+        F = np.array([[0.0, 0.0, 0],
+                      [1.0, 0.0, 4],
+                      [3.0, 0.0, 6],
+                      [4.0, 0.0, 7]])
+        expected = np.array([[0, 1],
+                             [1, 2],
+                             [1, 3]])
+        expected_d = np.sqrt(
+            np.sum((L[expected[:, 0], :2] - F[expected[:, 1], :2]) ** 2, 1))
+        t = T.TrackObjects()
+        a, d = t.get_gap_pair_scores(F, L, 4)
+        np.testing.assert_array_equal(a, expected)
+        np.testing.assert_array_almost_equal(d, expected_d)
+                      

@@ -1361,29 +1361,15 @@ class TrackObjects(cpm.CPModule):
         ma_off = len(F) * 2 + len(P1) * 3
 
         #creates the upper-left block
-
-        i, j = np.mgrid[0:len(F),0:len(F)]
-        d = np.sqrt((L[i, X] - F[j, X])**2 + (L[i, Y] - F[j, Y])**2)
-
-        #removes the possibility of gaps that have too large of a frame difference
-
-        y = F[j, IIDX] - L[i, IIDX]
-        x = np.argwhere(y > para8)
-        i = np.arange(len(x))
-        d[x[i, 0], x[i, 1]] = para1 + 1
-        x = np.argwhere(y <= 0)
-        i = np.arange(len(x))
-        d[x[i,0], x[i,1]] = para1+1
-
-        # Filter out costs that are too high
-        a = np.argwhere(d <= para1)
-        #
-        # Add the gap closing cost which is just an offset that guarantees
-        # that the gap initiation and gap termination are higher than
-        # split and merge coss
-        #
-        d += gap_closing_cost
-        d = np.column_stack((a, d[a[0:len(a), 0], a[0:len(a), 1]]))
+        
+        a, d = self.get_gap_pair_scores(F, L, para8)
+        # filter by max gap score
+        mask = d <= para1
+        if np.sum(mask) > 0:
+            d = np.column_stack((a[mask, :].astype(float), 
+                                 d[mask] + gap_closing_cost))
+        else:
+            d = np.zeros((0, 3))
 
         #creates the transpose for the lower-right block
 
@@ -1724,6 +1710,86 @@ class TrackObjects(cpm.CPModule):
                 child_image_numbers, child_object_numbers)
 
         self.recalculate_group(workspace, image_numbers)
+        
+    def get_gap_pair_scores(self, F, L, max_gap):
+        '''Compute scores for matching last frame with first to close gaps
+        
+        F - an N x 3 (or more) array giving X, Y and frame # of the first object
+            in each track
+            
+        L - an N x 3 (or more) array giving X, Y and frame # of the last object
+            in each track
+            
+        max_gap - the maximum allowed # of frames between the last and first
+        
+        Returns: an M x 2 array of M pairs where the first element of the array
+                 is the index of the track whose last frame is to be joined to
+                 the track whose index is the second element of the array.
+                 
+                 an M-element vector of scores.
+        '''
+        #
+        # There have to be at least two things to match
+        #
+        nothing = (np.zeros((0, 2), int), np.zeros(0))
+
+        if F.shape[0] <= 1:
+            return nothing
+
+        X = 0
+        Y = 1
+        IIDX = 2
+        
+        #
+        # Create an indexing ordered by the last frame index and by the first
+        #
+        i = np.arange(len(F))
+        j = np.arange(len(F))
+        f_iidx = F[:, IIDX].astype(int)
+        l_iidx = L[:, IIDX].astype(int)
+        
+        i_lorder = np.lexsort((i, l_iidx))
+        j_forder = np.lexsort((j, f_iidx))
+        i = i[i_lorder]
+        j = j[j_forder]
+        i_counts = np.bincount(l_iidx)
+        j_counts = np.bincount(f_iidx)
+        i_indexes = Indexes([i_counts])
+        j_indexes = Indexes([j_counts])
+        #
+        # The lowest possible F for each L is 1+L
+        #
+        j_self = np.minimum(np.arange(len(i_counts)),
+                            len(j_counts) - 1)
+        j_first_idx = j_indexes.fwd_idx[j_self] + j_counts[j_self]
+        #
+        # The highest possible F for each L is L + max_gap. j_end is the
+        # first illegal value... just past that.
+        #
+        j_last = np.minimum(np.arange(len(i_counts)) + max_gap,
+                            len(j_counts)-1)
+        j_end_idx = j_indexes.fwd_idx[j_last] + j_counts[j_last]
+        #
+        # Structure the i and j block ranges
+        #
+        ij_counts = j_end_idx - j_first_idx
+        ij_indexes = Indexes([i_counts, ij_counts])
+        if ij_indexes.length == 0:
+            return nothing
+        #
+        # The index into L of the first element of the pair
+        #
+        ai = i[i_indexes.fwd_idx[ij_indexes.rev_idx] + ij_indexes.idx[0]]
+        #
+        # The index into F of the second element of the pair
+        #
+        aj = j[j_first_idx[ij_indexes.rev_idx] + ij_indexes.idx[1]]
+        #
+        # The distances
+        #
+        d = np.sqrt((L[ai, X] - F[aj, X]) ** 2 + 
+                    (L[ai, Y] - F[aj, Y]) ** 2)
+        return np.column_stack((ai, aj)), d
         
     def recalculate_group(self, workspace, image_numbers):
         '''Recalculate all measurements once post_group has run

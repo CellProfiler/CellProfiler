@@ -651,7 +651,6 @@ classes of metacharacters, partially listed below. Some helpful links follow:
 <li><a href="http://pythex.org/">Pythex</a> provides quick way to test your regular expressions. Here is an 
 <a href="http://pythex.org/?regex=Channel%5B1-2%5D-%5B0-9%5D%7B2%7D-(%3FP%3CWellRow%3E%5BA-H%5D)-(%3FP%3CWellColumn%3E%5B0-9%5D%7B2%7D)%5C.tif&test_string=Channel1-01-A-01.tif&ignorecase=0&multiline=0&dotall=0&verbose=0">example</a>
 to capture information from a common microscope nomenclature.</li>
-<li></li>
 </ul>
 
 <p>The following metacharacters match exactly one character from its respective set of characters:<br><br>
@@ -698,16 +697,16 @@ match a '.' specifically, use '\.' in your pattern.
 
 Examples:
 <ul>
-<li><code>[trm]ail</code> matches 'tail' or 'rail' or 'mail'</li>
-<li><code>[0-9]</code> matches any digit between 0 to 9</li>
-<li><code>[^Q-S]</code> matches any character other than 'Q' or 'R' or 'S'</li>
-<li><code>[[]A-Z]</code> matches any upper case alphabet along with square brackets</li>
-<li><code>[ag-i-9]</code> matches characters 'a' or 'g' or 'h' or 'i' or '-' or '9'</li>
+<li><code>[trm]ail</code> matches 'tail' or 'rail' or 'mail'.</li>
+<li><code>[0-9]</code> matches any digit between 0 to 9.</li>
+<li><code>[^Q-S]</code> matches any character other than 'Q' or 'R' or 'S'.</li>
+<li><code>[[]A-Z]</code> matches any upper case alphabet along with square brackets.</li>
+<li><code>[ag-i-9]</code> matches characters 'a' or 'g' or 'h' or 'i' or '-' or '9'.</li>
 <li><code>[a-p]*</code> matches '' or 'a' or 'aab' or 'p' etc.</li>
 <li><code>[a-p]+</code> matches  'a' or 'abc' or 'p' etc.</li>
-<li><code>[^0-9]</code> matches any string that is not a number</li>
-<li><code>^[0-9]*$</code> matches any string that is a natural number or ''</li>
-<li><code>^-[0-9]+$|^\+?[0-9]+$</code> matches any integer</li>
+<li><code>[^0-9]</code> matches any string that is not a number.</li>
+<li><code>^[0-9]*$</code> matches either a blank string or a natural number.</li>
+<li><code>^-[0-9]+$|^\+?[0-9]+$</code> matches any integer.</li>
 </ul>
 """
 

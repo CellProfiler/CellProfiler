@@ -12,7 +12,7 @@ appears in the context of tagging images with various attributes, which
 can include (but is not limited to) items such as the following:
 <ul>
 <li>The height and width of an image, in pixels.</li>
-<li>Is the image RGB, indexed or separate channels?</li>
+<li>The image type, i.e., RGB, indexed or separate channels.</li>
 <li>The number of timepoints or channels contained in the image file.</li>
 <li>The experimental treatment applied to the well that the image was acquired from.</li>
 <li>The row and column of the microtiter plate that the image was acquired from.</li>
@@ -165,7 +165,7 @@ class Metadata(cpm.CPModule):
         self.wants_metadata = cps.Binary(
             "Extract metadata?", False,doc = """
             Select <i>%(YES)s</i> if your file or path names or file headers contain information 
-            (i.e., metadata) that you would like to extract and store along with your 
+            (i.e., metadata) you would like to extract and store along with your 
             measurements. See the main module
             help for more details."""%globals())
         
@@ -411,13 +411,13 @@ class Metadata(cpm.CPModule):
         
         group.append("wants_case_insensitive", cps.Binary(
             "Use case insensitive matching?", False, doc = """
-            This setting controls whether row matching takes the
-            metadata case into account when matching. If this setting is 
-            not checked, metadata entries that only differ by case 
-            (for instance, "A01" and "a01") will not match. 
+            This setting controls whether row matching takes the metadata case 
+            into account when matching. If you note that your CSV metadata is not being
+            applied, your choice on this setting may be the culprit.
+            <p>Select <i>%(NO)s</i> so that metadata entries that only differ by case 
+            (for instance, "A01" and "a01") will not match.</p>
             <p>Select <i>%(YES)s</i> to match metadata entries that only differ 
-            by case. If you note that your CSV metadata is not being
-            applied, your choice on this setting may be the culprit.</p>"""%globals()))
+            by case. </p>"""%globals()))
         
         group.append("update_metadata", cps.DoSomething(
             "", "Update metadata",

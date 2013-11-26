@@ -227,10 +227,12 @@ class NamesAndTypes(cpm.CPModule):
         
         self.assignment_method = cps.Choice(
             "Assign a name to", [ASSIGN_ALL, ASSIGN_RULES],doc = """
-            This setting controls how different image types (e.g., an image
-            of the GFP stain and a brightfield image) are assigned different
-            names so that each type can be treated differently by
-            downstream modules. There are three choices:<br>
+            This setting allows the user to specify a name to images or subsets
+            of images so they can be treated separately by downstream modules. 
+            For example, giving a different name to a GFP stain image and a 
+            brightfield image of the same site allows each to be processed 
+            independently.
+            <p>There are three choices:<br>
             <ul><li><i>%(ASSIGN_ALL)s</i>: Give every image the same name.
             This is the simplest choice and the appropriate one if you have
             only one kind of image (or only one image). CellProfiler will
@@ -241,7 +243,8 @@ class NamesAndTypes(cpm.CPModule):
             appropriate choice if more than one image was taken of each 
             imaging site. You will be asked for distinctive criteria for
             each image and will be able to assign each category of image
-            a name that can be referred to in downstream modules.</li></ul>
+            a name that can be referred to in downstream modules.</li>
+            </ul></p>
             """ % globals())
         
         self.single_load_as_choice = cps.Choice(

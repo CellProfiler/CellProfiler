@@ -906,7 +906,7 @@ class CPFrame(wx.Frame):
         if not hasattr(sys, 'frozen'):
             os.system('open CellProfiler_python.command')
         else:       
-            os.system('open -na CellProfiler2.0.app')
+            os.system('open -na CellProfiler.app')
 
     def __on_help_release_notes(self, event):
             import webbrowser

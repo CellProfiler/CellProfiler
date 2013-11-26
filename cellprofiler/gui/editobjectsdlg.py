@@ -149,6 +149,7 @@ class EditObjectsDialog(wx.Dialog):
         self.delete_mode_artist = None
         self.delete_mode_rect_artist = None
         self.wants_image_display = guide_image != None
+        self.hes_dead_jim = False
         self.pressed_keys = set()
         self.build_ui()
         self.init_labels()
@@ -491,21 +492,23 @@ class EditObjectsDialog(wx.Dialog):
         button_sizer.AddButton(resume_button)
         sub_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER)
         def on_resume(event):
-            self.EndModal(wx.OK)
-            self.on_close(event)
+            self.on_close(event, wx.OK)
         self.Bind(wx.EVT_BUTTON, on_resume, resume_button)
         button_sizer.SetAffirmativeButton(resume_button)
 
         cancel_button = wx.Button(self, self.cancel_id, "Cancel")
         button_sizer.AddButton(cancel_button)
         def on_cancel(event):
-            self.EndModal(wx.CANCEL)
+            self.Close()
         self.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
         button_sizer.SetNegativeButton(cancel_button)
         self.Bind(wx.EVT_MENU, self.on_help, id=wx.ID_HELP)
-        self.Bind(wx.EVT_CLOSE, self.on_close)
+        self.Bind(wx.EVT_CLOSE, lambda event: self.on_close(event, wx.CANCEL))
         self.Bind(wx.EVT_SIZE, self.on_size)
         self.Bind(wx.EVT_CONTEXT_MENU, self.on_context_menu)
+        self.figure.canvas.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
+        self.toolbar.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
+        self.help_sash.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
                           
         button_sizer.Realize()
         self.figure.canvas.mpl_connect('button_press_event', 
@@ -589,15 +592,41 @@ class EditObjectsDialog(wx.Dialog):
         self.oc = self.colormap[self.ol, :]
         self.lc = self.colormap[self.ll, :]
         
-    def on_close(self, event):
+    def on_close(self, event, return_code):
         '''Fix up the labels as we close'''
-        if self.GetReturnCode() == wx.OK:
+        if return_code == wx.OK:
+            self.EndModal(return_code)
             open_labels = set([d[self.K_LABEL] for d in self.artists.values()])
             for l in open_labels:
                 self.close_label(l, False)
             for idx in np.argwhere(~self.to_keep).flatten():
                 if idx > 0:
                     self.remove_label(idx)
+        else:
+            result = wx.MessageBox(
+                "Are you sure you want to cancel editing?\n\n"
+                "If you are in analysis mode this will stop the analysis.",
+                "Cancel object editor",
+                style = wx.YES_NO | wx.ICON_QUESTION,
+                parent = self)
+            if result != wx.YES:
+                event.Skip(False)
+                return
+            self.EndModal(return_code)
+            
+    def on_destroy(self, event):
+        # bug in wx / matplotlib. Toolbar will be in a mouse capture
+        # mode which is not cancelled as dialog exits. Bad things
+        # happen on Mac when you try to release capture on a window
+        # that's not there.
+        # And the sash too, despite the positively wonderful (sarcasm)
+        # feedback it gives on the Mac as it is doing stuff.
+        if self.hes_dead_jim:
+            return
+        self.hes_dead_jim = True
+        for window in self.figure.canvas, self.help_sash:
+            if window.HasCapture():
+                window.ReleaseMouse()
         
     def remove_label(self, object_number):
         for l in self.labels:
@@ -854,7 +883,13 @@ class EditObjectsDialog(wx.Dialog):
             self.skip_right_button_up = True
     
     def on_key_down(self, event):
+        assert isinstance(event, matplotlib.backend_bases.KeyEvent)
         self.pressed_keys.add(event.key)
+        if self.toolbar.mode != '':
+            if event.key == "escape":
+                event.guiEvent.Skip(False)
+                self.Close()
+            return
         if event.key == "f1":
             self.on_help(event)
         if self.mode == self.NORMAL_MODE:
@@ -881,13 +916,16 @@ class EditObjectsDialog(wx.Dialog):
                     self.undo()
             elif event.key == "escape":
                 self.remove_artists(event)
+                event.guiEvent.Skip(False)
         elif self.mode in (self.SPLIT_PICK_FIRST_MODE, 
                            self.SPLIT_PICK_SECOND_MODE):
             if event.key == "escape":
                 self.exit_split_mode(event)
+                event.guiEvent.Skip(False)
         elif self.mode == self.DELETE_MODE:
             if event.key == "escape":
                 self.exit_delete_mode(event)
+                event.guiEvent.Skip(False)
         elif self.mode == self.FREEHAND_DRAW_MODE:
             self.exit_freehand_draw_mode(event)
     

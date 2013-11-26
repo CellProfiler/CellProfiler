@@ -76,8 +76,11 @@ OBJECT_RELATIONSHIPS = "Object relationships"
 RELATIONSHIPS = "Relationships"
 
 SETTING_OG_OFFSET_V7 = 15
+SETTING_OG_OFFSET_V8 = 16
+SETTING_OG_OFFSET_V9 = 15
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 16
+SETTING_OG_OFFSET = 15
+
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -114,7 +117,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     module_name = 'ExportToSpreadsheet'
     category = ["File Processing","Data Tools"]
-    variable_revision_number = 8
+    variable_revision_number = 9
     
     def create_settings(self):
         self.delimiter = cps.CustomChoice(
@@ -123,12 +126,6 @@ class ExportToSpreadsheet(cpm.CPModule):
             two default choices are tab and comma, but you can type in any single character delimiter 
             you would prefer. Be sure that the delimiter you choose is not a character that is present 
             within your data (for example, in file names).""")
-        
-        self.prepend_output_filename = cps.Binary(
-            "Prepend the output file name to the data file names?", True, doc = """
-            Select <i>%(YES)s</i> to prepend the output file name to the exported spreadsheet file name. 
-            This can be useful if you want to run a pipeline multiple 
-            times without overwriting the old results."""%globals())
         
         self.directory = cps.DirectoryPath(
             "Output file location",
@@ -322,8 +319,8 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     def settings(self):
         """Return the settings in the order used when storing """
-        result = [self.delimiter, self.prepend_output_filename,
-                  self.add_metadata, self.excel_limits, self.pick_columns,
+        result = [self.delimiter, self.add_metadata, 
+                  self.excel_limits, self.pick_columns,
                   self.wants_aggregate_means, self.wants_aggregate_medians,
                   self.wants_aggregate_std, self.directory,
                   self.wants_genepattern_file, self.how_to_specify_gene_name, 
@@ -336,8 +333,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     def visible_settings(self):
         """Return the settings as seen by the user"""
-        result = [self.delimiter, self.prepend_output_filename,
-                  self.directory]
+        result = [self.delimiter, self.directory]
         result += [ self.add_metadata, self.excel_limits, 
                     self.nan_representation, self.pick_columns]
         if self.pick_columns:
@@ -579,9 +575,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         path, file = os.path.split(file_name)
         if not os.path.isdir(path):
             os.makedirs(path)
-        if self.prepend_output_filename.value:
-            file = os.path.splitext(get_output_file_name())[0] + '_' + file 
-        return os.path.join(path,file)
+        return os.path.join(path, file)
     
     def make_experiment_file(self, file_name, workspace):
         """Make a file containing the experiment measurements
@@ -1044,14 +1038,6 @@ Do you want to save it anyway?""" %
                               setting_values[11:])
             variable_revision_number = 6
         
-        # Standardize input/output directory name references
-        SLOT_DIRCHOICE = 8
-        directory = setting_values[SLOT_DIRCHOICE]
-        directory = cps.DirectoryPath.upgrade_setting(directory)
-        setting_values = (setting_values[:SLOT_DIRCHOICE] +
-                          [directory] + 
-                          setting_values[SLOT_DIRCHOICE+1:])
-        
         if variable_revision_number == 6 and not from_matlab:
             ''' Add GenePattern export options
             self.wants_genepattern_file, self.how_to_specify_gene_name, 
@@ -1068,7 +1054,20 @@ Do you want to save it anyway?""" %
                 setting_values[:SETTING_OG_OFFSET_V7] +
                 [NANS_AS_NANS] + setting_values[SETTING_OG_OFFSET_V7:])
             variable_revision_number = 8
+            
+        if variable_revision_number == 8 and not from_matlab:
+            # Removed output file prepend
+            setting_values = setting_values[:1] + setting_values[2:]
+            variable_revision_number = 9
                 
+        # Standardize input/output directory name references
+        SLOT_DIRCHOICE = 7
+        directory = setting_values[SLOT_DIRCHOICE]
+        directory = cps.DirectoryPath.upgrade_setting(directory)
+        setting_values = (setting_values[:SLOT_DIRCHOICE] +
+                          [directory] + 
+                          setting_values[SLOT_DIRCHOICE+1:])
+        
         return setting_values, variable_revision_number, from_matlab
 
 def is_object_group(group):

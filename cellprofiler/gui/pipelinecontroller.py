@@ -1780,33 +1780,43 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         """Move the currently selected modules up"""
         if not self.ok_to_edit_pipeline():
             return
-        active_module = self.__pipeline_list_view.get_active_module()
-        if active_module is not None:
-            self.__pipeline.move_module(
-                active_module.module_num, cpp.DIRECTION_UP)
-            #
-            # Major event - restart from scratch
-            #
-            if self.is_in_debug_mode():
-                self.stop_debugging()
-                if cpprefs.get_show_exiting_test_mode_dlg():
-                    self.show_exiting_test_mode()
+        selected_modules = list(self.__get_selected_modules())
+        if len(selected_modules) == 0:
+            active_module = self.__pipeline_list_view.get_active_module()
+            if active_module is None:
+                return
+            selected_modules = [active_module]
+        for module in selected_modules:
+            self.__pipeline.move_module(module.module_num, cpp.DIRECTION_UP)
+        #
+        # Major event - restart from scratch
+        #
+        if self.is_in_debug_mode():
+            self.stop_debugging()
+            if cpprefs.get_show_exiting_test_mode_dlg():
+                self.show_exiting_test_mode()
         
     def on_module_down(self,event):
         """Move the currently selected modules down"""
         if not self.ok_to_edit_pipeline():
             return
-        active_module = self.__pipeline_list_view.get_active_module()
-        if active_module is not None:
+        selected_modules = list(self.__get_selected_modules())
+        selected_modules.reverse()
+        if len(selected_modules) == 0:
+            active_module = self.__pipeline_list_view.get_active_module()
+            if active_module is None:
+                return
+            selected_modules = [active_module]
+        for module in selected_modules:
             self.__pipeline.move_module(
-                active_module.module_num, cpp.DIRECTION_DOWN)
-            #
-            # Major event - restart from scratch
-            #
-            if self.is_in_debug_mode():
-                self.stop_debugging()
-                if cpprefs.get_show_exiting_test_mode_dlg():
-                    self.show_exiting_test_mode()
+                module.module_num, cpp.DIRECTION_DOWN)
+        #
+        # Major event - restart from scratch
+        #
+        if self.is_in_debug_mode():
+            self.stop_debugging()
+            if cpprefs.get_show_exiting_test_mode_dlg():
+                self.show_exiting_test_mode()
     
     def on_update_module_enable(self, event):
         '''Update the UI for the ENABLE_MODULE menu item / button

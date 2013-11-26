@@ -3,7 +3,7 @@ from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_
 __doc__ = """
 The <b>Images</b> module helps you specify which image are to be processed in your pipeline.
 <hr>
-The <b>Images</b> module allows you to specify the location of any and all files to
+The <b>Images</b> module allows you to specify the location of files to
 be analyzed by the pipeline. These files can be located on your hard drive or on a networked
 computer elsewhere. If it is easier to specify the folder(s) containing the files rather than 
 the files theselves (for example, because
@@ -71,8 +71,8 @@ shown as grayed-out entries.</li>
 
 <h4>What do I get as output?</h4>
 The <b>Images</b> module yields a file list, in which any files that are not intended 
-for further processing have been removed, whether manually or using filtering. This list is the one that will be used when 
-collecting metadata (if desired) and when assembling the image sets in <b>NamesAndTypes</b>. This list
+for further processing have been removed, whether manually or using filtering. This list will be used when 
+collecting metadata (if desired) and when assembling the image sets in <b>NamesAndTypes</b>. The list
 can be filtered further in <b>NamesAndTypes</b>, for example, to specify that a subset of these images 
 represents a particular wavelength.
 """%globals()

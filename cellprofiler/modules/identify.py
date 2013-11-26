@@ -185,8 +185,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <br><ul>
             <li><i>%(TS_AUTOMATIC)s:</i> Use the default settings for
             thresholding. This strategy calculates the threshold using the %(TM_MCT)s method
-            on the whole image and applies the threshold to the image, smoothed
-            with a Gaussian with sigma of 1.
+            on the whole image (see below for details on this method) and applies the 
+            threshold to the image, smoothed with a Gaussian with sigma of 1.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
             This approach is fairly robust, but does not allow you to select the threshold
@@ -234,9 +234,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
             This approach is useful if the input image has a stable or
             negligible background, or if the input image is the probability
             map output of the <b>ClassifyPixels</b> module (in which case, a value
-            of 0.5 should be chosen). If you are using this module to find objects 
-            in an image that is already binary (where the foreground is 1 and 
-            the background is 0), a manual value of 0.5 will identify the objects.</dd>
+            of 0.5 should be chosen). If the input image is already binary (i.e.,
+            where the foreground is 1 and the background is 0), a manual value 
+            of 0.5 will identify the objects.</dd>
             </dl></li>
             
             <li><i>%(TS_BINARY_IMAGE)s:</i> Use a binary image to classify
@@ -276,8 +276,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
             methods, doc="""
             The intensity threshold affects the decision of whether each pixel
             will be considered foreground (region(s) of interest) or background.
-            A stringent threshold will result in only the brightest regions being identified, 
-            whereas a lenient threshold will include dim regions. You can have the threshold 
+            A higher threshold value will result in only the brightest regions being identified, 
+            whereas a lower threshold value will include dim regions. You can have the threshold 
             automatically calculated from a choice of several methods, 
             or you can enter a number manually between 0 and 1 for the threshold.
             
@@ -326,7 +326,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
             Our implementation 
             takes into account the maximum and minimum values in the image and log-transforming the
-            image prior to calculating the threshold. For this reason, please note
+            image prior to calculating the threshold. For this reason, note
             that negative-valued pixels are ignored in this computation, so caution should be
             used applying offsets to the pixel values (via the <b>ImageMath</b> module or similar).</dd>
             </dl>
@@ -460,7 +460,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             the size of the artifacts to be eliminated by smoothing. A Gaussian
             is used with a sigma adjusted so that 1/2 of the Gaussian's
             distribution falls within the diameter given by the scale
-            (sigma = scale / 0.674)""")
+            (sigma = scale / 0.674)"""%globals())
 
         self.threshold_correction_factor = cps.Float(
             "Threshold correction factor", 1, doc ="""

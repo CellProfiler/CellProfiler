@@ -11,12 +11,12 @@ found in an image by using another cellular feature as a reference for guiding d
 
 <p>For densely-packed cells
 (such as those in a confluent monolayer), determining the cell borders using a cell body stain
-can be quite difficult since they are often heterogeneous and lower-contrast with more diffuse 
-staining. In addition, cells often touch their neighbors making it harder to delineate the cell 
-borders. It is often easier to identify an organelle which is well separated spatially (such 
-as the nucleus) as an object first and then use that object to guide the detection of the cell
-borders. See the <b>IdentifyPrimaryObjects</b> module for details on how to identify a primary
-object.</p>
+can be quite difficult since they often have irregular intensity patterns and are lower-contrast 
+with more diffuse staining. In addition, cells often touch their neighbors making it harder to 
+delineate the cell borders. It is often easier to identify an organelle which is well separated 
+spatially (such as the nucleus) as an object first and then use that object to guide the detection 
+of the cell borders. See the <b>IdentifyPrimaryObjects</b> module for details on how to identify 
+a primary object.</p>
 
 In order to identify the edges of secondary objects, this module performs two tasks: 
 <ol>

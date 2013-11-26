@@ -15,10 +15,10 @@ the assistance of another cellular feature as a reference. For example:
 morphology, high contrast relative to the background when stained, and good separation
 between adjacent nuclei. These qualities typically make them appropriate candidates for primary object 
 identification.</li>
-<li>In contrast, cells are often heterogeneous and lower-contrast with more diffuse 
+<li>In contrast, cells often have irregular intensity patterns and are lower-contrast with more diffuse 
 staining, making them more challenging to identify than nuclei. In addition, cells often 
 touch their neighbors making it harder to delineate the cell borders. For these reasons, 
-cell bodies are often good candidates for <i>secondary object</i> identification, since they are 
+cell bodies are better suited for <i>secondary object</i> identification, since they are 
 best identified by using a previously-identified primary object (i.e, the nuclei) as 
 a reference. See the <b>IdentifySecondaryObjects</b> module for details on how to 
 do this.</li>
@@ -45,7 +45,7 @@ by identifying areas of images that fall into one of several classes, such as ce
 background, etc. Then, the <b>ClassifyPixels</b> module takes the classifier and applies it to each image 
 to identify areas that correspond to the trained classes. The result of <b>ClassifyPixels</b> is 
 an image in which the region that falls into the class of interest is light on a dark background. Since 
-this new image satisfies the constraints abov, it can be used as input in <b>IdentifyPrimaryObjects</b>. 
+this new image satisfies the constraints above, it can be used as input in <b>IdentifyPrimaryObjects</b>. 
 See the <b>ClassifyPixels</b> module for more information.</p>
 
 <h4>What do the settings mean?</h4>
@@ -57,7 +57,7 @@ for which a particular setting is best used.</li>
 <li><img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;Indicates a condition under which 
 a particular setting may not work well.</li>
 <li><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;Technical note. Provides more
-detailed information on the setting, if interested.</li>
+detailed information on the setting.</li>
 </ul>
 
 <h4>What do I get as output?</h4>
@@ -122,7 +122,7 @@ different types of objects. The module has many
 options, which vary in terms of speed and sophistication.
 More detail can be found in the Settings section below.
 Here are the three steps, using an example 
-where the primary objects to be identified are nuclei:
+where nuclei are the primary objects:
 <ol>
 <li>CellProfiler determines whether a foreground region is an individual
 nucleus or two or more clumped nuclei.</li>
@@ -384,13 +384,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             'Method to distinguish clumped objects', 
             [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""
             This setting allows you to choose the method that is used to segment
-            objects, i.e., "declump" a large, merged object into the appropriate number of  
-            objects of interest. To decide between these methods, you can run Test mode to see the results of each.
+            objects, i.e., "declump" a large, merged object into individual objects of interest. 
+            To decide between these methods, you can run Test mode to see the results of each.
             <ul>
             <li>
             <table cellpadding="0"><tr><td>
-            <i>%(UN_INTENSITY)s:</i> For objects that tend to have only one peak of brightness
-            per object (e.g. objects that are brighter towards their interiors and 
+            <i>%(UN_INTENSITY)s:</i> For objects that tend to have only a single peak of brightness
+            (e.g. objects that are brighter towards their interiors and 
             dimmer towards their edges), this option counts each intensity peak as a separate object. 
             The objects can
             be any shape, so they need not be round and uniform in size as would be
@@ -589,8 +589,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             <i>(Used only when applying the LoG thresholding method)</i><br>
             <p>Select <i>%(YES)s</i> to use the filtering diameter range above 
             when constructing the LoG filter. </p>
-            <p>Select <i>%(NO)s</i> in order to enter a size that is not related to the filtering 
-            size. You may want to specify a custom size if you want to filter 
+            <p>Select <i>%(NO)s</i> in order to manually specify the size. 
+            You may want to specify a custom size if you want to filter 
             using loose criteria, but have objects that are generally of 
             similar sizes.</p>"""%globals())
         

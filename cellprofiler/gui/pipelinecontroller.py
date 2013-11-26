@@ -495,6 +495,16 @@ class PipelineController:
         
         filename - the path to the file to open. It should already be locked.
         '''
+        if self.is_running():
+            # Defensive programming - the user shouldn't be able
+            # to do this.
+            wx.MessageBox(
+                'The project file, "%s", cannot be loaded during analysis.\n\nPlease stop the analysis and try again.' % filename,
+                caption = "Cannot load project file",
+                style = wx.OK | wx.ICON_INFORMATION,
+                parent = self.__frame)
+            return
+        self.exit_test_mode()
         progress_callback_fn = None
         message = "Loading %s" % filename
         with wx.ProgressDialog(
@@ -507,7 +517,7 @@ class PipelineController:
                 dlg.longest_msg_len = dlg.GetTextExtent(message)[0]
                     
                 def progress_callback(operation_id, progress, message):
-                    if progress != 1:
+                    if progress not in (1, None):
                         proceed, skip = dlg.Pulse(message)
                         if not proceed:
                             raise Exception("User cancelled opening workspace")

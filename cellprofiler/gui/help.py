@@ -1829,7 +1829,7 @@ combination tells CellProfiler not to treat the image as a single file, but rath
 if you wanted to process multiple files in one analysis run with this pipeline, you would need to 
 do the following: 
 <ul>
-<li>Select "URL" as the metadata category. </li>
+<li>Select "FileLocation" as the metadata category. </li>
 <li>The tables below this setting will update themselves, and you should be able to visually confirm 
 that each of the multiple files are defined as a group, each with 10 slices' worth of images. </li>
 </ul>
@@ -1875,21 +1875,21 @@ multiple channels, you will need to do this for each channel.
 <li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code> and name it <i>OrigGFP</i>.
 <li>Click the "Add" button to add another rule.</li>
 <li>In the "Assign channel by" setting, select "Metadata".</li>
-<li>Select "URL" for the <i>OrigDAPI</i> and <i>OrigGFP</i> channels. The URL identifies the individual 
+<li>Select "FileLocation" for the <i>OrigDAPI</i> and <i>OrigGFP</i> channels. The <i>FileLocation</i> identifies the individual 
 stack, and selecting this parameter insures that the channels are matched within each stack, 
 rather than across stack.</li>
 <li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right to add another row, 
 and select "Z" for each channel.</li>
 <li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button on this row,
 and select "T" for each channel.</li>
-<li>Click "Update table" to confirm the channel matching. The corresponding <i>URL</i>, <i>Z</i> and <i>T</i> for each
+<li>Click "Update table" to confirm the channel matching. The corresponding <i>FileLocation</i>, <i>Z</i> and <i>T</i> for each
 channel should be matched to each other.</li>
 </ul></p>
 </li>
 <li>In the <b>Groups</b> module, select the metadata that defines a distinct image stack. For the example above, 
 do the following: 
 <ul>
-<li>Select "URL" as the metadata category. </li>
+<li>Select "FileLocation" as the metadata category. </li>
 <li>The tables below this setting will update themselves, and you should be able to visually confirm 
 that each of the two image stacks are defined as a group, each with 6 slices' worth of images. </li>
 </ul>

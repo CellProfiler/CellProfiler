@@ -193,7 +193,7 @@ class StraightenWorms(cpm.CPModule):
             self.training_set_directory.join_parts(dir_choice, custom_path)
             
         self.training_set_file_name = cps.FilenameText(
-            "Training set file name", "TrainingSet.mat",
+            "Training set file name", "TrainingSet.xml",
             doc = "This is the name of the training set file.",
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,

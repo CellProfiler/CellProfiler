@@ -688,6 +688,8 @@ class Morph(cpm.CPModule):
                     result += [function.x_offset, function.y_offset, function.scale]
                 elif function.structuring_element == SE_RECTANGLE:
                     result += [function.width, function.height]
+            if function.can_remove:
+                result.append(function.remove)
         result += [self.add_button]
         return result
 

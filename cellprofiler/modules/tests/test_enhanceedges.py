@@ -188,7 +188,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == FIL.vsobel(image)))
     
     def test_02_03_sobel_all(self):
-        '''Test the Sobel vertical transform'''
+        '''Test the Sobel transform'''
         np.random.seed(0)
         image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -221,7 +221,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == FIL.vprewitt(image)))
     
     def test_03_03_prewitt_all(self):
-        '''Test the prewitt vertical transform'''
+        '''Test the prewitt transform'''
         np.random.seed(0)
         image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -260,7 +260,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == expected))
         
     def test_05_02_log_manual(self):
-        '''Test the laplacian of gaussian with automatic sigma'''
+        '''Test the laplacian of gaussian with manual sigma'''
         np.random.seed(0)
         image = np.random.uniform(size=(20,20)).astype(np.float32)
         workspace, module = self.make_workspace(image)

@@ -586,6 +586,22 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
             C.FTR_RAND_INDEX, None)
         self.assertEqual(len(scales), 0)
         
+    def test_05_00_test_measure_overlap_no_objects(self):
+        # Regression test of issue #934 - no objects
+        workspace, module = self.make_obj_workspace(
+            np.zeros((0, 3), int),
+            np.zeros((0, 3), int),
+            dict(image = np.zeros((20, 10), bool)),
+            dict(image = np.zeros((20, 10), bool)))
+        module.run(workspace)
+        m = workspace.measurements
+        for feature in C.FTR_ALL:
+            mname = module.measurement_name(feature)
+            if feature == C.FTR_RAND_INDEX:
+                self.assertEqual(m[cpmeas.IMAGE, mname, 1], 1)
+            else:
+                self.assertTrue(np.isnan(m[cpmeas.IMAGE, mname, 1]))
+        
     def test_05_01_test_measure_overlap_objects(self):
         r = np.random.RandomState()
         r.seed(51)

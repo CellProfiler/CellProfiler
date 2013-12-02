@@ -302,8 +302,8 @@ class CalculateImageOverlap(cpm.CPModule):
         object_name_ID = self.object_name_ID.value
         objects_ID = workspace.get_objects(object_name_ID)
         iID, jID, lID = objects_ID.ijv.transpose()
-        ID_obj = max(lID)
-        GT_obj  = max(lGT)
+        ID_obj = 0 if len(lID) == 0 else max(lID)
+        GT_obj  = 0 if len(lGT) == 0 else max(lGT)
         intersect_matrix = np.zeros((ID_obj, GT_obj))
         GT_tot_area = []
         all_intersect_area = []

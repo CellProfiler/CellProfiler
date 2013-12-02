@@ -585,11 +585,16 @@ class ClassifyObjects(cpm.CPModule):
         object_name = self.object_name.value
         for i, feature_name in ((0, self.first_measurement.value),
                                 (1, self.second_measurement.value)):
-            axes = figure.subplot(i,0)
             saved_values = workspace.display_data.saved_values[i]
-            axes.hist(saved_values[~np.isnan(saved_values)])
-            axes.set_xlabel(feature_name)
-            axes.set_ylabel("# of %s"%object_name)
+            good_saved_values = saved_values[~np.isnan(saved_values)]
+            if len(good_saved_values) == 0:
+                figure.subplot_table(
+                    i, 0, [["No %s objects found" % object_name]])
+            else:
+                axes = figure.subplot(i,0)
+                axes.hist(good_saved_values)
+                axes.set_xlabel(feature_name)
+                axes.set_ylabel("# of %s"%object_name)
         class_1, class_2 = workspace.display_data.in_high_class
         object_codes = class_1.astype(int)+class_2.astype(int)*2 + 1
         object_codes = np.hstack(([0], object_codes))

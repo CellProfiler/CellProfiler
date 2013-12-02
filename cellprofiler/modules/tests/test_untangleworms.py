@@ -2763,3 +2763,10 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(np.all(lengths== 4))
         np.testing.assert_array_equal(expected, result)
         
+    def test_13_02_recalculate_single_worm_control_points_no_objects(self):
+        # regression test of issue #930
+        result, lengths = U.recalculate_single_worm_control_points(
+            [np.zeros((10, 15), int)], 3)
+        self.assertEqual(tuple(result.shape), (0, 3, 2))
+        self.assertEqual(len(lengths), 0)
+        

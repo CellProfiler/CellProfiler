@@ -2666,10 +2666,10 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     a vector of N lengths.
     '''
     
-    all_object_numbers = np.unique(np.hstack(
-        [ filter((lambda n: n > 0), np.unique(l)) for l in all_labels]))
-    if len(all_object_numbers) == 0:
-        return np.zeros((0, 0, 2), int), np.zeros(0, int)
+    all_object_numbers = [
+        filter((lambda n: n > 0), np.unique(l)) for l in all_labels]
+    if all([len(object_numbers) == 0 for object_numbers in all_object_numbers]):
+        return np.zeros((0, ncontrolpoints, 2), int), np.zeros(0, int)
     module = UntangleWorms()
     module.create_settings()
     module.num_control_points.value = ncontrolpoints

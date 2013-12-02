@@ -54,6 +54,8 @@ def log_transform(im):
 def auto_contrast(im):
     '''returns image scaled to the interval [0,1]'''
     im = im.copy()
+    if np.prod(im.shape) == 0:
+        return im
     (min, max) = (im.min(), im.max())
     # Check that the image isn't binary 
     if np.any((im>min)&(im<max)):

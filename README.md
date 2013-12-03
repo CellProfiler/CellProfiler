@@ -1,20 +1,10 @@
-## Mailing list
+CellProfiler is free open-source software designed to enable biologists without training in computer vision or programming to quantitatively measure phenotypes from thousands of images automatically.
 
-CellProfiler development is discussed on the cellprofiler-dev mailing list.
-This is a fairly low-volume mailing list.  To subscribe:
+Our website, [cellprofiler.org](http://cellprofiler.org/), is aimed at non-developer users and has lots of information about CellProfiler and how to use it.
 
-> https://groups.google.com/a/broadinstitute.org/d/forum/cellprofiler-dev
+The [developer wiki](https://github.com/CellProfiler/CellProfiler/wiki) covers topic such as how to build CellProfiler from source, how to set up a development environment with all of CellProfiler's dependencies, and the various resources set up to support CellProfiler development.
+
 
 ## How to file new issues
 
-Most users should use the [CellProfiler forum](http://cellprofiler.org/forum/) to ask for help and report 
-issues. We monitor the forum and may be able to help you find a workaround 
-for the problem. If you have discovered a new bug, we will take care of 
-filing a bug report on your behalf and include all necessary technical 
-information.
-
-The [issue tracker](https://github.com/CellProfiler/CellProfiler/issues) on Github is primarily for developer of CellProfiler 
-and related software. There is a [special form](http://cellprofiler.org/issues/) for submitting new issues 
-with attachments. If you use this form for reporting bugs, please attach 
-sufficient information to reproduce the bug. For many bugs, it is appropriate 
-to attach a CellProfiler pipeline and an image.
+If you have a bug or other issue to report, please read the wiki page on [how to file new issues](https://github.com/CellProfiler/CellProfiler/wiki/How-to-file-new-issues) to learn the best way to report it.

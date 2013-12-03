@@ -20,7 +20,7 @@ object detection. More instructions on using the interface may be found
 Please note that you must use the same image format for classification
 as for the initial learning phase.
 
-Currently, ilastik is only avilable for Windows, and is accessible from
+Currently, ilastik is only available for Windows, and is accessible from
 in the CellProfiler folder under the Start Menu. A 64-bit system is 
 recommended for running ilastik.
 '''

@@ -315,8 +315,11 @@ class CPFrame(wx.Frame):
         self.__make_startup_blurb_frame()
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
-        self.tbicon = wx.TaskBarIcon()
-        self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
+        if sys.platform != 'linux2':
+            # It will be worth trying to use the taskbar icon again on
+            # Linux after we switch to wxPython 2.9.5.
+            self.tbicon = wx.TaskBarIcon()
+            self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
         self.SetAutoLayout(True)
         if cpprefs.get_startup_blurb():
             self.show_welcome_screen(True)

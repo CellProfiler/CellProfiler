@@ -382,14 +382,14 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     np.arange(1, np.max(center_labels)+1,dtype=np.int32)))
                 good = pixel_counts > 0
                 i,j = (centers_of_labels(center_labels) + .5).astype(int)
+                ig = i[good]
+                jg = j[good]
+                lg = np.arange(1, len(i)+1)[good]
                 if center_choice == C_CENTERS_OF_OTHER:
                     #
                     # Reduce the propagation labels to the centers of
                     # the centering objects
                     #
-                    ig = i[good]
-                    jg = j[good]
-                    lg = np.arange(1, len(i)+1)[good]
                     center_labels = np.zeros(center_labels.shape, int)
                     center_labels[ig,jg] = lg
                 cl,d_from_center = propagate(np.zeros(center_labels.shape),

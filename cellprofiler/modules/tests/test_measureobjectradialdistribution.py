@@ -614,13 +614,15 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
                       int(center_labels.shape[1]/2)] = 1
         
         image = np.random.uniform(size=labels.shape)
-        m = self.run_module(image, labels, 
-                            center_labels = center_labels, 
-                            bin_count = 4)
-        for bin in range(1,5):
-            data = m.get_current_measurement(OBJECT_NAME, 
-                                             feature_frac_at_d(bin, 4))
-            self.assertEqual(len(data), 1)
+        for center_choice in (M.C_CENTERS_OF_OTHER, M.C_EDGES_OF_OTHER):
+            m = self.run_module(image, labels, 
+                                center_labels = center_labels, 
+                                center_choice = center_choice,
+                                bin_count = 4)
+            for bin in range(1,5):
+                data = m.get_current_measurement(OBJECT_NAME, 
+                                                 feature_frac_at_d(bin, 4))
+                self.assertEqual(len(data), 1)
 
         m = self.run_module(image, labels, bin_count = 4)
         for bin in range(1,5):

@@ -102,7 +102,8 @@ ASSIGN_RULES = "Images matching rules"
 
 LOAD_AS_GRAYSCALE_IMAGE = "Grayscale image"
 LOAD_AS_COLOR_IMAGE = "Color image"
-LOAD_AS_MASK = "Mask"
+LOAD_AS_MASK = "Binary mask"
+LOAD_AS_MASK_V5A = "Mask"
 LOAD_AS_ILLUMINATION_FUNCTION = "Illumination function"
 LOAD_AS_OBJECTS = "Objects"
 LOAD_AS_ALL = [ LOAD_AS_GRAYSCALE_IMAGE,
@@ -189,6 +190,7 @@ LOAD_AS_CHOICE_HELP_TEXT = """
 
 IDX_ASSIGNMENTS_COUNT_V2 = 5
 IDX_ASSIGNMENTS_COUNT_V3 = 6
+IDX_ASSIGNMENTS_COUNT_V5 = 6
 IDX_ASSIGNMENTS_COUNT = 6
 
 IDX_SINGLE_IMAGES_COUNT_V5 = 7
@@ -200,7 +202,17 @@ IDX_FIRST_ASSIGNMENT_V5 = 8
 
 NUM_ASSIGNMENT_SETTINGS_V2 = 4
 NUM_ASSIGNMENT_SETTINGS_V3 = 5
+NUM_ASSIGNMENT_SETTINGS_V5 = 7
 NUM_ASSIGNMENT_SETTINGS = 7
+
+NUM_SINGLE_IMAGE_SETTINGS_V5 = 7
+NUM_SINGLE_IMAGE_SETTINGS = 7
+
+OFF_LOAD_AS_CHOICE_V5 = 3
+OFF_LOAD_AS_CHOICE = 3
+
+OFF_SI_LOAD_AS_CHOICE_V5 = 3
+OFF_SI_LOAD_AS_CHOICE = 3
 
 MATCH_BY_ORDER = "Order"
 MATCH_BY_METADATA = "Metadata"
@@ -1417,6 +1429,24 @@ class NamesAndTypes(cpm.CPModule):
             setting_values = setting_values[:IDX_SINGLE_IMAGES_COUNT_V5] +\
                 ["0"] + setting_values[IDX_SINGLE_IMAGES_COUNT_V5:]
             variable_revision_number = 5
+        if variable_revision_number == 5:
+            #
+            # Convert LOAD_AS_MASK_V5A to LOAD_AS_MASK if present
+            #
+            setting_values = list(setting_values)
+            n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V5])
+            n_single_images = int(setting_values[IDX_SINGLE_IMAGES_COUNT_V5])
+            for i in range(n_assignments):
+                offset = IDX_FIRST_ASSIGNMENT_V5 + \
+                    NUM_ASSIGNMENT_SETTINGS_V5 * i + OFF_LOAD_AS_CHOICE_V5
+                if setting_values[offset] == LOAD_AS_MASK_V5A:
+                    setting_values[offset] = LOAD_AS_MASK
+            for i in range(n_single_images):
+                offset = IDX_FIRST_ASSIGNMENT_V5 + \
+                    NUM_ASSIGNMENT_SETTINGS_V5 * n_assignments + \
+                    NUM_SINGLE_IMAGE_SETTINGS_V5 * i + OFF_SI_LOAD_AS_CHOICE_V5
+                if setting_values[offset] == LOAD_AS_MASK_V5A:
+                    setting_values[offset] = LOAD_AS_MASK
             
         return setting_values, variable_revision_number, from_matlab
     

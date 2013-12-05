@@ -460,6 +460,13 @@ class CalculateStatistics(cpm.CPModule):
         #
         return np.asanyarray(v).dtype.kind not in "OSU"
         
+    def validate_module_warnings(self, pipeline):
+        '''Warn user re: Test mode '''
+        if pipeline.test_mode:
+            raise cps.ValidationError(
+                "CalculateStatistics will not produce any output in test mode",
+                self.grouping_values)
+        
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
                 

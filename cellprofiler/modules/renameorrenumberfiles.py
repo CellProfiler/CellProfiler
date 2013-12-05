@@ -257,6 +257,13 @@ class RenameOrRenumberFiles(cpm.CPModule):
         figure.subplot_table(
             0, 0, statistics, col_labels = ('Old file name','New file name'))
 
+    def validate_module_warnings(self, pipeline):
+        '''Warn user re: Test mode '''
+        if pipeline.test_mode:
+            raise cps.ValidationError(
+                "RenameOrRenumberFiles will not rename files in test mode",
+                self.image_name)
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Upgrade settings from previous pipeline versions

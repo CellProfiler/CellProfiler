@@ -380,6 +380,13 @@ class CreateWebPage(cpm.CPModule):
         image_path_name = m[cpmeas.IMAGE, path_name_feature, image_number]
         return image_path_name, image_file_name
         
+    def validate_module_warnings(self, pipeline):
+        '''Warn user re: Test mode '''
+        if pipeline.test_mode:
+            raise cps.ValidationError(
+                "CreateWebPage will not produce output in Test Mode",
+                self.orig_image_name)
+        
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1 and from_matlab:

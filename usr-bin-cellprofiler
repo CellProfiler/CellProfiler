@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Wrapper script used to start CellProfiler on Linux.
+
+prefix=/usr/cellprofiler
+
+export LD_LIBRARY_PATH=$prefix/jdk/jre/lib/amd64/server
+export PATH=$prefix/bin:$prefix/jdk/bin:$PATH
+cd $prefix/src/CellProfiler
+$prefix/bin/python CellProfiler.py "$@"
+

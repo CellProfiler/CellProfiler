@@ -264,10 +264,16 @@ def parse_args(args):
                       help="Open a new project, prompting for its name using a file dialog",
                       action="store_true",
                       default=False)
+    
+    default_show_gui = True
+    if sys.platform == 'linux2':
+        if not os.getenv('DISPLAY'):
+            default_show_gui = False
+
     parser.add_option("-c", "--run-headless",
                       action="store_false",
                       dest="show_gui",
-                      default=True,
+                      default=default_show_gui,
                       help="Run headless (without the GUI)")
     parser.add_option("-r", "--run",
                       action="store_true",

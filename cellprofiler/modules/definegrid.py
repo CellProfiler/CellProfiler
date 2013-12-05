@@ -790,7 +790,7 @@ class DefineGrid(cpm.CPModule):
             # and bottom that we have on the left and top
             top_edge = int(gridding.y_location_of_lowest_y_spot - 
                            gridding.y_spacing / 2)
-            right_edge = int(gridding.x_location_of_lowest_x_spot + 
+            right_edge = int(gridding.x_location_of_lowest_x_spot - 
                              gridding.x_spacing/2)
             gridding.image_height = \
                 top_edge * 2 + gridding.y_spacing * gridding.rows

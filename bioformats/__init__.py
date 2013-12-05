@@ -134,12 +134,21 @@ def start_cellprofiler_jvm():
         # For IJ1 compatibility
         args += [r"-Dplugins.dir=%s" % plugin_directory]
     
-    if get_headless():
-        # We're running silently, so don't change the Java preferences
-        # The following definition uses a process-scope preferences factory
-        args += [
-            "-Djava.util.prefs.PreferencesFactory="
-            "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
+    # In headless mode, we have to avoid changing the Java preferences.
+    # 
+    # Aside from that, we need to prevent ImageJ from exiting and from
+    # displaying the updater dialog - at least temporarily, we do that
+    # through preferences. We use the HeadlessPreferencesFactory to
+    # limit the scope of the changes to this process - otherwise we'd
+    # turn off updating for the machine.
+    #
+    # TODO: ImageJ is implementing a pluggable mechanism to control the
+    #       quit process. We can also contribute a pluggable mechanism
+    #       that gives us more control over the updater.
+    #
+    args += [
+        "-Djava.util.prefs.PreferencesFactory="
+        "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
     run_headless = (get_headless() and 
                     not os.environ.has_key("CELLPROFILER_USE_XVFB"))
     run_headless = False

@@ -26,7 +26,7 @@ REQUIRED_SERVICES = [
     "imagej.event.EventService",
     "imagej.object.ObjectService",
     "imagej.platform.PlatformService",
-    "imagej.plugin.PluginService",
+    "org.scijava.plugin.PluginService",
     "imagej.module.ModuleService",
     'imagej.display.DisplayService',
     "imagej.command.CommandService",
@@ -129,7 +129,10 @@ def create_context(service_classes):
             return J.call(self.o, 'get', 
                           '(Ljava/lang/Class;)Lorg/scijava/service/Service;', klass)
         getContext = J.make_method("getContext", "()Lorg/scijava/Context;")
+        getVersion = J.make_method("getVersion", "()Ljava/lang/String;")
+        dispose = J.make_method("dispose", "()V")
     return Context()
+    
 
 the_imagej_context = None
 def get_context():
@@ -144,7 +147,48 @@ def get_context():
     global the_imagej_context
     if the_imagej_context is None:
         the_imagej_context = create_context(None)
+        #
+        # We have to turn off the updater and tell ImageJ to never call
+        # System.exit. We have to tell ImageJ that we read the readme file.
+        #
+        # To Do: programatically turn off the updater and take control of
+        #        the quitting and exit process.
+        #
+        max_value = J.run_script(
+            "java.lang.Long.toString(java.lang.Long.MAX_VALUE);")
+        prefs = [
+            ("imagej.updater.core.UpToDate", "latestNag", max_value),
+            ("imagej.core.options.OptionsMisc", "exitWhenQuitting", "false")]
+        plugin_service = the_imagej_context.getService(
+            "org.scijava.plugin.PluginService")
+        ui_interface = J.class_for_name("imagej.ui.UserInterface")
+        script = """
+        var result = java.lang.System.getProperty('ij.ui');
+        if (! result) {
+            var infos = pluginService.getPluginsOfType(ui_interface);
+            if (infos.size() > 0) {
+                result = infos.get(0).getClassName();
+            }
+        }
+        result;"""
+        ui_class = J.run_script(script, dict(pluginService=plugin_service,
+                                             ui_interface=ui_interface))
+        first_run = "firstRun-"+the_imagej_context.getVersion()
+        if ui_class:
+            prefs.append((ui_class, first_run, "false"))
+        for class_name, key, value in prefs:
+            c = J.class_for_name(class_name)
+            J.static_call(
+                "imagej/util/Prefs", "put",
+                "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V",
+                c, key, value)
     return the_imagej_context
+
+def allow_quit():
+    '''Allow the CellProfilerAppEventService to dispose of ImageJ
+    '''
+    J.static_call("org/cellprofiler/ijutils/CellProfilerAppEventService",
+                  "allowQuit", "()V")
 
 def get_module_service(context):
     '''Get the module service for a given context
@@ -1130,6 +1174,8 @@ def wrap_user_interface(o):
             self.o = o
         show = J.make_method("show", "()V")
         isVisible = J.make_method("isVisible", "()Z")
+        getApplicationFrame = J.make_method(
+            "getApplicationFrame", "()Limagej/ui/ApplicationFrame;")
         
     return UserInterface()
 

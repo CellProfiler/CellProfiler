@@ -26,6 +26,7 @@ imagej/jars
 imagej/*.zip
 imagej/.project
 imagej/.settings
+imagej/.checksums
 java/target
 java/.factorypath
 java/.settings

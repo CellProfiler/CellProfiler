@@ -35,9 +35,24 @@
     </dependency>
     <dependency>
       <groupId>net.imagej</groupId>
+      <artifactId>ij-ui</artifactId>
+      <version>${imagej.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.imagej</groupId>
       <artifactId>ij-app</artifactId>
       <version>${imagej.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.imagej</groupId>
+      <artifactId>ij-options</artifactId>
+      <version>${imagej.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.imagej</groupId>
+      <artifactId>ij-updater-core</artifactId>
+      <version>${imagej.version}</version>
     </dependency>
     <dependency>
       <groupId>net.imglib2</groupId>
@@ -59,6 +74,11 @@
 	<artifactId>opencsv</artifactId>
 	<version>2.3</version>
   </dependency>
+ <dependency>
+  <groupId>org.apache.commons</groupId>
+  <artifactId>commons-lang3</artifactId>
+  <version>3.1</version>
+ </dependency>
  </dependencies>
   <repositories>
   	<repository>

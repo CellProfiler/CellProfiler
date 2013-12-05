@@ -669,7 +669,6 @@ CLOSE_ALL_WINDOWS = """
                 var all_frames = java.awt.Frame.getFrames();
                 if (all_frames) {
                     for (idx in all_frames) {
-                        java.lang.System.err.println("Disposing");
                         all_frames[idx].dispose();
                     }
                 }

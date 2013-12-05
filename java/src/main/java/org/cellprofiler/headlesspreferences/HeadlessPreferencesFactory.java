@@ -105,9 +105,13 @@ public class HeadlessPreferencesFactory implements PreferencesFactory {
 		protected AbstractPreferences childSpi(String name) {
 			checkAlive();
 			if (! children.containsKey(name)) {
-				children.put(name, new HeadlessPreferences(this, name));
+				final HeadlessPreferences result = new HeadlessPreferences(this, name); 
+				children.put(name, result);
+				result.newNode = true;
+				return result;
+			} else {
+				return children.get(name);
 			}
-			return children.get(name);
 		}
 
 		@Override

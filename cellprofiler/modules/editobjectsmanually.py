@@ -1,20 +1,16 @@
-'''<b>Edit Objects Manually</b> allows you to remove specific objects
-from each image by pointing and clicking.
+'''<b>Edit Objects Manually</b> allows you create, remove and edit objects previously defined.
 <hr>
-This module allows you to remove specific objects via a user interface 
-where you point and click to select objects for removal. The
-module displays three images: the objects as originally identified,
-the objects that have not been removed, and the objects that have been
-removed.
+The interface will show the image that you selected as the
+guiding image, overlaid with colored outlines of the selected objects (or filled
+objects if you choose). This module allows you to remove or edit specific objects 
+by pointing and clicking to select objects for removal or editing. Once
+editing is complete, the module displays the objects as originally identified (left)
+and the objects that remain after this module (right).
 
-If you click on an object in the "not removed" image, it moves to the
-"removed" image and will be removed. If you click on an object in the
-"removed" image, it moves to the "not removed" image and will not be
-removed. Clicking on an object in the original image 
-toggles its "removed" state.
+More detailed Help is provided in the editing window via the '?' button.
 
 The pipeline pauses once per processed image when it reaches this module.
-You must press the <i>Continue</i> button to accept the selected objects
+You must press the <i>Done</i> button to accept the selected objects
 and continue the pipeline.
 
 <h4>Available measurements</h4>

@@ -196,6 +196,11 @@ def main():
     except:
         logger.warn("Failed to stop Ilastik")
     try:
+        from imagej.imagej2 import allow_quit
+        allow_quit()
+    except:
+        logger.warn("Failed to signal ImageJ to stop")
+    try:
         J.kill_vm()
     except:
         logger.warn("Failed to stop the Java VM")

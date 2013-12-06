@@ -2142,7 +2142,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
 
         module_num = evt.module_num
-        if module_num <= 0 or module_num > len(self.__pipeline.modules()):
+        if module_num <= 0 or\
+           module_num > len(self.__pipeline.modules(exclude_disabled=False)):
             # Defensive coding: module was deleted?
             logger.warning(
                 "Failed to display module # %d. The pipeline may have been edited during analysis" % module_num)
@@ -2152,7 +2153,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
-            module = self.__pipeline.modules()[module_num - 1]
+            module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
             if module.display != cpmodule.CPModule.display:
                 fig = self.__workspace.get_module_figure(module,
                                                          evt.image_set_number,
@@ -2176,7 +2177,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
         try:
-            module = self.__pipeline.modules()[module_num - 1]
+            module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
             if module.display_post_run != cpmodule.CPModule.display_post_run:
                 image_number = self.__workspace.measurements.image_set_count
                 fig = self.__workspace.get_module_figure(module,
@@ -2196,7 +2197,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data)
         try:
-            module = self.__pipeline.modules()[module_num - 1]
+            module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
             if module.display_post_group != cpmodule.CPModule.display_post_group:
                 image_number = evt.image_set_number
                 fig = self.__workspace.get_module_figure(module,
@@ -2223,7 +2224,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         kwargs = dict((name, evt.__dict__['kwarg_%s' % name]) for name in evt.kwargs_names)
         result = ""
         try:
-            module = self.__pipeline.modules()[module_num - 1]
+            module = self.__pipeline.modules(
+                exclude_disabled=False)[module_num - 1]
             result = module.handle_interaction(*args, **kwargs)
         except:
             _, exc, tb = sys.exc_info()

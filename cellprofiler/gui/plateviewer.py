@@ -523,7 +523,7 @@ class PlateViewer(object):
             for channel in sd:
                 img_size = [max(i0, i1) for i0, i1 in zip(
                     sd[channel].shape, img_size)]
-        if all([iii == 0 for iii in image_size]):
+        if all([iii == 0 for iii in img_size]):
             return
         img_size = np.array(img_size)
         tile_dims = np.array(tile_dims)+1

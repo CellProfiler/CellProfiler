@@ -207,6 +207,7 @@ class DisplayPlatemap(cpm.CPModule):
 
             for plate, sub_dict in pm_dict.items():            
                 for well, vals in sub_dict.items():
+                    vals = np.hstack(vals)
                     if self.agg_method == AGG_AVG:
                         pm_dict[plate][well] = np.mean(vals)
                     elif self.agg_method == AGG_STDEV:

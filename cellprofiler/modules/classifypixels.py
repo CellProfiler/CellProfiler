@@ -286,7 +286,7 @@ class ClassifyPixels(cpm.CPModule):
                 last_modtime, d = classifier_dict[fileName]
                 if modtime == last_modtime:
                     return d
-            d = self.parse_classifier_file(fileName)
+            d = self.parse_classifier_hdf5(fileName)
             classifier_dict[fileName] = (modtime, d)
         return d
     

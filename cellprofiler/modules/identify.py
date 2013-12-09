@@ -805,7 +805,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     else:
                         masking_objects = workspace.object_set.get_objects(
                             self.masking_objects.value)
-                    label_planes = masking_objects.get_labels(img.shape[:2])
+                    if masking_objects is not None:
+                        label_planes = masking_objects.get_labels(img.shape[:2])
+                    else:
+                        label_planes = [image.mask.astype(int)]
                     if len(label_planes) == 1:
                         labels = label_planes[0][0]
                     else:

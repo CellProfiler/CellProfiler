@@ -2517,7 +2517,7 @@ def read_params(training_set_directory, training_set_file_name, d):
             return d[file_name][0]
         
     if training_set_directory.dir_choice == cps.URL_FOLDER_NAME:
-        url = path + "/" + file_name
+        url = file_name
         fd_or_file = urllib2.urlopen(url)
         is_url = True
         timestamp = "URL"

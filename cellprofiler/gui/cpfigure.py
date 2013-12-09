@@ -27,6 +27,7 @@ import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
 from scipy.sparse import coo_matrix
 import functools
@@ -36,6 +37,16 @@ from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
 from cpfigure_tools import figure_to_image, only_display_image, renumber_labels_for_display
 
+#
+# Monkey-patch the backend canvas to only report the truly supported filetypes
+#
+mpl_filetypes = ["png", "pdf"]
+mpl_unsupported_filetypes = [
+    ft for ft in FigureCanvasWxAgg.filetypes
+    if ft not in mpl_filetypes]
+for ft in mpl_unsupported_filetypes:
+    del FigureCanvasWxAgg.filetypes[ft]
+    
 g_use_imshow = False
 
 def log_transform(im):
@@ -256,7 +267,7 @@ class CPFigureFrame(wx.Frame):
         else:
             matplotlib.rcdefaults()
         self.figure = figure = matplotlib.figure.Figure()
-        self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
+        self.panel = FigureCanvasWxAgg(self, -1, self.figure)
         sizer.Add(self.panel, 1, wx.EXPAND) 
         self.status_bar = self.CreateStatusBar()
         wx.EVT_CLOSE(self, self.on_close)

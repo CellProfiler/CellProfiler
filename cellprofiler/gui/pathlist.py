@@ -111,7 +111,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.Bind(wx.EVT_SET_FOCUS, self.on_set_focus)
         self.Bind(wx.EVT_KILL_FOCUS, self.on_kill_focus)
         self.Bind(wx.EVT_LEFT_DCLICK, self.on_double_click)
-
+        #
+        # Compute the size of the message to display when empty
+        #
+        dc = wx.MemoryDC()
+        dc.Font = self.DROP_FILES_AND_FOLDERS_FONT
+        self.drop_files_and_folders_text_extent =\
+            dc.GetTextExtent(self.DROP_FILES_AND_FOLDERS_HERE)
+        
     def AcceptsFocus(self):
         '''Tell the scrollpanel that we can accept the focus'''
         return True
@@ -323,7 +330,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             return urllib.url2pathname(folder[5:]).decode("utf8")
         return folder
     
-    def recalc(self, dc = None):
+    def recalc(self):
         '''Recalculate cached internals
         
         Call this before using any of the internals such as
@@ -332,11 +339,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         if not self.schmutzy:
             return
         if len(self.folder_items) == 0:
-            if dc is None:
-                dc = wx.MemoryDC()
-            dc.Font = self.DROP_FILES_AND_FOLDERS_FONT
-            max_width, total_height = \
-                dc.GetTextExtent(self.DROP_FILES_AND_FOLDERS_HERE)
+            max_width, total_height = self.drop_files_and_folders_text_extent
             self.folder_counts = np.zeros(0, int)
             self.folder_idxs = np.zeros(0, int)
         else:
@@ -562,7 +565,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         assert isinstance(event, wx.PaintEvent)
         paint_dc = wx.BufferedPaintDC(self)
         if self.schmutzy:
-            self.recalc(paint_dc)
+            self.recalc()
         width, height = self.GetSizeTuple()
         rn = wx.RendererNative.Get()
         paint_dc.BeginDrawing()

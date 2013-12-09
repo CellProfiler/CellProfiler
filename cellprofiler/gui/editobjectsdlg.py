@@ -861,16 +861,8 @@ class EditObjectsDialog(wx.Dialog):
                     self.record_undo()
                     self.skip_right_button_up = True
                     return
-        x = int(event.xdata + .5)
-        y = int(event.ydata + .5)
-        if (x < 0 or x >= self.shape[1] or
-            y < 0 or y >= self.shape[0]):
-            return
-        for labels in self.labels:
-            lnum = labels[y,x]
-            if lnum != 0:
-                break
-        if lnum == 0:
+        lnum = self.get_mouse_event_object_number(event)
+        if lnum is None:
             return
         if event.button == 1:
             # Move object into / out of working set
@@ -882,6 +874,27 @@ class EditObjectsDialog(wx.Dialog):
             self.display()
             self.skip_right_button_up = True
     
+    def get_mouse_event_object_number(self, event):
+        '''Return the object number of the object under the mouse
+        
+        event - a matplotlib mouse event
+        
+        returns the object number at the mouse location or None if
+        mouse isn't over an object
+        '''
+        x = int(event.xdata + .5)
+        y = int(event.ydata + .5)
+        if (x < 0 or x >= self.shape[1] or
+            y < 0 or y >= self.shape[0]):
+            return
+        for labels in self.labels:
+            lnum = labels[y,x]
+            if lnum != 0:
+                break
+        if lnum == 0:
+            return
+        return lnum
+        
     def on_key_down(self, event):
         assert isinstance(event, matplotlib.backend_bases.KeyEvent)
         self.pressed_keys.add(event.key)
@@ -935,6 +948,13 @@ class EditObjectsDialog(wx.Dialog):
             
     def on_context_menu(self, event):
         '''Pop up a context menu for the control'''
+        x, y = self.panel.ScreenToClient(event.GetPosition())
+        location_event = matplotlib.backend_bases.LocationEvent(
+            "ContextMenu", self.panel, x, y, event)
+        if location_event.inaxes == self.orig_axes:
+            if self.get_mouse_event_object_number(location_event) is not None:
+                event.Skip(False)
+                return
         if self.mode == self.FREEHAND_DRAW_MODE:
             self.exit_freehand_draw_mode(event)
         elif self.mode in (self.SPLIT_PICK_FIRST_MODE,

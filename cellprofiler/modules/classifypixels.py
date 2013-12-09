@@ -300,6 +300,8 @@ class ClassifyPixels(cpm.CPModule):
            FEATURE_ITEMS_KEY - the features needed by the classifier
         '''
         d = {}
+        if not isinstance(filename, str):
+            filename = filename.encode('utf-8')
         hf = h5py.File(filename,'r')
         temp = hf['classifiers'].keys()
         # If hf is not closed this leads to an error in win64 and mac os x
@@ -325,6 +327,7 @@ class ClassifyPixels(cpm.CPModule):
             featureItems.append(FeatureBase.deserialize(fgrp))
         d[FEATURE_ITEMS_KEY] = featureItems
         f.close()
+        del f
         return d
 
     def display(self, workspace, figure):

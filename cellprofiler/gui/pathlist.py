@@ -11,6 +11,8 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
+import logging
+logger = logging.getLogger(__name__)
 import bisect
 import numpy as np
 import wx
@@ -114,10 +116,17 @@ class PathListCtrl(wx.PyScrolledWindow):
         #
         # Compute the size of the message to display when empty
         #
-        dc = wx.MemoryDC()
-        dc.Font = self.DROP_FILES_AND_FOLDERS_FONT
-        self.drop_files_and_folders_text_extent =\
-            dc.GetTextExtent(self.DROP_FILES_AND_FOLDERS_HERE)
+        tmp = self.Font
+        try:
+            self.Font = self.DROP_FILES_AND_FOLDERS_FONT
+            self.drop_files_and_folders_text_extent =\
+            self.GetTextExtent(self.DROP_FILES_AND_FOLDERS_HERE)
+        except:
+            logger.warn("Failed to get text extend for \"%s\" message" %
+                        self.DROP_FILES_AND_FOLDERS_HERE, exc_info=True)
+            self.drop_files_and_folders_text_extent = (200, 30)
+        finally:
+            self.Font = tmp
         
     def AcceptsFocus(self):
         '''Tell the scrollpanel that we can accept the focus'''

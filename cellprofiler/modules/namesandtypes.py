@@ -120,11 +120,15 @@ rescaled from 0.0 &ndash; 1.0.
 <ul>
 <li><i>%(INTENSITY_RESCALING_BY_METADATA)s:</i> Rescale the image 
 intensity so that saturated values are rescaled to 1.0 by dividing 
-all pixels in the image by the maximum possible intensity value. 
-Some image formats save the maximum possible intensity value along with the pixel data.
+all pixels in the image by the maximum possible intensity value
+allowed by the imaging hardware. Some image formats save the maximum 
+possible intensity value along with the pixel data.
 For instance, a microscope might acquire images using a 12-bit
 A/D converter which outputs intensity values between zero and 4095,
-but stores the values in a field that can take values up to 65535.</li>
+but stores the values in a field that can take values up to 65535.
+Choosing this setting ensures that the intensity scaling value is 
+the maximum allowed by the hardware, and not the maximum allowable
+by the file format. </li>
 <li><i>%(INTENSITY_RESCALING_BY_DATATYPE)s:</i> Ignore the image 
 metadata and rescale the image to 0 &ndash; 1 by dividing by 255 
 or 65535, depending on the number of bits used to store the image.</li>

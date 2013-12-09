@@ -34,6 +34,8 @@ recommended for running ilastik.
 # 
 # Website: http://www.cellprofiler.org
 
+import urllib
+
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -42,7 +44,8 @@ import cellprofiler.cpimage  as cpi
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT, \
-     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
+     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
+     URL_FOLDER_NAME
   
 import logging
 logger = logging.getLogger(__name__)
@@ -125,7 +128,8 @@ class ClassifyPixels(cpm.CPModule):
             dir_choices = [
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
-                DEFAULT_OUTPUT_SUBFOLDER_NAME], allow_metadata = False,doc ="""
+                DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME], 
+            allow_metadata = False,doc ="""
                 Select the folder containing the classifier file to be loaded. 
             %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
         
@@ -261,16 +265,42 @@ class ClassifyPixels(cpm.CPModule):
     def parse_classifier_file(self, workspace):
         global classifier_dict
         # Load classifier from hdf5
-        fileName = str(os.path.join(self.h5_directory.get_absolute_path(), 
-                                    self.classifier_file_name.value))
-        modtime = os.stat(fileName).st_mtime
-        if fileName in classifier_dict:
-            last_modtime, d = classifier_dict[fileName]
-            if modtime == last_modtime:
+        if self.h5_directory.dir_choice == URL_FOLDER_NAME:
+            url = self.classifier_file_name.value.encode("utf-8")
+            if url in classifier_dict:
+                last_modtime, d = classifier_dict[url]
                 return d
+            filename, headers = urllib.urlretrieve(url)
+            try:
+                modtime = os.stat(filename).st_mtime
+                d = self.parse_classifier_hdf5(filename)
+                classifier_dict[url] = (modtime, d)
+            finally:
+                os.remove(filename)
+        else:
+            fileName = os.path.join(
+                self.h5_directory.get_absolute_path(), 
+                self.classifier_file_name.value).encode("utf-8")
+            modtime = os.stat(fileName).st_mtime
+            if fileName in classifier_dict:
+                last_modtime, d = classifier_dict[fileName]
+                if modtime == last_modtime:
+                    return d
+            d = self.parse_classifier_file(fileName)
+            classifier_dict[fileName] = (modtime, d)
+        return d
+    
+    def parse_classifier_hdf5(self, filename):
+        '''Parse the classifiers out of the HDF5 file
         
+        filename - name of classifier file
+        
+        returns a dictionary
+           CLASSIFIERS_KEY - the random forest classifiers
+           FEATURE_ITEMS_KEY - the features needed by the classifier
+        '''
         d = {}
-        hf = h5py.File(fileName,'r')
+        hf = h5py.File(filename,'r')
         temp = hf['classifiers'].keys()
         # If hf is not closed this leads to an error in win64 and mac os x
         hf.close()
@@ -280,21 +310,21 @@ class ClassifyPixels(cpm.CPModule):
         for cid in temp:
             cidpath = 'classifiers/' + cid
             try:
-                classifiers.append(ClassifierRandomForest.deserialize(fileName, cidpath))
+                classifiers.append(
+                    ClassifierRandomForest.deserialize(filename, cidpath))
             except:
-                classifiers.append(ClassifierRandomForest.loadRFfromFile(fileName, cidpath))
+                classifiers.append(
+                    ClassifierRandomForest.loadRFfromFile(filename, cidpath))
 
         d[CLASSIFIERS_KEY] = classifiers
         
         # Restore user selection of feature items from hdf5
         featureItems = []
-        f = h5py.File(fileName,'r')
+        f = h5py.File(filename,'r')
         for fgrp in f['features'].values():
             featureItems.append(FeatureBase.deserialize(fgrp))
-        f.close()
-        del f
         d[FEATURE_ITEMS_KEY] = featureItems
-        classifier_dict[fileName] = (modtime, d)
+        f.close()
         return d
 
     def display(self, workspace, figure):

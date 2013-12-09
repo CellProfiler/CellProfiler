@@ -1789,7 +1789,8 @@ class ExportToDatabase(cpm.CPModule):
             COL_OBJECT_NAME1, COL_OBJECT_NAME2, relationship_type_table)
         
         return dict(
-            [((mn, r, o1, o2), rt_id) for rt_id, mn, r, o1, o2 in
+            [((int(mn), r, o1, o2), int(rt_id)) 
+             for rt_id, r, mn, o1, o2 in
               execute(cursor, statement)])
         
     def handle_interaction_add_relationship_type(

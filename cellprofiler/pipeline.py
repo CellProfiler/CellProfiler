@@ -3037,7 +3037,7 @@ class Pipeline(object):
         """Throw a ValidationError if the pipeline isn't valid
         
         """
-        for module in self.__modules:
+        for module in self.modules():
             module.test_valid(self)
     
     def notify_listeners(self, event):

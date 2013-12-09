@@ -217,8 +217,10 @@ class DataToolFrame(wx.Frame):
         self.module.show_window = True  # to make sure it saves display data
         self.module.run_as_data_tool(workspace)
         self.measurements.flush()
-        fig = cpf.create_or_find(parent=self,
-                                 title="%s Output" % (self.module.module_name),
-                                 name="CellProfiler:DataTool:%s" % (self.module.module_name))
-        self.module.display(workspace, fig)
-        fig.figure.canvas.draw()
+        if self.module.show_window:
+            fig = cpf.create_or_find(
+                parent=self,
+                title="%s Output" % (self.module.module_name),
+                name="CellProfiler:DataTool:%s" % (self.module.module_name))
+            self.module.display(workspace, fig)
+            fig.figure.canvas.draw()

@@ -798,7 +798,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.savetxt(fd, save_image_plane_details=False)
         result = fd.getvalue()
         lines = result.split("\n")
-        self.assertEqual(len(lines), 9)
+        self.assertEqual(len(lines), 10)
         text, value = lines[-2].split(":")
         #
         # unicode encoding: 
@@ -811,7 +811,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         #
         # result = \\\\\\u2211
         self.assertEqual(value, r"\\\\\\u2211")
-        mline = lines[6]
+        mline = lines[7]
         idx0 = mline.find("notes:")
         mline = mline[(idx0+6):]
         idx1 = mline.find("|")

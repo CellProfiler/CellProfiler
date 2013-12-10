@@ -412,7 +412,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                                      all_centers[:, missing_labels-1]
                     di = missing_i_centers[:, np.newaxis] - ig[np.newaxis, :]
                     dj = missing_j_centers[:, np.newaxis] - jg[np.newaxis, :]
-                    missing_best = lg[np.lexsort((di*di + dj*dj, ))[:, 0]]
+                    missing_best = lg[np.argsort((di*di + dj*dj, ))[:, 0]]
                     best = np.zeros(np.max(labels) + 1, int)
                     best[missing_labels] = missing_best
                     cl[missing_mask] = best[labels[missing_mask]]

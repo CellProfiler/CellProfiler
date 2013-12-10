@@ -469,7 +469,7 @@ class FilterObjects(cpm.CPModule):
             indexes = self.discard_border_objects(workspace, src_objects)
         else:
             raise ValueError("Unknown filter choice: %s"%
-                             self.filter_choice.value)
+                             self.mode.value)
         
         #
         # Create an array that maps label indexes to their new values

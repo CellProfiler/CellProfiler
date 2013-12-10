@@ -942,6 +942,7 @@ class Pipeline(object):
         has_image_plane_details = False
         git_hash = None
         pipeline_version = None
+        CURRENT_VERSION = None
         while True:
             line = rl()
             if line is None:
@@ -975,7 +976,9 @@ class Pipeline(object):
             else:
                 print line
         
-        if git_hash is None or git_hash != cpversion.git_hash:
+        if CURRENT_VERSION is None:
+            pass
+        elif git_hash is None or git_hash != cpversion.git_hash:
             if pipeline_version > CURRENT_VERSION:
                 if git_hash is None:
                     message = (

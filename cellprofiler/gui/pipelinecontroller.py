@@ -844,7 +844,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         return True if the user saved the pipeline
         '''
         wildcard = ("CellProfiler pipeline (*.%s)|*.%s|"
-                    "CellProfiler pipeline and file list(*.%s)|*.%s") % (
+                    "CellProfiler pipeline and file list (*.%s)|*.%s") % (
             cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE, 
             cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE)
         with wx.FileDialog(self.__frame,

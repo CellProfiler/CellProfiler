@@ -538,15 +538,43 @@ class PipelineController:
                 self.on_update_pathlist()
                 self.__dirty_workspace = False
                 self.set_title()
-                if self.__pipeline.message_for_user is not None:
-                    wx.MessageBox(
-                        self.__pipeline.message_for_user,
-                        caption = self.__pipeline.caption_for_user,
-                        style = wx.ICON_INFORMATION | wx.OK,
-                        parent = self.__frame)
+                self.display_pipeline_message_for_user()
             finally:
                 cpprefs.remove_progress_callback(progress_callback_fn)
+    
+    def display_pipeline_message_for_user(self):
+        if self.__pipeline.message_for_user is not None:
+            frame = wx.Frame(self.
+                             __frame, 
+                             title = self.__pipeline.caption_for_user)
+            frame.Sizer = wx.BoxSizer(wx.VERTICAL)
+            frame.Sizer.AddSpacer(5)
+            message_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            frame.Sizer.Add(
+                message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 12)
+            frame.Sizer.AddSpacer(5)
+            button_bar = wx.StdDialogButtonSizer()
+            frame.Sizer.Add(button_bar, 0, wx.EXPAND)
             
+            info_bitmap = wx.ArtProvider.GetBitmap(
+                wx.ART_INFORMATION,
+                client = wx.ART_CMN_DIALOG)
+            message_sizer.Add(
+                wx.StaticBitmap(frame, bitmap=info_bitmap),
+                0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
+            message_sizer.AddSpacer(12)
+            text = wx.StaticText(
+                frame, label = self.__pipeline.message_for_user)
+            message_sizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
+            
+            ok_button = wx.Button(frame, wx.ID_OK)
+            button_bar.AddButton(ok_button)
+            ok_button.Bind(
+                wx.EVT_BUTTON, 
+                lambda event: frame.Close())
+            frame.Fit()
+            frame.Show()
+        
     def __on_new_workspace(self, event):
         '''Handle the New Workspace menu command'''
         if self.__dirty_workspace:
@@ -752,12 +780,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                             dir_ctrl.GetValue())
                 
             self.__workspace.save_pipeline_to_measurements()
-            if self.__pipeline.message_for_user is not None:
-                wx.MessageBox(
-                    self.__pipeline.message_for_user,
-                    caption = self.__pipeline.caption_for_user,
-                    style = wx.ICON_INFORMATION | wx.OK,
-                    parent = self.__frame)
+            self.display_pipeline_message_for_user()
             
         except Exception,instance:
             from cellprofiler.gui.errordialog import display_error_dialog

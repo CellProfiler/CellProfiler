@@ -428,7 +428,8 @@ class CPFrame(wx.Frame):
                and module UI, otherwise hide the welcome screen.
         '''
         self.startup_blurb_frame.Show(show)
-        self.startup_blurb_frame.Raise()
+        if (show):
+            self.startup_blurb_frame.Raise()
             
     def show_preferences(self, show):
         '''Show or hide the preferences panel

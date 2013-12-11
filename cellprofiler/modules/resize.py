@@ -18,7 +18,7 @@ method to use.
 import logging
 import numpy as np
 import traceback
-from scipy.ndimage import affine_transform
+from scipy.ndimage import affine_transform, map_coordinates
 logger = logging.getLogger(__name__)
 
 import cellprofiler.cpmodule as cpm
@@ -205,7 +205,9 @@ class Resize(cpm.CPModule):
                 shape = np.array([self.specific_height.value,
                                   self.specific_width.value])
             elif self.use_manual_or_image == C_IMAGE:
-                shape = np.array(workspace.image_set.get_image(self.specific_image.value).pixel_data.shape).astype(int)
+                shape = np.array(workspace.image_set.get_image(
+                    self.specific_image.value).pixel_data.shape).astype(int)
+            factor = np.array(shape, float) /np.array(image_pixels.shape, float)
         #
         # Little bit of wierdness here. The input pixels are numbered 0 to
         # shape-1 and so are the output pixels. Therefore the affine transform
@@ -232,7 +234,31 @@ class Resize(cpm.CPModule):
             output_pixels = affine_transform(image_pixels, transform,
                                              output_shape = shape,
                                              order = order)
-        output_image = cpi.Image(output_pixels, parent_image=image)
+        # Explicitly provide a mask in order to divorce our mask from
+        # any that might be supplied by the parent.
+        mask = affine_transform(image.mask.astype(float), transform,
+                                output_shape = shape[:2],
+                                order = 1) >= .5
+        if image.has_crop_mask:
+            input_cropping = image.crop_mask
+            cropping_shape = (
+                np.array(input_cropping.shape, float) * factor + .5).astype(int)
+            eps = np.array([.50001, .50001]) / factor
+            i = np.linspace(eps[0], input_cropping.shape[0]+eps[0], 
+                            cropping_shape[0],
+                            endpoint=False)
+            j = np.linspace(eps[1], input_cropping.shape[1]+eps[1],
+                            cropping_shape[1],
+                            endpoint=False)
+            ii, jj = np.mgrid[0:cropping_shape[0], 0:cropping_shape[1]]
+            cropping = map_coordinates(
+                input_cropping.astype(float),
+                coordinates = [i[ii], j[jj]],
+                order = 1, mode='nearest') >= .5
+        else:
+            cropping = mask
+        output_image = cpi.Image(output_pixels, parent_image=image,
+                                 mask=mask, crop_mask=cropping)
         workspace.image_set.add(output_image_name, output_image)
 
         if self.show_window:

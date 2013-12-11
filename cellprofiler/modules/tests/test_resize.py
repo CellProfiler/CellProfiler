@@ -166,7 +166,8 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         self.assertTrue(isinstance(module, R.Resize))
         self.assertEqual(module.interpolation, R.I_BICUBIC)
     
-    def make_workspace(self, image, size_method, interpolation):
+    def make_workspace(self, image, size_method, interpolation, 
+                       mask = None, cropping = None):
         module = R.Resize()
         module.image_name.value = INPUT_IMAGE_NAME
         module.resized_image_name.value = OUTPUT_IMAGE_NAME
@@ -177,7 +178,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image = cpi.Image(image)
+        image = cpi.Image(image, mask, cropping)
         image_set.add(INPUT_IMAGE_NAME, image)
         workspace = cpw.Workspace(pipeline, module, image_set, 
                                   cpo.ObjectSet(), 
@@ -327,3 +328,44 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertTrue(expected.shape == result.shape)
  
+    def test_05_01_resize_with_cropping(self):
+        # This is a regression test for issue # 967
+        r = np.random.RandomState()
+        r.seed(501)
+        i, j = np.mgrid[0:10, 0:20]
+        image = i + j
+        mask = r.uniform(size=image.shape) > .5
+        imask = mask.astype(int)
+        cropping = np.zeros((30, 40), bool)
+        cropping[10:20, 10:30] = True
+        workspace, module = self.make_workspace(
+            image, R.R_BY_FACTOR, R.I_BILINEAR, mask, cropping)
+        assert isinstance(module, R.Resize)
+        module.resizing_factor.value = .5
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertEqual(tuple(result.mask.shape), (5, 10))
+        self.assertEqual(tuple(result.crop_mask.shape), (15, 20))
+        x = result.crop_image_similarly(np.zeros(result.crop_mask.shape))
+        self.assertEqual(tuple(x.shape), (5, 10))
+        
+    def test_05_02_resize_with_cropping_bigger(self):
+        # This is a regression test for issue # 967
+        r = np.random.RandomState()
+        r.seed(501)
+        i, j = np.mgrid[0:10, 0:20]
+        image = i + j
+        mask = r.uniform(size=image.shape) > .5
+        imask = mask.astype(int)
+        cropping = np.zeros((30, 40), bool)
+        cropping[10:20, 10:30] = True
+        workspace, module = self.make_workspace(
+            image, R.R_BY_FACTOR, R.I_BILINEAR, mask, cropping)
+        assert isinstance(module, R.Resize)
+        module.resizing_factor.value = 2
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertEqual(tuple(result.mask.shape), (20, 40))
+        self.assertEqual(tuple(result.crop_mask.shape), (60, 80))
+        x = result.crop_image_similarly(np.zeros(result.crop_mask.shape))
+        self.assertEqual(tuple(x.shape), (20, 40))

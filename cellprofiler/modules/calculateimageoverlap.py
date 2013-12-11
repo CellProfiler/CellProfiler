@@ -101,7 +101,7 @@ L_CP = "From this CP pipeline"
 
 class CalculateImageOverlap(cpm.CPModule):
     
-    category = "Image Processing"
+    category = "Measurement"
     variable_revision_number = 3
     module_name = "CalculateImageOverlap"
 

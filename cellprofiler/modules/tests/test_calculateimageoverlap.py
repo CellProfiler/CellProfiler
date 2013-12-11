@@ -88,6 +88,50 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         self.assertEqual(module.ground_truth, "GroundTruth")
         self.assertEqual(module.test_img, "Segmentation")
+        
+    def test_01_03_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20131210175632
+GitHash:63ec479
+ModuleCount:2
+HasImagePlaneDetails:False
+
+CalculateImageOverlap:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Compare segmented objects, or foreground/background?:Segmented objects
+    Select the image to be used as the ground truth basis for calculating the amount of overlap:Bar
+    Select the image to be used to test for overlap:Foo
+    Select the objects to be used as the ground truth basis for calculating the amount of overlap:Nuclei2_0
+    Select the objects to be tested for overlap against the ground truth:Nuclei2_1
+
+CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Compare segmented objects, or foreground/background?:Foreground/background segmentation
+    Select the image to be used as the ground truth basis for calculating the amount of overlap:Foo
+    Select the image to be used to test for overlap:Bar
+    Select the objects to be used as the ground truth basis for calculating the amount of overlap:Cell2_0
+    Select the objects to be tested for overlap against the ground truth:Cell2_1
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, C.CalculateImageOverlap))
+        self.assertEqual(module.obj_or_img, C.O_OBJ)
+        self.assertEqual(module.ground_truth, "Bar")
+        self.assertEqual(module.test_img, "Foo")
+        self.assertEqual(module.object_name_GT, "Nuclei2_0")
+        self.assertEqual(module.object_name_ID, "Nuclei2_1")
+        
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module, C.CalculateImageOverlap))
+        self.assertEqual(module.obj_or_img, C.O_IMG)
+        self.assertEqual(module.ground_truth, "Foo")
+        self.assertEqual(module.test_img, "Bar")
+        self.assertEqual(module.object_name_GT, "Cell2_0")
+        self.assertEqual(module.object_name_ID, "Cell2_1")
 
     def make_workspace(self, ground_truth, test):
         '''Make a workspace with a ground-truth image and a test image
@@ -136,10 +180,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         module = C.CalculateImageOverlap()
         module.module_num = 1
         module.obj_or_img.value = O_OBJ
-        module.object_name_GT.value = GROUND_TRUTH_OBJ 
-        module.img_obj_found_in_GT.value = GROUND_TRUTH_OBJ_IMAGE_NAME
+        module.object_name_GT.value = GROUND_TRUTH_OBJ
         module.object_name_ID.value = ID_OBJ
-        module.img_obj_found_in_ID.value = ID_OBJ_IMAGE_NAME
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
@@ -597,10 +639,7 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         m = workspace.measurements
         for feature in C.FTR_ALL:
             mname = module.measurement_name(feature)
-            if feature == C.FTR_RAND_INDEX:
-                self.assertEqual(m[cpmeas.IMAGE, mname, 1], 1)
-            else:
-                self.assertTrue(np.isnan(m[cpmeas.IMAGE, mname, 1]))
+            self.assertTrue(np.isnan(m[cpmeas.IMAGE, mname, 1]))
         
     def test_05_01_test_measure_overlap_objects(self):
         r = np.random.RandomState()

@@ -102,7 +102,7 @@ L_CP = "From this CP pipeline"
 class CalculateImageOverlap(cpm.CPModule):
     
     category = "Image Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = "CalculateImageOverlap"
 
     def create_settings(self):
@@ -130,28 +130,15 @@ class CalculateImageOverlap(cpm.CPModule):
             the result of another segmentation algorithm whose results you would like to compare. See the <b>Load</b> modules for more details
             on loading objects.""")
         
-        self.img_obj_found_in_GT = cps.ImageNameSubscriber(
-            "Select the image used to identify the objects",
-            cps.NONE, doc ="""
-            <i>(Used only when comparing segmented objects)</i> <br>
-            Choose which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
-            select "None." """)
-        
         self.object_name_ID = cps.ObjectNameSubscriber(
             "Select the objects to be tested for overlap against the ground truth", 
             cps.NONE, doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
             This set of objects is what you will compare with the ground truth objects. It is known as the "test object." """)
-        
-        self.img_obj_found_in_ID = cps.ImageNameSubscriber(
-            "Select the image used to find these objects",
-            cps.NONE, doc ="""
-            <i>(Used only when comparing segmented objects)</i> <br>
-            Choose which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
-            select "None." """)
 
     def settings(self):
-        result = [self.obj_or_img, self.ground_truth, self.test_img, self.object_name_GT, self.img_obj_found_in_GT,self.object_name_ID, self.img_obj_found_in_ID]
+        result = [self.obj_or_img, self.ground_truth, self.test_img, 
+                  self.object_name_GT, self.object_name_ID]
         return result
 
     def visible_settings(self):
@@ -159,7 +146,7 @@ class CalculateImageOverlap(cpm.CPModule):
         if self.obj_or_img == O_IMG:
             result += [self.ground_truth, self.test_img]
         elif self.obj_or_img == O_OBJ:
-            result += [self.object_name_GT, self.img_obj_found_in_GT,self.object_name_ID, self.img_obj_found_in_ID]
+            result += [self.object_name_GT, self.object_name_ID]
         return result
 
     def run(self,workspace):
@@ -288,14 +275,6 @@ class CalculateImageOverlap(cpm.CPModule):
             
     def measure_objects(self, workspace):
         image_set = workspace.image_set
-        GT_img = image_set.get_image(self.img_obj_found_in_GT.value)
-        ID_img = image_set.get_image(self.img_obj_found_in_ID.value)
-        ID_pixels = ID_img.pixel_data
-        GT_pixels = GT_img.pixel_data
-        GT_pixels = ID_img.crop_image_similarly(GT_pixels)
-        GT_mask = ID_img.crop_image_similarly(GT_img.mask)
-        ID_mask = ID_img.mask
-        mask  = GT_mask & ID_mask
         object_name_GT = self.object_name_GT.value
         objects_GT = workspace.get_objects(object_name_GT)
         iGT,jGT,lGT = objects_GT.ijv.transpose() 
@@ -304,36 +283,64 @@ class CalculateImageOverlap(cpm.CPModule):
         iID, jID, lID = objects_ID.ijv.transpose()
         ID_obj = 0 if len(lID) == 0 else max(lID)
         GT_obj  = 0 if len(lGT) == 0 else max(lGT)
-        intersect_matrix = np.zeros((ID_obj, GT_obj))
-        GT_tot_area = []
-        all_intersect_area = []
-        FN_area = np.zeros((ID_obj, GT_obj))
 
-        xGT, yGT = np.shape(GT_pixels)
-        xID, yID = np.shape(ID_pixels)
+        xGT, yGT = objects_GT.shape
+        xID, yID = objects_ID.shape
         GT_pixels = np.zeros((xGT, yGT))
         ID_pixels = np.zeros((xID, yID))
         total_pixels = xGT*yGT
 
-        for ii in range(0, GT_obj):
-            indices_ii = np.nonzero(lGT == ii)
-            indices_ii = indices_ii[0]
-            iGT_ii = iGT[indices_ii]
-            jGT_ii = jGT[indices_ii]
-            GT_set = set(zip(iGT_ii, jGT_ii))
-            for jj in range(0, ID_obj):
-                indices_jj = np.nonzero(lID==jj)
-                indices_jj = indices_jj[0]
-                iID_jj = iID[indices_jj]
-                jID_jj = jID[indices_jj]
-                ID_set = set(zip(iID_jj, jID_jj))
-                area_overlap = len(GT_set & ID_set)
-                all_intersect_area += [area_overlap]
-                intersect_matrix[jj,ii] = area_overlap
-                FN_area[jj,ii] = len(GT_set) - area_overlap
-            GT_pixels[iGT, jGT] = 1    
-            GT_tot_area += [len(GT_set)]
+        GT_pixels[iGT, jGT] = 1
+        ID_pixels[iID, jID] = 1
 
+        GT_tot_area = len(iGT)
+        if len(iGT) == 0 and len(iID) == 0:
+            intersect_matrix = np.zeros((0, 0), int)
+        else:
+            #
+            # Build a matrix with rows of i, j, label and a GT/ID flag
+            #
+            all_ijv = np.column_stack(
+                (np.hstack((iGT, iID)),
+                 np.hstack((jGT, jID)),
+                 np.hstack((lGT, lID)),
+                 np.hstack((np.zeros(len(iGT)), np.ones(len(iID))))))
+            #
+            # Order it so that runs of the same i, j are consecutive
+            #
+            order = np.lexsort((all_ijv[:, -1], all_ijv[:, 0], all_ijv[:, 1]))
+            all_ijv = all_ijv[order, :]
+            # Mark the first at each i, j != previous i, j
+            first = np.where(np.hstack(
+                ([True], 
+                 ~ np.all(all_ijv[:-1, :2] == all_ijv[1:, :2], 1), 
+                 [True])))[0]
+            # Count # at each i, j
+            count = first[1:] - first[:-1]
+            # First indexer - mapping from i,j to index in all_ijv
+            all_ijv_map = Indexes([count])
+            # Bincount to get the # of ID pixels per i,j
+            id_count = np.bincount(all_ijv_map.rev_idx,
+                                   all_ijv[:, -1]).astype(int)
+            gt_count = count - id_count
+            # Now we can create an indexer that has NxM elements per i,j
+            # where N is the number of GT pixels at that i,j and M is
+            # the number of ID pixels. We can then use the indexer to pull
+            # out the label values for each to populate a sparse array.
+            #
+            cross_map = Indexes([id_count, gt_count])
+            off_gt = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[0]
+            off_id = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[1]+\
+                id_count[cross_map.rev_idx]
+            intersect_matrix = coo_matrix(
+                (np.ones(len(off_gt)), 
+                 (all_ijv[off_id, 2], all_ijv[off_gt, 2])),
+                shape = (ID_obj+1, GT_obj+1)).toarray()[1:, 1:]
+        
+        gt_areas = objects_GT.areas
+        FN_area = gt_areas[np.newaxis, :] - intersect_matrix
+        all_intersecting_area = np.sum(intersect_matrix)
+        
         dom_ID = []
 
         for i in range(0, ID_obj):
@@ -388,11 +395,7 @@ class CalculateImageOverlap(cpm.CPModule):
         TN = np.sum(TN)
         TP = np.sum(TP)
         FP = np.sum(FP)
-        GT_tot_area = np.sum(GT_tot_area)
 
-        all_intersecting_area = np.sum(all_intersect_area)
-
-        
         accuracy = TP/all_intersecting_area
         recall  = TP/GT_tot_area
         precision = TP/(TP+FP)
@@ -401,18 +404,11 @@ class CalculateImageOverlap(cpm.CPModule):
         false_positive_rate = FP/(FP+TN)
         false_negative_rate = FN/(FN+TP)
         true_negative_rate = TN / (FP+TN)
-        #
-        # Temporary - assume not ijv
-        #
-        #rand_index, adjusted_rand_index = self.compute_rand_index_ijv(
-        #    gt_ijv, objects_ijv, mask)
-        #
-        gt_labels = np.zeros(mask.shape, np.int64)
-        gt_labels[iGT, jGT] = lGT
-        test_labels = np.zeros(mask.shape, np.int64)
-        test_labels[iID, jID] = lID
+        shape = np.maximum(np.maximum(
+            np.array(objects_GT.shape), np.array(objects_ID.shape)),
+                           np.ones(2, int))
         rand_index, adjusted_rand_index = self.compute_rand_index_ijv(
-            objects_GT.ijv, objects_ID.ijv, mask)
+            objects_GT.ijv, objects_ID.ijv, shape)
         m = workspace.measurements
         m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), F_factor)
         m.add_image_measurement(self.measurement_name(FTR_PRECISION),
@@ -567,7 +563,7 @@ class CalculateImageOverlap(cpm.CPModule):
             rand_index = adjusted_rand_index = np.nan
         return rand_index, adjusted_rand_index 
 
-    def compute_rand_index_ijv(self, gt_ijv, test_ijv, mask):
+    def compute_rand_index_ijv(self, gt_ijv, test_ijv, shape):
         '''Compute the Rand Index for an IJV matrix
         
         This is in part based on the Omega Index:
@@ -587,9 +583,9 @@ class CalculateImageOverlap(cpm.CPModule):
         #
         # First, add the backgrounds to the IJV with a label of zero
         #
-        gt_bkgd = mask.copy()
+        gt_bkgd = np.ones(shape, bool)
         gt_bkgd[gt_ijv[:, 0], gt_ijv[:, 1]] = False
-        test_bkgd = mask.copy()
+        test_bkgd = np.ones(shape, bool)
         test_bkgd[test_ijv[:, 0], test_ijv[:, 1]] = False
         gt_ijv = np.vstack([
             gt_ijv, 
@@ -796,6 +792,15 @@ class CalculateImageOverlap(cpm.CPModule):
         if variable_revision_number == 1:
             #no object choice before rev 2
             old_setting_values = setting_values
-            setting_values = [O_IMG, old_setting_values[0], old_setting_values[1]]
+            setting_values = [
+                O_IMG, old_setting_values[0], old_setting_values[1],
+                "None", "None", "None", "None"]
             variable_revision_number = 2
+        if variable_revision_number == 2:
+            #
+            # Removed images associated with objects from the settings
+            #
+            setting_values = setting_values[:4] + setting_values[5:6]
+            variable_revision_number = 3
+            
         return setting_values, variable_revision_number, from_matlab

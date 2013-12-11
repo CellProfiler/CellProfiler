@@ -116,9 +116,11 @@ class Objects(object):
             return self.__shape
         if self.__segmented is not None:
             return self.__segmented.shape
-        if self.has_parent_image is not None:
+        if self.has_parent_image:
             return self.parent_image.pixel_data.shape
-        return tuple([np.max(self.__ijv[i]) for i in range(2)])
+        if self.__ijv.shape[0] == 0:
+            return (0, 0)
+        return tuple([np.max(self.__ijv[:, i]+1) for i in range(2)])
     
     def get_labels(self, shape = None):
         '''Get a set of labels matrices consisting of non-overlapping labels

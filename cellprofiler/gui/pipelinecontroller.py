@@ -548,27 +548,36 @@ class PipelineController:
                              __frame, 
                              title = self.__pipeline.caption_for_user)
             frame.Sizer = wx.BoxSizer(wx.VERTICAL)
-            frame.Sizer.AddSpacer(5)
+            panel = wx.Panel(frame)
+            frame.Sizer.Add(panel, 1, wx.EXPAND)
+            panel.Sizer = wx.BoxSizer(wx.VERTICAL)
+            subpanel = wx.Panel(panel)
+            subpanel.BackgroundColour = wx.SystemSettings.GetColour(
+                wx.SYS_COLOUR_WINDOW)
+            panel.Sizer.Add(subpanel, 1, wx.EXPAND)
+            subpanel.Sizer = wx.BoxSizer(wx.VERTICAL)
+            subpanel.Sizer.AddSpacer(15)
             message_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            frame.Sizer.Add(
-                message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 12)
-            frame.Sizer.AddSpacer(5)
+            subpanel.Sizer.Add(
+                message_sizer, 1, wx.EXPAND | wx.RIGHT | wx.LEFT, 15)
+            subpanel.Sizer.AddSpacer(15)
             button_bar = wx.StdDialogButtonSizer()
-            frame.Sizer.Add(button_bar, 0, wx.EXPAND)
+            panel.Sizer.Add(button_bar, 0, wx.EXPAND|wx.ALL, 5)
             
             info_bitmap = wx.ArtProvider.GetBitmap(
                 wx.ART_INFORMATION,
                 client = wx.ART_CMN_DIALOG)
             message_sizer.Add(
-                wx.StaticBitmap(frame, bitmap=info_bitmap),
+                wx.StaticBitmap(subpanel, bitmap=info_bitmap),
                 0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
             message_sizer.AddSpacer(12)
             text = wx.StaticText(
-                frame, label = self.__pipeline.message_for_user)
+                subpanel, label = self.__pipeline.message_for_user)
             message_sizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
             
-            ok_button = wx.Button(frame, wx.ID_OK)
+            ok_button = wx.Button(panel, wx.ID_OK)
             button_bar.AddButton(ok_button)
+            button_bar.Realize()
             ok_button.Bind(
                 wx.EVT_BUTTON, 
                 lambda event: frame.Close())

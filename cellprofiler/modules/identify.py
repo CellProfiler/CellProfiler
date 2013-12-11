@@ -324,11 +324,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
             </dl>
             <dl>
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
-            Our implementation 
-            takes into account the maximum and minimum values in the image and log-transforming the
-            image prior to calculating the threshold. For this reason, note
-            that negative-valued pixels are ignored in this computation, so caution should be
-            used applying offsets to the pixel values (via the <b>ImageMath</b> module or similar).</dd>
+            Our implementation of Otsu's method allows for assigning the threhsold value based on
+            splitting the image into either two classes (foreground and background) or three classes 
+            (foreground, mid-level, and background). See the help below for more details.</dd>
             </dl>
             </li>
             
@@ -392,16 +390,20 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <dl>
             <dd></dd>
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
+            This is an implementation of the method described in Ridler and Calvard, 1978. 
             According to Sezgin and Sankur 2004, Otsu's 
             overall quality on testing 40 nondestructive testing images is slightly 
             better than Ridler's (average error: Otsu, 0.318; Ridler, 0.401).</dd>
             </dl>
             </li>
             
-            <li><i>%(TM_KAPUR)s:</i> This method computes the threshold of an image by
-            log-transforming its values, then searching for the threshold that
-            maximizes the sum of entropies of the foreground and background
-            pixel values, when treated as separate distributions.</li>
+            <li><i>%(TM_KAPUR)s:</i> This method computes the threshold of an image by 
+            searching for the threshold that maximizes the sum of entropies of the foreground 
+            and background pixel values, when treated as separate distributions.
+            <dl>
+            <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
+            This is an implementation of the method described in Kapur <i>et al</i>, 1985.</dd>
+            </dl></li>
             
             <li><i>Maximum correlation thresholding (%(TM_MCT)s):</i> This method computes 
             the maximum correlation between the binary mask created by thresholding and
@@ -413,8 +415,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             </dl>
             <dl>
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
-            This is an implementation of the
-            method described in Padmanabhan <i>et al</i>, 2010. </dd>
+            This is an implementation of the method described in Padmanabhan <i>et al</i>, 2010.</dd>
             </dl></li>
             </ul>
             
@@ -427,6 +428,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             optimal image thresholding of biological data" <i>Journal of 
             Neuroscience Methods</i> 193, 380-384.
             (<a href="http://dx.doi.org/10.1016/j.jneumeth.2010.08.031">link</a>)</li>
+            <li>Ridler T, Calvard S (1978) "Picture thresholding using an iterative selection method",
+            <i>IEEE Transactions on Systems, Man and Cybernetics</i>, 8(8), 630-632.</li>
+            <li>Kapur JN, Sahoo PK, Wong AKC (1985) "A new method of gray level picture thresholding 
+            using the entropy of the histogram." <i>Computer Vision, Graphics and Image Processing</i>, 
+            29, 273-285.</li>
             </ul></p>
             """%globals())
         

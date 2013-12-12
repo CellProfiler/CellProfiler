@@ -755,13 +755,38 @@ class NamesAndTypes(cpm.CPModule):
             if any([x is not None for x in all_channels]):
                 m.add_all_measurements(
                     cpmeas.IMAGE, channel_feature, all_channels)
+        
+        # # # # # # # # # # # # # 
+        #
+        # Find the metadata items to add.
+        #
+        # First, make a java list of columns where each column is
+        # a list of the Java IPDs in that column
+        #
         ipdsByChannel = J.make_list([
             J.make_list([ipd.jipd for ipd in column]).o
             for column in ipd_columns])
+        #
+        # Make a Java map of metadata key to column for matching metadata.
+        # This is used to pick out the preferred column for must-have
+        # metadata items (see issue #971).
+        #
+        must_have = J.make_map()
+        if self.matching_method == MATCH_BY_METADATA:
+            md_keys = self.join.parse()
+            for idx, column_name in enumerate(column_names):
+                for k in md_keys:
+                    ck = k.get(column_name)
+                    if ck is not None and not must_have.containsKey(ck):
+                        must_have.put(ck, idx)
+        #
+        # Do the giant collation in Java
+        #
         md_dict = J.get_map_wrapper(J.static_call(
             "org/cellprofiler/imageset/MetadataUtils",
-            "getImageSetMetadata", "(Ljava/util/List;)Ljava/util/Map;",
-            ipdsByChannel.o))
+            "getImageSetMetadata", 
+            "(Ljava/util/List;Ljava/util/Map;)Ljava/util/Map;",
+            ipdsByChannel.o, must_have.o))
         #
         # Populate the metadata measurements
         #

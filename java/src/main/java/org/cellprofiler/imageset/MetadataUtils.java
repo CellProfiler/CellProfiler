@@ -13,6 +13,7 @@
 package org.cellprofiler.imageset;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,26 +37,33 @@ public class MetadataUtils {
 	 * likely to be consistent, but Wavelength will differ for each column).
 	 * 
 	 * @param ipdList a list of columns of IPDs
+	 * @param mustHave a map of metadata key to the IPD column from which to extract.
+	 *                 These keys are ones that we must return for each image set. 
 	 * @return a map of metadata name to the values for each image set
 	 */
-	static Map<String, List<String>> getImageSetMetadata(List<List<ImagePlaneDetails>> ipdList) {
+	static Map<String, List<String>> getImageSetMetadata(
+			List<List<ImagePlaneDetails>> ipdList,
+			Map<String,Integer> mustHave) {
 		int nrows = Integer.MAX_VALUE;
 		for (List<ImagePlaneDetails> l: ipdList) {
 			nrows = Math.min(nrows, l.size());
 		}
 		Map<String, List<String>> result = new HashMap<String, List<String>>(); 
 		if (nrows == 0) return result;
-		
+		//
+		// The metadata to ignore. We populate with the must-haves
+		// which we collect in a more explicit manner
+		//
 		Set<String> badMetadata = new HashSet<String>();
 		
-		Map<String, String> rowMetadata = getRowMetadata(ipdList, 0, badMetadata);
+		Map<String, String> rowMetadata = getRowMetadata(ipdList, 0, badMetadata, mustHave);
 		for (Map.Entry<String, String> entry:rowMetadata.entrySet()) {
 			List<String> values = new ArrayList<String>(nrows);
 			values.add(entry.getValue());
 			result.put(entry.getKey(), values);
 		}
 		for (int i=1; i<nrows; i++) {
-			rowMetadata = getRowMetadata(ipdList, i, badMetadata);
+			rowMetadata = getRowMetadata(ipdList, i, badMetadata, mustHave);
 			for (Map.Entry<String, List<String>> entry:result.entrySet()) {
 				if (rowMetadata.containsKey(entry.getKey())) {
 					entry.getValue().add(rowMetadata.get(entry.getKey()));
@@ -68,12 +76,17 @@ public class MetadataUtils {
 		return result;
 	}
 	
-	private static Map<String, String> getRowMetadata(List<List<ImagePlaneDetails>> ipdList, int idx, Set<String> badMetadata) { 
+	private static Map<String, String> getRowMetadata(
+			List<List<ImagePlaneDetails>> ipdList, 
+			int idx, 
+			Set<String> badMetadata,
+			Map<String, Integer> mustHave) { 
 		Map<String, String> image_set_metadata = new HashMap<String, String>();
 		for (List<ImagePlaneDetails> l: ipdList) {
 			Map<String, String> metadata = l.get(idx).metadata;
 			for (String key:metadata.keySet()) {
-				if (! badMetadata.contains(key)) {
+				if ((! badMetadata.contains(key)) &&
+					(! mustHave.containsKey(key))){
 					String value = metadata.get(key);
 					if (image_set_metadata.containsKey(key)) {
 						if (! image_set_metadata.get(key).equals(value)) {
@@ -85,6 +98,11 @@ public class MetadataUtils {
 					}
 				}
 			}
+		}
+		for (Map.Entry<String, Integer> entry:mustHave.entrySet()) {
+			final String k = entry.getKey();
+			final ImagePlaneDetails ipd = ipdList.get(entry.getValue()).get(idx);
+			image_set_metadata.put(k, ipd.metadata.get(k));
 		}
 		return image_set_metadata;
 	}

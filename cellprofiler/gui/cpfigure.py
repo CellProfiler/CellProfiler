@@ -911,7 +911,7 @@ class CPFigureFrame(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
-                       colorbar=False, normalize=True, vmin=0, vmax=1, 
+                       colorbar=False, normalize=None, vmin=0, vmax=1, 
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
                        use_imshow = False, interpolation=None):
         '''Show an image in a subplot
@@ -939,6 +939,9 @@ class CPFigureFrame(wx.Frame):
         orig_vmax = vmax
         if interpolation is None:
             interpolation = get_matplotlib_interpolation_preference()
+        if normalize is None:
+            normalize = (image.ndim == 2)
+
         # NOTE: self.subplot_user_params is used to store changes that are made 
         #    to the display through GUI interactions (eg: hiding a channel).
         #    Once a subplot that uses this mechanism has been drawn, it will
@@ -1081,7 +1084,7 @@ class CPFigureFrame(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
-                             normalize=True, rgb_mask=[1,1,1],
+                             normalize=False, rgb_mask=[1,1,1],
                              sharex=None, sharey=None,
                              use_imshow=False):
         return self.subplot_imshow(x, y, image, title=title, clear=clear, 

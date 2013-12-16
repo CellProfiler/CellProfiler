@@ -559,8 +559,8 @@ class ModuleView:
                             continue
                         else:
                             table = TableController(v)
-                            self.__frame.show_grid_ctrl(table)
                             table.bind_to_grid(grid)
+                            self.__frame.show_grid_ctrl(table)
                         continue
                     control = self.make_table_control(v, control)
                     flag = wx.EXPAND

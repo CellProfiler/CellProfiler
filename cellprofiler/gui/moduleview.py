@@ -3319,6 +3319,7 @@ class JoinerController(object):
             joins = [dict([(cn, "") for cn in column_names])]
         
         all_subcontrols = {}
+        self.panel.Sizer.Clear()
         for ctrl in self.panel.GetChildren():
             assert isinstance(ctrl, wx.Window)
             all_subcontrols[ctrl.GetName()] = False
@@ -3329,11 +3330,11 @@ class JoinerController(object):
             if ctrl is None:
                 ctrl = wx.StaticText(self.panel, -1, column_name,
                                      name = header_control_name)
-                self.panel.Sizer.Add(
-                    ctrl, row=0, col=i, 
-                    flag=wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_BOTTOM)
             else:
                 ctrl.Label = column_name
+            self.panel.Sizer.Add(
+                ctrl, row=0, col=i, 
+                flag=wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_BOTTOM)
             all_subcontrols[header_control_name] = True
                 
         for i, join in enumerate(joins):
@@ -3352,14 +3353,14 @@ class JoinerController(object):
                     ctrl = wx.Choice(self.panel, -1, 
                                      choices = choices,
                                      name = choice_ctrl_name)
-                    self.panel.Sizer.Add(ctrl, row=i+1, col = j,
-                                         flag = wx.ALIGN_BOTTOM)
                     ctrl.Bind(wx.EVT_CHOICE,
                               lambda event, row=i, col=j:
                               self.on_choice_changed(event, row, col))
                 else:
                     ctrl.SetItems(choices)
                 ctrl.SetStringSelection(selection)
+                self.panel.Sizer.Add(ctrl, row=i+1, col = j,
+                                     flag = wx.ALIGN_BOTTOM)
                 all_subcontrols[choice_ctrl_name] = True
 
             add_button_name = self.get_add_button_control_name(i)
@@ -3371,8 +3372,8 @@ class JoinerController(object):
                 ctrl.Bind(wx.EVT_BUTTON, 
                           lambda event, position=i+1: 
                           self.on_insert_row(event, position))
-                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names),
-                                     flag = wx.ALIGN_BOTTOM)
+            self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names),
+                                 flag = wx.ALIGN_BOTTOM)
             all_subcontrols[add_button_name] = True
                   
             if len(joins) > 1:                   
@@ -3385,8 +3386,8 @@ class JoinerController(object):
                     ctrl.Bind(wx.EVT_BUTTON, 
                               lambda event, position=i: 
                               self.on_delete_row(event, position))
-                    self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+1,
-                                         flag = wx.ALIGN_BOTTOM)
+                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+1,
+                                     flag = wx.ALIGN_BOTTOM)
                 all_subcontrols[delete_button_name] = True
                                      
             if i > 0:
@@ -3401,8 +3402,8 @@ class JoinerController(object):
                     ctrl.Bind(wx.EVT_BUTTON,
                               lambda event, position=i:
                               self.on_move_row_up(event, position))
-                    self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+2,
-                                         flag = wx.ALIGN_BOTTOM)
+                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+2,
+                                     flag = wx.ALIGN_BOTTOM)
                 all_subcontrols[move_up_button_name] = True
             
             if i < len(joins) - 1:
@@ -3417,8 +3418,8 @@ class JoinerController(object):
                     ctrl.Bind(wx.EVT_BUTTON,
                               lambda event, position=i:
                               self.on_move_row_down(event, position))
-                    self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+3,
-                                         flag = wx.ALIGN_BOTTOM)
+                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+3,
+                                     flag = wx.ALIGN_BOTTOM)
                 all_subcontrols[move_down_button_name] = True
                 
         for key, value in all_subcontrols.iteritems():

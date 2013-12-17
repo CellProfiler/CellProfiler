@@ -2,8 +2,8 @@ __doc__ = """
 The <b>NamesAndTypes</b> module assigns a user-defined name to a particular image or channel, as
 well as defining the relationships between images to create an image set.
 <hr>
-Once the relevant images have been identified using the <b>Images</b> module (and/or optionally has
-had metadata associated with the images using the <b>Metadata</b> module), <b>NamesAndTypes</b> module 
+Once the relevant images have been identified using the <b>Images</b> module (and/or has
+had metadata associated with the images using the <b>Metadata</b> module), the <b>NamesAndTypes</b> module 
 gives each image a meaningful name by which modules in the analysis pipeline will refer to it. 
 
 <h4>What is an "image set"?</h4>
@@ -23,7 +23,7 @@ used the <b>Metadata</b> module to attach metadata to the images, this informati
 In the above example, the <b>NamesAndTypes</b> module allows you to assign each of these channels a unique name,
 provided by you. All files of a given channel will be referred to by the chosen name, and the output
 will also be labeled according to this name. This simplifies the book-keeping of your pipeline and 
-results by making the input and output data more inituitive: a large number of images are referred 
+results by making the input and output data more intuitive: a large number of images are referred 
 to by a small collection of names which are readily memorable to the researcher.
 
 <p>The most common way to perform this assignment is by specifying the pattern in the filename which
@@ -43,7 +43,7 @@ or <i>Help > General help > Using Metadata in CellProfiler</i> for more details 
 and syntax. </p>
 
 <h4>What do I get as output?</h4>
-The <b>NamesAndTypes</b> module is the last of the input modules. After this module, you can choose  
+The <b>NamesAndTypes</b> module is the last of the required input modules. After this module, you can choose  
 any of the names you defined from a drop-down list in any downstream analysis module which requires an 
 image as input. If you defined a set of objects using this module, those names are also available for analysis
 modules that require an object as input.
@@ -256,7 +256,7 @@ class NamesAndTypes(cpm.CPModule):
             one of the images per iteration.</li>
             <li><i>%(ASSIGN_RULES)s</i>: Give images one of several names
             depending on the file name, directory and metadata. This is the
-            appropriate choice if more than one image was taken of each 
+            appropriate choice if more than one image was acquired from each 
             imaging site. You will be asked for distinctive criteria for
             each image and will be able to assign each category of image
             a name that can be referred to in downstream modules.</li>

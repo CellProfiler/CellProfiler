@@ -1942,22 +1942,22 @@ FILTER_RULES_BUTTONS_HELP = """
 Clicking the rule menus shows you all the file <i>attributes</i>, <i>operators</i> and <i>conditions</i> you can specify to narrow down 
 the image list.
 <ol>
-<li>For each rule, first select the <i>attribute</i> that the rule is to be based on. For example, you can select <i>File</i> 
-among others. </li>
-<li>The <i>operator</i> menu is updated with operators applicable to the attribute you selected. For example, if you select 
-<i>File</i> as the attribute, the operator
+<li>For each rule, first select the <i>attribute</i> that the rule is to be based on. For example, you can select "File" 
+to define a rule that will filter files on the basis of their filename. </li>
+<li>The <i>operator</i> drop-down is then updated with operators applicable to the attribute you selected. For example, if you select 
+"File" as the attribute, the operator
 menu includes text operators such as <i>Contain</i> or <i>Starts with</i>. On the other hand, if you
-select <i>Extension</i> as the attribute, you can choose the logical operators <i>Is</i> or <i>Is not</i> from the menu.</li>
-<li>In the operator menu, select the operator you want to use. For example,
-if you want to match data exactly, you may want the <i>Exactly match</i> or the <i>Is</i> operator. If you want the
-condition to be more loose, select an operator such as <i>Contains</i>.</li>
-<li>Use the Condition box to type the condition you want to match. The more
+select "Extension" as the attribute, you can choose the logical operators "Is" or "Is not" from the menu.</li>
+<li>In the operator drop-down menu, select the operator you want to use. For example,
+if you want to match data exactly, you may want the "Exactly match" or the "Is" operator. If you want the
+condition to be more loose, select an operator such as "Contains".</li>
+<li>Use the <i>condition</i> box to type the condition you want to match. The more
 you type, the more specific the condition is. 
 <ul>
 <li>As an example, if you create a new filter and select
-<i>File</i> as the Attribute, select <i>Does</i> and <i>Contain</i> as the Operators, and type "Channel" as the condition,
+<i>File</i> as the attribute, then select "Does" and "Contain" as the operators, and type "Channel" as the condition,
 the filter finds all files that include the text "Channel", such as "Channel1.tif" "Channel2.jpg", "1-Channel-A01.BMP" and so on.</li>
-<li>If you select <i>Does</i> and <i>Start with</i> as the operators and <i>Channel1</i> in the Condition box, 
+<li>If you select "Does" and "Start with" as the operators and "Channel1" in the Condition box, 
 the rule will includes such files as "Channel1.tif" "Channel1-A01.png", and so on.</li></ul>
 <table cellpadding="0" width="100%%">
 <tr align="center"><td><img src="memory:%(IMAGES_USING_RULES_ICON)s"></td></tr>

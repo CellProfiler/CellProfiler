@@ -13,7 +13,7 @@ that are meant to be conceptually distinct from each other, CellProfiler will si
 finish processing one collection and proceed to the next, ignoring any such distinctions unless 
 told otherwise.</p>
 
-<p>To illustrate this, below are two examples where the grouping concept can be useful or important:
+<p>To illustrate this idea, below are two examples where the grouping concept can be useful or important:
 <ul>
 <li>If you are performing illumination correction for a screening experiment, we recommend 
 that the illumination function (an image which represents the overall background fluorescence) 
@@ -34,8 +34,8 @@ be used in this module to insure that object tracking only takes place within ea
 </p>
 
 <p>A grouping may be defined as according to any or as many of the metadata categories as defined by 
-the <b>Metadata</b> module. Upon adding a metadata category, two tables will update in panels below
-showing the resultant oragnization of the image data for each group.</p>
+the <b>Metadata</b> module. Upon adding a metadata category, the two tables will update in the panels 
+below showing the resultant organization of the image data for each group.</p>
 
 <h4>Available measurements</h4>
 <ul> 
@@ -101,18 +101,18 @@ class Groups(cpm.CPModule):
             "grouping metadata count")
         self.add_grouping_metadata(can_remove = False)
         self.add_grouping_metadata_button = cps.DoSomething(
-            "Add another metadata item", "Add", self.add_grouping_metadata)
+            "", "Add another metadata item", self.add_grouping_metadata)
 
         self.grouping_list = cps.Table("Grouping list", min_size = (300, 100),doc="""
-            This list shows the unique values of the selected metadata; each of the
-            unique values comprise a group. Also shown is the number of image sets that comprise that group; this
+            This list shows the unique values of the selected metadata under the "Group" column; each of the unique values 
+            comprises a group. The "Count" column shows the number of image sets that included in a given group; this
             is useful as a "sanity check", to make sure that the expected number of images are present. For example,
             if you are grouping by per-plate metadata from a 384-well assay with 2 sites per well consisting of 3 plates, 
-            you woulld expect to see 3 groups (from 3 plates), with 384 wells &times; 2 sites/well &times;
+            you would expect to see 3 groups (each from the 3 unique plate IDs), with 384 wells &times; 2 sites/well &times;
             3 plates = 768 image sets in each.""")
         
         self.image_set_list = cps.Table("Image sets",doc="""
-            This list displays the file name of location of each of the images that comprise the
+            This list displays the file name and location of each of the image sets that comprise the
             group. For example, if you are grouping by per-plate metadata from a 384-well assay with 2 sites per well 
             consisting of 3 plates, you would expect to see a table consisting of 768 rows.""")
         
@@ -178,7 +178,7 @@ class Groups(cpm.CPModule):
         group.can_remove = can_remove
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(
-                "Remove the above metadata item", "Remove", 
+                "", "Remove this metadata item", 
                 self.grouping_metadata, group))
 
     def get_metadata_choices(self, pipeline, group):

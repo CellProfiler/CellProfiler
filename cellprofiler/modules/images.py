@@ -5,10 +5,9 @@ The <b>Images</b> module helps you specify which image are to be processed in yo
 <hr>
 The <b>Images</b> module allows you to specify the location of files to
 be analyzed by the pipeline. These files can be located on your hard drive or on a networked
-computer elsewhere. If it is easier to specify the folder(s) containing the files rather than 
-the files theselves (for example, because
-the number of files to analyze is too large to deal with individually), you can provide rules to specify only those
-files that you want analyzed from a larger set.
+computer elsewhere. You can also provide rules to specify only those files that you want 
+analyzed out of a larger collection (for example, from a folder containing both images for 
+analysis and non-image files that should be disregarded).
 
 <h4>What is an "image"?</h4>
 An <i>image</i> typically refers to a set of numbers arranged into a two-dimensional format; 
@@ -23,7 +22,7 @@ see <a href="http://loci.wisc.edu/bio-formats/formats">here</a>
 for the formats available. Some image formats are better than others for use in image analysis. Some are 
 <a href="http://www.techterms.com/definition/lossy">"lossy"</a> (information is lost in the conversion 
 to the format) like most JPG/JPEG files; others are 
-<a href="http://www.techterms.com/definition/lossless">lossless</a> (no image information is lost). 
+<a href="http://www.techterms.com/definition/lossless">"lossless"</a> (no image information is lost). 
 For image analysis purposes, a lossless format like TIF or PNG is recommended.</p>
 
 <h4>What do I need as input?</h4>
@@ -55,13 +54,17 @@ confirmation beforehand.</li>
 
 <h4>What do the settings mean?</h4>
 If you have a subset of files that you want to analyze from the full listing shown in the 
-panel, you can filter the files according to a set of rules. This is useful when, for example, you
-have dragged a folder of images onto the file list panel, but the folder contains the images
+panel, you can filter the files according to a set of rules. This is useful in cases such as:
+<ul>
+<li>You have dragged a folder of images onto the file list panel, but the folder contains images 
+you want to analyze along with non-image files that you want to disregard.</li>
+<li>You have dragged a folder of images onto the file list panel, but the folder contains the images
 from one experiment that you want to process along with images from another experiment that you
-want to ignore for now. You may specify as many rules as neccesary to define the desired 
-list of images.
+want to ignore for now. </li>
+</ul>
+You may specify as many rules as necessary to define the desired list of images.
 
-<p>After you have filtered the file list, press the "Update file list" button to update the view of the 
+<p>After you have filtered the file list, press the "Apply" button to update the view of the 
 file list. You can also toggle the "Show file excluded by filters" box to modify the display of the files:
 <ul>
 <li>Checking this box will show all the files in the list, with the files that have been filtered out

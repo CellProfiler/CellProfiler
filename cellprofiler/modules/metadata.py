@@ -1,9 +1,11 @@
+import cellprofiler.icons 
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED
 __doc__ = """
 The <b>Metadata</b> module associates information about the images (i.e., metadata)
 with the images themselves. 
 <hr>
-The <b>Metadata</b> module allows you incorporate the metadata that is particular to the image 
-format, assigned as part of the file name or location (by a vendor microscope, for example),
+The <b>Metadata</b> module allows you incorporate the metadata encoded as part of the image format,
+assigned as part of the file name or location (by a vendor microscope, for example),
 contained in a text file filled out by the user, or any of the above.
 
 <h4>What is "metadata"?</h4>
@@ -50,25 +52,25 @@ metadata extraction. You can extract metadata from all images from <b>Images</b>
 of them by using rules to filter the list.
 
 <h4>What do I get as output?</h4>
-The <b>Metadata</b> module will take the metadata from the source(s) provided and attach them as additional
-data for each image. If the metadata originates from an external source such as a CSV, there are some caveats
+The <b>Metadata</b> module will take the metadata from the source(s) provided and matched to the desired image(s).
+If the metadata originates from an external source such as a CSV, there are some caveats
 in the cases when metadata is either missing or duplicated for the referenced images; see the <b>NamesAndTypes</b>
 for more details.
 
-<p>If the metadata establishes how channels are related to one another, you can use them in <b>NamesAndTypes</b> 
-to aid in creating an image set. You can also use <i>metadata tags</i> in your pipeline to reference the metadata 
-values in later modules. Several modules are capable of using metadata tags for various purposes. Examples include:
+<p>If the metadata establishes how channels are related to one another, you can use them in the <b>NamesAndTypes</b>
+module to aid in creating an image set. You can also use metadata in your pipeline to reference their 
+values in later modules. Several modules are capable of using metadata for various purposes. Examples include:
 <ul>
 <li>You would like to create and apply an illumination correction function to all images from a particular
-plate. You can use metadata tags to save each illumination correction function with a plate-specific
-name in <b>SaveImages</b>, and then use <b>Images</b> to get files
-with the name associated with your image's plate to be applied to your original images.</li>
+plate. You can create a pipeline to use metadata to save each illumination correction function with a 
+plate-specific name in the <b>SaveImages</b> module, and then create a second pipeline to use the Input modules
+to get files with the name associated with your image's plate to be applied to your original images.</li>
 <li>You have a set of experiments for which you would like to produce and save results
 individually for each experiment but using only one analysis run. You can use metadata tags
-in <b>ExportToSpreadsheet</b> or <b>ExportToDatabase</b> to save a spreadsheet for each experiment in 
+in the <b>ExportToSpreadsheet</b> module to save a spreadsheet for each experiment in 
 a folder named according to the experiment.</li>
 </ul>
-In each case, the pre-defined metadata tag is used to name a file or folder. See the module setting help for additional
+In each case, the metadata is used to name a file or folder. Refer to the module setting help for additional
 information on how to use them in the context of the specific module.</p>
 
 <h4>Available measurements</h4>
@@ -185,17 +187,18 @@ class Metadata(cpm.CPModule):
             tooltips=dict(DTC_TEXT="Save all metadata as text",
                           DTC_CHOOSE="Choose the data type (text or numeric) for each metadata category"),
             doc="""
-            Metadata can be saved as either a text or numeric measurement:
+            Metadata can be stored as either a text or numeric value:
             <ul>
             <li><i>%(DTC_TEXT)s:</i> Save all metadata item as text.</li>
             <li><i>%(DTC_CHOOSE)s:</i> Choose the data type separately for each 
             metadata entry. An example of when this approach would be necessary 
             would be if a whole filename is captured as metadata but the file name is
-            numeric, e.g., "0001101.tif". In this situation, if the file name needs to be used for an
-            arithmetic calculation or index, the name would need to be converted to a number.
-            On the other hand, if the file name has leading zeros which would 
-            be removed if converted to a number, capturing the metdata values as text would be more
-            appropriate.</li>
+            numeric, e.g., "0001101". In this situation, if the file name needs to be used for an
+            arithmetic calculation or index, the name would need to be converted to a 
+            number and you would select "Integer" as the data type.
+            On the other hand, if it important that the leading zeroes be retained, 
+            setting it to an integer would them upon conversion to a number. In this case, 
+            storing the metadata values as "Text" would be more appropriate.</li>
             </ul>
             """ % globals())
         
@@ -240,26 +243,42 @@ class Metadata(cpm.CPModule):
             Typically, image information is embedded in the actual image file as header information;
             this information includes the dimensions and color depth among other things.
             If you select this method, press the "Update metadata" button
-            below to extract the metadata. Since the metadata is often image-format specific, the
-            module will extract information that is common to all images files:
+            below to extract the metadata. Since the metadata is often image-format specific, this
+            option will extract information that is common to all images files:
             <ul>
-            <li><i>Series:</i> The series index of the image. <i>None</i> if not applicable.</li>
-            <li><i>Frame:</i> The frame index of the image. <i>None</i> if not applicable.</li>
-            <li><i>ColorFormat:</i> <i>Monochrome</i> for grayscale images, <i>RGB</i> for color.</li>
-            <li><i>SizeZ:</i> The number of image slices. Typically &gt; 1 for confocal stacks and the like.</li>
-            <li><i>SizeT:</i> The number of image frames. Typically &gt; 1 for movies.</li>
-            <li><i>SizeC:</i> The number of color channels. Typically &gt; 1 for non-grayscale images.</li>
+            <li><i>Series:</i> The series index of the image. Set to "None" if not applicable.</li>
+            <li><i>Frame:</i> The frame index of the image. Det to "None" if not applicable.</li>
+            <li><i>ColorFormat:</i> Set to "Monochrome" for grayscale images, "RGB" for color.</li>
+            <li><i>SizeZ:</i> The number of image slices. Typically has a value &gt; 1 for confocal stacks and the like.</li>
+            <li><i>SizeT:</i> The number of image frames. Typically has a value &gt; 1 for movies.</li>
+            <li><i>SizeC:</i> The number of color channels. Typically has a value &gt; 1 for non-grayscale images.</li>
             </ul>
             This extraction process can take a while for assays with lots of images
-            since each one needs to read for extraction.</li>
-            <li><i>%(X_MANUAL_EXTRACTION)s</i>: Specified based on the file nomenclature and/or location. This
-            takes advantage of the fact that acquistion software often automatically assigns a regular 
-            nomenclature to the files. Alternately, the researcher acquiring the images may also have
-            a nomenclature in mind in order for bookkeeping purposes.</li>
+            since each one needs to read for extraction.
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <i>When would you want to use this option?</i> You want to analyze images that are contained as 
+            file stacks, i.e., the images that are related to each other in some way, such as by time 
+            (temporal), space (spatial), or color (spectral).</dd>
+            </dl></li>
+            <li><i>%(X_MANUAL_EXTRACTION)s</i>: Specified based on the file nomenclature and/or location. 
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <i>When would you want to use this option?</i> You want to take advantage of the fact that acquisition software 
+            often automatically assigns a regular 
+            nomenclature to the files or the containing folders. Alternately, the researcher acquiring the images may also have
+            a nomenclature they adhere to for bookkeeping purposes.</dd>
+            </dl></li>
             <li><i>%(X_IMPORTED_EXTRACTION)s</i>: From a comma-delimited list (csv) of information;
             provided as one type of metadata per column, and one row of metadata per image. This is a
             convenient way for you to add data from your own sources to the output generated by
-            CellProfiler.</li>
+            CellProfiler.
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <i>When would you want to use this option?</i> You have information curated in software that allows for
+            export to a spreadsheet. This is commonly the case for laboratories that use data management systems 
+            that track samples and acquisition.</dd>
+            </dl></li>
             </ul>
             Additional extraction methods can be added by clicking the "Add" button below.</p>
             
@@ -428,7 +447,7 @@ class Metadata(cpm.CPModule):
         group.can_remove = can_remove
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(
-                'Remove above extraction method', 'Remove',
+                '', 'Remove this extraction method',
                 self.extraction_methods, group))
             
     def get_dt_metadata_keys(self):

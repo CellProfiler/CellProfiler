@@ -948,18 +948,19 @@ class EditObjectsDialog(wx.Dialog):
             
     def on_context_menu(self, event):
         '''Pop up a context menu for the control'''
-        x, y = self.panel.ScreenToClient(event.GetPosition())
-        location_event = matplotlib.backend_bases.LocationEvent(
-            "ContextMenu", self.panel, x, y, event)
-        if location_event.inaxes == self.orig_axes:
-            if self.get_mouse_event_object_number(location_event) is not None:
-                event.Skip(False)
-                return
-        if self.mode == self.FREEHAND_DRAW_MODE:
-            self.exit_freehand_draw_mode(event)
-        elif self.mode in (self.SPLIT_PICK_FIRST_MODE,
-                           self.SPLIT_PICK_SECOND_MODE):
-            self.exit_split_mode(event)
+        if isinstance(event, wx.MouseEvent):
+            x, y = self.panel.ScreenToClient(event.GetPosition())
+            location_event = matplotlib.backend_bases.LocationEvent(
+                "ContextMenu", self.panel, x, y, event)
+            if location_event.inaxes == self.orig_axes:
+                if self.get_mouse_event_object_number(location_event) is not None:
+                    event.Skip(False)
+                    return
+            if self.mode == self.FREEHAND_DRAW_MODE:
+                self.exit_freehand_draw_mode(event)
+            elif self.mode in (self.SPLIT_PICK_FIRST_MODE,
+                               self.SPLIT_PICK_SECOND_MODE):
+                self.exit_split_mode(event)
         menu = wx.Menu()
         contrast_menu = wx.Menu("Contrast")
         for mid, state, help in (

@@ -149,7 +149,6 @@ class EditObjectsDialog(wx.Dialog):
         self.delete_mode_artist = None
         self.delete_mode_rect_artist = None
         self.wants_image_display = guide_image != None
-        self.hes_dead_jim = False
         self.pressed_keys = set()
         self.build_ui()
         self.init_labels()
@@ -621,13 +620,17 @@ class EditObjectsDialog(wx.Dialog):
         # that's not there.
         # And the sash too, despite the positively wonderful (sarcasm)
         # feedback it gives on the Mac as it is doing stuff.
-        if self.hes_dead_jim:
-            return
-        self.hes_dead_jim = True
-        for window in self.figure.canvas, self.help_sash:
-            if window.HasCapture():
-                window.ReleaseMouse()
-        
+        #
+        # This loop... yes... on the Mac, you can release capture on a window
+        # and the window you just released capture on, it becomes the new
+        # capture window.
+        #
+        while True:
+            window = wx.Window.GetCapture()
+            if window is None:
+                break
+            window.ReleaseCapture()
+            
     def remove_label(self, object_number):
         for l in self.labels:
             l[l == object_number] = 0

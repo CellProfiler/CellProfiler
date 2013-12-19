@@ -115,9 +115,9 @@ from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
 X_IMPORTED_EXTRACTION = "Import from file"
-X_ALL_EXTRACTION_METHODS = [X_AUTOMATIC_EXTRACTION, 
-                            X_MANUAL_EXTRACTION,
-                            X_IMPORTED_EXTRACTION]
+X_ALL_EXTRACTION_METHODS = [X_MANUAL_EXTRACTION,
+                            X_IMPORTED_EXTRACTION,
+                            X_AUTOMATIC_EXTRACTION]
 XM_FILE_NAME = "File name"
 XM_FOLDER_NAME = "Folder name"
 
@@ -228,7 +228,7 @@ class Metadata(cpm.CPModule):
             group.append("divider", cps.Divider())
             
         group.append("extraction_method", cps.Choice(
-            "Metadata extraction method", X_ALL_EXTRACTION_METHODS, doc="""
+            "Metadata extraction method", X_ALL_EXTRACTION_METHODS, X_MANUAL_EXTRACTION, doc="""
             <p>Metadata can be stored in either or both of two ways:
             <ul>
             <li><i>Internally:</i> This method is often through the file naming, directory structuring, 
@@ -416,7 +416,12 @@ class Metadata(cpm.CPModule):
         
         group.append("csv_location", cps.PathnameOrURL(
             "Metadata file location",
-            wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*"))
+            wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*",doc="""
+            The file containing the metadata must be a comma-delimited file (csv). You can create or edit 
+            such a file using a spreadsheet program such as Microsoft Excel. 
+            <p>The file must be saved as plain text, i.e., without hidden file encoding information. 
+            If using Excel on a Mac to edit the file, choose to save the file as "Windows CSV" or "Windows 
+            Comma Separated".</p>"""))
         
         group.append("csv_joiner", cps.Joiner(
             "Match file and image metadata", allow_none = False,doc="""

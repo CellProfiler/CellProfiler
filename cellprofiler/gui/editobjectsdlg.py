@@ -149,7 +149,6 @@ class EditObjectsDialog(wx.Dialog):
         self.delete_mode_artist = None
         self.delete_mode_rect_artist = None
         self.wants_image_display = guide_image != None
-        self.hes_dead_jim = False
         self.pressed_keys = set()
         self.build_ui()
         self.init_labels()
@@ -621,13 +620,17 @@ class EditObjectsDialog(wx.Dialog):
         # that's not there.
         # And the sash too, despite the positively wonderful (sarcasm)
         # feedback it gives on the Mac as it is doing stuff.
-        if self.hes_dead_jim:
-            return
-        self.hes_dead_jim = True
-        for window in self.figure.canvas, self.help_sash:
-            if window.HasCapture():
-                window.ReleaseMouse()
-        
+        #
+        # This loop... yes... on the Mac, you can release capture on a window
+        # and the window you just released capture on, it becomes the new
+        # capture window.
+        #
+        while True:
+            window = wx.Window.GetCapture()
+            if window is None:
+                break
+            window.ReleaseCapture()
+            
     def remove_label(self, object_number):
         for l in self.labels:
             l[l == object_number] = 0
@@ -948,18 +951,19 @@ class EditObjectsDialog(wx.Dialog):
             
     def on_context_menu(self, event):
         '''Pop up a context menu for the control'''
-        x, y = self.panel.ScreenToClient(event.GetPosition())
-        location_event = matplotlib.backend_bases.LocationEvent(
-            "ContextMenu", self.panel, x, y, event)
-        if location_event.inaxes == self.orig_axes:
-            if self.get_mouse_event_object_number(location_event) is not None:
-                event.Skip(False)
-                return
-        if self.mode == self.FREEHAND_DRAW_MODE:
-            self.exit_freehand_draw_mode(event)
-        elif self.mode in (self.SPLIT_PICK_FIRST_MODE,
-                           self.SPLIT_PICK_SECOND_MODE):
-            self.exit_split_mode(event)
+        if isinstance(event, wx.MouseEvent):
+            x, y = self.panel.ScreenToClient(event.GetPosition())
+            location_event = matplotlib.backend_bases.LocationEvent(
+                "ContextMenu", self.panel, x, y, event)
+            if location_event.inaxes == self.orig_axes:
+                if self.get_mouse_event_object_number(location_event) is not None:
+                    event.Skip(False)
+                    return
+            if self.mode == self.FREEHAND_DRAW_MODE:
+                self.exit_freehand_draw_mode(event)
+            elif self.mode in (self.SPLIT_PICK_FIRST_MODE,
+                               self.SPLIT_PICK_SECOND_MODE):
+                self.exit_split_mode(event)
         menu = wx.Menu()
         contrast_menu = wx.Menu("Contrast")
         for mid, state, help in (

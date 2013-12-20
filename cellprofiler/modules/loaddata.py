@@ -50,12 +50,12 @@ and furthermore, that the date be captured in the file names for the individual 
 sets and in a .csv file specifying the illumination correction functions. 
 <p>In this case, if the illumination correction images are loaded with the 
 <b>LoadData</b> module, the file should have a "Metadata_Date" 
-column which contains the date identifiers. Similarly, if the individual images 
+column which contains the date metadata tags. Similarly, if the individual images 
 are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
-<Date> metadata field from the file names (see <b>LoadImages</b> for more details 
+<Date> metadata tag from the file names (see <b>LoadImages</b> for more details 
 on how to do so). The pipeline will then match the individual image with 
 their corresponding illumination correction functions based on matching 
-"Metadata_Date" fields. This is useful if the same data is associated with several
+"Metadata_Date" tags. This is useful if the same data is associated with several
 images (for example, multiple images obtained from a single well).</li>
 
 <li><i>Columns whose name begins with Series or Frame:</i> A columns whose name begins
@@ -105,7 +105,7 @@ will be the measurement.
 metadata in CellProfiler</i> for more details on metadata usage and syntax. Briefly, <b>LoadData</b> can
 use metadata provided by the input CSV file for grouping similar images together for the 
 analysis run and for metadata-specfic options in other modules; see the settings help for
-<i>Group images by metadata</i> and, if that setting is selected, <i>Select metadata fields for grouping</i>
+<i>Group images by metadata</i> and, if that setting is selected, <i>Select metadata tags for grouping</i>
 for details.</p>
 
 <h6>Using MetaXpress-acquired images in CellProfiler</h6>
@@ -387,12 +387,12 @@ class LoadData(cpm.CPModule):
             CellProfiler pipeline to a computing cluster for processing."""%globals())
         
         self.metadata_fields = cps.MultiChoice(
-            "Select metadata fields for grouping", None,doc="""
+            "Select metadata tags for grouping", None,doc="""
             <i>(Used only if images are to be grouped by metadata)</i><br>
-            Select the fields by which you want to group the image files here. You can select multiple tags. For
+            Select the tags by which you want to group the image files here. You can select multiple tags. For
             example, if a set of images had metadata for "Run", "Plate", "Well", and
             "Site", selecting <i>Run</i> and <i>Plate</i> will create groups containing 
-            images that share the same [<i>Run</i>,<i>Plate</i>] pair of fields.""")
+            images that share the same [<i>Run</i>,<i>Plate</i>] pair of tags.""")
         
         self.wants_rows = cps.Binary(
             "Process just a range of rows?",
@@ -492,7 +492,7 @@ class LoadData(cpm.CPModule):
         # check that user has selected fields for grouping if grouping is turned on
         if self.wants_image_groupings.value and (len(self.metadata_fields.selections) == 0):
             raise cps.ValidationError("Group images by metadata is True, but no metadata "
-                                      "fields have been chosen for grouping.",
+                                      "tags have been chosen for grouping.",
                                       self.metadata_fields)
 
     def visible_settings(self):

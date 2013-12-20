@@ -131,6 +131,7 @@ PROJECT_INTRO_HELP = """Help > Creating a Project > Introduction to Projects"""
 USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
 MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Named"""
 USING_METADATA_HELP_REF = """Please see the <b>Metadata</b> module for more details on metadata collection and usage"""
+LOADING_IMAGE_SEQ_HELP_REF = """Help > Creating a Project > Loading Image Stacks and Movies"""
 
 USING_METADATA_TAGS_REF = """
 You can insert a previously defined metadata tag by either using:
@@ -1727,7 +1728,7 @@ sequence.
 <p>In the above example, you would drag-and-drop the <i>fluo2</i>, <i>fluor</i> and <i>phase</i> folders
 into the file list panel.</p></li>
 <li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
-obtain the metadatat tags neccesary to do two things:
+obtain the metadata tags neccesary to do two things:
 <ul>
 <li>Distinguish the movies from each other. This information may be encapsulated in the filename 
 and/or the folder name.</li>
@@ -2034,7 +2035,7 @@ MAIN_HELP = (
         ("Introduction to Projects",INTRODUCTION_TO_PROJECTS_HELP),
         ("Selecting Images for Input",SELECTING_IMAGES_HELP),
         ("Configuring Images for Analysis",CONFIGURE_IMAGES_HELP),
-        ("Loading Image Stacks And Movies",LOADING_IMAGE_SEQUENCES_HELP))),
+        ("Loading Image Stacks and Movies",LOADING_IMAGE_SEQUENCES_HELP))),
     ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
     ("Testing Your Pipeline",TEST_MODE_HELP),
     ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),    

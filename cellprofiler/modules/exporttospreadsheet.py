@@ -1,12 +1,14 @@
-'''<b>Export To Spreadsheet</b> exports measurements into one or more files that can be
+from cellprofiler.gui.help import USING_METADATA_TAGS_REF
+__doc__ = '''
+<b>Export To Spreadsheet</b> exports measurements into one or more files that can be
 opened in Excel or other spreadsheet programs.
 <hr>
 This module will convert the measurements to a comma-, tab-, or other 
 character-delimited text format and
 save them to the hard drive in one or several files, as requested. 
-<h2>Metadata tokens</h2>
+<h2>Using metadata tags for output</h2>
 <b>ExportToSpreadsheet</b> can write out separate files for groups of images based
-on their metadata. This is controlled by the directory and file names
+on their metadata tags. This is controlled by the directory and file names
 that you enter. For instance, you might have applied two treatments
 to each of your samples and labeled them with the metadata names "Treatment1" 
 and "Treatment2", and you might want to create separate files for each 
@@ -14,11 +16,13 @@ combination of treatments, storing all measurements with a given "Treatment1"
 in separate directories. You can do this by specifying metadata tags for the folder name and
 file name:
 <ul>
-<li>Choose <i>Default Input/Output Folder sub-folder</i> for the output file location.</li>
-<li>Enter the sub-folder name "\g&lt;Treatment1&gt;"</li>
+<li>Choose <i>Elsewhere...</i> or <i>Default Input/Output Folder sub-folder</i> for the output file location.</li>
+<li>Insert the metadata tag of choice into the output path. %(USING_METADATA_TAGS_REF)s In this instance, 
+you would select the metadata tag "Treatment1"</li>
 <li>Uncheck "Export all measurements?"</li>
 <li>Uncheck <i>Use the object name for the file name?</i>.</li>
-<li>Enter the file name "\g&lt;Treatment2&gt;.csv". </li>
+<li>Using the same approach as above, select the metadata tag "Treatment2", and complete 
+the filename by appending the text ".csv". </li>
 </ul>
 Here's an example table of the files that would be generated:<br><br><tt>
 <table border="1"><tr><th>Treatment1</th><th>Treatment2</th><th>Path</th></tr>
@@ -34,7 +38,8 @@ For details on the nomenclature used by CellProfiler for the exported measuremen
 see <i>Help > General Help > How Measurements Are Named</i>.
 
 See also <b>ExportToDatabase</b>.
-'''
+'''%globals()
+
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 

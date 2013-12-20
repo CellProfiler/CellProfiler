@@ -1,4 +1,6 @@
-'''<b>Make Projection</b> combines several two-dimensional images of 
+from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
+__doc__ = '''
+<b>Make Projection</b> combines several two-dimensional images of 
 the same field of view together, either by performing a mathematical operation
 upon the pixel values at each pixel position.
 <hr>
@@ -6,26 +8,26 @@ This module combines a set of images by performing a mathematic operation of you
 choice at each pixel position; please refer to the settings help for more information on the available
 operations. The process of averaging or summing a Z-stack (3D image stack) is known as making a projection.
 
-The image is not immediately available in subsequent modules because the
-output of this module is not complete until all image processing cycles have completed.
-
-<h4>Technical notes</h4>
-This module will create a projection of all images specified in <b>LoadImages</b>. 
-To acheive per-folder projections
+<p>This module will create a projection of all images specified in the Input modules. For more
+information on loading image stacks and movies, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.
+To achieve per-folder projections
 i.e., creating a projection for each set of images in a folder, for all input folders, 
-make the following setting specifications in <b>LoadImages</b>:
+make the following setting specifications:
 <ol>
-<li>Specify that all subfolders under the Default input folder are to be analyzed.</li>
-<li>Extract metadata from the input image path by using a regular expression to capture
-the subfolder name.</li>
-<li>Enable grouping of image sets by metadata and specify the subfolder metadata token
-as the field by which to group.</li>
+<li>In the <b>Images</b> module, drag-and-drop the parent folder containing the sub-folders.</li>
+<li>In the <b>Metadata</b> module, enable metadata extraction and extract metadata from the folder name
+by using a regular expression to capture the subfolder name, e.g., <code>.*[\\\\/](?P&lt;Subfolder&gt;.*)$</code></li>
+<li>In the <b>NamesAndTypes</b> module, specify the appropriate names for any desired channels.</li>
+<li>In the <b>Groups</b> module, enable image grouping, and select the metadata tag representing
+the sub-folder name as the metadata category.</li>
 </ol>
-Keep in mind that this per-folder projection is not available for use in subsequent 
-modules; the projection should be created with a dedicated pipeline.
+Keep in mind that the projection image is not immediately available in subsequent modules because the
+output of this module is not complete until all image processing cycles have completed. Therefore, 
+the projection should be created with a dedicated pipeline.</p>
 
 See also the help for the <b>Input</b> modules.
-'''
+'''%globals()
+
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 

@@ -913,7 +913,7 @@ class ExportToDatabase(cpm.CPModule):
             To define a group, enter the image key columns followed by group key columns, each separated by commas.
             <p>In CellProfiler, the image key column is always given the name as <i>ImageNumber</i>; group keys
             are typically metadata columns which are always prefixed with <i>Image_Metadata_</i>. For example, if you 
-            wanted to be able to group your data by unique plate names and well identifiers, you could define a 
+            wanted to be able to group your data by unique plate and well metadata tags, you could define a 
             group with the following MySQL statement:<br>
             <code>group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate, Image_Metadata_Well FROM Per_Image</code><br>
             For this example, the columns to enter in this setting would be:<br>

@@ -1023,6 +1023,8 @@ class Metadata(cpm.CPModule):
                     
     def get_metadata_keys(self):
         '''Return a collection of metadata keys to be associated with files'''
+        if not self.wants_metadata:
+            return []
         keys = set()
         self.update_imported_metadata()
         for group in self.extraction_methods:

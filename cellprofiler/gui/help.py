@@ -1653,7 +1653,12 @@ panel, you can also filter the files according to a set of rules that you specif
 have dragged a folder of images onto the file list panel, but the folder contains the images
 from one experiment that you want to process along with images from another experiment that you
 want to ignore for now. You may specify as many rules as necessary to define the desired 
-list of images.</p>"""
+list of images.</p>
+
+<p>For more information on this module and how to configure it for the best performance, please see the detailed help by selecting the
+module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out 
+the Input module tutorials on our <a href="http://www.cellprofiler.org/tutorials.shtml">Tutorials</a> page.</p>
+"""%globals()
 
 CONFIGURE_IMAGES_HELP = """
 <p>Once you have used the <b>Images</b> module to produce a list of images to be analyzed, you can use the other
@@ -1684,8 +1689,9 @@ attach additional image information about the experiment, among other things.</p
     can be safely skipped.</td></tr>
 </table>
 </p>
-<p>For more information on these modules and how to configure for best performance, please see the detailed help by selecting the
-module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel.</p>
+<p>For more information on these modules and how to configure them for the best performance, please see the detailed help by selecting the
+module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out 
+the Input module tutorials on our <a href="http://www.cellprofiler.org/tutorials.shtml">Tutorials</a> page.</p>
 """%globals()
 
 LOADING_IMAGE_SEQUENCES_HELP = """

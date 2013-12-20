@@ -370,7 +370,7 @@ class NamesAndTypes(cpm.CPModule):
             <p>In addition, CellProfiler can match a single file for one channel against many files from
             another channel. This is useful, for instance, for applying an illumination correction file
             for an entire plate against every image file for that plate. In this instance, this would be 
-            done by selecting <i>Plate</i> as the common identifier and <i>(None)</i> for the rest:
+            done by selecting <i>Plate</i> as the common metadata tag and <i>(None)</i> for the rest:
             <table border="1" align="center">
             <tr><th><b>OrigBlue</b></th><th><b>IllumBlue</b></th></tr>
             <tr><td>Plate</td><td>Plate</td></tr>

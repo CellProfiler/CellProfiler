@@ -112,6 +112,11 @@ IMAGES_FILELIST_BLANK = "Images_FilelistPanel_Blank.png"
 IMAGES_FILELIST_FILLED = "Images_FilelistPanel_Filled.png"
 MEASUREOBJSIZESHAPE_ECCENTRICITY = 'MeasureObjectSizeShape_Eccentricity.png'
 IMAGES_USING_RULES_ICON = 'Images_UsingRules.png'
+METADATA_DISPLAY_TABLE = 'Metadata_ExampleDisplayTable.png'
+NAMESANDTYPES_DISPLAY_TABLE = 'NamesAndTypes_ExampleDisplayTable.png'
+GROUPS_DISPLAY_TABLE = 'Groups_ExampleDisplayTable.png'
+EXAMPLE_DAPI_PIC = "dapi.png"
+EXAMPLE_GFP_PIC = "gfp.png"
 
 ####################################################
 #
@@ -236,9 +241,9 @@ sets and in a .csv file specifying the illumination correction functions. </p>
 
 <p>In this case, if the illumination correction images are loaded with the 
 <b>LoadData</b> module, the file should have a "Metadata_Date" 
-column which contains the date identifiers. Similarly, if the individual images 
+column which contains the date metadata tags. Similarly, if the individual images 
 are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
-<Date> metadata field from the file names. The pipeline will then match the individual 
+<Date> metadata tag from the file names. The pipeline will then match the individual 
 images with their corresponding illumination correction functions based on matching 
 "Metadata_Date" fields.</p>
 
@@ -1716,7 +1721,7 @@ sequence.
 <p>In the above example, you would drag-and-drop the <i>fluo2</i>, <i>fluor</i> and <i>phase</i> folders
 into the file list panel.</p></li>
 <li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
-obtain the identifiers neccesary to do two things:
+obtain the metadatat tags neccesary to do two things:
 <ul>
 <li>Distinguish the movies from each other. This information may be encapsulated in the filename 
 and/or the folder name.</li>
@@ -1726,11 +1731,11 @@ in the filename.</li>
 To accomplish this, do the following:
 <ul>
 <li>Select "%(X_MANUAL_EXTRACTION)s" or "%(X_IMPORTED_EXTRACTION)s" as the metadata extraction method. You 
-will use these to extract the movie and timepoint identifiers from the images. </li>
+will use these to extract the movie and timepoint tags from the images. </li>
 <li>Use "%(X_MANUAL_EXTRACTION)s" to create a regular expression to extract the metadata from the
 filename and/or path name.</li>
 <li>Use "%(X_IMPORTED_EXTRACTION)s" if you have a comma-delimted list (.csv) of 
-metadata columns (including the movie and timepoint identifiers) for each image.</li>
+metadata columns (including the movie and timepoint tags) for each image.</li>
 </ul>
 If there are multiple channels for each movies, this step may need to be performed for each channel.
 <p>In the above example, you could do the following:
@@ -1800,7 +1805,7 @@ neccesary, set your rules accordingly in order to filter out any files that are 
 sequence.<br>
 In the above example, you would drag-and-drop the STK files into the file list panel.</li>
 <li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
-obtain the identifiers neccesary to do two things:
+obtain the metadata tags neccesary to do two things:
 <ul>
 <li>Distinguish the movies from each other. This information may be encapsulated in the filename 
 and/or the folder name.</li>
@@ -1846,7 +1851,7 @@ neccesary, set your rules accordingly in order to filter out any files that are 
 sequence.<br>
 In the above example, you would drag-and-drop the LSM files into the file list panel.</li>
 <li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
-obtain the identifiers neccesary to do two things:
+obtain the metadata tags neccesary to do two things:
 <ul>
 <li>Distinguish the movies from each other. This information may be encapsulated in the filename 
 and/or the folder name.</li>

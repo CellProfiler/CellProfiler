@@ -1,6 +1,8 @@
+import cellprofiler.icons 
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, NAMESANDTYPES_DISPLAY_TABLE, EXAMPLE_DAPI_PIC, EXAMPLE_GFP_PIC
 __doc__ = """
-The <b>NamesAndTypes</b> module assigns a user-defined name to a particular image or channel, as
-well as defining the relationships between images to create an image set.
+The <b>NamesAndTypes</b> module gives images and/or channels a meaningful name to a particular image or channel,
+as well as defining the relationships between images to create an image set.
 <hr>
 Once the relevant images have been identified using the <b>Images</b> module (and/or has
 had metadata associated with the images using the <b>Metadata</b> module), the <b>NamesAndTypes</b> module 
@@ -8,11 +10,18 @@ gives each image a meaningful name by which modules in the analysis pipeline wil
 
 <h4>What is an "image set"?</h4>
 An <i>image set</i> is the collection of channels that represent a single
-field of view. For example, a fluorescent assay may have samples stained with DAPI and GFP to label
-separate cellular sub-compartments, and for each site imaged, one DAPI and one GFP image is acquired
-by the microscope. For the purposes of analysis, you want the DAPI and GFP image for a given site 
-to be loaded and processed together. Therefore, the DAPI and GFP image for a given site comprise an
-image set for that site.
+field of view. For example, a fluorescent assay may have samples using DAPI and GFP to label separate 
+cellular sub-compartments (see figure below), and for each site imaged, one DAPI (left) and one GFP image (right) 
+is acquired by the microscope. Sometimes, the two channels are combined into a single color images and other 
+times they are stored as two separate grayscale images, as in the figure.
+<table border="0" cellpadding="10" cellspacing="4" width="100%%">
+<tr>
+<td align="right"><img src="memory:%(EXAMPLE_DAPI_PIC)s"></td>
+<td align="left"><img src="memory:%(EXAMPLE_GFP_PIC)s"></td>
+</tr>
+</table>
+For the purposes of analysis, you want the DAPI and GFP image for a given site to be loaded and processed 
+together. Therefore, the DAPI and GFP image for a given site comprise an image set for that site. 
 
 <h4>What do I need as input?</h4>
 The <b>NamesAndTypes</b> module receives the file list produced by the <b>Images</b> module. If you
@@ -21,10 +30,11 @@ used the <b>Metadata</b> module to attach metadata to the images, this informati
 
 <h4>What do the settings mean?</h4>
 In the above example, the <b>NamesAndTypes</b> module allows you to assign each of these channels a unique name,
-provided by you. All files of a given channel will be referred to by the chosen name, and the output
-will also be labeled according to this name. This simplifies the book-keeping of your pipeline and 
-results by making the input and output data more intuitive: a large number of images are referred 
-to by a small collection of names which are readily memorable to the researcher.
+provided by you. All files of a given channel will be referred to by the chosen name within the pipeline, 
+and the data exported by the pipeline will also be labeled according to this name. This simplifies the 
+bookkeeping of your pipeline and results by making the input and output data more intuitive: a large 
+number of images are referred to by a small collection of names, which are hopefully easier for you 
+to recognize.
 
 <p>The most common way to perform this assignment is by specifying the pattern in the filename which
 the channel(s) of interest have in common. This is done using user-defined rules in a similar manner 
@@ -48,14 +58,24 @@ any of the names you defined from a drop-down list in any downstream analysis mo
 image as input. If you defined a set of objects using this module, those names are also available for analysis
 modules that require an object as input.
 
+<p>In order to see whether the images are matched up correctly to form the image sets you would expect, press 
+the "Update" button below the divider to display a table of results using the current settings. Each row 
+corresponds to a unique image set, and the columns correspond to the name you specified for CellProfiler 
+to identify the channel. You can press this button as many times as needed to display the most current image 
+sets obtained. When you complete your pipeline and perform an analysis run, CellProfiler will process the 
+image sets in the order shown.</p>
+<table cellpadding="0" width="100%%">
+<tr align="center"><td><img src="memory:%(NAMESANDTYPES_DISPLAY_TABLE)s"></td></tr>
+</table>
+
 <h4>Available measurements</h4>
 <ul> 
-<li><i>FileName, PathName:</i> The prefixes of the filename and location, respectively, of each image set written to 
-the per-image table.</li>
-<li><i>ObjectFileName, ObjectPathName:</i> (For images loaded as objects only) The prefixes of the filename and location, 
-respectively, of each object set written to the per-image table.</li>
+<li><i>FileName, PathName:</i> The prefixes of the filename and location, respectively, of each image set 
+written to the per-image table.</li>
+<li><i>ObjectFileName, ObjectPathName:</i> (For used for images loaded as objects) The prefixes of the 
+filename and location, respectively, of each object set written to the per-image table.</li>
 </ul>
-"""
+"""%globals()
 
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
@@ -340,7 +360,7 @@ class NamesAndTypes(cpm.CPModule):
             will be paired with the <i>w2</i> channel belonging to well A01 and site 1. This will occur for all
             unique well and site pairings, to create an image set similar to the following:
             <table border="1" align="center">
-            <tr><th colspan="2"><b>Image set identifiers</b></th><th colspan="2"><b>Channels</b></th></tr>
+            <tr><th colspan="2"><b>Image set tags</b></th><th colspan="2"><b>Channels</b></th></tr>
             <tr><td><b>Well</b></td><td><b>Site</b></td><td><b>OrigBlue (w1)</b></td><td><b>OrigGreen (w2)</b></td></tr>
             <tr><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s1</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w2</font>.tif</td></tr>
             <tr><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s2</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w2</font>.tif</td></tr>

@@ -1,50 +1,88 @@
+import cellprofiler.icons 
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, GROUPS_DISPLAY_TABLE
 __doc__ = """
 The <b>Groups</b> module organizes sets of images into groups.
 <hr>
-Once the images have been identified with the <b>Images</b> module (and/or optionally has
-had metadata associated with the images using the <b>Metadata</b> module), and been given
-a name by the <b>NamesAndTypes</b> module, you have the option of further sub-dividing
-an image set into <i>groups</i> that share a common feature.
+Once the images have been identified with the <b>Images</b> module, have had metadata associated with 
+them using the <b>Metadata</b> module, and have been assigned names by the <b>NamesAndTypes</b> module, 
+you have the option of further sub-dividing the image sets into groups that share a common feature. 
+Some downstream modules of CellProfiler are capable of processing groups of images in useful ways 
+(e.g., object tracking within a set of images comprising a time series, illumination correction within 
+a set of images comprising an experimental batch, data export for a set of images comprising a plate).
 
-<h4>What is a "group"?</h4>
-<p>The key to understanding why grouping may be necessary is that CellProfiler processes
-the input images sequentially and in the order given. If you have multiple collections of images
-that are meant to be conceptually distinct from each other, CellProfiler will simply 
-finish processing one collection and proceed to the next, ignoring any such distinctions unless 
-told otherwise.</p>
+<h4>What is an image "group"?</h4>
+<p>The key to understanding why grouping may be necessary is that CellProfiler processes the input images 
+sequentially and in the order given by the NamesAndTypes module. If you have multiple collections (or "groups") 
+of images that should be processed independently from each other, CellProfiler will simply finish processing 
+one collection and proceed to the next, ignoring any distinction between them unless told otherwise via 
+the <b>Groups</b> module.</p>
 
 <p>To illustrate this idea, below are two examples where the grouping concept can be useful or important:
 <ul>
-<li>If you are performing illumination correction for a screening experiment, we recommend 
-that the illumination function (an image which represents the overall background fluorescence) 
-be calculated on a per-plate basis. Since the illumination function is an aggregate of images from a
-plate, running a pipeline must yield a single illumination function for each plate. Naively running 
-a pipeline on all the images will create a single illumination function for <i>all</i> the images 
-across all plates. Running this pipeline multiple times, once for each plate, will give the desired
-result but would be tedious and time-consuming. In this case, CellProfiler can use image grouping 
-for this purpose; if plate metadata can be defined by the <b>Metadata</b> module, grouping will enable you to
-process images that have the same plate metadata together.</li>
 <li>If you have time-lapse movie data that is in the form of individual image files, and you
 are performing object tracking, it is important to indicate to CellProfiler that the end of a movie 
 indicates the end of a distinct data set. Without doing so, CellProfiler will simply take the first frame
 of the next movie as a continuation of the previous one. If each set of
 files that comprise a movie is defined using the <b>Metadata</b> module, the relevant metadata can 
 be used in this module to insure that object tracking only takes place within each movie.</li>
+<li>If you are performing illumination correction for a screening experiment, we recommend 
+that the illumination function (an image which represents the overall background fluorescence) 
+be calculated on a per-plate basis. Since the illumination function is an aggregate of images from a
+plate, running a pipeline must yield a single illumination function for each plate. Running this 
+pipeline multiple times, once for each plate, will give the desired result but would be tedious and 
+time-consuming. In this case, CellProfiler can use image grouping for this purpose; if plate metadata 
+can be defined by the <b>Metadata</b> module, grouping will enable you to
+process images that have the same plate metadata together.</li>
 </ul>
 </p>
 
-<p>A grouping may be defined as according to any or as many of the metadata categories as defined by 
-the <b>Metadata</b> module. Upon adding a metadata category, the two tables will update in the panels 
-below showing the resultant organization of the image data for each group.</p>
+<h4>What are the inputs?</h4>
+Using this module assumes that you have already adjusted the following Input modules:
+<ul>
+<li>Used the <b>Images</b> module to produce a list of images to analyze. </li>
+<li>Used the <b>Metadata</b> module to produce metadata defining the distinct sub-divisions between groups of images.</li>
+<li>Used the <b>NamesAndTypes</b> module to assign names to individual channels and create image sets.</li>
+</ul>
+
+<h4>What do the settings mean?</h4>
+See below for help on the individual settings. Selecting this module will display a panel, allowing you to select 
+whether you want to create groups or not. A grouping may be defined as according to any or as many of the metadata 
+categories as defined by the <b>Metadata</b> module. By selecting a metadata tag from the drop-down for the 
+metadata category, the <b>Groups</b> module will sub-divide and assemble the image sets according to their unique 
+metadata value. Upon adding a metadata category, the two tables underneath will update to show the resultant 
+organization of the image sets for each group.</p>
+
+<h4>What do I get as output?</h4>
+The final product of the <b>Groups</b> module is a list defining subsets of image sets that will be processed 
+independently of the other subsets. 
+<ul>
+<li>If no groups are defined, the Analysis modules in the rest of the pipeline will be applied to all images in 
+exactly the same way. </li>
+<li>If groups are defined in the <b>Groups</b> module, then organizationally (and transparently to you), 
+CellProfiler will begin the analyses with the first image set of the group, end with the last image set of the 
+group, and then proceed to the next group. </li>
+</ul>
+<p>The two tables at the bottom provide the following information when a metadata category is selected: 
+<ul>
+<li>The <i>grouping list</i>(top table) shows the unique values of the selected metadata under the "Group" 
+column; each of the unique values comprises a group. The "Count" column shows the number of image sets included 
+in a given group; this is useful as a "sanity check" to make sure that the expected numbers of images are present.</li>
+<li>The <i>image set list</i> (bottom table) shows the file name and location of each of the image sets that 
+comprise the groups.</li>
+</ul>
+<table cellpadding="0" width="100%%">
+<tr align="center"><td><img src="memory:%(GROUPS_DISPLAY_TABLE)s"></td></tr>
+</table>
+</p>
 
 <h4>Available measurements</h4>
 <ul> 
 <li><i>Group_Number:</i> The index of each grouping, as defined by the unique combinations of the metadata
-identifiers specified. These are written to the per-image table.</li>
+tags specified. These are written to the per-image table.</li>
 <li><i>Group_Index:</i> The index of each imaget set within each grouping, as defined by the <i>Group_Number</i>.
 These are written to the per-image table.</li>
 </ul>
-"""
+"""%globals()
 
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
@@ -108,13 +146,14 @@ class Groups(cpm.CPModule):
             comprises a group. The "Count" column shows the number of image sets that included in a given group; this
             is useful as a "sanity check", to make sure that the expected number of images are present. For example,
             if you are grouping by per-plate metadata from a 384-well assay with 2 sites per well consisting of 3 plates, 
-            you would expect to see 3 groups (each from the 3 unique plate IDs), with 384 wells &times; 2 sites/well &times;
-            3 plates = 768 image sets in each.""")
+            you would expect to see 3 groups (each from the 3 unique plate IDs), with 384 wells &times; 2 sites/well 
+            = 768 image sets in each.""")
         
         self.image_set_list = cps.Table("Image sets",doc="""
             This list displays the file name and location of each of the image sets that comprise the
             group. For example, if you are grouping by per-plate metadata from a 384-well assay with 2 sites per well 
-            consisting of 3 plates, you would expect to see a table consisting of 768 rows.""")
+            consisting of 3 plates, you would expect to see a table consisting of 3 plates &times; 384 wells/plate 
+            &times;2 sites/well = 2304 rows.""")
         
     def add_grouping_metadata(self, can_remove = True):
         group = cps.SettingsGroup()
@@ -133,7 +172,20 @@ class Groups(cpm.CPModule):
             "Metadata category", choices,
             choices_fn = get_group_metadata_choices,doc="""
             Specify the metadata category with which to define a group. Once a selection
-            is made, the two listings below will display the updated values.
+            is made, the two listings below will display the updated values:
+            <ul>
+            <li>The <i>grouping list</i> (top table) shows the unique values of the selected metadata under the 
+            "Group" column; each of the unique values comprises a group. The "Count" column shows the number of 
+            image sets included in a given group; this is useful as a "sanity check" to make sure that the 
+            expected numbers of images are present.</li>
+            <li>The <i>image set list</i> (bottom table) shows the file name and location of each of the image 
+            sets that comprise the groups. In this example, the table has 26 rows, one for each of the DNA and 
+            GFP image sets defined by the <b>NamesAndTypes</b> module. </li>
+            </ul>
+            You may specify multiple metadata tags to group with by clicking the "Add" button. This would 
+            be necessary if a combination of metadata is required in order to define a group. Upon adding a 
+            metadata category, the two tables will update in the panels below showing the resulting organization 
+            of the image data for each group.
             
             <p>As an example, an time-lapse experiment consists of a set of movie images (indexed by a frame number), collected
             on a per-well basis. The plate, well, wavelength and frame number metadata have been extracted using the 
@@ -160,7 +212,7 @@ class Groups(cpm.CPModule):
             <p>Selecting the <i>Plate</i> followed by the <i>Well</i> metadata as the metadata categories will 
             create four groups based on the unique plate and well combinations:
             <table border="1" align="center">
-            <tr><th colspan="2"><b>Grouping identifiers</b></th><th colspan="4"><b>Image set identifiers</b></th><th colspan="2"><b>Channels</b></th></tr>
+            <tr><th colspan="2"><b>Grouping tags</b></th><th colspan="4"><b>Image set tags</b></th><th colspan="2"><b>Channels</b></th></tr>
             <tr><th><b>Group number</b></th><th><b>Group index</b></th><th><b>Image set number</b></th><th><b>Plate</b></th><th><b>Well</b></th><th><b>FrameNumber</b></th><th><b>OrigBlue</b></th><th><b>OrigGreen</b></th></tr>
             <tr><td rowspan="2">1</td><td>1</td><td>1</td><td>P-12345</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t001</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t001</font>_<font color="#33bbce">w2</font>.tif</td></tr>
             <tr><td>2</td><td>2</td><td>P-12345</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">t002</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">t002</font>_<font color="#33bbce">w2</font>.tif</td></tr>

@@ -1,49 +1,57 @@
 import cellprofiler.icons 
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED, MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
 __doc__ = """
-The <b>Metadata</b> module associates information about the images (i.e., metadata)
-with the images themselves. 
+The <b>Metadata</b> module connects information about the images (i.e., metadata)
+to your list of images for processing in CellProfiler. 
 <hr>
-The <b>Metadata</b> module allows you incorporate the metadata encoded as part of the image format,
-assigned as part of the file name or location (by a vendor microscope, for example),
-contained in a text file filled out by the user, or any of the above.
+The <b>Metadata</b> module allows you to extract and associate metadata with your images. 
+The metadata can be extracted from the image file itself, from a part of the file name 
+or location, and/or from a text file you provide. 
 
 <h4>What is "metadata"?</h4>
-The general term <i>metadata</i> refers to "data about data." For many assays, metadata
-appears in the context of tagging images with various attributes, which 
-can include (but is not limited to) items such as the following:
+The  term <i>metadata</i> refers to "data about data." For many assays, metadata is 
+important in the context of tagging images with various attributes, which can include 
+(but is not limited to) items such as the following:
 <ul>
-<li>The height and width of an image, in pixels.</li>
-<li>The image type, i.e., RGB, indexed or separate channels.</li>
-<li>The number of timepoints or channels contained in the image file.</li>
-<li>The experimental treatment applied to the well that the image was acquired from.</li>
 <li>The row and column of the microtiter plate that the image was acquired from.</li>
+<li>The experimental treatment applied to the well that the image was acquired from.</li>
+<li>The number of timepoints or channels contained in the image file.</li>
+<li>The image type, i.e., RGB, indexed or separate channels.</li>
+<li>The height and width of an image, in pixels.</li>
 <li>Etc.</li>
 </ul>
-It can be helpful to inform CellProfiler about certain types of metadata either contained
-in the image files and/or specified elsewhere from another source, in order to define
-a specific relationship between the images and the associated metadata. For instance:
+It can be helpful to inform CellProfiler about certain metadata in order to define a 
+specific relationship between the images and the associated metadata. For instance:
 <ul>
-<li>You want images with a common identifier to be matched together so they are
-processed together during the pipeline run;</li>
-<li>You want certain information attached to the output measurements and filenames 
-for annotation or sample-tracking purposes.</li>
+<li>You want images with a common tag to be matched together so they are 
+processed together during the pipeline run. E.g., the filenames for fluorescent 
+DAPI and GFP images contain different tags indicating the wavelength but 
+share '_s1' in the filename if they were acquired from site #1, '_s2' from 
+site #2, and so on.</li>
+<li>You want certain information attached to the output measurements and 
+filenames for annotation or sample-tracking purposes.  E.g., some images are to be 
+identified as acquired from DMSO treated wells, whereas others were collected from 
+wells treated with Compound 1, 2,... and so forth. </li>
 </ul>
 
-<p>The underlying assumption in matching metadata values to image sets is that there is an
-exact pairing (i.e., a one-to-one match) for a given metadata tag combination. A common example is that for
-a two-channel microtiter plate assay, each plate, well and site metadata from one channel
-gets matched uniquely to the plate, well and site metadata from the other channel.</p>
+<p>The underlying assumption in matching metadata values to image sets is that there 
+is an exact pairing (i.e., a one-to-one match) for a given combination of metadata 
+tags. A common example is that for a two-channel microtiter plate assay, 
+the values of the plate, well, and site tags from one channel get matched 
+uniquely to the plate, well, and site tag values from the other channel.</p>
 
 <h4>What are the inputs?</h4>
-The <b>Metadata</b> module receives the file list produced by the <b>Images</b> module. It then
-tags (or attaches) information that can be obtained from several sources:
+If you do not have metadata that is relevant to your analysis, you can leave this module 
+in the default setting, and continue on to the <b>NamesAndTypes</b>module 
+If you do have relevant metadata, the <b>Metadata</b> module receives the file list 
+produced by the <b>Images</b> module. It then associates information to each file in the 
+File list, which can be obtained from several sources:
 <ul>
-<li>The metadata may be part of the image file name or location (e.g., as assigned by a vendor 
-microscope). In this case, the user provides the text search pattern to obtain this information. </li>
-<li>Alternately (or concurrently), the metadata may be contained in a text file created and 
-filled out by the user or laboratory. If this is the case, the user will point the module to the 
-location of this file.</li>
+<li>From the image file name or location (e.g., as assigned by a microscope). In this 
+case, you will provide the text search pattern to obtain this information.</li>
+<li>In a text file created and filled out by you or a laboratory information management 
+system. In this case, you will point the module to the location of this file. </li>
+<li>In the image file itself.</li>
 </ul>
 
 <h4>What do the settings mean?</h4>
@@ -52,32 +60,39 @@ metadata extraction. You can extract metadata from all images from <b>Images</b>
 of them by using rules to filter the list.
 
 <h4>What do I get as output?</h4>
-The <b>Metadata</b> module will take the metadata from the source(s) provided and matched to the desired image(s).
+The final product of the <b>Metadata</b> module is a list of files from the <b>Images</b>module, accompanied by 
+the associated metadata retrieved from the source(s) provided and matched to the desired images.
+
+<p>As you are extracting metadata from your various sources, you can click the "Update" button below the 
+divider to display a table of results using the current settings. Each row corresponds to an image file from 
+the <b>Images</b> module, and the columns display the metadata obtained for each tag specified. 
+You can press this button as many times as needed to display the most current metadata obtained.</p>
+<table cellpadding="0" width="100%%">
+<tr align="center"><td><img src="memory:%(METADATA_DISPLAY_TABLE)s"></td></tr>
+</table>
+
+<p>Some downstream use cases for metadata include the following:
+<ul>
+<li>If the metadata establishes how channels are related to one another, you can use them in the <b>NamesAndTypes</b> 
+module to aid in creating an image set. </li>
+<li>If the images need to be further sub-divided into groups of images that share a common metadata value, 
+the <b>Groups</b> module can be used to specify which metadata is needed for this purpose. </li>
+<li>You can also use metadata to reference their values in later modules. Since the metadata is stored as an image 
+measurement and can be assigned as an integer or floating-point number, any module which allows measurements 
+as input can make use of it. </li>
+<li>Several modules are also capable of using metadata for more specific purposes. Refer to the module setting 
+help for additional information on how to use them in the context of the specific module.</li>
+</ul></p>
 If the metadata originates from an external source such as a CSV, there are some caveats
 in the cases when metadata is either missing or duplicated for the referenced images; see the <b>NamesAndTypes</b>
-for more details.
-
-<p>If the metadata establishes how channels are related to one another, you can use them in the <b>NamesAndTypes</b>
-module to aid in creating an image set. You can also use metadata in your pipeline to reference their 
-values in later modules. Several modules are capable of using metadata for various purposes. Examples include:
-<ul>
-<li>You would like to create and apply an illumination correction function to all images from a particular
-plate. You can create a pipeline to use metadata to save each illumination correction function with a 
-plate-specific name in the <b>SaveImages</b> module, and then create a second pipeline to use the Input modules
-to get files with the name associated with your image's plate to be applied to your original images.</li>
-<li>You have a set of experiments for which you would like to produce and save results
-individually for each experiment but using only one analysis run. You can use metadata tags
-in the <b>ExportToSpreadsheet</b> module to save a spreadsheet for each experiment in 
-a folder named according to the experiment.</li>
-</ul>
-In each case, the metadata is used to name a file or folder. Refer to the module setting help for additional
-information on how to use them in the context of the specific module.</p>
+module for more details.</p>
 
 <h4>Available measurements</h4>
 <ul> 
-<li><i>Metadata:</i> Each metadata identifier is prefixed by <i>Image_Metadata_</i> in the per-image table.</li>
+<li><i>Metadata:</i> The prefix of each metadata tag in the per-image table.</li>
 </ul>
-"""
+"""%globals()
+
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 
@@ -239,51 +254,57 @@ class Metadata(cpm.CPModule):
             The <b>Metadata</b> module can extract internal or external metadata from the images 
             in any of three ways:
             <ul>
-            <li><i>%(X_AUTOMATIC_EXTRACTION)s</i>: From the internal structure of the file format itself. 
-            Typically, image information is embedded in the actual image file as header information;
-            this information includes the dimensions and color depth among other things.
-            If you select this method, press the "Update metadata" button
-            below to extract the metadata. Since the metadata is often image-format specific, this
-            option will extract information that is common to all images files:
-            <ul>
-            <li><i>Series:</i> The series index of the image. Set to "None" if not applicable.</li>
-            <li><i>Frame:</i> The frame index of the image. Det to "None" if not applicable.</li>
-            <li><i>ColorFormat:</i> Set to "Monochrome" for grayscale images, "RGB" for color.</li>
-            <li><i>SizeZ:</i> The number of image slices. Typically has a value &gt; 1 for confocal stacks and the like.</li>
-            <li><i>SizeT:</i> The number of image frames. Typically has a value &gt; 1 for movies.</li>
-            <li><i>SizeC:</i> The number of color channels. Typically has a value &gt; 1 for non-grayscale images.</li>
-            </ul>
-            This extraction process can take a while for assays with lots of images
-            since each one needs to read for extraction.
+            <li><i>%(X_MANUAL_EXTRACTION)s</i>: This approach retrieves information based on the file 
+            nomenclature and/or location. A special syntax called "regular expressions" is used to match 
+            text patterns in the file name or path, and then assign this text as metadata for the images 
+            you specify. The tag for each metadata is assigned a name that is meaningful to you.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            <i>When would you want to use this option?</i> You want to analyze images that are contained as 
-            file stacks, i.e., the images that are related to each other in some way, such as by time 
-            (temporal), space (spatial), or color (spectral).</dd>
+            <i>When would you want to use this option?</i> If you want to take advantage of the fact that 
+            acquisition software often automatically assigns a regular nomenclature to the filenames or 
+            the containing folders. Alternately, the researcher acquiring the images may also have a 
+            specific nomenclature they adhere to for bookkeeping purposes.</dd>
             </dl></li>
-            <li><i>%(X_MANUAL_EXTRACTION)s</i>: Specified based on the file nomenclature and/or location. 
-            <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            <i>When would you want to use this option?</i> You want to take advantage of the fact that acquisition software 
-            often automatically assigns a regular 
-            nomenclature to the files or the containing folders. Alternately, the researcher acquiring the images may also have
-            a nomenclature they adhere to for bookkeeping purposes.</dd>
-            </dl></li>
-            <li><i>%(X_IMPORTED_EXTRACTION)s</i>: From a comma-delimited list (csv) of information;
-            provided as one type of metadata per column, and one row of metadata per image. This is a
-            convenient way for you to add data from your own sources to the output generated by
-            CellProfiler.
+            <li><i>%(X_IMPORTED_EXTRACTION)s</i>: This option retrieves metadata from a comma-delimited 
+            file (known as a CSV file, for comma-separated values) of information; you will be prompted 
+            to specify the location of the CSV file. You can create such a file using a spreadsheet program 
+            such as Microsoft Excel. 
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
             <i>When would you want to use this option?</i> You have information curated in software that allows for
             export to a spreadsheet. This is commonly the case for laboratories that use data management systems 
             that track samples and acquisition.</dd>
             </dl></li>
+            <li><i>%(X_AUTOMATIC_EXTRACTION)s</i>: This option retrieves information from the internal 
+            structure of the file format itself. Typically, image metadata is embedded in the image file 
+            as header information; this information includes the dimensions and color depth among other 
+            things. If you select this method, press the "Update metadata" button to extract the metadata. 
+            Note that this extraction process can take a while for assays with lots of images since each 
+            one needs to read for extraction. Since the metadata is often image-format specific, this option 
+            will extract information that is common to most image types:
+            <ul>
+            <li><i>Series:</i> The series index of the image. This value is set to "None" if not applicable. 
+            Some image formats can store more than one stack in a single file; for those, the <i>Series</i> 
+            value for each stack in the file will be different</li>
+            <li><i>Frame:</i> The frame index of the image. This value is set to "None" if not applicable. 
+            For stack frames and movies, this is the frame number for an individual 2-D image slice.</li>
+            <li><i>ColorFormat:</i> Set to "Monochrome" for grayscale images, "RGB" for color.</li>
+            <li><i>SizeZ:</i> The number of image slices. Typically has a value &gt; 1 for confocal stacks 
+            and the like.</li>
+            <li><i>SizeT:</i> The number of image frames. Typically has a value &gt; 1 for movies.</li>
+            <li><i>SizeC:</i> The number of color channels. Typically has a value &gt; 1 for non-grayscale 
+            images and for confocal stacks containing channel images acquired using different filters and 
+            illumination sources.</li>
             </ul>
-            Additional extraction methods can be added by clicking the "Add" button below.</p>
-            
-            <p>For more details on how metadata is used downstream from this module, see the help for
-            the <b>NamesAndTypes</b> or <b>Groups</b> modules.</p>"""%globals()))
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <i>When would you want to use this option?</i> You want to analyze images that are contained as 
+            file stacks, i.e., the images that are related to each other in some way, such as by time 
+            (temporal), space (spatial), or color (spectral).</dd>
+            </dl></li>
+            </ul>
+            Specifics on the metadata extraction options are described below. Any or all of these options 
+            may be used at time; press the "Add another extraction method" button to add more.</p>"""%globals()))
         
         group.append("source", cps.Choice(
             "Metadata source", [XM_FILE_NAME, XM_FOLDER_NAME],doc = """
@@ -419,19 +440,34 @@ class Metadata(cpm.CPModule):
             wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*",doc="""
             The file containing the metadata must be a comma-delimited file (csv). You can create or edit 
             such a file using a spreadsheet program such as Microsoft Excel. 
-            <p>The file must be saved as plain text, i.e., without hidden file encoding information. 
+            <p>The CSV file needs to conform to the following format:
+            <ul>
+            <li>Each column describes one type of metadata.</li>
+            <li>Each row describes the metadata for one image site.</li>
+            <li>The column headers are uniquely named. You can optionally prepend "Metadata_" to the header 
+            name in order to insure that it is interpreted correctly.</li>
+            <li>The CSV must be plain text, i.e., without hidden file encoding information. If using Excel 
+            on a Mac to edit the file, choose to save the file as "Windows CSV" or "Windows Comma Separated".</li>
+            </ul>
+            The file must be saved as plain text, i.e., without hidden file encoding information. 
             If using Excel on a Mac to edit the file, choose to save the file as "Windows CSV" or "Windows 
             Comma Separated".</p>"""))
         
         group.append("csv_joiner", cps.Joiner(
             "Match file and image metadata", allow_none = False,doc="""
-            Match columns in your .csv file to image metadata items
+            Match columns in your .csv file to image metadata items.
+            If you are using a CSV in conjunction with the filename/path metadata matching, you might want 
+            to capture the metadata in common with both sources. For example, you might be extracting the 
+            well tag from the image filename while your CSV contains treatment dosage information 
+            paired with each well. Therefore, you would want to let CellProfiler know that the well tag 
+            extracted from the image filename and the well tag noted in the CSV are in fact the 
+            one and the same.
+            
             <p>This setting controls how rows in your .csv file are matched to
-            different images. The setting displays the columns in your
-            .csv file in one of its columns and the metadata in your images
-            in the other, including the metadata extracted by previous
-            metadata extractors in this module.</p>
-            """))
+            different images. Set the drop-downs to pair the metadata tags of the images and the 
+            CSV, such that each row contains the corresponding tags. This can be done for as many 
+            metadata correspondences as you may have for each source; press 
+            <img src="memory:%(MODULE_ADD_BUTTON)s"> to add more rows.</p>"""%globals()))
         
         group.append("wants_case_insensitive", cps.Binary(
             "Use case insensitive matching?", False, doc = """

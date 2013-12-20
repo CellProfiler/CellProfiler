@@ -173,7 +173,8 @@ class Workspace(object):
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(self.__on_file_list_changed)
         self.__file_list = file_list
-        self.__file_list.add_notification_callback(self.__on_file_list_changed)
+        if file_list is not None:
+            self.__file_list.add_notification_callback(self.__on_file_list_changed)
     
     file_list = property(get_file_list)
 

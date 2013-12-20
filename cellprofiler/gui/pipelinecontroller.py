@@ -2551,15 +2551,18 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                   self.__debug_measurements,
                                   self.__debug_image_set_list,
                                   self.__frame)
-        workspace.set_file_list(self.__workspace.file_list)
-        self.__keys, self.__groupings = self.__pipeline.get_groupings(
-            workspace)
-
-        self.__grouping_index = 0
-        self.__within_group_index = 0
-        self.__pipeline.prepare_group(workspace,
-                                      self.__groupings[0][0],
-                                      self.__groupings[0][1])
+        try:
+            workspace.set_file_list(self.__workspace.file_list)
+            self.__keys, self.__groupings = self.__pipeline.get_groupings(
+                workspace)
+    
+            self.__grouping_index = 0
+            self.__within_group_index = 0
+            self.__pipeline.prepare_group(workspace,
+                                          self.__groupings[0][0],
+                                          self.__groupings[0][1])
+        finally:
+            workspace.set_file_list(None)
         self.__debug_outlines = {}
         if not self.debug_init_imageset():
             self.stop_debugging()

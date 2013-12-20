@@ -2703,6 +2703,7 @@ class Pipeline(object):
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
         temp_measurements = cpmeas.Measurements(mode = "memory")
+        new_workspace = None
         try:
             new_workspace = cpw.Workspace(
                 pipeline, None, None, None,
@@ -2752,6 +2753,8 @@ class Pipeline(object):
                 d[key] = value
             return (iscds, metadata_key_names, d)
         finally:
+            if new_workspace is not None:
+                new_workspace.set_file_list(None)
             temp_measurements.close()
             
             

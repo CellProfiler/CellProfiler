@@ -291,7 +291,8 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
             column = self.columns[col]
             value = self.cache[column.feature, image_set]
             if (column.column_type == COL_URL and 
-                self.display_mode == DISPLAY_MODE_SIMPLE):
+                self.display_mode == DISPLAY_MODE_SIMPLE and 
+                value is not None):
                 last_slash = value.rfind("/")
                 return urllib.unquote(value[(last_slash+1):])
             return value

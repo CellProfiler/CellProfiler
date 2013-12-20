@@ -485,7 +485,6 @@ class PipelineController:
             self.__frame,
             "Choose a project file to open",
             wildcard = wildcard) as dlg:
-            dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
                 return dlg.Path
             return None
@@ -631,7 +630,6 @@ class PipelineController:
             "Save project file as",
             wildcard = wildcard,
             style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
-            dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
                 pathname, filename = os.path.split(dlg.Path)
                 fullname = dlg.Path
@@ -667,7 +665,6 @@ class PipelineController:
         dlg = wx.FileDialog(self.__frame,
                             "Choose a pipeline file to open",
                             wildcard = wildcard)
-        dlg.Directory = cpprefs.get_default_output_directory()
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             self.do_load_pipeline(pathname)

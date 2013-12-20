@@ -28,6 +28,8 @@ ED_SKIP = "Skip"
 
 ERROR_URL = 'http://www.cellprofiler.org/cgi-bin/reporterror.cgi'
 
+__inside_display_error_dialog = False
+
 # keep track of errors that have already been reported this session,
 # and just log them to the console, rather than putting up the dialog.
 previously_seen_error_locations = set()
@@ -50,6 +52,10 @@ def display_error_dialog(*args, **kwargs):
 
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
     '''
+    global __inside_display_error_dialog
+    if __inside_display_error_dialog:
+        return
+    __inside_display_error_dialog = True
     try:
         return _display_error_dialog(*args, **kwargs)
     except Exception:
@@ -59,6 +65,8 @@ def display_error_dialog(*args, **kwargs):
         except Exception:
             sys.stderr.write("Exception logging exception in display_error_dialog().  Everything probably broken.\n");
             pass
+    finally:
+        __inside_display_error_dialog = False
 
 
 def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_only=False,

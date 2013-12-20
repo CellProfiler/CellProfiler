@@ -261,6 +261,12 @@ class Groups(cpm.CPModule):
                        self.grouping_list, self.image_set_list]
         return result
     
+    def help_settings(self):
+        result = [self.wants_groups, 
+                  self.grouping_metadata[0].metadata_choice,
+                  self.grouping_list, self.image_set_list]
+        return result
+    
     def prepare_settings(self, setting_values):
         nmetadata = int(setting_values[self.IDX_GROUPING_METADATA_COUNT])
         while len(self.grouping_metadata) > nmetadata:

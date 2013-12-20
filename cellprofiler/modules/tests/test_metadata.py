@@ -264,6 +264,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         
     def test_02_01_get_metadata_from_filename(self):
         module = M.Metadata()
+        module.wants_metadata.value=True
         em = module.extraction_methods[0]
         em.filter_choice.value = M.F_ALL_IMAGES
         em.extraction_method.value = M.X_MANUAL_EXTRACTION
@@ -299,6 +300,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         
     def test_02_03_filter_positive(self):
         module = M.Metadata()
+        module.wants_metadata.value=True
         em = module.extraction_methods[0]
         em.filter_choice.value = M.F_FILTERED_IMAGES
         em.filter.value = 'or (file does contain "B08")'
@@ -316,6 +318,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
 
     def test_02_04_filter_negative(self):
         module = M.Metadata()
+        module.wants_metadata.value=True
         em = module.extraction_methods[0]
         em.filter_choice.value = M.F_FILTERED_IMAGES
         em.filter.value = 'or (file doesnot contain "B08")'
@@ -419,6 +422,7 @@ C10,BRD041618
         fd.close()
         try:
             module = M.Metadata()
+            module.wants_metadata.value=True
             module.add_extraction_method()
             em = module.extraction_methods[0]
             em.filter_choice.value = M.F_ALL_IMAGES
@@ -476,6 +480,7 @@ C10,BRD041618
         fd.close()
         try:
             module = M.Metadata()
+            module.wants_metadata.value=True
             module.add_extraction_method()
             em = module.extraction_methods[0]
             em.filter_choice.value = M.F_ALL_IMAGES
@@ -530,6 +535,7 @@ C10,BRD041618
             ("wellrow", "wellcolumn"),
             ("well_row", "well_column")):
             module = M.Metadata()
+            module.wants_metadata.value=True
             em = module.extraction_methods[0]
             em.filter_choice.value = M.F_ALL_IMAGES
             em.extraction_method.value = M.X_MANUAL_EXTRACTION

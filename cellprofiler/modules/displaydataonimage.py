@@ -5,9 +5,6 @@ This module displays either a single image measurement on an image of
 your choosing, or one object measurement per object on top
 of every object in an image. The display itself is an image which you
 can save to a file using <b>SaveImages</b>.
-
-<i>Note:</i> The module ShowDataOnImage and data tool DisplayDataOnImage from 
-CellProfiler 1.0 were merged into DisplayDataOnImage in the CellProfiler 2.0.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.

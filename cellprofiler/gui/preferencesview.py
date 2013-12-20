@@ -414,6 +414,23 @@ class PreferencesView:
         self.__progress_watcher.pause(do_pause)
 
     def update_progress(self, message, elapsed_time, remaining_time):
+        #
+        # Disable everything if in a modal state. The progress bar
+        # seems to eat memory in huge chunks if allowed to draw its
+        # oh so shiny self while modal in the ultra awesome Mac
+        # interface. But you have to admit, the design is disgustingly
+        # elegant even if it does cause my ugly application to
+        # crash horribly.
+        #
+        # Taken from Cody Precord's post
+        # https://groups.google.com/forum/#!topic/wxpython-users/s8AQ64ptyCg
+        #
+        for win in wx.GetTopLevelWindows():
+            if isinstance(win, wx.Dialog):
+                if win.IsModal():
+                    self.__progress_bar.Show(False)
+                    return
+        self.__progress_bar.Show(True)
         self.__current_status.SetLabel(message)
         self.__progress_bar.Value = (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
         self.__timer.SetLabel('Time %s/%s'%(secs_to_timestr(elapsed_time), secs_to_timestr(elapsed_time + remaining_time)))

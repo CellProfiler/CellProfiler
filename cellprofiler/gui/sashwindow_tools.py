@@ -121,4 +121,4 @@ def on_splitter_paint(event):
         orientation = wx.HORIZONTAL
     art.DrawSash(dc, window, orientation, wx.Rect(sx, sy, sw, sh))
     art.DrawGripper(dc, window, wx.Rect(gx, gy, gw, gh), pane_info)
-    
+    dc.EndDrawing()

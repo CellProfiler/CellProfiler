@@ -47,7 +47,7 @@ except that it is used to specify an image that you want to load as objects. </l
 <p>For instance, an experiment might require that images created on the same day 
 use an illumination correction function calculated from all images from that day, 
 and furthermore, that the date be captured in the file names for the individual image 
-sets and in a .csv file specifying the illumination correction functions. 
+sets and in a CSV file specifying the illumination correction functions. 
 <p>In this case, if the illumination correction images are loaded with the 
 <b>LoadData</b> module, the file should have a "Metadata_Date" 
 column which contains the date metadata tags. Similarly, if the individual images 
@@ -63,11 +63,11 @@ with "Series" or "Frame" refers to CSVs containing information about image stack
 The name of the image within CellProfiler appears afterward an underscore character. For
 example, "Frame_DNA" would supply the frame number for the movie/image stack file specified
 by the "Image_FileName_DNA" and "Image_PathName_DNA" columns.
-<p>Using a .csv for loading frames and/or series from an movie/image stack allows you more
+<p>Using a CSV for loading frames and/or series from an movie/image stack allows you more
 flexibility in assembling image sets for operations that would difficult or impossible
 using the Input modules alone. For example, if you wanted to analyze a movie of 1,000 frames 
 by computing the difference between frames, you could create two 
-image columns in a .csv, one for loading frames 1,2,...,999, and the other for loading
+image columns in a CSV, one for loading frames 1,2,...,999, and the other for loading
 frames 2,3,...,1000. In this case, CellProfiler would load the frame and its predecessor
 for each cycle and <b>ImageMath</b> could be used to create the differece image for downstream use.</p>
 </li>
@@ -110,7 +110,7 @@ for details.</p>
 
 <h6>Using MetaXpress-acquired images in CellProfiler</h6>
 
-<p>To produce a .csv file containing image location and metadata from a <a href=
+<p>To produce a CSV file containing image location and metadata from a <a href=
 "http://www.moleculardevices.com/Products/Software/High-Content-Analysis/MetaXpress.html">MetaXpress</a>
 imaging run, do the following:
 <ul>
@@ -126,7 +126,7 @@ one row per image.</li>
 <li>The image data table may be linked to metadata contained in plate maps. These plate maps should
 be stored as flat files, and may be updated periodically via queries to a laboratory information 
 management system (LIMS) database. </li>
-<li>The complete image location and metadata is written to a .csv file where the headers can easily 
+<li>The complete image location and metadata is written to a CSV file where the headers can easily 
 be formatted to match <b>LoadData</b>'s input requirements (see column descriptions above). Single 
 plates split across multiple directories (which often occurs in MetaXpress) are written 
 to separate files and then merged, thereby removing the discontinuity.</li>
@@ -476,7 +476,7 @@ class LoadData(cpm.CPModule):
                 raise cps.ValidationError(
                     "Your pipeline has two or more LoadData modules.\n"
                     "The best practice is to have only one LoadData module.\n"
-                    "Consider combining the .csv files from all of your\n"
+                    "Consider combining the CSV files from all of your\n"
                     "LoadData modules into one and using only a single\n"
                     "LoadData module", self.csv_file_name)
             if isinstance(module, LoadImages):

@@ -551,7 +551,7 @@ class CPFrame(wx.Frame):
         submenu.Append(
             ID_FILE_EXPORT_IMAGE_SETS,
             "Image Set Listing...",
-            "Export the project's image sets as a .csv file suitable for LoadData")
+            "Export the project's image sets as a CSV file suitable for LoadData")
         self.__menu_file.AppendSubMenu(submenu, "Export")
         self.__menu_file.Append(
             ID_FILE_CLEAR_PIPELINE,

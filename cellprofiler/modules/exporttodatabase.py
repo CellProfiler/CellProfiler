@@ -421,8 +421,8 @@ class ExportToDatabase(cpm.CPModule):
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
                 DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
-            <i>(Used only when using .csv's or a SQLite database, and/or creating a properties or workspace file)</i><br>
-            This setting determines where the .csv files or SQLite database is saved if
+            <i>(Used only when using a CSV or a SQLite database, and/or creating a properties or workspace file)</i><br>
+            This setting determines where the CSV files or SQLite database is saved if
             you decide to write measurements to files instead of writing them
             directly to the database. If you request a CellProfiler Analyst properties file
             or workspace file, it will also be saved to this location. %(IO_FOLDER_CHOICE_HELP_TEXT)s 

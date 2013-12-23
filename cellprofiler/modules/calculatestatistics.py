@@ -176,7 +176,7 @@ class CalculateStatistics(cpm.CPModule):
             single low value (for instance, 0). Other samples should have an intermediate value
             to exclude them from the Z' factor analysis.<p>
             The typical way to provide this information in the pipeline is to create 
-            a text comma-delimited (.csv) file outside of CellProfiler and then load that file into the pipeline
+            a text comma-delimited (CSV) file outside of CellProfiler and then load that file into the pipeline
             using the <b>Metadata</b> module or the legacy <b>LoadData</b> module. In that case, choose the
             measurement that matches the column header of the measurement
             in the input file. See the <b>Metadata</b> module help for an example text file.''')

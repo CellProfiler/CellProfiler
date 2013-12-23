@@ -157,7 +157,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             "Limit output to a size that is allowed in Excel?", False, doc = """
             If your output has more than 256 columns, select <i>%(YES)s</i> will open a window 
             allowing you to select the columns you'd like to export. If your output exceeds
-            65,000 rows, you can still open the .csv in Excel, but not all rows will be visible."""%globals())
+            65,000 rows, you can still open the CSV in Excel, but not all rows will be visible."""%globals())
         
         self.nan_representation = cps.Choice(
             "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS], doc = """

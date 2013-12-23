@@ -438,7 +438,7 @@ class Metadata(cpm.CPModule):
         group.append("csv_location", cps.PathnameOrURL(
             "Metadata file location",
             wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*",doc="""
-            The file containing the metadata must be a comma-delimited file (csv). You can create or edit 
+            The file containing the metadata must be a comma-delimited file (CSV). You can create or edit 
             such a file using a spreadsheet program such as Microsoft Excel. 
             <p>The CSV file needs to conform to the following format:
             <ul>
@@ -463,7 +463,7 @@ class Metadata(cpm.CPModule):
             extracted from the image filename and the well tag noted in the CSV are in fact the 
             one and the same.
             
-            <p>This setting controls how rows in your .csv file are matched to
+            <p>This setting controls how rows in your CSV file are matched to
             different images. Set the drop-downs to pair the metadata tags of the images and the 
             CSV, such that each row contains the corresponding tags. This can be done for as many 
             metadata correspondences as you may have for each source; press 
@@ -940,7 +940,7 @@ class Metadata(cpm.CPModule):
                             imported_metadata = self.ImportedMetadata(
                                 csv_path, group.csv_location.is_url())
                         except:
-                            logger.debug("Failed to load csv file: %s" % csv_path)
+                            logger.debug("Failed to load CSV file: %s" % csv_path)
                             continue
                     new_imported_metadata.append(imported_metadata)
                 joiner.entities[self.CSV_JOIN_NAME] = \

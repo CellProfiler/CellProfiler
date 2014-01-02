@@ -341,7 +341,7 @@ class PreferencesView:
                 self.__progress_dialog = None
             wx.SetCursor(wx.NullCursor)
             self.set_message_text(WELCOME_MESSAGE)
-            wx.Yield()
+            wx.SafeYield(None, True)
         
         if operation_id == None:
             reset_progress()
@@ -442,11 +442,12 @@ class PreferencesView:
         self.__progress_watcher = None
         self.show_status_text()
         
-    def set_message_text(self,text):
-        saved_size = self.__status_text.GetSize()
-        self.__status_text.SetLabel(text)
-        self.__status_text.SetSize(saved_size)
-        self.__status_text.Update()
+    def set_message_text(self, text):
+        if self.__status_text.Label != text:
+            saved_size = self.__status_text.GetSize()
+            self.__status_text.SetLabel(text)
+            self.__status_text.SetSize(saved_size)
+            self.__status_text.Update()
     
     def pop_error_text(self,error_text):
         if error_text in self.__errors:

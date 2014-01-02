@@ -63,6 +63,8 @@ def aw_parse_args():
                       default=None)
     options, args = parser.parse_args()
     logging.root.setLevel(options.log_level)
+    if len(logging.root.handlers) == 0:
+        logging.root.addHandler(logging.StreamHandler())
 
     if not options.work_announce_address:
         parser.print_help()

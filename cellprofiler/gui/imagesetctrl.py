@@ -1010,8 +1010,9 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
             if attr.HasBackgroundColour():
                 brush = wx.Brush(attr.BackgroundColour)
                 dc.SetBrush(brush)
-            dc.SetPen(wx.TRANSPARENT_PEN)
-            dc.DrawRectangle(rect.X, rect.Y, rect.Width, rect.Height)
+            if dc.Brush.IsNull() == False:
+                dc.SetPen(wx.TRANSPARENT_PEN)
+                dc.DrawRectangle(rect.X, rect.Y, rect.Width, rect.Height)
             flags = 0
             if grid.IsInSelection(row, col):
                 flags += wx.CONTROL_SELECTED

@@ -1012,6 +1012,7 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
                 dc.SetBrush(brush)
             if dc.Brush.IsNull():
                 brush = wx.Brush(grid.GetGridWindow().BackgroundColour)
+                dc.SetBrush(brush)
             dc.SetPen(wx.TRANSPARENT_PEN)
             dc.DrawRectangle(rect.X, rect.Y, rect.Width, rect.Height)
             flags = 0

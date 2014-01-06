@@ -81,13 +81,15 @@ class TestNoWX(unittest.TestCase):
         import cellprofiler.cpmodule as cpm
         import os
         from cellprofiler.preferences import set_default_image_directory, set_default_output_directory
-        example_sbs_dir = os.path.join(self.example_dir(), 
-                                       "ExampleSBSImages")
-        set_default_image_directory(example_sbs_dir)
+        example_fly_dir = os.path.join(self.example_dir(), 
+                                       "ExampleFlyImages")
+        set_default_image_directory(example_fly_dir)
         output_dir = tempfile.mkdtemp()
         set_default_output_directory(output_dir)
         try:
-            pipeline_file = os.path.join(example_sbs_dir, "ExampleSBS.cp")
+            pipeline_file = os.path.join(example_fly_dir, "ExampleFlyURL.cppipe")
+            if not os.path.exists(pipeline_file):
+                pipeline_file = os.path.join(example_fly_dir, "ExampleFly.cp")
             pipeline = cpp.Pipeline()
             def callback(caller, event):
                 self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
@@ -100,7 +102,8 @@ class TestNoWX(unittest.TestCase):
                     self.assertTrue(isinstance(module, cpm.CPModule))
                     if module.module_name in ("SaveImages", 
                                               "CalculateStatistics",
-                                              "ExportToSpreadsheet"):
+                                              "ExportToSpreadsheet",
+                                              "ExportToDatabase"):
                         pipeline.remove_module(module.module_num)
                         removed_something = True
                         break

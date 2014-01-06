@@ -3463,7 +3463,8 @@ class Joiner(Setting):
         for d in join:
             for column_name, value in d.items():
                 if column_name in self.entities and \
-                   value not in self.entities[column_name]:
+                   (value not in self.entities[column_name] and
+                    value is not None):
                     raise ValidationError(
                         "%s is not a valid choice for %s" %
                         (value, column_name), self)

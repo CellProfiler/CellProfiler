@@ -448,6 +448,7 @@ class AnalysisWorker(object):
                     workspace = cpw.Workspace(current_pipeline, None, 
                                               current_measurements, None,
                                               current_measurements, None, None)
+                    workspace.interaction_handler = self.interaction_handler
                     workspace.post_group_display_handler = \
                         self.post_group_display_handler
                     # There might be an exception in this call, but it will be

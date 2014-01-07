@@ -106,7 +106,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
             fd.write(
                 'Name: "{group}\Ilastik"; '
                 'Filename: "{app}\CellProfiler.exe"; '
-                'Parameters:"--ilastik"; WorkingDir: "{app}\n')
+                'Parameters:"--ilastik"; WorkingDir: "{app}"\n')
         fd.close()
         if is_win64:
             cell_profiler_iss = "CellProfiler64.iss"

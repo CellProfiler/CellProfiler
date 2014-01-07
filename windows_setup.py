@@ -45,6 +45,7 @@ import pyreadline
 import tempfile
 import xml.dom.minidom
 
+CP_NO_ILASTIK = "CP_NO_ILASTIK"
 # make sure external dependencies match requirements
 import external_dependencies
 external_dependencies.fetch_external_dependencies('fail')
@@ -100,6 +101,13 @@ AppVerName=CellProfiler %s r%s
 OutputBaseFilename=CellProfiler_%s_win%d_r%s
 """ % (dotted_version, revision, dotted_version, (64 if is_win64 else 32), revision))
         fd.close()
+        fd = open("ilastik.iss", "w")
+        if CP_NO_ILASTIK not in os.environ:
+            fd.write(
+                'Name: "{group}\Ilastik"; '
+                'Filename: "{app}\CellProfiler.exe"; '
+                'Parameters:"--ilastik"; WorkingDir: "{app}\n')
+        fd.close()
         if is_win64:
             cell_profiler_iss = "CellProfiler64.iss"
         else:
@@ -111,6 +119,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
                        subprocess.check_call,([compile_command]),
                        "Compiling %s" % cell_profiler_iss)
         os.remove("version.iss")
+        os.remove("ilastik.iss")
         
     def modify_manifest(self, resource_name):
         '''Change the manifest of a resource to match the CRT
@@ -235,59 +244,66 @@ opts = {
 data_files = []
 ####################################
 #
-# Ilastik fixups
+# H5PY / HDF5 fixups
 #
 ####################################
-try:
-    import vigra
-    import ilastik
-    vigranumpy_path = os.path.join(vigra.__path__[0],"vigranumpycore.pyd")
-    if os.path.exists(vigranumpy_path):
-        data_files += [(".",[vigranumpy_path])]
-    opts['py2exe']['includes'] += [
-        "vigra", "vigra.impex",
-        "h5py", "h5py._stub", "h5py._conv", "h5py.utils", "h5py._proxy",
-        "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip",
-        "zmq", "zmq.utils", "zmq.utils.jsonapi", "zmq.utils.strtypes"]
-    opts['py2exe']['excludes'] += ["ilastik"]
-    #
-    # Put path to QT dlls in PATH environment variable
-    #
-    import PyQt4
-    pyqt4_path = os.path.split(PyQt4.__file__)[0]
-    os.environ["PATH"] = os.environ["PATH"] + ";" + pyqt4_path
-    il_path = ilastik.__path__[0]
-    for root, subFolders, files in os.walk(il_path):
-        #
-        # Do not include experimental modules
-        #
-        relative_path = root[(len(il_path)+1):]
-        if any([relative_path.startswith(os.path.join('modules',x))
-                for x in (
-            'automatic_segmentation','object_picking',
-            'connected_components')]):
-            continue
-        dest = os.path.join('site-packages','ilastik')
-        if root != il_path:
-            dest = os.path.join(dest, relative_path)
-        ilastik_files = [os.path.join(root, f) for f in files 
-                         if f.endswith(".ui") or f.endswith(".png") or
-                         f.endswith(".py")]
-        if len(ilastik_files) > 0:
-            data_files += [(dest, ilastik_files)]
-                                     
-    #
-    # port_v3 is for Python 3.1
-    #
-    opts['py2exe']['excludes'] += ['PyQt4.uic.port_v3']
+opts['py2exe']['includes'] += [
+    "h5py", "h5py._stub", "h5py._conv", "h5py.utils", "h5py._proxy"]
+
+####################################
+#
+# Ilastik fixups
+#
+# Define CP_NO_ILASTIK if distribution does not
+# include Ilastik and ClassifyPixels
+####################################
+
+ilastik_dependencies = [
+    "vigra", "vigra.impex", "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip"]
+if CP_NO_ILASTIK not in os.environ:
     try:
-        import OpenGL.platform.win32
-        opts['py2exe']['includes'] += ['OpenGL.platform.win32', 
-                                       'OpenGL.arrays.*']
+        import vigra
+        import ilastik
+        vigranumpy_path = os.path.join(vigra.__path__[0],"vigranumpycore.pyd")
+        if os.path.exists(vigranumpy_path):
+            data_files += [(".",[vigranumpy_path])]
+        opts['py2exe']['includes'] += ilastik_dependencies
+        opts['py2exe']['excludes'] += ["ilastik", 'PyQt4.uic.port_v3']
+        #
+        # Put path to QT dlls in PATH environment variable
+        #
+        import PyQt4
+        pyqt4_path = os.path.split(PyQt4.__file__)[0]
+        os.environ["PATH"] = os.environ["PATH"] + ";" + pyqt4_path
+        il_path = ilastik.__path__[0]
+        for root, subFolders, files in os.walk(il_path):
+            #
+            # Do not include experimental modules
+            #
+            relative_path = root[(len(il_path)+1):]
+            if any([relative_path.startswith(os.path.join('modules',x))
+                    for x in (
+                'automatic_segmentation','object_picking',
+                'connected_components')]):
+                continue
+            dest = os.path.join('site-packages','ilastik')
+            if root != il_path:
+                dest = os.path.join(dest, relative_path)
+            ilastik_files = [os.path.join(root, f) for f in files 
+                             if f.endswith(".ui") or f.endswith(".png") or
+                             f.endswith(".py")]
+            if len(ilastik_files) > 0:
+                data_files += [(dest, ilastik_files)]
+        try:
+            import OpenGL.platform.win32
+            opts['py2exe']['includes'] += ['OpenGL.platform.win32', 
+                                           'OpenGL.arrays.*']
+        except:
+            print "This installation will not supply OpenGL support for Ilastik"
     except:
-        print "This installation will not supply OpenGL support for Ilastik"
-except:
-    print "This installation will not include Ilastik"
+        print "This installation will not include Ilastik"
+else:
+    opts['py2exe']['excludes'] += ilastik_dependencies
 
 ##################################
 #
@@ -312,6 +328,9 @@ except:
 ##############################################
 try:
     import zmq
+    opts['py2exe']['includes'] += [
+        "zmq", "zmq.utils", "zmq.utils.jsonapi", "zmq.utils.strtypes"]
+
     zmq_loc = os.path.split(zmq.__file__)[0]
     os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc
     #

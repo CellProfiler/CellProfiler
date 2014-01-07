@@ -30,8 +30,9 @@ def import_all_but_wx(name,
 
 class TestNoWX(unittest.TestCase):
     def setUp(self):
-        from cellprofiler.preferences import set_headless
+        from cellprofiler.preferences import set_headless, set_temporary_directory
         set_headless()
+        set_temporary_directory(tempfile.gettempdir())
         self.old_import = __builtin__.__import__
         __builtin__.__import__ = import_all_but_wx
 

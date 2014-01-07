@@ -14,6 +14,7 @@
 # 
 # Website: http://www.cellprofiler.org
 #
+import xml.etree.ElementTree
 from xml.etree import cElementTree as ElementTree
 from cStringIO import StringIO
 import datetime

@@ -39,7 +39,7 @@ Source: ".\windows\vcredist_x64.exe"; DestDir: "{tmp}"
 
 [Icons]
 Name: "{group}\CellProfiler"; Filename: "{app}\CellProfiler.exe"; WorkingDir: "{app}"
-Name: "{group}\Ilastik"; Filename: "{app}\CellProfiler.exe"; Parameters:"--ilastik"; WorkingDir: "{app}"
+#include "ilastik.iss"
 Name: "{group}\{cm:ProgramOnTheWeb,CellProfiler}"; Filename: "http://www.cellprofiler.org"
 Name: "{group}\{cm:UninstallProgram,CellProfiler}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\CellProfiler"; Filename: "{app}\CellProfiler.exe"; WorkingDir: "{app}"; Tasks: desktopicon

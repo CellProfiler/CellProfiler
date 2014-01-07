@@ -29,7 +29,20 @@ def sw_bind_to_evt_paint(window):
     window - a wx.SashWindow
     '''
     window.Bind(wx.EVT_PAINT, on_sashwindow_paint)
-    
+
+__art = None
+__pane_info = None
+
+def get_art_and_pane_info():
+    global __art
+    global __pane_info
+    if __art is None:
+        __art = PyAuiDockArt()
+        __pane_info = wx.aui.AuiPaneInfo()
+        __pane_info.Gripper(True)
+    return __art, __pane_info
+
+
 def on_sashwindow_paint(event):
     assert isinstance(event, wx.PaintEvent)
     window = event.EventObject
@@ -38,7 +51,7 @@ def on_sashwindow_paint(event):
     dc.BeginDrawing()
     dc.Background = wx.Brush(get_background_color())
     dc.Clear()
-    art = PyAuiDockArt()
+    art, pane_info = get_art_and_pane_info()
     w, h = window.GetClientSizeTuple()
     for edge, orientation in (
         (wx.SASH_LEFT, wx.VERTICAL),
@@ -47,8 +60,6 @@ def on_sashwindow_paint(event):
         (wx.SASH_BOTTOM, wx.HORIZONTAL)):
         if window.GetSashVisible(edge):
             margin = window.GetEdgeMargin(edge)
-            pane_info = wx.aui.AuiPaneInfo()
-            pane_info.Gripper(True)
             if orientation == wx.VERTICAL:
                 sy = 0
                 sh = h
@@ -91,9 +102,7 @@ def on_splitter_paint(event):
     dc.BeginDrawing()
     dc.Background = wx.Brush(get_background_color())
     dc.Clear()
-    art = PyAuiDockArt()
-    pane_info = wx.aui.AuiPaneInfo()
-    pane_info.Gripper(True)
+    art, pane_info = get_art_and_pane_info()
     w, h = window.GetClientSizeTuple()
     margin = window.GetSashSize()
     pos = window.GetSashPosition()

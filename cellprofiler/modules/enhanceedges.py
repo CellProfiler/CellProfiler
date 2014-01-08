@@ -71,7 +71,7 @@ class EnhanceEdges(cpm.CPModule):
             <i>(Used only with the %(M_CANNY)s option and manual thresholding)</i><br>
             The upper cutoff for Canny edges. All Sobel-transformed 
             pixels with this value or higher will be marked as an edge.
-            You can enter a threshold between 0 and 1.''')
+            You can enter a threshold between 0 and 1.'''%globals())
         
         self.threshold_adjustment_factor = cps.Float(
             "Threshold adjustment factor",1, doc = '''
@@ -79,7 +79,7 @@ class EnhanceEdges(cpm.CPModule):
             This threshold adjustment factor is a multiplier that is applied to
             both the lower and upper Canny thresholds if they are calculated
             automatically. An adjustment factor of 1 indicates no adjustment.
-            The adjustment factor has no effect on any threshhold entered manually entered.''')
+            The adjustment factor has no effect on any threshhold entered manually entered.'''%globals())
         
         self.method = cps.Choice(
             "Select an edge-finding method",

@@ -145,7 +145,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         self.object_dilation_radius = cps.Integer(
             "Dilation radius",1,0,doc='''
             <i>(Used only if the "%(IC_REGULAR)s" method and dilation is selected)</i><br>
-            This value should be roughly equal to the original radius of the objects''')
+            This value should be roughly equal to the original radius of the objects'''%globals())
         
         self.block_size = cps.Integer(
             "Block size",60,1,doc = '''
@@ -388,7 +388,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             than the diameter of foreground objects. The image will
             be downsampled by the factor you enter. For instance, a 500x600
             image will be downsampled into a 250x300 image if a factor of 2
-            is entered.""")
+            is entered."""%globals())
         
         self.spline_maximum_iterations = cps.Integer(
             "Maximum number of iterations", 40, minval=1,doc = """

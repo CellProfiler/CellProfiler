@@ -134,7 +134,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             <i>(Used only when "%(D_WITHIN)s" is selected)</i> <br>
             The Neighbor distance is the number of pixels that each object is 
             expanded for the neighbor calculation. Expanded objects that touch 
-            are considered neighbors.""")
+            are considered neighbors."""%globals())
         
         self.wants_count_image = cps.Binary(
             'Retain the image of objects colored by numbers of neighbors?',

@@ -560,8 +560,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             ui = ui_service.getDefaultUI()
             J.execute_runnable_in_main_thread(J.run_script(
                 """new java.lang.Runnable() {
-                run: function() { frame.setVisible(true); }}""",
-                dict(frame=ui.getApplicationFrame())))
+                run: function() { 
+                    ui.getApplicationFrame().setVisible(true); }}""",
+                dict(ui=ui)), True)
         
     def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to run a group

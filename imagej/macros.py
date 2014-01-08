@@ -56,23 +56,12 @@ def execute_macro(macro_text):
     
     macro_text - the macro program to be run
     '''
-    if sys.platform == "darwin":
-        J.set_static_field("ij/macro/Interpreter", "batchMode", "Z", True)
-        J.static_call("ij/IJ", "runMacro", 
-                      "(Ljava/lang/String;)Ljava/lang/String;",
-                      macro_text)
-    else:
-        show_imagej();
-        interp = J.make_instance("ij/macro/Interpreter","()V");
-        J.call(interp, "run","(Ljava/lang/String;)V", macro_text);
-    
-def show_imagej():
-    '''Show the ImageJ user interface'''
-    ij_obj = J.static_call("ij/IJ", "getInstance", "()Lij/ImageJ;")
-    if ij_obj is None:
-        ij_obj = J.make_instance("ij/ImageJ", "()V")
-    J.call(ij_obj, "setVisible", "(Z)V", True)
-    J.call(ij_obj, "toFront", "()V")
+    interp = J.make_instance("ij/macro/Interpreter","()V");
+    J.execute_runnable_in_main_thread(J.run_script(
+        """new java.lang.Runnable() {
+        run: function() {
+            interp.run(macro_text);
+        }}""", dict(interp=interp, macro_text=macro_text)), synchronous=True)
     
 def get_user_loader():
     '''The class loader used to load user plugins'''

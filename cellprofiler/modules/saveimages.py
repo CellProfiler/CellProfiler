@@ -202,7 +202,7 @@ class SaveImages(cpm.CPModule):
             cps.NONE,doc="""
             <i>(Used only when "%(FN_FROM_IMAGE)s" is selected for contructing the filename)</i><br>
             Select an image loaded using <b>NamesAndTypes</b>. The original filename will be
-            used as the prefix for the output filename.""")
+            used as the prefix for the output filename."""%globals())
         
         self.single_file_name = cps.Text(
             SINGLE_NAME_TEXT, "OrigBlue",

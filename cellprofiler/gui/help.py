@@ -426,7 +426,7 @@ images and objects such that image/object measurements will include only those
 regions within the masked area.</li>
 <li><i>Improved loading of text information:</i> Previously, you could load only a
 limited amount of annotation relevant to your images, via a text file. Now you can use  
-comma-delimited files to load tables of metadata, in addition to file lists of input 
+comma-delimited files to load tables of metadata, in addition to lists of input 
 images for analysis.</li>
 <li><i>Convex hull</i> has been included as an image morphological operation.</li>
 <li>A new module, MeasureNeurons, has been added, which measures the number 
@@ -1350,7 +1350,7 @@ the images:
 image type. For example, for a 16-bit image, the pixel data will be shown using 0 as black
 and 65535 as white. However, if the actual pixel intensities span only a portion of the
 image intensity range, this may render the image unviewable. For example, if a 16-bit image
-only contains 12 bits of data, the resultant image will be entirely black.</li>
+only contains 12 bits of data, the resulting image will be entirely black.</li>
 <li><i>Normalized (default):</i> Shows the image with the colormap "autoscaled" to
 the maximum and minimum pixel intensity values; the minimum value is black and the
 maximum value is white. </li>
@@ -1698,13 +1698,14 @@ the Input module tutorials on our <a href="http://www.cellprofiler.org/tutorials
 LOADING_IMAGE_SEQUENCES_HELP = """
 <h3>Introdution</h3>
 In this context, the term <i>image sequence</i> is used to refer to a collection of images which can be from
-a time-lapse assay, a 3-D Z-stack assay, or both. This section will instruct you how to load these collections
+a time-lapse assay, a three-dimensional (3-D) Z-stack assay, or both. This section will instruct you how to load these collections
 in order to properly represent your data for processing.
 
 <h3>Sequences of individual files</h3>
-<p>The simplest method of collecting image sequences is to simply acquire them as a series of individual
-images, where each image represents a single timepoint/z-slice. Typically, the image filename reflects
-the timepoint, such that the alphabetical image listing corresponds to timepoint sequence,
+<p>For some microscopes, the simplest method of capturing image sequences is to simply acquire them as a series of individual
+images, where each image represents a single timepoint/z-slice (for simplicity, we will refer to <i>timepoints</i> in the rest of 
+this example). Typically, the image filename reflects
+the timepoint, such that the alphabetical image listing corresponds to the proper sequence,
 e.g., <i>img000.png</i>, <i>img001.png</i>, <i>img002.png</i>, etc</p>. It is also not uncommon
 to store the movie such that one movie's worth of files is stored in a single folder.</p>
 <p><i>Example:</i>You have a time-lapse movie of individual files set up as follows:
@@ -1722,17 +1723,17 @@ where the file names are in the format <i>&lt;Stain&gt;-&lt;Well&gt;.&lt;Timepoi
 </p>
 <p>In this case, the procedure to set up the input modules to handle these files is as follows:
 <ul>
-<li>In the <b>Images</b> module, drag-and-drop your folders of images into the file list panel. If 
+<li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If 
 necessary, set your rules accordingly in order to filter out any files that are not part of a movie 
 sequence.
 <p>In the above example, you would drag-and-drop the <i>fluo2</i>, <i>fluor</i> and <i>phase</i> folders
-into the file list panel.</p></li>
-<li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
+into the File list panel.</p></li>
+<li>In the <b>Metadata</b> module, ccheck the box to enable metadata extraction. The key step here is to
 obtain the metadata tags necessary to do two things:
 <ul>
-<li>Distinguish the movies from each other. This information may be encapsulated in the filename 
+<li>Distinguish the movies from each other. This information is typically encapsulated in the filename 
 and/or the folder name.</li>
-<li>For each movie, distinguish the timepoints from each other. This information is usually contained
+<li>For each movie, distinguish the timepoints from each other, ensuring their proper ordering. This information is usually contained
 in the filename.</li>
 </ul>
 To accomplish this, do the following:
@@ -1741,19 +1742,21 @@ To accomplish this, do the following:
 will use these to extract the movie and timepoint tags from the images. </li>
 <li>Use "%(X_MANUAL_EXTRACTION)s" to create a regular expression to extract the metadata from the
 filename and/or path name.</li>
-<li>Use "%(X_IMPORTED_EXTRACTION)s" if you have a comma-delimted file (CSV) of 
+<li>Or, use "%(X_IMPORTED_EXTRACTION)s" if you have a comma-delimted file (CSV) of the necessary 
 metadata columns (including the movie and timepoint tags) for each image.</li>
 </ul>
 If there are multiple channels for each movie, this step may need to be performed for each channel.
 <p>In this example, you could do the following:
 <ul>
 <li>Select "%(X_MANUAL_EXTRACTION)s" as the method, "From file name" as the source, and 
-<code>.*-(?P&lt;Well&gt;[A-P][0-9]{2})\.(?P&lt;Timepoint&gt;[0-9]{3})</code> as the regular expression.</li>
+<code>.*-(?P&lt;Well&gt;[A-P][0-9]{2})\.(?P&lt;Timepoint&gt;[0-9]{3})</code> as the regular expression.
+This step will extract the well ID and timepoint from each filename.</li>
 <li>Click the "Add" button to add another extraction method.</i>
 <li>In the new group of extraction settings, select "%(X_MANUAL_EXTRACTION)s" as the method, "From folder name" as the source, and 
-<code>.*[\\/](?P&lt;Stain>.*)[\\/].*$</code> as the regular expression.</li>
-<li>Click the "Update" button below the divider to confirm that the proper metadata values are being 
-collected from each image.</li>
+<code>.*[\\/](?P&lt;Stain>.*)[\\/].*$</code> as the regular expression. 
+This step will extract the stain name from each folder name.</li>
+<li>Click the "Update" button below the divider and check the output in the table 
+to confirm that the proper metadata values are being collected from each image.</li>
 </ul></p>
 </li>
 <li>In the <b>NamesAndTypes</b> module, assign the channel(s) to a name of your choice. If there are 
@@ -1767,15 +1770,16 @@ For this example, you could do the following:
 <li>Click the "Add" button to define another image with a rule.</li>
 <li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it <i>OrigPhase</i>.
 <li>In the "Image set matching method" setting, select "Metadata".</li>
-<li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i> and <i>OrigPhase</i> channels.</li>
+<li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i>, and <i>OrigPhase</i> channels.</li>
 <li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right to add another row,
 and select "Timepoint" for each channel.</li>
-<li>Click the "Update" button below the divider to confirm the channel matching. The corresponding well and 
-timepoint for each channel should now be matched to each other.</li>
+<li>Click the "Update" button below the divider to view the resulting table and confirm that the proper 
+files are listed and matched across the channels. The corresponding well and frame for each channel 
+should now be matched to each other.</li>
 </ul>
 </li>
-<li>In the <b>Groups</b> module, enable image grouping for these images, then select the metadata that 
-defines a distinct movie of data.</br>
+<li>In the <b>Groups</b> module, enable image grouping for these images in order to select the metadata 
+that defines a distinct movie of data.</br>
 For the example above, do the following:
 <ul>
 <li>Select "Well" as the metadata category.</li>
@@ -1788,7 +1792,7 @@ process the images in all movies together as if they were constituents of only o
 </ul>
 </p>
 
-<h3>Image sequences consisting of a single file</h3>
+<h3>basic image sequences consisting of a single file</h3>
 <p>Another common means of storing time-lapse/Z-stack data is as a single file containing the movie. Examples of this
 approach include image formats such as:
 <ul>
@@ -1800,7 +1804,7 @@ approach include image formats such as:
 </ul>
 CellProfiler uses the Bio-Formats library for reading various image formats. For more details on 
 supported files, see this <a href="http://www.openmicroscopy.org/site/support/bio-formats4/supported-formats.html">webpage</a>. In 
-general, we recommend saving stacks and movies in an open format such as .TIF.
+general, we recommend saving stacks and movies in a format such as .TIF.
 </p>
 
 <p><i>Example:</i>You have two image stacks in the following format:
@@ -1815,7 +1819,7 @@ general, we recommend saving stacks and movies in an open format such as .TIF.
 or a Z-stack assay):
 <ul>
 <li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If 
-necessary, set your rules accordingly in order to filter out any files that are not stack sequences.<br>
+necessary, set your rules accordingly in order to filter out any files that are not files that are not images to be processed.<br>
 In the above example, you would drag-and-drop the FLEX files into the File list panel.</li>
 <li>In the <b>Metadata</b> module, enable metadata extraction in order to obtain metadata from these files.
 The key step here is to obtain the necessary metadata tags  to do two things:
@@ -1832,14 +1836,14 @@ extract the requisite information from the metadata stored in the image headers.
 <li>Click the "Update metadata" button. A progress bar will appear showing the time elapsed; depending on 
 the number of files present, this step may take a while to complete.</li>
 <li>Click the "Update" button below the divider.</li>
-<li>The resultant table should show the various metadata contained in the file. In this case, the relevant 
+<li>The resulting table should show the various metadata contained in the file. In this case, the relevant 
 information is contained in the <i>C</i> and <i>Series</i> columns. In the figure shown, the <i>C</i> column 
 shows three unique values for the channels represented, numbered from 0 to 2. The <i>Series</i> column shows 
-8 values for the slices collected in each stack, numbered from 0 to 7. </li>
+8 values for the slices collected in each stack, numbered from 0 to 7, followed by the slices for other stacks. </li>
 </ul>
 </li>
 <li>In the <b>NamesAndTypes</b> module, assign the channel to a name of your choice. If there are multiple 
-channels, you will need to do this for each channel. For the above example, you could do the following:
+channels, you will need to do this for each channel. For this example, you could do the following:
 <ul>
 <li>Select "Assign images matching rules".</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> </li>
@@ -1859,11 +1863,11 @@ combination tells CellProfiler not to treat the image as a single file, but rath
 <li>Name the image <i>TxRed</i>.</li>
 <li>In the "Image set matching method" setting, select "Metadata". </li>
 <li>Select "FileLocation" for the DAPI, GFP and TxRed channels. The FileLocation metadata tag identifies the 
-individual stack, and selecting this parameter insures that the channels are first matched within each 
+individual stack, and selecting this parameter ensures that the channels are first matched within each 
 stack, rather than across stacks.</li>
 <li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp; button to the right to add another row, and select <i>Series</i> for each channel. </li>
-<li>Click the "Update" button below the divider to confirm the channel matching. The corresponding <i>FileLocation</i> and 
-<i>Series</i> for each channel should now be matched to each other. 
+<li>Click the "Update" button below the divider to confirm that the proper image slices are listed and matched across the channels. 
+The corresponding <i>FileLocation</i> and <i>Series</i> for each channel should now be matched to each other. 
 </ul>
 
 <li>In the <b>Groups</b> module, select the metadata that defines a distinct image stack. For the example above, 
@@ -1892,9 +1896,8 @@ the same manner.</li>
 (please note that this procedure is basically identical whether the file is for a time-lapse assay
 or a Z-stack assay):
 <ul>
-<li>In the <b>Images</b> module, drag-and-drop your folders of images into the file list panel. If 
-necessary, set your rules accordingly in order to filter out any files that are not part of a Z-stack 
-sequence.<br>
+<li>In the <b>Images</b> module, drag-and-drop your folders of images into the File list panel. If 
+necessary, set your rules accordingly in order to filter out any files that are not images to be processed.<br>
 In the above example, you would drag-and-drop the LSM files into the File list panel. In this case, 
 the default "Images only" filter is sufficient to capture the necessary files. </li>
 
@@ -1903,8 +1906,8 @@ files. The key step here is to obtain the metadata tags necessary to do two thin
 <ul>
 <li>Distinguish the stacks from each other. This information is contained as the file itself, that is, 
 each file represents a different stack.</li>
-<li>For each stack, distinguish the timepoints from each other. This information is usually contained
-in the image's internal metadata.</li>
+<li>For each stack, distinguish the timepoints from each other, ensuring proper ordering. This information 
+is usually contained in the image file's internal metadata.</li>
 </ul> 
 To accomplish this, do the following:
 <ul>
@@ -1913,7 +1916,7 @@ extract the requisite information from the metadata stored in the image headers.
 <li>Click the "Update metadata" button. A progress bar will appear showing the time elapsed; depending 
 on the number of files present, this step may take a while.</li>
 <li>Click the "Update" button below the divider.</li>
-<li>The resultant table should show the various metadata contained in the file. In this case, the relevant 
+<li>The resulting table should show the various metadata contained in the file. In this case, the relevant 
 information is contained in the C and Z columns. The <i>C</i> column shows four unique 
 values for the channels represented, numbered from 0 to 3. The <i>Z</i> column shows nine values for 
 the slices represented from the first stack, numbered from 0 to 8.</li>
@@ -1928,30 +1931,30 @@ multiple channels, you will need to do this for each channel.
 <ul>
 <li>Select "Assign images matching rules".</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> </li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to right of the rule to add another set of 
+<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of 
 rule options.</li>
 <li>Add the rule [Image][Is][Stack frame].</li>
 <li>Name the image <i>DAPI</i>.
 <li>Click the "Add another image" button to define a second image with a set of rules.</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code> </li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to right of the rule to add another set of 
+<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of 
 rule options.</li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the second image <i>GFP</i>.</li>
 <li>Click the "Add another image" button to define a third image with a set of rules.</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][2]</code>.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to right of the rule to add another set of 
+<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of 
 rule options. </li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the third image <i>TxRed</i>. </li>
 <li>Click the "Add another image" button to define a fourth image with set of rules.</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][3]</code>.</li>
-<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to right of the rule to add another set of 
+<li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of 
 rule options. </li>
 <li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the fourth image <i>Cy3</i>.</li>
 <li>In the "Image set matching method" setting, select "Metadata".</li>
-<li>Select "FileLocation" for the <i>DAPI</i>,<i>GFP</i>,<i>TxRed</i> and <i>Cy3</i>channels. The 
+<li>Select "FileLocation" for the <i>DAPI</i>,<i>GFP</i>,<i>TxRed</i>, and <i>Cy3</i>channels. The 
 <i>FileLocation</i> identifies the individual 
 stack, and selecting this parameter insures that the channels are matched within each stack, 
 rather than across stacks.</li>
@@ -2005,7 +2008,7 @@ for the window lets you display or remove files and lets you remove folders.
 <br>
 The buttons and checkbox along the bottom have the following functions:<br>
 <ul><li><i>Browse...</i>: Browse for files and folders to add.</li>
-<li><i>Clear</i>: Clear all entries from the file list</li>
+<li><i>Clear</i>: Clear all entries from the File list</li>
 <li><i>Show files excluded by filters</i>: <i>(Only shown if filtered based on rules is selected)</i> 
 Check this to see all files in the
 list. Uncheck it to see only the files that pass the rules criteria in the
@@ -2044,7 +2047,7 @@ You can also create regular expressions (an advanced syntax for pattern matching
 <p>To add another rule, click the plus  buttons to the right of each rule. Subtract an existing rule by clicking the 
 minus button.</p>
 <p>You can also link a set of rules by choosing the logical expression <i>All</i> or <i>Any</i>. If you use  
-<i>All</i> logical expression, all the rules be true for a file to be included in the file list. If
+<i>All</i> logical expression, all the rules be true for a file to be included in the File list. If
 you use the <i>Any</i> option, only one of the conditions has to be met for a file to be included.</p>
 <p>If you want to create more complex rules (e.g, some criteria matching all rules and others matching any),
 you can create sets of rules, by clicking the ellipsis button (to the right of the plus button). 

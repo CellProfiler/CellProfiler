@@ -60,6 +60,10 @@ def main(args):
         #
         import cellprofiler.preferences as cpprefs
         cpprefs.set_headless()
+        for i, arg in enumerate(args):
+            if arg == "--ij-plugins-directory" and len(args) > i+1:
+                cpprefs.set_ij_plugin_directory(args[i+1])
+                break
         import cellprofiler.analysis_worker
         cellprofiler.analysis_worker.aw_parse_args()
         cellprofiler.analysis_worker.main()

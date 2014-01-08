@@ -108,7 +108,7 @@ class MaskObjects(I.Identify):
             [MC_OBJECTS, MC_IMAGE],doc="""
             You can mask your objects by defining a region using objects
             you previously identified in your pipeline (<i>%(MC_OBJECTS)s</i>) or by defining a 
-            region based on the white regions in a binary image (<i>%(MC_IMAGE)s</i>).""")
+            region based on the white regions in a binary image (<i>%(MC_IMAGE)s</i>)."""%globals())
         
         self.masking_objects = cps.ObjectNameSubscriber(
             "Select the masking object",cps.NONE,doc="""

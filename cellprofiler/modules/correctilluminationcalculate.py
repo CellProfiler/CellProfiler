@@ -149,7 +149,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         
         self.block_size = cps.Integer(
             "Block size",60,1,doc = '''
-            <i>(Used only if "%(IC_BACKGROUND)s" is selected)</i><br>%
+            <i>(Used only if "%(IC_BACKGROUND)s" is selected)</i><br>
             The block size should be large enough that every square block of pixels is likely 
             to contain some background pixels, where no objects are located.'''%globals())
         

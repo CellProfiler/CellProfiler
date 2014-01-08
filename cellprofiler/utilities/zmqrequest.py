@@ -47,7 +47,8 @@ def make_CP_encoder(buffers):
             info32 = np.iinfo(np.int32)
             if data.dtype.kind == "i" and data.dtype.itemsize > 4 or\
                data.dtype.kind == "u" and data.dtype.itemsize >= 4:
-                if np.min(data) >= info32.min and np.max(data) <= info32.max:
+                if np.prod(data.shape) == 0 or \
+                   (np.min(data) >= info32.min and np.max(data) <= info32.max):
                     data = data.astype(np.int32)
             idx = len(buffers)
             buffers.append(np.ascontiguousarray(data))

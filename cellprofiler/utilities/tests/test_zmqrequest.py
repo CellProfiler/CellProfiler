@@ -239,6 +239,14 @@ class TestZMQRequest(unittest.TestCase):
             dict(foo=np.arange(10).astype(np.int16)))
         result = Z.json_decode(json_string, buf)
         self.assertEqual(result["foo"].dtype, np.int16)
+        
+    def test_03_06_json_encode_zero_length_uint(self):
+        for dtype in np.uint64, np.int64, np.uint32:
+            json_string, buf = Z.json_encode(
+                dict(foo = np.zeros(0,dtype)))
+            result = Z.json_decode(json_string, buf)
+            self.assertEqual(len(result["foo"]), 0)
+        
     
     def same(self, a, b):
         if isinstance(a, (float, int)):

@@ -77,7 +77,11 @@ def make_CP_decoder(buffers):
     def decoder(dct, buffers=buffers):
         if '__ndarray__' in dct:
             buf = buffer(buffers[dct['idx']])
-            return np.frombuffer(buf, dtype=dct['dtype']).reshape(dct['shape']).copy()
+            shape = dct['shape']
+            dtype = dct['dtype']
+            if np.prod(shape) == 0:
+                return np.zeros(shape, dtype)
+            return np.frombuffer(buf, dtype=dtype).reshape(shape).copy()
         if '__buffer__' in dct:
             return buffer(buffers[dct['idx']])
         if '__CPGridInfo__' in dct:

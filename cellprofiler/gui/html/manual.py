@@ -23,10 +23,10 @@ from cellprofiler.gui.help import MAIN_HELP
 from cellprofiler.utilities.relpath import relpath
 import cellprofiler.utilities.version as version
     
-LOCATION_COVERPAGE = '/'.join(['images','CPCoverPage.png'])
-LOCATION_WHITEHEADLOGO = '/'.join(['images','WhiteheadInstituteLogo.png'])
-LOCATION_CSAILLOGO = '/'.join(['images','CSAIL_Logo.png'])
-LOCATION_IMAGINGPLATFORMBANNER  = '/'.join(['images','BroadPlusImagingPlusBanner.png'])    
+LOCATION_COVERPAGE = os.path.join('images','CPCoverPage.png')
+LOCATION_WHITEHEADLOGO = os.path.join('images','WhiteheadInstituteLogo.png')
+LOCATION_CSAILLOGO = os.path.join('images','CSAIL_Logo.png')
+LOCATION_IMAGINGPLATFORMBANNER  = os.path.join('images','BroadPlusImagingPlusBanner.png')    
 VERSION = version.version_string
 VERSION_NUMBER = version.version_number
 
@@ -120,14 +120,22 @@ def output_gui_html(webpage_path):
                 help_text += "<b>%s</b>"%key
                 help_text = write_menu(prefix+"_"+key, value, help_text)
             else:
-                cleaned_up_key = re.sub("[/\\\?%\*:\|\"<>\.\+]","",key) # Replace special characters with blanks
-                cleaned_up_key = re.sub(" ","_",cleaned_up_key) # Replace spaces with underscores
+                 # Replace special characters with blanks
+                cleaned_up_key = re.sub("[/\\\?%\*:\|\"<>\.\+]","",key)
+                # Replace spaces with underscores
+                cleaned_up_key = re.sub(" ","_",cleaned_up_key) 
                 file_name = "%s_%s.html" % (prefix, cleaned_up_key)
+                
                 fd = open(os.path.join(webpage_path, file_name),"w")
                 fd.write("<html style=""font-family:arial""><head><title>%s</title></head>\n" % key)
                 fd.write("<body><h1>%s</h1>\n<div>\n" % key)
+                
                 # Replace the relative paths to the icons with the relative path to the image dir
                 value = value.replace(icons_relpath,'images')
+                # Replace refs to icons in memory with the relative path to the image dir
+                #  Slashes need to be escaped: http://stackoverflow.com/questions/4427174/python-re-bogus-escape-error
+                value = re.sub("memory:",os.path.join("images","").encode('string-escape'),value)
+                
                 fd.write(value)
                 fd.write("</div></body>\n")
                 fd.close()
@@ -176,13 +184,18 @@ def output_module_html(webpage_path):
             continue
         result = result.replace('<body><h1>','<body><h1>Module: ')
         
+        # Replace refs to icons in memory with the relative path to the image dir (see above)
+        result = re.sub("memory:",os.path.join("images","").encode('string-escape'),result)        
+
         # Check if a corresponding image exists for the module
         if module_name in icon_names:
             # Strip out end html tags so I can add more stuff
             result = result.replace('</body>','').replace('</html>','')
+            
             # Include images specific to the module, relative to html files ('images' dir)
-            LOCATION_MODULE_IMAGES = '/'.join(['images','%s.png'%(module_name)])
+            LOCATION_MODULE_IMAGES = os.path.join('images','%s.png'%(module_name))
             result += '\n\n<div><p><img src="%s", width="50%%"></p></div>\n'%LOCATION_MODULE_IMAGES
+            
             # Now end the help text
             result += '</body></html>'
         fd = open(os.path.join(module_path,"%s.html" % module_name), "w")

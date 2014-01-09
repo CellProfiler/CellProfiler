@@ -1309,6 +1309,14 @@ class Pipeline(object):
                           fd.getvalue(), 
                           can_overwrite = True)
         
+    def clear_measurements(self, m):
+        '''Erase all measurements, but make sure to re-establish the pipeline one
+        
+        m - measurements to be cleared
+        '''
+        m.clear()
+        self.write_experiment_measurements(m)
+        
     def savemat(self, filename, root):
         '''Save a handles structure accounting for scipy version compatibility to a filename or file-like object'''
         sver = scipy.__version__.split('.')
@@ -2077,7 +2085,7 @@ class Pipeline(object):
                     workspace.show_frame(module.show_window)
                     if ((not module.prepare_run(workspace)) or
                         prepare_run_error_detected[0]):
-                        workspace.measurements.clear()
+                        self.clear_measurements(workspace.measurements)
                         return False
                 except Exception, instance:
                     logging.error("Failed to prepare run for module %s",
@@ -2085,7 +2093,7 @@ class Pipeline(object):
                     event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                     self.notify_listeners(event)
                     if event.cancel_run:
-                        workspace.measurements.clear()
+                        self.clear_measurements(workspace.measurements)
                         return False
         if workspace.measurements.image_set_count == 0:
             self.report_prepare_run_error(

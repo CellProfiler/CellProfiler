@@ -591,9 +591,9 @@ class PipelineController:
                 caption = "Save project",
                 style = wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION,
                 parent = self.__frame)
-            if result == wx.ID_CANCEL:
+            if result == wx.CANCEL:
                 return
-            elif result == wx.ID_YES:
+            elif result == wx.YES:
                 if cpprefs.get_current_workspace_path() is None:
                     if not self.do_save_as_workspace():
                         return

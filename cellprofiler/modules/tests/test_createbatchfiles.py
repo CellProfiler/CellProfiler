@@ -435,6 +435,8 @@ class TestCreateBatchFiles(unittest.TestCase):
                 self.assertFalse(pipeline.in_batch_mode())
                 self.assertFalse(result)
                 self.assertFalse(module.batch_mode.value)
+                self.assertTrue(measurements.has_feature(
+                    cpmeas.EXPERIMENT, cpp.M_PIPELINE))
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
                 image_set_list = cpi.ImageSetList()

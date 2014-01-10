@@ -625,7 +625,7 @@ class HDF5Dict(object):
         if (object_name, feature_name) in self.indices:
             return True
         return (self.has_object(object_name) and 
-                feature_name in self.top_group[object_name].keys())
+                feature_name in self.top_group[object_name])
 
     def add_feature(self, object_name, feature_name):
         with self.lock:

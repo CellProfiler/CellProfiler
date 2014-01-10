@@ -333,8 +333,10 @@ class Groups(cpm.CPModule):
             self.grouping_list.clear_rows()
             self.image_set_list.clear_columns()
             self.image_set_list.clear_rows()
-            metadata_key_names = [group.metadata_choice.value
-                                  for group in self.grouping_metadata]
+            metadata_key_names = [
+                group.metadata_choice.value
+                for group in self.grouping_metadata
+                if group.metadata_choice.value != "None"]
             metadata_feature_names = ["_".join((cpmeas.C_METADATA, key))
                                       for key in metadata_key_names]
             metadata_key_names =  [

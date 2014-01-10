@@ -23,9 +23,6 @@ import threading
 import traceback
 import multiprocessing
 
-from bioformats.formatreader import load_using_bioformats_url
-import cellprofiler.utilities.jutil
-
 def well_row_name(x):
     '''Return a well row name for the given zero-based index'''
     if x < 26:
@@ -462,6 +459,11 @@ class PlateViewer(object):
             self.image_dict_generation += 1
         
         def fn():
+            from bioformats.formatreader import load_using_bioformats_url
+            import cellprofiler.utilities.jutil
+            from scipy.io.matlab.mio import loadmat
+            from cellprofiler.modules.loadimages import url2pathname
+
             cellprofiler.utilities.jutil.attach()
             with self.image_dict_lock:
                 generation = self.image_dict_generation
@@ -477,8 +479,14 @@ class PlateViewer(object):
                         channel = fd[PlateData.D_CHANNEL]
                     else:
                         channel = str(c+1)
+                    url = fd[PlateData.D_FILENAME]
                     try:
-                        img = load_using_bioformats_url(fd[PlateData.D_FILENAME])
+                        if url.lower().endswith(".mat"):
+                            img = loadmat(
+                                url2pathname(url), 
+                                struct_as_record=True)["Image"]
+                        else:
+                            img = load_using_bioformats_url(url)
                         with self.image_dict_lock:
                             if self.image_dict_generation > generation:
                                 return
@@ -487,6 +495,8 @@ class PlateViewer(object):
                         traceback.print_exc()
                         pass
             wx.CallAfter(self.update_figure)
+            cellprofiler.utilities.jutil.static_call(
+                "java/lang/System", "gc", "()V")
             cellprofiler.utilities.jutil.detach()
         t = threading.Thread(target = fn)
         t.setDaemon(True)

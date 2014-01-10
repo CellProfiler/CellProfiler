@@ -1057,7 +1057,7 @@ class Pipeline(object):
         new_modules = []
         module_number = 1
         skip_attributes = ['svn_version','module_num']
-        while module_number <= module_count:
+        for i in range(module_count):
             line = rl()
             if line is None:
                 break

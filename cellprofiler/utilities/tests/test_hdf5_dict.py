@@ -107,11 +107,17 @@ class TestHDF5Dict(unittest.TestCase):
         for i in (1, 2, 4):
             self.assertEqual(data[i], d2[i][0])
             
-    def test_02_05_upgrade_none(self):
+    def test_02_05_00_upgrade_none(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.zeros(0)
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = np.arange(5)
         self.assertSequenceEqual(
             self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(), range(5))
+        
+    def test_02_05_01_upgrade_none_multiple(self):
+        # Regression test of issue #1011
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.zeros(0)
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, np.arange(2,4)] = [
+            np.zeros(1), np.zeros(0)]
         
     def test_02_06_upgrade_int_to_float(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.arange(5)

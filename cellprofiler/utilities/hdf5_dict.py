@@ -500,7 +500,6 @@ class HDF5Dict(object):
                 return
             if dataset.shape[0] == 0:
                 recast_dataset = True
-                hdf5_type = infer_hdf5_type(vals)
             else:
                 recast_dataset = False
                 ds_type = dataset.dtype.kind

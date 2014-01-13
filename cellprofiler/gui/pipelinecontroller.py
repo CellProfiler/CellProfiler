@@ -1901,8 +1901,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         event - an UpdateUIEvent for the item
         '''
         active_module = self.__pipeline_list_view.get_active_module()
-        event.SetText("Disable Module" if active_module.enabled 
-                      else "Enable Module")
+        if active_module is not None:
+            event.SetText("Disable Module" if active_module.enabled 
+                          else "Enable Module")
         if active_module is None or active_module.is_input_module():
             event.Enable(False)
         else:

@@ -940,7 +940,7 @@ class CPFigureFrame(wx.Frame):
         if interpolation is None:
             interpolation = get_matplotlib_interpolation_preference()
         if normalize is None:
-            normalize = (image.ndim == 2)
+            normalize = True
 
         # NOTE: self.subplot_user_params is used to store changes that are made 
         #    to the display through GUI interactions (eg: hiding a channel).

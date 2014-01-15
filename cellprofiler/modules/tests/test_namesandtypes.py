@@ -25,10 +25,13 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.jutil as J
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
+from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.loadimages import \
-     pathname2url, C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING, C_FILE_NAME,\
-     C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SERIES, C_FRAME, \
-     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
+     C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
+from cellprofiler.measurements import C_FILE_NAME,\
+     C_PATH_NAME, C_URL, C_SERIES, C_FRAME, \
+     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, \
+     C_OBJECTS_SERIES, C_OBJECTS_FRAME
      
 from cellprofiler.modules.identify import \
      C_COUNT, C_LOCATION, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
@@ -1361,7 +1364,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
                                  for c in columns]))
             
         for ftr in C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_MD5_DIGEST, \
-            C_OBJECTS_URL, C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, C_COUNT:
+            C_OBJECTS_URL, C_HEIGHT, C_WIDTH, C_OBJECTS_SERIES, C_OBJECTS_FRAME, C_COUNT:
             mname = "_".join((ftr, OBJECTS_NAME))
             self.assertTrue(any([c[0] == cpmeas.IMAGE and c[1] == mname
                                  for c in columns]))

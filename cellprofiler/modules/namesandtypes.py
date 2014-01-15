@@ -1346,6 +1346,8 @@ class NamesAndTypes(cpm.CPModule):
              C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
              C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
              C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
+        from cellprofiler.measurements import \
+             C_OBJECTS_SERIES, C_OBJECTS_FRAME
         from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
              C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, \
              get_object_measurement_columns
@@ -1380,8 +1382,8 @@ class NamesAndTypes(cpm.CPModule):
                             (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
                             (C_WIDTH, cpmeas.COLTYPE_INTEGER),
                             (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
-                            (C_SERIES, cpmeas.COLTYPE_INTEGER),
-                            (C_FRAME, cpmeas.COLTYPE_INTEGER)
+                            (C_OBJECTS_SERIES, cpmeas.COLTYPE_INTEGER),
+                            (C_OBJECTS_FRAME, cpmeas.COLTYPE_INTEGER)
                             )]
             result += get_object_measurement_columns(object_name)
         result += [(cpmeas.IMAGE, ftr, cpmeas.COLTYPE_VARCHAR)

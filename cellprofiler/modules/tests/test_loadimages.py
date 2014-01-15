@@ -82,7 +82,10 @@ class ConvtesterMixin:
         
         ff1 = m1.get_feature_names(measurements.IMAGE)
         ffexpected = [f.replace("IMAGE_FOR_", "") for f in ff1]
-        ff2 = m2.get_feature_names(measurements.IMAGE)
+        ff2 = [x for x in m2.get_feature_names(measurements.IMAGE)
+               if not any([x.startswith(y) for y in (
+               measurements.C_FRAME, measurements.C_SERIES,
+               measurements.C_OBJECTS_FRAME, measurements.C_OBJECTS_SERIES)])]
         self.assertItemsEqual(ffexpected, ff2)
         self.assertEqual(m1.image_set_count, m2.image_set_count)
         image_numbers = m1.get_image_numbers()

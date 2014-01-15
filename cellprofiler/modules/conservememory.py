@@ -106,15 +106,23 @@ class ConserveMemory(cpm.CPModule):
     def run(self, workspace):
         image_set = workspace.image_set
         image_names = [x.image_name.value for x in self.image_names]
+        workspace.display_data.statistics = []
         if self.how_to_remove == C_KEEP:
             all_names = [x.name for x in image_set.providers]
             for name in set(all_names) - set(image_names):
                 image_set.clear_image(name)
+            for name in image_names:
+                workspace.display_data.statistics.append(["Kept %s"%name])
         else:
             for name in image_names:
                 image_set.clear_image(name)
+                workspace.display_data.statistics.append(["Removed %s"%name])
         gc.collect()
     
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0, workspace.display_data.statistics)   
+                
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 5:

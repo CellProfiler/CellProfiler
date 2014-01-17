@@ -91,7 +91,7 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpmeas
-from cellprofiler.pipeline import GROUP_INDEX
+from cellprofiler.pipeline import GROUP_INDEX, M_MODIFICATION_TIMESTAMP
 from identify import M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF
@@ -2176,7 +2176,8 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
     object_name text not null,
     field text not null,
     value longtext,
-    constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name(255), field(255)))""" % globals()
+    constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key 
+    (experiment_id, object_name(255), field(255)))""" % globals()
         else:
             create_experiment_properties = """
 CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
@@ -2185,7 +2186,7 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
     field text not null,
     value longtext,
     constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name, field))""" % globals()
-            
+        
         statements.append(create_experiment_properties)
         insert_into_experiment_statement = """
 INSERT INTO %s (name) values ('%s')""" % ( 
@@ -2213,7 +2214,8 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
         create_per_experiment = """
 CREATE TABLE %s (
 %s)
-""" % (self.get_table_name(cpmeas.EXPERIMENT), ",\n".join(experiment_coldefs))
+""" % (self.get_table_name(cpmeas.EXPERIMENT), 
+       ",\n".join(experiment_coldefs))
         statements.append(create_per_experiment)
         column_names = []
         values = []
@@ -2830,7 +2832,22 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             measurement_cols = self.get_pipeline_measurement_columns(pipeline,
                                                                      image_set_list)
             mapping = self.get_column_name_mappings(pipeline, image_set_list)
-            
+
+            ###########################################
+            #
+            # The experiment table
+            #
+            # Update the modification timestamp. This
+            # has a side-effect of synchronizing (and blocking
+            # writes to the database for transactional DB engines)
+            # by taking a lock on the single row of
+            # the experiment table
+            ###########################################
+            stmt = "UPDATE %s SET %s='%s'" %\
+                (self.get_table_name(cpmeas.EXPERIMENT),
+                 M_MODIFICATION_TIMESTAMP,
+                 datetime.datetime.now().isoformat())
+            execute(self.cursor, stmt, return_result=False)
             ###########################################
             #
             # The image table
@@ -2971,6 +2988,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     if not post_group:
                         stmt = ('DELETE FROM %s WHERE %s=%d'%
                                 (table_name, C_IMAGE_NUMBER, image_number))
+                        
                         execute(self.cursor, stmt, return_result=False)
                         #
                         # Write the object table data
@@ -3081,14 +3099,16 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             statement = "UPDATE %s SET " % self.get_table_name(cpmeas.EXPERIMENT)
             assignments = []
             for column in columns:
-                value = workspace.measurements[cpmeas.EXPERIMENT, column[1]]
-                if value is not None:
-                    assignments.append("%s='%s'" % (column[1], value))
+                if workspace.measurements.has_feature(
+                    cpmeas.EXPERIMENT, column[1]):
+                    value = workspace.measurements[cpmeas.EXPERIMENT, column[1]]
+                    if value is not None:
+                        assignments.append("%s='%s'" % (column[1], value))
             if len(assignments) > 0:
                 statement += ",".join(assignments)
-            with DBContext(self) as (connection, cursor):
-                cursor.execute(statement)
-                connection.commit()
+                with DBContext(self) as (connection, cursor):
+                    cursor.execute(statement)
+                    connection.commit()
                 
     def write_properties_file(self, workspace):
         """Write the CellProfiler Analyst properties file"""

@@ -192,8 +192,10 @@ M_USER_PIPELINE = "_".join((C_PIPELINE, F_USER_PIPELINE))
 F_VERSION = "Version"
 M_VERSION = "_".join((C_CELLPROFILER, F_VERSION))
 C_RUN = "Run"
+C_MODIFICATION = "Modification"
 F_TIMESTAMP = "Timestamp"
 M_TIMESTAMP = "_".join((C_RUN, F_TIMESTAMP))
+M_MODIFICATION_TIMESTAMP = "_".join((C_MODIFICATION, F_TIMESTAMP))
 
 """Default input folder measurement"""
 M_DEFAULT_INPUT_FOLDER = "Default_InputFolder"
@@ -2180,6 +2182,9 @@ class Pipeline(object):
                     logging.warn(
                         "Caught exception during post_run_display for module %s." %
                         module.module_name, exc_info=True)
+        workspace.measurements.add_experiment_measurement(
+            M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat())
+
         return "Complete"
     
     def prepare_to_create_batch(self, workspace, fn_alter_path):
@@ -3176,6 +3181,8 @@ class Pipeline(object):
             (cpmeas.EXPERIMENT, M_PIPELINE, cpmeas.COLTYPE_LONGBLOB),
             (cpmeas.EXPERIMENT, M_VERSION, cpmeas.COLTYPE_VARCHAR),
             (cpmeas.EXPERIMENT, M_TIMESTAMP, cpmeas.COLTYPE_VARCHAR),
+            (cpmeas.EXPERIMENT, M_MODIFICATION_TIMESTAMP, 
+             cpmeas.COLTYPE_VARCHAR, {cpmeas.MCA_AVAILABLE_POST_RUN:True}),
             (cpmeas.IMAGE, GROUP_NUMBER, cpmeas.COLTYPE_INTEGER),
             (cpmeas.IMAGE, GROUP_INDEX, cpmeas.COLTYPE_INTEGER)]
         should_write_columns = True

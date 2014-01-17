@@ -240,14 +240,30 @@ class CreateWebPage(cpm.CPModule):
                                  cntrl)
                 
     def run(self, workspace):
+        # All of the work is done in post_run()
         pass
     
+    def display_post_run(self, workspace, figure):
+        if self.show_window:
+            figure.set_subplots((1, 1))
+            msg = ("Wrote %s" if workspace.display_data.wrote_html
+                       else "Did not write %s")
+            outcomes = [[msg %(workspace.display_data.webpage_filename)]]
+            if self.wants_zip_file:
+                msg = ("Wrote %s" if workspace.display_data.wrote_zip
+                                                   else "Did not write %s")
+                outcomes.append([msg % (workspace.display_data.zipfile_filename)])
+            figure.subplot_table(0, 0, outcomes)               
+                
     def post_run(self, workspace):
         '''Make all the webpages after the run'''
         d = {}
         zipfiles = {}
         m = workspace.measurements
         image_name = self.orig_image_name.value
+        workspace.display_data.wrote_html = False    
+        workspace.display_data.wrote_zip = False        
+            
         for image_number in m.get_image_numbers():
             image_path_name, image_file_name = self.get_image_location(
                 workspace, image_name, image_number)
@@ -280,6 +296,7 @@ class CreateWebPage(cpm.CPModule):
             if file_name.find('.') == -1:
                 file_name += ".html"
             file_path = os.path.join(path_name, file_name)
+            workspace.display_data.webpage_filename = file_path
                            
             if self.wants_zip_file:
                 zip_file_name = self.zipfile_name.value
@@ -287,6 +304,8 @@ class CreateWebPage(cpm.CPModule):
                 if zip_file_name.find('.') == -1:
                     zip_file_name += ".zip"
                 zip_file_path = os.path.join(path_name, zip_file_name)
+                workspace.display_data.zipfile_filename = zip_file_path    
+                        
                 if not zip_file_path in zipfiles:
                     zipfiles[zip_file_path] = []
                 zipfiles[zip_file_path].append((abs_image_path_name, 
@@ -361,11 +380,13 @@ class CreateWebPage(cpm.CPModule):
             fd.write("</table></center>\n</body>\n</html>\n")
             with open(key, "w") as real_file:
                 real_file.write(fd.getvalue())
-        
+        workspace.display_data.wrote_html = True         
+
         for zip_file_path, filenames in zipfiles.iteritems():
             with zipfile.ZipFile(zip_file_path, "w") as z:
                 for abs_path_name,filename  in filenames:
                     z.write(abs_path_name, arcname=filename)
+        workspace.display_data.wrote_zip = True                    
         
     def get_image_location(self, workspace, image_name, image_number):
         '''Get the path and file name for an image

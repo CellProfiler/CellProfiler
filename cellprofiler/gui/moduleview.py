@@ -2013,9 +2013,10 @@ class ModuleView:
                 wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
             self.module_settings_box.SetToolTip(None)
         else:
+            msg = "Hover over the %s below for more information" % (
+                "error" if level == logging.ERROR else "warning")
             self.module_settings_box.Label = "%s: %s" % (
-                MODULE_SETTINGS_LABEL, 
-                "Hover over the error below for more information")
+                MODULE_SETTINGS_LABEL, msg)
             self.module_settings_box.SetToolTipString(message)
             self.module_settings_box.SetForegroundColour(
                 cpprefs.get_error_color())

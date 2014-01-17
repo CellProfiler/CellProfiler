@@ -292,13 +292,9 @@ class SendEmail(cpm.CPModule):
             workspace.display_data.result = "Nothing sent"
             
     def display(self, workspace, figure):
-        import matplotlib
-        message = workspace.display_data.result
-        
-        mfigure = figure.figure
-        assert isinstance(mfigure, matplotlib.figure.Figure)
-        mfigure.clf()
-        mfigure.text(.1, .1, workspace.display_data.result)
+        if self.show_window:
+            figure.set_subplots((1, 1))
+            figure.subplot_table(0, 0, [[workspace.display_data.result]]) 
     
     def post_run(self, workspace):
         '''Possibly send an email as we finish the run'''

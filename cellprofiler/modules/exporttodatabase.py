@@ -2686,6 +2686,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         """Write the data in the measurements out to the csv files
         workspace - contains the measurements
         """
+        if self.show_window:
+            disp_header = ['Table','Filename']
+            disp_columns = []              
+        
         zeros_for_nan = False
         measurements = workspace.measurements
         pipeline = workspace.pipeline
@@ -2772,6 +2776,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             object_row.append(value)
                     csv_writer.writerow(object_row)
             fid.close()
+            if self.show_window:
+                disp_columns.append((file_object_name,'Wrote %s'%file_name))
         #
         # Relationships table
         #
@@ -2794,6 +2800,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     for i1, o1, i2, o2 in r:
                         csv_writer.writerow((
                             relationship_type_id, i1, o1, i2, o2))
+            if self.show_window:
+                disp_columns.append((T_RELATIONSHIPS,'Wrote %s'%file_name))
+        
+        if self.show_window:
+            workspace.display_data.header = disp_header  
+            workspace.display_data.columns = disp_columns                
 
     @staticmethod
     def should_write(column, post_group):
@@ -2821,6 +2833,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         mappings  - map a feature name to a column name
         image_number - image number for primary database key. Defaults to current.
         """
+        if self.show_window:
+            disp_header = ["Table", "Statement"]
+            disp_columns = []         
         try:            
             zeros_for_nan = False
             measurements = workspace.measurements
@@ -2991,11 +3006,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         for i in range(0,len(object_rows), 25):
                             my_rows = object_rows[i:min(i+25, len(object_rows))]
                             self.cursor.executemany(stmt, my_rows)
+                        if self.show_window:
+                            disp_columns.append((table_name,self.truncate_string_for_display(stmt%tuple(my_rows[0]))))                            
                     else:
                         for row in object_rows:
                             row = [ 'NULL' if x is None else x for x in row]
                             row_stmt = stmt % tuple(row)
                             execute(self.cursor, row_stmt, return_result=False)
+                        if self.show_window:
+                            disp_columns.append((table_name,self.truncate_string_for_display(row_stmt)))
             
             image_table = self.get_table_name(cpmeas.IMAGE)
             replacement = '%s' if self.db_type == DB_MYSQL else "?"
@@ -3023,6 +3042,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                     for val, dtype, colname in image_row]) +
                         ('\nWHERE %s = %d' % (C_IMAGE_NUMBER, image_number)))
                 execute(self.cursor, stmt, image_row_values, return_result=False)
+                
+            if self.show_window:
+                disp_columns.append((image_table,self.truncate_string_for_display(
+                    stmt+" VALUES(%s)"%','.join(map(str,image_row_values))) if len(image_row) > 0 else '')) 
+                    
             if self.wants_relationship_table:
                 #
                 # Relationships table - for SQLite, check for previous existence
@@ -3058,17 +3082,47 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         row_values = [(rt_id, i1, o1, i2, o2)
                                       for i1, o1, i2, o2 in r]
                         self.cursor.executemany(stmt, row_values)
+                        if self.show_window:
+                            disp_columns.append((rtbl_name,self.truncate_string_for_display(stmt%tuple(row_values[0]))))                        
                     else:
                         for i1, o1, i2, o2 in r:
                             row = (
                                 rt_id, i1, o1, i2, o2, rt_id, i1, o1, i2, o2)
                             row_stmt = stmt % tuple(row)
                             execute(self.cursor, row_stmt, return_result=False)
+                        if self.show_window:
+                            disp_columns.append((rtbl_name,self.truncate_string_for_display(row_stmt)))   
+                    
+            if self.show_window: 
+                workspace.display_data.header = disp_header
+                workspace.display_data.columns = disp_columns
+
             self.connection.commit()
         except:
             logger.error("Failed to write measurements to database", exc_info=True)
             self.connection.rollback()
             raise
+
+    def truncate_string_for_display(self,s,field_size=100):
+        ''' Any string with more than this # of characters will
+                be truncated using an ellipsis.
+        '''
+        if len(s) > field_size:
+            half = int(field_size - 3) / 2
+            s = s[:half] + "..." + s[-half:]
+        return s        
+
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1,))
+        figure.subplot_table(0, 0, 
+                             workspace.display_data.columns,
+                             col_labels = workspace.display_data.header)
+    
+    def display_post_run(self, workspace, figure):
+        figure.set_subplots((1, 1,))
+        figure.subplot_table(0, 0, 
+                             workspace.display_data.columns,
+                             col_labels = workspace.display_data.header)
 
     def write_post_run_measurements(self, workspace):
         '''Write any experiment measurements marked as post-run'''
@@ -3089,6 +3143,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             with DBContext(self) as (connection, cursor):
                 cursor.execute(statement)
                 connection.commit()
+            if self.show_window:
+                workspace.display_data.header = ["Table name","Statement"]
+                workspace.display_data.columns = [(self.get_table_name(cpmeas.EXPERIMENT),statement)]
+                
                 
     def write_properties_file(self, workspace):
         """Write the CellProfiler Analyst properties file"""

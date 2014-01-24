@@ -1,3 +1,4 @@
+# -*- Encoding: utf-8 -*-
 """ CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
 
 CellProfiler is distributed under the GNU General Public License.
@@ -952,8 +953,13 @@ class CPFrame(wx.Frame):
             dlg, label="Revision author timestamp: %d" % version.version_number),
                   0, wx.EXPAND | wx.ALL, 5)
 
-        cellprofiler_copyright = """Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
+        cellprofiler_copyright = u"""
+CellProfiler (BI-2013-070) is cell image analysis software that was
+developed with funding from the U.S. National Institutes of Health and
+National Science Foundation and is made available through the
+generosity of the Broad Institute, Inc.
+Copyright © 2009-2014 Broad Institute, Inc.
+Copyright © 2008-2009 Massachusetts Institute of Technology
 All rights reserved."""
         copyright_ctl = wx.StaticText(dlg, -1, cellprofiler_copyright)
         sizer.Add(copyright_ctl, 0, wx.ALIGN_LEFT | wx.ALL, 5)
@@ -964,9 +970,48 @@ All rights reserved."""
         button_list = [("GPL License", gpl_license),
                        ("BSD License", bsd_license)]
         
+        additional_copyrights = u""" (a) h5py © 2008 Andrew Collette, et al.; ilastik © 2012 C. Sommer,
+et al.,; ImageJ2 © 2009-2013 Board of Regents of the University of
+Wisconsin-Madison, Max Planck Institute of Molecular Cell Biology and
+Genetics; libhdf5 © 2006-2013 HDF Group; libtiff © 1988-1997 Sam
+Leffler and © 1991- 1997 Silicon Graphics, Inc.; NumPy © 2005-2013
+NumPy Developers; openGL © 2013 Khronos Group; Pillow © 1990-2013
+Python Software Foundation; progressbar © 2005 Nilton Volpato; SciPy ©
+2013 SciPy Developers; sklearn © 2007-2013 Scikit-Learn Developers;
+and zlib © 1995-2013 Jean-loup Gailly, Mark Adler under BSD licenses;
+(b) altgraph © 2004 Istvan Albert, Bob Ippolito and © 2010-2013 Ronald
+Oussoren; macholib © 2010-2013 Bob Ippolito, Ronald Oussoren;
+modulegraph © 2010-2013 Bob Ippolito, Ronald Oussoren; py2app ©
+2004-2006 Bob Ippolito, © 2010-2011 Ronald Oussoren; and vigra ©
+1998-2013 by Ullrich Koethe under MIT licenses; (c) libjpeg ©
+1991-1998 Thomas G. Lane under a license from the Independent JPEG
+Group found at https://github.com/aseprite/aseprite/blob/master/docs/
+licenses/libjpeg-LICENSE.txt; (d) matplotlib © 2003-2012 John Hunter,
+© 2012-2013 Michael Droettboom et al. under licenses found at
+http://matplotlib.org/users/license.html#copyright-policy; (e) Java
+Runtime Environment © 2013 Oracle, Inc. under the Oracle Binary Code
+License Agreement for the Java SE Platform Products and JavaFX found
+at http://www.oracle.com/technetwork/java/javase/terms/license/
+index.html; (f) Bioformats © 2000-2013 University of Dundee & Open
+Microscopy Environment; ice © 2013 ZeroC, Inc.; mySQLdb © 2013 Andy
+Dustman; omero © 2002-2013 Open Microscopy Environment; and ZeroMQ ©
+2007-2012 iMatix Corporation and Contributors; (g) wxWidgets ©
+1999-2005 Julian Smart, et al.; and wxPython © 1992-2006 Julian Smart,
+et al. and © 1996 Artificial Intelligence Applications Institute under
+the wxWindows license; and (h) Intel Visual Fortran Compiler Run-time
+Library, Intel Fortran Portability Library, Intel OMP Runtime Library,
+Math Library for Intel Compilers, Short Vector Math Library for Intel
+Compilers under the Single User license provision for
+Resdistributables © 2013 Intel Corporation under the End User License
+Agreement for the Intel Software Development Products.
+
+"""
+
         icon_copyrights = get_icon_copyrights()
-        if icon_copyrights is not None:
-            button_list.append(("Additional copyrights", icon_copyrights))
+        if additional_copyrights is not None:
+            additional_copyrights += icon_copyrights
+        button_list.append(("Additional licenses and attributions", 
+                            additional_copyrights))
 
         for button_text, license_text in button_list:
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1466,11 +1511,12 @@ class CPSizer(wx.PySizer):
             item.SetDimension(item_pos,item_size)
             idx+=1
 
-cellprofiler_license = """CellProfiler is licensed under the GNU General Public License version 2.
-
-The files in the "CellProfiler/cpmath" and "CellProfiler/utilities"
-subdirectories are licensed under the more permissive BSD
-license.
+cellprofiler_license = """
+CellProfiler is licensed under the terms of the GNU General Public
+License (GPL) version 2. The files in the "CellProfiler/cpmath" and
+"CellProfiler/utilities" subdirectories are licensed under the more
+permissive BSD license. CellProfiler is distributed, in part, under
+the provisions of the additional licenses and attributions below.
 
 CELLPROFILER IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
 WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -1827,10 +1873,6 @@ Public License instead of this License.
 """
 
 bsd_license = """
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
-All rights reserved.
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 

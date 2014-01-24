@@ -2,6 +2,18 @@
 #
 # This script will be run as the cpbuild user inside the virtual build
 # machine. It is started from the Fabric script fabfile.py.
+#
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+#
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2014 Broad Institute
+# All rights reserved.
+#
+# Please see the AUTHORS file for credits.
+#
+# Website: http://www.cellprofiler.org
+#
 
 # Stop at first error.
 set -e

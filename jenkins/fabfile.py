@@ -5,6 +5,18 @@
 # During development, run with the IP address of the virtual machine
 # in the -H parameter. Example: fab -H 192.168.194.177 build
 #
+#
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+#
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2014 Broad Institute
+# All rights reserved.
+#
+# Please see the AUTHORS file for credits.
+#
+# Website: http://www.cellprofiler.org
+#
 
 from fabric.api import env, settings, run, put, get, local
 from fabric.decorators import with_settings

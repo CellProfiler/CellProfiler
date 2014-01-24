@@ -26,24 +26,34 @@ the right. <b>MeasureTexture</b> quantizes the image into eight intensity
 levels. There are then 8x8 possible ways to categorize a pixel with its
 scale-neighbor. <b>MeasureTexture</b> forms the 8x8 co-occurrence matrix
 by counting how many pixels and neighbors have each of the 8x8 intensity
-combinations. Thirteen features are then calculated for the image by performing
-mathematical operations on the co-occurrence matrix (the forumulas can be found 
+combinations. 
+<p>Thirteen measurements are then calculated for the image by performing
+mathematical operations on the co-occurrence matrix (the formulas can be found 
 <a href="http://murphylab.web.cmu.edu/publications/boland/boland_node26.html">here</a>):
 <ul>
-<li><i>H1:</i> Angular Second Moment</li>
-<li><i>H2:</i> Contrast</li>
-<li><i>H3:</i> Correlation</li>
-<li><i>H4:</i> Sum of Squares: Variation</li>
-<li><i>H5:</i> Inverse Difference Moment</li>
-<li><i>H6:</i> Sum Average</li>
-<li><i>H7:</i> Sum Variance</li>
-<li><i>H8:</i> Sum Entropy</li>
-<li><i>H9:</i> Entropy</li>
-<li><i>H10:</i> Difference Variance</li>
-<li><i>H11:</i> Difference Entropy</li>
-<li><i>H12:</i> Information Measure of Correlation 1</li>
-<li><i>H13:</i> Information Measure of Correlation 2</li>
+<li><i>AngularSecondMoment</i></li>
+<li><i>Contrast</i></li>
+<li><i>Correlation</i></li>
+<li><i>Variance</i></li>
+<li><i>InverseDifferenceMoment</i></li>
+<li><i>SumAverage</i></li>
+<li><i>SumVariance</i></li>
+<li><i>SumEntropy</i></li>
+<li><i>Entropy</i></li>
+<li><i>DifferenceVariance</i></li>
+<li><i>DifferenceEntropy</i></li>
+<li><i>InfoMeas1</i></li>
+<li><i>InfoMeas2</i></li>
 </ul>
+Each measurement is suffixed with the direction of the offset used between
+pixels in the co-occurrence matrix:
+<ul>
+<li><i>0:</i> Horizontal</li>
+<li><i>90:</i> Vertical</li>
+<li><i>45:</i> Diagonal</li>
+<li><i>135:</i> Anti-diagonal</li>
+</ul>
+</p>
 </li>
 <li>
 <i>Gabor "wavelet" features:</i> These features are similar to wavelet features, 

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if [ -d /Applications/CellProfiler2.0.app ]; then
+    mv /Applications/CellProfiler2.0.app /Applications/CellProfiler.app
+fi

@@ -28,7 +28,7 @@ to increase the JVM heap memory to 2GB, use <code>--jvm-heap-size=2g</code></p>
 # See the accompanying file LICENSE for details.
 # 
 # Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2013 Broad Institute
+# Copyright (c) 2009-2014 Broad Institute
 # 
 # Please see the AUTHORS file for credits.
 # 

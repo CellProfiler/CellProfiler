@@ -643,7 +643,7 @@ class PipelineController:
             return False
                 
     def __on_save_workspace(self, event):
-        '''Handle the Save Workspace menu command'''
+        '''Handle the Save Project menu command'''
         path = cpprefs.get_current_workspace_path()
         if path is None:
             self.do_save_as_workspace()
@@ -2975,8 +2975,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         def on_save_workspace(event):
             self.__on_save_workspace(event)
             wx.MessageBox(
-                "Saved workspace %s" % cpprefs.get_current_workspace_path(),
-                caption = "Saved workspace",
+                "Saved project %s" % cpprefs.get_current_workspace_path(),
+                caption = "Saved project",
                 parent = self.__frame)
         save_pipeline_button.Bind(wx.EVT_BUTTON, on_save_workspace)
 

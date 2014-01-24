@@ -953,7 +953,7 @@ class CPFrame(wx.Frame):
                   0, wx.EXPAND | wx.ALL, 5)
 
         cellprofiler_copyright = """Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2013 Broad Institute
+Copyright (c) 2009-2014 Broad Institute
 All rights reserved."""
         copyright_ctl = wx.StaticText(dlg, -1, cellprofiler_copyright)
         sizer.Add(copyright_ctl, 0, wx.ALIGN_LEFT | wx.ALL, 5)
@@ -1471,7 +1471,18 @@ cellprofiler_license = """CellProfiler is licensed under the GNU General Public 
 The files in the "CellProfiler/cpmath" and "CellProfiler/utilities"
 subdirectories are licensed under the more permissive BSD
 license.
-"""
+
+CELLPROFILER IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF CELLPROFILER, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  """
 
 gpl_license = """
 		    GNU GENERAL PUBLIC LICENSE
@@ -1817,7 +1828,7 @@ Public License instead of this License.
 
 bsd_license = """
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2012 Broad Institute
+Copyright (c) 2009-2014 Broad Institute
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

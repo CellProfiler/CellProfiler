@@ -83,8 +83,9 @@ RELATIONSHIPS = "Relationships"
 SETTING_OG_OFFSET_V7 = 15
 SETTING_OG_OFFSET_V8 = 16
 SETTING_OG_OFFSET_V9 = 15
+SETTING_OG_OFFSET_V10 = 17
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 15
+SETTING_OG_OFFSET = 17
 
 
 """Offset of the object name setting within an object group"""
@@ -122,7 +123,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     module_name = 'ExportToSpreadsheet'
     category = ["File Processing","Data Tools"]
-    variable_revision_number = 9
+    variable_revision_number = 10
     
     def create_settings(self):
         self.delimiter = cps.CustomChoice(
@@ -147,6 +148,27 @@ class ExportToSpreadsheet(cpm.CPModule):
             and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will 
             substitute the metadata values for the current image set for any metadata tags in the 
             folder name. %(USING_METADATA_HELP_REF)s.</p>"""%globals())
+        
+        self.wants_prefix = cps.Binary(
+            "Add a prefix to file names?",
+            True,
+            doc="""This setting lets you choose whether or not to add
+            a prefix to each of the .CSV filenames produced by 
+            <b>ExportToSpreadsheet</b>. A prefix may be useful if you use
+            the same directory for the results of more than one pipeline; you
+            can specify a different prefix in each pipeline.
+            Select <i>%(YES)s</i> to add a prefix to each file name 
+            (e.g. "MyExpt_Images.csv"). Select <i>%(NO)s</i> to use filenames
+            without prefixes (e.g. "Images.csv").
+            """ % globals())
+        
+        self.prefix = cps.Text(
+            "Filename prefix:", "MyExpt_",
+            doc="""(<i>Used only if "Add a prefix to file names?" is %(YES)s</i>)
+            
+            The text you enter here is prepended to the names of each file
+            produced by <b>ExportToSpreadsheet</i>.
+            """ %globals())
         
         self.add_metadata = cps.Binary(
             "Add image metadata columns to your object data file?", False, doc = """"
@@ -330,7 +352,8 @@ class ExportToSpreadsheet(cpm.CPModule):
                   self.wants_aggregate_std, self.directory,
                   self.wants_genepattern_file, self.how_to_specify_gene_name, 
                   self.use_which_image_for_gene_name,self.gene_name_column,
-                  self.wants_everything, self.columns, self.nan_representation]
+                  self.wants_everything, self.columns, self.nan_representation,
+                  self.wants_prefix, self.prefix]
         for group in self.object_groups:
             result += [group.name, group.previous_file, group.file_name,
                        group.wants_automatic_file_name]
@@ -338,7 +361,9 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     def visible_settings(self):
         """Return the settings as seen by the user"""
-        result = [self.delimiter, self.directory]
+        result = [self.delimiter, self.directory, self.wants_prefix]
+        if self.wants_prefix:
+            result += [self.prefix]
         result += [ self.add_metadata, self.excel_limits, 
                     self.nan_representation, self.pick_columns]
         if self.pick_columns:
@@ -576,6 +601,8 @@ class ExportToSpreadsheet(cpm.CPModule):
         measurements = None if workspace is None else workspace.measurements
         path_name = self.directory.get_absolute_path(measurements, 
                                                      image_set_number)
+        if self.wants_prefix:
+            file_name = self.prefix.value + file_name
         file_name = os.path.join(path_name, file_name)
         path, file = os.path.split(file_name)
         if not os.path.isdir(path):
@@ -1064,6 +1091,12 @@ Do you want to save it anyway?""" %
             # Removed output file prepend
             setting_values = setting_values[:1] + setting_values[2:]
             variable_revision_number = 9
+            
+        if variable_revision_number == 9 and not from_matlab:
+            # Added prefix
+            setting_values = setting_values[:SETTING_OG_OFFSET_V9] +\
+                [ cps.NO, "MyExpt_"] + \
+                setting_values[SETTING_OG_OFFSET_V9:]
                 
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 7

@@ -641,6 +641,69 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertFalse(module.object_groups[0].previous_file)
         self.assertEqual(module.object_groups[0].file_name, "Output.csv")
         self.assertTrue(module.object_groups[0].wants_automatic_file_name)
+        self.assertFalse(module.wants_prefix)
+        self.assertEqual(module.prefix, "MyExpt_")
+        
+    def test_000_10_load_v10(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130503182624
+ModuleCount:1
+HasImagePlaneDetails:False
+
+ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:10|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select or enter the column delimiter:Comma (",")
+    Add image metadata columns to your object data file?:No
+    Limit output to a size that is allowed in Excel?:No
+    Select the columns of measurements to export?:No
+    Calculate the per-image mean values for object measurements?:No
+    Calculate the per-image median values for object measurements?:No
+    Calculate the per-image standard deviation values for object measurements?:No
+    Output file location:Elsewhere...\x7C/imaging/analysis/2005Projects
+    Create a GenePattern GCT file?:No
+    Select source of sample row name:Image filename
+    Select the image to use as the identifier:GFP
+    Select the metadata to use as the identifier:Metadata_GeneName
+    Export all measurements, using default file names?:Yes
+    Press button to select measurements to export:
+    Representation of Nan/Inf:Null
+    Add a prefix to file names?:Yes
+    Filename prefix\x7c:Fred
+    Data to export:Nuclei
+    Combine these object measurements with those of the previous object?:No
+    File name:Output.csv
+    Use the object name for the file name?:Yes
+
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
+        self.assertFalse(module.add_metadata)
+        self.assertFalse(module.excel_limits)
+        self.assertFalse(module.wants_aggregate_means)
+        self.assertFalse(module.wants_aggregate_medians)
+        self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.directory.custom_path,
+                         "/imaging/analysis/2005Projects")
+        self.assertFalse(module.wants_genepattern_file)
+        self.assertEqual(module.how_to_specify_gene_name, 
+                         E.GP_NAME_FILENAME)
+        self.assertEqual(module.use_which_image_for_gene_name, "GFP")
+        self.assertEqual(module.gene_name_column, "Metadata_GeneName")
+        self.assertTrue(module.wants_everything)
+        self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
+        self.assertEqual(module.object_groups[0].name, "Nuclei")
+        self.assertFalse(module.object_groups[0].previous_file)
+        self.assertEqual(module.object_groups[0].file_name, "Output.csv")
+        self.assertTrue(module.object_groups[0].wants_automatic_file_name)
+        self.assertTrue(module.wants_prefix)
+        self.assertEqual(module.prefix, "Fred")
 
     def test_00_00_no_measurements(self):
         '''Test an image set with objects but no measurements'''
@@ -651,6 +714,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
+        module.wants_prefix.value = False
         m = cpmeas.Measurements()
         m.add_measurement("my_object","my_measurement",np.zeros((0,)))
         m.add_image_measurement("Count_my_object", 0)
@@ -682,6 +746,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -716,6 +781,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.module_num = 1
         module.directory.custom_path = self.output_dir
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
         module.object_groups[0].file_name.value = "badfile"
         module.object_groups[0].wants_automatic_file_name.value = True
@@ -757,6 +823,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.wants_everything.value = True
@@ -779,12 +846,42 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         path = os.path.join(self.output_dir, "Image.csv")
         self.assertTrue(os.path.exists(path))
         
+    def test_01_05_prefix(self):
+        # Use a prefix, check that file name exists
+        prefix = "Foo_"
+        np.random.seed(14887)
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.wants_everything.value = False
+        module.wants_prefix.value = True
+        module.prefix.value = prefix
+        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.custom_path = self.output_dir
+        module.wants_everything.value = True
+        m = cpmeas.Measurements()
+        image_measurements = np.random.uniform(size=4)
+        m.add_all_measurements(cpmeas.IMAGE, "my_measurement", image_measurements)
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        path = os.path.join(self.output_dir, prefix + "Image.csv")
+        self.assertTrue(os.path.exists(path))
+        
+        
     def test_02_01_image_measurement(self):
         '''Test writing an image measurement'''
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -820,6 +917,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -863,6 +961,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -903,6 +1002,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -949,6 +1049,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.add_object_group()
         module.object_groups[0].name.value = "object_0"
         module.object_groups[0].file_name.value = path
@@ -1011,6 +1112,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1055,6 +1157,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1104,6 +1207,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1158,6 +1262,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1212,6 +1317,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = path
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -1269,6 +1375,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
         module.directory.custom_path = "./my_dir"
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -1308,6 +1415,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.directory.dir_choice = E.DEFAULT_OUTPUT_SUBFOLDER_NAME
         module.directory.custom_path = "./my_dir"
         module.object_groups[0].name.value = cpmeas.IMAGE
@@ -1346,6 +1454,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1395,6 +1504,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1444,6 +1554,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = image_path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1536,6 +1647,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1579,6 +1691,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1628,6 +1741,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1688,6 +1802,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = "my_objects"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1760,6 +1875,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 2
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = output_csv_filename
         module.object_groups[0].wants_automatic_file_name.value = False
@@ -1905,6 +2021,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module = E.ExportToSpreadsheet()
         module.module_num = 1
         module.wants_everything.value = False
+        module.wants_prefix.value = False
         module.object_groups[0].name.value = E.OBJECT_RELATIONSHIPS
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False

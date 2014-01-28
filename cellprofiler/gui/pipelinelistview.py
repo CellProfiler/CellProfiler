@@ -424,7 +424,8 @@ class PipelineListView(object):
             else:
                 self.select_one_module(event.module_num)
                 for module in self.__pipeline.modules():
-                    if module.module_num == event.module_num:
+                    if module.module_num >= event.module_num and \
+                       not module.is_input_module():
                         self.request_validation(module)
                         debug_module = self.get_current_debug_module()
                         if debug_module is not None and \

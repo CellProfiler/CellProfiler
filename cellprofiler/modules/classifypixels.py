@@ -354,6 +354,17 @@ class ClassifyPixels(cpm.CPModule):
             for _ in range(len(self.probability_maps), n_maps):
                 self.add_probability_map()
 
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
+        '''Prepare the module's settings for the batch target environment
+        
+        workspace - workspace / measurements / pipeline for batch file
+        
+        fn_alter_path - call this to alter any file path to target the
+                        batch environment.
+        '''
+        self.h5_directory.alter_for_create_batch_files(fn_alter_path)
+        return True
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Upgrade settings to maintain backwards compatibility

@@ -181,6 +181,16 @@ if has_ilastik:
                 self.assertEqual(pixels.shape[0], 64)
                 self.assertEqual(pixels.shape[1], 72)
 
+        def test_03_01_prepare_to_create_batch(self):
+            module = C.ClassifyPixels()
+            module.h5_directory.dir_choice = C.ABSOLUTE_FOLDER_NAME
+            module.h5_directory.custom_path = "/foo"
+            def fn_alter_path(path):
+                self.assertEqual(path, "/foo")
+                return "/bar"
+            module.prepare_to_create_batch(None, fn_alter_path)
+            self.assertEqual(module.h5_directory.custom_path, "/bar")
+
 classifier_data = (
                 'eJztfQt8XEX1/+0LlncKLQSodJtCCfwKLFAgKP64ImAUpJEfSOSVDW3KBtp0'
                 'TVK6oNDlvQJCeCgBUVcFfwH5afAHGv+grFgkPA2CGP3xWAQkQIXwjqD0n7sz'

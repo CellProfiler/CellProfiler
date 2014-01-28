@@ -589,7 +589,7 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
         self.assertEqual(module.root_dir.custom_path,
                          cpmt.example_images_directory())
 
-    def test_00_08_load_v9(self):
+    def test_00_09_load_v9(self):
         pipeline = cpp.Pipeline()
         image_folder_text = pipeline.encode_txt(
             "%s|%s" % (cpprefs.ABSOLUTE_FOLDER_NAME, 
@@ -649,7 +649,141 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
                          cpprefs.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.root_dir.custom_path,
                          cpmt.example_images_directory())
+        self.assertEqual(module.movie_format, cpm_si.FF_AVI)
 
+    def test_00_10_load_v10(self):
+        pipeline = cpp.Pipeline()
+        image_folder_text = pipeline.encode_txt(
+            "%s|%s" % (cpprefs.ABSOLUTE_FOLDER_NAME, 
+                       cpp.utf16encode(cpmt.example_images_directory())))
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20140128180905
+GitHash:b9e9c97
+ModuleCount:1
+HasImagePlaneDetails:False
+
+SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the type of image to save:Objects
+    Select the image to save:None
+    Select the objects to save:Nuclei
+    Select the module display window to save:None
+    Select method for constructing file names:Single name
+    Select image name for file prefix:None
+    Enter single file name:\\\\g<Well>_Nuclei
+    Number of digits:4
+    Append a suffix to the image file name?:No
+    Text to append to the image name:Whatever
+    Saved file format:tif
+    Output file location:Default Output Folder\x7CNone
+    Image bit depth:8
+    Overwrite existing files without warning?:No
+    When to save:Every cycle
+    Rescale the images? :No
+    Save as grayscale or color image?:Grayscale
+    Select colormap:Default
+    Record the file and path information to the saved image?:No
+    Create subfolders in the output folder?:Yes
+    Base image folder:%s
+""" % image_folder_text
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))        
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.save_image_or_figure, cpm_si.IF_OBJECTS)
+        self.assertEqual(module.objects_name, "Nuclei")
+        self.assertEqual(module.file_name_method, cpm_si.FN_SINGLE_NAME)
+        self.assertEqual(module.file_image_name, "None")
+        self.assertEqual(module.single_file_name, r"\g<Well>_Nuclei")
+        self.assertFalse(module.wants_file_name_suffix)
+        self.assertEqual(module.file_name_suffix, "Whatever")
+        self.assertEqual(module.file_format, cpm_si.FF_TIF)
+        self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.pathname.custom_path, r"None")
+        self.assertEqual(module.bit_depth, 8)
+        self.assertFalse(module.overwrite)
+        self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
+        self.assertFalse(module.rescale)
+        self.assertEqual(module.gray_or_color, cpm_si.GC_GRAYSCALE)
+        self.assertEqual(module.colormap, "Default")
+        self.assertFalse(module.update_file_names)
+        self.assertTrue(module.create_subdirectories)
+        self.assertEqual(module.root_dir.dir_choice, 
+                         cpprefs.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.root_dir.custom_path,
+                         cpmt.example_images_directory())
+        self.assertEqual(module.movie_format, cpm_si.FF_AVI)
+        
+    def test_00_11_load_v11(self):
+        pipeline = cpp.Pipeline()
+        image_folder_text = pipeline.encode_txt(
+            "%s|%s" % (cpprefs.ABSOLUTE_FOLDER_NAME, 
+                       cpp.utf16encode(cpmt.example_images_directory())))
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20140128180905
+GitHash:b9e9c97
+ModuleCount:1
+HasImagePlaneDetails:False
+
+SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the type of image to save:Objects
+    Select the image to save:None
+    Select the objects to save:Nuclei
+    Select the module display window to save:None
+    Select method for constructing file names:Single name
+    Select image name for file prefix:None
+    Enter single file name:\\\\g<Well>_Nuclei
+    Number of digits:4
+    Append a suffix to the image file name?:No
+    Text to append to the image name:Whatever
+    Saved file format:tif
+    Output file location:Default Output Folder\x7CNone
+    Image bit depth:8
+    Overwrite existing files without warning?:No
+    When to save:Every cycle
+    Rescale the images? :No
+    Save as grayscale or color image?:Grayscale
+    Select colormap:Default
+    Record the file and path information to the saved image?:No
+    Create subfolders in the output folder?:Yes
+    Base image folder:%s
+    Saved movie format:tif
+""" % image_folder_text
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))        
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.save_image_or_figure, cpm_si.IF_OBJECTS)
+        self.assertEqual(module.objects_name, "Nuclei")
+        self.assertEqual(module.file_name_method, cpm_si.FN_SINGLE_NAME)
+        self.assertEqual(module.file_image_name, "None")
+        self.assertEqual(module.single_file_name, r"\g<Well>_Nuclei")
+        self.assertFalse(module.wants_file_name_suffix)
+        self.assertEqual(module.file_name_suffix, "Whatever")
+        self.assertEqual(module.file_format, cpm_si.FF_TIF)
+        self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.pathname.custom_path, r"None")
+        self.assertEqual(module.bit_depth, 8)
+        self.assertFalse(module.overwrite)
+        self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
+        self.assertFalse(module.rescale)
+        self.assertEqual(module.gray_or_color, cpm_si.GC_GRAYSCALE)
+        self.assertEqual(module.colormap, "Default")
+        self.assertFalse(module.update_file_names)
+        self.assertTrue(module.create_subdirectories)
+        self.assertEqual(module.root_dir.dir_choice, 
+                         cpprefs.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.root_dir.custom_path,
+                         cpmt.example_images_directory())
+        self.assertEqual(module.movie_format, cpm_si.FF_TIF)
+        
     def test_01_01_save_first_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
         img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
@@ -1635,6 +1769,28 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
             frame_out = load_using_bioformats(path, t=i)
+            self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
+            
+    def test_05_04_save_tif_movie(self):
+        def fn(module):
+            self.assertTrue(isinstance(module, cpm_si.SaveImages))
+            module.movie_format.value = cpm_si.FF_TIF
+            
+        frames = self.run_movie(fn=fn)
+        for i, frame in enumerate(frames):
+            path = os.path.join(self.custom_directory, FILE_NAME + ".tif")
+            frame_out = load_using_bioformats(path, index=i)
+            self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
+                
+    def test_05_05_save_mov_movie(self):
+        def fn(module):
+            self.assertTrue(isinstance(module, cpm_si.SaveImages))
+            module.movie_format.value = cpm_si.FF_MOV
+            
+        frames = self.run_movie(fn=fn)
+        for i, frame in enumerate(frames):
+            path = os.path.join(self.custom_directory, FILE_NAME + ".mov")
+            frame_out = load_using_bioformats(path, index=i)
             self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_06_01_save_image(self):

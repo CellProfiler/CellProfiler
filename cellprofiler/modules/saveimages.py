@@ -113,7 +113,7 @@ OFFSET_DIRECTORY_PATH = 11
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
-    variable_revision_number = 10
+    variable_revision_number = 11
     category = "File Processing"
     
     def create_settings(self):
@@ -237,6 +237,16 @@ class SaveImages(cpm.CPModule):
             <i>(Used only when saving non-movie files)</i><br>
             Select the image or movie format to save the image(s). Most common
             image formats are available; MAT-files are readable by MATLAB.""")
+        
+        self.movie_format = cps.Choice(
+            "Saved movie format",
+            [FF_AVI, FF_TIF, FF_MOV],
+            value = FF_AVI, doc="""
+            <i>(Used only when saving movie files)</i><br>
+            Select the movie format to use when saving movies. AVI and MOV
+            store images from successive image sets as movie frames. TIF
+            stores each image as an image plane in a TIF stack.
+            """)
         
         self.pathname = SaveImagesDirectoryPath(
             "Output file location", self.file_image_name,doc = """ 
@@ -378,7 +388,7 @@ class SaveImages(cpm.CPModule):
                 self.overwrite, self.when_to_save,
                 self.rescale, self.gray_or_color, self.colormap, 
                 self.update_file_names, self.create_subdirectories,
-                self.root_dir]
+                self.root_dir, self.movie_format]
     
     def visible_settings(self):
         """Return only the settings that should be shown"""
@@ -405,7 +415,9 @@ class SaveImages(cpm.CPModule):
             result.append(self.single_file_name)
         else:
             raise NotImplementedError("Unhandled file name method: %s"%(self.file_name_method))
-        if self.save_image_or_figure != IF_MOVIE:
+        if self.save_image_or_figure == IF_MOVIE:
+            result.append(self.movie_format)
+        else:
             result.append(self.file_format)
         if (self.file_format in FF_SUPPORTING_16_BIT and 
             self.save_image_or_figure == IF_IMAGE):
@@ -830,7 +842,7 @@ class SaveImages(cpm.CPModule):
         """Return the file format associated with the extension in self.file_format
         """
         if self.save_image_or_figure == IF_MOVIE:
-            return FF_AVI
+            return self.movie_format.value
         return self.file_format.value
     
     def get_bit_depth(self):
@@ -1036,7 +1048,15 @@ class SaveImages(cpm.CPModule):
         if (not from_matlab) and (variable_revision_number == 9):
             setting_values = setting_values[:7] + ["4"] + \
                     setting_values[7:]
-            variable_revision_number = 10     
+            variable_revision_number = 10 
+            
+        ######################
+        #
+        # Version 11 - Allow selection of movie format
+        #
+        ######################   
+        if (not from_matlab) and (variable_revision_number == 10):
+            setting_values = setting_values + [ FF_AVI ]
 
         setting_values[OFFSET_DIRECTORY_PATH] = \
             SaveImagesDirectoryPath.upgrade_setting(setting_values[OFFSET_DIRECTORY_PATH])

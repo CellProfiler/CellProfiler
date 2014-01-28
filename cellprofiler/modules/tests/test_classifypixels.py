@@ -185,7 +185,7 @@ if has_ilastik:
             module = C.ClassifyPixels()
             module.h5_directory.dir_choice = C.ABSOLUTE_FOLDER_NAME
             module.h5_directory.custom_path = "/foo"
-            def fn_alter_path(path):
+            def fn_alter_path(path, *args, **kwargs):
                 self.assertEqual(path, "/foo")
                 return "/bar"
             module.prepare_to_create_batch(None, fn_alter_path)

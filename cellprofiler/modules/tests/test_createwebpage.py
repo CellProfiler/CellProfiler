@@ -20,6 +20,7 @@ import shutil
 from StringIO import StringIO
 import tempfile
 import unittest
+from urllib2 import urlopen
 import xml.dom.minidom as DOM
 import zipfile
 import zlib
@@ -35,7 +36,8 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.createwebpage as C
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
+from cellprofiler.modules.loadimages import pathname2url, url2pathname
 IMAGE_NAME = "image"
 THUMB_NAME = "thumb"
 DEFAULT_HTML_FILE = "default.html"
@@ -55,9 +57,11 @@ class TestCreateWebPage(unittest.TestCase):
                 for k in range(3):
                     os.mkdir(os.path.join(directory, str(i), str(j), str(k)))
         cpprefs.set_default_image_directory(os.path.join(self.directory, "1"))
+        self.alt_directory = tempfile.mkdtemp()
         
     def tearDown(self):
         shutil.rmtree(self.directory)
+        shutil.rmtree(self.alt_directory)
         
     def test_00_00_remember_to_put_new_text_in_the_dictionary(self):
         '''Make sure people use TRANSLATION_DICTIONARY'''
@@ -106,7 +110,7 @@ class TestCreateWebPage(unittest.TestCase):
         self.assertTrue(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "OrigGreen")
         self.assertEqual(module.web_page_file_name, "images1.html")
-        self.assertEqual(module.directory_choice, C.DIR_SAME)
+        self.assertEqual(module.directory_choice.dir_choice, C.DIR_SAME)
         self.assertEqual(module.title, "CellProfiler Images")
         self.assertEqual(module.background_color, "Lime")
         self.assertEqual(module.columns, 3)
@@ -185,7 +189,7 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertTrue(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "ColorThumbnail")
         self.assertEqual(module.web_page_file_name, "sbsimages\\g<Controls>.html")
-        self.assertEqual(module.directory_choice, C.DIR_SAME)
+        self.assertEqual(module.directory_choice.dir_choice, C.DIR_SAME)
         self.assertEqual(module.title, "SBS Images\x3A Controls=\\g<Controls>")
         self.assertEqual(module.background_color, "light grey")
         self.assertEqual(module.columns, 12)
@@ -203,7 +207,7 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertFalse(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "IllumGFP")
         self.assertEqual(module.web_page_file_name, "sbsimages\\g<Controls>.html")
-        self.assertEqual(module.directory_choice, C.DIR_ABOVE)
+        self.assertEqual(module.directory_choice.dir_choice, C.DIR_ABOVE)
         self.assertEqual(module.title, "SBS Images: Controls=\\g<Controls>")
         self.assertEqual(module.background_color, "light grey")
         self.assertEqual(module.columns, 1)
@@ -221,7 +225,7 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertTrue(module.wants_thumbnails)
         self.assertEqual(module.thumbnail_image_name, "IllumGFP")
         self.assertEqual(module.web_page_file_name, "sbsimages.html")
-        self.assertEqual(module.directory_choice, C.DIR_ABOVE)
+        self.assertEqual(module.directory_choice.dir_choice, C.DIR_ABOVE)
         self.assertEqual(module.title, "SBS Images")
         self.assertEqual(module.background_color, "light grey")
         self.assertEqual(module.columns, 5)
@@ -232,7 +236,56 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         self.assertEqual(module.create_new_window, C.OPEN_NO)
         self.assertTrue(module.wants_zip_file)
         self.assertEqual(module.zipfile_name, "Images.zip")
+        
+    def test_01_03_load_v2(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:9462
 
+CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
+    Full-size image name\x3A:ColorImage
+    Use thumbnail images?:Yes
+    Thumbnail image name\x3A:ColorThumbnail
+    Web page file name\x3A:sbsimages\\g<Controls>.html
+    Folder for the .html file\x3A:Elsewhere...|/imaging/analysis
+    Webpage title\x3A:SBS Images\x3A Controls=\\g<Controls>
+    Webpage background color\x3A:light grey
+    # of columns\x3A:12
+    Table border width\x3A:1
+    Table border color\x3A:blue
+    Image spacing\x3A:1
+    Image border width\x3A:1
+    Open new window when viewing full image?:Once only
+    Make a zipfile containing the full-size images?:No
+    Zipfile name\x3A:Images.zip
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, C.CreateWebPage))
+        self.assertEqual(module.orig_image_name, "ColorImage")
+        self.assertTrue(module.wants_thumbnails)
+        self.assertEqual(module.thumbnail_image_name, "ColorThumbnail")
+        self.assertEqual(module.web_page_file_name, "sbsimages\\g<Controls>.html")
+        self.assertEqual(module.directory_choice.dir_choice, 
+                         C.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.directory_choice.custom_path, 
+                         "/imaging/analysis")
+        self.assertEqual(module.title, "SBS Images\x3A Controls=\\g<Controls>")
+        self.assertEqual(module.background_color, "light grey")
+        self.assertEqual(module.columns, 12)
+        self.assertEqual(module.table_border_width, 1)
+        self.assertEqual(module.table_border_color, "blue")
+        self.assertEqual(module.image_spacing, 1)
+        self.assertEqual(module.image_border_width, 1)
+        self.assertEqual(module.create_new_window, C.OPEN_ONCE)
+        self.assertFalse(module.wants_zip_file)
+        self.assertEqual(module.zipfile_name, "Images.zip")
+    
     def run_create_webpage(self, image_paths, thumb_paths = None, 
                            metadata = None, alter_fn = None):
         '''Run the create_webpage module, returning the resulting HTML document
@@ -286,15 +339,31 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
                 path_name, file_name = paths[i]
                 if path_name is None:
                     path_name = cpprefs.get_default_image_directory()
-                full_path = os.path.abspath(os.path.join(
-                    self.directory, path_name, file_name))
-                imsave(full_path, pixel_data)
+                    is_file = True
+                elif path_name.lower().startswith("http"):
+                    is_file = False
+                    url = path_name + "/" + file_name
+                    if "?" in file_name:
+                        file_name = file_name.split("?", 1)[0]
+                if is_file:
+                    full_path = os.path.abspath(os.path.join(
+                        self.directory, path_name, file_name))
+                    url = pathname2url(full_path)
+                    path = os.path.split(full_path)[0]
+                else:
+                    full_path = url
+                    path = path_name
+                if is_file:
+                    imsave(full_path, pixel_data)
                 path_feature = '_'.join((C_PATH_NAME, image_name))
                 file_feature = '_'.join((C_FILE_NAME, image_name))
+                url_feature = '_'.join((C_URL, image_name))
                 measurements[cpmeas.IMAGE, path_feature, image_number] = \
-                    os.path.split(full_path)[0]
+                    path
                 measurements[cpmeas.IMAGE, file_feature, image_number] =\
                     file_name
+                measurements[cpmeas.IMAGE, url_feature, image_number] = url
+                
         module.post_run(workspace)
         return measurements
     
@@ -606,6 +675,23 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
             self.assertTrue(img.hasAttribute("src"))
             self.assertEqual(img.getAttribute("src"), image_name)
             
+    def test_04_04_abspath(self):
+        # Specify an absolute path for the images.
+        def alter_fn(module):
+            self.assertTrue(isinstance(module, C.CreateWebPage))
+            module.directory_choice.dir_choice = C.ABSOLUTE_FOLDER_NAME
+            module.directory_choice.custom_path = self.alt_directory
+        filenames = [(None, 'A%02d.png' % i) for i in range(1, 3)]
+        self.run_create_webpage(filenames, alter_fn=alter_fn)
+        dom = self.read_html(os.path.join(self.alt_directory, DEFAULT_HTML_FILE))
+        imgs = dom.getElementsByTagName("img")
+        self.assertEqual(len(imgs), 2)
+        for img in imgs:
+            self.assertTrue(img.hasAttribute("src"))
+            image_name = str(img.getAttribute("src"))
+            path = url2pathname(image_name)
+            self.assertTrue(os.path.exists(path))
+            
     def test_05_01_zipfiles(self):
         # Test the zipfile function
         def alter_fn(module):
@@ -614,7 +700,7 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
             module.zipfile_name.value = ZIPFILE_NAME
         filenames = ['A%02d.png' % i for i in range(1, 3)]
         self.run_create_webpage([(None, fn) for fn in filenames],
-                                alter_fn=alter_fn),
+                                alter_fn=alter_fn)
         
         zpath = os.path.join(cpprefs.get_default_image_directory(), ZIPFILE_NAME)
         with zipfile.ZipFile(zpath, "r") as zfile:
@@ -648,4 +734,37 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
                 with open(fpath, "rb") as fd:
                     with zfile.open(filename, "r") as zfd:
                         self.assertEqual(fd.read(), zfd.read())
+                        
+    def test_05_03_http_image_zipfile(self):
+        # Make a zipfile using files accessed from the web
+        def alter_fn(module):
+            self.assertTrue(isinstance(module, C.CreateWebPage))
+            module.wants_zip_file.value = True
+            module.zipfile_name.value = ZIPFILE_NAME
+            module.directory_choice.dir_choice = C.ABSOLUTE_FOLDER_NAME
+            module.directory_choice.custom_path = cpprefs.get_default_image_directory()
+            
+        url_root = "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/"
+        url_query = "?r=11710"
+        filenames = [ (url_root,  fn + url_query) for fn in
+                      ("Channel1-01-A-01.tif", "Channel2-01-A-01.tif",
+                       "Channel1-02-A-02.tif", "Channel2-02-A-02.tif")]
+        self.run_create_webpage(filenames, alter_fn = alter_fn)
+        zpath = os.path.join(cpprefs.get_default_image_directory(),
+                             ZIPFILE_NAME)
+        with zipfile.ZipFile(zpath, "r") as zfile:
+            for _, filename in filenames:
+                fn = filename.split("?", 1)[0]
+                url = url_root + "/" + filename
+                svn_fd = urlopen(url)
+                with zfile.open(fn, "r") as zip_fd:
+                    data = zip_fd.read()
+                    offset = 0
+                    while offset < len(data):
+                        udata = svn_fd.read(len(data) - offset)
+                        self.assertEqual(
+                            udata, data[offset:(offset + len(udata))])
+                        offset += len(udata)
+                svn_fd.close()
+        
 

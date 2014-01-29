@@ -20,16 +20,23 @@ import os
 from cStringIO import StringIO
 import sys
 import uuid
+from urllib2 import urlopen
+import shutil
 import zipfile
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+from cellprofiler.settings import YES, NO, ABSOLUTE_FOLDER_NAME
+from cellprofiler.settings import \
+     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
+     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 import cellprofiler.preferences as cpprefs
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+
+IDX_DIRECTORY_CHOICE_V1 = 4
 
 DIR_ABOVE = "One level over the images"
 DIR_SAME = "Same as the images"
@@ -90,7 +97,7 @@ class CreateWebPage(cpm.CPModule):
     
     module_name = "CreateWebPage"
     category = "Other"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         self.orig_image_name = cps.ImageNameSubscriber(
@@ -126,9 +133,13 @@ class CreateWebPage(cpm.CPModule):
             your metadata by inserting the tags "Plate_Well" to specify the 
             name. %(USING_METADATA_HELP_REF)s."""%globals())
         
-        self.directory_choice = cps.Choice(
+        self.directory_choice = CWPDirectoryPath(
             "Select the folder for the .html file",
-            [ DIR_SAME, DIR_ABOVE],doc="""
+            dir_choices = [ 
+                DIR_SAME, DIR_ABOVE, ABSOLUTE_FOLDER_NAME,
+                DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,
+                DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME],
+            doc="""
             This setting determines how <b>CreateWebPage</b> selects the 
             folder for the .html file(s) it creates. 
             <ul>
@@ -136,6 +147,19 @@ class CreateWebPage(cpm.CPModule):
             the files.</li>
             <li><i>%(DIR_ABOVE)s</i>: Place the .html file(s) in the
             image files' parent folder.</li>
+            <li><i>%(ABSOLUTE_FOLDER_NAME)s</i>: Places the .html file(s) in
+            a folder of your choosing. <b>CreateWebPage</b> will use absolute
+            references for your image URLs if you choose this option.</li>
+            <li><i>%(DEFAULT_INPUT_FOLDER_NAME)s</i>: Places the .html file(s)
+            in the default input folder.</li>
+            <li><i>%(DEFAULT_OUTPUT_FOLDER_NAME)s</i>: Places the .html file(s)
+            in the default output folder.</li>
+            <li><i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i>: Places the .html file(s)
+            in a subfolder of the default input folder. You will be prompted
+            for the subfolder name after making this choice</li>
+            <li><i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>: Places the .html file(s)
+            in a subfolder of the default input folder. You will be prompted
+            for the subfolder name after making this choice</li>
             </ul>""" % globals())
         
         self.title = cps.Text(
@@ -265,31 +289,40 @@ class CreateWebPage(cpm.CPModule):
         workspace.display_data.wrote_zip = False        
             
         for image_number in m.get_image_numbers():
-            image_path_name, image_file_name = self.get_image_location(
-                workspace, image_name, image_number)
+            image_path_name, image_file_name, image_url =\
+                self.get_image_location(workspace, image_name, image_number)
             abs_image_path_name = os.path.abspath(
-                os.path.join(image_path_name,image_file_name))
-            if self.directory_choice == DIR_ABOVE:
+                os.path.join(image_path_name, image_file_name))
+            if self.directory_choice.dir_choice == DIR_ABOVE:
                 path_name, image_path_name = os.path.split(image_path_name)
                 image_path_name = '/'.join((image_path_name, image_file_name))
-            else:
+            elif self.directory_choice.dir_choice == DIR_SAME:
                 path_name = image_path_name
                 image_path_name = image_file_name
+            else:
+                path_name = self.directory_choice.get_absolute_path(
+                    workspace.measurements, image_number)
+                image_path_name = image_url
             
             if self.wants_thumbnails:
                 thumbnail_image_name = self.thumbnail_image_name.value
-                thumbnail_path_name, thumbnail_file_name = self.get_image_location(
-                    workspace, thumbnail_image_name, image_number)
-                #
-                # Make the thumbnail path name relative to the location for
-                # the .html file
-                #
-                thumbnail_path_name = relpath(thumbnail_path_name, path_name)
-                if os.path.sep != '/':
-                    thumbnail_path_name = thumbnail_path_name.replace(
-                        os.path.sep, '/')
-                thumbnail_path_name = '/'.join((thumbnail_path_name, 
-                                               thumbnail_file_name))
+                thumbnail_path_name, thumbnail_file_name, thumbnail_url =\
+                    self.get_image_location(
+                        workspace, thumbnail_image_name, image_number)
+                if self.use_relative_image_urls():
+                    #
+                    # Make the thumbnail path name relative to the location for
+                    # the .html file
+                    #
+                    thumbnail_path_name = relpath(
+                        thumbnail_path_name, path_name)
+                    if os.path.sep != '/':
+                        thumbnail_path_name = thumbnail_path_name.replace(
+                            os.path.sep, '/')
+                    thumbnail_path_name = '/'.join((thumbnail_path_name, 
+                                                   thumbnail_file_name))
+                else:
+                    thumbnail_path_name = thumbnail_url
                 
             file_name = self.web_page_file_name.value
             file_name = m.apply_metadata(file_name, image_number)
@@ -308,7 +341,8 @@ class CreateWebPage(cpm.CPModule):
                         
                 if not zip_file_path in zipfiles:
                     zipfiles[zip_file_path] = []
-                zipfiles[zip_file_path].append((abs_image_path_name, 
+                zipfiles[zip_file_path].append((abs_image_path_name,
+                                                image_url,
                                                 image_file_name))
             if not file_path in d.keys():
                 #
@@ -384,10 +418,21 @@ class CreateWebPage(cpm.CPModule):
 
         for zip_file_path, filenames in zipfiles.iteritems():
             with zipfile.ZipFile(zip_file_path, "w") as z:
-                for abs_path_name,filename  in filenames:
-                    z.write(abs_path_name, arcname=filename)
+                for abs_path_name, url, filename  in filenames:
+                    if url is not None and not url.lower().startswith("file"):
+                        fd_src = urlopen(url)
+                        fd_dest = StringIO()
+                        shutil.copyfileobj(fd_src, fd_dest)
+                        fd_src.close()
+                        z.writestr(filename, fd_dest.getvalue())
+                    else:
+                        z.write(abs_path_name, arcname=filename)
         workspace.display_data.wrote_zip = True                    
         
+    def use_relative_image_urls(self):
+        '''Return True if using relative URL paths for images'''
+        return self.directory_choice.dir_choice in (DIR_ABOVE, DIR_SAME)
+    
     def get_image_location(self, workspace, image_name, image_number):
         '''Get the path and file name for an image
         
@@ -396,10 +441,16 @@ class CreateWebPage(cpm.CPModule):
         '''
         file_name_feature = '_'.join((C_FILE_NAME, image_name))
         path_name_feature = '_'.join((C_PATH_NAME, image_name))
+        url_feature = '_'.join((C_URL, image_name))
         m = workspace.measurements
         image_file_name = m[cpmeas.IMAGE, file_name_feature, image_number]
         image_path_name = m[cpmeas.IMAGE, path_name_feature, image_number]
-        return image_path_name, image_file_name
+        if (not self.use_relative_image_urls()) and\
+           m.has_feature(cpmeas.IMAGE, url_feature):
+            image_url = m[cpmeas.IMAGE, url_feature, image_number]
+        else:
+            image_url = None
+        return image_path_name, image_file_name, image_url
         
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
@@ -407,6 +458,9 @@ class CreateWebPage(cpm.CPModule):
             raise cps.ValidationError(
                 "CreateWebPage will not produce output in Test Mode",
                 self.orig_image_name)
+        
+    def prepare_to_create_batch(self, fn_alter_path):
+        self.directory_choice.alter_for_create_batch_files(fn_alter_path)
         
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
@@ -426,9 +480,53 @@ class CreateWebPage(cpm.CPModule):
                 zip_file_name]
             from_matlab = False
             variable_revision_number = 1
-            
-        setting_values = list(setting_values)
-        for index in (4, 12):
-            setting_values[index] = TRANSLATION_DICTIONARY[setting_values[index]]
+        if variable_revision_number == 1 and not from_matlab:
+            setting_values = list(setting_values)
+            for index in (4, 12):
+                setting_values[index] = TRANSLATION_DICTIONARY[setting_values[index]]
+            #
+            # Changed directory_choice to a bastardized DirectoryPath
+            #
+            directory_choice = CWPDirectoryPath.static_join_string(
+                setting_values[IDX_DIRECTORY_CHOICE_V1], "")
+            setting_values = setting_values[:IDX_DIRECTORY_CHOICE_V1] + \
+                [directory_choice] + \
+                setting_values[(IDX_DIRECTORY_CHOICE_V1+1):]
+            variable_revision_number = 2
             
         return setting_values, variable_revision_number, from_matlab
+
+class CWPDirectoryPath(cps.DirectoryPath):
+    '''The CreateWebPage DirectoryPath setting
+    
+    This setting has the additional options of DIR_SAME to place the HTML
+    file in the same directory as the images or DIR_ABOVE to place the HTML
+    one level above the images.
+    '''
+    USE_DIR_SAME = object()
+    USE_DIR_ABOVE = object()
+    
+    def get_absolute_path(self, measurements, image_set_number=None):
+        '''Get the absolute directory path... with some exceptions
+        
+        measurements - the measurements may be used to reconcile metadata tags
+        
+        image_set_number - the current image set number
+        
+        See cps.DirectoryPath.get_absolute_path()
+        
+        If the directory choice is DIR_SAME or DIR_ABOVE, we return one of
+        the special tokens, USE_DIR_SAME or USE_DIR_ABOVE
+        '''
+        if self.dir_choice == DIR_SAME:
+            return self.USE_DIR_SAME
+        elif self.dir_choice == DIR_ABOVE:
+            return self.USE_DIR_ABOVE
+        else:
+            return super(CWPDirectoryPath, self).get_absolute_path(
+                measurements, image_set_number)
+        
+    def alter_for_create_batch_files(self, fn_alter_path):
+        if self.dir_choice not in [DIR_SAME, DIR_ABOVE]:
+            super(CWPDirectoryPath, self).alter_for_create_batch_files(
+                fn_alter_path)

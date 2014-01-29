@@ -32,6 +32,7 @@ import hashlib
 from cStringIO import StringIO
 import threading
 import urllib
+from wx.lib.mixins.listctrl import ColumnSorterMixin
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
@@ -2814,47 +2815,100 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         '''Choose one of the current image sets
         
         '''
-        dialog = wx.Dialog(self.__frame, title="Choose an image cycle", style=wx.RESIZE_BORDER|wx.DEFAULT_DIALOG_STYLE)
-        super_sizer = wx.BoxSizer(wx.VERTICAL)
-        dialog.SetSizer(super_sizer)
-        super_sizer.Add(wx.StaticText(dialog, label = "Select an image cycle for testing:"),0,wx.EXPAND|wx.ALL,5)
-        choices = []
-        indexes = []
         m = self.__debug_measurements
         features = [f for f in 
                     m.get_feature_names(cpm.IMAGE)
                     if f.split("_")[0] in (cpm.C_METADATA, C_FILE_NAME,
                                            C_PATH_NAME, C_FRAME)]
+        choices = {}
         for image_number in self.__groupings[self.__grouping_index][1]:
-            indexes.append(image_number)
-            text = ', '.join([
-                "%s=%s" % (f, m.get_measurement(cpm.IMAGE, f, 
-                                                image_set_number = image_number))
-                for f in features])
-                                                              
-            choices.append(text)
+            choices[image_number] = [
+                m[cpm.IMAGE, f, image_number] for f in features]
+        
         if len(choices) == 0:
             wx.MessageBox("Sorry, there are no available images. Check your LoadImages module's settings",
                           "Can't choose image")
             return
-        lb = wx.ListBox(dialog, -1, choices=choices)
-        if self.__within_group_index < len(choices):
-            lb.Select(self.__within_group_index)
-        else:
-            lb.Select(0)
-        super_sizer.Add(lb, 1, wx.EXPAND|wx.ALL, 10)
-        super_sizer.Add(wx.StaticLine(dialog),0,wx.EXPAND|wx.ALL,5)
-        btnsizer = wx.StdDialogButtonSizer()
-        btnsizer.AddButton(wx.Button(dialog, wx.ID_OK))
-        btnsizer.AddButton(wx.Button(dialog, wx.ID_CANCEL))
-        btnsizer.Realize()
-        super_sizer.Add(btnsizer)
-        super_sizer.Add((2,2))
-        dialog.Fit()
-        dialog.CenterOnParent()
-        try:
+        if len(choices) > 1:
+            # Get rid of columns with redundant info
+            useless_columns = []
+            cvalues = choices.values()
+            for i, f in enumerate(features):
+                if all([cv[i] == cvalues[0][i] for cv in cvalues[1:]]):
+                    useless_columns.insert(0, i)
+            for i in useless_columns:
+                for cv in cvalues:
+                    del cv[i]
+                del features[i]
+            
+        
+        class ChooseImageSetDialog(wx.Dialog, ColumnSorterMixin):
+            def __init__(self, parent):
+                wx.Dialog.__init__(
+                    self, parent, 
+                    title="Choose an image cycle", 
+                    style=wx.RESIZE_BORDER|wx.DEFAULT_DIALOG_STYLE)
+                super_sizer = wx.BoxSizer(wx.VERTICAL)
+                self.SetSizer(super_sizer)
+                super_sizer.Add(
+                    wx.StaticText(
+                        self, label = "Select an image cycle for testing:"),
+                    0, wx.EXPAND|wx.ALL, 5)
+                self.list_ctrl = wx.ListCtrl(
+                    self, 
+                    style = wx.LC_REPORT | wx.LC_SORT_ASCENDING)
+                self.list_ctrl.InsertColumn(0, "Image #")
+                total_width = self.list_ctrl.GetTextExtent("Image #")[0]
+                for i, f in enumerate(features):
+                    if f.startswith(cpm.C_METADATA):
+                        name = f[(len(cpm.C_METADATA) + 1):]
+                    elif f.startswith(cpm.C_FILE_NAME):
+                        name = f[(len(cpm.C_FILE_NAME) + 1):]
+                    elif f.startswith(cpm.C_FRAME):
+                        name = f[(len(cpm.C_FRAME)+1):] + " frame"
+                    else:
+                        name = f[(len(cpm.C_PATH_NAME) + 1):] + " folder"
+                    self.list_ctrl.InsertColumn(i+1, name)
+                    width = 0
+                    for row in choices.values():
+                        w, h = self.list_ctrl.GetTextExtent(row[i])
+                        if w > width:
+                            width = w
+                    self.list_ctrl.SetColumnWidth(i+1, width+10)
+                    total_width += width + 15
+                self.list_ctrl.SetMinSize(
+                    wx.Size(min(total_width, 640), self.list_ctrl.GetMinHeight()))
+                self.itemDataMap = dict([
+                    (k, [unicode(k)] + choices[k]) for k in choices])
+                ColumnSorterMixin.__init__(self, self.list_ctrl.ColumnCount)
+                    
+                for image_number in sorted(self.itemDataMap):
+                    pos = self.list_ctrl.Append(self.itemDataMap[image_number])
+                    self.list_ctrl.SetItemData(pos, image_number)
+                super_sizer.Add(self.list_ctrl, 1, wx.EXPAND|wx.ALL, 10)
+                super_sizer.Add(wx.StaticLine(self),0,wx.EXPAND|wx.ALL,5)
+                btnsizer = wx.StdDialogButtonSizer()
+                btnsizer.AddButton(wx.Button(self, wx.ID_OK))
+                btnsizer.AddButton(wx.Button(self, wx.ID_CANCEL))
+                btnsizer.Realize()
+                super_sizer.Add(btnsizer)
+                super_sizer.Add((2,2))
+                self.Fit()
+                self.CenterOnParent()
+                
+            def GetListCtrl(self):
+                return self.list_ctrl
+                    
+        with ChooseImageSetDialog(self.__frame) as dialog:
+            if self.__within_group_index < len(choices):
+                dialog.list_ctrl.Select(self.__within_group_index)
+            else:
+                dialog.list_ctrl.Select(0)
             if dialog.ShowModal() == wx.ID_OK:
-                image_number = indexes[lb.Selection]
+                selection = dialog.list_ctrl.GetFirstSelected()
+                if selection == -1:
+                    return
+                image_number = dialog.list_ctrl.GetItemData(selection)
                 self.__debug_measurements.next_image_set(image_number)
                 self.__pipeline_list_view.reset_debug_module()
                 for i, (grouping, image_numbers) in enumerate(self.__groupings):
@@ -2864,8 +2918,6 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                             list(image_numbers).index(image_number)
                         break
                 self.debug_init_imageset()
-        finally:
-            dialog.Destroy()
             
     def debug_init_imageset(self):
         '''Initialize the current image set by running the input modules'''

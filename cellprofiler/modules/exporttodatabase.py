@@ -189,6 +189,8 @@ SETTING_FILTER_FIELD_GROUP_COUNT = 31
 """Offset of the workspace specification group count in the settings"""
 SETTING_WORKSPACE_GROUP_COUNT = 32
 
+SETTING_OFFSET_PROPERTIES_IMAGE_URL_PREPEND_V26 = 21
+
 SETTING_FIXED_SETTING_COUNT_V21 = 33
 
 SETTING_FIXED_SETTING_COUNT_V22 = 35
@@ -199,7 +201,9 @@ SETTING_FIXED_SETTING_COUNT_V24 = 37
 
 SETTING_FIXED_SETTING_COUNT_V25 = 38
 
-SETTING_FIXED_SETTING_COUNT = 38
+SETTING_FIXED_SETTING_COUNT_V26 = 39
+
+SETTING_FIXED_SETTING_COUNT = 39
 
 ##############################################
 #
@@ -340,7 +344,7 @@ class DBContext(object):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 25
+    variable_revision_number = 26
     category = ["File Processing","Data Tools"]
 
     def create_settings(self):
@@ -463,6 +467,18 @@ class ExportToDatabase(cpm.CPModule):
             'Export measurements for all objects to the database?'.</p>
             """%globals())
         
+        self.wants_properties_image_url_prepend = cps.Binary(
+            "Access CPA images via URL?", False,
+            doc = """
+            <i>(Used only if creating a properties file)</i><br>
+            The image paths written to the database will be the absolute
+            path the the image files on your computer. If you plan to make these 
+            files accessible via the web, you can have CellProfiler Analyst prepend
+            a URL to your file name. 
+            Eg: If an image is loaded from the path "/cellprofiler/images/" and you use
+            a url prepend of "http://mysite.com/", CellProfiler Analyst will look
+            for your file at "http://mysite.com/cellprofiler/images/" 
+            """)
         #
         # Hack: if user is on Broad IP, then plug in the imageweb url prepend
         #
@@ -478,7 +494,7 @@ class ExportToDatabase(cpm.CPModule):
         self.properties_image_url_prepend = cps.Text(
             "Enter an image url prepend if you plan to access your files via http",
             default_prepend, doc = """
-            <i>(Used only if creating a properties file)</i><br>
+            <i>(Used only if accessing CellProfiler Analyst images via URL)</i><br>
             The image paths written to the database will be the absolute
             path the the image files on your computer. If you plan to make these 
             files accessible via the web, you can enter a url prefix here. Eg: 
@@ -1160,9 +1176,13 @@ class ExportToDatabase(cpm.CPModule):
             if (self.objects_choice != O_NONE and 
                 (self.separate_object_tables == OT_COMBINE or self.separate_object_tables == OT_VIEW)):
                 result += [self.location_object]
-            result += [self.properties_image_url_prepend, self.properties_plate_type, 
-                       self.properties_plate_metadata, self.properties_well_metadata,
-                       self.properties_export_all_image_defaults]
+            result += [self.wants_properties_image_url_prepend]
+            if self.wants_properties_image_url_prepend:
+                result += [self.properties_image_url_prepend]
+                result += [
+                    self.properties_plate_type, self.properties_plate_metadata, 
+                    self.properties_well_metadata, 
+                    self.properties_export_all_image_defaults]
             if not self.properties_export_all_image_defaults:
                 for group in self.image_groups:
                     if group.can_remove:
@@ -1289,7 +1309,8 @@ class ExportToDatabase(cpm.CPModule):
                 self.image_group_count, self.group_field_count, self.filter_field_count,
                 self.workspace_measurement_count, self.experiment_name, 
                 self.location_object, self.properties_class_table_name,
-                self.wants_relationship_table_setting, self.allow_overwrite]
+                self.wants_relationship_table_setting, self.allow_overwrite,
+                self.wants_properties_image_url_prepend]
         
         # Properties: Image groups
         for group in self.image_groups:
@@ -1322,6 +1343,7 @@ class ExportToDatabase(cpm.CPModule):
                 self.allow_overwrite,
                 self.want_table_prefix, self.table_prefix, 
                 self.save_cpa_properties, self.location_object, 
+                self.wants_properties_image_url_prepend,
                 self.properties_image_url_prepend, 
                 self.properties_plate_type, self.properties_plate_metadata, self.properties_well_metadata,
                 self.properties_export_all_image_defaults,
@@ -3398,7 +3420,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                             ' FROM ' + spot_tables + \
                                             ' WHERE ' + group.filter_statement.value + '\n'
             
-            image_url = self.properties_image_url_prepend.value
+            image_url = self.properties_image_url_prepend.value \
+                if self.wants_properties_image_url_prepend else ""
             plate_type = "" if self.properties_plate_type.value == NONE_CHOICE else self.properties_plate_type.value
             plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_plate_metadata.value)
             well_id = "" if self.properties_well_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_well_metadata.value)
@@ -4018,6 +4041,17 @@ CP version : %d\n""" % version_number
                 [ OVERWRITE_DATA ] +
                 setting_values[SETTING_FIXED_SETTING_COUNT_V24:])
             variable_revision_number = 25
+            
+        if (not from_matlab) and variable_revision_number == 25:
+            #
+            # added wants_properties_image_url_prepend setting
+            #
+            wants_urls = len(setting_values[SETTING_OFFSET_PROPERTIES_IMAGE_URL_PREPEND_V26]) > 0
+            setting_values =\
+                setting_values[:SETTING_FIXED_SETTING_COUNT_V25] +\
+                [cps.YES if wants_urls else cps.NO] + \
+                setting_values[SETTING_FIXED_SETTING_COUNT_V25:]
+            variable_revision_number = 26
             
         # Added view creation to object table settings
         setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],

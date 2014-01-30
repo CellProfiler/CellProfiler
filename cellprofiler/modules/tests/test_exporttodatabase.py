@@ -735,6 +735,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         self.assertEqual(module.objects_choice, E.O_ALL)
         self.assertEqual(module.max_column_size, 62)
         self.assertEqual(module.separate_object_tables, E.OT_PER_OBJECT)
+        self.assertFalse(module.wants_properties_image_url_prepend)
         
     def test_01_22_load_v22(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -1266,6 +1267,161 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
         self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertTrue(module.save_cpa_properties)
         self.assertEqual(module.location_object, "Cells")
+        self.assertTrue(module.wants_properties_image_url_prepend)
+        self.assertEqual(module.properties_image_url_prepend, "http://server.university.edu")
+        self.assertEqual(module.properties_plate_type, "384")
+        self.assertEqual(module.properties_plate_metadata, "Plate")
+        self.assertEqual(module.properties_well_metadata, "Well")
+        self.assertFalse(module.properties_export_all_image_defaults)
+        self.assertTrue(module.properties_wants_groups)
+        self.assertTrue(module.properties_wants_filters)
+        self.assertTrue(module.create_filters_for_plates)
+        self.assertTrue(module.create_workspace_file)
+        self.assertEqual(module.properties_class_table_name, "Hoopla")
+        self.assertTrue(module.wants_relationship_table)
+        self.assertEqual(len(module.image_groups), 2)
+        for image_group, input_image_name, output_image_name, color in (
+            (module.image_groups[0], "DNA", "NucleicAcid", "green"),
+            (module.image_groups[1], "Actin", "Protein", "blue")):
+            self.assertFalse(image_group.wants_automatic_image_name)
+            self.assertEqual(image_group.image_cols, input_image_name)
+            self.assertEqual(image_group.image_name, output_image_name)
+            self.assertEqual(image_group.image_channel_colors, color)
+            
+        self.assertEqual(len(module.group_field_groups), 1)
+        g = module.group_field_groups[0]
+        self.assertEqual(g.group_name, "WellGroup")
+        self.assertEqual(g.group_statement, "Image_Metadata_Plate, Image_Metadata_Well")
+
+        self.assertEqual(len(module.workspace_measurement_groups), 2)
+        for (g, measurement_display, x_measurement_type, x_object_name,
+             x_measurement_name, x_index_name, 
+             y_measurement_type, y_object_name,
+             y_measurement_name, y_index_name) in (
+                 (module.workspace_measurement_groups[0], "ScatterPlot",
+                  cpmeas.IMAGE, "Mitochondria", "Width_DNA", "ImageNumber", 
+                  cpmeas.IMAGE, "Nuclei", "Height_DNA", "ImageNumber"),
+                 (module.workspace_measurement_groups[1], "PlateViewer",
+                  cpmeas.IMAGE, "Cells", "Height_Actin", "ImageNumber",
+                  cpmeas.IMAGE, "Speckles", "Width_Actin", "ImageNumber")):
+            self.assertEqual(g.measurement_display, measurement_display)
+            self.assertEqual(g.x_measurement_type, x_measurement_type)
+            self.assertEqual(g.x_object_name, x_object_name)
+            self.assertEqual(g.x_measurement_name, x_measurement_name)
+            self.assertEqual(g.x_index_name, x_index_name)
+            self.assertEqual(g.y_measurement_type, y_measurement_type)
+            self.assertEqual(g.y_object_name, y_object_name)
+            self.assertEqual(g.y_measurement_name, y_measurement_name)
+            self.assertEqual(g.y_index_name, y_index_name)
+                  
+        self.assertEqual(len(module.filter_field_groups), 1)
+        g = module.filter_field_groups[0]
+        self.assertEqual(g.filter_name, "Site1Filter")
+        self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
+        self.assertEqual(module.allow_overwrite, E.OVERWRITE_NEVER)
+        
+    def test_01_26_load_v26(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20140130135727
+GitHash:d666db0
+ModuleCount:1
+HasImagePlaneDetails:False
+
+ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:26|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Database type:MySQL
+    Database name:Gamma
+    Add a prefix to table names?:Yes
+    Table prefix:Delta_
+    SQL file prefix:Iota_
+    Output file location:Default Output Folder\x7CNone
+    Create a CellProfiler Analyst properties file?:Yes
+    Database host:Alpha
+    Username:Beta
+    Password:Gamma
+    Name the SQLite database file:DefaultDB.db
+    Calculate the per-image mean values of object measurements?:Yes
+    Calculate the per-image median values of object measurements?:No
+    Calculate the per-image standard deviation values of object measurements?:No
+    Calculate the per-well mean values of object measurements?:No
+    Calculate the per-well median values of object measurements?:No
+    Calculate the per-well standard deviation values of object measurements?:No
+    Export measurements for all objects to the database?:All
+    Select the objects:
+    Maximum # of characters in a column name:64
+    Create one table per object, a single object table or a single object view?:Single object table
+    Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
+    Write image thumbnails directly to the database?:Yes
+    Select the images for which you want to save thumbnails:Actin,DNA
+    Auto-scale thumbnail pixel intensities?:Yes
+    Select the plate type:384
+    Select the plate metadata:Plate
+    Select the well metadata:Well
+    Include information for all images, using default values?:No
+    Properties image group count:2
+    Properties group field count:1
+    Properties filter field count:1
+    Workspace measurement count:2
+    Experiment name:Sigma
+    Which objects should be used for locations?:Cells
+    Enter a phenotype class table name if using the classifier tool:Hoopla
+    Export object relationships?:Yes
+    Overwrite without warning?:Never
+    Access CPA images via URL?:No
+    Select an image to include:DNA
+    Use the image name for the display?:No
+    Image name:NucleicAcid
+    Channel color:green
+    Select an image to include:Actin
+    Use the image name for the display?:No
+    Image name:Protein
+    Channel color:blue
+    Do you want to add group fields?:Yes
+    Enter the name of the group:WellGroup
+    Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
+    Do you want to add filter fields?:Yes
+    Automatically create a filter for each plate?:Yes
+    Enter the name of the filter:Site1Filter
+    Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
+    Create a CellProfiler Analyst workspace file?:Yes
+    Select the measurement display tool:ScatterPlot
+    Type of measurement to plot on the X-axis:Image
+    Enter the object name:Mitochondria
+    Select the X-axis measurement:Width_DNA
+    Select the X-axis index:ImageNumber
+    Type of measurement to plot on the Y-axis:Image
+    Enter the object name:Nuclei
+    Select the Y-axis measurement:Height_DNA
+    Select the Y-axis index:ImageNumber
+    Select the measurement display tool:PlateViewer
+    Type of measurement to plot on the X-axis:Image
+    Enter the object name:Cells
+    Select the X-axis measurement:Height_Actin
+    Select the X-axis index:ImageNumber
+    Type of measurement to plot on the Y-axis:Image
+    Enter the object name:Speckles
+    Select the Y-axis measurement:Width_Actin
+    Select the Y-axis index:ImageNumber
+
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.db_name, "Gamma")
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "Delta_")
+        self.assertEqual(module.sql_file_prefix, "Iota_")
+        self.assertEqual(module.experiment_name, "Sigma")
+        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertTrue(module.save_cpa_properties)
+        self.assertEqual(module.location_object, "Cells")
+        self.assertFalse(module.wants_properties_image_url_prepend)
         self.assertEqual(module.properties_image_url_prepend, "http://server.university.edu")
         self.assertEqual(module.properties_plate_type, "384")
         self.assertEqual(module.properties_plate_metadata, "Plate")

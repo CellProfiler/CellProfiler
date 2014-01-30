@@ -18,7 +18,7 @@ import exceptions
 import h5py
 import logging
 import math
-import numpy
+import numpy as np
 import wx
 import os
 import re
@@ -32,7 +32,7 @@ import hashlib
 from cStringIO import StringIO
 import threading
 import urllib
-from wx.lib.mixins.listctrl import ColumnSorterMixin
+from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
@@ -2746,12 +2746,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                len(self.__groupings)))
             
     def on_debug_random_image_set(self,event):
-        group_index = 0 if len(self.__groupings) == 1 else numpy.random.randint(0,len(self.__groupings)-1,size=1)
+        group_index = 0 if len(self.__groupings) == 1 else np.random.randint(0,len(self.__groupings)-1,size=1)
         keys, image_numbers = self.__groupings[group_index]
         if len(image_numbers) == 0:
             return
-        numpy.random.seed()
-        image_number_index = numpy.random.randint(1,len(image_numbers),size=1)[0]
+        np.random.seed()
+        image_number_index = np.random.randint(1,len(image_numbers),size=1)[0]
         self.__within_group_index = ((image_number_index-1) % len(image_numbers))
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
@@ -2815,15 +2815,43 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         '''Choose one of the current image sets
         
         '''
+        def feature_cmp(x, y):
+            if "_" not in x or "_" not in y:
+                return cmp(x, y)
+            (cx, fx), (cy, fy) = [z.split("_", 1) for z in (x, y)]
+            #
+            # For image names, group image file, path and frame consecutively
+            #
+            # Put metadata first.
+            #
+            file_md_order = (C_FILE_NAME, C_PATH_NAME, C_FRAME)
+            cx_is_file_md, cy_is_file_md = \
+                [cz in file_md_order for cz in (cx, cy)]
+            if cx_is_file_md:
+                if not cy_is_file_md:
+                    return 1
+                elif fx != fy:
+                    return cmp(fx, fy)
+                else:
+                    cx_priority, cy_priority =\
+                        [file_md_order.index(cz) for cz in (cx, cy)]
+                    return cmp(cx_priority, cy_priority)
+            elif cy_is_file_md:
+                return -1
+            else:
+                return cmp(x, y)
+            
         m = self.__debug_measurements
-        features = [f for f in 
-                    m.get_feature_names(cpm.IMAGE)
-                    if f.split("_")[0] in (cpm.C_METADATA, C_FILE_NAME,
-                                           C_PATH_NAME, C_FRAME)]
+        features = sorted(
+            [f for f in m.get_feature_names(cpm.IMAGE) if f.split("_")[0] in 
+             (cpm.C_METADATA, C_FILE_NAME, C_PATH_NAME, C_FRAME)],
+            cmp = feature_cmp)
+        image_numbers = np.array(self.__groupings[self.__grouping_index][1], int)
+        columns = dict([
+            (f, m[cpm.IMAGE, f, image_numbers]) for f in features])
         choices = {}
-        for image_number in self.__groupings[self.__grouping_index][1]:
-            choices[image_number] = [
-                m[cpm.IMAGE, f, image_number] for f in features]
+        for i, image_number in enumerate(image_numbers):
+            choices[image_number] = [columns[f][i] for f in features]
         
         if len(choices) == 0:
             wx.MessageBox("Sorry, there are no available images. Check your LoadImages module's settings",
@@ -2841,6 +2869,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     del cv[i]
                 del features[i]
             
+        class ListCtrlAndWidthMixin(wx.ListCtrl, ListCtrlAutoWidthMixin):
+            pass
         
         class ChooseImageSetDialog(wx.Dialog, ColumnSorterMixin):
             def __init__(self, parent):
@@ -2854,9 +2884,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     wx.StaticText(
                         self, label = "Select an image cycle for testing:"),
                     0, wx.EXPAND|wx.ALL, 5)
-                self.list_ctrl = wx.ListCtrl(
+                self.list_ctrl = ListCtrlAndWidthMixin(
                     self, 
-                    style = wx.LC_REPORT | wx.LC_SORT_ASCENDING)
+                    style = wx.LC_REPORT)
                 self.list_ctrl.InsertColumn(0, "Image #")
                 total_width = self.list_ctrl.GetTextExtent("Image #")[0]
                 for i, f in enumerate(features):
@@ -2871,20 +2901,26 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     self.list_ctrl.InsertColumn(i+1, name)
                     width = 0
                     for row in choices.values():
-                        w, h = self.list_ctrl.GetTextExtent(row[i])
+                        w, h = self.list_ctrl.GetTextExtent(unicode(row[i]))
                         if w > width:
                             width = w
-                    self.list_ctrl.SetColumnWidth(i+1, width+10)
-                    total_width += width + 15
+                    self.list_ctrl.SetColumnWidth(i+1, width+15)
+                    total_width += width + 25
+                total_width += 30
                 self.list_ctrl.SetMinSize(
                     wx.Size(min(total_width, 640), self.list_ctrl.GetMinHeight()))
                 self.itemDataMap = dict([
-                    (k, [unicode(k)] + choices[k]) for k in choices])
-                ColumnSorterMixin.__init__(self, self.list_ctrl.ColumnCount)
+                    (k, 
+                     [u"%06d" % v if isinstance(v, int) else
+                      u"%020.10f" % v if isinstance(v, float) else
+                      unicode(v) for v in [k] + choices[k]]) for k in choices])
                     
-                for image_number in sorted(self.itemDataMap):
-                    pos = self.list_ctrl.Append(self.itemDataMap[image_number])
+                for image_number in sorted(choices.keys()):
+                    row = [unicode(image_number)] + \
+                        [unicode(x) for x in choices[image_number]]
+                    pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
+                ColumnSorterMixin.__init__(self, self.list_ctrl.ColumnCount)
                 super_sizer.Add(self.list_ctrl, 1, wx.EXPAND|wx.ALL, 10)
                 super_sizer.Add(wx.StaticLine(self),0,wx.EXPAND|wx.ALL,5)
                 btnsizer = wx.StdDialogButtonSizer()

@@ -61,6 +61,13 @@ def aw_parse_args():
                       dest="ij_plugins_directory",
                       help="Folder containing the ImageJ plugin .jar and .class files needed bby client pipelines",
                       default=None)
+    parser.add_option("--jvm-heap-size",
+                      dest="jvm_heap_size",
+                      default="512m",
+                      help=("This is the amount of memory reserved for the "
+                            "Java Virtual Machine (similar to the java -Xmx switch)."
+                            "Example formats: 512000k, 512m, 1g"))
+
     options, args = parser.parse_args()
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:

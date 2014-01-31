@@ -105,12 +105,8 @@ def start_cellprofiler_jvm():
         else:
             logger.warning("Failed to find tools.jar")
     
-    jvm_arg = [x.groups()[0] for x in [
-        re.match('--jvm-heap-size=([0-9]+[gGkKmM])', y) for y in sys.argv]
-               if x is not None]
-    if len(jvm_arg) > 0:
-        jvm_arg = jvm_arg[0]
-    else:
+    jvm_arg = jutil.get_jvm_heap_size_arg()
+    if jvm_arg is None:
         jvm_arg = "512m"
         
     args = [r"-Djava.class.path="+class_path,

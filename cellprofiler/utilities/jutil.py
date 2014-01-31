@@ -1794,6 +1794,22 @@ def make_run_dictionary(jobject_address):
         result[key] = d.get(key)
     return result
 
+def get_jvm_heap_size_arg():
+    '''Return the heap size argument entered on the command-line or the default
+    
+    Look for a command-line argument of the form,
+    "--jvm-heap-size=####X" where X is one of the magnitude qualifiers,
+    g = gigabytes, m = megabytes, or k = kilobytes
+    
+    returns just the ####X part or None.
+    '''
+    matches = [x.groups()[0] for x in [
+        re.match('--jvm-heap-size=([0-9]+[gGkKmM])', y) for y in sys.argv]
+               if x is not None]
+    if len(matches) > 0:
+        return matches[0]
+    return None
+
 if __name__=="__main__":
     import wx
     app = wx.PySimpleApp(False)

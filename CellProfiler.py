@@ -448,7 +448,13 @@ def parse_args(args):
                           action = "store_true",
                           default = False,
                           help = "Print the number of modules, settings and lines of code")
-                                  
+    
+    if sys.platform == 'darwin':
+        parser.add_option("--use-awt",
+                          dest = "start_awt",
+                          action = "store_true",
+                          default = False,
+                          help = "Initialize the Java AWT UI so it can be used when running headless on OS/X")
     options, result_args = parser.parse_args(args[1:])
     if sys.platform == 'darwin' and len(args) == 2:
         if args[1].lower().endswith(".cpproj"):
@@ -649,6 +655,12 @@ def build_extensions():
 def run_pipeline_headless(options, args):
     '''Run a CellProfiler pipeline in headless mode'''
     
+    if sys.platform == 'darwin':
+        if options.start_awt:
+            import bioformats
+            from cellprofiler.utilities.jutil import activate_awt
+            activate_awt()
+        
     if not options.first_image_set is None:
         if not options.first_image_set.isdigit():
             raise ValueError("The --first-image-set option takes a numeric argument")

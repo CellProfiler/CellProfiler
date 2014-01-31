@@ -560,18 +560,24 @@ def mac_get_future_value(future):
     import wx
     import time
     app = wx.GetApp()
-    if (app is None) or (not wx.Thread_IsMain()):
-        logger.debug("Synchronizing without event loop")
+    if (app is None):
+        from cellprofiler.preferences import get_headless
+        if (not javabridge.mac_is_main_thread()) or not get_headless():
+            logger.debug("Synchronizing without event loop")
+            #
+            # There could be a deadlock between the GIL being taken
+            # by the execution of Future.get() and AWT needing WX to
+            # run the event loop. Therefore, we poll before getting.
+            #
+            while not future.isDone():
+                logger.debug("Future is not done")
+                time.sleep(.1)
+            return future.raw_get()
         #
-        # There could be a deadlock between the GIL being taken
-        # by the execution of Future.get() and AWT needing WX to
-        # run the event loop. Therefore, we poll before getting.
-        #
-        while not future.isDone():
-            logger.debug("Future is not done")
-            time.sleep(.1)
-        return future.raw_get()
-    elif app.IsMainLoopRunning():
+        # So sad - start some GUI if we need it.
+        # 
+        app = wx.PySimpleApp(True)
+    if app.IsMainLoopRunning():
         evtloop = wx.EventLoop()
         logger.debug("Polling for future done within main loop")
         while not future.isDone():

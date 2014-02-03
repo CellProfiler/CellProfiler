@@ -3146,13 +3146,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def on_show_all_windows(self, event):
         '''Turn "show_window" on for every module in the pipeline'''
         with self.__pipeline.undoable_action("Show all windows"):
-            for module in self.__pipeline.modules():
+            for module in self.__pipeline.modules(exclude_disabled=False):
                 self.__pipeline.show_module_window(module, True)
         
     def on_hide_all_windows(self, event):
         '''Turn "show_window" off for every module in the pipeline'''
         with self.__pipeline.undoable_action("Hide all windows"):
-            for module in self.__pipeline.modules():
+            for module in self.__pipeline.modules(exclude_disabled=False):
                 self.__pipeline.show_module_window(module, False)
             
     def run_pipeline(self):

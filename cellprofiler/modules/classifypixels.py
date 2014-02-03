@@ -310,6 +310,8 @@ class ClassifyPixels(cpm.CPModule):
         
         classifiers = []
         for cid in temp:
+            if isinstance(cid, unicode):
+                cid = cid.encode('utf-8')
             cidpath = 'classifiers/' + cid
             try:
                 classifiers.append(

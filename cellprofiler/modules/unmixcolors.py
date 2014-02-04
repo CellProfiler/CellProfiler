@@ -317,6 +317,9 @@ class UnmixColors(cpm.CPModule):
         input_image = workspace.image_set.get_image(input_image_name,
                                                     must_be_rgb = True)
         input_pixels = input_image.pixel_data
+        if self.show_window:
+            workspace.display_data.input_image = input_pixels
+            workspace.display_data.outputs = {}
         for output in self.outputs:
             self.run_on_output(workspace, input_image, output)
             
@@ -353,22 +356,20 @@ class UnmixColors(cpm.CPModule):
         image_name = output.image_name.value
         output_image = cpi.Image(image, parent_image = input_image)
         workspace.image_set.add(image_name, output_image)
+        if self.show_window:
+            workspace.display_data.outputs[image_name] = image
         
     def display(self, workspace, figure):
         '''Display all of the images in a figure'''
         figure.set_subplots((len(self.outputs)+1, 1))
-        image_set = workspace.image_set
-        input_image_name = self.input_image_name.value
-        input_image = image_set.get_image(input_image_name,
-                                          must_be_color = True)
-        figure.subplot_imshow_color(0,0, input_image.pixel_data,
-                                    title = input_image_name)
+        input_image = workspace.display_data.input_image
+        figure.subplot_imshow_color(0,0, input_image,
+                                    title = self.input_image_name.value)
         ax = figure.subplot(0,0)
         for i, output in enumerate(self.outputs):
             image_name = output.image_name.value
-            output_image = image_set.get_image(image_name,
-                                               must_be_grayscale = True)
-            figure.subplot_imshow_grayscale(i+1, 0, output_image.pixel_data,
+            pixel_data = workspace.display_data.outputs[image_name]
+            figure.subplot_imshow_grayscale(i+1, 0, pixel_data,
                                             title = image_name,
                                             sharexy = ax)
 

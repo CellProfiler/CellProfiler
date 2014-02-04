@@ -533,6 +533,7 @@ class PipelineController:
                 cpprefs.set_workspace_file(filename)
                 cpprefs.set_current_workspace_path(filename)
                 self.__pipeline.load_image_plane_details(self.__workspace)
+                self.__pipeline.turn_off_batch_mode()
                 if not load_pipeline:
                     self.__workspace.measurements.clear()
                     self.__workspace.save_pipeline_to_measurements()

@@ -145,11 +145,20 @@ else:
     #
     # Fix permissions
     #
-    print "<div style='position:relative; float:top'>"
+    print "<div style='position:relative; float:left'>"
     print "<form action='FixPermissions.py'>"
     print "<input type='hidden' name='batch_id' value='%(batch_id)d'/>"%(my_batch)
     print """<input type='submit' 
                      value='Fix file permissions' />"""
+    print "</form>"
+    print "</div>"
+    #
+    # Get the pipeline
+    #
+    print "<div style='position:relative; padding=2px'>"
+    print "<form action='GetPipeline.py'>"
+    print "<input type='hidden' name='batch_id' value='%(batch_id)d'/>"%(my_batch)
+    print "<input type='submit' value='Download pipeline'/>"
     print "</form>"
     print "</div>"
     print "</div>"

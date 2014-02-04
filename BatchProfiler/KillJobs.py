@@ -1,4 +1,7 @@
 #!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/python-2.6.sh
+#
+# Kill all jobs in a batch
+#
 """
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -11,9 +14,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-#
-# Kill all jobs in a batch
-#
 print "Content-Type: text/html"
 print
 import cgitb
@@ -37,11 +37,9 @@ if form.has_key("job_id"):
 """%(globals())
 elif form.has_key("batch_id"):
     batch_id = int(form["batch_id"].value)
-    my_batch = RunBatch.LoadBatch(batch_id)
-    for run in my_batch["runs"]:
-        RunBatch.KillOne(run)
+    RunBatch.KillBatch(batch_id)
     
-    url = "ViewBatch.py?batch_id=%(batch_id)d"%(my_batch)
+    url = "ViewBatch.py?batch_id=%d"%(batch_id)
     print "<html><head>"
     print "<meta http-equiv='refresh' content='0; URL=%(url)s' />"%(globals())
     print "</head>"

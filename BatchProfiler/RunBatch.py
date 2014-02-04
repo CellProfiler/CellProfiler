@@ -17,6 +17,9 @@ import MySQLdb
 import subprocess
 import os
 import re
+import site
+
+site.addsitedir("/home/unix/leek/.local/lib/python2.7/site-packages")
 
 batchprofiler_host = "imgdb02"
 batchprofiler_db = "batchprofiler"
@@ -30,19 +33,8 @@ connection = MySQLdb.Connect(host = batchprofiler_host,
 def SetEnvironment(my_batch):
     orig_PATH = os.environ['PATH']
     orig_LD_LIBRARY_PATH = os.environ['LD_LIBRARY_PATH']
-    mcr_root = '/imaging/analysis/CPCluster/MCR/v78'
-    jre_file = open('/imaging/analysis/CPCluster/MCR/v78/sys/java/jre/glnxa64/jre.cfg')
-    jre_version = jre_file.readline().replace('\n','').replace('\r','')
-    jre_file.close()
-    os.environ['LD_LIBRARY_PATH']=':'.join([
-        orig_LD_LIBRARY_PATH,
-        '%(mcr_root)s/sys/java/jre/glnxa64/jre%(jre_version)s/lib/amd64/native_threads'%(locals()),
-        '%(mcr_root)s/sys/java/jre/glnxa64/jre%(jre_version)s/lib/amd64/server'%(locals()),
-        '%(mcr_root)s/sys/java/jre/glnxa64/jre%(jre_version)s/lib/amd64/client'%(locals()),
-        '%(mcr_root)s/sys/java/jre/glnxa64/jre%(jre_version)s/lib/amd64'%(locals())])
     os.environ['XAPPLRESDIR']='%(mcr_root)s/X11/app-defaults'%(locals())
     os.environ['MCR_CACHE_ROOT']='%(cpcluster)s'%(my_batch)
-    os.environ['PATH']=orig_PATH.replace('/home/radon01/ljosa/software/x86_64/bin:','').replace('/home/radon01/ljosa/bin:','')
     return orig_PATH, orig_LD_LIBRARY_PATH
 
 def RestoreEnvironment(vals):
@@ -236,9 +228,6 @@ def RunAll(batch_id):
         response.append(run_response)
     return response
 
-def IsPythonBatch(my_batch):
-    return my_batch["cpcluster"].startswith("CellProfiler_2_0")
-
 def PythonDir(my_batch):
     cpcluster = my_batch["cpcluster"]
     if cpcluster.find(':') == -1:
@@ -248,55 +237,7 @@ def PythonDir(my_batch):
 def RunOne(my_batch,run):
     x=my_batch.copy()
     x.update(run)
-    if IsPythonBatch(my_batch):
-        return RunOne_2_0(x, run)
-    else:
-        return RunOne_1_0(x, run)
-
-def RunOne_1_0(x, run):
-    x["write_data_yes"]=(my_batch["write_data"]!=0 and "yes") or "no"
-    x["memory_limit_gb"]=max(1,int(my_batch["memory_limit"]/1000))
-    x["memory_limit_gb2"]=x["memory_limit_gb"]*2
-    cmd=["bsub",
-         "-q","%(queue)s"%(x),
-         "-M","%(memory_limit_gb2)d"%(x),
-         "-R",'"rusage[mem=%(memory_limit_gb)d]"'%(x),
-         "-P","%(project)s"%(x),
-         "-g","/imaging/batch/%(batch_id)d"%(x),
-         "-J","/imaging/batch/%(batch_id)d/%(start)s_to_%(end)s"%(x),
-         "-o","%(data_dir)s/txt_output/%(start)s_to_%(end)s.txt"%(x),
-         "-sp","%(priority)d" % x,
-         "%(cpcluster)s/CPCluster.py"%(x),
-         "%(data_dir)s/Batch_data.mat"%(x),
-         "%(start)d"%(x),
-         "%(end)d"%(x),
-         "%(data_dir)s/status"%(x),
-         "Batch_",
-         "%(write_data_yes)s"%(x),
-         "%(timeout)d"%(x)]
-    cmd = ' '.join(cmd)
-    old_environ = SetEnvironment(my_batch)
-    p=os.popen(". /broad/lsf/conf/profile.lsf;umask 2;"+cmd,'r')
-    output=p.read()
-    exit_code=p.close()
-    RestoreEnvironment(old_environ)
-    job=None
-    if output:
-        match = re.search(r'<([0-9]+)>',output)
-        if len(match.groups()) > 0:
-            job=int(match.groups()[0])
-            CreateJobRecord(run["run_id"],job)
-            run["job_id"]=job
-    result = {
-        "start":run["start"],
-        "end":run["end"],
-        "command":cmd,
-        "exit_code":exit_code,
-        "output":output,
-        "job":job
-        }
-        
-    return result
+    return RunOne_2_0(x, run)
 
 def RunOne_2_0(x, run):
     '''Run one batch in pyCP'''
@@ -323,12 +264,12 @@ def RunOne_2_0(x, run):
          "-R",'"%s"'%select,
          "-P","%(project)s"%(x),
          "-cwd",PythonDir(x),
-         "-g","/imaging/batch/%(batch_id)d"%(x),
+         "-g",batch_group(x['batch_id']),
          "-J","/imaging/batch/%(batch_id)d/%(start)s_to_%(end)s"%(x),
          "-o",'"%(data_dir)s/txt_output/%(start)s_to_%(end)s.txt"'%(x),
          "./python-2.6.sh",
          "CellProfiler.py",
-         "-p",'"%(data_dir)s/Batch_data.mat"'%(x),
+         "-p",'"%(data_dir)s/Batch_data.h5"'%(x),
          "-c",
          "-r","-b","--do-not-fetch",
          "-o",'"%(data_dir)s"' % x,
@@ -361,9 +302,22 @@ def RunOne_2_0(x, run):
         
     return result
     
+def batch_group(batch_id):
+    '''Return the group name for a batch
+
+    batch_id - the batch number
+
+    Group names have the form, "/imaging/batch/###"
+    '''
+    return "/imaging/batch/%d" % (batch_id)
+
 def KillOne(run):
-    p=os.popen(". /broad/lsf/conf/profile.lsf;bkill -s 6 %(job_id)d"%(run),"r")
-    
+    p=os.popen(". /broad/lsf/conf/profile.lsf;bkill -b %(job_id)d"%(run),"r")
+
+def KillBatch(batch_id):
+    '''Issue a bkill to a whole group, killing all jobs associated w/batch'''
+    p=os.popen(". /broad/lsf/conf/profile.lsf;bkill -g %s 0" % 
+               batch_group(batch_id))
 
 def RunTextFile(run):
     """Return the name of the text file created by bsub

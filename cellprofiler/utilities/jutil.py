@@ -545,6 +545,7 @@ def mac_get_future_value(future):
     future to come done to keep the UI event loop alive for message
     processing.
     '''
+    from cellprofiler.preferences import get_headless
     if __run_headless:
         return future.raw_get()
     if sys.maxsize > 2**32:
@@ -560,19 +561,20 @@ def mac_get_future_value(future):
     import wx
     import time
     app = wx.GetApp()
-    if (app is None):
-        from cellprofiler.preferences import get_headless
-        if (not javabridge.mac_is_main_thread()) or not get_headless():
-            logger.debug("Synchronizing without event loop")
-            #
-            # There could be a deadlock between the GIL being taken
-            # by the execution of Future.get() and AWT needing WX to
-            # run the event loop. Therefore, we poll before getting.
-            #
-            while not future.isDone():
-                logger.debug("Future is not done")
-                time.sleep(.1)
-            return future.raw_get()
+    synchronize_without_event_loop = \
+        (app is None and not get_headless()) or not javabridge.mac_is_main_thread()
+    if synchronize_without_event_loop:
+        logger.debug("Synchronizing without event loop")
+        #
+        # There could be a deadlock between the GIL being taken
+        # by the execution of Future.get() and AWT needing WX to
+        # run the event loop. Therefore, we poll before getting.
+        #
+        while not future.isDone():
+            logger.debug("Future is not done")
+            time.sleep(.1)
+        return future.raw_get()
+    elif app is None:
         #
         # So sad - start some GUI if we need it.
         # 

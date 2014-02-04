@@ -61,6 +61,7 @@ ID_FILE_SAVE_AS = wx.ID_SAVEAS
 ID_FILE_REVERT_TO_SAVED = wx.NewId()
 ID_FILE_CLEAR_PIPELINE=wx.NewId()
 ID_FILE_EXPORT_IMAGE_SETS = wx.NewId()
+ID_FILE_IMPORT_FILE_LIST = wx.NewId()
 ID_FILE_ANALYZE_IMAGES=wx.NewId()
 ID_FILE_STOP_ANALYSIS=wx.NewId()
 ID_FILE_RESTART = wx.NewId()
@@ -535,14 +536,18 @@ class CPFrame(wx.Frame):
         submenu = wx.Menu()
         submenu.Append(
             ID_FILE_LOAD_PIPELINE,
-            'From file...',
+            'Pipeline from file...',
             'Import a pipeline into the project from a .%s file' % 
             cpprefs.EXT_PIPELINE)
         submenu.Append(
             ID_FILE_URL_LOAD_PIPELINE, 
-            'From URL...', 
+            'Pipeline from URL...', 
             'Load a pipeline from the web')
-        self.__menu_file.AppendSubMenu(submenu, "Import Pipeline")
+        submenu.Append(
+            ID_FILE_IMPORT_FILE_LIST,
+            "File list...",
+            "Add files or URLs to the Images module file list")
+        self.__menu_file.AppendSubMenu(submenu, "Import")
         
         submenu = wx.Menu()
         submenu.Append(

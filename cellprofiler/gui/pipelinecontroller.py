@@ -118,6 +118,7 @@ class PipelineController:
         wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD_PIPELINE,
                     self.__on_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_IMPORT_FILE_LIST, self.__on_import_file_list)
         wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_as_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_IMAGE_SETS,
                     self.__on_export_image_sets)
@@ -686,6 +687,53 @@ class PipelineController:
             finally:
                 os.remove(filename)
         dlg.Destroy()
+        
+    def __on_import_file_list(self, event):
+        wildcard = ("CSV file (*.csv)|*.csv|"
+                    "Text file (*.txt)|*.txt|"
+                    "All files (*.*)|*.*")
+        with wx.FileDialog(
+            self.__frame, "Import file list", 
+            wildcard = wildcard) as dlg:
+            assert isinstance(dlg, wx.FileDialog)
+            if dlg.ShowModal() == wx.ID_OK:
+                if dlg.FilterIndex == 0:
+                    self.do_import_csv_file_list(dlg.Path)
+                else:
+                    self.do_import_text_file_list(dlg.Path)
+    def do_import_csv_file_list(self, path):
+        '''Import path names from a CSV file
+        
+        path - path to the CSV file
+        
+        The CSV file should have no header. Each field in the CSV file
+        is treated as a path. An example:
+        "/images/A01_w1.tif","/images/A01_w2.tif"
+        "/images/A02_w1.tif","/images/A02_w2.tif"
+        '''
+        with open(path, mode="rb") as fd:
+            rdr = csv.reader(fd)
+            pathnames = sum(rdr, [])
+            self.add_pathnames(pathnames)
+    
+    def do_import_text_file_list(self, path):
+        '''Import path names from a text file
+        
+        path - path to the text file
+        
+        Each line in the text file is treated as a path. Whitespace at the
+        start or end of the line is stripped. An example:
+        /images/A01_w1.tif
+        /images/A01_w2.tif
+        /images/A02_w1.tif
+        /images/A02_w2.tif
+        
+        If your file name has line feeds in it or whitespace at the start
+        or end of the line, maybe you're asking too much :-)
+        '''
+        with open(path, mode="r") as fd:
+            pathnames = [p.strip() for p in fd]
+            self.add_pathnames(pathnames)
     
     def is_running(self):
         return self.__analysis is not None
@@ -1584,6 +1632,14 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     
     def on_pathlist_drop_text(self, x, y, text):
         pathnames = [p.strip() for p in text.split("\n")]
+        self.add_pathnames(pathnames)
+        
+    def add_pathnames(self, pathnames):
+        '''Add a sequence of pathnames to the path list
+        
+        pathnames - a sequence of either URLs (prefixed by http:, https:,
+                    ftp:, omero:, or file:) or file-system paths.
+        '''
         urls = []
         for pathname in pathnames:
             if len(pathname) == 0:
@@ -1591,7 +1647,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             if (pathname.startswith("http:") or 
                 pathname.startswith("https:") or
                 pathname.startswith("ftp:") or
-                pathname.startswith("omero:")):
+                pathname.startswith("omero:") or
+                pathname.startswith("file:")):
                 urls.append(pathname)
             else:
                 urls.append(pathname2url(pathname))

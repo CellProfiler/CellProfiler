@@ -6,7 +6,7 @@ of pixels in the image that are minimal and maximal). Details and guidance for
 each of these measures is provided in the settings help.
 
 <p>Please note that for best results, this module should be applied to the 
-original raw images, as opposed to images that already been corrected for 
+original raw images, as opposed to images that have already been corrected for 
 illumination.</p>
  
 <h4>Available measurements</h4>  
@@ -39,7 +39,7 @@ illumination.</p>
 
 <li><b>Threshold metrics:</b>
 <ul>
-<li><i>Threshold:</i>: The automatically calculated threshold for each image for the 
+<li><i>Threshold:</i> The automatically calculated threshold for each image for the 
 thresholding method of choice.</li>
 </ul>
 </li>

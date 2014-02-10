@@ -9,7 +9,7 @@ each of these measures is provided in the settings help.
 original raw images, as opposed to images that have already been corrected for 
 illumination.</p>
  
-<h4>Available measurements</h4>  
+<h4>Available measurements</h4> 
 <ul>
 <li><b>Blur metrics</b>
 <ul>
@@ -40,7 +40,11 @@ illumination.</p>
 <li><b>Threshold metrics:</b>
 <ul>
 <li><i>Threshold:</i> The automatically calculated threshold for each image for the 
-thresholding method of choice.</li>
+thresholding method of choice.
+<p>Please note that these thresholds are recorded individually for each image and as an aggregate
+statistic for all images. The mean, median and standard deviation of the threshold values are 
+computed for each of the threshold methods selected and recorded as a measurement in the
+per-experiment table.</p></li>
 </ul>
 </li>
 </ul>

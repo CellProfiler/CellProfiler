@@ -167,7 +167,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             doc="""(<i>Used only if "Add a prefix to file names?" is %(YES)s</i>)
             
             The text you enter here is prepended to the names of each file
-            produced by <b>ExportToSpreadsheet</i>.
+            produced by <b>ExportToSpreadsheet</b>.
             """ %globals())
         
         self.add_metadata = cps.Binary(

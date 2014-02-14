@@ -1868,7 +1868,7 @@ process the images in all movies together as if they were constituents of only o
 </ul>
 </p>
 
-<h3>basic image sequences consisting of a single file</h3>
+<h3>Basic image sequences consisting of a single file</h3>
 <p>Another common means of storing time-lapse/Z-stack data is as a single file containing the movie. Examples of this
 approach include image formats such as:
 <ul>

@@ -917,7 +917,7 @@ class Measurements(object):
                        else Measurements.unwrap_string(vals[0])
             else:
                 if any([isinstance(x[0], basestring) for x in vals 
-                        if x is not None]):
+                        if x is not None and len(x) > 0]):
                     result = [ Measurements.unwrap_string(v[0]) 
                                if v is not None else None
                                for v in vals]
@@ -929,7 +929,8 @@ class Measurements(object):
                     # in this case and we substitute NaN for it.
                     #
                     result = np.array(
-                        [np.NaN if v is None else v[0] for v in vals])
+                        [np.NaN if v is None or len(v) == 0
+                         else v[0] for v in vals])
                 return result
         if np.isscalar(image_set_number):
             return np.array([]) if vals is None else vals.flatten()

@@ -764,9 +764,9 @@ class NamesAndTypes(cpm.CPModule):
                 cpmeas.IMAGE, file_name_feature,
                 [os.path.split(ipd.path)[1] for ipd in ipds])
             all_series = \
-                [0 if ipd.series is None else ipd.series for ipd in ipds]
+                [ipd.series for ipd in ipds]
             m.add_all_measurements(cpmeas.IMAGE, series_feature, all_series)
-            all_frames = [0 if ipd.index is None else ipd.index for ipd in ipds]
+            all_frames = [ipd.index for ipd in ipds]
             m.add_all_measurements(cpmeas.IMAGE, frame_feature, all_frames)
             all_channels = [ipd.channel for ipd in ipds]
             if any([x is not None for x in all_channels]):

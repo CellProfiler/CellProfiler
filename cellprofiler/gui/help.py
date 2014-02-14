@@ -1868,7 +1868,7 @@ process the images in all movies together as if they were constituents of only o
 </ul>
 </p>
 
-<h3>basic image sequences consisting of a single file</h3>
+<h3>Basic image sequences consisting of a single file</h3>
 <p>Another common means of storing time-lapse/Z-stack data is as a single file containing the movie. Examples of this
 approach include image formats such as:
 <ul>
@@ -2009,7 +2009,7 @@ multiple channels, you will need to do this for each channel.
 <li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> </li>
 <li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of 
 rule options.</li>
-<li>Add the rule [Image][Is][Stack frame].</li>
+<li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the image <i>DAPI</i>.
 <li>Click the "Add another image" button to define a second image with a set of rules.</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code> </li>

@@ -399,6 +399,8 @@ class DefineGrid(cpm.CPModule):
 
         if self.wants_image:
             import matplotlib.transforms
+            import matplotlib.figure
+            import matplotlib.backends.backend_agg
             from cellprofiler.gui.cpfigure_tools import figure_to_image
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)

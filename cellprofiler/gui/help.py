@@ -2009,7 +2009,7 @@ multiple channels, you will need to do this for each channel.
 <li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> </li>
 <li>Click the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button to the right of the rule to add another set of 
 rule options.</li>
-<li>Add the rule [Image][Is][Stack frame].</li>
+<li>Add the rule <code>[Image][Is][Stack frame]</code>.</li>
 <li>Name the image <i>DAPI</i>.
 <li>Click the "Add another image" button to define a second image with a set of rules.</li>
 <li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code> </li>

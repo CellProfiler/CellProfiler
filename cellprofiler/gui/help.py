@@ -1804,7 +1804,7 @@ necessary, set your rules accordingly in order to filter out any files that are 
 sequence.
 <p>In the above example, you would drag-and-drop the <i>fluo2</i>, <i>fluor</i> and <i>phase</i> folders
 into the File list panel.</p></li>
-<li>In the <b>Metadata</b> module, ccheck the box to enable metadata extraction. The key step here is to
+<li>In the <b>Metadata</b> module, check the box to enable metadata extraction. The key step here is to
 obtain the metadata tags necessary to do two things:
 <ul>
 <li>Distinguish the movies from each other. This information is typically encapsulated in the filename 

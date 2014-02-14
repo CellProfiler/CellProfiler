@@ -291,7 +291,7 @@ PIXEL_SIZE = 'PixelSize'
 COLORMAP = 'Colormap'
 MODULEDIRECTORY = 'ModuleDirectory'
 CHECKFORNEWVERSIONS = 'CheckForNewVersions'
-SKIPVERSION = 'SkipVersion'
+SKIPVERSION = 'SkipVersion2.1'
 FF_RECENTFILES = 'RecentFile%d'
 STARTUPBLURB = 'StartupBlurb'
 RECENT_FILE_COUNT = 10
@@ -706,10 +706,10 @@ def set_check_new_versions(val):
 def get_skip_version():
     if not config_exists(SKIPVERSION):
         return 0
-    return get_config().ReadInt(SKIPVERSION)
+    return int(get_config().Read(SKIPVERSION))
 
 def set_skip_version(ver):
-    get_config().WriteInt(SKIPVERSION, ver)
+    get_config().Write(SKIPVERSION, str(ver))
     
 
 __show_sampling = None

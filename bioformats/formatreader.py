@@ -641,6 +641,8 @@ def __load_using_bioformats(path, c, z, t, series, index, rescale,
         metadata = metadatatools.createOMEXMLMetadata()
         rdr.setMetadataStore(metadata)
         rdr.setId(path)
+        if series is not None:
+            rdr.setSeries(series)
         width = rdr.getSizeX()
         height = rdr.getSizeY()
         pixel_type = rdr.getPixelType()
@@ -675,8 +677,6 @@ def __load_using_bioformats(path, c, z, t, series, index, rescale,
                 scale = jutil.call(max_sample_value, 'intValue', '()I')
             except:
                 bioformats.logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
-        if series is not None:
-            rdr.setSeries(series)
         if index is not None:
             image = np.frombuffer(rdr.openBytes(index), dtype)
             if len(image) / height / width in (3,4):

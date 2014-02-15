@@ -3,7 +3,7 @@ texture, intensity).
 <hr>
 This module removes selected objects based on measurements produced by another module (e.g., 
 <b>MeasureObjectSizeShape</b>, <b>MeasureObjectIntensity</b>, <b>MeasureTexture</b>, etc). 
-All objects that do not satisty the specified parameters will be discarded.
+All objects that do not satisfy the specified parameters will be discarded.
 
 <p>This module also may remove objects touching the image border or edges of a mask. This is useful if
 you would like to unify images via <b>ReassignObjectNumbers</b> before deciding to discard these objects.</p>

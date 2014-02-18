@@ -576,7 +576,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.fill_holes = cps.Binary(
             'Fill holes in identified objects?', True, doc="""
             Checking this box will cause holes interior to identified objects
-            to be filled.""")
+            to be filled.
+            <p>Please note that if a foreground object is located within a hole
+            and this option is enabled, the object will be lost when the hole
+            is filled in. </p>""")
         
         self.wants_automatic_log_threshold = cps.Binary(
             'Automatically calculate the threshold using the Otsu method?', True)

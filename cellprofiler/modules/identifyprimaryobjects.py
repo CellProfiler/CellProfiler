@@ -340,7 +340,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             other measurement.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            Checking this box allows you to exclude small objects (e.g., dust, noise,
+            Select <i>%(YES)s</i> allows you to exclude small objects (e.g., dust, noise,
             and debris) or large objects (e.g., large clumps) if desired. </dd>
             </dl>
             '''%globals())
@@ -575,11 +575,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         self.fill_holes = cps.Binary(
             'Fill holes in identified objects?', True, doc="""
-            Checking this box will cause holes interior to identified objects
-            to be filled.
+            Select <i>%(YES)s</i> to fill in background holes located within identified objects.
             <p>Please note that if a foreground object is located within a hole
             and this option is enabled, the object will be lost when the hole
-            is filled in. </p>""")
+            is filled in. </p>"""%globals())
         
         self.wants_automatic_log_threshold = cps.Binary(
             'Automatically calculate the threshold using the Otsu method?', True)

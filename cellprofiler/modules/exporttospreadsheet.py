@@ -233,7 +233,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             <p>Each row in the GCT file represents (ordinarily) a gene and 
             each column represents a sample (in this case, a per-image set
             of measurements). In addition to any other spreadsheets desired, 
-            checking this box will produce a GCT file with the extension .gct, 
+            enabling this option will produce a GCT file with the extension .gct, 
             prepended with the text selection above. If per-image aggregate 
             measurements are requested above, those measurements are included 
             in the GCT file as well.</p>"""%globals())

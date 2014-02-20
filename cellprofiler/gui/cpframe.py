@@ -536,7 +536,7 @@ class CPFrame(wx.Frame):
         submenu = wx.Menu()
         submenu.Append(
             ID_FILE_LOAD_PIPELINE,
-            'Pipeline from file...',
+            'Pipeline from File...',
             'Import a pipeline into the project from a .%s file' % 
             cpprefs.EXT_PIPELINE)
         submenu.Append(
@@ -545,7 +545,7 @@ class CPFrame(wx.Frame):
             'Load a pipeline from the web')
         submenu.Append(
             ID_FILE_IMPORT_FILE_LIST,
-            "File list...",
+            "File List...",
             "Add files or URLs to the Images module file list")
         self.__menu_file.AppendSubMenu(submenu, "Import")
         

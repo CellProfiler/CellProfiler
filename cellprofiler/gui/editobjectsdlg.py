@@ -82,6 +82,11 @@ class EditObjectsDialog(wx.Dialog):
     SM_RAW = "Raw"
     SM_NORMALIZED = "Normalized"
     SM_LOG_NORMALIZED = "Log normalized"
+    #
+    # Show image / hide image button labels
+    #
+    D_SHOW_IMAGE = "Show image"
+    D_HIDE_IMAGE = "Hide image"
     
     ID_CONTRAST_RAW = wx.NewId()
     ID_CONTRAST_NORMALIZED = wx.NewId()
@@ -93,6 +98,8 @@ class EditObjectsDialog(wx.Dialog):
     
     ID_LABELS_OUTLINES = wx.NewId()
     ID_LABELS_FILL = wx.NewId()
+    
+    ID_DISPLAY_IMAGE = wx.NewId()
     
     ID_MODE_FREEHAND = wx.NewId()
     ID_MODE_SPLIT = wx.NewId()
@@ -439,6 +446,12 @@ class EditObjectsDialog(wx.Dialog):
         reset_button.SetToolTipString(
             "Undo all editing and restore the original objects")
         sub_sizer.Add(reset_button)
+        self.display_image_button = \
+            wx.Button(self, self.ID_DISPLAY_IMAGE, label = self.D_HIDE_IMAGE)
+        if self.guide_image is None:
+            self.display_image_button.Show(False)
+        else:
+            sub_sizer.Add(self.display_image_button)
         self.help_button = wx.Button(self, wx.ID_HELP, label="Show Help")
         sub_sizer.Add(self.help_button)
         self.Bind(wx.EVT_BUTTON, self.on_toggle, toggle_button)
@@ -449,10 +462,12 @@ class EditObjectsDialog(wx.Dialog):
         self.Bind(wx.EVT_MENU, self.on_remove, id=self.ID_ACTION_REMOVE)
         self.Bind(wx.EVT_BUTTON, self.undo, id = wx.ID_UNDO)
         self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
+        self.display_image_button.Bind(wx.EVT_BUTTON, self.on_display_image)
         self.help_button.Bind(wx.EVT_BUTTON, self.on_help)
         self.Bind(wx.EVT_MENU, self.on_reset, id=self.ID_ACTION_RESET)
         self.Bind(wx.EVT_MENU, self.join_objects, id=self.ID_ACTION_JOIN)
         self.Bind(wx.EVT_MENU, self.convex_hull, id=self.ID_ACTION_CONVEX_HULL)
+        self.Bind(wx.EVT_MENU, self.on_display_image, id=self.ID_DISPLAY_IMAGE)
         self.Bind(wx.EVT_MENU, self.on_raw_contrast, id=self.ID_CONTRAST_RAW)
         self.Bind(wx.EVT_MENU, self.on_normalized_contrast,
                   id=self.ID_CONTRAST_NORMALIZED)
@@ -695,7 +710,7 @@ class EditObjectsDialog(wx.Dialog):
             if object_number < len(orig_to_show):
                 orig_to_show[object_number] = False
         self.orig_axes.clear()
-        if self.guide_image is not None:
+        if self.guide_image is not None and self.wants_image_display:
             image, _ = cpo.size_similarly(self.orig_labels[0], 
                                           self.guide_image)
             if image.ndim == 2:
@@ -965,6 +980,11 @@ class EditObjectsDialog(wx.Dialog):
                                self.SPLIT_PICK_SECOND_MODE):
                 self.exit_split_mode(event)
         menu = wx.Menu()
+        if self.guide_image is not None:
+            check_item = menu.AppendCheckItem(
+                self.ID_DISPLAY_IMAGE, "Display image",
+                "Toggle guiding image display")
+            check_item.Check(self.wants_image_display)
         contrast_menu = wx.Menu("Contrast")
         for mid, state, help in (
             (self.ID_CONTRAST_RAW, self.SM_RAW, "Display raw intensity image"),
@@ -1033,6 +1053,12 @@ class EditObjectsDialog(wx.Dialog):
         menu.AppendMenu(-1, "Actions", actions_menu)
         menu.Append(wx.ID_HELP)
         self.PopupMenu(menu)
+   
+    def on_display_image(self, event):
+        self.wants_image_display = not self.wants_image_display
+        self.display_image_button.Label = \
+            self.D_HIDE_IMAGE if self.wants_image_display else self.D_SHOW_IMAGE
+        self.display()
         
     def on_raw_contrast(self, event):
         self.scaling_mode = self.SM_RAW

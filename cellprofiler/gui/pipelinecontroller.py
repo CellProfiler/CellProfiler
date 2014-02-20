@@ -2581,12 +2581,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                           style = wx.OK | wx.ICON_ERROR,
                           parent = self.__frame)
             return
-        if not self.start_debugging():
-            wx.MessageBox(
-                "Test mode is disabled because there are no image sets",
-                "Test mode is disabled",
-                style = wx.OK | wx.ICON_ERROR,
-                parent = self.__frame)
+        self.start_debugging()
     
     def start_debugging(self):
         self.__pipeline.test_mode = True

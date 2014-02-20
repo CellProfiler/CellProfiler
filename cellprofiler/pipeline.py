@@ -2078,6 +2078,7 @@ class Pipeline(object):
             if isinstance(event, PrepareRunErrorEvent):
                 prepare_run_error_detected[0] = True
 
+        had_image_sets = False
         with self.PipelineListener(self, on_pipeline_event):
             for module in self.modules():
                 if module == end_module:
@@ -2087,8 +2088,10 @@ class Pipeline(object):
                     workspace.show_frame(module.show_window)
                     if ((not module.prepare_run(workspace)) or
                         prepare_run_error_detected[0]):
+                        if workspace.measurements.image_set_count > 0:
+                            had_image_sets = True
                         self.clear_measurements(workspace.measurements)
-                        return False
+                        break
                 except Exception, instance:
                     logging.error("Failed to prepare run for module %s",
                                   module.module_name, exc_info=True)
@@ -2098,11 +2101,12 @@ class Pipeline(object):
                         self.clear_measurements(workspace.measurements)
                         return False
         if workspace.measurements.image_set_count == 0:
-            self.report_prepare_run_error(
-                None,
-                "The pipeline did not identify any image sets.\n"
-                "Please correct any problems in your input module settings\n"
-                "and try again.")
+            if not had_image_sets:
+                self.report_prepare_run_error(
+                    None,
+                    "The pipeline did not identify any image sets.\n"
+                    "Please correct any problems in your input module settings\n"
+                    "and try again.")
             return False
         
         if not m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):

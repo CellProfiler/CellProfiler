@@ -267,8 +267,7 @@ class EditObjectsManually(I.Identify):
         #
         if self.wants_outlines:
             outlines_name = self.outlines_name.value
-            outlines = np.zeros((filtered_labels[0].shape[0], 
-                                 filtered_labels[0].shape[1]), bool)
+            outlines = outline(filtered_labels[0]).astype(bool)
             outlines_image = cpi.Image(outlines)
             workspace.image_set.add(outlines_name, outlines_image)
 

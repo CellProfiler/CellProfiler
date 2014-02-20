@@ -14,11 +14,17 @@ Website: http://www.cellprofiler.org
 import h5py
 import logging
 import logging.config
+import re
 import sys
 import os
 import numpy as np
 import tempfile
 from cStringIO import StringIO
+
+OMERO_CK_HOST = "host"
+OMERO_CK_PORT = "port"
+OMERO_CK_USER = "user"
+OMERO_CK_SESSION_ID = "session-id"
 
 if sys.platform.startswith('win'):
     # This recipe is largely from zmq which seems to need this magic
@@ -145,7 +151,8 @@ def main(args):
     if options.print_measurements:
         print_measurements(options)
         return
-    
+    if options.omero_credentials is not None:
+        set_omero_credentials_from_string(options.omero_credentials)
     try:
         if options.show_gui:
             import wx
@@ -429,6 +436,17 @@ def parse_args(args):
                       default = None,
                       help = "Specify the image set file that controls the input "
                       "images for the pipeline")
+    parser.add_option("--omero-credentials",
+                      dest="omero_credentials",
+                      default= None,
+                      help = "Enter login credentials for OMERO. The credentials"
+                      " are entered as comma-separated key/value pairs with"
+                      " keys, \"host\" - the DNS host name for the OMERO server"
+                      ", \"port\" - the server's port # (typically 4064)"
+                      ", \"user\" - the name of the connecting user"
+                      ", \"session-id\" - the session ID for an OMERO client session."
+                      " A typical set of credentials might be:"
+                      " --omero-credentials host=demo.openmicroscopy.org,port=4064,session-id=atrvomvjcjfe7t01e8eu59amixmqqkfp")
                       
     parser.add_option("-L", "--log-level",
                       dest = "log_level",
@@ -478,6 +496,53 @@ def set_log_level(options):
             logging.root.addHandler(logging.StreamHandler())
     except ValueError:
         logging.config.fileConfig(options.log_level)
+        
+def set_omero_credentials_from_string(credentials_string):
+    '''Set the OMERO server / port / session ID
+    
+    credentials_string: a comma-separated key/value pair string (key=value)
+                        that gives the credentials. Keys are
+                        host - the DNS name or IP address of the OMERO server
+                        port - the TCP port to use to connect
+                        user - the user name
+                        session-id - the session ID used for authentication
+    '''
+    import cellprofiler.preferences as cpprefs
+    from bioformats.formatreader import use_omero_credentials
+    from bioformats.formatreader import \
+         K_OMERO_SERVER, K_OMERO_PORT, K_OMERO_USER, K_OMERO_SESSION_ID
+    
+    if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
+        logging.root.error(
+            'The OMERO credentials string, "%s", is badly-formatted.' %
+            credentials_string)
+        logging.root.error(
+            'It should have the form: '
+            '"host=hostname.org,port=####,user=<user>,session-id=<session-id>\n')
+        raise ValueError("Invalid format for --omero-credentials")
+        
+    for k, v in [kv.split("=", 1) for kv in credentials_string.split(",")]:
+        k = k.lower()
+        if k == OMERO_CK_HOST:
+            cpprefs.set_omero_server(v)
+        elif k == OMERO_CK_PORT:
+            cpprefs.set_omero_port(v)
+        elif k == OMERO_CK_SESSION_ID:
+            cpprefs.set_omero_session_id(v)
+        elif k == OMERO_CK_USER:
+            cpprefs.set_omero_user(v)
+        else:
+            logging.root.error(
+                'Unknown --omero-credentials keyword: "%s"' % k)
+            logging.root.error(
+                'Acceptable keywords are: "%s"' %
+            '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID]))
+            raise ValueError("Invalid format for --omero-credentials")
+    use_omero_credentials( {
+        K_OMERO_SERVER: cpprefs.get_omero_server(),
+        K_OMERO_PORT: cpprefs.get_omero_port(),
+        K_OMERO_USER: cpprefs.get_omero_user(),
+        K_OMERO_SESSION_ID: cpprefs.get_omero_session_id() })
 
 def print_code_statistics():
     '''Print # lines of code, # modules, etc to console

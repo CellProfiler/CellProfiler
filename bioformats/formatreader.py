@@ -43,6 +43,11 @@ import bioformats
 import bioformats.metadatatools as metadatatools
 import cellprofiler.utilities.javabridge as javabridge
 
+K_OMERO_SERVER = "omero_server"
+K_OMERO_PORT = "omero_port"
+K_OMERO_USER = "omero_user"
+K_OMERO_SESSION_ID = "omero_session_id"
+
 def make_format_tools_class():
     '''Get a wrapper for the loci/formats/FormatTools class
     
@@ -405,10 +410,10 @@ def use_omero_credentials(credentials):
     global __omero_username
     global __omero_session_id
     global __omero_port
-    __omero_server = credentials["omero_server"]
-    __omero_port = credentials["omero_port"]
-    __omero_username = credentials["omero_user"]
-    __omero_session_id = credentials["omero_session_id"]
+    __omero_server = credentials[K_OMERO_SERVER]
+    __omero_port = credentials[K_OMERO_PORT]
+    __omero_username = credentials[K_OMERO_USER]
+    __omero_session_id = credentials[K_OMERO_SESSION_ID]
     
 __omero_login_fn = None
 def set_omero_login_hook(fn):

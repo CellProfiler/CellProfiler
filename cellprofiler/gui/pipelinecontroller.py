@@ -837,6 +837,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 
             self.__workspace.save_pipeline_to_measurements()
             self.display_pipeline_message_for_user()
+            target_project_path = \
+                os.path.splitext(pathname)[0] + "." + cpprefs.EXT_PROJECT
+            if not os.path.exists(target_project_path) and\
+               cpprefs.get_current_workspace_path() is None:
+                cpprefs.set_current_workspace_path(target_project_path)
+                self.set_title()
+                
             
         except Exception,instance:
             from cellprofiler.gui.errordialog import display_error_dialog
@@ -922,6 +929,14 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         return True if the user saved the pipeline
         '''
+        default_filename = cpprefs.get_current_workspace_path()
+        if default_filename is None:
+            default_filename = "pipeline.%s" % cpprefs.EXT_PIPELINE
+            default_path = None
+        else:
+            default_path, default_filename = os.path.split(default_filename)
+            default_filename = \
+                os.path.splitext(default_filename)[0] + "." + cpprefs.EXT_PIPELINE
         wildcard = ("CellProfiler pipeline (*.%s)|*.%s|"
                     "CellProfiler pipeline and file list (*.%s)|*.%s") % (
             cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE, 
@@ -929,9 +944,11 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         with wx.FileDialog(self.__frame,
                            "Save pipeline",
                            wildcard=wildcard,
-                           defaultFile="pipeline.%s" % cpprefs.EXT_PIPELINE,
+                           defaultFile=default_filename,
                            style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT) as dlg:
             assert isinstance(dlg, wx.FileDialog)
+            if default_path is not None:
+                dlg.Path = os.path.join(default_path, default_filename)
             if dlg.ShowModal() == wx.ID_OK:
                 save_image_plane_details = (dlg.GetFilterIndex() == 1)
                 file_name = dlg.GetFilename()

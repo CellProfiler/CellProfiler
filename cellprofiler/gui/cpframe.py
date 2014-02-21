@@ -552,7 +552,7 @@ class CPFrame(wx.Frame):
         submenu = wx.Menu()
         submenu.Append(
             ID_FILE_SAVE_PIPELINE,
-            'Pipeline...',
+            'Pipeline...\tctrl+P',
             "Save the project's pipeline to a .%s file" % cpprefs.EXT_PIPELINE)
         submenu.Append(
             ID_FILE_EXPORT_IMAGE_SETS,
@@ -725,8 +725,9 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self, ID_DEBUG_NUMPY, self.__debug_numpy_references)
         wx.EVT_MENU(self, ID_DEBUG_PDB, self.__debug_pdb)
         accelerator_table = wx.AcceleratorTable(
-            [(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
-             (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD),
+            [(wx.ACCEL_CMD, ord('N'), ID_FILE_ANALYZE_IMAGES),
+             (wx.ACCEL_CMD, ord('O'), ID_FILE_LOAD),
+             (wx.ACCEL_CMD, ord('P'), ID_FILE_SAVE_PIPELINE),
              (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE),
              (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
              (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),

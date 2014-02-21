@@ -47,6 +47,9 @@ K_OMERO_SERVER = "omero_server"
 K_OMERO_PORT = "omero_port"
 K_OMERO_USER = "omero_user"
 K_OMERO_SESSION_ID = "omero_session_id"
+K_OMERO_CONFIG_FILE = "omero_config_file"
+'''The cleartext password - only used if password is provided on command-line'''
+K_OMERO_PASSWORD = "omero_password"
 
 def make_format_tools_class():
     '''Get a wrapper for the loci/formats/FormatTools class
@@ -345,6 +348,11 @@ __omero_server = None
 __omero_username = None
 __omero_session_id = None
 __omero_port = None
+__omero_config_file = None
+#
+# Only set if user enters password in plaintext on command-line
+#
+__omero_password = None
 
 def set_omero_credentials(omero_server, omero_port, omero_username, omero_password):
     '''Set the credentials to be used to connect to the Omero server
@@ -393,7 +401,29 @@ def get_omero_credentials():
                 omero_session_id = __omero_session_id)
 
 def omero_login():
-    __omero_login_fn()
+    global __omero_config_file
+    global __omero_session_id
+    global __omero_server
+    global __omero_username
+    global __omero_port
+    global __omero_password
+    if __omero_config_file is not None and os.path.isfile(__omero_config_file):
+        env = jutil.get_env()
+        config = env.make_object_array(1, env.find_class("java/lang/String"))
+        env.set_object_array_element(
+            config, 0, env.new_string(u"--Ice.Config=%s" % __omero_config_file))
+        script = """
+        var client = Packages.omero.client(config);
+        client.createSession();
+        client.getSessionId();
+        """
+        __omero_session_id = jutil.run_script(script, dict(config=config))
+    elif all([x is not None for x in 
+              __omero_server, __omero_port, __omero_username, __omero_password]):
+        set_omero_credentials(__omero_server, __omero_port, __omero_username, 
+                              __omero_password)
+    else:
+        __omero_login_fn()
     return __omero_session_id
     
 def omero_logout():
@@ -410,10 +440,14 @@ def use_omero_credentials(credentials):
     global __omero_username
     global __omero_session_id
     global __omero_port
-    __omero_server = credentials[K_OMERO_SERVER]
-    __omero_port = credentials[K_OMERO_PORT]
-    __omero_username = credentials[K_OMERO_USER]
-    __omero_session_id = credentials[K_OMERO_SESSION_ID]
+    global __omero_config_file
+    global __omero_password
+    __omero_server = credentials.get(K_OMERO_SERVER, None)
+    __omero_port = credentials.get(K_OMERO_PORT, None)
+    __omero_username = credentials.get(K_OMERO_USER, None)
+    __omero_session_id = credentials.get(K_OMERO_SESSION_ID, None)
+    __omero_config_file = credentials.get(K_OMERO_CONFIG_FILE, None)
+    __omero_password = credentials.get(K_OMERO_PASSWORD, None)
     
 __omero_login_fn = None
 def set_omero_login_hook(fn):

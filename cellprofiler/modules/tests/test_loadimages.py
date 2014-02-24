@@ -39,6 +39,7 @@ import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
 from cellprofiler.modules.tests import example_images_directory
 import cellprofiler.preferences as cpprefs
+from bioformats.formatreader import clear_image_reader_cache
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
@@ -126,6 +127,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         self.directory = None
         
     def tearDown(self):
+        clear_image_reader_cache()
         if self.directory is not None:
             try:
                 for path in (os.path.sep.join((self.directory, "*","*")),
@@ -1627,6 +1629,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                     pipeline, load_images, None, None, 
                     measurements.Measurements(), image_set_list)))
         finally:
+            clear_image_reader_cache()
             for filename in filenames:
                 os.remove(os.path.join(directory,filename))
             os.rmdir(directory)
@@ -1703,6 +1706,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 self.assertEqual(ctags["Run"], itags["Run"])
                 self.assertEqual(ctags["plate"], itags["plate"])
         finally:
+            clear_image_reader_cache()
             for filename in filenames:
                 os.remove(os.path.join(directory,filename))
             os.rmdir(directory)
@@ -1782,6 +1786,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 image = image_set.get_image("Channel1")
                 self.assertEqual(image.file_name, filenames[chosen])
             finally:
+                clear_image_reader_cache()
                 for filename in filenames:
                     p = os.path.join(directory,filename)
                     try:
@@ -1850,6 +1855,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 p = m.get_current_image_measurement("PathName_my_image")
                 self.assertEqual(os.path.join(directory, path), p)
         finally:
+            clear_image_reader_cache()
             for path, directories, file_names in os.walk(directory, False):
                 for file_name in file_names:
                     p = os.path.join(path, file_name)
@@ -1923,6 +1929,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 p = m.get_current_image_measurement("PathName_my_image")
                 self.assertEqual(os.path.join(directory, path), p)
         finally:
+            clear_image_reader_cache()
             for path, directories, file_names in os.walk(directory, False):
                 for file_name in file_names:
                     p = os.path.join(path, file_name)

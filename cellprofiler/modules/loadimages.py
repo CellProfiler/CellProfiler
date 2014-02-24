@@ -3134,7 +3134,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
-        import bioformats
+        from bioformats.formatreader import get_image_reader
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
@@ -3147,10 +3147,12 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             pixel_type_scale = 1.0
         else:
             url = self.get_url()
-            if not url.lower().startswith("omero:"):
-                url = self.get_full_name()
-            img, self.scale = bioformats.load_using_bioformats(
-                url,
+            if url.lower().startswith("omero:"):
+                rdr = get_image_reader(self.get_name(), url=url)
+            else:
+                rdr = get_image_reader(
+                    self.get_name(), path = self.get_full_name())
+            img, self.scale = rdr.read(
                 c = self.channel,
                 series=self.series,
                 index = self.index,

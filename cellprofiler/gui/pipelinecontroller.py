@@ -2649,6 +2649,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.stop_debugging()
 
     def stop_debugging(self):
+        from bioformats.formatreader import clear_image_reader_cache
+        clear_image_reader_cache()
         self.__pipeline.test_mode = False
         self.__pipeline_list_view.set_debug_mode(False)
         self.__test_controls_panel.GetParent().GetSizer().Layout()

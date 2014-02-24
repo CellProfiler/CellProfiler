@@ -36,6 +36,7 @@ import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
+from bioformats.formatreader import clear_image_reader_cache
 
 OBJECTS_NAME = "objects"
 
@@ -798,6 +799,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                     OBJECTS_NAME, feature)
                 self.assertEqual(len(value), 9)
         finally:
+            clear_image_reader_cache()
             os.remove(name)
             os.remove(csv_name)
             

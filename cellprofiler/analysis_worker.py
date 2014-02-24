@@ -267,7 +267,9 @@ class AnalysisWorker(object):
         self.notify_socket.connect(NOTIFY_ADDR)
         
     def exit_thread(self):
+        from bioformats.formatreader import clear_image_reader_cache
         self.notify_socket.close()
+        clear_image_reader_cache()
         J.deactivate_awt()
         J.detach()
         if self.with_stop_run_loop:

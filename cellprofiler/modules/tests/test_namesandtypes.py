@@ -575,7 +575,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
                 if url in urls:
                     continue
                 urls.add(url)
-                ipd = cpp.ImagePlaneDetails(url, None, None, None, **metadata)
+                ipd = cpp.ImagePlaneDetails(url, None, None, None, metadata)
                 jmetadata = J.make_map(**metadata)
                 ipd.jipd = J.run_script("""
                 importPackage(Packages.org.cellprofiler.imageset);
@@ -831,9 +831,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
         n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("%s%d" % (C0, (3-i)), None, None, None, **m)
+            [[cpp.ImagePlaneDetails("%s%d" % (C0, (3-i)), None, None, None, m)
               for i, m in enumerate(md([(M0, 3)]))],
-             [cpp.ImagePlaneDetails("%s%d" % (C1, i+1), None, None, None, **m)
+             [cpp.ImagePlaneDetails("%s%d" % (C1, i+1), None, None, None, m)
                            for i, m in enumerate(md([(M1, 2)]))]]
         data = {
             C0:[("%s%d" % (C0, i+1), m) for i, m in enumerate(md([(M0, 2)]))],

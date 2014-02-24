@@ -1176,13 +1176,18 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             (cpp.ImagePlaneDetails("foo", 1, 2, None),
              cpp.ImagePlaneDetails("bar", 1, None, 3),
              cpp.ImagePlaneDetails("baz", None, 2, 3)),
-            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Well="A01", Plate="P-12345"),),
-            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Plate="P-12345"),),
+            (cpp.ImagePlaneDetails(
+                "foo", 1, 2, 3, dict(Well="A01", Plate="P-12345")),),
+            (cpp.ImagePlaneDetails(
+                "foo", 1, 2, 3, dict(Plate="P-12345")),),
             (cpp.ImagePlaneDetails("\u03b1\u03b2", 1, 2, 3),),
-            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Treatment="TNF-\u03b1"),),
+            (cpp.ImagePlaneDetails(
+                "foo", 1, 2, 3, dict(Treatment="TNF-\u03b1")),),
             (cpp.ImagePlaneDetails('\\"', 1, 2, 3),),
-            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Well="A01"),
-             cpp.ImagePlaneDetails("bar", 1, 2, 3, Treatment="TNF-\u3b1")))
+            (cpp.ImagePlaneDetails(
+                "foo", 1, 2, 3, dict(Well="A01")),
+             cpp.ImagePlaneDetails(
+                 "bar", 1, 2, 3, dict(Treatment="TNF-\u3b1"))))
         for t in test_data:
             fd = cStringIO.StringIO()
             cpp.write_image_plane_details(fd, t)
@@ -1211,9 +1216,8 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     def test_18_03_serialize_ipds(self):
         url = "file://foo/bar.baz"
         ipds = [cpp.ImagePlaneDetails(url, None, None, None),
-                cpp.ImagePlaneDetails(url, 1, 2, 3, 
-                                      Plate="P-12345",
-                                      Well="A01" )]
+                cpp.ImagePlaneDetails(
+                    url, 1, 2, 3, dict(Plate="P-12345", Well="A01"))]
         data = cpp.ImagePlaneDetails.serialize_metadata(ipds)
         result = cpp.ImagePlaneDetails.deserialize_metadata(url, data)
         self.assertEqual(len(result), len(ipds))

@@ -441,7 +441,7 @@ class ImagePlaneDetails(object):
     MD_T = "T"
     MD_CHANNEL_NAME = "ChannelName"
     
-    def __init__(self, url, series, index, channel, **metadata):
+    def __init__(self, url, series, index, channel, metadata={}):
         self.url = url
         self.series = series
         self.index = index
@@ -487,7 +487,7 @@ class ImagePlaneDetails(object):
         returns all IPDs serialized for the URL
         '''
         ipd_data = json.loads(data)
-        return [ImagePlaneDetails(url, series, index, channel, **metadata)
+        return [ImagePlaneDetails(url, series, index, channel, metadata)
                 for series, index, channel, metadata in ipd_data]
         
 def read_image_plane_details(file_or_fd):
@@ -546,7 +546,7 @@ def read_image_plane_details(file_or_fd):
                              for k,v in zip(header[4:], fields[4:])
                              if v is not None])
             result.append(
-                ImagePlaneDetails(url, series, index, channel, **metadata))
+                ImagePlaneDetails(url, series, index, channel, metadata))
         return result
     finally:
         if needs_close:

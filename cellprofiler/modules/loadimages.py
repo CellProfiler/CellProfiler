@@ -3116,9 +3116,12 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         #
         # Cache the MD5 hash on the image reader
         #
-        from bioformats.formatreader import get_image_reader
-        rdr = get_image_reader(id(self), url = self.get_url())
-        if not hasattr(rdr, "md5_hash"):
+        if self.is_matlab_file():
+            rdr = None
+        else:
+            from bioformats.formatreader import get_image_reader
+            rdr = get_image_reader(id(self), url = self.get_url())
+        if rdr is None or not hasattr(rdr, "md5_hash"):
             hasher = hashlib.md5()
             path = self.get_full_name()
             if not os.path.isfile(path):
@@ -3132,6 +3135,8 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
                         if len(buf) == 0:
                             break
                         hasher.update(buf)
+            if rdr is None:
+                return hasher.hexdigest()
             rdr.md5_hash = hasher.hexdigest()
         return rdr.md5_hash
     

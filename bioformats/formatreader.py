@@ -621,7 +621,7 @@ class ImageReader(object):
                                                       filename = filename,
                                                       stream = self.stream))
         if jrdr is None:
-            raise ValueError("Could not find a Bio-Formats reader for %s", path)
+            raise ValueError("Could not find a Bio-Formats reader for %s", self.path)
         self.rdr = IFormatReader()
         self.rdr.o = jrdr
         if perform_init:
@@ -679,7 +679,8 @@ class ImageReader(object):
                     "The file, \"%s\", does not exist." % path,
                     path)
             e2 = exceptions.IOError(
-                errno.EINVAL, "Could not load the file as an image (see log for details)", path.encode('utf-8'))
+                errno.EINVAL, "Could not load the file as an image (see log for details)",
+                self.path.encode('utf-8'))
             raise e2
             
         

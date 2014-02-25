@@ -3182,8 +3182,9 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         filename = self.get_filename()
         channel_names = []
         if self.is_matlab_file():
-            imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
-                                                  struct_as_record=True)
+            with open(self.get_full_name(), "rb") as fd:
+                imgdata = scipy.io.matlab.mio.loadmat(
+                    fd, struct_as_record=True)
             img = imgdata["Image"]
             # floating point - scale = 1:1
             self.scale = 1.0

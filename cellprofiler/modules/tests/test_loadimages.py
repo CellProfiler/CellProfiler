@@ -3250,14 +3250,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         image_provider = LI.LoadImagesImageProviderURL(
             IMAGE_NAME, 
             "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/Channel1ILLUM.mat?r11710")
+        pathname = image_provider.get_full_name()
         image = image_provider.provide_image(None)
         self.assertEqual(tuple(image.pixel_data.shape), (640, 640))
         expected_md5 = "f3c4d57ee62fa2fd96e3686179656d82"
-        md5 = hashlib.md5()
-        pathname = image_provider.get_full_name()
-        with open(pathname, "rb") as fd:
-            md5.update(fd.read())
-        self.assertEqual(expected_md5, md5.hexdigest())
+        md5 = image_provider.get_md5_hash(None)
+        self.assertEqual(expected_md5, md5)
         image_provider.release_memory()
         self.assertFalse(os.path.exists(pathname))
 

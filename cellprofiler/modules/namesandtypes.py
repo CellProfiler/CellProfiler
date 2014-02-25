@@ -1134,20 +1134,7 @@ class NamesAndTypes(cpm.CPModule):
     @staticmethod
     def get_file_hash(provider, measurements):
         '''Get an md5 checksum from the (cached) file courtesy of the provider'''
-        hasher = hashlib.md5()
-        path = provider.get_full_name()
-        if not os.path.isfile(path):
-            # No file here - hash the image
-            image = provider.provide_image(measurements)
-            hasher.update(image.pixel_data.tostring())
-        else:
-            with open(provider.get_full_name(), "rb") as fd:
-                while True:
-                    buf = fd.read(65536)
-                    if len(buf) == 0:
-                        break
-                    hasher.update(buf)
-        return hasher.hexdigest()
+        return provider.get_md5_hash(measurements)
     
     def add_objects(self, workspace, name, should_save_outlines, outlines_name):
         '''Add objects loaded from a file to the object set'''

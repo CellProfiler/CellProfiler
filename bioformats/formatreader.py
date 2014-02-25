@@ -851,21 +851,29 @@ def get_image_reader(key, path=None, url=None):
         old_count, rdr = __image_reader_cache[old_path, old_url]
         if old_path == path and old_url == url:
             return rdr
-        del __image_reader_key_cache[key]
-        if old_count == 1:
-            rdr.close()
-            del __image_reader_cache[old_path, old_url]
-        else:
-            __image_reader_cache[old_path, old_url] = (old_count-1, rdr)
+        release_image_reader(key)
     if (path, url) in __image_reader_cache:
         old_count, rdr = __image_reader_cache[path, url]
-        __image_reader_cache[path, url] = (old_count+1, rdr)
     else:
         rdr = ImageReader(path=path, url=url)
         old_count = 0
     __image_reader_cache[path, url] = (old_count+1, rdr)
     __image_reader_key_cache[key] = (path, url)
     return rdr
+
+def release_image_reader(key):
+    '''Tell the cache that it should flush the reference for the given key
+    
+    '''
+    if key in __image_reader_key_cache:
+        path, url = __image_reader_key_cache[key]
+        del __image_reader_key_cache[key]
+        old_count, rdr = __image_reader_cache[path, url]
+        if old_count == 1:
+            rdr.close()
+            del __image_reader_cache[path, url]
+        else:
+            __image_reader_cache[path, url] = (old_count-1, rdr)
 
 def clear_image_reader_cache():
     '''Get rid of any open image readers'''

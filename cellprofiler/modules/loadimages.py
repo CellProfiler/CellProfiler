@@ -2173,11 +2173,9 @@ class LoadImages(cpmodule.CPModule):
                     image = provider.provide_image(workspace.image_set)
                     pixel_data = image.pixel_data
                     image_set.providers.append(provider)
-                    digest = hashlib.md5()
-                    digest.update(np.ascontiguousarray(pixel_data).data)
                     m.add_image_measurement(
-                                      "_".join((C_MD5_DIGEST, image_name)),
-                                      digest.hexdigest())
+                        "_".join((C_MD5_DIGEST, image_name)),
+                        provider.get_md5_hash(m))
                     m.add_image_measurement("_".join((C_SCALING, image_name)),
                                             image.scale)
                     m.add_image_measurement("_".join((C_HEIGHT, image_name)), 
@@ -3019,6 +3017,17 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         self.__cached_file = None
         self.__is_cached = False
         self.__cacheing_tried = False
+        if pathname is None:
+            self.__url = filename
+        elif any([pathname.startswith(s+":") for s in PASSTHROUGH_SCHEMES]):
+            if filename is not None:
+                self.__url = pathname + "/" + filename
+            else:
+                self.__url = pathname
+        elif filename is None:
+            self.__url = pathname2url(pathname)
+        else:
+            self.__url = pathname2url(os.path.join(pathname, filename))
 
     def get_name(self):
         return self.__name
@@ -3063,30 +3072,23 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
                 raise IOError("Test for access to directory failed. Directory: %s" %path)
         if parsed_path.scheme == 'file':
             self.__cached_file = url2pathname(path)
-        elif parsed_path.scheme.lower() == 'omero':
-            # Let bioformats open the URL directly
-            self.__is_cached = False
-            return True
-        else:
+        elif self.is_matlab_file():
             #
             # urlretrieve uses the suffix of the path component of the URL
             # to name the temporary file, so we replicate that behavior
             #
             temp_dir = preferences.get_temporary_directory()
-            filename = self.get_filename()
-            suffix_idx = filename.rfind(".")
-            if suffix_idx > 0:
-                suffix = filename[suffix_idx:]
-                tempfd, temppath = tempfile.mkstemp(suffix=suffix,
-                                                    dir = temp_dir)
-            else:
-                tempfd, temppath = tempfile.mkstemp(dir = temp_dir)
+            tempfd, temppath = tempfile.mkstemp(suffix=".mat", dir = temp_dir)
             self.__cached_file = temppath
             try:
                 self.__cached_file, headers = urllib.urlretrieve(
                     url, filename=temppath)
             finally:
                 os.close(tempfd)
+        else:
+            from bioformats.formatreader import get_image_reader
+            rdr = get_image_reader(id(self), url=url)
+            self.__cached_file = rdr.path
         self.__is_cached = True
         return True
             
@@ -3098,22 +3100,58 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
     
     def get_url(self):
         '''Get the URL representation of the file location'''
-        return pathname2url(self.get_full_name())
+        return self.__url
+    
+    def is_matlab_file(self):
+        '''Return True if the file name ends with .mat (no Bio-formats)'''
+        path = urlparse.urlparse(self.get_url())[2]
+        return path.lower().endswith(".mat")
+    
+    def get_md5_hash(self, measurements):
+        '''Compute the MD5 hash of the underlying file or use cached value
+        
+        measurements - backup for case where MD5 is calculated on image data
+                       directly retrieved from URL
+        '''
+        #
+        # Cache the MD5 hash on the image reader
+        #
+        from bioformats.formatreader import get_image_reader
+        rdr = get_image_reader(id(self), url = self.get_url())
+        if not hasattr(rdr, "md5_hash"):
+            hasher = hashlib.md5()
+            path = self.get_full_name()
+            if not os.path.isfile(path):
+                # No file here - hash the image
+                image = self.provide_image(measurements)
+                hasher.update(image.pixel_data.tostring())
+            else:
+                with open(self.get_full_name(), "rb") as fd:
+                    while True:
+                        buf = fd.read(65536)
+                        if len(buf) == 0:
+                            break
+                        hasher.update(buf)
+            rdr.md5_hash = hasher.hexdigest()
+        return rdr.md5_hash
     
     def release_memory(self):
         '''Release any image memory
         
         Possibly delete the temporary file'''
         if self.__is_cached:
-            try:
-                os.remove(self.__cached_file)
-                self.__is_cached = False
-                self.__cacheing_tried = False
-                self.__cached_file = None
-            except:
-                logger.warning("Could not delete file %s", self.__cached_file,
-                               exc_info=True)
-                
+            if self.is_matlab_file():
+                try:
+                    os.remove(self.__cached_file)
+                except:
+                    logger.warning("Could not delete file %s", self.__cached_file,
+                                   exc_info=True)
+            else:
+                from bioformats.formatreader import release_image_reader
+                release_image_reader(id(self))
+            self.__is_cached = False
+            self.__cacheing_tried = False
+            self.__cached_file = None
 
     def __del__(self):
         # using __del__ is all kinds of bad, but we need to remove the
@@ -3138,7 +3176,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
-        if filename.lower().endswith(".mat"):
+        if self.is_matlab_file():
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             img = imgdata["Image"]
@@ -3151,7 +3189,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                 rdr = get_image_reader(self.get_name(), url=url)
             else:
                 rdr = get_image_reader(
-                    self.get_name(), path = self.get_full_name())
+                    self.get_name(), url=self.get_url())
             img, self.scale = rdr.read(
                 c = self.channel,
                 series=self.series,

@@ -1210,7 +1210,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
         load_images.location.custom_path = path
         load_images.module_num = 1
-        outer_self = self
+        
         class CheckImage(CPM.CPModule):
             variable_revision_number = 1
             module_name = "CheckImage"
@@ -1220,21 +1220,27 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 image = workspace.image_set.get_image('Orig')
                 matfh.close()
                 pixel_data = image.pixel_data
-                pixel_data = (pixel_data * 255+.5).astype(np.uint8)
                 check_data = base64.b64decode(T.raw_8_1)
                 check_image = np.fromstring(check_data,np.uint8).reshape(T.raw_8_1_shape)
-                outer_self.assertTrue(np.all(pixel_data ==check_image))
-                digest = hashlib.md5()
-                digest.update((check_image.astype(np.float32)/255).data)
-                hexdigest = workspace.measurements.get_current_image_measurement('MD5Digest_Orig')
-                outer_self.assertEqual(hexdigest, digest.hexdigest())
+                self.expected_digest = hashlib.md5()
+                self.expected_digest.update(
+                    (check_image.astype(np.float32)/255).tostring())
+                self.digest = hashlib.md5()
+                self.digest.update(
+                    pixel_data.astype(np.float32).tostring())
         check_image = CheckImage()
         check_image.module_num = 2
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
         pipeline.add_module(check_image)
-        pipeline.run()
+        m = pipeline.run()
+        self.assertEqual(check_image.digest.hexdigest(), 
+                         check_image.expected_digest.hexdigest())
+        md5 = m[measurements.IMAGE, "_".join((LI.C_MD5_DIGEST, "Orig")), 1]
+        expected_md5 = hashlib.md5()
+        expected_md5.update(data)
+        self.assertEqual(md5, expected_md5.hexdigest())
 
     def test_05_02_load_GIF(self):
         """Test loading of a .GIF file
@@ -3179,7 +3185,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                               i)
                     self.assertEqual(value, expected)
                     
-    def test_16_01_load_from_url(self):
+    def test_16_01_00_load_from_url(self):
+        from bioformats.formatreader import release_image_reader
+        
         module = LI.LoadImages()
         module.module_num = 1
         module.location.dir_choice = LI.URL_FOLDER_NAME
@@ -3224,6 +3232,34 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                cpo.ObjectSet(), m, image_set_list))
         image = image_set.get_image(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.pixel_data.shape), (1006, 1000))
+        #
+        # Make sure the file on disk goes away
+        #
+        provider = image_set.get_image_provider(IMAGE_NAME)
+        pathname = provider.get_full_name()
+        self.assertTrue(os.path.exists(pathname))
+        provider.release_memory()
+        release_image_reader(IMAGE_NAME)
+        self.assertFalse(os.path.exists(pathname))
+        
+    def test_16_01_01_load_url_mat(self):
+        #
+        # Unfortunately, MAT files end up in temporary files using a different
+        # mechanism than everything else
+        #
+        image_provider = LI.LoadImagesImageProviderURL(
+            IMAGE_NAME, 
+            "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/Channel1ILLUM.mat?r11710")
+        image = image_provider.provide_image(None)
+        self.assertEqual(tuple(image.pixel_data.shape), (640, 640))
+        expected_md5 = "f3c4d57ee62fa2fd96e3686179656d82"
+        md5 = hashlib.md5()
+        pathname = image_provider.get_full_name()
+        with open(pathname, "rb") as fd:
+            md5.update(fd.read())
+        self.assertEqual(expected_md5, md5.hexdigest())
+        image_provider.release_memory()
+        self.assertFalse(os.path.exists(pathname))
 
     def test_16_02_load_url_with_groups(self):
         module = LI.LoadImages()

@@ -820,7 +820,7 @@ class Metadata(cpm.CPModule):
                         continue
                 metadata = filelist.get_metadata(url)
                 if metadata is None:
-                    metadata = get_omexml_metadata(url2pathname(url))
+                    metadata = get_omexml_metadata(url = url)
                     filelist.add_metadata(url, metadata)
                 metadata = OMEXML(metadata)
                 exemplar = cpp.ImagePlaneDetails(url, None, None, None)

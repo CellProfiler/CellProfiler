@@ -643,6 +643,7 @@ class ImageReader(object):
             del self.stream
         if self.using_temp_file:
             os.remove(self.path)
+            self.using_temp_file = False
         #
         # Run the Java garbage collector here.
         #
@@ -901,7 +902,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
         return rdr.read(c, z, t, series, index, rescale, wants_max_intensity,
                         channel_names)
     
-def get_omexml_metadata(path):
+def get_omexml_metadata(path=None, url=None):
     '''Read the OME metadata from a file using Bio-formats
     
     path - path to the file
@@ -912,7 +913,7 @@ def get_omexml_metadata(path):
     groupfiles - utilize the groupfiles option to take the directory structure
                  into account.
     '''
-    with ImageReader(path, perform_init=False) as rdr:
+    with ImageReader(path=path, url=url, perform_init=False) as rdr:
         #
         # Below, "in" is a keyword and Rhino's parser is just a little wonky I fear.
         #
@@ -934,6 +935,5 @@ def get_omexml_metadata(path):
         var xml = service.getOMEXML(metadata);
         xml;
         """
-        xml = jutil.run_script(script, dict(path=path, reader = rdr.rdr))
-        rdr.close()
+        xml = jutil.run_script(script, dict(path=rdr.path, reader = rdr.rdr))
         return xml

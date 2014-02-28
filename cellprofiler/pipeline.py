@@ -1141,6 +1141,8 @@ class Pipeline(object):
                 module_number += 1
         if has_image_plane_details:
             self.__image_plane_details = read_image_plane_details(fd)
+            self.__filtered_image_plane_details_images_settings = None
+            self.__filtered_image_plane_details_metadata_settings = None
             
         self.__modules = new_modules
         self.__settings = [self.capture_module_settings(module)

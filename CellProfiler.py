@@ -195,6 +195,8 @@ def main(args):
         if options.ij_plugins_directory is not None:
             cpprefs.set_ij_plugin_directory(options.ij_plugins_directory)
         if options.temp_dir is not None:
+            if not os.path.exists(options.temp_dir):
+                os.makedirs(options.temp_dir)
             cpprefs.set_temporary_directory(options.temp_dir)
         if options.data_file is not None:
             cpprefs.set_data_file(os.path.abspath(options.data_file))
@@ -208,6 +210,8 @@ def main(args):
             raise ValueError("You must specify a pipeline filename to run")
     
         if options.output_directory:
+            if not os.path.exists(options.output_directory):
+                os.makedirs(options.output_directory)
             cpprefs.set_default_output_directory(options.output_directory)
         
         if options.image_directory:

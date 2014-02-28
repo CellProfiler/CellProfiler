@@ -366,6 +366,7 @@ class PipelineListView(object):
         Skip the input modules. If there are no other modules, return None,
         otherwise return the first module
         '''
+        self.list_ctrl.last_running_item = 0
         for module in self.__pipeline.modules():
             if not module.is_input_module():
                 self.set_current_debug_module(module)
@@ -1095,6 +1096,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.anchor = None
         # The item highlighted by the test mode slider
         self.running_item = 0
+        # The last module in the pipeline that has been run on this image set
+        self.last_running_item = 0
         # True if in test mode
         self.test_mode = False
         # True if allowed to disable a module
@@ -1366,6 +1369,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
     def set_running_item(self, idx):
         '''The index of the next module to run in test mode'''
         self.running_item = idx
+        if self.running_item > self.last_running_item:
+            self.last_running_item = self.running_item
         self.Refresh(eraseBackground = False)
 
     def DoGetBestSize(self):
@@ -1456,6 +1461,12 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             if self.running_item is not None:
                 r = self.get_slider_rect()
                 dc.DrawBitmap(bmp, r.Left, r.Top, True)
+                if self.last_running_item != 0:
+                    top = self.line_height * (self.last_running_item+1)
+                    dc.Pen = self.shadow_pen
+                    dc.DrawLine(r.Left, top, r.Right, top)
+                    dc.Pen = self.light_pen
+                    dc.DrawLine(r.Left, top+1, r.Right, top+1)
         else:
             #
             # Draw a green arrow indicating how much of the pipeline is good
@@ -1649,7 +1660,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             if self.running_item != index:
                 plv_event = self.make_event(EVT_PLV_SLIDER_MOTION, index)
                 self.GetEventHandler().ProcessEvent(plv_event)
-                if plv_event.IsAllowed():
+                if plv_event.IsAllowed() and index <= self.last_running_item:
                     self.running_item = index
                     self.Refresh(eraseBackground=False)
         elif self.HasCapture() and self.pressed_column is not None:

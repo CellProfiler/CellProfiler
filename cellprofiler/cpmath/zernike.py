@@ -28,7 +28,7 @@ def construct_zernike_lookuptable(zernike_indexes):
                       computed.
     """
     factorial = np.ones((100,))
-    factorial[1:] = np.cumproduct(range(1,100))
+    factorial[1:] = np.cumproduct(np.arange(1, 100).astype(float))
     width = int(np.max(zernike_indexes[:,0]) / 2+1)
     lut = np.zeros((zernike_indexes.shape[0],width))
     for idx,(n,m) in zip(range(zernike_indexes.shape[0]),zernike_indexes):

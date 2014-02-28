@@ -21,6 +21,16 @@ The text you see here will be displayed as the help for your module. You
 can use HTML markup here and in the settings text; the Python HTML control
 does not fully support the HTML specification, so you may have to experiment
 to get it to display correctly.
+
+The Zernike features measured here are themselves interesting. You can
+reconstruct the image of a cell, approximately, by constructing the
+Zernike functions on a unit circle, multiplying the real parts by the
+corresponding features for positive M, multiplying the imaginary parts
+by the corresponding features for negative M and adding real and imaginary
+parts.
+
+Features names are in the format, 
+"MT_Intensity_<i>Image name</i>_N<i>(radial degree)</i>M<i>(Azimuthal degree)</i>
 '''
 #################################
 #
@@ -47,6 +57,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 
 from cellprofiler.cpmath.zernike import construct_zernike_polynomials
+from cellprofiler.cpmath.zernike import get_zernike_indexes
 from cellprofiler.cpmath.cpmorphology import minimum_enclosing_circle
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 
@@ -56,15 +67,7 @@ from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 #
 # I put constants that are used more than once here.
 #
-# The Zernike list here is a list of the N & M Zernike
-# numbers that we use below in our measurements. I made it
-# a constant because the same list will be used to make
-# the measurements and to report the measurements that can
-# be made.
-#
 ###################################
-ZERNIKE_LIST = ((0, 0), (1, 1), (2, 0), (2, 2), (3, 1), (3, 3), 
-                (4, 0), (4, 2), (4, 4), (5, 1), (5, 3), (5, 5))
 
 '''This is the measurement template category'''
 C_MEASUREMENT_TEMPLATE = "MT"
@@ -129,6 +132,21 @@ class MeasurementTemplate(cpm.CPModule):
         self.input_object_name = cps.ObjectNameSubscriber(
             "Input object name",
             doc = """These are the objects that the module operates on.""")
+        #
+        # The radial degree is the "N" parameter in the Zernike - how many
+        # inflection points there are, radiating out from the center. Higher
+        # N means more features and a more detailed description
+        #
+        # The setting is an integer setting, bounded between 1 and 50.
+        # N = 50 generates 1200 features!
+        #
+        self.radial_degree = cps.Integer(
+            "Radial degree", 10, minval=1, maxval=50,
+            doc = """Calculate all Zernike features up to the given radial
+            degree. The Zernike function is parameterized by a radial
+            and azimuthal degree. The module will calculate all Zernike
+            features for all azimuthal degrees up to and including the
+            radial degree you enter here.""")
         
     #
     # The "settings" method tells CellProfiler about the settings you
@@ -142,7 +160,8 @@ class MeasurementTemplate(cpm.CPModule):
     # a template for visible_settings that you can cut and paste here.
     #
     def settings(self):
-        return [self.input_image_name, self.input_object_name]
+        return [self.input_image_name, self.input_object_name, 
+                self.radial_degree]
     
     #
     # CellProfiler calls "run" on each image set in your pipeline.
@@ -222,6 +241,24 @@ class MeasurementTemplate(cpm.CPModule):
         objects = object_set.get_objects(input_object_name)
         labels = objects.segmented
         #
+        ###########################################
+        #
+        # The minimum enclosing circle (MEC) is the smallest circle that
+        # will fit around the object. We get the centers and radii of
+        # all of the objects at once. You'll see how that lets us
+        # compute the X and Y position of each pixel in a label all at
+        # one go.
+        #
+        # First, get an array that lists the whole range of indexes in
+        # the labels matrix.
+        #
+        indexes = objects.get_indices()
+        #
+        # Then ask for the minimum_enclosing_circle for each object named
+        # in those indexes. MEC returns the i and j coordinate of the center
+        # and the radius of the circle and that defines the circle entirely.
+        #
+        centers, radius = minimum_enclosing_circle(labels, indexes)
         ###############################################################
         #
         # The module computes a measurement based on the image intensity
@@ -230,19 +267,29 @@ class MeasurementTemplate(cpm.CPModule):
         # in the "measure_zernike" function. We call into the function with
         # an N and M which describe the polynomial.
         #
-        for n, m in ZERNIKE_LIST:
+        for n, m in self.get_zernike_indexes():
             # Compute the zernikes for each object, returned in an array
-            z = self.measure_zernike(pixels, labels, n, m)
+            zr, zi = self.measure_zernike(
+                pixels, labels, indexes, centers, radius, n, m)
             # Get the name of the measurement feature for this zernike
             feature = self.get_measurement_name(n, m)
             # Add a measurement for this kind of object
-            meas.add_measurement(input_object_name, feature, z)
+            if m != 0:
+                meas.add_measurement(input_object_name, feature, zr)
+                #
+                # Do the same with -m
+                #
+                feature = self.get_measurement_name(n, -m)
+                meas.add_measurement(input_object_name, feature, zi)
+            else:
+                # For zero, the total is the sum of real and imaginary parts
+                meas.add_measurement(input_object_name, feature, zr + zi)
             #
             # Record the statistics. 
             #
-            zmean = np.mean(z)
-            zmedian = np.median(z)
-            zsd = np.std(z)
+            zmean = np.mean(zr)
+            zmedian = np.median(zr)
+            zsd = np.std(zr)
             statistics.append( [ feature, zmean, zmedian, zsd ] )
     ################################
     # 
@@ -256,11 +303,36 @@ class MeasurementTemplate(cpm.CPModule):
             figure.set_subplots((1,1))
         figure.subplot_table(0,0, statistics)
     
+    def get_zernike_indexes(self, wants_negative = False):
+        '''Get an N x 2 numpy array containing the M and N Zernike degrees
+        
+        Use the radial_degree setting to determine which Zernikes to do.
+        
+        wants_negative - if True, return both positive and negative M, if false
+                         return only positive
+        '''
+        zi = get_zernike_indexes(self.radial_degree.value + 1)
+        if wants_negative:
+            #
+            # np.vstack means concatenate rows of two 2d arrays.
+            # The multiplication by [1, -1] negates every m, but preserves n.
+            # zi[zi[:, 1] != 0] picks out only elements with m not equal to zero. 
+            #
+            zi = np.vstack([zi, zi[zi[:, 1] != 0]*np.array([1, -1])])
+            #
+            # Sort by azimuth degree and radial degree so they are ordered
+            # reasonably
+            #
+            order = np.lexsort((zi[:, 1], zi[:, 0]))
+            zi = zi[order, :]
+        return zi
+            
+    
     ################################
     #
     # measure_zernike makes one Zernike measurement on each object
     # 
-    def measure_zernike(self, pixels, labels, n, m):
+    def measure_zernike(self, pixels, labels, indexes, centers, radius, n, m):
         # I'll put some documentation in here to explain what it does.
         # If someone ever wants to call it, their editor might display
         # the documentation.
@@ -268,6 +340,9 @@ class MeasurementTemplate(cpm.CPModule):
         
         pixels - the intensity image to be measured
         labels - the labels matrix that labels each object with an integer
+        indexes - the label #s in the image
+        centers - the centers of the minimum enclosing circle for each object
+        radius - the radius of the minimum enclosing circle for each object
         n, m - the Zernike coefficients.
         
         See http://en.wikipedia.org/wiki/Zernike_polynomials for an
@@ -282,30 +357,6 @@ class MeasurementTemplate(cpm.CPModule):
         #
         # We play lots of indexing tricks here to operate on the whole image.
         # I'll try to explain some - hopefully, you can reuse.
-        #
-        # You could move the calculation of the minimum enclosing circle
-        # outside of this function. The function gets called more than
-        # 10 times, so the same calculation is performed 10 times.
-        # It would make the code a little more confusing, so I'm leaving
-        # it as-is.
-        ###########################################
-        #
-        # The minimum enclosing circle (MEC) is the smallest circle that
-        # will fit around the object. We get the centers and radii of
-        # all of the objects at once. You'll see how that lets us
-        # compute the X and Y position of each pixel in a label all at
-        # one go.
-        #
-        # First, get an array that lists the whole range of indexes in
-        # the labels matrix.
-        #
-        indexes = np.arange(1, np.max(labels)+1,dtype=np.int32)
-        #
-        # Then ask for the minimum_enclosing_circle for each object named
-        # in those indexes. MEC returns the i and j coordinate of the center
-        # and the radius of the circle and that defines the circle entirely.
-        #
-        centers, radius = minimum_enclosing_circle(labels, indexes)
         center_x = centers[:, 1]
         center_y = centers[:, 0]
         #
@@ -352,17 +403,18 @@ class MeasurementTemplate(cpm.CPModule):
         # runs a little faster.
         #
         zernike_polynomial = construct_zernike_polynomials(
-            x, y, np.array([ [ n, m ]]))
+            x, y, np.array([ [ n, m ]]), labels > 0)
+        #
+        # For historical reasons, CellProfiler didn't multiply by the per/zernike
+        # normalizing factor: 2*n + 2 / E / pi where E is 2 if m is zero and 1
+        # if m is one. We do it here to aid with the reconstruction
+        #
+        zernike_polynomial *= (2*n + 2) / (2 if m == 0 else 1) / np.pi
         #
         # Multiply the Zernike polynomial by the image to dissect
         # the image by the Zernike basis set.
         #
         output_pixels = pixels * zernike_polynomial[:,:,0]
-        #
-        # The zernike polynomial is a complex number. We get a power
-        # spectrum here to combine the real and imaginary parts
-        #
-        output_pixels = np.sqrt(output_pixels * output_pixels.conjugate())
         #
         # Finally, we use Scipy to sum the intensities. Scipy has different
         # versions with different quirks. The "fix" function takes all
@@ -372,11 +424,12 @@ class MeasurementTemplate(cpm.CPModule):
         # each pixel in an object, using the labels matrix to name
         # the pixels in an object
         #
-        result = fix(scind.sum(output_pixels.real, labels, indexes))
+        zr = fix(scind.sum(output_pixels.real, labels, indexes))
+        zi = fix(scind.sum(output_pixels.imag, labels, indexes))
         #
         # And we're done! Did you like it? Did you get it?
         #
-        return result
+        return zr, zi
     
     #######################################
     #
@@ -393,16 +446,18 @@ class MeasurementTemplate(cpm.CPModule):
     def get_feature_name(self, n, m):
         '''Return a measurement feature name for the given Zernike'''
         #
-        # Something nice and simple for a name... IntensityN4M2 for instance
+        # Something nice and simple for a name... Intensity_DNA_N4M2 for instance
         #
-        return "IntensityN%dM%d" % (n, m)
+        if m >= 0:
+            return "Intensity_%s_N%dM%d" % (self.input_image_name.value, n, m)
+        else:
+            return "Intensity_%s_N%dMM%d" % (self.input_image_name.value, n, -m)
     
     def get_measurement_name(self, n, m):
         '''Return the whole measurement name'''
         input_image_name = self.input_image_name.value
         return '_'.join([C_MEASUREMENT_TEMPLATE, 
-                         self.get_feature_name(n,m),
-                         input_image_name])
+                         self.get_feature_name(n,m)])
     #
     # We have to tell CellProfiler about the measurements we produce.
     # There are two parts: one that is for database-type modules and one
@@ -433,7 +488,7 @@ class MeasurementTemplate(cpm.CPModule):
         return [ (input_object_name,
                   self.get_measurement_name(n, m),
                   cpmeas.COLTYPE_FLOAT)
-                 for n, m in ZERNIKE_LIST]
+                 for n, m in self.get_zernike_indexes(True)]
     
     #
     # get_categories returns a list of the measurement categories produced
@@ -454,10 +509,7 @@ class MeasurementTemplate(cpm.CPModule):
     def get_measurements(self, pipeline, object_name, category):
         if (object_name == self.input_object_name and
             category == C_MEASUREMENT_TEMPLATE):
-            #
-            # Use another list comprehension. See docs in get_measurement_columns.
-            return [ self.get_feature_name(n, m)
-                     for n, m in ZERNIKE_LIST]
+            return ["Intensity"]
         else:
             return []
         
@@ -476,3 +528,42 @@ class MeasurementTemplate(cpm.CPModule):
             return [ self.input_image_name.value]
         else:
             return []
+        
+    def get_measurement_scales(self, pipeline, object_name, category, 
+                               measurement, image_name):
+        '''Get the scales for a measurement
+        
+        For the Zernikes, the scales are of the form, N2M2 or N2MM2 for
+        negative azimuthal degree
+        '''
+        if image_name in self.get_measurement_images(
+            pipeline, object_name, category, measurement):
+            return [("N%dM%d" % (n, m)) if m >= 0 else
+                    ("N%dMM%d" % (n, -m)) for n, m in 
+                    self.get_zernike_indexes(True)]
+        return []
+    
+    @staticmethod
+    def get_image_from_features(radius, feature_dictionary):
+        '''Reconstruct the intensity image from the zernike features
+        
+        radius - the radius of the minimum enclosing circle
+        
+        feature_dictionary - keys are (n, m) tuples and values are the
+        magnitudes.
+        
+        returns a greyscale image based on the feature dictionary.
+        '''
+        i, j = np.mgrid[-radius:(radius+1), -radius:(radius+1)].astype(float) / radius
+        mask = (i*i + j*j) <= 1
+        
+        zernike_indexes = np.array(feature_dictionary.keys())
+        zernike_features = np.array(feature_dictionary.values())
+        
+        z = construct_zernike_polynomials(
+            j, i, np.abs(zernike_indexes), mask=mask)
+        zn = (2*zernike_indexes[:, 0] + 2) / ((zernike_indexes[:, 1] == 0) + 1) / np.pi
+        z = z * zn[np.newaxis, np.newaxis, :]
+        z = z.real * (zernike_indexes[:, 1] >= 0)[np.newaxis, np.newaxis, :] +\
+            z.imag * (zernike_indexes[:, 1] <= 0)[np.newaxis, np.newaxis, :]
+        return np.sum(z * zernike_features[np.newaxis, np.newaxis, :], 2)

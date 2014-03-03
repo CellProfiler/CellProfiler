@@ -9,6 +9,7 @@ export HOME=/broad/hptmp/imageweb
 fi
 fi
 
+export PYTHONPATH=
 . /broad/software/scripts/useuse
 reuse .toolbox-0.11.0
 reuse Java-1.6

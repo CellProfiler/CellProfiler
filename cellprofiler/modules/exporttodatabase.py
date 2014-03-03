@@ -1,4 +1,6 @@
-'''<b>Export To Database</b> exports data directly to a database, or in 
+import cellprofiler.icons 
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+__doc__ = '''<b>Export To Database</b> exports data directly to a database, or in 
 database readable format, including an imported file
 with column names and a CellProfiler Analyst properties file, if desired.
 <hr>
@@ -371,7 +373,19 @@ class ExportToDatabase(cpm.CPModule):
             can more readily be run on your local computer rather than requiring a 
             database server. More information about SQLite can be found  
             <a href="http://www.sqlite.org/">here</a>. </li>
-            </ul>"""%globals())
+            </ul>
+            <dl>
+            <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
+            If running this module on a computing cluster, there are a few 
+            considerations to note:
+            <ul>
+            <li>The <i>%(DB_MYSQL)s</i> option is well-suited for cluster use, since
+            multiple jobs can write to the database simultaneously.</li>
+            <li>The <i>%(DB_SQLITE)s</i> option is not
+            as appropriate; a SQLite database only allows access by one job at a time.</li>
+            </ul>
+            </dd>
+            </dl>"""%globals())
         
         self.test_connection_button = cps.DoSomething(
             "Press this button to test the connection to the remote server using the current settings",

@@ -1344,6 +1344,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__workspace.file_list.add_files_to_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
             len(self.__pipeline.image_plane_details) > 0)
+        self.exit_test_mode()
         
     def on_image_plane_details_removed(self, event):
         '''Callback from pipeline when paths are removed from the pipeline'''
@@ -1352,6 +1353,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__workspace.file_list.remove_files_from_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
             len(self.__pipeline.image_plane_details) > 0)
+        self.exit_test_mode()
         
     def on_update_pathlist(self, event=None):
         ipds = self.__pipeline.get_filtered_image_plane_details(self.__workspace)

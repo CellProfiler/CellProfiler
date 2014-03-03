@@ -1430,6 +1430,16 @@ class ExportToDatabase(cpm.CPModule):
             raise cps.ValidationError("ExportToDatabase does not produce output in Test Mode",
                                       self.db_type)
         
+        # Warn user if using SQLLite and CreateBatchFiles
+        if self.db_type == DB_SQLITE and pipeline.has_create_batch_module():
+            raise cps.ValidationError(
+            "Only one process can access a SQLite database at a time.\n"
+            "Database operations will fail if you run more than one copy\n"
+            "of CellProfiler simultaneously. You can run multiple copies\n"
+            "of CellProfiler if you choose to output a MySQL database.\n"
+            "ExportToDatabase will work in multiprocessing mode using a\n"
+            "SQLite database.", self.db_type)
+        
         '''Warn user that they will have to merge tables to use CPA'''
         if self.objects_choice != O_NONE and self.separate_object_tables == OT_PER_OBJECT:
             raise cps.ValidationError(

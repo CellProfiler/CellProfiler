@@ -513,6 +513,15 @@ class CPModule(object):
         """
         return False
     
+    def is_create_batch_module(self):
+        '''If true, the module will pickle the pipeline into a batch file and exit
+        
+        This is needed by modules which can't properly operate in a batch
+        mode (e.g. do all their work post_run or don't work so well if
+        run in parallel)
+        '''
+        return False
+    
     def is_aggregation_module(self):
         """If true, the module uses data from other imagesets in a group
         

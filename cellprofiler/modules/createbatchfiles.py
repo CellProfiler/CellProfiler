@@ -293,6 +293,9 @@ class CreateBatchFiles(cpm.CPModule):
         finally:
             m.close()
 
+    def is_create_batch_module(self):
+        return True
+    
     def in_batch_mode(self):
         '''Tell the system whether we are in batch mode on the cluster'''
         return self.batch_mode.value

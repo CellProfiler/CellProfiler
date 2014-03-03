@@ -2329,6 +2329,12 @@ class Pipeline(object):
                         module.module_name, exc_info=True)
         return True
     
+    def has_create_batch_module(self):
+        for module in self.modules():
+            if module.is_create_batch_module():
+                return True
+        return False
+    
     def in_batch_mode(self):
         '''Return True if the pipeline is in batch mode'''
         for module in self.modules():

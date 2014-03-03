@@ -1432,6 +1432,7 @@ class ModuleView:
             
     def make_text_control(self, v, control_name, control):
         """Make a textbox control"""
+        text = None
         if not control:
             if v.metadata_display:
                 control = MetadataControl(
@@ -1443,12 +1444,15 @@ class ModuleView:
                 )
             else:
                 style = 0
-                if getattr(v, "multiline_display", False):
-                    style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER
-    
                 text = v.get_value_text()
                 if not isinstance(text, (unicode, str)):
                     text = str(text)
+                if getattr(v, "multiline_display", False):
+                    style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER
+                    lines = text.split("\n")
+                else:
+                    lines = [text]
+                
                 control = wx.TextCtrl(self.__module_panel,
                                       -1,
                                       text,
@@ -1462,6 +1466,13 @@ class ModuleView:
             if not isinstance(text, (unicode, str)):
                 text = str(text)
             control.Value = text
+        if text is not None:
+            lines = text.split("\n")
+            if len(lines) > 0:
+                width = max([control.GetTextExtent(line)[0] for line in lines])
+                height = sum([control.GetTextExtent(line)[1] for line in lines])
+                bw, bh = control.GetWindowBorderSize()
+                control.SetMinSize((bw*2+width, bh*2+height))
         return control
     
     def make_range_control(self, v, panel):

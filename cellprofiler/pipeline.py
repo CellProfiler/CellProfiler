@@ -2503,6 +2503,7 @@ class Pipeline(object):
             pos = bisect.bisect_left(self.image_plane_details, details, start)
             if (pos != len(self.image_plane_details) and
                 cmp(self.image_plane_details[pos], details) == 0):
+                details.jipd = None
                 real_list.append(details)
                 del self.image_plane_details[pos]
             start = pos
@@ -2521,6 +2522,8 @@ class Pipeline(object):
         self.notify_listeners(ImagePlaneDetailsRemovedEvent(old_ipds))
         if len(old_ipds):
             self.notify_listeners(ImagePlaneDetailsRemovedEvent(old_ipds))
+            for ipd in old_ipds:
+                ipd.jipd = None
             def undo():
                 self.add_image_plane_details(old_ipds, False)
             self.__undo_stack.append((undo, "Remove images"))
@@ -2539,6 +2542,8 @@ class Pipeline(object):
             removed = self.image_plane_details[pos:end]
             del self.image_plane_details[pos:end]
             self.notify_listeners(ImagePlaneDetailsRemovedEvent(removed))
+            for ipd in removed:
+                ipd.jipd = None
             def undo():
                 self.add_image_plane_details(removed)
             self.__undo_stack.append((undo, "Remove images"))

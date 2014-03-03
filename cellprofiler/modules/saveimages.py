@@ -829,7 +829,15 @@ class SaveImages(cpm.CPModule):
             subdir = relpath(image_path, self.root_dir.get_absolute_path())
             pathname = os.path.join(pathname, subdir)
         if len(pathname) and not os.path.isdir(pathname) and make_dirs:
-            os.makedirs(pathname)
+            try:
+                os.makedirs(pathname)
+            except:
+                #
+                # On cluster, this can fail if the path was created by
+                # another process after this process found it did not exist.
+                #
+                if not os.path.isdir(pathname):
+                    raise
         result = os.path.join(pathname, filename)
         if check_overwrite and not self.check_overwrite(result, workspace):
             return

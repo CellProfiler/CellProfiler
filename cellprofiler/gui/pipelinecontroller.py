@@ -1239,7 +1239,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.stop_running()
         self.__workspace.close()
     
-    def __on_pipeline_event(self,caller,event):
+    def __on_pipeline_event(self, caller, event):
+        if not wx.Thread_IsMain():
+            wx.CallAfter(self.__on_pipeline_event, caller, event)
         if isinstance(event,cpp.RunExceptionEvent):
             error_msg = None
             self.__pipeline_list_view.select_one_module(event.module.module_num)
@@ -1258,14 +1260,25 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     error_msg = event.error.strerror
                 else:
                     error_msg = str(event.error)
-            message = (("Error while processing %s:\n"
-                        "%s\n\nDo you want to stop processing?") %
-                       (event.module.module_name,error_msg))
+            if isinstance(event, cpp.PrepareRunExceptionEvent):
+                message = "Encountered unrecoverable error in %s during startup:\n%s" % (
+                    event.module.module_name, error_msg)
+                continue_only = True
+            elif isinstance(event, cpp.PostRunExceptionEvent):
+                message = "Encountered uncrecoverable error in %s during post-processing:\n%s" % (
+                    event.module.module_name, error_msg)
+                continue_only = True
+            else:
+                message = (("Error while processing %s:\n"
+                            "%s\n\nDo you want to stop processing?") %
+                           (event.module.module_name,error_msg))
+                continue_only = False
             result = display_error_dialog(self.__frame,
                                           event.error,
                                           self.__pipeline,
                                           message,
-                                          event.tb)
+                                          event.tb,
+                                          continue_only=continue_only)
             event.cancel_run = result == ED_STOP
             event.skip_thisset = result == ED_SKIP
                 
@@ -2260,8 +2273,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             wx.CallAfter(self.show_pause_button)
         elif isinstance(evt, cellprofiler.pipeline.RunExceptionEvent):
             # exception in (prepare/post)_(run/group)
-            import pdb
-            pdb.post_mortem(evt.tb)
+            wx.CallAfter(self.__on_pipeline_event, self.__pipeline, evt)
         else:
             raise ValueError("Unknown event type %s %s" % (type(evt), evt))
 

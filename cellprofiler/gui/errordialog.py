@@ -125,9 +125,12 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
                        style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
     sizer = wx.BoxSizer(wx.VERTICAL)
     dialog.SetSizer(sizer)
-    question_control = wx.StaticText(dialog,-1, 
-                                     "Encountered error while processing. "
-                                     "Do you want to stop processing?")
+    if continue_only:
+        qc_msg = "Encountered error while processing."
+    else:
+        qc_msg = ("Encountered error while processing. "
+                  "Do you want to stop processing?")
+    question_control = wx.StaticText(dialog,-1, qc_msg)
     question_control.Font = wx.Font(int(dialog.Font.GetPointSize()*5/4),
                                     dialog.Font.GetFamily(),
                                     dialog.Font.GetStyle(),

@@ -2097,7 +2097,7 @@ class Pipeline(object):
                 except Exception, instance:
                     logging.error("Failed to prepare run for module %s",
                                   module.module_name, exc_info=True)
-                    event = RunExceptionEvent(instance, module, sys.exc_info()[2])
+                    event = PrepareRunExceptionEvent(instance, module, sys.exc_info()[2])
                     self.notify_listeners(event)
                     if event.cancel_run:
                         self.clear_measurements(workspace.measurements)
@@ -2175,7 +2175,7 @@ class Pipeline(object):
                 logging.error(
                     "Failed to complete post_run processing for module %s." %
                     module.module_name, exc_info=True)
-                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
+                event = PostRunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
@@ -3542,6 +3542,16 @@ class RunExceptionEvent(AbstractPipelineEvent):
     
     def event_type(self):
         return "Pipeline run exception"
+    
+class PrepareRunExceptionEvent(RunExceptionEvent):
+    '''An event indicating an uncaught exception during the prepare_run phase'''
+    def event_type(self):
+        return "Prepare run exception"
+    
+class PostRunExceptionEvent(RunExceptionEvent):
+    '''An event indicating an uncaught exception during the post_run phase'''
+    def event_type(self):
+        return "Post run exception"
     
 class PrepareRunErrorEvent(AbstractPipelineEvent):
     """A user configuration error prevented CP from running the pipeline

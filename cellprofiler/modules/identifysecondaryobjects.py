@@ -727,8 +727,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 100 * object_area / np.product(segmented_out.shape)
             workspace.display_data.img = img
             workspace.display_data.segmented_out = segmented_out
-            workspace.display_data.primary_outline = primary_outline
-            workspace.display_data.secondary_outline = secondary_outline
+            workspace.display_data.primary_labels = objects.segmented
             workspace.display_data.global_threshold = global_threshold
             workspace.display_data.object_count = object_count
 
@@ -737,8 +736,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         object_pct = workspace.display_data.object_pct
         img = workspace.display_data.img
-        primary_outline = workspace.display_data.primary_outline
-        secondary_outline = workspace.display_data.secondary_outline
+        primary_labels = workspace.display_data.primary_labels
         segmented_out = workspace.display_data.segmented_out
         global_threshold = workspace.display_data.global_threshold
         object_count = workspace.display_data.object_count
@@ -771,21 +769,16 @@ class IdentifySecondaryObjects(cpmi.Identify):
         figure.subplot_imshow_labels(1, 0, segmented_out, "%s objects" % self.objects_name.value,
                                        sharexy = figure.subplot(0, 0))
 
-        primary_img = np.dstack((img, img, img))
-        #
-        # Stretch the outline image to the full scale
-        #
-        primary_img = stretch(primary_img)        
-        # Outline the primary objects
-        cpmi.draw_outline(primary_img, primary_outline > 0,
-                          cpprefs.get_primary_outline_color())
-        # Outline the secondary objects
-        cpmi.draw_outline(primary_img, secondary_outline > 0,
-                          cpprefs.get_secondary_outline_color())
-        figure.subplot_imshow(0, 1, primary_img,
-                                "%s and %s outlines"%(self.primary_objects.value,self.objects_name.value),
-                                normalize=False,
-                                sharexy = figure.subplot(0, 0))
+        cplabels = [
+            dict(name = self.primary_objects.value,
+                 labels = [ primary_labels ]),
+            dict(name = self.objects_name.value,
+                 labels = [ segmented_out ])]
+        title = "%s and %s outlines" %(
+            self.primary_objects.value, self.objects_name.value)
+        figure.subplot_imshow_grayscale(
+            0, 1, img, title = title, cplabels = cplabels,
+            sharexy = figure.subplot(0, 0))
         figure.subplot_table(
             1, 1, 
             [[x[1]] for x in workspace.display_data.statistics],

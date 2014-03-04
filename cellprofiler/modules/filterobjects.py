@@ -576,30 +576,26 @@ class FilterObjects(cpm.CPModule):
                                          target_name,
                                          sharexy = figure.subplot(0,0))
         else:
-            figure.set_subplots((2, 2))
-            figure.subplot_imshow_labels(0,0,src_objects_segmented,
-                                         title="Original: %s"%src_name)
-            figure.subplot_imshow_labels(0,1,target_objects_segmented,
-                                         title="Filtered: %s"%
-                                         target_name,
-                                         sharexy = figure.subplot(0,0))
-            outs = outline(target_objects_segmented) > 0
-            maxpix = np.max(image)
-            if maxpix == 0:
-                maxpix = 1.0
-            if len(image.shape) == 3:
-                picture = image.copy()
+            figure.set_subplots((2, 1))
+            orig_minus_filtered = src_objects_segmented.copy()
+            orig_minus_filtered[target_objects_segmented > 0] = 0
+            cplabels = [
+                dict(name = target_name,
+                     labels = [target_objects_segmented]),
+                dict(name = "%s removed" % src_name,
+                     labels = [orig_minus_filtered])]
+            title = "Original: %s, Filtered: %s" % (src_name, target_name)
+            if image.ndim == 3:
+                figure.subplot_imshow_color(
+                    0, 0, image, title = title, cplabels = cplabels)
             else:
-                picture = np.dstack((image,image,image))
-            red_channel = picture[:,:,0]
-            red_channel[outs] = maxpix
-            figure.subplot_imshow(1, 0, picture, "Filtered Outlines",
-                                  sharexy = figure.subplot(0,0))
+                figure.subplot_imshow_grayscale(
+                    0, 0, image, title = title, cplabels = cplabels)
             
             statistics = [  [np.max(src_objects_segmented)],
                             [np.max(target_objects_segmented)]]
             figure.subplot_table(
-                1, 1, statistics, 
+                1, 0, statistics, 
                 row_labels = ("Number of objects pre-filtering",  
                               "Number of objects post-filtering"))
                                                

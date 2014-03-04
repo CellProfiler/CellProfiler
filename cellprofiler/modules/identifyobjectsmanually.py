@@ -125,10 +125,15 @@ class IdentifyObjectsManually(I.Identify):
         objects_name = self.objects_name.value
         labels = workspace.display_data.labels
         pixel_data = workspace.display_data.pixel_data
-        figure.set_subplots((2, 1))
-        figure.subplot_imshow_labels(0, 0, labels, objects_name)
-        figure.subplot_imshow(1, 0, self.draw_outlines(pixel_data, labels),
-                              sharexy = figure.subplot(0,0))
+        figure.set_subplots((1, 1))
+        cplabels = [
+            dict(name = objects_name, labels = [labels])]
+        if pixel_data.ndim == 3:
+            figure.subplot_imshow_color(
+                0, 0, pixel_data, title = objects_name, cplabels = cplabels)
+        else:
+            figure.subplot_imshow_grayscale(
+                0, 0, pixel_data, title = objects_name, cplabels = cplabels)
 
     def draw_outlines(self, pixel_data, labels):
         '''Draw a color image that shows the objects

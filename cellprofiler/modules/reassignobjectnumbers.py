@@ -315,7 +315,10 @@ class ReassignObjectNumbers(cpm.CPModule):
         if self.show_window:
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.output_labels = output_objects.segmented
-    
+            if self.unify_option == UNIFY_PARENT:
+                workspace.display_data.parent_labels = \
+                    workspace.object_set.get_objects(self.parent_object.value).segmented
+                
     def display(self, workspace, figure):
         '''Display the results of relabeling
         
@@ -324,45 +327,44 @@ class ReassignObjectNumbers(cpm.CPModule):
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         import matplotlib.cm as cm
         
-        figure.set_subplots((1, 2))
-        figure.subplot_imshow_labels(0,0, workspace.display_data.orig_labels,
-                                     title = self.objects_name.value)
+        figure.set_subplots((2, 1))
+        ax = figure.subplot_imshow_labels(
+            0, 0, workspace.display_data.orig_labels,
+            title = self.objects_name.value)
         
-        output_labels = renumber_labels_for_display(
-                workspace.display_data.output_labels)
         if self.relabel_option == OPTION_UNIFY and ((self.unify_option == UNIFY_DISTANCE and self.wants_image) or (self.unify_option == UNIFY_PARENT)):
             if self.unify_option == UNIFY_DISTANCE and self.wants_image:
-                #
-                # Make a nice picture which superimposes the labels on the
-                # guiding image
-                #
-                image = (stretch(workspace.display_data.image) * 255).astype(np.uint8)
+                image = workspace.display_data.image
+                cplabels = [
+                    dict(name = self.output_objects_name.value,
+                         labels = [workspace.display_data.output_labels]),
+                    dict(name = self.objects_name.value,
+                         labels = [workspace.display_data.orig_labels])]
+                    
             elif self.unify_option == UNIFY_PARENT:
-                parent_objects = workspace.object_set.get_objects(self.parent_object.value)
-                labels = parent_objects.segmented
-                image = labels.astype(float) / (1.0 if np.max(labels) == 0 else np.max(labels))
-                image = (stretch(image) * 255).astype(np.uint8)
-            
-            image = np.dstack((image,image,image))
-            my_cm = cm.get_cmap(cpprefs.get_default_colormap())
-            my_cm.set_bad((0,0,0))
-            sm = cm.ScalarMappable(cmap=my_cm)
-            m_output_labels = np.ma.array(output_labels,
-                                        mask = output_labels == 0)
-            output_image = sm.to_rgba(m_output_labels, bytes=True)[:,:,:3]
-            image[output_labels > 0 ] = (
-                image[output_labels > 0] / 4 * 3 +
-                output_image[output_labels > 0,:] / 4)
-        
-            figure.subplot_imshow(0,1, 
-                                  image,
-                                  title = self.output_objects_name.value,
-                                  sharexy = figure.subplot(0,0))
+                image = np.zeros(workspace.display_data.output_labels.shape)
+                cplabels = [
+                    dict(name = self.output_objects_name.value,
+                         labels = [workspace.display_data.output_labels]),
+                    dict(name = self.parent_object.value,
+                         labels = [workspace.display_data.parent_labels]),
+                    dict(name = self.objects_name.value,
+                         labels = [workspace.display_data.orig_labels],
+                         mode = "none")
+                ]
+            if image.ndim == 2:
+                figure.subplot_imshow_grayscale(
+                    1, 0, image, title = self.output_objects_name.value,
+                    cplabels = cplabels, sharexy=ax)
+            else:
+                figure.subplot_imshow_color(
+                    1, 0, image, title = self.output_objects_name.value,
+                    cplabels = cplabels, sharexy=ax)
         else:
-            figure.subplot_imshow_labels(0,1, 
+            figure.subplot_imshow_labels(1, 0, 
                                          workspace.display_data.output_labels,
                                          title = self.output_objects_name.value,
-                                         sharexy = figure.subplot(0,0))
+                                         sharexy = ax)
 
     def filter_using_image(self, workspace, mask):
         '''Filter out connections using local intensity minima between objects

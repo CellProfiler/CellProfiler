@@ -961,9 +961,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                    "%.1f"%(maxima_suppression_size)])
             workspace.display_data.image = image.pixel_data
             workspace.display_data.labeled_image = labeled_image
-            workspace.display_data.outline_image = outline_image
-            workspace.display_data.outline_size_excluded_image = outline_size_excluded_image
-            workspace.display_data.outline_border_excluded_image = outline_border_excluded_image
+            workspace.display_data.size_excluded_labels = size_excluded_labeled_image
+            workspace.display_data.border_excluded_labels = border_excluded_labeled_image
 
         # Add image measurements
         objname = self.object_name.value
@@ -1332,42 +1331,26 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             outlined_axes = figure.subplot(0,1, sharexy = orig_axes)
     
             title = "Input image, cycle #%d"%(workspace.measurements.image_number,)
-            figure.subplot_imshow_grayscale(0, 0,
-                                              workspace.display_data.image,
-                                              title)
-            figure.subplot_imshow_labels(1, 0, workspace.display_data.labeled_image, 
-                                           self.object_name.value)
+            image = workspace.display_data.image
+            labeled_image = workspace.display_data.labeled_image
+            size_excluded_labeled_image = workspace.display_data.size_excluded_labels
+            border_excluded_labeled_image = workspace.display_data.border_excluded_labels
+
+            ax = figure.subplot_imshow_grayscale(0, 0, image, title)
+            figure.subplot_imshow_labels(1, 0, labeled_image, 
+                                         self.object_name.value,
+                                         sharexy = ax)
     
-            if workspace.display_data.image.ndim == 2:
-                # Outline the size-excluded pixels in red
-                outline_img = np.ndarray(shape=(workspace.display_data.image.shape[0],
-                                                   workspace.display_data.image.shape[1],3))
-                outline_img[:,:,0] = workspace.display_data.image 
-                outline_img[:,:,1] = workspace.display_data.image
-                outline_img[:,:,2] = workspace.display_data.image
-            else:
-                outline_img = workspace.display_data.image.copy()
-            #
-            # Stretch the outline image to the full scale
-            #
-            outline_img = stretch(outline_img)
-            
-            # Outline the accepted objects pixels
-            draw_outline(outline_img, workspace.display_data.outline_image,
-                         cpp.get_primary_outline_color())
-            
-            # Outline the size-excluded pixels
-            draw_outline(outline_img,
-                         workspace.display_data.outline_size_excluded_image,
-                         cpp.get_secondary_outline_color())
-            
-            # Outline the border-excluded pixels in yellow
-            draw_outline(outline_img,
-                         workspace.display_data.outline_border_excluded_image,
-                         cpp.get_tertiary_outline_color())
-            
+            cplabels = [
+                dict(name = self.object_name.value,
+                     labels = [labeled_image]),
+                dict(name = "Objects filtered out by size",
+                     labels = [size_excluded_labeled_image]),
+                dict(name = "Objects touching border",
+                     labels = [border_excluded_labeled_image])]
             title = "%s outlines"%(self.object_name.value) 
-            figure.subplot_imshow(0, 1, outline_img, title, normalize=False)
+            figure.subplot_imshow_grayscale(
+                0, 1, image, title, cplabels = cplabels, sharexy = ax)
             
             figure.subplot_table(
                 1, 1, 

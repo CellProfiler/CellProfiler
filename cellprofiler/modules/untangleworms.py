@@ -849,7 +849,6 @@ class UntangleWorms(cpm.CPModule):
                                          labels.shape)
         if self.show_window:
             workspace.display_data.input_image = image.pixel_data
-            workspace.display_data.ijv = ijv
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
         measurements = workspace.measurements
@@ -864,7 +863,10 @@ class UntangleWorms(cpm.CPModule):
             object_names.append(name)
             object_set.add_objects(o, name)
             I.add_object_count_measurements(measurements, name, o.count)
-            
+            if self.show_window:
+                workspace.display_data.overlapping_labels = [
+                    l for l, idx in o.get_labels()]
+                                                                     
             if o.count == 0:
                 center_x = np.zeros(0)
                 center_y = np.zeros(0)
@@ -913,7 +915,11 @@ class UntangleWorms(cpm.CPModule):
             object_set.add_objects(o, name)
             I.add_object_count_measurements(measurements, name, o.count)
             I.add_object_location_measurements(measurements, name, labels, o.count)
-            
+            if self.show_window:
+                workspace.display_data.nonoverlapping_labels = [
+                    l for l, idx in o.get_labels()]
+                                                                     
+                        
             if self.wants_nonoverlapping_outlines:
                 outline_pixels = outline(labels) > 0
                 outline_image = cpi.Image(outline_pixels, parent_image = image)
@@ -931,18 +937,26 @@ class UntangleWorms(cpm.CPModule):
             
     
     def display(self, workspace, figure):
+        from cellprofiler.gui.cpfigure import CPLDM_ALPHA
         if self.mode == MODE_UNTANGLE:
-            figure.set_subplots((2, 1))
-            axes = figure.subplot_imshow_bw(0, 0, workspace.display_data.input_image,
-                                            title = self.image_name.value)
+            figure.set_subplots((1, 1))
+            cplabels = []
             if self.overlap in (OO_BOTH, OO_WITH_OVERLAP):
                 title = self.overlap_objects.value
+                cplabels.append(
+                    dict(name = self.overlap_objects.value,
+                         labels = workspace.display_data.overlapping_labels,
+                         mode = CPLDM_ALPHA))
             else:
                 title = self.nonoverlapping_objects.value
-            figure.subplot_imshow_ijv(1, 0, workspace.display_data.ijv,
-                                      shape = workspace.display_data.input_image.shape,
-                                      title = title,
-                                      sharexy = axes)
+            if self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP):
+                cplabels.append(
+                    dict(name = self.nonoverlapping_objects.value,
+                         labels = workspace.display_data.nonoverlapping_labels))
+            image = workspace.display_data.input_image
+            if image.ndim == 2:
+                figure.subplot_imshow_grayscale(
+                    0, 0, image, title = title, cplabels = cplabels)
         else:
             from matplotlib.path import Path
             from matplotlib.patches import PathPatch

@@ -285,7 +285,6 @@ class ModuleView:
         self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(
             top_panel,
             style=wx.TAB_TRAVERSAL)
-        self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
         self.__module_panel.SetupScrolling(True, True)
         self.__module_panel.BackgroundColour = background_color
         module_settings_box_sizer.Add(self.__module_panel, 1, wx.EXPAND)

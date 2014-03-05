@@ -2151,17 +2151,20 @@ class ExportToDatabase(cpm.CPModule):
 
         columns = self.get_pipeline_measurement_columns(pipeline, 
                                                         image_set_list)
-            
+
+        #
+        # Drop either the unified objects table or the view of it
+        #
+        execute(cursor, 'DROP TABLE IF EXISTS %s' %
+                self.get_table_name(cpmeas.OBJECT), 
+                return_result = False)
+        execute(cursor, 'DROP VIEW IF EXISTS %s' %
+                self.get_table_name(cpmeas.OBJECT), 
+                return_result = False)
+        
         if self.objects_choice != O_NONE:
             # Object table/view
             if self.separate_object_tables == OT_COMBINE:
-                execute(cursor, 'DROP TABLE IF EXISTS %s' %
-                        self.get_table_name(cpmeas.OBJECT), 
-                        return_result = False)
-                # Dropping a per-object table may fail because a view exists with the same name
-                execute(cursor, 'DROP VIEW IF EXISTS %s' %
-                        self.get_table_name(cpmeas.OBJECT), 
-                        return_result = False)
                 statement = self.get_create_object_table_statement(
                     None, pipeline, image_set_list)
                 execute(cursor, statement, return_result = False)
@@ -2175,13 +2178,6 @@ class ExportToDatabase(cpm.CPModule):
                         object_name, pipeline, image_set_list)
                     execute(cursor, statement, return_result=False)
                 if self.separate_object_tables == OT_VIEW:
-                    execute(cursor, 'DROP TABLE IF EXISTS %s' %
-                            self.get_table_name(cpmeas.OBJECT), 
-                            return_result = False)
-                    # Dropping a per-object table may fail because a view exists with the same name
-                    execute(cursor, 'DROP VIEW IF EXISTS %s' %
-                            self.get_table_name(cpmeas.OBJECT), 
-                            return_result = False)
                     statement = self.get_create_object_view_statement(
                         self.get_object_names(pipeline, image_set_list), pipeline, image_set_list)
                     execute(cursor, statement, return_result=False)

@@ -19,7 +19,7 @@ for an image sequence, that is, an image collection such as a time-lapse series 
 (3-D), etc.
 
 <p>CellProfiler can read a wide variety of image formats by using a library called Bio-Formats; 
-see <a href="http://loci.wisc.edu/bio-formats/formats">here</a> 
+see <a href="http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html">here</a> 
 for the formats available. Some image formats are better than others for use in image analysis. Some are 
 <a href="http://www.techterms.com/definition/lossy">"lossy"</a> (information is lost in the conversion 
 to the format) like most JPG/JPEG files; others are 
@@ -161,7 +161,7 @@ class Images(cpm.CPModule):
             selected if you are sure that only images are specified in the list.</li>
             <li><i>%(FILTER_CHOICE_IMAGES)s:</i> Only image files will be passed to downstream
             modules. The permissible image formats are provided by a library called Bio-Formats; see 
-            <a href="http://loci.wisc.edu/bio-formats/formats">here</a> for the formats available.</li>
+            <a href="http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html">here</a> for the formats available.</li>
             <li><i>%(FILTER_CHOICE_CUSTOM)s:</i> Specify custom rules for selecting a subset of 
             the files from the File list panel. This approach is useful if, for example, you 
             drag-and-dropped a folder onto the File list panel which contains a mixture of images 

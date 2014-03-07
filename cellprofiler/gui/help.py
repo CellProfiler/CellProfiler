@@ -1719,7 +1719,7 @@ Both individual files and entire folders can be dragged onto this panel, and as 
 placed onto this panel as needed. As you add files, you will see a listing of the files appear in the panel.</p>
 
 <p>CellProfiler supports a wide variety of image formats, including most of those used in imaging, by using a library called
-Bio-Formats; see <a href="http://loci.wisc.edu/bio-formats/formats">here</a> for the formats available. Some image formats are better 
+Bio-Formats; see <a href="http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html">here</a> for the formats available. Some image formats are better 
 than others for image analysis. Some are <a href="http://www.techterms.com/definition/lossy">"lossy"</a> 
 (information is lost in the conversion to the format) like most JPG/JPEG files; others are 
 <a href="http://www.techterms.com/definition/lossless">lossless</a> (no image information is lost). For image analysis purposes, a 

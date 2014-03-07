@@ -24,7 +24,7 @@ from external_dependencies import get_cellprofiler_jars
 
 logger = logging.getLogger("bioformats")
 
-# See http://www.loci.wisc.edu/software/bio-formats
+# See http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html
 READABLE_FORMATS = ('al3d', 'am', 'amiramesh', 'apl', 'arf', 'avi', 'bmp', 
                     'c01', 'cfg', 'cxd', 'dat', 'dcm', 'dicom', 'dm3', 'dv', 
                     'eps', 'epsi', 'fits', 'flex', 'fli', 'gel', 'gif', 'grey', 

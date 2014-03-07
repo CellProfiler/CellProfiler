@@ -1069,7 +1069,7 @@ class CPFigureFrame(wx.Frame):
         #    continually load defaults from self.subplot_user_params instead of
         #    the default values specified in the function definition.
         kwargs = {'title' : title,
-                  'clear' : clear,
+                  'clear' : False,
                   'colormap' : colormap,
                   'colorbar' : colorbar,
                   'normalize' : normalize,
@@ -1091,7 +1091,6 @@ class CPFigureFrame(wx.Frame):
 
         # and fetch back out
         title = kwargs['title']
-        clear = kwargs['clear']
         colormap = kwargs['colormap']
         colorbar = kwargs['colorbar']
         normalize = kwargs['normalize']

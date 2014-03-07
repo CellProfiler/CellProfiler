@@ -152,6 +152,51 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertEqual(module.offset, 5)
         self.assertEqual(module.color_or_text, D.CT_COLOR)
         self.assertEqual(module.colormap, "jet")
+        self.assertTrue(module.wants_image)
+
+    def test_01_04_load_v5(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130719180707
+ModuleCount:1
+HasImagePlaneDetails:False
+
+DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Display object or image measurements?:Object
+    Select the input objects:Nuclei
+    Measurement to display:AreaShape_Zernike_0_0
+    Select the image on which to display the measurements:DNA
+    Text color:green
+    Name the output image that has the measurements displayed:Zernike
+    Font size (points):10
+    Number of decimals:2
+    Image elements to save:Axes
+    Annotation offset (in pixels):5
+    Display mode:Color
+    Color map:jet
+    Display background image:No
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, D.DisplayDataOnImage))
+        self.assertEqual(module.objects_or_image, D.OI_OBJECTS)
+        self.assertEqual(module.measurement, "AreaShape_Zernike_0_0")
+        self.assertEqual(module.image_name, "DNA")
+        self.assertEqual(module.text_color, "green")
+        self.assertEqual(module.objects_name, "Nuclei")
+        self.assertEqual(module.display_image, "Zernike")
+        self.assertEqual(module.font_size, 10)
+        self.assertEqual(module.decimals, 2)
+        self.assertEqual(module.saved_image_contents, D.E_AXES)
+        self.assertEqual(module.offset, 5)
+        self.assertEqual(module.color_or_text, D.CT_COLOR)
+        self.assertEqual(module.colormap, "jet")
+        self.assertFalse(module.wants_image)
 
     def make_workspace(self, measurement, labels = None, image = None):
         object_set = cpo.ObjectSet()

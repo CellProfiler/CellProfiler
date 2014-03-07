@@ -42,7 +42,7 @@ CT_TEXT = "Text"
 class DisplayDataOnImage(cpm.CPModule):
     module_name = 'DisplayDataOnImage'
     category = 'Data Tools'
-    variable_revision_number = 4
+    variable_revision_number = 5
     
     def create_settings(self):
         """Create your settings by subclassing this function
@@ -86,10 +86,21 @@ class DisplayDataOnImage(cpm.CPModule):
             displaying a single image measurement) or on the objects you
             selected.""")
         
+        self.wants_image = cps.Binary(
+            "Display background image?", True,
+            doc="""Choose whether or not to display the measurements on
+            a background image. Usually, you will want to see the image
+            context for the measurements, but it may be useful to save
+            just the overlay of the text measurements and composite the
+            overlay image and the original image later. Choose "Yes" to
+            display the measurements on top of a background image or "No"
+            to display the measurements on a black background.""")
         self.image_name = cps.ImageNameSubscriber(
             "Select the image on which to display the measurements", cps.NONE, doc="""
             Choose the image to be displayed behind the measurements.
-            This can be any image created or loaded by a previous module.""")
+            This can be any image created or loaded by a previous module.
+            If you have chosen not to display the background image, the image
+            will only be used to determine the dimensions of the displayed image""")
         
         self.color_or_text = cps.Choice(
             "Display mode", [CT_TEXT, CT_COLOR],
@@ -167,7 +178,8 @@ class DisplayDataOnImage(cpm.CPModule):
         return [self.objects_or_image, self.objects_name, self.measurement,
                 self.image_name, self.text_color, self.display_image,
                 self.font_size, self.decimals, self.saved_image_contents,
-                self.offset, self.color_or_text, self.colormap]
+                self.offset, self.color_or_text, self.colormap, 
+                self.wants_image]
     
     def visible_settings(self):
         """The settings that are visible in the UI
@@ -175,7 +187,7 @@ class DisplayDataOnImage(cpm.CPModule):
         result = [self.objects_or_image]
         if self.objects_or_image == OI_OBJECTS:
             result += [self.objects_name]
-        result += [self.measurement, self.image_name]
+        result += [self.measurement, self.wants_image, self.image_name]
         if self.objects_or_image == OI_OBJECTS:
             result += [self.color_or_text]
         if self.use_color_map():
@@ -201,7 +213,11 @@ class DisplayDataOnImage(cpm.CPModule):
         # Get the image
         #
         image = workspace.image_set.get_image(self.image_name.value)
-        workspace.display_data.pixel_data = image.pixel_data
+        if self.wants_image:
+            pixel_data = image.pixel_data
+        else:
+            pixel_data = np.zeros(image.pixel_data.shape[:2])
+        workspace.display_data.pixel_data = pixel_data
         if self.use_color_map():
             workspace.display_data.labels = \
                 workspace.object_set.get_objects(self.objects_name.value).segmented
@@ -213,10 +229,10 @@ class DisplayDataOnImage(cpm.CPModule):
             value = measurements.get_current_image_measurement(
                 self.measurement.value)
             values = [value]
-            x = [image.pixel_data.shape[1] / 2]
+            x = [pixel_data.shape[1] / 2]
             x_offset = np.random.uniform(high=1.0,low=-1.0)
             x[0] += x_offset
-            y = [image.pixel_data.shape[0] / 2]
+            y = [pixel_data.shape[0] / 2]
             y_offset = np.sqrt(1 - x_offset**2)
             y[0] += y_offset
         else:
@@ -255,7 +271,7 @@ class DisplayDataOnImage(cpm.CPModule):
             fig.set_frameon(False)
             if not self.use_color_map():
                 fig.subplots_adjust(0.1,.1,.9,.9,0,0)
-            shape = workspace.display_data.pixel_data.shape
+            shape = pixel_data.shape
             width = float(shape[1]) / fig.dpi
             height = float(shape[0]) / fig.dpi
             fig.set_figheight(height)
@@ -263,7 +279,7 @@ class DisplayDataOnImage(cpm.CPModule):
         elif self.saved_image_contents == E_IMAGE:
             if self.use_color_map():
                 fig.axes[1].set_visible(False)
-            only_display_image(fig, workspace.display_data.pixel_data.shape)
+            only_display_image(fig, pixel_data.shape)
         else:
             if not self.use_color_map():
                 fig.subplots_adjust(.1,.1,.9,.9,0,0)
@@ -308,17 +324,15 @@ class DisplayDataOnImage(cpm.CPModule):
         
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-        figure.clf()
+        ax = figure.subplot(0, 0)
         title = "%s_%s" % (self.objects_name.value, self.measurement.value)
         def imshow_fn(pixel_data):
             if pixel_data.ndim == 3:
-                figure.subplot_imshow_color(0, 0, pixel_data, title=title,
-                                         use_imshow = True)
+                figure.subplot_imshow_color(0, 0, pixel_data, title=title)
             else:
-                figure.subplot_imshow_grayscale(0, 0, pixel_data, title=title,
-                                             use_imshow = True)
+                figure.subplot_imshow_grayscale(0, 0, pixel_data, title=title)
 
-        self.display_on_figure(workspace, figure.subplot(0,0), imshow_fn)
+        self.display_on_figure(workspace, ax, imshow_fn)
         
     def display_on_figure(self, workspace, axes, imshow_fn):
         import matplotlib
@@ -392,6 +406,11 @@ class DisplayDataOnImage(cpm.CPModule):
             setting_values = setting_values + [ 
                 CT_TEXT, cpprefs.get_default_colormap() ]
             variable_revision_number = 4
+            
+        if variable_revision_number == 4:
+            # added wants_image
+            setting_values = setting_values + [ cps.YES ]
+            variable_revision_number = 5
         
         return setting_values, variable_revision_number, from_matlab
         

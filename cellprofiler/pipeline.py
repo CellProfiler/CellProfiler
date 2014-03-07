@@ -1244,8 +1244,9 @@ class Pipeline(object):
         fd.write("%s:%s\n" % (H_GIT_HASH, cpversion.git_hash))
         fd.write("%s:%d\n" % (H_MODULE_COUNT, len(self.__modules)))
         fd.write("%s:%s\n" % (H_HAS_IMAGE_PLANE_DETAILS, str(save_image_plane_details)))
-        attributes = ('module_num','svn_version','variable_revision_number',
-                      'show_window','notes','batch_state','enabled')
+        attributes = (
+            'module_num', 'svn_version', 'variable_revision_number',
+            'show_window', 'notes', 'batch_state', 'enabled', 'wants_pause')    
         notes_idx = 4
         for module in self.__modules:
             if ((modules_to_save is not None) and 

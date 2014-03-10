@@ -32,7 +32,10 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E 
+from cellprofiler.modules import identifyprimaryobjects
 from cellprofiler.modules.tests import example_images_directory
+
+OBJECTS_NAME = "MyObjects"
 
 class TestExportToSpreadsheet(unittest.TestCase):
 
@@ -704,7 +707,71 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(module.object_groups[0].wants_automatic_file_name)
         self.assertTrue(module.wants_prefix)
         self.assertEqual(module.prefix, "Fred")
+        self.assertTrue(module.wants_overwrite_without_warning)
 
+    def test_000_11_load_v11(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130503182624
+ModuleCount:1
+HasImagePlaneDetails:False
+
+ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select or enter the column delimiter:Comma (",")
+    Add image metadata columns to your object data file?:No
+    Limit output to a size that is allowed in Excel?:No
+    Select the columns of measurements to export?:No
+    Calculate the per-image mean values for object measurements?:No
+    Calculate the per-image median values for object measurements?:No
+    Calculate the per-image standard deviation values for object measurements?:No
+    Output file location:Elsewhere...\x7C/imaging/analysis/2005Projects
+    Create a GenePattern GCT file?:No
+    Select source of sample row name:Image filename
+    Select the image to use as the identifier:GFP
+    Select the metadata to use as the identifier:Metadata_GeneName
+    Export all measurements, using default file names?:Yes
+    Press button to select measurements to export:
+    Representation of Nan/Inf:Null
+    Add a prefix to file names?:Yes
+    Filename prefix\x7c:Fred
+    Overwrite existing files?:No
+    Data to export:Nuclei
+    Combine these object measurements with those of the previous object?:No
+    File name:Output.csv
+    Use the object name for the file name?:Yes
+
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.ExportToSpreadsheet))
+        self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
+        self.assertFalse(module.add_metadata)
+        self.assertFalse(module.excel_limits)
+        self.assertFalse(module.wants_aggregate_means)
+        self.assertFalse(module.wants_aggregate_medians)
+        self.assertEqual(module.directory.dir_choice, E.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.directory.custom_path,
+                         "/imaging/analysis/2005Projects")
+        self.assertFalse(module.wants_genepattern_file)
+        self.assertEqual(module.how_to_specify_gene_name, 
+                         E.GP_NAME_FILENAME)
+        self.assertEqual(module.use_which_image_for_gene_name, "GFP")
+        self.assertEqual(module.gene_name_column, "Metadata_GeneName")
+        self.assertTrue(module.wants_everything)
+        self.assertEqual(module.nan_representation, E.NANS_AS_NULLS)
+        self.assertEqual(module.object_groups[0].name, "Nuclei")
+        self.assertFalse(module.object_groups[0].previous_file)
+        self.assertEqual(module.object_groups[0].file_name, "Output.csv")
+        self.assertTrue(module.object_groups[0].wants_automatic_file_name)
+        self.assertTrue(module.wants_prefix)
+        self.assertEqual(module.prefix, "Fred")
+        self.assertFalse(module.wants_overwrite_without_warning)
+    
     def test_00_00_no_measurements(self):
         '''Test an image set with objects but no measurements'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1448,6 +1515,73 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
             
+    def test_04_06_overwrite_files_everything(self):
+        pipeline = cpp.Pipeline()
+        #
+        # This will give ExportToSpreadsheet some objects to deal with
+        #
+        idp = identifyprimaryobjects.IdentifyPrimaryObjects()
+        idp.module_num = 1
+        idp.object_name.value = OBJECTS_NAME
+        pipeline.add_module(idp)
+        
+        module = E.ExportToSpreadsheet()
+        module.wants_everything.value = True
+        module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
+        module.directory.custom_path = self.output_dir
+        module.module_num = 2
+        pipeline.add_module(module)
+        
+        m = self.make_measurements()
+        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+        for object_name in (cpmeas.EXPERIMENT, cpmeas.IMAGE, OBJECTS_NAME):
+            file_name = module.make_objects_file_name(
+                object_name, workspace, 1)
+            with open(file_name, "w") as fd:
+                fd.write("Hello, world.")
+            module.wants_overwrite_without_warning.value = True
+            self.assertTrue(module.prepare_run(workspace))
+            module.wants_overwrite_without_warning.value = False
+            self.assertFalse(module.prepare_run(workspace))
+            os.remove(file_name)
+            self.assertTrue(module.prepare_run(workspace))
+            
+    def test_04_07_overwrite_files_group(self):
+        pipeline = cpp.Pipeline()
+        #
+        # This will give ExportToSpreadsheet some objects to deal with
+        #
+        idp = identifyprimaryobjects.IdentifyPrimaryObjects()
+        idp.module_num = 1
+        idp.object_name.value = OBJECTS_NAME
+        pipeline.add_module(idp)
+        
+        module = E.ExportToSpreadsheet()
+        module.wants_everything.value = False
+        module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
+        module.directory.custom_path = self.output_dir
+        g = module.object_groups[0]
+        g.name.value =  OBJECTS_NAME
+        g.wants_automatic_file_name.value = False
+        g.file_name.value = "\\g<tag>.csv"
+        module.module_num = 2
+        pipeline.add_module(module)
+        
+        m = self.make_measurements(dict(Metadata_tag=["foo", "bar"]))
+        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+
+        for image_number in m.get_image_numbers():
+            file_name = module.make_objects_file_name(
+                OBJECTS_NAME, workspace, image_number, g)
+            with open(file_name, "w") as fd:
+                fd.write("Hello, world.")
+            module.wants_overwrite_without_warning.value = True
+            self.assertTrue(module.prepare_run(workspace))
+            module.wants_overwrite_without_warning.value = False
+            self.assertFalse(module.prepare_run(workspace))
+            os.remove(file_name)
+            self.assertTrue(module.prepare_run(workspace))
+            
     def test_05_01_aggregate_image_columns(self):
         """Test output of aggregate object data for images"""
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1871,6 +2005,27 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         pipeline.add_listener(error_callback)
         return pipeline, module, name
     
+    def make_measurements(self, d = None):
+        '''Make a measurements object
+        
+        d - a dictionary whose keywords are the measurement names and whose
+            values are sequences of measurement values per image set
+        '''
+        if d is None:
+            d = {cpmeas.GROUP_NUMBER: [0],
+                 cpmeas.GROUP_INDEX: [0]}
+        m = cpmeas.Measurements()
+        for k, v in d.iteritems():
+            m[cpmeas.IMAGE, k, np.arange(len(v))+1] = v
+        image_numbers = m.get_image_numbers()
+        if cpmeas.GROUP_NUMBER not in d:
+            m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers] = \
+                [0] * len(image_numbers)
+        if cpmeas.GROUP_INDEX not in d:
+            m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers] = \
+                np.arange(len(image_numbers))
+        return m
+    
     def add_gct_settings(self,output_csv_filename):
         module = E.ExportToSpreadsheet()
         module.module_num = 2
@@ -2013,6 +2168,28 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             os.remove(input_filename)
             os.remove(output_csv_filename)
+            
+    def test_08_04_test_overwrite_gct_file(self):
+        output_csv_filename = os.path.join(
+            self.output_dir, "%s.gct" % cpmeas.IMAGE)
+        pipeline = cpp.Pipeline()
+        m = self.make_measurements()
+        module = E.ExportToSpreadsheet()
+        module.wants_genepattern_file.value = True
+        module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
+        module.directory.custom_path = self.output_dir
+        module.wants_prefix.value = False
+        module.module_num = 1
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+        self.assertEqual(output_csv_filename, module.make_gct_file_name(
+            workspace, 1))
+
+        self.assertTrue(module.prepare_run(workspace))
+        with open(output_csv_filename, "w") as fd:
+            fd.write("Hello, world.\n")
+        module.wants_overwrite_without_warning.value = False
+        self.assertFalse(module.prepare_run(workspace))
 
     def test_09_01_relationships_file(self):
         r = np.random.RandomState()
@@ -2083,3 +2260,24 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             except:
                 pass
 
+    def test_09_02_test_overwrite_relationships_file(self):
+        output_csv_filename = os.path.join(self.output_dir, "my_file.csv")
+        pipeline = cpp.Pipeline()
+        m = self.make_measurements()
+        module = E.ExportToSpreadsheet()
+        module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
+        module.directory.custom_path = self.output_dir
+        module.wants_prefix.value = False
+        module.wants_everything.value = False
+        g = module.object_groups[0]
+        g.name.value = E.OBJECT_RELATIONSHIPS
+        g.wants_automatic_file_name.value = False
+        g.file_name.value = "my_file.csv"
+        module.module_num = 1
+        pipeline.add_module(module)
+
+        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+        self.assertTrue(module.prepare_run(workspace))
+        with open(output_csv_filename, "w") as fd:
+            fd.write("Hello, world.\n")
+        self.assertFalse(module.prepare_run(workspace))

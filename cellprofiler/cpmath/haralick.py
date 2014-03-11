@@ -28,8 +28,7 @@ def normalized_per_object(image, labels):
     """Normalize the intensities of each object to the [0, 1] range."""
     nobjects = labels.max()
     objects = np.arange(nobjects + 1)
-    lmax = maximum(image, labels, objects)
-    lmin = minimum(image, labels, objects)
+    lmin, lmax = scind.extrema(image, labels, objects)[:2]
     # Divisor is the object's max - min, or 1 if they are the same.
     divisor = np.ones((nobjects + 1,))
     divisor[lmax > lmin] = (lmax - lmin)[lmax > lmin]

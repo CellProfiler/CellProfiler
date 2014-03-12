@@ -371,7 +371,7 @@ class PipelineController:
         self.__tcp_analysis_sizer.Add(self.__resume_button, 1, wx.EXPAND)
         
         self.__stop_analysis_button = BitmapLabelButton(
-            panel, bitmap = stop_bmp, label = 'Stop analysis')
+            panel, bitmap = stop_bmp, label = 'Stop Analysis')
         self.__stop_analysis_button.Bind(wx.EVT_BUTTON, self.on_stop_running)
         self.__stop_analysis_button.SetToolTipString(
             "Cancel the analysis run")

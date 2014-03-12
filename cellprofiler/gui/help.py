@@ -834,7 +834,7 @@ show you the total number of image sets, the number of image sets completed, the
 time remaining in the run.
 <p>If you need to pause analysis, click the "<img src="memory:%(PAUSE_ANALYSIS_BUTTON)s">&nbsp;Pause" button, then click the 
 "Resume" button to continue. If you
-want to terminate analysis, click the "<img src="memory:%(STOP_ANALYSIS_BUTTON)s">&nbsp;Stop analysis" button.</p>
+want to terminate analysis, click the "<img src="memory:%(STOP_ANALYSIS_BUTTON)s">&nbsp;Stop Analysis" button.</p>
 <p>If your computer has multiple processors, CellProfiler will take advantage of them by starting multiple copies
 of itself to process the image sets in parallel. You can set the number of <i>workers</i> (i.e.,copies of 
 CellProfiler activated) under <i>File > Preferences...</i></p>

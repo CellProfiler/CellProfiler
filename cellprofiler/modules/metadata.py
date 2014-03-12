@@ -961,6 +961,8 @@ class Metadata(cpm.CPModule):
             ipd_metadata = self.get_ipd_metadata(ipd)
             metadata.append(ipd_metadata)
             columns.update(ipd_metadata.keys())
+        columns.discard(COL_SERIES)
+        columns.discard(COL_INDEX)
         columns = [COL_PATH, COL_SERIES, COL_INDEX] + \
             sorted(list(columns))
         self.table.clear_columns()

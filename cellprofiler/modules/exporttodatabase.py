@@ -2219,7 +2219,7 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
     field text not null,
     value longtext,
     constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key 
-    (experiment_id, object_name(255), field(255)))""" % globals()
+    (experiment_id, object_name(200), field(200)))""" % globals()
         else:
             create_experiment_properties = """
 CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (

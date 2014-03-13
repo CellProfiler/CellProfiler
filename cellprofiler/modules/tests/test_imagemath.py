@@ -503,6 +503,21 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
 
+    def test_05_02_multiply_binary(self):
+        # Regression test of issue # 42
+        #
+        # Multiplying two binary images should yield a binary image
+        #
+        def fn(module):
+            module.operation.value = I.O_MULTIPLY
+            module.truncate_low.value = False
+        r = np.random.RandomState()
+        r.seed(52)
+        images = [{ 'pixel_data':np.random.uniform(size=(10,10)) > .5 }
+                      for i in range(2)]
+        output = self.run_imagemath(images, fn)
+        self.assertTrue(output.pixel_data.dtype == np.bool)
+        
     def test_06_01_divide(self):
         def fn(module):
             module.operation.value = I.O_DIVIDE

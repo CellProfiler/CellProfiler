@@ -278,8 +278,9 @@ class ImageMath(cpm.CPModule):
         #
         # Multiply images by their factors
         #
-        for i in range(len(image_factors)):
-            pixel_data[i] = pixel_data[i] * image_factors[i]
+        for i, image_factor in enumerate(image_factors):
+            if image_factor != 1:
+                pixel_data[i] = pixel_data[i] * image_factors[i]
 
         output_pixel_data = pixel_data[0]
         output_mask = masks[0]
@@ -294,7 +295,11 @@ class ImageMath(cpm.CPModule):
             elif opval == O_DIFFERENCE:
                 op = lambda x, y: np.abs(np.subtract(x, y))
             elif opval == O_MULTIPLY:
-                op = np.multiply
+                if output_pixel_data.dtype == np.bool and \
+                   all([pd.dtype == np.bool for pd in pixel_data[1:]]):
+                    op = np.logical_and
+                else:
+                    op = np.multiply
             elif opval == O_MAXIMUM:
                 op = np.maximum
             else:

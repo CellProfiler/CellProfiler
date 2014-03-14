@@ -496,6 +496,12 @@ class PipelineController:
         
         filename - the path to the file to open. It should already be locked.
         '''
+        if not os.path.isfile(filename):
+            wx.MessageBox("Could not find project file: %s" % filename,
+                          caption = "Error opening project file",
+                          parent = self.__frame,
+                          style = wx.OK | wx.ICON_ERROR)
+            return
         if self.is_running():
             # Defensive programming - the user shouldn't be able
             # to do this.
@@ -740,6 +746,12 @@ class PipelineController:
         return self.__analysis is not None
     
     def do_load_pipeline(self, pathname):
+        if not os.path.isfile(pathname):
+            wx.MessageBox("Could not find pipeline file: %s." % pathname,
+                          caption="Error loading pipeline file",
+                          parent = self.__frame,
+                          style=wx.OK | wx.ICON_ERROR)
+            return
         try:
             if self.__pipeline.test_mode:
                 self.stop_debugging()

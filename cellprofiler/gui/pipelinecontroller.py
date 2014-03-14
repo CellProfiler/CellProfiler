@@ -1074,10 +1074,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             data.add_files(
                 [url.encode('utf-8') for url in urls],
                 plate, well, site, channel_names = channel)
-        if self.__plate_viewer is None:
-            self.__pv_frame = wx.Frame(self.__frame, title = "Plate viewer")
-        else:
-            self.__pv_frame.DestroyChildren()
+        if self.__plate_viewer is not None:
+            self.__pv_frame.Destroy()
+        self.__pv_frame = wx.Frame(self.__frame, title = "Plate viewer")
         self.__plate_viewer = pv.PlateViewer(self.__pv_frame, data)
         self.__pv_frame.Fit()
         self.__pv_frame.Show()

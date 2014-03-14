@@ -846,15 +846,23 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     object_fraction = float(object_fraction[:-1])/100.0
                 else:
                     object_fraction = float(object_fraction)
+                if self.threshold_scope == TS_AUTOMATIC:
+                    threshold_range_min = 0
+                    threshold_range_max = 1
+                    threshold_correction_factor = 1
+                else:
+                    threshold_range_min = self.threshold_range.min
+                    threshold_range_max = self.threshold_range.max
+                    threshold_correction_factor = self.threshold_correction_factor.value
                 local_threshold, global_threshold = get_threshold(
                     self.threshold_algorithm,
                     self.threshold_modifier,
                     img, 
                     mask = mask,
                     labels = labels,
-                    threshold_range_min = self.threshold_range.min,
-                    threshold_range_max = self.threshold_range.max,
-                    threshold_correction_factor = self.threshold_correction_factor.value,
+                    threshold_range_min = threshold_range_min,
+                    threshold_range_max = threshold_range_max,
+                    threshold_correction_factor = threshold_correction_factor,
                     object_fraction = object_fraction,
                     two_class_otsu = self.two_class_otsu.value == O_TWO_CLASS,
                     use_weighted_variance = self.use_weighted_variance.value == O_WEIGHTED_VARIANCE,

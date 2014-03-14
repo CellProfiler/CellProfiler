@@ -315,6 +315,8 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.threshold_range.min = .7
         x.threshold_range.max = 1
         x.threshold_correction_factor.value = .95
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = I.TM_MCT
         x.exclude_size.value = False
         x.watershed_method.value = ID.WA_NONE
         img = two_cell_image()
@@ -930,6 +932,32 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
             self.assertEqual(output.count, 4)
             self.assertTrue(np.all(output.segmented[expected == 0] == 0))
             self.assertEqual(len(np.unique(output.segmented[expected == 1])), 1)
+            
+    def test_02_14_automatic(self):
+        # Regression test of issue 1071 - automatic should yield same
+        # threshold regardless of manual parameters
+        #
+        r = np.random.RandomState()
+        r.seed(214)
+        image = r.uniform(size = (20, 20))
+        workspace, module = self.make_workspace(image)
+        assert isinstance(module, ID.IdentifyPrimaryObjects)
+        module.threshold_scope.value = I.TS_AUTOMATIC
+        module.run(workspace)
+        m = workspace.measurements
+        orig_threshold = m[cpmeas.IMAGE, I.FF_FINAL_THRESHOLD % OBJECTS_NAME]
+        workspace, module = self.make_workspace(image)
+        module.threshold_scope.value = I.TS_AUTOMATIC
+        module.threshold_method.value = I.TM_OTSU
+        module.threshold_smoothing_choice.value = I.TSM_MANUAL
+        module.threshold_smoothing_scale.value = 100
+        module.threshold_correction_factor.value = .1
+        module.threshold_range.min = .8
+        module.threshold_range.max = .81
+        module.run(workspace)
+        m = workspace.measurements
+        threshold = m[cpmeas.IMAGE, I.FF_FINAL_THRESHOLD % OBJECTS_NAME]
+        self.assertEqual(threshold, orig_threshold)
             
     def test_04_01_load_matlab_12(self):
         """Test loading a Matlab version 12 IdentifyPrimAutomatic pipeline

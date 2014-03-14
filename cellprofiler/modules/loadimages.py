@@ -496,6 +496,7 @@ class LoadImages(cpmodule.CPModule):
             'Type the regular expression that finds metadata in the subfolder path',
             '.*[\\\\/](?P<Date>.*)[\\\\/](?P<Run>.*)$',
             get_example_fn = example_path_fn,
+            guess = cps.RegexpText.GUESS_FOLDER,
             doc="""
             <i>(Used only if you want to extract metadata from the path)</i><br>
             Enter the regular expression for extracting the metadata from the 

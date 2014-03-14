@@ -16,34 +16,49 @@ import re
 import wx
 import wx.stc
 
-def edit_regexp(parent, regexp, test_text):
-    frame = RegexpDialog(parent, size=(500,200),
-                         style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-    frame.value = regexp
-    frame.test_text = test_text
-    if frame.ShowModal():
-        return frame.value
-    return None
-
 STYLE_NO_MATCH = 0
 STYLE_MATCH = 1
 STYLE_FIRST_LABEL = 2
 STYLE_ERROR = 31
 
 UUID_REGEXP = "[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}"
-RE_GUESSES = [
+RE_FILENAME_GUESSES = [
     # This is the generic naming convention for fluorescent microscopy images
     "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)f(?P<Site>[0-9]{2})d(?P<Dye>[0-9])\\.tif$",
-    # A full-well image with a UUID at the end
-    "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_w(?P<Wavelength>[0-9])_" + UUID_REGEXP + "\\.tif$" ,
+    # Molecular devices single site
+    "^(?P<ExperimentName>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_w(?P<Wavelength>[0-9])_?" + UUID_REGEXP + "\\.tif$" ,
     # Plate / well / site / channel without UUID
     "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])\\.tif$",
-    # Plate / well / site / channel with UUID
-    '^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])' + UUID_REGEXP + '\\.tif$',
+    # Molecular devices multi-site
+    '^(?P<ExperimentName>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])' + UUID_REGEXP + '\\.tif$',
+    # Molecular devices multi-site, single wavelength
+    '^(?P<ExperimentName>.*)_(?P<Well>[A-Za-z][0-9]{2})_s(?P<Site>[0-9])'+ UUID_REGEXP,
     # Plate / well / [UUID]
-    '^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_\\[' + UUID_REGEXP + '\\]\\.tif$'
+    '^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_\\[' + UUID_REGEXP + '\\]\\.tif$',
+    # Cellomics
+    '^(?P<ExperimentName>.*)_(?P<Well>[A-Za-z][0-9]{1,2})f(?P<Site>[0-9]{1,2})d(?P<Wavelength>[0-9])',
+    # BD Pathway
+    '^(?P<Wavelength>.*) - n(?P<StackSlice>[0-9]{6})'
     # Please add more guesses below
     ]
+
+RE_FOLDER_GUESSES = [
+    # BD Pathway
+    r".*[\\/](?P<Plate>[^\\/]+)[\\/](?P<Well>[A-Za-z][0-9]{2})",
+    # Molecular devices
+    r".*[\\/](?P<Date>\d{4}-\d{1,2}-\d{1,2})[\\/](?P<PlateID>.*)$"
+    # Please add more guesses below
+    ]
+
+def edit_regexp(parent, regexp, test_text, guesses = RE_FILENAME_GUESSES):
+    frame = RegexpDialog(parent, size=(500,200),
+                         style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+    frame.value = regexp
+    frame.test_text = test_text
+    frame.guesses = guesses
+    if frame.ShowModal():
+        return frame.value
+    return None
 
 class RegexpDialog(wx.Dialog):
     def __init__(self, *args,**varargs):
@@ -51,6 +66,7 @@ class RegexpDialog(wx.Dialog):
         super(RegexpDialog,self).__init__(*args,**varargs)
         self.__value = "Not initialized"
         self.__test_text = "Not initialized"
+        self.__guesses = RE_FILENAME_GUESSES
         self.font = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT) 
         self.error_font = wx.SystemSettings.GetFont(wx.SYS_ANSI_VAR_FONT)
         temp = wx.ClientDC(self)
@@ -165,7 +181,7 @@ class RegexpDialog(wx.Dialog):
     
     def on_guess(self, event):
         sample = self.test_text_ctl.Value
-        for guess in RE_GUESSES:
+        for guess in self.guesses:
             m = re.match(guess, sample)
             if m is not None:
                 self.regexp_display.Text = guess
@@ -269,6 +285,15 @@ class RegexpDialog(wx.Dialog):
         self.refresh_text()
 
     test_text = property(get_test_text, set_test_text)
+    
+    def get_guesses(self):
+        '''The guess regexps used when the user presses the "guess" button'''
+        return self.__guesses
+    
+    def set_guesses(self, value):
+        self.__guesses = value
+        
+    guesses = property(get_guesses, set_guesses)
 
 ####################
 #

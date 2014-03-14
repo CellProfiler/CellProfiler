@@ -376,6 +376,7 @@ class Metadata(cpm.CPModule):
             "Regular expression",
             '(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$',
             get_example_fn = self.example_directory_fn,
+            guess = cps.RegexpText.GUESS_FOLDER,
             doc="""
             <i>(Used only if you want to extract metadata from the path)</i><br>
             Enter the regular expression for extracting the metadata from the 

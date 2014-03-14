@@ -261,7 +261,187 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         module = pipeline.modules()[5]
         self.assertEqual(len(module.images),2)
         self.assertAlmostEqual(module.addend.value, .3)
-    
+        
+    def test_01_03_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20140124151645
+GitHash:0c7fb94
+ModuleCount:5
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    :
+    Filter images?:Images only
+    Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Extract metadata?:No
+    Metadata data type:Text
+    Metadata types:{}
+    Extraction method count:1
+    Metadata extraction method:Extract from file/folder names
+    Metadata source:File name
+    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Extract metadata from:All images
+    Select the filtering criteria:and (file does contain "")
+    Metadata file location:
+    Match file and image metadata:\x5B\x5D
+    Use case insensitive matching?:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Assign a name to:All images
+    Select the image type:Grayscale image
+    Name to assign these images:DNA
+    Match metadata:\x5B\x5D
+    Image set matching method:Order
+    Set intensity range from:Image metadata
+    Assignments count:1
+    Single images count:0
+    Select the rule criteria:and (file does contain "")
+    Name to assign these images:DNA
+    Name to assign these objects:Cell
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedOutlines
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Do you want to group your images?:No
+    grouping metadata count:1
+    Metadata category:None
+
+ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Operation:Log transform (base 2)
+    Raise the power of the result by:1.5
+    Multiply the result by:0.5
+    Add to result:0.1
+    Set values less than 0 equal to 0?:Yes
+    Set values greater than 1 equal to 1?:No
+    Ignore the image masks?:Yes
+    Name the output image:LogTransformed
+    Image or measurement?:Image
+    Select the first image:DNA
+    Multiply the first image by:1.2
+    Measurement:
+    Image or measurement?:Measurement
+    Select the second image:
+    Multiply the second image by:1.5
+    Measurement:Count_Nuclei
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, I.ImageMath))
+        self.assertEqual(module.operation, I.O_LOG_TRANSFORM_LEGACY)
+        self.assertEqual(module.exponent, 1.5)
+        self.assertEqual(module.after_factor, 0.5)
+        self.assertEqual(module.addend, 0.1)
+        self.assertTrue(module.truncate_low)
+        self.assertFalse(module.truncate_high)
+        self.assertTrue(module.ignore_mask)
+        self.assertEqual(module.output_image_name, "LogTransformed")
+        self.assertEqual(module.images[0].image_or_measurement, I.IM_IMAGE)
+        self.assertEqual(module.images[0].image_name, "DNA")
+        self.assertEqual(module.images[0].factor, 1.2)
+        self.assertEqual(module.images[1].image_or_measurement, I.IM_MEASUREMENT)
+        self.assertEqual(module.images[1].measurement, "Count_Nuclei")
+        self.assertEqual(module.images[1].factor, 1.5)
+
+    def test_01_04_load_v4(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20140124151645
+GitHash:0c7fb94
+ModuleCount:5
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    :
+    Filter images?:Images only
+    Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Extract metadata?:No
+    Metadata data type:Text
+    Metadata types:{}
+    Extraction method count:1
+    Metadata extraction method:Extract from file/folder names
+    Metadata source:File name
+    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Extract metadata from:All images
+    Select the filtering criteria:and (file does contain "")
+    Metadata file location:
+    Match file and image metadata:\x5B\x5D
+    Use case insensitive matching?:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Assign a name to:All images
+    Select the image type:Grayscale image
+    Name to assign these images:DNA
+    Match metadata:\x5B\x5D
+    Image set matching method:Order
+    Set intensity range from:Image metadata
+    Assignments count:1
+    Single images count:0
+    Select the rule criteria:and (file does contain "")
+    Name to assign these images:DNA
+    Name to assign these objects:Cell
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedOutlines
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Do you want to group your images?:No
+    grouping metadata count:1
+    Metadata category:None
+
+ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Operation:Log transform (base 2)
+    Raise the power of the result by:1.5
+    Multiply the result by:0.5
+    Add to result:0.1
+    Set values less than 0 equal to 0?:Yes
+    Set values greater than 1 equal to 1?:No
+    Ignore the image masks?:Yes
+    Name the output image:LogTransformed
+    Image or measurement?:Image
+    Select the first image:DNA
+    Multiply the first image by:1.2
+    Measurement:
+    Image or measurement?:Measurement
+    Select the second image:
+    Multiply the second image by:1.5
+    Measurement:Count_Nuclei
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, I.ImageMath))
+        self.assertEqual(module.operation, I.O_LOG_TRANSFORM)
+        self.assertEqual(module.exponent, 1.5)
+        self.assertEqual(module.after_factor, 0.5)
+        self.assertEqual(module.addend, 0.1)
+        self.assertTrue(module.truncate_low)
+        self.assertFalse(module.truncate_high)
+        self.assertTrue(module.ignore_mask)
+        self.assertEqual(module.output_image_name, "LogTransformed")
+        self.assertEqual(module.images[0].image_or_measurement, I.IM_IMAGE)
+        self.assertEqual(module.images[0].image_name, "DNA")
+        self.assertEqual(module.images[0].factor, 1.2)
+        self.assertEqual(module.images[1].image_or_measurement, I.IM_MEASUREMENT)
+        self.assertEqual(module.images[1].measurement, "Count_Nuclei")
+        self.assertEqual(module.images[1].factor, 1.5)
+        
     def run_imagemath(self, images, modify_module_fn=None, measurement = None):
         '''Run the ImageMath module, returning the image created
         
@@ -575,6 +755,17 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         '''Test log transform of an image'''
         def fn(module):
             module.operation.value = I.O_LOG_TRANSFORM
+            module.truncate_low.value = False
+        
+        np.random.seed(0)
+        image = np.random.uniform(size=(10,10)).astype(np.float32)
+        expected = np.log2(image+1)
+        output = self.run_imagemath([{ 'pixel_data': image}], fn)
+        self.check_expected(output, expected)
+        
+    def test_09_02_log_transform_legacy(self):
+        def fn(module):
+            module.operation.value = I.O_LOG_TRANSFORM_LEGACY
             module.truncate_low.value = False
         
         np.random.seed(0)

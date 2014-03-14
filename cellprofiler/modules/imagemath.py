@@ -42,6 +42,7 @@ O_AVERAGE = "Average"
 O_MAXIMUM = "Maximum"
 O_INVERT = "Invert"
 O_COMPLEMENT = "Complement"
+O_LOG_TRANSFORM_LEGACY = "Log transform (legacy)"
 O_LOG_TRANSFORM = "Log transform (base 2)"
 O_NONE = "None"
 # Combine is now obsolete - done by Add now, but we need the string for upgrade_settings
@@ -62,7 +63,7 @@ FIXED_SETTING_COUNT = 8
 class ImageMath(cpm.CPModule):
     
     category = "Image Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     module_name = "ImageMath"
 
     def create_settings(self):
@@ -75,7 +76,7 @@ class ImageMath(cpm.CPModule):
         # other settings
         self.operation = cps.Choice(
             "Operation", 
-            [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM, O_INVERT, O_LOG_TRANSFORM, O_NONE], doc="""
+            [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM, O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NONE], doc="""
             Select the operation to perform. Note that if more than two images are chosen, 
             then operations will be performed sequentially from first to last, e.g., 
             for "Divide", (Image1 / Image2) / Image3
@@ -93,7 +94,9 @@ class ImageMath(cpm.CPModule):
             <li><i>%(O_MAXIMUM)s:</i> Returns the element-wise maximum value at each pixel location.</li>   
             <li><i>%(O_INVERT)s:</i> Subtracts the image intensities from 1. This makes the darkest
             color the brightest and vice-versa.</li>
-            <li><i>%(O_LOG_TRANSFORM)s</i> Log transforms each pixel's intensity. </li>
+            <li><i>%(O_LOG_TRANSFORM)s</i> Log transforms each pixel's intensity. 
+            The actual function is log<sub>2</sub>(image + 1), transforming values from 0 to 1 into values from 0 to 1.</li>
+            <li><i>%(O_LOG_TRANSFORM_LEGACY)s</i> Log<sub>2</sub> transform for backwards compatibility.</li>
             <li><i>%(O_NONE)s</i> This option is useful if you simply want to select some of the later 
             options in the module, such as adding, multiplying, or exponentiating your image by a constant.</li>
             </ul> 
@@ -243,7 +246,8 @@ class ImageMath(cpm.CPModule):
         image_factors = [image.factor.value for image in self.images]
         wants_image = [image.image_or_measurement == IM_IMAGE
                        for image in self.images]
-        if self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_NONE):
+        if self.operation.value in \
+           (O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NONE):
             # these only operate on the first image
             image_names = image_names[:1]
             image_factors = image_factors[:1]
@@ -323,6 +327,8 @@ class ImageMath(cpm.CPModule):
         elif opval == O_INVERT:
             output_pixel_data = 1 - output_pixel_data 
         elif opval == O_LOG_TRANSFORM:
+            output_pixel_data = np.log2(output_pixel_data+1)
+        elif opval == O_LOG_TRANSFORM_LEGACY:
             output_pixel_data = np.log2(output_pixel_data)
         elif opval == O_NONE:
             pass
@@ -571,4 +577,9 @@ class ImageMath(cpm.CPModule):
             new_setting_values.insert(6, 'No')
             setting_values = new_setting_values
             variable_revision_number = 3
+        if (not from_matlab) and variable_revision_number == 3:
+            # Log transform -> legacy log transform
+            if setting_values[0] == O_LOG_TRANSFORM:
+                setting_values = [O_LOG_TRANSFORM_LEGACY] + setting_values[1:]
+            variable_revision_number = 4
         return setting_values, variable_revision_number, from_matlab

@@ -8,7 +8,7 @@ a pipeline.</b>
 placeholders if CellProfiler is run programatically. For example,
 another program, e.g., a plugin to ImageJ, is provided with 
 a CellProfiler pipeline. This program should then replace the input
-modules with <b>InputExternal<b> modules and prompt the user what inputs 
+modules with <b>InputExternal</b> modules and prompt the user what inputs 
 should be supplied to the pipeline through <b>InputExternal</b>. The program 
 should also specify which inputs are to be sent back to the source program 
 via <b>OutputExternal</b>. The calling program would insert the images into 

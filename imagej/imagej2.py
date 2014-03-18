@@ -403,13 +403,16 @@ def get_command_service(context):
             self.o = command_service
         run = J.make_method(
             "run", 
-            "(Limagej/module/ModuleInfo;Ljava/util/Map;)"
+            "(Limagej/command/CommandInfo;ZLjava/util/Map;)"
             "Ljava/util/concurrent/Future;",
             doc = """Run the command associated with a ModuleInfo
             
             Runs the command with pre and post processing plugins.
             
             module_info - the ModuleInfo that defines a command
+            
+            process - True to run pre and post processing on command, False
+                      to execute as-is.
             
             inputs - a java.util.map of parameter name to value
             
@@ -666,7 +669,7 @@ class Axes(object):
     
     def get_named_axis(self, axis_name):
         return J.get_static_field("net/imglib2/meta/Axes", axis_name, 
-                                  "Lnet/imglib2/meta/Axes;")
+                                  "Lnet/imglib2/meta/AxisType;")
     @property
     def X(self):
         return self.get_named_axis("X")
@@ -740,7 +743,7 @@ def create_overlay(context, mask):
                   mask.flatten(), 0, strides, img)
     roi = J.make_instance(
         "net/imglib2/roi/BinaryMaskRegionOfInterest",
-        "(Lnet/imglib2/img/Img;)V", img)
+        "(Lnet/imglib2/RandomAccessibleInterval;)V", img)
     overlay = J.make_instance(
         "imagej/data/overlay/BinaryMaskOverlay",
         "(Lorg/scijava/Context;Lnet/imglib2/roi/BinaryMaskRegionOfInterest;)V", 
@@ -808,22 +811,21 @@ def wrap_dataset(dataset):
     class Dataset(object):
         def __init__(self, o=dataset):
             self.o = o
-        getImgPlus = J.make_method("getImgPlus", "()Lnet/imglib2/img/ImgPlus;")
-        setImgPlus = J.make_method("setImgPlus","(Lnet/imglib2/img/ImgPlus;)V")
+        getImgPlus = J.make_method("getImgPlus", "()Lnet/imglib2/meta/ImgPlus;")
+        setImgPlus = J.make_method("setImgPlus","(Lnet/imglib2/meta/ImgPlus;)V")
         getAxes = J.make_method("getAxes","()[Lnet/imglib2/img/AxisType;")
         getType = J.make_method("getType", "()Lnet/imglib2/type/numeric/RealType;")
         isSigned = J.make_method("isSigned", "()Z")
         isInteger = J.make_method("isInteger", "()Z")
         getName = J.make_method("getName", "()Ljava/lang/String;")
         setName = J.make_method("setName","(Ljava/lang/String;)V")
-        calibration = J.make_method("calibration", "(I)D")
-        setCalibration = J.make_method("setCalibration", "(DI)V")
         def get_pixel_data(self, axes = None):
             imgplus = self.getImgPlus()
             pixel_data = get_pixel_data(imgplus)
             script = """
             var result = java.util.ArrayList();
-            for (i=0;i<imgplus.numDimensions();i++) result.add(imgplus.axis(i));
+            for (i=0;i<imgplus.numDimensions();i++) 
+                result.add(imgplus.axis(i).type());
             result"""
             inv_axes = J.run_script(script, dict(imgplus=imgplus))
             inv_axes = list(J.iterate_collection(inv_axes))
@@ -929,8 +931,6 @@ def get_script_service(context):
         
         getPluginService = J.make_method(
             "getPluginService", "()Lorg/scijava/plugin/PluginService;")
-        getLogService = J.make_method(
-            "getLogService", "()Lorg/scijava/log/LogService;")
         getIndex = J.make_method(
             "getIndex", "()Limagej/script/ScriptLanguageIndex;")
         getLanguages = J.make_method(
@@ -940,12 +940,12 @@ def get_script_service(context):
                 wrap_script_engine_factory(o) 
                 for o in J.iterate_collection(jlangs)])
         getByFileExtension = J.make_method(
-            "getByFileExtension", 
-            "(Ljava/lang/String;)Ljavax/script/ScriptEngineFactory;",
+            "getLanguageByExtension", 
+            "(Ljava/lang/String;)Limagej/script/ScriptLanguage;",
             fn_post_process=wrap_script_engine_factory)
         getByName = J.make_method(
-            "getByName", 
-            "(Ljava/lang/String;)Ljavax/script/ScriptEngineFactory;",
+            "getLanguageByName", 
+            "(Ljava/lang/String;)Limagej/script/ScriptLanguage;",
             fn_post_process=wrap_script_engine_factory)
     return ScriptService()
         

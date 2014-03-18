@@ -7,16 +7,15 @@
   <name>cellprofiler-dependencies</name>
   <description>A POM that, when executed, assembles CellProfiler's Java dependencies.</description>
   <properties>
-  <imagej.version>2.0.0-beta-7</imagej.version>
-  <ome.version>5.0.0-beta1</ome.version>
+  <imagej.version>2.0.0-beta-7.7</imagej.version>
+  <bioformats.version>5.0.0-rc2</bioformats.version>
   </properties>
   <dependencies>
     <dependency>
-      <groupId>loci</groupId>
-      <artifactId>ome_plugins</artifactId>
-      <version>${ome.version}</version>
-      <type>jar</type>
-      <scope>runtime</scope>
+    	<groupId>org.jruby</groupId>
+	    <artifactId>jruby</artifactId>
+ 	    <version>1.7.11</version>
+ 	    <scope>runtime</scope>
     </dependency>
     <dependency>
 	  <groupId>net.imagej</groupId>
@@ -33,6 +32,14 @@
     </dependency>
   </dependencies>
   <repositories>
+	<repository>
+	  <id>ome.releases</id>
+	  <url>http://artifacts.openmicroscopy.org/artifactory/ome.releases</url>
+	</repository>
+	<repository>
+	  <id>ome.snapshots</id>
+	  <url>http://artifacts.openmicroscopy.org/artifactory/ome.snapshots</url>
+	</repository>
   	<repository>
       <id>imagej.releases</id>
       <url>http://maven.imagej.net/content/repositories/releases</url>
@@ -42,6 +49,16 @@
       <url>http://maven.imagej.net/content/repositories/snapshots</url>
   	</repository>
   </repositories>
+  <dependencyManagement>
+  <dependencies>
+  <dependency>
+    	<groupId>org.jruby</groupId>
+	    <artifactId>jruby</artifactId>
+ 	    <version>1.7.11</version>
+ 	    <scope>runtime</scope>
+  </dependency>
+  </dependencies>
+  </dependencyManagement>
   <build>
     <plugins>
       <plugin>

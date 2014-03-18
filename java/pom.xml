@@ -8,8 +8,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <bioformats.version>5.0.0-beta1</bioformats.version>
-    <imagej.version>2.0.0-beta-7</imagej.version>
+    <bioformats.version>5.0.0</bioformats.version>
+    <imagej.version>2.0.0-beta-7.7</imagej.version>
   </properties>
   <dependencies>
  	<dependency>
@@ -19,9 +19,25 @@
  	  <scope>test</scope>
  	</dependency>
     <dependency>
-      <groupId>loci</groupId>
-      <artifactId>bio-formats</artifactId>
-      <version>${bioformats.version}</version>
+      <groupId>ome</groupId>
+      <artifactId>formats-gpl</artifactId>
+      <version>${bioformats.version}-rc4</version>
+    </dependency>
+    <dependency>
+      <groupId>ome</groupId>
+      <artifactId>formats-api</artifactId>
+      <version>${bioformats.version}-rc4</version>
+    </dependency>
+    <dependency>
+      <groupId>ome</groupId>
+      <artifactId>ome-io</artifactId>
+      <version>${bioformats.version}-rc2</version>
+      <exclusions>
+      	<exclusion>
+      		<artifactId>omero-client</artifactId>
+      		<groupId>ome</groupId>
+      	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>net.imagej</groupId>
@@ -55,16 +71,6 @@
       <version>${imagej.version}</version>
     </dependency>
     <dependency>
-      <groupId>net.imglib2</groupId>
-      <artifactId>imglib2</artifactId>
-      <version>${imagej.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.imglib2</groupId>
-      <artifactId>imglib2-ops</artifactId>
-      <version>${imagej.version}</version>
-    </dependency>
-    <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.14</version>
@@ -80,7 +86,25 @@
   <version>3.1</version>
  </dependency>
  </dependencies>
+  <dependencyManagement>
+  <dependencies>
+  <dependency>
+    	<groupId>org.jruby</groupId>
+	    <artifactId>jruby</artifactId>
+ 	    <version>1.7.11</version>
+ 	    <scope>runtime</scope>
+  </dependency>
+  </dependencies>
+  </dependencyManagement>
   <repositories>
+	<repository>
+	  <id>ome.releases</id>
+	  <url>http://artifacts.openmicroscopy.org/artifactory/ome.releases</url>
+	</repository>
+	<repository>
+	  <id>ome.snapshots</id>
+	  <url>http://artifacts.openmicroscopy.org/artifactory/ome.snapshots</url>
+	</repository>
   	<repository>
       <id>imagej.releases</id>
       <url>http://maven.imagej.net/content/repositories/releases</url>

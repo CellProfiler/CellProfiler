@@ -50,10 +50,7 @@ public class TestOverlayUtils {
 	static ImageJ context;
 	@BeforeClass
 	public static void setUpClass() {
-		context = new ImageJ(
-				DisplayService.class, ImageDisplayService.class, 
-				OverlayService.class, DatasetService.class,
-				AutoscaleService.class);
+		context = new ImageJ();
 	}
 	public static ImageDisplayService getImageDisplayService() {
 		return context.imageDisplay();

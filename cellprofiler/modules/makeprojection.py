@@ -113,7 +113,7 @@ class MakeProjection(cpm.CPModule):
             <ul>
             <li>Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al. (2009) 
             "Bright field microscopy as an alternative to whole cell fluorescence in 
-            automated analysis of macrophage images", PLoS ONE 4(10): e7497 
+            automated analysis of macrophage images", <i>PLoS ONE</i> 4(10): e7497 
             <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.</li>
             </ul>
             </p>''' % globals())

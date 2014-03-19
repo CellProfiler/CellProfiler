@@ -70,11 +70,6 @@
       <artifactId>ij-updater-core</artifactId>
       <version>${imagej.version}</version>
     </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.14</version>
-    </dependency>
   <dependency>
 	<groupId>net.sf.opencsv</groupId>
 	<artifactId>opencsv</artifactId>
@@ -85,6 +80,16 @@
   <artifactId>commons-lang3</artifactId>
   <version>3.1</version>
  </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.2</version>
+    </dependency>
+	 <dependency>
+	    <groupId>ch.qos.logback</groupId>
+	    <artifactId>logback-classic</artifactId>
+	    <version>1.0.9</version>	 	
+	 </dependency>
  </dependencies>
   <dependencyManagement>
   <dependencies>

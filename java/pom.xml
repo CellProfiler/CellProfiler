@@ -1,72 +1,169 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  
+  	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>1.150</version>
+		<relativePath />
+	</parent>
+  
   <groupId>org.cellprofiler</groupId>
   <artifactId>cellprofiler-java</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>CellProfiler-java</name>
   <description>CellProfiler-java is a package of Java support routines for CellProfiler.</description>
+  <url>http://cellprofiler.org</url>
+  <inceptionYear>2003</inceptionYear>
+  <licenses>
+    <license>
+      <name>GPL 2 or later</name>
+      <url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
+      <distribution>repo</distribution>
+   	</license>
+  </licenses>
+  <developers>
+		<developer>
+			<id>leek</id>
+			<name>Lee Kamentsky</name>
+			<email>leek@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>architect</role>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>mbray</id>
+			<name>Mark Bray</name>
+			<email>mbray@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>vebjorn</id>
+			<name>Vebjorn Ljosa</name>
+			<email>vebjorn@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>dlogan</id>
+			<name>David Logan</name>
+			<email>dlogan@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>thouis</id>
+			<name>Ray Jones</name>
+			<email>thouis@seas.harvard.edu</email>
+			<organization>Harvard University</organization>
+			<organizationUrl>http://seas.harvard.edu</organizationUrl>
+			<roles>
+				<role>developer</role>
+				<role>emeritus</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>anne</id>
+			<name>Anne Carpenter</name>
+			<email>anne@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>principal investigator</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+  </developers>
+  <organization>
+  	<name>Broad Institute Imaging Platform</name>
+  	<url>http://www.broadinstitute.org/science/platforms/imaging/imaging-platform</url>
+  </organization>
+
+	<scm>
+		<connection>scm:git:git://github.com/CellProfiler/CellProfiler</connection>
+		<developerConnection>scm:git:git@github.com:CellProfiler/CellProfiler</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/CellProfiler/CellProfiler</url>
+	</scm>
+  
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <bioformats.version>5.0.0</bioformats.version>
-    <imagej.version>2.0.0-beta-7.7</imagej.version>
   </properties>
   <dependencies>
  	<dependency>
  	  <groupId>junit</groupId>
  	  <artifactId>junit</artifactId>
- 	  <version>4.8.1</version>
+ 	  <version>${junit.version}</version>
  	  <scope>test</scope>
  	</dependency>
     <dependency>
-      <groupId>ome</groupId>
+      <groupId>${bio-formats.groupId}</groupId>
       <artifactId>formats-gpl</artifactId>
-      <version>${bioformats.version}-rc4</version>
+      <version>${bio-formats.version}</version>
     </dependency>
     <dependency>
-      <groupId>ome</groupId>
+      <groupId>${bio-formats.groupId}</groupId>
       <artifactId>formats-api</artifactId>
-      <version>${bioformats.version}-rc4</version>
+      <version>${bio-formats.version}-rc4</version>
     </dependency>
     <dependency>
-      <groupId>ome</groupId>
+      <groupId>${bio-formats.groupId}</groupId>
       <artifactId>ome-io</artifactId>
-      <version>${bioformats.version}-rc2</version>
+      <version>${bio-formats.version}-rc2</version>
       <exclusions>
       	<exclusion>
-      		<artifactId>omero-client</artifactId>
-      		<groupId>ome</groupId>
+    	  <artifactId>omero-client</artifactId>
+	      <groupId>${bio-formats.groupId}</groupId>
       	</exclusion>
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>net.imagej</groupId>
+      <groupId>${imagej.groupId}</groupId>
       <artifactId>ij-core</artifactId>
       <version>${imagej.version}</version>
     </dependency>
     <dependency>
-      <groupId>net.imagej</groupId>
+      <groupId>${imagej.groupId}</groupId>
       <artifactId>ij-data</artifactId>
       <version>${imagej.version}</version>
     </dependency>
     <dependency>
-      <groupId>net.imagej</groupId>
+      <groupId>${imagej.groupId}</groupId>
       <artifactId>ij-ui</artifactId>
       <version>${imagej.version}</version>
     </dependency>
     <dependency>
-      <groupId>net.imagej</groupId>
+      <groupId>${imagej.groupId}</groupId>
       <artifactId>ij-app</artifactId>
       <version>${imagej.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>net.imagej</groupId>
+      <groupId>${imagej.groupId}</groupId>
       <artifactId>ij-options</artifactId>
       <version>${imagej.version}</version>
     </dependency>
     <dependency>
-      <groupId>net.imagej</groupId>
+      <groupId>${imagej.groupId}</groupId>
       <artifactId>ij-updater-core</artifactId>
       <version>${imagej.version}</version>
     </dependency>
@@ -126,10 +223,6 @@
       <url>http://maven.imagej.net/content/repositories/releases</url>
   	</repository>
   </repositories>
-  <organization>
-  	<name>Broad Institute Imaging Platform</name>
-  	<url>http://www.broadinstitute.org/science/platforms/imaging/imaging-platform</url>
-  </organization>
   <build>
   <plugins>
     <plugin>

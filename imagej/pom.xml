@@ -1,15 +1,109 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>1.150</version>
+		<relativePath />
+	</parent>
+  
   <groupId>org.cellprofiler</groupId>
   <artifactId>cellprofiler-dependencies</artifactId>
   <version>1.0</version>
   <packaging>pom</packaging>
   <name>cellprofiler-dependencies</name>
   <description>A POM that, when executed, assembles CellProfiler's Java dependencies.</description>
-  <properties>
-  <imagej.version>2.0.0-beta-7.7</imagej.version>
-  <bioformats.version>5.0.0-rc2</bioformats.version>
-  </properties>
+  <url>http://cellprofiler.org</url>
+  <inceptionYear>2003</inceptionYear>
+  <licenses>
+    <license>
+      <name>GPL 2 or later</name>
+      <url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
+      <distribution>repo</distribution>
+   	</license>
+  </licenses>
+  <developers>
+		<developer>
+			<id>leek</id>
+			<name>Lee Kamentsky</name>
+			<email>leek@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>architect</role>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>mbray</id>
+			<name>Mark Bray</name>
+			<email>mbray@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>vebjorn</id>
+			<name>Vebjorn Ljosa</name>
+			<email>vebjorn@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>dlogan</id>
+			<name>David Logan</name>
+			<email>dlogan@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>thouis</id>
+			<name>Ray Jones</name>
+			<email>thouis@seas.harvard.edu</email>
+			<organization>Harvard University</organization>
+			<organizationUrl>http://seas.harvard.edu</organizationUrl>
+			<roles>
+				<role>developer</role>
+				<role>emeritus</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+		<developer>
+			<id>anne</id>
+			<name>Anne Carpenter</name>
+			<email>anne@broadinstitute.org</email>
+			<organization>Broad Institute</organization>
+			<organizationUrl>http://broadinstitute.org</organizationUrl>
+			<roles>
+				<role>principal investigator</role>
+			</roles>
+			<timezone>-5</timezone>
+		</developer>
+  </developers>
+  <organization>
+  	<name>Broad Institute Imaging Platform</name>
+  	<url>http://www.broadinstitute.org/science/platforms/imaging/imaging-platform</url>
+  </organization>
+
+	<scm>
+		<connection>scm:git:git://github.com/CellProfiler/CellProfiler</connection>
+		<developerConnection>scm:git:git@github.com:CellProfiler/CellProfiler</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/CellProfiler/CellProfiler</url>
+	</scm>
+  
   <dependencies>
     <dependency>
     	<groupId>org.jruby</groupId>
@@ -18,7 +112,7 @@
  	    <scope>runtime</scope>
     </dependency>
     <dependency>
-	  <groupId>net.imagej</groupId>
+	  <groupId>${imagej.groupId}</groupId>
 	  <artifactId>ij-app</artifactId>
 	  <version>${imagej.version}</version>
 	  <scope>runtime</scope>

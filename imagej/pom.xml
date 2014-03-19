@@ -33,6 +33,17 @@
   </dependencies>
   <repositories>
 	<repository>
+		<id>sonatype-nexus-releases</id>
+		<name>Sonatype Nexus Releases</name>
+		<url>https://oss.sonatype.org/content/repositories/releases</url>
+		<releases>
+			<enabled>true</enabled>
+		</releases>
+		<snapshots>
+			<enabled>false</enabled>
+		</snapshots>
+	</repository>
+	<repository>
 	  <id>ome.releases</id>
 	  <url>http://artifacts.openmicroscopy.org/artifactory/ome.releases</url>
 	</repository>
@@ -57,6 +68,7 @@
  	    <version>1.7.11</version>
  	    <scope>runtime</scope>
   </dependency>
+  
   </dependencies>
   </dependencyManagement>
   <build>

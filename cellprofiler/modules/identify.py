@@ -711,7 +711,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     vv.append(self.assign_middle_to_foreground)
             if self.threshold_method == TM_MOG:
                 vv += [self.object_fraction]
-        if self.threshold_scope != TM_BINARY_IMAGE:
+        if self.threshold_scope not in \
+           (TS_BINARY_IMAGE, TS_MEASUREMENT, TS_MANUAL):
             vv += [ self.threshold_smoothing_choice]
             if self.threshold_smoothing_choice == TSM_MANUAL:
                 vv += [self.threshold_smoothing_scale]
@@ -752,7 +753,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
         local_threshold, global_threshold = self.get_threshold(
             image, mask, workspace)
     
-        if self.threshold_smoothing_choice == TSM_NONE:
+        if self.threshold_smoothing_choice == TSM_NONE or\
+           self.threshold_scope in (TS_MEASUREMENT, TS_MANUAL):
             blurred_image = img
             sigma = 0
         else:

@@ -162,7 +162,6 @@ def main(args):
             from cellprofiler.cellprofilerapp import CellProfilerApp
             from cellprofiler.workspace import is_workspace_file
             show_splashbox = (options.pipeline_filename is None and
-                              options.project_filename is None and
                               (not options.new_project) and
                               options.show_splashbox)
             

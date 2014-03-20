@@ -104,6 +104,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.outline
+import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
@@ -705,6 +706,8 @@ class NamesAndTypes(cpm.CPModule):
             return True
         column_names = self.get_column_names()
         ipd_columns = self.java_make_image_sets(workspace)
+        if ipd_columns is None:
+            return False
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         
@@ -882,13 +885,35 @@ class NamesAndTypes(cpm.CPModule):
                         column.append(ipd)
                 columns.append(column)
             self.append_single_image_columns(columns, ipds)
-            column_lengths = [len(column) for column in columns]
-            if any([l != column_lengths[0] for l in column_lengths]):
-                # TO_DO - better display of channels of different lengths
+            l0 = len(columns[0])
+            lmin = l0
+            lmax = l0
+            display_message = not cpprefs.get_headless()
+            for column_name, c in zip(column_names, columns):
+                l = len(c)
+                if l != l0:
+                    if display_message:
+                        msg = (
+                            "Warning: the image set list has different numbers of images\n"
+                            "for channels %s (%d images) and %s (%d images).\n"
+                            "Do you want to continue?") % (
+                                column_names[0], l0, column_name, l)
+                        import wx
+                        result = wx.MessageBox(
+                            msg, 
+                            caption="NamesAndTypes: matching by order error",
+                            style = wx.YES_NO | wx.ICON_QUESTION)
+                        if result == wx.NO:
+                            return None
+                        display_message = False
+                    lmin = min(lmin, l)
+                    lmax = max(lmax, l)
+            n_rows = lmin
+            if lmin != lmax:
                 logger.warning("Truncating image set: some channels have fewer images than others")
-            n_rows = np.min(column_lengths)
-            for column in columns:
-                del column[n_rows:]
+                for column in columns:
+                    del column[lmin:]
+            
             self.image_sets = [
                 ((i+1, ), 
                  dict([(column_name, None if len(column) >= i else column[i])

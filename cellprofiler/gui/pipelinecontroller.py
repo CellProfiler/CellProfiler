@@ -40,6 +40,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpm
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
+import cellprofiler.analysis as cpanalysis
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 from cellprofiler.gui import get_cp_bitmap
 import cellprofiler.gui.moduleview
@@ -2145,6 +2146,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         
     def on_analyze_images(self, event):
         '''Handle a user request to start running the pipeline'''
+        self.do_analyze_images()
+        
+    def do_analyze_images(self):
+        '''Analyze images using the current workspace and pipeline'''
         ##################################
         #
         # Preconditions:
@@ -2588,10 +2593,15 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                         return
                 self.__pipeline.save_measurements(path, event.measurements)
         finally:
+            m = event.measurements
+            status = m[cpm.IMAGE, cpanalysis.AnalysisRunner.STATUS, 
+                       m.get_image_numbers()]
+            n_image_sets = sum([
+                x == cpanalysis.AnalysisRunner.STATUS_DONE for x in status])
             self.stop_running()
             if cpprefs.get_show_analysis_complete_dlg():
-                self.show_analysis_complete()
-            event.measurements.close()
+                self.show_analysis_complete(n_image_sets)
+            m.close()
             self.run_next_pipeline(None)
         
     def stop_running(self):
@@ -3106,7 +3116,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
     # ~^~
                     
-    def show_analysis_complete(self):
+    def show_analysis_complete(self, n_image_sets):
         '''Show the "Analysis complete" dialog'''
         dlg = wx.Dialog(self.__frame, -1, "Analysis complete")
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -3120,7 +3130,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             "have been saved in your designated locations.\n\n"
             "Note that the module display windows may not show\n"
             "the final image cycle on computers with multiple\n"
-            "processing cores."%self.__workspace.measurements.image_set_count)
+            "processing cores."% n_image_sets)
         sub_sizer.Add(
             text_ctrl,
             1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | 

@@ -103,6 +103,12 @@ if __name__=="__main__":
         except:
             maxfd = 256
         os.closerange(3, maxfd)
+    if not hasattr(sys, 'frozen'):
+        # In the development version, maybe the bioformats package is installed?
+        # Add the root to the pythonpath
+        root = os.path.split(os.path.split(__file__)[0])[0]
+        sys.path.insert(0, root)
+
     aw_parse_args()
     
 import time

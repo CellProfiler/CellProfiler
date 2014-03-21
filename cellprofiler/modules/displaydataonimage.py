@@ -217,10 +217,11 @@ class DisplayDataOnImage(cpm.CPModule):
             pixel_data = image.pixel_data
         else:
             pixel_data = np.zeros(image.pixel_data.shape[:2])
+        if self.objects_or_image == OI_OBJECTS:
+            objects = workspace.object_set.get_objects(self.objects_name.value)
         workspace.display_data.pixel_data = pixel_data
         if self.use_color_map():
-            workspace.display_data.labels = \
-                workspace.object_set.get_objects(self.objects_name.value).segmented
+            workspace.display_data.labels = objects.segmented
         #
         # Get the measurements and positions
         #
@@ -239,6 +240,11 @@ class DisplayDataOnImage(cpm.CPModule):
             values = measurements.get_current_measurement(
                 self.objects_name.value,
                 self.measurement.value)
+            if len(values) < objects.count:
+                temp = np.zeros(objects.count, values.dtype)
+                temp[:len(values)] = values
+                temp[len(values):] = np.nan
+                values = temp
             x = measurements.get_current_measurement(
                 self.objects_name.value, M_LOCATION_CENTER_X)
             x_offset = np.random.uniform(high=1.0,low=-1.0,size=x.shape)
@@ -251,6 +257,7 @@ class DisplayDataOnImage(cpm.CPModule):
             values = values[mask]
             x = x[mask]
             y = y[mask]
+            workspace.display_data.mask = mask
         workspace.display_data.values = values
         workspace.display_data.x = x
         workspace.display_data.y = y
@@ -345,10 +352,12 @@ class DisplayDataOnImage(cpm.CPModule):
                 pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
             colormap = matplotlib.cm.get_cmap(self.colormap.value)
             values = workspace.display_data.values
-            colors = np.ones((len(values) + 1, 4))
+            vmask = workspace.display_data.mask
+            colors = np.ones((len(vmask) + 1, 4))
+            colors[1:][~vmask, :3] = 0
             sm = matplotlib.cm.ScalarMappable(cmap = colormap)
             sm.set_array(values)
-            colors[1:, :] = sm.to_rgba(values)
+            colors[1:][vmask, :] = sm.to_rgba(values)
             img = colors[labels, :3] * pixel_data[:, :, np.newaxis]
             imshow_fn(img)
             assert isinstance(axes, matplotlib.axes.Axes)

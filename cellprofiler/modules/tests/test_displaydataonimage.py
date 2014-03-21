@@ -283,3 +283,43 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             module.saved_image_contents.value = display
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            
+    def test_02_06_display_colors(self):
+        labels = np.zeros((50,120),int)
+        labels[10:20,20:27] = 1
+        labels[30:35,35:50] = 2
+        labels[5:18,44:100] = 3
+        workspace, module = self.make_workspace([1.1, 2.2, 3.3], labels)
+        assert isinstance(module, D.DisplayDataOnImage)
+        module.color_or_text.value = D.CT_COLOR
+        module.run(workspace)
+        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        
+    def test_02_07_display_colors_missing_measurement(self):
+        #
+        # Regression test of issue 1084
+        #
+        labels = np.zeros((50,120),int)
+        labels[10:20,20:27] = 1
+        labels[30:35,35:50] = 2
+        labels[5:18,44:100] = 3
+        workspace, module = self.make_workspace([1.1, 2.2], labels)
+        assert isinstance(module, D.DisplayDataOnImage)
+        module.color_or_text.value = D.CT_COLOR
+        module.run(workspace)
+        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        
+    def test_02_08_display_colors_nan_measurement(self):
+        #
+        # Regression test of issue 1084
+        #
+        labels = np.zeros((50,120),int)
+        labels[10:20,20:27] = 1
+        labels[30:35,35:50] = 2
+        labels[5:18,44:100] = 3
+        workspace, module = self.make_workspace([1.1, np.nan, 2.2], labels)
+        assert isinstance(module, D.DisplayDataOnImage)
+        module.color_or_text.value = D.CT_COLOR
+        module.run(workspace)
+        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        

@@ -44,6 +44,16 @@ import zmq
 # CellProfiler expects NaN as a result during calculation
 #
 np.seterr(all='ignore')
+#
+# Defeat pyreadline which graciously sets its logging to DEBUG and it
+# appears when CP is frozen
+#
+try:
+    from pyreadline.logger import stop_logging, pyreadline_logger, Rea
+    pyreadline_logger.setLevel(logging.INFO)
+    stop_logging()
+except:
+    pass
 
 if not hasattr(sys, 'frozen'):
     root = os.path.split(__file__)[0]

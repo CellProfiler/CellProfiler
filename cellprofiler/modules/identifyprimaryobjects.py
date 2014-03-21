@@ -1151,8 +1151,15 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                            maxima_mask,
                                            image_resize_factor)
         elif self.unclump_method == UN_SHAPE:
+            if not self.fill_holes:
+                # For shape, even if the user doesn't want to fill holes,
+                # a point far away from the edge might be near a hole.
+                # So we fill just for this part.
+                foreground = fill_labeled_holes(labeled_image) > 0
+            else:
+                foreground = labeled_image > 0
             distance_transformed_image =\
-                scipy.ndimage.distance_transform_edt(labeled_image>0)
+                scipy.ndimage.distance_transform_edt(foreground)
             # randomize the distance slightly to get unique maxima
             np.random.seed(0)
             distance_transformed_image +=\

@@ -408,7 +408,8 @@ class PreferencesView:
         self.show_progress_panel()
         
     def on_pipeline_progress(self, *args):
-        self.__progress_watcher.on_pipeline_progress(*args)
+        if self.__progress_watcher is not None:
+            self.__progress_watcher.on_pipeline_progress(*args)
 
     def pause(self, do_pause):
         self.__progress_watcher.pause(do_pause)

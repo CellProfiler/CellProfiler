@@ -337,7 +337,10 @@ class DisplayDataOnImage(cpm.CPModule):
             pixel_data = workspace.display_data.pixel_data
             if pixel_data.ndim == 3:
                 pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
-            colormap = matplotlib.cm.get_cmap(self.colormap.value)
+            colormap_name = self.colormap.value
+            if colormap_name == cps.DEFAULT:
+                colormap_name = cpprefs.get_default_colormap()
+            colormap = matplotlib.cm.get_cmap(colormap_name)
             values = workspace.display_data.values
             vmask = workspace.display_data.mask
             colors = np.ones((len(vmask) + 1, 4))

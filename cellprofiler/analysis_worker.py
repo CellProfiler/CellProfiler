@@ -32,6 +32,8 @@ import sys
 import os
 import logging
 logger = logging.getLogger(__name__)
+import wx
+wx.Log.EnableLogging(False)
 
 '''Set the log level through the environment by specifying AW_LOG_LEVEL'''
 AW_LOG_LEVEL = "AW_LOG_LEVEL"

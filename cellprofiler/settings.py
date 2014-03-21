@@ -2356,12 +2356,13 @@ class Color(Setting):
         super(Color, self).__init(text, value, *args, **kwargs)
         
     def to_rgb(self):
-        if self.value.startswith("#") and len(self.value) >= 7:
-            return (int(self.value[1:3]), 
-                    int(self.value[3:5]), 
-                    int(self.value[5:7]))
-        elif self.colortable.has_key(self.value.lower()):
-            return self.colortable(self.value.lower())
+        value = self.value.replace(" ", "")
+        if value.startswith("#") and len(value) >= 7:
+            return (int(value[1:3], 16), 
+                    int(value[3:5], 16), 
+                    int(value[5:7], 16))
+        elif self.colortable.has_key(value.lower()):
+            return self.colortable[value.lower()]
         else:
             raise ValueError("Unknown color: " + self.value)
         

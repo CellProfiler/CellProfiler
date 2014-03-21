@@ -125,9 +125,8 @@ class OverlayOutlines(cpm.CPModule):
         default_color = (COLOR_ORDER[len(self.outlines)]
                          if len(self.outlines) < len(COLOR_ORDER)
                          else COLOR_ORDER[0])
-        group.append("color", cps.Choice(
-                "Select outline color",
-                COLORS.keys(), default_color))
+        group.append("color", cps.Color(
+                "Select outline color", default_color))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this outline", self.outlines, group))
         
@@ -253,7 +252,7 @@ class OverlayOutlines(cpm.CPModule):
             if pdmax <= 0:
                 pdmax = 1
         for outline in self.outlines:
-            color = COLORS[outline.color.value]
+            color = np.array(outline.color.to_rgb(), float) / 255.0
             outline_img = self.get_outline(image_set, 
                                            outline.outline_name.value,
                                            color)

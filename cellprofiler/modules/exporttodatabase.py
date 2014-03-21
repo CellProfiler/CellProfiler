@@ -917,8 +917,8 @@ class ExportToDatabase(cpm.CPModule):
                      else COLOR_ORDER[0])
         
         group.append(
-            "image_channel_colors", cps.Choice(
-                "Channel color", COLOR_ORDER, default_color, doc="""
+            "image_channel_colors", cps.Color(
+                "Channel color", default_color, doc="""
                 <i>(Used only if creating a properties file and specifiying the image information)</i><br>
                 Enter a color to display this channel."""))
         
@@ -3397,7 +3397,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         user_image_names += [group.image_cols.value]
                     else:
                         user_image_names += [group.image_name.value]
-                    image_channel_colors += [group.image_channel_colors.value]
+                    color_value = group.image_channel_colors.value.replace(" ","")
+                    image_channel_colors += [color_value]
                             
                 image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in selected_image_names])
                 image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in selected_image_names])

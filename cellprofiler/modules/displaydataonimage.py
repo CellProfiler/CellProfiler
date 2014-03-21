@@ -121,23 +121,10 @@ class DisplayDataOnImage(cpm.CPModule):
             This is the color map used as the color gradient for coloring the
             objects by their measurement values.
             """)        
-        self.text_color = cps.Text(
+        self.text_color = cps.Color(
             "Text color","red",doc="""
             This is the color that will be used when displaying the text.
-            There are several different ways by which you can specify the color:<br>
-            <ul>
-            <li><i>Single letter:</i> "b"=blue, "g"=green, "r"=red, "c"=cyan, "m"=magenta,
-            "y"=yellow, "k"=black, "w"=white</li>
-            <li><i>Name:</i> You can use any name supported by HTML; a list of colors is shown on
-            <a href="http://www.w3schools.com/html/html_colors.asp">this page</a>.
-            </li>
-            <li><i>RGB code:</i> You can specify the color as a combination of
-            the red, green, and blue intensities, for instance, "#FFFF00"
-            for yellow; yellow = red("FF") + green("FF") + blue("00"), where <i>FF</i> is
-            hexadecimal for 255, the highest intensity. See  
-            <a href="http://www.w3schools.com/html/html_colors.asp">this page</a> for a more detailed
-            explanation.</li>
-            </ul>""")
+            """)
         
         self.display_image = cps.ImageNameProvider(
             "Name the output image that has the measurements displayed","DisplayImage",doc="""

@@ -354,7 +354,7 @@ class DisplayDataOnImage(cpm.CPModule):
             values = workspace.display_data.values
             vmask = workspace.display_data.mask
             colors = np.ones((len(vmask) + 1, 4))
-            colors[1:][~vmask, :3] = 0
+            colors[1:][~vmask, :3] = 1
             sm = matplotlib.cm.ScalarMappable(cmap = colormap)
             sm.set_array(values)
             colors[1:][vmask, :] = sm.to_rgba(values)

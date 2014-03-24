@@ -402,6 +402,15 @@ class TestMeasurements(unittest.TestCase):
         pattern = r"\g<Plate>_\g<Well>"
         self.assertEqual(x.apply_metadata(pattern), expected)
         
+    def test_06_06_apply_series_and_frame_metadata(self):
+        x = cpmeas.Measurements()
+        x[cpmeas.IMAGE, cpmeas.C_SERIES+"_DNA"] = 1
+        x[cpmeas.IMAGE, cpmeas.C_SERIES+"_DNAIllum"] = 0
+        x[cpmeas.IMAGE, cpmeas.C_FRAME+"_DNA"] = 2
+        x[cpmeas.IMAGE, cpmeas.C_FRAME+"_DNAIllum"] = 0
+        pattern = r"\g<%s>_\g<%s>" % (cpmeas.C_SERIES, cpmeas.C_FRAME)
+        self.assertEqual(x.apply_metadata(pattern), "1_2")
+        
     def test_07_01_copy(self):
         x = cpmeas.Measurements()
         r = np.random.RandomState()

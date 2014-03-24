@@ -1676,7 +1676,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__workspace.invalidate_image_set()
     
     def on_pathlist_drop_text(self, x, y, text):
-        pathnames = [p.strip() for p in text.split("\n")]
+        pathnames = [p.strip() for p in re.split("[\r\n]+", text.strip())]
         self.add_pathnames(pathnames)
         
     def add_pathnames(self, pathnames):

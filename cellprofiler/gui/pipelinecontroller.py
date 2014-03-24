@@ -2720,7 +2720,15 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                       self.__frame if module.show_window else None,
                                       outlines = self.__debug_outlines)
             self.__debug_grids = workspace.set_grids(self.__debug_grids)
+            cancelled = [False]
+            def cancel_handler(cancelled = cancelled):
+                cancelled[0] = True
+            workspace.cancel_handler = cancel_handler
             module.run(workspace)
+            if cancelled[0]:
+                self.__frame.SetCursor(old_cursor)
+                return False
+            
             if module.show_window:
                 fig = workspace.get_module_figure(module, image_set_number)
                 module.display(workspace, fig)

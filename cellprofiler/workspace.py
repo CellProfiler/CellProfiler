@@ -103,6 +103,7 @@ class Workspace(object):
         self.interaction_handler = None
         self.post_run_display_handler = None
         self.post_group_display_handler = None
+        self.cancel_handler = None
 
         class DisplayData(object):
             pass
@@ -336,6 +337,12 @@ class Workspace(object):
                 return module.handle_interaction(*args, **kwargs)
         else:
             return self.interaction_handler(module, *args, **kwargs)
+        
+    def cancel_request(self):
+        '''Make a request to cancel an ongoing analysis'''
+        if self.cancel_handler is None:
+            raise self.NoInteractionException()
+        self.cancel_handler()
         
     def post_group_display(self, module):
         '''Perform whatever post-group module display is necessary

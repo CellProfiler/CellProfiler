@@ -199,20 +199,20 @@ class EditObjectsManually(I.Identify):
         assert isinstance(orig_objects, cpo.Objects)
         orig_labels = [l for l, c in orig_objects.get_labels()]
 
-        try:
-            if self.wants_image_display:
-                guide_image = workspace.image_set.get_image(self.image_name.value)
-                guide_image = guide_image.pixel_data
-                if np.any(guide_image != np.min(guide_image)):
-                    guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image) - np.min(guide_image))
-            else:
-                guide_image = None
-            filtered_labels = workspace.interaction_request(
-                self, orig_labels, guide_image, workspace.measurements.image_set_number)
-        except workspace.NoInteractionException:
-            # Accept the labels as-is
+        if self.wants_image_display:
+            guide_image = workspace.image_set.get_image(self.image_name.value)
+            guide_image = guide_image.pixel_data
+            if np.any(guide_image != np.min(guide_image)):
+                guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image) - np.min(guide_image))
+        else:
+            guide_image = None
+        filtered_labels = workspace.interaction_request(
+            self, orig_labels, guide_image, workspace.measurements.image_set_number)
+        if filtered_labels is None:
+            # Ask whoever is listening to stop doing stuff
+            workspace.cancel_request()
+            # Have to soldier on until the cancel takes effect...
             filtered_labels = orig_labels
-
         #
         # Renumber objects consecutively if asked to do so
         #
@@ -441,12 +441,6 @@ class EditObjectsManually(I.Identify):
                 mask = mask_copy
             project_labels[0, 0, :, :, 0] = mask
             
-    class InteractionCancelledException(RuntimeError):
-        def __init__(self, *args):
-            if len(args) == 0:
-                args = ["User cancelled EditObjectsManually"]
-            super(self.__class__, self).__init__(*args)
-            
     def handle_interaction(self, orig_labels, guide_image, image_set_number):
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         from wx import OK
@@ -460,7 +454,7 @@ class EditObjectsManually(I.Identify):
             title) as dialog_box:
             result = dialog_box.ShowModal()
             if result != OK:
-                raise self.InteractionCancelledException()
+                return None
             return dialog_box.labels
     
     def get_measurement_columns(self, pipeline):

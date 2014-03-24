@@ -91,6 +91,10 @@ class IdentifyObjectsManually(I.Identify):
         
         labels = workspace.interaction_request(
             self, pixel_data, workspace.measurements.image_set_number)
+        if labels is None:
+            # User cancelled. Soldier on as best we can.
+            workspace.cancel_request()
+            labels = np.zeros(pixel_data.shape[:2], int)
         objects = cpo.Objects()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, objects_name)
@@ -187,7 +191,7 @@ class IdentifyObjectsManually(I.Identify):
             title) as dialog_box:
             result = dialog_box.ShowModal()
             if result != OK:
-                raise self.InteractionCancelledException()
+                return None
             return dialog_box.labels[0]
         
     def upgrade_settings(self, setting_values, variable_revision_number,

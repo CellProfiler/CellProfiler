@@ -545,7 +545,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         workspace.post_run_display_handler = post_run_display_handler
         self.assertTrue(pipeline.prepare_run(workspace))
         pipeline.prepare_group(workspace, {}, (1,))
-        pipeline.run_image_set(m, 1, None, display_handler)
+        pipeline.run_image_set(m, 1, None, display_handler, None)
         self.assertIn("display_handler", callbacks_called)
         pipeline.post_group(workspace, {})
         self.assertIn("post_group_display_handler", callbacks_called)

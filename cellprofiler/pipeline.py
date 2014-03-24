@@ -1887,7 +1887,8 @@ class Pipeline(object):
             self.end_run()
 
     def run_image_set(self, measurements, image_set_number,
-                      interaction_handler, display_handler):
+                      interaction_handler, display_handler,
+                      cancel_handler):
         """Run the pipeline for a single image set storing the results in measurements.
 
         Arguments:
@@ -1923,6 +1924,7 @@ class Pipeline(object):
                                       None,
                                       outlines=outlines)
             workspace.interaction_handler = interaction_handler
+            workspace.cancel_handler = cancel_handler
 
             grids = workspace.set_grids(grids)
 

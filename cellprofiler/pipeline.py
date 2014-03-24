@@ -2280,6 +2280,8 @@ class Pipeline(object):
         if not m:
             m = re.findall('\\\\g[<](.+?)[>]', pattern)
         if m:
+            m = filter((lambda x:not any(
+                [x.startswith(y) for y in cpmeas.C_SERIES, cpmeas.C_FRAME])), m)
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:

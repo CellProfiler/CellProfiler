@@ -429,7 +429,7 @@ class PreferencesView:
     def pause(self, do_pause):
         self.__progress_watcher.pause(do_pause)
 
-    def update_progress(self, message, elapsed_time, remaining_time):
+    def update_progress(self, message, elapsed_time, remaining_time=None):
         #
         # Disable everything if in a modal state. The progress bar
         # seems to eat memory in huge chunks if allowed to draw its
@@ -448,11 +448,15 @@ class PreferencesView:
                     return
         self.__progress_bar.Show(True)
         self.__progress_msg_ctrl.Label = message
-        self.__progress_bar.Value = \
-            (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
-        timestr = 'Time %s/%s' % (
-            secs_to_timestr(elapsed_time), 
-            secs_to_timestr(elapsed_time + remaining_time))
+        if remaining_time is not None:
+            self.__progress_bar.Value = \
+                (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
+            timestr = 'Time %s/%s' % (
+                secs_to_timestr(elapsed_time), 
+                secs_to_timestr(elapsed_time + remaining_time))
+        else:
+            self.__progress_bar.Pulse()
+            timestr = "Elapsed time: %s" % secs_to_timestr(elapsed_time)
         self.__timer.SetLabel(timestr)
         self.__progress_panel.Layout()
     
@@ -589,11 +593,16 @@ class ProgressWatcher:
                              self.remaining_time())
 
     def update_multiprocessing(self, event=None):
-        status = 'Processing: %d of %d image sets completed' %\
-            (self.num_received, self.num_jobs)
-        self.update_callback(status,
-                             self.elapsed_time(),
-                             self.remaining_time_multiprocessing())
+        if self.num_jobs > self.num_received:
+            status = 'Processing: %d of %d image sets completed' %\
+                (self.num_received, self.num_jobs)
+            self.update_callback(
+                status,
+                self.elapsed_time(),
+                self.remaining_time_multiprocessing())
+        else:
+            status = "Post-processing, please wait"
+            self.update_callback(status, self.elapsed_time())
 
     def on_pipeline_progress(self, *args):
         if not self.multiprocessing:

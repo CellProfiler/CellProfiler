@@ -2198,6 +2198,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 initial_measurements=self.__workspace.measurements)
             self.__analysis.start(self.analysis_event_handler,
                                   num_workers)
+            self.__frame.preferences_view.update_worker_count_info(num_workers)
             self.enable_module_controls_panel_buttons()
 
         except Exception, e:

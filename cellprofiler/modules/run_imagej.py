@@ -787,7 +787,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     "java/io/File", "(Ljava/lang/String;)V", setting.value)
                 input_dictionary.put(field_name, jfile)
         command_service = ij2.get_command_service(get_context())
-        future = command_service.run(module_info.o, input_dictionary.o)
+        future = command_service.run(module_info.o, True, input_dictionary.o)
         module = future.get()
         for setting, module_item in d[key]:
             if isinstance(setting, cps.ImageNameProvider):

@@ -26,9 +26,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceException;
 
-import org.apache.log4j.Logger;
 import org.cellprofiler.imageset.filter.Filter;
 import org.cellprofiler.imageset.filter.ImagePlaneDetails;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -44,7 +45,7 @@ import org.xml.sax.SAXException;
  * filter runs on the IPD metadata as accumulated by the previous extractors.
  */
 public class ImagePlaneMetadataExtractor  {
-	final static public Logger logger = Logger.getLogger(ImagePlaneMetadataExtractor.class);
+	final static public Logger logger = LoggerFactory.getLogger(ImagePlaneMetadataExtractor.class);
 	protected class ExtractorFilterPair {
 		public final MetadataExtractor<ImagePlaneDetails> extractor;
 		public final Filter filter;

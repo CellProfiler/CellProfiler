@@ -50,7 +50,7 @@ class TestImagej2(unittest.TestCase):
                              module_infos)[0]
         svc = ij2.get_command_service(self.context)
         input_map = J.make_map(**inputs)
-        future = svc.run(module_info.o, input_map.o)
+        future = svc.run(module_info.o, True, input_map.o)
         module = future.get()
         for key in list(outputs):
             module_item = module_info.getOutput(key)
@@ -73,7 +73,7 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_module_service(self.context)
         module_index = svc.getIndex()
         self.assertTrue(any([
-            x.getClassName() == 'imagej.core.commands.assign.AddSpecifiedNoiseToDataValues'
+            x.getClassName() == 'imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues'
             for x in module_index]))
         self.assertGreaterEqual(
             len(module_index.getS('imagej.command.CommandInfo')), 1)
@@ -132,7 +132,7 @@ class TestImagej2(unittest.TestCase):
         module_infos = svc.getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'imagej.core.commands.assign.AddSpecifiedNoiseToDataValues':
+               'imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
                 module = module_info.createModule()
                 module.getInfo()
                 module.getInput('stdDev')
@@ -150,7 +150,7 @@ class TestImagej2(unittest.TestCase):
         module_infos = svc.getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'imagej.core.commands.assign.AddSpecifiedNoiseToDataValues':
+               'imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
                 menu_path = module_info.getMenuPath()
                 for item in J.iterate_collection(menu_path):
                     menu_entry = ij2.wrap_menu_entry(item)
@@ -176,12 +176,12 @@ class TestImagej2(unittest.TestCase):
         module_infos = ij2.get_module_service(self.context).getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'imagej.core.commands.display.ShowLUT':
+               'imagej.plugins.commands.app.AboutImageJ':
                 d = J.get_map_wrapper(J.make_instance('java/util/HashMap', '()V'))
-                future = svc.run(module_info.o, d.o)
+                future = svc.run(module_info.o, True, d.o)
                 module = future.get()
                 module = ij2.wrap_module(module)
-                module.getOutput('output')
+                module.getOutput('display')
                 break
         else:
             raise AssertionError("Could not find target module")
@@ -204,7 +204,6 @@ class TestImagej2(unittest.TestCase):
         self.assertFalse(result.isSigned())
         result.getImgPlus()
         result.getType()
-        result.calibration(0)
         
     def test_05_03_get_pixel_data(self):
         svc = ij2.get_dataset_service(self.context)
@@ -449,7 +448,7 @@ class TestImagej2(unittest.TestCase):
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = svc.createDisplay("Foo", ds)
         outputs = dict(display=None)
-        self.run_command("imagej.core.commands.rotate.Rotate90DegreesLeft",
+        self.run_command("imagej.plugins.commands.rotate.Rotate90DegreesLeft",
                          dict(display=display),
                          outputs)
         display_out = ij2.wrap_display(outputs["display"])
@@ -471,7 +470,7 @@ class TestImagej2(unittest.TestCase):
         ij2.get_overlay_service(self.context).addOverlays(
             display.o, J.make_list([overlay]))
         ij2.select_overlay(display.o, overlay)
-        self.run_command("imagej.core.commands.imglib.CropImage",
+        self.run_command("imagej.plugins.commands.imglib.CropImage",
                          dict(display=display), {})
         dataset = ij2.wrap_dataset(display.getActiveView().getData())
         image_out = dataset.get_pixel_data()
@@ -481,7 +480,6 @@ class TestImagej2(unittest.TestCase):
     def test_10_01_get_script_service(self):
         svc = ij2.get_script_service(self.context)
         svc.getPluginService()
-        svc.getLogService()
         svc.getIndex()
         for factory in svc.getLanguages():
             factory.getLanguageName()

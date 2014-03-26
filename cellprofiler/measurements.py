@@ -1011,6 +1011,13 @@ class Measurements(object):
                      if metadata is not associated with an image)
         image_set_number - # of image set to use to retrieve data.
                            None for current.
+        
+        C_SERIES and C_FRAME are special cases. We look at the series/frame
+        values for all images in the image set and take the one that's the
+        highest - assuming that there may be a stack + a single image like
+        one used for background subtraction. Admittedly a heuristic, but
+        there it is.
+        
         returns a string with the metadata tags replaced by the metadata
         """
         if image_set_number == None:
@@ -1030,9 +1037,19 @@ class Measurements(object):
                         result += piece
                         break
                 result += piece[:m.start()]
-                measurement = '%s_%s' % (C_METADATA, m.groups()[0])
-                result += str(self.get_measurement("Image", measurement,
-                                                   image_set_number))
+                feature = m.groups()[0]
+                if feature in (C_SERIES, C_FRAME):
+                    max_value = 0
+                    for mname in self.get_feature_names(IMAGE):
+                        if mname.startswith(feature + "_"):
+                            value = self[IMAGE, mname, image_set_number]
+                            if value > max_value:
+                                max_value = value
+                    result += str(max_value)
+                else:
+                    measurement = '%s_%s' % (C_METADATA, feature)
+                    result += str(self.get_measurement("Image", measurement,
+                                                       image_set_number))
                 piece = piece[m.end():]
             result_pieces.append(result)
         return single_backquote.join(result_pieces)

@@ -1244,8 +1244,9 @@ class Pipeline(object):
         fd.write("%s:%s\n" % (H_GIT_HASH, cpversion.git_hash))
         fd.write("%s:%d\n" % (H_MODULE_COUNT, len(self.__modules)))
         fd.write("%s:%s\n" % (H_HAS_IMAGE_PLANE_DETAILS, str(save_image_plane_details)))
-        attributes = ('module_num','svn_version','variable_revision_number',
-                      'show_window','notes','batch_state','enabled')
+        attributes = (
+            'module_num', 'svn_version', 'variable_revision_number',
+            'show_window', 'notes', 'batch_state', 'enabled', 'wants_pause')    
         notes_idx = 4
         for module in self.__modules:
             if ((modules_to_save is not None) and 
@@ -1886,7 +1887,8 @@ class Pipeline(object):
             self.end_run()
 
     def run_image_set(self, measurements, image_set_number,
-                      interaction_handler, display_handler):
+                      interaction_handler, display_handler,
+                      cancel_handler):
         """Run the pipeline for a single image set storing the results in measurements.
 
         Arguments:
@@ -1922,6 +1924,7 @@ class Pipeline(object):
                                       None,
                                       outlines=outlines)
             workspace.interaction_handler = interaction_handler
+            workspace.cancel_handler = cancel_handler
 
             grids = workspace.set_grids(grids)
 
@@ -2277,6 +2280,8 @@ class Pipeline(object):
         if not m:
             m = re.findall('\\\\g[<](.+?)[>]', pattern)
         if m:
+            m = filter((lambda x:not any(
+                [x.startswith(y) for y in cpmeas.C_SERIES, cpmeas.C_FRAME])), m)
             undefined_tags = list(set(m).difference(current_metadata))
             return undefined_tags
         else:

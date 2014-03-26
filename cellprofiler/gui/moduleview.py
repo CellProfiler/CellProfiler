@@ -35,7 +35,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.icons import get_builtin_image
-from regexp_editor import edit_regexp
+from regexp_editor import edit_regexp, RE_FILENAME_GUESSES, RE_FOLDER_GUESSES
 from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
 from metadatactrl import MetadataControl
@@ -285,7 +285,6 @@ class ModuleView:
         self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(
             top_panel,
             style=wx.TAB_TRAVERSAL)
-        self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
         self.__module_panel.SetupScrolling(True, True)
         self.__module_panel.BackgroundColour = background_color
         module_settings_box_sizer.Add(self.__module_panel, 1, wx.EXPAND)
@@ -1163,7 +1162,7 @@ class ModuleView:
                 #
                 # Find a file in the image directory
                 #
-                file = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
+                filename = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
                 try:
                     if setting.get_example_fn is None:
                         path = cpprefs.get_default_image_directory()
@@ -1172,12 +1171,17 @@ class ModuleView:
                                      os.path.splitext(x)[1].upper() in
                                      ('.TIF','.JPG','.PNG','.BMP')]
                         if len(filenames):
-                            file = filenames[0]
+                            filename = filenames[0]
                     else:
-                        file = setting.get_example_fn()
+                        filename = setting.get_example_fn()
                 except:
                     pass
-                new_value = edit_regexp(panel, control.Value, file)
+                
+                if v.guess == cps.RegexpText.GUESS_FOLDER:
+                    guesses = RE_FOLDER_GUESSES
+                else:
+                    guesses = RE_FILENAME_GUESSES
+                new_value = edit_regexp(panel, control.Value, filename, guesses)
                 if new_value:
                     control.Value = new_value
                     self.__on_cell_change(event, setting,control)

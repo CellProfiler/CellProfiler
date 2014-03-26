@@ -1635,7 +1635,7 @@ class TrackObjects(cpm.CPModule):
                 child_object_number = int(P1[p1_idx, ONIDX])
                 relationships.append(
                     ((parent_image_index, parent_object_number),
-                     (my_image_index, my_object_number)))
+                     (child_image_index, child_object_number)))
                 lost_object_count[child_image_index] -= 1
                 merge_count[child_image_index] += 1
             else:

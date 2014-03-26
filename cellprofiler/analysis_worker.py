@@ -103,6 +103,12 @@ if __name__=="__main__":
         except:
             maxfd = 256
         os.closerange(3, maxfd)
+    if not hasattr(sys, 'frozen'):
+        # In the development version, maybe the bioformats package is installed?
+        # Add the root to the pythonpath
+        root = os.path.split(os.path.split(__file__)[0])[0]
+        sys.path.insert(0, root)
+
     aw_parse_args()
     
 import time
@@ -124,7 +130,7 @@ from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
      PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
      NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
-     DisplayPostGroupRequest, \
+     DisplayPostGroupRequest, AnalysisCancelRequest, \
      ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
      ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
      SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE,  \
@@ -404,7 +410,8 @@ class AnalysisWorker(object):
                             current_measurements,
                             image_set_number,
                             self.interaction_handler,
-                            self.display_handler)
+                            self.display_handler,
+                            self.cancel_handler)
                         if self.pipeline_listener.should_abort:
                             abort = True
                             break
@@ -458,6 +465,7 @@ class AnalysisWorker(object):
                                               current_measurements, None,
                                               current_measurements, None, None)
                     workspace.interaction_handler = self.interaction_handler
+                    workspace.cancel_handler = self.cancel_handler
                     workspace.post_group_display_handler = \
                         self.post_group_display_handler
                     # There might be an exception in this call, but it will be
@@ -500,6 +508,12 @@ class AnalysisWorker(object):
             **arg_kwarg_dict)
         rep = self.send(req)
         return rep.result
+    
+    def cancel_handler(self):
+        '''Handle a cancel request by sending AnalysisCancelRequest
+        
+        '''
+        self.send(AnalysisCancelRequest(self.current_analysis_id))
         
     def display_handler(self, module, display_data, image_set_number):
         '''handle display requests'''

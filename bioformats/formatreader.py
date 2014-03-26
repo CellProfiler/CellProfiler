@@ -99,9 +99,6 @@ def make_iformat_reader_class():
         getDimensionOrder = jutil.make_method('getDimensionOrder',
                                               '()Ljava/lang/String;',
                                               'Return the dimension order as a five-character string, e.g. "XYCZT"')
-        getMetadata = jutil.make_method('getMetadata',
-                                        '()Ljava/util/Hashtable;',
-                                        'Obtains the hashtable containing the metadata field/value pairs')
         getMetadataValue = jutil.make_method('getMetadataValue',
                                              '(Ljava/lang/String;)'
                                              'Ljava/lang/Object;',
@@ -653,8 +650,8 @@ class ImageReader(object):
         mdoptions = metadatatools.get_metadata_options(metadatatools.ALL)
         self.rdr.setMetadataOptions(mdoptions)
         self.rdr.setGroupFiles(False)
-        metadata = metadatatools.createOMEXMLMetadata()
-        self.rdr.setMetadataStore(metadata)
+        self.metadata = metadatatools.createOMEXMLMetadata()
+        self.rdr.setMetadataStore(self.metadata)
         try:
             self.rdr.setId(self.path)
         except jutil.JavaException, e:
@@ -782,7 +779,7 @@ class ImageReader(object):
             image = np.dstack(images)
             image.shape = (height, width, self.rdr.getSizeC())
             if not channel_names is None:
-                metadata = metadatatools.MetadataRetrieve(metadata)
+                metadata = metadatatools.MetadataRetrieve(self.metadata)
                 for i in range(self.rdr.getSizeC()):
                     index = self.rdr.getIndex(z, 0, t)
                     channel_name = metadata.getChannelName(index, i)

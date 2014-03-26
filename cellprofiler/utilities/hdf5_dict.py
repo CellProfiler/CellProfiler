@@ -64,6 +64,7 @@ def infer_hdf5_type(val):
 
 FILE_LIST_GROUP = "FileList"
 DEFAULT_GROUP = "Default"
+TOP_LEVEL_GROUP_NAME = "Measurements"
 FILE_METADATA_GROUP = "FileMetadata"
 A_TIMESTAMP = "Timestamp"
 '''The attribute on a group or dataset that indicates how the data is organized'''
@@ -121,7 +122,7 @@ class HDF5Dict(object):
     # XXX - document how data is stored in hdf5 (basically, /Measurements/Object/Feature)
 
     def __init__(self, hdf5_filename, 
-                 top_level_group_name = "Measurements",
+                 top_level_group_name = TOP_LEVEL_GROUP_NAME,
                  run_group_name = None,
                  is_temporary = False,
                  copy = None,
@@ -343,6 +344,16 @@ class HDF5Dict(object):
             with open(self.filename, "rb") as f:
                 return buffer(f.read())
 
+    @classmethod
+    def has_hdf5_dict(cls, h5file):
+        '''Return True if the HDF file has a HDF5Dict in the usual location
+        
+        :param h5file: An open HDF5 file
+        
+        :returns: True if it has a HDF5Dict
+        '''
+        return TOP_LEVEL_GROUP_NAME in h5file
+    
     @staticmethod
     def __is_positive_int(idx):
         '''Return True if the index is a positive integer suitable for HDF5 indexing'''

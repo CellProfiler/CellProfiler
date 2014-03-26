@@ -1089,6 +1089,40 @@ class TestAnalysis(unittest.TestCase):
                                           np.arange(1, n_objects+1))
             np.testing.assert_array_equal(r[cpmeas.R_SECOND_OBJECT_NUMBER],
                                           objects_relationship)
+
+    def test_06_07_worker_cancel(self):
+        #
+        # Test worker sending AnalysisCancelRequest
+        #
+        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
+        self.wants_analysis_finished = True
+        pipeline, m = self.make_pipeline_and_measurements_and_start()
+        r = np.random.RandomState()
+        r.seed(61)
+        with self.FakeWorker() as worker:
+            #####################################################
+            #
+            # Connect the worker to the analysis server and get
+            # the initial measurements.
+            #
+            #####################################################
+            worker.connect(self.analysis.runner.work_announce_address)
+            response = worker.request_work()
+            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+                worker.analysis_id))()
+            #####################################################
+            #
+            # The worker sends an AnalysisCancelRequest. The
+            # server should send AnalysisFinished.
+            #
+            #####################################################
+            
+            response = worker.send(cpanalysis.AnalysisCancelRequest(
+                worker.analysis_id))()
+            result = self.event_queue.get()
+            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertTrue(result.cancelled)
+            
                 
 SBS_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3

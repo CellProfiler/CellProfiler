@@ -30,12 +30,14 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
 from scipy.sparse import coo_matrix
+from scipy.ndimage import distance_transform_edt
 import functools
 
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
 from cpfigure_tools import figure_to_image, only_display_image, renumber_labels_for_display
+import cellprofiler.cpmath.outline
 
 #
 # Monkey-patch the backend canvas to only report the truly supported filetypes
@@ -87,6 +89,27 @@ COLOR_VALS = [[1, 0, 0],
               [0, 1, 1],
               [1, 0, 1],
               [1, 1, 1]]
+
+"""subplot_imshow cplabels dictionary key: segmentation labels image"""
+CPLD_LABELS = "labels"
+"""subplot_imshow cplabels dictionary key: objects name"""
+CPLD_NAME = "name"
+"""subplot_imshow cplabels dictionary key: color to use for outlines"""
+CPLD_OUTLINE_COLOR = "outline_color"
+"""subplot_imshow cplabels dictionary key: display mode - outlines or alpha"""
+CPLD_MODE = "mode"
+"""subplot_imshow cplabels mode value: show outlines of objects"""
+CPLDM_OUTLINES = "outlines"
+"""subplot_imshow cplabels mode value: show objects as an alpha-transparent color overlay"""
+CPLDM_ALPHA = "alpha"
+"""subplot_imshow cplabels mode value: don't show these objects"""
+CPLDM_NONE = "none"
+"""subplot_imshow cplabels dictionary key: line width of outlines"""
+CPLD_LINE_WIDTH = "line_width"
+"""subplot_imshow cplabels dictionary key: color map to use in alpha mode"""
+CPLD_ALPHA_COLORMAP = "alpha_colormap"
+"""subplot_imshow cplabels dictionary key: alpha value to use in overlay mode"""
+CPLD_ALPHA_VALUE = "alpha_value"
 
 def wraparound(list):
     while True:
@@ -206,7 +229,17 @@ MENU_CONTRAST_LOG = wx.NewId()
 MENU_INTERPOLATION_NEAREST = wx.NewId()
 MENU_INTERPOLATION_BILINEAR = wx.NewId()
 MENU_INTERPOLATION_BICUBIC = wx.NewId()
+MENU_LABELS_OUTLINE = {}
+MENU_LABELS_OVERLAY = {}
+MENU_LABELS_OFF = {}
+MENU_LABELS_ALPHA = {}
 MENU_SAVE_SUBPLOT = {}
+MENU_RGB_CHANNELS = {}
+
+def get_menu_id(d, idx):
+    if idx not in d:
+        d[idx] = wx.NewId()
+    return d[idx]
 
 '''mouse tool mode - do nothing'''
 MODE_NONE = 0
@@ -787,9 +820,8 @@ class CPFigureFrame(wx.Frame):
             "the most visually appealing image but is the least faithful to "
             "the image pixel values.", wx.ITEM_RADIO)
         popup.AppendMenu(-1, "Interpolation", submenu)
-        if (x, y) not in MENU_SAVE_SUBPLOT:
-            MENU_SAVE_SUBPLOT[(x, y)] = wx.NewId()
-        popup.Append(MENU_SAVE_SUBPLOT[(x, y)],
+        save_subplot_id = get_menu_id(MENU_SAVE_SUBPLOT, (x, y))
+        popup.Append(save_subplot_id,
                      "Save subplot", 
                      "Save just the display portion of this subplot")
         
@@ -867,7 +899,8 @@ class CPFigureFrame(wx.Frame):
         if is_color_image(self.images[x,y]):
             submenu = wx.Menu()
             rgb_mask = match_rgbmask_to_image(params['rgb_mask'], self.images[x,y])
-            ids = [wx.NewId() for _ in rgb_mask]
+            ids = [get_menu_id(MENU_RGB_CHANNELS, (x, y, i))
+                   for i in range(len(rgb_mask))]
             for name, value, id in zip(wraparound(COLOR_NAMES), rgb_mask, ids):
                 item = submenu.Append(id, name, 'Show/Hide the %s channel'%(name), wx.ITEM_CHECK)
                 if value != 0:
@@ -892,10 +925,40 @@ class CPFigureFrame(wx.Frame):
                 self.subplot(x,y).set_xlim(xlims[0], xlims[1])
                 self.subplot(x,y).set_ylim(ylims[0], ylims[1])   
                 self.figure.canvas.draw()
-
+                
             for id in ids:
                 self.Bind(wx.EVT_MENU, toggle_channels, id=id)
         
+        if params['cplabels'] is not None and len(params['cplabels']) > 0:
+            for i, cplabels in enumerate(params['cplabels']):
+                submenu = wx.Menu()
+                name = cplabels.get(CPLD_NAME, "Objects #%d" %i)
+                for mode, menud, mlabel, mhelp in (
+                    (CPLDM_OUTLINES, MENU_LABELS_OUTLINE,
+                     "Outlines", "Display outlines of objects"),
+                    (CPLDM_ALPHA, MENU_LABELS_OVERLAY,
+                     "Overlay", "Display objects as an alpha-overlay"),
+                    (CPLDM_NONE, MENU_LABELS_OFF,
+                     "Off", "Turn object labels off")):
+                    menu_id = get_menu_id(menud, (x, y, i))
+                    item = submenu.AppendRadioItem(menu_id, mlabel, mhelp)
+                    if cplabels[CPLD_MODE] == mode:
+                        item.Check()
+                    def select_mode(event, cplabels = cplabels, mode=mode):
+                        cplabels[CPLD_MODE] = mode
+                        self.figure.canvas.draw()
+                    self.Bind(wx.EVT_MENU, select_mode, id=menu_id)
+                if cplabels[CPLD_MODE] == CPLDM_ALPHA:
+                    menu_id = get_menu_id(MENU_LABELS_ALPHA, (x, y, i))
+                    item = submenu.Append(
+                        menu_id, "Adjust transparency",
+                        "Change the alpha-blend for the labels overlay to make it more or less transparent")
+                    self.Bind(wx.EVT_MENU, 
+                              lambda event, cplabels = cplabels:
+                              self.on_adjust_labels_alpha(cplabels),
+                              id = menu_id)
+                popup.AppendMenu(-1, name, submenu)
+
         self.Bind(wx.EVT_MENU, open_image_in_new_figure, open_in_new_figure_item)
         self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
@@ -909,11 +972,42 @@ class CPFigureFrame(wx.Frame):
                   id = MENU_SAVE_SUBPLOT[(x, y)])
         return popup
 
+    def on_adjust_labels_alpha(self, cplabels):
+        with wx.Dialog(self, title = "Adjust labels transparency") as dlg:
+            name = cplabels.get(CPLD_NAME, "Objects")
+            orig_alpha = int(cplabels[CPLD_ALPHA_VALUE] * 100 + .5)
+            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            dlg.Sizer.Add(sizer, 1, wx.EXPAND|wx.ALL, 8)
+            sizer.Add(wx.StaticText(dlg, label="%s transparency"), 
+                      0, wx.ALIGN_CENTER_HORIZONTAL)
+            sizer.AddSpacer(4)
+            slider = wx.Slider(
+                dlg, value=orig_alpha, minValue=0, maxValue=100,
+                style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS)
+            sizer.Add(slider, 1, wx.EXPAND)
+            button_sizer = wx.StdDialogButtonSizer()
+            button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+            button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+            dlg.Sizer.Add(button_sizer)
+            button_sizer.Realize()
+            
+            def on_slider(event, cplabels = cplabels, 
+                          draw_fn = self.figure.canvas.draw_idle):
+                cplabels[CPLD_ALPHA_VALUE] = float(slider.Value) / 100.
+                draw_fn()
+                
+            dlg.Layout()
+            slider.Bind(wx.EVT_SLIDER, on_slider)
+            if dlg.ShowModal() != wx.ID_OK:
+                slider.Value = orig_alpha
+                on_slider(None)
+            
     @allow_sharexy
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=None, vmin=0, vmax=1, 
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
-                       use_imshow = False, interpolation=None):
+                       use_imshow = False, interpolation=None, cplabels = None):
         '''Show an image in a subplot
         
         x, y  - show image in this subplot
@@ -934,6 +1028,9 @@ class CPFigureFrame(wx.Frame):
                          panning). Specify a subplot using CPFigure.subplot(x,y)
         use_imshow - True to use Axes.imshow to paint images, False to fill
                      the image into the axes after painting.
+        cplabels - a list of dictionaries of labels properties. Each dictionary
+                   describes a set of labels. See the documentation of
+                   the CPLD_* constants for details.
         '''
         orig_vmin = vmin
         orig_vmax = vmax
@@ -941,6 +1038,30 @@ class CPFigureFrame(wx.Frame):
             interpolation = get_matplotlib_interpolation_preference()
         if normalize is None:
             normalize = True
+        if cplabels is None:
+            cplabels = []
+        else:
+            use_imshow = False
+            new_cplabels = []
+            for i, d in enumerate(cplabels):
+                d = d.copy()
+                if CPLD_OUTLINE_COLOR not in d:
+                    if i == 0:
+                        d[CPLD_OUTLINE_COLOR] = cpprefs.get_primary_outline_color()
+                    elif i == 1:
+                        d[CPLD_OUTLINE_COLOR] = cpprefs.get_secondary_outline_color()
+                    elif i == 2:
+                        d[CPLD_OUTLINE_COLOR] = cpprefs.get_tertiary_outline_color()
+                if CPLD_MODE not in d:
+                    d[CPLD_MODE] = CPLDM_OUTLINES
+                if CPLD_LINE_WIDTH not in d:
+                    d[CPLD_LINE_WIDTH] = 1
+                if CPLD_ALPHA_COLORMAP not in d:
+                    d[CPLD_ALPHA_COLORMAP] = cpprefs.get_default_colormap()
+                if CPLD_ALPHA_VALUE not in d:
+                    d[CPLD_ALPHA_VALUE] = .25
+                new_cplabels.append(d)
+            cplabels = new_cplabels
 
         # NOTE: self.subplot_user_params is used to store changes that are made 
         #    to the display through GUI interactions (eg: hiding a channel).
@@ -948,7 +1069,7 @@ class CPFigureFrame(wx.Frame):
         #    continually load defaults from self.subplot_user_params instead of
         #    the default values specified in the function definition.
         kwargs = {'title' : title,
-                  'clear' : clear,
+                  'clear' : False,
                   'colormap' : colormap,
                   'colorbar' : colorbar,
                   'normalize' : normalize,
@@ -956,7 +1077,8 @@ class CPFigureFrame(wx.Frame):
                   'vmax' : vmax,
                   'rgb_mask' : rgb_mask,
                   'use_imshow' : use_imshow,
-                  'interpolation': interpolation}
+                  'interpolation': interpolation,
+                  'cplabels': cplabels}
         if (x,y) not in self.subplot_user_params:
             self.subplot_user_params[(x,y)] = {}
         if (x,y) not in self.subplot_params:
@@ -969,7 +1091,6 @@ class CPFigureFrame(wx.Frame):
 
         # and fetch back out
         title = kwargs['title']
-        clear = kwargs['clear']
         colormap = kwargs['colormap']
         colorbar = kwargs['colorbar']
         normalize = kwargs['normalize']
@@ -1083,14 +1204,10 @@ class CPFigureFrame(wx.Frame):
         return subplot
 
     @allow_sharexy
-    def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
-                             normalize=False, rgb_mask=[1,1,1],
-                             sharex=None, sharey=None,
-                             use_imshow=False):
-        return self.subplot_imshow(x, y, image, title=title, clear=clear, 
-                                   normalize=normalize, rgb_mask=rgb_mask, 
-                                   sharex=sharex, sharey=sharey,
-                                   use_imshow = use_imshow)
+    def subplot_imshow_color(self, x, y, image, title=None,
+                             normalize=False, rgb_mask=[1,1,1], **kwargs):
+        return self.subplot_imshow(
+            x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs)
 
     @allow_sharexy
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True, 
@@ -1172,10 +1289,7 @@ class CPFigureFrame(wx.Frame):
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
     @allow_sharexy
-    def subplot_imshow_grayscale(self, x, y, image, title=None, clear=True,
-                                 colorbar=False, normalize=True, vmin=0, vmax=1,
-                                 sharex=None, sharey=None, 
-                                 use_imshow = False):
+    def subplot_imshow_grayscale(self, x, y, image, title=None, **kwargs):
         '''Show an intensity image in shades of gray
         
         x,y - the subplot's coordinates
@@ -1193,15 +1307,12 @@ class CPFigureFrame(wx.Frame):
         '''
         if image.dtype.type == np.float64:
             image = image.astype(np.float32)
-        return self.subplot_imshow(x, y, image, title, clear, 
-                                   matplotlib.cm.Greys_r, normalize=normalize,
-                                   colorbar=colorbar, vmin=vmin, vmax=vmax,
-                                   sharex=sharex, sharey=sharey,
-                                   use_imshow = use_imshow)
+        kwargs = kwargs.copy()
+        kwargs['colormap'] = matplotlib.cm.Greys_r
+        return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
     @allow_sharexy
-    def subplot_imshow_bw(self, x, y, image, title=None, clear=True, 
-                          sharex=None, sharey=None, use_imshow = False):
+    def subplot_imshow_bw(self, x, y, image, title=None, **kwargs):
         '''Show a binary image in black and white
         
         x,y - the subplot's coordinates
@@ -1213,16 +1324,9 @@ class CPFigureFrame(wx.Frame):
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
         '''
-#        a = 0.3
-#        b = 0.59
-#        c = 0.11
-#        if is_color_image(image):
-#            # Convert to luminance
-#            image = np.sum(image * (a,b,c), axis=2)
-        return self.subplot_imshow(x, y, image, title, clear, 
-                                   matplotlib.cm.binary_r,
-                                   sharex=sharex, sharey=sharey,
-                                   use_imshow = use_imshow)
+        kwargs = kwargs.copy()
+        kwargs['colormap'] = matplotlib.cm.binary_r
+        return self.subplot_imshow(x, y, image, title=title, **kwargs)
     
     def normalize_image(self, image, **kwargs):
         '''Produce a color image normalized according to user spec'''
@@ -1258,6 +1362,40 @@ class CPFigureFrame(wx.Frame):
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap)
             mappable.set_clim(vmin, vmax)
             image = mappable.to_rgba(image)[:,:,:3]
+        #
+        # add the segmentations
+        #
+        for cplabel in kwargs['cplabels']:
+            if cplabel[CPLD_MODE] == CPLDM_NONE:
+                continue
+            loffset = 0
+            ltotal = sum([np.max(labels) for labels in cplabel[CPLD_LABELS]])
+            for labels in cplabel[CPLD_LABELS]:
+                if cplabel[CPLD_MODE] == CPLDM_OUTLINES:
+                    oc = np.array(cplabel[CPLD_OUTLINE_COLOR], float)[:3]/255
+                    lo = cellprofiler.cpmath.outline.outline(labels) != 0
+                    lo = lo.astype(float)
+                    lw = float(cplabel[CPLD_LINE_WIDTH])
+                    if lw > 1:
+                        # Alpha-blend for distances beyond 1
+                        hw = lw / 2
+                        d = distance_transform_edt(lo)
+                        lo[(d > .5) & (d < hw)] = (hw + .5 - d) / hw
+                    image = image * (1 - lo[:, :, np.newaxis]) + \
+                        lo[:, :, np.newaxis] * oc[np.newaxis, np.newaxis, :]
+                else:
+                    #
+                    # For alpha overlays, renumber
+                    lnumbers = renumber_labels_for_display(labels) + loffset
+                    mappable = matplotlib.cm.ScalarMappable(
+                        cmap=cplabel[CPLD_ALPHA_COLORMAP])
+                    mappable.set_clim(1, ltotal)
+                    limage = mappable.to_rgba(lnumbers[labels!=0])[:,:3]
+                    alpha = cplabel[CPLD_ALPHA_VALUE]
+                    image[labels != 0, :] *= 1-alpha
+                    image[labels != 0, :] += limage * alpha
+                loffset += np.max(labels)
+                        
         return image
     
     def subplot_table(self, x, y, statistics, 

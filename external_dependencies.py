@@ -53,7 +53,7 @@ ACTION_MAVEN = "Maven"
 
 CELLPROFILER_DEPENDENCIES_URL = \
     'http://www.cellprofiler.org/linked_files/CellProfilerDependencies'
-OMERO_CLIENTS_URL = CELLPROFILER_DEPENDENCIES_URL + '/OMERO.clients-4.4.6'
+OMERO_CLIENTS_URL = CELLPROFILER_DEPENDENCIES_URL + '/OMERO.clients-5.0.0-ice35-b19'
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
 files = [
     [['imagej', 'apache-maven-3.0.4-bin.zip'], 
@@ -61,17 +61,27 @@ files = [
      CELLPROFILER_DEPENDENCIES_URL + '/apache-maven-3.0.4-bin.zip',
      ACTION_MAVEN],
     [['imagej', 'jars', 'blitz.jar'], 
-     '187b6ba235b248b9e0bbbdbce030b677c43e0ca6',
+     '537bb9c05adc23cb07be21991bc4511aefe92dfd',
      OMERO_CLIENTS_URL + '/blitz.jar', None],
     [['imagej', 'jars', 'common.jar'], 
-     'b5e71c170ec44e532a42a21c3d4f0114b36a8a0a',
+     '8c6926ef5c77d1606dfb2483232ddff4716553f9',
      OMERO_CLIENTS_URL + '/common.jar', None],
     [['imagej', 'jars', 'model-psql.jar'], 
-     'f0dfd921e0569e5eb78a0842c595904e0b059fd9',
+     'aeaf122dbb2ffa2fe716194daf818c12bc764183',
      OMERO_CLIENTS_URL + '/model-psql.jar', None],
     [['imagej', 'jars', 'ice.jar'], 
-     '017c5f3960be550673ff491bbcc7184c6d6388f1',
-     OMERO_CLIENTS_URL + '/ice.jar', None]]
+     'f11f38c0f643cafe933089827395c8e5d29162e7',
+     OMERO_CLIENTS_URL + '/ice.jar', None],
+    [['imagej', 'jars', 'ice-glacier2.jar'],
+     '90b6cbc3d05c3610f00e23efe7067a11a74b84b2',
+     OMERO_CLIENTS_URL + '/ice-glacier2.jar', None],
+    [['imagej', 'jars', 'ice-storm.jar'],
+     'b3ecbee2e7f25daf2adf5c890b65965ed518dcb9',
+     OMERO_CLIENTS_URL + '/ice-storm.jar', None],
+    [['imagej', 'jars', 'ice-grid.jar'],
+     '108cb942775d3d4763d7d2a9d1c646f6c5f21354',
+     OMERO_CLIENTS_URL + '/ice-grid.jar', None]
+]
 
 pom_folders = ["imagej", "java"]
 classpath_filenames = ("cellprofiler-dependencies-classpath.txt",

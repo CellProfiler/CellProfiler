@@ -634,8 +634,15 @@ class AnalysisRunner(object):
                                                  req.buf)
                 req.reply(Ack())
                 logger.debug("Acknowledged measurements report")
+            elif isinstance(req, AnalysisCancelRequest):
+                # Signal the interface that we are cancelling
+                logger.debug("Received analysis worker cancel request")
+                with self.interface_work_cv:
+                    self.cancelled = True
+                    self.interface_work_cv.notify()
+                req.reply(Ack())
             elif isinstance(req, (InteractionRequest, DisplayRequest, 
-                                  DisplayPostGroupRequest,
+                                  DisplayPostGroupRequest, 
                                   ExceptionReport, DebugWaiting, DebugComplete,
                                   OmeroLoginRequest)):
                 logger.debug("Enqueueing interactive request")
@@ -908,6 +915,9 @@ class MeasurementsReport(AnalysisRequest):
 
 
 class InteractionRequest(AnalysisRequest):
+    pass
+
+class AnalysisCancelRequest(AnalysisRequest):
     pass
 
 class DisplayRequest(AnalysisRequest):

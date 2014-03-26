@@ -32,7 +32,7 @@ import loci.formats.services.OMEXMLService;
 import ome.xml.model.OME;
 import ome.xml.model.OMEModelObject;
 
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -117,12 +117,12 @@ public class ImageFile {
 					}
 				}
 			} catch (URISyntaxException e) {
-				Logger.getLogger(getClass()).info(
+				LoggerFactory.getLogger(getClass()).info(
 						"Failed to extract metadata from badly formed URL: " + 
 						uri.toString());
 				return null;
 			} catch (MalformedURLException e) {
-				Logger.getLogger(getClass()).warn(
+				LoggerFactory.getLogger(getClass()).warn(
 						String.format("Failed to reconstitute path from URL, \"%s\"", uri.toString()));
 				return null;
 			}

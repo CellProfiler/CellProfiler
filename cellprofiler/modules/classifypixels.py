@@ -55,10 +55,11 @@ import sys, os
 # Import vigra
 try:
     import vigra
+    has_ilastik = True
 except ImportError, vigraImport:
     logger.warning("""vigra import: failed to import the vigra library. Please follow the instructions on 
 "http://hci.iwr.uni-heidelberg.de/vigra/" to install vigra""", exc_info=True)
-    raise vigraImport
+    has_ilastik = False
 
 # Import h5py
 try:
@@ -71,22 +72,23 @@ except ImportError, h5pyImport:
 # Import ilastik 
 
 old_stdout = sys.stdout
-try:
-    sys.stdout = sys.stderr = open(os.devnull, "w")
-    from ilastik.core.dataMgr import DataMgr, DataItemImage
-    from ilastik.modules.classification.core.featureMgr import FeatureMgr
-    from ilastik.modules.classification.core.classificationMgr import ClassificationMgr
-    from ilastik.modules.classification.core.features.featureBase import FeatureBase
-    from ilastik.modules.classification.core.classifiers.classifierRandomForest import ClassifierRandomForest
-    from ilastik.modules.classification.core.classificationMgr import ClassifierPredictThread
-    from ilastik.core.volume import DataAccessor
-    sys.stdout = old_stdout
-    
-except ImportError, ilastikImport:
-    sys.stdout = old_stdout
-    logger.warning("""ilastik import: failed to import the ilastik. Please follow the instructions on 
-"http://www.ilastik.org" to install ilastik""", exc_info=True)
-    raise ilastikImport
+if has_ilastik:
+    try:
+        sys.stdout = sys.stderr = open(os.devnull, "w")
+        from ilastik.core.dataMgr import DataMgr, DataItemImage
+        from ilastik.modules.classification.core.featureMgr import FeatureMgr
+        from ilastik.modules.classification.core.classificationMgr import ClassificationMgr
+        from ilastik.modules.classification.core.features.featureBase import FeatureBase
+        from ilastik.modules.classification.core.classifiers.classifierRandomForest import ClassifierRandomForest
+        from ilastik.modules.classification.core.classificationMgr import ClassifierPredictThread
+        from ilastik.core.volume import DataAccessor
+        sys.stdout = old_stdout
+        
+    except ImportError, ilastikImport:
+        sys.stdout = old_stdout
+        logger.warning("""ilastik import: failed to import the ilastik. Please follow the instructions on 
+    "http://www.ilastik.org" to install ilastik""", exc_info=True)
+        has_ilastik = False
 
 CLASSIFIERS_KEY = "IlastikClassifiers"
 FEATURE_ITEMS_KEY = "IlastikFeatureItems"
@@ -150,6 +152,13 @@ class ClassifyPixels(cpm.CPModule):
             browse_msg = "Choose Classifier file",
             exts = [("Classfier file (*.h5)","*.h5"),("All files (*.*)","*.*")]
         )
+        self.no_ilastik_msg = cps.HTMLText(
+            "",
+            content = """
+            ClassifyPixels cannot run on this platform because
+            the necessary libraries are not available. ClassifyPixels is
+            supported on 64-bit versions of Windows Vista, Windows 7 and
+            Windows 8 and on Linux.""", size=(-1, 50))
         
     def add_probability_map(self, can_remove=True):
         group = cps.SettingsGroup()
@@ -182,16 +191,21 @@ class ClassifyPixels(cpm.CPModule):
         return result
     
     def visible_settings(self):
-        result = [self.image_name]
-        for group in self.probability_maps:
-            result += [group.output_image, group.class_sel]
-            if group.can_remove:
-                result += [group.remover]
-        result += [self.add_probability_button, self.h5_directory,
-                   self.classifier_file_name]
-        return result
+        if has_ilastik:
+            result = [self.image_name]
+            for group in self.probability_maps:
+                result += [group.output_image, group.class_sel]
+                if group.can_remove:
+                    result += [group.remover]
+            result += [self.add_probability_button, self.h5_directory,
+                       self.classifier_file_name]
+            return result
+        else:
+            return [self.no_ilastik_msg]
         
     def run(self, workspace):
+        if not has_ilastik:
+            raise ImportError("The Vigra and Ilastik packages are not available or installed on this platform")
         # get input image
         image = workspace.image_set.get_image(self.image_name.value, must_be_color=False) 
         
@@ -347,6 +361,27 @@ class ClassifyPixels(cpm.CPModule):
                 title = self.probability_maps[i].output_image.value,
                 sharexy = src_plot)
 
+    def validate_module(self, pipeline):
+        '''Mark ClassifyPixels as invalid if Ilastik is not properly installed
+        
+        '''
+        if not has_ilastik:
+            raise cps.ValidationError(
+                "ClassifyPixels is not available on this platform.",
+                self.no_ilastik_msg)
+        if self.h5_directory.dir_choice != URL_FOLDER_NAME:
+            fileName = os.path.join(
+                self.h5_directory.get_absolute_path(), 
+                self.classifier_file_name.value)
+            if not os.path.isfile(fileName):
+                if len(self.classifier_file_name.value) == 0:
+                    msg = "Please select a classifier file"
+                else:
+                    msg = "Could not find the classifier file, \"%s\"." %\
+                        fileName
+                    
+                raise cps.ValidationError(msg, self.classifier_file_name)
+        
     def prepare_settings(self, setting_values):
         '''Prepare the module to receive the settings'''
         n_maps = int(setting_values[SI_PROBABILITY_MAP_COUNT])

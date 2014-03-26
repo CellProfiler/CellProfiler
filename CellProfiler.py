@@ -44,6 +44,16 @@ import zmq
 # CellProfiler expects NaN as a result during calculation
 #
 np.seterr(all='ignore')
+#
+# Defeat pyreadline which graciously sets its logging to DEBUG and it
+# appears when CP is frozen
+#
+try:
+    from pyreadline.logger import stop_logging, pyreadline_logger, Rea
+    pyreadline_logger.setLevel(logging.INFO)
+    stop_logging()
+except:
+    pass
 
 if not hasattr(sys, 'frozen'):
     root = os.path.split(__file__)[0]
@@ -160,21 +170,30 @@ def main(args):
             import wx
             wx.Log.EnableLogging(False)
             from cellprofiler.cellprofilerapp import CellProfilerApp
+            from cellprofiler.workspace import is_workspace_file
             show_splashbox = (options.pipeline_filename is None and
-                              options.project_filename is None and
                               (not options.new_project) and
                               options.show_splashbox)
-            if options.project_filename:
-                workspace_path = os.path.expanduser(options.project_filename)
+            
+            if options.pipeline_filename:
+                if is_workspace_file(options.pipeline_filename):
+                    workspace_path = os.path.expanduser(options.pipeline_filename)
+                    pipeline_path = None
+                else:
+                    pipeline_path = os.path.expanduser(options.pipeline_filename)
+                    workspace_path = None
             elif options.new_project:
                 workspace_path = False
+                pipeline_path = None
             else:
                 workspace_path = None
+                pipeline_path = None
             App = CellProfilerApp(
                 0, 
                 check_for_new_version = (options.pipeline_filename is None),
                 show_splashbox = show_splashbox,
-                workspace_path = workspace_path)
+                workspace_path = workspace_path,
+                pipeline_path = pipeline_path)
     
         #
         # Important to go headless ASAP
@@ -218,20 +237,8 @@ def main(args):
             cpprefs.set_default_image_directory(options.image_directory)
     
         if options.show_gui:
-            import cellprofiler.gui.cpframe as cpgframe
-            if options.pipeline_filename:
-                pipeline_path = os.path.expanduser(options.pipeline_filename)
-                try:
-                    App.frame.pipeline.load(pipeline_path)
-                    if options.run_pipeline:
-                        App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
-                except:
-                    import wx
-                    wx.MessageBox(
-                        'CellProfiler was unable to load the pipeline file, "%s"' %
-                        options.pipeline_filename, "Error loading pipeline",
-                        style = wx.OK | wx.ICON_ERROR)
-                    logging.root.error("Unable to load pipeline", exc_info=True)
+            if options.run_pipeline:
+                App.frame.pipeline_controller.do_analyze_images()
             App.MainLoop()
             return
         
@@ -268,13 +275,9 @@ def parse_args(args):
                when running headless"""
     
     parser = optparse.OptionParser(usage=usage)
-    parser.add_option("-p", "--pipeline",
+    parser.add_option("-p", "--pipeline", "--project",
                       dest="pipeline_filename",
-                      help="Load this pipeline file on startup",
-                      default=None)
-    parser.add_option("-w", "--project",
-                      dest="project_filename",
-                      help="Load this project on startup",
+                      help="Load this pipeline file or project on startup",
                       default=None)
     parser.add_option("-n", "--new-project",
                       dest="new_project",

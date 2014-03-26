@@ -69,7 +69,7 @@ References
     http://support.meta.moleculardevices.com/docs/t10243.pdf
 (4) File Format Description - LSM 5xx Release 2.0.
     http://ibb.gsf.de/homepage/karsten.rodenacker/IDL/Lsmfile.doc
-(5) BioFormats. http://www.loci.wisc.edu/ome/formats.html
+(5) BioFormats. http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html
 
 Examples
 --------

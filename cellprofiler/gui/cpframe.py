@@ -812,7 +812,8 @@ class CPFrame(wx.Frame):
     def on_cut(self, event):
         '''Handle ID_CUT'''
         focus = wx.Window.FindFocus()
-        if focus is not None and getattr(focus, "Cut"):
+        if (focus is not None and hasattr(focus, "Cut") 
+            and hasattr(focus, 'CanCut') and focus.CanCut()):
             focus.Cut()
             
     def on_update_cut_ui(self, event):
@@ -823,7 +824,8 @@ class CPFrame(wx.Frame):
     def on_copy(self, event):
         '''Handle ID_COPY'''
         focus = wx.Window.FindFocus()
-        if focus is not None and getattr(focus, "Copy"):
+        if focus is not None and hasattr(focus, "Copy") and\
+           hasattr(focus, 'CanCopy') and focus.CanCopy():
             focus.Copy()
             
     def on_update_copy_ui(self, event):
@@ -834,7 +836,8 @@ class CPFrame(wx.Frame):
     def on_paste(self, event):
         '''Handle ID_PASTE'''
         focus = wx.Window.FindFocus()
-        if focus is not None and getattr(focus, "Paste"):
+        if focus is not None and hasattr(focus, "Paste") and\
+           hasattr(focus, "CanPaste") and focus.CanPaste():
             focus.Paste()
             
     def on_update_paste_ui(self, event):

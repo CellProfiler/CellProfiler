@@ -1,7 +1,19 @@
 '''<b>Input External</b> specifies the image names that will be pulled from
 external sources (e.g., Java)
 <hr>
-<b>Input External</b> is a helper module for ImageJ. <b>Do not add it to a pipeline.</b>
+<b>InputExternal</b> is a helper module for ImageJ. <b>Do not add it to 
+a pipeline.</b>
+
+<p>The <b>InputExternal</b> and <b>OutputExternal</b> modules are 
+placeholders if CellProfiler is run programatically. For example,
+another program, e.g., a plugin to ImageJ, is provided with 
+a CellProfiler pipeline. This program should then replace the input
+modules with <b>InputExternal</b> modules and prompt the user what inputs 
+should be supplied to the pipeline through <b>InputExternal</b>. The program 
+should also specify which inputs are to be sent back to the source program 
+via <b>OutputExternal</b>. The calling program would insert the images into 
+the image set before running the pipeline and remove the images from the 
+image set at the end.</p>
 
 See also <b>RunImageJ</b>'''
 

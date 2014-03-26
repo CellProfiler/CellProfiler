@@ -40,6 +40,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpm
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
+import cellprofiler.analysis as cpanalysis
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 from cellprofiler.gui import get_cp_bitmap
 import cellprofiler.gui.moduleview
@@ -371,7 +372,7 @@ class PipelineController:
         self.__tcp_analysis_sizer.Add(self.__resume_button, 1, wx.EXPAND)
         
         self.__stop_analysis_button = BitmapLabelButton(
-            panel, bitmap = stop_bmp, label = 'Stop analysis')
+            panel, bitmap = stop_bmp, label = 'Stop Analysis')
         self.__stop_analysis_button.Bind(wx.EVT_BUTTON, self.on_stop_running)
         self.__stop_analysis_button.SetToolTipString(
             "Cancel the analysis run")
@@ -496,6 +497,12 @@ class PipelineController:
         
         filename - the path to the file to open. It should already be locked.
         '''
+        if not os.path.isfile(filename):
+            wx.MessageBox("Could not find project file: %s" % filename,
+                          caption = "Error opening project file",
+                          parent = self.__frame,
+                          style = wx.OK | wx.ICON_ERROR)
+            return
         if self.is_running():
             # Defensive programming - the user shouldn't be able
             # to do this.
@@ -740,6 +747,12 @@ class PipelineController:
         return self.__analysis is not None
     
     def do_load_pipeline(self, pathname):
+        if not os.path.isfile(pathname):
+            wx.MessageBox("Could not find pipeline file: %s." % pathname,
+                          caption="Error loading pipeline file",
+                          parent = self.__frame,
+                          style=wx.OK | wx.ICON_ERROR)
+            return
         try:
             if self.__pipeline.test_mode:
                 self.stop_debugging()
@@ -1074,10 +1087,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             data.add_files(
                 [url.encode('utf-8') for url in urls],
                 plate, well, site, channel_names = channel)
-        if self.__plate_viewer is None:
-            self.__pv_frame = wx.Frame(self.__frame, title = "Plate viewer")
-        else:
-            self.__pv_frame.DestroyChildren()
+        if self.__plate_viewer is not None:
+            self.__pv_frame.Destroy()
+        self.__pv_frame = wx.Frame(self.__frame, title = "Plate viewer")
         self.__plate_viewer = pv.PlateViewer(self.__pv_frame, data)
         self.__pv_frame.Fit()
         self.__pv_frame.Show()
@@ -1664,7 +1676,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__workspace.invalidate_image_set()
     
     def on_pathlist_drop_text(self, x, y, text):
-        pathnames = [p.strip() for p in text.split("\n")]
+        pathnames = [p.strip() for p in re.split("[\r\n]+", text.strip())]
         self.add_pathnames(pathnames)
         
     def add_pathnames(self, pathnames):
@@ -2134,6 +2146,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         
     def on_analyze_images(self, event):
         '''Handle a user request to start running the pipeline'''
+        self.do_analyze_images()
+        
+    def do_analyze_images(self):
+        '''Analyze images using the current workspace and pipeline'''
         ##################################
         #
         # Preconditions:
@@ -2182,6 +2198,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 initial_measurements=self.__workspace.measurements)
             self.__analysis.start(self.analysis_event_handler,
                                   num_workers)
+            self.__frame.preferences_view.update_worker_count_info(num_workers)
             self.enable_module_controls_panel_buttons()
 
         except Exception, e:
@@ -2577,10 +2594,15 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                         return
                 self.__pipeline.save_measurements(path, event.measurements)
         finally:
+            m = event.measurements
+            status = m[cpm.IMAGE, cpanalysis.AnalysisRunner.STATUS, 
+                       m.get_image_numbers()]
+            n_image_sets = sum([
+                x == cpanalysis.AnalysisRunner.STATUS_DONE for x in status])
             self.stop_running()
             if cpprefs.get_show_analysis_complete_dlg():
-                self.show_analysis_complete()
-            event.measurements.close()
+                self.show_analysis_complete(n_image_sets)
+            m.close()
             self.run_next_pipeline(None)
         
     def stop_running(self):
@@ -2699,7 +2721,15 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                       self.__frame if module.show_window else None,
                                       outlines = self.__debug_outlines)
             self.__debug_grids = workspace.set_grids(self.__debug_grids)
+            cancelled = [False]
+            def cancel_handler(cancelled = cancelled):
+                cancelled[0] = True
+            workspace.cancel_handler = cancel_handler
             module.run(workspace)
+            if cancelled[0]:
+                self.__frame.SetCursor(old_cursor)
+                return False
+            
             if module.show_window:
                 fig = workspace.get_module_figure(module, image_set_number)
                 module.display(workspace, fig)
@@ -3095,7 +3125,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
     # ~^~
                     
-    def show_analysis_complete(self):
+    def show_analysis_complete(self, n_image_sets):
         '''Show the "Analysis complete" dialog'''
         dlg = wx.Dialog(self.__frame, -1, "Analysis complete")
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -3109,7 +3139,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             "have been saved in your designated locations.\n\n"
             "Note that the module display windows may not show\n"
             "the final image cycle on computers with multiple\n"
-            "processing cores."%self.__workspace.measurements.image_set_count)
+            "processing cores."% n_image_sets)
         sub_sizer.Add(
             text_ctrl,
             1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | 

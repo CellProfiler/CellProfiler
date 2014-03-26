@@ -22,19 +22,6 @@ import cellprofiler.cpmodule as cpm
 from cellprofiler.modules.plugins import plugin_list
 from cellprofiler.preferences import get_plugin_directory
 
-try:
-    import vigra
-    import h5py
-    old_stdout = sys.stdout
-    sys.stdout = open(os.devnull, "w")
-    try:
-        import ilastik.core
-    finally:
-        sys.stdout = old_stdout
-    has_ilastik = True
-except:
-    has_ilastik = False
-    
 # python modules and their corresponding cellprofiler.module classes
 pymodule_to_cpmodule = {'align' : 'Align',
                         'applythreshold' : 'ApplyThreshold',
@@ -42,6 +29,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'calculatemath' : 'CalculateMath',
                         'calculatestatistics' : 'CalculateStatistics',
                         'classifyobjects' : 'ClassifyObjects',
+                        'classifypixels' : 'ClassifyPixels',
                         'colortogray' : 'ColorToGray',
                         'conservememory' : 'ConserveMemory',
                         'convertobjectstoimage' : 'ConvertObjectsToImage',
@@ -119,8 +107,6 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'unmixcolors': 'UnmixColors',
                         'untangleworms': 'UntangleWorms'
                         }
-if has_ilastik:
-    pymodule_to_cpmodule['classifypixels'] = 'ClassifyPixels'
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
 builtin_modules = ['align',
@@ -129,6 +115,7 @@ builtin_modules = ['align',
                    'calculatemath',
                    'calculatestatistics',
                    'classifyobjects',
+                   'classifypixels',
                    'colortogray',
                    'conservememory',
                    'convertobjectstoimage',
@@ -204,8 +191,6 @@ builtin_modules = ['align',
                    'unmixcolors',
                    'untangleworms'
                    ]
-if has_ilastik:
-    builtin_modules.append('classifypixels')
 
 # CP-Matlab to CP-python module substitutions
 substitutions = {'Average': 'MakeProjection',

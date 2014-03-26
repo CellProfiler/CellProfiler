@@ -37,6 +37,7 @@ IMAGE_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
 BINARY_IMAGE_NAME = "binary_image"
 MASKING_OBJECTS_NAME = "masking_objects"
+MEASUREMENT_NAME = "my_measurement"
 
 class test_IdentifyPrimaryObjects(unittest.TestCase):
     def load_error_handler(self, caller, event):
@@ -315,6 +316,8 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.threshold_range.min = .7
         x.threshold_range.max = 1
         x.threshold_correction_factor.value = .95
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = I.TM_MCT
         x.exclude_size.value = False
         x.watershed_method.value = ID.WA_NONE
         img = two_cell_image()
@@ -930,6 +933,32 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
             self.assertEqual(output.count, 4)
             self.assertTrue(np.all(output.segmented[expected == 0] == 0))
             self.assertEqual(len(np.unique(output.segmented[expected == 1])), 1)
+            
+    def test_02_14_automatic(self):
+        # Regression test of issue 1071 - automatic should yield same
+        # threshold regardless of manual parameters
+        #
+        r = np.random.RandomState()
+        r.seed(214)
+        image = r.uniform(size = (20, 20))
+        workspace, module = self.make_workspace(image)
+        assert isinstance(module, ID.IdentifyPrimaryObjects)
+        module.threshold_scope.value = I.TS_AUTOMATIC
+        module.run(workspace)
+        m = workspace.measurements
+        orig_threshold = m[cpmeas.IMAGE, I.FF_FINAL_THRESHOLD % OBJECTS_NAME]
+        workspace, module = self.make_workspace(image)
+        module.threshold_scope.value = I.TS_AUTOMATIC
+        module.threshold_method.value = I.TM_OTSU
+        module.threshold_smoothing_choice.value = I.TSM_MANUAL
+        module.threshold_smoothing_scale.value = 100
+        module.threshold_correction_factor.value = .1
+        module.threshold_range.min = .8
+        module.threshold_range.max = .81
+        module.run(workspace)
+        m = workspace.measurements
+        threshold = m[cpmeas.IMAGE, I.FF_FINAL_THRESHOLD % OBJECTS_NAME]
+        self.assertEqual(threshold, orig_threshold)
             
     def test_04_01_load_matlab_12(self):
         """Test loading a Matlab version 12 IdentifyPrimAutomatic pipeline
@@ -2551,9 +2580,12 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         module.exclude_size.value = False
         module.unclump_method.value = ID.UN_NONE
         module.watershed_method.value = ID.WA_NONE
-        module.threshold_scope.value = T.TM_MANUAL
+        # MCT on this image is zero, so set the threshold at .225
+        # with the threshold minimum (manual = no smoothing)
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_MCT
+        module.threshold_range.min= .225
         module.threshold_smoothing_choice.value = I.TSM_AUTOMATIC
-        module.manual_threshold.value = .225
         module.run(workspace)
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
         np.testing.assert_array_equal(expected, labels)
@@ -2578,14 +2610,46 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         module.exclude_size.value = False
         module.unclump_method.value = ID.UN_NONE
         module.watershed_method.value = ID.WA_NONE
-        module.threshold_scope.value = T.TM_MANUAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_MCT
+        module.threshold_range.min= .125
         module.threshold_smoothing_choice.value = I.TSM_MANUAL
         module.threshold_smoothing_scale.value = 3
-        module.manual_threshold.value = .125
         module.run(workspace)
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
         np.testing.assert_array_equal(expected, labels)
         
+    def test_20_03_threshold_no_smoothing(self):
+        image = np.array([[  0,  0,  0,  0,  0,  0,  0],
+                          [  0,  0,  0,  0,  0,  0,  0],
+                          [  0,  0, .4, .4, .4,  0,  0],
+                          [  0,  0, .4, .5, .4,  0,  0],
+                          [  0,  0, .4, .4, .4,  0,  0],
+                          [  0,  0,  0,  0,  0,  0,  0],
+                          [  0,  0,  0,  0,  0,  0,  0]])
+        expected = np.array([[  0,  0,  0,  0,  0,  0,  0],
+                             [  0,  0,  0,  0,  0,  0,  0],
+                             [  0,  0,  1,  1,  1,  0,  0],
+                             [  0,  0,  1,  1,  1,  0,  0],
+                             [  0,  0,  1,  1,  1,  0,  0],
+                             [  0,  0,  0,  0,  0,  0,  0],
+                             [  0,  0,  0,  0,  0,  0,  0]])
+        for ts in I.TS_MANUAL, I.TS_MEASUREMENT:
+            workspace, module = self.make_workspace(image)
+            assert isinstance(module, ID.IdentifyPrimaryObjects)
+            module.exclude_size.value = False
+            module.unclump_method.value = ID.UN_NONE
+            module.watershed_method.value = ID.WA_NONE
+            module.threshold_scope.value = ts
+            module.manual_threshold.value = .125
+            module.thresholding_measurement.value = MEASUREMENT_NAME
+            workspace.measurements[cpmeas.IMAGE, MEASUREMENT_NAME] = .125
+            module.threshold_smoothing_choice.value = I.TSM_MANUAL
+            module.threshold_smoothing_scale.value = 3
+            module.run(workspace)
+            labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
+            np.testing.assert_array_equal(expected, labels)
+
 def add_noise(img, fraction):
     '''Add a fractional amount of noise to an image to make it look real'''
     np.random.seed(0)

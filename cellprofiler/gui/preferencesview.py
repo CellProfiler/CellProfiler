@@ -298,15 +298,29 @@ class PreferencesView:
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
         on_write_MAT_files_combo_box(None)
     
+    def update_worker_count_info(self, n_workers):
+        '''Update the # of running workers in the progress UI
+        
+        n_workers - # of workers running
+        '''
+        if n_workers == 1:
+            label = "Running 1 worker."
+        else:
+            label = "Running %d workers." % n_workers
+        self.__worker_count_ctrl.Label = label
+        
     def __make_progress_panel(self):
         panel = self.__progress_panel
-        self.__current_status= wx.StaticText(panel, -1, label="LoadImages, Image Set 1/19")
+        self.__progress_msg_ctrl = wx.StaticText(panel)
+        self.__worker_count_ctrl = wx.StaticText(panel)
         self.__progress_bar = wx.Gauge(panel, -1, size=(100, -1))
         self.__progress_bar.Value = 25
-        self.__timer = wx.StaticText(panel, -1, label="1:45/3:50")
+        self.__timer = wx.StaticText(panel)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([((1,1), 1),
-                       (self.__current_status, 0, wx.ALIGN_BOTTOM),
+                       (self.__progress_msg_ctrl, 0,  wx.ALIGN_BOTTOM),
+                       ((10, 0), 0),
+                       (self.__worker_count_ctrl, 0, wx.ALIGN_BOTTOM),
                        ((10, 0), 0),
                        (self.__progress_bar, 0, wx.ALIGN_BOTTOM),
                        ((10, 0), 0),
@@ -402,18 +416,20 @@ class PreferencesView:
     
     def on_analyze_images(self):
         # begin tracking progress
-        self.__progress_watcher = ProgressWatcher(self.__progress_panel,
-                                                  self.update_progress,
-                                                  multiprocessing=cpanalysis.use_analysis)
+        self.__progress_watcher = ProgressWatcher(
+            self.__progress_panel,
+            self.update_progress,
+            multiprocessing=cpanalysis.use_analysis)
         self.show_progress_panel()
         
     def on_pipeline_progress(self, *args):
-        self.__progress_watcher.on_pipeline_progress(*args)
+        if self.__progress_watcher is not None:
+            self.__progress_watcher.on_pipeline_progress(*args)
 
     def pause(self, do_pause):
         self.__progress_watcher.pause(do_pause)
 
-    def update_progress(self, message, elapsed_time, remaining_time):
+    def update_progress(self, message, elapsed_time, remaining_time=None):
         #
         # Disable everything if in a modal state. The progress bar
         # seems to eat memory in huge chunks if allowed to draw its
@@ -431,9 +447,17 @@ class PreferencesView:
                     self.__progress_bar.Show(False)
                     return
         self.__progress_bar.Show(True)
-        self.__current_status.SetLabel(message)
-        self.__progress_bar.Value = (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
-        self.__timer.SetLabel('Time %s/%s'%(secs_to_timestr(elapsed_time), secs_to_timestr(elapsed_time + remaining_time)))
+        self.__progress_msg_ctrl.Label = message
+        if remaining_time is not None:
+            self.__progress_bar.Value = \
+                (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
+            timestr = 'Time %s/%s' % (
+                secs_to_timestr(elapsed_time), 
+                secs_to_timestr(elapsed_time + remaining_time))
+        else:
+            self.__progress_bar.Pulse()
+            timestr = "Elapsed time: %s" % secs_to_timestr(elapsed_time)
+        self.__timer.SetLabel(timestr)
         self.__progress_panel.Layout()
     
     def on_stop_analysis(self):
@@ -569,11 +593,16 @@ class ProgressWatcher:
                              self.remaining_time())
 
     def update_multiprocessing(self, event=None):
-        status = 'Processing: %d of %d image sets completed' %\
-            (self.num_received, self.num_jobs)
-        self.update_callback(status,
-                             self.elapsed_time(),
-                             self.remaining_time_multiprocessing())
+        if self.num_jobs > self.num_received:
+            status = 'Processing: %d of %d image sets completed' %\
+                (self.num_received, self.num_jobs)
+            self.update_callback(
+                status,
+                self.elapsed_time(),
+                self.remaining_time_multiprocessing())
+        else:
+            status = "Post-processing, please wait"
+            self.update_callback(status, self.elapsed_time())
 
     def on_pipeline_progress(self, *args):
         if not self.multiprocessing:

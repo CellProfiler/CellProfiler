@@ -20,7 +20,7 @@ import h5py
 import os
 
 from cellprofiler.cpgridinfo import CPGridInfo
-from .utilities.hdf5_dict import HDF5FileList
+from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
 
 '''Continue to run the pipeline
 
@@ -42,6 +42,15 @@ it back to DISPOSITION_CONTINUE to resume.
 DISPOSITION_PAUSE = "Pause"
 '''Cancel running the pipeline'''
 DISPOSITION_CANCEL = "Cancel"
+
+def is_workspace_file(path):
+    '''Return True if the file along the given path is a workspace file'''
+    if not h5py.is_hdf5(path):
+        return False
+    h5file = h5py.File(path, mode="r")
+    if not HDF5FileList.has_file_list(h5file):
+        return False
+    return HDF5Dict.has_hdf5_dict(h5file)
 
 class Workspace(object):
     """The workspace contains the processing information and state for
@@ -94,6 +103,7 @@ class Workspace(object):
         self.interaction_handler = None
         self.post_run_display_handler = None
         self.post_group_display_handler = None
+        self.cancel_handler = None
 
         class DisplayData(object):
             pass
@@ -327,6 +337,12 @@ class Workspace(object):
                 return module.handle_interaction(*args, **kwargs)
         else:
             return self.interaction_handler(module, *args, **kwargs)
+        
+    def cancel_request(self):
+        '''Make a request to cancel an ongoing analysis'''
+        if self.cancel_handler is None:
+            raise self.NoInteractionException()
+        self.cancel_handler()
         
     def post_group_display(self, module):
         '''Perform whatever post-group module display is necessary

@@ -59,25 +59,19 @@ public class OverlayUtils {
 			 */
 			RandomAccessibleInterval<BitType> adapter = mask;
 			long [] offset = new long[display.numDimensions()];
-			AxisType [] oAxes = overlay.getAxes();
 			AxisType [] dAxes = new AxisType [] { Axes.Y, Axes.X };
 				
-			for (int i=0; i<oAxes.length; i++) {
-				for (int j=0; j<dAxes.length; j++) {
-					if (oAxes[i].equals(dAxes[j])) {
-						offset[i] = display.getLongPosition(dAxes[j]) - oView.getLongPosition(oAxes[i]);
-						if (i != j) {
-							/*
-							 * Perform an axis permutation.
-							 */
-							adapter = Views.permute(adapter, j, i);
-							final AxisType temp = dAxes[i];
-							dAxes[i] = dAxes[j];
-							dAxes[j] = temp;
-						}
-						break;
-					}
-					
+			for (int j=0; j<dAxes.length; j++) {
+				int i = overlay.dimensionIndex(dAxes[j]);
+				offset[j] = display.getLongPosition(dAxes[j]) - oView.getLongPosition(dAxes[j]);
+				if (i != j) {
+					/*
+					 * Perform an axis permutation.
+					 */
+					adapter = Views.permute(adapter, j, i);
+					final AxisType temp = dAxes[i];
+					dAxes[i] = dAxes[j];
+					dAxes[j] = temp;
 				}
 			}
 			adapter = Views.translate(adapter, offset); 
@@ -118,8 +112,8 @@ public class OverlayUtils {
 	 */
 	public static Img<BitType> createBitMask(ImageDisplay interval) {
 		long [] dimensions = new long [] { 
-				interval.max(interval.getAxisIndex(Axes.Y))+1,
-				interval.max(interval.getAxisIndex(Axes.X))+1
+				interval.max(interval.dimensionIndex(Axes.Y))+1,
+				interval.max(interval.dimensionIndex(Axes.X))+1
 		};
 		return ArrayImgs.bits(dimensions);
 	}

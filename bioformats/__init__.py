@@ -24,7 +24,7 @@ from external_dependencies import get_cellprofiler_jars
 
 logger = logging.getLogger("bioformats")
 
-# See http://www.loci.wisc.edu/software/bio-formats
+# See http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html
 READABLE_FORMATS = ('al3d', 'am', 'amiramesh', 'apl', 'arf', 'avi', 'bmp', 
                     'c01', 'cfg', 'cxd', 'dat', 'dcm', 'dicom', 'dm3', 'dv', 
                     'eps', 'epsi', 'fits', 'flex', 'fli', 'gel', 'gif', 'grey', 
@@ -114,18 +114,7 @@ def start_cellprofiler_jvm():
             #r"-verbose:class",
             #r"-verbose:jni",
             r"-Xmx%s" % jvm_arg]
-    #
-    # Get the log4j logger setup from a file in the bioformats directory
-    # if such a file exists.
-    #
-    log4j_properties = os.path.join(bioformats_path, "log4j.properties")
-    if os.path.exists(log4j_properties):
-        log4j_properties = "file:/"+log4j_properties.replace(os.path.sep, "/")
-        args += [r"-Dlog4j.configuration="+log4j_properties]
-        init_logger = False
-    else:
-        init_logger = True
-        
+
     if plugin_directory is not None and os.path.isdir(plugin_directory):
         # For IJ1 compatibility
         args += [r"-Dplugins.dir=%s" % plugin_directory]
@@ -159,25 +148,7 @@ def start_cellprofiler_jvm():
                           "(Z)V", True)
     except:
         logger.warning("Bioformats version does not support directory cacheing")
-    
-    #
-    # Start the log4j logger to avoid error messages.
-    #
-    if init_logger:
-        try:
-            jutil.static_call("org/apache/log4j/BasicConfigurator",
-                              "configure", "()V")
-            log4j_logger = jutil.static_call("org/apache/log4j/Logger",
-                                             "getRootLogger",
-                                             "()Lorg/apache/log4j/Logger;")
-            warn_level = jutil.get_static_field("org/apache/log4j/Level","WARN",
-                                                "Lorg/apache/log4j/Level;")
-            jutil.call(log4j_logger, "setLevel", "(Lorg/apache/log4j/Level;)V", 
-                       warn_level)
-            del logger
-            del warn_level
-        except:
-            logger.error("Failed to initialize log4j\n", exc_info=True)
+
     if not get_headless():
         jutil.activate_awt()
 start_cellprofiler_jvm()

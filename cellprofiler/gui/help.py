@@ -834,7 +834,7 @@ show you the total number of image sets, the number of image sets completed, the
 time remaining in the run.
 <p>If you need to pause analysis, click the "<img src="memory:%(PAUSE_ANALYSIS_BUTTON)s">&nbsp;Pause" button, then click the 
 "Resume" button to continue. If you
-want to terminate analysis, click the "<img src="memory:%(STOP_ANALYSIS_BUTTON)s">&nbsp;Stop analysis" button.</p>
+want to terminate analysis, click the "<img src="memory:%(STOP_ANALYSIS_BUTTON)s">&nbsp;Stop Analysis" button.</p>
 <p>If your computer has multiple processors, CellProfiler will take advantage of them by starting multiple copies
 of itself to process the image sets in parallel. You can set the number of <i>workers</i> (i.e.,copies of 
 CellProfiler activated) under <i>File > Preferences...</i></p>
@@ -1719,7 +1719,7 @@ Both individual files and entire folders can be dragged onto this panel, and as 
 placed onto this panel as needed. As you add files, you will see a listing of the files appear in the panel.</p>
 
 <p>CellProfiler supports a wide variety of image formats, including most of those used in imaging, by using a library called
-Bio-Formats; see <a href="http://loci.wisc.edu/bio-formats/formats">here</a> for the formats available. Some image formats are better 
+Bio-Formats; see <a href="http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html">here</a> for the formats available. Some image formats are better 
 than others for image analysis. Some are <a href="http://www.techterms.com/definition/lossy">"lossy"</a> 
 (information is lost in the conversion to the format) like most JPG/JPEG files; others are 
 <a href="http://www.techterms.com/definition/lossless">lossless</a> (no image information is lost). For image analysis purposes, a 

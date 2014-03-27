@@ -58,7 +58,7 @@ unsigned_zip="CellProfiler-${version}-unsigned.zip"
 (cd dist; zip -r "$unsigned_zip" CellProfiler.app)
 signdir="jenkins/${BUILD_TAG// /-}"
 ssh ${signer} mkdir -p jenkins
-scp $(dirname "$0")/sign.sh ${signer}:jenkins/sign_mac.sh
+scp $(dirname "$0")/sign.sh ${signer}:jenkins/sign.sh
 ssh ${signer} mkdir -p "$signdir"
 scp dist/"$unsigned_zip" "${signer}:${signdir}/${unsigned_zip}"
 signed_zip="CellProfiler-${version}.zip"

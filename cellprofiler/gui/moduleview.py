@@ -1475,6 +1475,11 @@ class ModuleView:
             if len(lines) > 0:
                 width = max([control.GetTextExtent(line)[0] for line in lines])
                 height = sum([control.GetTextExtent(line)[1] for line in lines])
+                min_width, min_height = control.GetTextExtent("M")
+                if width < min_width:
+                    width = min_width
+                if height < min_height:
+                    height = min_height
                 bw, bh = control.GetWindowBorderSize()
                 control.SetMinSize((bw*2+width, bh*2+height))
         return control

@@ -328,7 +328,7 @@ class Crop(cpm.CPModule):
                                str(d[D_FIRST_CROPPING].shape),
                                str(orig_image.pixel_data.shape[:2]),
                                workspace.image_set.image_number)
-        mask = None # calculate the mask after cropping unless set below
+        mask = orig_image.get_mask()
         cropping = None
         masking_objects = None
         if not recalculate_flag:
@@ -352,21 +352,22 @@ class Crop(cpm.CPModule):
             cropping = self.get_ellipse_cropping(workspace,orig_image)
         elif self.shape == SH_RECTANGLE:
             cropping = self.get_rectangle_cropping(workspace,orig_image)
+        if mask == None:
+            mask = cropping
+        else:
+            mask = mask & cropping
         if self.remove_rows_and_columns == RM_NO:
             cropped_pixel_data = orig_image.pixel_data.copy()
             if cropped_pixel_data.ndim == 3:
                 cropped_pixel_data[~cropping,:]=0
             else:
                 cropped_pixel_data[np.logical_not(cropping)] = 0
-            if mask == None:
-                mask = cropping
         else:
             internal_cropping = self.remove_rows_and_columns == RM_ALL
             cropped_pixel_data = cpi.crop_image(orig_image.pixel_data,
                                                 cropping,
                                                 internal_cropping)
-            if mask == None:
-                mask = cpi.crop_image(cropping, cropping, internal_cropping)
+            mask = cpi.crop_image(mask, cropping, internal_cropping)
             if cropped_pixel_data.ndim == 3:
                 cropped_pixel_data[~mask,:] = 0
             else:

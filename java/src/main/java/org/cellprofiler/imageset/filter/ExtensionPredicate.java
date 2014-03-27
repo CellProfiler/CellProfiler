@@ -12,6 +12,8 @@
  */
 package org.cellprofiler.imageset.filter;
 
+import org.cellprofiler.imageset.ImageFile;
+
 
 /**
  * @author Lee Kamentsky
@@ -27,8 +29,8 @@ public class ExtensionPredicate extends AbstractURLPredicateBase {
 		return SYMBOL;
 	}
 
-	public boolean eval(ImagePlaneDetails ipd) {
-		String candidate = ipd.imagePlane.getImageFile().getFileName();
+	public boolean eval(ImageFile candidateFile) {
+		String candidate = candidateFile.getFileName();
 		if (candidate == null) return false;
 		int index = candidate.length();
 		while (index > 0) {
@@ -37,13 +39,5 @@ public class ExtensionPredicate extends AbstractURLPredicateBase {
 			if (subpredicate.eval(candidate.substring(index+1))) return true;
 		}
 		return false;
-	}
-
-	public Class<ImagePlaneDetails> getInputClass() {
-		return ImagePlaneDetails.class;
-	}
-
-	public Class<String> getOutputClass() {
-		return String.class;
 	}
 }

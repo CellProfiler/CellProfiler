@@ -12,7 +12,9 @@
  */
 package org.cellprofiler.imageset.filter;
 
-import org.cellprofiler.imageset.OMEMetadataExtractor;
+import org.cellprofiler.imageset.ImagePlane;
+
+import net.imglib2.meta.Axes;
 
 /**
  * @author Lee Kamentsky
@@ -21,12 +23,12 @@ import org.cellprofiler.imageset.OMEMetadataExtractor;
  * is a color image.
  *
  */
-public class IsColorPredicate extends
-		AbstractTerminalPredicate<ImagePlaneDetails> {
+public class IsColorPredicate 
+		extends AbstractTerminalPredicate<ImagePlaneDetailsStack> {
 	final static public String SYMBOL="iscolor";
 
 	protected IsColorPredicate() {
-		super(ImagePlaneDetails.class);
+		super(ImagePlaneDetailsStack.class);
 	}
 
 	/* (non-Javadoc)
@@ -39,10 +41,18 @@ public class IsColorPredicate extends
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
 	 */
-	public boolean eval(ImagePlaneDetails candidate) {
-		if (! candidate.metadata.containsKey(OMEMetadataExtractor.MD_COLOR_FORMAT)) return false;
-		return candidate.metadata.get(OMEMetadataExtractor.MD_COLOR_FORMAT).equals(
-				OMEMetadataExtractor.MD_RGB);
+	public boolean eval(ImagePlaneDetailsStack candidate) {
+		// We have a color image if it contains channels
+		for (int i=0;i<candidate.numDimensions();i++) {
+			if (candidate.axis(i).equals(Axes.CHANNEL)) {
+				if (candidate.size(i) > 1) return true;
+				for (ImagePlaneDetails ipd:candidate){
+					if (ipd.imagePlane.getChannel() != ImagePlane.INTERLEAVED) return false;
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

@@ -12,6 +12,9 @@
  */
 package org.cellprofiler.imageset.filter;
 
+import net.imglib2.meta.Axes;
+
+import org.cellprofiler.imageset.ImagePlane;
 import org.cellprofiler.imageset.OMEMetadataExtractor;
 
 /**
@@ -22,11 +25,11 @@ import org.cellprofiler.imageset.OMEMetadataExtractor;
  *
  */
 public class IsMonochromePredicate extends
-		AbstractTerminalPredicate<ImagePlaneDetails> {
+		AbstractTerminalPredicate<ImagePlaneDetailsStack> {
 	final static public String SYMBOL="ismonochrome";
 
 	protected IsMonochromePredicate() {
-		super(ImagePlaneDetails.class);
+		super(ImagePlaneDetailsStack.class);
 	}
 
 	/* (non-Javadoc)
@@ -39,10 +42,18 @@ public class IsMonochromePredicate extends
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
 	 */
-	public boolean eval(ImagePlaneDetails candidate) {
-		if (! candidate.metadata.containsKey(OMEMetadataExtractor.MD_COLOR_FORMAT)) return false;
-		return candidate.metadata.get(OMEMetadataExtractor.MD_COLOR_FORMAT).equals(
-				OMEMetadataExtractor.MD_MONOCHROME);
+	public boolean eval(ImagePlaneDetailsStack candidate) {
+		// We have a color image if it contains channels
+		for (int i=0;i<candidate.numDimensions();i++) {
+			if (candidate.axis(i).equals(Axes.CHANNEL)) {
+				if (candidate.size(i) > 1) return false;
+				for (ImagePlaneDetails ipd:candidate){
+					if (ipd.imagePlane.getChannel() == ImagePlane.INTERLEAVED) return false;
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

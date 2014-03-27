@@ -17,7 +17,7 @@ import org.cellprofiler.imageset.OMEMetadataExtractor;
 /**
  * @author Lee Kamentsky
  * 
- * A predicate that determines whether an image plane
+ * A predicate that determines whether an image plane stack
  * is part of an image stack.
  * 
  * An image "plane" is a stack if it has M_T or M_Z

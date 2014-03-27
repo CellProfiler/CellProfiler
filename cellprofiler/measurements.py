@@ -147,6 +147,9 @@ C_SERIES = "Series"
 '''The frame of a movie file'''
 C_FRAME = "Frame"
 
+'''For 3-D images (e.g. 3 color planes), the indexes of the planes'''
+C_FRAMES = "Frames"
+
 '''The channel # of a color image plane'''
 C_CHANNEL = "Channel"
 

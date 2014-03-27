@@ -14,10 +14,11 @@ package org.cellprofiler.imageset.filter;
 
 import java.util.List;
 
+import org.cellprofiler.imageset.ImageFile;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
 
 abstract public class AbstractURLPredicateBase  implements
-	FilterPredicate<ImagePlaneDetails, String> {
+	FilterPredicate<ImageFile, String> {
 
 	protected FilterPredicate<String, ?> subpredicate;
 
@@ -37,8 +38,8 @@ abstract public class AbstractURLPredicateBase  implements
 		throw new BadFilterExpressionException(String.format("The %s predicate does not take a literal", getSymbol()));
 	}
 
-	public Class<ImagePlaneDetails> getInputClass() {
-		return ImagePlaneDetails.class;
+	public Class<ImageFile> getInputClass() {
+		return ImageFile.class;
 	}
 
 	public Class<String> getOutputClass() {

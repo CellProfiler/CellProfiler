@@ -27,10 +27,10 @@ import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
  * categories and are also grouped separately because of the UI.
  *
  */
-public class ImagePredicate extends
-		AbstractImagePlaneDetailsPredicate<ImagePlaneDetails> {
+public class ImagePredicate 
+		implements FilterPredicate<ImagePlaneDetailsStack, ImagePlaneDetailsStack> {
 	final static public String SYMBOL="image";
-	private FilterPredicate<ImagePlaneDetails, ?> subpredicate;
+	private FilterPredicate<ImagePlaneDetailsStack, ?> subpredicate;
 
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#getSymbol()
@@ -43,7 +43,7 @@ public class ImagePredicate extends
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#setSubpredicates(java.util.List)
 	 */
 	public void setSubpredicates(
-			List<FilterPredicate<ImagePlaneDetails, ?>> subpredicates)
+			List<FilterPredicate<ImagePlaneDetailsStack, ?>> subpredicates)
 			throws BadFilterExpressionException {
 		if (subpredicates.size() != 1)
 			throw new BadFilterExpressionException("ImagePredicates have a single subpredicate");
@@ -60,15 +60,22 @@ public class ImagePredicate extends
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
 	 */
-	public boolean eval(ImagePlaneDetails candidate) {
+	public boolean eval(ImagePlaneDetailsStack candidate) {
 		return subpredicate.eval(candidate);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cellprofiler.imageset.filter.FilterPredicate#getInputClass()
+	 */
+	public Class<ImagePlaneDetailsStack> getInputClass() {
+		return ImagePlaneDetailsStack.class;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#getOutputClass()
 	 */
-	public Class<ImagePlaneDetails> getOutputClass() {
-		return ImagePlaneDetails.class;
+	public Class<ImagePlaneDetailsStack> getOutputClass() {
+		return ImagePlaneDetailsStack.class;
 	}
 
 }

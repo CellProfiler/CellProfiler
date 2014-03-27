@@ -29,11 +29,12 @@ import org.cellprofiler.imageset.MetadataExtractor;
 /**
  * @author Lee Kamentsky
  *
- * A filter parses a filter expression and evaluates candidate
- * ImagePlaneDetails on the basis of the filter.
+ * A filter parses a filter expression and evaluates the candidate
+ * on the basis of the filter.
  * 
+ * @param <C> the type of the candidate to be filtered
  */
-public class Filter {
+public class Filter<C> {
 	public static class BadFilterExpressionException extends Exception {
 
 		private static final long serialVersionUID = -3134183711783453007L;
@@ -75,9 +76,9 @@ public class Filter {
 		}
 	}
 	static private int nCachedEntries = 100;
-	final static private Map<String, Filter> filterCache = new HashMap<String, Filter>();
+	final static private Map<Class<?>, Map<String, Filter<?>>> filterCache = new HashMap<Class<?>, Map<String, Filter<?>>>();
 	final static public Random random = new Random(0);
-	final public FilterPredicate<ImagePlaneDetails, ?> rootPredicate;
+	final public FilterPredicate<C, ?> rootPredicate;
 	final private String expression;
 	/**
 	 * @return maximum number of filters to be cached
@@ -99,25 +100,37 @@ public class Filter {
 	 * @param expression a filter expression
 	 * @throws BadFilterExpressionException if there was an error parsing the expression
 	 */
-	public Filter(String expression) throws BadFilterExpressionException {
+	public Filter(String expression, Class<C> klass) throws BadFilterExpressionException {
 		this.expression = expression;
 		String [] rest = new String [1];
-		rootPredicate = parse(expression, ImagePlaneDetails.class, rest);
+		rootPredicate = parse(expression, klass, rest);
 	}
 	
 	/**
-	 * Filter an IPD based on a filter expression
+	 * Filter a candidate based on a filter expression
 	 * 
 	 * @param expression construct a filter from this expression (or use
 	 *                   the cached filter).
-	 * @param ipd image plane + details to be filtered
+	 * @param candidate candidate to be filtered
 	 * 
 	 * @return true to keep, false to filter out
 	 * @throws BadFilterExpressionException if the filter syntax is badly formed
 	 */
-	static public boolean filter(String expression, ImagePlaneDetails ipd) 
+	static public <T> boolean filter(String expression, T candidate, Class<T> klass) 
 		throws BadFilterExpressionException {
-		return getFilter(expression).eval(ipd);
+		Filter<T> filter = getFilter(expression, klass);
+		return filter.eval(candidate);
+	}
+	
+	/**
+	 * Filter an IPD based on an expression
+	 * @param expression
+	 * @param ipd
+	 * @return true to keep, false to filter out
+	 * @throws BadFilterExpressionException
+	 */
+	static public boolean filter(String expression, ImagePlaneDetails ipd) throws BadFilterExpressionException {
+		return filter(expression, ipd, ImagePlaneDetails.class);
 	}
 	
 	/**
@@ -129,8 +142,7 @@ public class Filter {
 	 * @throws BadFilterExpressionException if the expression cannot be parsed
 	 */
 	static public boolean filter(String expression, URI url) throws BadFilterExpressionException {
-		return filter(expression, new ImagePlaneDetails(
-				new ImagePlane(new ImageFile(url)), MetadataExtractor.emptyMap));
+		return filter(expression, url, URI.class);
 	}
 	/**
 	 * Filter a URL based on a filter expression
@@ -146,36 +158,52 @@ public class Filter {
 		return filter(expression, new URI(url));
 	}
 	
-	static private Filter getFilter(String expression) throws BadFilterExpressionException {
+	/**
+	 * Filter a stack of IPDs based on a filter expression
+	 * 
+	 * @param expression
+	 * @param stack
+	 * @return
+	 * @throws BadFilterExpressionException
+	 */
+	static public boolean filter(String expression, ImagePlaneDetailsStack stack) throws BadFilterExpressionException {
+		return filter(expression, stack, ImagePlaneDetailsStack.class);
+	}
+	
+	static private <CC> Filter<CC> getFilter(String expression, Class<CC> klass) throws BadFilterExpressionException {
 		synchronized(filterCache) {
-			if (! filterCache.containsKey(expression)) {
-				if (filterCache.size() >= nCachedEntries) {
+			if (! filterCache.containsKey(klass)) {
+				filterCache.put(klass, new HashMap<String, Filter<?>>());
+			}
+			Map<String, Filter<?>> classFilterCache = filterCache.get(klass);
+			if (! classFilterCache.containsKey(expression)) {
+				if (classFilterCache.size() >= nCachedEntries) {
 					/*
 					 * Decimate the cache by half.
 					 */
-					int halfSize = filterCache.size() / 2;
-					List<String> expressions = new ArrayList<String>(filterCache.keySet());
+					int halfSize = classFilterCache.size() / 2;
+					List<String> expressions = new ArrayList<String>(classFilterCache.keySet());
 					for (int i=0; i<halfSize; i++) {
 						int idx = random.nextInt(expressions.size());
-						filterCache.remove(expressions.get(idx));
+						classFilterCache.remove(expressions.get(idx));
 						expressions.remove(idx);
 					}
 				}
-				final Filter filter = new Filter(expression);
-				filterCache.put(expression, filter);
+				final Filter<CC> filter = new Filter<CC>(expression, klass);
+				classFilterCache.put(expression, filter);
 				return filter;
 			} else {
-				return filterCache.get(expression);
+				return cast(classFilterCache.get(expression), klass);
 			}
 		}
 	}
 	/**
-	 * Determine whether a particular image plane passes the filter
-	 * @param ipd image plane + metadata
-	 * @return true if the image plane passes the filter, false if it is filtered out
+	 * Determine whether a particular candidate passes the filter
+	 * @param candidate
+	 * @return true if the candidate passes the filter, false if it is filtered out
 	 */
-	public boolean eval(ImagePlaneDetails ipd) {
-		return rootPredicate.eval(ipd);
+	public boolean eval(C candidate) {
+		return rootPredicate.eval(candidate);
 	}
 	/**
      * (?:\\.|[^ )]) matches either backslash-anything or anything but
@@ -225,6 +253,29 @@ public class Filter {
 		}
 		return (FilterPredicate<T, ?>) p;
 	}
+	
+	/**
+	 * Cast a filter of indeterminate input type to a specific type with
+	 * a check for compatibility.
+	 * 
+	 * @param <T> the desired input type
+	 * @param f a filter
+	 * @param klass the class of the desired input type
+	 * @return the cast predicate
+	 * @throws BadFilterExpressionException
+	 */
+	@SuppressWarnings("unchecked")
+	static private <T> Filter<T> cast(Filter<?> f, Class<T> klass)
+	throws BadFilterExpressionException
+	{
+		FilterPredicate<?, ?> p = f.rootPredicate;
+		if (! p.getInputClass().isAssignableFrom(klass)) {
+			throw new BadFilterExpressionException(String.format(
+					"The %s predicate expects a %s as an input, not %s",
+					p.getSymbol(), p.getInputClass().getName(), klass.getName()));
+		}
+		return (Filter<T>) f;
+	}
 	/**
 	 * Get the filter predicate for a given key
 	 * @param <T> the input type of the filter predicate
@@ -237,16 +288,22 @@ public class Filter {
 		if (key.equals(OrPredicate.SYMBOL)) return new OrPredicate<T>(klass);
 		if (key.equals(DoesPredicate.SYMBOL)) return new DoesPredicate<T>(klass);
 		if (key.equals(DoesNotPredicate.SYMBOL)) return new DoesNotPredicate<T>(klass);
-		if (klass.isAssignableFrom(ImagePlaneDetails.class)) {
-			if (key.equals(FileNamePredicate.SYMBOL)) return cast(new FileNamePredicate(), klass);
-			if (key.equals(PathPredicate.SYMBOL)) return cast(new PathPredicate(), klass);
-			if (key.equals(ExtensionPredicate.SYMBOL)) return cast (new ExtensionPredicate(), klass);
-			if (key.equals(MetadataPredicate.SYMBOL)) return cast(new MetadataPredicate(), klass);
+		if (klass.isAssignableFrom(ImagePlaneDetailsStack.class)) {
 			if (key.equals(ImagePredicate.SYMBOL)) return cast(new ImagePredicate(), klass);
 			if (key.equals(IsColorPredicate.SYMBOL)) return cast(new IsColorPredicate(), klass);
 			if (key.equals(IsMonochromePredicate.SYMBOL)) return cast(new IsMonochromePredicate(), klass);
 			if (key.equals(IsStackPredicate.SYMBOL)) return cast(new IsStackPredicate(), klass);
 			if (key.equals(IsStackFramePredicate.SYMBOL)) return cast(new IsStackFramePredicate(), klass);
+			return cast(StackAdapter.makeAdapter(get(key, ImagePlaneDetails.class)), klass);
+		}
+		if (klass.isAssignableFrom(ImagePlaneDetails.class)) {
+			if (key.equals(MetadataPredicate.SYMBOL)) return cast(new MetadataPredicate(), klass);
+			return cast(ImagePlaneDetailsAdapter.makeAdapter(get(key, ImageFile.class)), klass);
+		}
+		if (klass.isAssignableFrom(ImageFile.class)) {
+			if (key.equals(FileNamePredicate.SYMBOL)) return cast(new FileNamePredicate(), klass);
+			if (key.equals(PathPredicate.SYMBOL)) return cast(new PathPredicate(), klass);
+			if (key.equals(ExtensionPredicate.SYMBOL)) return cast (new ExtensionPredicate(), klass);
 		}
 		if (klass.isAssignableFrom(String.class)) {
 			if (key.equals(ContainsPredicate.SYMBOL)) return cast(new ContainsPredicate(), klass);

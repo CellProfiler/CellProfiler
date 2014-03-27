@@ -10,25 +10,22 @@
  * 
  * Website: http://www.cellprofiler.org
  */
+
 package org.cellprofiler.imageset.filter;
 
+import net.imglib2.Axis;
 
-import org.cellprofiler.imageset.ImageFile;
+import org.cellprofiler.imageset.PlaneStack;
 
 /**
  * @author Lee Kamentsky
  *
+ * A PlaneStack of ImagePlaneDetails. This class is mostly
+ * here to give a class marker that can be used by
+ * the StackAdapter filter predicate's getInputClass method.
  */
-public abstract class AbstractURLPredicate extends AbstractURLPredicateBase {
-	/* (non-Javadoc)
-	 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
-	 */
-	public boolean eval(ImageFile candidate) {
-		String value = getValue(candidate);
-		if (value == null) return false;
-		return subpredicate.eval(value);
+public class ImagePlaneDetailsStack extends PlaneStack<ImagePlaneDetails> {
+	public ImagePlaneDetailsStack(final Axis... axes){
+		super(axes);
 	}
-
-	protected abstract String getValue(ImageFile candidate);
-
 }

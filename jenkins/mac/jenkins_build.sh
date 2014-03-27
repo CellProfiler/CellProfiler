@@ -58,17 +58,18 @@ unsigned_zip="CellProfiler-${version}-unsigned.zip"
 (cd dist; zip -r "$unsigned_zip" CellProfiler.app)
 signdir="jenkins/${BUILD_TAG// /-}"
 ssh ${signer} mkdir -p jenkins
-scp $(dirname "$0")/sign_mac.sh ${signer}:jenkins/sign_mac.sh
+scp $(dirname "$0")/sign.sh ${signer}:jenkins/sign_mac.sh
 ssh ${signer} mkdir -p "$signdir"
 scp dist/"$unsigned_zip" "${signer}:${signdir}/${unsigned_zip}"
 signed_zip="CellProfiler-${version}.zip"
-ssh ${signer} jenkins/sign_mac.sh "${signdir}" "${unsigned_zip}" "${signed_zip}"
+ssh ${signer} jenkins/sign.sh "${signdir}" "${unsigned_zip}" "${signed_zip}"
 scp ${signer}:"${signdir}/${signed_zip}" dist/
-rm -rf dist/CellProfiler.app
+rm -rf dist/"$unsigned_zip" dist/CellProfiler.app
 (cd dist; unzip "${signed_zip}")
 #hdiutil create -ov -volname CellProfiler -srcfolder dist/CellProfiler.app CellProfiler.dmg
 pkgbuild --analyze --root dist CellProfilerComponents.plist
 /usr/libexec/PlistBuddy -c "Set :0:BundleHasStrictIdentifier 0" CellProfilerComponents.plist
 /usr/libexec/PlistBuddy -c "Set :0:BundleIsRelocatable 0" CellProfilerComponents.plist
 security unlock-keychain -p '' $keychain
+rm -f *.pkg
 pkgbuild --scripts jenkins/mac/scripts --install-location /Applications --keychain $keychain --root dist --component-plist CellProfilerComponents.plist --identifier org.cellprofiler.CellProfiler --version "$version" --sign 'THE BROAD INSTITUTE INC' "CellProfiler-${version}.pkg"

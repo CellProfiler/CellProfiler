@@ -1,0 +1,6 @@
+[cellprofiler]
+name=CellProfiler for CentOS 6
+baseurl=http://www.cellprofiler.org/linux/centos6/
+enabled=1
+gpgcheck=0
+

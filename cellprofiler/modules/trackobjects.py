@@ -1,26 +1,30 @@
-"""<b>Track Objects</b> allows tracking objects throughout sequential 
+from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
+__doc__ = """
+<b>Track Objects</b> allows tracking objects throughout sequential 
 frames of a series of images, so that from frame to frame
 each object maintains a unique identity in the output measurements
 <hr>
-
 This module must be placed downstream of a module that identifies objects
 (e.g., <b>IdentifyPrimaryObjects</b>). <b>TrackObjects</b> will associate each
 object with the same object in the frames before and after. This allows the study 
 of objects' lineages and the timing and characteristics of dynamic events in 
 movies.
 
-Images in CellProfiler are processed 
-sequentially by frame (whether loaded as a series of images or a movie file). 
-To process a collection of images/movies, you will need to 
-group the input using grouping options in <b>LoadImages</b> to make sure 
-that each image sequence is
-handled individually. See the help in that module, and CellProfiler Help > 
-General Help > Using MetaData in CellProfiler for more information. If you are 
-only processing a single movie in each analysis 
-run, you do not need to set up image grouping.
+<p>Images in CellProfiler are processed sequentially by frame (whether loaded as a 
+series of images or a movie file). To process a collection of images/movies, 
+you will need to do the following:
+<ul>
+<li>Define each individual movie using metadata 
+either contained within the image file itself or as part of the images nomenclature 
+or folder structure. %(USING_METADATA_HELP_REF)s.</li>
+<li>Group the movies to make sure 
+that each image sequence is handled individually. %(USING_METADATA_GROUPING_HELP_REF)s.
+</li>
+</ul>
+For complete details, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.</p>
 
-For an example pipeline using TrackObjects, see the CellProfiler 
-<a href="http://www.cellprofiler.org/examples.shtml#Tracking">Examples</a> webpage.
+<p>For an example pipeline using TrackObjects, see the CellProfiler 
+<a href="http://www.cellprofiler.org/examples.shtml#Tracking">Examples</a> webpage.</p>
 
 <h4>Available measurements</h4>
 <b>Object measurements</b>
@@ -69,7 +73,7 @@ resulted from the merging of child objects in the previous frame.</li>
 </ul>
 
 See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>Groups</b>.
-"""
+"""%globals()
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 

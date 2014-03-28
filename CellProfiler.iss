@@ -41,6 +41,9 @@ Source: ".\dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs create
 Source: ".\windows\vcredist_x86.exe"; DestDir: "{tmp}"
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
+[InstallDelete]
+Type: files; Name: {app}\imagej\jars\*.jar
+
 [Icons]
 Name: "{group}\CellProfiler"; Filename: "{app}\CellProfiler.exe"; WorkingDir: "{app}"
 #include "ilastik.iss"

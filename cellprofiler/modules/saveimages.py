@@ -66,7 +66,7 @@ IF_CROPPING    = "Cropping"
 IF_FIGURE      = "Module window"
 IF_MOVIE       = "Movie"
 IF_OBJECTS     = "Objects"
-IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_FIGURE, IF_OBJECTS]
+IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_OBJECTS]
 
 BIT_DEPTH_8 = "8"
 BIT_DEPTH_16 = "16"
@@ -148,8 +148,6 @@ class SaveImages(cpm.CPModule):
             Results may be unpredictable if you save using PNG and there
             are more than 255 objects or if you save using one of the other
             file formats.</li>
-            <li><i>%(IF_FIGURE)s:</i> The window associated with a module can be saved, which
-            will include all the panels and text within that window. <b>Currently, this option is not yet available.</b></li>
             </ul>"""%globals())
         
         self.image_name  = cps.ImageNameSubscriber(

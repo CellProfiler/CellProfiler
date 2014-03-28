@@ -693,7 +693,7 @@ class ModuleView:
         control_name - assign this name to the control
         style        - one of the CB_ styles 
         """
-        assert isinstance(v, cps.Choice)
+        assert isinstance(v, (cps.Choice, cps.FigureSubscriber))
         try:
             v.test_valid(self.__pipeline)
         except:

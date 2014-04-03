@@ -821,7 +821,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             # Make a lookup table that translates edge labels to zero
             # but translates everything else to itself
             #
-            lookup = np.arange(max_out+1)
+            lookup = np.arange(max(max_out, np.max(segmented_labels))+1)
             lookup[edge_labels] = 0
             #
             # Run the segmented labels through this to filter out edge

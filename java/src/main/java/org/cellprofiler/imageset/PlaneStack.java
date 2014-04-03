@@ -18,8 +18,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.imglib2.AbstractAnnotatedSpace;
-import net.imglib2.Axis;
+import net.imglib2.meta.AbstractTypedSpace;
+import net.imglib2.meta.TypedAxis;
+import net.imglib2.meta.Axes;
+import net.imglib2.meta.DefaultTypedAxis;
 
 /**
  * @author Lee Kamentsky
@@ -30,11 +32,26 @@ import net.imglib2.Axis;
  * dimensions and stacked over the remaining ones.
  */
 public class PlaneStack<T> 
-	extends AbstractAnnotatedSpace<Axis>
+	extends AbstractTypedSpace<TypedAxis>
 	implements Iterable<T>
 {
 	private final int [] dims;
 	private final Map<List<Integer>, T> planes;
+	static public final TypedAxis[] XYAxes = new TypedAxis [] {
+			new DefaultTypedAxis(Axes.X), new DefaultTypedAxis(Axes.Y)
+	};
+	static public final TypedAxis[] XYCAxes = new TypedAxis [] {
+		new DefaultTypedAxis(Axes.X), new DefaultTypedAxis(Axes.Y),
+		new DefaultTypedAxis(Axes.CHANNEL)
+	};
+	/**
+	 * Construct a plane stack that can hold just a single
+	 * plane.
+	 */
+	public PlaneStack(T plane) {
+		this(XYAxes);
+		add(plane, 0, 0);
+	}
 	/**
 	 * Construct an ImageStack with fixed axis definitions. For instance:
 	 *     new ImageStack(Axes.X, Axes.Y, Axes.CHANNEL, Axes.Z)
@@ -43,7 +60,7 @@ public class PlaneStack<T>
 	 * 
 	 * @param axes the axes that define the stack's dimension identity
 	 */
-	public PlaneStack(final Axis... axes){
+	public PlaneStack(final TypedAxis... axes){
 		super(axes);
 		dims = new int [axes.length];
 		planes = new HashMap<List<Integer>, T>();
@@ -101,9 +118,31 @@ public class PlaneStack<T>
 	public int size(int d) {
 		return dims[d];
 	}
+	
+	/**
+	 * @return the total # of planes in the stack
+	 */
+	public int getPlaneCount() {
+		return planes.size();
+	}
 
 	public Iterator<T> iterator() {
 		return planes.values().iterator();
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder(this.getClass().getSimpleName());
+		result.append(" Axes: ");
+		for (int i=0;i < numDimensions(); i++) {
+			if (i > 0) result.append(",");
+			result.append(axis(i).type().toString());
+		}
+		result.append(" Planes: ");
+		result.append(planes.toString());
+		return result.toString();
 	}
 
 }

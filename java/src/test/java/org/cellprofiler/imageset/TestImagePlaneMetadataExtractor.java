@@ -19,8 +19,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -29,7 +31,6 @@ import loci.common.services.ServiceException;
 
 import org.cellprofiler.imageset.filter.Filter;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -38,12 +39,12 @@ import org.xml.sax.SAXException;
  *
  */
 public class TestImagePlaneMetadataExtractor {
-	private ImagePlane makeImagePlane(String path, String filename, String omexml, int series, int index) {
+	private ImagePlane makeImagePlane(String path, String filename, String omexml, int series, int index, int channel) {
 		File file = new File(new File(System.getProperty("user.home"), path), filename);
 		try {
 			ImageFile imageFile = new ImageFile(file.toURI());
 			if (omexml != null) imageFile.setXMLDocument(omexml);
-			return new ImagePlane(imageFile, series, index);
+			return new ImagePlane(new ImageSeries(imageFile, series), index, channel);
 		} catch (MalformedURLException e) {
 			fail();
 		} catch (ParserConfigurationException e) {
@@ -61,13 +62,13 @@ public class TestImagePlaneMetadataExtractor {
 	}
 	
 	private ImagePlane makeImagePlane(String path, String filename) {
-		return makeImagePlane(path, filename, null, 0, 0);
+		return makeImagePlane(path, filename, null, 0, 0, 0);
 	}
 
 	@Test
 	public void testNothing() {
 		ImagePlaneMetadataExtractor x = new ImagePlaneMetadataExtractor();
-		assertEquals(0, x.extract(makeImagePlane("foo", "bar.jpg")).metadata.size());
+		assertFalse(x.extract(makeImagePlane("foo", "bar.jpg")).iterator().hasNext());
 	}
 	
 	@Test
@@ -75,21 +76,22 @@ public class TestImagePlaneMetadataExtractor {
 		ImagePlaneMetadataExtractor x = new ImagePlaneMetadataExtractor();
 		x.addFileNameRegexp("(?P<WellName>[A-H][0-9]{2})");
 		ImagePlaneDetails ipd = x.extract(makeImagePlane("Plate1", "A01.tif"));
-		assertTrue(ipd.metadata.containsKey("WellName"));
-		assertEquals(ipd.metadata.get("WellName"), "A01");
+		assertTrue(ipd.containsKey("WellName"));
+		assertEquals(ipd.get("WellName"), "A01");
 	}
 	
 	@Test
 	public void testFilteredFileRegexp() {
 		try {
-			Filter filter = new Filter("directory does contain \"Plate1\"");
+			Filter<ImageFile> filter = 
+				new Filter<ImageFile>("directory does contain \"Plate1\"", ImageFile.class);
 			ImagePlaneMetadataExtractor x = new ImagePlaneMetadataExtractor();
 			x.addFileNameRegexp("(?P<WellName>[A-H][0-9]{2})", filter);
 			ImagePlaneDetails ipd = x.extract(makeImagePlane("Plate1", "A01.tif"));
-			assertTrue(ipd.metadata.containsKey("WellName"));
-			assertEquals(ipd.metadata.get("WellName"), "A01");
+			assertTrue(ipd.containsKey("WellName"));
+			assertEquals(ipd.get("WellName"), "A01");
 			ipd = x.extract(makeImagePlane("Plate2", "A01.tif"));
-			assertFalse(ipd.metadata.containsKey("WellName"));
+			assertFalse(ipd.containsKey("WellName"));
 		} catch (BadFilterExpressionException e) {
 			fail();
 		}
@@ -99,42 +101,22 @@ public class TestImagePlaneMetadataExtractor {
 		ImagePlaneMetadataExtractor x = new ImagePlaneMetadataExtractor();
 		x.addPathNameRegexp("(?P<Plate>Plate[0-9]+)");
 		ImagePlaneDetails ipd = x.extract(makeImagePlane("Plate1", "A01.tif"));
-		assertTrue(ipd.metadata.containsKey("Plate"));
-		assertEquals(ipd.metadata.get("Plate"), "Plate1");
+		assertTrue(ipd.containsKey("Plate"));
+		assertEquals(ipd.get("Plate"), "Plate1");
 	}
 	
 	@Test
 	public void testFilteredPathRegexp() {
 		try {
-			Filter filter = new Filter("file does contain \"A01\"");
+			Filter<ImageFile> filter = 
+				new Filter<ImageFile>("file does contain \"A01\"", ImageFile.class);
 			ImagePlaneMetadataExtractor x = new ImagePlaneMetadataExtractor();
 			x.addPathNameRegexp("(?P<Plate>Plate[0-9]+)", filter);
 			ImagePlaneDetails ipd = x.extract(makeImagePlane("Plate1", "A01.tif"));
-			assertTrue(ipd.metadata.containsKey("Plate"));
-			assertEquals(ipd.metadata.get("Plate"), "Plate1");
+			assertTrue(ipd.containsKey("Plate"));
+			assertEquals(ipd.get("Plate"), "Plate1");
 			ipd = x.extract(makeImagePlane("Plate1", "A02.tif"));
-			assertFalse(ipd.metadata.containsKey("Plate"));
-		} catch (BadFilterExpressionException e) {
-			fail();
-		}
-	}
-	
-	@Test
-	public void testTwoExtractors() {
-		/*
-		 * Make sure that the metadata from one operation is available
-		 * to the filter of the second one.
-		 */
-		try {
-			Filter filter = new Filter("metadata does WellName \"A01\"");
-			ImagePlaneMetadataExtractor x = new ImagePlaneMetadataExtractor();
-			x.addFileNameRegexp("(?P<WellName>[A-H][0-9]{2})");
-			x.addPathNameRegexp("(?P<Plate>Plate[0-9]+)", filter);
-			ImagePlaneDetails ipd = x.extract(makeImagePlane("Plate1", "A01.tif"));
-			assertTrue(ipd.metadata.containsKey("Plate"));
-			assertEquals(ipd.metadata.get("Plate"), "Plate1");
-			ipd = x.extract(makeImagePlane("Plate1", "A02.tif"));
-			assertFalse(ipd.metadata.containsKey("Plate"));
+			assertFalse(ipd.containsKey("Plate"));
 		} catch (BadFilterExpressionException e) {
 			fail();
 		}
@@ -143,39 +125,51 @@ public class TestImagePlaneMetadataExtractor {
 	@Test
 	public void testExtractMetadata() {
 		/*
-		 * Test the extractMetadata method
+		 * Test the big extract method
+		 * 
+		 * We use OME metadata for a 3-series, 36 z-stack file
+		 * and we conditionally extract file name metadata.
 		 */
 		String xml = TestOMEMetadataExtractor.getTestXMLAsString();
 		try {
 			ImagePlaneMetadataExtractor x = new ImagePlaneMetadataExtractor();
-			Filter filter = new Filter("metadata does Z \"2\"");
-			x.addImagePlaneExtractor(new OMEMetadataExtractor());
+			Filter<ImageFile> filter = new Filter<ImageFile>(
+					"file does contain \"A02\"", ImageFile.class);
+			x.addImagePlaneExtractor(new OMEPlaneMetadataExtractor());
+			x.addImageSeriesExtractor(new OMESeriesMetadataExtractor());
 			x.addFileNameRegexp("(?P<WellName>[A-H][0-9]{2})", filter);
-			File file = new File(System.getProperty("user.home"), "Image_A02.tif");
-			ImagePlaneDetails [] pIPD = new ImagePlaneDetails[1];
-			ImageFile [] pIF = new ImageFile [1];
-			Iterator<Map.Entry<String, String>>  result = x.extractMetadata(file.toURI().toString(), 1, 0, xml, pIPD, pIF);
-			Map<String, String> dest = new HashMap<String, String>();
-			while(result.hasNext()) {
-				Map.Entry<String, String> entry = result.next();
-				dest.put(entry.getKey(), entry.getValue());
+			String [] urls = {
+					new File(System.getProperty("user.home"), "Image_A01.tif").toURI().toString(),
+					new File(System.getProperty("user.home"), "Image_A02.tif").toURI().toString() };
+			String [] omeMetadata = { xml, xml };
+			Set<String> keysOut = new HashSet<String>();
+					
+			ImagePlaneDetails [] ipds = x.extract(urls, omeMetadata, keysOut);
+			for (String key:new String [] {"T", "Z", "ChannelName", "WellName"}) {
+				assertTrue(keysOut.contains(key));
 			}
-			assertEquals("0", dest.get("T"));
-			assertEquals("0", dest.get("Z"));
-			assertEquals("Exp1Cam1", dest.get("ChannelName"));
-			assertFalse(dest.containsKey("WellName"));
-			assertNotNull(pIPD[0]);
-			
-			result = x.extractMetadata(pIF[0], 1, 2, pIPD);
-			dest = new HashMap<String, String>();
-			while(result.hasNext()) {
-				Map.Entry<String, String> entry = result.next();
-				dest.put(entry.getKey(), entry.getValue());
+			assertEquals(ipds.length, 36 * 4 * 2);
+			boolean [][][] found = {
+					{ new boolean[36], new boolean[36], new boolean[36], new boolean[36] },
+					{ new boolean[36], new boolean[36], new boolean[36], new boolean[36] }
+			};
+			for (ImagePlaneDetails ipd:ipds) {
+				int imageIndex = ipd.getImagePlane().getImageFile().getFileName().equals("Image_A01.tif")?0:1;
+				int seriesIndex = ipd.getImagePlane().getSeries().getSeries();
+				int zIndex = ipd.getImagePlane().getOMEPlane().getTheZ().getValue();
+				assertEquals("0", ipd.get("T"));
+				assertEquals(zIndex, Integer.valueOf(ipd.get("Z")).intValue());
+				assertEquals("Exp1Cam1", ipd.get("ChannelName"));
+				assertEquals(imageIndex == 1, ipd.containsKey("WellName"));
+				assertEquals("136570140804 96_Greiner", ipd.get("Plate"));
+				assertEquals("E11", ipd.get("Well"));
+				found[imageIndex][seriesIndex][zIndex] = true;
 			}
-			assertEquals("0", dest.get("T"));
-			assertEquals("2", dest.get("Z"));
-			assertEquals("Exp1Cam1", dest.get("ChannelName"));
-			assertEquals("A02", dest.get("WellName"));
+			for (boolean [][] fff:found) {
+				for(boolean [] ff:fff) {
+					for (boolean f:ff) assertTrue(f);
+				}
+			}
 			
 		} catch (BadFilterExpressionException e) {
 			fail();

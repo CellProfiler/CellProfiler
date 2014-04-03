@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 
 import org.cellprofiler.imageset.ImageFile;
 import org.cellprofiler.imageset.ImagePlane;
+import org.cellprofiler.imageset.ImagePlaneDetails;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
 import org.cellprofiler.imageset.filter.TestFileNamePredicate.Expects;
 import org.junit.Test;
@@ -39,8 +40,7 @@ public class TestPathPredicate {
 		try {
 			pred.setSubpredicates(Expects.expects(expectedPath));
 			ImageFile imgfile = new ImageFile(fileAtPath.toURI());
-			ImagePlaneDetails imgplane = new ImagePlaneDetails(new ImagePlane(imgfile), null);
-			pred.eval(imgplane);
+			pred.eval(imgfile);
 		} catch (BadFilterExpressionException e) {
 			fail("Path predicate takes a subpredicate.");
 		}
@@ -51,8 +51,7 @@ public class TestPathPredicate {
 		try {
 			pred.setSubpredicates(Expects.expects("http://www.cellprofiler.org/linked_files"));
 			ImageFile imgfile = new ImageFile(new URI("http://www.cellprofiler.org/linked_files/bar.jpg"));
-			ImagePlaneDetails imgplane = new ImagePlaneDetails(new ImagePlane(imgfile), null);
-			pred.eval(imgplane);
+			pred.eval(imgfile);
 		} catch (BadFilterExpressionException e) {
 			fail("Path predicate takes a subpredicate.");
 		} catch (URISyntaxException e) {

@@ -13,6 +13,8 @@
 package org.cellprofiler.imageset.filter;
 
 import org.cellprofiler.imageset.ImagePlane;
+import org.cellprofiler.imageset.ImagePlaneDetails;
+import org.cellprofiler.imageset.ImagePlaneDetailsStack;
 
 import net.imglib2.meta.Axes;
 
@@ -44,10 +46,10 @@ public class IsColorPredicate
 	public boolean eval(ImagePlaneDetailsStack candidate) {
 		// We have a color image if it contains channels
 		for (int i=0;i<candidate.numDimensions();i++) {
-			if (candidate.axis(i).equals(Axes.CHANNEL)) {
+			if (candidate.axis(i).type().equals(Axes.CHANNEL)) {
 				if (candidate.size(i) > 1) return true;
 				for (ImagePlaneDetails ipd:candidate){
-					if (ipd.imagePlane.getChannel() != ImagePlane.INTERLEAVED) return false;
+					if (ipd.getImagePlane().getChannel() != ImagePlane.INTERLEAVED) return false;
 				}
 				return true;
 			}

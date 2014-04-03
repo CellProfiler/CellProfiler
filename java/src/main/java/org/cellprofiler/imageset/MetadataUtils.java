@@ -22,7 +22,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
+import net.imglib2.Axis;
+import net.imglib2.meta.Axes;
+import net.imglib2.meta.DefaultTypedAxis;
+import net.imglib2.meta.TypedAxis;
+import ome.xml.model.Image;
+import ome.xml.model.OME;
+import ome.xml.model.Pixels;
+import ome.xml.model.enums.DimensionOrder;
+
 
 /**
  * @author Lee Kamentsky
@@ -83,11 +91,11 @@ public class MetadataUtils {
 			Map<String, Integer> mustHave) { 
 		Map<String, String> image_set_metadata = new HashMap<String, String>();
 		for (List<ImagePlaneDetails> l: ipdList) {
-			Map<String, String> metadata = l.get(idx).metadata;
-			for (String key:metadata.keySet()) {
+			final ImagePlaneDetails ipd = l.get(idx);
+			for (String key:ipd) {
 				if ((! badMetadata.contains(key)) &&
 					(! mustHave.containsKey(key))){
-					String value = metadata.get(key);
+					String value = ipd.get(key);
 					if (image_set_metadata.containsKey(key)) {
 						if (! image_set_metadata.get(key).equals(value)) {
 							badMetadata.add(key);
@@ -102,7 +110,7 @@ public class MetadataUtils {
 		for (Map.Entry<String, Integer> entry:mustHave.entrySet()) {
 			final String k = entry.getKey();
 			final ImagePlaneDetails ipd = ipdList.get(entry.getValue()).get(idx);
-			image_set_metadata.put(k, ipd.metadata.get(k));
+			image_set_metadata.put(k, ipd.get(k));
 		}
 		return image_set_metadata;
 	}
@@ -149,5 +157,34 @@ public class MetadataUtils {
 		}
 		p += pattern.substring(start);
 		return Pattern.compile(p);
+	}
+	
+	/**
+	 * Get a plane index given the channel, z and t indices
+	 * for a particular OMEXML pixels metadata node.
+	 * 
+	 * @param pixels an OMEXML pixels metadata node giving the layout for planes
+	 * @param c the channel #
+	 * @param z the z-stack height index
+	 * @param t the time index
+	 * @return the index to the plane.
+	 */
+	static public int getIndex(Pixels pixels, int c, int z, int t) {
+		final DimensionOrder dimensionOrder = pixels.getDimensionOrder();
+		switch(dimensionOrder) {
+		case XYCTZ:
+			return c + pixels.getSizeC().getValue() * (t + pixels.getSizeT().getValue()*z);
+		case XYCZT:
+			return c + pixels.getSizeC().getValue() * (z + pixels.getSizeZ().getValue()*t);
+		case XYTCZ:
+			return t + pixels.getSizeT().getValue() * (c + pixels.getSizeC().getValue() * z);
+		case XYTZC:
+			return t + pixels.getSizeT().getValue() * (z + pixels.getSizeZ().getValue() * c);
+		case XYZCT:
+			return z + pixels.getSizeZ().getValue() * (c + pixels.getSizeC().getValue() * t);
+		case XYZTC:
+			return z + pixels.getSizeZ().getValue() * (t + pixels.getSizeT().getValue() * c);
+		}
+		throw new UnsupportedOperationException(String.format("Unsupported dimension order: %s", dimensionOrder.toString()));
 	}
 }

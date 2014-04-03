@@ -15,6 +15,7 @@ package org.cellprofiler.imageset.filter;
 
 
 import org.cellprofiler.imageset.ImageFile;
+import org.cellprofiler.imageset.ImagePlaneDetails;
 
 /**
  * @author Lee Kamentsky
@@ -24,8 +25,7 @@ import org.cellprofiler.imageset.ImageFile;
  * 
  */
 public class ImagePlaneDetailsAdapter<TOUT> 
-	extends FilterAdapter<ImagePlaneDetails, ImageFile, TOUT> implements
-		FilterPredicate<ImagePlaneDetails, TOUT> {
+	extends FilterAdapter<ImagePlaneDetails, ImageFile, TOUT> {
 	/**
 	 * Make an adapter for an ImageFile filter predicate.
 	 * 
@@ -51,12 +51,6 @@ public class ImagePlaneDetailsAdapter<TOUT>
 		super(ImagePlaneDetails.class, ImageFile.class, klass);
 	}
 	/* (non-Javadoc)
-	 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
-	 */
-	public boolean eval(ImagePlaneDetails candidate) {
-		return predicate.eval(candidate.imagePlane.getImageFile());
-	}
-	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#getInputClass()
 	 */
 	public Class<ImagePlaneDetails> getInputClass() {
@@ -67,7 +61,7 @@ public class ImagePlaneDetailsAdapter<TOUT>
 	 */
 	@Override
 	public ImageFile getValue(ImagePlaneDetails candidate) {
-		return candidate.imagePlane.getImageFile();
+		return candidate.getImagePlane().getImageFile();
 	}
 
 }

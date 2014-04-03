@@ -12,25 +12,25 @@
  */
 package org.cellprofiler.imageset.filter;
 
-import org.cellprofiler.imageset.OMEMetadataExtractor;
+import net.imglib2.Axis;
+import net.imglib2.meta.Axes;
+
+import org.cellprofiler.imageset.ImagePlaneDetailsStack;
+import org.cellprofiler.imageset.OMEPlaneMetadataExtractor;
 
 /**
  * @author Lee Kamentsky
  * 
- * A predicate that determines whether an image "plane"
- * is really a stack of them.
+ * A predicate that determines whether a stack
+ * has a single frame or has multiple ones
  * 
- * An image "plane" is a stack if it has more than one
- * Z or T slice as indicated by the values of the
- * MD_SIZE_Z or MD_SIZE_T metadata.
- *
  */
 public class IsStackPredicate extends
-		AbstractTerminalPredicate<ImagePlaneDetails> {
+		AbstractTerminalPredicate<ImagePlaneDetailsStack> {
 	final static public String SYMBOL="isstack";
 
 	protected IsStackPredicate() {
-		super(ImagePlaneDetails.class);
+		super(ImagePlaneDetailsStack.class);
 	}
 
 	/* (non-Javadoc)
@@ -43,15 +43,9 @@ public class IsStackPredicate extends
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
 	 */
-	public boolean eval(ImagePlaneDetails candidate) {
-		for (final String key: new String [] {OMEMetadataExtractor.MD_SIZE_T, OMEMetadataExtractor.MD_SIZE_Z} ) {
-			if (! candidate.metadata.containsKey(key)) continue;
-			final String value = candidate.metadata.get(key);
-			try {
-				if (Integer.parseInt(value) > 1) return true;
-			} catch (NumberFormatException e) {
-				continue;
-			}
+	public boolean eval(ImagePlaneDetailsStack candidate) {
+		for (int i=0; i<candidate.numDimensions(); i++) {
+			if (candidate.size(i) > 1) return true;
 		}
 		return false;
 	}

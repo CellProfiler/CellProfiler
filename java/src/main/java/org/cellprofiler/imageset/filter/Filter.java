@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 
 import org.cellprofiler.imageset.ImageFile;
 import org.cellprofiler.imageset.ImagePlane;
+import org.cellprofiler.imageset.ImagePlaneDetails;
+import org.cellprofiler.imageset.ImagePlaneDetailsStack;
 import org.cellprofiler.imageset.MetadataExtractor;
 
 /**
@@ -142,7 +144,7 @@ public class Filter<C> {
 	 * @throws BadFilterExpressionException if the expression cannot be parsed
 	 */
 	static public boolean filter(String expression, URI url) throws BadFilterExpressionException {
-		return filter(expression, url, URI.class);
+		return filter(expression, new ImageFile(url), ImageFile.class);
 	}
 	/**
 	 * Filter a URL based on a filter expression

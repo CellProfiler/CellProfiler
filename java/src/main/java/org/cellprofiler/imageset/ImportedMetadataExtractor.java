@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -150,12 +149,12 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 	public Map<String, String> extract(ImagePlaneDetails source) {
 		final ArrayList<String> key = new ArrayList<String>(matchingKeys.length);
 		for (int i=0; i<matchingKeys.length; i++) {
-			if (! source.metadata.containsKey(matchingKeys[i]))
+			if (! source.containsKey(matchingKeys[i]))
 				return emptyMap;
 			if (caseInsensitive) {
-				key.add(source.metadata.get(matchingKeys[i]).toLowerCase());
+				key.add(source.get(matchingKeys[i]).toLowerCase());
 			} else {
-				key.add(source.metadata.get(matchingKeys[i]));
+				key.add(source.get(matchingKeys[i]));
 			}
 		}
 		if (importedMetadata.containsKey(key))

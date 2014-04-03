@@ -22,7 +22,11 @@ import java.util.Map;
 
 import org.cellprofiler.imageset.ImageFile;
 import org.cellprofiler.imageset.ImagePlane;
-import org.cellprofiler.imageset.OMEMetadataExtractor;
+import org.cellprofiler.imageset.ImagePlaneDetails;
+import org.cellprofiler.imageset.ImagePlaneDetailsStack;
+import org.cellprofiler.imageset.Mocks;
+import org.cellprofiler.imageset.OMEPlaneMetadataExtractor;
+import org.cellprofiler.imageset.OMESeriesMetadataExtractor;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
 import org.junit.Test;
 import org.junit.BeforeClass;
@@ -42,16 +46,18 @@ public class TestFilter {
 			String [][] metadata, 
 			boolean expected) {
 		try {
-			File rootFile = new File(System.getProperty("user.home"));
-			File imagePath = new File(new File(rootFile, pathname), filename);
-			ImageFile imageFile;
-			imageFile = new ImageFile(imagePath.toURI());
-			ImagePlane imagePlane = new ImagePlane(imageFile, series, index);
-			Map<String, String> metadataMap = new HashMap<String, String>();
+			ImagePlaneDetails ipd = Mocks.makeMockIPD(filename);
 			for (String [] kvpair:metadata) {
-				metadataMap.put(kvpair[0], kvpair[1]);
+				ipd.put(kvpair[0], kvpair[1]);
 			}
-			assertEquals(expected, Filter.filter(expression, new ImagePlaneDetails(imagePlane, metadataMap)));
+			assertEquals(expected, Filter.filter(expression, ipd));
+		} catch (BadFilterExpressionException e) {
+			fail(e.getMessage());
+		}
+	}
+	static void testSomething(String expression, ImagePlaneDetailsStack stack, boolean expected) {
+		try {
+			assertEquals(expected, Filter.filter(expression, stack));
 		} catch (BadFilterExpressionException e) {
 			fail(e.getMessage());
 		}
@@ -163,9 +169,11 @@ public class TestFilter {
 		testSomething("extension does ismovie", "foo.avi", true);
 		testSomething("extension does ispng", "foo.png", true);
 		testSomething("extension does istif", "foo.tif", true);
-		testSomething("image does iscolor", new String[][] {{OMEMetadataExtractor.MD_COLOR_FORMAT, OMEMetadataExtractor.MD_RGB}}, true);
-		testSomething("image does ismonochrome", new String[][] {{OMEMetadataExtractor.MD_COLOR_FORMAT, OMEMetadataExtractor.MD_MONOCHROME}}, true);
-		testSomething("image does isstack", new String[][] {{OMEMetadataExtractor.MD_SIZE_T, "3"}}, true);
-		testSomething("image does isstackframe", new String [][] {{OMEMetadataExtractor.MD_T, "2"}}, true);
+		testSomething("image does iscolor", Mocks.makeMockColorStack(3), true);
+		testSomething("image does iscolor", Mocks.makeMockInterleavedStack(), true);
+		testSomething("image does iscolor", Mocks.makeMockMonochromeStack(), false);
+		testSomething("image does ismonochrome", Mocks.makeMockMonochromeStack(), true);
+		testSomething("image does isstack", Mocks.makeMockColorStack(3), true);
+		testSomething("image does isstackframe", Mocks.makeMockMonochromeStack(), true);
 	}
 }

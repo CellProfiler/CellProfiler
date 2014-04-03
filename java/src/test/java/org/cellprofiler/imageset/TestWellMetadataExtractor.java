@@ -17,14 +17,13 @@ import static org.junit.Assert.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 import org.junit.Test;
 
 public class TestWellMetadataExtractor {
 	private ImagePlaneDetails makeIPD(String [][] mapKv) {
-		Map<String, String> metadata = new HashMap<String, String>();
-		for (String []kv: mapKv) metadata.put(kv[0], kv[1]);
-		return new ImagePlaneDetails(null, metadata);
+		final ImagePlaneDetails ipd = Mocks.makeMockIPD();
+		for (String []kv: mapKv) ipd.put(kv[0], kv[1]);
+		return ipd;
 	}
 	private void testEmptyMapCase(String [][] mapKv) {
 		assertEquals(0, new WellMetadataExtractor().extract(makeIPD(mapKv)).size());

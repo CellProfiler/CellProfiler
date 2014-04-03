@@ -23,8 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.imglib2.meta.Axes;
+import net.imglib2.meta.TypedAxis;
+import ome.xml.model.Plane;
+
 import org.cellprofiler.imageset.filter.Filter;
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 
 /**
  * @author Lee Kamentsky
@@ -68,20 +71,30 @@ public class Joiner {
 		/**
 		 * The filter used for filtering ipds
 		 */
-		final private Filter filter;
+		final private Filter<ImagePlaneDetailsStack> filter;
 		
 		final private String name;
+		
+		final private TypedAxis [] axes;
 		/**
 		 * Initialize the channel filter with a filter and metadata keys.
 		 * 
 		 * @param channelName
 		 * @param keys
 		 * @param filter
+		 * @param axes the axes for the filter. Typical choices:
+		 *        Monochrome: PlaneStack.XYAxes
+		 *        Color: PlaneStack.XYCAxes
 		 */
-		public ChannelFilter(String channelName, String [] keys, Filter filter) {
+		public ChannelFilter(
+				String channelName, 
+				String [] keys, 
+				Filter<ImagePlaneDetailsStack> filter,
+				TypedAxis ... axes) {
 			this.name = channelName;
 			this.keys = keys;
 			this.filter = filter;
+			this.axes = axes;
 		}
 		
 		/**
@@ -90,15 +103,17 @@ public class Joiner {
 		 * @param channelName
 		 * @param filter
 		 */
-		public ChannelFilter(String channelName, Filter filter) {
-			this(channelName, null, filter);
+		public ChannelFilter(String channelName, Filter<ImagePlaneDetailsStack> filter, TypedAxis... axes) {
+			this(channelName, null, filter, axes);
 		}
 		
-		public Filter getFilter() { return filter; }
+		public Filter<ImagePlaneDetailsStack> getFilter() { return filter; }
 		
 		public String getName() { return name; }
 		
 		public String [] getKeys() { return keys; }
+		
+		public TypedAxis [] getAxes() { return axes; }
 		
 		/**
 		 * @return the indices of the keys that have non-null metadata tags.
@@ -154,16 +169,16 @@ public class Joiner {
 	 *        which had missing or duplicate images.
 	 * @return a list of image sets.
 	 */
-	public <T  extends ImagePlaneDetails> List<ImageSet> join(List<T> ipds, Collection<ImageSetError> errors) {
-		Map<List<String>, List<ImagePlaneDetails>> result = 
-			new HashMap<List<String>, List<ImagePlaneDetails>>();
+	public List<ImageSet> join(List<ImagePlaneDetails> ipds, Collection<ImageSetError> errors) {
+		Map<List<String>, List<ImagePlaneDetailsStack>> result = 
+			new HashMap<List<String>, List<ImagePlaneDetailsStack>>();
 		/*
 		 * Do the anchor channel first.
 		 */
-		Map<List<String>, ImagePlaneDetails> channelResult = filterChannel(
+		Map<List<String>, ImagePlaneDetailsStack> channelResult = filterChannel(
 				channels.get(anchorChannel), ipds, errors);
-		for (Map.Entry<List<String>, ImagePlaneDetails> entry:channelResult.entrySet()) {
-			List<ImagePlaneDetails> imagesetIPDs = getListOfNulls(channels.size());
+		for (Map.Entry<List<String>, ImagePlaneDetailsStack> entry:channelResult.entrySet()) {
+			List<ImagePlaneDetailsStack> imagesetIPDs = getListOfNulls(channels.size());
 			imagesetIPDs.set(anchorChannel, entry.getValue());
 			result.put(entry.getKey(), imagesetIPDs);
 		}
@@ -177,7 +192,7 @@ public class Joiner {
 			int [] idxs = channelFilter.getJoiningKeyIndices(); 
 			List<String> key = getListOfNulls(idxs.length);
 			Set<List<String>> channelResultKeys = new HashSet<List<String>>(channelResult.keySet());
-			for (Map.Entry<List<String>, List<ImagePlaneDetails>> entry:result.entrySet()) {
+			for (Map.Entry<List<String>, List<ImagePlaneDetailsStack>> entry:result.entrySet()) {
 				/*
 				 * Extract only the metadata values in the result that are specified
 				 * by this channel.
@@ -198,7 +213,7 @@ public class Joiner {
 				ImageSetMissingError error = new ImageSetMissingError(
 						channels.get(anchorChannel).getName(),
 						"No matching metadata", missingKey);
-				final List<ImagePlaneDetails> errantImageSet = new ArrayList<ImagePlaneDetails>(channels.size());
+				final List<ImagePlaneDetailsStack> errantImageSet = new ArrayList<ImagePlaneDetailsStack>(channels.size());
 				for (int ii=0; ii<channels.size(); ii++) {
 					errantImageSet.add((ii==i)?channelResult.get(missingKey):null);
 				}
@@ -212,7 +227,7 @@ public class Joiner {
 		for (ImageSetError error: errors) {
 			final List<String> key = error.getKey();
 			if (result.containsKey(key)) {
-				List<ImagePlaneDetails> imageSet = result.get(key);
+				List<ImagePlaneDetailsStack> imageSet = result.get(key);
 				error.setImageSet(imageSet);
 				result.remove(key);
 			}
@@ -241,39 +256,119 @@ public class Joiner {
 		return imageSet;
 	}
 	
-	private <T extends ImagePlaneDetails> Map<List<String>, ImagePlaneDetails> filterChannel(
+	private Map<List<String>, ImagePlaneDetailsStack> filterChannel(
 			ChannelFilter channelFilter,
-			List<T> ipds,
+			List<ImagePlaneDetails> ipds,
 			Collection<ImageSetError> errors) {
 		Map<List<String>, ImageSetDuplicateError> localErrors = 
 			new HashMap<List<String>, ImageSetDuplicateError>();
-		Map<List<String>, ImagePlaneDetails> result = new HashMap<List<String>, ImagePlaneDetails>();
+		Map<List<String>, ImagePlaneDetailsStack> result = 
+			new HashMap<List<String>, ImagePlaneDetailsStack>();
+
+		List<ImagePlaneDetailsStack> ipdStacks = getStacks(ipds, channelFilter.getAxes());
 		String [] keys = channelFilter.getKeys();
 		int [] idxs = channelFilter.getJoiningKeyIndices();
 		next_ipd:
-		for (ImagePlaneDetails ipd:ipds) {
-			if (channelFilter.getFilter().eval(ipd)) {
+		for (ImagePlaneDetailsStack ipdStack:ipdStacks) {
+			if (channelFilter.getFilter().eval(ipdStack)) {
 				List<String> keyValues = new ArrayList<String>(idxs.length);
 				for (int i:idxs) {
-					if (! ipd.metadata.containsKey(keys[i])) continue next_ipd;
-					keyValues.add(ipd.metadata.get(keys[i]));
+					if (! ipdStack.containsKey(keys[i])) continue next_ipd;
+					keyValues.add(ipdStack.get(keys[i]));
 				}
 				if (result.containsKey(keyValues)) {
 					if (localErrors.containsKey(keyValues)) {
-						localErrors.get(keyValues).getImagePlaneDetails().add(ipd);
+						localErrors.get(keyValues).getImagePlaneDetailsStacks().add(ipdStack);
 					} else {
-						List<ImagePlaneDetails> errorIPDs = new ArrayList<ImagePlaneDetails>(2);
+						List<ImagePlaneDetailsStack> errorIPDs = new ArrayList<ImagePlaneDetailsStack>(2);
 						errorIPDs.add(result.get(keyValues));
-						errorIPDs.add(ipd);
-						localErrors.put(keyValues, new ImageSetDuplicateError(
-								channelFilter.getName(), "Duplicate entries for key", keyValues, errorIPDs));
+						errorIPDs.add(ipdStack);
+						localErrors.put(keyValues, 
+								new ImageSetDuplicateError(
+										channelFilter.getName(), 
+										"Duplicate entries for key", 
+										keyValues, errorIPDs));
 					}
 					continue;
 				}
-				result.put(keyValues, ipd);
+				result.put(keyValues, ipdStack);
 			}
 		}
 		errors.addAll(localErrors.values());
+		return result;
+	}
+
+	private List<ImagePlaneDetailsStack> getStacks(List<ImagePlaneDetails> ipds, TypedAxis [] axes) {
+		for (TypedAxis axis: axes) {
+			if (axis.type().equals(Axes.CHANNEL)) {
+				return getColorStacks(ipds);
+			}
+		}
+		return getMonochromeStacks(ipds);
+	}
+
+	private List<ImagePlaneDetailsStack> getMonochromeStacks(List<ImagePlaneDetails> ipds) {
+		List<ImagePlaneDetailsStack> result = new ArrayList<ImagePlaneDetailsStack>();
+		for (ImagePlaneDetails ipd:ipds) {
+			result.add(ImagePlaneDetailsStack.makeMonochromeStack(
+					ipd.coerceToMonochrome()));
+		}
+		return result;
+	}
+
+	protected static class ChannelGrouping implements Comparable<ChannelGrouping> {
+		final public ImagePlaneDetails ipd;
+		final public int z;
+		final public int t;
+		final public int c;
+		public ChannelGrouping(ImagePlaneDetails ipd) {
+			Plane omePlane = ipd.getImagePlane().getOMEPlane();
+			this.ipd = ipd;
+			c = omePlane.getTheC().getValue();
+			t = omePlane.getTheT().getValue();
+			z = omePlane.getTheZ().getValue();
+		}
+
+		public int compareTo(ChannelGrouping o) {
+			int result = ipd.getImagePlane().getSeries().compareTo(
+					o.ipd.getImagePlane().getSeries());
+			if (result != 0) return result;
+			if (z != o.z) return z - o.z;
+			if (t != o.t) return t - o.t;
+			return c - o.c;
+		}
+	}
+	private List<ImagePlaneDetailsStack> getColorStacks(List<ImagePlaneDetails> ipds) {
+		List<ImagePlaneDetailsStack> result = new ArrayList<ImagePlaneDetailsStack>();
+		//
+		// Make ChannelGrouping keys for planes that have decent OME metadata
+		//
+		List<ChannelGrouping> groupingPlanes = new ArrayList<ChannelGrouping>();
+		for (ImagePlaneDetails ipd:ipds) {
+			final ImagePlane imagePlane = ipd.getImagePlane();
+			if (imagePlane.getOMEPlane() != null) {
+				groupingPlanes.add(new ChannelGrouping(ipd));
+			} else {
+				result.add(ImagePlaneDetailsStack.makeColorStack(ipd));
+			}
+		}
+		if (groupingPlanes.size() > 0) {
+			// Order the planes so that consecutive channels of the
+			// same channel-stack appear consecutively
+			Collections.sort(groupingPlanes);
+			ImagePlaneDetailsStack stack = new ImagePlaneDetailsStack(PlaneStack.XYCAxes);
+			int lastChannel = -1;
+			for (ChannelGrouping g:groupingPlanes) {
+				if (g.c > lastChannel) {
+					stack.add(g.ipd, 0, 0, g.c);
+				} else {
+					result.add(stack);
+					stack = ImagePlaneDetailsStack.makeColorStack(g.ipd);
+				}
+				lastChannel = g.c;
+			}
+			result.add(stack);
+		}
 		return result;
 	}
 			

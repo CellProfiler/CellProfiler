@@ -16,11 +16,12 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.cellprofiler.imageset.ImportedMetadataExtractor.KeyPair;
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 import org.junit.Test;
 
 public class TestImportedMetadataExtractor {
@@ -38,9 +39,9 @@ public class TestImportedMetadataExtractor {
 	}
 	
 	private void testSomething(ImportedMetadataExtractor extractor, String [][] metadataIn, String [][] expectedOut) {
-		ImagePlaneDetails ipd = new ImagePlaneDetails(null, new HashMap<String, String>());
+		ImagePlaneDetails ipd = Mocks.makeMockIPD();
 		for (String [] kv:metadataIn) {
-			ipd.metadata.put(kv[0], kv[1]);
+			ipd.put(kv[0], kv[1]);
 		}
 		Map<String,String> mapOut = extractor.extract(ipd);
 		for (String [] kv:expectedOut) {

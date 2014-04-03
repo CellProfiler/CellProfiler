@@ -36,7 +36,7 @@ import org.xml.sax.SAXException;
 public class TestOMEMetadataExtractor {
 
 	/**
-	 * Test method for {@link org.cellprofiler.imageset.OMEMetadataExtractor#extract(org.cellprofiler.imageset.ImagePlane)}.
+	 * Test method for {@link org.cellprofiler.imageset.OMEPlaneMetadataExtractor#extract(org.cellprofiler.imageset.ImagePlane)}.
 	 */
 	@Test
 	public void testExtract() {
@@ -45,8 +45,8 @@ public class TestOMEMetadataExtractor {
 		try {
 			ImageFile imageFile = new ImageFile(path.toURI());
 			imageFile.setXMLDocument(getTestXML());
-			ImagePlane imagePlane = new ImagePlane(imageFile, 0, 0);
-			OMEMetadataExtractor extractor = new OMEMetadataExtractor();
+			ImagePlane imagePlane = new ImagePlane(new ImageSeries(imageFile, 0), 0, ImagePlane.ALWAYS_MONOCHROME);
+			OMEPlaneMetadataExtractor extractor = new OMEPlaneMetadataExtractor();
 			Map<String, String> result = extractor.extract(imagePlane);
 			assertNotNull(result);
 			assertEquals("Exp1Cam1", result.get("ChannelName"));
@@ -54,7 +54,7 @@ public class TestOMEMetadataExtractor {
 			assertEquals("0", result.get("T"));
 			assertEquals("0", result.get("Z"));
 			
-			imagePlane = new ImagePlane(imageFile, 1, 2);
+			imagePlane = new ImagePlane(new ImageSeries(imageFile, 2), 2, ImagePlane.ALWAYS_MONOCHROME);
 			result = extractor.extract(imagePlane);
 			assertNotNull(result);
 			assertEquals("Exp1Cam1", result.get("ChannelName"));

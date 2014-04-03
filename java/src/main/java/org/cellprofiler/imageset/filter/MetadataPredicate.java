@@ -14,6 +14,7 @@ package org.cellprofiler.imageset.filter;
 
 import java.util.List;
 
+import org.cellprofiler.imageset.ImagePlaneDetails;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
 
 /**
@@ -60,7 +61,8 @@ public class MetadataPredicate extends
 		 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
 		 */
 		public boolean eval(ImagePlaneDetails candidate) {
-			return (candidate.metadata.containsKey(key) && candidate.metadata.get(key).equals(value));
+			String value = candidate.get(key);
+			return (value != null && this.value.equals(value));
 		}
 
 		/* (non-Javadoc)

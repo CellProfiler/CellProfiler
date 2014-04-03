@@ -12,39 +12,21 @@
  */
 package org.cellprofiler.imageset.filter;
 
-import org.cellprofiler.imageset.OMEMetadataExtractor;
+import org.cellprofiler.imageset.ImagePlaneDetailsStack;
+import org.cellprofiler.imageset.OMEPlaneMetadataExtractor;
 
 /**
  * @author Lee Kamentsky
  * 
- * A predicate that determines whether an image plane stack
- * is part of an image stack.
+ * A predicate that determines whether an ImagePlaneDetailsStack
+ * has just a single image plane.
  * 
- * An image "plane" is a stack if it has M_T or M_Z
- * metadata.
  */
 public class IsStackFramePredicate extends
-		AbstractTerminalPredicate<ImagePlaneDetails> {
+		FilterPredicateInverter<ImagePlaneDetailsStack, Object> {
 	final static public String SYMBOL="isstackframe";
 
-	protected IsStackFramePredicate() {
-		super(ImagePlaneDetails.class);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.cellprofiler.imageset.filter.FilterPredicate#getSymbol()
-	 */
-	public String getSymbol() {
-		return SYMBOL;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
-	 */
-	public boolean eval(ImagePlaneDetails candidate) {
-		for (final String key: new String [] {OMEMetadataExtractor.MD_T, OMEMetadataExtractor.MD_Z} ) {
-			if ( candidate.metadata.containsKey(key)) return true;
-		}
-		return false;
+	public IsStackFramePredicate() {
+		super(new IsStackPredicate(), SYMBOL);
 	}
 }

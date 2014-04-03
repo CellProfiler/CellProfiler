@@ -16,10 +16,8 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.cellprofiler.imageset.ImageFile;
-import org.cellprofiler.imageset.ImagePlane;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
 import org.junit.Test;
 
@@ -43,9 +41,7 @@ public class TestExtensionPredicate {
 					File rootFile = new File(System.getProperty("user.home"));
 					File testFile = new File(rootFile, filename);
 					ImageFile imageFile = new ImageFile(testFile.toURI());
-					ImagePlaneDetails candidate = new ImagePlaneDetails(
-							new ImagePlane(imageFile), new HashMap<String, String>());
-					assertEquals(ep.eval(candidate), testcase);
+					assertEquals(ep.eval(imageFile), testcase);
 				}
 			}
 		} catch (BadFilterExpressionException e) {

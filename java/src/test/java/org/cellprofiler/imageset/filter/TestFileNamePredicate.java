@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.cellprofiler.imageset.ImageFile;
 import org.cellprofiler.imageset.ImagePlane;
+import org.cellprofiler.imageset.ImagePlaneDetails;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
 import org.junit.Test;
 
@@ -60,8 +61,7 @@ public class TestFileNamePredicate {
 		try {
 			pred.setSubpredicates(Expects.expects("foo.jpg"));
 			ImageFile imgfile = new ImageFile(new URI("file:///imaging/analysis/foo.jpg"));
-			ImagePlaneDetails imgplane = new ImagePlaneDetails(new ImagePlane(imgfile), null);
-			pred.eval(imgplane);
+			pred.eval(imgfile);
 		} catch (BadFilterExpressionException e) {
 			fail("File predicate takes a subpredicate");
 		} catch (URISyntaxException e) {
@@ -74,8 +74,7 @@ public class TestFileNamePredicate {
 		try {
 			pred.setSubpredicates(Expects.expects("bar.jpg"));
 			ImageFile imgfile = new ImageFile(new URI("http://www.cellprofiler.org/linked_files/bar.jpg"));
-			ImagePlaneDetails imgplane = new ImagePlaneDetails(new ImagePlane(imgfile), null);
-			pred.eval(imgplane);
+			pred.eval(imgfile);
 		} catch (BadFilterExpressionException e) {
 			fail("File predicate takes a subpredicate");
 		} catch (URISyntaxException e) {
@@ -88,8 +87,7 @@ public class TestFileNamePredicate {
 		try {
 			pred.setSubpredicates(Expects.expects("iid=12345"));
 			ImageFile imgfile = new ImageFile(new URI("omero:iid=12345"));
-			ImagePlaneDetails imgplane = new ImagePlaneDetails(new ImagePlane(imgfile), null);
-			pred.eval(imgplane);
+			pred.eval(imgfile);
 		} catch (BadFilterExpressionException e) {
 			fail("File predicate takes a subpredicate");
 		} catch (URISyntaxException e) {

@@ -14,7 +14,6 @@ package org.cellprofiler.imageset;
 
 import java.util.List;
 
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 
 /**
  * @author Lee Kamentsky
@@ -35,7 +34,7 @@ public class ImageSetError {
 	 * The error message 
 	 */
 	final private String message;
-	private List<ImagePlaneDetails> imageSet;
+	private List<ImagePlaneDetailsStack> imageSet;
 	public ImageSetError(String channelName, String message, List<String> key) {
 		this.channelName = channelName;
 		this.message = message;
@@ -53,13 +52,13 @@ public class ImageSetError {
 	 * @param imageSet a list of image planes that were not in error for the key
 	 *                 with the error channels represented as nulls.
 	 */
-	void setImageSet(List<ImagePlaneDetails> imageSet) {
+	void setImageSet(List<ImagePlaneDetailsStack> imageSet) {
 		this.imageSet = imageSet;
 	}
 	/**
 	 * @return a list of correctly-discovered image planes for the image set
 	 */
-	List<ImagePlaneDetails> getImageSet() {
+	List<ImagePlaneDetailsStack> getImageSet() {
 		return imageSet;
 	}
 }

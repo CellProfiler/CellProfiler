@@ -14,6 +14,7 @@ package org.cellprofiler.imageset;
 
 import ome.xml.model.Image;
 import ome.xml.model.OME;
+import ome.xml.model.Pixels;
 import ome.xml.model.Plane;
 
 /**
@@ -33,8 +34,7 @@ import ome.xml.model.Plane;
  *
  */
 public class ImagePlane {
-	private final ImageFile imageFile;
-	private final int series;
+	private final ImageSeries imageSeries;
 	private final int index;
 	private final int channel;
 	
@@ -51,14 +51,12 @@ public class ImagePlane {
 	/**
 	 * Construct an image plane from a file, series and index
 	 * 
-	 * @param imageFile the image file, which may contain multiple planes
-	 * @param series the series index in the file for formats with multiple sites
+	 * @param imageSeries the series or OMEXML Image containing the plane
 	 * @param index the index into the image stack
 	 * @param channel for interleaved formats, the index of the monochrome plane
 	 */
-	public ImagePlane(ImageFile imageFile, int series, int index, int channel) {
-		this.imageFile = imageFile;
-		this.series = series;
+	public ImagePlane(ImageSeries imageSeries, int index, int channel) {
+		this.imageSeries = imageSeries;
 		this.index = index;
 		this.channel = channel;
 	}
@@ -68,22 +66,29 @@ public class ImagePlane {
 	 * 
 	 * @param imageFile
 	 */
-	public ImagePlane(ImageFile imageFile) {
-		this.imageFile = imageFile;
-		this.series = 0;
-		this.index = 0;
-		this.channel = ALWAYS_MONOCHROME;
+	static public ImagePlane makeMonochromePlane(ImageFile imageFile) {
+		return new ImagePlane(imageFile, ALWAYS_MONOCHROME);
+	}
+	
+	/**
+	 * Construct an interleaved color image plane for an image file.
+	 * 
+	 * @param imageFile
+	 * @return
+	 */
+	static public ImagePlane makeColorPlane(ImageFile imageFile) {
+		return new ImagePlane(imageFile, INTERLEAVED);
 	}
 	
 	/**
 	 * Construct one of the color planes for an interleaved color file
+	 * or create an interleaved color file using ImagePlane.INTERLEAVED
 	 * 
 	 * @param imageFile
 	 * @param channel
 	 */
 	public ImagePlane(ImageFile imageFile, int channel) {
-		this.imageFile = imageFile;
-		this.series = 0;
+		this.imageSeries = new ImageSeries(imageFile, 0);
 		this.index = 0;
 		this.channel = channel;
 	}
@@ -91,12 +96,12 @@ public class ImagePlane {
 	/**
 	 * @return the image file containing this plane
 	 */
-	public ImageFile getImageFile() { return imageFile; }
+	public ImageFile getImageFile() { return imageSeries.getImageFile(); }
 	
 	/**
 	 * @return the plane's series
 	 */
-	public int getSeries() { return series; }
+	public ImageSeries getSeries() { return imageSeries; }
 	
 	/**
 	 * @return the plane's index
@@ -107,25 +112,22 @@ public class ImagePlane {
 	 * @return the channel index for interleaved images.
 	 */
 	public int getChannel() { return channel; }
-	/**
-	 * @return the OME model Image element that contains this plane 
-	 */
-	public Image getOMEImage() {
-		final OME metadata = imageFile.getMetadata(); 
-		if (metadata == null) return null;
-		return metadata.getImage(series);
-	}
 	
 	/**
 	 * @return this plane's Plane element in the OME XML model
 	 */
 	public Plane getOMEPlane() {
-		final Image image = getOMEImage();
+		final Image image = imageSeries.getOMEImage();
 		if (image == null) return null;
-		return image.getPixels().getPlane(index);
+		final Pixels pixels = image.getPixels();
+		if (pixels.sizeOfPlaneList() <= index) return null;
+		return pixels.getPlane(index);
 	}
 	@Override
 	public String toString() {
-		return String.format("ImagePlane: %s, series=%d, index=%d", imageFile, series, index);
+		return String.format("ImagePlane: %s, series=%d, index=%d, channel=%s", 
+				imageSeries.getImageFile(), imageSeries.getSeries(), index,
+				(channel == ALWAYS_MONOCHROME)?"Monochrome":
+				((channel == INTERLEAVED)?"Color":Integer.toString(channel)));
 	}
 }

@@ -15,7 +15,9 @@ package org.cellprofiler.imageset.filter;
 import net.imglib2.meta.Axes;
 
 import org.cellprofiler.imageset.ImagePlane;
-import org.cellprofiler.imageset.OMEMetadataExtractor;
+import org.cellprofiler.imageset.ImagePlaneDetails;
+import org.cellprofiler.imageset.ImagePlaneDetailsStack;
+import org.cellprofiler.imageset.OMEPlaneMetadataExtractor;
 
 /**
  * @author Lee Kamentsky
@@ -27,6 +29,8 @@ import org.cellprofiler.imageset.OMEMetadataExtractor;
 public class IsMonochromePredicate extends
 		AbstractTerminalPredicate<ImagePlaneDetailsStack> {
 	final static public String SYMBOL="ismonochrome";
+	final static private AbstractTerminalPredicate<ImagePlaneDetailsStack> inversePredicate = 
+		new IsColorPredicate();
 
 	protected IsMonochromePredicate() {
 		super(ImagePlaneDetailsStack.class);
@@ -43,17 +47,7 @@ public class IsMonochromePredicate extends
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
 	 */
 	public boolean eval(ImagePlaneDetailsStack candidate) {
-		// We have a color image if it contains channels
-		for (int i=0;i<candidate.numDimensions();i++) {
-			if (candidate.axis(i).equals(Axes.CHANNEL)) {
-				if (candidate.size(i) > 1) return false;
-				for (ImagePlaneDetails ipd:candidate){
-					if (ipd.imagePlane.getChannel() == ImagePlane.INTERLEAVED) return false;
-				}
-				return true;
-			}
-		}
-		return false;
+		return ! inversePredicate.eval(candidate);
 	}
 
 }

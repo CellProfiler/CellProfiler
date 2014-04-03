@@ -16,15 +16,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 
 /**
  * @author Lee Kamentsky
  *
- * An ImageSet is a collection of ImagePlanes coallated for
+ * An ImageSet is a collection of image stacks coallated for
  * processing during a CellProfiler cycle.
  */
-public class ImageSet extends ArrayList<ImagePlaneDetails> {
+public class ImageSet extends ArrayList<ImagePlaneDetailsStack> {
 	private static final long serialVersionUID = -6824821112413090930L;
 	final private List<String> key;
 	/**
@@ -32,7 +31,7 @@ public class ImageSet extends ArrayList<ImagePlaneDetails> {
 	 * @param ipds
 	 * @param key
 	 */
-	public ImageSet(Collection<ImagePlaneDetails> ipds, List<String> key) {
+	public ImageSet(Collection<ImagePlaneDetailsStack> ipds, List<String> key) {
 		super(ipds);
 		this.key = key;
 	}

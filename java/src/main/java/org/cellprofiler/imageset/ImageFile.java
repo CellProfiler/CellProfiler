@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
  * for their retrieval, and OME metadata retrieved from the file.
  *
  */
-public class ImageFile {
+public class ImageFile implements Comparable<ImageFile>{
 	private final URI uri;
 	private String fileName = null;
 	private String pathName = null;
@@ -171,6 +171,15 @@ public class ImageFile {
 	}
 	
 	/**
+	 *  Set the file's OME XML metadata using a constructed OME document
+	 *  
+	 * @param omexml
+	 */
+	public void setXMLDocument(OME omexml) {
+		this.omexml = omexml;
+	}
+	
+	/**
 	 * Remove the XML document object (e.g. to save space)
 	 */
 	public void clearXMLDocument() {
@@ -186,5 +195,15 @@ public class ImageFile {
 	@Override
 	public String toString() {
 		return String.format("ImageFile: %s", this.uri);
+	}
+
+	/**
+	 * Compare two image files lexically by URL
+	 * @param o
+	 * @return
+	 */
+	public int compareTo(ImageFile o) {
+		if (this == o) return 0;
+		return this.uri.compareTo(o.uri);
 	}
 }

@@ -17,17 +17,21 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import loci.common.services.DependencyException;
 import loci.common.services.ServiceException;
 
+import ome.xml.model.Image;
+import ome.xml.model.OME;
+
 import org.cellprofiler.imageset.filter.Filter;
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -43,71 +47,123 @@ import org.xml.sax.SAXException;
  * as it does so, it builds up an ImagePlaneDescriptor whose metadata map holds
  * the accumulated metadata. If a sub-extractor was added with a filter, that
  * filter runs on the IPD metadata as accumulated by the previous extractors.
+ * 
+ * The extractor operates on image planes but metadata is also extracted
+ * from series and files. The extractor maintains a map of ImageFile
+ * to ImageFileDetails and ImageSeries to ImageSeriesDetails references.
+ * In order to operate efficiently and correctly, you should create a new
+ * ImagePlaneMetadataExtractor before processing any image planes and then
+ * process all image planes within the same file using the same extractor
+ * to utilize the map.
  */
 public class ImagePlaneMetadataExtractor  {
 	final static public Logger logger = LoggerFactory.getLogger(ImagePlaneMetadataExtractor.class);
-	protected class ExtractorFilterPair {
-		public final MetadataExtractor<ImagePlaneDetails> extractor;
-		public final Filter filter;
+	protected class ExtractorFilterPair<T> {
+		public final MetadataExtractor<T> extractor;
+		public final Filter<ImageFile> filter;
+		public final Class<T> klass;
 		public ExtractorFilterPair(
-				MetadataExtractor<ImagePlaneDetails> extractor, 
-				Filter filter) {
+				MetadataExtractor<T> extractor, 
+				Filter<ImageFile> filter, Class<T> klass) {
 			this.extractor = extractor;
 			this.filter = filter;
+			this.klass = klass;
+		}
+		/**
+		 * Extract the metadata using the extractor, conditional
+		 * on the imageFile passing the filter and store in the
+		 * destination
+		 * 
+		 * @param source - run the extractor on the source
+		 * @param imageFile - filter based on this image file
+		 * @param destination - put the metadata here
+		 */
+		public void extract(T source, ImageFile imageFile, Details destination) {
+			if (filter != null) {
+				logger.info(String.format("Running filter %s on %s", filter, source));
+				if (! filter.eval(imageFile)) return;
+				logger.info("  Filter passed");
+			}
+			Map<String, String> metadata = extractor.extract(source);
+			logger.info(String.format("  Extracted metadata = %s", metadata));
+			destination.putAll(metadata);
 		}
 	}
-	final private List<ExtractorFilterPair> extractors = new ArrayList<ExtractorFilterPair>();
+	final private List<ExtractorFilterPair<ImageFile>> fileExtractors = 
+		new ArrayList<ExtractorFilterPair<ImageFile>>();
+	
+	final private List<ExtractorFilterPair<ImageSeries>> seriesExtractors = 
+		new ArrayList<ExtractorFilterPair<ImageSeries>>();
+	
+	final private List<ExtractorFilterPair<ImagePlane>> planeExtractors =
+		new ArrayList<ExtractorFilterPair<ImagePlane>>();
+	
+	final private Map<ImageFile, ImageFileDetails> mapImageFileToDetails =
+		new IdentityHashMap<ImageFile, ImageFileDetails>();
+	
+	final private Map<ImageSeries, ImageSeriesDetails> mapImageSeriesToDetails =
+		new IdentityHashMap<ImageSeries, ImageSeriesDetails>();
 	
 	/**
-	 * Add a conditional extractor that takes an ImagePlaneDetails and only operates on
+	 * Add a conditional extractor that takes an ImagePlane and only operates on
 	 * IPDs that pass a filter
 	 *  
-	 * @param extractor extract metadata from ipds
-	 * @param filter only extract if the ipd passes this filter.
+	 * @param extractor extract metadata from image planes
+	 * @param filter only extract if the ImageFile.
 	 */
-	public void addImagePlaneDetailsExtractor(MetadataExtractor<ImagePlaneDetails> extractor, Filter filter) {
-		extractors.add(new ExtractorFilterPair(extractor, filter));
+	public void addImagePlaneExtractor(
+			MetadataExtractor<ImagePlane> extractor, 
+			Filter<ImageFile> filter) {
+		planeExtractors.add(
+				new ExtractorFilterPair<ImagePlane>(
+						extractor, filter, ImagePlane.class));
 	}
 	
 	/**
-	 * Add an unconditional extractor that takes an ImagePlaneDetails
+	 * Add an unconditional extractor that takes an ImagePlane
 	 * 
 	 * @param extractor
 	 */
-	public void addImagePlaneDetailsExtractor(MetadataExtractor<ImagePlaneDetails> extractor) {
-		extractors.add(new ExtractorFilterPair(extractor, null));
+	public void addImagePlaneExtractor(MetadataExtractor<ImagePlane> extractor) {
+		planeExtractors.add(new ExtractorFilterPair<ImagePlane>(extractor, null, ImagePlane.class));
 	}
 	
 	/**
-	 * Add a conditional extractor that takes an image plane
-	 * @param extractor extracts metadata from an ImagePlane
-	 * @param filter only extract IPDs that pass this filter.
+	 * Add a metadata extractor that extracts metadata from an image file
+	 * that passes a given filter
+	 * 
+	 * @param extractor
+	 * @param filter
 	 */
-	public void addImagePlaneExtractor(MetadataExtractor<ImagePlane> extractor, Filter filter) {
-		extractors.add(new ExtractorFilterPair(
-				new MetadataExtractorAdapter<ImagePlaneDetails, ImagePlane>(extractor) {
-
-					@Override
-					protected ImagePlane get(ImagePlaneDetails source) {
-						return source.imagePlane;
-					}
-			}, filter));
+	public void addImageFileExtractor(MetadataExtractor<ImageFile> extractor, Filter<ImageFile> filter) {
+		fileExtractors.add(new ExtractorFilterPair<ImageFile>(extractor, filter, ImageFile.class));
 	}
-	public void addImagePlaneExtractor(MetadataExtractor<ImagePlane> extractor) {
-		addImagePlaneExtractor(extractor, null);
-	}
-	public void addImageFileExtractor(MetadataExtractor<ImageFile> extractor, Filter filter) {
-		extractors.add(new ExtractorFilterPair(
-				new MetadataExtractorAdapter<ImagePlaneDetails, ImageFile>(extractor) {
-
-					@Override
-					protected ImageFile get(ImagePlaneDetails source) {
-						return source.imagePlane.getImageFile();
-					}
-			}, filter));
-	}
+	
+	/**
+	 * Add an unconditional image file metadata extractor.
+	 * @param extractor
+	 */
 	public void addImageFileExtractor(MetadataExtractor<ImageFile> extractor) {
-		addImageFileExtractor(extractor);
+		addImageFileExtractor(extractor, null);
+	}
+	
+	/**
+	 * Add a metadata extractor that extracts metadata from one of several
+	 * series within an image file, filtered using an ImageFile filter.
+	 * 
+	 * @param extractor
+	 * @param filter
+	 */
+	public void addImageSeriesExtractor(MetadataExtractor<ImageSeries> extractor, Filter<ImageFile> filter) {
+		seriesExtractors.add(new ExtractorFilterPair<ImageSeries>(extractor, filter, ImageSeries.class));
+	}
+	
+	/**
+	 * Add a metadata extractor that extracts metadata from a series without filtering.
+	 * @param extractor
+	 */
+	public void addImageSeriesExtractor(MetadataExtractor<ImageSeries> extractor) {
+		addImageSeriesExtractor(extractor, null);
 	}
 	/**
 	 * Add a file name regular expression metadata extractor.
@@ -119,7 +175,7 @@ public class ImagePlaneMetadataExtractor  {
 		addFileNameRegexp(regexp, null);
 	}
 	
-	public void addFileNameRegexp(String regexp, Filter filter) {
+	public void addFileNameRegexp(String regexp, Filter<ImageFile> filter) {
 		addImageFileExtractor(new FileNameMetadataExtractor(
 				new RegexpMetadataExtractor(regexp)), filter);
 	}
@@ -134,84 +190,107 @@ public class ImagePlaneMetadataExtractor  {
 		addPathNameRegexp(regexp, null);
 	}
 	
-	public void addPathNameRegexp(String regexp, Filter filter) {
+	public void addPathNameRegexp(String regexp, Filter<ImageFile> filter) {
 		addImageFileExtractor(new PathNameMetadataExtractor(
 				new RegexpMetadataExtractor(regexp)), filter);
 	}
 	
 	/**
-	 * Extract metadata from an image plane, producing an ImagePlaneDetails
-	 * whose metadata is fully populated
+	 * Extract metadata from an image plane.
+	 * 
+	 * This routine will also calculate series and file metadata
+	 * for the plane's ImageSeries and ImageFile (or will
+	 * look it up from a previous invocation).
 	 *  
 	 * @param plane the image plane
 	 * @return an ImagePlaneDetails with extracted metadata
 	 */
 	public ImagePlaneDetails extract(ImagePlane plane) {
-		ImagePlaneDetails ipd = new ImagePlaneDetails(plane, new HashMap<String, String>());
-		for (ExtractorFilterPair efp:extractors) {
-			if (efp.filter != null) {
-				logger.info(String.format("Running filter %s on %s", efp.filter, plane));
-				if (! efp.filter.eval(ipd)) continue;
-				logger.info("  Filter passed");
-			}
-			Map<String, String> metadata = efp.extractor.extract(ipd);
-			logger.info(String.format("  Extracted metadata = %s", metadata));
-			ipd.metadata.putAll(metadata);
+		final ImageSeries series = plane.getSeries();
+		final ImageFile file = series.getImageFile();
+		ImageSeriesDetails seriesDetails = mapImageSeriesToDetails.get(series);
+		if (seriesDetails == null) {
+			seriesDetails = extract(series);
+			mapImageSeriesToDetails.put(series, seriesDetails);
+		}
+		ImagePlaneDetails ipd = new ImagePlaneDetails(plane, seriesDetails);
+		for (ExtractorFilterPair<ImagePlane> efp:planeExtractors) {
+			efp.extract(plane, file, ipd);
 		}
 		return ipd;
 	}
-
+	
 	/**
-	 * The extractMetadata method creates an ImagePlane, extracts metadata from it
-	 * and returns an iterator over the metadata map entries. It provides a streamlined
-	 * and specialized interface to be used by CellProfiler
+	 * Extract metadata from an image series.
 	 * 
-	 * @param sURL url of image file
-	 * @param series series # of image plane
-	 * @param index index # of image plane
-	 * @param metadata OME xml metadata if present
-	 * @param pIPD an array of length 1 that's used to return the Java
-	 *        ImagePlaneDetails built by this method, populated with metadata.
-	 * @param pIF an array of length 1 that's used to return the image file.
-	 * @return an iterator over the metadata entries.
+	 * @param series
+	 * @return
+	 */
+	public ImageSeriesDetails extract(ImageSeries series) {
+		final ImageFile file = series.getImageFile();
+		ImageFileDetails fileDetails = mapImageFileToDetails.get(file);
+		if (fileDetails == null) {
+			fileDetails = extract(file);
+			mapImageFileToDetails.put(file, fileDetails);
+		}
+		ImageSeriesDetails isd = new ImageSeriesDetails(series, fileDetails);
+		for (ExtractorFilterPair<ImageSeries> efp:seriesExtractors) {
+			efp.extract(series, file, isd);
+		}
+		return isd;
+	}
+	
+	/**
+	 * Extract metadata from an image file.
+	 * 
+	 * @param file
+	 * @return
+	 */
+	public ImageFileDetails extract(ImageFile file) {
+		ImageFileDetails ifd = new ImageFileDetails(file);
+		for (ExtractorFilterPair<ImageFile> efp:fileExtractors) {
+			efp.extract(file, file, ifd);
+		}
+		return ifd;
+	}
+	
+	/**
+	 * Extract all image plane details from a list of files
+	 * encoded as an array of URL-encoded strings
+	 * 
+	 * @param urls - the image locations encoded as URLs
+	 * @param keysOut - on input, an empty set, on output, the set of all metadata keys extracted.
+	 * @return the extracted image plane details.
+	 * @throws URISyntaxException 
+	 * @throws ServiceException 
+	 * @throws DependencyException 
 	 * @throws IOException 
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
-	 * @throws ServiceException 
-	 * @throws DependencyException 
-	 * @throws URISyntaxException 
 	 */
-	public Iterator<Map.Entry<String, String>> extractMetadata(
-			String sURL, int series, int index, String metadata, ImagePlaneDetails [] pIPD, ImageFile [] pIF) 
-			throws ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException, URISyntaxException {
-		ImageFile imageFile = new ImageFile(new URI(sURL));
-		if (metadata != null)
-			imageFile.setXMLDocument(metadata);
-		ImagePlane imagePlane = new ImagePlane(imageFile, series, index);
-		ImagePlaneDetails result = extract(imagePlane);
-		pIPD[0] = result;
-		pIF[0] = result.imagePlane.getImageFile();
-		return result.metadata.entrySet().iterator();
+	public ImagePlaneDetails [] extract(String [] urls, String [] metadata, Set<String> keysOut) 
+	throws URISyntaxException, ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException {
+		assert(urls.length == metadata.length);
+		final List<ImagePlaneDetails> result = new ArrayList<ImagePlaneDetails> ();
+		for (int i=0; i<urls.length; i++) {
+			ImageFile imageFile = new ImageFile(new URI(urls[i]));
+			if (metadata[i] != null) {
+				imageFile.setXMLDocument(metadata[i]);
+				final OME fileMetadata = imageFile.getMetadata();
+				for (int series=0; series < fileMetadata.sizeOfImageList(); series++) {
+					final ImageSeries imageSeries = new ImageSeries(imageFile, series);
+					Image seriesMetadata = imageSeries.getOMEImage();
+					for (int plane=0; plane<seriesMetadata.getPixels().sizeOfPlaneList(); plane++) {
+						final ImagePlane imagePlane = new ImagePlane(imageSeries, plane, ImagePlane.ALWAYS_MONOCHROME);
+						final ImagePlaneDetails ipd = extract(imagePlane);
+						result.add(ipd);
+						for (String key:ipd) keysOut.add(key);
+					}
+				}
+			}
+		}
+		
+		return result.toArray(new ImagePlaneDetails[0]);
 	}
-	/**
-	 * Helper to extract plane metadata, given an ImageFile, series and index
-	 * @param imageFile the ImageFile for the image plane with metadata initialized
-	 * @param series the series # of the plane
-	 * @param index the index within the series
-	 * @param pIPD return the generated image plane descriptor here
-	 * @return an iterator over the metadata.
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws DependencyException
-	 * @throws ServiceException
-	 */
-	public Iterator<Map.Entry<String, String>> extractMetadata(
-			ImageFile imageFile, int series, int index, ImagePlaneDetails [] pIPD) 
-			throws ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException {
-		ImagePlane imagePlane = new ImagePlane(imageFile, series, index);
-		ImagePlaneDetails result = extract(imagePlane);
-		pIPD[0] = result;
-		return result.metadata.entrySet().iterator();
-	}
+
 }

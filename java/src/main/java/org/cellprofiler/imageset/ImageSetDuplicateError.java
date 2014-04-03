@@ -14,7 +14,6 @@ package org.cellprofiler.imageset;
 
 import java.util.List;
 
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 
 /**
  * @author Lee Kamentsky
@@ -23,12 +22,12 @@ import org.cellprofiler.imageset.filter.ImagePlaneDetails;
  *
  */
 public class ImageSetDuplicateError extends ImageSetError {
-	final private List<ImagePlaneDetails> ipds;
+	final private List<ImagePlaneDetailsStack> ipds;
 	public ImageSetDuplicateError(
 			String channelName, String message, List<String> key, 
-			List<ImagePlaneDetails> ipds) {
+			List<ImagePlaneDetailsStack> ipds) {
 		super(channelName, message, key);
 		this.ipds = ipds;
 	}
-	public List<ImagePlaneDetails> getImagePlaneDetails() { return ipds; }
+	public List<ImagePlaneDetailsStack> getImagePlaneDetailsStacks() { return ipds; }
 }

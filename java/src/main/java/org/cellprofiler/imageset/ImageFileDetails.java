@@ -10,23 +10,22 @@
  * 
  * Website: http://www.cellprofiler.org
  */
-package org.cellprofiler.imageset.filter;
 
-import org.cellprofiler.imageset.ImagePlaneDetails;
+package org.cellprofiler.imageset;
 
 
 /**
  * @author Lee Kamentsky
  *
- * A filter predicate that takes an ImagePlaneDetals as input
- * 
- * @param <TOUT>
+ * This class represents the metadata for an image file.
  */
-public abstract class AbstractImagePlaneDetailsPredicate<TOUT> 
-	implements FilterPredicate<ImagePlaneDetails, TOUT> {
-
-	public Class<ImagePlaneDetails> getInputClass() {
-		return ImagePlaneDetails.class;
+public class ImageFileDetails extends Details {
+	final private ImageFile imageFile;
+	public ImageFileDetails(ImageFile imageFile) {
+		this.imageFile = imageFile;
 	}
-
+	
+	public ImageFile getImageFile() {
+		return imageFile;
+	}
 }

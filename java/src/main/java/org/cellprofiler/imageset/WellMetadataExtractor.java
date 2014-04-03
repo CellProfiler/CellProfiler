@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.cellprofiler.imageset.filter.ImagePlaneDetails;
 
 /**
  * @author Lee Kamentsky
@@ -41,16 +40,15 @@ public class WellMetadataExtractor implements
 	 * @see org.cellprofiler.imageset.MetadataExtractor#extract(java.lang.Object)
 	 */
 	public Map<String, String> extract(ImagePlaneDetails source) {
-		if (source.metadata == null) return emptyMap;
 		String wellRow = null;
 		String wellColumn = null;
-		for (Map.Entry<String, String>entry:source.metadata.entrySet()) {
-			String lcKey = entry.getKey().toLowerCase();
+		for (String key:source) {
+			final String lcKey = key.toLowerCase();
 			if (lcKey.equals("well")) return emptyMap;
 			if (rowKeys.contains(lcKey)) {
-				wellRow = entry.getValue();
+				wellRow = source.get(key);
 			} else if (columnKeys.contains(lcKey)) {
-				wellColumn = entry.getValue();
+				wellColumn = source.get(key);
 			}
 		}
 		if ((wellRow != null) && (wellColumn != null)) {

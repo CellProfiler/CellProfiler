@@ -39,7 +39,7 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import triangle_areas, distance2_to_line, convex_hull_image
 from cellprofiler.cpmath.cpmorphology import polygon_lines_to_mask
-from cellprofiler.cpmath.cpmorphology import get_outline_pts, thicken
+from cellprofiler.cpmath.cpmorphology import get_outline_pts, thicken, color_labels
 from cellprofiler.cpmath.index import Indexes
 from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
 from cellprofiler.gui.cpfigure import CPNavigationToolbar
@@ -554,48 +554,54 @@ class EditObjectsDialog(wx.Dialog):
         self.li = np.zeros(0, int)
         self.lj = np.zeros(0, int)
         self.ll = np.zeros(0, int)
-        for label in self.labels:
-            # drive each successive matrix's labels away
-            # from all others.
-            idxs = np.unique(label)
-            idxs = idxs[idxs!=0]
-            distinct_label_count = len(idxs)
-            clabels = renumber_labels_for_display(label)
-            clabels[clabels != 0] += lstart
-            lstart += distinct_label_count
-            label_map[label.flatten()] = clabels.flatten()
-            l, ct = scipy.ndimage.label(label != 0, 
-                                        structure=np.ones((3,3), bool))
-            coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
-            oi, oj = coords.transpose()
-            l, ct = scipy.ndimage.label(label == 0) # 4-connected
-            #
-            # Have to remove the label that touches the edge, if any
-            #
-            ledge = np.hstack([l[0, :][label[0, :] == 0],
-                               l[-1, :][label[-1, :] == 0],
-                               l[:, 0][label[:, 0] == 0],
-                               l[:, -1][label[:, -1] == 0]])
-            if len(ledge) > 0:
-                l[l == ledge[0]] = 0
-
-            coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
-            if coords.shape[0] > 0:
-                oi, oj = [np.hstack((o, coords[:,i]))
-                          for i, o in enumerate((oi, oj))]
-                
-            ol = label[oi, oj]
-            self.oi = np.hstack((self.oi, oi))
-            self.oj = np.hstack((self.oj, oj))
-            self.ol = np.hstack((self.ol, ol))
-            #
-            # compile the filled labels
-            #
-            li, lj = np.argwhere(label != 0).transpose()
-            ll = label[li, lj]
-            self.li = np.hstack((self.li, li))
-            self.lj = np.hstack((self.lj, lj))
-            self.ll = np.hstack((self.ll, ll))
+        for label_and_touching in self.labels:
+            colored_labels = color_labels(label_and_touching)
+            for color in range(1, np.max(colored_labels)+1):
+                label = np.zeros(label_and_touching.shape,
+                                  label_and_touching.dtype)
+                label[colored_labels==color] = \
+                    label_and_touching[colored_labels==color]
+                # drive each successive matrix's labels away
+                # from all others.
+                idxs = np.unique(label)
+                idxs = idxs[idxs!=0]
+                distinct_label_count = len(idxs)
+                clabels = renumber_labels_for_display(label)
+                clabels[clabels != 0] += lstart
+                lstart += distinct_label_count
+                label_map[label.flatten()] = clabels.flatten()
+                l, ct = scipy.ndimage.label(label != 0, 
+                                            structure=np.ones((3,3), bool))
+                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
+                oi, oj = coords.transpose()
+                l, ct = scipy.ndimage.label(label == 0) # 4-connected
+                #
+                # Have to remove the label that touches the edge, if any
+                #
+                ledge = np.hstack([l[0, :][label[0, :] == 0],
+                                   l[-1, :][label[-1, :] == 0],
+                                   l[:, 0][label[:, 0] == 0],
+                                   l[:, -1][label[:, -1] == 0]])
+                if len(ledge) > 0:
+                    l[l == ledge[0]] = 0
+    
+                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
+                if coords.shape[0] > 0:
+                    oi, oj = [np.hstack((o, coords[:,i]))
+                              for i, o in enumerate((oi, oj))]
+                    
+                ol = label[oi, oj]
+                self.oi = np.hstack((self.oi, oi))
+                self.oj = np.hstack((self.oj, oj))
+                self.ol = np.hstack((self.ol, ol))
+                #
+                # compile the filled labels
+                #
+                li, lj = np.argwhere(label != 0).transpose()
+                ll = label[li, lj]
+                self.li = np.hstack((self.li, li))
+                self.lj = np.hstack((self.lj, lj))
+                self.ll = np.hstack((self.ll, ll))
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         cm.set_bad((0,0,0))
     
@@ -651,9 +657,14 @@ class EditObjectsDialog(wx.Dialog):
             l[l == object_number] = 0
         
     def replace_label(self, mask, object_number):
-        self.remove_label(object_number)
-        self.labels.append(mask.astype(self.labels[0].dtype) * object_number)
-        self.restructure_labels()
+        if self.allow_overlap:
+            self.remove_label(object_number)
+            self.labels.append(mask.astype(self.labels[0].dtype) * object_number)
+            self.restructure_labels()
+        else:
+            labels = self.labels[0]
+            labels[labels == object_number] = 0
+            labels[mask] = object_number
         
     def restructure_labels(self):
         '''Convert the labels into ijv and back to get the colors right'''
@@ -1735,7 +1746,10 @@ class EditObjectsDialog(wx.Dialog):
                                      xydata[1:, 1],
                                      xydata[1:, 0],
                                      self.shape)
+        if not self.allow_overlap:
+            self.labels[0][mask] = 0
         self.add_label(mask)
+            
         self.exit_freehand_draw_mode(event)
         self.init_labels()
         self.display()

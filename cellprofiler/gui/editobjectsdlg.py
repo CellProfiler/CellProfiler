@@ -1960,6 +1960,7 @@ class EditObjectsDialog(wx.Dialog):
                 n for n in range(1, count+1)
                 if polarity or n != border_object]
             coords, offsets, counts = get_outline_pts(labels, sub_object_numbers)
+            coords = coords - 1 # account for mask padding
             for i, sub_object_number in enumerate(sub_object_numbers):
                 chain = coords[offsets[i]:(offsets[i] + counts[i]), :]
                 if not polarity:

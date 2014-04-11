@@ -1296,10 +1296,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 
         elif isinstance(event, cpp.LoadExceptionEvent):
             self.on_load_exception_event(event)
-        elif isinstance(event, cpp.ImagePlaneDetailsAddedEvent):
-            self.on_image_plane_details_added(event)
-        elif isinstance(event, cpp.ImagePlaneDetailsRemovedEvent):
-            self.on_image_plane_details_removed(event)
+        elif isinstance(event, cpp.URLsAddedEvent):
+            self.on_urls_added(event)
+        elif isinstance(event, cpp.URLsRemovedEvent):
+            self.on_urls_removed(event)
         elif event.is_pipeline_modification:
             self.__dirty_workspace = True
             self.set_title()
@@ -1349,18 +1349,18 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             buttons = [wx.ID_YES, wx.ID_NO]) == wx.NO:
             event.cancel_run = False
             
-    def on_image_plane_details_added(self, event):
+    def on_urls_added(self, event):
         '''Callback from pipeline when paths are added to the pipeline'''
-        urls = [ipd.url for ipd in event.image_plane_details]
+        urls = event.urls
         self.__path_list_ctrl.add_paths(urls)
         self.__workspace.file_list.add_files_to_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
             len(self.__pipeline.image_plane_details) > 0)
         self.exit_test_mode()
         
-    def on_image_plane_details_removed(self, event):
+    def on_urls_removed(self, event):
         '''Callback from pipeline when paths are removed from the pipeline'''
-        urls = [ipd.url for ipd in event.image_plane_details]
+        urls =event.urls
         self.__path_list_ctrl.remove_paths(urls)
         self.__workspace.file_list.remove_files_from_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(

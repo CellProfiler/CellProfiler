@@ -22,7 +22,11 @@ import urllib
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
+import cellprofiler.modules.images as I
 import cellprofiler.modules.metadata as M
+import cellprofiler.workspace as cpw
+
+OME_XML = open(os.path.join(os.path.split(__file__)[0], "omexml.xml"), "r").read()
 
 class TestMetadata(unittest.TestCase):
     def test_01_01_load_v1(self):
@@ -236,7 +240,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         self.assertTrue(isinstance(module, M.Metadata))
         self.assertTrue(module.wants_metadata)
         self.assertEqual(module.data_type_choice, M.DTC_CHOOSE)
-        d = module.data_types.get_data_types()
+        d = cps.DataTypes.decode_data_types(module.data_types.value_text)
         for k, v in (("Index", cps.DataTypes.DT_NONE),
                      ("WellRow", cps.DataTypes.DT_TEXT),
                      ("WellColumn", cps.DataTypes.DT_FLOAT),
@@ -262,6 +266,31 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         self.assertEqual(em1.csv_joiner.value, "[{'Image Metadata': u'ChannelNumber', 'CSV Metadata': u'Wavelength'}]")
         self.assertTrue(em1.wants_case_insensitive)
         
+    def check(self, module, url, dd, keys=None, xml=None):
+        '''Check that running the metadata module on a url generates the expected dictionary'''
+        pipeline = cpp.Pipeline()
+        imgs = I.Images()
+        imgs.filter_choice.value = I.FILTER_CHOICE_NONE
+        imgs.module_num = 1
+        pipeline.add_module(imgs)
+        module.module_num = 2
+        pipeline.add_module(module)
+        pipeline.add_urls([url])
+        m = cpmeas.Measurements()
+        workspace = cpw.Workspace(pipeline, module, None, None, m, None)
+        file_list = workspace.file_list
+        file_list.add_files_to_filelist([url])
+        if xml is not None:
+            file_list.add_metadata(url, xml)
+        ipds = pipeline.get_image_plane_details(workspace)
+        self.assertEqual(len(ipds), len(dd))
+        for d, ipd in zip(dd, ipds):
+            self.assertDictContainsSubset(d, ipd.metadata)
+        all_keys = pipeline.get_available_metadata_keys().keys()
+        if keys is not None:
+            for key in keys:
+                self.assertIn(key, all_keys)
+        
     def test_02_01_get_metadata_from_filename(self):
         module = M.Metadata()
         module.wants_metadata.value=True
@@ -271,13 +300,13 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         em.source.value = M.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
         em.filter_choice.value = M.F_ALL_IMAGES
-        ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_B08_s5_w2.tif",
-                                    None, None, None)
-        metadata = module.get_ipd_metadata(ipd)
-        self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                         "Well":"B08",
-                                         "Site":"5",
-                                         "Wavelength":"2"})
+        url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
+        self.check(module, url, 
+                   [{ "Plate":"P-12345",
+                      "Well":"B08",
+                      "Site":"5",
+                      "Wavelength":"2"}],
+                   ("Plate", "Well", "Site", "Wavelength"))
         
     def test_02_02_get_metadata_from_path(self):
         module = M.Metadata()
@@ -288,15 +317,8 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         em.source.value = M.XM_FOLDER_NAME
         em.folder_regexp.value = r".*[/\\](?P<Plate>.+)$"
         em.filter_choice.value = M.F_ALL_IMAGES
-        ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345/_B08_s5_w2.tif",
-                                    None, None, None)
-        metadata = module.get_ipd_metadata(ipd)
-        self.assertDictEqual(metadata, { "Plate":"P-12345" })
-        self.assertTrue("Plate" in module.get_dt_metadata_keys())
-        self.assertTrue(any(c[0] == cpmeas.IMAGE and
-                            c[1] == "_".join((cpmeas.C_METADATA, "Plate")) and
-                            c[2] == cpmeas.COLTYPE_VARCHAR_FILE_NAME
-                            for c in module.get_measurement_columns(None)))
+        url = "file:/imaging/analysis/P-12345/_B08_s5_w2.tif"
+        self.check(module, url, [{ "Plate":"P-12345" }], ("Plate",))
         
     def test_02_03_filter_positive(self):
         module = M.Metadata()
@@ -308,13 +330,12 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         em.source.value = M.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
         em.filter_choice.value = M.F_ALL_IMAGES
-        ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_B08_s5_w2.tif",
-                                    None, None, None)
-        metadata = module.get_ipd_metadata(ipd)
-        self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                         "Well":"B08",
-                                         "Site":"5",
-                                         "Wavelength":"2"})
+        url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
+        self.check(module, url, 
+                   [{ "Plate":"P-12345",
+                     "Well":"B08",
+                     "Site":"5",
+                     "Wavelength":"2"}])
 
     def test_02_04_filter_negative(self):
         module = M.Metadata()
@@ -326,13 +347,12 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         em.source.value = M.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
         em.filter_choice.value = M.F_ALL_IMAGES
-        ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_B08_s5_w2.tif",
-                                    None, None, None)
-        metadata = module.get_ipd_metadata(ipd)
-        self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                         "Well":"B08",
-                                         "Site":"5",
-                                         "Wavelength":"2"})
+        url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
+        self.check(module, url, 
+                   [{ "Plate":"P-12345",
+                      "Well":"B08",
+                      "Site":"5",
+                      "Wavelength":"2"}])
         
     def test_02_05_imported_extraction(self):
         metadata_csv = """WellName,Treatment,Dose,Counter
@@ -368,36 +388,38 @@ C10,BRD041618,1.5,2
             em.csv_location.value = path
             em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
                 module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
-            module.ipd_metadata_keys = set()
-            module.update_imported_metadata()
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_B08_s5_w2.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                             "Well":"B08",
-                                             "Site":"5",
-                                             "Wavelength":"2",
-                                             "Treatment":"DMSO",
-                                             "Dose":"0",
-                                             "Counter":"1"})
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_C10_s2_w3.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                             "Well":"C10",
-                                             "Site":"2",
-                                             "Wavelength":"3",
-                                             "Treatment":"BRD041618",
-                                             "Dose":"1.5",
-                                             "Counter":"2"})
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_A01_s2_w3.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                             "Well":"A01",
-                                             "Site":"2",
-                                             "Wavelength":"3"})
-            columns = module.get_measurement_columns(None)
+            url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
+            self.check(module, url, 
+                       [{ "Plate":"P-12345",
+                          "Well":"B08",
+                          "Site":"5",
+                          "Wavelength":"2",
+                          "Treatment":"DMSO",
+                          "Dose":"0",
+                          "Counter":"1"}])
+            url = "file:/imaging/analysis/P-12345_C10_s2_w3.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                          "Well":"C10",
+                          "Site":"2",
+                          "Wavelength":"3",
+                          "Treatment":"BRD041618",
+                          "Dose":"1.5",
+                          "Counter":"2"}])
+            url = "file:/imaging/analysis/P-12345_A01_s2_w3.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                          "Well":"A01",
+                          "Site":"2",
+                          "Wavelength":"3"}])
+            pipeline = cpp.Pipeline()
+            imgs = I.Images()
+            imgs.filter_choice.value = I.FILTER_CHOICE_NONE
+            imgs.module_num = 1
+            pipeline.add_module(imgs)
+            module.module_num = 2
+            pipeline.add_module(module)
+            columns = module.get_measurement_columns(pipeline)
             self.assertFalse(any([c[1] == "Counter" for c in columns]))
             for feature_name, data_type in (
                 ("Metadata_Treatment", cpmeas.COLTYPE_VARCHAR_FILE_NAME),
@@ -438,31 +460,26 @@ C10,BRD041618
             em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
                 module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
             em.wants_case_insensitive.value = True
-            module.ipd_metadata_keys = set()
-            module.update_imported_metadata()
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_B08_s5_w2.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                             "Well":"B08",
-                                             "Site":"5",
-                                             "Wavelength":"2",
-                                             "Treatment":"DMSO"})
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_c10_s2_w3.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                             "Well":"c10",
-                                             "Site":"2",
-                                             "Wavelength":"3",
-                                             "Treatment":"BRD041618"})
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_A01_s2_w3.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                             "Well":"A01",
-                                             "Site":"2",
-                                             "Wavelength":"3"})
+            url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                          "Well":"B08",
+                          "Site":"5",
+                          "Wavelength":"2",
+                          "Treatment":"DMSO"}])
+            url = "file:/imaging/analysis/P-12345_c10_s2_w3.tif"
+            self.check(module, url, 
+                       [{ "Plate":"P-12345",
+                          "Well":"c10",
+                          "Site":"2",
+                          "Wavelength":"3",
+                          "Treatment":"BRD041618"}])
+            url = "file:/imaging/analysis/P-12345_A01_s2_w3.tif"
+            self.check(module, url, 
+                       [{ "Plate":"P-12345",
+                          "Well":"A01",
+                          "Site":"2",
+                          "Wavelength":"3"}])
         finally:
             try:
                 os.unlink(path)
@@ -496,36 +513,89 @@ C10,BRD041618
             em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
                 module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
             em.wants_case_insensitive.value = False
-            module.ipd_metadata_keys = set()
-            module.update_imported_metadata()
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_B08_s5_w2.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                             "Well":"B08",
-                                             "Site":"5",
-                                             "Wavelength":"2"})
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_C10_s2_w3.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                             "Well":"C10",
-                                             "Site":"2",
-                                             "Wavelength":"3",
-                                             "Treatment":"BRD041618"})
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/P-12345_A01_s2_w3.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Plate":"P-12345",
-                                             "Well":"A01",
-                                             "Site":"2",
-                                             "Wavelength":"3"})
+            url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                          "Well":"B08",
+                          "Site":"5",
+                          "Wavelength":"2"}])
+            url = "file:/imaging/analysis/P-12345_C10_s2_w3.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                          "Well":"C10",
+                          "Site":"2",
+                          "Wavelength":"3",
+                          "Treatment":"BRD041618"}])
+            url = "file:/imaging/analysis/P-12345_A01_s2_w3.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                          "Well":"A01",
+                          "Site":"2",
+                          "Wavelength":"3"}])
         finally:
             try:
                 os.unlink(path)
             except:
                 pass
 
+    def test_02_08_numeric_joining(self):
+        # Check that Metadata correctly joins metadata items
+        # that are supposed to be extracted as numbers
+        metadata_csv = """Site,Treatment
+05,DMSO
+02,BRD041618
+"""
+        filenum, path = tempfile.mkstemp(suffix = ".csv")
+        fd = os.fdopen(filenum, "w")
+        fd.write(metadata_csv)
+        fd.close()
+        try:
+            module = M.Metadata()
+            module.wants_metadata.value=True
+            module.data_types.value = cps.DataTypes.encode_data_types(
+                {"Site":cps.DataTypes.DT_INTEGER})
+            module.data_type_choice.value = M.DTC_CHOOSE
+            module.add_extraction_method()
+            em = module.extraction_methods[0]
+            em.filter_choice.value = M.F_ALL_IMAGES
+            em.extraction_method.value = M.X_MANUAL_EXTRACTION
+            em.source.value = M.XM_FILE_NAME
+            em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
+            em.filter_choice.value = M.F_ALL_IMAGES
+            
+            em = module.extraction_methods[1]
+            em.filter_choice.value = M.F_ALL_IMAGES
+            em.extraction_method.value = M.X_IMPORTED_EXTRACTION
+            em.csv_location.value = path
+            em.csv_joiner.value = '[{"%s":"Site","%s":"Site"}]' % (
+                module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
+            em.wants_case_insensitive.value = False
+            url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                         "Well":"B08",
+                         "Site":"5",
+                         "Wavelength":"2",
+                         "Treatment":"DMSO"}])
+            url = "file:/imaging/analysis/P-12345_C10_s2_w3.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                          "Well":"C10",
+                          "Site":"2",
+                          "Wavelength":"3",
+                          "Treatment":"BRD041618"}])
+            url = "file:/imaging/analysis/P-12345_A01_s3_w3.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                          "Well":"A01",
+                          "Site":"3",
+                          "Wavelength":"3"}])
+        finally:
+            try:
+                os.unlink(path)
+            except:
+                pass
+        
     def test_03_01_well_row_column(self):
         # Make sure that Metadata_Well is generated if we have
         # Metadata_Row and Metadata_Column
@@ -545,13 +615,48 @@ C10,BRD041618
                 "(?P<%(row_tag)s>[A-H])-"
                 "(?P<%(column_tag)s>[0-9]{2}).tif$") % locals()
             em.filter_choice.value = M.F_ALL_IMAGES
-            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/Channel1-C-05.tif",
-                                        None, None, None)
-            metadata = module.get_ipd_metadata(ipd)
-            self.assertDictEqual(metadata, { "Wavelength":"1",
-                                             row_tag:"C",
-                                             column_tag:"05",
-                                             cpmeas.FTR_WELL:"C05"})
-            self.assertIn(cpmeas.M_WELL, 
-                          [c[1] for c in module.get_measurement_columns(None)])
-                
+            url = "file:/imaging/analysis/Channel1-C-05.tif"
+            self.check(module, url,
+                       [{ "Wavelength":"1",
+                          row_tag:"C",
+                          column_tag:"05",
+                          cpmeas.FTR_WELL:"C05"}])
+            pipeline = cpp.Pipeline()
+            imgs = I.Images()
+            imgs.filter_choice.value = I.FILTER_CHOICE_NONE
+            imgs.module_num = 1
+            pipeline.add_module(imgs)
+            module.module_num = 2
+            pipeline.add_module(module)
+            self.assertIn(
+                cpmeas.M_WELL, 
+                [c[1] for c in module.get_measurement_columns(pipeline)])
+            
+    def test_04_01_ome_metadata(self):
+        # Test loading one URL with the humongous stack XML
+        # (pat self on back if passes)
+        module = M.Metadata()
+        module.wants_metadata.value=True
+        em = module.extraction_methods[0]
+        em.filter_choice.value = M.F_ALL_IMAGES
+        em.extraction_method.value = M.X_AUTOMATIC_EXTRACTION
+        url = "file:/imaging/analysis/Channel1-C-05.tif"
+        metadata = []
+        for series in range(4):
+            for z in range(36):
+                metadata.append(dict(
+                    Series=str(series),
+                    Frame=str(z),
+                    Plate="136570140804 96_Greiner",
+                    Well="E11",
+                    Site=str(series),
+                    ChannelName="Exp1Cam1",
+                    SizeX=str(688),
+                    SizeY=str(512),
+                    SizeZ=str(36),
+                    SizeC=str(1),
+                    SizeT=str(1),
+                    Z=str(z),
+                    C=str(0),
+                    T=str(0)))
+        self.check(module, url, metadata, xml=OME_XML)

@@ -3197,13 +3197,27 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             else:
                 rdr = get_image_reader(
                     self.get_name(), url=self.get_url())
-            img, self.scale = rdr.read(
-                c = self.channel,
-                series=self.series,
-                index = self.index,
-                rescale = self.rescale,
-                wants_max_intensity=True,
-                channel_names=channel_names)
+            if np.isscalar(self.index):
+                img, self.scale = rdr.read(
+                    c = self.channel,
+                    series=self.series,
+                    index = self.index,
+                    rescale = self.rescale,
+                    wants_max_intensity=True,
+                    channel_names=channel_names)
+            else:
+                # It's a stack
+                stack = []
+                for index in self.index:
+                    img, self.scale = rdr.read(
+                        c = self.channel,
+                        series=self.series,
+                        index = self.index,
+                        rescale = self.rescale,
+                        wants_max_intensity=True,
+                        channel_names=channel_names)
+                    stack.append(img)
+                img = np.dstack(stack)
         image = cpimage.Image(img,
                               path_name = self.get_pathname(),
                               file_name = self.get_filename(),

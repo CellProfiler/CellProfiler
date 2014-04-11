@@ -122,8 +122,6 @@ from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.images import Images, evaluate_url
-from cellprofiler.modules.loadimages import needs_well_metadata
 from cellprofiler.modules.loadimages import well_metadata_tokens
 from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
 
@@ -171,7 +169,6 @@ class Metadata(cpm.CPModule):
     def create_settings(self):
         self.pipeline = None
         self.ipds = []
-        self.imported_metadata = []
         module_explanation = [
             "The %s module optionally allows you to extract information" %self.module_name,
             "describing your images (i.e, metadata) which will be stored along",
@@ -219,7 +216,7 @@ class Metadata(cpm.CPModule):
         
         self.data_types = cps.DataTypes(
             "Metadata types",
-            name_fn = self.get_dt_metadata_keys, doc = """
+            name_fn = self.get_metadata_keys, doc = """
             <i>(Used only when %(DTC_CHOOSE)s is selected for the metadata data type)</i><br>
             This setting determines the data type of each metadata field
             when stored as a measurement. 
@@ -486,38 +483,114 @@ class Metadata(cpm.CPModule):
             Press this button to automatically extract metadata from
             your image files."""))
                  
+        group.imported_metadata_header_timestamp = 0
+        group.imported_metadata_header_path = None
+        group.imported_metadata_header_line = None
         group.can_remove = can_remove
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(
                 '', 'Remove this extraction method',
                 self.extraction_methods, group))
-            
-    def get_dt_metadata_keys(self):
-        '''Get the list of data-type metadata keys
-        
-        Get the metadata keys captured by file and folder metadata extraction
-        and by metadata import.
-        '''
-        if not self.wants_metadata:
-            return []
-        keys = set()
-        self.update_imported_metadata()
-        for group in self.extraction_methods:
-            if group.extraction_method == X_MANUAL_EXTRACTION:
-                if group.source == XM_FILE_NAME:
-                    regexp = group.file_regexp
-                else:
-                    regexp = group.folder_regexp
-                keys.update(cpmeas.find_metadata_tokens(regexp.value))
-            elif group.extraction_method == X_IMPORTED_EXTRACTION:
-                imported_metadata = self.get_imported_metadata_for_group(group)
-                if imported_metadata is None:
-                    logger.warn("Unable to import metadata from %s" %
-                                group.csv_location.value)
-                else:
-                    keys.update(imported_metadata.get_csv_metadata_keys())
-        return sorted(keys)
     
+    def get_group_header(self, group):
+        '''Get the header line from the imported extraction group's csv file'''
+        csv_path = group.csv_location.value
+        if csv_path == group.imported_metadata_header_path:
+            if group.csv_location.is_url():
+                return group.imported_metadata_header_line
+            timestamp = os.stat(csv_path).st_mtime
+            if timestamp <= group.imported_metadata_header_timestamp:
+                return group.imported_metadata_header_line
+        group.imported_metadata_header_timestamp = time.time()
+        group.imported_metadata_header_path = csv_path
+        if group.csv_location.is_url():
+            fd = urllib.urlopen(csv_path)
+        else:
+            fd = open(csv_path, "rb")
+        group.imported_metadata_header_line = fd.readline()
+        return group.imported_metadata_header_line
+    
+    def build_imported_metadata_extractor(self, group, extractor,
+                                          for_metadata_only):
+        '''Build an extractor of imported metadata for this group
+        
+        group - a settings group to extract imported metadata
+        
+        extractor - the extractor as built up to the current point
+        
+        for_metadata_only - if true, only give the header to the
+                 imported metadata extractor.
+        '''
+        key_pairs = []
+        dt_numeric = (cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER)
+        kp_cls = 'org/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair'
+        kp_sig = '(Ljava/lang/String;Ljava/lang/String;)L%s;' % kp_cls
+        for join_idx in group.csv_joiner.parse():
+            csv_key = join_idx[self.CSV_JOIN_NAME]
+            ipd_key = join_idx[self.IPD_JOIN_NAME]
+            if self.get_data_type(csv_key) in dt_numeric and \
+               self.get_data_type(ipd_key) in dt_numeric:
+                kp_method = "makeNumericKeyPair"
+            elif group.wants_case_insensitive:
+                kp_method = "makeCaseInsensitiveKeyPair"
+            else:
+                kp_method = "makeCaseSensitiveKeyPair"
+            key_pair = J.static_call(
+                kp_cls, kp_method, kp_sig, csv_key, ipd_key)
+            key_pairs.append(key_pair)
+        key_pairs = J.get_nice_arg(
+            key_pairs, 
+            "[L%s;" % kp_cls)
+        
+        if for_metadata_only:
+            header = self.get_group_header(group)
+            rdr = J.run_script("new java.io.StringReader(header);",
+                               dict(header=header))
+        elif group.csv_location.is_url():
+            rdr = J.run_script(
+                """var url = new java.net.URL(path);
+                   new java.io.InputStreamReader(url.openStream());
+                   """, dict(path=group.csv_location.value))
+        else:
+            rdr = J.run_script(
+                    """var stream = new java.io.FileInputStream(path);
+                       new java.io.InputStreamReader(stream);
+                    """, dict(path=group.csv_location.value))
+        return J.run_script(
+            """importPackage(Packages.org.cellprofiler.imageset);
+            new ImportedMetadataExtractor(rdr, key_pairs);
+            """, dict(rdr = rdr, key_pairs=key_pairs))
+        
+            
+    def refresh_group_joiner(self, group):
+        '''Refresh the metadata entries for a group's joiner'''
+        if group.extraction_method != X_IMPORTED_EXTRACTION:
+            return
+        #
+        # Build an extractor to this point, just for getting the metadata
+        # keys.
+        #
+        extractor = self.build_extractor(group, True)
+        #
+        # Get the key set.
+        #
+        possible_keys = J.get_collection_wrapper(
+            J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"))
+        joiner = group.csv_joiner
+        assert isinstance(joiner, cps.Joiner)
+        joiner.entities[self.IPD_JOIN_NAME] = list(possible_keys)
+        #
+        # Build the imported metadata extractor for this group
+        #
+        extractor = self.build_imported_metadata_extractor(
+            group, extractor, True)
+        #
+        # Get the key set.
+        #
+        possible_keys = J.get_collection_wrapper(
+            J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"))
+        joiner.entities[self.CSV_JOIN_NAME] = possible_keys
+        
     def settings(self):
         result = [self.wants_metadata, self.data_type_choice, self.data_types,
                   self.extraction_method_count]
@@ -593,132 +666,71 @@ class Metadata(cpm.CPModule):
         if workspace.pipeline.in_batch_mode():
             return True
         
-        file_list = workspace.file_list
         pipeline = workspace.pipeline
-        ipds = pipeline.get_filtered_image_plane_details(workspace)
+        assert isinstance(pipeline, cpp.Pipeline)
+        filtered_file_list = pipeline.get_filtered_file_list(workspace)
         extractor = self.build_extractor()
-        max_series = 0
-        max_index = 0
-        for ipd in ipds:
-            if ipd.series is not None:
-                max_series = max(max_series, ipd.series)
-            if ipd.index is not None:
-                max_index = max(max_index, ipd.index)
-        if max_series > 0:
-            series_digits = int(np.log10(max_series)) + 1
-        else:
-            series_digits = 1
-        if max_index > 0:
-            index_digits = int(np.log10(max_index)) + 1
-        else:
-            index_digits = 1
-        if max_series > 0 or max_index > 0:
-            script = """
-            importPackage(Packages.org.cellprofiler.imageset);
-            extractor.addImagePlaneExtractor(new SeriesIndexMetadataExtractor(
-                seriesDigits, indexDigits));
-            """
-            J.run_script(script, dict(extractor = extractor,
-                                      seriesDigits = series_digits,
-                                      indexDigits = index_digits))
         env = J.get_env()
-        entry_set_class = env.find_class("java/util/Map$Entry")
-        get_key_id = env.get_method_id(entry_set_class, "getKey", "()Ljava/lang/Object;")
-        get_value_id = env.get_method_id(entry_set_class, "getValue", "()Ljava/lang/Object;")
-                
-        def wrap_entry_set(o):
-            return (env.get_string_utf(env.call_method(o, get_key_id)), 
-                    env.get_string_utf(env.call_method(o, get_value_id)))
-        #
-        # Much of what appears below is optimized to avoid the cost of
-        # "getting nice arguments" for the Java bridge. The IPDs should be
-        # in alphabetical order which means that, for stacks, we can
-        # save the results of OME-XML parsing in the Java ImageFile object.
-        #
-        extractor_class = env.find_class(
-            "org/cellprofiler/imageset/ImagePlaneMetadataExtractor")
-        extract_metadata_id = env.get_method_id(
-            extractor_class,
-            "extractMetadata",
-            "(Ljava/lang/String;IILjava/lang/String;"
-            "[Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;"
-            "[Lorg/cellprofiler/imageset/ImageFile;"
-            ")Ljava/util/Iterator;")
-        extract_metadata_if_id = env.get_method_id(
-            extractor_class,
-            "extractMetadata",
-            "(Lorg/cellprofiler/imageset/ImageFile;II"
-            "[Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;"
-            ")Ljava/util/Iterator;")
-        ipd_class = env.find_class("org/cellprofiler/imageset/filter/ImagePlaneDetails")
-        if_class = env.find_class("org/cellprofiler/imageset/ImageFile")
-        clear_xml_document_id = env.get_method_id(
-            if_class,
-            "clearXMLDocument", "()V")
-        pIPD = env.make_object_array(1, ipd_class)
-        pIF = env.make_object_array(1, if_class)
-        
-        last_url = None
-        last_if = None
-        if_has_metadata = False
-        for ipd in ipds:
-            series, index = [x if x is not None else 0 
-                             for x in ipd.series, ipd.index]
-            if ipd.url != last_url:
-                if if_has_metadata:
-                    env.call_method(last_if, clear_xml_document_id)
-                    x = env.exception_occurred()
-                    if x is not None:
-                        raise J.JavaException(x)
-                    if_has_metadata = False
-                xmlmetadata = file_list.get_metadata(ipd.url)
-                if xmlmetadata is not None:
-                    xmlmetadata = env.new_string(xmlmetadata)
-                    if_has_metadata = True
-                metadata = env.call_method(extractor, extract_metadata_id,
-                                           env.new_string_utf(ipd.url),
-                                           int(series), int(index),
-                                           xmlmetadata, pIPD, pIF)
-                x = env.exception_occurred()
-                if x is not None:
-                    raise J.JavaException(x)
-                last_url = ipd.url
-                last_if = env.get_object_array_elements(pIF)[0]
+        scls = env.find_class("java/lang/String")
+        url_array = env.make_object_array(len(filtered_file_list), scls)
+        metadata_array = env.make_object_array(len(filtered_file_list), scls)
+        for i, url in enumerate(filtered_file_list):
+            if isinstance(url, unicode):
+                ourl = env.new_string(url)
             else:
-                metadata = env.call_method(
-                    extractor, extract_metadata_if_id,
-                    last_if, int(series), int(index), pIPD)
-                x = env.exception_occurred()
-                if x is not None:
-                    raise J.JavaException(x)
-            
-            ipd.metadata.update(J.iterate_java(metadata, wrap_entry_set))
-            ipd.jipd = env.get_object_array_elements(pIPD)[0]
-        if if_has_metadata:
-            env.call_method(last_if, clear_xml_document_id)
-            x = env.exception_occurred()
-            if x is not None:
-                raise J.JavaException(x)
+                ourl = env.new_string_utf(url)
+            env.set_object_array_element(url_array, i, ourl)
+            xmlmetadata = workspace.file_list.get_metadata(url)
+            if xmlmetadata is not None:
+                xmlmetadata = env.new_string(xmlmetadata)
+                env.set_object_array_element(metadata_array, i, xmlmetadata)
+        key_set = J.make_instance("java/util/HashSet", "()V")
+        jipds = J.call(
+            extractor, "extract",
+            "([Ljava/lang/String;[Ljava/lang/String;Ljava/util/Set;)"
+            "[Lorg/cellprofiler/imageset/ImagePlaneDetails;",
+            url_array, metadata_array, key_set)
+        ipds = [ cpp.ImagePlaneDetails(jipd)
+                 for jipd in env.get_object_array_elements(jipds)]
+        keys = sorted(J.iterate_collection(key_set, J.to_string))
+        pipeline.set_image_plane_details(ipds, keys, self)
         return True
     
-    def build_extractor(self):
-        '''Build a Java metadata extractor using the module settings'''
+    def build_extractor(self, end_group=None, for_metadata_only=False):
+        '''Build a Java metadata extractor using the module settings
+
+        end_group - stop building the extractor when you reach this group.
+                    default is build all.
+        for_metadata_only - only build an extractor to capture the header info
+        '''
         #
         # Build a metadata extractor
         #
         script = """
         importPackage(Packages.org.cellprofiler.imageset);
-        importPackage(Packages.org.cellprofiler.imageset.filter);
         extractor = new ImagePlaneMetadataExtractor();
-        extractor.addImagePlaneExtractor(new OMEMetadataExtractor());
+        extractor.addImagePlaneExtractor(new SeriesIndexMetadataExtractor());
         extractor;
         """
         extractor = J.run_script(script)
+        if any([group.extraction_method == X_AUTOMATIC_EXTRACTION
+                for group in self.extraction_methods]):
+            script = """
+            importPackage(Packages.org.cellprofiler.imageset);
+            extractor.addImageFileExtractor(new OMEFileMetadataExtractor());
+            extractor.addImageSeriesExtractor(new OMESeriesMetadataExtractor());
+            extractor.addImagePlaneExtractor(new OMEPlaneMetadataExtractor());
+                """
+            J.run_script(script, dict(extractor=extractor));
         for group in self.extraction_methods:
+            if group == end_group:
+                break
             if group.filter_choice == F_FILTERED_IMAGES:
                 fltr = J.make_instance(
                     "org/cellprofiler/imageset/filter/Filter",
-                    "(Ljava/lang/String;)V", group.filter.value_text)
+                    "(Ljava/lang/String;Ljava/lang/Class;)V", 
+                    group.filter.value_text,
+                    J.class_for_name("org.cellprofiler.imageset.ImageFile"))
             else:
                 fltr = None
             if group.extraction_method == X_MANUAL_EXTRACTION:
@@ -733,54 +745,23 @@ class Metadata(cpm.CPModule):
                        "(Ljava/lang/String;Lorg/cellprofiler/imageset/filter/Filter;)V",
                        pattern, fltr)
             elif group.extraction_method == X_IMPORTED_EXTRACTION:
-                #
-                # Create the array of key pairs for the join
-                #
-                key_pairs = []
-                for join_idx in group.csv_joiner.parse():
-                    key_pair = J.make_instance(
-                        'org/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair',
-                        '(Ljava/lang/String;Ljava/lang/String;)V',
-                        join_idx[self.CSV_JOIN_NAME], 
-                        join_idx[self.IPD_JOIN_NAME])
-                    key_pairs.append(key_pair)
-                key_pairs = J.get_nice_arg(
-                    key_pairs, 
-                    "[Lorg/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair;")
-                #
-                # Open the CSV file for reading
-                #
-                path = group.csv_location.value
-                if group.csv_location.is_url():
-                    stream = J.run_script(
-                        """var url = new java.net.URL(path);
-                           url.openStream();""", dict(path=path))
-                else:
-                    stream = J.run_script(
-                        "new java.io.FileInputStream(path);", dict(path=path))
-                #
-                # Make an ImportedMetadataExtractor
-                # and install it in the big extractor
-                #
-                script = """
-                importPackage(Packages.org.cellprofiler.imageset);
-                var rdr = new java.io.InputStreamReader(inputStream);
-                var iextractor = new ImportedMetadataExtractor(rdr, key_pairs, case_insensitive);
-                extractor.addImagePlaneDetailsExtractor(iextractor, fltr);
-                """
-                J.run_script(script, dict(
-                    inputStream = stream,
-                    key_pairs=key_pairs,
-                    case_insensitive = group.wants_case_insensitive.value,
-                    extractor = extractor,
-                    fltr = fltr))
+                imported_extractor = self.build_imported_metadata_extractor(
+                    group, extractor, for_metadata_only)
+                J.call(extractor,
+                       "addImagePlaneDetailsExtractor",
+                       "(Lorg/cellprofiler/imageset/MetadataExtractor;"
+                       "Lorg/cellprofiler/imageset/filter/Filter;)V",
+                       imported_extractor, fltr)
         #
         # Finally, we add the WellMetadataExtractor which has the inglorious
-        # job of making a well name from row and column, if present.
+        # job of making a well name from row and column, if present,
+        # but only if our existing metadata extractors have metadata that
+        # might require it.
         #
         script = """
         importPackage(Packages.org.cellprofiler.imageset);
-        extractor.addImagePlaneDetailsExtractor(new WellMetadataExtractor());
+        if (WellMetadataExtractor.maybeYouNeedThis(extractor.getMetadataKeys()))
+            extractor.addImagePlaneDetailsExtractor(new WellMetadataExtractor());
         """
         J.run_script(script, dict(extractor = extractor))
         
@@ -823,145 +804,36 @@ class Metadata(cpm.CPModule):
                 if metadata is None:
                     metadata = get_omexml_metadata(url = url)
                     filelist.add_metadata(url, metadata)
-                metadata = OMEXML(metadata)
-                exemplar = cpp.ImagePlaneDetails(url, None, None, None)
-                if not self.pipeline.find_image_plane_details(exemplar):
-                    self.pipeline.add_image_plane_details([exemplar])
-                self.pipeline.add_image_metadata(url, metadata)
-            self.ipds = self.pipeline.get_filtered_image_plane_details(self.workspace)
-            self.update_metadata_keys()
                 
-    def get_ipd_metadata(self, ipd):
-        '''Get the metadata for an image plane details record'''
-        assert isinstance(ipd, cpp.ImagePlaneDetails)
-        m = ipd.metadata.copy()
-        for group in self.extraction_methods:
-            if group.filter_choice == F_FILTERED_IMAGES:
-                if not evaluate_url(group.filter, ipd.url):
-                    continue
-            if group.extraction_method == X_MANUAL_EXTRACTION:
-                m.update(self.manually_extract_metadata(group, ipd))
-            elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
-                m.update(self.automatically_extract_metadata(group, ipd))
-            elif group.extraction_method == X_IMPORTED_EXTRACTION:
-                m.update(self.import_metadata(group, ipd, m))
-        return m
-                
-    def manually_extract_metadata(self, group, ipd):
-        if group.source == XM_FILE_NAME:
-            text = os.path.split(ipd.path)[1]
-            pattern = group.file_regexp.value
-        elif group.source == XM_FOLDER_NAME:
-            text = os.path.split(ipd.path)[0]
-            pattern = group.folder_regexp.value
-        else:
-            return {}
-        match = re.search(pattern, text)
-        if match is None:
-            return {}
-        result = match.groupdict()
-        tokens = result.keys()
-        if needs_well_metadata(tokens):
-            well_row_token, well_column_token = well_metadata_tokens(tokens)
-            result[cpmeas.FTR_WELL] = \
-                result[well_row_token] + result[well_column_token]
-        return result
-    
-    def automatically_extract_metadata(self, group, ipd):
-        return {}
-
-    def get_imported_metadata_for_group(self, group):
-        for imported_metadata in self.imported_metadata:
-            assert isinstance(imported_metadata, self.ImportedMetadata)
-            if imported_metadata.is_match(
-                group.csv_location.value,
-                group.csv_joiner,
-                self.CSV_JOIN_NAME,
-                self.IPD_JOIN_NAME):
-                return imported_metadata
-        return None
-        
-    def import_metadata(self, group, ipd, m):
-        imported_metadata = self.get_imported_metadata_for_group(group)
-        if imported_metadata is not None:
-            return imported_metadata.get_ipd_metadata(
-                m, group.wants_case_insensitive.value)
-        return {}
-    
     def on_activated(self, workspace):
         self.workspace = workspace
         self.pipeline = workspace.pipeline
-        self.ipds = self.pipeline.get_filtered_image_plane_details(workspace)
-        self.ipd_metadata_keys = []
-        self.update_metadata_keys()
-        self.update_imported_metadata()
+        for group in self.extraction_methods:
+            if group.extraction_method == X_IMPORTED_EXTRACTION:
+                self.refresh_group_joiner(group)
         self.table.clear_rows()
         self.table.clear_columns()
+        if workspace.pipeline.has_cached_image_plane_details():
+            self.update_table()
         
     def on_setting_changed(self, setting, pipeline):
-        self.update_imported_metadata()
-        
-    def update_imported_metadata(self):
-        new_imported_metadata = []
-        ipd_metadata_keys = set(getattr(self, "ipd_metadata_keys", []))
+        '''Update the imported extraction joiners on setting changes'''
+        visible_settings = self.visible_settings()
+        if setting == self.data_types:
+            # The data types affect the joiner's matching
+            setting_idx = 0
+        else:
+            setting_idx = visible_settings.index(setting)
         for group in self.extraction_methods:
-            if group.extraction_method == X_MANUAL_EXTRACTION:
-                if group.source == XM_FILE_NAME:
-                    regexp = group.file_regexp
-                else:
-                    regexp = group.folder_regexp
-                ipd_metadata_keys.update(cpmeas.find_metadata_tokens(regexp.value))
-            elif group.extraction_method == X_IMPORTED_EXTRACTION:
-                joiner = group.csv_joiner
-                csv_path = group.csv_location.value
-                if ((not group.csv_location.is_url()) and
-                    not os.path.isfile(csv_path)):
+            if group.extraction_method == X_IMPORTED_EXTRACTION:
+                joiner_idx = visible_settings.index(group.csv_joiner)
+                location_idx = visible_settings.index(group.csv_location)
+                if joiner_idx < setting_idx and location_idx < setting_idx:
                     continue
-                found = False
-                best_match = None
-                for i, imported_metadata in enumerate(self.imported_metadata):
-                    assert isinstance(imported_metadata, self.ImportedMetadata)
-                    if imported_metadata.is_match(csv_path, joiner,
-                                                  self.CSV_JOIN_NAME,
-                                                  self.IPD_JOIN_NAME):
-                        new_imported_metadata.append(imported_metadata)
-                        found = True
-                        break
-                    elif (best_match is None and 
-                          imported_metadata.path == csv_path):
-                        best_match = i
-                if found:
-                    del self.imported_metadata[i]
-                else:
-                    if best_match is not None:
-                        imported_metadata = self.imported_metadata[i]
-                        del self.imported_metadata[i]
-                    else:
-                        try:
-                            imported_metadata = self.ImportedMetadata(
-                                csv_path, group.csv_location.is_url())
-                        except:
-                            logger.debug("Failed to load CSV file: %s" % csv_path)
-                            continue
-                    new_imported_metadata.append(imported_metadata)
-                joiner.entities[self.CSV_JOIN_NAME] = \
-                    imported_metadata.get_csv_metadata_keys()
-                joiner.entities[self.IPD_JOIN_NAME] = \
-                    list(ipd_metadata_keys)
-                imported_metadata.set_joiner(joiner,
-                                             self.CSV_JOIN_NAME,
-                                             self.IPD_JOIN_NAME)
-                ipd_metadata_keys.update(imported_metadata.get_csv_metadata_keys())
-                    
-        self.imported_metadata = new_imported_metadata            
-        
+                self.refresh_group_joiner(group)
+       
     def update_table(self):
-        columns = set()
-        metadata = []
-        for ipd in self.ipds:
-            ipd_metadata = self.get_ipd_metadata(ipd)
-            metadata.append(ipd_metadata)
-            columns.update(ipd_metadata.keys())
+        columns = self.get_metadata_keys()
         columns.discard(COL_SERIES)
         columns.discard(COL_INDEX)
         columns = [COL_PATH, COL_SERIES, COL_INDEX] + \
@@ -972,17 +844,12 @@ class Metadata(cpm.CPModule):
             self.table.insert_column(i, column)
             
         data = []
-        for ipd, ipd_metadata in zip(self.ipds, metadata):
+        for ipd in self.pipeline.get_image_plane_details(self.workspace):
             row = [ipd.path, ipd.series, ipd.index]
+            ipd_metadata = ipd.metadata
             row += [ipd_metadata.get(column) for column in columns[3:]]
             data.append(row)
         self.table.add_rows(columns, data)
-        
-    def update_metadata_keys(self):
-        self.ipd_metadata_keys = set(self.ipd_metadata_keys)
-        for ipd in self.ipds:
-            self.ipd_metadata_keys.update(ipd.metadata.keys())
-        self.ipd_metadata_keys = sorted(self.ipd_metadata_keys)
         
     def on_deactivated(self):
         self.pipeline = None
@@ -1028,38 +895,50 @@ class Metadata(cpm.CPModule):
         '''Return a collection of metadata keys to be associated with files'''
         if not self.wants_metadata:
             return []
-        keys = set()
-        self.update_imported_metadata()
-        for group in self.extraction_methods:
-            if group.extraction_method == X_MANUAL_EXTRACTION:
-                if group.source == XM_FILE_NAME:
-                    regexp = group.file_regexp
-                else:
-                    regexp = group.folder_regexp
-                keys.update(cpmeas.find_metadata_tokens(regexp.value))
-            elif group.extraction_method == X_IMPORTED_EXTRACTION:
-                imported_metadata = self.get_imported_metadata_for_group(group)
-                if imported_metadata is None:
-                    logger.warn("Unable to import metadata from %s" %
-                                group.csv_location.value)
-                else:
-                    keys.update(imported_metadata.metadata_keys)
-            elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
-                # Assume that automatic extraction will populate T and Z
-                keys.add(cpp.ImagePlaneDetails.MD_T)
-                keys.add(cpp.ImagePlaneDetails.MD_Z)
-        return list(keys)
+        extractor = self.build_extractor(for_metadata_only=True)
+        keys = J.get_collection_wrapper(
+            J.call(extractor, 
+                   "getMetadataKeys", 
+                   "()Ljava/util/List;"), J.to_string)
+        return keys
+    
+    NUMERIC_DATA_TYPES = (
+        cpp.ImagePlaneDetails.MD_T, cpp.ImagePlaneDetails.MD_Z,
+        cpp.ImagePlaneDetails.MD_SIZE_C, cpp.ImagePlaneDetails.MD_SIZE_T,
+        cpp.ImagePlaneDetails.MD_SIZE_Z, cpp.ImagePlaneDetails.MD_SIZE_X,
+        cpp.ImagePlaneDetails.MD_SIZE_Y, cpmeas.C_SERIES, cpmeas.C_FRAME)
+    
+    def get_data_type(self, key):
+        '''Get the data type for a particular metadata key'''
+        if isinstance(key, basestring):
+            return self.get_data_type([key]).get(key, cpmeas.COLTYPE_VARCHAR)
+        result = {}
+        if self.data_type_choice == DTC_CHOOSE:
+            data_types = cps.DataTypes.decode_data_types(
+                self.data_types.value_text)
+        for k in key:
+            if k in self.NUMERIC_DATA_TYPES:
+                result[k] = cpmeas.COLTYPE_INTEGER
+            elif self.data_type_choice == DTC_CHOOSE:
+                dt = data_types.get(k, cps.DataTypes.DT_TEXT)
+                if dt == cps.DataTypes.DT_TEXT:
+                    result[k] = cpmeas.COLTYPE_VARCHAR
+                elif dt == cps.DataTypes.DT_INTEGER:
+                    result[k] = cpmeas.COLTYPE_INTEGER
+                elif dt == cps.DataTypes.DT_FLOAT:
+                    result[k] = cpmeas.COLTYPE_FLOAT
+            else:
+                result[k] = cpmeas.COLTYPE_VARCHAR
+                
+        return result
     
     def get_measurement_columns(self, pipeline):
         '''Get the metadata measurements collected by this module'''
-        keys = self.get_metadata_keys()
-        data_types = self.data_types.get_data_types()
-        data_types[cpp.ImagePlaneDetails.MD_T] = cps.DataTypes.DT_INTEGER
-        data_types[cpp.ImagePlaneDetails.MD_Z] = cps.DataTypes.DT_INTEGER
+        key_types = pipeline.get_available_metadata_keys()
         result = []
-        for key in keys:
+        for key, coltype in key_types.iteritems():
             if self.data_type_choice == DTC_CHOOSE:
-                data_type = data_types.get(key, cps.DataTypes.DT_TEXT)
+                data_type = self.get_data_type(key)
                 if data_type == cps.DataTypes.DT_NONE:
                     continue
                 elif data_type == cps.DataTypes.DT_INTEGER:
@@ -1072,9 +951,6 @@ class Metadata(cpm.CPModule):
                 data_type = cpmeas.COLTYPE_VARCHAR_FILE_NAME
             result.append((
                 cpmeas.IMAGE,  '_'.join((cpmeas.C_METADATA, key)), data_type))
-        if needs_well_metadata(keys):
-            result.append((cpmeas.IMAGE, cpmeas.M_WELL, 
-                           cpmeas.COLTYPE_VARCHAR_FORMAT % 4))
         return result
     
     def get_categories(self, pipeline, object_name):
@@ -1086,8 +962,6 @@ class Metadata(cpm.CPModule):
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == cpmeas.C_METADATA:
             keys = self.get_metadata_keys()
-            if needs_well_metadata(keys):
-                keys = list(keys) + [cpmeas.FTR_WELL]
             return keys
         return []
     
@@ -1131,117 +1005,3 @@ class Metadata(cpm.CPModule):
 
         return setting_values, variable_revision_number, from_matlab
     
-    class ImportedMetadata(object):
-        '''A holder for the metadata from a csv file'''
-        def __init__(self, path, is_url):
-            self.joiner_initialized = False
-            self.path = path
-            self.is_url = is_url
-            if is_url:
-                self.path_timestamp = time.time()
-                fd = urllib.urlopen(path)
-            else:
-                self.path_timestamp = os.stat(path).st_mtime
-                fd = open(path, "rb")
-            rdr = csv.reader(fd)
-            header = rdr.next()
-            columns = [[] for  c in header]
-            self.columns = dict([(c, l) for c,l in zip(header, columns)])
-            for row in rdr:
-                for i, field in enumerate(row):
-                    columns[i].append(None if len(field) == 0 else field)
-                if len(row) < len(columns):
-                    for i in range(len(row), len(columns)):
-                        columns[i].append(None)
-                        
-        def get_csv_metadata_keys(self):
-            '''Get the metadata keys in the CSV header'''
-            return sorted(self.columns.keys())
-        
-        def set_joiner(self, joiner, csv_name, ipd_name):
-            '''Initialize to assign csv metadata to an image plane descriptor
-            
-            joiner - a joiner setting that describes the join between the
-                     CSV metadata and the IPD metadata
-            csv_name - the name assigned to the CSV file in the joiner
-            ipd_name - the name assigned to the IPD in the joiner
-            
-            Creates a dictionary of keys from the CSV joining keys and
-            records the keys that will be used to join in the IPD
-            '''
-            joins = joiner.parse()
-            if len(joins) == 0:
-                return
-            if any([join.get(csv_name) not in self.columns.keys()
-                    for join in joins]):
-                return
-            self.csv_keys = [join[csv_name] for join in joins]
-            self.ipd_keys = [join[ipd_name] for join in joins]
-            self.metadata_keys = set(self.columns.keys()).difference(self.csv_keys)
-            self.d = {}
-            self.d_lower = {}
-            columns = [self.columns[key] for key in self.csv_keys]
-            for i in range(len(columns[0])):
-                key = tuple([column[i] for column in columns])
-                self.d[key] = i
-                key_lower = tuple([
-                    k.lower() if isinstance(k, basestring) else k for k in key])
-                self.d_lower[key_lower] = i
-            self.joiner_initialized = True
-            
-        def get_ipd_metadata(self, ipd_metadata, case_insensitive=False):
-            '''Get the matching metadata from the .csv for a given ipd
-            
-            ipd_metadata - the metadata dictionary for an IPD, possibly
-            augmented by prior extraction
-            '''
-            if not self.joiner_initialized:
-                return {}
-            key = tuple([ipd_metadata.get(k) for k in self.ipd_keys])
-            if case_insensitive:
-                d = self.d_lower
-                key = tuple([
-                    k.lower() if isinstance(k, basestring) else k for k in key])
-            else:
-                d = self.d
-            if not d.has_key(key):
-                return {}
-            return dict([(k, self.columns[k][d[key]]) 
-                         for k in self.metadata_keys])
-        
-        def is_match(self, csv_path, joiner, csv_join_name, ipd_join_name):
-            '''Check to see if this instance can handle the given csv and joiner
-            
-            csv_path - path to the CSV file to use
-            
-            joiner - the joiner to join to the ipd metadata
-            
-            csv_join_name - the join name in the joiner of the csv_file
-            
-            ipd_join_name - the join name in the joiner of the ipd metadata
-            
-            is_url - True if the CSV path is a URL
-            '''
-            if csv_path != self.path:
-                return False
-            
-            if (not self.is_url) and \
-               os.stat(self.path).st_mtime != self.path_timestamp:
-                return False
-            
-            if not self.joiner_initialized:
-                self.set_joiner(joiner, csv_join_name, ipd_join_name)
-                return True
-            
-            joins = joiner.parse()
-            csv_keys = [join[csv_join_name] for join in joins]
-            ipd_keys = [join[ipd_join_name] for join in joins]
-            metadata_keys = set(self.columns.keys()).difference(self.csv_keys)
-            for mine, yours in ((self.csv_keys, csv_keys),
-                                (self.ipd_keys, ipd_keys),
-                                (self.metadata_keys, metadata_keys)):
-                if tuple(mine) != tuple(yours):
-                    return False
-            return True
-            
-            

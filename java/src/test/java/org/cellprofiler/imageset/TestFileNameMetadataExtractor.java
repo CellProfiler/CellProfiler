@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -33,6 +34,10 @@ public class TestFileNameMetadataExtractor {
 				assertEquals(source, filename);
 				return emptyMap;
 			}
+			public List<String> getMetadataKeys() {
+				fail();
+				return null;
+			}
 		});
 		extractor.extract(imageFile);
 	}
@@ -46,6 +51,11 @@ public class TestFileNameMetadataExtractor {
 				public Map<String, String> extract(String source) {
 					assertEquals(source, "foo.jpg");
 					return emptyMap;
+				}
+
+				public List<String> getMetadataKeys() {
+					fail();
+					return null;
 				}
 			});
 			extractor.extract(imageFile);

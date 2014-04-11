@@ -38,7 +38,7 @@ import org.junit.Test;
 public class TestJoiner {
 	private void assertThrows(List<Joiner.ChannelFilter> channels) {
 		try {
-			new Joiner(channels);
+			new Joiner(channels, new boolean[channels.get(0).getKeys().length]);
 			fail("The joiner did not throw an exception");
 		} catch (Joiner.JoinerException e) {
 			
@@ -104,8 +104,8 @@ public class TestJoiner {
 			Joiner.ChannelFilter b = makeMonoChannelFilter("B", new String [] { "A", "B", null}, expr);
 			Joiner.ChannelFilter c = makeMonoChannelFilter("C", new String [] { "A", null, "C"}, expr);
 			Joiner.ChannelFilter d = makeMonoChannelFilter("D", new String [] { "A", "B"}, expr);
-			new Joiner(Arrays.asList(a,b));
-			new Joiner(Arrays.asList(a,b,c));
+			new Joiner(Arrays.asList(a,b), new boolean[3]);
+			new Joiner(Arrays.asList(a,b,c), new boolean[3]);
 			assertThrows(Arrays.asList(b,c));
 			assertThrows(Arrays.asList(a, d));
 		} catch (BadFilterExpressionException e) {
@@ -130,7 +130,7 @@ public class TestJoiner {
 					makeIPD(b, new String [] { "first" }, "B"),
 					makeIPD(a, new String [] { "third" }, "A"),
 					makeIPD(b, new String [] { "second" }, "B"));
-			Joiner joiner = new Joiner(Arrays.asList(a, b));
+			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean[1]);
 			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
 			List<ImageSet> foo = joiner.join(ipds, errors );
 			assertEquals(3, foo.size());
@@ -159,7 +159,7 @@ public class TestJoiner {
 					makeIPD(b, new String [] { "Plate1", "A01" }, "B"),
 					makeIPD(a, new String [] { "Plate2", "A01" }, "A"),
 					makeIPD(b, new String [] { "Plate1", "A02" }, "B"));
-			Joiner joiner = new Joiner(Arrays.asList(a, b));
+			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean[2]);
 			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
 			List<ImageSet> foo = joiner.join(ipds, errors );
 			assertEquals(3, foo.size());
@@ -187,7 +187,7 @@ public class TestJoiner {
 					makeIPD(b, new String [] { "Plate1", "A01" }, "B"),
 					makeIPD(a, new String [] { "Plate2" }, "A"),
 					makeIPD(b, new String [] { "Plate1", "A02" }, "B"));
-			Joiner joiner = new Joiner(Arrays.asList(a, b));
+			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean[2]);
 			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
 			List<ImageSet> foo = joiner.join(ipds, errors );
 			assertEquals(3, foo.size());
@@ -216,7 +216,7 @@ public class TestJoiner {
 					makeIPD(a, new String [] { "third" }, "A"),
 					makeIPD(b, new String [] { "second" }, "B"));
 			for (int pass=1; pass <=2; pass++) {
-				Joiner joiner = new Joiner((pass == 1)?Arrays.asList(a, b):Arrays.asList(b,a));
+				Joiner joiner = new Joiner((pass == 1)?Arrays.asList(a, b):Arrays.asList(b,a), new boolean[1]);
 				Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
 				List<ImageSet> foo = joiner.join(ipds, errors );
 				assertEquals(2, foo.size());
@@ -255,7 +255,7 @@ public class TestJoiner {
 					makeIPD(b, new String [] { "second" }, "B"),
 					makeIPD(b, new String [] { "first" }, "B3"));
 			for (int pass=1; pass <=2; pass++) {
-				Joiner joiner = new Joiner((pass == 1)?Arrays.asList(a, b):Arrays.asList(b,a));
+				Joiner joiner = new Joiner((pass == 1)?Arrays.asList(a, b):Arrays.asList(b,a), new boolean[1]);
 				Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
 				List<ImageSet> foo = joiner.join(ipds, errors );
 				assertEquals(2, foo.size());
@@ -304,7 +304,7 @@ public class TestJoiner {
 			stacks.put("third", new ImagePlaneDetailsStack [] {
 					makeColorStack(a, new String [] { "third" }, "A"),
 					makeColorStack(b, new String [] { "third" }, "B")});
-			Joiner joiner = new Joiner(Arrays.asList(a, b));
+			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean[1]);
 			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
 			List<ImagePlaneDetails> ipds = new ArrayList<ImagePlaneDetails>();
 			for (ImagePlaneDetailsStack [] stackks:stacks.values())
@@ -322,6 +322,37 @@ public class TestJoiner {
 					}
 				}
 			}
+		} catch (BadFilterExpressionException e) {
+			e.printStackTrace();
+			fail();
+		} catch (JoinerException e) {
+			e.printStackTrace();
+			fail();
+		}
+		
+	}
+	@Test
+	public void testNumericMatching() {
+		// Mark the metadata key as numeric. In this case 10 > 2, if it's a string, it's less.
+		try {
+			Joiner.ChannelFilter a = makeMonoChannelFilter("A", new String [] { "A" }, "file does contain \"A\"");
+			Joiner.ChannelFilter b = makeMonoChannelFilter("B", new String [] { "B" }, "file does contain \"B\"");
+			List<ImagePlaneDetails> ipds = Arrays.asList(
+					makeIPD(a, new String [] { "1"}, "A1"),
+					makeIPD(a, new String [] { "2"}, "A2"),
+					makeIPD(b, new String [] { "10" }, "B10"),
+					makeIPD(b, new String [] { "1" }, "B1"),
+					makeIPD(a, new String [] { "10" }, "A10"),
+					makeIPD(b, new String [] { "2" }, "B2"));
+			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean [] { true });
+			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
+			List<ImageSet> result = joiner.join(ipds, errors);
+			assertSame(ipds.get(0), result.get(0).get(0).get(0, 0));
+			assertSame(ipds.get(1), result.get(1).get(0).get(0, 0));
+			assertSame(ipds.get(2), result.get(2).get(1).get(0, 0));
+			assertSame(ipds.get(3), result.get(0).get(1).get(0, 0));
+			assertSame(ipds.get(4), result.get(2).get(0).get(0, 0));
+			assertSame(ipds.get(5), result.get(1).get(1).get(0, 0));
 		} catch (BadFilterExpressionException e) {
 			e.printStackTrace();
 			fail();

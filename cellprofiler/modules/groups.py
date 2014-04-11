@@ -283,7 +283,7 @@ class Groups(cpm.CPModule):
             self.metadata_keys = []
             self.image_sets_initialized = workspace.refresh_image_set()
             self.metadata_keys = list(
-                self.pipeline.get_available_metadata_keys(workspace))
+                self.pipeline.get_available_metadata_keys().keys())
             is_valid = True
             for group in self.grouping_metadata:
                 try:

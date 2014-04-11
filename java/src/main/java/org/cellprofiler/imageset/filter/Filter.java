@@ -12,6 +12,8 @@
  */
 package org.cellprofiler.imageset.filter;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -23,10 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.cellprofiler.imageset.ImageFile;
-import org.cellprofiler.imageset.ImagePlane;
 import org.cellprofiler.imageset.ImagePlaneDetails;
 import org.cellprofiler.imageset.ImagePlaneDetailsStack;
-import org.cellprofiler.imageset.MetadataExtractor;
 
 /**
  * @author Lee Kamentsky
@@ -82,6 +82,7 @@ public class Filter<C> {
 	final static public Random random = new Random(0);
 	final public FilterPredicate<C, ?> rootPredicate;
 	final private String expression;
+	final private Class<C> klass;
 	/**
 	 * @return maximum number of filters to be cached
 	 */
@@ -104,6 +105,7 @@ public class Filter<C> {
 	 */
 	public Filter(String expression, Class<C> klass) throws BadFilterExpressionException {
 		this.expression = expression;
+		this.klass = klass;
 		String [] rest = new String [1];
 		rootPredicate = parse(expression, klass, rest);
 	}
@@ -122,6 +124,32 @@ public class Filter<C> {
 		throws BadFilterExpressionException {
 		Filter<T> filter = getFilter(expression, klass);
 		return filter.eval(candidate);
+	}
+	
+	/**
+	 * Filter an array of URLs using an ImageFile filter
+	 * 
+	 * @param urls
+	 * @return
+	 * @throws NoSuchMethodException if the filter is not an ImageFile filter
+	 * @throws URISyntaxException if the URL is badly formed
+	 * @throws InvocationTargetException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 * @throws IllegalArgumentException 
+	 */
+	public boolean [] filterURLs(String [] urls) 
+		throws NoSuchMethodException, IllegalArgumentException, InstantiationException, 
+			IllegalAccessException, InvocationTargetException, URISyntaxException {
+		
+		final Constructor<C> c = klass.getConstructor(URI.class);
+		final boolean[] result = new boolean [urls.length];
+		for (int i=0; i<urls.length; i++) {
+			final String url = urls[i];
+			final C f = c.newInstance(new URI(url));
+			result[i] = eval(f);
+		}
+		return result;
 	}
 	
 	/**

@@ -13,7 +13,9 @@
 
 package org.cellprofiler.imageset;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +34,13 @@ public class OMEFileMetadataExtractor implements MetadataExtractor<ImageFile> {
 		// from the OME metadata.
 		final Map<String, String> map = new HashMap<String, String>();
 		return map;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cellprofiler.imageset.MetadataExtractor#getMetadataKeys()
+	 */
+	public List<String> getMetadataKeys() {
+		return Collections.emptyList();
 	}
 
 }

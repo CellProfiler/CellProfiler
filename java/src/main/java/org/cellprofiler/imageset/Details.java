@@ -13,13 +13,13 @@
 
 package org.cellprofiler.imageset;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
+
+import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 /**
  * @author Lee Kamentsky
@@ -112,6 +112,19 @@ public class Details implements Iterable<String> {
 				
 			}
 		};
+	}
+	
+	/**
+	 * Serialize the metadata as a JSON-encoded string
+	 * 
+	 * @return
+	 */
+	public String jsonSerialize() {
+		JsonObjectBuilder d = Json.createObjectBuilder();
+		for (String key:this) {
+			d.add(key, get(key));
+		}
+		return d.build().toString();
 	}
 
 }

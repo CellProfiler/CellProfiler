@@ -103,7 +103,22 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             ("file:/TestImages/003002000.flex",
              'or (directory doesnot endwith "ges") (directory does contain "foo")', False)):
             module.filter.value = filter_value
-            self.assertEqual(module.filter_url(url), expected)
+            self.check(module, url, expected)
+            
+    def check(self, module, url, expected):
+        '''Check filtering of one URL using the module as configured'''
+        pipeline = cpp.Pipeline()
+        pipeline.add_urls([url])
+        module.module_num = 1
+        pipeline.add_module(module)
+        m = cpmeas.Measurements()
+        workspace = cpw.Workspace(pipeline, module, None, None, m, None)
+        file_list = pipeline.get_filtered_file_list(workspace)
+        if expected:
+            self.assertEqual(len(file_list), 1)
+            self.assertEqual(file_list[0], url)
+        else:
+            self.assertEqual(len(file_list), 0)
             
     def test_02_05_filter_standard(self):
         module = I.Images()
@@ -112,6 +127,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             ("file:/TestImages/NikonTIF.tif", True),
             ("file:/foo/.bar/baz.tif", False),
             ("file:/TestImages/foo.bar", False)):
-            self.assertEqual(module.filter_url(url), expected)
+            self.check(module, url, expected)
+
         
         

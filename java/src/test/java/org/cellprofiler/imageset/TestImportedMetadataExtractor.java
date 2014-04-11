@@ -26,11 +26,11 @@ import org.junit.Test;
 
 public class TestImportedMetadataExtractor {
 	private ImportedMetadataExtractor makeExtractor(
-			String csv, KeyPair [] keys, boolean caseInsensitive, boolean expectsFail) {
+			String csv, KeyPair [] keys, boolean expectsFail) {
 		StringReader rdr = new StringReader(csv);
 		ImportedMetadataExtractor extractor = null;
 		try {
-			extractor = new ImportedMetadataExtractor(rdr, keys, caseInsensitive);
+			extractor = new ImportedMetadataExtractor(rdr, keys);
 			assertFalse(expectsFail);
 		} catch (IOException e) {
 			assertTrue(expectsFail);
@@ -54,24 +54,24 @@ public class TestImportedMetadataExtractor {
 	public void testImportedMetadataExtractor() {
 		makeExtractor(
 				"Key1,Key2\n" +
-				"val1,val2\n", new KeyPair [] { new KeyPair("Key1", "Key1") }, false, false);
+				"val1,val2\n", new KeyPair [] { KeyPair.makeCaseSensitiveKeyPair("Key1", "Key1") }, false);
 		makeExtractor(
 				"Key1,Key2\n" +
-				"val1,val2\n", new KeyPair [] { new KeyPair("Key1", "Key3") }, false, false);
+				"val1,val2\n", new KeyPair [] { KeyPair.makeCaseSensitiveKeyPair("Key1", "Key3") }, false);
 	}
 	
 	@Test
 	public void testImportedMetadataExtractorMissingKey() {
 		makeExtractor(
 				"Key1,Key2\n" +
-				"val1,val2\n", new KeyPair [] { new KeyPair("Key3", "Key1") }, false, true);
+				"val1,val2\n", new KeyPair [] { KeyPair.makeCaseSensitiveKeyPair("Key3", "Key1") }, true);
 	}
 	
 	@Test
 	public void testDuplicateKey() {
 		makeExtractor(
 				"Key1,Key1\n" +
-				"val1,val2\n", new KeyPair [] { new KeyPair("Key1", "Key1") }, false, true);
+				"val1,val2\n", new KeyPair [] { KeyPair.makeCaseSensitiveKeyPair("Key1", "Key1") }, true);
 	}
 	
 	@Test
@@ -79,7 +79,7 @@ public class TestImportedMetadataExtractor {
 		ImportedMetadataExtractor extractor = makeExtractor(
 				"Key1,Key2\n" +
 				"val1,val2\n" +
-				"val3,val4\n", new KeyPair [] { new KeyPair("Key1", "Key1a") }, false, false);
+				"val3,val4\n", new KeyPair [] { KeyPair.makeCaseSensitiveKeyPair("Key1", "Key1a") }, false);
 		testSomething(extractor, new String [][] { {"Key1a", "val1"}},
 				new String [][] { {"Key2", "val2" }});
 		testSomething(extractor, new String [][] { {"Key1a", "val3"}},
@@ -93,7 +93,7 @@ public class TestImportedMetadataExtractor {
 		ImportedMetadataExtractor extractor = makeExtractor(
 				"Key1,Key2\n" +
 				"val1,val2\n" +
-				"val3,val4\n", new KeyPair [] { new KeyPair("Key1", "Key1a") }, true, false);
+				"val3,val4\n", new KeyPair [] { KeyPair.makeCaseInsensitiveKeyPair("Key1", "Key1a") }, false);
 		testSomething(extractor, new String [][] { {"Key1a", "val1"}},
 				new String [][] { {"Key2", "val2" }});
 		testSomething(extractor, new String [][] { {"Key1a", "val3"}},
@@ -105,6 +105,21 @@ public class TestImportedMetadataExtractor {
 		testSomething(extractor, new String [][] { {"Key11", "val1"}},
 				new String [0][]);
 	}
+	@Test
+	public void testExtractNumeric() {
+		ImportedMetadataExtractor extractor = makeExtractor(
+				"Key1,Key2\n" +
+				"1,Foo\n" +
+				"02,Bar\n", 
+				new KeyPair [] { KeyPair.makeNumericKeyPair("Key1", "Key1a") },
+				false);
+		testSomething(extractor, 
+				new String [][] { { "Key1a", "01" }}, 
+				new String [][] { { "Key2", "Foo"}});
+		testSomething(extractor, 
+				new String [][] { { "Key1a", "2" }}, 
+				new String [][] { { "Key2", "Bar"}});
+	}
 	
 	@Test
 	public void testTwoKeys() {
@@ -112,8 +127,10 @@ public class TestImportedMetadataExtractor {
 				"Key1,Key2,Key3,Key4\n" +
 				"val11,val21,val31,val41\n" +
 				"val12,val22,val32,val42\n", 
-				new KeyPair [] { new KeyPair("Key1", "Key1"), new KeyPair("Key3", "Key3") },
-				false, false);
+				new KeyPair [] { 
+						KeyPair.makeCaseSensitiveKeyPair("Key1", "Key1"), 
+						KeyPair.makeCaseInsensitiveKeyPair("Key3", "Key3") },
+				false);
 		testSomething(extractor, 
 				new String [][] { {"Key1", "val11"},{"Key3", "val31"}},
 				new String [][] { {"Key2", "val21"},{"Key4", "val41"}});
@@ -123,6 +140,12 @@ public class TestImportedMetadataExtractor {
 		testSomething(extractor, 
 				new String [][] { {"Key1", "val12"},{"Key3", "val31"}},
 				new String [0][]);
+		testSomething(extractor, 
+				new String [][] { {"Key1", "VAL12"},{"Key3", "val32"}},
+				new String [0][]);
+		testSomething(extractor, 
+				new String [][] { {"Key1", "val12"},{"Key3", "VAL32"}},
+				new String [][] { {"Key2", "val22"},{"Key4", "val42"}});
 	}
 
 }

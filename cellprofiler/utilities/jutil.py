@@ -1233,6 +1233,18 @@ def get_nice_result(result, sig):
     if sig == '[B':
         # Convert a byte array into a numpy array
         return env.get_byte_array_elements(result)
+    if sig == '[I':
+        return env.get_int_array_elements(result)
+    if sig == '[J':
+        return env.get_long_array_elements(result)
+    if sig == '[S':
+        return env.get_short_array_elements(result)
+    if sig == '[F':
+        return env.get_float_array_elements(result)
+    if sig == '[D':
+        return env.get_double_array_elements(result)
+    if sig == '[Z':
+        return env.get_boolean_array_elements(result)
     if isinstance(result, javabridge.JB_Object):
         #
         # Do longhand to prevent recursion

@@ -14,6 +14,7 @@ package org.cellprofiler.imageset;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,5 +41,9 @@ public interface MetadataExtractor<T> {
 	 * @return a key / value map of metadata entries
 	 */
 	public Map<String, String> extract(T source);
+	/**
+	 * @return the metadata keys extracted by this extractor
+	 */
+	public List<String> getMetadataKeys();
 
 }

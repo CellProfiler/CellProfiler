@@ -14,7 +14,7 @@ package org.cellprofiler.imageset;
 
 import static org.junit.Assert.*;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.junit.Test;
@@ -48,5 +48,12 @@ public class TestWellMetadataExtractor {
 		}
 		testWellCase(new String [][] {{ "rOW", "A" }, {"cOl", "01"}}, "A01");
 	}
-
+	@Test
+	public void testMaybeYouNeedThis() {
+		assertTrue(WellMetadataExtractor.maybeYouNeedThis(Arrays.asList("row", "column")));
+		assertTrue(WellMetadataExtractor.maybeYouNeedThis(Arrays.asList("row", "COL")));
+		assertTrue(WellMetadataExtractor.maybeYouNeedThis(Arrays.asList("Well_row", "COL")));
+		assertTrue(WellMetadataExtractor.maybeYouNeedThis(Arrays.asList("Well_row", "Foo", "COL")));
+		assertFalse(WellMetadataExtractor.maybeYouNeedThis(Arrays.asList("Well_row", "foo")));
+	}
 }

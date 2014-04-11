@@ -15,6 +15,7 @@ package org.cellprofiler.imageset.filter;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -175,5 +176,37 @@ public class TestFilter {
 		testSomething("image does ismonochrome", Mocks.makeMockMonochromeStack(), true);
 		testSomething("image does isstack", Mocks.makeMockColorStack(3), true);
 		testSomething("image does isstackframe", Mocks.makeMockMonochromeStack(), true);
+	}
+	@Test
+	public void testFilterURLs() {
+		Filter<ImageFile> filter;
+		try {
+			filter = new Filter<ImageFile>("file does contain \"foo\"", ImageFile.class);
+			boolean [] result = filter.filterURLs(
+					new String [] { "http://cellprofiler.org/foo.jpg", "http://cellprofiler.org/bar.jpg" });
+			assertTrue(result[0]);
+			assertFalse(result[1]);
+		} catch (BadFilterExpressionException e) {
+			e.printStackTrace();
+			fail();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			fail();
+		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
+			fail();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+			fail();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+			fail();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+			fail();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			fail();
+		}
 	}
 }

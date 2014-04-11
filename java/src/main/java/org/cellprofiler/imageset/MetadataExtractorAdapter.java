@@ -12,6 +12,7 @@
  */
 package org.cellprofiler.imageset;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,5 +41,12 @@ public abstract class MetadataExtractorAdapter<TIN, TOUT> implements
 	 */
 	public Map<String, String> extract(TIN source) {
 		return subExtractor.extract(get(source));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cellprofiler.imageset.MetadataExtractor#getMetadataKeys()
+	 */
+	public List<String> getMetadataKeys() {
+		return subExtractor.getMetadataKeys();
 	}
 }

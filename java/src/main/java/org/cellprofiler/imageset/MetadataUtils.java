@@ -13,7 +13,6 @@
 package org.cellprofiler.imageset;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,12 +21,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.imglib2.Axis;
-import net.imglib2.meta.Axes;
-import net.imglib2.meta.DefaultTypedAxis;
-import net.imglib2.meta.TypedAxis;
-import ome.xml.model.Image;
-import ome.xml.model.OME;
 import ome.xml.model.Pixels;
 import ome.xml.model.enums.DimensionOrder;
 

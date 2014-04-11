@@ -13,7 +13,10 @@
 
 package org.cellprofiler.imageset;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ome.xml.model.Image;
@@ -38,6 +41,10 @@ public class OMESeriesMetadataExtractor implements
 	final static public String MD_SITE = "Site";
 	final static public String MD_WELL = "Well";
 	final static public String MD_PLATE = "Plate";
+	final static private List<String> metadataKeys =
+		Collections.unmodifiableList(Arrays.asList(
+				MD_SIZE_X, MD_SIZE_Y, MD_SIZE_C,
+				MD_SIZE_T, MD_SIZE_Z, MD_SITE, MD_WELL, MD_PLATE));
 
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.MetadataExtractor#extract(java.lang.Object)
@@ -83,5 +90,11 @@ public class OMESeriesMetadataExtractor implements
 		}
 		rowName = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".charAt(rowIdx % 26) + rowName;
 		return String.format("%s%02d", rowName, colIdx);
+	}
+	/* (non-Javadoc)
+	 * @see org.cellprofiler.imageset.MetadataExtractor#getMetadataKeys()
+	 */
+	public List<String> getMetadataKeys() {
+		return metadataKeys;
 	}
 }

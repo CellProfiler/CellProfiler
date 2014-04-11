@@ -12,7 +12,10 @@
  */
 package org.cellprofiler.imageset;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,45 +28,34 @@ import java.util.Map;
  * superfluous, so it should be conditionally added to the filters.
  */
 public class SeriesIndexMetadataExtractor implements MetadataExtractor<ImagePlane> {
-	final private String seriesFormat;
-	final private String indexFormat;
 	static final public String SERIES_TAG = "Series";
 	static final public String INDEX_TAG = "Frame";
+	static final private String ZERO = "0";
+	static final private List<String> metadataKeys = 
+		Collections.unmodifiableList(Arrays.asList(SERIES_TAG, INDEX_TAG));
 	/**
-	 * Construct an extractor of the image plane series and index. We zero-pad
-	 * the numbers so they sort both alphabetically and numerically
+	 * Construct an extractor of the image plane series and index.
 	 * 
-	 * @param seriesDigits number of digits to use to display series. Zero means
-	 *        do not record series information.
-	 * @param indexDigits number of digits to use to display index. Zero means
-	 *        do not record index information.
 	 */
-	public SeriesIndexMetadataExtractor(int seriesDigits, int indexDigits) {
-		if (seriesDigits == 0) {
-			seriesFormat = null;
-		} else {
-			seriesFormat = String.format("%%0%dd", seriesDigits);
-		}
-		if (indexDigits == 0) {
-			indexFormat = null;
-		} else {
-			indexFormat = String.format("%%0%dd", indexDigits);
-		}
+	public SeriesIndexMetadataExtractor() {
 			
 	}
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.MetadataExtractor#extract(java.lang.Object)
 	 */
 	public Map<String, String> extract(ImagePlane source) {
-		final int nFormats = ((seriesFormat == null)?0:1) + ((indexFormat==null)?0:1);
-		Map<String, String> result = new HashMap<String, String>(nFormats);
-		if (seriesFormat != null) {
-			result.put(SERIES_TAG, String.format(seriesFormat, source.getSeries()));
-		}
-		if (indexFormat != null) {
-			result.put(INDEX_TAG, String.format(indexFormat, source.getIndex()));
-		}
+		Map<String, String> result = new HashMap<String, String>(2);
+		int series = source.getSeries().getSeries();
+		int index = source.getIndex();
+		result.put(SERIES_TAG, (series == 0)? ZERO: StringCache.intern(Integer.toString(series)));
+		result.put(INDEX_TAG, (index == 0)? ZERO: StringCache.intern(Integer.toString(index)));
 		return result;
+	}
+	/* (non-Javadoc)
+	 * @see org.cellprofiler.imageset.MetadataExtractor#getMetadataKeys()
+	 */
+	public List<String> getMetadataKeys() {
+		return metadataKeys;
 	}
 	
 }

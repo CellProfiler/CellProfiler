@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import net.imglib2.meta.Axes;
 import net.imglib2.meta.TypedAxis;
@@ -81,6 +83,7 @@ public class Joiner {
 		 * 
 		 * @param channelName
 		 * @param keys
+		 * @param isNumeric - true if the key's value is treated as numeric during matching and sorting
 		 * @param filter
 		 * @param axes the axes for the filter. Typical choices:
 		 *        Monochrome: PlaneStack.XYAxes
@@ -88,7 +91,7 @@ public class Joiner {
 		 */
 		public ChannelFilter(
 				String channelName, 
-				String [] keys, 
+				String [] keys,
 				Filter<ImagePlaneDetailsStack> filter,
 				TypedAxis ... axes) {
 			this.name = channelName;
@@ -133,11 +136,21 @@ public class Joiner {
 	final private List<ChannelFilter> channels;
 	final private int anchorChannel;
 	final private int nKeys;
-	public Joiner(List<ChannelFilter> channels) throws JoinerException {
+	final private boolean [] isNumeric;
+	/**
+	 * Create a joiner from a list of channel filters
+	 * 
+	 * @param channels channel filters that pick and assemble the image stacks in a channel
+	 * @param isNumeric - for each matching key, true if metadata values should be matched and sorted
+	 *                    numerically, false to match and sort as a string.
+	 * @throws JoinerException
+	 */
+	public Joiner(List<ChannelFilter> channels, boolean [] isNumeric) throws JoinerException {
 		if (channels.size() == 0) {
 			throw new JoinerException("The image set must have at least one channel");
 		}
 		this.channels = new ArrayList<ChannelFilter>(channels);
+		this.isNumeric = isNumeric;
 		int anchorChannel = -1;
 		nKeys = channels.get(0).getKeys().length;
 		for (int i=0; i<channels.size(); i++) {
@@ -155,11 +168,37 @@ public class Joiner {
 		}
 		this.anchorChannel = anchorChannel;
 	}
-
+	
 	static private <T> List<T> getListOfNulls(int nElements) {
 		List<T> result = new ArrayList<T>(nElements);
 		for (int i=0; i<nElements; i++) result.add(null);
 		return result;
+	}
+	/**
+	 * @author Lee Kamentsky
+	 *
+	 * A class to compare channel key sets against each other
+	 * 
+	 * A null key matches anything.
+	 * Other keys are matched on either a numeric or string basis
+	 * depending on whether the key is interpreted numerically or not.
+	 */
+	protected class MetadataComparator implements Comparator<List<String>> {
+
+		public int compare(List<String> o1, List<String> o2) {
+			for (int i=0; i<isNumeric.length; i++) {
+				final String s1 = o1.get(i);
+				if (s1 == null) continue;
+				final String s2 = o2.get(i);
+				if (s2 == null) continue;
+				final int cmp = (isNumeric[i])?
+						Double.valueOf(s1).compareTo(Double.valueOf(s2)):
+						s1.compareTo(s2);
+				if (cmp != 0) return cmp;
+			}
+			return 0;
+		}
+		
 	}
 	/**
 	 * Join the image plane descriptors to make an image set list
@@ -170,8 +209,8 @@ public class Joiner {
 	 * @return a list of image sets.
 	 */
 	public List<ImageSet> join(List<ImagePlaneDetails> ipds, Collection<ImageSetError> errors) {
-		Map<List<String>, List<ImagePlaneDetailsStack>> result = 
-			new HashMap<List<String>, List<ImagePlaneDetailsStack>>();
+		SortedMap<List<String>, List<ImagePlaneDetailsStack>> result = 
+			new TreeMap<List<String>, List<ImagePlaneDetailsStack>>(new MetadataComparator());
 		/*
 		 * Do the anchor channel first.
 		 */
@@ -233,25 +272,11 @@ public class Joiner {
 			}
 		}
 		/*
-		 * At the end, sort into a list by alphabetical metadata tag value
-		 */
-		List<List<String>> keysInOrder = new ArrayList<List<String>>(result.keySet());
-		Collections.sort(keysInOrder, new Comparator<List<String>>() {
-
-			public int compare(List<String> o1, List<String> o2) {
-				for (int i=0; i<Math.min(o1.size(), o2.size()); i++) {
-					int result = o1.get(i).compareTo(o2.get(i));
-					if (result != 0) return result;
-				}
-				return o1.size() - o2.size();
-			}
-		});
-		/*
 		 * Construct the final list
 		 */
-		List<ImageSet> imageSet = new ArrayList<ImageSet>(keysInOrder.size());
-		for (List<String> key:keysInOrder) {
-			imageSet.add(new ImageSet(result.get(key), key));
+		List<ImageSet> imageSet = new ArrayList<ImageSet>(result.size());
+		for (Map.Entry<List<String>, List<ImagePlaneDetailsStack>> entry:result.entrySet()) {
+			imageSet.add(new ImageSet(entry.getValue(), entry.getKey()));
 		}
 		return imageSet;
 	}

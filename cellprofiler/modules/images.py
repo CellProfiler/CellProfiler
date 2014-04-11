@@ -219,14 +219,6 @@ class Images(cpm.CPModule):
             result.insert(0, part)
             path = new_path
             
-    def filter_url(self, url):
-        '''Return True if a URL passes the module's filter'''
-        if self.filter_choice == FILTER_CHOICE_NONE:
-            return True
-        elif self.filter_choice == FILTER_CHOICE_IMAGES:
-            return evaluate_url(None, url)
-        return evaluate_url(self.filter, url)
-    
     def settings(self):
         return [self.path_list_display, self.filter_choice, self.filter]
     
@@ -259,22 +251,32 @@ class Images(cpm.CPModule):
         '''Create an IPD for every url that passes the filter'''
         if workspace.pipeline.in_batch_mode():
             return True
+        file_list = workspace.pipeline.file_list
         if self.filter_choice != FILTER_CHOICE_NONE:
             if self.filter_choice == FILTER_CHOICE_IMAGES:
                 expression = FILTER_DEFAULT
             else:
                 expression = self.filter.value_text
             env = J.get_env()
-            jexpression = env.new_string_utf(expression)
-            filter_fn = J.make_static_call(
+            ifcls = J.class_for_name("org.cellprofiler.imageset.ImageFile")
+            scls = env.find_class("java/lang/String")
+            iffilter = J.make_instance(
                 "org/cellprofiler/imageset/filter/Filter",
-                "filter", "(Ljava/lang/String;Ljava/lang/String;)Z")
-            ipds = filter(
-                lambda ipd:filter_fn(jexpression, env.new_string_utf(ipd.url)), 
-                workspace.pipeline.image_plane_details)
-        else:
-            ipds = workspace.pipeline.image_plane_details
-        workspace.pipeline.set_filtered_image_plane_details(ipds, self)
+                "(Ljava/lang/String;Ljava/lang/Class;)V",
+                expression, ifcls)
+            file_array = env.make_object_array(len(file_list), scls)
+            for i, url in enumerate(file_list):
+                if isinstance(url, unicode):
+                    ourl = env.new_string(url)
+                else:
+                    ourl = env.new_string_utf(url)
+                env.set_object_array_element(file_array, i, ourl)
+            passes_filter = J.call(
+                iffilter, "filterURLs", 
+                "([Ljava/lang/String;)[Z", file_array)
+            file_list = [f for f, passes in zip(file_list, passes_filter)
+                         if passes]
+        workspace.pipeline.set_filtered_file_list(file_list, self)
         return True
         
     def run(self, workspace):
@@ -513,44 +515,3 @@ class ImagePredicate(cps.Filter.FilterPredicate):
         self((cps.FileCollectionDisplay.NODE_FILE, 
               ["/imaging", "test.tif"], self.FakeModule()), *args)
 
-filter_class = None
-filter_method_id = None
-def evaluate_url(filtr, url):
-    '''Evaluate a URL using a setting's filter
-    
-    filtr - the filter setting to use for custom filtering or None to use
-            the canned filter expression
-            
-    url - URL to filter
-    '''
-    global filter_class, filter_method_id
-    env = J.get_env()
-    if filter_class is None:
-        filter_class = env.find_class("org/cellprofiler/imageset/filter/Filter")
-        if filter_class is None:
-            jexception = get_env.exception_occurred()
-            raise J.JavaException(jexception)
-        filter_method_id = env.get_static_method_id(
-            filter_class,
-            "filter", 
-            "(Ljava/lang/String;Ljava/lang/String;)Z")
-        if filter_method_id is None:
-            raise JavaError("Could not find static method, org.cellprofiler.imageset.filter.Filter.filter(String, String)")
-    try:
-        if filtr is None:
-            expression = FILTER_DEFAULT
-        else:
-            expression = filtr.value_text
-        if isinstance(expression, unicode):
-            expression = expression.encode("utf-8")
-        if isinstance(url, unicode):
-            url = url.encode("utf-8")
-        return env.call_static_method(
-            filter_class, filter_method_id, 
-            env.new_string_utf(expression), env.new_string_utf(url))
-    except J.JavaException as e:
-        if J.is_instance_of(
-            e.throwable, "org/cellprofiler/imageset/filter/Filter$BadFilterExpressionException"):
-            raise
-        return False
-    

@@ -123,7 +123,7 @@ public class TestImagePlaneMetadataExtractor {
 	}
 	
 	@Test
-	public void testExtractMetadata() {
+	public void testExtractMetadataOME() {
 		/*
 		 * Test the big extract method
 		 * 
@@ -186,5 +186,59 @@ public class TestImagePlaneMetadataExtractor {
 		} catch (URISyntaxException e) {
 			fail();
 		}
+	}
+	@Test
+	public void testExtractMetadataNoOME() {
+		try {
+			ImagePlaneMetadataExtractor x = new ImagePlaneMetadataExtractor();
+			Filter<ImageFile> filter = new Filter<ImageFile>(
+					"file does contain \"A02\"", ImageFile.class);
+			x.addImagePlaneExtractor(new OMEPlaneMetadataExtractor());
+			x.addImageSeriesExtractor(new OMESeriesMetadataExtractor());
+			x.addFileNameRegexp("(?P<WellName>[A-H][0-9]{2})", filter);
+			String [] urls = {
+					new File(System.getProperty("user.home"), "Image_A01.tif").toURI().toString(),
+					new File(System.getProperty("user.home"), "Image_A02.tif").toURI().toString() };
+			Set<String> keysOut = new HashSet<String>();
+					
+			ImagePlaneDetails [] ipds = x.extract(urls, new String [2], keysOut);
+			for (String key:new String [] {"WellName"}) {
+				assertTrue(keysOut.contains(key));
+			}
+			assertEquals(ipds.length,  urls.length);
+			assertFalse(ipds[0].containsKey("WellName"));
+			assertEquals(ipds[1].get("WellName"), "A02");
+			for (int i=0; i<urls.length; i++) {
+				ImagePlaneDetails ipd = ipds[i];
+				ImagePlane plane = ipd.getImagePlane();
+				ImageSeries series = plane.getSeries();
+				ImageFile file = series.getImageFile();
+				assertEquals(file.getURI().toString(), urls[i]);
+				assertEquals(plane.getIndex(), 0);
+				assertEquals(plane.getChannel(), ImagePlane.ALWAYS_MONOCHROME);
+				assertEquals(series.getSeries(), 0);
+			}
+		} catch (BadFilterExpressionException e) {
+			e.printStackTrace();
+			fail();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			fail();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+			fail();
+		} catch (SAXException e) {
+			e.printStackTrace();
+			fail();
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail();
+		} catch (DependencyException e) {
+			e.printStackTrace();
+			fail();
+		} catch (ServiceException e) {
+			e.printStackTrace();
+			fail();
+		}		
 	}
 }

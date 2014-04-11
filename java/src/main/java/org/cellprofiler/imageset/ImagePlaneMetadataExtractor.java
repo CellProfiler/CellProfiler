@@ -16,9 +16,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -98,12 +97,37 @@ public class ImagePlaneMetadataExtractor  {
 	final private List<ExtractorFilterPair<ImagePlane>> planeExtractors =
 		new ArrayList<ExtractorFilterPair<ImagePlane>>();
 	
+	final private List<ExtractorFilterPair<ImagePlaneDetails>> planeDetailsExtractors = 
+		new ArrayList<ExtractorFilterPair<ImagePlaneDetails>>();
+	
 	final private Map<ImageFile, ImageFileDetails> mapImageFileToDetails =
 		new IdentityHashMap<ImageFile, ImageFileDetails>();
 	
 	final private Map<ImageSeries, ImageSeriesDetails> mapImageSeriesToDetails =
 		new IdentityHashMap<ImageSeries, ImageSeriesDetails>();
 	
+	/**
+	 * Add a conditional extractor that takes an ImagePlaneDetails and
+	 * only operates on files that pass a filter
+	 * @param extractor extracts metadata from ImagePlaneDetails
+	 * @param filter filter to choose which ImageFiles on which to apply the filter
+	 */
+	public void addImagePlaneDetailsExtractor(
+			MetadataExtractor<ImagePlaneDetails> extractor,
+			Filter<ImageFile> filter) {
+		planeDetailsExtractors.add(
+				new ExtractorFilterPair<ImagePlaneDetails>(
+						extractor, filter, ImagePlaneDetails.class));
+	}
+	/**
+	 * Add an unconditional extractor of metadata from ImagePlaneDetails objects
+	 * 
+	 * @param extractor
+	 */
+	public void addImagePlaneDetailsExtractor(
+			MetadataExtractor<ImagePlaneDetails> extractor) {
+		addImagePlaneDetailsExtractor(extractor, null);
+	}
 	/**
 	 * Add a conditional extractor that takes an ImagePlane and only operates on
 	 * IPDs that pass a filter
@@ -196,6 +220,18 @@ public class ImagePlaneMetadataExtractor  {
 	}
 	
 	/**
+	 * Augment the metadata of an ImagePlaneDetails object using
+	 * the metadata extracted by this extractor
+	 * 
+	 * @param details
+	 */
+	public void extract(ImagePlaneDetails details) {
+		for (ExtractorFilterPair<ImagePlaneDetails> efp:planeDetailsExtractors){
+			efp.extract(details, details.getImagePlane().getImageFile(), details);
+		}
+	}
+	
+	/**
 	 * Extract metadata from an image plane.
 	 * 
 	 * This routine will also calculate series and file metadata
@@ -216,6 +252,9 @@ public class ImagePlaneMetadataExtractor  {
 		ImagePlaneDetails ipd = new ImagePlaneDetails(plane, seriesDetails);
 		for (ExtractorFilterPair<ImagePlane> efp:planeExtractors) {
 			efp.extract(plane, file, ipd);
+		}
+		for (ExtractorFilterPair<ImagePlaneDetails> efp:planeDetailsExtractors) {
+			efp.extract(ipd, file, ipd);
 		}
 		return ipd;
 	}
@@ -259,6 +298,7 @@ public class ImagePlaneMetadataExtractor  {
 	 * encoded as an array of URL-encoded strings
 	 * 
 	 * @param urls - the image locations encoded as URLs
+	 * @param metadata - the OME XML data for each URL or null if not obtained
 	 * @param keysOut - on input, an empty set, on output, the set of all metadata keys extracted.
 	 * @return the extracted image plane details.
 	 * @throws URISyntaxException 
@@ -287,10 +327,28 @@ public class ImagePlaneMetadataExtractor  {
 						for (String key:ipd) keysOut.add(key);
 					}
 				}
+			} else {
+				// If no OME XML, guess at one plane / one series
+				final ImagePlane imagePlane = ImagePlane.makeMonochromePlane(imageFile);
+				final ImagePlaneDetails ipd = extract(imagePlane);
+				result.add(ipd);
+				for (String key:ipd) keysOut.add(key);
 			}
 		}
-		
-		return result.toArray(new ImagePlaneDetails[0]);
+		return (ImagePlaneDetails[]) result.toArray(new ImagePlaneDetails[result.size()]);
 	}
-
+	/**
+	 * @return the metadata keys possibly extracted by the extractors.
+	 */
+	public List<String> getMetadataKeys() {
+		Set<String> keys = new HashSet<String>();
+		for (List<ExtractorFilterPair<?>> efs:new List [] {
+				this.fileExtractors, this.seriesExtractors, 
+				this.planeExtractors, this.planeDetailsExtractors}) {
+			for (ExtractorFilterPair<?> ef:efs) {
+				keys.addAll(ef.extractor.getMetadataKeys());
+			}
+		}
+		return new ArrayList<String>(keys);
+	}
 }

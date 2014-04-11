@@ -3516,14 +3516,13 @@ class DataTypes(Setting):
         '''
         result = json.loads(self.value_text)
         if self.__name_fn is not None:
-            names = self.__name_fn()
-            for rname in result.keys():
-                if rname not in names:
-                    del result[rname]
-            for name in names:
-                if name not in result:
-                    result[name] = self.DT_TEXT
+            for name in self.__name_fn():
+                result[name] = self.DT_TEXT
         return result
+    
+    @staticmethod
+    def decode_data_types(s):
+        return json.loads(s)
     
     @staticmethod
     def encode_data_types(d):

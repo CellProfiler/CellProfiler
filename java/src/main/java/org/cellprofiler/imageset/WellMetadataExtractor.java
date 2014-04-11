@@ -36,6 +36,7 @@ public class WellMetadataExtractor implements
 	final static public String WELL = "Well";
 	final static private List<String> rowKeys = Arrays.asList("wellrow", "well_row", "row");
 	final static private List<String> columnKeys = Arrays.asList("wellcol", "well_col", "wellcolumn", "well_column", "column", "col");
+	final static private List<String> metadataKeys = Collections.singletonList(WELL);
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.MetadataExtractor#extract(java.lang.Object)
 	 */
@@ -55,6 +56,32 @@ public class WellMetadataExtractor implements
 			return Collections.singletonMap(WELL, StringCache.intern(wellRow + wellColumn));
 		}
 		return emptyMap;
+	}
+	/* (non-Javadoc)
+	 * @see org.cellprofiler.imageset.MetadataExtractor#getMetadataKeys()
+	 */
+	public List<String> getMetadataKeys() {
+		return metadataKeys;
+	}
+	/**
+	 * Determines whether you might need the WellMetadataExtractor
+	 * as part of your extractor chain, based on the other
+	 * keys in your extractor.
+	 * 
+	 * @param keys - the keys in your extractor.
+	 * @return true if the WellMetadataExtractor might be able
+	 * to construct a well name from your other metadata
+	 */
+	public static boolean maybeYouNeedThis(List<String> keys) {
+		// Must have one of each of a row and column key
+		top_loop:
+		for (List<String> targetList:new List[] {rowKeys, columnKeys}) {
+			for (String key:keys) {
+				if (targetList.contains(key.toLowerCase())) continue top_loop;
+			}
+			return false;
+		}
+		return true;
 	}
 
 }

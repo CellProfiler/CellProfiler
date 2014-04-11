@@ -46,7 +46,6 @@ import re
 
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
-import cellprofiler.cpmodule
 import cellprofiler.preferences as cpprefs
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
@@ -58,6 +57,7 @@ from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_
 from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
 from bioformats.omexml import OMEXML
 import cellprofiler.utilities.version as cpversion
+import cellprofiler.utilities.jutil as J
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = cpmeas.IMAGE_NUMBER
@@ -436,27 +436,16 @@ class ImagePlaneDetails(object):
     MD_SIZE_C = "SizeC"
     MD_SIZE_Z = "SizeZ"
     MD_SIZE_T = "SizeT"
+    MD_SIZE_X = "SizeX"
+    MD_SIZE_Y = "SizeY"
     MD_C = "C"
     MD_Z = "Z"
     MD_T = "T"
     MD_CHANNEL_NAME = "ChannelName"
     
-    def __init__(self, url, series, index, channel, metadata={}):
-        self.url = url
-        self.series = series
-        self.index = index
-        self.channel = channel
-        self.metadata = dict(metadata)
-        self.jipd = None
+    def __init__(self, jipd):
+        self.jipd = jipd
         
-    def __cmp__(self, other):
-        '''A stable comparison method for sorting'''
-        if isinstance(other, basestring):
-            return cmp(self.url, other)
-        assert isinstance(other, ImagePlaneDetails)
-        return (cmp(self.url, other.url) or cmp(self.series, other.series) or
-                cmp(self.index, other.index) or cmp(self.channel, other.channel))
-    
     @property
     def path(self):
         '''The file path if a file: URL, otherwise the URL'''
@@ -464,57 +453,57 @@ class ImagePlaneDetails(object):
             return urllib.url2pathname(self.url[5:]).decode('utf8')
         return self.url
     
-    @staticmethod
-    def serialize_metadata(ipds):
-        '''Serialize metadata and series / index / channel to json
-        
-        Writes a json string that can be used, in conjunction with the URL,
-        to recreate the IPDs associated with a URL
-        
-        ipds - the sequence of image plane descriptors for a URL of an image file
-        '''
-        return json.dumps(
-            [(ipd.series, ipd.index, ipd.channel, ipd.metadata)
-             for ipd in ipds])
+    @property
+    def url(self):
+        return J.run_script(
+            "o.getImagePlane().getImageFile().getURI().toString()",
+            dict(o = self.jipd))
     
-    @staticmethod
-    def deserialize_metadata(url, data):
-        '''Return the list of IPDs for a particular URL, given serialized metadata
-        
-        url - url for the IPD
-        data - the serialized metadata produced by the call to serialize_metadata
-        
-        returns all IPDs serialized for the URL
-        '''
-        ipd_data = json.loads(data)
-        return [ImagePlaneDetails(url, series, index, channel, metadata)
-                for series, index, channel, metadata in ipd_data]
-        
-def read_image_plane_details(file_or_fd):
-    """Read image plane details from a file or file object
+    @property
+    def series(self):
+        return J.run_script(
+            "o.getImagePlane().getSeries().getSeries()",
+            dict(o = self.jipd))
+    
+    @property
+    def index(self):
+        return J.run_script("o.getImagePlane().getIndex()",
+                            dict(o = self.jipd))
+    
+    @property
+    def channel(self):
+        return J.run_script("o.getImagePlane().getChannel()",
+                            dict(o = self.jipd))
+    @property
+    def metadata(self):
+        return json.loads(
+            J.call(self.jipd, "jsonSerialize", "()Ljava/lang/String;"))
+    
+def read_file_list(file_or_fd):
+    """Read a file list from a file or file object
     
     file_or_fd - either a path string or a file-like object
     
-    Returns a collection of ImagePlaneDetails
+    Returns a collection of urls
 
     The unicode text for each field is utf-8 encoded, then string_escape encoded.
     All fields are delimited by quotes and separated by commas. A "None" value is
-    represented by two consecutive commas.
+    represented by two consecutive commas. The series, index, and channel
+    are no longer set, so the URL is followed by three commas.
     
     There are two header lines. The first header line has key/value pairs.
     Required key/value pairs are "Version" and "PlaneCount". "Version" is
     the format version. "PlaneCount" is the number of image planes to be
     read or saved.
     
-    The second header line defines the column names for the rows. The first
-    four column names are "URL", "Series", "Index", "Channel". They are only
-    there for documentation - you can call your metadata "Channel" too.
+    The second header line is legacy at this point - it used to specify
+    a particular image plane in the file, but doesn't do that any longer.
     
     A minimal example:
     
     "Version":"1","PlaneCount":"1"
-    "URL","Series","Index","Channel","Plate","Well"
-    "file:///imaging/analysis/singleplane.tif","0","0",0,"P-12345","A01"
+    "URL","Series","Index","Channel"
+    "file:///imaging/analysis/singleplane.tif",,,
     """
     
     if isinstance(file_or_fd, basestring):
@@ -540,32 +529,22 @@ def read_image_plane_details(file_or_fd):
             fields = [None if x is None else x.decode('string-escape')
                       for x in fields]
             url = fields[0]
-            series, index, channel = [None if x is None else int(x) 
-                                      for x in fields[1:4]]
-            metadata = dict([(k, v.decode("utf-8"))
-                             for k,v in zip(header[4:], fields[4:])
-                             if v is not None])
-            result.append(
-                ImagePlaneDetails(url, series, index, channel, metadata))
+            result.append(url)
         return result
     finally:
         if needs_close:
             fd.close()
             
-def write_image_plane_details(file_or_fd, ipds):
-    '''Write the image plane details out to a file.
+def write_file_list(file_or_fd, file_list):
+    '''Write the file list out to a file.
     
     See read_image_plane_details for the file format.
     
     file_or_fd - a path or a file like object
     
-    ipds - a list of image plane descriptors.
+    file_list - collection of URLs to be output
     
     '''
-    metadata_columns = set()
-    for ipd in ipds:
-        metadata_columns.update(ipd.metadata.keys())
-    metadata_columns = list(sorted(metadata_columns))
     if isinstance(file_or_fd, basestring):
         fd = open(file_or_fd, "w")
         needs_close = True
@@ -574,22 +553,14 @@ def write_image_plane_details(file_or_fd, ipds):
         needs_close = False
     try:
         fd.write('"%s":"%d","%s":"%d"\n' % (
-            H_VERSION, IMAGE_PLANE_DESCRIPTOR_VERSION, H_PLANE_COUNT, len(ipds)))
-        fd.write('"'+'","'.join([
-            H_URL, H_SERIES, H_INDEX, H_CHANNEL] + metadata_columns) + '"\n')
-        for ipd in ipds:
-            assert isinstance(ipd, ImagePlaneDetails)
-            fields = [ipd.url]
-            fields += [unicode(x) if x is not None else None 
-                       for x in (ipd.series, ipd.index, ipd.channel)]
-            fields += [unicode(ipd.metadata[k]) if ipd.metadata.has_key(k) else None
-                       for k in metadata_columns]
-            line = ",".join(['"%s"' % 
-                             v.encode("utf-8")
-                              .encode("string_escape")
-                              .replace('"',r'\"')
-                             if v is not None else ""
-                             for v in fields]) + "\n"
+            H_VERSION, IMAGE_PLANE_DESCRIPTOR_VERSION, H_PLANE_COUNT,
+            len(file_list)))
+        fd.write('"'+'","'.join([H_URL, H_SERIES, H_INDEX, H_CHANNEL]) + '"\n')
+        for url in file_list:
+            if isinstance(url, unicode):
+                url = url.encode("utf-8")
+            url = url.encode("string_escape").replace('"',r'\"')
+            line = "\"%s\",,,\n" % url
             fd.write(line)
     finally:
         if needs_close:
@@ -660,12 +631,27 @@ class Pipeline(object):
         self.__settings = []
         self.__undo_stack = []
         self.__undo_start = None
+        # The file list is the list of URLs operated on by the
+        # input modules
+        self.__file_list = []
+        #
+        # A cookie that's shared between the workspace and pipeline
+        # and is used to figure out whether the two are synchronized
+        #
+        self.__file_list_generation = None
+        #
+        # The filtered file list is the list of URLS after filtering using
+        # the Images module. The images settings are used to determine
+        # whether the cache is valid
+        #
+        self.__filtered_file_list = []
+        self.__filtered_file_list_images_settings = tuple()
+        #
+        # The image plane details are generated by the metadata module
+        # from the file list
+        #
         self.__image_plane_details = []
-        self.__image_plane_details_generation = -1
-        self.__filtered_image_plane_details = []
-        self.__filtered_image_plane_details_images_settings = tuple()
-        self.__filtered_image_plane_details_with_metadata = []
-        self.__filtered_image_plane_details_metadata_settings = tuple()
+        self.__image_plane_details_metadata_settings = tuple()
         
         self.file_walker = WalkCollection(self.on_walk_completed)
         self.__undo_stack = []
@@ -1140,8 +1126,8 @@ class Pipeline(object):
                 new_modules.append(module)
                 module_number += 1
         if has_image_plane_details:
-            self.__image_plane_details = read_image_plane_details(fd)
-            self.__filtered_image_plane_details_images_settings = None
+            self.__file_list = read_file_list(fd)
+            self.__filtered_file_list_images_settings = None
             self.__filtered_image_plane_details_metadata_settings = None
             
         self.__modules = new_modules
@@ -1151,7 +1137,7 @@ class Pipeline(object):
             module.post_pipeline_load(self)
         self.notify_listeners(PipelineLoadedEvent())
         if has_image_plane_details:
-            self.notify_listeners(ImagePlaneDetailsAddedEvent(
+            self.notify_listeners(URLsAddedEvent(
                 self.__image_plane_details))
         self.__undo_stack = []
         
@@ -1273,7 +1259,7 @@ class Pipeline(object):
                     self.encode_txt(utf16encode(setting.unicode_value))))
         if save_image_plane_details:
             fd.write("\n")
-            write_image_plane_details(fd, self.__image_plane_details)
+            write_file_list(fd, self.__file_list)
         if needs_close:
             fd.close()
         
@@ -2478,102 +2464,87 @@ class Pipeline(object):
                 ("Show" if state else "Hide"), module.module_name)
             self.__undo_stack.append((undo, message))
         
-    def add_image_plane_details(self, details_list, add_undo = True):
+    def add_urls(self, urls, add_undo = True):
+        '''Add URLs to the file list
+        
+        urls - a collection of URLs
+        add_undo - True to add the undo operation of this to the undo stack
+        '''
         real_list = []
-        details_list = sorted(details_list)
+        urls = sorted(urls)
         start = 0
         uid = uuid.uuid4()
-        n = len(details_list)
-        for i, details in enumerate(details_list):
+        n = len(urls)
+        for i, url in enumerate(urls):
             if i % 100 == 0:
+                path = urlparse.urlparse(url).path
+                if "/" in path:
+                    filename = path.rsplit("/", 1)[1]
+                else:
+                    filename = path
+                filename = urllib.url2pathname(filename)
                 cpprefs.report_progress(
                     uid, float(i) / n,
-                    "Adding %s" % details.path)
-            pos = bisect.bisect_left(self.image_plane_details, details, start)
-            if (pos == len(self.image_plane_details) or 
-                cmp(self.image_plane_details[pos], details)):
-                real_list.append(details)
-                self.image_plane_details.insert(pos, details)
+                    u"Adding %s" % filename)
+            pos = bisect.bisect_left(self.__file_list, url, start)
+            if (pos == len(self.file_list) or 
+                self.__file_list[pos] == url):
+                real_list.append(url)
+                self.__file_list.insert(pos, url)
             start = pos
         if n > 0:
             cpprefs.report_progress(uid, 1, "Done")
         # Invalidate caches
-        self.__filtered_image_plane_details_images_settings = None
-        self.__filtered_image_plane_details_metadata_settings = None
-        self.notify_listeners(ImagePlaneDetailsAddedEvent(real_list))
+        self.__file_list_generation = uid
+        self.__filtered_file_list_images_settings = None
+        self.__image_plane_details_metadata_settings = None
+        self.notify_listeners(URLsAddedEvent(real_list))
         if add_undo:
             def undo():
-                self.remove_image_plane_details(real_list)
+                self.remove_urls(real_list)
             self.__undo_stack.append((undo, "Add images"))
         
-    def remove_image_plane_details(self, details_list):
+    def remove_urls(self, urls):
         real_list = []
-        details_list = sorted(details_list)
+        urls = sorted(urls)
         start = 0
-        for details in details_list:
-            pos = bisect.bisect_left(self.image_plane_details, details, start)
-            if (pos != len(self.image_plane_details) and
-                cmp(self.image_plane_details[pos], details) == 0):
-                details.jipd = None
-                real_list.append(details)
-                del self.image_plane_details[pos]
+        for url in urls:
+            pos = bisect.bisect_left(self.__file_list, url, start)
+            if (pos != len(self.__file_list) and
+                self.__file_list[pos] == url):
+                real_list.append(url)
+                del self.__file_list[pos]
             start = pos
         if len(real_list):
-            self.__filtered_image_plane_details_images_settings = None
-            self.__filtered_image_plane_details_metadata_settings = None
-            self.notify_listeners(ImagePlaneDetailsRemovedEvent(real_list))
+            self.__filtered_file_list_images_settings = None
+            self.__image_plane_details_metadata_settings = None
+            self.__image_plane_details = []
+            self.__file_list_generation = uuid.uuid4()
+            self.notify_listeners(URLsRemovedEvent(real_list))
             def undo():
-                self.add_image_plane_details(real_list, False)
+                self.add_urls(real_list, False)
             self.__undo_stack.append((undo, "Remove images"))
             
-    def clear_image_plane_details(self):
-        '''Remove the image plane details from the pipeline'''
-        old_ipds = list(self.__image_plane_details)
-        self.__image_plane_details = []
-        self.notify_listeners(ImagePlaneDetailsRemovedEvent(old_ipds))
-        if len(old_ipds):
-            self.notify_listeners(ImagePlaneDetailsRemovedEvent(old_ipds))
-            for ipd in old_ipds:
-                ipd.jipd = None
+    def clear_urls(self):
+        '''Remove all URLs from the pipeline'''
+        old_urls = list(self.__file_list)
+        self.__file_list = []
+        if len(old_urls):
+            self.__filtered_file_list_images_settings = None
+            self.__image_plane_details_metadata_settings = None
+            self.__image_plane_details = []
+            self.notify_listeners(URLsRemovedEvent(old_urls))
             def undo():
                 self.add_image_plane_details(old_ipds, False)
             self.__undo_stack.append((undo, "Remove images"))
             
-    def remove_image_plane_url(self, url):
-        pos = bisect.bisect_left(self.image_plane_details, url)
-        end = pos
-        while True:
-            if end == len(self.image_plane_details):
-                break
-            if (self.image_plane_details[end].url != url and not
-                self.image_plane_details[end].url.startswith(url + "/")):
-                break
-            end += 1
-        if end > pos:
-            removed = self.image_plane_details[pos:end]
-            del self.image_plane_details[pos:end]
-            self.notify_listeners(ImagePlaneDetailsRemovedEvent(removed))
-            for ipd in removed:
-                ipd.jipd = None
-            def undo():
-                self.add_image_plane_details(removed)
-            self.__undo_stack.append((undo, "Remove images"))
-        
-    def find_image_plane_details(self, exemplar, ipds = None):
-        '''Return the image plane details record that matches the exemplar
-        
-        exemplar - an image plane details record with the desired URL,
-                   series, index and channel
-        '''
-        return find_image_plane_details(exemplar, self.image_plane_details)
-    
-    def load_image_plane_details(self, workspace):
-        '''Load the pipeline's image plane details from the workspace file list
+    def load_file_list(self, workspace):
+        '''Load the pipeline's file_list from the workspace file list
         
         '''
         file_list = workspace.file_list
-        if self.__image_plane_details_generation == file_list.generation:
-            return self.__image_plane_details
+        if self.__file_list_generation == file_list.generation:
+            return
         try:
             urls = file_list.get_filelist()
         except Exception, instance:
@@ -2582,101 +2553,107 @@ class Pipeline(object):
             self.notify_listeners(x)
             if x.cancel_run:
                 raise instance
-            
-        self.clear_image_plane_details()
+        self.start_undoable_action()
+        self.clear_urls()
+        self.add_urls(file_list)
+        self.stop_undoable_action(name="Load file list")
         self.__filtered_image_plane_details_images_settings = tuple()
         self.__filtered_image_plane_details_metadata_settings = tuple()
         self.__image_plane_details_generation = file_list.generation
-        self.add_image_plane_details(cpprefs.map_report_progress(
-            lambda url: ImagePlaneDetails(url.encode('utf-8'), None, None, None),
-            lambda url: "Converting image URL: %s" % url,
-            urls), False)
-        bypass_exceptions = False
-        n_ipds = len(self.image_plane_details)
-        uid = uuid.uuid4()
-        # Need to copy list - it gets changed if planes added
-        ipds = list(self.image_plane_details)
-        for i, ipd in enumerate(ipds):
-            if i % 100 == 0:
-                cpprefs.report_progress(
-                    uid, float(i) / n_ipds,
-                    "Importing %s " % ipd.path)
-            try:
-                metadata = file_list.get_metadata(ipd.url)
-                if metadata is not None:
-                    self.add_image_metadata(ipd.url, OMEXML(metadata))
-            except Exception, instance:
-                message = "Failed to load metadata for %s" % ipd.path
-                logger.error(message, exc_info=True)
-                if bypass_exceptions:
-                    continue
-                x = IPDLoadExceptionEvent(message)
-                self.notify_listeners(x)
-                if x.cancel_run:
-                    raise instance
-                else:
-                    bypass_exceptions = True
-        if len(self.image_plane_details) > 0:
-            cpprefs.report_progress(uid, 1, "Done")
     
-    def filter_urls(self, urls):
-        '''Filter URLs using the Images module'''
-        images_modules = [module for module in self.modules()
-                          if module.module_name == "Images"]
-        if (len(images_modules) > 0):
-            images_module = images_modules[0]
-            return filter(images_module.filter_url, urls)
-        return urls
-    
-    def get_filtered_image_plane_details(self, workspace, with_metadata = False):
-        '''Return the image plane details that pass the Images filter
+    def get_module_state(self, module_name_or_module):
+        '''Return an object representing the state of the named module
         
-        with_metadata - if True, use the Metadata module to copy the
-                        ipds and add metadata to them.
+        module_name - the name of the module
+        
+        returns an object that represents the state of the first instance
+        of the named module or None if not in pipeline
         '''
-        images_modules = [module for module in self.modules()
-                          if module.module_name == "Images"]
-        if (len(images_modules) > 0):
-            images_module = images_modules[0]
-            images_settings = tuple([
-                s.unicode_value for s in images_module.settings()])
-            if (self.__filtered_image_plane_details_images_settings !=
-                images_settings):
-                images_module.prepare_run(workspace)
-                self.__filtered_image_plane_details_metadata_settings = None
+        if isinstance(module_name_or_module, basestring):
+            modules = [module for module in self.modules()
+                       if module.module_name == module_name_or_module]
+            if len(modules) == 0:
+                return None
+            module = modules[0]
         else:
-            self.__filtered_image_plane_details = self.image_plane_details
-        if with_metadata:
-            self.__available_metadata_keys = set()
-            metadata_modules = [module for module in self.modules()
-                                if module.module_name == "Metadata"]
-            if len(metadata_modules) > 0:
-                metadata_module = metadata_modules[0]
-                metadata_settings = tuple([
-                    s.unicode_value for s in metadata_module.settings()])
-                if (metadata_settings !=
-                    self.__filtered_image_plane_details_metadata_settings):
-                    metadata_module.prepare_run(workspace)
-                for ipd in self.__filtered_image_plane_details:
-                    self.__available_metadata_keys.update(ipd.metadata.keys())
-                self.__filtered_image_plane_details_metadata_settings = \
-                    metadata_settings
-        return self.__filtered_image_plane_details
+            module = module_name_or_module
+        return tuple([s.unicode_value for s in module.settings()])
     
-    def get_available_metadata_keys(self, workspace):
-        '''Get all keys from the current set of filtered IPDs'''
-        #
-        # Has the side-effect of updating self.__available_metadata_keys
-        #
-        self.get_filtered_image_plane_details(workspace, True)
-        return self.__available_metadata_keys
+    def __prepare_run_module(self, module_name, workspace):
+        '''Execute "prepare_run" on the first instance of the named module'''
+        modules = [module for module in self.modules()
+                   if module.module_name == module_name]
+        if len(modules) == 0:
+            return False
+        return modules[0].prepare_run(workspace)
     
-    def set_filtered_image_plane_details(self, ipds, module):
-        '''The Images module calls this to report its list of filtered ipds'''
-        self.__filtered_image_plane_details = ipds
-        self.__filtered_image_plane_details_images_settings = tuple([
-            s.unicode_value for s in module.settings()])
+    def has_cached_filtered_file_list(self):
+        '''True if the filtered file list is currently cached'''
+        images_settings = self.get_module_state("Images")
+        if images_settings == None:
+            return False
+        return self.__filtered_file_list_images_settings == images_settings
     
+    def get_filtered_file_list(self, workspace):
+        '''Return the file list as filtered by the Images module
+        
+        '''
+        if not self.has_cached_filtered_file_list():
+            self.__image_plane_details_metadata_settings = None
+            self.__prepare_run_module("Images", workspace)
+        return self.__filtered_file_list
+        
+    def has_cached_image_plane_details(self):
+        '''Return True if we have up-to-date image plane details cached'''
+        if not self.has_cached_filtered_file_list():
+            return False
+        metadata_settings = self.get_module_state("Metadata")
+        if metadata_settings == None:
+            return False
+        return self.__image_plane_details_metadata_settings == metadata_settings
+        
+    def get_image_plane_details(self, workspace):
+        '''Return the image plane details with metadata computed
+        
+        '''
+        if self.has_cached_image_plane_details():
+            return self.__image_plane_details
+        self.__available_metadata_keys = set()
+        self.__prepare_run_module("Metadata", workspace)
+        return self.__image_plane_details
+    
+    def get_available_metadata_keys(self):
+        '''Get the metadata keys from extraction and their types
+
+        Returns a dictionary of metadata key to measurements COLTYPE
+        '''
+        modules = [module for module in self.modules()
+                   if module.module_name == "Metadata"]
+        if len(modules) == 0:
+            return {}
+        module = modules[0]
+        return module.get_data_type(module.get_metadata_keys())
+    
+    def set_filtered_file_list(self, file_list, module):
+        '''The Images module calls this to report its list of filtered files'''
+        self.__filtered_file_list = file_list
+        self.__filtered_file_list_images_settings = \
+            self.get_module_state(module)
+        
+    def set_image_plane_details(self, ipds, available_metadata_keys, module):
+        '''The Metadata module calls this to report on the extracted IPDs
+        
+        ipds - the image plane details to be fed into NamesAndTypes
+        available_metadata_keys - the metadata keys collected during IPD
+                                  metadata extraction.
+        module - the metadata module that made them (so we can cache based
+                 on the module's settings.
+        '''
+        self.__image_plane_details = ipds
+        self.__available_metadata_keys = available_metadata_keys
+        self.__image_plane_details_metadata_settings = \
+            self.get_module_state(module)
+                                                             
     class ImageSetChannelDescriptor(object):
         '''This class represents the metadata for one image set channel
         
@@ -2943,6 +2920,10 @@ class Pipeline(object):
             self.__settings[idx] = old_settings
         self.__undo_stack.append((undo, "Edited %s" % module_name))
         
+    @property
+    def file_list(self):
+        return self.__file_list
+    
     @property
     def image_plane_details(self):
         return self.__image_plane_details
@@ -3509,29 +3490,21 @@ class ModuleEditedPipelineEvent(AbstractPipelineEvent):
     def event_type(self):
         return "Module edited"
     
-class ImagePlaneDetailsAddedEvent(AbstractPipelineEvent):
-    def __init__(self, ipds):
+class URLsAddedEvent(AbstractPipelineEvent):
+    def __init__(self, urls):
         super(self.__class__, self).__init__()
-        self.image_plane_details = ipds
+        self.urls = urls
         
     def event_type(self):
-        return "Image plane details added"
+        return "URLs added to file list"
 
-class ImagePlaneDetailsRemovedEvent(AbstractPipelineEvent):
-    def __init__(self, ipds):
+class URLsRemovedEvent(AbstractPipelineEvent):
+    def __init__(self, urls):
         super(self.__class__, self).__init__()
-        self.image_plane_details = ipds
+        self.urls = urls
         
     def event_type(self):
-        return "Image plane details removed"
-    
-class ImagePlaneDetailsMetadataEvent(AbstractPipelineEvent):
-    def __init__(self, ipd):
-        super(self.__class__, self).__init__()
-        self.image_plane_details = ipd
-        
-    def event_type(self):
-        return "Image plane details metadata changed"
+        return "URLs removed from file list"
     
 class FileWalkStartedEvent(AbstractPipelineEvent):
     def event_type(self):

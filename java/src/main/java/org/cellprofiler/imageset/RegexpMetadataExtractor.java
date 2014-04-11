@@ -13,6 +13,7 @@
 package org.cellprofiler.imageset;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class RegexpMetadataExtractor implements MetadataExtractor<String> {
 	 */
 	final private Pattern pattern;
 	final private String [] keys;
+	final private List<String> metadataKeys;
 	
 	/**
 	 * Constructor initializes the extractor with the regular expression
@@ -42,12 +44,19 @@ public class RegexpMetadataExtractor implements MetadataExtractor<String> {
 	 */
 	public RegexpMetadataExtractor(String pattern) {
 		List<String> keys = new ArrayList<String>();
+		List<String> metadataKeys = new ArrayList<String>();
 		this.pattern = MetadataUtils.compilePythonRegexp(pattern, keys);
 		this.keys = new String [keys.size()];
 		for (int i=0; i<keys.size(); i++) {
 			final String key = keys.get(i);
-			this.keys[i] = (key == null)?null:StringCache.intern(key);
+			if (key == null) {
+				this.keys[i] = null;
+			} else {
+				this.keys[i] = StringCache.intern(key);
+				metadataKeys.add(key);
+			}
 		}
+		this.metadataKeys = Collections.unmodifiableList(metadataKeys);
 	}
 
 	/* (non-Javadoc)
@@ -65,6 +74,13 @@ public class RegexpMetadataExtractor implements MetadataExtractor<String> {
 			}
 		}
 		return map;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.cellprofiler.imageset.MetadataExtractor#getMetadataKeys()
+	 */
+	public List<String> getMetadataKeys() {
+		return metadataKeys;
 	}
 
 }

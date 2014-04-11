@@ -17,6 +17,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Map;
 import java.net.URI;
 import org.junit.Test;
@@ -40,6 +41,10 @@ public class TestPathNameMetadataExtractor {
 				assertEquals(source, root.getAbsolutePath());
 				return emptyMap;
 			}
+			public List<String> getMetadataKeys() {
+				fail();
+				return null;
+			}
 		});
 		extractor.extract(imageFile);
 	}
@@ -54,6 +59,10 @@ public class TestPathNameMetadataExtractor {
 				public Map<String, String> extract(String source) {
 					assertEquals(source, "http://cellprofiler.org/linked_files");
 					return emptyMap;
+				}
+				public List<String> getMetadataKeys() {
+					fail();
+					return null;
 				}
 			});
 			extractor.extract(imageFile);
@@ -73,6 +82,10 @@ public class TestPathNameMetadataExtractor {
 					assertEquals(source, "");
 					return emptyMap;
 				}
+				public List<String> getMetadataKeys() {
+					fail();
+					return null;
+				}
 			});
 			extractor.extract(imageFile);
 		} catch (URISyntaxException e) {
@@ -90,6 +103,10 @@ public class TestPathNameMetadataExtractor {
 				public Map<String, String> extract(String source) {
 					assertEquals(source, "http://cellprofiler.org");
 					return emptyMap;
+				}
+				public List<String> getMetadataKeys() {
+					fail();
+					return null;
 				}
 			});
 			extractor.extract(imageFile);

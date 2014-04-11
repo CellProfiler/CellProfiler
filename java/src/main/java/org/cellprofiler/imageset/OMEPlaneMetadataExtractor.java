@@ -12,10 +12,14 @@
  */
 package org.cellprofiler.imageset;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import ome.xml.model.Channel;
+import ome.xml.model.Image;
 import ome.xml.model.Pixels;
 import ome.xml.model.Plane;
 import ome.xml.model.primitives.NonNegativeInteger;
@@ -42,13 +46,18 @@ public class OMEPlaneMetadataExtractor implements MetadataExtractor<ImagePlane> 
 	final static public String MD_PLANAR = "Planar";
 	final static public String MD_CHANNEL_NAME = "ChannelName";
 	final static public String MD_URL = "FileLocation";
+	final static private List<String> metadataKeys =
+		Collections.unmodifiableList(
+				Arrays.asList(MD_C, MD_T, MD_Z, MD_COLOR_FORMAT, MD_CHANNEL_NAME, MD_URL));
 
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.MetadataExtractor#extract(java.lang.Object)
 	 */
 	public Map<String, String> extract(ImagePlane source) {
 		Plane plane = source.getOMEPlane();
-		Pixels pixels = source.getSeries().getOMEImage().getPixels();
+		final Image image = source.getSeries().getOMEImage();
+		if (image == null) return emptyMap;
+		Pixels pixels = image.getPixels();
 		HashMap<String, String> map = new HashMap<String, String>();
 		if (plane != null) {
 			putIfNotNull(map, MD_C, plane.getTheC().toString());
@@ -128,5 +137,11 @@ public class OMEPlaneMetadataExtractor implements MetadataExtractor<ImagePlane> 
 	}
 	static private void putIfNotNull(Map<String, String> map, String key, String value) {
 		if (value != null) map.put(key, StringCache.intern(value));
+	}
+	/* (non-Javadoc)
+	 * @see org.cellprofiler.imageset.MetadataExtractor#getMetadataKeys()
+	 */
+	public List<String> getMetadataKeys() {
+		return metadataKeys;
 	}
 }

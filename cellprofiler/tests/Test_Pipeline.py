@@ -1163,72 +1163,78 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
                                 metadata_columns) + '"\n'
             s += "\n".join(body_lines)+"\n"
             fd = cStringIO.StringIO(s)
-            result = cpp.read_image_plane_details(fd)
+            result = cpp.read_file_list(fd)
             self.assertEqual(len(result), len(expected))
             for r, e in zip(result, expected):
-                for rr, ee in zip(
-                    (r.url, r.series, r.index, r.channel, r.metadata),e):
-                    self.assertEqual(rr, ee)
+                self.assertEqual(r, e[0])
                     
     def test_18_02_write_image_plane_details(self):
         test_data = (
-            (cpp.ImagePlaneDetails("foo", 1, 2, 3),),
-            (cpp.ImagePlaneDetails("foo", 1, 2, None),
-             cpp.ImagePlaneDetails("bar", 1, None, 3),
-             cpp.ImagePlaneDetails("baz", None, 2, 3)),
-            (cpp.ImagePlaneDetails(
-                "foo", 1, 2, 3, dict(Well="A01", Plate="P-12345")),),
-            (cpp.ImagePlaneDetails(
-                "foo", 1, 2, 3, dict(Plate="P-12345")),),
-            (cpp.ImagePlaneDetails("\u03b1\u03b2", 1, 2, 3),),
-            (cpp.ImagePlaneDetails(
-                "foo", 1, 2, 3, dict(Treatment="TNF-\u03b1")),),
-            (cpp.ImagePlaneDetails('\\"', 1, 2, 3),),
-            (cpp.ImagePlaneDetails(
-                "foo", 1, 2, 3, dict(Well="A01")),
-             cpp.ImagePlaneDetails(
-                 "bar", 1, 2, 3, dict(Treatment="TNF-\u3b1"))))
-        for t in test_data:
-            fd = cStringIO.StringIO()
-            cpp.write_image_plane_details(fd, t)
-            fd.seek(0)
-            result = cpp.read_image_plane_details(fd)
-            metadata_columns = set()
-            for tt in t:
-                metadata_columns.update(tt.metadata.keys())
-            for rr, tt in zip(result, t):
-                self.assertTrue(isinstance(rr, cpp.ImagePlaneDetails))
-                self.assertTrue(isinstance(tt, cpp.ImagePlaneDetails))
-                self.assertEqual(rr.url, tt.url)
-                self.assertEqual(rr.series, tt.series)
-                self.assertEqual(rr.index, tt.index)
-                self.assertEqual(rr.channel, tt.channel)
-                for k in metadata_columns:
-                    self.assertTrue(rr.metadata.has_key(k) or 
-                                    (not tt.metadata.has_key(k)) or
-                                    tt.metadata[k] is None)
-                    if (not tt.metadata.has_key(k)) or tt.metadata[k] is None:
-                        self.assertTrue((not rr.metadata.has_key(k)) or
-                                        rr.metadata[k] is None)
-                    else:
-                        self.assertEqual(rr.metadata[k], tt.metadata[k])
-                        
-    def test_18_03_serialize_ipds(self):
-        url = "file://foo/bar.baz"
-        ipds = [cpp.ImagePlaneDetails(url, None, None, None),
-                cpp.ImagePlaneDetails(
-                    url, 1, 2, 3, dict(Plate="P-12345", Well="A01"))]
-        data = cpp.ImagePlaneDetails.serialize_metadata(ipds)
-        result = cpp.ImagePlaneDetails.deserialize_metadata(url, data)
-        self.assertEqual(len(result), len(ipds))
-        for ipd_in, ipd_out in zip(ipds, result):
-            self.assertEqual(ipd_in.url, ipd_out.url)
-            self.assertEqual(ipd_in.series, ipd_out.series)
-            self.assertEqual(ipd_in.index, ipd_out.index)
-            self.assertEqual(ipd_in.channel, ipd_out.channel)
-            self.assertDictEqual(ipd_in.metadata, ipd_out.metadata)
-                        
-     
+            "foo", u"\u03b1\u03b2", 
+            "".join([chr(i) for i in range(128)]))
+        fd = cStringIO.StringIO()
+        cpp.write_file_list(fd, test_data)
+        fd.seek(0)
+        result = cpp.read_file_list(fd)
+        for rr, tt in zip(result, test_data):
+            if isinstance(tt, unicode):
+                tt = tt.encode("utf-8")
+            self.assertEquals(rr, tt)
+
+class TestImagePlaneDetails(unittest.TestCase):
+    def get_ipd(self, 
+                url = "http://cellprofiler.org", 
+                series = 0, index=0, channel=0,
+                metadata = {}):
+        d = cpp.J.make_map(**metadata)
+        jipd = cpp.J.run_script(
+            """
+            var uri = new java.net.URI(url);
+            var f = new Packages.org.cellprofiler.imageset.ImageFile(uri);
+            var fd = new Packages.org.cellprofiler.imageset.ImageFileDetails(f);
+            var s = new Packages.org.cellprofiler.imageset.ImageSeries(f, series);
+            var sd = new Packages.org.cellprofiler.imageset.ImageSeriesDetails(s, fd);
+            var p = new Packages.org.cellprofiler.imageset.ImagePlane(s, index, channel);
+            var ipd = new Packages.org.cellprofiler.imageset.ImagePlaneDetails(p, sd);
+            ipd.putAll(d);
+            ipd;
+            """, dict(url=url, series=series, index=index, channel=channel, d=d))
+        return cpp.ImagePlaneDetails(jipd)
+    
+    def test_01_01_init(self):
+        self.get_ipd();
+        
+    def test_02_01_path_url(self):
+        url = "http://google.com"
+        ipd = self.get_ipd(url=url)
+        self.assertEquals(ipd.path, url)
+        
+    def test_02_02_path_file(self):
+        path = "file:" + cpp.urllib.pathname2url(__file__)
+        ipd = self.get_ipd(url=path)
+        self.assertEquals(ipd.path, __file__)
+        
+    def test_03_01_url(self):
+        url = "http://google.com"
+        ipd = self.get_ipd(url=url)
+        self.assertEquals(ipd.url, url)
+        
+    def test_04_01_series(self):
+        ipd = self.get_ipd(series = 4)
+        self.assertEquals(ipd.series, 4)
+        
+    def test_05_01_index(self):
+        ipd = self.get_ipd(index = 2)
+        self.assertEquals(ipd.index, 2)
+        
+    def test_06_01_channel(self):
+        ipd = self.get_ipd(channel=3)
+        self.assertEquals(ipd.channel, 3)
+        
+    def test_07_01_metadata(self):
+        ipd = self.get_ipd(metadata = dict(foo="Bar", baz="Blech"))
+        self.assertEquals(ipd.metadata["foo"], "Bar")
+        self.assertEquals(ipd.metadata["baz"], "Blech")
         
 def profile_pipeline(pipeline_filename,
                      output_filename=None,

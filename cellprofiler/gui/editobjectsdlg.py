@@ -397,6 +397,7 @@ class EditObjectsDialog(wx.Dialog):
         has a hole in it. This split creates a channel from the hole 
         to the outside of the object.</li>
         </ul>
+        <li><b>T</b>: Toggle between fill and outline mode for objects.</li>
         <li><b>X</b>: Delete mode. Press down on the %(LEFT_MOUSE)s to
         start defining the delete region. Drag to define a rectangle. All
         control points within the rectangle (shown as white circles) will be
@@ -699,6 +700,13 @@ class EditObjectsDialog(wx.Dialog):
         self.label_display_mode = mode
         self.display()
         
+    def toggle_label_display_mode(self):
+        '''Toggle between fill and outline modes'''
+        mode = self.ID_LABELS_OUTLINES \
+            if self.label_display_mode == self.ID_LABELS_FILL \
+            else self.ID_LABELS_FILL
+        self.set_label_display_mode(mode)
+        
     ################### d i s p l a y #######
     #
     # The following is a function that we can call to refresh
@@ -951,6 +959,8 @@ class EditObjectsDialog(wx.Dialog):
                 self.new_object(event)
             elif event.key == "s":
                 self.enter_split_mode(event)
+            elif event.key == "t":
+                self.toggle_label_display_mode()
             elif event.key == "x":
                 self.enter_delete_mode(event)
             elif event.key =="z":

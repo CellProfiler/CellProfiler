@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ome.xml.model.Pixels;
+import ome.xml.model.Plane;
 import ome.xml.model.enums.DimensionOrder;
 
 
@@ -179,5 +180,15 @@ public class MetadataUtils {
 			return z + pixels.getSizeZ().getValue() * (t + pixels.getSizeT().getValue() * c);
 		}
 		throw new UnsupportedOperationException(String.format("Unsupported dimension order: %s", dimensionOrder.toString()));
+	}
+	/**
+	 * Get the plane index given an OME plane
+	 * 
+	 * @param plane
+	 * @return
+	 */
+	static public int getIndex(Plane plane) {
+		return getIndex(plane.getPixels(), plane.getTheC().getValue(), 
+				plane.getTheZ().getValue(), plane.getTheT().getValue());	
 	}
 }

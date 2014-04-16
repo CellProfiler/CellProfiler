@@ -36,8 +36,25 @@ public class ImageSet extends ArrayList<ImagePlaneDetailsStack> {
 		this.key = key;
 	}
 	
+	/**
+	 * A convenience constructor if you want to start out with just a single
+	 * channel and then glom on.
+	 * 
+	 * @param stack the stack for the first channel in the image set
+	 * @param key the key that defines the image set.
+	 */
+	public ImageSet(ImagePlaneDetailsStack stack, List<String> key) {
+		this(icantfindafunctionthatmakesamutablelistinitializedwithasinglemember(stack), key);
+	}
+	
 	public List<String> getKey() {
 		return key;
+	}
+	
+	private static List<ImagePlaneDetailsStack> icantfindafunctionthatmakesamutablelistinitializedwithasinglemember(ImagePlaneDetailsStack stack) {
+		List<ImagePlaneDetailsStack> stacks = new ArrayList<ImagePlaneDetailsStack>();
+		stacks.add(stack);
+		return stacks;
 	}
 	
 }

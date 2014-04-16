@@ -523,7 +523,7 @@ class Metadata(cpm.CPModule):
         '''
         key_pairs = []
         dt_numeric = (cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER)
-        kp_cls = 'org/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair'
+        kp_cls = 'org/cellprofiler/imageset/MetadataKeyPair'
         kp_sig = '(Ljava/lang/String;Ljava/lang/String;)L%s;' % kp_cls
         for join_idx in group.csv_joiner.parse():
             csv_key = join_idx[self.CSV_JOIN_NAME]

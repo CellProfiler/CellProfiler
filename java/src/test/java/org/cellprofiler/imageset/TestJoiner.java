@@ -14,11 +14,10 @@ package org.cellprofiler.imageset;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,71 +25,70 @@ import java.util.Random;
 
 import net.imglib2.meta.TypedAxis;
 
-import org.cellprofiler.imageset.Joiner.JoinerException;
 import org.cellprofiler.imageset.filter.Filter;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
 import org.junit.Test;
 
 /**
  * @author Lee Kamentsky
- *
+ * Test the Joiner class
  */
 public class TestJoiner {
-	private void assertThrows(List<Joiner.ChannelFilter> channels) {
-		try {
-			new Joiner(channels, new boolean[channels.get(0).getKeys().length]);
-			fail("The joiner did not throw an exception");
-		} catch (Joiner.JoinerException e) {
-			
+	static private final Comparator<String> I = MetadataKeyPair.getCaseInsensitiveComparator();
+	static private final Comparator<String> S = MetadataKeyPair.getCaseSensitiveComparator();
+	static private final Comparator<String> N = MetadataKeyPair.getNumericComparator();
+	@SuppressWarnings("serial")
+	protected class CMKP extends C<MetadataKeyPair> {
+		public CMKP(String left, String right, Comparator<String> c) { 
+			super(new MetadataKeyPair(left, right, c));
+		}
+		public CMKP c(String left, String right, Comparator<String> c) {
+			add(new MetadataKeyPair(left, right, c));
+			return this;
 		}
 	}
 	
-	private ImagePlaneDetails makeIPD(Joiner.ChannelFilter c, String [] values, String root) {
+	private ImagePlaneDetails makeIPD(String [][] metadata, String root) {
 		String filename = root;
-		for (String value:values) filename = filename.concat(value);
+		for (String [] kv:metadata) filename = filename.concat(kv[1]);
 		final ImagePlaneDetails result = Mocks.makeMockIPD(filename+".tif");
-		addImageSetMetadata(c, result, values);
+		for (String [] kv:metadata) result.put(kv[0], kv[1]);
+		return result;
+	}
+	private C<ImagePlaneDetails> makeIPDs(String [] keys, String [][] values, String root) {
+		C<ImagePlaneDetails> result = new C<ImagePlaneDetails>();
+		for (int i=0; i<values.length; i++) {
+			final String [][] metadata = new String [keys.length][];
+			for (int j=0; j<keys.length; j++) metadata[j] = new String [] {keys[j], values[i][j]};
+			result.add(makeIPD(metadata, root));
+		}
 		return result;
 	}
 
-	/**
-	 * @param c
-	 * @param result
-	 * @param values
-	 */
-	private void addImageSetMetadata(Joiner.ChannelFilter c,
-			final Details result, String... values) {
-		int [] idxs = c.getJoiningKeyIndices();
-		String [] keys = c.getKeys();
-		for (int i=0; i<values.length; i++) 
-			if (values[i] != null)
-				result.put(keys[idxs[i]], values[i]);
+	private ImagePlaneDetailsStack makeColorStack(String [][] metadata, String root) {
+		return makeColorStack(metadata, root, "P-12345", "A01", 0);
 	}
 	
-	private ImagePlaneDetailsStack makeColorStack(Joiner.ChannelFilter c, String [] values, String root) {
-		return makeColorStack(c, values, root, "P-12345", "A01", 0);
-	}
-	
-	private ImagePlaneDetailsStack makeColorStack(Joiner.ChannelFilter c, String [] values, String root, String plate, String well, int site) {
+	private ImagePlaneDetailsStack makeColorStack(String [][] metadata, String root, String plate, String well, int site) {
 		String filename = root;
-		for (String value:values) filename = filename.concat(value);
+		for (String [] kv:metadata) filename = filename.concat(kv[1]);
 		ImageFileDetails ifd = Mocks.makeMockImageFileDetails(filename, Mocks.MockImageDescription.makeColorDescription(plate, well, site));
-		addImageSetMetadata(c, ifd, values);
 		final ImagePlaneDetailsStack stack = Mocks.makeMockColorStack(ifd, 3);
+		for (String [] kv:metadata) ifd.put(kv[0], kv[1]);
 		return stack;
 	}
 	
-	private Joiner.ChannelFilter makeMonoChannelFilter(String name, String [] keys, String expression) throws BadFilterExpressionException {
-		return makeChannelFilter(name, keys, expression, PlaneStack.XYAxes);
+	private ChannelFilter makeMonoChannelFilter(String name, String expression) throws BadFilterExpressionException {
+		return makeChannelFilter(name, expression, PlaneStack.XYAxes);
 	}
-	private Joiner.ChannelFilter makeChannelFilter(String name, String [] keys, String expression, TypedAxis... axes)
+	private ChannelFilter makeChannelFilter(String name, String expression, TypedAxis... axes)
 	throws BadFilterExpressionException {
 		final Filter<ImagePlaneDetailsStack> filter = new Filter<ImagePlaneDetailsStack>(expression, ImagePlaneDetailsStack.class);
-		return new Joiner.ChannelFilter(name, keys, filter, axes);
+		return new ChannelFilter(name, filter, axes);
 	}
 	
-	private Joiner.ChannelFilter makeColorChannelFilter(String name, String [] keys, String expression)  throws BadFilterExpressionException {
-		return makeChannelFilter(name, keys, expression, PlaneStack.XYCAxes);
+	private ChannelFilter makeColorChannelFilter(String name, String expression)  throws BadFilterExpressionException {
+		return makeChannelFilter(name, expression, PlaneStack.XYCAxes);
 	}
 
 	/**
@@ -100,17 +98,10 @@ public class TestJoiner {
 	public void testJoiner() {
 		try {
 			String expr = "file does eq \"foo\"";
-			Joiner.ChannelFilter a = makeMonoChannelFilter("A", new String [] { "A", "B", "C"}, expr);
-			Joiner.ChannelFilter b = makeMonoChannelFilter("B", new String [] { "A", "B", null}, expr);
-			Joiner.ChannelFilter c = makeMonoChannelFilter("C", new String [] { "A", null, "C"}, expr);
-			Joiner.ChannelFilter d = makeMonoChannelFilter("D", new String [] { "A", "B"}, expr);
-			new Joiner(Arrays.asList(a,b), new boolean[3]);
-			new Joiner(Arrays.asList(a,b,c), new boolean[3]);
-			assertThrows(Arrays.asList(b,c));
-			assertThrows(Arrays.asList(a, d));
+			ChannelFilter a = makeMonoChannelFilter("A",  expr);
+			new Joiner(a, Arrays.asList(new String [] { "A", "B", "C"}),
+					new C<Comparator<String>>(I).c(I).c(I));
 		} catch (BadFilterExpressionException e) {
-			fail();
-		} catch (JoinerException e) {
 			fail();
 		}
 	}
@@ -121,112 +112,122 @@ public class TestJoiner {
 	@Test
 	public void testFullJoin() {
 		try {
-			Joiner.ChannelFilter a = makeMonoChannelFilter("A", new String [] { "A" }, "file does contain \"A\"");
-			Joiner.ChannelFilter b = makeMonoChannelFilter("B", new String [] { "B" }, "file does contain \"B\"");
-			List<ImagePlaneDetails> ipds = Arrays.asList(
-					makeIPD(a, new String [] { "first"}, "A"),
-					makeIPD(a, new String [] { "second"}, "A"),
-					makeIPD(b, new String [] { "third" }, "B"),
-					makeIPD(b, new String [] { "first" }, "B"),
-					makeIPD(a, new String [] { "third" }, "A"),
-					makeIPD(b, new String [] { "second" }, "B"));
-			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean[1]);
-			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
-			List<ImageSet> foo = joiner.join(ipds, errors );
+			final String [] aKeys = new String [] { "A" };
+			final String [] bKeys = new String [] { "B" };
+			final ChannelFilter a = makeMonoChannelFilter("A", "file does contain \"A\"");
+			final ChannelFilter b = makeMonoChannelFilter("B", "file does contain \"B\"");
+			final C<ImagePlaneDetails> ipds = 
+				makeIPDs(aKeys, new String [][] {{ "first" }, { "second" }, {"third"}}, "A") 
+				.c(makeIPDs(bKeys, new String [][] {{ "first" }, { "second" }, {"third"}}, "B"));
+			final Joiner joiner = new Joiner(a, Arrays.asList(aKeys), Collections.singletonList(I));
+			joiner.addChannel(b, new CMKP("A", "B", I));
+			List<ImageSetError> errors = new ArrayList<ImageSetError>();
+			List<ImageSet> foo = joiner.join(ipds.shuffle(), errors );
 			assertEquals(3, foo.size());
 			assertSame(foo.get(0).get(0).get(0, 0), ipds.get(0));
 			assertSame(foo.get(0).get(1).get(0, 0), ipds.get(3));
 			assertSame(foo.get(1).get(0).get(0, 0), ipds.get(1));
-			assertSame(foo.get(1).get(1).get(0, 0), ipds.get(5));
-			assertSame(foo.get(2).get(0).get(0, 0), ipds.get(4));
-			assertSame(foo.get(2).get(1).get(0, 0), ipds.get(2));
+			assertSame(foo.get(1).get(1).get(0, 0), ipds.get(4));
+			assertSame(foo.get(2).get(0).get(0, 0), ipds.get(2));
+			assertSame(foo.get(2).get(1).get(0, 0), ipds.get(5));
 			assertEquals(0, errors.size());
 		} catch (BadFilterExpressionException e) {
 			fail();
-		} catch (JoinerException e) {
-			fail();
-		}
+		} 
 	}
 	@Test
 	public void testTwoKeyJoin() {
 		try {
-			Joiner.ChannelFilter a = makeMonoChannelFilter("A", new String [] { "A1", "A2" }, "file does contain \"A\"");
-			Joiner.ChannelFilter b = makeMonoChannelFilter("B", new String [] { "B1", "B2" }, "file does contain \"B\"");
-			List<ImagePlaneDetails> ipds = Arrays.asList(
-					makeIPD(a, new String [] { "Plate1", "A01"}, "A"),
-					makeIPD(a, new String [] { "Plate1", "A02"}, "A"),
-					makeIPD(b, new String [] { "Plate2", "A01" }, "B"),
-					makeIPD(b, new String [] { "Plate1", "A01" }, "B"),
-					makeIPD(a, new String [] { "Plate2", "A01" }, "A"),
-					makeIPD(b, new String [] { "Plate1", "A02" }, "B"));
-			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean[2]);
-			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
-			List<ImageSet> foo = joiner.join(ipds, errors );
+			String [] aKeys = new String [] { "A1", "A2" }; 
+			String [] bKeys = new String [] { "B1", "B2" };
+			ChannelFilter a = makeMonoChannelFilter("A", "file does contain \"A\"");
+			ChannelFilter b = makeMonoChannelFilter("B", "file does contain \"B\"");
+			C<ImagePlaneDetails> ipds = 
+				makeIPDs(aKeys, new String [][] {
+						{ "Plate1", "A01"},
+						{ "Plate1", "A02"},
+						{ "Plate2", "A01" }}, "A")
+				.c(makeIPDs(bKeys, new String [][] {
+						{ "Plate1", "A01"},
+						{ "Plate1", "A02"},
+						{ "Plate2", "A01" }}, "B"));
+			Joiner joiner = new Joiner(a, Arrays.asList(aKeys), new C<Comparator<String>>(I).c(I));
+			joiner.addChannel(b, new CMKP("A1", "B1", I).c("A2", "B2", I));
+			List<ImageSetError> errors = new ArrayList<ImageSetError>();
+			List<ImageSet> foo = joiner.join(ipds.shuffle(), errors );
 			assertEquals(3, foo.size());
 			assertSame(foo.get(0).get(0).get(0, 0), ipds.get(0));
 			assertSame(foo.get(0).get(1).get(0, 0), ipds.get(3));
 			assertSame(foo.get(1).get(0).get(0, 0), ipds.get(1));
-			assertSame(foo.get(1).get(1).get(0, 0), ipds.get(5));
-			assertSame(foo.get(2).get(0).get(0, 0), ipds.get(4));
-			assertSame(foo.get(2).get(1).get(0, 0), ipds.get(2));
+			assertSame(foo.get(1).get(1).get(0, 0), ipds.get(4));
+			assertSame(foo.get(2).get(0).get(0, 0), ipds.get(2));
+			assertSame(foo.get(2).get(1).get(0, 0), ipds.get(5));
 			assertEquals(0, errors.size());
 		} catch (BadFilterExpressionException e) {
 			fail();
-		} catch (JoinerException e) {
-			fail();
-		}		
+		} 	
 	}
 	@Test
 	public void testOuterJoin() {
 		try {
-			Joiner.ChannelFilter a = makeMonoChannelFilter("A", new String [] { "A1", null }, "file does contain \"A\"");
-			Joiner.ChannelFilter b = makeMonoChannelFilter("B", new String [] { "B1", "B2" }, "file does contain \"B\"");
-			List<ImagePlaneDetails> ipds = Arrays.asList(
-					makeIPD(a, new String [] { "Plate1"}, "A"),
-					makeIPD(b, new String [] { "Plate2", "A01" }, "B"),
-					makeIPD(b, new String [] { "Plate1", "A01" }, "B"),
-					makeIPD(a, new String [] { "Plate2" }, "A"),
-					makeIPD(b, new String [] { "Plate1", "A02" }, "B"));
-			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean[2]);
-			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
-			List<ImageSet> foo = joiner.join(ipds, errors );
+			final String [] aKeys = { "A" };
+			final String [] bKeys = { "B1", "B2" };
+			ChannelFilter a = makeMonoChannelFilter("A", "file does contain \"A\"");
+			ChannelFilter b = makeMonoChannelFilter("B", "file does contain \"B\"");
+			C<ImagePlaneDetails> ipds = 
+				makeIPDs(aKeys, new String [][] {
+						{ "Plate1" },
+						{ "Plate2" }}, "A")
+				.c(makeIPDs(bKeys, new String [][] {
+						{ "Plate1", "C01"},
+						{ "Plate1", "C02"},
+						{ "Plate2", "C01" }}, "B"));
+			
+			final Joiner joiner = 
+				new Joiner(b, Arrays.asList(bKeys), new C<Comparator<String>>(I).c(I));
+			joiner.addChannel(a, new CMKP("B1", "A", I));
+			List<ImageSetError> errors = new ArrayList<ImageSetError>();
+			List<ImageSet> foo = joiner.join(ipds.shuffle(), errors );
 			assertEquals(3, foo.size());
-			assertSame(foo.get(0).get(0).get(0, 0), ipds.get(0));
-			assertSame(foo.get(0).get(1).get(0, 0), ipds.get(2));
-			assertSame(foo.get(1).get(0).get(0, 0), ipds.get(0));
-			assertSame(foo.get(1).get(1).get(0, 0), ipds.get(4));
-			assertSame(foo.get(2).get(0).get(0, 0), ipds.get(3));
+			assertSame(foo.get(0).get(0).get(0, 0), ipds.get(2));
+			assertSame(foo.get(0).get(1).get(0, 0), ipds.get(0));
+			assertSame(foo.get(1).get(0).get(0, 0), ipds.get(3));
+			assertSame(foo.get(1).get(1).get(0, 0), ipds.get(0));
+			assertSame(foo.get(2).get(0).get(0, 0), ipds.get(4));
 			assertSame(foo.get(2).get(1).get(0, 0), ipds.get(1));
 			assertEquals(0, errors.size());
 		} catch (BadFilterExpressionException e) {
-			fail();
-		} catch (JoinerException e) {
 			fail();
 		}		
 	}
 	@Test
 	public void testMissing() {
 		try {
-			Joiner.ChannelFilter a = makeMonoChannelFilter("A", new String [] { "A" }, "file does contain \"A\"");
-			Joiner.ChannelFilter b = makeMonoChannelFilter("B", new String [] { "B" }, "file does contain \"B\"");
-			List<ImagePlaneDetails> ipds = Arrays.asList(
-					makeIPD(a, new String [] { "first"}, "A"),
-					makeIPD(b, new String [] { "third" }, "B"),
-					makeIPD(b, new String [] { "first" }, "B"),
-					makeIPD(a, new String [] { "third" }, "A"),
-					makeIPD(b, new String [] { "second" }, "B"));
+			final String [] aKeys = new String [] { "A" };
+			final String [] bKeys = new String [] { "B" };
+			ChannelFilter a = makeMonoChannelFilter("A", "file does contain \"A\"");
+			ChannelFilter b = makeMonoChannelFilter("B", "file does contain \"B\"");
+			final C<ImagePlaneDetails> ipds = 
+				makeIPDs(aKeys, new String [][] {{ "first" }, { "second" }, {"third"}}, "A") 
+				.c(makeIPDs(bKeys, new String [][] {{ "first" }, {"third"}}, "B"));
 			for (int pass=1; pass <=2; pass++) {
-				Joiner joiner = new Joiner((pass == 1)?Arrays.asList(a, b):Arrays.asList(b,a), new boolean[1]);
-				Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
-				List<ImageSet> foo = joiner.join(ipds, errors );
-				assertEquals(2, foo.size());
+				final ChannelFilter firstCF = (pass==1)?a:b;
+				final ChannelFilter secondCF = (pass==1)?b:a;
+				final String [] kFirst = (pass==1)?aKeys:bKeys;
+				final String [] kSecond = (pass==1)?bKeys:aKeys;
 				int aidx = (pass==1)?0:1;
 				int bidx = 1-aidx;
+				
+				Joiner joiner = new Joiner(firstCF, Arrays.asList(kFirst), Collections.singletonList(I));
+				joiner.addChannel(secondCF, new CMKP(kFirst[0], kSecond[0], I));
+				List<ImageSetError> errors = new ArrayList<ImageSetError>();
+				List<ImageSet> foo = joiner.join(ipds.shuffle(), errors );
+				assertEquals(2, foo.size());
 				int resultIdx = 0;
 				assertSame(foo.get(resultIdx).get(aidx).get(0, 0),   ipds.get(0));
-				assertSame(foo.get(resultIdx++).get(bidx).get(0, 0), ipds.get(2));
-				assertSame(foo.get(resultIdx).get(aidx).get(0, 0),   ipds.get(3));
-				assertSame(foo.get(resultIdx++).get(bidx).get(0, 0), ipds.get(1));
+				assertSame(foo.get(resultIdx++).get(bidx).get(0, 0), ipds.get(3));
+				assertSame(foo.get(resultIdx).get(aidx).get(0, 0),   ipds.get(2));
+				assertSame(foo.get(resultIdx++).get(bidx).get(0, 0), ipds.get(4));
 				assertEquals(1, errors.size());
 				ImageSetError error = errors.iterator().next();
 				assertTrue(error instanceof ImageSetMissingError);
@@ -236,35 +237,38 @@ public class TestJoiner {
 			}
 		} catch (BadFilterExpressionException e) {
 			fail();
-		} catch (JoinerException e) {
-			fail();
 		}
 	}
 	@Test
 	public void testDuplicates() {
 		try {
-			Joiner.ChannelFilter a = makeMonoChannelFilter("A", new String [] { "A" }, "file does contain \"A\"");
-			Joiner.ChannelFilter b = makeMonoChannelFilter("B", new String [] { "B" }, "file does contain \"B\"");
-			List<ImagePlaneDetails> ipds = Arrays.asList(
-					makeIPD(a, new String [] { "first"}, "A"),
-					makeIPD(b, new String [] { "first" }, "B2"),
-					makeIPD(a, new String [] { "second"}, "A"),
-					makeIPD(b, new String [] { "third" }, "B"),
-					makeIPD(b, new String [] { "first" }, "B1"),
-					makeIPD(a, new String [] { "third" }, "A"),
-					makeIPD(b, new String [] { "second" }, "B"),
-					makeIPD(b, new String [] { "first" }, "B3"));
+			final String [] aKeys = new String [] { "A" };
+			final String [] bKeys = new String [] { "B" };
+			final ChannelFilter a = makeMonoChannelFilter("A", "file does contain \"A\"");
+			final ChannelFilter b = makeMonoChannelFilter("B", "file does contain \"B\"");
+			final C<ImagePlaneDetails> ipds = 
+				makeIPDs(aKeys, new String [][] {{ "first" }, { "second" }, {"third"}}, "A") 
+				.c(makeIPDs(bKeys, new String [][] {{ "first" }, { "second" }, {"third"}}, "B"))
+				.c(makeIPDs(bKeys, new String [][] {{ "first"}}, "B1"));
 			for (int pass=1; pass <=2; pass++) {
-				Joiner joiner = new Joiner((pass == 1)?Arrays.asList(a, b):Arrays.asList(b,a), new boolean[1]);
-				Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
-				List<ImageSet> foo = joiner.join(ipds, errors );
-				assertEquals(2, foo.size());
+				final ChannelFilter firstCF = (pass==1)?a:b;
+				final ChannelFilter secondCF = (pass==1)?b:a;
+				final String [] kFirst = (pass==1)?aKeys:bKeys;
+				final String [] kSecond = (pass==1)?bKeys:aKeys;
 				int aidx = (pass==1)?0:1;
 				int bidx = 1-aidx;
-				assertSame(foo.get(0).get(aidx).get(0, 0), ipds.get(2));
-				assertSame(foo.get(0).get(bidx).get(0, 0), ipds.get(6));
-				assertSame(foo.get(1).get(aidx).get(0, 0), ipds.get(5));
-				assertSame(foo.get(1).get(bidx).get(0, 0), ipds.get(3));
+				
+				Joiner joiner = new Joiner(firstCF, Arrays.asList(kFirst), Collections.singletonList(I));
+				joiner.addChannel(secondCF, new CMKP(kFirst[0], kSecond[0], I));
+				List<ImageSetError> errors = new ArrayList<ImageSetError>();
+				List<ImageSet> foo = joiner.join(ipds.shuffle(), errors );
+				assertSame(foo.get(0).get(aidx).get(0, 0), ipds.get(0));
+				assertTrue((foo.get(0).get(bidx).get(0, 0) == ipds.get(6)) ||
+						(foo.get(0).get(bidx).get(0, 0) == ipds.get(3)));
+				assertSame(foo.get(1).get(aidx).get(0, 0), ipds.get(1));
+				assertSame(foo.get(1).get(bidx).get(0, 0), ipds.get(4));
+				assertSame(foo.get(2).get(aidx).get(0, 0), ipds.get(2));
+				assertSame(foo.get(2).get(bidx).get(0, 0), ipds.get(5));
 				assertEquals(1, errors.size());
 				ImageSetError error = errors.iterator().next();
 				assertTrue(error instanceof ImageSetDuplicateError);
@@ -273,39 +277,37 @@ public class TestJoiner {
 				assertEquals("first", key.get(0));
 				ImageSetDuplicateError e2 = (ImageSetDuplicateError)error;
 				List<ImagePlaneDetailsStack> ipdDuplicates = e2.getImagePlaneDetailsStacks();
-				assertEquals(3, ipdDuplicates.size());
+				assertEquals(1, ipdDuplicates.size());
 				List<ImagePlaneDetails> ipdd = new ArrayList<ImagePlaneDetails>();
 				for (ImagePlaneDetailsStack s:ipdDuplicates) {
 					assertEquals(1, s.getPlaneCount());
 					ipdd.add(s.iterator().next());
 				}
-				assertTrue(ipdd.contains(ipds.get(1)));
-				assertTrue(ipdd.contains(ipds.get(4)));
-				assertTrue(ipdd.contains(ipds.get(7)));
+				assertTrue((ipdd.contains(ipds.get(3))) && (foo.get(0).get(bidx).get(0, 0) == ipds.get(6)) ||
+							(ipdd.contains(ipds.get(6))) && (foo.get(0).get(bidx).get(0, 0) == ipds.get(3)));
 			}
 		} catch (BadFilterExpressionException e) {
-			fail();
-		} catch (JoinerException e) {
 			fail();
 		}
 	}
 	@Test
 	public void testColorStack() {
 		try {
-			Joiner.ChannelFilter a = makeColorChannelFilter("A", new String [] { "A" }, "file does contain \"A\"");
-			Joiner.ChannelFilter b = makeColorChannelFilter("B", new String [] { "B" }, "file does contain \"B\"");
+			ChannelFilter a = makeColorChannelFilter("A", "file does contain \"A\"");
+			ChannelFilter b = makeColorChannelFilter("B", "file does contain \"B\"");
 			Map<String, ImagePlaneDetailsStack []> stacks = new HashMap<String, ImagePlaneDetailsStack []>();
 			stacks.put("first", new ImagePlaneDetailsStack [] { 
-				makeColorStack(a, new String [] { "first"}, "A"),
-				makeColorStack(b, new String [] { "first" }, "B")});
+				makeColorStack(new String [][] { {"A", "first"}}, "A"),
+				makeColorStack(new String [][] { {"B", "first" }}, "B")});
 			stacks.put("second", new ImagePlaneDetailsStack [] {
-					makeColorStack(a, new String [] { "second"}, "A"),
-					makeColorStack(b, new String [] { "second" }, "B")});
+					makeColorStack(new String [][] {{ "A", "second" }}, "A"),
+					makeColorStack(new String [][] {{ "B", "second" }}, "B")});
 			stacks.put("third", new ImagePlaneDetailsStack [] {
-					makeColorStack(a, new String [] { "third" }, "A"),
-					makeColorStack(b, new String [] { "third" }, "B")});
-			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean[1]);
-			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
+					makeColorStack(new String [][] { {"A", "third" }}, "A"),
+					makeColorStack(new String [][] { {"B", "third" }}, "B")});
+			Joiner joiner = new Joiner(a, Collections.singletonList("A"), Collections.singletonList(I));
+			joiner.addChannel(b, new CMKP("A", "B", I));
+			List<ImageSetError> errors = new ArrayList<ImageSetError>();
 			List<ImagePlaneDetails> ipds = new ArrayList<ImagePlaneDetails>();
 			for (ImagePlaneDetailsStack [] stackks:stacks.values())
 				for (ImagePlaneDetailsStack stack:stackks)
@@ -325,42 +327,85 @@ public class TestJoiner {
 		} catch (BadFilterExpressionException e) {
 			e.printStackTrace();
 			fail();
-		} catch (JoinerException e) {
-			e.printStackTrace();
-			fail();
-		}
+		} 
 		
+	}
+
+	@Test
+	public void testCaseInsensitiveJoin() {
+		try {
+			final String [] aKeys = new String [] { "A" };
+			final String [] bKeys = new String [] { "B" };
+			final ChannelFilter a = makeMonoChannelFilter("A", "file does contain \"A\"");
+			final ChannelFilter b = makeMonoChannelFilter("B", "file does contain \"B\"");
+			final C<ImagePlaneDetails> ipds = 
+				makeIPDs(aKeys, new String [][] {{ "first" }, { "second" }, {"third"}}, "A") 
+				.c(makeIPDs(bKeys, new String [][] {{ "fIrst" }, { "Second" }, {"THIRD"}}, "B"));
+			final Joiner joiner = new Joiner(a, Arrays.asList(aKeys), Collections.singletonList(I));
+			joiner.addChannel(b, new CMKP("A", "B", I));
+			List<ImageSetError> errors = new ArrayList<ImageSetError>();
+			List<ImageSet> foo = joiner.join(ipds.shuffle(), errors );
+			assertEquals(3, foo.size());
+			assertSame(foo.get(0).get(0).get(0, 0), ipds.get(0));
+			assertSame(foo.get(0).get(1).get(0, 0), ipds.get(3));
+			assertSame(foo.get(1).get(0).get(0, 0), ipds.get(1));
+			assertSame(foo.get(1).get(1).get(0, 0), ipds.get(4));
+			assertSame(foo.get(2).get(0).get(0, 0), ipds.get(2));
+			assertSame(foo.get(2).get(1).get(0, 0), ipds.get(5));
+			assertEquals(0, errors.size());
+		} catch (BadFilterExpressionException e) {
+			fail();
+		} 
+	}
+	@Test
+	public void testCaseSensitiveJoin() {
+		try {
+			final String [] aKeys = new String [] { "A" };
+			final String [] bKeys = new String [] { "B" };
+			final ChannelFilter a = makeMonoChannelFilter("A", "file does contain \"A\"");
+			final ChannelFilter b = makeMonoChannelFilter("B", "file does contain \"B\"");
+			final C<ImagePlaneDetails> ipds = 
+				makeIPDs(aKeys, new String [][] {{"first"}, { "First" }, { "FIRST" }}, "A") 
+				.c(makeIPDs(bKeys, new String [][] {{"first"}, { "First" }, { "FIRST" }}, "B"));
+			final Joiner joiner = new Joiner(a, Arrays.asList(aKeys), Collections.singletonList(S));
+			joiner.addChannel(b, new CMKP("A", "B", S));
+			List<ImageSetError> errors = new ArrayList<ImageSetError>();
+			List<ImageSet> foo = joiner.join(ipds.shuffle(), errors );
+			assertEquals(3, foo.size());
+			assertSame(foo.get(0).get(0).get(0, 0), ipds.get(0));
+			assertSame(foo.get(0).get(1).get(0, 0), ipds.get(3));
+			assertSame(foo.get(1).get(0).get(0, 0), ipds.get(1));
+			assertSame(foo.get(1).get(1).get(0, 0), ipds.get(4));
+			assertSame(foo.get(2).get(0).get(0, 0), ipds.get(2));
+			assertSame(foo.get(2).get(1).get(0, 0), ipds.get(5));
+			assertEquals(0, errors.size());
+		} catch (BadFilterExpressionException e) {
+			fail();
+		} 
 	}
 	@Test
 	public void testNumericMatching() {
 		// Mark the metadata key as numeric. In this case 10 > 2, if it's a string, it's less.
 		try {
-			Joiner.ChannelFilter a = makeMonoChannelFilter("A", new String [] { "A" }, "file does contain \"A\"");
-			Joiner.ChannelFilter b = makeMonoChannelFilter("B", new String [] { "B" }, "file does contain \"B\"");
-			List<ImagePlaneDetails> ipds = Arrays.asList(
-					makeIPD(a, new String [] { "1"}, "A1"),
-					makeIPD(a, new String [] { "2"}, "A2"),
-					makeIPD(b, new String [] { "10" }, "B10"),
-					makeIPD(b, new String [] { "1" }, "B1"),
-					makeIPD(a, new String [] { "10" }, "A10"),
-					makeIPD(b, new String [] { "2" }, "B2"));
-			Joiner joiner = new Joiner(Arrays.asList(a, b), new boolean [] { true });
-			Collection<ImageSetError> errors = new ArrayList<ImageSetError>();
+			ChannelFilter a = makeMonoChannelFilter("A", "file does contain \"A\"");
+			ChannelFilter b = makeMonoChannelFilter("B", "file does contain \"B\"");
+			C<ImagePlaneDetails> ipds = 
+				makeIPDs( new String [] {"A"}, new String [][] {{ "1"}, { "2" }, { "10" }}, "A")
+				.c(makeIPDs( new String [] {"B"}, new String [][] {{ "01"}, { "02" }, { "10" }}, "B"));
+			Joiner joiner = new Joiner(a, Arrays.asList("A"), Collections.singletonList(N));
+			joiner.addChannel(b, Collections.singletonList(MetadataKeyPair.makeNumericKeyPair("A", "B")));
+			List<ImageSetError> errors = new ArrayList<ImageSetError>();
 			List<ImageSet> result = joiner.join(ipds, errors);
 			assertSame(ipds.get(0), result.get(0).get(0).get(0, 0));
 			assertSame(ipds.get(1), result.get(1).get(0).get(0, 0));
-			assertSame(ipds.get(2), result.get(2).get(1).get(0, 0));
+			assertSame(ipds.get(2), result.get(2).get(0).get(0, 0));
 			assertSame(ipds.get(3), result.get(0).get(1).get(0, 0));
-			assertSame(ipds.get(4), result.get(2).get(0).get(0, 0));
-			assertSame(ipds.get(5), result.get(1).get(1).get(0, 0));
+			assertSame(ipds.get(4), result.get(1).get(1).get(0, 0));
+			assertSame(ipds.get(5), result.get(2).get(1).get(0, 0));
 		} catch (BadFilterExpressionException e) {
 			e.printStackTrace();
 			fail();
-		} catch (JoinerException e) {
-			e.printStackTrace();
-			fail();
 		}
-		
 	}
 
 }

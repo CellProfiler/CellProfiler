@@ -61,4 +61,16 @@ public class ImagePlaneDetailsStack extends PlaneStack<ImagePlaneDetails> {
 		stack.add(plane, 0, 0, 0);
 		return stack;
 	}
+	/**
+	 * Make a stack of labels matrices with one initial plane
+	 * 
+	 * @param plane
+	 * @return an XYO stack containing the plane
+	 */
+	static public ImagePlaneDetailsStack makeObjectsStack(ImagePlaneDetails plane) {
+		ImagePlaneDetailsStack stack = new ImagePlaneDetailsStack(XYOAxes);
+		stack.add(plane, 0, 0, 0);
+		return stack;
+		
+	}
 }

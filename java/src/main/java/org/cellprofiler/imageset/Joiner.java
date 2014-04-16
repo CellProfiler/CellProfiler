@@ -13,388 +13,206 @@
 package org.cellprofiler.imageset;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.logging.Logger;
 
-import net.imglib2.meta.Axes;
-import net.imglib2.meta.TypedAxis;
-import ome.xml.model.Plane;
 
-import org.cellprofiler.imageset.filter.Filter;
 
 /**
  * @author Lee Kamentsky
- * 
- * The joiner is the machine that creates image sets
- * from image plane descriptors.
+ *
+ * A joiner joins two lists of IPD stacks together
+ * using a set of keys
  *
  */
 public class Joiner {
-	/**
-	 * @author Lee Kamentsky
-	 * 
-	 * A JoinerException indicates that there is some logical problem
-	 * in the way the Joiner was put together, for instance that
-	 * it specifies a Cartesian product.
-	 *
-	 */
-	public static class JoinerException extends Exception {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 3466971897445983373L;
-
-		public JoinerException(String message) {
-			super(message);
+	protected static class Join {
+		final public ChannelFilter channelFilter;
+		final public List<MetadataKeyPair> joiningKeys;
+		public Join(ChannelFilter channelFilter, List<MetadataKeyPair> joiningKeys) {
+			this.channelFilter = channelFilter;
+			this.joiningKeys = joiningKeys;
 		}
-		
-	}
-	/**
-	 * @author Lee Kamentsky
-	 * 
-	 * A channel filter defines a channel's join criteria
-	 * and IPD filter.
-	 *
-	 */
-	public static class ChannelFilter {
-		/**
-		 * The metadata keys used for matching
-		 */
-		final private String [] keys;
-		/**
-		 * The filter used for filtering ipds
-		 */
-		final private Filter<ImagePlaneDetailsStack> filter;
-		
-		final private String name;
-		
-		final private TypedAxis [] axes;
-		/**
-		 * Initialize the channel filter with a filter and metadata keys.
-		 * 
-		 * @param channelName
-		 * @param keys
-		 * @param isNumeric - true if the key's value is treated as numeric during matching and sorting
-		 * @param filter
-		 * @param axes the axes for the filter. Typical choices:
-		 *        Monochrome: PlaneStack.XYAxes
-		 *        Color: PlaneStack.XYCAxes
-		 */
-		public ChannelFilter(
-				String channelName, 
-				String [] keys,
-				Filter<ImagePlaneDetailsStack> filter,
-				TypedAxis ... axes) {
-			this.name = channelName;
-			this.keys = keys;
-			this.filter = filter;
-			this.axes = axes;
-		}
-		
-		/**
-		 * Initialize the channel filter to match by order.
-		 * 
-		 * @param channelName
-		 * @param filter
-		 */
-		public ChannelFilter(String channelName, Filter<ImagePlaneDetailsStack> filter, TypedAxis... axes) {
-			this(channelName, null, filter, axes);
-		}
-		
-		public Filter<ImagePlaneDetailsStack> getFilter() { return filter; }
-		
-		public String getName() { return name; }
-		
-		public String [] getKeys() { return keys; }
-		
-		public TypedAxis [] getAxes() { return axes; }
-		
-		/**
-		 * @return the indices of the keys that have non-null metadata tags.
-		 */
-		public int [] getJoiningKeyIndices() {
-			int [] nonNullTags = new int[keys.length];
-			int idx = 0;
-			for (int i=0; i<keys.length; i++) {
-				if (keys[i] != null) {
-					nonNullTags[idx++] = i;
-				}
+		public List<String> getLeftKey(ImagePlaneDetailsStack d) {
+			List<String> result = new ArrayList<String>(joiningKeys.size());
+			for (MetadataKeyPair joiningKey:joiningKeys) {
+				result.add(d.get(joiningKey.leftKey));
 			}
-			return Arrays.copyOf(nonNullTags, idx);
+			return result;
+		}
+		public List<String> getRightKey(ImagePlaneDetailsStack d) {
+			List<String> result = new ArrayList<String>(joiningKeys.size());
+			for (MetadataKeyPair joiningKey:joiningKeys) {
+				result.add(d.get(joiningKey.rightKey));
+			}
+			return result;
+		}
+		public Comparator<List<String>> getComparator() {
+			List<Comparator<String>> comparators = new ArrayList<Comparator<String>>();
+			for (MetadataKeyPair kp:joiningKeys) comparators.add(kp.comparator);
+			return new ListComparator<String>(comparators);
 		}
 	}
-	
-	final private List<ChannelFilter> channels;
-	final private int anchorChannel;
-	final private int nKeys;
-	final private boolean [] isNumeric;
+	final private Comparator<List<String>> imageSetKeyComparator;
+	final private static Logger logger = Logger.getLogger(Joiner.class.getCanonicalName());
+	final private ChannelFilter anchorChannel;
+	final private List<String> keys;
+	final private List<Join> joinedChannels = new ArrayList<Joiner.Join>();
 	/**
-	 * Create a joiner from a list of channel filters
+	 * Construct a joiner to join other channels to an anchor
+	 * channel by metadata
 	 * 
-	 * @param channels channel filters that pick and assemble the image stacks in a channel
-	 * @param isNumeric - for each matching key, true if metadata values should be matched and sorted
-	 *                    numerically, false to match and sort as a string.
-	 * @throws JoinerException
+	 * @param anchorChannel the anchor channel produces one stack
+	 *                      per image set and all other channels
+	 *                      join to this one.
+	 * @param keys the keys that uniquely define an image set in
+	 *             the anchor channel's stack metadata (in lexical
+	 *             order for channel sorting).
+	 *             
+	 * @param comparators - comparators for each of the keys
 	 */
-	public Joiner(List<ChannelFilter> channels, boolean [] isNumeric) throws JoinerException {
-		if (channels.size() == 0) {
-			throw new JoinerException("The image set must have at least one channel");
-		}
-		this.channels = new ArrayList<ChannelFilter>(channels);
-		this.isNumeric = isNumeric;
-		int anchorChannel = -1;
-		nKeys = channels.get(0).getKeys().length;
-		for (int i=0; i<channels.size(); i++) {
-			ChannelFilter channel = channels.get(i);
-			String [] keys = channel.getKeys();
-			if (keys.length != nKeys) {
-				throw new JoinerException("All channels must have the same number of keys");
-			}
-			if (channel.getJoiningKeyIndices().length == nKeys) {
-				anchorChannel = i;
-			}
-		}
-		if (anchorChannel == -1) {
-			throw new JoinerException("At least one of the channels must have all matching tags specified");
-		}
+	public Joiner(ChannelFilter anchorChannel, List<String> keys, List<Comparator<String>> comparators){
 		this.anchorChannel = anchorChannel;
+		this.keys = keys;
+		imageSetKeyComparator = new ListComparator<String>(comparators);
 	}
 	
-	static private <T> List<T> getListOfNulls(int nElements) {
-		List<T> result = new ArrayList<T>(nElements);
-		for (int i=0; i<nElements; i++) result.add(null);
-		return result;
-	}
 	/**
-	 * @author Lee Kamentsky
-	 *
-	 * A class to compare channel key sets against each other
+	 * Add another channel to the joiner as well as a join criterion
 	 * 
-	 * A null key matches anything.
-	 * Other keys are matched on either a numeric or string basis
-	 * depending on whether the key is interpreted numerically or not.
+	 * @param channelFilter
+	 * @param joiningKeys - keys to use to join stacks from this channel to those in the anchor channel.
 	 */
-	protected class MetadataComparator implements Comparator<List<String>> {
-
-		public int compare(List<String> o1, List<String> o2) {
-			for (int i=0; i<isNumeric.length; i++) {
-				final String s1 = o1.get(i);
-				if (s1 == null) continue;
-				final String s2 = o2.get(i);
-				if (s2 == null) continue;
-				final int cmp = (isNumeric[i])?
-						Double.valueOf(s1).compareTo(Double.valueOf(s2)):
-						s1.compareTo(s2);
-				if (cmp != 0) return cmp;
-			}
-			return 0;
-		}
-		
-	}
-	/**
-	 * Join the image plane descriptors to make an image set list
-	 * @param ipds image plane descriptors (= image planes + metadata)
-	 * @param errors on input, this should be an empty collection. 
-	 *        On output it will hold an ImageSetError for every image set key
-	 *        which had missing or duplicate images.
-	 * @return a list of image sets.
-	 */
-	public List<ImageSet> join(List<ImagePlaneDetails> ipds, Collection<ImageSetError> errors) {
-		SortedMap<List<String>, List<ImagePlaneDetailsStack>> result = 
-			new TreeMap<List<String>, List<ImagePlaneDetailsStack>>(new MetadataComparator());
-		/*
-		 * Do the anchor channel first.
-		 */
-		Map<List<String>, ImagePlaneDetailsStack> channelResult = filterChannel(
-				channels.get(anchorChannel), ipds, errors);
-		for (Map.Entry<List<String>, ImagePlaneDetailsStack> entry:channelResult.entrySet()) {
-			List<ImagePlaneDetailsStack> imagesetIPDs = getListOfNulls(channels.size());
-			imagesetIPDs.set(anchorChannel, entry.getValue());
-			result.put(entry.getKey(), imagesetIPDs);
-		}
-		/*
-		 * Loop through the other channels.
-		 */
-		for (int i=0; i<channels.size(); i++) {
-			if (i == anchorChannel) continue;
-			final ChannelFilter channelFilter = channels.get(i);
-			channelResult = filterChannel(channelFilter, ipds, errors);
-			int [] idxs = channelFilter.getJoiningKeyIndices(); 
-			List<String> key = getListOfNulls(idxs.length);
-			Set<List<String>> channelResultKeys = new HashSet<List<String>>(channelResult.keySet());
-			for (Map.Entry<List<String>, List<ImagePlaneDetailsStack>> entry:result.entrySet()) {
-				/*
-				 * Extract only the metadata values in the result that are specified
-				 * by this channel.
-				 */
-				for (int j=0; j<idxs.length; j++) {
-					key.set(j, entry.getKey().get(idxs[j]));
-				}
-				if (! channelResult.containsKey(key)) {
-					ImageSetMissingError error = new ImageSetMissingError(
-							channelFilter.getName(), "No matching metadata", entry.getKey()); 
-					errors.add(error);
-				} else {
-					entry.getValue().set(i, channelResult.get(key));
-					channelResultKeys.remove(key);
-				}
-			}
-			for (List<String> missingKey:channelResultKeys) {
-				ImageSetMissingError error = new ImageSetMissingError(
-						channels.get(anchorChannel).getName(),
-						"No matching metadata", missingKey);
-				final List<ImagePlaneDetailsStack> errantImageSet = new ArrayList<ImagePlaneDetailsStack>(channels.size());
-				for (int ii=0; ii<channels.size(); ii++) {
-					errantImageSet.add((ii==i)?channelResult.get(missingKey):null);
-				}
-				error.setImageSet(errantImageSet);
-				errors.add(error);
-			}
-		}
-		/*
-		 * Remove any image sets with errors
-		 */
-		for (ImageSetError error: errors) {
-			final List<String> key = error.getKey();
-			if (result.containsKey(key)) {
-				List<ImagePlaneDetailsStack> imageSet = result.get(key);
-				error.setImageSet(imageSet);
-				result.remove(key);
-			}
-		}
-		/*
-		 * Construct the final list
-		 */
-		List<ImageSet> imageSet = new ArrayList<ImageSet>(result.size());
-		for (Map.Entry<List<String>, List<ImagePlaneDetailsStack>> entry:result.entrySet()) {
-			imageSet.add(new ImageSet(entry.getValue(), entry.getKey()));
-		}
-		return imageSet;
+	public void addChannel(ChannelFilter channelFilter, List<MetadataKeyPair> joiningKeys) {
+		joinedChannels.add(new Join(channelFilter, joiningKeys));
 	}
 	
-	private Map<List<String>, ImagePlaneDetailsStack> filterChannel(
-			ChannelFilter channelFilter,
-			List<ImagePlaneDetails> ipds,
-			Collection<ImageSetError> errors) {
-		Map<List<String>, ImageSetDuplicateError> localErrors = 
-			new HashMap<List<String>, ImageSetDuplicateError>();
-		Map<List<String>, ImagePlaneDetailsStack> result = 
-			new HashMap<List<String>, ImagePlaneDetailsStack>();
-
-		List<ImagePlaneDetailsStack> ipdStacks = getStacks(ipds, channelFilter.getAxes());
-		String [] keys = channelFilter.getKeys();
-		int [] idxs = channelFilter.getJoiningKeyIndices();
-		next_ipd:
-		for (ImagePlaneDetailsStack ipdStack:ipdStacks) {
-			if (channelFilter.getFilter().eval(ipdStack)) {
-				List<String> keyValues = new ArrayList<String>(idxs.length);
-				for (int i:idxs) {
-					if (! ipdStack.containsKey(keys[i])) continue next_ipd;
-					keyValues.add(ipdStack.get(keys[i]));
+	/**
+	 * Make image sets using the joiner
+	 * 
+	 * @param ipds the image planes to assemble into image sets
+	 * @param errors an empty list which will hold the errors that we found
+	 * 
+	 * @return an ordered list of image sets
+	 */
+	public List<ImageSet> join(List<ImagePlaneDetails> ipds, List<ImageSetError> errors)
+	{
+		SortedMap<List<String>, ImageSet> imageSets = 
+			new TreeMap<List<String>, ImageSet>(imageSetKeyComparator);
+		SortedMap<List<String>, List<ImagePlaneDetailsStack>> duplicates =
+			new TreeMap<List<String>, List<ImagePlaneDetailsStack>>(imageSetKeyComparator);
+		List<ImageSetMissingError> missing = new ArrayList<ImageSetMissingError>();
+		Set<List<String>> bad = new TreeSet<List<String>>(imageSetKeyComparator);
+		
+		stack_loop:
+		for (ImagePlaneDetailsStack stack:anchorChannel.makeStacks(ipds)) {
+			List<String> stackKey = new ArrayList<String>(keys.size());
+			for (String key:keys) {
+				final String value = stack.get(key);
+				if (value == null) {
+					ImageFile f = stack.iterator().next().getImagePlane().getImageFile();
+					logger.info(String.format("%s in channel %s does not have metadata for %s key", 
+							f, anchorChannel.getName(), key));
+					continue stack_loop;
 				}
-				if (result.containsKey(keyValues)) {
-					if (localErrors.containsKey(keyValues)) {
-						localErrors.get(keyValues).getImagePlaneDetailsStacks().add(ipdStack);
-					} else {
-						List<ImagePlaneDetailsStack> errorIPDs = new ArrayList<ImagePlaneDetailsStack>(2);
-						errorIPDs.add(result.get(keyValues));
-						errorIPDs.add(ipdStack);
-						localErrors.put(keyValues, 
-								new ImageSetDuplicateError(
-										channelFilter.getName(), 
-										"Duplicate entries for key", 
-										keyValues, errorIPDs));
-					}
-					continue;
+				stackKey.add(value);
+			}
+			if (imageSets.containsKey(stackKey)) {
+				if (! duplicates.containsKey(stackKey)) {
+					duplicates.put(stackKey, new ArrayList<ImagePlaneDetailsStack>(1));
 				}
-				result.put(keyValues, ipdStack);
-			}
-		}
-		errors.addAll(localErrors.values());
-		return result;
-	}
-
-	private List<ImagePlaneDetailsStack> getStacks(List<ImagePlaneDetails> ipds, TypedAxis [] axes) {
-		for (TypedAxis axis: axes) {
-			if (axis.type().equals(Axes.CHANNEL)) {
-				return getColorStacks(ipds);
-			}
-		}
-		return getMonochromeStacks(ipds);
-	}
-
-	private List<ImagePlaneDetailsStack> getMonochromeStacks(List<ImagePlaneDetails> ipds) {
-		List<ImagePlaneDetailsStack> result = new ArrayList<ImagePlaneDetailsStack>();
-		for (ImagePlaneDetails ipd:ipds) {
-			result.add(ImagePlaneDetailsStack.makeMonochromeStack(
-					ipd.coerceToMonochrome()));
-		}
-		return result;
-	}
-
-	protected static class ChannelGrouping implements Comparable<ChannelGrouping> {
-		final public ImagePlaneDetails ipd;
-		final public int z;
-		final public int t;
-		final public int c;
-		public ChannelGrouping(ImagePlaneDetails ipd) {
-			Plane omePlane = ipd.getImagePlane().getOMEPlane();
-			this.ipd = ipd;
-			c = omePlane.getTheC().getValue();
-			t = omePlane.getTheT().getValue();
-			z = omePlane.getTheZ().getValue();
-		}
-
-		public int compareTo(ChannelGrouping o) {
-			int result = ipd.getImagePlane().getSeries().compareTo(
-					o.ipd.getImagePlane().getSeries());
-			if (result != 0) return result;
-			if (z != o.z) return z - o.z;
-			if (t != o.t) return t - o.t;
-			return c - o.c;
-		}
-	}
-	private List<ImagePlaneDetailsStack> getColorStacks(List<ImagePlaneDetails> ipds) {
-		List<ImagePlaneDetailsStack> result = new ArrayList<ImagePlaneDetailsStack>();
-		//
-		// Make ChannelGrouping keys for planes that have decent OME metadata
-		//
-		List<ChannelGrouping> groupingPlanes = new ArrayList<ChannelGrouping>();
-		for (ImagePlaneDetails ipd:ipds) {
-			final ImagePlane imagePlane = ipd.getImagePlane();
-			if (imagePlane.getOMEPlane() != null) {
-				groupingPlanes.add(new ChannelGrouping(ipd));
+				duplicates.get(stackKey).add(stack);
 			} else {
-				result.add(ImagePlaneDetailsStack.makeColorStack(ipd));
+				final ImageSet imageSet = new ImageSet(stack, stackKey);
+				imageSets.put(stackKey, imageSet);
 			}
 		}
-		if (groupingPlanes.size() > 0) {
-			// Order the planes so that consecutive channels of the
-			// same channel-stack appear consecutively
-			Collections.sort(groupingPlanes);
-			ImagePlaneDetailsStack stack = new ImagePlaneDetailsStack(PlaneStack.XYCAxes);
-			int lastChannel = -1;
-			for (ChannelGrouping g:groupingPlanes) {
-				if (g.c > lastChannel) {
-					stack.add(g.ipd, 0, 0, g.c);
-				} else {
-					result.add(stack);
-					stack = ImagePlaneDetailsStack.makeColorStack(g.ipd);
+		errors.addAll(compileDuplicates(duplicates, anchorChannel.getName()));
+		for (int i=0; i<joinedChannels.size(); i++) {
+			Join join = joinedChannels.get(i);
+			SortedMap<List<String>, List<ImageSet>> groupedImageSets =
+				new TreeMap<List<String>, List<ImageSet>>(join.getComparator());
+			duplicates = new TreeMap<List<String>, List<ImagePlaneDetailsStack>>(join.getComparator());
+			//
+			// Create groups of extant image sets using the possibly truncated
+			// key set
+			//
+			for (ImageSet imageSet:imageSets.values()) {
+				final List<String> stackKey = join.getLeftKey(imageSet.get(0));
+				List<ImageSet> match = groupedImageSets.get(stackKey);
+				if (match == null) {
+					match = new ArrayList<ImageSet>();
+					groupedImageSets.put(stackKey, match);
 				}
-				lastChannel = g.c;
+				match.add(imageSet);
 			}
-			result.add(stack);
+			//
+			// Generate the auxilliary channel's stacks and assign
+			//
+			for (ImagePlaneDetailsStack stack:join.channelFilter.makeStacks(ipds)) {
+				final List<String> stackKey = join.getRightKey(stack);
+				final List<ImageSet> match = groupedImageSets.get(stackKey);
+				if (match == null) {
+					ImageFile f = stack.iterator().next().getImagePlane().getImageFile();
+					String message = String.format(
+						"%s in channel %s with metadata %s has no match", 
+						f, anchorChannel.getName(), stackKey);
+					missing.add(new ImageSetMissingError(
+							join.channelFilter.getName(),
+							message, stackKey));
+				} else {
+					for (ImageSet imageSet:match) {
+						if (imageSet.size() > i+1) {
+							List<ImagePlaneDetailsStack> dlist = duplicates.get(imageSet.getKey());
+							if (dlist == null) {
+								dlist = new ArrayList<ImagePlaneDetailsStack>();
+								duplicates.put(imageSet.getKey(), dlist);
+							}
+							dlist.add(stack);
+						} else {
+							imageSet.add(stack);
+						}
+					}
+				}
+			}
+			errors.addAll(compileDuplicates(duplicates, join.channelFilter.getName()));
+			for (ImageSet imageSet:imageSets.values()) {
+				if (imageSet.size() != i+2) {
+					missing.add(new ImageSetMissingError(join.channelFilter.getName(), "Missing from channel", imageSet.getKey()));
+					imageSet.add(null);
+					bad.add(imageSet.getKey());
+				}
+			}
+		}
+		//
+		// At the end, remove all bad image sets
+		//
+		for (List<String> key:bad) imageSets.remove(key);
+		errors.addAll(missing);
+		return new ArrayList<ImageSet>(imageSets.values());
+	}
+
+	/**
+	 * Create ImageSetDuplicateError entries for these duplicates
+	 *  
+	 * @param duplicates stacks that are duplicates for this channel.
+	 * @param name channel name
+	 * @return
+	 */
+	private List<? extends ImageSetError> compileDuplicates(
+			SortedMap<List<String>, List<ImagePlaneDetailsStack>> duplicates,
+			String name) {
+		List<ImageSetError> result = new ArrayList<ImageSetError>();
+		for (Map.Entry<List<String>, List<ImagePlaneDetailsStack>> e:duplicates.entrySet()) {
+			result.add(new ImageSetDuplicateError(name, "Duplicate entries", e.getKey(), e.getValue()));
 		}
 		return result;
 	}
-			
+
 }

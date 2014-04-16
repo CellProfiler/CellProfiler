@@ -31,6 +31,12 @@ import ome.xml.model.Plane;
  * a monochrome image can be synthesized out of the color image
  * or the image can be left as color.
  *
+ * In the context of CellProfiler, it's often not scalable to have
+ * the UI read the OME XML metadata for every image during image
+ * set creation. We assume that the images are what the user
+ * chooses them to be and coerce them to the correct type
+ * when the image is read - because of this, sometimes
+ * a plane is not a plane...
  */
 public class ImagePlane {
 	private final ImageSeries imageSeries;
@@ -38,10 +44,31 @@ public class ImagePlane {
 	private final int channel;
 	
 	/**
+	 * This "channel number" requests that the "image plane"
+	 * should be interpreted as a labels matrix, possibly composed
+	 * of overlapping objects organized as several planes.
+	 * 
+	 * It may be that the OME XML hasn't been collected and,
+	 * at the time of reading, if several planes are discovered,
+	 * they should be interpreted as overlapping objects.
+	 */
+	static final public int OBJECT_PLANES=-3;
+	/**
+	 * This "channel number" indicates that, although the
+	 * data may be organized in a single plane, the plane is
+	 * composed of alternating red, green and blue (and maybe alpha)
+	 * values.
+	 * 
+	 *  Also, if a plane is marked as INTERLEAVED and there is
+	 *  no OME XML for the plane, the true format should be
+	 *  discovered when it is read and the image should be
+	 *  coerced to a stack of color planes
+	 */
+	static final public int INTERLEAVED=-2;
+	/**
 	 * This is the "channel number" for formats where we
 	 * force color images to be monochrome.
 	 */
-	static final public int INTERLEAVED=-2;
 	static final public int ALWAYS_MONOCHROME=-1;
 	static final public int RED_CHANNEL=0;
 	static final public int GREEN_CHANNEL=1;
@@ -77,6 +104,16 @@ public class ImagePlane {
 	 */
 	static public ImagePlane makeColorPlane(ImageFile imageFile) {
 		return new ImagePlane(imageFile, INTERLEAVED);
+	}
+	
+	/**
+	 * Construct an objects plane for reading labels matrices.
+	 * 
+	 * @param imageFile
+	 * @return
+	 */
+	static public ImagePlane makeObjectsPlane(ImageFile imageFile) {
+		return new ImagePlane(imageFile, OBJECT_PLANES);
 	}
 	
 	/**
@@ -127,6 +164,7 @@ public class ImagePlane {
 		return String.format("ImagePlane: %s, series=%d, index=%d, channel=%s", 
 				imageSeries.getImageFile(), imageSeries.getSeries(), index,
 				(channel == ALWAYS_MONOCHROME)?"Monochrome":
-				((channel == INTERLEAVED)?"Color":Integer.toString(channel)));
+				((channel == INTERLEAVED)?"Color":
+					((channel == OBJECT_PLANES)?"Objects":Integer.toString(channel))));
 	}
 }

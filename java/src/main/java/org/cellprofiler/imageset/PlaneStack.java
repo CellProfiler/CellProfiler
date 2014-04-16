@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.imglib2.meta.AbstractTypedSpace;
+import net.imglib2.meta.AxisType;
 import net.imglib2.meta.TypedAxis;
 import net.imglib2.meta.Axes;
 import net.imglib2.meta.DefaultTypedAxis;
@@ -43,6 +44,23 @@ public class PlaneStack<T>
 	static public final TypedAxis[] XYCAxes = new TypedAxis [] {
 		new DefaultTypedAxis(Axes.X), new DefaultTypedAxis(Axes.Y),
 		new DefaultTypedAxis(Axes.CHANNEL)
+	};
+	/**
+	 * Overlapping objects are stored as consecutive planes
+	 * in a TIF file and C / Z / T metadata are ignored.
+	 */
+	static public final String OBJECT_PLANE_AXIS_NAME = "ObjectPlane";
+	/**
+	 * The axis type for an axis that is a stack of labels matrix
+	 * planes for overlapping objects.
+	 */
+	static public final AxisType OBJECT_PLANE_AXIS_TYPE = Axes.get(OBJECT_PLANE_AXIS_NAME, false);
+	/**
+	 * The axis type for a stack of overlapping labels planes. 
+	 */
+	static public final TypedAxis[] XYOAxes = new TypedAxis [] {
+		new DefaultTypedAxis(Axes.X), new DefaultTypedAxis(Axes.Y),
+		new DefaultTypedAxis(OBJECT_PLANE_AXIS_TYPE)
 	};
 	/**
 	 * Construct a plane stack that can hold just a single

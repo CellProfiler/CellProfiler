@@ -845,185 +845,247 @@ class NamesAndTypes(cpm.CPModule):
         workspace - the current workspace
         '''
         pipeline = workspace.pipeline
-        env = J.get_env()
-        filter_class = env.find_class("org/cellprofiler/imageset/filter/Filter")
-        eval_method = env.get_method_id(
-            filter_class,
-            "eval",
-            "(Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;)Z")
-        ipds = pipeline.get_filtered_image_plane_details(workspace, 
-                                                         with_metadata=True)
+        ipds = pipeline.get_image_plane_details(workspace)
         #
-        # Remove any ipd with series = None and index = None if followed
-        # by same URL and series = 0, index = 0
+        # Put the IPDs into a list
         #
-        if len(ipds) > 1:
-            ipds = [ipd for ipd, next_ipd in zip(ipds[:-1], ipds[1:])
-                    if ipd.url != next_ipd.url
-                    or ipd.series is not None or ipd.index is not None] + [
-                        ipds[-1]]
-                
-        column_names = self.get_column_names()
+        ipd_list = J.make_list([ipd.jipd for ipd in ipds])
+        
         if self.assignment_method == ASSIGN_ALL:
-            self.image_sets = [((i+1, ), { column_names[0]: (ipd, ) })
-                               for i, ipd in enumerate(ipds)]
-            return [ipds]
-        elif self.matching_method == MATCH_BY_ORDER:
-            filters = []
-            columns = []
-            for assignment in self.assignments:
-                fltr = J.make_instance(
-                    "org/cellprofiler/imageset/filter/Filter",
-                    "(Ljava/lang/String;)V", assignment.rule_filter.value_text)
-                column = []
-                for ipd in ipds:
-                    keep = env.call_method(fltr, eval_method, ipd.jipd)
-                    jexception = env.exception_occurred()
-                    if jexception is not None:
-                        raise J.JavaException(jexception)
-                    if keep:
-                        column.append(ipd)
-                columns.append(column)
-            self.append_single_image_columns(columns, ipds)
-            l0 = len(columns[0])
-            lmin = l0
-            lmax = l0
-            display_message = not cpprefs.get_headless()
-            for column_name, c in zip(column_names, columns):
-                l = len(c)
-                if l != l0:
-                    if display_message:
-                        msg = (
-                            "Warning: the image set list has different numbers of images\n"
-                            "for channels %s (%d images) and %s (%d images).\n"
-                            "Do you want to continue?") % (
-                                column_names[0], l0, column_name, l)
-                        import wx
-                        result = wx.MessageBox(
-                            msg, 
-                            caption="NamesAndTypes: matching by order error",
-                            style = wx.YES_NO | wx.ICON_QUESTION)
-                        if result == wx.NO:
-                            return None
-                        display_message = False
-                    lmin = min(lmin, l)
-                    lmax = max(lmax, l)
-            n_rows = lmin
-            if lmin != lmax:
-                logger.warning("Truncating image set: some channels have fewer images than others")
-                for column in columns:
-                    del column[lmin:]
-            
-            self.image_sets = [
-                ((i+1, ), 
-                 dict([(column_name, None if len(column) >= i else column[i])
-                       for column_name, column in zip(column_names, columns)]))
-                for i in range(n_rows)]
-            return columns
-        else:
-            channels = []
-            joins = self.join.parse()
-            columns = []
-            for assignment in self.assignments:
-                if assignment.load_as_choice == LOAD_AS_OBJECTS:
-                    channel_name = assignment.object_name.value
+            image_sets = self.java_make_image_sets_assign_all(
+                workspace, ipd_list)
+            channels = { (self.single_image_provider.value, cpmeas.IMAGE): 0 }
+        elif self.matching_choice == MATCH_BY_ORDER:
+            image_sets = self.java_make_image_sets_by_order(
+                workspace, ipd_list)
+            channels =  {}
+            for i, group in enumerate(self.assignments):
+                if group.load_as_choice == LOAD_AS_OBJECTS:
+                    channels[(group.object_name.value, cpmeas.OBJECT)] = i
                 else:
-                    channel_name = assignment.image_name.value
-                keys = [d[channel_name] for d in joins]
-                keys = J.get_nice_arg(keys, "[Ljava/lang/String;")
-                channel = J.run_script("""
-                importPackage(Packages.org.cellprofiler.imageset);
-                importPackage(Packages.org.cellprofiler.imageset.filter);
-                var filter = new Filter(expression);
-                new Joiner.ChannelFilter(channelName, keys, filter);
-                """, dict(expression = assignment.rule_filter.value_text,
-                          keys = keys,
-                          channelName = channel_name))
-                channels.append(channel)
-            channels = J.make_list(channels)
-            joiner = J.make_instance(
-                "org/cellprofiler/imageset/Joiner",
-                "(Ljava/util/List;)V", channels.o)
-            errors = J.make_list()
-            jipds = J.make_list()
-            fn_add = J.make_call(jipds.o, "add", "(Ljava/lang/Object;)Z")
-            for ipd in ipds:
-                fn_add(ipd.jipd)
-            jipds = J.static_call(
-                "org/cellprofiler/imageset/filter/IndexedImagePlaneDetails",
-                "index", 
-                "(Ljava/util/List;)Ljava/util/List;", jipds.o)
-            result = J.call(joiner, "join",
-                            "(Ljava/util/List;Ljava/util/Collection;)"
-                            "Ljava/util/List;", jipds, errors.o)
+                    channels[(group.image_name.value, cpmeas.IMAGE)] = i
+        else:
+            image_sets, channels = \
+                self.java_make_image_sets_by_metadata(workspace, ipd_list)
+        if image_sets is None:
+            return None
+
+    @staticmethod
+    def get_axes_for_load_as_choice(load_as_choice):
+        '''Get the appropriate set of axes for a given way of loading an image
+        
+        load_as_choice - one of the LOAD_AS_ constants
+        
+        returns the CellProfiler java PlaneStack prebuilt axes list that
+        is the appropriate shape for the channel's image stack, e.g. XYCAxes
+        for color.
+        '''
+        script = "Packages.org.cellprofiler.imageset.PlaneStack.%;"
+        if load_as_choice == LOAD_AS_COLOR_IMAGE:
+            return J.run_script(script % "XYCAxes")
+        elif load_as_choice == LOAD_AS_OBJECTS:
+            return J.run_script(script %"XYOAxes")
+        else:
+            return J.run_script(script % "XYAxes")
+        
+    def make_channel_filter(self, group, name):
+        '''Make a channel filter to get images for this group'''
+        script = """
+        importPackage(Packages.org.cellprofiler.imageset);
+        importPackage(Packages.org.cellprofiler.filter);
+        var filter = new Filter(expr, ImagePlaneDetailsStack.class);
+        new ChannelFilter(name, filter, PlaneStack.%s);
+        """
+        axes = self.get_axes_for_load_as_choice(group.load_as_choice.value)
+        return J.run_script(
+            script, dict(expr=group.rule_filter.value, name=name, axes=axes))
+    
+    def get_metadata_comparator(self, workspace, key):
+        '''Get a Java Comparator<String> for a metadata key'''
+        pipeline = workspace.pipeline
+        if pipeline.get_available_metadata(keys).get(key) in (
+            cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER):
+            script =\
+            """importPackage("Packages.org.cellprofiler.imageset");
+            MetadataKeyPair.getNumericComparator();
+            """
+        elif pipeline.use_case_insensitive_metadata_matching():
+            script =\
+            """importPackage("Packages.org.cellprofiler.imageset");
+            MetadataKeyPair.getCaseInsensitiveComparator();
+            """
+        else:
+            script =\
+            """importPackage("Packages.org.cellprofiler.imageset");
+            MetadataKeyPair.getCaseSensitiveComparator();
+            """
+        return J.run_script(script)
+    
+    def make_metadata_key_pair(self, workspace, left_key, right_key):
+        c = self.get_metadata_comparator(workspace, left_key)
+        return J.run_script("""
+        importPackage(Packages.org.cellprofiler.imageset);
+        new MetadataKeyPair(left_key, right_key, c);
+        """, dict(left_key=left_key, right_key=right_key, c=c))
+        
+    def java_make_image_sets_by_metadata(self, workspace, ipd_list):
+        '''Make image sets by matching images by metadata
+        
+        workspace - current workspace
+        ipd_list - a wrapped Java List<ImagePlaneDetails> containing
+                   the IPDs to be composed into channels.
+        
+        returns a Java list of ImageSet objects and a dictionary of
+        channel name to index in the image set.
+        '''
+        metadata_types = workspace.pipeline.get_available_metadata_keys()
+        #
+        # Find the anchor channel - it's the first one which has metadata
+        # definitions for all joins
+        #
+        joins = self.join.parse()
+        channels = []
+        anchor_channel = None
+        channel_names = self.get_column_names()
+        for i, group in enumerate(assignments):
+            name = channel_names[i]
+            if anchor_channel is None:
+                anchor_keys = []
+                for join in joins:
+                    if join.get(name) == None:
+                        break
+                    anchor_keys.append(join[name])
+                else:
+                    anchor_channel = i
+                    anchor_cf = self.make_channel_filter(group, name)
+            channels.append((name, category))
+        channels = dict([(c, 0 if i == anchor_channel 
+                        else i if i < anchor_channel
+                        else i+1) for i, c in enumerate(channels)])
+        #
+        # Make the joiner
+        #
+        jkeys = J.make_list(anchor_keys)
+        jcomparators = J.make_list([
+            self.get_metadata_comparator(workspace, key)
+            for key in anchor_keys])
+        
+        script = """
+        importPackage(Packages.org.cellprofiler.imageset);
+        new Joiner(anchor_cf, keys, comparators)
+        """
+        joiner = J.run_script(
+            script, dict(anchor_cf = anchor_cf, keys=jkeys, 
+                         comparators = jcomparators))
+        #
+        # Make the column filters and joins for the others
+        #
+        for i, (group, name) in enumerate(zip(self.assignments, channel_names)):
+            if i == anchor_channel:
+                continue
+            cf = self.make_channel_filter(group, name)
+            joining_keys = J.make_list()
+            for j, join in enumerate(joins):
+                if join.get(name) is not None:
+                    joining_keys.add(self.make_metadata_key_pair(
+                        workspace, anchor_keys[j], join[name]))
+            J.run_script("""
+            joiner.addChannel(cf, joiningKeys);
+            """, dict(cf=cf, joiningKeys=joining_keys))
+        errors = J.make_list()
+        image_sets = J.run_script("""
+        joiner.join(ipds, errors);
+        """, dict(ipds = ipd_list.o, errors = errors.o))
+        if len(errors) > 0:
+            if not self.handle_errors(errors):
+                return None, None
             
-            indexes = env.make_int_array(np.array([-1] * len(channels), np.int32))
-            getIndices = J.make_static_call(
-                "org/cellprofiler/imageset/filter/IndexedImagePlaneDetails",
-                "getIndices",
-                "(Ljava/util/List;[I)V")
-            def getIPDs(o):
-                getIndices(o, indexes)
-                idxs = env.get_int_array_elements(indexes)
-                return [None if idx == -1 else ipds[idx] for idx in idxs]
+        return image_sets, channels
                 
-            getKey = J.make_call(
-                "org/cellprofiler/imageset/ImageSet",
-                "getKey", "()Ljava/util/List;")
-            columns = [[] for _ in range(
-                len(self.assignments)+len(self.single_images))]
-            image_sets = {}
-            d = {}
-            acolumns = columns[:len(self.assignments)]
-            scolumns = columns[len(self.assignments):]
-            anames = column_names[:len(self.assignments)]
-            snames = column_names[len(self.assignments):]
-            s_ipds = [
-                (self.get_single_image_ipd(single_image, ipds),)
-                for single_image in self.single_images]
-            for image_set in J.iterate_collection(result):
-                image_set_ipds = getIPDs(image_set)
-                for column_name, column, ipd in zip(
-                    anames, acolumns, image_set_ipds):
-                    column.append(ipd)
-                    d[column_name] = tuple() if ipd is None else (ipd, )
-                for column_name, column, ipd in zip(
-                    snames, scolumns, s_ipds):
-                    column.append(ipd[0])
-                    d[column_name] = ipd
-                key = tuple(J.iterate_collection(getKey(image_set), 
-                                                 env.get_string_utf))
-                image_sets[key] = d
-            for error in J.iterate_collection(errors.o):
-                image_set_ipds = J.call(error, "getImageSet", "()Ljava/util/List;")
-                key = tuple(J.iterate_collection(J.call(
-                    error, "getKey", "()Ljava/util/List;"), env.get_string_utf))
-                if image_set_ipds is None:
-                    emetadata = []
-                    echannel = J.call(error, "getChannelName", "()Ljava/lang/String;")
-                    for k, j in zip(key, joins):
-                        if k is not None and j[echannel] is not None:
-                            emetadata.append("%s=%s" % (j[echannel], k))
-                    emetadata = ",".join(emetadata)
-                    logger.warning(
-                        ("Channel %s does not have a matching file for "
-                         "metadata: %s") % ( echannel, emetadata))
-                    continue
-                image_set_ipds = getIPDs(image_set_ipds)
-                if key not in image_sets:
-                    d = dict(zip(column_names, image_set_ipds))
-                    image_sets[key] = d
-                if J.is_instance_of(error, "org/cellprofiler/imageset/ImageSetDuplicateError"):
-                    errant_channel = J.call(error, "getChannelName",
-                                            "()Ljava/lang/String;")
-                    iduplicates = J.iterate_collection(
-                        J.call(error, "getImagePlaneDetails",
-                               "()Ljava/util/List;"))
-                    duplicates = [ipds[J.call(duplicate, "getIndex", "()I")]
-                                  for duplicate in iduplicates]
-                    image_sets[key][errant_channel] = tuple(duplicates)
-            self.image_sets = sorted(image_sets.iteritems())
-            return columns
+    def java_make_image_sets_assign_all(self, workspace, ipd_list):
+        '''Group all IPDs into stacks and assign to a single channel
+        
+        workspace - workspace for the analysis
+        ipd_list - a wrapped Java List<ImagePlaneDetails> containing
+                   the IPDs to be composed into channels.
+        '''
+        axes = self.get_axes_for_load_as_choice(
+            self.single_load_as_choice.value)
+        name = self.single_images.value
+        errors = J.make_list()
+        image_sets = J.run_script("""
+        importPackage(Packages.org.cellprofiler.imageset);
+        var cf = new ChannelFilter(name, axes);
+        var cfs = java.util.Collections.singletonList(cf);
+        ChannelFilter.makeImageSets(cfs, ipds, errors);
+        """, dict(axes=axes, name=name, ipds=ipd_list.o, errors =errors))
+        if len(errors) > 0:
+            if not self.handle_errors(errors):
+                return None
+        return image_sets
+    
+    def java_make_image_sets_by_order(self, workspace, ipd_list):
+        '''Make image sets by coallating channels of image plane stacks
+        
+        workspace - workspace for the analysis
+        ipd_list - a wrapped Java List<ImagePlaneDetails> containing
+                   the IPDs to be composed into channels.
+        '''
+        channel_filters = J.make_list(
+            [self.make_channel_filter(group, name)
+             for group, name in zip(self.assignments, self.get_column_names())])
+        errors = J.make_list()
+        image_sets = J.run_script("""
+        importPackage(Packages.org.cellprofiler.imageset);
+        ChannelFilter.makeImageSets(cfs, ipds, errors);
+        """, dict(cfs = channel_filters.o, ipds=ipd_list.o, errors =errors))
+        if len(errors) > 0:
+            if not self.handle_errors(errors):
+                return None
+        return image_sets
+                       
+    def handle_errors(self, errors):
+        '''Handle UI presentation of errors and user's response
+        
+        errors - a wrapped Java list of ImageSetError objects
+        
+        returns True if no errors or if user is OK with them
+                False if user wants to abort.
+        '''
+        if len(errors) == 0:
+            return True
+        env = J.get_env()
+        indexes = env.make_int_array(np.array([-1] * len(channels), np.int32))
+        getIndices = J.make_static_call(
+            "org/cellprofiler/imageset/filter/IndexedImagePlaneDetails",
+            "getIndices",
+            "(Ljava/util/List;[I)V")
+        def getIPDs(o):
+            getIndices(o, indexes)
+            idxs = env.get_int_array_elements(indexes)
+            return [None if idx == -1 else ipds[idx] for idx in idxs]
+
+        for error in J.iterate_collection(errors.o):
+            image_set_ipds = J.call(error, "getImageSet", "()Ljava/util/List;")
+            key = tuple(J.iterate_collection(J.call(
+                 error, "getKey", "()Ljava/util/List;"), env.get_string_utf))
+            echannel = J.call(error, "getChannelName", "()Ljava/lang/String;")
+            message = J.call(error, "getMessage", "()Ljava/lang/String;")
+            logger.warning(
+                     "Error for image set, channel=%s, metadata=%s: %s" %
+                     (str(key), echannel, message))
+        if not cpprefs.get_headless():
+            msg = (
+                "Warning: %d image set errors found (see log for details)\n"
+                "Do you want to continue?") % (errors.size())
+            import wx
+            result = wx.MessageBox(
+                msg, 
+                caption="NamesAndTypes: matching by order error",
+                style = wx.YES_NO | wx.ICON_QUESTION)
+            if result == wx.NO:
+                return False
+        return True
                 
     def append_single_image_columns(self, columns, ipds):
         max_len = np.max([len(x) for x in columns])

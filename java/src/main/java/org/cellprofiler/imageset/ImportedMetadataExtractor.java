@@ -14,7 +14,6 @@ package org.cellprofiler.imageset;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -35,79 +34,6 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDetails> {
 
-	/**
-	 * @author Lee Kamentsky
-	 *
-	 * An ImportedMetadataExtractor.KeyPair represents a pair
-	 * of metadata keys used for matching. The ImportedMetadataExtractor
-	 * matches sets of values in the CSV to sets of values in the
-	 * ImagePlaneDetails's metadata. The metadata key names in the
-	 * CSV can be different than in the IPD, for instance "PlateName"
-	 * in the CSV and "Plate" in the IPD. The KeyPair allows arbitrary
-	 * matching of metadata keys between the two.
-	 */
-	static public class KeyPair {
-		final public String csvKey;
-		final public String ipdKey;
-		final public Comparator<String> comparator;
-		public KeyPair(String csvKey, String ipdKey, Comparator<String> comparator){
-			this.csvKey = csvKey;
-			this.ipdKey = ipdKey;
-			this.comparator = comparator;
-		}
-		/**
-		 * Create a comparator of strings from one of objects
-		 * @param c
-		 * @return
-		 */
-		static private Comparator<String> adapt(final Comparator<Object> c) {
-			return new Comparator<String> () {
-
-				public int compare(String o1, String o2) {
-					return c.compare(o1, o2);
-				}
-				
-			};
-		}
-		/**
-		 * Make a key pair that requires exact case comparison
-		 * @param csvKey
-		 * @param ipdKey
-		 * @return
-		 */
-		static public KeyPair makeCaseSensitiveKeyPair(String csvKey, String ipdKey) {
-			Collator c = Collator.getInstance();
-			c.setStrength(Collator.IDENTICAL);
-			return new KeyPair(csvKey, ipdKey, adapt(c));
-		}
-		/**
-		 * Make a key pair that allows case-insensitive comparison
-		 * @param csvKey
-		 * @param ipdKey
-		 * @return
-		 */
-		static public KeyPair makeCaseInsensitiveKeyPair(String csvKey, String ipdKey) {
-			Collator c = Collator.getInstance();
-			c.setStrength(Collator.SECONDARY);
-			return new KeyPair(csvKey, ipdKey, adapt(c));
-		}
-		/**
-		 * Make a key pair that does numeric comparison
-		 * @param csvKey
-		 * @param ipdKey
-		 * @return
-		 */
-		static public KeyPair makeNumericKeyPair(String csvKey, String ipdKey) {
-			Comparator<String> c = new Comparator<String> () {
-
-				public int compare(String o1, String o2) {
-					if (o1.equals(o2)) return 0;
-					return Double.valueOf(o1).compareTo(Double.valueOf(o2));
-				}
-			};
-			return new KeyPair(csvKey, ipdKey, c);
-		}
-	}
 	/**
 	 * @author Lee Kamentsky
 	 *
@@ -138,7 +64,7 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 	 * The keys to be matched against IPD metadata, in the order they appear
 	 * in the importedMetadata map key list.
 	 */
-	final private KeyPair [] matchingKeys;
+	final private MetadataKeyPair [] matchingKeys;
 	/**
 	 * The column positions of those matching keys
 	 */
@@ -167,7 +93,7 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 	 * @param caseInsensitive true if case-insensitive matching should be used when matching values
 	 * @throws IOException 
 	 */
-	public ImportedMetadataExtractor(Reader rdr, KeyPair [] matchingKeys) 
+	public ImportedMetadataExtractor(Reader rdr, MetadataKeyPair [] matchingKeys) 
 	throws IOException {
 		this.matchingKeys = matchingKeys;
 		csvReader = new CSVReader(rdr);
@@ -183,7 +109,7 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 		for (int kidx = 0; kidx < allKeys.length; kidx++) {
 			String key = allKeys[kidx];
 			for (int i=0; i<this.matchingKeys.length; i++) {
-				if (key.equals(matchingKeys[i].csvKey)) {
+				if (key.equals(matchingKeys[i].leftKey)) {
 					if (matchingPositions[i] != -1) {
 						throw new IOException("Duplicate key in CSV header: " + key);
 					}
@@ -202,7 +128,7 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 		}
 		for (int i=0; i<matchingPositions.length; i++) {
 			if (matchingPositions[i] == -1) {
-				throw new IOException(String.format("Key, \"%s\", is missing from CSV header.", matchingKeys[i].csvKey));
+				throw new IOException(String.format("Key, \"%s\", is missing from CSV header.", matchingKeys[i].leftKey));
 			}
 		}
 		readData();
@@ -240,7 +166,7 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 	public Map<String, String> extract(ImagePlaneDetails source) {
 		final ArrayList<String> key = new ArrayList<String>(matchingKeys.length);
 		for (int i=0; i<matchingKeys.length; i++) {
-			final String value = source.get(matchingKeys[i].ipdKey); 
+			final String value = source.get(matchingKeys[i].rightKey); 
 			if (value == null)
 				return emptyMap;
 			key.add(value);

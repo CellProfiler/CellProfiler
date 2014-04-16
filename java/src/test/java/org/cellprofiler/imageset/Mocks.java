@@ -13,11 +13,7 @@
 
 package org.cellprofiler.imageset;
 
-import static org.junit.Assert.fail;
-
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,11 +51,13 @@ public class Mocks {
 		final int sizeC;
 		final int sizeZ;
 		final int sizeT;
+		final DimensionOrder order;
 		final String [] channelNames;
 		static final int DEFAULT_SIZE_X = 640;
 		static final int DEFAULT_SIZE_Y = 480;
 		static final String [] DEFAULT_CHANNEL_NAMES = { "DNA", "GFP", "Actin" };
-		public MockImageDescription(String plate, String well, int site, int sizeX, int sizeY, int sizeC, int sizeZ, int sizeT, String... channelNames) {
+		static final DimensionOrder DEFAULT_DIMENSION_ORDER = DimensionOrder.XYCTZ;
+		public MockImageDescription(String plate, String well, int site, int sizeX, int sizeY, int sizeC, int sizeZ, int sizeT, DimensionOrder order, String... channelNames) {
 			this.plate = plate;
 			this.well = well;
 			this.site = site;
@@ -68,12 +66,15 @@ public class Mocks {
 			this.sizeC = sizeC;
 			this.sizeZ = sizeZ;
 			this.sizeT = sizeT;
+			this.order = order;
 			this.channelNames = channelNames;
+		}
+		public MockImageDescription(String plate, String well, int site, int sizeX, int sizeY, int sizeC, int sizeZ, int sizeT, String... channelNames) {
+			this(plate, well, site, sizeX, sizeY, sizeC, sizeZ, sizeT, DEFAULT_DIMENSION_ORDER, channelNames);
 		}
 		public static MockImageDescription makeColorDescription(String plate, String well, int site) {
 			return new MockImageDescription(plate, well, site, DEFAULT_SIZE_X, DEFAULT_SIZE_Y, 3, 1, 1, DEFAULT_CHANNEL_NAMES);
 		}
-		
 	}
 	/**
 	 * Make a mock ImageFile with a mock OMEXML structure including
@@ -139,17 +140,46 @@ public class Mocks {
 			pixels.setSizeC(new PositiveInteger(d.sizeC));
 			pixels.setSizeZ(new PositiveInteger(d.sizeZ));
 			pixels.setSizeT(new PositiveInteger(d.sizeT));
-			pixels.setDimensionOrder(DimensionOrder.XYCZT);
-			for (int t=0; t<d.sizeT; t++) {
-				for (int z=0; z<d.sizeZ; z++) {
-					for (int c=0; c<d.sizeC; c++) {
-						Plane plane = new Plane();
-						plane.setTheC(new NonNegativeInteger(c));
-						plane.setTheZ(new NonNegativeInteger(z));
-						plane.setTheT(new NonNegativeInteger(t));
-						pixels.addPlane(plane);
-					}
+			pixels.setDimensionOrder(d.order);
+			for (int i=0; i<d.sizeC*d.sizeZ*d.sizeT; i++) {
+				int c=0, z=0, t=0;
+				switch(d.order) {
+				case XYCTZ:
+					c = i % d.sizeC;
+					t = (i / d.sizeC) % d.sizeT;
+					z = i / d.sizeC / d.sizeT;
+					break;
+				case XYCZT:
+					c = i % d.sizeC;
+					z = (i / d.sizeC) % d.sizeZ;
+					t = i / d.sizeC / d.sizeZ;
+					break;
+				case XYTCZ:
+					t = i % d.sizeT;
+					c = (i / d.sizeT) % d.sizeC;
+					z = i / d.sizeC / d.sizeT;
+					break;
+				case XYTZC:
+					t = i % d.sizeT;
+					z = (i / d.sizeT) % d.sizeZ;
+					c = i / d.sizeZ / d.sizeT;
+					break;
+				case XYZCT:
+					z = i % d.sizeZ;
+					c = (i / d.sizeZ) % d.sizeC;
+					t = i / d.sizeC / d.sizeZ;
+					break;
+				case XYZTC:
+					z = i % d.sizeZ;
+					t = (i / d.sizeZ) % d.sizeT;
+					c = i / d.sizeT / d.sizeZ;
+					break;
 				}
+				Plane plane = new Plane();
+				plane.setTheC(new NonNegativeInteger(c));
+				plane.setTheZ(new NonNegativeInteger(z));
+				plane.setTheT(new NonNegativeInteger(t));
+				pixels.addPlane(plane);
 			}
 			image.setPixels(pixels);
 			sample.linkImage(image);
@@ -213,5 +243,30 @@ public class Mocks {
 		final ImagePlane imagePlane = new ImagePlane(imageSeries, 0, ImagePlane.ALWAYS_MONOCHROME);
 		stack.add(new ImagePlaneDetails(imagePlane, imageSeriesDetails), 0, 0);
 		return stack;
+	}
+	/**
+	 * Generate a list of the IPDs for a mock file
+	 * 
+	 * @param filename the name of the mock file
+	 * @param descriptions descriptions of each OME Image within the file
+	 * 
+	 * @return a list of IPDs that reflect the contents of the series
+	 *         within the file, as described by the descriptions.
+	 */
+	public static List<ImagePlaneDetails> makeMockIPDs(String filename, MockImageDescription ... descriptions) {
+		final ImageFileDetails imageFileDetails = makeMockImageFileDetails(filename, descriptions);
+		final List<ImagePlaneDetails> result = new ArrayList<ImagePlaneDetails>();
+		final ImageFile imageFile = imageFileDetails.getImageFile();
+		final OME imageFileMetadata = imageFile.getMetadata();
+		for (int series=0; series < imageFileMetadata.sizeOfImageList(); series++) {
+			final ImageSeries imageSeries = new ImageSeries(imageFile, series);
+			final ImageSeriesDetails imageSeriesDetails = new ImageSeriesDetails(imageSeries, imageFileDetails);
+			final Pixels pixels = imageSeries.getOMEImage().getPixels();
+			for (int index=0; index<pixels.sizeOfPlaneList(); index++) {
+				final ImagePlane imagePlane = new ImagePlane(imageSeries, index, ImagePlane.ALWAYS_MONOCHROME);
+				result.add(new ImagePlaneDetails(imagePlane, imageSeriesDetails));
+			}
+		}
+		return result;
 	}
 }

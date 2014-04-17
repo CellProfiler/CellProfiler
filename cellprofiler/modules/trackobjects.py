@@ -2169,7 +2169,7 @@ class TrackObjects(cpm.CPModule):
                          cpmeas.COLTYPE_INTEGER)]
             result += [( self.object_name.value,
                          self.measurement_name(name),
-                         coltype) for name in self.get_kalman_feature_names()]
+                         cpmeas.COLTYPE_FLOAT) for name in self.get_kalman_feature_names()]
             if self.wants_second_phase:
                 # Add the post-group attribute to all measurements
                 attributes = { cpmeas.MCA_AVAILABLE_POST_GROUP: True }

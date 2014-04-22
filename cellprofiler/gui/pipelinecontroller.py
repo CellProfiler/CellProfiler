@@ -539,7 +539,7 @@ class PipelineController:
                 self.__workspace.load(filename, load_pipeline)
                 cpprefs.set_workspace_file(filename)
                 cpprefs.set_current_workspace_path(filename)
-                self.__pipeline.load_image_plane_details(self.__workspace)
+                self.__pipeline.load_file_list(self.__workspace)
                 self.__pipeline.turn_off_batch_mode()
                 if not load_pipeline:
                     self.__workspace.measurements.clear()
@@ -617,7 +617,7 @@ class PipelineController:
         if self.is_running():
             self.stop_running()            
         self.__workspace.create()
-        self.__pipeline.clear_image_plane_details()
+        self.__pipeline.clear_urls()
         self.__pipeline.clear()
         self.__clear_errors()
         self.__workspace.measurements.clear()
@@ -1355,7 +1355,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__path_list_ctrl.add_paths(urls)
         self.__workspace.file_list.add_files_to_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
-            len(self.__pipeline.image_plane_details) > 0)
+            len(self.__pipeline.file_list) > 0)
         self.exit_test_mode()
         
     def on_urls_removed(self, event):
@@ -1364,12 +1364,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__path_list_ctrl.remove_paths(urls)
         self.__workspace.file_list.remove_files_from_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
-            len(self.__pipeline.image_plane_details) > 0)
+            len(self.__pipeline.file_list) > 0)
         self.exit_test_mode()
         
     def on_update_pathlist(self, event=None):
-        ipds = self.__pipeline.get_filtered_image_plane_details(self.__workspace)
-        enabled_urls = set([ipd.url for ipd in ipds])
+        enabled_urls = set(self.__pipeline.get_filtered_file_list(
+            self.__workspace))
         disabled_urls = set(self.__path_list_ctrl.get_paths())
         disabled_urls.difference_update(enabled_urls)
         self.__path_list_ctrl.enable_paths(enabled_urls, True)
@@ -1540,9 +1540,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         show_image(paths[0], self.__frame)
                 
     def on_pathlist_file_delete(self, paths):
-        self.__pipeline.remove_image_plane_details(
-            [ cpp.ImagePlaneDetails(url, None, None, None)
-              for url in paths])
+        self.__pipeline.remove_urls(paths)
         self.__workspace.file_list.remove_files_from_filelist(paths)
         self.__workspace.invalidate_image_set()        
         
@@ -1563,7 +1561,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             for idx, url in enumerate(urls):
                 path = urllib.url2pathname(url[5:])                
                 if not os.path.isfile(path):
-                    to_remove.append(cpp.ImagePlaneDetails(url, None, None, None))
+                    to_remove.append(url)
                 if idx % 100 == 0:
                     keep_going, skip = dlg.Update(idx, refresh_msg(idx))
                     if not keep_going:
@@ -1571,7 +1569,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             if len(to_remove) > 0:
                 dlg.Update(
                     len(urls), "Removing %d missing files" % len(to_remove))
-                self.__pipeline.remove_image_plane_details(to_remove)
+                self.__pipeline.remove_urls(to_remove)
                 
     def on_pathlist_clear(self, event):
         '''Remove all files from the path list'''
@@ -1584,7 +1582,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             style = wx.YES_NO,
             parent = self.__frame)
         if result == wx.YES:
-            self.__pipeline.clear_image_plane_details()
+            self.__pipeline.clear_urls()
             self.__workspace.file_list.clear_filelist()
             self.__workspace.invalidate_image_set()
             
@@ -1757,9 +1755,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 
     def add_urls(self, urls):
         '''Add URLS to the pipeline and file list'''
-        self.__pipeline.add_image_plane_details([
-            cpp.ImagePlaneDetails(url, None, None, None)
-            for url in urls])
+        self.__pipeline.add_urls(urls)
         self.__workspace.file_list.add_files_to_filelist(urls)
         
     def on_walk_callback(self, dirpath, dirnames, filenames):
@@ -1769,9 +1765,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         file_list = [pathname2url(os.path.join(dirpath, filename))
                      for filename in filenames]
         hdf_file_list.add_files_to_filelist(file_list)
-        self.__pipeline.add_image_plane_details([
-            cpp.ImagePlaneDetails(url, None, None, None)
-            for url in file_list])
+        self.__pipeline.add_urls(file_list)
         
     def on_walk_completed(self):
         pass

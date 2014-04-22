@@ -334,11 +334,15 @@ class Measurements(object):
         return self.get_measurement(*key)
 
     def __setitem__(self, key, value):
-        assert 2 <= len(key) <= 3
+        assert 2 <= len(key) <= 4
         if len(key) == 2:
             self.add_measurement(key[0], key[1], value)
-        else:
+        elif len(key) == 3:
             self.add_measurement(key[0], key[1], value, image_set_number=key[2])
+        else:
+            self.add_measurement(key[0], key[1], value,
+                                 image_set_number = key[2],
+                                 data_type = key[3])
 
     def flush(self):
         if self.hdf5_dict is not None:
@@ -755,13 +759,19 @@ class Measurements(object):
                 r[R_SECOND_IMAGE_NUMBER], r[R_SECOND_OBJECT_NUMBER])
 
     def add_measurement(self, object_name, feature_name, data, 
-                        can_overwrite=False, image_set_number=None):
+                        can_overwrite=False, image_set_number=None,
+                        data_type =  None):
         """Add a measurement or, for objects, an array of measurements to the set
 
         This is the classic interface - like CPaddmeasurements:
         ObjectName - either the name of the labeled objects or "Image"
         FeatureName - the feature name, encoded with underbars for category/measurement/image/scale
         Data - the data item to be stored
+        can_overwrite - legacy / ignored
+        image_set_number - write the measurement to this image set or if
+                           a sequence of image sets, write the sequence of
+                           data values to the sequence of image sets
+        data_type - an explicit data type to use when storing the measurements.
         """
         if image_set_number is None:
             image_set_number = self.image_set_number
@@ -775,7 +785,7 @@ class Measurements(object):
                 data = data[0]
             if data is None:
                 data = []
-            self.hdf5_dict[EXPERIMENT, feature_name, 0] = \
+            self.hdf5_dict[EXPERIMENT, feature_name, 0, data_type] = \
                 Measurements.wrap_string(data)
         elif object_name == IMAGE:
             if np.isscalar(image_set_number):
@@ -785,12 +795,13 @@ class Measurements(object):
                     else Measurements.wrap_string(d) if np.isscalar(d)
                     else Measurements.wrap_string(d[0])
                     for d in data]
-            self.hdf5_dict[IMAGE, feature_name, image_set_number] = data
+            self.hdf5_dict[IMAGE, feature_name, image_set_number, data_type] = data
             for n in image_set_number:
                 if not self.hdf5_dict.has_data(object_name, IMAGE_NUMBER, n):
                     self.hdf5_dict[IMAGE, IMAGE_NUMBER, n] = n
         else:
-            self.hdf5_dict[object_name, feature_name, image_set_number] = data
+            self.hdf5_dict[
+                object_name, feature_name, image_set_number, data_type] = data
             for n, d in (((image_set_number,data), ) if np.isscalar(image_set_number)
                          else zip(image_set_number, data)):
                 if not self.hdf5_dict.has_data(IMAGE, IMAGE_NUMBER, n):

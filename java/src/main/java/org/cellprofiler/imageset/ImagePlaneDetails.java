@@ -12,6 +12,16 @@
  */
 package org.cellprofiler.imageset;
 
+import ome.xml.model.LongAnnotation;
+import ome.xml.model.OME;
+import ome.xml.model.Pixels;
+import ome.xml.model.Plane;
+import ome.xml.model.StructuredAnnotations;
+import ome.xml.model.TiffData;
+import ome.xml.model.UUID;
+import ome.xml.model.primitives.NonNegativeInteger;
+import ome.xml.model.primitives.PositiveInteger;
+
 
 /**
  * @author Lee Kamentsky

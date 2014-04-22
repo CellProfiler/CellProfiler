@@ -269,7 +269,7 @@ class RegexpText(Setting):
     def test_valid(self, pipeline):
         try:
             # Convert Matlab to Python
-            pattern = re.sub('(\\(\\?)([<].+?[>])','\\1P\\2',self.value)
+            pattern = re.sub('(\\(\\?)([<][^)>]+?[>])','\\1P\\2',self.value)
             re.search('(|(%s))'%(pattern), '')
         except re.error, v:
             raise ValidationError("Invalid regexp: %s"%(v), self)

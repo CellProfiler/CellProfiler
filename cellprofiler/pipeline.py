@@ -2555,7 +2555,7 @@ class Pipeline(object):
                 raise instance
         self.start_undoable_action()
         self.clear_urls()
-        self.add_urls(file_list)
+        self.add_urls(urls)
         self.stop_undoable_action(name="Load file list")
         self.__filtered_image_plane_details_images_settings = tuple()
         self.__filtered_image_plane_details_metadata_settings = tuple()

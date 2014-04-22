@@ -111,6 +111,7 @@ import re
 import os
 import time
 import urllib
+import urlparse
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -122,7 +123,8 @@ from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.loadimages import well_metadata_tokens
+from cellprofiler.modules.loadimages import \
+     well_metadata_tokens, urlfilename, urlpathname
 from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
@@ -640,14 +642,28 @@ class Metadata(cpm.CPModule):
     
     def example_file_fn(self):
         '''Get an example file name for the regexp editor'''
-        if len(self.ipds) > 0:
-            return os.path.split(self.ipds[0].path)[1]
+        if self.pipeline != None:
+            if self.pipeline.has_cached_filtered_file_list():
+                urls = self.pipeline.get_filtered_file_list(self.workspace)
+                if len(urls) == 0:
+                    urls = self.pipeline.file_list
+            else:
+                urls = self.pipeline.file_list
+            if len(urls) > 0:
+                return urlfilename(urls[0])
         return "PLATE_A01_s1_w11C78E18A-356E-48EC-B204-3F4379DC43AB.tif"
             
     def example_directory_fn(self):
         '''Get an example directory name for the regexp editor'''
-        if len(self.ipds) > 0:
-            return os.path.split(self.ipds[0].path)[0]
+        if self.pipeline != None:
+            if self.pipeline.has_cached_filtered_file_list():
+                urls = self.pipeline.get_filtered_file_list(self.workspace)
+                if len(urls) == 0:
+                    urls = self.pipeline.file_list
+            else:
+                urls = self.pipeline.file_list
+            if len(urls) > 0:
+                return urlpathname(urls[0])
         return "/images/2012_01_12"
     
     def change_causes_prepare_run(self, setting):
@@ -740,6 +756,11 @@ class Metadata(cpm.CPModule):
                 elif group.source == XM_FOLDER_NAME:
                     method = "addPathNameRegexp"
                     pattern = group.folder_regexp.value
+                # check for bad pattern before creating an extractor
+                try:
+                    re.search(pattern, "")
+                except re.error:
+                    continue
                 J.call(extractor,
                        method,
                        "(Ljava/lang/String;Lorg/cellprofiler/imageset/filter/Filter;)V",
@@ -773,7 +794,7 @@ class Metadata(cpm.CPModule):
     
     def do_update_metadata(self, group):
         filelist = self.workspace.file_list
-        urls = set([ipd.url for ipd in self.pipeline.get_filtered_image_plane_details(self.workspace)])
+        urls = set(self.pipeline.get_filtered_file_list(self.workspace))
         if len(urls) == 0:
             return
         def msg(url):
@@ -833,7 +854,7 @@ class Metadata(cpm.CPModule):
                 self.refresh_group_joiner(group)
        
     def update_table(self):
-        columns = self.get_metadata_keys()
+        columns = set(self.get_metadata_keys())
         columns.discard(COL_SERIES)
         columns.discard(COL_INDEX)
         columns = [COL_PATH, COL_SERIES, COL_INDEX] + \
@@ -901,6 +922,13 @@ class Metadata(cpm.CPModule):
                    "getMetadataKeys", 
                    "()Ljava/util/List;"), J.to_string)
         return keys
+    
+    def get_dt_metadata_keys(self):
+        '''Get the metadata keys which can have flexible datatyping
+        
+        '''
+        return filter((lambda k: k not in self.NUMERIC_DATA_TYPES),
+                      self.get_metadata_keys())
     
     NUMERIC_DATA_TYPES = (
         cpp.ImagePlaneDetails.MD_T, cpp.ImagePlaneDetails.MD_Z,

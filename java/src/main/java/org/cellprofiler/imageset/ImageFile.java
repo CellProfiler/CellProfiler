@@ -20,6 +20,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -42,6 +44,11 @@ import org.xml.sax.SAXException;
  *
  */
 public class ImageFile implements Comparable<ImageFile>{
+	public static final String BLANK_URI_PATH = "/image/blank";
+	public static final String BLANK_URI_AUTHORITY = "cellprofiler.org";
+	public static final String BLANK_URI_SCHEME = "info";
+	public static final String BLANK_URI_QUERY_PATTERN_STRING = "X=([0-9]+)&Y=([0-9]+)";
+	public static final Pattern BLANK_URI_QUERY_PATTERN = Pattern.compile(BLANK_URI_QUERY_PATTERN_STRING);
 	private final URI uri;
 	private String fileName = null;
 	private String pathName = null;
@@ -53,6 +60,19 @@ public class ImageFile implements Comparable<ImageFile>{
 	 */
 	public ImageFile(URI uri) {
 		this.uri = uri;
+	}
+	/**
+	 * Construct an image file representing a single plane
+	 * of all zeros - a placeholder for a non-existent plane
+	 */
+	public ImageFile(int xSize, int ySize) {
+		String query = String.format("X=%d&Y=%d", xSize, ySize);
+		try {
+			uri = new URI(BLANK_URI_SCHEME, BLANK_URI_AUTHORITY, BLANK_URI_PATH, query, null);
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			throw new AssertionError("Failed to construct the blank image URI");
+		}
 	}
 	
 	/**
@@ -71,7 +91,10 @@ public class ImageFile implements Comparable<ImageFile>{
 				File file = new File(uri);
 				fileName = file.getName();
 			} else {
-				String path = uri.getSchemeSpecificPart();
+				String path = uri.getPath();
+				if (path == null) {
+					path = uri.getSchemeSpecificPart();
+				}
 				int lastslash = path.lastIndexOf("/");
 				if (lastslash == -1) {
 					fileName = path;
@@ -204,5 +227,46 @@ public class ImageFile implements Comparable<ImageFile>{
 	public int compareTo(ImageFile o) {
 		if (this == o) return 0;
 		return this.uri.compareTo(o.uri);
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return this.uri.hashCode();
+	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof ImageFile) return compareTo((ImageFile)obj) == 0;
+		return super.equals(obj);
+	}
+	/**
+	 * @return true if the URI of this image file is the URI of a blank (missing) file.
+	 */
+	public boolean isBlank() {
+		return (uri.getScheme().equals(BLANK_URI_SCHEME)) &&
+		       (uri.getAuthority().equals(BLANK_URI_AUTHORITY)) &&
+		       (uri.getPath().equals(BLANK_URI_PATH));
+	}
+	/**
+	 * For a blank (missing) file, get the plane's X dimension
+	 * @return
+	 */
+	public int getBlankSizeX() {
+		Matcher m = BLANK_URI_QUERY_PATTERN.matcher(uri.getQuery());
+		m.find();
+		return Integer.valueOf(m.group(1));
+	}
+	/**
+	 * For a blank (missing) file, get the plane's Y dimension
+	 * @return
+	 */
+	public int getBlankSizeY() {
+		Matcher m = BLANK_URI_QUERY_PATTERN.matcher(uri.getQuery());
+		m.find();
+		return Integer.valueOf(m.group(2));
 	}
 }

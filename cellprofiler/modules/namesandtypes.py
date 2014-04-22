@@ -245,6 +245,9 @@ MATCH_BY_METADATA = "Metadata"
 IMAGE_NAMES = ["DNA", "GFP", "Actin"]
 OBJECT_NAMES = ["Cell", "Nucleus", "Cytoplasm", "Speckle"]
 
+'''The experiment measurement that holds the ZLIB compression dictionary for image sets'''
+M_IMAGE_SET_ZIP_DICTIONARY = "ImageSet_Zip_Dictionary"
+
 class NamesAndTypes(cpm.CPModule):
     variable_revision_number = 5
     module_name = "NamesAndTypes"
@@ -705,13 +708,20 @@ class NamesAndTypes(cpm.CPModule):
         if workspace.pipeline.in_batch_mode():
             return True
         column_names = self.get_column_names()
-        ipd_columns = self.java_make_image_sets(workspace)
-        if ipd_columns is None:
+        image_sets, channel_map = self.java_make_image_sets(workspace)
+        if image_sets == None:
             return False
+        if len(image_sets) == 0:
+            return True
+        
+        image_set_channel_names = [None] * len(column_names)
+        for name, idx in channel_map.iteritems():
+            image_set_channel_names[idx] = name
+        
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         
-        image_numbers = range(1, len(ipd_columns[0]) + 1)
+        image_numbers = range(1, len(image_sets) + 1)
         if len(image_numbers) == 0:
             return False
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, 
@@ -738,7 +748,31 @@ class NamesAndTypes(cpm.CPModule):
                  for column_name, load_choice in zip(column_names, load_choices)]
         m.set_channel_descriptors(iscds)
         
-        for iscd, ipds in zip(iscds, ipd_columns):
+        zip_dict = self.create_imageset_dictionary(
+            workspace, image_sets, image_set_channel_names)
+        env = J.get_env()
+        intcls = env.find_class("[I")
+        strcls = env.find_class("java/lang/String");
+        urls, path_names, file_names, series, index, channel = [
+            env.make_object_array(len(image_set_channel_names), cls)
+            for cls in (strcls, strcls, strcls, intcls, intcls, intcls)]
+        image_set_blobs = J.run_script("""
+        importPackage(Packages.org.cellprofiler.imageset);
+        ImageSet.convertToColumns(imageSets, channelNames, urls, pathNames,
+            fileNames, series, index, channel, dict);
+        """, dict(imageSets = image_sets.o,
+                  channelNames = J.make_list(image_set_channel_names).o,
+                  urls = urls,
+                  pathNames = path_names,
+                  fileNames = fileNames,
+                  series=series,
+                  index=index,
+                  channel=channel,
+                  dict=zip_dict))
+        urls, path_names, file_names, series, index, channel = [
+            env.get_object_array_elements(x) for x in
+            urls, path_names, file_names, series, index, channel]
+        for i, iscd, ipds in enumerate(iscds):
             if iscd.channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
                 url_category = cpmeas.C_OBJECTS_URL
                 path_name_category = cpmeas.C_OBJECTS_PATH_NAME
@@ -758,23 +792,20 @@ class NamesAndTypes(cpm.CPModule):
                     "%s_%s" % (category, iscd.name) for category in (
                         url_category, path_name_category, file_name_category,
                         series_category, frame_category, channel_category)]
-            m.add_all_measurements(cpmeas.IMAGE, url_feature,
-                              [ipd.url for ipd in ipds])
-            m.add_all_measurements(
-                cpmeas.IMAGE, path_name_feature,
-                [os.path.split(ipd.path)[0] for ipd in ipds])
-            m.add_all_measurements(
-                cpmeas.IMAGE, file_name_feature,
-                [os.path.split(ipd.path)[1] for ipd in ipds])
-            all_series = \
-                [ipd.series for ipd in ipds]
-            m.add_all_measurements(cpmeas.IMAGE, series_feature, all_series)
-            all_frames = [ipd.index for ipd in ipds]
-            m.add_all_measurements(cpmeas.IMAGE, frame_feature, all_frames)
-            all_channels = [ipd.channel for ipd in ipds]
-            if any([x is not None for x in all_channels]):
-                m.add_all_measurements(
-                    cpmeas.IMAGE, channel_feature, all_channels)
+            for ftr, jarray in ((url_feature, urls),
+                                (path_name_feature, path_names),
+                                (file_name_feature, file_names)):
+                col_values = [
+                    env.get_string(x) 
+                    for x in env.get_object_array_elements(jarray[i])]
+                m.add_all_measurements(cpmeas.IMAGE, ftr, col_values)
+                del col_values
+            
+            for ftr, jarray in ((series_feature, series),
+                                (frame_feature, index),
+                                (channel_feature, channel)):
+                col_values = list(env.get_int_array_elements(jarray[i]))
+                m.add_all_measurements(cpmeas.IMAGE, ftr, col_values)
         
         # # # # # # # # # # # # # 
         #
@@ -854,21 +885,22 @@ class NamesAndTypes(cpm.CPModule):
         if self.assignment_method == ASSIGN_ALL:
             image_sets = self.java_make_image_sets_assign_all(
                 workspace, ipd_list)
-            channels = { (self.single_image_provider.value, cpmeas.IMAGE): 0 }
+            channels = { self.single_image_provider.value: 0 }
         elif self.matching_choice == MATCH_BY_ORDER:
             image_sets = self.java_make_image_sets_by_order(
                 workspace, ipd_list)
             channels =  {}
             for i, group in enumerate(self.assignments):
                 if group.load_as_choice == LOAD_AS_OBJECTS:
-                    channels[(group.object_name.value, cpmeas.OBJECT)] = i
+                    channels[group.object_name.value] = i
                 else:
-                    channels[(group.image_name.value, cpmeas.IMAGE)] = i
+                    channels[group.image_name.value] = i
         else:
             image_sets, channels = \
                 self.java_make_image_sets_by_metadata(workspace, ipd_list)
-        if image_sets is None:
-            return None
+        if image_sets != None:
+            image_sets = J.make_list(image_sets)
+        return image_sets, channels
 
     @staticmethod
     def get_axes_for_load_as_choice(load_as_choice):
@@ -944,7 +976,6 @@ class NamesAndTypes(cpm.CPModule):
         # definitions for all joins
         #
         joins = self.join.parse()
-        channels = []
         anchor_channel = None
         channel_names = self.get_column_names()
         for i, group in enumerate(assignments):
@@ -958,10 +989,9 @@ class NamesAndTypes(cpm.CPModule):
                 else:
                     anchor_channel = i
                     anchor_cf = self.make_channel_filter(group, name)
-            channels.append((name, category))
         channels = dict([(c, 0 if i == anchor_channel 
                         else i if i < anchor_channel
-                        else i+1) for i, c in enumerate(channels)])
+                        else i+1) for i, c in enumerate(channel_names)])
         #
         # Make the joiner
         #
@@ -1086,6 +1116,39 @@ class NamesAndTypes(cpm.CPModule):
             if result == wx.NO:
                 return False
         return True
+    
+    def create_imageset_dictionary(self, workspace, image_sets, channel_names):
+        '''Create a compression dictionary for OME-encoded image sets
+        
+        Image sets are serialized as OME-XML which is bulky and repetitive.
+        ZLIB has a facility for using an input dictionary for priming
+        the deflation and inflation process.
+        
+        This writes the dictionary to the experiment measurements.
+        '''
+        if len(image_sets) < 4:
+            dlist = image_sets
+        else:
+            # Pick somewhere between four and 8 image sets from the whole
+            dlist = J.make_list(image_sets[::int(len(image_sets) / 4)])
+        cd = J.run_script(
+            """importPackage(Packages.org.cellprofiler.imageset);
+               ImageSet.createCompressionDictionary(image_sets, channel_names);
+            """, 
+            dict(image_sets=image_sets,
+                 channel_names = J.make_list(channel_names).o))
+        m = workspace.measurements
+        np_d = J.get_env().get_byte_array_elements(cd)
+        m[cpmeas.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY, 0, np.uint8] = np_d
+        return cd
+        
+    def get_imageset_dictionary(self, workspace):
+        '''Returns the imageset dictionary as a Java byte array'''
+        m = workspace.measurements
+        if m.has_feature(cpmeas.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY):
+            d = m[cpmeas.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY]
+            return J.get_env.make_byte_array(d.astype(np.uint8))
+        return None
                 
     def append_single_image_columns(self, columns, ipds):
         max_len = np.max([len(x) for x in columns])
@@ -1276,11 +1339,8 @@ class NamesAndTypes(cpm.CPModule):
     def on_activated(self, workspace):
         self.workspace = workspace
         self.pipeline = workspace.pipeline
-        self.ipds = self.pipeline.get_filtered_image_plane_details(
-            workspace, with_metadata=True)
-        self.metadata_keys = set()
-        for ipd in self.ipds:
-            self.metadata_keys.update(ipd.metadata.keys())
+        self.ipds = self.pipeline.get_image_plane_details(workspace)
+        self.metadata_keys = self.pipeline.get_available_metadata_keys().keys()
         self.update_all_metadata_predicates()
         if self.join in self.visible_settings():
             self.update_all_columns()

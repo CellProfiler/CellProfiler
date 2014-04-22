@@ -470,7 +470,8 @@ class HDF5Dict(object):
         assert (not np.isscalar(idxs[2]) or self.__is_positive_int(idxs[2])),\
                "Third index must be a non-negative integer"
 
-        object_name, feature_name, num_idx = idxs
+        object_name, feature_name, num_idx = idxs[:3]
+        
         if np.isscalar(num_idx):
             # An image or experiment feature, typically
             if vals is None:
@@ -487,17 +488,20 @@ class HDF5Dict(object):
         all_null = True
         
         hdf5_type = None
-        for vector in vals:
-            if len(vector) > 0:
-                all_null = False
-                new_dtype = infer_hdf5_type(vector)
-                if hdf5_type is None or hdf5_type == int:
-                    hdf5_type = new_dtype
-                elif hdf5_type == float:
-                    if new_dtype != int:
+        if len(idxs) > 3 and idxs[3] is not None:
+            hdf5_type = idxs[3]
+        else:
+            for vector in vals:
+                if len(vector) > 0:
+                    all_null = False
+                    new_dtype = infer_hdf5_type(vector)
+                    if hdf5_type is None or hdf5_type == int:
                         hdf5_type = new_dtype
-                else:
-                    break
+                    elif hdf5_type == float:
+                        if new_dtype != int:
+                            hdf5_type = new_dtype
+                    else:
+                        break
         hdf5_type_is_int = (
             np.issubdtype(hdf5_type, int) or
             (isinstance(hdf5_type, np.dtype) and hdf5_type.kind == 'u'))

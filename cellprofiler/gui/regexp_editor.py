@@ -38,7 +38,7 @@ RE_FILENAME_GUESSES = [
     # Cellomics
     '^(?P<ExperimentName>.*)_(?P<Well>[A-Za-z][0-9]{1,2})f(?P<Site>[0-9]{1,2})d(?P<Wavelength>[0-9])',
     # BD Pathway
-    '^(?P<Wavelength>.*) - n(?P<StackSlice>[0-9]{6})'
+    '^(?P<Wavelength>.*) - n(?P<StackSlice>[0-9]{6})',
     # GE InCell Analyzer
     '^(?P<Row>[A-H]*) - (?P<Column>[0-9]*)\(fld (?P<Site>[0-9]*) wv (?P<Wavelength>.*) - (?P<Filter>.*)\)'
     # Please add more guesses below

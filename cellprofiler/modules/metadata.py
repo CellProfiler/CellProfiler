@@ -865,10 +865,18 @@ class Metadata(cpm.CPModule):
             self.table.insert_column(i, column)
             
         data = []
+        md_keys = J.make_list(columns[3:])
+        #
+        # Use the low-level Javabridge interface to make things a bit faster
+        #
+        env = J.get_env()
+        clsIPD = env.find_class("org/cellprofiler/imageset/ImagePlaneDetails")
+        methodID = env.get_method_id(
+            clsIPD, "getIPDFields", "(Ljava/util/List;)[Ljava/lang/String;")
         for ipd in self.pipeline.get_image_plane_details(self.workspace):
-            row = [ipd.path, ipd.series, ipd.index]
-            ipd_metadata = ipd.metadata
-            row += [ipd_metadata.get(column) for column in columns[3:]]
+            fields = env.call_method(ipd.jipd, methodID, md_keys.o)
+            row = [env.get_string(f) 
+                   for f in env.get_object_array_elements(fields)]
             data.append(row)
         self.table.add_rows(columns, data)
         
@@ -959,6 +967,27 @@ class Metadata(cpm.CPModule):
                 result[k] = cpmeas.COLTYPE_VARCHAR
                 
         return result
+    
+    def wants_case_insensitive_matching(self, key):
+        '''Return True if the key should be matched using case-insensitive matching
+        
+        key - key to check.
+        
+        Currently, there is a case-insensitive matching flag in the
+        imported metadata matcher. Perhaps this should be migrated into
+        the data types control, but for now, we look for the key to be
+        present in the joiner for any imported metadata matcher.
+        '''
+        if not self.wants_metadata:
+            return False
+        for group in self.extraction_methods:
+            if group.extraction_method == X_IMPORTED_EXTRACTION and \
+               group.wants_case_insensitive:
+                joins = group.csv_joiner.parse()
+                for join in joins:
+                    if key in join.values():
+                        return True
+        return False
     
     def get_measurement_columns(self, pipeline):
         '''Get the metadata measurements collected by this module'''

@@ -692,7 +692,8 @@ class HDF5Dict(object):
         with self.lock:
             return self.top_group[object_name].keys()
         
-    def add_all(self, object_name, feature_name, values, idxs = None):
+    def add_all(self, object_name, feature_name, values, 
+                idxs = None, data_type=None):
         '''Add all imageset values for a given feature
         
         object_name - name of object supporting the feature
@@ -702,6 +703,8 @@ class HDF5Dict(object):
                  objects in the corresponding image set.
         idxs - the image set numbers associated with the values. If idxs is
                omitted or None, image set numbers are assumed to go from 1 to N
+        data_type - the data type of the array to be created or None to have
+                    it inferred.
         '''
         with self.lock:
             self.add_object(object_name)
@@ -716,17 +719,18 @@ class HDF5Dict(object):
                 values = [[v] if v is not None else [] for v in values]
             if idxs is None:
                 idxs = np.arange(1, len(values)+1)
-            dtype = None
-            for vector in values:
-                if len(vector) > 0:
-                    new_dtype = infer_hdf5_type(vector)
-                    if dtype is None or dtype == int:
-                        dtype = new_dtype
-                    elif dtype == float:
-                        if new_dtype != int:
+            dtype = data_type
+            if dtype is None:
+                for vector in values:
+                    if len(vector) > 0:
+                        new_dtype = infer_hdf5_type(vector)
+                        if dtype is None or dtype == int:
                             dtype = new_dtype
-                    else:
-                        break
+                        elif dtype == float:
+                            if new_dtype != int:
+                                dtype = new_dtype
+                        else:
+                            break
             if dtype is None:
                 # empty set
                 self.__make_empty_feature(object_name, feature_name, idxs)

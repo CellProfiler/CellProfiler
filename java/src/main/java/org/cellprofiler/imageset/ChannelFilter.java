@@ -148,7 +148,7 @@ public class ChannelFilter {
 	public ChannelFilter(
 			String channelName, 
 			Filter<ImagePlaneDetailsStack> filter,
-			TypedAxis ... axes) {
+			TypedAxis [] axes) {
 		this.name = channelName;
 		this.filter = filter;
 		this.axes = axes;
@@ -162,7 +162,7 @@ public class ChannelFilter {
 	 * @param channelName
 	 * @param axes
 	 */
-	public ChannelFilter(String channelName, TypedAxis...axes) {
+	public ChannelFilter(String channelName, TypedAxis []axes) {
 		this(channelName, null, axes);
 	}
 	

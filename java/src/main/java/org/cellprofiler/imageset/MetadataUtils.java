@@ -13,6 +13,8 @@
 package org.cellprofiler.imageset;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,79 +37,92 @@ public class MetadataUtils {
 	/**
 	 * This method takes a list of columns of IPDs where each column contains the IPDs
 	 * for a particular channel. It finds the metadata keys which are consistent for
-	 * all IPDs in which they appear for each image set (for instance, WellName is
-	 * likely to be consistent, but Wavelength will differ for each column).
+	 * all IPDs in the image set, for instance, "Well", is likely to be consistent
+	 * whereas "Wavelength" is not.
 	 * 
-	 * @param ipdList a list of columns of IPDs
-	 * @param mustHave a map of metadata key to the IPD column from which to extract.
+	 * @param imageSets
+	 * @param mustHave a map of metadata key to the channel index from which to extract.
 	 *                 These keys are ones that we must return for each image set. 
+	 * @param comparators metadata-key-specific comparators. For instance,
+	 *        site metadata is usually numeric, so 1 is the same as 01, but
+	 *        plate metadata is usually alphanumeric and each needs an appropriate
+	 *        comparator.
 	 * @return a map of metadata name to the values for each image set
 	 */
 	static Map<String, List<String>> getImageSetMetadata(
-			List<List<ImagePlaneDetails>> ipdList,
-			Map<String,Integer> mustHave) {
-		int nrows = Integer.MAX_VALUE;
-		for (List<ImagePlaneDetails> l: ipdList) {
-			nrows = Math.min(nrows, l.size());
-		}
-		Map<String, List<String>> result = new HashMap<String, List<String>>(); 
-		if (nrows == 0) return result;
+			List<ImageSet> imageSets,
+			Map<String,Integer> mustHave,
+			Map<String, Comparator<String>> comparators) {
+		int nrows = imageSets.size();
+		if (nrows == 0) return Collections.emptyMap();
+		final List<Map<String, String>> result = new ArrayList<Map<String, String>>();
 		//
 		// The metadata to ignore. We populate with the must-haves
 		// which we collect in a more explicit manner
 		//
-		Set<String> badMetadata = new HashSet<String>();
-		
-		Map<String, String> rowMetadata = getRowMetadata(ipdList, 0, badMetadata, mustHave);
-		for (Map.Entry<String, String> entry:rowMetadata.entrySet()) {
-			List<String> values = new ArrayList<String>(nrows);
-			values.add(entry.getValue());
-			result.put(entry.getKey(), values);
-		}
-		for (int i=1; i<nrows; i++) {
-			rowMetadata = getRowMetadata(ipdList, i, badMetadata, mustHave);
-			for (Map.Entry<String, List<String>> entry:result.entrySet()) {
-				if (rowMetadata.containsKey(entry.getKey())) {
-					entry.getValue().add(rowMetadata.get(entry.getKey()));
-				} else {
-					badMetadata.add(entry.getKey());
+		final Set<String> badMetadata = new HashSet<String>();
+		final Set<String> keysSeen = new HashSet<String>();
+		for (ImageSet imageSet:imageSets) {
+			final Map<String, String> imageSetMetadata = new HashMap<String, String>();
+			result.add(imageSetMetadata);
+			//
+			// The "must have" entries
+			//
+			for (Map.Entry<String, Integer> entry:mustHave.entrySet()) {
+				final ImagePlaneDetailsStack stack = imageSet.get(entry.getValue());
+				for (ImagePlaneDetails ipd:stack) {
+					final String key = entry.getKey();
+					if (ipd.containsKey(key)) {
+						imageSetMetadata.put(key, ipd.get(key));
+					}
 				}
 			}
-		}
-		result.keySet().removeAll(badMetadata);
-		return result;
-	}
-	
-	private static Map<String, String> getRowMetadata(
-			List<List<ImagePlaneDetails>> ipdList, 
-			int idx, 
-			Set<String> badMetadata,
-			Map<String, Integer> mustHave) { 
-		Map<String, String> image_set_metadata = new HashMap<String, String>();
-		for (List<ImagePlaneDetails> l: ipdList) {
-			final ImagePlaneDetails ipd = l.get(idx);
-			for (String key:ipd) {
-				if ((! badMetadata.contains(key)) &&
-					(! mustHave.containsKey(key))){
-					String value = ipd.get(key);
-					if (image_set_metadata.containsKey(key)) {
-						if (! image_set_metadata.get(key).equals(value)) {
-							badMetadata.add(key);
-							image_set_metadata.remove(key);
+			//
+			// Other entries that we can find
+			//
+			for (ImagePlaneDetailsStack stack:imageSet) {
+				for (ImagePlaneDetails ipd:stack) {
+					for (String key:ipd) {
+						if ((! badMetadata.contains(key)) && (! mustHave.containsKey(key))) {
+							String value = ipd.get(key);
+							final String oldValue = imageSetMetadata.get(key); 
+							if (oldValue != null) {
+								if (comparators != null) {
+									Comparator<String> c = comparators.get(key);
+									if (c != null) {
+										if (c.compare(value, oldValue) != 0) {
+											badMetadata.add(key);
+											continue;
+										}
+									} else if (! value.equals(oldValue)) {
+										badMetadata.add(key);
+										continue;
+									}
+								}
+							}
+							imageSetMetadata.put(key, value);
+							keysSeen.add(key);
 						}
-					} else {
-						image_set_metadata.put(key, value);
 					}
 				}
 			}
 		}
-		for (Map.Entry<String, Integer> entry:mustHave.entrySet()) {
-			final String k = entry.getKey();
-			final ImagePlaneDetails ipd = ipdList.get(entry.getValue()).get(idx);
-			image_set_metadata.put(k, ipd.get(k));
+		//
+		// At the end, reorganize the list into columns per metadata item
+		//
+		keysSeen.removeAll(badMetadata);
+		keysSeen.addAll(mustHave.keySet());
+		final Map<String, List<String>> output = new HashMap<String, List<String>>();
+		for (String key:keysSeen) {
+			List<String> values = new ArrayList<String>(imageSets.size());
+			for (Map<String, String>metadata:result) {
+				values.add(metadata.get(key));
+			}
+			output.put(key, values);
 		}
-		return image_set_metadata;
+		return output;
 	}
+	
 	//
 	// This expression looks for:
 	// two backslashes = escaped backslash

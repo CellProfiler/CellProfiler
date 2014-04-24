@@ -3208,11 +3208,20 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             else:
                 # It's a stack
                 stack = []
-                for index in self.index:
+                if not np.isscalar(self.series):
+                    series_list = [self.series] * len(self.index)
+                else:
+                    series_list = self.series
+                if not np.isscalar(self.channel):
+                    channel_list = [self.channel] * len(self.index)
+                else:
+                    channel_list = self.channel
+                for series, index, channel in zip(
+                    series_list, self.index, channel_list):
                     img, self.scale = rdr.read(
-                        c = self.channel,
-                        series=self.series,
-                        index = self.index,
+                        c = channel,
+                        series=series,
+                        index = index,
                         rescale = self.rescale,
                         wants_max_intensity=True,
                         channel_names=channel_names)

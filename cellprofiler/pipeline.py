@@ -457,7 +457,7 @@ class ImagePlaneDetails(object):
     def url(self):
         return J.run_script(
             "o.getImagePlane().getImageFile().getURI().toString()",
-            dict(o = self.jipd))
+            dict(o = self.jipd)).encode("utf-8")
     
     @property
     def series(self):
@@ -1138,7 +1138,7 @@ class Pipeline(object):
         self.notify_listeners(PipelineLoadedEvent())
         if has_image_plane_details:
             self.notify_listeners(URLsAddedEvent(
-                self.__image_plane_details))
+                self.__file_list))
         self.__undo_stack = []
         
     def save(self, fd_or_filename, 
@@ -2634,13 +2634,13 @@ class Pipeline(object):
         module = modules[0]
         return module.get_data_type(module.get_metadata_keys())
     
-    def use_case_insensitive_metadata_matching(self):
+    def use_case_insensitive_metadata_matching(self, key):
         '''Return TRUE if metadata should be matched without regard to case'''
         modules = [module for module in self.modules()
                    if module.module_name == "Metadata"]
         if len(modules) == 0:
             return False
-        return modules[0].wants_case_insensitive.value
+        return modules[0].wants_case_insensitive_matching(key)
     
     def set_filtered_file_list(self, file_list, module):
         '''The Images module calls this to report its list of filtered files'''

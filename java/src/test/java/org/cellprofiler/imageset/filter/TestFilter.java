@@ -176,6 +176,10 @@ public class TestFilter {
 		testSomething("image does ismonochrome", Mocks.makeMockMonochromeStack(), true);
 		testSomething("image does isstack", Mocks.makeMockColorStack(3), true);
 		testSomething("image does isstackframe", Mocks.makeMockMonochromeStack(), true);
+		final ImagePlaneDetailsStack stack = Mocks.makeMockMonochromeStack();
+		stack.get(0, 0).put("foo", "bar");
+		testSomething("metadata does foo \"bar\"", stack, true);
+		testSomething("metadata does foo \"baz\"", stack, false);
 	}
 	@Test
 	public void testFilterURLs() {

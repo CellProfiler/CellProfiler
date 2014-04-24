@@ -781,7 +781,7 @@ class Measurements(object):
             return
 
         if object_name == EXPERIMENT:
-            if not np.isscalar(data) and data is not None:
+            if not np.isscalar(data) and data is not None and data_type is None:
                 data = data[0]
             if data is None:
                 data = []
@@ -920,15 +920,20 @@ class Measurements(object):
                            listed.
         """
         if object_name == EXPERIMENT:
-            return Measurements.unwrap_string(
-                self.hdf5_dict[EXPERIMENT, feature_name, 0][0])
+            result = self.hdf5_dict[EXPERIMENT, feature_name, 0]
+            if len(result) == 1:
+                result = result[0]
+            return Measurements.unwrap_string(result)
         if image_set_number is None:
             image_set_number = self.image_set_number
         vals = self.hdf5_dict[object_name, feature_name, image_set_number]
         if object_name == IMAGE:
             if np.isscalar(image_set_number):
-                return None if vals is None or len(vals) == 0 \
-                       else Measurements.unwrap_string(vals[0])
+                if vals is None or len(vals) == 0:
+                    return None
+                if len(vals) == 1:
+                    return Measurements.unwrap_string(vals[0]) 
+                return vals
             else:
                 if any([isinstance(x[0], basestring) for x in vals 
                         if x is not None and len(x) > 0]):
@@ -944,7 +949,8 @@ class Measurements(object):
                     #
                     result = np.array(
                         [np.NaN if v is None or len(v) == 0
-                         else v[0] for v in vals])
+                         else v[0] if len(v) == 1
+                         else v for v in vals])
                 return result
         if np.isscalar(image_set_number):
             return np.array([]) if vals is None else vals.flatten()
@@ -988,7 +994,8 @@ class Measurements(object):
         return self.get_measurement(object_name, feature_name,
                                     self.get_image_numbers())
 
-    def add_all_measurements(self, object_name, feature_name, values):
+    def add_all_measurements(self, object_name, feature_name, values,
+                             data_type = None):
         '''Add a list of measurements for all image sets
 
         object_name - name of object or Images
@@ -1007,7 +1014,7 @@ class Measurements(object):
         else:
             image_numbers = self.get_image_numbers()
         self.hdf5_dict.add_all(object_name, feature_name, values, 
-                               image_numbers)
+                               image_numbers, data_type=data_type)
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement

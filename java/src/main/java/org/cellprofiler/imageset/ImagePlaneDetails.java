@@ -12,6 +12,10 @@
  */
 package org.cellprofiler.imageset;
 
+import java.io.File;
+import java.net.URI;
+import java.util.List;
+
 import ome.xml.model.LongAnnotation;
 import ome.xml.model.OME;
 import ome.xml.model.Pixels;
@@ -81,5 +85,32 @@ public class ImagePlaneDetails extends Details {
 		} else {
 			return this;
 		}
+	}
+	/**
+	 * Get the following fields for display by CellProfiler's
+	 * metadata module:
+	 * Path / URL
+	 * Series
+	 * Index
+	 * metadata as given by the metadataKeys
+	 * 
+	 * @param metadataKeys
+	 * @return
+	 */
+	public String [] getIPDFields(List<String> metadataKeys) {
+		final String [] result = new String[metadataKeys.size() + 3];
+		URI uri = imagePlane.getImageFile().getURI();
+		if (uri.getScheme().toLowerCase().equals("file")) {
+			result[0] = new File(uri).toString();
+		} else {
+			result[0] = uri.toString();
+		}
+		result[1] = Integer.toString(imagePlane.getSeries().getSeries());
+		result[2] = Integer.toString(imagePlane.getIndex());
+		for (int i=0; i<metadataKeys.size(); i++) {
+			result[i+3] = get(metadataKeys.get(i));
+			if (result[i+3] == null) result[i+3] = "";
+		}
+		return result;
 	}
 }

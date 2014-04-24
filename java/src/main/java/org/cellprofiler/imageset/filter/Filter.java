@@ -324,7 +324,11 @@ public class Filter<C> {
 			if (key.equals(IsMonochromePredicate.SYMBOL)) return cast(new IsMonochromePredicate(), klass);
 			if (key.equals(IsStackPredicate.SYMBOL)) return cast(new IsStackPredicate(), klass);
 			if (key.equals(IsStackFramePredicate.SYMBOL)) return cast(new IsStackFramePredicate(), klass);
-			return cast(StackAdapter.makeAdapter(get(key, ImagePlaneDetails.class)), klass);
+			final FilterPredicate<ImagePlaneDetails, ?> predicate = get(key, ImagePlaneDetails.class);
+			if (predicate instanceof TokenParser) {
+				return cast(TokenParserStackAdapter.makeAdapter((TokenParser<ImagePlaneDetails, ?>)predicate), klass);
+			}
+			return cast(StackAdapter.makeAdapter(predicate), klass);
 		}
 		if (klass.isAssignableFrom(ImagePlaneDetails.class)) {
 			if (key.equals(MetadataPredicate.SYMBOL)) return cast(new MetadataPredicate(), klass);

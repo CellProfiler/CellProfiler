@@ -29,7 +29,7 @@ import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
  */
 public class StackAdapter<TOUT> implements
 		FilterPredicate<ImagePlaneDetailsStack, TOUT> {
-	private FilterPredicate<ImagePlaneDetails, TOUT> planeFilterPredicate;
+	protected FilterPredicate<ImagePlaneDetails, TOUT> planeFilterPredicate;
 	/**
 	 * Make a stack adapter for an ImagePlaneDetails filter predicate.
 	 * 

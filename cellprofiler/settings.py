@@ -2830,11 +2830,13 @@ class Filter(Setting):
 
     def test_valid(self, pipeline):
         try:
-            tokens = self.parse()
-        except ValueError:
-            raise ValidationError("Invalid filter expression: %s" % self.value_text, self)
-        try:
-            tokens[0].test_valid(pipeline, *tokens[1:])
+            import cellprofiler.utilities.jutil as J
+            J.run_script("""
+            importPackage(Packages.org.cellprofiler.imageset.filter);
+            new Filter(expr, klass);
+            """, dict(expr = self.value_text,
+                      klass = J.class_for_name(
+                          "org.cellprofiler.imageset.ImagePlaneDetailsStack")))
         except Exception, e:
             raise ValidationError(str(e), self)
         

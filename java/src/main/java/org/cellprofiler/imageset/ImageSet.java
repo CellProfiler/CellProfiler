@@ -319,15 +319,18 @@ public class ImageSet extends ArrayList<ImagePlaneDetailsStack> {
 		for (CDLoc loc:set.headSet(set.last())) {
 			final CDLoc higher = set.higher(loc);
 			int matchLength = loc.matchLength(higher);
-			for (int i=3; i<=matchLength; i++) {
-				final CDLoc key = new CDLoc(loc.imageSetIdx, loc.dataIdx, i, matchLength);
-				final Entry<CDLoc, Integer> other = runs.lowerEntry(key);
-				if ((other == null) || (other.getKey().matchLength(key) < i)) {
+			final CDLoc key = new CDLoc(loc.imageSetIdx, loc.dataIdx, matchLength, matchLength);
+			final Entry<CDLoc, Integer> other = runs.lowerEntry(key);
+			if (other == null) {
+				runs.put(key, key.runLength(set));
+			} else {
+				final CDLoc otherKey = other.getKey();
+				int oml = otherKey.matchLength(key);
+				if (oml < matchLength) {
+					if (oml == otherKey.dataLength) {
+						runs.remove(otherKey);
+					}
 					runs.put(key, key.runLength(set));
-					continue;
-				}
-				if (other.getKey().maxLength < key.maxLength) {
-					runs.put(key, other.getValue());
 				}
 			}
 		}

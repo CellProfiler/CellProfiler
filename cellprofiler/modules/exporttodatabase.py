@@ -3174,9 +3174,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1,))
-        figure.subplot_table(0, 0, 
-                             workspace.display_data.columns,
-                             col_labels = workspace.display_data.header)
+        if workspace.pipeline.test_mode:
+            figure.subplot_table(
+                0, 0, [["Data not written to database in test mode"]])
+        else:
+            figure.subplot_table(0, 0, 
+                                 workspace.display_data.columns,
+                                 col_labels = workspace.display_data.header)
     
     def display_post_run(self, workspace, figure):
         figure.set_subplots((1, 1,))

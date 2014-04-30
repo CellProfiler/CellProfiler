@@ -367,38 +367,23 @@ class MeasureObjectIntensity(cpm.CPModule):
                     lmask = masked_labels > 0 & np.isfinite(img) # Ignore NaNs, Infs
                     has_objects = np.any(lmask)
                     if has_objects:
-                        emask = masked_outlines > 0
                         limg = img[lmask]
-                        eimg = img[emask]
                         llabels = labels[lmask]
-                        elabels = labels[emask]
                         mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0],
                                                   0:masked_image.shape[1]]
                         mesh_x = mesh_x[lmask]
                         mesh_y = mesh_y[lmask]
                         lcount = fix(nd.sum(np.ones(len(limg)), llabels, lindexes))
-                        ecount = fix(nd.sum(np.ones(len(eimg)), elabels, lindexes))
                         integrated_intensity[lindexes-1] = \
                             fix(nd.sum(limg, llabels, lindexes))
-                        integrated_intensity_edge[lindexes-1] = \
-                            fix(nd.sum(eimg, elabels, lindexes))
                         mean_intensity[lindexes-1] = \
                             integrated_intensity[lindexes-1] / lcount
-                        mean_intensity_edge[lindexes-1] = \
-                            integrated_intensity_edge[lindexes-1] / ecount
                         std_intensity[lindexes-1] = np.sqrt(
                             fix(nd.mean((limg - mean_intensity[llabels-1])**2, 
                                         llabels, lindexes)))
-                        std_intensity_edge[lindexes-1] = np.sqrt(
-                            fix(nd.mean((eimg - mean_intensity_edge[elabels-1])**2, 
-                                        elabels, lindexes)))
                         min_intensity[lindexes-1] = fix(nd.minimum(limg, llabels, lindexes))
-                        min_intensity_edge[lindexes-1] = fix(
-                            nd.minimum(eimg, elabels, lindexes))
                         max_intensity[lindexes-1] = fix(
                             nd.maximum(limg, llabels, lindexes))
-                        max_intensity_edge[lindexes-1] = fix(
-                            nd.maximum(eimg, elabels, lindexes))
                          # Compute the position of the intensity maximum
                         max_position = np.array( fix(nd.maximum_position(limg, llabels, lindexes)), dtype=int )
                         max_position = np.reshape( max_position, ( max_position.shape[0], ) )
@@ -464,6 +449,25 @@ class MeasureObjectIntensity(cpm.CPModule):
                         qmask = (~qmask) & (areas > 0)
                         mad_intensity[lindexes[qmask]-1] = madimg[order[qindex[qmask]]]
                         
+                    emask = masked_outlines > 0
+                    eimg = img[emask]
+                    elabels = labels[emask]
+                    has_edge = len(eimg) > 0
+                    if has_edge:
+                        ecount = fix(nd.sum(
+                            np.ones(len(eimg)), elabels, lindexes))
+                        integrated_intensity_edge[lindexes-1] = \
+                            fix(nd.sum(eimg, elabels, lindexes))
+                        mean_intensity_edge[lindexes-1] = \
+                            integrated_intensity_edge[lindexes-1] / ecount
+                        std_intensity_edge[lindexes-1] = \
+                            np.sqrt(fix(nd.mean(
+                                (eimg - mean_intensity_edge[elabels-1])**2, 
+                                elabels, lindexes)))
+                        min_intensity_edge[lindexes-1] = fix(
+                            nd.minimum(eimg, elabels, lindexes))
+                        max_intensity_edge[lindexes-1] = fix(
+                            nd.maximum(eimg, elabels, lindexes))
                 m = workspace.measurements
                 for category, feature_name, measurement in \
                     ((INTENSITY, INTEGRATED_INTENSITY, integrated_intensity),

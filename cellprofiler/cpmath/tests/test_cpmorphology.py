@@ -180,7 +180,20 @@ class TestFillLabeledHoles(unittest.TestCase):
         # Program would segfault within this call
         result = morph.fill_labeled_holes(labels)
     
-
+    def test_13_issue_1116(self):
+        # Regression test of issue # 1116. Object 727 is next to 762, but 762
+        # is not next to 727 causing 727 to be filled-in
+        labels = np.array(
+            [[694, 694, 694, 705, 705, 705, 705, 705, 705, 705],
+             [  0,   0, 705, 705, 705, 705, 705, 705, 727, 762],
+             [  0,   0, 705, 705, 705, 705, 705, 727, 727, 762],
+             [  0,   0, 705, 705, 705, 705, 705, 727, 762, 762],
+             [761, 761, 761, 761, 705, 705, 762, 762, 762, 762],
+             [761, 761, 761, 761,   0, 762, 762, 762, 762, 762],
+             [761, 761, 761, 761, 762, 762, 762, 762, 762, 762]])
+        result = morph.fill_labeled_holes(labels)
+        self.assertTrue(np.sum(result == 727) == np.sum(labels==727))
+        
 class TestAdjacent(unittest.TestCase):
     def test_00_00_zeros(self):
         result = morph.adjacent(np.zeros((10,10), int))

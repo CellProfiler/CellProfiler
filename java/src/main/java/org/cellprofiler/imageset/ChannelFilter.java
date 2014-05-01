@@ -87,14 +87,11 @@ public class ChannelFilter {
 	static public class ColorOrdering extends OrderingBase {
 		public int compare(ImagePlane aImagePlane, Plane omePlaneA, 
 				ImagePlane bImagePlane, Plane omePlaneB) {
-			int result = omePlaneA.getTheT().getValue() -
-				omePlaneB.getTheT().getValue();
+			int result = aImagePlane.theT() - bImagePlane.theT();
 			if (result != 0) return result;
-			result = omePlaneA.getTheZ().getValue() -
-			omePlaneB.getTheZ().getValue();
+			result = aImagePlane.theZ() - bImagePlane.theZ();
 			if (result != 0) return result;
-			return omePlaneA.getTheC().getValue() -
-				omePlaneB.getTheC().getValue();
+			return aImagePlane.theC() - bImagePlane.theC();
 		}
 	}
 	/**
@@ -331,7 +328,7 @@ public class ChannelFilter {
 		List<ImagePlaneDetails> groupingPlanes = new ArrayList<ImagePlaneDetails>();
 		for (ImagePlaneDetails ipd:ipds) {
 			final ImagePlane imagePlane = ipd.getImagePlane();
-			if (imagePlane.getOMEPlane() != null) {
+			if (imagePlane.hasCZT()) {
 				groupingPlanes.add(ipd);
 			} else {
 				result.add(ImagePlaneDetailsStack.makeColorStack(ipd));
@@ -349,7 +346,7 @@ public class ChannelFilter {
 			ImagePlaneDetailsStack stack = new ImagePlaneDetailsStack(PlaneStack.XYCAxes);
 			int lastChannel = -1;
 			for (ImagePlaneDetails ipd:groupingPlanes) {
-				final Integer c = ipd.getImagePlane().getOMEPlane().getTheC().getValue();
+				final Integer c = ipd.getImagePlane().theC();
 				if (c > lastChannel) {
 					stack.add(ipd, 0, 0, c);
 				} else {

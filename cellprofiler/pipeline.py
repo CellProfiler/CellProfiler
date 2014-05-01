@@ -1595,7 +1595,7 @@ class Pipeline(object):
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = cellprofiler.measurements.Measurements(
+        measurements = cpmeas.Measurements(
             image_set_start = image_set_start,
             filename = measurements_filename,
             copy = initial_measurements)
@@ -2535,7 +2535,7 @@ class Pipeline(object):
             self.__image_plane_details = []
             self.notify_listeners(URLsRemovedEvent(old_urls))
             def undo():
-                self.add_image_plane_details(old_ipds, False)
+                self.add_urls(old_urls, False)
             self.__undo_stack.append((undo, "Remove images"))
             
     def load_file_list(self, workspace):

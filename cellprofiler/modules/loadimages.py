@@ -3197,7 +3197,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             else:
                 rdr = get_image_reader(
                     self.get_name(), url=self.get_url())
-            if np.isscalar(self.index):
+            if np.isscalar(self.index) or self.index is None:
                 img, self.scale = rdr.read(
                     c = self.channel,
                     series=self.series,

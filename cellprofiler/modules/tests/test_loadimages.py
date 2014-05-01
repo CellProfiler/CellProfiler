@@ -38,6 +38,7 @@ import cellprofiler.measurements as measurements
 import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
 from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 import cellprofiler.preferences as cpprefs
 from bioformats.formatreader import clear_image_reader_cache
 
@@ -77,17 +78,29 @@ class ConvtesterMixin:
                  for filename in os.listdir(directory)
                  if fn_filter(filename)]
         w2.file_list.add_files_to_filelist(urls)
+        pipeline.add_urls(urls, False)
         pipeline.convert_legacy_input_modules()
-        pipeline.load_image_plane_details(w2)
         pipeline.prepare_run(w2)
         
         ff1 = m1.get_feature_names(measurements.IMAGE)
-        ffexpected = [f.replace("IMAGE_FOR_", "") for f in ff1]
+        ffexpected = [f.replace("IMAGE_FOR_", "") for f in ff1 
+                      if not f.startswith(measurements.C_METADATA)]
         ff2 = [x for x in m2.get_feature_names(measurements.IMAGE)
                if not any([x.startswith(y) for y in (
                measurements.C_FRAME, measurements.C_SERIES,
-               measurements.C_OBJECTS_FRAME, measurements.C_OBJECTS_SERIES)])]
+               measurements.C_OBJECTS_FRAME, 
+               measurements.C_OBJECTS_SERIES,
+               measurements.C_CHANNEL,
+               measurements.C_OBJECTS_CHANNEL,
+               measurements.C_METADATA,
+               M_IMAGE_SET
+               )])]
         self.assertItemsEqual(ffexpected, ff2)
+        for feature in ff1:
+            if feature.startswith(measurements.C_METADATA):
+                self.assertTrue(m2.has_feature(measurements.IMAGE, feature))
+        ff1a = filter((lambda x:not x.startswith(measurements.C_METADATA)),
+                      ff1)
         self.assertEqual(m1.image_set_count, m2.image_set_count)
         image_numbers = m1.get_image_numbers()
         #
@@ -100,7 +113,7 @@ class ConvtesterMixin:
              for f in m_url]) for mm, m_url in ((m1, m_url1), (m2, m_url2))]
         image_numbers1 = image_numbers[order1]
         image_numbers2 = image_numbers[order2]
-        for f1, f2 in zip(ff1, ff2):
+        for f1, f2 in zip(ff1a, ff2):
             if f1 in (measurements.GROUP_INDEX, measurements.GROUP_NUMBER,
                       measurements.IMAGE_NUMBER):
                 continue

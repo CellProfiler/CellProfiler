@@ -206,4 +206,85 @@ public class MetadataUtils {
 		return getIndex(plane.getPixels(), plane.getTheC().getValue(), 
 				plane.getTheZ().getValue(), plane.getTheT().getValue());	
 	}
+	/**
+	 * Get the Z index of a plane, given its index and the
+	 * OME Pixels that describe its image
+	 * 
+	 * @param pixels
+	 * @param index
+	 * @return
+	 */
+	static public int getZ(Pixels pixels, int index) {
+		final Integer sizeC = pixels.getSizeC().getValue();
+		final Integer sizeT = pixels.getSizeT().getValue();
+		final Integer sizeZ = pixels.getSizeZ().getValue();
+		final DimensionOrder dimensionOrder = pixels.getDimensionOrder();
+		switch(dimensionOrder) {
+		case XYCTZ:
+		case XYTCZ:
+			return index / (sizeC * sizeT);
+		case XYCZT:
+			return (index / sizeC) % sizeZ;
+		case XYTZC:
+			return (index / sizeT) % sizeZ;
+		case XYZCT:
+		case XYZTC:
+			return index % sizeZ;
+		}
+		throw new UnsupportedOperationException(String.format("Unsupported dimension order: %s", dimensionOrder.toString()));
+	}
+	/**
+	 * Get the C index of a plane, given its index and the
+	 * OME Pixels that describe its image
+	 * 
+	 * @param pixels
+	 * @param index
+	 * @return
+	 */
+	static public int getC(Pixels pixels, int index) {
+		final Integer sizeC = pixels.getSizeC().getValue();
+		final Integer sizeT = pixels.getSizeT().getValue();
+		final Integer sizeZ = pixels.getSizeZ().getValue();
+		final DimensionOrder dimensionOrder = pixels.getDimensionOrder();
+		switch(dimensionOrder) {
+		case XYZTC:
+		case XYTZC:
+			return index / (sizeZ * sizeT);
+		case XYZCT:
+			return (index / sizeZ) % sizeC;
+		case XYTCZ:
+			return (index / sizeT) % sizeC;
+		case XYCZT:
+		case XYCTZ:
+			return index % sizeC;
+		}
+		throw new UnsupportedOperationException(String.format("Unsupported dimension order: %s", dimensionOrder.toString()));
+	}
+	/**
+	 * Get the T index of a plane, given its index and the
+	 * OME Pixels that describe its image
+	 * 
+	 * @param pixels
+	 * @param index
+	 * @return
+	 */
+	static public int getT(Pixels pixels, int index) {
+		final Integer sizeC = pixels.getSizeC().getValue();
+		final Integer sizeT = pixels.getSizeT().getValue();
+		final Integer sizeZ = pixels.getSizeZ().getValue();
+		final DimensionOrder dimensionOrder = pixels.getDimensionOrder();
+		switch(dimensionOrder) {
+		case XYZCT:
+		case XYCZT:
+			return index / (sizeZ * sizeC);
+		case XYZTC:
+			return (index / sizeZ) % sizeT;
+		case XYCTZ:
+			return (index / sizeC) % sizeT;
+		case XYTZC:
+		case XYTCZ:
+			return index % sizeT;
+		}
+		throw new UnsupportedOperationException(String.format("Unsupported dimension order: %s", dimensionOrder.toString()));
+	}
 }

@@ -253,6 +253,11 @@ def start_vm(args, run_headless = False):
         if run_headless:
             __run_headless = True
             args = args + [r"-Djava.awt.headless=true"]
+            
+        if os.environ.has_key("CP_JDWP_PORT"):
+            args.append(
+                ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"
+                 ",server=y,suspend=n") % os.environ["CP_JDWP_PORT"])
 
         logger.debug("Creating JVM object")
         __thread_local_env.is_main_thread = True

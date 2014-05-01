@@ -793,7 +793,8 @@ class Measurements(object):
                 data = [data]
             data = [d if d is None or d is np.NaN
                     else Measurements.wrap_string(d) if np.isscalar(d)
-                    else Measurements.wrap_string(d[0])
+                    else Measurements.wrap_string(d[0]) if data_type is None
+                    else d
                     for d in data]
             self.hdf5_dict[IMAGE, feature_name, image_set_number, data_type] = data
             for n in image_set_number:

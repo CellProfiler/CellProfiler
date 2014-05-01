@@ -39,7 +39,7 @@ def get_imageplus_wrapper(imageplus_obj):
         def getDimensions(self):
             'Returns the dimensions of this image: (width, height, nChannels, nSlices, nFrames)'
             jresult = J.call(self.o, 'getDimensions', '()[I')
-            return J.get_env().get_int_array_elements(jresult)
+            return jresult
         
         getFrame = J.make_method('getFrame', '()I')
         getHeight = J.make_method('getHeight', '()I')

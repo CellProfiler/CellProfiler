@@ -29,6 +29,7 @@ import loci.common.services.ServiceException;
 
 import ome.xml.model.Image;
 import ome.xml.model.OME;
+import ome.xml.model.Pixels;
 
 import org.cellprofiler.imageset.filter.Filter;
 import org.slf4j.Logger;
@@ -320,11 +321,28 @@ public class ImagePlaneMetadataExtractor  {
 				for (int series=0; series < fileMetadata.sizeOfImageList(); series++) {
 					final ImageSeries imageSeries = new ImageSeries(imageFile, series);
 					Image seriesMetadata = imageSeries.getOMEImage();
-					for (int plane=0; plane<seriesMetadata.getPixels().sizeOfPlaneList(); plane++) {
-						final ImagePlane imagePlane = new ImagePlane(imageSeries, plane, ImagePlane.ALWAYS_MONOCHROME);
-						final ImagePlaneDetails ipd = extract(imagePlane);
-						result.add(ipd);
-						for (String key:ipd) keysOut.add(key);
+					final Pixels pixels = seriesMetadata.getPixels();
+					int nPlanes = pixels.sizeOfPlaneList();
+					if (nPlanes == 0) {
+						// The planes aren't populated - need to infer from size{C / Z / T}
+						nPlanes = pixels.getSizeC().getValue() * pixels.getSizeT().getValue() * pixels.getSizeZ().getValue();
+						final ImageSeriesDetails imageSeriesDetails = extract(imageSeries);
+						for (int plane=0; plane<nPlanes; plane++) {
+							final ImagePlane imagePlane = new ImagePlane(imageSeries, plane, ImagePlane.ALWAYS_MONOCHROME);
+							final ImagePlaneDetails ipd = new ImagePlaneDetails(imagePlane, imageSeriesDetails);
+							ipd.put(OMEPlaneMetadataExtractor.MD_C, Integer.toString(imagePlane.theC()));
+							ipd.put(OMEPlaneMetadataExtractor.MD_T, Integer.toString(imagePlane.theT()));
+							ipd.put(OMEPlaneMetadataExtractor.MD_Z, Integer.toString(imagePlane.theZ()));
+							result.add(ipd);
+						}
+						
+					} else {
+						for (int plane=0; plane<nPlanes; plane++) {
+							final ImagePlane imagePlane = new ImagePlane(imageSeries, plane, ImagePlane.ALWAYS_MONOCHROME);
+							final ImagePlaneDetails ipd = extract(imagePlane);
+							result.add(ipd);
+							for (String key:ipd) keysOut.add(key);
+						}
 					}
 				}
 			} else {

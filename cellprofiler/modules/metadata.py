@@ -505,11 +505,14 @@ class Metadata(cpm.CPModule):
                 return group.imported_metadata_header_line
         group.imported_metadata_header_timestamp = time.time()
         group.imported_metadata_header_path = csv_path
-        if group.csv_location.is_url():
-            fd = urllib.urlopen(csv_path)
-        else:
-            fd = open(csv_path, "rb")
-        group.imported_metadata_header_line = fd.readline()
+        try:
+            if group.csv_location.is_url():
+                fd = urllib.urlopen(csv_path)
+            else:
+                fd = open(csv_path, "rb")
+            group.imported_metadata_header_line = fd.readline()
+        except:
+            return ""
         return group.imported_metadata_header_line
     
     def build_imported_metadata_extractor(self, group, extractor,
@@ -577,7 +580,8 @@ class Metadata(cpm.CPModule):
         # Get the key set.
         #
         possible_keys = J.get_collection_wrapper(
-            J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"))
+            J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"),
+            J.to_string)
         joiner = group.csv_joiner
         assert isinstance(joiner, cps.Joiner)
         joiner.entities[self.IPD_JOIN_NAME] = list(possible_keys)
@@ -590,7 +594,8 @@ class Metadata(cpm.CPModule):
         # Get the key set.
         #
         possible_keys = J.get_collection_wrapper(
-            J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"))
+            J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"),
+            J.to_string)
         joiner.entities[self.CSV_JOIN_NAME] = possible_keys
         
     def settings(self):

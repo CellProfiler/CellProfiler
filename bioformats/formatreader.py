@@ -582,7 +582,13 @@ class ImageReader(object):
         var classes = class_list.getClasses();
         var rdr = null;
         var lc_filename = java.lang.String(filename.toLowerCase());
-        for (pass=0; pass < 3; pass++) {
+        if (lc_filename.endsWith(".tif")) {
+            var omerdr = new Packages.loci.formats.in.OMETiffReader()
+            if (omerdr.isThisType(stream)) {
+                rdr = omerdr;
+            }
+        }
+        for (pass=0; (pass < 3) && (rdr == null); pass++) {
             for (class_idx in classes) {
                 var maybe_rdr = classes[class_idx].newInstance();
                 if (pass == 0) {
@@ -709,7 +715,7 @@ class ImageReader(object):
         pixel_type = self.rdr.getPixelType()
         little_endian = self.rdr.isLittleEndian()
         if pixel_type == FormatTools.INT8:
-            dtype = np.char
+            dtype = np.int8
             scale = 255
         elif pixel_type == FormatTools.UINT8:
             dtype = np.uint8

@@ -31,7 +31,6 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
-import java.util.zip.DeflaterInputStream;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
@@ -318,6 +317,7 @@ public class ImageSet extends ArrayList<ImagePlaneDetailsStack> {
 		TreeMap<CDLoc, Integer> runs = new TreeMap<CDLoc, Integer>();
 		for (CDLoc loc:set.headSet(set.last())) {
 			final CDLoc higher = set.higher(loc);
+			if (higher == null) continue;
 			int matchLength = loc.matchLength(higher);
 			final CDLoc key = new CDLoc(loc.imageSetIdx, loc.dataIdx, matchLength, matchLength);
 			final Entry<CDLoc, Integer> other = runs.lowerEntry(key);

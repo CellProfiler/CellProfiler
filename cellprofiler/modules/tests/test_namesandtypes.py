@@ -575,22 +575,14 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
                 if url in urls:
                     continue
                 urls.add(url)
-                ipd = cpp.ImagePlaneDetails(url, None, None, None, metadata)
-                jmetadata = J.make_map(**metadata)
-                ipd.jipd = J.run_script("""
-                importPackage(Packages.org.cellprofiler.imageset);
-                importPackage(Packages.org.cellprofiler.imageset.filter);
-                var imageFile=new ImageFile(new java.net.URI(url));
-                var imagePlane=new ImagePlane(imageFile);
-                new ImagePlaneDetails(imagePlane, metadata);
-                """, dict(url=url, metadata=jmetadata))
+                ipd = self.make_ipd(url, metadata)
                 ipds.append(ipd)
         if additional is not None:
             del channels["Additional"]
         ipds.sort(key = lambda x: x.url)
         pipeline = cpp.Pipeline()
-        del pipeline.image_plane_details[:]
-        pipeline.image_plane_details.extend(ipds)
+        pipeline.set_filtered_file_list(urls, module)
+        pipeline.set_image_plane_details(ipds, metadata.keys(), module)
         module.module_num = 1
         pipeline.add_module(module)
         m = cpmeas.Measurements()
@@ -627,6 +619,31 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
                     self.assertEqual(metadata[key], 
                                      m[cpmeas.IMAGE, md_ftr, image_number])
         return workspace
+
+    def make_ipd(self, url, metadata, series=0, index=0, channel=None):
+        if channel is None:
+            channel = "ALWAYS_MONOCHROME"
+        if isinstance(channel, basestring):
+            channel = J.run_script("""
+            importPackage(Packages.org.cellprofiler.imageset);
+            ImagePlane.%s;""" % channel)
+        jmetadata = J.make_map(**metadata)
+        jipd = J.run_script("""
+                importPackage(Packages.org.cellprofiler.imageset);
+                importPackage(Packages.org.cellprofiler.imageset.filter);
+                var imageFile=new ImageFile(new java.net.URI(url));
+                var imageFileDetails = new ImageFileDetails(imageFile);
+                var imageSeries=new ImageSeries(imageFile, series);
+                var imageSeriesDetails = new ImageSeriesDetails(imageSeries, imageFileDetails);
+                var imagePlane=new ImagePlane(imageSeries, index, channel);
+                var ipd = new ImagePlaneDetails(imagePlane, imageSeriesDetails);
+                for (var entry in Iterator(metadata.entrySet())) {
+                    ipd.put(entry.getKey(), entry.getValue());
+                }
+                ipd;
+                """, dict(url=url, metadata=jmetadata, series=series, 
+                          index=index, channel=channel))
+        return cpp.ImagePlaneDetails(jipd)
             
     def test_01_00_01_all(self):
         n = N.NamesAndTypes()
@@ -762,6 +779,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
                       [(M0, C0), (M1, C0), (M2, C1), (M3, C1)], additional)        
 
     def test_01_07_one_against_all(self):
+        import os
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_METADATA
@@ -831,10 +849,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
         n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("%s%d" % (C0, (3-i)), None, None, None, m)
+            [[self.make_ipd("%s%d" % (C0, (3-i)),  m)
               for i, m in enumerate(md([(M0, 3)]))],
-             [cpp.ImagePlaneDetails("%s%d" % (C1, i+1), None, None, None, m)
-                           for i, m in enumerate(md([(M1, 2)]))]]
+             [self.make_ipd("%s%d" % (C1, i+1), m)
+              for i, m in enumerate(md([(M1, 2)]))]]
         data = {
             C0:[("%s%d" % (C0, i+1), m) for i, m in enumerate(md([(M0, 2)]))],
             C1:[("%s%d" % (C1, i+1), m) for i, m in enumerate(md([(M1, 2)]))] }
@@ -1070,6 +1088,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
             series_feature = cpmeas.C_OBJECTS_SERIES + "_" + OBJECTS_NAME
             frame_feature = cpmeas.C_OBJECTS_FRAME + "_" + OBJECTS_NAME
             channel_feature = cpmeas.C_OBJECTS_CHANNEL + "_" + OBJECTS_NAME
+            names = J.make_list([OBJECTS_NAME])
         else:
             url_feature = cpmeas.C_URL + "_" + IMAGE_NAME
             path_feature = cpmeas.C_PATH_NAME + "_" + IMAGE_NAME
@@ -1077,6 +1096,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
             series_feature = cpmeas.C_SERIES + "_" + IMAGE_NAME
             frame_feature = cpmeas.C_FRAME + "_" + IMAGE_NAME
             channel_feature = cpmeas.C_CHANNEL + "_" + IMAGE_NAME
+            names = J.make_list([IMAGE_NAME])
             
         m.image_set_number = 1
         m.add_measurement(cpmeas.IMAGE, url_feature, url)
@@ -1090,11 +1110,26 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
             m.add_measurement(cpmeas.IMAGE, channel_feature, channel)
         m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
         m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1)
+        if load_as_type == N.LOAD_AS_COLOR_IMAGE:
+            stack="Color"
+            if channel is None:
+                channel = "INTERLEAVED"
+        elif load_as_type == N.LOAD_AS_OBJECTS:
+            stack="Objects"
+            if channel is None:
+                channel = "OBJECT_PLANES"
+        else:
+            stack="Monochrome"
+            if channel is None:
+                channel = "ALWAYS_MONOCHROME"
+        ipds = J.make_list([
+            self.make_ipd(url, {}, series or 0, index or 0, channel).jipd])
         
         for d in lsi:
             path = d["path"]
             load_as_type = d["load_as_type"]
             name = d["name"]
+            names.add(name)
             rescaled = d.get("rescaled", True)
             should_save_outlines = d.get("should_save_outlines", False)
             outlines_name = d.get("outlines_name", "_".join((name, "outlines")))
@@ -1126,8 +1161,24 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
             m.add_measurement(cpmeas.IMAGE, url_feature, url)
             m.add_measurement(cpmeas.IMAGE, path_feature, pathname)
             m.add_measurement(cpmeas.IMAGE, file_feature, filename)
-            
-            
+            ipds.add(self.make_ipd(url, {}).jipd)
+        
+        script = """
+        importPackage(Packages.org.cellprofiler.imageset);
+        var ls = new java.util.ArrayList();
+        for (var ipd in Iterator(ipds)) {
+            ls.add(ImagePlaneDetailsStack.make%sStack(ipd));
+        }
+        var kwlist = new java.util.ArrayList();
+        kwlist.add("ImageNumber");
+        var imageSet = new ImageSet(ls, kwlist);
+        imageSet.compress(names, null);
+        """ % stack
+        blob = J.run_script(script, dict(ipds=ipds.o, names=names.o))
+        blob = J.get_env().get_byte_array_elements(blob)
+        m.add_measurement(cpmeas.IMAGE, N.M_IMAGE_SET, blob, 
+                          data_type=np.uint8)
+        
         workspace = cpw.Workspace(pipeline, n, m,
                                   N.cpo.ObjectSet(),
                                   m, None)

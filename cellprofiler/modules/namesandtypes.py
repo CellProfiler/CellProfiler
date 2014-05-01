@@ -263,7 +263,6 @@ class NamesAndTypes(cpm.CPModule):
             "by which other modules will refer to it."]
         self.set_notes([" ".join(module_explanation)])
         
-        self.ipds = []
         self.image_sets = []
         self.metadata_keys = []
         
@@ -781,6 +780,7 @@ class NamesAndTypes(cpm.CPModule):
             env.get_object_array_elements(x) for x in
             urls, path_names, file_names, series, index, channel]
         for i, iscd in enumerate(iscds):
+            image_set_column_idx = channel_map[column_names[i]]
             if iscd.channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
                 url_category = cpmeas.C_OBJECTS_URL
                 path_name_category = cpmeas.C_OBJECTS_PATH_NAME
@@ -805,14 +805,16 @@ class NamesAndTypes(cpm.CPModule):
                                 (file_name_feature, file_names)):
                 col_values = [
                     env.get_string(x) 
-                    for x in env.get_object_array_elements(jarray[i])]
+                    for x in env.get_object_array_elements(
+                        jarray[image_set_column_idx])]
                 m.add_all_measurements(cpmeas.IMAGE, ftr, col_values)
                 del col_values
             
             for ftr, jarray in ((series_feature, series),
                                 (frame_feature, index),
                                 (channel_feature, channel)):
-                col_values = list(env.get_int_array_elements(jarray[i]))
+                col_values = list(env.get_int_array_elements(
+                    jarray[image_set_column_idx]))
                 m.add_all_measurements(cpmeas.IMAGE, ftr, col_values)
         
         #
@@ -823,11 +825,11 @@ class NamesAndTypes(cpm.CPModule):
         must_have = J.make_map()
         if self.matching_method == MATCH_BY_METADATA:
             md_keys = self.join.parse()
-            for idx, column_name in enumerate(column_names):
+            for column_name in column_names:
                 for k in md_keys:
                     ck = k.get(column_name)
                     if ck is not None and not must_have.containsKey(ck):
-                        must_have.put(ck, idx)
+                        must_have.put(ck, channel_map[column_name])
         #
         # Make a Java map of metadata key to metadata comparator
         #
@@ -848,9 +850,12 @@ class NamesAndTypes(cpm.CPModule):
         env = J.get_env()
         mc = workspace.pipeline.get_measurement_columns(self)
         type_dict = dict([(c[1], c[2]) for c in mc if c[0] == cpmeas.IMAGE])
-        for name in J.iterate_collection(md_dict.keySet(), env.get_string_utf):
+        def get_string_utf(x):
+            return None if x is None else env.get_string_utf(x)
+        
+        for name in J.iterate_collection(md_dict.keySet(), get_string_utf):
             feature_name = "_".join((cpmeas.C_METADATA, name))
-            values = J.iterate_collection(md_dict[name], env.get_string_utf)
+            values = J.iterate_collection(md_dict[name], get_string_utf)
             data_type = type_dict.get(feature_name, cpmeas.COLTYPE_VARCHAR_FILE_NAME)
             if data_type == cpmeas.COLTYPE_INTEGER:
                 values = [int(v) for v in values]
@@ -890,11 +895,11 @@ class NamesAndTypes(cpm.CPModule):
             image_sets = self.java_make_image_sets_assign_all(
                 workspace, ipd_list)
             channels = { self.single_image_provider.value: 0 }
-        elif self.matching_choice == MATCH_BY_ORDER:
+        elif self.matching_method == MATCH_BY_ORDER:
             image_sets = self.java_make_image_sets_by_order(
                 workspace, ipd_list)
             channels =  {}
-            for i, group in enumerate(self.assignments):
+            for i, group in enumerate(self.assignments+self.single_images):
                 if group.load_as_choice == LOAD_AS_OBJECTS:
                     channels[group.object_name.value] = i
                 else:
@@ -984,7 +989,7 @@ class NamesAndTypes(cpm.CPModule):
         joins = self.join.parse()
         anchor_channel = None
         channel_names = self.get_column_names()
-        for i, group in enumerate(assignments):
+        for i, group in enumerate(self.assignments):
             name = channel_names[i]
             if anchor_channel is None:
                 anchor_keys = []
@@ -996,8 +1001,8 @@ class NamesAndTypes(cpm.CPModule):
                     anchor_channel = i
                     anchor_cf = self.make_channel_filter(group, name)
         channels = dict([(c, 0 if i == anchor_channel 
-                        else i if i < anchor_channel
-                        else i+1) for i, c in enumerate(channel_names)])
+                        else i+1 if i < anchor_channel
+                        else i) for i, c in enumerate(channel_names)])
         #
         # Make the joiner
         #
@@ -1027,15 +1032,16 @@ class NamesAndTypes(cpm.CPModule):
                         workspace, anchor_keys[j], join[name]))
             J.run_script("""
             joiner.addChannel(cf, joiningKeys);
-            """, dict(cf=cf, joiningKeys=joining_keys))
+            """, dict(joiner=joiner, cf=cf, joiningKeys=joining_keys))
         errors = J.make_list()
         image_sets = J.run_script("""
         joiner.join(ipds, errors);
-        """, dict(ipds = ipd_list.o, errors = errors.o))
+        """, dict(joiner=joiner, ipds = ipd_list.o, errors = errors.o))
         if len(errors) > 0:
             if not self.handle_errors(errors):
                 return None, None
-            
+        
+        self.append_single_images(image_sets)
         return image_sets, channels
                 
     def java_make_image_sets_assign_all(self, workspace, ipd_list):
@@ -1047,7 +1053,7 @@ class NamesAndTypes(cpm.CPModule):
         '''
         axes = self.get_axes_for_load_as_choice(
             self.single_load_as_choice.value)
-        name = self.single_images.value
+        name = self.single_image_provider.value
         errors = J.make_list()
         image_sets = J.run_script("""
         importPackage(Packages.org.cellprofiler.imageset);
@@ -1078,8 +1084,52 @@ class NamesAndTypes(cpm.CPModule):
         if len(errors) > 0:
             if not self.handle_errors(errors):
                 return None
+        self.append_single_images(image_sets)
         return image_sets
                        
+    def append_single_images(self, image_sets):
+        '''Append the single image channels to every image set
+        
+        image_sets - a java list of image sets
+        '''
+        for group in self.single_images:
+            url = group.image_plane.url
+            series = group.image_plane.series or 0
+            index = group.image_plane.index or 0
+            axes = self.get_axes_for_load_as_choice(group.load_as_choice.value)
+            if group.load_as_choice == LOAD_AS_COLOR_IMAGE:
+                field_name = "INTERLEAVED"
+            elif group.load_as_choice == LOAD_AS_OBJECTS:
+                field_name = "OBJECT_PLANES"
+            else:
+                field_name = "ALWAYS_MONOCHROME"
+            channel = J.get_static_field(
+                "org/cellprofiler/imageset/ImagePlane", field_name, "I")
+            stack = J.make_instance(
+                "org/cellprofiler/imageset/ImagePlaneDetailsStack",
+                "([Lnet/imglib2/meta/TypedAxis;)V", axes)
+            J.run_script("""
+            importPackage(Packages.org.cellprofiler.imageset);
+            importClass(java.net.URI);
+            var imageFile = new ImageFile(new URI(url));
+            var imageFileDetails = new ImageFileDetails(imageFile);
+            var imageSeries = new ImageSeries(imageFile, series);
+            var imageSeriesDetails = 
+                new ImageSeriesDetails(imageSeries, imageFileDetails);
+            var imagePlane = new ImagePlane(imageSeries, index, channel);
+            var imagePlaneDetails = new ImagePlaneDetails(imagePlane, imageSeriesDetails);
+            if (stack.numDimensions() == 2) {
+                stack.add(imagePlaneDetails, 0, 0);
+            } else {
+                stack.add(imagePlaneDetails, 0, 0, 0);
+            }
+            for (var i=0; i<image_sets.size(); i++) {
+                image_sets.get(i).add(stack);
+            }
+            """, 
+               dict(url=url, series=series, index=index, stack=stack, 
+                    channel=channel, image_sets=image_sets))
+            
     def handle_errors(self, errors):
         '''Handle UI presentation of errors and user's response
         
@@ -1090,21 +1140,10 @@ class NamesAndTypes(cpm.CPModule):
         '''
         if len(errors) == 0:
             return True
-        env = J.get_env()
-        indexes = env.make_int_array(np.array([-1] * len(channels), np.int32))
-        getIndices = J.make_static_call(
-            "org/cellprofiler/imageset/filter/IndexedImagePlaneDetails",
-            "getIndices",
-            "(Ljava/util/List;[I)V")
-        def getIPDs(o):
-            getIndices(o, indexes)
-            idxs = env.get_int_array_elements(indexes)
-            return [None if idx == -1 else ipds[idx] for idx in idxs]
 
-        for error in J.iterate_collection(errors.o):
-            image_set_ipds = J.call(error, "getImageSet", "()Ljava/util/List;")
-            key = tuple(J.iterate_collection(J.call(
-                 error, "getKey", "()Ljava/util/List;"), env.get_string_utf))
+        for error in errors:
+            key = " / ".join(J.get_collection_wrapper(
+               J.call(error, "getKey", "()Ljava/util/List;"), J.to_string))
             echannel = J.call(error, "getChannelName", "()Ljava/lang/String;")
             message = J.call(error, "getMessage", "()Ljava/lang/String;")
             logger.warning(
@@ -1141,7 +1180,7 @@ class NamesAndTypes(cpm.CPModule):
             """importPackage(Packages.org.cellprofiler.imageset);
                ImageSet.createCompressionDictionary(image_sets, channel_names);
             """, 
-            dict(image_sets=image_sets,
+            dict(image_sets=dlist,
                  channel_names = J.make_list(channel_names).o))
         m = workspace.measurements
         np_d = J.get_env().get_byte_array_elements(cd)
@@ -1236,7 +1275,7 @@ class NamesAndTypes(cpm.CPModule):
             self.add_image_provider(workspace, name, load_choice,
                                     rescale, image_set[0])
         else:
-            for group, stack in zip(self.assignments, image_set):
+            for group, stack in zip(self.assignments+self.single_images, image_set):
                 if group.load_as_choice == LOAD_AS_OBJECTS:
                     self.add_objects(workspace, 
                                      group.object_name.value,
@@ -1250,12 +1289,6 @@ class NamesAndTypes(cpm.CPModule):
                                             group.load_as_choice.value,
                                             rescale,
                                             stack)
-            for group in self.single_images:
-                self.add_single_image_provider(
-                    group.image_name.value,
-                    group.load_as_choice.value,
-                    rescale)
-            
     
     def add_image_provider(self, workspace, name, load_choice, rescale, stack):
         '''Put an image provider into the image set
@@ -1309,24 +1342,6 @@ class NamesAndTypes(cpm.CPModule):
             # cacheing multiple readers for the same channel.
             #
             raise NotImplementedError("To do: support assembling image files into a stack")
-        
-    def add_single_image_provider(self, workspace, name, load_choice, rescale):
-        '''Create an image provider using the legacy features'''
-        def fetch_measurement_or_none(category):
-            feature = category + "_" + name
-            if workspace.measurements.has_feature(cpmeas.IMAGE, feature):
-                return workspace.measurements.get_measurement(
-                    cpmeas.IMAGE, feature)
-            else:
-                return None
-            
-        url = fetch_measurement_or_none(cpmeas.C_URL)
-        if url is not None:
-            url = url.encode("utf-8")
-        series = fetch_measurement_or_none(cpmeas.C_SERIES)
-        index = fetch_measurement_or_none(cpmeas.C_FRAME)
-        channel = fetch_measurement_or_none(cpmeas.C_CHANNEL)
-        self.add_simple_image(workspace, name, load_choice, rescale, url, series, index, channel)
         
     def add_simple_image(self, workspace, name, load_choice, rescale, url, series, index, channel):
         if load_choice == LOAD_AS_COLOR_IMAGE:
@@ -1455,64 +1470,17 @@ class NamesAndTypes(cpm.CPModule):
             workspace.image_set.add(outlines_name, out_img)
                      
     def on_activated(self, workspace):
-        self.workspace = workspace
         self.pipeline = workspace.pipeline
-        self.ipds = self.pipeline.get_image_plane_details(workspace)
-        self.metadata_keys = self.pipeline.get_available_metadata_keys().keys()
+        self.metadata_keys = sorted(self.pipeline.get_available_metadata_keys().keys())
         self.update_all_metadata_predicates()
-        if self.join in self.visible_settings():
-            self.update_all_columns()
-        else:
-            self.ipd_columns = []
-            self.column_names = []
+        self.update_joiner()
         
     def on_deactivated(self):
         self.pipeline = None
         
     def on_setting_changed(self, setting, pipeline):
         '''Handle updates to all settings'''
-        if setting.key() == self.assignment_method.key():
-            self.update_all_columns()
-        elif self.assignment_method == ASSIGN_RULES:
-            self.update_all_metadata_predicates()
-            if len(self.ipd_columns) != len(self.assignments+self.single_images):
-                self.update_all_columns()
-            else:
-                for i, group in enumerate(self.assignments):
-                    if setting in (group.rule_filter, group.image_name,
-                                   group.object_name):
-                        if setting == group.rule_filter:
-                            self.ipd_columns[i] = self.filter_column(group)
-                            self.update_column_metadata(i)
-                            self.update_joiner()
-                        else:
-                            if setting == group.image_name:
-                                name = group.image_name.value
-                            elif setting == group.object_name:
-                                name = group.object_name.value
-                            else:
-                                return
-                            #
-                            # The column was renamed.
-                            #
-                            old_name = self.column_names[i]
-                            if old_name == name:
-                                return
-                            self.column_names[i] = name
-                            if old_name in self.column_names:
-                                # duplicate names - update the whole thing
-                                self.update_joiner()
-                                return
-                            self.join.entities[name] = \
-                                self.column_metadata_choices[i]
-                            del self.join.entities[old_name]
-                            joins = self.join.parse()
-                            if len(joins) > 0:
-                                for join in joins:
-                                    join[name] = join[old_name]
-                                    del join[old_name]
-                            self.join.build(str(joins))
-                        return
+        self.update_joiner()
         
     def update_all_metadata_predicates(self):
         if self.assignment_method == ASSIGN_RULES:
@@ -1522,44 +1490,6 @@ class NamesAndTypes(cpm.CPModule):
                     if isinstance(predicate, MetadataPredicate):
                         predicate.set_metadata_keys(self.metadata_keys)
                         
-    def update_all_columns(self):
-        if self.assignment_method == ASSIGN_ALL:
-            self.ipd_columns = [ list(self.ipds)]
-            column_name = self.single_image_provider.value
-            self.column_names = [ column_name ]
-        elif False: # TO DO: make it update the columns
-            self.ipd_columns = [self.filter_column(group) 
-                                for group in self.assignments]
-            try:
-                self.append_single_image_columns(self.ipd_columns, self.ipds)
-            except ValueError, e:
-                # So sad... here, we have to slog through even if there's
-                # a configuration error but in prepare_run, the exception
-                # is not fatal.
-                for i in range(len(self.ipd_columns), 
-                               len(self.assignments) + len(self.single_images)):
-                    self.ipd_columns.append([None] * len(self.ipd_columns[0]))
-            
-            self.column_metadata_choices = [[]] * len(self.ipd_columns)
-            self.column_names = [
-                group.object_name.value if group.load_as_choice == LOAD_AS_OBJECTS
-                else group.image_name.value 
-                for group in self.assignments+self.single_images]
-            for i in range(len(self.ipd_columns)):
-                self.update_column_metadata(i)
-        self.update_all_metadata_predicates()
-        if False:
-            self.update_joiner()
-        
-    def make_image_sets(self):
-        '''Create image sets from the ipd columns and joining rules
-        
-        Each image set is a dictionary whose keys are column names and
-        whose values are lists of ipds that match the metadata for the
-        image set (hopefully a list with a single element).
-        '''
-        self.java_make_image_sets(self.workspace)
-            
     def get_image_names(self):
         '''Return the names of all images produced by this module'''
         if self.assignment_method == ASSIGN_ALL:
@@ -1762,67 +1692,25 @@ class NamesAndTypes(cpm.CPModule):
             assert all([m1 == m2 for m1, m2 in zip(self.modpath, modpath)])
             return self.ipd
         
-    filter_fn = None
-    def filter_ipd(self, ipd, group):
-        assert ipd.jipd is not None
-        if self.filter_fn is None:
-            self.filter_fn = J.make_static_call(
-                "org/cellprofiler/imageset/filter/Filter",
-                "filter",
-                "(Ljava/lang/String;"
-                "Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;)Z")
-        try:
-            jexpression = J.get_env().new_string_utf(group.rule_filter.value_text)
-            return self.filter_fn(jexpression, ipd.jipd)
-        except:
-            return False
-        
-    def filter_column(self, group):
-        '''Filter all IPDs using the values specified in the group
-        
-        return a collection of IPDs passing the filter
-        '''
-        try:
-            return [ipd for ipd in self.ipds
-                    if self.filter_ipd(ipd, group)]
-        except:
-            return []
-    
-    def update_column_metadata(self, idx):
-        '''Populate the column metadata choices with the common metadata keys
-        
-        Scan the IPDs for the column and find metadata keys that are common
-        to all.
-        '''
-        column = [x for x in self.ipd_columns[idx] if x is not None]
-        if len(column) == 0:
-            self.column_metadata_choices[idx] = []
-        else:
-            keys = set(column[0].metadata.keys())
-            for ipd in column[1:]:
-                keys.intersection_update(ipd.metadata.keys())
-            self.column_metadata_choices[idx] = list(keys)
-            
     def update_joiner(self):
         '''Update the joiner setting's entities'''
         if self.assignment_method == ASSIGN_RULES:
             self.join.entities = dict([
-                (column_name, column_metadata_choices)
-                for column_name, column_metadata_choices 
-                in zip(self.column_names, self.column_metadata_choices)])
+                (column_name, self.metadata_keys)
+                for column_name in self.get_column_names()])
             try:
                 joins = self.join.parse()
                 if len(joins) > 0:
                     for join in joins:
                         best_value = None
                         for key in join.keys():
-                            if key not in self.column_names:
+                            if key not in self.get_column_names():
                                 del join[key]
                             elif join[key] is not None and best_value is None:
                                 best_value = join[key]
-                        for i, column_name in enumerate(self.column_names):
+                        for i, column_name in enumerate(self.get_column_names()):
                             if not join.has_key(column_name):
-                                if best_value in self.column_metadata_choices[i]:
+                                if best_value in self.metadata_keys:
                                     join[column_name] = best_value
                                 else:
                                     join[column_name] = None
@@ -1831,7 +1719,7 @@ class NamesAndTypes(cpm.CPModule):
                 pass # bad field value
     
     def get_metadata_column_names(self):
-        if (self.matching_method == MATCH_BY_METADATA):
+        if self.matching_method == MATCH_BY_METADATA:
             joins = self.join.parse()
             metadata_columns = [
                 " / ".join(set([k for k in join.values() if k is not None]))
@@ -1839,94 +1727,7 @@ class NamesAndTypes(cpm.CPModule):
         else:
             metadata_columns = [cpmeas.IMAGE_NUMBER]
         return metadata_columns
-        
-    def update_table(self):
-        '''Update the table to show the current image sets'''
-        joins = self.join.parse()
-        self.table.clear_columns()
-        self.table.clear_rows()
-        
-        metadata_columns = self.get_metadata_column_names()
-        for i, name in enumerate(metadata_columns):
-            self.table.insert_column(i, name)
-        f_pathname = "Pathname: %s"
-        f_filename = "Filename: %s"
-        f_frame = "Frame: %s"
-        f_series = "Series: %s"
-        has_frame_numbers = {}
-        has_series = {}
-        column_counts = {}
-        idx = len(metadata_columns)
-        for column_name in self.column_names:
-            self.table.insert_column(idx, f_pathname % column_name)
-            self.table.insert_column(idx+1, f_filename % column_name)
-            idx += 2
-            hfn = None
-            hs = None
-            column_counts[column_name] = 2
-            has_frame_numbers[column_name] = False
-            has_series[column_name] = False
-
-            for (_, image_set) in self.image_sets:
-                for ipd in image_set.get(column_name, []):
-                    if ipd.index is not None:
-                        if hfn == None:
-                            hfn = ipd.index
-                        elif hfn != ipd.index and hfn is not True:
-                            hfn = True
-                            has_frame_numbers[column_name] = True
-                            if hs is True:
-                                break
-                    if ipd.series is not None:
-                        if hs == None:
-                            hs = ipd.series
-                        elif hs != ipd.series and hs is not True:
-                            hs = True
-                            has_series[column_name] = True
-                            if hfn is True:
-                                break
-                else:
-                    continue
-                break
-            if has_frame_numbers[column_name]:
-                self.table.insert_column(idx, f_frame % column_name)
-                idx += 1
-                column_counts[column_name] += 1
-            if has_series[column_name]:
-                self.table.insert_column(idx, f_series % column_name)
-                idx += 1
-                column_counts[column_name] += 1
-                
-        data = []
-        errors = []
-        for i, (keys, image_set) in enumerate(self.image_sets):
-            row = [unicode(key) for key in keys]
-            for column_name in self.column_names:
-                ipds = image_set.get(column_name, [])
-                if len(ipds) == 0:
-                    row += ["-- No image! --"] * column_counts[column_name]
-                    errors.append((i, column_name))
-                elif len(ipds) > 1:
-                    row.append("-- Multiple images! --\n" + 
-                               "\n".join([ipd.path for ipd in ipds]))
-                    row += ["-- Multiple images! --"] * (
-                        column_counts[column_name] - 1)
-                    errors.append((i, column_name))
-                else:
-                    ipd = ipds[0]
-                    row += os.path.split(ipd.path)
-                    if has_frame_numbers[column_name]:
-                        row += [str(ipd.index)]
-                    if has_series[column_name]:
-                        row += [str(ipd.series)]
-            data.append(row)
-        self.table.data = data
-        for error_row, column_name in errors:
-            for f in (f_pathname, f_filename):
-                self.table.set_cell_attribute(error_row, f % column_name, 
-                                              self.table.ATTR_ERROR)
-                self.table.set_row_attribute(error_row, self.table.ATTR_ERROR)
-
+    
 class MetadataPredicate(cps.Filter.FilterPredicate):
     '''A predicate that compares an ifd against a metadata key and value'''
     
@@ -2039,11 +1840,7 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
         channel_names = []
         url = self.get_url()
         properties = {}
-        if self.series is not None:
-            properties["series"] = self.series
-        if self.index is not None:
-            indexes = [self.index]
-        elif np.isscalar(self.index):
+        if self.index is None:
             metadata = get_omexml_metadata(self.get_full_name())
                                            
             ometadata = OME.OMEXML(metadata)
@@ -2052,12 +1849,19 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
             nplanes = (pixel_metadata.SizeC * pixel_metadata.SizeZ * 
                        pixel_metadata.SizeT)
             indexes = range(nplanes)
+        elif np.isscalar(self.index):
+            indexes = [self.index]
         else:
             indexes = self.index
         planes = []
         offset = 0
-        for index in indexes:
+        for i, index in enumerate(indexes):
             properties["index"] = str(index)
+            if self.series is not None:
+                if np.isscalar(self.series):
+                    properties["series"] = self.series
+                else:
+                    properties["series"] = self.series[i]
             img = load_using_bioformats(
                 self.get_full_name(), 
                 rescale=False, **properties).astype(int)

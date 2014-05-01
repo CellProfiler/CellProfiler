@@ -29,11 +29,13 @@ import cellprofiler.analysis as cpanalysis
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.utilities.zmqrequest as cpzmq
+import cellprofiler.utilities.jutil as J
 import cellprofiler.analysis_worker as cpaw
 import cellprofiler.preferences as cpprefs
 
 from cellprofiler.modules.identify import C_COUNT, M_LOCATION_CENTER_X
 from cellprofiler.modules.loadimages import pathname2url
+from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from cellprofiler.modules.tests import example_images_directory
 from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 
@@ -404,8 +406,13 @@ class TestAnalysisWorker(unittest.TestCase):
             for object_name in m.get_object_names():
                 for feature_name in m.get_feature_names(object_name):
                     self.assertTrue(cm.has_feature(object_name, feature_name))
-                    self.assertEqual(cm[object_name, feature_name, 1], 
+                    if feature_name == M_IMAGE_SET:
+                        np.testing.assert_array_equal(
+                            cm[object_name, feature_name, 1], 
                                      m[object_name, feature_name, 1])
+                    else:
+                        self.assertEqual(cm[object_name, feature_name, 1], 
+                                         m[object_name, feature_name, 1])
             #
             # Cancel and check for exit
             #
@@ -761,7 +768,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertIsInstance(req, cpanalysis.InitialMeasurementsRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline(nimages=3)
-        m[cpmeas.IMAGE, cpmeas.C_URL + "_DNA", 2] = "This is not a URL"
+        m[cpmeas.IMAGE, M_IMAGE_SET, 2] = np.zeros(100, np.uint8)
         try:
             req.reply(cpanalysis.Reply(buf = m.file_contents()))
         finally:
@@ -948,6 +955,23 @@ def get_measurements_for_good_pipeline(nimages = 1,
         m[cpmeas.IMAGE, cpmeas.C_URL+"_DNA", i] = url
         m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i] = group_numbers[i-1]
         m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, i] = group_indexes[i-1]
+        jblob = J.run_script("""
+        importPackage(Packages.org.cellprofiler.imageset);
+        importPackage(Packages.org.cellprofiler.imageset.filter);
+        var imageFile=new ImageFile(new java.net.URI(url));
+        var imageFileDetails = new ImageFileDetails(imageFile);
+        var imageSeries=new ImageSeries(imageFile, 0);
+        var imageSeriesDetails = new ImageSeriesDetails(imageSeries, imageFileDetails);
+        var imagePlane=new ImagePlane(imageSeries, 0, ImagePlane.ALWAYS_MONOCHROME);
+        var ipd = new ImagePlaneDetails(imagePlane, imageSeriesDetails);
+        var stack = ImagePlaneDetailsStack.makeMonochromeStack(ipd);
+        var stacks = java.util.Collections.singletonList(stack);
+        var keys = java.util.Collections.singletonList(imageNumber);
+        var imageSet = new ImageSet(stacks, keys);
+        imageSet.compress(java.util.Collections.singletonList("DNA"), null);
+        """, dict(url=url, imageNumber = str(i)))
+        blob = J.get_env().get_byte_array_elements(jblob)
+        m[cpmeas.IMAGE, M_IMAGE_SET, i, blob.dtype] = blob
     pipeline = cpp.Pipeline()
     pipeline.loadtxt(StringIO(GOOD_PIPELINE))
     pipeline.write_pipeline_measurement(m)

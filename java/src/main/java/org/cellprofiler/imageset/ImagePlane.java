@@ -88,6 +88,42 @@ public class ImagePlane {
 	}
 	
 	/**
+	 * @return true if we can determine the C / Z / T position of the plane
+	 */
+	public boolean hasCZT() {
+		return imageSeries.getOMEImage() != null; 
+	}
+	
+	/**
+	 * @return the channel index of this plane
+	 */
+	public int theC() {
+		if (! hasCZT()) return 0;
+		final Plane plane = getOMEPlane();
+		if (plane != null) return plane.getTheC().getValue();
+		return MetadataUtils.getC(imageSeries.getOMEImage().getPixels(), index);
+	}
+	
+	/**
+	 * @return the z-stack index of this plane
+	 */
+	public int theZ() {
+		if (! hasCZT()) return 0;
+		final Plane plane = getOMEPlane();
+		if (plane != null) return plane.getTheZ().getValue();
+		return MetadataUtils.getZ(imageSeries.getOMEImage().getPixels(), index);
+	}
+	
+	/**
+	 * @return the t-stack index of this plane
+	 */
+	public int theT() {
+		if (! hasCZT()) return 0;
+		final Plane plane = getOMEPlane();
+		if (plane != null) return plane.getTheT().getValue();
+		return MetadataUtils.getT(imageSeries.getOMEImage().getPixels(), index);
+	}
+	/**
 	 * Construct the default monochrome image plane for a file
 	 * 
 	 * @param imageFile

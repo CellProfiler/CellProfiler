@@ -29,7 +29,7 @@ def get_current_image():
 def get_id_list():
     '''Get the list of IDs of open images'''
     jid_list = J.static_call('ij/WindowManager', 'getIDList', '()[I')
-    return J.get_env().get_int_array_elements(jid_list)
+    return jid_list
 
 def get_image_by_id(imagej_id):
     '''Get an ImagePlus object by its ID'''

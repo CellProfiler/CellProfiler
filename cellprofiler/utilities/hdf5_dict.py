@@ -490,6 +490,7 @@ class HDF5Dict(object):
         hdf5_type = None
         if len(idxs) > 3 and idxs[3] is not None:
             hdf5_type = idxs[3]
+            all_null = False
         else:
             for vector in vals:
                 if len(vector) > 0:

@@ -602,7 +602,7 @@ class Metadata(cpm.CPModule):
                 J.to_string)
         else:
             possible_keys = ["None"]
-        joiner.entities[self.CSV_JOIN_NAME] = possible_keys
+        joiner.entities[self.CSV_JOIN_NAME] = list(possible_keys)
         
     def settings(self):
         result = [self.wants_metadata, self.data_type_choice, self.data_types,

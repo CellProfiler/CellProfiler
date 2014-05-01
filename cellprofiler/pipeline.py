@@ -1126,6 +1126,7 @@ class Pipeline(object):
                 new_modules.append(module)
                 module_number += 1
         if has_image_plane_details:
+            self.clear_urls(add_undo=False)
             self.__file_list = read_file_list(fd)
             self.__filtered_file_list_images_settings = None
             self.__filtered_image_plane_details_metadata_settings = None
@@ -2488,7 +2489,7 @@ class Pipeline(object):
                     u"Adding %s" % filename)
             pos = bisect.bisect_left(self.__file_list, url, start)
             if (pos == len(self.file_list) or 
-                self.__file_list[pos] == url):
+                self.__file_list[pos] != url):
                 real_list.append(url)
                 self.__file_list.insert(pos, url)
             start = pos
@@ -2525,7 +2526,7 @@ class Pipeline(object):
                 self.add_urls(real_list, False)
             self.__undo_stack.append((undo, "Remove images"))
             
-    def clear_urls(self):
+    def clear_urls(self, add_undo = True):
         '''Remove all URLs from the pipeline'''
         old_urls = list(self.__file_list)
         self.__file_list = []
@@ -2534,9 +2535,10 @@ class Pipeline(object):
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
             self.notify_listeners(URLsRemovedEvent(old_urls))
-            def undo():
-                self.add_urls(old_urls, False)
-            self.__undo_stack.append((undo, "Remove images"))
+            if add_undo:
+                def undo():
+                    self.add_urls(old_urls, False)
+                self.__undo_stack.append((undo, "Remove images"))
             
     def load_file_list(self, workspace):
         '''Load the pipeline's file_list from the workspace file list

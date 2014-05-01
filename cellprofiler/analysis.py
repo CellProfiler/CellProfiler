@@ -312,10 +312,12 @@ class AnalysisRunner(object):
         image_set_end - last image set number to process
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
         '''
+        from cellprofiler.utilities.jutil import attach, detach
         posted_analysis_started = False
         acknowledged_thread_start = False
         measurements = None
         workspace = None
+        attach()
         try:
             # listen for pipeline events, and pass them upstream
             self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
@@ -502,6 +504,7 @@ class AnalysisRunner(object):
                             self.received_measurements_queue.empty())):
                         self.interface_work_cv.wait()  # wait for a change of status or work to arrive
         finally:
+            detach()
             # Note - the measurements file is owned by the queue consumer
             #        after this post_event.
             #
@@ -543,7 +546,8 @@ class AnalysisRunner(object):
                         f_image_numbers = [
                             i for i, lv, rv in zip(
                                 image_numbers, local_values, remote_values)
-                            if lv != rv]
+                            if (np.any(rv!=lv) if isinstance(lv, np.ndarray) 
+                                else lv != rv)]
                     if len(f_image_numbers) > 0:
                         measurements[o, feature, f_image_numbers] \
                             = recd_measurements[o, feature, f_image_numbers]

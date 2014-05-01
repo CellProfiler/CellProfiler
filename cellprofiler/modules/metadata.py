@@ -500,9 +500,10 @@ class Metadata(cpm.CPModule):
         if csv_path == group.imported_metadata_header_path:
             if group.csv_location.is_url():
                 return group.imported_metadata_header_line
-            timestamp = os.stat(csv_path).st_mtime
-            if timestamp <= group.imported_metadata_header_timestamp:
-                return group.imported_metadata_header_line
+            if os.path.isfile(csv_path):
+                timestamp = os.stat(csv_path).st_mtime
+                if timestamp <= group.imported_metadata_header_timestamp:
+                    return group.imported_metadata_header_line
         group.imported_metadata_header_timestamp = time.time()
         group.imported_metadata_header_path = csv_path
         try:
@@ -512,7 +513,7 @@ class Metadata(cpm.CPModule):
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()
         except:
-            return ""
+            return None
         return group.imported_metadata_header_line
     
     def build_imported_metadata_extractor(self, group, extractor,
@@ -549,6 +550,8 @@ class Metadata(cpm.CPModule):
         
         if for_metadata_only:
             header = self.get_group_header(group)
+            if header is None:
+                return None
             rdr = J.run_script("new java.io.StringReader(header);",
                                dict(header=header))
         elif group.csv_location.is_url():
@@ -590,12 +593,15 @@ class Metadata(cpm.CPModule):
         #
         extractor = self.build_imported_metadata_extractor(
             group, extractor, True)
-        #
-        # Get the key set.
-        #
-        possible_keys = J.get_collection_wrapper(
-            J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"),
-            J.to_string)
+        if extractor is not None:
+            #
+            # Get the key set.
+            #
+            possible_keys = J.get_collection_wrapper(
+                J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"),
+                J.to_string)
+        else:
+            possible_keys = ["None"]
         joiner.entities[self.CSV_JOIN_NAME] = possible_keys
         
     def settings(self):
@@ -773,11 +779,12 @@ class Metadata(cpm.CPModule):
             elif group.extraction_method == X_IMPORTED_EXTRACTION:
                 imported_extractor = self.build_imported_metadata_extractor(
                     group, extractor, for_metadata_only)
-                J.call(extractor,
-                       "addImagePlaneDetailsExtractor",
-                       "(Lorg/cellprofiler/imageset/MetadataExtractor;"
-                       "Lorg/cellprofiler/imageset/filter/Filter;)V",
-                       imported_extractor, fltr)
+                if imported_extractor is not None:
+                    J.call(extractor,
+                           "addImagePlaneDetailsExtractor",
+                           "(Lorg/cellprofiler/imageset/MetadataExtractor;"
+                           "Lorg/cellprofiler/imageset/filter/Filter;)V",
+                           imported_extractor, fltr)
         #
         # Finally, we add the WellMetadataExtractor which has the inglorious
         # job of making a well name from row and column, if present,

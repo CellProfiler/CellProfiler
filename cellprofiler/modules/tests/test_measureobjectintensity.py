@@ -29,6 +29,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
 import cellprofiler.workspace as cpw
+import cellprofiler.cpmath.outline as cpmo
 #
 # This is a pipeline consisting of Matlab modules for LoadImages,
 # IdentifyPrimAutomatic and MeasureObjectIntensity
@@ -676,4 +677,33 @@ class TestMeasureObjects(unittest.TestCase):
         m = workspace.measurements.get_current_measurement("MyObjects", feature_name)
         self.assertEqual(len(m), 1)
         self.assertAlmostEqual(m[0], np.sum(image[:20,:40]),4)
+        
+    def test_04_02_masked_edge(self):
+        # Regression test of issue #1115
+        labels = np.zeros((20,50), int)
+        labels[15:25, 15:25] = 1
+        image = np.random.uniform(size=labels.shape).astype(np.float32)
+        #
+        # Mask the edge of the object
+        #
+        mask = ~ cpmo.outline(labels).astype(bool)
+        m = cpmeas.Measurements()
+        m.add(IMAGE_NAME, cpi.Image(image, mask=mask))
+        object_set = cpo.ObjectSet()
+        o = cpo.Objects()
+        o.segmented = labels
+        object_set.add_objects(o, OBJECT_NAME)
+        pipeline = P.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, P.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        module = MOI.MeasureObjectIntensity()
+        module.module_num = 1
+        module.images[0].name.value = IMAGE_NAME
+        module.objects[0].name.value = OBJECT_NAME
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline, module, m, object_set,
+                                  m, None)
+        module.run(workspace)
+        
     

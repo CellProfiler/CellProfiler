@@ -94,6 +94,7 @@ def fill_labeled_holes(labels, mask=None, size_fn = None):
     adjacent_non_hole = np.ascontiguousarray(np.zeros(lmax + 1), np.uint32)
     #
     # Find all 4-connected adjacent pixels
+    # Note that there will be some i, j not in j, i
     #
     i = np.hstack([labels[:-1, :].flatten(), labels[:, :-1].flatten()])
     j = np.hstack([labels[1:, :].flatten(), labels[:, 1:].flatten()])
@@ -102,10 +103,15 @@ def fill_labeled_holes(labels, mask=None, size_fn = None):
         order = np.lexsort((j, i))
         i = i[order]
         j = j[order]
-        # Remove duplicates.
+        # Remove duplicates and stack to guarantee that j, i is in i, j
         first = np.hstack([[True], (i[:-1] != i[1:]) | (j[:-1] != j[1:])])
-        i = i[first]
-        j = j[first]
+        i, j = np.hstack((i[first], j[first])), np.hstack((j[first], i[first]))
+        # Remove dupes again. (much shorter)
+        order = np.lexsort((j, i))
+        i = i[order]
+        j = j[order]
+        first = np.hstack([[True], (i[:-1] != i[1:]) | (j[:-1] != j[1:])])
+        i, j = i[first], j[first]
         #
         # Now we make a ragged array of i and j
         #

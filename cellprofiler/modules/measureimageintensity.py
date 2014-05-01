@@ -26,9 +26,9 @@ see the help for that setting for more details.</p>
 <li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation 
 (MAD) of pixel intensity values. The MAD is defined as the median(|x<sub>i</sub> - median(x)|).</li>
 <li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
-<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%% 
+<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25% 
 of the pixels in the object have lower values.</li>
-<li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%% 
+<li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
 of the pixels in the object have lower values.</li>
 <li><i>TotalArea:</i> Number of pixels measured, e.g., the area of the image.</li>
 </ul>

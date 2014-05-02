@@ -1212,7 +1212,10 @@ class TestImagePlaneDetails(unittest.TestCase):
     def test_02_02_path_file(self):
         path = "file:" + cpp.urllib.pathname2url(__file__)
         ipd = self.get_ipd(url=path)
-        self.assertEquals(ipd.path, __file__)
+        if sys.platform == 'win32':
+            self.assertEquals(ipd.path.lower(), __file__.lower())
+        else:
+            self.assertEquals(ipd.path, __file__)
         
     def test_03_01_url(self):
         url = "http://google.com"

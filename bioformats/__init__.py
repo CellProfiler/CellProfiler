@@ -18,6 +18,7 @@ import logging
 import os
 import re
 import cellprofiler.utilities.jutil as jutil
+import urllib
 from cellprofiler.preferences import get_headless, get_ij_plugin_directory
 import sys
 from external_dependencies import get_cellprofiler_jars
@@ -113,6 +114,7 @@ def start_cellprofiler_jvm():
             r"-Dloci.bioformats.loaded=true",
             #r"-verbose:class",
             #r"-verbose:jni",
+            r"-Dlogback.configurationFile=logback.xml",
             r"-Xmx%s" % jvm_arg]
 
     if plugin_directory is not None and os.path.isdir(plugin_directory):

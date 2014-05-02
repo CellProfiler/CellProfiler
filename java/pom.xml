@@ -119,6 +119,12 @@
       <groupId>${bio-formats.groupId}</groupId>
       <artifactId>formats-gpl</artifactId>
       <version>${bio-formats.version}</version>
+	  <exclusions>
+        <exclusion>
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>       
     </dependency>
     <dependency>
       <groupId>${bio-formats.groupId}</groupId>

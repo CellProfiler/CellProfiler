@@ -1876,9 +1876,18 @@ class VStringArray(object):
                 index[nulls, 0] = self.VS_NULL
             self.data.resize(index[-1, 1], 0)
             self.index[old_len:, :] = index
-            for s, (begin, end) in zip(strings, index):
-                if begin < end:
-                    self.data[begin:end] = np.frombuffer(s, "S1")
+            idx_not_nulls = np.where(~nulls)[0]
+            for i in range(0, len(idx_not_nulls), 1000):
+                iend = min(i+1000, len(idx_not_nulls))
+                ilast = iend-1
+                begin = index[idx_not_nulls[i], 0]
+                end = index[idx_not_nulls[ilast], 1]
+                scat = np.zeros(end-begin, "S1")
+                for idx in idx_not_nulls[i:iend]:
+                    sbegin = index[idx, 0] - begin
+                    send = index[idx, 1] - begin
+                    scat[sbegin:send] = np.frombuffer(strings[idx], "S1")
+                self.data[begin:end] = scat
         
     def bisect_left(self, s):
         '''Return the insertion point for s, assuming the array is sorted'''

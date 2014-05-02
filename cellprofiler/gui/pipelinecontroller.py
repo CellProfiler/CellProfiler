@@ -1754,9 +1754,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 self.__path_list_ctrl.Reparent(old_parent)
                 
     def add_urls(self, urls):
-        '''Add URLS to the pipeline and file list'''
+        '''Add URLS to the pipeline'''
+        # The pipeline's notification callback will add them to the workspace
         self.__pipeline.add_urls(urls)
-        self.__workspace.file_list.add_files_to_filelist(urls)
         
     def on_walk_callback(self, dirpath, dirnames, filenames):
         '''Handle an iteration of file walking'''

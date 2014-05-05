@@ -238,14 +238,25 @@ class Workspace(object):
     def get_module_figure(self, module, image_set_number, parent=None):
         """Create a CPFigure window or find one already created"""
         import cellprofiler.gui.cpfigure as cpf
+        import cellprofiler.measurements as cpmeas
+        
 
         # catch any background threads trying to call display functions.
         assert not self.__in_background
-
         window_name = cpf.window_name(module)
-        title = "%s #%d, image cycle #%d" % (module.module_name,
-                                             module.module_num,
-                                             image_set_number)
+        if self.measurements.has_feature(cpmeas.EXPERIMENT, 
+                                         cpmeas.M_GROUPING_TAGS):
+            group_number = self.measurements[
+                cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
+            group_index = self.measurements[
+                cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number]
+            title = "%s #%d, image cycle #%d, group #%d, group index #%d" % (
+                module.module_name, module.module_num, image_set_number,
+                group_number, group_index)
+        else:
+            title = "%s #%d, image cycle #%d" % (module.module_name,
+                                                 module.module_num,
+                                                 image_set_number)
 
         if self.__create_new_window:
             figure = cpf.CPFigureFrame(parent or self.__frame,

@@ -841,6 +841,11 @@ def find_worker_env():
         added_paths.insert(0, newenv['PYTHONPATH'])
     newenv['PYTHONPATH'] = os.pathsep.join(
         [x.encode('utf-8') for x in added_paths])
+    if "CP_JDWP_PORT" in newenv:
+        del newenv["CP_JDWP_PORT"]
+    if "AW_JDWP_PORT" in newenv:
+        newenv["CP_JDWP_PORT"] = newenv["AW_JDWP_PORT"]
+        del newenv["AW_JDWP_PORT"]
     return newenv
 
 

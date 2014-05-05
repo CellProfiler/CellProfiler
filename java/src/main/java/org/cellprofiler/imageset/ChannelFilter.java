@@ -19,7 +19,7 @@ import java.util.List;
 
 import net.imglib2.meta.Axes;
 import net.imglib2.meta.TypedAxis;
-import ome.xml.model.Plane;
+import ome.xml.model.Image;
 
 import org.cellprofiler.imageset.filter.Filter;
 import org.slf4j.Logger;
@@ -57,13 +57,15 @@ public class ChannelFilter {
 			int result = planeA.getImageFile().getURI().compareTo(
 					planeB.getImageFile().getURI());
 			if (result != 0) return result;
-			result = planeA.getSeries().getSeries() - planeB.getSeries().getSeries();
+			final ImageSeries seriesA = planeA.getSeries();
+			final ImageSeries seriesB = planeB.getSeries();
+			result = seriesA.getSeries() - seriesB.getSeries();
 			if (result != 0) return result;
-			final Plane omePlaneA = planeA.getOMEPlane();
-			final Plane omePlaneB = planeB.getOMEPlane();
-			if (omePlaneA == null) return (omePlaneB==null)?0:-1;
-			if (omePlaneB == null) return 1;
-			return compare(planeA, omePlaneA, planeB, omePlaneB);
+			final Image omeImageA = seriesA.getOMEImage();
+			final Image omeImageB = seriesB.getOMEImage();
+			if (omeImageA == null) return (omeImageA==null)?0:-1;
+			if (omeImageB == null) return 1;
+			return compare(planeA, planeB);
 		}
 		/**
 		 * The implementation-dependent ordering of image planes
@@ -75,7 +77,7 @@ public class ChannelFilter {
 		 * @param bOMEPlane
 		 * @return
 		 */
-		abstract protected int compare(ImagePlane aImagePlane, Plane aOMEPlane, ImagePlane bImagePlane, Plane bOMEPlane);
+		abstract protected int compare(ImagePlane aImagePlane, ImagePlane bImagePlane);
 		
 	}
 	/**
@@ -85,8 +87,7 @@ public class ChannelFilter {
 	 * adjacent after ordering.
 	 */
 	static public class ColorOrdering extends OrderingBase {
-		public int compare(ImagePlane aImagePlane, Plane omePlaneA, 
-				ImagePlane bImagePlane, Plane omePlaneB) {
+		public int compare(ImagePlane aImagePlane, ImagePlane bImagePlane) {
 			int result = aImagePlane.theT() - bImagePlane.theT();
 			if (result != 0) return result;
 			result = aImagePlane.theZ() - bImagePlane.theZ();
@@ -104,7 +105,7 @@ public class ChannelFilter {
 	static public class ObjectsOrdering extends OrderingBase {
 
 		@Override
-		protected int compare(ImagePlane aImagePlane, Plane aOMEPlane, ImagePlane bImagePlane, Plane bOMEPlane) {
+		protected int compare(ImagePlane aImagePlane, ImagePlane bImagePlane) {
 			return aImagePlane.getIndex() - bImagePlane.getIndex();
 		}
 		

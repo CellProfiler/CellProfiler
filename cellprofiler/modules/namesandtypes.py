@@ -1373,9 +1373,13 @@ class NamesAndTypes(cpm.CPModule):
              C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
         
         name = provider.get_name()
+        if name in m.get_names():
+            # Get the image with cacheing.
+            img = m.get_image(name)
+        else:
+            img = provider.provide_image(m)
         m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + name] = \
             NamesAndTypes.get_file_hash(provider, m)
-        img = provider.provide_image(m)
         m[cpmeas.IMAGE, C_WIDTH + "_" + name] = img.pixel_data.shape[1]
         m[cpmeas.IMAGE, C_HEIGHT + "_" + name] = img.pixel_data.shape[0]
         if image_or_objects == cpmeas.IMAGE:

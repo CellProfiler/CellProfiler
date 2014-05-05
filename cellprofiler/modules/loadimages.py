@@ -3208,7 +3208,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             else:
                 # It's a stack
                 stack = []
-                if not np.isscalar(self.series):
+                if np.isscalar(self.series):
                     series_list = [self.series] * len(self.index)
                 else:
                     series_list = self.series

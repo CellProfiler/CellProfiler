@@ -2053,8 +2053,9 @@ class ModuleView:
                             desired_fg = cpprefs.get_error_color()
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
-                    if (static_text.SetForegroundColour(desired_fg) or
-                        static_text.SetBackgroundColour(desired_bg)):
+                    if any([
+                        static_text.SetForegroundColour(desired_fg),
+                        static_text.SetBackgroundColour(desired_bg)]):
                         static_text.Refresh()
         except Exception:
             logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)

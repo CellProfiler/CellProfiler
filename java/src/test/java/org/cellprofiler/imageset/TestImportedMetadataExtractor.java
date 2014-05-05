@@ -16,9 +16,6 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;

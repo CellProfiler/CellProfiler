@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
-import java.util.zip.DeflaterInputStream;
-import java.util.zip.Inflater;
 
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;

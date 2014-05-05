@@ -161,13 +161,17 @@ public class ImageSet extends ArrayList<ImagePlaneDetailsStack> {
 		DOMSource domSource = new DOMSource(document);
 		
 		ByteArrayOutputStream baOS = new ByteArrayOutputStream();
-		OutputStream os = (deflater == null)?new DeflaterOutputStream(baOS):new DeflaterOutputStream(baOS, deflater);
 		final Transformer transformer = TransformerFactory.newInstance().newTransformer();
-		final OutputStreamWriter writer = new OutputStreamWriter(os);
+		final OutputStreamWriter writer = new OutputStreamWriter(baOS);
 		transformer.transform(domSource, new StreamResult(writer));
 		writer.close();
+		byte [] uncompressed = baOS.toByteArray();
+		ByteArrayOutputStream baOSCompressed = new ByteArrayOutputStream();
+		OutputStream os = (deflater == null)?new DeflaterOutputStream(baOSCompressed):new DeflaterOutputStream(baOSCompressed, deflater);
+		os.write(uncompressed);
+		os.flush();
 		os.close();
-		return baOS.toByteArray();
+		return baOSCompressed.toByteArray();
 	}
 	
 	/**

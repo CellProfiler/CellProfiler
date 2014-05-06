@@ -19,7 +19,8 @@ import os
 import re
 import cellprofiler.utilities.jutil as jutil
 import urllib
-from cellprofiler.preferences import get_headless, get_ij_plugin_directory
+from cellprofiler.preferences import \
+     get_headless, get_ij_plugin_directory, get_jvm_heap_mb
 import sys
 from external_dependencies import get_cellprofiler_jars
 
@@ -106,9 +107,7 @@ def start_cellprofiler_jvm():
         else:
             logger.warning("Failed to find tools.jar")
     
-    jvm_arg = jutil.get_jvm_heap_size_arg()
-    if jvm_arg is None:
-        jvm_arg = "512m"
+    jvm_arg = "%dm" % get_jvm_heap_mb()
         
     args = [r"-Djava.class.path="+class_path,
             r"-Dloci.bioformats.loaded=true",

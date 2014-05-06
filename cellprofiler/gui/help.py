@@ -1598,6 +1598,17 @@ images accessed by http URL temporarily to disk (but will efficiently access
 OMERO image planes directly from the server).
 """
 
+JVM_HEAP_HELP = """
+Sets the maximum amount of memory that can be used by the Java virtual machine.
+CellProfiler uses Java for loading images, for running ImageJ and for
+processing image sets. If you load extremely large images, use the RunImageJ
+module extensively or process large image set lists, you can use this option
+to start Java with a larger amount of memory. By default, CellProfiler starts
+Java with 512m, but you can override this by specifying the number of megabytes
+to load. You can also start CellProfiler from the command-line with the
+--jvm-heap-size switch to get the same effect.
+"""
+
 EACH_PREFERENCE_HELP = (
     ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP ),
     ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP ),

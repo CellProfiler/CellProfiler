@@ -63,12 +63,15 @@ def aw_parse_args():
                       default=None)
     parser.add_option("--jvm-heap-size",
                       dest="jvm_heap_size",
-                      default="512m",
+                      default=None,
                       help=("This is the amount of memory reserved for the "
                             "Java Virtual Machine (similar to the java -Xmx switch)."
                             "Example formats: 512000k, 512m, 1g"))
 
     options, args = parser.parse_args()
+    if options.jvm_heap_size is not None:
+        from cellprofiler.preferences import set_jvm_heap_mb
+        set_jvm_heap_mb(options.jvm_heap_size, False)
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:
         logging.root.addHandler(logging.StreamHandler())

@@ -304,7 +304,12 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_temporary_directory,
                  cpprefs.set_temporary_directory,
                  DIRBROWSE,
-                 cphelp.TEMP_DIR_HELP]]
+                 cphelp.TEMP_DIR_HELP],
+                ['Max. Java memory (mb)',
+                 cpprefs.get_jvm_heap_mb,
+                 cpprefs.set_jvm_heap_mb,
+                 IntegerPreference(128, 64000),
+                 cphelp.JVM_HEAP_HELP]]
     
     def get_title_font(self):
         return "%s,%f"%(cpprefs.get_title_font_name(),

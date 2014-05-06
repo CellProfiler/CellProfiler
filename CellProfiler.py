@@ -88,6 +88,9 @@ def main(args):
         sys.exit(0)
         
     options, args = parse_args(args)
+    if options.jvm_heap_size != None:
+        from cellprofiler.preferences import set_jvm_heap_mb
+        set_jvm_heap_mb(options.jvm_heap_size, False)
     set_log_level(options)
     
     if not hasattr(sys, "frozen") and options.code_statistics:
@@ -353,7 +356,7 @@ def parse_args(args):
     
     parser.add_option("--jvm-heap-size",
                       dest="jvm_heap_size",
-                      default="512m",
+                      default=None,
                       help=("This is the amount of memory reserved for the "
                             "Java Virtual Machine (similar to the java -Xmx switch)."
                             "Example formats: 512000k, 512m, 1g"))

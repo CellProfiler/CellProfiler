@@ -349,6 +349,12 @@ EXT_PROJECT = "cpproj"
 '''Possible CellProfiler project extensions'''
 EXT_PROJECT_CHOICES = [EXT_PROJECT, "cpi", "h5"]
 
+'''Preference key for the JVM heap size in megabytes'''
+JVM_HEAP_MB = "JVMHeapMB"
+
+'''Default JVM heap size'''
+DEFAULT_JVM_HEAP_MB = 512
+
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
 
@@ -1249,6 +1255,44 @@ def set_interpolation_mode(value):
     global __interpolation_mode
     __interpolation_mode = value
     config_write(INTERPOLATION_MODE, value)
+    
+__jvm_heap_mb = None
+def get_jvm_heap_mb():
+    '''Get the JVM heap size'''
+    global __jvm_heap_mb
+    if __jvm_heap_mb is not None:
+        return __jvm_heap_mb
+    if config_exists(JVM_HEAP_MB):
+        jvm_heap_config = config_read(JVM_HEAP_MB)
+        try:
+            __jvm_heap_mb = int(jvm_heap_config)
+        except:
+            __jvm_heap_mb = DEFAULT_JVM_HEAP_MB
+    else:
+        __jvm_heap_mb = DEFAULT_JVM_HEAP_MB
+    return __jvm_heap_mb
+
+def set_jvm_heap_mb(value, save_config=True):
+    '''Set the JVM heap size
+    
+    value - value in megabytes or as a string with a K/ M or G postifx
+    save_config - True to save the value in the configuration, False to set locally
+    '''
+    global __jvm_heap_mb
+    try:
+        value_mb = int(value)
+    except:
+        if value.lower().endswith("k"):
+            value_mb = int(value[:-1]) / 1000
+        elif value.lower().endswith("m"):
+            value_mb = int(value[:-1])
+        elif value.lower().endswith("g"):
+            value_mb = int(value[:-1]) * 1000
+        else:
+            raise
+    __jvm_heap_mb = value_mb
+    if save_config:
+        config_write(JVM_HEAP_MB, str(value_mb))
     
 def add_progress_callback(callback):
     '''Add a callback function that listens to progress calls

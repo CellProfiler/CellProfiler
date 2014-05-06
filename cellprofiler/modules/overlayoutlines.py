@@ -278,18 +278,20 @@ class OverlayOutlines(cpm.CPModule):
             if image_pixel_data.ndim == 2:
                 figure.subplot_imshow_bw(0, 0, image_pixel_data,
                                          "Original: %s" %
-                                         self.image_name.value,
-                                         cplabels=cplabels)
+                                         self.image_name.value)
             else:
                 figure.subplot_imshow_color(0, 0, image_pixel_data,
                                       "Original: %s" %
-                                      self.image_name.value,
-                                      normalize=False)
+                                      self.image_name.value)
             if self.wants_color.value == WANTS_COLOR:
-                figure.subplot_imshow(1, 0, pixel_data,
-                                      self.output_image_name.value,
-                                      sharexy = figure.subplot(0,0),
-                                      cplabels = cplabels)
+                if cplabels is not None and pixel_data.ndim == 2:
+                    fn = figure.subplot_imshow_grayscale
+                else:
+                    fn = figure.subplot_imshow
+                fn(1, 0, pixel_data,
+                   self.output_image_name.value,
+                   sharexy = figure.subplot(0,0),
+                   cplabels = cplabels)
             else:
                 figure.subplot_imshow_bw(1, 0, pixel_data,
                                          self.output_image_name.value,

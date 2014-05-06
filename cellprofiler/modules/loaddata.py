@@ -783,15 +783,18 @@ class LoadData(cpm.CPModule):
         #
         # Check for correct # of columns
         #
+        n_fields = len(header)
         for i, row in enumerate(rows):
-            if len(row) != len(header):
+            if len(row) < n_fields:
                 text = ('Error on line %d of %s.\n'
                         '\n"%s"\n'
                         '%d rows found, expected %d') % (
                             i+2, self.csv_file_name.value,
                             ','.join(row),
-                            len(row), len(header))
+                            len(row), n_fields)
                 raise ValueError(text)
+            elif len(row) > n_fields:
+                del row[n_fields:]
         #
         # Find the metadata, object_name and image_name columns
         #
@@ -1177,6 +1180,8 @@ class LoadData(cpm.CPModule):
              key.startswith(C_OBJECTS_URL)) for key in header]
 
         for row in reader:
+            if len(row) > len(header):
+                row = row[:len(header)]
             for index, field in enumerate(row):
                 if already_output[index]:
                     continue

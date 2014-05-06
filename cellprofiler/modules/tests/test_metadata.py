@@ -596,6 +596,62 @@ C10,BRD041618
             except:
                 pass
         
+    def test_02_09_too_many_columns(self):
+        # Regression test of issue #853
+        # Allow .csv files which have rows with more fields than there
+        # are header fields.
+        metadata_csv = """WellName,Treatment
+b08,DMSO,foo
+C10,BRD041618,bar
+"""
+        filenum, path = tempfile.mkstemp(suffix = ".csv")
+        fd = os.fdopen(filenum, "w")
+        fd.write(metadata_csv)
+        fd.close()
+        try:
+            module = M.Metadata()
+            module.wants_metadata.value=True
+            module.add_extraction_method()
+            em = module.extraction_methods[0]
+            em.filter_choice.value = M.F_ALL_IMAGES
+            em.extraction_method.value = M.X_MANUAL_EXTRACTION
+            em.source.value = M.XM_FILE_NAME
+            em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-Ha-h][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
+            em.filter_choice.value = M.F_ALL_IMAGES
+            
+            em = module.extraction_methods[1]
+            em.filter_choice.value = M.F_ALL_IMAGES
+            em.extraction_method.value = M.X_IMPORTED_EXTRACTION
+            em.csv_location.value = path
+            em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
+                module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
+            em.wants_case_insensitive.value = True
+            url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
+            self.check(module, url,
+                       [{ "Plate":"P-12345",
+                          "Well":"B08",
+                          "Site":"5",
+                          "Wavelength":"2",
+                          "Treatment":"DMSO"}])
+            url = "file:/imaging/analysis/P-12345_c10_s2_w3.tif"
+            self.check(module, url, 
+                       [{ "Plate":"P-12345",
+                          "Well":"c10",
+                          "Site":"2",
+                          "Wavelength":"3",
+                          "Treatment":"BRD041618"}])
+            url = "file:/imaging/analysis/P-12345_A01_s2_w3.tif"
+            self.check(module, url, 
+                       [{ "Plate":"P-12345",
+                          "Well":"A01",
+                          "Site":"2",
+                          "Wavelength":"3"}])
+        finally:
+            try:
+                os.unlink(path)
+            except:
+                pass
+        
     def test_03_01_well_row_column(self):
         # Make sure that Metadata_Well is generated if we have
         # Metadata_Row and Metadata_Column

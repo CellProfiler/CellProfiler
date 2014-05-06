@@ -915,7 +915,35 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         img = workspace.image_set.get_image("DNA", must_be_color=True)
         self.assertEqual(tuple(img.pixel_data.shape), (157, 400, 3))
         
-        
+    def test_13_03_extra_fields(self):
+        #
+        # Regression test of issue #853, extra fields
+        #
+        csv_text = '''"Image_URL_DNA"
+"http://cellprofiler.org/images/cp_logo_smaller.png", "foo"
+"http:cp_logo_smaller.png"
+"bogusurl.png"
+'''
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        assert isinstance(module, L.LoadData)
+        m = cpmeas.Measurements()
+        workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+                                  m, cpi.ImageSetList())
+        self.assertTrue(module.prepare_run(workspace))
+        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
+                         "cp_logo_smaller.png")
+        path = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
+        self.assertEqual(path, "http://cellprofiler.org/images")
+        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
+                         "http://cellprofiler.org/images/cp_logo_smaller.png")
+        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 2], "cp_logo_smaller.png")
+        self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 2], "http:")
+        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 3], "bogusurl.png")
+        self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 3], "")
+        module.prepare_group(workspace, {}, [1])
+        module.run(workspace)
+        img = workspace.image_set.get_image("DNA", must_be_color=True)
+        self.assertEqual(tuple(img.pixel_data.shape), (157, 400, 3))
     
 class C0(cpm.CPModule):
     module_name = 'C0'

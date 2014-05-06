@@ -26,6 +26,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
+import cellprofiler.cpmath.outline
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"
@@ -42,10 +43,22 @@ COLORS = { "White":  (1,1,1),
 
 COLOR_ORDER = ["Red", "Green", "Blue","Yellow","White","Black"]
 
+FROM_IMAGES = "Image"
+FROM_OBJECTS = "Objects"
+
+NUM_FIXED_SETTINGS_V1 = 5
+NUM_FIXED_SETTINGS_V2 = 6
+NUM_FIXED_SETTINGS_V3 = 6
+NUM_FIXED_SETTINGS = 6
+
+NUM_OUTLINE_SETTINGS_V2 = 2
+NUM_OUTLINE_SETTINGS_V3 = 3
+NUM_OUTLINE_SETTINGS = 3
+
 class OverlayOutlines(cpm.CPModule):
 
     module_name = 'OverlayOutlines'
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Image Processing"
     
     def create_settings(self):
@@ -111,7 +124,24 @@ class OverlayOutlines(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-            
+
+        group.append("outline_choice", cps.Choice(
+            "Load outlines from an image or objects?",
+            [FROM_OBJECTS, FROM_IMAGES],
+            doc = """Prior versions of <b>OverlayOutlines</b> would only
+            display outline images which were optional outputs of the identify
+            modules. For legacy pipelines or to continue using the outline
+            images instead of objects, choose <i>%(FROM_IMAGES)s</i>. Choose
+            <i>%(FROM_OBJECTS)s</i> to create the image directly from the
+            objects. This option will improve the functionality of the
+            contrast options for this module's interactive display and will
+            save memory.
+            """ % globals()))
+        
+        group.append("objects_name", cps.ObjectNameSubscriber(
+            "Select objects to display", cps.NONE,
+        doc = """Choose the objects whose outlines you would like
+        to display."""))
         group.append("outline_name",cps.OutlineNameSubscriber(
             "Select outlines to display",
             cps.NONE, doc="""
@@ -133,16 +163,22 @@ class OverlayOutlines(cpm.CPModule):
         self.outlines.append(group)
 
     def prepare_settings(self, setting_values):
-        assert (len(setting_values) - 6) % 2 == 0
-        self.outlines = []
-        for i in range((len(setting_values) - 6)/2):
-            self.add_outline()
+        num_settings = \
+            (len(setting_values) - NUM_FIXED_SETTINGS)/NUM_OUTLINE_SETTINGS
+        if len(self.outlines) == 0:
+            self.add_outline(False)
+        elif len(self.outlines) > num_settings:
+            del self.outlines[num_settings:]
+        else:
+            for i in range(len(self.outlines), num_settings):
+                self.add_outline()
 
     def settings(self):
         result = [self.blank_image, self.image_name, self.output_image_name,
                   self.wants_color, self.max_type, self.line_width]
         for outline in self.outlines:
-            result += [outline.outline_name, outline.color]
+            result += [outline.outline_name, outline.color, 
+                       outline.outline_choice, outline.objects_name]
         return result
 
     def visible_settings(self):
@@ -155,12 +191,15 @@ class OverlayOutlines(cpm.CPModule):
             self.blank_image.value):
             result += [self.max_type]
         for outline in self.outlines:
+            result += [outline.outline_choice]
             if self.wants_color.value == WANTS_COLOR:
-                result += outline.visible_settings()
-            else:
+                result += [outline.color]
+            if outline.outline_choice == FROM_IMAGES:
                 result += [outline.outline_name]
-                if hasattr(outline, "remover"):
-                    result += [outline.remover]
+            else:
+                result += [outline.objects_name]
+            if hasattr(outline, "remover"):
+                result += [outline.remover]
         result += [self.add_outline_button]
         return result
 
@@ -177,19 +216,61 @@ class OverlayOutlines(cpm.CPModule):
             output_image = cpi.Image(pixel_data,parent_image = image)
             workspace.image_set.add(self.output_image_name.value, output_image)
             workspace.display_data.image_pixel_data = image.pixel_data
+        if self.__can_composite_objects() and self.show_window:
+            workspace.display_data.labels = {}
+            for outline in self.outlines:
+                name = outline.objects_name.value
+                objects = workspace.object_set.get_objects(name)
+                workspace.display_data.labels[name] = \
+                    [labels for labels, indexes in objects.get_labels()]
+            
         workspace.display_data.pixel_data = pixel_data
 
+    def __can_composite_objects(self):
+        '''Return True if we can use object compositing during display'''
+        for outline in self.outlines:
+            if outline.outline_choice == FROM_IMAGES:
+                return False
+        return True
+    
     def display(self, workspace, figure):
+        from cellprofiler.gui.cpfigure import CPLD_LABELS, CPLD_NAME,\
+             CPLD_OUTLINE_COLOR, CPLD_MODE, CPLDM_OUTLINES, CPLDM_ALPHA, \
+             CPLDM_NONE, CPLD_LINE_WIDTH, CPLD_ALPHA_COLORMAP, CPLD_ALPHA_VALUE
+           
         figure.set_subplots((1, 1))
 
-        pixel_data = workspace.display_data.pixel_data
+        if self.__can_composite_objects():
+            if self.blank_image:
+                pixel_data = np.zeros(workspace.display_data.pixel_data.shape)
+            else:
+                pixel_data = workspace.display_data.image_pixel_data
+            cplabels = []
+            ldict = workspace.display_data.labels
+            for outline in self.outlines:
+                name = outline.objects_name.value
+                if self.wants_color.value == WANTS_COLOR:
+                    color = np.array(outline.color.to_rgb(), float)
+                else:
+                    color = np.ones(3) * 255.0
+                d = { CPLD_NAME:name,
+                      CPLD_LABELS:ldict[name],
+                      CPLD_OUTLINE_COLOR: color,
+                      CPLD_MODE: CPLDM_OUTLINES,
+                      CPLD_LINE_WIDTH: self.line_width.value }
+                cplabels.append(d)
+        else:
+            pixel_data = workspace.display_data.pixel_data
+            cplabels = None
         if self.blank_image.value:
             if self.wants_color.value == WANTS_COLOR:
                 figure.subplot_imshow(0, 0, pixel_data,
-                                      self.output_image_name.value)
+                                      self.output_image_name.value,
+                                      cplabels = cplabels)
             else:
                 figure.subplot_imshow_bw(0, 0, pixel_data,
-                                         self.output_image_name.value)
+                                         self.output_image_name.value,
+                                         cplabels = cplabels)
         else:
             figure.set_subplots((2, 1))
 
@@ -197,7 +278,8 @@ class OverlayOutlines(cpm.CPModule):
             if image_pixel_data.ndim == 2:
                 figure.subplot_imshow_bw(0, 0, image_pixel_data,
                                          "Original: %s" %
-                                         self.image_name.value)
+                                         self.image_name.value,
+                                         cplabels=cplabels)
             else:
                 figure.subplot_imshow_color(0, 0, image_pixel_data,
                                       "Original: %s" %
@@ -206,11 +288,13 @@ class OverlayOutlines(cpm.CPModule):
             if self.wants_color.value == WANTS_COLOR:
                 figure.subplot_imshow(1, 0, pixel_data,
                                       self.output_image_name.value,
-                                      sharexy = figure.subplot(0,0))
+                                      sharexy = figure.subplot(0,0),
+                                      cplabels = cplabels)
             else:
                 figure.subplot_imshow_bw(1, 0, pixel_data,
                                          self.output_image_name.value,
-                                         sharexy = figure.subplot(0,0))
+                                         sharexy = figure.subplot(0,0),
+                                         cplabels = cplabels)
 
     def run_bw(self, workspace):
         image_set = workspace.image_set
@@ -228,8 +312,7 @@ class OverlayOutlines(cpm.CPModule):
             maximum = 1 if self.max_type == MAX_POSSIBLE else np.max(pixel_data)
             pixel_data = pixel_data.copy()
         for outline in self.outlines:
-            mask = image_set.get_image(outline.outline_name.value,
-                                       must_be_binary=True).pixel_data
+            mask = self.get_outline(workspace, outline)
             i_max = min(mask.shape[0], pixel_data.shape[0])
             j_max = min(mask.shape[1], pixel_data.shape[1])
             mask = mask[:i_max, :j_max]
@@ -252,10 +335,7 @@ class OverlayOutlines(cpm.CPModule):
             if pdmax <= 0:
                 pdmax = 1
         for outline in self.outlines:
-            color = np.array(outline.color.to_rgb(), float) / 255.0
-            outline_img = self.get_outline(image_set, 
-                                           outline.outline_name.value,
-                                           color)
+            outline_img = self.get_outline(workspace, outline)
             if pixel_data is None:
                 pixel_data = np.zeros(list(outline_img.shape[:2]) + [3], np.float32)
             i_max = min(outline_img.shape[0], pixel_data.shape[0])
@@ -278,9 +358,21 @@ class OverlayOutlines(cpm.CPModule):
 
         return pixel_data
     
-    def get_outline(self, image_set, name, color):
+    def get_outline(self, workspace, outline):
         '''Get outline, with aliasing and taking widths into account'''
-        pixel_data = image_set.get_image(name).pixel_data
+        if outline.outline_choice == FROM_IMAGES:
+            name = outline.outline_name.value
+            pixel_data = workspace.image_set.get_image(name).pixel_data
+        else:
+            name = outline.objects_name.value
+            objects = workspace.object_set.get_objects(name)
+            pixel_data = np.zeros(objects.shape, bool)
+            for labels, indexes in objects.get_labels():
+                pixel_data = \
+                    pixel_data | cellprofiler.cpmath.outline.outline(labels)
+        if self.wants_color == WANTS_GRAYSCALE:
+            return pixel_data.astype(bool)
+        color = np.array(outline.color.to_rgb(), float) / 255.0
         if pixel_data.ndim == 2:
             if len(color) == 3:
                 color = np.hstack((color, [1]))
@@ -332,7 +424,21 @@ class OverlayOutlines(cpm.CPModule):
             #
             # Added line width
             #
-            setting_values = setting_values[:5] + ["1"] + setting_values[5:]
+            setting_values = setting_values[:NUM_FIXED_SETTINGS_V1] +\
+                ["1"] + setting_values[NUM_FIXED_SETTINGS_V1:]
             variable_revision_number = 2
+            
+        if (not from_matlab) and variable_revision_number == 2:
+            #
+            # Added overlay image / objects choice
+            #
+            new_setting_values = setting_values[:NUM_FIXED_SETTINGS_V2]
+            for i in range(NUM_FIXED_SETTINGS_V2, len(setting_values),
+                           NUM_OUTLINE_SETTINGS_V2):
+                new_setting_values += \
+                    setting_values[i:(i+NUM_OUTLINE_SETTINGS_V2)]
+                new_setting_values += [FROM_IMAGES, cps.NONE]
+            setting_values = new_setting_values
+            variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
 

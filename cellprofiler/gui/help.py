@@ -1587,6 +1587,11 @@ sets in parallel, utilizing the computer's CPUs and memory fully. The default
 value is the number of CPUs detected on your computer. Use fewer workers for
 pipelines that require a large amount of memory. Use more workers for
 pipelines that are accessing image data over a slow connection.
+
+<p>If using the <b>Groups</b> module, only one worker will be allocated to 
+handle each group. This means that you may have multiple workers created, 
+but only a subset of them may actually be active, depending on the number of 
+groups you have.</p>
 """
 
 TEMP_DIR_HELP = """

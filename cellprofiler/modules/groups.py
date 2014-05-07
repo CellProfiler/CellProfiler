@@ -82,6 +82,11 @@ tags specified. These are written to the per-image table.</li>
 <li><i>Group_Index:</i> The index of each imaget set within each grouping, as defined by the <i>Group_Number</i>.
 These are written to the per-image table.</li>
 </ul>
+
+<h4>Technical notes</h4>
+To perform grouping, only one analysis worker (i.e., copy of CellProfiler) will be allocated to handle each group.
+This means that you may have multiple workers created (as set under the Preferences), but only a subset of them
+may actually be active, depending on the number of groups you have.
 """%globals()
 
 #CellProfiler is distributed under the GNU General Public License.

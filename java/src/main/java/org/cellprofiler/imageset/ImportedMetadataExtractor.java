@@ -14,6 +14,7 @@ package org.cellprofiler.imageset;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -97,9 +98,7 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 	throws IOException {
 		this.matchingKeys = matchingKeys;
 		csvReader = new CSVReader(rdr);
-		String [] allKeys = csvReader.readNext();
-		if (allKeys == null)
-			throw new IOException("The CSV file has no header line");
+		String [] allKeys = readHeader(csvReader);
 		matchingPositions = new int [matchingKeys.length];
 		Arrays.fill(matchingPositions, -1);
 		metadataKeys = new String [allKeys.length - matchingKeys.length];
@@ -132,6 +131,29 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 			}
 		}
 		readData();
+	}
+	/**
+	 * Read the header of a CSV file, given a reader on that file
+	 * 
+	 * @param csvReader
+	 * @return the keys from the file
+	 * @throws IOException
+	 */
+	static public String [] readHeader(CSVReader csvReader) throws IOException {
+		final String [] allKeys = csvReader.readNext();
+		if (allKeys == null)
+			throw new IOException("The CSV file has no header line");
+		return allKeys;
+	}
+	/**
+	 * Read the header of a CSV file, given the first line of that file.
+	 * 
+	 * @param header the header line, probably cached from the file.
+	 * @return
+	 * @throws IOException 
+	 */
+	static public List<String> readHeader(String header) throws IOException {
+		return Arrays.asList(readHeader(new CSVReader(new StringReader(header))));
 	}
 	/**
 	 * Read the metadata from the CSV file

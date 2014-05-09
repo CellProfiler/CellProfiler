@@ -588,21 +588,15 @@ class Metadata(cpm.CPModule):
         joiner = group.csv_joiner
         assert isinstance(joiner, cps.Joiner)
         joiner.entities[self.IPD_JOIN_NAME] = list(possible_keys)
-        #
-        # Build the imported metadata extractor for this group
-        #
-        extractor = self.build_imported_metadata_extractor(
-            group, extractor, True)
-        if extractor is not None:
-            #
-            # Get the key set.
-            #
-            possible_keys = J.get_collection_wrapper(
-                J.call(extractor, "getMetadataKeys", "()Ljava/util/List;"),
-                J.to_string)
+        header = self.get_group_header(group)
+        if header is None:
+            header_keys = ["None"]
         else:
-            possible_keys = ["None"]
-        joiner.entities[self.CSV_JOIN_NAME] = list(possible_keys)
+            header_keys = J.get_collection_wrapper(J.run_script("""
+                importPackage(org.cellprofiler.imageset);
+                ImportedMetadataExtractor.readHeader(header);
+                """, dict(header = header)), J.to_string)
+        joiner.entities[self.CSV_JOIN_NAME] = list(header_keys)
         
     def settings(self):
         result = [self.wants_metadata, self.data_type_choice, self.data_types,
@@ -852,16 +846,17 @@ class Metadata(cpm.CPModule):
     def on_setting_changed(self, setting, pipeline):
         '''Update the imported extraction joiners on setting changes'''
         visible_settings = self.visible_settings()
-        if setting == self.data_types:
+        if setting == self.data_types or setting == self.data_type_choice:
             # The data types affect the joiner's matching
-            setting_idx = 0
+            setting_idx = len(self.visible_settings())
         else:
             setting_idx = visible_settings.index(setting)
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
-                joiner_idx = visible_settings.index(group.csv_joiner)
-                location_idx = visible_settings.index(group.csv_location)
-                if joiner_idx < setting_idx and location_idx < setting_idx:
+                idx = max(*map(visible_settings.index,
+                               [group.csv_joiner, group.csv_location, 
+                                group.wants_case_insensitive]))
+                if idx < setting_idx:
                     continue
                 self.refresh_group_joiner(group)
        

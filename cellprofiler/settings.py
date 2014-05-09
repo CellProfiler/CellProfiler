@@ -148,6 +148,16 @@ class Setting(object):
         # their .values are the same.
         if isinstance(x, Setting):
             return self .__key == x.__key
+        return self.eq(x)
+    
+    def eq(self, x):
+        '''The equality test for things other than settings
+        
+        x - the thing to be compared, for instance a string
+        
+        override this to do things like compare whether an integer
+        setting's value matches a given number
+        '''
         return self.value == unicode(x)
     
     def __ne__(self, x):
@@ -741,9 +751,8 @@ class Number(Text):
                 'Must be at most %s, was %s' % 
                 (self.value_to_str(self.__maxval), self.value_text), self)
         
-    def __eq__(self, x):
-        if super(Number, self).__eq__(x):
-            return True
+    def eq(self, x):
+        '''Equal if our value equals the operand'''
         return self.value == x
     
 class Integer(Number):
@@ -893,9 +902,8 @@ class Range(Setting):
             raise ValidationError("%s is greater than %s" % 
                                   (self.min_text, self.max_text), self)
     
-    def __eq__(self, x):
-        if super(Range, self).__eq__(x):
-            return True
+    def eq(self, x):
+        '''If the operand is a sequence, true if it matches the min and max'''
         if hasattr(x, "__getitem__") and len(x) == 2:
             return x[0] == self.min and x[1] == self.max
         return False
@@ -1502,7 +1510,7 @@ class Binary(Setting):
         """
         return super(Binary,self).get_value() == YES 
     
-    def __eq__(self,x):
+    def eq(self,x):
         if x == NO:
             x = False
         return (self.value and x) or ((not self.value) and (not x))

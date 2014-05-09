@@ -8,9 +8,14 @@
 		<relativePath />
 	</parent>
   
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <org.cellprofiler.java.version>2.2.1-SNAPSHOT</org.cellprofiler.java.version>
+  </properties>
   <groupId>org.cellprofiler</groupId>
   <artifactId>cellprofiler-java</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>${org.cellprofiler.java.version}</version>
   <name>CellProfiler-java</name>
   <description>CellProfiler-java is a package of Java support routines for CellProfiler.</description>
   <url>http://cellprofiler.org</url>
@@ -104,10 +109,6 @@
 		<url>https://github.com/CellProfiler/CellProfiler</url>
 	</scm>
   
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-  </properties>
   <dependencies>
  	<dependency>
  	  <groupId>junit</groupId>
@@ -261,7 +262,7 @@
                 <artifactItem>
 				  <groupId>org.cellprofiler</groupId>
   				  <artifactId>cellprofiler-java</artifactId>
-                  <version>0.0.1-SNAPSHOT</version>
+                  <version>${org.cellprofiler.java.version}</version>
                   <overWrite>true</overWrite>
                 </artifactItem>
 			  </artifactItems>

@@ -45,10 +45,9 @@ public class OMEPlaneMetadataExtractor implements MetadataExtractor<ImagePlane> 
 	final static public String MD_MONOCHROME = "monochrome";
 	final static public String MD_PLANAR = "Planar";
 	final static public String MD_CHANNEL_NAME = "ChannelName";
-	final static public String MD_URL = "FileLocation";
 	final static private List<String> metadataKeys =
 		Collections.unmodifiableList(
-				Arrays.asList(MD_C, MD_T, MD_Z, MD_COLOR_FORMAT, MD_CHANNEL_NAME, MD_URL));
+				Arrays.asList(MD_C, MD_T, MD_Z, MD_COLOR_FORMAT, MD_CHANNEL_NAME));
 
 	/* (non-Javadoc)
 	 * @see org.cellprofiler.imageset.MetadataExtractor#extract(java.lang.Object)
@@ -63,7 +62,6 @@ public class OMEPlaneMetadataExtractor implements MetadataExtractor<ImagePlane> 
 			putIfNotNull(map, MD_C, plane.getTheC().toString());
 			putIfNotNull(map, MD_T, plane.getTheT().toString());
 			putIfNotNull(map, MD_Z, plane.getTheZ().toString());
-			putIfNotNull(map, MD_URL, source.getImageFile().getURI().toString());
 			final NonNegativeInteger c = plane.getTheC();
 			if (c != null) {
 				final int cidx = c.getValue().intValue();

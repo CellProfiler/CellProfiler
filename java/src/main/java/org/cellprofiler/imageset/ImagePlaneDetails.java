@@ -16,17 +16,6 @@ import java.io.File;
 import java.net.URI;
 import java.util.List;
 
-import ome.xml.model.LongAnnotation;
-import ome.xml.model.OME;
-import ome.xml.model.Pixels;
-import ome.xml.model.Plane;
-import ome.xml.model.StructuredAnnotations;
-import ome.xml.model.TiffData;
-import ome.xml.model.UUID;
-import ome.xml.model.primitives.NonNegativeInteger;
-import ome.xml.model.primitives.PositiveInteger;
-
-
 /**
  * @author Lee Kamentsky
  *
@@ -109,7 +98,6 @@ public class ImagePlaneDetails extends Details {
 		result[2] = Integer.toString(imagePlane.getIndex());
 		for (int i=0; i<metadataKeys.size(); i++) {
 			result[i+3] = get(metadataKeys.get(i));
-			if (result[i+3] == null) result[i+3] = "";
 		}
 		return result;
 	}

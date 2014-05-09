@@ -736,7 +736,7 @@ class Metadata(cpm.CPModule):
         script = """
         importPackage(Packages.org.cellprofiler.imageset);
         extractor = new ImagePlaneMetadataExtractor();
-        extractor.addImagePlaneExtractor(new SeriesIndexMetadataExtractor());
+        extractor.addImagePlaneExtractor(new URLSeriesIndexMetadataExtractor());
         extractor;
         """
         extractor = J.run_script(script)
@@ -873,9 +873,6 @@ class Metadata(cpm.CPModule):
             sorted(list(columns))
         self.table.clear_columns()
         self.table.clear_rows()
-        for i, column in enumerate(columns):
-            self.table.insert_column(i, column)
-            
         data = []
         md_keys = J.make_list(columns[3:])
         #
@@ -885,11 +882,22 @@ class Metadata(cpm.CPModule):
         clsIPD = env.find_class("org/cellprofiler/imageset/ImagePlaneDetails")
         methodID = env.get_method_id(
             clsIPD, "getIPDFields", "(Ljava/util/List;)[Ljava/lang/String;")
+        has_data = [False] * len(columns)
         for ipd in self.pipeline.get_image_plane_details(self.workspace):
             fields = env.call_method(ipd.jipd, methodID, md_keys.o)
-            row = [env.get_string(f) 
-                   for f in env.get_object_array_elements(fields)]
+            row = [None] * len(columns)
+            for i, f in enumerate(env.get_object_array_elements(fields)):
+                if f is not None:
+                    has_data[i] = True
+                    row[i] = J.to_string(f)
             data.append(row)
+        columns = [c for c, h in zip(columns, has_data) if h]
+        for i in range(len(data)):
+            data[i] = [f for f, h in zip(data[i], has_data) if h]
+            
+        for i, column in enumerate(columns):
+            self.table.insert_column(i, column)
+                
         self.table.add_rows(columns, data)
         
     def on_deactivated(self):

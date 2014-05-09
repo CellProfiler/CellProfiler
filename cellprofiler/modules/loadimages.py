@@ -3121,7 +3121,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             rdr = None
         else:
             from bioformats.formatreader import get_image_reader
-            rdr = get_image_reader(id(self), url = self.get_url())
+            rdr = get_image_reader(None, url = self.get_url())
         if rdr is None or not hasattr(rdr, "md5_hash"):
             hasher = hashlib.md5()
             path = self.get_full_name()

@@ -1485,6 +1485,7 @@ class NamesAndTypes(cpm.CPModule):
     def on_setting_changed(self, setting, pipeline):
         '''Handle updates to all settings'''
         self.update_joiner()
+        self.update_all_metadata_predicates()
         
     def update_all_metadata_predicates(self):
         if self.assignment_method == ASSIGN_RULES:

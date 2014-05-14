@@ -26,6 +26,15 @@ is_win64 = (is_win and (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64"))
 is_msvc = (is_win and sys.version_info[0] >= 2 and sys.version_info[1] >= 6)
 is_mingw = (is_win and not is_msvc)
 
+def get_visual_studio_version():
+    try:
+        ver = os.environ['VisualStudioVersion']
+    except:
+        ver = "9.0"
+        print 'Warning: Could not find the version of Microsoft Visual Studio. Are you in a Visual Studio command prompt?'
+        print 'Assuming version', ver
+    return ver
+
 if not hasattr(sys, 'frozen'):
     from distutils.core import setup,Extension
     from distutils.sysconfig import get_config_var
@@ -83,7 +92,8 @@ if not hasattr(sys, 'frozen'):
                     #
                     jdk_lib = os.path.join(jdk_home, "lib")
                     library_dirs = [jdk_lib]
-                    javabridge_sources.append("strtoull.c")
+                    if float(get_visual_studio_version()) < 12:
+                        javabridge_sources.append("strtoull.c")
             
                 libraries = ["jvm"]
             elif sys.platform == 'darwin':

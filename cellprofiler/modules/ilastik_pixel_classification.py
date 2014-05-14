@@ -1,20 +1,17 @@
-'''<b>ClassifyPixels</b> classify image pixels as belonging to different 
-classes using the machine-learning tool, ilastik 0.5.
+'''<b>ilastik</b> classifiy image pixels as belonging to different 
+classes using the machine-learning tool, ilastik.
 <hr>
 
-<b>This module is based on ilastik 0.5. It will be removed 
-in future releases. Please switch to newer ilastik versions >= 1.0 
-and the use the <i>IlastikPixelClassification</i> module.</b>
 
-ClassifyPixels performs per-pixel classification using the 
-<a href="http://www.ilastik.org/">ilastik 0.5</a> application.
+IlastikPixelClassification performs per-pixel classification using the 
+<a href="http://www.ilastik.org/">ilastik</a> application.
 Ilastik is now bundled with the CellProfiler distribution; it applies
 supervised machine learning techniques to images to learn their features.
 A user trains a classifier with Ilastik and then saves the classifier.
-The user then uses the ClassifyPixels module to classify the pixels in an
+The user then uses the IlastikPixelClassification module to classify the pixels in an
 image. 
 
-ClassifyPixels produces an "image" consisting of probabilities that
+IlastikPixelClassification produces an "image" consisting of probabilities that
 the pixel belongs to the chosen class; this image is similar to
 an intensity image that would be produced by fluorescence imaging.
 Provided that the classifier is sufficiently accurate, the image is
@@ -60,6 +57,7 @@ import sys, os
 try:
     import vigra
     has_ilastik = True
+    # TODO Version check
 except ImportError, vigraImport:
     logger.warning("""vigra import: failed to import the vigra library. Please follow the instructions on 
 "http://hci.iwr.uni-heidelberg.de/vigra/" to install vigra""", exc_info=True)
@@ -78,35 +76,24 @@ except ImportError, h5pyImport:
 old_stdout = sys.stdout
 if has_ilastik:
     try:
+        # TODO Version check
         sys.stdout = sys.stderr = open(os.devnull, "w")
-        from ilastik.core.dataMgr import DataMgr, DataItemImage
-        from ilastik.modules.classification.core.featureMgr import FeatureMgr
-        from ilastik.modules.classification.core.classificationMgr import ClassificationMgr
-        from ilastik.modules.classification.core.features.featureBase import FeatureBase
-        from ilastik.modules.classification.core.classifiers.classifierRandomForest import ClassifierRandomForest
-        from ilastik.modules.classification.core.classificationMgr import ClassifierPredictThread
-        from ilastik.core.volume import DataAccessor
+        import ilastik_main
+        import ilastik
+        print ilastik.__file__
+        from ilastik.workflows.pixelClassification import PixelClassificationWorkflow
         sys.stdout = old_stdout
         
     except ImportError, ilastikImport:
         sys.stdout = old_stdout
         logger.warning("""ilastik import: failed to import the ilastik. Please follow the instructions on 
-    "http://www.ilastik.org" to install ilastik""", exc_info=True)
+                          "http://www.ilastik.org" to install ilastik""", exc_info=True)
         has_ilastik = False
-
-CLASSIFIERS_KEY = "IlastikClassifiers"
-FEATURE_ITEMS_KEY = "IlastikFeatureItems"
 
 SI_PROBABILITY_MAP_COUNT = 3
 
-#
-# Classifiers by file. Key is file name, value is a tuple of stat modification
-# time and classifier
-#
-classifier_dict = {}
-
-class ClassifyPixels(cpm.CPModule):
-    module_name = 'ClassifyPixels'
+class IlastikPixelClassification(cpm.CPModule):
+    module_name = 'ilastik_pixel_classification'
     variable_revision_number = 2
     category = "Image Processing"
     
@@ -130,13 +117,13 @@ class ClassifyPixels(cpm.CPModule):
             more images.""")
         
         self.h5_directory = cps.DirectoryPath(
-            "Classifier file location",
+            "Ilastik project file location",
             dir_choices = [
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
                 DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME], 
             allow_metadata = False,doc ="""
-                Select the folder containing the classifier file to be loaded. 
+                Select the folder containing the ilastik project file to be loaded. 
             %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
         
         def get_directory_fn():
@@ -148,19 +135,19 @@ class ClassifyPixels(cpm.CPModule):
             self.h5_directory.join_parts(dir_choice, custom_path)
                 
         self.classifier_file_name = cps.FilenameText(
-            "Classfier file name",
+            "Ilastik project file name",
             cps.NONE,
-            doc="""This is the name of the Classfier file.""",
+            doc="""This is the name of the ilastik project file.""",
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,
-            browse_msg = "Choose Classifier file",
-            exts = [("Classfier file (*.h5)","*.h5"),("All files (*.*)","*.*")]
+            browse_msg = "Choose ilastik project file",
+            exts = [("ilastik project file (*.ilp)","*.ilp"),("All files (*.*)","*.*")]
         )
         self.no_ilastik_msg = cps.HTMLText(
             "",
             content = """
-            ClassifyPixels cannot run on this platform because
-            the necessary libraries are not available. ClassifyPixels is
+            IlastikPixelClassification cannot run on this platform because
+            the necessary libraries are not available. IlastikPixelClassification is
             supported on 64-bit versions of Windows Vista, Windows 7 and
             Windows 8 and on Linux.""", size=(-1, 50))
         
@@ -226,130 +213,70 @@ class ClassifyPixels(cpm.CPModule):
         image_max = np.max(image_)
         if (image_max > 255) and (image_max < 4096):
             image_ = image_ / 4095. * 255.0
-        
-        # Create ilastik dataMgr
-        dataMgr = DataMgr()
-        
-        # Transform input image to ilastik convention s
-        # 3D = (time,x,y,z,channel) 
-        # 2D = (time,1,x,y,channel)
-        # Note, this work for 2D images right now. Is there a need for 3D
-        image_.shape = (1,1) + image_.shape
-        
+
         # Check if image_ has channels, if not add singelton dimension
-        if len(image_.shape) == 4:
+        if len(image_.shape) == 2:
             image_.shape = image_.shape + (1,)
         
-        # Add data item di to dataMgr
-        di = DataItemImage('')
-        di.setDataVol(DataAccessor(image_))
-        dataMgr.append(di, alreadyLoaded=True)
-        dataMgr.module["Classification"]["classificationMgr"].classifiers =\
-            self.get_classifiers(workspace)
-
-        # Create FeatureMgr
-        fm = FeatureMgr(dataMgr, self.get_feature_items(workspace))
-        
-        # Compute features
-
-        fm.prepareCompute(dataMgr)
-        fm.triggerCompute()
-        fm.joinCompute(dataMgr)
-        
-        # Predict with loaded classifier
-        
-        classificationPredict = ClassifierPredictThread(dataMgr)
-        classificationPredict.start()
-        classificationPredict.wait()
+        probMaps = self._classify_with_ilastik(image_)
         
         workspace.display_data.source_image = image.pixel_data
         workspace.display_data.dest_images = []
         for group in self.probability_maps:
             # Produce output image and select the probability map
-            probMap = classificationPredict._prediction[0][
-                0 ,0 ,: ,: ,int(group.class_sel.value)]
+            probMap = probMaps[:,:,int(group.class_sel.value)]
             temp_image = cpi.Image(probMap, parent_image=image)
             workspace.image_set.add(group.output_image.value, temp_image)
             workspace.display_data.dest_images.append(probMap)
 
-    def get_classifiers(self, workspace):
-        d = self.parse_classifier_file(workspace)
-        return d[CLASSIFIERS_KEY]
-    
-    def get_feature_items(self, workspace):
-        d = self.parse_classifier_file(workspace)
-        return d[FEATURE_ITEMS_KEY]
+    def _classify_with_ilastik(self, image):
         
-    def parse_classifier_file(self, workspace):
-        global classifier_dict
-        # Load classifier from hdf5
-        if self.h5_directory.dir_choice == URL_FOLDER_NAME:
-            url = self.classifier_file_name.value.encode("utf-8")
-            if url in classifier_dict:
-                last_modtime, d = classifier_dict[url]
-                return d
-            filename, headers = urllib.urlretrieve(url)
-            try:
-                modtime = os.stat(filename).st_mtime
-                d = self.parse_classifier_hdf5(filename)
-                classifier_dict[url] = (modtime, d)
-            finally:
-                os.remove(filename)
-        else:
-            fileName = os.path.join(
-                self.h5_directory.get_absolute_path(), 
-                self.classifier_file_name.value).encode("utf-8")
-            modtime = os.stat(fileName).st_mtime
-            if fileName in classifier_dict:
-                last_modtime, d = classifier_dict[fileName]
-                if modtime == last_modtime:
-                    return d
-            d = self.parse_classifier_hdf5(fileName)
-            classifier_dict[fileName] = (modtime, d)
-        return d
-    
-    def parse_classifier_hdf5(self, filename):
-        '''Parse the classifiers out of the HDF5 file
         
-        filename - name of classifier file
+        args = ilastik_main.parser.parse_args([])
+        args.headless = True
+        args.project = os.path.join(
+                        self.h5_directory.get_absolute_path(), 
+                        self.classifier_file_name.value).encode("utf-8")
         
-        returns a dictionary
-           CLASSIFIERS_KEY - the random forest classifiers
-           FEATURE_ITEMS_KEY - the features needed by the classifier
-        '''
-        d = {}
-        if not isinstance(filename, str):
-            filename = filename.encode('utf-8')
-        hf = h5py.File(filename,'r')
-        temp = hf['classifiers'].keys()
-        # If hf is not closed this leads to an error in win64 and mac os x
-        hf.close()
-        del hf
+        input_data = image
+        print input_data.shape
+        input_data = vigra.taggedView( input_data, 'yxc' )
         
-        classifiers = []
-        for cid in temp:
-            if isinstance(cid, unicode):
-                cid = cid.encode('utf-8')
-            cidpath = 'classifiers/' + cid
-            try:
-                classifiers.append(
-                    ClassifierRandomForest.deserialize(filename, cidpath))
-            except:
-                classifiers.append(
-                    ClassifierRandomForest.loadRFfromFile(filename, cidpath))
-
-        d[CLASSIFIERS_KEY] = classifiers
+        shell = ilastik_main.main( args )
+        assert isinstance(shell.workflow, PixelClassificationWorkflow)
         
-        # Restore user selection of feature items from hdf5
-        featureItems = []
-        f = h5py.File(filename,'r')
-        for fgrp in f['features'].values():
-            featureItems.append(FeatureBase.deserialize(fgrp))
-        d[FEATURE_ITEMS_KEY] = featureItems
-        f.close()
-        del f
-        return d
-
+        # The training operator
+        opPixelClassification = shell.workflow.pcApplet.topLevelOperator
+        
+        # Sanity checks
+        assert len(opPixelClassification.InputImages) > 0
+        assert opPixelClassification.Classifier.ready()
+        
+        #print opPixelClassification.
+        
+        label_names = opPixelClassification.LabelNames.value
+        label_colors = opPixelClassification.LabelColors.value
+        probability_colors = opPixelClassification.PmapColors.value
+        
+        print label_names, label_colors, probability_colors
+        
+        # Change the connections of the batch prediction pipeline so we can supply our own data.
+        opBatchFeatures = shell.workflow.opBatchFeatures
+        opBatchPredictionPipeline = shell.workflow.opBatchPredictionPipeline
+        
+        opBatchFeatures.InputImage.disconnect()
+        opBatchFeatures.InputImage.resize(1)
+        opBatchFeatures.InputImage[0].setValue( input_data )
+        
+        # Run prediction.
+        assert len(opBatchPredictionPipeline.HeadlessPredictionProbabilities) == 1
+        assert opBatchPredictionPipeline.HeadlessPredictionProbabilities[0].ready()
+        predictions = opBatchPredictionPipeline.HeadlessPredictionProbabilities[0][:].wait()
+        return predictions
+        
+        
+        
+        
     def display(self, workspace, figure):
         figure.set_subplots((len(workspace.display_data.dest_images) + 1, 1))
         source_image = workspace.display_data.source_image
@@ -366,12 +293,12 @@ class ClassifyPixels(cpm.CPModule):
                 sharexy = src_plot)
 
     def validate_module(self, pipeline):
-        '''Mark ClassifyPixels as invalid if Ilastik is not properly installed
+        '''Mark IlastikPixelClassification as invalid if Ilastik is not properly installed
         
         '''
         if not has_ilastik:
             raise cps.ValidationError(
-                "ClassifyPixels is not available on this platform.",
+                "IlastikPixelClassification is not available on this platform.",
                 self.no_ilastik_msg)
         if self.h5_directory.dir_choice != URL_FOLDER_NAME:
             fileName = os.path.join(

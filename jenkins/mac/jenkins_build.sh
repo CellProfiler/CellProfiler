@@ -52,6 +52,11 @@ version="${short_branch}-${hash}"
 rm -rf build dist imagej/jars
 arch -i386 python external_dependencies.py -o
 arch -i386 python CellProfiler.py --build-and-exit --do-not-fetch
+svn co https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/
+svn co https://svn.broadinstitute.org/CellProfiler/trunk/TestImages/
+export CP_EXAMPLEIMAGES=$(pwd)/ExampleImages
+export CP_TESTIMAGES=$(pwd)/TestImages
+arch -i386 python cpnose.py --noguitests --with-xunit
 arch -i386 python setup.py py2app
 
 unsigned_zip="CellProfiler-${version}-unsigned.zip"

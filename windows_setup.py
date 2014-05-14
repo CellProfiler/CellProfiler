@@ -56,7 +56,7 @@ f = open("cellprofiler/frozen_version.py", "w")
 f.write("# MACHINE_GENERATED\nversion_string = '%s'" % version_string)
 f.close()
 
-is_win64 = (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64")
+is_win64 = os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64"
 is_2_6 = sys.version_info[0] >= 2 and sys.version_info[1] >= 6
 vcredist = os.path.join("windows",
                         "vcredist_x64.exe" if is_win64
@@ -348,6 +348,16 @@ except:
 #                            than to hand-patch the manifest and DLLs.
 #
 ##############################################
+
+def get_visual_studio_version():
+    try:
+        ver = os.environ['VisualStudioVersion']
+    except:
+        ver = "9.0"
+        print 'Warning: Could not find the version of Microsoft Visual Studio. Are you in a Visual Studio command prompt?'
+        print 'Assuming version', ver
+    return ver
+
 try:
     # Fix for scipy 0.11
     from scipy.sparse.csgraph import _validation
@@ -357,10 +367,11 @@ except:
 
 if do_modify:
     # A trick to load the dlls
+    ver = get_visual_studio_version()
     if is_win64:
-        path = r"SOFTWARE\WOW6432node\Microsoft\VisualStudio\9.0\Setup\VC"
+        path = r"SOFTWARE\WOW6432node\Microsoft\VisualStudio\%s\Setup\VC" % ver
     else:
-        path = r"SOFTWARE\Microsoft\VisualStudio\9.0\Setup\VC"
+        path = r"SOFTWARE\Microsoft\VisualStudio\%s\Setup\VC" % ver
     key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, path)
     product_dir = _winreg.QueryValueEx(key, "ProductDir")[0]
     key.Close()

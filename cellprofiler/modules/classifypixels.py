@@ -1,9 +1,13 @@
 '''<b>ClassifyPixels</b> classify image pixels as belonging to different 
-classes using the machine-learning tool, ilastik.
+classes using the machine-learning tool, ilastik 0.5.
 <hr>
 
+<b>This module is based on ilastik 0.5. It will be removed 
+in future releases. Please switch to newer ilastik versions >= 1.0 
+and the use the <i>IlastikPixelClassification</i> module.</b>
+
 ClassifyPixels performs per-pixel classification using the 
-<a href="http://www.ilastik.org/">ilastik</a> application.
+<a href="http://www.ilastik.org/">ilastik 0.5</a> application.
 Ilastik is now bundled with the CellProfiler distribution; it applies
 supervised machine learning techniques to images to learn their features.
 A user trains a classifier with Ilastik and then saves the classifier.

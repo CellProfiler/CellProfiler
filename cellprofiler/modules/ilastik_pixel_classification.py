@@ -1,18 +1,17 @@
-'''<b>ilastik</b> classify image pixels as belonging to different 
+'''<b>ilastik</b> classifiy image pixels as belonging to different 
 classes using the machine-learning tool, ilastik.
 <hr>
 
-# TODO documentation 
 
-ClassifyPixels performs per-pixel classification using the 
+IlastikPixelClassification performs per-pixel classification using the 
 <a href="http://www.ilastik.org/">ilastik</a> application.
 Ilastik is now bundled with the CellProfiler distribution; it applies
 supervised machine learning techniques to images to learn their features.
 A user trains a classifier with Ilastik and then saves the classifier.
-The user then uses the ClassifyPixels module to classify the pixels in an
+The user then uses the IlastikPixelClassification module to classify the pixels in an
 image. 
 
-ClassifyPixels produces an "image" consisting of probabilities that
+IlastikPixelClassification produces an "image" consisting of probabilities that
 the pixel belongs to the chosen class; this image is similar to
 an intensity image that would be produced by fluorescence imaging.
 Provided that the classifier is sufficiently accurate, the image is
@@ -156,8 +155,8 @@ class IlastikPixelClassification(cpm.CPModule):
         self.no_ilastik_msg = cps.HTMLText(
             "",
             content = """
-            ClassifyPixels cannot run on this platform because
-            the necessary libraries are not available. ClassifyPixels is
+            IlastikPixelClassification cannot run on this platform because
+            the necessary libraries are not available. IlastikPixelClassification is
             supported on 64-bit versions of Windows Vista, Windows 7 and
             Windows 8 and on Linux.""", size=(-1, 50))
         
@@ -303,12 +302,12 @@ class IlastikPixelClassification(cpm.CPModule):
                 sharexy = src_plot)
 
     def validate_module(self, pipeline):
-        '''Mark ClassifyPixels as invalid if Ilastik is not properly installed
+        '''Mark IlastikPixelClassification as invalid if Ilastik is not properly installed
         
         '''
         if not has_ilastik:
             raise cps.ValidationError(
-                "ClassifyPixels is not available on this platform.",
+                "IlastikPixelClassification is not available on this platform.",
                 self.no_ilastik_msg)
         if self.h5_directory.dir_choice != URL_FOLDER_NAME:
             fileName = os.path.join(

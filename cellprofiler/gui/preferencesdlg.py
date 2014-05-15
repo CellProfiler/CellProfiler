@@ -305,7 +305,7 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.set_temporary_directory,
                  DIRBROWSE,
                  cphelp.TEMP_DIR_HELP],
-                ['Max. Java memory (mb)',
+                ['Maximum memory for Java (MB)',
                  cpprefs.get_jvm_heap_mb,
                  cpprefs.set_jvm_heap_mb,
                  IntegerPreference(128, 64000),

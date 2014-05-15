@@ -432,9 +432,9 @@ data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
 #
 try:
     setup(console=[{'script':'CellProfiler.py',
-                    'icon_resources':[(0,'CellProfilerIcon.ico')]},
+                    'icon_resources':[(1,'CellProfilerIcon.ico')]},
                    {'script':'cellprofiler\\analysis_worker.py',
-                    'icon_resources':[(0,'CellProfilerIcon.ico')]}],
+                    'icon_resources':[(1,'CellProfilerIcon.ico')]}],
           name='Cell Profiler',
           data_files = data_files,
           cmdclass={'msi':CellProfilerMSI,

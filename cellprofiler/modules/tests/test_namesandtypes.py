@@ -22,6 +22,7 @@ import urllib
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.namesandtypes as N
 import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.jutil as J
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
@@ -36,6 +37,9 @@ from cellprofiler.measurements import C_FILE_NAME,\
 from cellprofiler.modules.identify import \
      C_COUNT, C_LOCATION, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
      FTR_CENTER_X, FTR_CENTER_Y
+
+from cellprofiler.modules.createbatchfiles import \
+     CreateBatchFiles, F_BATCH_DATA_H5
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
@@ -1044,6 +1048,79 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
                                        feature + "_" + name,
                                        np.arange(1, 3))
             self.assertSequenceEqual(list(expected), list(values))
+        
+    def test_02_04_create_batch_files_imagesets(self):
+        # Regression test of issue 1129
+        # Once imagesets are pickled in the M_IMAGE_SET measurement,
+        # their path names are smoewhat inaccessible, yet need conversion.
+        #
+        m = cpmeas.Measurements()
+        pipeline = cpp.Pipeline()
+        pipeline.init_modules()
+        images_module, metadata_module, module, groups_module = \
+            pipeline.modules()
+        assert isinstance(module, N.NamesAndTypes)
+        cbf_module = CreateBatchFiles()
+        cbf_module.module_num = groups_module.module_num + 1
+        pipeline.add_module(cbf_module)
+        workspace = cpw.Workspace(
+            pipeline, images_module, m,
+            cpo.ObjectSet(), m, None)
+        #
+        # Add two files
+        #
+        current_path = os.path.abspath(os.curdir)
+        target_path = os.path.join(example_images_directory(), 
+                                   "ExampleAllModulesPipeline",
+                                   "Images")
+        img_url = pathname2url(os.path.join(current_path, "all_ones_image.tif"))
+        objects_url = pathname2url(os.path.join(current_path,
+                                                "one_object_00_A.tif"))
+        pipeline.add_urls([img_url, objects_url])
+        workspace.file_list.add_files_to_filelist([img_url, objects_url])
+        #
+        # Set up NamesAndTypes to read 1 image and 1 object
+        #
+        module.assignment_method.value = N.ASSIGN_RULES
+        module.add_assignment()
+        a = module.assignments[0]
+        a.rule_filter.value = 'and (file does contain "_image")'
+        a.image_name.value = IMAGE_NAME
+        a.load_as_choice.value = N.LOAD_AS_GRAYSCALE_IMAGE
+        a = module.assignments[1]
+        a.rule_filter.value = 'and (file does contain "_object_")'
+        a.load_as_choice.value = N.LOAD_AS_OBJECTS
+        a.object_name.value = OBJECTS_NAME
+        #
+        # Set up CreateBatchFiles to change names.
+        #
+        tempdir = tempfile.mkdtemp()
+        batch_data_filename = os.path.join(tempdir, F_BATCH_DATA_H5)
+        try:
+            cbf_module.wants_default_output_directory.value = False
+            cbf_module.custom_output_directory.value = tempdir
+            cbf_module.mappings[0].local_directory.value = current_path
+            cbf_module.mappings[0].remote_directory.value = target_path
+            pipeline.prepare_run(workspace)
+            self.assertTrue(os.path.exists(batch_data_filename))
+            #
+            # Load Batch_data.h5
+            #
+            workspace.load(batch_data_filename, True)
+            module = pipeline.modules()[2]
+            self.assertTrue(isinstance(module, N.NamesAndTypes))
+            workspace.set_module(module)
+            module.run(workspace)
+            img = workspace.image_set.get_image(IMAGE_NAME)
+            self.assertEquals(tuple(img.pixel_data.shape), (20, 21))
+            objs = workspace.object_set.get_objects(OBJECTS_NAME)
+            self.assertEquals(objs.count, 1)
+        finally:
+            import gc
+            gc.collect()
+            os.remove(batch_data_filename)
+            os.rmdir(tempdir)
+        
         
     def run_workspace(self, path, load_as_type, 
                       series = None, index = None, channel = None,

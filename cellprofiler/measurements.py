@@ -32,6 +32,7 @@ import warnings
 import os
 import os.path
 import mmap
+import urllib
 import sys
 
 AGG_MEAN = "Mean"
@@ -186,6 +187,21 @@ M_GROUPING_TAGS = "_".join((C_METADATA, "GroupingTags"))
 '''Tags that are reserved for automatic population of metadata'''
 RESERVED_METADATA_TAGS = ( "C", "T", "Z", "ColorFormat", "ChannelName",
                            C_SERIES, C_FRAME, C_FILE_LOCATION)
+
+'''A JSON-encoding of the local/remote path mappings'''
+M_PATH_MAPPINGS = "Path_Mappings"
+
+'''Case-sensitive comparison flag in M_PATH_MAPPINGS'''
+K_CASE_SENSITIVE = "CaseSensitive"
+
+'''Path-mappings sequence of two-tuple key in M_PATH_MAPPINGS'''
+K_PATH_MAPPINGS = "PathMappings"
+
+'''Local path separator as stored in M_PATH_MAPPINGS'''
+K_LOCAL_SEPARATOR = "LocalSeparator"
+
+'''Source of local url2pathname function for M_PATH_MAPPINGS'''
+K_URL2PATHNAME_PACKAGE_NAME = "Url2PathnamePackageName"
 
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
@@ -1425,7 +1441,61 @@ class Measurements(object):
         if any([filename != new_filename
                 for filename, new_filename in zip(filenames, new_filenames)]):
             self.add_all_measurements(IMAGE, file_feature, new_filenames)
-                
+    
+    def write_path_mappings(self, mappings):
+        '''Write the mappings of local/remote dirs as an experiment measurement
+        
+        This records the mappings of local and remote directories entered
+        by the CreateBatchFiles module.
+        
+        mappings - a sequence of two-tuples. The first tuple is the local
+                   path and the second is the remote path (on the target
+                   machine for the run)
+        '''
+        d = {
+            K_CASE_SENSITIVE: (os.path.normcase("A") != os.path.normcase("a")),
+            K_LOCAL_SEPARATOR: os.path.sep,
+            K_PATH_MAPPINGS: tuple([tuple(m) for m in mappings]),
+            K_URL2PATHNAME_PACKAGE_NAME: urllib.url2pathname.__module__
+            }
+        s = json.dumps(d)
+        self.add_experiment_measurement(M_PATH_MAPPINGS, s)
+        
+    def alter_url_post_create_batch(self, url):
+        '''Apply CreateBatchFiles path mappings to an unmapped URL
+        
+        This method can be run on the measurements output by CreateBatchFiles
+        to map the paths of any URL that wasn't mapped by the alter-paths
+        mechanism (e.g. URLs encoded in blobs)
+        
+        url - the url to map
+        
+        returns - a possibly mapped URL
+        '''
+        if not url.lower().startswith("file:"):
+            return url
+        if not self.has_feature(EXPERIMENT, M_PATH_MAPPINGS):
+            return url
+        d = json.loads(self.get_experiment_measurement(M_PATH_MAPPINGS))
+        os_url2pathname = __import__(d[K_URL2PATHNAME_PACKAGE_NAME]).url2pathname
+        full_name = os_url2pathname(url[5:].encode("utf-8"))
+        full_name_c = full_name if d[K_CASE_SENSITIVE] else full_name.lower()
+        if d[K_LOCAL_SEPARATOR] != os.path.sep:
+            full_name = full_name.replace(d[K_LOCAL_SEPARATOR], os.path.sep)
+        for local_directory, remote_directory in d[K_PATH_MAPPINGS]:
+            if d[K_CASE_SENSITIVE]:
+                if full_name_c.startswith(local_directory):
+                    full_name = \
+                        remote_directory + full_name[len(local_directory):]
+            else:
+                if full_name_c.startswith(local_directory.lower()):
+                    full_name = \
+                        remote_directory + full_name[len(local_directory):]
+        url = "file:" + urllib.pathname2url(full_name)
+        if isinstance(url, unicode):
+            url = url.encode("utf-8")
+        return url
+        
     ###########################################################
     #
     # Ducktyping measurements as image sets

@@ -289,6 +289,12 @@ class CreateBatchFiles(cpm.CPModule):
             bizarro_self.batch_mode.value = True
             pipeline.write_pipeline_measurement(m)
             orig_pipeline.write_pipeline_measurement(m, user_pipeline=True)
+            #
+            # Write the path mappings to the batch measurements
+            #
+            m.write_path_mappings(
+                [(mapping.local_directory.value, mapping.remote_directory.value)
+                 for mapping in self.mappings])
             return h5_path
         finally:
             m.close()

@@ -56,7 +56,9 @@ svn --trust-server-cert --non-interactive co https://svn.broadinstitute.org/Cell
 svn --trust-server-cert --non-interactive co https://svn.broadinstitute.org/CellProfiler/trunk/TestImages/
 export CP_EXAMPLEIMAGES=$(pwd)/ExampleImages
 export CP_TESTIMAGES=$(pwd)/TestImages
+set +e
 arch -i386 python cpnose.py --noguitests --with-xunit
+set -e
 arch -i386 python setup.py py2app
 
 unsigned_zip="CellProfiler-${version}-unsigned.zip"

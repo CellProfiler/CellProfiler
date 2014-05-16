@@ -18,11 +18,21 @@ import sys
 import numpy as np
 np.seterr(all='ignore')
 
+
+class MockModule(object):
+    def __getattr__(self, *args, **kwargs):
+        raise SkipTest
+
+    def __getitem__(self, *args, **kwargs):
+        raise SkipTest
+
+
 if '--noguitests' in sys.argv:
     sys.argv.remove('--noguitests')
     import cellprofiler.preferences as cpprefs
     cpprefs.set_headless()
-    sys.modules['wx'] = None
+    sys.modules['wx'] = MockModule()
+    sys.modules['wx.html'] = MockModule()
     import matplotlib
     matplotlib.use('agg')
 

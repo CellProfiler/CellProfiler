@@ -1344,6 +1344,8 @@ class NamesAndTypes(cpm.CPModule):
             raise NotImplementedError("To do: support assembling image files into a stack")
         
     def add_simple_image(self, workspace, name, load_choice, rescale, url, series, index, channel):
+        m = workspace.measurements
+        url = m.alter_url_post_create_batch(url)
         if load_choice == LOAD_AS_COLOR_IMAGE:
             provider = ColorImageProvider(name, url, series, index, rescale)
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
@@ -1439,7 +1441,8 @@ class NamesAndTypes(cpm.CPModule):
                 index = [ipd.index for ipd in ipds]
                 series = [ipd.series for ipd in ipds]
                 url = ipds[0].url
-                
+        
+        url = workspace.measurements.alter_url_post_create_batch(url)
         provider = ObjectsImageProvider(name, url, series, index)
         self.add_provider_measurements(provider, workspace.measurements, 
                                        cpmeas.OBJECT)

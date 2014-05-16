@@ -208,17 +208,24 @@ class CellProfilerCodesign(distutils.core.Command):
             key = _winreg.OpenKey(
                 _winreg.HKEY_LOCAL_MACHINE,
                 "SOFTWARE\Microsoft\Microsoft SDKs\Windows")
-            best_sdk = _winreg.EnumKey(key, _winreg.QueryInfoKey(key)[0]-1)
-            sdk_key = _winreg.OpenKey(key, best_sdk)
+            for i in reversed(range(_winreg.QueryInfoKey(key)[0])):
+                sdk_name = _winreg.EnumKey(key, i)
+                sdk_key = _winreg.OpenKey(key, sdk_name)
+                try:
+                    signtool = os.path.join(
+                        _winreg.QueryValueEx(sdk_key, "InstallationFolder")[0],
+                        "Bin", "signtool.exe")
+                    sdk_key.Close()
+                    if os.path.isfile(signtool):
+                        break
+                except:
+                    pass
+            else:
+                raise distutils.errors.DistutilsExecError, \
+                      "The Microsoft Windows SDK does not seem to be properly installed"
+        finally:
             key.Close()
-            signtool = os.path.join(
-                _winreg.QueryValueEx(sdk_key, "InstallationFolder")[0],
-                "Bin", "signtool.exe")
-            sdk_key.Close()
-            assert(os.path.isfile(signtool))
-        except:
-            raise distutils.errors.DistutilsExecError, \
-                  "The Microsoft Windows SDK does not seem to be properly installed"
+        
         self.execute(
             subprocess.check_call,
             ([signtool, "sign", "/a", "/du", "http://www.cellprofiler.org/", 
@@ -426,7 +433,8 @@ data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
 try:
     setup(console=[{'script':'CellProfiler.py',
                     'icon_resources':[(1,'CellProfilerIcon.ico')]},
-                   {'script':'cellprofiler\\analysis_worker.py'}],
+                   {'script':'cellprofiler\\analysis_worker.py',
+                    'icon_resources':[(1,'CellProfilerIcon.ico')]}],
           name='Cell Profiler',
           data_files = data_files,
           cmdclass={'msi':CellProfilerMSI,

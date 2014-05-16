@@ -19,7 +19,7 @@ Website: http://www.cellprofiler.org
 import os
 import sys
 import cellprofiler.preferences
-from cellprofiler.icons import get_builtin_image
+from cellprofiler.icons import get_builtin_image, get_builtin_images_path
 
 cp_image = None
 
@@ -41,9 +41,12 @@ def get_cp_bitmap(size=None):
 def get_cp_icon(size=None):
     """The CellProfiler icon as a wx.Icon"""
     import wx
+    if sys.platform.startswith('win'):
+        path = os.path.join(get_builtin_images_path(), "CellProfilerIcon.ico")
+        icon = wx.EmptyIcon()
+        icon.LoadFile(path, wx.BITMAP_TYPE_ICO)
+        return icon
     icon = wx.EmptyIcon()
-    if size == None and sys.platform.startswith('win'):
-        size = wx.SystemSettings.GetMetric(wx.SYS_ICON_X)
     icon.CopyFromBitmap(get_cp_bitmap(size))
     return icon
 

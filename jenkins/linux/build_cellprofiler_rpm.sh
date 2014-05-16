@@ -13,7 +13,7 @@ fi
 
 yum -y update
 adduser build
-yum install -q -y rpm-build yum-utils git
+yum install -q -y rpm-build yum-utils git tar
 
 cp=/jenkins/CellProfiler
 

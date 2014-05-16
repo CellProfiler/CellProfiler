@@ -11,6 +11,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
+from unittest.case import SkipTest
 import nose
 import sys
 
@@ -25,10 +26,13 @@ if '--noguitests' in sys.argv:
     import matplotlib
     matplotlib.use('agg')
 
+def mock_start_vm(*args, **kwargs):
+    raise SkipTest
+
 if '--nojavatests' in sys.argv:
     sys.argv.remove('--nojavatests')
     import cellprofiler.utilities.jutil as jutil
-    jutil.start_vm = None
+    jutil.start_vm = mock_start_vm
 
 if len(sys.argv) == 0:
     args = ['--testmatch=(?:^)test_.*']

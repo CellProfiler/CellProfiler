@@ -63,6 +63,10 @@ public class RunnableQueue implements Runnable {
 		queue.put(new FutureTask<Object>(runnable, null));
 	}
 	
+	static public boolean offer(Runnable runnable) {
+		return queue.offer(runnable);
+	}
+	
 	/**
 	 * Execute a runnable synchronously.
 	 * 

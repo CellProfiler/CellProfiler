@@ -99,6 +99,7 @@ def read_example_image(folder, file_name, **kwargs):
     path = os.path.join(example_images_directory(), folder, file_name)
     return load_using_bioformats(path, **kwargs)
 
+@unittest.skip
 def read_test_image(file_name, **kwargs):
     '''Read an image from the test directory
     

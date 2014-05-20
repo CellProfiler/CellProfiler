@@ -430,7 +430,10 @@ class Workspace(object):
         from cellprofiler.preferences import set_default_image_directory, \
              set_default_output_directory
         
+        image_set_and_measurements_are_same = False
         if self.__measurements is not None:
+            image_set_and_measurements_are_same = (
+                id(self.__measurements) == id(self.__image_set))
             self.close()
         self.__loading = True
         try:
@@ -469,6 +472,8 @@ class Workspace(object):
                     path = self.measurements[cpmeas.EXPERIMENT, feature]
                     if os.path.isdir(path):
                         function(path)
+            if image_set_and_measurements_are_same:
+                self.__image_set = self.__measurements
                 
         finally:
             self.__loading = False

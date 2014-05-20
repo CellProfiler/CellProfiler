@@ -43,10 +43,15 @@ if '--nojavatests' in sys.argv:
     sys.argv.remove('--nojavatests')
     import cellprofiler.utilities.jutil as jutil
     jutil.start_vm = mock_start_vm
+    
+addplugins = []
+if '--with-kill-vm' in sys.argv:
+    from killjavabridge import KillVMPlugin
+    addplugins.append(KillVMPlugin())
 
 if len(sys.argv) == 0:
     args = ['--testmatch=(?:^)test_.*']
 else:
     args = sys.argv
 
-nose.main(argv=args + ['--exe'])
+nose.main(argv=args + ['--exe'], addplugins=addplugins)

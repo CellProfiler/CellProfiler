@@ -1099,7 +1099,7 @@ def wrap_user_interface(o):
     class UserInterface(object):
         def __init__(self):
             self.o = o
-        show = J.make_invoke_method("show")
+        show = make_invoke_method("show")
         isVisible = J.make_method("isVisible", "()Z")
         getApplicationFrame = J.make_method(
             "getApplicationFrame", "()Limagej/ui/ApplicationFrame;")

@@ -1375,7 +1375,7 @@ class NamesAndTypes(cpm.CPModule):
              C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
         
         name = provider.get_name()
-        if name in m.get_names():
+        if name not in m.get_names():
             # Get the image with cacheing.
             img = m.get_image(name)
         else:

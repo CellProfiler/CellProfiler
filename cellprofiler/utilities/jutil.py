@@ -540,7 +540,7 @@ def execute_future_in_main_thread(future):
         return future.get()
     
     logger.debug("Enqueueing future on runnable queue")
-    static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
+
     return mac_get_future_value(future)
 
 def mac_get_future_value(future):
@@ -552,6 +552,7 @@ def mac_get_future_value(future):
     '''
     from cellprofiler.preferences import get_headless
     if __run_headless:
+        static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
         return future.raw_get()
     if sys.maxsize > 2**32:
         if javabridge.mac_is_main_thread():
@@ -561,6 +562,7 @@ def mac_get_future_value(future):
             # it never returned.
             #
             raise NotImplementedError("No support for synchronizing futures in Python's startup thread on the OS/X in 64-bit mode.")
+        static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
         return future.raw_get()
         
     import wx
@@ -575,6 +577,7 @@ def mac_get_future_value(future):
         # by the execution of Future.get() and AWT needing WX to
         # run the event loop. Therefore, we poll before getting.
         #
+        static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
         while not future.isDone():
             logger.debug("Future is not done")
             time.sleep(.1)
@@ -587,7 +590,11 @@ def mac_get_future_value(future):
     if app.IsMainLoopRunning():
         evtloop = wx.EventLoop()
         logger.debug("Polling for future done within main loop")
-        while not future.isDone():
+        taken = static_call(RQCLS, "offer", "(Ljava/lang/Runnable;)Z", future.o)
+        while (not taken) or not future.isDone():
+            if not taken:
+                taken = static_call(RQCLS, "offer", "(Ljava/lang/Runnable;)Z", future.o)
+                
             logger.debug("Future is not done")
             if evtloop.Pending():
                 while evtloop.Pending():
@@ -624,8 +631,16 @@ def mac_get_future_value(future):
                 if self.fn():
                     self.timer.Stop()
                     self.evtloop.Exit()
+        
+        def offer(future):
+            while not static_call(RQCLS, "offer", "(Ljava/lang/Runnable;)Z", future.o):
+                yield False
+            yield True
+            
+        event_loop_runner = EventLoopRunner(offer(future).next)
+        event_loop_runner.Run(time=60)
         event_loop_runner = EventLoopRunner(lambda: future.isDone())
-        event_loop_runner.Run(time=10)
+        event_loop_runner.Run(time=60)
     logger.debug("Fetching future value")
     return future.raw_get()
 

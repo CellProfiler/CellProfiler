@@ -130,7 +130,7 @@ def create_context(service_classes):
                           '(Ljava/lang/Class;)Lorg/scijava/service/Service;', klass)
         getContext = J.make_method("getContext", "()Lorg/scijava/Context;")
         getVersion = J.make_method("getVersion", "()Ljava/lang/String;")
-        dispose = J.make_method("dispose", "()V")
+        dispose = make_invoke_method("dispose")
     return Context()
     
 
@@ -401,10 +401,8 @@ def get_command_service(context):
     class CommandService(object):
         def __init__(self):
             self.o = command_service
-        run = J.make_method(
-            "run", 
-            "(Limagej/command/CommandInfo;ZLjava/util/Map;)"
-            "Ljava/util/concurrent/Future;",
+        run = make_invoke_method(
+            "run", returns_value=True,
             doc = """Run the command associated with a ModuleInfo
             
             Runs the command with pre and post processing plugins.
@@ -517,25 +515,25 @@ def wrap_display(display):
             fn_post_process=
             lambda o:[wrap_data_view(v) 
                       for v in J.get_env().get_object_array_elements(o)])
-        addO = J.make_method("add", "(Ljava/lang/Object;)Z")
-        removeO = J.make_method("remove", "(Ljava/lang/Object;)Z")
-        clear = J.make_method("clear", "()V")
+        addO = make_invoke_method("add", returns_value=True)
+        removeO = make_invoke_method("remove", returns_value=True)
+        clear = make_invoke_method("clear", returns_value=True)
         get = J.make_method("get", "(I)Ljava/lang/Object;",
                             fn_post_process = wrap_data_view)
-        set = J.make_method("set", "(ILjava/lang/Object;)V")
-        addI = J.make_method("add", "(ILjava/lang/Object;)V")
-        removeI = J.make_method("remove", "(I)V")
+        set = make_invoke_method("set")
+        addI = make_invoke_method("add")
+        removeI = make_invoke_method("remove")
         #
         # Display methods
         #
         canDisplay = J.make_method(
             "canDisplay", "(Ljava/lang/Object;)Z",
             "Return true if display can display dataset")
-        display = J.make_method(
-            "display", "(Ljava/lang/Object;)V",
-            "Display the given object")
-        update = J.make_method("update", "()V",
-                               "Signal display change")
+        display = make_invoke_method(
+            "display", 
+            doc="Display the given object")
+        update = make_invoke_method("update",
+                                    doc="Signal display change")
         getName = J.make_method("getName", "()Ljava/lang/String;")
         setName = J.make_method("setName", "(Ljava/lang/String;)V")
         def close(self):
@@ -639,12 +637,8 @@ def get_overlay_service(context):
             "getOverlays",
             "(Limagej/data/display/ImageDisplay;)Ljava/util/List;",
             fn_post_process=J.get_collection_wrapper)
-        addOverlays = J.make_method(
-            "addOverlays", 
-            "(Limagej/data/display/ImageDisplay;Ljava/util/List;)V")
-        removeOverlay = J.make_method(
-            "removeOverlay",
-            "(Limagej/data/display/ImageDisplay;Limagej/data/overlay/Overlay;)V")
+        addOverlays = make_invoke_method("addOverlays")
+        removeOverlay = make_invoke_method("removeOverlay")
         getSelectionBounds = J.make_method(
             "getSelectionBounds",
             "(Limagej/data/display/ImageDisplay;)Limagej/util/RealRect;")
@@ -779,9 +773,9 @@ def wrap_data_view(view):
         isSelected = J.make_method("isSelected", "()Z")
         getPreferredWidth = J.make_method("getPreferredWidth", "()I")
         getPreferredHeight = J.make_method("getPreferredHeight", "()I")
-        update = J.make_method("update", "()V")
-        rebuild = J.make_method("rebuild", "()V")
-        dispose = J.make_method("dispose", "()V")
+        update = make_invoke_method("update")
+        rebuild = make_invoke_method("rebuild")
+        dispose = make_invoke_method("dispose")
     return DataView()
 
 def calculate_transpose(actual_axes, desired_axes=None):
@@ -1009,59 +1003,14 @@ def wrap_script_engine(o):
         LANGUAGE = J.get_static_field(klass, "LANGUAGE", "Ljava/lang/String;")
         LANGUAGE_VERSION = J.get_static_field(
             klass, "LANGUAGE_VERSION", "Ljava/lang/String;")
-        evalSSC = J.make_method(
-            "eval", 
-            "(Ljava/lang/String;Ljavax/scriptScriptContext;)Ljava/lang/Object;",
-            doc = """Evaluate a script within a context
             
-            script - the script to run
-            
-            script_context - The context describing the operational scope
-                             during the evaluation.""")
-        evalRSC = J.make_method(
+        evalS = make_invoke_method(
             "eval",
-            "(Ljava/io/Reader;Ljavax/scriptScriptContext;)Ljava/lang/Object;",
-            doc = """Evaluate a script within a context
-            
-            reader - read the script from this reader
-            
-            script_context - The context describing the operational scope
-                             during the evaluation.""")
-            
-        evalS = J.make_method(
-            "eval",
-            "(Ljava/lang/String;)Ljava/lang/Object;",
+            returns_value=True,
             doc = """Evaluate a script within the engine's default context
             
             script - script to evaluate
             """)
-        evalR = J.make_method(
-            "eval",
-            "(Ljava/io/Reader;)Ljava/lang/Object;",
-            doc = """Evaluate a script within the engine's default context
-            
-            reader - read the script from here
-            """)
-        evalSB = J.make_method(
-            "eval",
-            "(Ljava/lang/String;Ljavax/script/Bindings;)Ljava/lang/Object;",
-            doc = """Evaluate the script using the bindings as the ENGINE_SCOPE
-            
-            script - the script to be run
-            
-            bindings - bindings of values to variables which are combined with
-                       the non ENGINE_SCOPE bindings of the default context
-                       to provide an execution scope.""")
-        evalRB = J.make_method(
-            "eval",
-            "(Ljava/io/Reader;Ljavax/script/Bindings;)Ljava/lang/Object;",
-            doc = """Evaluate the script using the bindings as the ENGINE_SCOPE
-            
-            reader- read the script from here
-            
-            bindings - bindings of values to variables which are combined with
-                       the non ENGINE_SCOPE bindings of the default context
-                       to provide an execution scope.""")
         put = J.make_method(
             "put", "(Ljava/lang/String;Ljava/lang/Object;)V",
             doc = """Set the value for some script engine key
@@ -1122,30 +1071,8 @@ def get_ui_service(context):
     class UIService(object):
         def __init__(self):
             self.o = ui_service
-        def createUI(self):
-            '''Create the ImageJ UI'''
-            #
-            # This has to be done via a future in order
-            # for CP to run the Mac event loop.
-            #
-            r = J.run_script(
-                """new java.lang.Runnable() {
-                    run:function() {
-                        uiService.showUI();
-                    }
-                };
-                """, dict(uiService=self.o))
-            J.execute_runnable_in_main_thread(r, True)
-        def createUIS(self, arg):
-            '''Create the ImageJ UI with a string argument'''
-            r = J.run_script(
-                """new java.lang.Runnable() {
-                    run:function() {
-                        uiService.showUI(arg);
-                    }
-                };
-                """, dict(uiService=self.o, arg=arg))
-            J.execute_runnable_in_main_thread(r, True)
+        createUI = make_invoke_method(
+            "showUI", doc='''Create the ImageJ UI''')
         isVisible = J.make_method("isVisible", "()Z")
         getDefaultUI = J.make_method(
             "getDefaultUI", 
@@ -1172,13 +1099,58 @@ def wrap_user_interface(o):
     class UserInterface(object):
         def __init__(self):
             self.o = o
-        show = J.make_method("show", "()V")
+        show = J.make_invoke_method("show")
         isVisible = J.make_method("isVisible", "()Z")
         getApplicationFrame = J.make_method(
             "getApplicationFrame", "()Limagej/ui/ApplicationFrame;")
         
     return UserInterface()
 
+def make_invoke_method(method, returns_value=False, doc = None, 
+                       fn_post_process=None):
+    '''Make a method that will invoke on the UI thread
+    
+    method - the name of the method to call on self.o
+    
+    returns_value - True if the method returns a value.
+    '''
+    if fn_post_process is None:
+        fn_post_process = lambda x: x
+    if returns_value:
+        def fn(self, *args):
+            script = """
+            new java.util.concurrent.Callable() {
+                call: function() {
+                    return o.%s(%s);
+                }
+            };
+            """ % (method, ",".join(["arg%d" % i for i in range(len(args))]))
+            d = dict([("arg%d" % i, arg) for i, arg in enumerate(args)])
+            d["o"] = self.o
+            future = J.make_future_task(J.run_script(script, d))
+            J.execute_future_in_main_thread(future)
+            return fn_post_process(future.get())
+    else:
+        def fn(self, *args):
+            script = """
+            new java.lang.Runnable() {
+                run: function() {
+                    o.%s(%s);
+                }
+            };
+            """ % (method, ",".join(["arg%d" % i for i in range(len(args))]))
+            d = dict([("arg%d" % i, arg) for i, arg in enumerate(args)])
+            d["o"] = self.o
+            future = J.make_future_task(J.run_script(script, d))
+            J.execute_future_in_main_thread(future)
+            return future.get()
+    if doc is None:
+        doc = "Run the %s method in the UI thread" % method
+    fn.__doc__ = doc
+    fn.__name__ = method
+    return fn
+            
+    
 if __name__=="__main__":
     jar_dir = os.path.join(os.path.split(__file__)[0], "jars")
     classpath = os.pathsep.join([

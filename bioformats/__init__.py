@@ -135,8 +135,6 @@ def start_cellprofiler_jvm():
     args += [
         "-Djava.util.prefs.PreferencesFactory="
         "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
-    run_headless = (get_headless() and 
-                    not os.environ.has_key("CELLPROFILER_USE_XVFB"))
     run_headless = False
         
     logger.debug("JVM arguments: " + " ".join(args))
@@ -150,7 +148,7 @@ def start_cellprofiler_jvm():
     except:
         logger.warning("Bioformats version does not support directory cacheing")
 
-    if not get_headless():
+    if not run_headless:
         jutil.activate_awt()
 start_cellprofiler_jvm()
 from formatreader import load_using_bioformats

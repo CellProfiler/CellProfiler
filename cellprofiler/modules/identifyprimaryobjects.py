@@ -254,6 +254,7 @@ OFF_ASSIGN_MIDDLE_TO_FOREGROUND_V9 = 26
 OFF_THRESHOLDING_MEASUREMENT_V9    = 31
 OFF_ADAPTIVE_WINDOW_METHOD_V9      = 32
 OFF_ADAPTIVE_WINDOW_SIZE_V9        = 33
+OFF_FILL_HOLES_V10                 = 12
 
 '''The number of settings, exclusive of threshold settings in V10'''
 N_SETTINGS_V10 = 22
@@ -271,6 +272,13 @@ WA_NONE                         = "None"
 LIMIT_NONE = "Continue"
 LIMIT_TRUNCATE = "Truncate"
 LIMIT_ERASE = "Erase"
+
+'''Never fill holes'''
+FH_NEVER = "Never"
+FH_THRESHOLDING = "After both thresholding and declumping"
+FH_DECLUMP = "After declumping only"
+
+FH_ALL = (FH_NEVER, FH_THRESHOLDING, FH_DECLUMP)
 
 # Settings text which is referenced in various places in the help
 SIZE_RANGE_SETTING_TEXT = "Typical diameter of objects, in pixel units (Min,Max)"
@@ -573,9 +581,16 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             'Name the outline image',"PrimaryOutlines", doc="""
             %(NAMING_OUTLINES_HELP)s"""%globals())
         
-        self.fill_holes = cps.Binary(
-            'Fill holes in identified objects?', True, doc="""
-            Select <i>%(YES)s</i> to fill in background holes located within identified objects.
+        self.fill_holes = cps.Choice(
+            'Fill holes in identified objects?', 
+            FH_ALL, value = FH_THRESHOLDING,
+            doc="""
+            Select <i>%(FH_THRESHOLDING)s</i> to fill in background holes 
+            that are smaller than the maximum object size prior to declumping
+            and to fill in any holes after declumping.
+            Select <i>%(FH_DECLUMP)s to fill in background holes
+            located within identified objects after declumping. 
+            Select <i>%(FH_NEVER)s to leave holes within objects.
             <p>Please note that if a foreground object is located within a hole
             and this option is enabled, the object will be lost when the hole
             is filled in. </p>"""%globals())
@@ -803,6 +818,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                OFF_THRESHOLDING_MEASUREMENT_V9] + \
                 threshold_settings
             variable_revision_number = 10
+        if variable_revision_number == 10:
+            setting_values = list(setting_values)
+            if setting_values[OFF_FILL_HOLES_V10] == cps.NO:
+                setting_values[OFF_FILL_HOLES_V10] = FH_NEVER
+            elif setting_values[OFF_FILL_HOLES_V10] == cps.YES:
+                setting_values[OFF_FILL_HOLES_V10] = FH_THRESHOLDING
+                
         # upgrade threshold settings
         setting_values = setting_values[:N_SETTINGS_V10] + \
             self.upgrade_threshold_settings(setting_values[N_SETTINGS_V10:])
@@ -877,8 +899,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         #
         # Fill background holes inside foreground objects
         #
-        if self.fill_holes.value:
-            binary_image = fill_labeled_holes(binary_image)
+        def size_fn(size, is_foreground):
+            return size < self.size_range.max * self.size_range.max
+        
+        if self.fill_holes.value == FH_THRESHOLDING:
+            binary_image = fill_labeled_holes(binary_image, size_fn=size_fn)
 
         labeled_image,object_count = scipy.ndimage.label(binary_image,
                                                          np.ones((3,3),bool))
@@ -902,7 +927,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         #
         # Fill holes again after watershed
         #
-        if self.fill_holes:
+        if self.fill_holes != FH_NEVER:
             labeled_image = fill_labeled_holes(labeled_image)
             
         # Relabel the image
@@ -1151,7 +1176,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                            maxima_mask,
                                            image_resize_factor)
         elif self.unclump_method == UN_SHAPE:
-            if not self.fill_holes:
+            if self.fill_holes == FH_NEVER:
                 # For shape, even if the user doesn't want to fill holes,
                 # a point far away from the edge might be near a hole.
                 # So we fill just for this part.

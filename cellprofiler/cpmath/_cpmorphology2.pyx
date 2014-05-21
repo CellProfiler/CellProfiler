@@ -585,7 +585,7 @@ def fill_labeled_holes_loop(
         #
         to_do_count = 0
         for jj from 0 <= jj < n:
-            if p_is_not_hole[jj] != 0 and p_adjacent_non_hole[jj] != 0:
+            if p_is_not_hole[jj] == 0 and p_adjacent_non_hole[jj] != 0:
                 p_to_do[to_do_count] = jj
                 to_do_count += 1
         while to_do_count > 0:
@@ -593,7 +593,7 @@ def fill_labeled_holes_loop(
             to_do_count -= 1
             for jidx from 0 <= jidx < p_i_count[ii]:
                 jj = p_j[p_idx[ii] + jidx]
-                if p_adjacent_non_hole[jj] == 0:
+                if p_is_not_hole[jj] == 0 and p_adjacent_non_hole[jj] == 0:
                     p_adjacent_non_hole[jj] = p_adjacent_non_hole[ii]
                     p_to_do[to_do_count] = jj
                     to_do_count += 1

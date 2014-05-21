@@ -414,8 +414,10 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
+        x.size_range.min = 1
+        x.size_range.max = 2
         x.exclude_size.value = False
-        x.fill_holes.value = True
+        x.fill_holes.value = ID.FH_DECLUMP
         x.watershed_method.value = ID.WA_NONE
         x.threshold_scope.value = I.TS_GLOBAL
         x.threshold_method.value = T.TM_OTSU
@@ -977,7 +979,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertEqual(module.object_name.value,"Nuclei")
         self.assertEqual(module.image_name.value,"Do not use")
         self.assertTrue(module.exclude_size.value)
-        self.assertTrue(module.fill_holes.value)
+        self.assertEqual(module.fill_holes.value, ID.FH_THRESHOLDING)
         self.assertTrue(module.exclude_border_objects.value)
         self.assertTrue(module.automatic_smoothing.value)
         self.assertTrue(module.automatic_suppression.value)
@@ -1229,7 +1231,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(module.maxima_suppression_size, 7)
         self.assertFalse(module.should_save_outlines)
         self.assertEqual(module.save_outlines, "MyOutlines")
-        self.assertTrue(module.fill_holes)
+        self.assertEqual(module.fill_holes, ID.FH_THRESHOLDING)
         self.assertTrue(module.automatic_smoothing)
         self.assertTrue(module.automatic_suppression)
         self.assertEqual(module.manual_threshold, 0)
@@ -1265,7 +1267,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(module.maxima_suppression_size, 7)
         self.assertTrue(module.should_save_outlines)
         self.assertEqual(module.save_outlines, "MyOutlines")
-        self.assertFalse(module.fill_holes)
+        self.assertEqual(module.fill_holes, ID.FH_NEVER)
         self.assertFalse(module.automatic_smoothing)
         self.assertFalse(module.automatic_suppression)
         self.assertEqual(module.manual_threshold, 0)
@@ -1646,7 +1648,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertTrue(module.low_res_maxima)
         self.assertFalse(module.should_save_outlines)
         self.assertEqual(module.save_outlines, "CellOutlines")
-        self.assertTrue(module.fill_holes)
+        self.assertEqual(module.fill_holes, ID.FH_THRESHOLDING)
         self.assertTrue(module.wants_automatic_log_threshold)
         self.assertEqual(module.manual_log_threshold, .2)
         self.assertTrue(module.wants_automatic_log_diameter)
@@ -1685,7 +1687,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         self.assertFalse(module.automatic_suppression)
         self.assertFalse(module.low_res_maxima)
         self.assertTrue(module.should_save_outlines)
-        self.assertFalse(module.fill_holes)
+        self.assertEqual(module.fill_holes, ID.FH_NEVER)
         self.assertFalse(module.wants_automatic_log_threshold)
         self.assertFalse(module.wants_automatic_log_diameter)
         self.assertEqual(module.limit_choice, ID.LIMIT_ERASE)

@@ -35,6 +35,9 @@ if '--noguitests' in sys.argv:
     sys.modules['wx.html'] = MockModule()
     import matplotlib
     matplotlib.use('agg')
+    with_guitests = False
+else:
+    with_guitests = True
 
 def mock_start_vm(*args, **kwargs):
     raise SkipTest
@@ -43,7 +46,12 @@ if '--nojavatests' in sys.argv:
     sys.argv.remove('--nojavatests')
     import cellprofiler.utilities.jutil as jutil
     jutil.start_vm = mock_start_vm
-    
+elif not with_guitests:
+    import cellprofiler.utilities.jutil as jutil
+    jutil.activate_awt = mock_start_vm
+    jutil.execute_future_in_main_thread = mock_start_vm
+    jutil.execute_runnable_in_main_thread = mock_start_vm
+
 addplugins = []
 if '--with-kill-vm' in sys.argv:
     from killjavabridge import KillVMPlugin

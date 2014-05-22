@@ -63,17 +63,25 @@ class KillVMPlugin(Plugin):
             #
             # Start PySimpleApp for unit tests
             #
-            import wx
-            self.app = wx.GetApp()
-            if self.app is None:
-                class KVMApp(wx.PySimpleApp):
-                    def __init__(self):
-                        super(self.__class__, self).__init__(False)
+            import unittest
+            try:
+                 import wx
+                 wx.GetApp()
+                 has_wx = True
+            except unittest.SkipTest:
+                 has_wx = False
+            if has_wx:
+                self.app = wx.GetApp()
+                if self.app is None:
+                    class KVMApp(wx.PySimpleApp):
+                        def __init__(self):
+                            super(self.__class__, self).__init__(False)
                         
-                    def OnExit(self):
-                        from cellprofiler.utilities.jutil import deactivate_awt
-                        deactivate_awt()
-                self.app = KVMApp()
+                        def OnExit(self):
+                            from cellprofiler.utilities.jutil \
+                                import deactivate_awt
+                            deactivate_awt()
+                    self.app = KVMApp()
             #
             # At least one H5PY build has had debug mode on
             #

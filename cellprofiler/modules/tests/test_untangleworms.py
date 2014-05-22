@@ -275,14 +275,12 @@ PARAMS = ('eJyVVnVQFI62lu5ucWFhkUW6EVhAWroFkV1AWkpqaRBYkBAWkE7pFCRlJRbp'
 
 class TestUntangleWorms(unittest.TestCase):
     def setUp(self):
-        self.fd, self.filename = tempfile.mkstemp(".mat")
-        self.closed = False
-        
+        self.filename = tempfile.mktemp(".mat")
+    
     def tearDown(self):
-        if not self.closed:
-            os.close(self.fd)
         gc.collect()
-        os.remove(self.filename)
+        if os.path.exists(self.filename):
+            os.remove(self.filename)
         
     def test_01_01_load_v1(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
@@ -594,12 +592,16 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                                        U.C_VERY_HIGH, U.C_CUSTOM)):
             self.assertEqual(module.complexity, complexity)
     
-    def make_workspace(self, image, data=None):
+    def make_workspace(self, image, data=None, write_mode="wb"):
         '''Make a workspace to run the given image and params file
         
         image - a binary image
         data - the binary of the params file to run
         '''
+        if data is not None:
+            with open(self.filename, "wb") as fd:
+                fd.write(data)
+            
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, (cpp.RunExceptionEvent, cpp.LoadExceptionEvent)))
@@ -614,12 +616,6 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, img)
-        if data is not None:
-            fd = os.fdopen(self.fd, "wb")
-            fd.write(data)
-            fd.flush()
-            fd.close()
-            self.closed = True
         module.training_set_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         (module.training_set_directory.custom_path,
          module.training_set_file_name.value) = os.path.split(self.filename)
@@ -2107,7 +2103,8 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
   </inv-angles-covariance-matrix>
 </training-data>
 """
-        workspace, module = self.make_workspace(np.zeros((10,10), bool), data)
+        workspace, module = self.make_workspace(
+            np.zeros((10,10), bool), data, write_mode="w")
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.prepare_group(workspace, None, None)
         params = module.read_params()

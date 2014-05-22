@@ -30,6 +30,16 @@ import imagej.imagej2 as ij2
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 
+from cellprofiler.modules import instantiate_module
+
+try:
+   instantiate_module("RunImageJ")
+   skip_tests = False
+except:
+   skip_tests = True
+
+
+@unittest.skipIf(skip_tests, "RunImageJ did not load (headless?)")
 class TestRunImageJ(unittest.TestCase):
     
     def test_01_01_load_v1(self):

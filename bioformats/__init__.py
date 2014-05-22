@@ -135,7 +135,7 @@ def start_cellprofiler_jvm():
     args += [
         "-Djava.util.prefs.PreferencesFactory="
         "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
-    run_headless = False
+    run_headless = get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB")
         
     logger.debug("JVM arguments: " + " ".join(args))
     jutil.start_vm(args, run_headless)

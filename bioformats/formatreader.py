@@ -507,7 +507,10 @@ class ImageReader(object):
         self.using_temp_file = False
         if url is not None and url.lower().startswith(file_scheme):
             utf8_url = urllib.url2pathname(url[len(file_scheme):])
-            path = unicode(utf8_url, 'utf-8')
+            if isinstance(utf8_url, unicode):
+                path = utf8_url
+            else:
+                path = unicode(utf8_url, 'utf-8')
         self.path = path
         if path is None:
             if url.lower().startswith("omero:"):

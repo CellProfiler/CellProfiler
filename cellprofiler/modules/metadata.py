@@ -638,7 +638,11 @@ class Metadata(cpm.CPModule):
                 if group.can_remove:
                     result += [group.remover]
             result += [self.add_extraction_method_button]
-            if len(self.get_dt_metadata_keys()) > 0:
+            try:
+                has_keys = len(self.get_dt_metadata_keys()) > 0
+            except:
+                has_keys = False
+            if has_keys:
                 result += [self.dtc_divider, self.data_type_choice]
                 if self.data_type_choice == DTC_CHOOSE:
                     result.append(self.data_types)

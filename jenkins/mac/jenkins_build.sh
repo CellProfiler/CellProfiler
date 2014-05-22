@@ -57,7 +57,7 @@ svn --trust-server-cert --non-interactive co https://svn.broadinstitute.org/Cell
 export CP_EXAMPLEIMAGES=$(pwd)/ExampleImages
 export CP_TESTIMAGES=$(pwd)/TestImages
 set +e
-arch -i386 python cpnose.py --with-kill-vm --noguitests --with-xunit
+arch -i386 python cpnose.py --with-kill-vm --noguitests --with-xunit -m \(\?\:\^\)test_\(\?\!example\).\*
 set -e
 arch -i386 python setup.py py2app
 

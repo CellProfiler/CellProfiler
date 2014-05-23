@@ -25,7 +25,7 @@
 # BUILD_ID=2014-03-25_15-00-19
 # HOME=/Users/Shared/Jenkins
 # SHLVL=1
-GIT_BRANCH=origin/master
+GIT_BRANCH=origin/release_2.1.1
 # JENKINS_SERVER_COOKIE=fa678bfb9d635ec8
 # EXECUTOR_NUMBER=0
 # GIT_URL=https://github.com/CellProfiler/CellProfiler.git

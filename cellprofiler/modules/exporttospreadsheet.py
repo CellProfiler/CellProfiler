@@ -139,6 +139,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.directory = cps.DirectoryPath(
             "Output file location",
+            value = DEFAULT_OUTPUT_FOLDER_NAME,
             dir_choices = [
                 ABSOLUTE_FOLDER_NAME, 
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,

@@ -971,8 +971,18 @@ the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=18">CP
 
 RUN_MULTIPLE_PIPELINES_HELP = """
 <br>The <b>Run multiple pipelines</b> dialog lets you select several pipelines
-which will be run consecutively. You can invoke <b>Run multiple pipelines</b>
-by selecting it from the file menu. The dialog has three parts to it:
+which will be run consecutively. Please note the following:
+<ul>
+<li>CellProfiler 2.1 project files are not currently supported.</li>
+<li>Pipelines from CellProfiler 2.0 and lower are supported.</li>
+<li>If you want to use a pipeline made using CellProfiler 2.1, then you
+need to include the project file list with the pipeline, by selecting <i>Export &gt;
+Pipeline...</i>, and under the "Save as type" dropdown, select "CellProfiler
+pipeline and file list".</li>
+</ul>
+
+<p>You can invoke <b>Run multiple pipelines</b> by selecting it from the file menu. 
+The dialog has three parts to it:
 <br><ul><li><i>File chooser</i>: The file chooser lets you select the pipeline
 files to be run. The <i>Select all</i> and <i>Deselect all</i> buttons to
 the right will select or deselect all pipeline files in the list. The

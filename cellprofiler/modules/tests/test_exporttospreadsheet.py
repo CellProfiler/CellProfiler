@@ -846,6 +846,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         path = os.path.join(self.output_dir, "%s.csv" % cpmeas.EXPERIMENT)
         module = E.ExportToSpreadsheet()
         module.module_num = 1
+        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.wants_everything.value = False
         module.wants_prefix.value = False

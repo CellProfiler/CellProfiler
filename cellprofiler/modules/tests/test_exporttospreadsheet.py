@@ -1776,6 +1776,56 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
                 
+    def test_05_04_image_number(self):
+        # Regression test of issue #1139
+        # Always output the ImageNumber column in Image.csv
+        
+        image_path = os.path.join(self.output_dir, "my_image_file.csv")
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.wants_everything.value = False
+        module.wants_prefix.value = False
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = image_path
+        module.object_groups[0].wants_automatic_file_name.value = False
+        module.wants_aggregate_means.value = False
+        module.wants_aggregate_medians.value = False
+        module.wants_aggregate_std.value = False
+        module.pick_columns.value = True
+        columns = [module.columns.make_measurement_choice(ob, feature)
+                   for ob, feature in (
+                       (cpmeas.IMAGE, "first_measurement"),
+                   )]
+        module.columns.value = module.columns.get_value_string(columns)
+        
+        m = cpmeas.Measurements()
+        np.random.seed(0)
+        data = np.random.uniform(size=(6,))
+        m.add_image_measurement("first_measurement", np.sum(data))
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        try:
+            fd = open(image_path,"r")
+            reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
+            self.assertEqual(len(header),2)
+            expected_image_columns = (
+                "ImageNumber", "first_measurement")
+            d = {}
+            for index, caption in enumerate(header):
+                self.assertTrue(caption in expected_image_columns)
+                d[caption]=index
+        finally:
+            fd.close()
+                
     def test_06_01_image_index_columns(self):
         '''Test presence of index column'''
         path = os.path.join(self.output_dir, "my_file.csv")

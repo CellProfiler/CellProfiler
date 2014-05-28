@@ -948,6 +948,8 @@ Do you want to save it anyway?""" %
                 for x in self.columns.selections
                 if self.columns.get_measurement_object(x) == object_name]
             if object_name == cpmeas.IMAGE:
+                if cpmeas.IMAGE_NUMBER not in columns:
+                    columns.insert(0, cpmeas.IMAGE_NUMBER)
                 for agg, wants_it in (
                     (cpmeas.AGG_MEAN, self.wants_aggregate_means),
                     (cpmeas.AGG_MEDIAN, self.wants_aggregate_medians),

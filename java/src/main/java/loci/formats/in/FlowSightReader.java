@@ -92,6 +92,7 @@ public class FlowSightReader extends FormatReader {
 	
 	public FlowSightReader() {
 		super("FlowSight format", "cif");
+		saveOriginalMetadata = false;
 	}
 
 	/* (non-Javadoc)

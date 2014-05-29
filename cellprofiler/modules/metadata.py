@@ -853,8 +853,10 @@ class Metadata(cpm.CPModule):
         if setting == self.data_types or setting == self.data_type_choice:
             # The data types affect the joiner's matching
             setting_idx = len(self.visible_settings())
-        else:
+        elif setting in visible_settings:
             setting_idx = visible_settings.index(setting)
+        else:
+            setting_idx = len(self.visible_settings())
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 idx = max(*map(visible_settings.index,

@@ -1036,7 +1036,8 @@ class Measurements(object):
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement
         """
-        return self.get_measurement(EXPERIMENT, feature_name) or 'N/A'
+        result = self.get_measurement(EXPERIMENT, feature_name)
+        return 'N/A' if result is None else result
     
     def apply_metadata(self, pattern, image_set_number=None):
         """Apply metadata from the current measurements to a pattern

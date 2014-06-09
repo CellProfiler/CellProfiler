@@ -87,10 +87,19 @@ if has_ilastik:
     except ImportError, ilastikImport:
         sys.stdout = old_stdout
         logger.warning("""ilastik import: failed to import the ilastik. Please follow the instructions on 
-                          "http://www.ilastik.org" to install ilastik""", exc_info=True)
+    "http://www.ilastik.org" to install ilastik""", exc_info=True)
         has_ilastik = False
 
+CLASSIFIERS_KEY = "IlastikClassifiers"
+FEATURE_ITEMS_KEY = "IlastikFeatureItems"
+
 SI_PROBABILITY_MAP_COUNT = 3
+
+#
+# Classifiers by file. Key is file name, value is a tuple of stat modification
+# time and classifier
+#
+classifier_dict = {}
 
 class IlastikPixelClassification(cpm.CPModule):
     module_name = 'ilastik_pixel_classification'
@@ -117,13 +126,13 @@ class IlastikPixelClassification(cpm.CPModule):
             more images.""")
         
         self.h5_directory = cps.DirectoryPath(
-            "Ilastik project file location",
+            "Classifier file location",
             dir_choices = [
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
                 DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME], 
             allow_metadata = False,doc ="""
-                Select the folder containing the ilastik project file to be loaded. 
+                Select the folder containing the classifier file to be loaded. 
             %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
         
         def get_directory_fn():
@@ -135,7 +144,7 @@ class IlastikPixelClassification(cpm.CPModule):
             self.h5_directory.join_parts(dir_choice, custom_path)
                 
         self.classifier_file_name = cps.FilenameText(
-            "Ilastik project file name",
+            "Classfier file name",
             cps.NONE,
             doc="""This is the name of the ilastik project file.""",
             get_directory_fn = get_directory_fn,

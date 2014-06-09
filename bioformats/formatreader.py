@@ -239,9 +239,8 @@ def get_class_list():
             
         def __init__(self):
             env = jutil.get_env()
-            class_name = 'loci/formats/ImageReader'
-            klass = env.find_class(class_name)
-            base_klass = env.find_class('loci/formats/IFormatReader')
+            klass = jutil.class_for_name("loci.formats.ImageReader")
+            base_klass = jutil.class_for_name("loci.formats.IFormatReader")
             self.o = jutil.make_instance("loci/formats/ClassList", 
                                          "(Ljava/lang/String;"
                                          "Ljava/lang/Class;" # base
@@ -258,6 +257,14 @@ def get_class_list():
                 #
                 'loci.formats.in.MRCReader'
                 ]
+            flow_sight_cls = jutil.class_for_name(
+                "loci.formats.in.FlowSightReader")
+            for klass in env.get_object_array_elements(self.get_classes()):
+                if jutil.call(klass, "equals", "(Ljava/lang/Object;)Z",
+                              flow_sight_cls):
+                    break
+            else:
+                self.add_class(flow_sight_cls)
             for problem_class in problem_classes:
                 # Move to back
                 klass = jutil.class_for_name(problem_class)

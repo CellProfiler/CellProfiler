@@ -139,6 +139,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.directory = cps.DirectoryPath(
             "Output file location",
+            value = DEFAULT_OUTPUT_FOLDER_NAME,
             dir_choices = [
                 ABSOLUTE_FOLDER_NAME, 
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
@@ -653,8 +654,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                 # No metadata substitution allowed for experiment file
                 return self.make_full_filename(filename)
             return self.make_full_filename(
-                filename, workspace, 
-                workspace.measurements.image_set_number)
+                filename, workspace, image_set_number)
         if settings_group.wants_automatic_file_name:
             filename = "%s.%s" % (settings_group.name.value, self.extension())
         else:
@@ -947,6 +947,8 @@ Do you want to save it anyway?""" %
                 for x in self.columns.selections
                 if self.columns.get_measurement_object(x) == object_name]
             if object_name == cpmeas.IMAGE:
+                if cpmeas.IMAGE_NUMBER not in columns:
+                    columns.insert(0, cpmeas.IMAGE_NUMBER)
                 for agg, wants_it in (
                     (cpmeas.AGG_MEAN, self.wants_aggregate_means),
                     (cpmeas.AGG_MEDIAN, self.wants_aggregate_medians),

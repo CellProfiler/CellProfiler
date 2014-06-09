@@ -331,7 +331,7 @@ class GrayToColor(cpm.CPModule):
         for x, y in subplot_indices[len(input_image_names):]:
             figure.subplot(x,y).set_visible(False)
         figure.subplot_imshow(color_subplot[0], color_subplot[1],
-                                workspace.display_data.rgb_pixel_data,
+                                workspace.display_data.rgb_pixel_data[:, :, :3],
                                 title=self.rgb_image_name.value,
                                 sharexy = figure.subplot(0,0))
     

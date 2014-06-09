@@ -282,7 +282,9 @@ class UntangleWorms(cpm.CPModule):
             with the overlapping sections removed."""%globals())
         
         self.training_set_directory = cps.DirectoryPath(
-            "Training set file location", support_urls = True,
+            "Training set file location", 
+            value = DEFAULT_OUTPUT_FOLDER_NAME,
+            support_urls = True,
             allow_metadata = False,doc = """
             Select the folder containing the training set to be loaded.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s

@@ -435,7 +435,9 @@ class ExportToDatabase(cpm.CPModule):
             Enter the prefix to be used to name the SQL file."""%globals())
         
         self.directory = cps.DirectoryPath(
-            "Output file location", dir_choices = [
+            "Output file location", 
+            value = DEFAULT_OUTPUT_FOLDER_NAME,
+            dir_choices = [
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
                 DEFAULT_INPUT_SUBFOLDER_NAME], doc="""

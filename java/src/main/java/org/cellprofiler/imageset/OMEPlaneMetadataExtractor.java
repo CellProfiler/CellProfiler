@@ -89,6 +89,10 @@ public class OMEPlaneMetadataExtractor implements MetadataExtractor<ImagePlane> 
 					map.put(MD_COLOR_FORMAT, MD_RGB);
 				} else {
 					map.put(MD_COLOR_FORMAT, MD_MONOCHROME);
+					Channel channel = pixels.getChannel(source.theC());
+					if (channel != null) {
+						putIfNotNull(map, MD_CHANNEL_NAME, channel.getName());
+					}
 				}
 			} else {
 				/*

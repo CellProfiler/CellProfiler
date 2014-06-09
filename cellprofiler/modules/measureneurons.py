@@ -133,6 +133,7 @@ class MeasureNeurons(cpm.CPModule):
         
         self.directory = cps.DirectoryPath(
             "File output directory", 
+            value = cps.DEFAULT_OUTPUT_FOLDER_NAME,
             dir_choices = [
                 cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                 cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,

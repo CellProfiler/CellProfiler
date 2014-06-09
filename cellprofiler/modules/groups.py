@@ -469,6 +469,9 @@ class Groups(cpm.CPModule):
         if not self.wants_groups:
             return True
         
+        if len(workspace.measurements.get_image_numbers()) == 0:
+            return False
+        
         result = self.get_groupings(workspace)
         if result is None:
             return False

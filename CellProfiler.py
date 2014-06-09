@@ -274,13 +274,17 @@ def parse_args(args):
     '''Parse the CellProfiler command-line arguments'''
     import optparse
     usage = """usage: %prog [options] [<output-file>])
-         where <output-file> is the optional filename for the output file of measurements
-               when running headless"""
+         where <output-file> is the optional filename for the output file of 
+               measurements when running headless. 
+         The flags -p, -r and -c are required for a headless run."""
     
     parser = optparse.OptionParser(usage=usage)
     parser.add_option("-p", "--pipeline", "--project",
                       dest="pipeline_filename",
-                      help="Load this pipeline file or project on startup",
+                      help=('Load this pipeline file or project on startup. '
+                            'If specifying a pipeline file rather than a '
+                            'project, the -i flag is also needed unless the '
+                            'pipeline is saved with the file list.'),
                       default=None)
     parser.add_option("-n", "--new-project",
                       dest="new_project",

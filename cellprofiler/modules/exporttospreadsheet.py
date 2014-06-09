@@ -654,8 +654,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                 # No metadata substitution allowed for experiment file
                 return self.make_full_filename(filename)
             return self.make_full_filename(
-                filename, workspace, 
-                workspace.measurements.image_set_number)
+                filename, workspace, image_set_number)
         if settings_group.wants_automatic_file_name:
             filename = "%s.%s" % (settings_group.name.value, self.extension())
         else:

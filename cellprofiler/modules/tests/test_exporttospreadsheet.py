@@ -1265,7 +1265,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
         
-    def test_04_01_object_with_metadata(self):
+    def test_04_01_01_object_with_metadata(self):
         '''Test writing objects with 2 pairs of 2 image sets w same metadata'''
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
@@ -1304,6 +1304,63 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                         ("bar.csv",(1,2))):
             path = os.path.join(self.output_dir, file_name)
             fd = open(path,"r")
+            try:
+                reader = csv.reader(fd, delimiter=module.delimiter_char)
+                header = reader.next()
+                self.assertEqual(len(header),3)
+                self.assertEqual(header[0],"ImageNumber")
+                self.assertEqual(header[1],"ObjectNumber")
+                self.assertEqual(header[2],"my_measurement")
+                for value_index in value_indexes:
+                    row = reader.next()
+                    self.assertEqual(len(row),3)
+                    self.assertEqual(int(row[0]), value_index+1)
+                    self.assertEqual(int(row[1]), 1)
+                    self.assertAlmostEqual(float(row[2]),
+                                           mvalues[value_index],4)
+                self.assertRaises(StopIteration,reader.next)
+            finally:
+                fd.close()
+        
+    def test_04_01_02_object_with_path_metadata(self):
+        #
+        # Regression test of issue #1142
+        #
+        # +++backslash+++ here because Windows and join don't do well
+        # if you have the raw backslash
+        path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
+        path = path.replace("\\","\\\\")
+        path = path.replace("+++backslash+++","\\")
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.wants_everything.value = True
+        module.wants_prefix.value = False
+        module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+        module.directory.custom_path = path
+        m = cpmeas.Measurements()
+        np.random.seed(0)
+        mvalues = np.random.uniform(size=(4,))
+        image_set_list = cpi.ImageSetList()
+        for index,measurement,metadata in zip(range(4),mvalues,('foo','bar','bar','foo')):
+            image_set = image_set_list.get_image_set(index)
+            m.add_measurement("my_object", "my_measurement", np.array([measurement]))
+            m.add_image_measurement("Metadata_tag", metadata)
+            m.add_image_measurement("Count_my_object", 1)
+            if index < 3:
+                m.next_image_set()
+        object_set = cpo.ObjectSet()
+        object_set.add_objects(cpo.Objects(), "my_objects")
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        for dir_name,value_indexes in (("foo",(0,3)),
+                                        ("bar",(1,2))):
+            path = os.path.join(self.output_dir, dir_name, "my_object.csv")
+            fd = open(path, "r")
             try:
                 reader = csv.reader(fd, delimiter=module.delimiter_char)
                 header = reader.next()

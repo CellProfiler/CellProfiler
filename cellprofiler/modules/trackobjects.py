@@ -66,7 +66,7 @@ can be ignored or filtered out.</li>
 but have no identifiable child in the current frame.</li>
 <li><i>NewObjectCount:</i> Number of objects that appear in the current frame but
 have no identifiable parent in the previous frame. </li>
-<li><i>DaughterObjectCount:</i> Number of objects in the current frame that 
+<li><i>SplitObjectCount:</i> Number of objects in the current frame that 
 resulted from a split from a parent object in the previous frame.</li>
 <li><i>MergedObjectCount:</i> Number of objects in the current frame that 
 resulted from the merging of child objects in the previous frame.</li>
@@ -163,9 +163,9 @@ F_NEW_OBJECT_COUNT = "NewObjectCount"
 '''# of objects in the previous frame without parents in the new frame'''
 F_LOST_OBJECT_COUNT = "LostObjectCount"
 '''# of parents that split into more than one child'''
-F_SPLIT_COUNT = "SplitCount"
+F_SPLIT_COUNT = "SplitObjectCount"
 '''# of children that are merged from more than one parent'''
-F_MERGE_COUNT = "MergeCount"
+F_MERGE_COUNT = "MergedObjectCount"
 '''Object area measurement for LAP method
 
 The final part of the LAP method needs the object area measurement

@@ -7,4 +7,4 @@ The [developer wiki](https://github.com/CellProfiler/CellProfiler/wiki) covers t
 
 ## How to file new issues
 
-If you have a bug or other issue to report, please read the wiki page on [how to file new issues](https://github.com/CellProfiler/CellProfiler/wiki/How-to-file-new-issues) to learn the best way to report it.
+If you have a bug or other issue to report, please read the wiki page on [how to file new issues](https://github.com/CellProfiler/CellProfiler/wiki/How-to-file-new-issues) to learn the best way to report it. You can also search the [forum](http://cellprofiler.org/forum/) which may have a report or work-around for the issue.

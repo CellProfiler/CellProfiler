@@ -20,7 +20,7 @@ import re
 import cellprofiler.utilities.jutil as jutil
 import urllib
 from cellprofiler.preferences import \
-     get_headless, get_ij_plugin_directory, get_jvm_heap_mb
+     get_headless, get_awt_headless, get_ij_plugin_directory, get_jvm_heap_mb
 import sys
 from external_dependencies import get_cellprofiler_jars
 
@@ -135,7 +135,7 @@ def start_cellprofiler_jvm():
     args += [
         "-Djava.util.prefs.PreferencesFactory="
         "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
-    run_headless = get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB")
+    run_headless = get_awt_headless()
         
     logger.debug("JVM arguments: " + " ".join(args))
     jutil.start_vm(args, run_headless)

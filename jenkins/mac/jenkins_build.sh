@@ -54,8 +54,8 @@ arch -i386 python external_dependencies.py -o
 arch -i386 python CellProfiler.py --build-and-exit --do-not-fetch
 svn --trust-server-cert --non-interactive co https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/
 svn --trust-server-cert --non-interactive co https://svn.broadinstitute.org/CellProfiler/trunk/TestImages/
-export CP_EXAMPLEIMAGES=$(pwd)/ExampleImages
-export CP_TESTIMAGES=$(pwd)/TestImages
+export CP_EXAMPLEIMAGES=/Users/build/ExampleImages
+export CP_TESTIMAGES=/Users/build/TestImages
 set +e
 arch -i386 python cpnose.py --with-kill-vm --noguitests --with-xunit -m \(\?\:\^\)test_\(\?\!example\).\*
 set -e

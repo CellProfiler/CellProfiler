@@ -3068,15 +3068,17 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         for i in range(0,len(object_rows), 25):
                             my_rows = object_rows[i:min(i+25, len(object_rows))]
                             self.cursor.executemany(stmt, my_rows)
-                        if self.show_window:
+                        if self.show_window and len(object_rows) > 0:
                             disp_columns.append((table_name,self.truncate_string_for_display(stmt%tuple(my_rows[0]))))                            
                     else:
                         for row in object_rows:
                             row = [ 'NULL' if x is None else x for x in row]
                             row_stmt = stmt % tuple(row)
                             execute(self.cursor, row_stmt, return_result=False)
-                        if self.show_window:
-                            disp_columns.append((table_name,self.truncate_string_for_display(row_stmt)))
+                        if self.show_window and len(object_rows) > 0:
+                            disp_columns.append(
+                                (table_name,
+                                 self.truncate_string_for_display(row_stmt)))
             
             image_table = self.get_table_name(cpmeas.IMAGE)
             replacement = '%s' if self.db_type == DB_MYSQL else "?"

@@ -52,8 +52,8 @@ version="${short_branch}-${hash}"
 rm -rf build dist imagej/jars
 arch -i386 python external_dependencies.py -o
 arch -i386 python CellProfiler.py --build-and-exit --do-not-fetch
-svn --trust-server-cert --non-interactive co https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/
-svn --trust-server-cert --non-interactive co https://svn.broadinstitute.org/CellProfiler/trunk/TestImages/
+#svn --trust-server-cert --non-interactive co https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/
+#svn --trust-server-cert --non-interactive co https://svn.broadinstitute.org/CellProfiler/trunk/TestImages/
 export CP_EXAMPLEIMAGES=/Users/build/ExampleImages
 export CP_TESTIMAGES=/Users/build/TestImages
 set +e

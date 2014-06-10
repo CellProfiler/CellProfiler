@@ -1370,6 +1370,8 @@ class CPFigureFrame(wx.Frame):
                 continue
             loffset = 0
             ltotal = sum([np.max(labels) for labels in cplabel[CPLD_LABELS]])
+            if ltotal == 0:
+                continue
             for labels in cplabel[CPLD_LABELS]:
                 if cplabel[CPLD_MODE] == CPLDM_OUTLINES:
                     oc = np.array(cplabel[CPLD_OUTLINE_COLOR], float)[:3]/255

@@ -1222,7 +1222,7 @@ class Pipeline(object):
             needs_close = True
 
         # Don't write image plane details if we don't have any
-        if len(self.__image_plane_details) == 0:
+        if len(self.__file_list) == 0:
             save_image_plane_details = False
 
         fd.write("%s\n"%COOKIE)

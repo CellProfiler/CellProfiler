@@ -84,6 +84,29 @@ def set_headless():
 def get_headless():
     return __is_headless
 
+__awt_headless = None
+def set_awt_headless(value):
+    '''Tell the Javabridge to start Java with AWT headless or not
+    
+    value - True to always start Java headless, regardless of headless
+            setting or other factors. False to always start Java with
+            AWT enabled, despite other factors. None to use the
+            default logic.
+            
+    If this is not called, Java is started with AWT headless if
+    we are headless and the environment variable, CELLPROFILER_USE_XVFB,
+    is not present.
+    '''
+    global __awt_headless
+    __awt_headless = value
+    
+def get_awt_headless():
+    '''Return True if Java is to be started with AWT headless, False to use AWT'''
+    global __awt_headless
+    if __awt_headless is None:
+        return get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB")
+    return __awt_headless
+
 def get_config():
     global __is_headless,__headless_config
     if __is_headless:

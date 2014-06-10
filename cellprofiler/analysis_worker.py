@@ -39,11 +39,13 @@ AW_LOG_LEVEL = "AW_LOG_LEVEL"
 work_announce_address = None
 def aw_parse_args():
     '''Parse the application arguments into setup parameters'''
-    from cellprofiler.preferences import set_headless, set_plugin_directory
-    from cellprofiler.preferences import set_ij_plugin_directory
+    from cellprofiler.preferences import \
+         set_headless, set_awt_headless, \
+         set_plugin_directory, set_ij_plugin_directory
     import optparse
     global work_announce_address
     set_headless()
+    set_awt_headless(False)
     parser = optparse.OptionParser()
     parser.add_option("--work-announce",
                       dest="work_announce_address",

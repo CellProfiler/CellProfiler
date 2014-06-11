@@ -53,6 +53,8 @@ FT_FILE = "FILE"
 FT_COLOR = "COLOR"
 '''Field type = imagej.data.table.TableDisplay'''
 FT_TABLE = "TABLE"
+'''Field type = plugin'''
+FT_PLUGIN = "PLUGIN"
 
 field_mapping = {
     'java.io.File': FT_FILE,
@@ -79,7 +81,8 @@ def field_class_mapping():
         (J.class_for_name('imagej.data.display.ImageDisplay'), FT_IMAGE),
         (J.class_for_name('imagej.data.Dataset'), FT_IMAGE),
         (J.class_for_name('imagej.data.display.DatasetView'), FT_IMAGE),
-        (J.class_for_name('imagej.data.table.TableDisplay'), FT_TABLE)
+        (J.class_for_name('imagej.data.table.TableDisplay'), FT_TABLE),
+        (J.class_for_name('org.scijava.plugin.SciJavaPlugin'), FT_PLUGIN)
     )
 
 def run_imagej(*args):
@@ -354,6 +357,7 @@ def wrap_module_item(instance):
         loadValue = J.make_method("loadValue", "()Ljava/lang/Object;")
         isInput = J.make_method("isInput", "()Z")
         isOutput = J.make_method("isOutput", "()Z")
+        isRequired = J.make_method("isRequired", "()Z")
     return ModuleItem()
     
 def wrap_module(module):
@@ -427,6 +431,20 @@ def get_command_service(context):
             fn_post_process=wrap_module_info)
         
     return CommandService()
+
+def get_object_service(context):
+    '''Get the object service for a given context'''
+    o = context.getService('org.scijava.object.ObjectService')
+    class ObjectService(object):
+        def __init__(self):
+            self.o = o
+        
+        getObjects = J.make_method(
+            "getObjects", "(Ljava/lang/Class;)Ljava/util/List;",
+            doc= """Get all objects of the given class""",
+            fn_post_process=J.get_collection_wrapper)
+        
+    return ObjectService()
 
 def get_display_service(context):
     '''Get the display service for a given context

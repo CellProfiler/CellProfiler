@@ -2,6 +2,8 @@
 *~
 *.pyc
 *.pyd
+*.pdb
+*.log
 *.so
 *.dll
 *.properties

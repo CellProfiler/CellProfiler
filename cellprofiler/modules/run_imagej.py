@@ -407,7 +407,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     choices = module_item.getChoices()
                     value = J.to_string(default)
                     if choices is not None:
-                        choices = J.get_collection_wrapper(choices)
+                        choices = J.get_collection_wrapper(
+                            choices, J.to_string)
                         setting = cps.Choice(
                             label, choices, value, doc = description)
                     else:
@@ -426,6 +427,17 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 elif field_type == ij2.FT_FILE:
                     setting = cps.FilenameText(
                         label, None, doc = description)
+                elif field_type == ij2.FT_PLUGIN:
+                    klass = J.call(module_item.o, "getType", 
+                                   "()Ljava/lang/Class;")
+                    choices = [
+                        J.to_string(x) for x in 
+                        ij2.get_object_service(get_context()).getObjects(klass)]
+                    if len(choices) < 2:
+                        continue
+                    value = J.to_string(default)
+                    setting = cps.Choice(label, choices, value,
+                                         doc = description)
                 else:
                     continue
                 result.append((setting, module_item))
@@ -786,6 +798,26 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 jfile = J.make_instance(
                     "java/io/File", "(Ljava/lang/String;)V", setting.value)
                 input_dictionary.put(field_name, jfile)
+            elif field_type == ij2.FT_PLUGIN:
+                klass = J.call(module_item.o, "getType", 
+                               "()Ljava/lang/Class;")
+                
+                oo = ij2.get_object_service(get_context()).getObjects(klass)
+                if len(oo) == 0:
+                    input_dictionary.put(field_name, None)
+                elif len(oo) == 1:
+                    input_dictionary.put(field_name, oo[0])
+                else:
+                    for o in oo:
+                        choice = J.to_string(o)
+                        if setting.value == choice:
+                            input_dictionary.put(field_name, o)
+                            break
+                    else:
+                        input_dictionary.put(field_name, None)
+            elif module_item.isRequired():
+                input_dictionary.put(field_name, None)
+                
         command_service = ij2.get_command_service(get_context())
         future = command_service.run(module_info.o, True, input_dictionary.o)
         module = future.get()

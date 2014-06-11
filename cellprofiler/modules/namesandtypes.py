@@ -873,7 +873,7 @@ class NamesAndTypes(cpm.CPModule):
         #           we could not deliver...
         #
         if len(promised) > 0:
-            values = [None] * len(md_dict)
+            values = [None] * len(image_sets)
             for feature_name in promised:
                 coltype = promised[feature_name]
                 if coltype==cpmeas.COLTYPE_INTEGER:

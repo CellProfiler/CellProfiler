@@ -528,7 +528,7 @@ class ImageReader(object):
                     #
                     try:
                         self.rdr = get_omero_reader()
-                        self.path = url
+                        self.path = urllib.unquote(url)
                         if perform_init:
                             self.init_reader()
                         return
@@ -679,13 +679,13 @@ class ImageReader(object):
                 logger.warn(line)
             je = e.throwable
             if jutil.is_instance_of(
-                je, "Glacier2/PermissionDeniedException"):
-                # Handle at a higher level
-                raise
-            if jutil.is_instance_of(
                 je, "loci/formats/FormatException"):
                 je = jutil.call(je, "getCause", 
                                 "()Ljava/lang/Throwable;")
+            if jutil.is_instance_of(
+                je, "Glacier2/PermissionDeniedException"):
+                # Handle at a higher level
+                raise
             if jutil.is_instance_of(
                 je, "java/io/FileNotFoundException"):
                 raise exceptions.IOError(
@@ -756,13 +756,14 @@ class ImageReader(object):
                 bioformats.logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
         if index is not None:
             image = np.frombuffer(self.rdr.openBytes(index), dtype)
-            if len(image) / height / width in (3,4):
+            if len(image) / height / width >= 3:
                 n_channels = int(len(image) / height / width)
                 if self.rdr.isInterleaved():
                     image.shape = (height, width, n_channels)
                 else:
                     image.shape = (n_channels, height, width)
                     image = image.transpose(1, 2, 0)
+                image = image[:, :, :3]
             else:
                 image.shape = (height, width)
         elif self.rdr.isRGB() and self.rdr.isInterleaved():

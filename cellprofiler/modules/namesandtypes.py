@@ -853,6 +853,8 @@ class NamesAndTypes(cpm.CPModule):
         def get_string_utf(x):
             return None if x is None else env.get_string_utf(x)
         
+        promised = dict([(x[1], x[2]) for x in mc 
+                         if x[1].startswith(cpmeas.C_METADATA)])
         for name in J.iterate_collection(md_dict.keySet(), get_string_utf):
             feature_name = "_".join((cpmeas.C_METADATA, name))
             values = J.iterate_collection(md_dict[name], get_string_utf)
@@ -864,6 +866,26 @@ class NamesAndTypes(cpm.CPModule):
             m.add_all_measurements(cpmeas.IMAGE,
                                    feature_name,
                                    values)
+            if feature_name in promised:
+                del promised[feature_name]
+        #
+        # Sadness - at this late date, we discover we promised something
+        #           we could not deliver...
+        #
+        if len(promised) > 0:
+            values = [None] * len(md_dict)
+            for feature_name in promised:
+                coltype = promised[feature_name]
+                if coltype==cpmeas.COLTYPE_INTEGER:
+                    data_type = int
+                elif coltype == cpmeas.COLTYPE_FLOAT:
+                    data_type = float
+                else:
+                    data_type = None
+                m.add_all_measurements(cpmeas.IMAGE,
+                                       feature_name,
+                                       values,
+                                       data_type = data_type)
         return True
     
     @property

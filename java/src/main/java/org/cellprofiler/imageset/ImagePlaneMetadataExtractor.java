@@ -325,7 +325,9 @@ public class ImagePlaneMetadataExtractor  {
 					int nPlanes = pixels.sizeOfPlaneList();
 					if (nPlanes == 0) {
 						// The planes aren't populated - need to infer from size{C / Z / T}
-						nPlanes = pixels.getSizeC().getValue() * pixels.getSizeT().getValue() * pixels.getSizeZ().getValue();
+						int nChannels = pixels.sizeOfChannelList();
+						if (nChannels == 0) nChannels = pixels.getSizeC().getValue();
+						nPlanes = nChannels * pixels.getSizeT().getValue() * pixels.getSizeZ().getValue();
 						for (int plane=0; plane<nPlanes; plane++) {
 							final ImagePlane imagePlane = new ImagePlane(imageSeries, plane, ImagePlane.ALWAYS_MONOCHROME);
 							final ImagePlaneDetails ipd = extract(imagePlane);

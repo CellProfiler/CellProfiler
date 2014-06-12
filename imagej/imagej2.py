@@ -301,7 +301,6 @@ def wrap_module_info(instance):
         getMenuRoot = J.make_method(
             "getMenuRoot", "()Ljava/lang/String;")
         getName = J.make_method("getName", "()Ljava/lang/String;")
-        getClassName = J.make_method("getClassName", "()Ljava/lang/String;")
     return ModuleInfo()
 
 def wrap_module_item(instance):
@@ -358,6 +357,7 @@ def wrap_module_item(instance):
         isInput = J.make_method("isInput", "()Z")
         isOutput = J.make_method("isOutput", "()Z")
         isRequired = J.make_method("isRequired", "()Z")
+        initialize = J.make_method("initialize", "(Limagej/module/Module;)V")
     return ModuleItem()
     
 def wrap_module(module):
@@ -372,6 +372,8 @@ def wrap_module(module):
         setOutput = J.make_method("setOutput", "(Ljava/lang/String;Ljava/lang/Object;)V")
         isResolved = J.make_method("isResolved", "(Ljava/lang/String;)Z")
         setResolved = J.make_method("setResolved", "(Ljava/lang/String;Z)V")
+        setContext = J.make_method("setContext", "(Lorg/scijava/Context;)V")
+        initialize = J.make_method("initialize", "()V")
     return Module()
 
 def wrap_menu_entry(menu_entry):

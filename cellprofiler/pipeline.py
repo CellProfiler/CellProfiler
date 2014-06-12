@@ -1608,7 +1608,8 @@ class Pipeline(object):
             src = initial_measurements.hdf5_dict.hdf5_file
             dest = measurements.hdf5_dict.hdf5_file
             if HDF5FileList.has_file_list(src):
-                    HDF5FileList.copy(src, dest)
+                HDF5FileList.copy(src, dest)
+                self.add_urls(HDF5FileList(dest).get_filelist())
         
         measurements.is_first_image = True
         for m in self.run_with_yield(frame, image_set_start, image_set_end,

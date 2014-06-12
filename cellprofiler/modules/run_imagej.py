@@ -373,11 +373,26 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 if field_type == ij2.FT_BOOL:
                     value = (J.is_instance_of(default, 'java/lang/Boolean') and
                              J.call(default, "booleanValue", "()Z"))
+                    if len(description) == 0:
+                        description = """
+                        This setting is an input parameter to the ImageJ
+                        command that you selected. The parameter enables or
+                        disables some feature of the command, but is otherwise
+                        undocumented by ImageJ. Please see ImageJ's
+                        documentation for further information."""
                     setting = cps.Binary(
                         label,
                         value = value,
                         doc = description)
                 elif field_type == ij2.FT_INTEGER:
+                    if len(description) == 0:
+                        description = """
+                        This setting is an input parameter to the ImageJ
+                        command that you selected. The parameter supplies
+                        an integer value, but is otherwise undocumented.
+                        Please see ImageJ's documentation for further
+                        information.
+                        """
                     if J.is_instance_of(default, 'java/lang/Number'):
                         value = J.call(default, "intValue", "()I")
                     elif minimum is not None:
@@ -391,6 +406,14 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         value = value,
                         doc = description)
                 elif field_type == ij2.FT_FLOAT:
+                    if len(description) == 0:
+                        description = """
+                        This setting is an input parameter to the ImageJ
+                        command that you selected. The parameter supplies
+                        a numeric value, but is otherwise undocumented.
+                        Please see ImageJ's documentation for further
+                        information.
+                        """
                     if J.is_instance_of(default, 'java/lang/Number'):
                         value = J.call(default, "doubleValue", "()D")
                     elif minimum is not None:
@@ -407,17 +430,48 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     choices = module_item.getChoices()
                     value = J.to_string(default)
                     if choices is not None:
+                        if len(description) == 0:
+                            description = """
+                            This setting is an input parameter to the ImageJ
+                            command that you selected. The parameter lets you
+                            choose from among several options, but is otherwise
+                            undocumented. Please see ImageJ's documentation for
+                            further information.
+                            """
                         choices = J.get_collection_wrapper(
                             choices, J.to_string)
                         setting = cps.Choice(
                             label, choices, value, doc = description)
                     else:
+                        if len(description) == 0:
+                            description = """
+                            This setting is an input parameter to the ImageJ
+                            command that you selected. The parameter supplies
+                            a text item to the command, but is otherwise
+                            undocumented. Please see ImageJ's documentation for
+                            further information.
+                            """
                         setting = cps.Text(
                             label, value, doc = description)
                 elif field_type == ij2.FT_COLOR:
+                    if len(description) == 0:
+                        description = """
+                        This setting is an input parameter to the ImageJ
+                        command that you selected. The parameter lets you
+                        choose a color for the command, but is otherwise
+                        undocumented. Please see ImageJ's documentation for
+                        further information.
+                        """
                     value = "#ffffff"
                     setting = cps.Color(label, value, doc = description)
                 elif field_type == ij2.FT_IMAGE:
+                    if len(description) == 0:
+                        description = """
+                        This setting supplies an input image to the
+                        command that you selected, but is otherwise
+                        undocumented. Please see ImageJ's documentation for
+                        further information.
+                        """
                     setting = cps.ImageNameSubscriber(
                         label, "InputImage",
                         doc = description)
@@ -425,9 +479,25 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     setting = IJTableSubscriber(label, "InputTable",
                                                 doc=description)
                 elif field_type == ij2.FT_FILE:
+                    if len(description) == 0:
+                        description = """
+                        This setting is an input parameter to the ImageJ
+                        command that you selected. The parameter lets you
+                        choose a file for the command, but is otherwise
+                        undocumented. Please see ImageJ's documentation for
+                        further information.
+                        """
                     setting = cps.FilenameText(
                         label, None, doc = description)
                 elif field_type == ij2.FT_PLUGIN:
+                    if len(description) == 0:
+                        description = """
+                        This setting is an input parameter to the ImageJ
+                        command that you selected. The parameter lets you
+                        choose from among several options, but is otherwise
+                        undocumented. Please see ImageJ's documentation for
+                        further information.
+                        """
                     klass = J.call(module_item.o, "getType", 
                                    "()Ljava/lang/Class;")
                     choices = [
@@ -450,6 +520,13 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     # if both, qualify which is for input and which for output
                     label = "%s (Output)" % label
                 if field_type == ij2.FT_IMAGE:
+                    if len(description) == 0:
+                        description = """
+                        This setting names the output (or one of the outputs)
+                        of the ImageJ command that you selected but is otherwise
+                        undocumented. Please see ImageJ's documentation for
+                        further information.
+                        """
                     result.append((cps.ImageNameProvider(
                         label, "ImageJImage",
                         doc = description), output))

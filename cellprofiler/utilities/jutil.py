@@ -1303,24 +1303,25 @@ def box(value, klass):
     '''
     wclass = get_class_wrapper(klass, True)
     name = wclass.getCanonicalName()
-    if wclass.isPrimitive():
-        if name == 'boolean':
+    is_primitive = wclass.isPrimitive()
+    if is_primitive or name.startswith("java.lang"):
+        if name in ('boolean', 'java.lang.Boolean'):
             return make_instance('java/lang/Boolean', "(Z)V", value)
-        elif name == 'int':
+        elif name in ('int', 'java.lang.Integer'):
             return make_instance('java/lang/Integer', "(I)V", value)
-        elif name == 'byte':
+        elif name in ('byte', 'java.lang.Byte'):
             return make_instance('java/lang/Byte', "(B)V", value)
-        elif name == 'short':
+        elif name in ('short', 'java.lang.Short'):
             return make_instance('java/lang/Short', "(S)V", value)
-        elif name == 'long':
+        elif name in ('long', 'java.lang.Long'):
             return make_instance('java/lang/Long', "(J)V", value)
-        elif name == 'float':
+        elif name in ('float', 'java.lang.Float'):
             return make_instance('java/lang/Float', "(F)V", value)
-        elif name == 'double':
+        elif name in ('double', 'java.lang.Double'):
             return make_instance('java/lang/Double', "(D)V", value)
-        elif name == 'char':
+        elif name in ('char', 'java.lang.Character'):
             return make_instance('java/lang/Character', "(C)V", value)
-        else:
+        elif is_primitive:
             raise NotImplementedError("Boxing %s is not implemented" % name)
     sig = "L%s;" % wclass.getCanonicalName().replace(".", "/")
     return get_nice_arg(value, sig)

@@ -150,6 +150,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             This setting chooses the scripting language used to execute
             any macros in this module""")
         
+        self.run_group_divider = cps.Divider()
         self.wants_to_set_current_image = cps.Binary(
             "Input the currently active image in ImageJ?", True,doc="""
             Select <i>%(YES)s</i> if you want to set the currently 
@@ -225,6 +226,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             a group of images. For help on writing macros, see 
             <a href="http://rsb.info.nih.gov/ij/developer/macro/macros.html">here</a>.""")
         
+        self.prepare_group_divider = cps.Divider()
+        
         self.post_group_choice = cps.Choice(
             "Function to run after each group of images?", 
             [CM_NOTHING, CM_COMMAND, CM_SCRIPT, CM_MACRO],doc="""
@@ -250,6 +253,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             This is the ImageJ macro to be executed after processing
             a group of images. For help on writing macros, see 
             <a href="http://rsb.info.nih.gov/ij/developer/macro/macros.html">here</a>.""")
+        
+        self.post_group_divider = cps.Divider()
         
         self.wants_post_group_image = cps.Binary(
             "Retrieve the image output by the group operation?", False,doc="""
@@ -311,7 +316,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         for module_info in module_service.getModules():
             if module_info.getMenuRoot() != "app":
                 continue
-            logger.info("Processing module %s" % module_info.getClassName())
+            logger.info("Processing module %s" % module_info.getTitle())
             menu_path = module_info.getMenuPath()
             if menu_path is None or J.call(menu_path, "size", "()I") == 0:
                 continue
@@ -328,7 +333,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 if len(matches) > 0:
                     current_node = matches[0]
                 else:
-                    current_node = [name, [], None, weight]
+                    current_node = [name, [], None, weight, None]
                     current_tree.append(current_node)
                 current_tree = current_node[1]
             # mark the leaf.
@@ -343,6 +348,25 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         sort_tree(tree)
         cached_choice_tree = tree
         return cached_choice_tree
+    
+    @staticmethod
+    def __get_module_info_from_command(command):
+        leaf = command.get_selected_leaf()
+        module_info = leaf[2]
+        if leaf[4] is None:
+            # Initialize the module at this point
+            module = module_info.createModule()
+            J.call(get_context().getContext(), "inject", 
+                   "(Ljava/lang/Object;)V", module.o)
+            try:
+                module.initialize()
+            except:
+                logger.warn("Failed to initialize %s command." %
+                            module_info.getTitle())
+            leaf[4] = module
+        else:
+            module = leaf[4]
+        return ij2.wrap_module_info(module.getInfo())
         
     def get_command_settings(self, command, d):
         '''Get the settings associated with the current command
@@ -352,16 +376,16 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         key = command.get_unicode_value()
         if not d.has_key(key):
             try:
-                module_info = command.get_selected_leaf()[2]
+                module_info = RunImageJ.__get_module_info_from_command(command)
             except cps.ValidationError:
                 logger.info("Could not find command %s" % key)
                 return []
-            result = []
             inputs = module_info.getInputs()
+            result = []
             for module_item in inputs:
                 field_type = module_item.getType()
                 label = module_item.getLabel()
-                if label is None:
+                if label is None or len(label) == 0:
                     label = module_item.getName()
                 if module_item.isOutput():
                     # if both, qualify which is for input and which for output
@@ -373,7 +397,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 if field_type == ij2.FT_BOOL:
                     value = (J.is_instance_of(default, 'java/lang/Boolean') and
                              J.call(default, "booleanValue", "()Z"))
-                    if len(description) == 0:
+                    if description == None or len(description) == 0:
                         description = """
                         This setting is an input parameter to the ImageJ
                         command that you selected. The parameter enables or
@@ -385,7 +409,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         value = value,
                         doc = description)
                 elif field_type == ij2.FT_INTEGER:
-                    if len(description) == 0:
+                    if description == None or len(description) == 0:
                         description = """
                         This setting is an input parameter to the ImageJ
                         command that you selected. The parameter supplies
@@ -393,6 +417,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         Please see ImageJ's documentation for further
                         information.
                         """
+                    minimum, maximum = [
+                        None if x is None else J.call(x, "intValue", "()I")
+                        for x in minimum, maximum]
+                               
                     if J.is_instance_of(default, 'java/lang/Number'):
                         value = J.call(default, "intValue", "()I")
                     elif minimum is not None:
@@ -404,9 +432,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     setting = cps.Integer(
                         label,
                         value = value,
+                        minval=minimum,
+                        maxval=maximum,
                         doc = description)
                 elif field_type == ij2.FT_FLOAT:
-                    if len(description) == 0:
+                    if description == None or len(description) == 0:
                         description = """
                         This setting is an input parameter to the ImageJ
                         command that you selected. The parameter supplies
@@ -414,6 +444,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         Please see ImageJ's documentation for further
                         information.
                         """
+                    minimum, maximum = [
+                        None if x is None else J.call(x, "doubleValue", "()D")
+                        for x in minimum, maximum]
                     if J.is_instance_of(default, 'java/lang/Number'):
                         value = J.call(default, "doubleValue", "()D")
                     elif minimum is not None:
@@ -425,12 +458,15 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     setting = cps.Float(
                         label,
                         value=value,
+                        minval=minimum,
+                        maxval=maximum,
                         doc = description)
                 elif field_type == ij2.FT_STRING:
                     choices = module_item.getChoices()
                     value = J.to_string(default)
-                    if choices is not None:
-                        if len(description) == 0:
+                    if choices is not None and\
+                       J.call(choices, "size", "()I") > 0:
+                        if description == None or len(description) == 0:
                             description = """
                             This setting is an input parameter to the ImageJ
                             command that you selected. The parameter lets you
@@ -438,12 +474,12 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                             undocumented. Please see ImageJ's documentation for
                             further information.
                             """
-                        choices = J.get_collection_wrapper(
-                            choices, J.to_string)
+                        choices = list(J.get_collection_wrapper(
+                            choices, J.to_string))
                         setting = cps.Choice(
                             label, choices, value, doc = description)
                     else:
-                        if len(description) == 0:
+                        if description == None or len(description) == 0:
                             description = """
                             This setting is an input parameter to the ImageJ
                             command that you selected. The parameter supplies
@@ -454,7 +490,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         setting = cps.Text(
                             label, value, doc = description)
                 elif field_type == ij2.FT_COLOR:
-                    if len(description) == 0:
+                    if description == None or len(description) == 0:
                         description = """
                         This setting is an input parameter to the ImageJ
                         command that you selected. The parameter lets you
@@ -465,7 +501,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     value = "#ffffff"
                     setting = cps.Color(label, value, doc = description)
                 elif field_type == ij2.FT_IMAGE:
-                    if len(description) == 0:
+                    if description == None or len(description) == 0:
                         description = """
                         This setting supplies an input image to the
                         command that you selected, but is otherwise
@@ -479,7 +515,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     setting = IJTableSubscriber(label, "InputTable",
                                                 doc=description)
                 elif field_type == ij2.FT_FILE:
-                    if len(description) == 0:
+                    if description == None or len(description) == 0:
                         description = """
                         This setting is an input parameter to the ImageJ
                         command that you selected. The parameter lets you
@@ -487,10 +523,14 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         undocumented. Please see ImageJ's documentation for
                         further information.
                         """
-                    setting = cps.FilenameText(
-                        label, None, doc = description)
+                    if default is None:
+                        default = ""
+                    elif not isinstance(default, basestring):
+                        default = J.to_string(default)
+                    setting = cps.Pathname(
+                        label, default, doc = description)
                 elif field_type == ij2.FT_PLUGIN:
-                    if len(description) == 0:
+                    if description == None or len(description) == 0:
                         description = """
                         This setting is an input parameter to the ImageJ
                         command that you selected. The parameter lets you
@@ -514,13 +554,13 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             for output in module_info.getOutputs():
                 field_type = output.getType()
                 label = output.getLabel()
-                if label is None:
+                if label is None or len(label) == 0:
                     label = output.getName()
                 if output.isInput():
                     # if both, qualify which is for input and which for output
                     label = "%s (Output)" % label
                 if field_type == ij2.FT_IMAGE:
-                    if len(description) == 0:
+                    if description == None or len(description) == 0:
                         description = """
                         This setting names the output (or one of the outputs)
                         of the ImageJ command that you selected but is otherwise
@@ -605,7 +645,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             result += [self.macro]
         if uses_macros:
             result += [self.macro_language]
-        result += [self.wants_to_set_current_image]
+        result += [self.run_group_divider, self.wants_to_set_current_image]
         if self.wants_to_set_current_image:
             result += [self.current_input_image_name]
         result += [self.wants_to_get_current_image]
@@ -617,6 +657,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         elif self.prepare_group_choice == CM_COMMAND:
             result += [self.prepare_group_command]
             result += self.pre_command_settings
+        if self.prepare_group_choice != CM_NOTHING:
+            result += [self.prepare_group_divider]
         result += [self.post_group_choice]
         if self.post_group_choice in (CM_SCRIPT, CM_MACRO):
             result += [self.post_group_macro]
@@ -624,7 +666,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             result += [self.post_group_command]
             result += self.post_command_settings
         if self.post_group_choice != CM_NOTHING:
-            result += [self.wants_post_group_image]
+            result += [self.post_group_divider, self.wants_post_group_image]
             if self.wants_post_group_image:
                 result += [self.post_group_output_image]
         result += [self.pause_before_proceeding, self.show_imagej_button]
@@ -774,6 +816,18 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         workspace.image_set.add(image_name, image)
         return pixel_data
 
+    def save_dataset_as_image(self, workspace, dataset, image_name):
+        '''Convert an ImageJ dataset to an image and save in the image set
+        
+        workspace - current workspace
+        dataset - an ImageJ dataset
+        image_name - save the image in the image set using this name.
+        '''
+        pixel_data = dataset.get_pixel_data() / IMAGEJ_SCALE
+        image = cpi.Image(pixel_data)
+        workspace.image_set.add(image_name, image)
+        return pixel_data
+
     def do_imagej(self, workspace, when=None):
         if when == D_FIRST_IMAGE_SET:
             choice = self.prepare_group_choice.value
@@ -824,8 +878,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             workspace.display_data.input_images = input_images = []
             workspace.display_data.output_images = output_images = []
         key = command.get_unicode_value()
-        node = command.get_selected_leaf()
-        module_info = node[2]
+        module_info = RunImageJ.__get_module_info_from_command(command)
         
         input_dictionary = J.get_map_wrapper(
             J.make_instance('java/util/HashMap', "()V"))
@@ -847,23 +900,35 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     "imagej/util/ColorRGB", "(III)V", red, green, blue)
                 input_dictionary.put(field_name, jobject)
             elif field_type == ij2.FT_IMAGE:
+                data_class = J.call(module_item.o, "getType", "()Ljava/lang/Class;")
                 image_name = setting.value
                 image = workspace.image_set.get_image(image_name)
                 pixel_data = image.pixel_data * IMAGEJ_SCALE
                 
                 dataset = ij2.create_dataset(
                     context, pixel_data, image_name)
-                display = display_service.createDisplay(image_name, dataset)
-                display_dictionary[module_item.getName()] = display 
-                if image.has_mask:
-                    #overlay_name = "X" + uuid.uuid4().get_hex()
-                    #image_dictionary[overlay_name] = image.mask
-                    overlay = ij2.create_overlay(context, image.mask)
-                    overlay_service = ij2.get_overlay_service(context)
-                    overlay_service.addOverlays(
-                        display.o, J.make_list([overlay]))
-                    ij2.select_overlay(display.o, overlay)
-                input_dictionary.put(field_name, display.o)
+                if J.call(data_class, "isAssignableFrom",
+                          "(Ljava/lang/Class;)Z",
+                          J.class_for_name("imagej.data.Dataset")):
+                    o = dataset.o
+                else:
+                    display = display_service.createDisplay(image_name, dataset)
+                    display_dictionary[module_item.getName()] = display 
+                    if image.has_mask:
+                        #overlay_name = "X" + uuid.uuid4().get_hex()
+                        #image_dictionary[overlay_name] = image.mask
+                        overlay = ij2.create_overlay(context, image.mask)
+                        overlay_service = ij2.get_overlay_service(context)
+                        overlay_service.addOverlays(
+                            display.o, J.make_list([overlay]))
+                        ij2.select_overlay(display.o, overlay)
+                    if J.call(data_class, "isAssignableFrom",
+                              "(Ljava/lang/Class;)Z",
+                              J.class_for_name("imagej.data.display.DatasetView")):
+                        o = display.getActiveView().o
+                    else:
+                        o = display.o
+                input_dictionary.put(field_name, o)
                 if wants_display:
                     input_images.append((image_name, image.pixel_data))
             elif field_type == ij2.FT_TABLE:
@@ -895,8 +960,41 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             elif module_item.isRequired():
                 input_dictionary.put(field_name, None)
                 
-        command_service = ij2.get_command_service(get_context())
-        future = command_service.run(module_info.o, True, input_dictionary.o)
+        module = module_info.createModule()
+        J.call(get_context().getContext(), "inject", 
+               "(Ljava/lang/Object;)V", module.o)
+        try:
+            module.initialize()
+            filter_pre = True
+        except:
+            filter_pre = False
+        context = get_context()
+        module_service = ij2.get_module_service(context)
+        #
+        # Filter out the init preprocessor if we already initialized
+        #
+        pluginService = context.getService("org.scijava.plugin.PluginService")
+        preprocessors, postprocessors = [
+            J.call(pluginService, "createInstancesOfType", 
+                   "(Ljava/lang/Class;)Ljava/util/List;",
+                   J.class_for_name(x))
+            for x in ("imagej.module.process.PreprocessorPlugin",
+                      "imagej.module.process.PostprocessorPlugin")]
+        if filter_pre:
+            good_preprocessors = []
+            for preprocessor in J.get_collection_wrapper(preprocessors):
+                if not J.is_instance_of(
+                    preprocessor, "imagej/module/process/InitPreprocessor"):
+                    good_preprocessors.append(preprocessor)
+            preprocessors = J.make_list(good_preprocessors).o
+        #
+        # Now run the module
+        #
+        jfuture = J.call(
+            module_service.o, "run", 
+            "(Limagej/module/Module;Ljava/util/List;Ljava/util/List;Ljava/util/Map;)Ljava/util/concurrent/Future;",
+            module.o, preprocessors, postprocessors, input_dictionary.o)
+        future = J.get_future_wrapper(jfuture, ij2.wrap_module)
         module = future.get()
         for setting, module_item in d[key]:
             if isinstance(setting, cps.ImageNameProvider):
@@ -904,10 +1002,23 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 output_name = setting.value
                 if display_dictionary.has_key(name):
                     display = display_dictionary[name]
+                    pixel_data = self.save_display_as_image(
+                        workspace, display, output_name)
                 else:
-                    display = IJ2.wrap_display(module.getOutput(name))
-                pixel_data = self.save_display_as_image(
-                    workspace, display, output_name)
+                    o = module.getOutput(name)
+                    if J.is_instance_of(o, "imagej/data/display/ImageDisplay"):
+                        display = ij2.wrap_display(o)
+                        pixel_data = self.save_display_as_image(
+                            workspace, display, output_name)
+                    elif J.is_instance_of(o, "imagej/data/display/DatasetView"):
+                        pixel_data = self.save_dataset_as_image(
+                            workspace,
+                            ij2.wrap_dataset(ij2.wrap_data_view(o).getData()),
+                            output_name)
+                    else:
+                        # Assume it's a dataset.
+                        pixel_data = self.save_dataset_as_image(
+                            workspace, ij2.wrap_dataset(o), output_name)
                 
                 if wants_display:
                     output_images.append((output_name, pixel_data))

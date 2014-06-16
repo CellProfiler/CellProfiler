@@ -1766,6 +1766,7 @@ class ModuleView:
                         all([x==y for x,y in zip(ctrl.Strings,choices)])):
                     ctrl.Clear()
                     ctrl.AppendItems(choices)
+                    ctrl.SetSelection(0)
                 if (not value is None):
                     try:
                         if ctrl.Value != value:

@@ -186,7 +186,6 @@ def main():
         icon_path = os.path.join(get_builtin_images_path(), "CellProfilerIcon.png")
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
-        J.javabridge.mac_run_loop_init()
     
     # Importing bioformats starts the JVM
     import bioformats

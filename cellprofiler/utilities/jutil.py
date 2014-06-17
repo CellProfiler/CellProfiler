@@ -101,7 +101,8 @@ elif sys.platform.startswith('linux'):
 
 if jvm_dir is None:
     from cellprofiler.preferences \
-         import get_report_jvm_error, set_report_jvm_error, get_headless
+         import get_report_jvm_error, set_report_jvm_error, \
+         get_headless, get_awt_headless
     from cellprofiler.preferences import set_has_reported_jvm_error
     
     if not get_headless():
@@ -366,6 +367,9 @@ def start_vm(args, run_headless = False):
     if __vm is None:
         raise RuntimeError("Failed to start Java VM")
     attach()
+    if sys.platform == 'Darwin' and not get_awt_headless():
+        javabridge.mac_run_loop_init()
+        
     
 def unwrap_javascript(o):
     '''Unwrap an object such as NativeJavaObject
@@ -582,65 +586,15 @@ def mac_get_future_value(future):
             logger.debug("Future is not done")
             time.sleep(.1)
         return future.raw_get()
-    elif app is None:
-        #
-        # So sad - start some GUI if we need it.
-        # 
-        app = wx.PySimpleApp(True)
-    if app.IsMainLoopRunning():
-        evtloop = wx.EventLoop()
-        logger.debug("Polling for future done within main loop")
-        taken = static_call(RQCLS, "offer", "(Ljava/lang/Runnable;)Z", future.o)
-        while (not taken) or not future.isDone():
-            if not taken:
-                taken = static_call(RQCLS, "offer", "(Ljava/lang/Runnable;)Z", future.o)
-                
-            logger.debug("Future is not done")
-            if evtloop.Pending():
-                while evtloop.Pending():
-                    logger.debug("Processing pending event")
-                    evtloop.Dispatch()
-            else:
-                logger.debug("No pending wx event, run Dispatch anyway")
-                evtloop.Dispatch()
-            logger.debug("Sleeping")
-            time.sleep(.1)
-    else:
-        logger.debug("Polling for future while running main loop")
-        class EventLoopTimer(wx.Timer):
-        
-            def __init__(self, func):
-                self.func = func
-                wx.Timer.__init__(self)
-        
-            def Notify(self):
-                self.func()
-        
-        class EventLoopRunner(object):
-        
-            def __init__(self, fn):
-                self.fn = fn
-                
-            def Run(self, time):
-                self.evtloop = wx.EventLoop()
-                self.timer = EventLoopTimer(self.check_fn)
-                self.timer.Start(time)
-                self.evtloop.Run()
-        
-            def check_fn(self):
-                if self.fn():
-                    self.timer.Stop()
-                    self.evtloop.Exit()
-        
-        def offer(future):
-            while not static_call(RQCLS, "offer", "(Ljava/lang/Runnable;)Z", future.o):
-                yield False
-            yield True
+    logger.debug("Polling for future done using Mac native event loop")
+    taken = static_call(RQCLS, "offer", "(Ljava/lang/Runnable;)Z", future.o)
+    while (not taken) or not future.isDone():
+        if not taken:
+            taken = static_call(RQCLS, "offer", "(Ljava/lang/Runnable;)Z", future.o)
             
-        event_loop_runner = EventLoopRunner(offer(future).next)
-        event_loop_runner.Run(time=60)
-        event_loop_runner = EventLoopRunner(lambda: future.isDone())
-        event_loop_runner.Run(time=60)
+        logger.debug("Future is not done")
+        javabridge.mac_poll_run_loop(.25)
+        
     logger.debug("Fetching future value")
     return future.raw_get()
 

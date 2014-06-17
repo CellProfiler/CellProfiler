@@ -147,9 +147,6 @@ def start_cellprofiler_jvm():
                           "(Z)V", True)
     except:
         logger.warning("Bioformats version does not support directory cacheing")
-
-    if not run_headless:
-        jutil.activate_awt()
 start_cellprofiler_jvm()
 from formatreader import load_using_bioformats
 

@@ -272,6 +272,7 @@ class AnalysisWorker(object):
         
     def enter_thread(self):
         J.attach()
+        J.activate_awt()
         self.notify_socket = the_zmq_context.socket(zmq.SUB)
         self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
         self.notify_socket.connect(NOTIFY_ADDR)

@@ -39,7 +39,7 @@ class CellProfilerApp(wx.App):
     def OnInit(self):
         # The wx.StandardPaths aren't available until this is set.
         self.SetAppName('CellProfiler2.0')
-
+        
         wx.InitAllImageHandlers()
 
         if self.show_splashbox:
@@ -64,6 +64,9 @@ class CellProfilerApp(wx.App):
         if self.check_for_new_version:
             self.new_version_check()
 
+        import bioformats
+        from cellprofiler.utilities.jutil import activate_awt
+        activate_awt()
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")
         self.destroy_splash_screen()

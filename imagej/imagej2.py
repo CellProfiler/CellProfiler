@@ -673,7 +673,10 @@ def select_overlay(display, overlay, select=True):
     '''
     for view in J.get_collection_wrapper(display, fn_wrapper = wrap_data_view):
         if J.call(overlay, "equals", "(Ljava/lang/Object;)Z", view.getData()):
-            view.setSelected(select)
+            J.execute_runnable_in_main_thread(J.run_script(
+                """new java.lang.Runnable() {
+                    run: function() { view.setSelected(select);}
+                   }""", dict(view = view.o, select=select)))
             break
     else:
         logger.info("Failed to select overlay")

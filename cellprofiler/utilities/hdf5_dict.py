@@ -304,8 +304,8 @@ class HDF5Dict(object):
                                         maxshape = (None, ))                                
             self.hdf5_file.flush()
         except Exception, e:
-            self.hdf5_file.close()
             logger.exception("Failed during initial processing of %s" % self.filename)
+            self.hdf5_file.close()
             raise
                             
     def __del__(self):

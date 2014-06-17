@@ -260,6 +260,8 @@ def start_vm(args, run_headless = False):
                 ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"
                  ",server=y,suspend=n") % os.environ["CP_JDWP_PORT"])
 
+        if sys.platform == 'Darwin' and not get_awt_headless():
+            javabridge.mac_run_loop_init()
         logger.debug("Creating JVM object")
         __thread_local_env.is_main_thread = True
         __vm = javabridge.JB_VM()
@@ -367,8 +369,6 @@ def start_vm(args, run_headless = False):
     if __vm is None:
         raise RuntimeError("Failed to start Java VM")
     attach()
-    if sys.platform == 'Darwin' and not get_awt_headless():
-        javabridge.mac_run_loop_init()
         
     
 def unwrap_javascript(o):
@@ -558,22 +558,8 @@ def mac_get_future_value(future):
     if __run_headless:
         static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
         return future.raw_get()
-    if sys.maxsize > 2**32:
-        if javabridge.mac_is_main_thread():
-            #
-            # Haven't figured out how to run a modal event loop
-            # on OS/X - tried CFRunLoopInMode with 1/4 sec timeout and
-            # it never returned.
-            #
-            raise NotImplementedError("No support for synchronizing futures in Python's startup thread on the OS/X in 64-bit mode.")
-        static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
-        return future.raw_get()
-        
-    import wx
     import time
-    app = wx.GetApp()
-    synchronize_without_event_loop = \
-        (app is None and not get_headless()) or not javabridge.mac_is_main_thread()
+    synchronize_without_event_loop = not javabridge.mac_is_main_thread()
     if synchronize_without_event_loop:
         logger.debug("Synchronizing without event loop")
         #

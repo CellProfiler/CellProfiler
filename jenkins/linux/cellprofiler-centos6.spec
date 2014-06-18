@@ -67,7 +67,8 @@ PATH=%{pref}/bin:%{pref}/jdk/bin:$PATH \
     JAVA_HOME=%{pref}/jdk \
 %{python} cellprofiler/cpmath/setup.py install --root=$RPM_BUILD_ROOT
 
-echo "version_string = '`date +%%Y-%%m-%%dT%%H:%%M:%%S` %{version}'" > $RPM_BUILD_ROOT%{pref}/src/CellProfiler/cellprofiler/frozen_version.py
+#echo "version_string = '`date +%%Y-%%m-%%dT%%H:%%M:%%S` %{version}'" > $RPM_BUILD_ROOT%{pref}/src/CellProfiler/cellprofiler/frozen_version.py
+(cd $RPM_BUILD_ROOT%{pref}/src/CellProfiler; PYTHONPATH=. ./jenkins/linux/make_frozen_version.py)
 
 mkdir $RPM_BUILD_ROOT/usr/bin
 cp usr-bin-cellprofiler $RPM_BUILD_ROOT/usr/bin/cellprofiler

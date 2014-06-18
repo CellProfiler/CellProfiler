@@ -11,10 +11,9 @@ it passes QC). The flag can be used in post-processing to filter out
 images you do not want to analyze, e.g., in CellProfiler Analyst. In 
 addition, you can use <b>ExportToSpreadsheet</b> to generate a file 
 that includes the flag as a metadata measurement associated with the 
-images. The <b>LoadData</b> module can then use this flag 
+images. The <b>Metadata</b> module can then use this flag 
 to put images that pass QC into one group and images that fail 
-into another. If you plan to use a flag in <b>LoadData</b>, give it a 
-category of "Metadata" so that it can be used in grouping.
+into another.
 
 A flag can be based on one or more measurements. If you create a flag 
 based on more than one measurement, you can choose between setting the

@@ -2,8 +2,9 @@
 <hr>
 <b>LabelImages</b> assigns a plate number, well and site number to each image
 set based on the order in which they are processed. You can use <b>Label
-Images</b> to add plate and well metadata for images loaded using <i>File order</i>
-in <b>LoadImages</b>. <b>LabelImages</b> assumes the following are true of the image order:
+Images</b> to add plate and well metadata for images loaded using <i>Order</i>
+for "Image set matching order" in <b>NamesAndTypes</b>. <
+b>LabelImages</b> assumes the following are true of the image order:
 <ul>
 <li>Each well has the same number of images (i.e., sites) per channel.</li>
 <li>Each plate has the same number of rows and columns, so that the total

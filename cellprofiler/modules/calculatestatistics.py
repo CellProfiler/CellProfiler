@@ -108,7 +108,7 @@ Here is an example file:<br><br>
 </code>
 <br>
 
-See also <b>LoadData</b>.
+See also the <b>Metadata</b> and legacy <b>LoadData</b> modules.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -200,10 +200,10 @@ class CalculateStatistics(cpm.CPModule):
             specified as a particular treatment dose. Choose a measurement that gives 
             the dose of some treatment for each of your images. <p>
             The typical way to provide this information in the pipeline is to create 
-            a text file outside of CellProfiler and then load that file into the pipeline
-            using <b>LoadData</b>. In that case, choose the
+            a comma-delimited text file (CSV) outside of CellProfiler and then load that file into the pipeline
+            using <b>Metadata</b> or the <b>LoadData</b>. In that case, choose the
             measurement that matches the column header of the measurement
-            in <b>LoadData</b>'s input file. See <b>LoadData</b> help for an example text file.
+            in the CSV input file. See <b>LoadData</b> help for an example text file.
             """))
         
         group.append("log_transform",cps.Binary(

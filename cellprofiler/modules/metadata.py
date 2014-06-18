@@ -355,7 +355,7 @@ class Metadata(cpm.CPModule):
             regular expression.</p>
             
             <p>You can create metadata tags for any portion of the filename or path, but if you are
-            specifying metadata for multiple images in a single <b>LoadImages</b> module, an image cycle can 
+            specifying metadata for multiple images, an image cycle can 
             only have one set of values for each metadata tag. This means that you can only 
             specify the metadata tags which have the same value across all images listed in the module. For example,
             in the example above, you might load two wavelengths of data, one named <i>TE12345_A05_s1_w1.tif</i>

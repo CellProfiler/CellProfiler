@@ -110,7 +110,7 @@ class CreateWebPage(cpm.CPModule):
             images) on the web page that link to the full images. <br>
             Select <i>%(NO)s</i> to display the full image directly on the web page.
             <p>If you are going to use thumbnails, you will need to load
-            them using <b>LoadImages</b> or <b>LoadData</b>; you can run a separate 
+            them using the <b>Input</b> modules; you can also run a separate 
             pipeline prior to this one to create thumbnails from your originals  
             using the <b>Resize</b> and <b>SaveImages</b> modules. For some high-content
             screening systems, thumbnail files are automatically created and have

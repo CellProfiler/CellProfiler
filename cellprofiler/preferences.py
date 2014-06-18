@@ -298,7 +298,7 @@ folder called "MyFolder" at the same level as the Default Input Folder.</li>
 IO_WITH_METADATA_HELP_TEXT = """
 For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i> and 
 <i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>, if you have metadata associated with your 
-images via <b>LoadImages</b> or <b>LoadData</b>, you can name the folder using metadata
+images via <b>Metadata</b> module, you can name the folder using metadata
 tags."""%globals()
 
 PREFERENCES_VERSION = 'PreferencesVersion'

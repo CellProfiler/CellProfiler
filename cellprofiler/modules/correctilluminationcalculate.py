@@ -191,8 +191,8 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             cycle longer than subsequent cycles), and lets you use the function in a subsequent
             <b>CorrectIllumination_Apply</b> module in the same pipeline, but also
             means that you will not have the ability to filter out images (e.g., by using
-            <b>FlagImage</b>). The input images need to be produced by a <b>LoadImage</b> 
-            or <b>LoadData</b> module; using images produced by other modules will yield an error.</li>
+            <b>FlagImage</b>). The input images need to be assembled using the <b>Input</b> 
+            modules; using images produced by other modules will yield an error.</li>
             <li><i>%(EA_ALL_ACROSS)s:</i> Calculate an illumination function 
             across all cycles in each group. This option takes any image
             as input; however, the illumination function 

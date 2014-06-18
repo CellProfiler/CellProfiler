@@ -37,8 +37,8 @@ one-to-one correspondence is <i>not</i> the case for all objects in the pipeline
 measured for each nucleus), then you must configure <b>ExportToDatabase</b> to export only objects that maintain the one-to-one correspondence 
 (for example, export only <i>Nucleus</i> and <i>Cytoplasm</i>, but omit <i>Speckles</i>).
 
-If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via <b>LoadData</b>, 
-you can ask CellProfiler to create a "Per_Well" table, which aggregates object measurements across wells.  
+If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via the <b>Metadata</b>
+or <b>LoadData</b> modules, you can ask CellProfiler to create a "Per_Well" table, which aggregates object measurements across wells.  
 This option will output a SQL file (regardless of whether you choose to write directly to the database)
 that can be used to create the Per_Well table. At the secure shell where you normally log in to MySQL, type
 the following, replacing the italics with references to your database and files:
@@ -553,7 +553,7 @@ class ExportToDatabase(cpm.CPModule):
             Select <i>%(YES)s</i> to include information in the properties file for all images. This
             option will do the following:
             <ul>
-            <li>All images loaded using <b>LoadImages</b>, <b>LoadData</b> or saved in <b>SaveImages</b> will be included.</li>
+            <li>All images loaded using the <b>Input</b> modules or saved in <b>SaveImages</b> will be included.</li>
             <li>The CellProfiler image name will be used for the <i>image_name</i> field.</li>
             <li>A channel color listed in the <i>image_channel_colors</i> field will be assigned to the image by default order.</li>
             </ul>
@@ -689,8 +689,8 @@ class ExportToDatabase(cpm.CPModule):
 
             <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be 
             run on your Per-Image and Per-Object tables to create the desired per-well table. 
-            <p><i>Note:</i> this option is only
-            available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
+            <p><i>Note:</i> this option is only available if you have extracted plate and well metadata 
+            from the filename using the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
             table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s'''%globals())
         
@@ -706,7 +706,8 @@ class ExportToDatabase(cpm.CPModule):
             <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your 
             Per-Image and Per-Object tables to create the desired per-well table. 
             <p><i>Note:</i> this option is only
-            available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
+            available if you have extracted plate and well metadata from the filename using 
+            the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
             table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s'''%globals())
         
@@ -721,7 +722,8 @@ class ExportToDatabase(cpm.CPModule):
             <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your 
             Per-Image and Per-Object tables to create the desired per-well table. 
             <p><i>Note:</i> this option is only
-            available if you have extracted plate and well metadata from the filename or via a <b>LoadData</b> module.
+            available if you have extracted plate and well metadata from the filename 
+            using the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
             table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s'''%globals())
         

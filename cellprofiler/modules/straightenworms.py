@@ -151,7 +151,7 @@ class StraightenWorms(cpm.CPModule):
             either the overlapping or non-overlapping objects as input. It
             will use the control point measurements associated with the objects
             to reconstruct the straight worms. You can also use objects
-            saved from a previous run and loaded via <b>LoadImages</b>, objects
+            saved from a previous run and loaded via the <b>Input</b> modules, objects
             edited using <b>EditObjectsManually</b> or objects from one
             of the Identify modulues. <b>StraightenWorms</b>
             will recalculate the control points for these images.""")

@@ -259,9 +259,9 @@ class ExportToSpreadsheet(cpm.CPModule):
             sample, which is ordinarily the gene name. This information may be 
             specified in one of two ways:
             <ul>
-            <li><i>Metadata:</i> If you used <b>LoadData</b> or <b>LoadImages</b> 
-            to input your images, you may use a per-image data measurement 
-            (such as metadata) that corresponds to the identifier for this column. 
+            <li><i>Metadata:</i> If you used the <b>Metadata</b> modules to  
+            add metadata to your images, you may specify a metadata tag
+            that corresponds to the identifier for this column. 
             %(USING_METADATA_HELP_REF)s.</li>
             <li><i>Image filename:</i> If the gene name is not available, the image 
             filename can be used as a surrogate identifier.</li>
@@ -273,7 +273,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             <i>(Used only if a GenePattern file is requested and metadata is used 
             to name each row)</i><br>
             Choose the measurement that corresponds to the identifier, such as 
-            metadata from <b>LoadData</b>'s input file. 
+            metadata from the <b>Metadata</b> module. 
             %(USING_METADATA_HELP_REF)s."""%globals())
         
         self.use_which_image_for_gene_name = cps.ImageNameSubscriber(

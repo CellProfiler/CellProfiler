@@ -122,8 +122,9 @@ class MaskObjects(I.Identify):
             Select an image that was either loaded or
             created by a previous module. The image should be a binary image where 
             the white portion of the image is the region(s) you will use for masking.
-            Images can be loaded from disk by <b>LoadImages</b> or
-            <b>LoadData</b>. You can create a binary image from a grayscale
+            Binary images can be loaded from disk using the 
+            <b>NamesAndTypes</b> module by selecting "Binary mask" for the image type. 
+            You can also create a binary image from a grayscale
             image using <b>ApplyThreshold</b>.""")
         
         self.wants_inverted_mask = cps.Binary(

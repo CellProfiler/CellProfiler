@@ -552,22 +552,35 @@ class Metadata(cpm.CPModule):
             header = self.get_group_header(group)
             if header is None:
                 return None
-            rdr = J.run_script("new java.io.StringReader(header);",
-                               dict(header=header))
+            rdr = J.make_instance(
+                "java/io/StringReader",
+                "(Ljava/lang/String;)V",
+                header)
         elif group.csv_location.is_url():
-            rdr = J.run_script(
-                """var url = new java.net.URL(path);
-                   new java.io.InputStreamReader(url.openStream());
-                   """, dict(path=group.csv_location.value))
+            jurl = J.make_instance(
+                "java/net/URL",
+                "(Ljava/lang/String;)V",
+                group.csv_location.value)
+            stream = J.call(
+                jurl, "openStream",
+                "()Ljava/io/InputStream;")
+            rdr = J.make_instance(
+                "java/io/InputStreamReader",
+                "(Ljava/io/InputStream;)V",
+                stream)
         else:
-            rdr = J.run_script(
-                    """var stream = new java.io.FileInputStream(path);
-                       new java.io.InputStreamReader(stream);
-                    """, dict(path=group.csv_location.value))
-        return J.run_script(
-            """importPackage(Packages.org.cellprofiler.imageset);
-            new ImportedMetadataExtractor(rdr, key_pairs);
-            """, dict(rdr = rdr, key_pairs=key_pairs))
+            stream = J.make_instance(
+                "java/io/FileInputStream",
+                "(Ljava/lang/String;)V",
+                group.csv_location.value)
+            rdr = J.make_instance(
+                "java/io/InputStreamReader",
+                "(Ljava/io/InputStream;)V",
+                stream)
+        return J.make_instance(
+            "org/cellprofiler/imageset/ImportedMetadataExtractor",
+            "(Ljava/io/Reader;[Lorg/cellprofiler/imageset/MetadataKeyPair;)V",
+            rdr, key_pairs)
         
             
     def refresh_group_joiner(self, group):
@@ -592,10 +605,12 @@ class Metadata(cpm.CPModule):
         if header is None:
             header_keys = ["None"]
         else:
-            header_keys = J.get_collection_wrapper(J.run_script("""
-                importPackage(org.cellprofiler.imageset);
-                ImportedMetadataExtractor.readHeader(header);
-                """, dict(header = header)), J.to_string)
+            header_keys = J.get_collection_wrapper(
+                J.static_call(
+                    "org/cellprofiler/imageset/ImportedMetadataExtractor",
+                    "readHeader",
+                    "(Ljava/lang/String;)Ljava/util/List;",
+                    header), J.to_string)
         joiner.entities[self.CSV_JOIN_NAME] = list(header_keys)
         
     def settings(self):
@@ -731,22 +746,25 @@ class Metadata(cpm.CPModule):
         #
         # Build a metadata extractor
         #
-        script = """
-        importPackage(Packages.org.cellprofiler.imageset);
-        extractor = new ImagePlaneMetadataExtractor();
-        extractor.addImagePlaneExtractor(new URLSeriesIndexMetadataExtractor());
-        extractor;
-        """
-        extractor = J.run_script(script)
+        extractor = J.make_instance(
+            "org/cellprofiler/imageset/ImagePlaneMetadataExtractor",
+            "()V")
+        J.call(extractor, "addImagePlaneExtractor",
+               "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
+               J.make_instance(
+                   "org/cellprofiler/imageset/URLSeriesIndexMetadataExtractor",
+                   "()V"))
         if any([group.extraction_method == X_AUTOMATIC_EXTRACTION
                 for group in self.extraction_methods]):
-            script = """
-            importPackage(Packages.org.cellprofiler.imageset);
-            extractor.addImageFileExtractor(new OMEFileMetadataExtractor());
-            extractor.addImageSeriesExtractor(new OMESeriesMetadataExtractor());
-            extractor.addImagePlaneExtractor(new OMEPlaneMetadataExtractor());
-                """
-            J.run_script(script, dict(extractor=extractor));
+            for method_name, class_name in (
+                ("addImageFileExtractor", "OMEFileMetadataExtractor"),
+                ("addImageSeriesExtractor", "OMESeriesMetadataExtractor"),
+                ("addImagePlaneExtractor", "OMEPlaneMetadataExtractor")):
+                class_name = "org/cellprofiler/imageset/"+class_name
+                J.call(extractor, method_name,
+                       "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
+                       J.make_instance(class_name, "()V"))
+                       
         for group in self.extraction_methods:
             if group == end_group:
                 break
@@ -789,12 +807,18 @@ class Metadata(cpm.CPModule):
         # but only if our existing metadata extractors have metadata that
         # might require it.
         #
-        script = """
-        importPackage(Packages.org.cellprofiler.imageset);
-        if (WellMetadataExtractor.maybeYouNeedThis(extractor.getMetadataKeys()))
-            extractor.addImagePlaneDetailsExtractor(new WellMetadataExtractor());
-        """
-        J.run_script(script, dict(extractor = extractor))
+        metadata_keys = J.call(extractor,
+                               "getMetadataKeys",
+                               "()Ljava/util/List;")
+        if J.static_call("org/cellprofiler/imageset/WellMetadataExtractor",
+                         "maybeYouNeedThis", "(Ljava/util/List;)Z",
+                         metadata_keys):
+            J.call(extractor,
+                   "addImagePlaneDetailsExtractor",
+                   "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
+                   J.make_instance(
+                       "org/cellprofiler/imageset/WellMetadataExtractor",
+                       "()V"))
         
         return extractor
                     

@@ -325,7 +325,6 @@ public class FlowSightReader extends FormatReader {
 			boolean bHasNext = (formatException[0] != null);
 			boolean loaded = bHasNext;
 			
-			@Override
 			public boolean hasNext() {
 				if (loaded) return bHasNext;
 				shift = 0;
@@ -395,14 +394,12 @@ public class FlowSightReader extends FormatReader {
 				return true;
 			}
 	
-			@Override
 			public Short next() {
 				if (! hasNext()) throw new IndexOutOfBoundsException("Tried to read past end of IFD data");
 				loaded = false;
 				return value;
 			}
 	
-			@Override
 			public void remove() {
 				throw new UnsupportedOperationException();
 			}

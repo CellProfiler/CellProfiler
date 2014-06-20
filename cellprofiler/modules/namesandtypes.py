@@ -1439,7 +1439,7 @@ class NamesAndTypes(cpm.CPModule):
                 J.call(stack, "get", "([I)Ljava/lang/Object;", coords))
             url = ipd.url
         else:
-            coords = np.zeros(num_dimensions, int)
+            coords = np.zeros(num_dimensions, np.int32)
             ipds = []
             for i in range(J.call(stack, "size", "(I)I", 2)):
                 coords[2] = i

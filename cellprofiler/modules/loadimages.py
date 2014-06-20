@@ -3346,6 +3346,8 @@ def is_file_url(url):
     return url.lower().startswith(FILE_SCHEME)
 
 def url2pathname(url):
+    if isinstance(url, unicode):
+        url = url.encode("utf-8")
     if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
     assert is_file_url(url)

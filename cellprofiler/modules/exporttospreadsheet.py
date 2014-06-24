@@ -493,9 +493,13 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1,))
-        figure.subplot_table(0, 0, 
-                             workspace.display_data.columns,
-                             col_labels = workspace.display_data.header)
+        if workspace.pipeline.test_mode:
+            figure.subplot_table(
+                0, 0, [["Data not written to spreadsheets in test mode"]])        
+        else:
+            figure.subplot_table(0, 0, 
+                                 workspace.display_data.columns,
+                                 col_labels = workspace.display_data.header)
     
     def run_as_data_tool(self, workspace):
         '''Run the module as a data tool

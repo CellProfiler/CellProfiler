@@ -834,7 +834,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         '''Produce error if 'All:First' is selected and input image is not provided by the file image provider.'''
         if not pipeline.is_image_from_file(self.image_name.value) and self.each_or_all == EA_ALL_FIRST:
             raise cps.ValidationError(
-                    "All: First cycle requires that the input image be provided by LoadImages or LoadData.",
+                    "All: First cycle requires that the input image be provided by the Input modules, or LoadImages/LoadData.",
                     self.each_or_all)
         
         '''Modify the image provider attributes based on other setttings'''
@@ -843,7 +843,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             d[cps.AVAILABLE_ON_LAST_ATTRIBUTE] = True
         elif d.has_key(cps.AVAILABLE_ON_LAST_ATTRIBUTE):
             del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
-    
+            
+    def validate_module_warnings(self, pipeline):
+        '''Warn user re: Test mode '''
+        if self.each_or_all == EA_ALL_FIRST:
+            raise cps.ValidationError("Pre-calculation of the illumination function is time-intensive, especially for Test Mode. The analysis will proceed, but consider using '%s' instead."%EA_ALL_ACROSS,
+                                      self.each_or_all)    
+            
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
         """Adjust the setting values of old versions

@@ -49,7 +49,7 @@ np.seterr(all='ignore')
 # appears when CP is frozen
 #
 try:
-    from pyreadline.logger import stop_logging, pyreadline_logger, Rea
+    from pyreadline.logger import stop_logging, pyreadline_logger
     pyreadline_logger.setLevel(logging.INFO)
     stop_logging()
 except:

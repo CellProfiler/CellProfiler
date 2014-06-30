@@ -24,6 +24,7 @@ import uuid
 import cStringIO
 import wx
 import wx.grid
+import wx.lib.colourselect
 import wx.lib.rcsizer
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
@@ -1006,25 +1007,39 @@ class ModuleView:
         return control
     
     def make_color_control(self, v, control_name, control):
+        try:
+            color = wx.Colour()
+            color.SetFromName(v.value)        
+        except:
+            color = wx.BLACK
+            if (not hasattr(control, "bad_color_name") or
+                control.bad_color_name != v.value):
+                logger.warn("Failed to set color to %s" % v.value)
+                control.bad_color_name = v.value
         if control is None:
-            control = wx.Button(self.module_panel)
+            control = wx.lib.colourselect.ColourSelect(
+                self.__module_panel,
+            colour = color)
+            control.SetName(control_name)
             
             def on_press(event, v=v, control=control):
-                color = wx.Colour()
-                color.SetFromName(v.value)
-                data = wx.ColourData()
-                data.SetColour(color)
-                dlg = wx.ColourDialog(self.module_panel, data)
-                dlg.Title = v.text
-                if dlg.ShowModal() == wx.ID_OK:
-                    proposed_value = dlg.GetColourData().GetColour().GetAsString(
+                proposed_value = control.GetColour().GetAsString(
                         wx.C2S_NAME | wx.C2S_HTML_SYNTAX)
-                    setting_edited_event = SettingEditedEvent(
+                setting_edited_event = SettingEditedEvent(
                         v, self.__module, proposed_value, event)
-                    self.notify(setting_edited_event)
-                    self.reset_view()
-            control.Bind(wx.EVT_BUTTON, on_press)
-        control.SetBackgroundColour(v.value)
+                self.notify(setting_edited_event)
+                self.reset_view()
+            #
+            # There's a little display bugginess that, when the window's
+            # size changes, the colored bitmap does not.
+            #
+            def on_size(event, control=control):
+                control.SetBitmap(control.MakeBitmap())
+                
+            control.Bind(wx.lib.colourselect.EVT_COLOURSELECT, on_press)
+            control.Bind(wx.EVT_SIZE, on_size)
+        else:
+            control.SetColour(color)
         return control
         
     def make_tree_choice_control(self, v, control_name, control):

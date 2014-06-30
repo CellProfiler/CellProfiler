@@ -803,6 +803,18 @@ class Pipeline(object):
             module.save_to_handles(handles)
         return handles
     
+    @staticmethod
+    def is_pipeline_txt_file(filename):
+        '''Test a file to see if it can be loaded by Pipeline.loadtxt
+        
+        filename - path to the file
+        
+        returns True if the file starts with the CellProfiler cookie.
+        '''
+        with open(filename, "rb") as fd:
+            header = fd.read(len(COOKIE))
+            return header == COOKIE
+        
     def load(self, fd_or_filename):
         """Load the pipeline from a file
         

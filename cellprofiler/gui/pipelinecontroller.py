@@ -503,6 +503,34 @@ class PipelineController:
                           parent = self.__frame,
                           style = wx.OK | wx.ICON_ERROR)
             return
+        #
+        # Meh, maybe the user loaded a pipeline file...
+        #
+        if not h5py.is_hdf5(filename):
+            if cpp.Pipeline.is_pipeline_txt_file(filename):
+                message = (
+                    "The file, \"%s\", is a pipeline file, not a project file. "
+                    "Do you want to load it as a pipeline?") % \
+                    os.path.split(filename)[-1]
+                result = wx.MessageBox(
+                    message, 
+                    "Cannot load as project file",
+                    style = wx.YES | wx.NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
+                    parent = self.__frame)
+                if result == wx.YES:
+                    self.do_load_pipeline(filename)
+                return
+            else:
+                message = (
+                    "CellProfiler cannot read the file, \"%s\", as a project "
+                    "file. It may be damaged or corrupted or may not be in the "
+                    ".cpproj format") % os.path.split(filename)[-1]
+                wx.MessageBox(
+                    message, "Cannot read %s" % filename,
+                    style = wx.OK | wx.ICON_ERROR,
+                    parent = self.__frame)
+                return
+                
         if self.is_running():
             # Defensive programming - the user shouldn't be able
             # to do this.

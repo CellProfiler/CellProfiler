@@ -308,7 +308,7 @@ cdef extern from "jni.h":
 
     jint JNI_CreateJavaVM(JavaVM **pvm, void **penv, void *args) nogil
     jint JNI_GetDefaultJavaVMInitArgs(void *args) nogil
-    
+
 IF UNAME_SYSNAME == "Darwin":
     cdef extern from "mac_javabridge_utils.h":
         int MacStartVM(JavaVM **, JavaVMInitArgs *pVMArgs, char *class_name) nogil
@@ -393,22 +393,86 @@ def get_default_java_vm_init_args():
     result = JNI_GetDefaultJavaVMInitArgs(<void *>&args)
     return (args.version, [args.options[i].optionString for i in range(args.nOptions)])
 
+__vm = None
+__thread_local_env = threading.local()
+__dead_objects = []
+__wake_event = threading.Event()
+
+def wait_for_wake_event():
+    '''Wait for dead objects to be enqueued or other event on monitor thread'''
+    __wake_event.wait()
+    __wake_event.clear()
+    
+def set_wake_event():
+    '''Wake up the monitor thread'''
+    __wake_event.set()
+
+def get_vm():
+    global __vm
+    if __vm is None:
+        __vm = JB_VM()
+    return __vm
+    
+def get_thread_local(key, default=None):
+    if not hasattr(__thread_local_env, key):
+        setattr(__thread_local_env, key, default)
+    return getattr(__thread_local_env, key)
+    
+def set_thread_local(key, value):
+    setattr(__thread_local_env, key, value)
+    
+def get_env():
+    '''Get the environment for this thread'''
+    return get_thread_local("env")
+    
+def jb_attach():
+    '''Attach to this thread's environment'''
+    assert __vm is not None
+    assert get_env() is None
+    set_thread_local("env", __vm.attach_as_daemon())
+    return get_env()
+    
+def jb_detach():
+    '''Detach from this thread's environment'''
+    assert __vm is not None
+    assert get_env() is not None
+    set_thread_local("env", None)
+    __vm.detach()
+    
+def reap():
+    '''Reap all of the garbage-collected Java objects on the dead_objects list'''
+    if len(__dead_objects) > 0:
+        env = get_env()
+        assert env is not None
+        try:
+            while True:
+                to_die = __dead_objects.pop()
+                env.dealloc_jobject(to_die)
+        except IndexError:
+            pass
+
 cdef class JB_Object:
     '''A Java object'''
     cdef:
         jobject o
-        env
         gc_collect
     def __cinit__(self):
         self.o = NULL
-        self.env = None
         self.gc_collect = False
     def __repr__(self):
         return "<Java object at 0x%x>"%<int>(self.o)
         
     def __dealloc__(self):
-        if self.env is not None and self.gc_collect:
-            self.env.dealloc_jobject(self)
+        if not self.gc_collect:
+            return
+        env = get_env()
+        if env is None:
+            alternate = JB_Object()
+            alternate.o = self.o
+            __dead_objects.append(alternate)
+            set_wake_event()
+        else:
+            env.dealloc_jobject(self)
 
     def addr(self):
         '''Return the address of the Java object as a string'''
@@ -522,6 +586,9 @@ cdef class JB_VM:
     '''Represents the Java virtual machine'''
     cdef JavaVM *vm
             
+    def is_active(self):
+        return self.vm != NULL
+        
     def create(self, options):
         '''Create the Java VM'''
         cdef:
@@ -543,6 +610,7 @@ cdef class JB_VM:
             raise RuntimeError("Failed to create Java VM. Return code = %d"%result)
         jenv = JB_Env()
         jenv.env = env
+        set_thread_local("env", jenv)
         return jenv
 
     def create_mac(self, options, class_name):
@@ -624,10 +692,10 @@ cdef class JB_Env:
     '''Represents the Java VM and the Java execution environment'''
     cdef:
         JNIEnv *env
-        defer_fn
 
     def __init__(self):
-        self.defer_fn = None
+        self.env = NULL
+        
     def __repr__(self):
         return "<JB_Env at 0x%x>"%(<size_t>(self.env))
     
@@ -644,30 +712,13 @@ cdef class JB_Env:
     def __dealloc__(self):
         self.env = NULL
         
-    def set_defer_fn(self, defer_fn):
-        '''The defer function defers object deallocation, running it on the main Java thread'''
-        self.defer_fn = defer_fn
-        self.env = NULL
-        
     def dealloc_jobject(self, JB_Object jbo):
         '''Deallocate an object as it goes out of scope
         
         DON'T call this externally.
         '''
-        cdef:
-            JB_Object safer_object
-        if self.defer_fn is not None:
-            #
-            # jbo might be gc, so gen a new object that will survive
-            #
-            safer_object=JB_Object()
-            safer_object.o = jbo.o
-            safer_object.env = self
-            self.defer_fn(safer_object)
-        elif (jbo.env is not None) and self.env != NULL:
-            self.env[0].DeleteGlobalRef(self.env, jbo.o)
-            jbo.env = None
-
+        self.env[0].DeleteGlobalRef(self.env, jbo.o)
+        jbo.gc_collect = False
         
     def get_version(self):
         '''Return the version number as a major / minor version tuple'''
@@ -1696,6 +1747,5 @@ cdef make_jb_object(JB_Env env, jobject o):
     env.env[0].DeleteLocalRef(env.env, o)
     jbo = JB_Object()
     jbo.o = oref
-    jbo.env = env
     jbo.gc_collect = True
     return (jbo, None)

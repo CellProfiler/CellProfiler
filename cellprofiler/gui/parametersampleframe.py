@@ -840,7 +840,7 @@ class ParameterSampleFrame(wx.Frame):
 
                     # 3. Open output file and write headers
                     output_file =\
-                        open(save_dialog.GetDirectory() + '\\' + save_dialog.GetFilename(), 'w')
+                        open(save_dialog.GetPath(), 'w')
                     headers = ''
                     for i, setting in enumerate(self.__module.visible_settings()):
                         # Do not write settings without values, ie, buttons etc

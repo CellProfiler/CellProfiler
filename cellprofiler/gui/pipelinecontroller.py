@@ -704,7 +704,7 @@ class PipelineController:
                             "Choose a pipeline file to open",
                             wildcard = wildcard)
         if dlg.ShowModal()==wx.ID_OK:
-            pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
+            pathname = dlg.GetPath()
             self.do_load_pipeline(pathname)
         dlg.Destroy()
             
@@ -993,11 +993,11 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             if dlg.ShowModal() == wx.ID_OK:
                 save_image_plane_details = (dlg.GetFilterIndex() == 1)
                 file_name = dlg.GetFilename()
+                pathname = dlg.GetPath()
                 if not sys.platform.startswith("win"):
                     if file_name.find('.') == -1:
                         # on platforms other than Windows, add the default suffix
-                        file_name += "." + cpprefs.EXT_PIPELINE
-                pathname = os.path.join(dlg.GetDirectory(), file_name)
+                        pathname += "." + cpprefs.EXT_PIPELINE
                 self.__pipeline.save(
                     pathname,
                     save_image_plane_details=save_image_plane_details)

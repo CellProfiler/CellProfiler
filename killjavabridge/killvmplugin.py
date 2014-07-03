@@ -64,6 +64,7 @@ class KillVMPlugin(Plugin):
             # Start PySimpleApp for unit tests
             #
             import unittest
+            import bioformats
             try:
                  import wx
                  wx.GetApp()
@@ -71,6 +72,9 @@ class KillVMPlugin(Plugin):
             except unittest.SkipTest:
                  has_wx = False
             if has_wx:
+                from cellprofiler.utilities.jutil \
+                    import activate_awt
+                activate_awt()
                 self.app = wx.GetApp()
                 if self.app is None:
                     class KVMApp(wx.PySimpleApp):

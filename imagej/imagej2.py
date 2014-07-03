@@ -301,6 +301,7 @@ def wrap_module_info(instance):
         getMenuRoot = J.make_method(
             "getMenuRoot", "()Ljava/lang/String;")
         getName = J.make_method("getName", "()Ljava/lang/String;")
+        getClassName = J.make_method("getClassName", "()Ljava/lang/String;")        
     return ModuleInfo()
 
 def wrap_module_item(instance):
@@ -676,7 +677,7 @@ def select_overlay(display, overlay, select=True):
             J.execute_runnable_in_main_thread(J.run_script(
                 """new java.lang.Runnable() {
                     run: function() { view.setSelected(select);}
-                   }""", dict(view = view.o, select=select)))
+                   }""", dict(view = view.o, select=select)), synchronous=True)
             break
     else:
         logger.info("Failed to select overlay")

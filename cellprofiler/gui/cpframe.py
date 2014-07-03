@@ -1202,8 +1202,7 @@ Agreement for the Intel Software Development Products.
                                  style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         result = save_dlg.ShowModal()
         if result == wx.ID_OK:
-            pathname = os.path.join(save_dlg.GetDirectory(),
-                                    save_dlg.GetFilename())
+            pathname = save_dlg.GetPath()
             fd = open(pathname, "wt")
             fd.write(help_text)
             fd.close()

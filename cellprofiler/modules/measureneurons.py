@@ -133,11 +133,11 @@ class MeasureNeurons(cpm.CPModule):
         
         self.directory = cps.DirectoryPath(
             "File output directory", 
-            value = cps.DEFAULT_OUTPUT_FOLDER_NAME,
             dir_choices = [
                 cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                 cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
                 cps.DEFAULT_INPUT_SUBFOLDER_NAME])
+        self.directory.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
         
         self.vertex_file_name = cps.Text(
             "Vertex file name", "vertices.csv",doc = """

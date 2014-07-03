@@ -139,7 +139,6 @@ class ExportToSpreadsheet(cpm.CPModule):
         
         self.directory = cps.DirectoryPath(
             "Output file location",
-            value = DEFAULT_OUTPUT_FOLDER_NAME,
             dir_choices = [
                 ABSOLUTE_FOLDER_NAME, 
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
@@ -153,6 +152,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will 
             substitute the metadata values for the current image set for any metadata tags in the 
             folder name. %(USING_METADATA_HELP_REF)s.</p>"""%globals())
+        self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
         
         self.wants_prefix = cps.Binary(
             "Add a prefix to file names?",

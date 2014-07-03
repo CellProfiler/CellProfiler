@@ -435,8 +435,7 @@ class ExportToDatabase(cpm.CPModule):
             Enter the prefix to be used to name the SQL file."""%globals())
         
         self.directory = cps.DirectoryPath(
-            "Output file location", 
-            value = DEFAULT_OUTPUT_FOLDER_NAME,
+            "Output file location",
             dir_choices = [
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
@@ -453,6 +452,7 @@ class ExportToDatabase(cpm.CPModule):
             and then specifying the subfolder name with the "Plate" metadata tag. 
             The module will substitute the metadata values for the last image set 
             processed for any metadata tags in the folder name. %(USING_METADATA_HELP_REF)s.</p>"""% globals())
+        self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
         
         self.save_cpa_properties = cps.Binary(
             "Create a CellProfiler Analyst properties file?", 

@@ -282,8 +282,7 @@ class UntangleWorms(cpm.CPModule):
             with the overlapping sections removed."""%globals())
         
         self.training_set_directory = cps.DirectoryPath(
-            "Training set file location", 
-            value = DEFAULT_OUTPUT_FOLDER_NAME,
+            "Training set file location",
             support_urls = True,
             allow_metadata = False,doc = """
             Select the folder containing the training set to be loaded.
@@ -297,6 +296,7 @@ class UntangleWorms(cpm.CPModule):
             <code>http://my_institution.edu/server/my_username/</code>
             as the path location.</li>
             </ul></p>"""%globals())
+        self.training_set_directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
         
         def get_directory_fn():
             '''Get the directory for the CSV file name'''

@@ -642,7 +642,7 @@ def make_kill_vm():
     
     kill = __kill
     def kill_vm():
-        if javabridge.get_vm() is None:
+        if not javabridge.get_vm().is_active():
             return
         deactivate_awt()
         gc.collect()

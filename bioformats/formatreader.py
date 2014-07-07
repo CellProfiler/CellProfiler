@@ -31,6 +31,7 @@ __version__ = "$Revision$"
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
+import re
 import os
 import sys
 import urllib
@@ -155,6 +156,8 @@ def make_iformat_reader_class():
         setMetadataOptions = jutil.make_method('setMetadataOptions',
                                                '(Lloci/formats/in/MetadataOptions;)V',
                                                'Sets the metadata options used when reading metadata')
+        setOriginalMetadataPopulated = jutil.make_method(
+            'setOriginalMetadataPopulated', '(Z)V')
         isThisTypeS = jutil.make_method(
             'isThisType',
             '(Ljava/lang/String;)Z',
@@ -928,26 +931,71 @@ def get_omexml_metadata(path=None, url=None):
                  into account.
     '''
     with ImageReader(path=path, url=url, perform_init=False) as rdr:
+
+        rdr.rdr.setGroupFiles(False)
+        rdr.rdr.setOriginalMetadataPopulated(True)
+        service_factory = jutil.make_instance(
+            "loci/common/services/ServiceFactory", "()V")
+        omesvc = jutil.call(
+            service_factory, "getInstance",
+            "(Ljava/lang/Class;)Lloci/common/services/Service;",
+            jutil.class_for_name("loci.formats.services.OMEXMLService"))
+        metadata = jutil.call(omesvc, "createOMEXMLMetadata",
+                          "()Lloci/formats/ome/OMEXMLMetadata;")
+        rdr.rdr.setMetadataStore(metadata)
+        ml_all = jutil.get_static_field(
+            "loci/formats/in/MetadataLevel", "ALL",
+            "Lloci/formats/in/MetadataLevel;")
+        rdr.rdr.setMetadataOptions(
+            jutil.make_instance(
+                "loci/formats/in/DefaultMetadataOptions",
+                "(Lloci/formats/in/MetadataLevel;)V", ml_all))
+        rdr.rdr.setId(rdr.path)
         #
-        # Below, "in" is a keyword and Rhino's parser is just a little wonky I fear.
+        # At this point, two ways to retrieve the metadata - pristine
+        # with lots of checks and accompanying failures or a more dirty
+        # way that succeeds even though some of the fields may have illegal
+        # characters
         #
-        # It is critical that setGroupFiles be set to false, goodness knows
-        # why, but if you don't the series count is wrong for flex files.
-        #
-        script = """
-        importClass(Packages.loci.common.services.ServiceFactory,
-                    Packages.loci.formats.services.OMEXMLService,
-                    Packages.loci.formats['in'].DefaultMetadataOptions,
-                    Packages.loci.formats['in'].MetadataLevel);
-        reader.setGroupFiles(false);
-        reader.setOriginalMetadataPopulated(true);
-        var service = new ServiceFactory().getInstance(OMEXMLService);
-        var metadata = service.createOMEXMLMetadata();
-        reader.setMetadataStore(metadata);
-        reader.setMetadataOptions(new DefaultMetadataOptions(MetadataLevel.ALL));
-        reader.setId(path);
-        var xml = service.getOMEXML(metadata);
-        xml;
-        """
-        xml = jutil.run_script(script, dict(path=rdr.path, reader = rdr.rdr))
+        try:
+            xml = jutil.call(
+                omesvc, "getOMEXML", 
+                "(Lloci/formats/meta/MetadataRetrieve;)Ljava/lang/String;",
+                metadata)
+        except:
+            xml = None
+        if xml is None:
+            xml = jutil.call(metadata, "dumpXML", "()Ljava/lang/String;")
+            cleanxml = ""
+            warned = False
+            while True:
+                match = re.search("&#(\\d+|x?[a-fA-F0-9]+);", xml)
+                if match is None:
+                    cleanxml += xml
+                    break
+                capture = match.group(1)
+                if capture.startswith("x"):
+                    value = hex(capture[1:])
+                else:
+                    value = int(capture)
+                # Legal range is given here:
+                # http://www.w3.org/TR/REC-xml/#charsets
+                if (value >= 0x20 and value <= 0xd7ff) or\
+                   (value in (0x9, 0xA, 0xD)) or\
+                   (value >= 0xE000 and value <= 0xFFFD) or\
+                   (value >= 0x10000 and value <= 0x10FFFF):
+                    cleanxml += xml[:match.end()]
+                else:
+                    if not warned:
+                        logger.warn(
+                            "Filtering out illegal XML entity: " + capture)
+                        warned = True
+                    cleanxml += xml[:match.start()]
+                xml = xml[match.end():]
+            xml = cleanxml
+            if not jutil.call(
+                omesvc, "validateOMEXML", "(Ljava/lang/String;)Z", xml):
+                raise ValueError(
+                    "Failed to extract metadata from the file, %s" % 
+                    os.path.split(rdr.path)[1])
         return xml

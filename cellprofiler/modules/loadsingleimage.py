@@ -372,6 +372,18 @@ class LoadSingleImage(cpm.CPModule):
         statistics = []
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
+        #
+        # Hack: if LoadSingleImage is first, no paths are populated
+        # 
+        if self.file_wants_images(self.file_settings[0]):
+            m_path = "_".join((C_PATH_NAME, 
+                               self.file_settings[0].image_name.value))
+        else:
+            m_path = "_".join((C_OBJECTS_PATH_NAME,
+                               self.file_settings[0].objects_name.value))
+        if m.get_current_image_measurement(m_path) is None:
+            self.prepare_run(workspace)
+            
         image_set = workspace.image_set
         for file_setting in self.file_settings:
             wants_images = self.file_wants_images(file_setting)

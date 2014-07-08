@@ -2632,10 +2632,10 @@ def read_params(training_set_directory, training_set_file_name, d):
             elif kind == STRING:
                 return x[0]
             elif kind == VECTOR:
-                if x.shape[0] > 1:
-                    return x[:,0]
-                else:
-                    return x[0,:]
+                # Work-around for OS/X Numpy bug
+                # Copy a possibly mis-aligned buffer
+                b = np.array([v for v in np.frombuffer(x.data, np.uint8)], np.uint8)
+                return np.frombuffer(b, x.dtype)
             return x
         
         result.min_worm_area = mp(INITIAL_FILTER, "min_worm_area")

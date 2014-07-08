@@ -32,6 +32,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.loadsingleimage as L
+import cellprofiler.modules.loadimages as LI
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.tests import example_images_directory
 from cellprofiler.modules.tests.test_loadimages import ConvtesterMixin
@@ -379,6 +380,51 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         unscaled, scaled = [workspace.image_set.get_image(self.get_image_name(i)).pixel_data
                             for i in range(2)]
         np.testing.assert_almost_equal(unscaled * 65535. / 4095., scaled)
+        
+    def test_02_03_prepare_run(self):
+        # regression test for issue #673 and #1161
+        #
+        # If LoadSingleImage appears first, pathname data does not show
+        # up in the measurements.
+        #
+        path = os.path.join(example_images_directory(), "ExampleSBSImages")
+        filename = "Channel1-01-A-01.tif"
+        pipeline = cpp.Pipeline()
+        lsi = L.LoadSingleImage()
+        lsi.module_num = 1
+        lsi.directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        lsi.directory.custom_path = path
+        lsi.file_settings[0].image_name.value = self.get_image_name(0)
+        lsi.file_settings[0].file_name.value = filename
+        pipeline.add_module(lsi)
+        li = LI.LoadImages()
+        li.module_num = 2
+        pipeline.add_module(li)
+        li.match_method.value = LI.MS_EXACT_MATCH
+        li.location.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        li.location.custom_path = path
+        li.images[0].common_text.value = "Channel2-"
+        m = cpmeas.Measurements()
+        workspace = cpw.Workspace(pipeline, lsi, m, cpo.ObjectSet(), m,
+                                  cpi.ImageSetList())
+        self.assertTrue(pipeline.prepare_run(workspace))
+        self.assertGreater(m.image_set_count, 1)
+        pipeline.prepare_group(workspace, {}, m.get_image_numbers())
+        #
+        # Skip to the second image set
+        #
+        m.next_image_set(2)
+        lsi.run(workspace)
+        #
+        # Are the measurements populated?
+        #
+        m_file = "_".join((cpmeas.C_FILE_NAME, self.get_image_name(0)))
+        self.assertEqual(m[cpmeas.IMAGE, m_file,2], filename)
+        #
+        # Can we retrieve the image?
+        #
+        pixel_data = m.get_image(self.get_image_name(0)).pixel_data
+        self.assertEqual(tuple(pixel_data.shape), (640, 640))
         
     def test_03_01_measurement_columns(self):
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]

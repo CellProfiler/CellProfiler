@@ -1645,11 +1645,15 @@ list saved in a readable format, for instance, for version control whenever
 the project file is saved. Your project can be restored by importing both
 the pipeline and file list, your pipeline can be run using a different
 file list and your file list can be reused by importing it into a different
-project. Choose <i>Neither</i> to refrain from saving either file. Choose
-<i>Pipeline</i> to save the pipeline, using the project's file name and
-path and a .cppipe extension. Choose <i>File list</i> to save the file
-list, using the project's file name and path and a .txt extension. Choose
-<i>Pipeline and file list</i> to save both files.
+project. 
+<ul>
+<li><i>Neither:</i> Refrain from saving either file. </li>
+<li><i>Pipeline:</i> Save the pipeline, using the project's file name and
+path and a .cppipe extension. </li>
+<li><i>File list:</i> Save the file list, using the project's file name and 
+path and a .txt extension.</li>
+<li><i>Pipeline and file list:</i> Save both files.</li>
+</ul>
 """
 
 EACH_PREFERENCE_HELP = (
@@ -1669,16 +1673,16 @@ EACH_PREFERENCE_HELP = (
     #( "ImageJ version", IJ_VERSION_HELP),
     ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
     ( "Display welcome text on startup", SHOW_STARTUP_BLURB_HELP ),
-    ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP),
-    ( "Show the 'Analysis complete' message", SHOW_ANALYSIS_COMPLETE_HELP),
-    ( "Show the 'Exiting test mode' message", SHOW_EXITING_TEST_MODE_HELP),
+    ( "Warn if Java runtime environment not present", REPORT_JVM_ERROR_HELP),
+    ( 'Show the "Analysis complete" message at the end of a run', SHOW_ANALYSIS_COMPLETE_HELP),
+    ( 'Show the "Exiting test mode" message', SHOW_EXITING_TEST_MODE_HELP),
     ( "Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
     ( "Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
-    ( "Warn about old pipelines", WARN_ABOUT_OLD_PIPELINES_HELP), 
+    ( "Warn if a pipeline was saved in an old version of CellProfiler", WARN_ABOUT_OLD_PIPELINES_HELP), 
     ( "Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
     ( "Maximum number of workers", MAX_WORKERS_HELP),
     ( "Temporary folder", TEMP_DIR_HELP),
-    ( "Save pipeline and file list with project", SAVE_PIPELINE_WITH_PROJECT_HELP),
+    ( "Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),
     )
 PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
 <ul>"""
@@ -1738,6 +1742,10 @@ save it unless you are saving the project to a new name or location. You can alw
 current work to a new project file by selecting <i>File > Save Project As...</i>, which will
 save your project, complete with the current image file list and pipeline, to a file with 
 with the extension <i>.cpproj</i>.</p>
+
+<p>You also have the option of automatically saving the associated pipeline file and the file list 
+in addition to the project file. See <i>File &gt; Preferences...</i> for more details.</p>
+
 <p>For those interested, some technical details:
 <ul>
 <li>The <i>.cpproj</i> file stores collected information using the HDF5 format. Documentation on

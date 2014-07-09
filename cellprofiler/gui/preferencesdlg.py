@@ -310,7 +310,7 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.set_jvm_heap_mb,
                  IntegerPreference(128, 64000),
                  cphelp.JVM_HEAP_HELP],
-                ['Save pipeline and file list with project',
+                ['Save pipeline and/or file list in addition to project',
                  cpprefs.get_save_pipeline_with_project,
                  cpprefs.set_save_pipeline_with_project,
                  cpprefs.SPP_ALL,

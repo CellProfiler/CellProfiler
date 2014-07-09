@@ -694,6 +694,18 @@ class PipelineController:
         cpprefs.set_workspace_file(filename)
         self.__dirty_workspace = False
         self.set_title()
+        others = cpprefs.get_save_pipeline_with_project()
+        if others in (cpprefs.SPP_PIPELINE_ONLY, 
+                      cpprefs.SPP_PIPELINE_AND_FILE_LIST):
+            pipeline_path = \
+                os.path.splitext(filename)[0] + "." + cpprefs.EXT_PIPELINE
+            self.__pipeline.save(pipeline_path,
+                                 save_image_plane_details=False)
+        if others in (cpprefs.SPP_FILE_LIST_ONLY,
+                      cpprefs.SPP_PIPELINE_AND_FILE_LIST):
+            filelist_path = os.path.splitext(filename)[0] + ".txt"
+            self.do_export_text_file_list(filelist_path)
+            
         return True
 
     def __on_load_pipeline(self, event):
@@ -768,8 +780,21 @@ class PipelineController:
         or end of the line, maybe you're asking too much :-)
         '''
         with open(path, mode="r") as fd:
-            pathnames = [p.strip() for p in fd]
+            pathnames = [p.strip().decode("utf-8") for p in fd]
             self.add_pathnames(pathnames)
+            
+    def do_export_text_file_list(self, path):
+        """Export pathnames to a text file
+        
+        path - path to the text file.
+        
+        The output is in the same format as for do_import_text_file_list
+        """
+        with open(path, mode="w") as fd:
+            for url in self.__workspace.file_list.get_filelist():
+                if isinstance(url, unicode):
+                    url = url.encode("utf-8")
+                fd.write(url+"\n")
     
     def is_running(self):
         return self.__analysis is not None

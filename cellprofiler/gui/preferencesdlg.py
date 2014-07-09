@@ -309,7 +309,13 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_jvm_heap_mb,
                  cpprefs.set_jvm_heap_mb,
                  IntegerPreference(128, 64000),
-                 cphelp.JVM_HEAP_HELP]]
+                 cphelp.JVM_HEAP_HELP],
+                ['Save pipeline and file list with project',
+                 cpprefs.get_save_pipeline_with_project,
+                 cpprefs.set_save_pipeline_with_project,
+                 cpprefs.SPP_ALL,
+                 cphelp.SAVE_PIPELINE_WITH_PROJECT_HELP]
+                ]
     
     def get_title_font(self):
         return "%s,%f"%(cpprefs.get_title_font_name(),

@@ -1638,6 +1638,20 @@ to load. You can also start CellProfiler from the command-line with the
 --jvm-heap-size switch to get the same effect.
 """
 
+SAVE_PIPELINE_WITH_PROJECT_HELP = """
+Controls whether a pipeline or file list file is saved whenever the user 
+saves the project file. Users may find it handy to have the pipeline or file
+list saved in a readable format, for instance, for version control whenever
+the project file is saved. Your project can be restored by importing both
+the pipeline and file list, your pipeline can be run using a different
+file list and your file list can be reused by importing it into a different
+project. Choose <i>Neither</i> to refrain from saving either file. Choose
+<i>Pipeline</i> to save the pipeline, using the project's file name and
+path and a .cppipe extension. Choose <i>File list</i> to save the file
+list, using the project's file name and path and a .txt extension. Choose
+<i>Pipeline and file list</i> to save both files.
+"""
+
 EACH_PREFERENCE_HELP = (
     ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP ),
     ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP ),
@@ -1663,7 +1677,8 @@ EACH_PREFERENCE_HELP = (
     ( "Warn about old pipelines", WARN_ABOUT_OLD_PIPELINES_HELP), 
     ( "Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
     ( "Maximum number of workers", MAX_WORKERS_HELP),
-    ( "Temporary folder", TEMP_DIR_HELP)
+    ( "Temporary folder", TEMP_DIR_HELP),
+    ( "Save pipeline and file list with project", SAVE_PIPELINE_WITH_PROJECT_HELP),
     )
 PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
 <ul>"""

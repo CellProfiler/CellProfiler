@@ -343,6 +343,7 @@ TEMP_DIR = "TempDir"
 WORKSPACE_CHOICE = "WorkspaceChoice"
 ERROR_COLOR = "ErrorColor"
 INTERPOLATION_MODE = "InterpolationMode"
+SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
 
 IM_NEAREST = "Nearest"
 IM_BILINEAR = "Bilinear"
@@ -378,6 +379,14 @@ JVM_HEAP_MB = "JVMHeapMB"
 '''Default JVM heap size'''
 DEFAULT_JVM_HEAP_MB = 512
 
+'''Save neither the pipeline nor the file list when saving the project'''
+SPP_NEITHER = "Neither"
+SPP_PIPELINE_ONLY = "Pipeline"
+SPP_FILE_LIST_ONLY = "File list"
+SPP_PIPELINE_AND_FILE_LIST = "Pipeline and file list"
+SPP_ALL = [SPP_NEITHER, SPP_PIPELINE_ONLY, SPP_FILE_LIST_ONLY, 
+           SPP_PIPELINE_AND_FILE_LIST]
+
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
 
@@ -392,7 +401,7 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
              WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE,
-             OMERO_SERVER, OMERO_PORT, OMERO_USER] + 
+             OMERO_SERVER, OMERO_PORT, OMERO_USER, SAVE_PIPELINE_WITH_PROJECT] + 
             [recent_file(n, category) for n in range(RECENT_FILE_COUNT)
              for category in ("", 
                               DEFAULT_IMAGE_DIRECTORY, 
@@ -1316,6 +1325,22 @@ def set_jvm_heap_mb(value, save_config=True):
     __jvm_heap_mb = value_mb
     if save_config:
         config_write(JVM_HEAP_MB, str(value_mb))
+        
+__save_pipeline_with_project = None
+def get_save_pipeline_with_project():
+    global __save_pipeline_with_project
+    if __save_pipeline_with_project is None:
+        if config_exists(SAVE_PIPELINE_WITH_PROJECT):
+            __save_pipeline_with_project = \
+                config_read(SAVE_PIPELINE_WITH_PROJECT)
+        else:
+            __save_pipeline_with_project = SPP_NEITHER
+    return __save_pipeline_with_project
+
+def set_save_pipeline_with_project(value):
+    global __save_pipeline_with_project
+    __save_pipeline_with_project = value
+    config_write(SAVE_PIPELINE_WITH_PROJECT, value)
     
 def add_progress_callback(callback):
     '''Add a callback function that listens to progress calls

@@ -671,8 +671,9 @@ class PipelineController:
             if dlg.ShowModal() == wx.ID_OK:
                 pathname, filename = os.path.split(dlg.Path)
                 fullname = dlg.Path
-                if sys.platform == "darwin" and "." not in filename:
-                    fullname += "." + cpprefs.EXT_PROJECT
+                dot_cpproj_ext = "." + cpprefs.EXT_PROJECT
+                if sys.platform == "darwin" and not filename.endswith(dot_cpproj_ext):
+                    fullname += dot_cpproj_ext
                 self.do_save_workspace(fullname)
                 cpprefs.set_current_workspace_path(fullname)
                 cpprefs.set_workspace_file(fullname)
@@ -1020,9 +1021,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 file_name = dlg.GetFilename()
                 pathname = dlg.GetPath()
                 if not sys.platform.startswith("win"):
-                    if file_name.find('.') == -1:
+                    dot_ext_pipeline = "." + cpprefs.EXT_PIPELINE
+                    if not file_name.endswith(dot_ext_pipeline):
                         # on platforms other than Windows, add the default suffix
-                        pathname += "." + cpprefs.EXT_PIPELINE
+                        pathname += dot_ext_pipeline
                 self.__pipeline.save(
                     pathname,
                     save_image_plane_details=save_image_plane_details)

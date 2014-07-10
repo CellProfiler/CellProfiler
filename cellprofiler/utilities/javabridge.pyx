@@ -463,6 +463,8 @@ cdef class JB_Object:
         return "<Java object at 0x%x>"%<int>(self.o)
         
     def __dealloc__(self):
+        cdef:
+            JB_Object alternate
         if not self.gc_collect:
             return
         env = get_env()

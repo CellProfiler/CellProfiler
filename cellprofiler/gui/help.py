@@ -1639,13 +1639,16 @@ to load. You can also start CellProfiler from the command-line with the
 """
 
 SAVE_PIPELINE_WITH_PROJECT_HELP = """
-Controls whether a pipeline or file list file is saved whenever the user 
-saves the project file. Users may find it handy to have the pipeline or file
+Controls whether a pipeline and/or file list file is saved whenever the user 
+saves the project file. Users may find it handy to have the pipeline and/or file
 list saved in a readable format, for instance, for version control whenever
 the project file is saved. Your project can be restored by importing both
-the pipeline and file list, your pipeline can be run using a different
-file list and your file list can be reused by importing it into a different
+the pipeline and file list, and your pipeline can be run using a different
+file list, and your file list can be reused by importing it into a different
 project. 
+Note: When using LoadData, it is not recommended to auto-save the file list,
+as this feature only saves the file list existing in the Input Modules, not
+LoadData input files. 
 <ul>
 <li><i>Neither:</i> Refrain from saving either file. </li>
 <li><i>Pipeline:</i> Save the pipeline, using the project's file name and

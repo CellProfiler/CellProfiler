@@ -2810,7 +2810,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         object_row.append(j+1)
                     #
                     # Write out in same order as in the column definition
-                    for object_name in object_names:
+                    for object_name in object_list:
                         for object_name_to_check, feature, coltype in columns:
                             if object_name_to_check != object_name:
                                 continue

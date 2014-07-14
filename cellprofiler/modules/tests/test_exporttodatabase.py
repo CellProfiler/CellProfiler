@@ -3359,7 +3359,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
                     
-    def test_05_08_write_two_object_tables_direct(self):
+    def test_05_08_01_write_two_object_tables_direct(self):
         '''Write two object tables using OT_PER_OBJECT'''
         workspace, module = self.make_workspace(
             False, alt_object = True)
@@ -3406,6 +3406,58 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME,
                                       "Per_%s" % ALTOBJECT_NAME))
                     
+    def test_05_08_02_write_two_object_tables_csv(self):
+        '''Write two object tables using OT_PER_OBJECT'''
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, alt_object = True)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL_CSV
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.max_column_size.value = 50
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_PER_OBJECT
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            module.post_run(workspace)
+            self.load_database(output_dir, module)
+            #
+            # Read from one object table
+            #
+            self.cursor.execute("use CPUnitTest")
+            statement = self.per_object_statement(module, OBJECT_NAME, 
+                                                  [OBJ_MEASUREMENT])
+            self.cursor.execute(statement)
+            for i, value in enumerate(OBJ_VALUE):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read from the other table
+            #
+            statement = self.per_object_statement(module, ALTOBJECT_NAME, 
+                                                  [OBJ_MEASUREMENT])
+            self.cursor.execute(statement)
+            for i in range(len(ALTOBJ_VALUE)):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 3)
+                self.assertEqual(row[0], 1)
+                self.assertEqual(row[1], i+1)
+                self.assertAlmostEqual(row[2], ALTOBJ_VALUE[i], 4)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            os.chdir(output_dir)
+            finally_fn()
+            self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME,
+                                      "Per_%s" % ALTOBJECT_NAME))
     def test_05_09_write_mysql_db_as_data_tool(self):
         '''Multiple objects / write - per-object tables'''
         workspace, module, output_dir, finally_fn = self.make_workspace(

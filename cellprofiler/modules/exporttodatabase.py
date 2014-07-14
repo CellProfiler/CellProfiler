@@ -2803,6 +2803,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     count = measurements.get_measurement(
                         cpmeas.IMAGE, "Count_%s" % object_name, image_number)
                     max_count = max(max_count, int(count))
+                d = {}
                 for j in range(max_count):
                     object_row = [image_number]
                     if file_object_name == cpmeas.OBJECT:
@@ -2814,8 +2815,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         for object_name_to_check, feature, coltype in columns:
                             if object_name_to_check != object_name:
                                 continue
-                            values = measurements.get_measurement(
-                                object_name, feature, image_number)
+                            key = (object_name, feature)
+                            if key not in d:
+                                values = measurements.get_measurement(
+                                    object_name, feature, image_number)
+                                d[key] = values
+                            else:
+                                values = d[key]
                             if (values is None or len(values) <= j or
                                 np.isnan(values[j]) or np.isinf(values[j])):
                                 value = "NULL"

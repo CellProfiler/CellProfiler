@@ -577,7 +577,8 @@ class ParameterSampleFrame(wx.Frame):
         try:
             if not self.__pipeline.prepare_run(workspace):
                 print 'Error: failed to get image sets'
-            self.__keys, self.__groupings = self.__pipeline.get_groupings(self.__image_set_list)
+            self.__keys, self.__groupings = self.__pipeline.get_groupings(
+                workspace)
         except ValueError, v:
             message = "Error while preparing for run:\n%s"%(v)
             wx.MessageBox(message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame)
@@ -601,12 +602,6 @@ class ParameterSampleFrame(wx.Frame):
         """
         failure = 1
         try:
-            image_set_number = self.__measurements.image_set_number
-            self.__measurements.add_image_measurement(
-                cellprofiler.pipeline.GROUP_NUMBER, self.__grouping_index)
-            self.__measurements.add_image_measurement(
-                cellprofiler.pipeline.GROUP_INDEX, self.__within_group_index)
-            image_set = self.__image_set_list.get_image_set(image_set_number-1)
             # ~*~
             #workspace = cellprofiler.workspace.Workspace(
             #    self.__pipeline, module, image_set, self.__object_set,
@@ -616,7 +611,7 @@ class ParameterSampleFrame(wx.Frame):
             #    None,
             #    outlines = self.__outlines)
             self.__workspace = cellprofiler.workspace.Workspace(
-                self.__pipeline, module, image_set, self.__object_set,
+                self.__pipeline, module, self.__measurements, self.__object_set,
                 self.__measurements, self.__image_set_list,
                 # Uncomment next line to display results in UI
                 #self.__frame if module.show_window else None,
@@ -659,7 +654,7 @@ class ParameterSampleFrame(wx.Frame):
                 if isinstance(setting, settings.ImageNameProvider):
                     # Save image
                     image =\
-                        self.__image_set_list.get_image_set(0).get_image(value_to_write)
+                        self.__measurements.get_image(value_to_write)
                     path =\
                         os.path.join(directory_path, value_to_write + '_' + str(sample_num))
                     self.save_image(image, path)

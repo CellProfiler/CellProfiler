@@ -126,8 +126,6 @@ import gc
 import traceback
 from weakref import WeakSet
 
-import cellprofiler.pipeline as cpp
-from cellprofiler.pipeline import CancelledException
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -288,6 +286,7 @@ class AnalysisWorker(object):
             stop_run_loop()
         
     def run(self):
+        from cellprofiler.pipeline import CancelledException
         t0 = 0
         with self.AnalysisWorkerThreadObject(self):
             while not self.cancelled:
@@ -318,6 +317,7 @@ class AnalysisWorker(object):
         
         job - WorkRequest
         '''
+        import cellprofiler.pipeline as cpp
         job_measurements = []
         try:
             send_dictionary = job.wants_dictionary
@@ -445,7 +445,7 @@ class AnalysisWorker(object):
                                 self.current_analysis_id,
                                 image_set_number = image_set_number)
                         rep = self.send(req)
-                    except CancelledException:
+                    except cpp.CancelledException:
                         logging.info("Aborting job after cancellation")
                         abort = True
                     except Exception:
@@ -487,14 +487,14 @@ class AnalysisWorker(object):
                                      image_set_numbers=image_set_numbers)
             rep = self.send(req)
         
-        except CancelledException:
+        except cpp.CancelledException:
             # Main thread received shutdown signal
             raise
         
         except Exception:
             logging.error("Error in worker", exc_info=True)
             if self.handle_exception() == ED_STOP:
-                raise CancelledException("Cancelling after user-requested stop")
+                raise cpp.CancelledException("Cancelling after user-requested stop")
         finally:
             # Clean up any measurements owned by us
             for m in job_measurements:
@@ -552,6 +552,7 @@ class AnalysisWorker(object):
         returns a reply on success. If cancelled, throws a CancelledException
         '''
         if self.current_analysis_id is None:
+            from cellprofiler.pipeline import CancelledException
             raise CancelledException("Can't send after cancelling")
         if work_socket is None:
             work_socket = self.work_socket
@@ -586,6 +587,7 @@ class AnalysisWorker(object):
         cancellation of analysis: either UpstreamExit or a stop notification
         from the deadman thread.
         '''
+        from cellprofiler.pipeline import CancelledException
         logger.debug(msg)
         self.cancelled = True
         if self.current_analysis_id in self.initial_measurements:
@@ -615,6 +617,7 @@ class AnalysisWorker(object):
                     if socket == self.notify_socket and state == zmq.POLLIN:
                         msg = self.notify_socket.recv()
                         if msg == NOTIFY_STOP:
+                            from cellprofiler.pipeline import CancelledException
                             self.cancelled = True
                             raise CancelledException()
                     elif socket == announce_socket and state == zmq.POLLIN:
@@ -703,7 +706,8 @@ class PipelineEventListener(object):
         self.should_skip = False
 
     def handle_event(self, pipeline, event):
-        if isinstance(event, cpp.RunExceptionEvent):
+        from cellprofiler.pipeline import RunExceptionEvent
+        if isinstance(event, RunExceptionEvent):
             disposition = self.handle_exception_fn(
                 image_set_number=self.image_set_number,
                 module_name=event.module.module_name,

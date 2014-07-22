@@ -541,7 +541,7 @@ class AnalysisRunner(object):
                     else:
                         local_values = measurements[
                             cpmeas.IMAGE, feature, image_numbers]
-                        remote_values = measurements[
+                        remote_values = recd_measurements[
                             cpmeas.IMAGE, feature, image_numbers]
                         f_image_numbers = [
                             i for i, lv, rv in zip(

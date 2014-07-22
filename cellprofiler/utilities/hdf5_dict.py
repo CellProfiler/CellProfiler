@@ -397,7 +397,8 @@ class HDF5Dict(object):
                     for x in vals])
     
     def __make_empty_feature(self, object_name, feature_name, 
-                             image_numbers = None):
+                             image_numbers = None,
+                             dtype = int):
         '''Create a feature that has only nulls
         
         lock must be taken prior to call
@@ -408,6 +409,8 @@ class HDF5Dict(object):
         
         image_numbers - image numbers of the image sets with no values for
                         the feature.
+                        
+        dtype - the desired data type for the array
         '''
         feature_group = self.top_group.require_group(object_name).\
             require_group(feature_name)
@@ -418,7 +421,7 @@ class HDF5Dict(object):
                 [image_numbers, np.zeros((len(image_numbers), 2), int)])
         self.__create_index(feature_group, index_slices)
         feature_group.create_dataset(
-            'data', (0, ), dtype = int, 
+            'data', (0, ), dtype = dtype, 
             compression='gzip', shuffle=True, chunks=(self.chunksize,), 
             maxshape=(None,))
         
@@ -478,19 +481,28 @@ class HDF5Dict(object):
                 vals = []
             elif np.isscalar(vals):
                 vals = [vals]
-            return self.__setitem__(
-                (object_name, feature_name, [num_idx]), [vals])
+            if len(idxs) > 3:
+                return self.__setitem__(
+                    (object_name, feature_name, [num_idx], idxs[3]), [vals])
+            else:
+                return self.__setitem__(
+                    (object_name, feature_name, [num_idx]), [vals])
         
         num_idx = np.atleast_1d(num_idx)
         if len(num_idx) > 0 and (np.isscalar(vals[0]) or vals[0] is None):
             # Convert imageset-style to lists per imageset
-            vals = [[v] if v is not None else [] for v in vals]
+            vals = [[] if v is None else
+                    [v] if np.isscalar(v)
+                    else v for v in vals]
         all_null = True
         
         hdf5_type = None
         if len(idxs) > 3 and idxs[3] is not None:
             hdf5_type = idxs[3]
             all_null = False
+            hdf5_type_is_int = False
+            hdf5_type_is_float = False
+            hdf5_type_is_string = False
         else:
             for vector in vals:
                 if len(vector) > 0:
@@ -503,17 +515,18 @@ class HDF5Dict(object):
                             hdf5_type = new_dtype
                     else:
                         break
-        hdf5_type_is_int = (
-            np.issubdtype(hdf5_type, int) or
-            (isinstance(hdf5_type, np.dtype) and hdf5_type.kind == 'u'))
-        hdf5_type_is_float = np.issubdtype(hdf5_type, float)
-        hdf5_type_is_string = not (hdf5_type_is_int or hdf5_type_is_float)
+            hdf5_type_is_int = (
+                np.issubdtype(hdf5_type, int) or
+                (isinstance(hdf5_type, np.dtype) and hdf5_type.kind == 'u'))
+            hdf5_type_is_float = np.issubdtype(hdf5_type, float)
+            hdf5_type_is_string = not (hdf5_type_is_int or hdf5_type_is_float)
         with self.lock:
             if not self.has_feature(object_name, feature_name):
                 if all_null:
                     self.__make_empty_feature(object_name, feature_name, num_idx)
                 else:
-                    self.add_all(object_name, feature_name, vals, num_idx)
+                    self.add_all(object_name, feature_name, vals, 
+                                 idxs=num_idx, data_type = hdf5_type)
                 return
             
             feature_group = self.top_group[object_name][feature_name]

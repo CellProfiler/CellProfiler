@@ -307,6 +307,29 @@ class TestMeasurements(unittest.TestCase):
         
         result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
         np.testing.assert_array_equal(test, result)
+        
+    def test_04_08_set_one_blob_measurement(self):
+        r = np.random.RandomState(408)
+        test = r.randint(0, 255, 10).astype(np.uint8)
+        m = cpmeas.Measurements()
+        m[cpmeas.IMAGE, "Feature", 1, np.uint8] = test
+        np.testing.assert_array_equal(test, m[cpmeas.IMAGE, "Feature", 1])
+        
+    def test_04_09_set_many_blob_measurements(self):
+        #
+        # This is a regression test which ran into the exception
+        # "ValueError: setting an array element with a sequence"
+        # when CP attempted to execute something like:
+        # np.array([np.nan, np.zeros(5)])
+        #
+        r = np.random.RandomState(408)
+        test = [ None, r.randint(0, 255, 10).astype(np.uint8)]
+        m = cpmeas.Measurements()
+        image_numbers = np.arange(1,len(test)+1)
+        m[cpmeas.IMAGE, "Feature", image_numbers, np.uint8] = test
+        result = m[cpmeas.IMAGE, "Feature", image_numbers]
+        self.assertIsNone(result[0])
+        np.testing.assert_array_equal(test[1], result[1])
     
     def test_05_01_test_has_current_measurements(self):
         x = cpmeas.Measurements()

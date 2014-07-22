@@ -952,11 +952,17 @@ class Measurements(object):
                     return Measurements.unwrap_string(vals[0]) 
                 return vals
             else:
-                if any([isinstance(x[0], basestring) for x in vals 
-                        if x is not None and len(x) > 0]):
+                measurement_dtype = self.hdf5_dict.get_feature_dtype(
+                    object_name, feature_name)
+                if h5py.check_dtype(vlen = measurement_dtype) == str:
                     result = [ Measurements.unwrap_string(v[0]) 
                                if v is not None else None
                                for v in vals]
+                elif measurement_dtype == np.uint8:
+                    #
+                    # Blobs - just pass them through as an array.
+                    #
+                    result = vals
                 else:
                     # numeric expect as numpy array, text as list (or possibly
                     # array of object in order to handle np.NaN

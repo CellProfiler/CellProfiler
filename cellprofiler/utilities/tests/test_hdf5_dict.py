@@ -146,6 +146,27 @@ class TestHDF5Dict(unittest.TestCase):
         index = self.hdf5_dict.top_group[OBJECT_NAME][FEATURE_NAME][H5DICT.INDEX]
         self.assertEqual(index.shape[0], 3)
         
+    def test_02_09_write_with_dtype(self):
+        self.hdf5_dict[
+            OBJECT_NAME, FEATURE_NAME, 1, np.uint8] = np.zeros(5, np.uint16)
+        result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1]
+        self.assertEqual(len(result), 5)
+        self.assertEqual(result.dtype, np.uint8)
+        
+    def test_02_10_write_with_dtype_and_nulls(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, (1, 2), np.uint8] = \
+            [ None, np.zeros(5, np.uint8)]
+        self.assertIsNone(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1])
+        result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2]
+        self.assertEqual(len(result), 5)
+        self.assertEqual(result.dtype, np.uint8)
+        
+    def test_02_11_write_empty_dtype(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1, np.uint8] = None
+        self.assertEqual(
+            self.hdf5_dict.get_feature_dtype(OBJECT_NAME, FEATURE_NAME),
+            np.uint8)
+        
     def test_03_01_add_all(self):
         r = np.random.RandomState()
         r.seed(301)
@@ -164,6 +185,18 @@ class TestHDF5Dict(unittest.TestCase):
         for i, d in enumerate(data):
             result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, p[i]]
             np.testing.assert_array_equal(d, result)
+            
+    def test_03_03_add_all_with_dtype(self):
+        r = np.random.RandomState()
+        r.seed(303)
+        data = [ [], r.randint(0, 255, 10).astype(np.uint8)]
+        self.hdf5_dict.add_all(OBJECT_NAME, FEATURE_NAME, data,
+                               idxs = np.arange(1, len(data)+1),
+                               data_type = np.uint8)
+        self.assertIsNone(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1])
+        m2 = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2]
+        self.assertEqual(m2.dtype, np.uint8)
+        np.testing.assert_array_equal(m2, data[1])
 
     def test_04_01_reopen_read_only(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"

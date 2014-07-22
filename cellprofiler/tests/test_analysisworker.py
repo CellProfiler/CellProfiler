@@ -158,7 +158,7 @@ class TestAnalysisWorker(unittest.TestCase):
                     if e is not None:
                         raise e
                     else:
-                        raise cpaw.CancelledException("Unexpected exit during recv")
+                        raise cpp.CancelledException("Unexpected exit during recv")
                 if socket == work_socket and state == zmq.POLLIN:
                     return cpzmq.Communicable.recv(work_socket)
             raise Queue.Empty
@@ -248,7 +248,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread.start()
         self.awthread.ex(self.awthread.aw.get_announcement)
         self.cancel()
-        self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
+        self.assertRaises(cpp.CancelledException, self.awthread.ecute)
         
     def test_02_01_send(self):
         self.awthread = self.AWThread(self.announce_addr)
@@ -275,7 +275,7 @@ class TestAnalysisWorker(unittest.TestCase):
             return reply
         self.awthread.ex(send_something)
         self.cancel()
-        self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
+        self.assertRaises(cpp.CancelledException, self.awthread.ecute)
 
     def test_02_03_send_upstream_exit(self):
         self.awthread = self.AWThread(self.announce_addr)
@@ -287,7 +287,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread.ex(send_something)
         req = self.awthread.recv(self.work_socket)
         req.reply(cpanalysis.ServerExited())
-        self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
+        self.assertRaises(cpp.CancelledException, self.awthread.ecute)
         
     def test_03_01_work_request(self):
         #
@@ -357,7 +357,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Cancel and check for exit
         #
         req.reply(cpanalysis.ServerExited())
-        self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
+        self.assertRaises(cpp.CancelledException, self.awthread.ecute)
         
     def test_03_03_initial_measurements(self):
         #
@@ -417,7 +417,7 @@ class TestAnalysisWorker(unittest.TestCase):
             # Cancel and check for exit
             #
             req.reply(cpanalysis.ServerExited())
-            self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
+            self.assertRaises(cpp.CancelledException, self.awthread.ecute)
         finally:
             m.close()
         

@@ -22,8 +22,19 @@ def get_current_image():
     
     returns a wrapped ImagePlus object
     '''
-    imageplus_obj = J.static_call('ij/WindowManager','getCurrentImage',
-                                  '()Lij/ImagePlus;')
+    #
+    # Run this on the UI thread so its thread context is the same
+    # as the macro invocation
+    #
+    script = """
+    new java.util.concurrent.Callable() {
+        call: function() {
+            return Packages.ij.WindowManager.getCurrentImage();
+        }
+    };
+    """
+    gci = J.make_future_task(J.run_script(script))
+    imageplus_obj = J.execute_future_in_main_thread(gci)
     return get_imageplus_wrapper(imageplus_obj)
 
 def get_id_list():
@@ -44,8 +55,16 @@ def get_image_by_name(title):
 
 def get_temp_current_image():
     '''Get the temporary ImagePlus object for the current thread'''
-    return get_imageplus_wrapper(J.static_call(
-        'ij/WindowManager', 'getTempCurrentImage','()Lij/ImagePlus;'))
+    script = """
+    new java.util.concurrent.Callable() {
+        call: function() {
+            return Packages.ij.WindowManager.getTempCurrentImage();
+        }
+    };
+    """
+    gtci = J.make_future_task(J.run_script(script))
+    imageplus_obj = J.execute_future_in_main_thread(gtci)
+    return get_imageplus_wrapper(imageplus_obj)
 
 def make_unique_name(proposed_name):
     '''Create a unique title name for an imageplus object'''
@@ -54,9 +73,16 @@ def make_unique_name(proposed_name):
                          proposed_name)
 
 def set_temp_current_image(imagej_obj):
-    '''Set the temporary current image for this thread'''
-    J.static_call('ij/WindowManager', 'setTempCurrentImage',
-                  '(Lij/ImagePlus;)V', imagej_obj.o)
+    '''Set the temporary current image for the UI thread'''
+    script = """
+    new java.lang.Runnable() {
+        run: function() {
+            Packages.ij.WindowManager.setTempCurrentImage(ip);
+        }
+    };
+    """
+    J.execute_runnable_in_main_thread(
+        J.run_script(script, dict(ip = imagej_obj.o)), True)
 
 def set_current_image(imagej_obj):
     '''Set the currently active window'''

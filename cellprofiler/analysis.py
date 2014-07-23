@@ -740,8 +740,9 @@ class AnalysisRunner(object):
                        "--plugins-directory", cpprefs.get_plugin_directory(),
                        "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
             jvm_arg = get_jvm_heap_size_arg()
-            if jvm_arg is not None:
-                aw_args.append("--jvm-heap-size=%s" % jvm_arg)
+            if jvm_arg is None:
+                jvm_arg = "%dm" % cpprefs.get_jvm_heap_mb()
+            aw_args.append("--jvm-heap-size=%s" % jvm_arg)
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
             if hasattr(sys, 'frozen'):

@@ -79,3 +79,10 @@ class TestWindowManager(unittest.TestCase):
     def test_01_07_make_unique_name(self):
         self.assertTrue(W.make_unique_name("Foo").startswith("Foo"))
         
+    def test_01_08_get_current_image(self):
+        file_name = os.path.join(self.root_dir, 
+                                 "ExampleSBSImages", "Channel1-01-A-01.tif")
+        ip = I.load_imageplus(file_name)
+        W.set_current_image(ip)
+        ip_out = W.get_current_image()
+        self.assertEqual(ip.getID(), ip_out.getID())

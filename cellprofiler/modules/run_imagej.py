@@ -734,48 +734,36 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         #
         if img is not None:
             ijpixels = img.pixel_data * IMAGEJ_SCALE
-            if ij1_mode:
-                ij_processor = ijiproc.make_image_processor(
-                    ijpixels.astype('float32'))
-                image_plus = ijip.make_imageplus_from_processor(
-                    input_image_name, ij_processor)
-                ijwm.set_current_image(image_plus)
-            else:
+            if not ij1_mode:
                 dataset = ij2.create_dataset(get_context(), 
                                              ijpixels,
                                              input_image_name)
                 display = display_service.createDisplay(
                     input_image_name, dataset)
                 display_service.setActiveDisplay(display)
+        else:
+            ijpixels = None
 
-        self.do_imagej(workspace)
+        self.do_imagej(workspace, input_image=ijpixels)
         #
         # Get the output image
         #
-        if self.wants_to_get_current_image:
+        if self.wants_to_get_current_image and not ij1_mode:
             output_image_name = self.current_output_image_name.value
-            if ij1_mode:
-                image_plus = ijwm.get_current_image()
-                ij_processor = image_plus.getProcessor()
-                pixels = ijiproc.get_image(ij_processor).\
-                    astype('float32') / IMAGEJ_SCALE
-                image = cpi.Image(pixels)
-                workspace.image_set.add(output_image_name, image)
+            for attempt in range(4):
+                display = display_service.getActiveImageDisplay()
+                if display.o is not None:
+                    break
+                #
+                # Possible synchronization problem with ImageJ 1.0
+                # Possible error involving user changing window focus
+                #
+                import time
+                time.sleep(.25)
             else:
-                for attempt in range(4):
-                    display = display_service.getActiveImageDisplay()
-                    if display.o is not None:
-                        break
-                    #
-                    # Possible synchronization problem with ImageJ 1.0
-                    # Possible error involving user changing window focus
-                    #
-                    import time
-                    time.sleep(.25)
-                else:
-                    raise ValueError("Failed to retrieve active display")
-                pixels = self.save_display_as_image(
-                    workspace, display, output_image_name)
+                raise ValueError("Failed to retrieve active display")
+            pixels = self.save_display_as_image(
+                workspace, display, output_image_name)
             if self.show_window:
                 workspace.display_data.image_acquired_from_ij = pixels
         #
@@ -790,7 +778,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             if (self.post_group_choice != CM_NOTHING and
                 self.wants_post_group_image):
                 output_image_name = self.post_group_output_image.value
-                if ij1_mode:
+                if not ij1_mode:
                     image_plus = ijwm.get_current_image()
                     ij_processor = image_plus.getProcessor()
                     pixels = ijiproc.get_image(ij_processor).\
@@ -828,7 +816,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         workspace.image_set.add(image_name, image)
         return pixel_data
 
-    def do_imagej(self, workspace, when=None):
+    def do_imagej(self, workspace, when=None, input_image=None):
         if when == D_FIRST_IMAGE_SET:
             choice = self.prepare_group_choice.value
             command = self.prepare_group_command
@@ -856,7 +844,31 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             result = engine.evalS(macro)
         elif choice == CM_MACRO:
             macro = workspace.measurements.apply_metadata(macro)
-            ijmacros.execute_macro(macro)
+            if when is None and\
+               (self.wants_to_set_current_image or
+                self.wants_to_get_current_image):
+                if input_image is None:
+                    input_image = np.zeros((16,16), np.float32)
+                ij_processor = ijiproc.make_image_processor(
+                    input_image.astype('float32'))
+                image_plus = ijip.make_imageplus_from_processor(
+                    self.current_input_image_name.value, ij_processor)
+                if self.wants_to_set_current_image:
+                    ijwm.set_current_image(image_plus)
+                image_plus = ijip.get_imageplus_wrapper(
+                    ijmacros.run_batch_macro(macro, image_plus.o))
+                ijwm.set_current_image(image_plus)
+                if self.wants_to_get_current_image:
+                    ij_processor = image_plus.getProcessor()
+                    pixels = ijiproc.get_image(ij_processor).\
+                        astype('float32') / IMAGEJ_SCALE
+                    image = cpi.Image(pixels)
+                    workspace.image_set.add(
+                        self.current_output_image_name.value, image)
+                    if self.show_window:
+                        workspace.display_data.image_acquired_from_ij = pixels
+            else:
+                ijmacros.execute_macro(macro)
             
         if (choice != CM_NOTHING and 
             (not cpprefs.get_headless()) and 

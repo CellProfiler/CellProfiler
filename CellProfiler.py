@@ -388,7 +388,10 @@ def parse_args(args):
                           dest="fetch_external_dependencies",
                           default=True,
                           action="store_false",
-                          help="Do not fetch external binary dependencies")
+                          help= ("Do not fetch external binary dependencies. Use this "
+                                 "flag if you don't want to update components, e.g. in "
+                                 "a cluster environment where you don't have write "
+                                 "access to the installation folder."))
         parser.add_option("--fetch-and-overwrite",
                           dest="overwrite_external_dependencies",
                           default=False,

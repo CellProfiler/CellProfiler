@@ -145,7 +145,34 @@ SUPPORTED_IMAGE_EXTENSIONS = set([
     '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr', 
     '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'])
 SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
-
+# The following is a list of the extensions as gathered from Bio-formats
+# Missing are .cfg, .csv, .html, .htm, .log, .txt, .xml and .zip which are likely
+# not to be images but you are welcome to add if needed
+#
+SUPPORTED_IMAGE_EXTENSIONS.update(
+    [".1sc", ".2fl", ".acff", ".afi", ".afm", ".aiix", ".aim", ".aisf", 
+     ".al3d", ".ali", ".am", ".amiramesh", ".ano", ".apl", ".arf", ".atsf", 
+     ".avi", ".bip", ".bmp", ".btf", ".c01", ".cr2", ".crw", 
+     ".cxd", ".czi", ".dat", ".dcm", ".df3", ".dib", ".dic", ".dicom", ".dm2", 
+     ".dm3", ".dti", ".dv", ".dv.log", ".eps", ".epsi", ".ets", ".exp", 
+     ".fake", ".fdf", ".fff", ".ffr", ".fits", ".flex", ".fli", ".frm", 
+     ".fts", ".gel", ".gif", ".grey", ".hdr", ".hed", ".his", ".htd", 
+     ".hx", ".ics", ".ids", ".ima", ".img", ".ims", ".inf", ".inr", ".ipl", 
+     ".ipm", ".ipw", ".j2k", ".j2ki", ".j2kr", ".jp2", ".jpe", ".jpeg", 
+     ".jpf", ".jpg", ".jpk", ".jpx", ".l2d", ".labels", ".lei", ".lif", 
+     ".liff", ".lim", ".lsm", ".lut", ".map", ".mdb", ".mea", 
+     ".mnc", ".mng", ".mod", ".mrc", ".mrw", ".msr", ".mtb", 
+     ".mvd2", ".naf", ".nd", ".nd2", ".ndpi", ".ndpis", ".nef", ".nhdr", 
+     ".nii", ".nrrd", ".obf", ".oib", ".oif", ".ome", ".ome.tif", 
+     ".ome.tiff", ".par", ".pcoraw", ".pct", ".pcx", ".pgm", ".pic", 
+     ".pict", ".png", ".pnl", ".pr3", ".ps", ".psd", ".pst", ".pty", 
+     ".r3d", ".r3d.log", ".r3d_d3d", ".raw", ".rec", ".res", ".scn", 
+     ".sdt", ".seq", ".sif", ".sld", ".sm2", ".sm3", ".spi", ".spl", 
+     ".st", ".stk", ".stp", ".svs", ".sxm", ".tf2", ".tf8", ".tfr",
+     ".tga", ".thm", ".tif", ".tiff", ".tim", ".tnb", ".top",
+     ".v", ".vms", ".vsi", ".vws", ".wat", ".wav", ".wlz", ".xdce", 
+     ".xlog", ".xqd", ".xqf", ".xv", ".xys", ".zfp", ".zfr", 
+     ".zpo", ".zvi"])
 SUPPORTED_MOVIE_EXTENSIONS = set(['.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', 
                                   '.tiff','.zvi'])
 

@@ -16,7 +16,7 @@ import numpy as np
 import unittest
 
 import bioformats
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 import imagej.imagej2 as ij2
 
 class TestImagej2(unittest.TestCase):

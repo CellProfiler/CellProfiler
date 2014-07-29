@@ -11,7 +11,7 @@
 # Website: http://www.cellprofiler.org
 #
 import bioformats
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 
 def get_imageplus_wrapper(imageplus_obj):
     '''Wrap the imageplus object as a Java class'''

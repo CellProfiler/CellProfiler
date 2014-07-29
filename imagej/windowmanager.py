@@ -14,7 +14,7 @@
 
 __version__ = "$Revision$"
 
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 from imagej.imageplus import get_imageplus_wrapper
 
 def get_current_image():

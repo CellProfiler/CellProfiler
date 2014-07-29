@@ -443,8 +443,8 @@ try:
           options=opts)
 finally:
     try:
-        import cellprofiler.utilities.jutil as jutil
-        jutil.kill_vm()
+        from javabridge import kill_vm
+        kill_vm()
         sys.stderr.flush()
         sys.stdout.flush()
         os._exit(0)

@@ -16,7 +16,7 @@ __version__ = "$Revision$"
 import os
 import unittest
 
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 import imagej.imageplus as I
 
 

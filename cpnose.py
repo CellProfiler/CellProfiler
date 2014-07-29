@@ -44,17 +44,16 @@ def mock_start_vm(*args, **kwargs):
 
 if '--nojavatests' in sys.argv:
     sys.argv.remove('--nojavatests')
-    import cellprofiler.utilities.jutil as jutil
-    jutil.start_vm = mock_start_vm
+    import javabridge
+    javabridge.start_vm = mock_start_vm
 elif not with_guitests:
-    import cellprofiler.utilities.jutil as jutil
-    jutil.activate_awt = mock_start_vm
-    jutil.execute_future_in_main_thread = mock_start_vm
-    jutil.execute_runnable_in_main_thread = mock_start_vm
+    import javabridge
+    javabridge.activate_awt = mock_start_vm
+    javabridge.execute_future_in_main_thread = mock_start_vm
+    javabridge.execute_runnable_in_main_thread = mock_start_vm
 
 addplugins = []
 if '--with-kill-vm' in sys.argv:
-    from killjavabridge import KillVMPlugin
     addplugins.append(KillVMPlugin())
 
 if len(sys.argv) == 0:

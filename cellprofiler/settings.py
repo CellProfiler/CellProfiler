@@ -2838,7 +2838,7 @@ class Filter(Setting):
 
     def test_valid(self, pipeline):
         try:
-            import cellprofiler.utilities.jutil as J
+            import javabridge as J
             J.run_script("""
             importPackage(Packages.org.cellprofiler.imageset.filter);
             new Filter(expr, klass);

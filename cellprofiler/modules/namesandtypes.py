@@ -115,7 +115,7 @@ from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from bioformats.formatreader import get_omexml_metadata, load_using_bioformats
 import bioformats.omexml as OME
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 
 ASSIGN_ALL = "All images"
 ASSIGN_GUESS = "Try to guess image assignment"

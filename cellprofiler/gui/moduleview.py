@@ -4293,7 +4293,7 @@ def validate_module(pipeline, module_num, test_mode, callback):
     wx.CallAfter(callback, setting_idx, message, level)
 
 def validation_queue_handler():
-    from cellprofiler.utilities.jutil import attach, detach
+    from javabridge import attach, detach
     attach()
     try:
         while validation_queue_keep_running:

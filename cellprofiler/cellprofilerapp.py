@@ -38,14 +38,17 @@ class CellProfilerApp(wx.App):
 
     def OnInit(self):
         # The wx.StandardPaths aren't available until this is set.
-        self.SetAppName('CellProfiler2.0')
+        from cellprofiler.utilities.version import dotted_version
+        self.SetAppName('CellProfiler%s' % dotted_version)
         
         wx.InitAllImageHandlers()
 
         if self.show_splashbox:
             # If the splash image has alpha, it shows up transparently on
             # windows, so we blend it into a white background.
-            splashbitmap = wx.EmptyBitmapRGBA(CellProfilerSplash.GetWidth(), CellProfilerSplash.GetHeight(), 255, 255, 255, 255)
+            splashbitmap = wx.EmptyBitmapRGBA(
+                CellProfilerSplash.GetWidth(), 
+                CellProfilerSplash.GetHeight(), 255, 255, 255, 255)
             dc = wx.MemoryDC()
             dc.SelectObject(splashbitmap)
             dc.DrawBitmap(wx.BitmapFromImage(CellProfilerSplash), 0, 0)
@@ -64,8 +67,7 @@ class CellProfilerApp(wx.App):
         if self.check_for_new_version:
             self.new_version_check()
 
-        import bioformats
-        from cellprofiler.utilities.jutil import activate_awt
+        from javabridge import activate_awt
         activate_awt()
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")
@@ -99,7 +101,7 @@ class CellProfilerApp(wx.App):
     def OnExit(self):
         from imagej.imagej2 import allow_quit
         allow_quit()
-        from cellprofiler.utilities.jutil import deactivate_awt
+        from javabridge import deactivate_awt
         deactivate_awt()
         # restore previous exception hook
         sys.excepthook = self.orig_excepthook

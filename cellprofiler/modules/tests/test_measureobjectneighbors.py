@@ -758,3 +758,30 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_Adjacent")
         np.testing.assert_array_equal(fo, [3, 0, 1])
+
+    def test_08_02_small_removed(self):
+        # Regression test of issue #1179
+        #
+        # neighbor_objects.small_removed_segmented + objects touching border
+        # with higher object numbers
+        #
+        neighbors = np.zeros((11, 13), int)
+        neighbors[5:7, 4:8] = 1
+        neighbors_unedited = np.zeros((11,13), int)
+        neighbors_unedited[5:7, 4:8] = 1
+        neighbors_unedited[0:4, 4:8] = 2
+        
+        objects = np.zeros((11, 13), int)
+        objects[1:6, 5:7] = 1
+        
+        workspace, module = self.make_workspace(
+            objects, M.D_WITHIN, neighbors_labels=neighbors)
+        no = workspace.object_set.get_objects(NEIGHBORS_NAME)
+        no.unedited_segmented = neighbors_unedited
+        no.small_removed_segmented = neighbors
+        module.run(workspace)
+        m = workspace.measurements
+        v = m[OBJECTS_NAME, 
+              module.get_measurement_name(M.M_NUMBER_OF_NEIGHBORS), 1]
+        self.assertEqual(len(v), 1)
+        self.assertEqual(v[0], 2)

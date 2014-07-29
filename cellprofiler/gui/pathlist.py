@@ -687,6 +687,8 @@ class PathListCtrl(wx.PyScrolledWindow):
         
     def get_mouse_idx(self, event):
         '''Return the line index at the event's mouse coordinate'''
+        if len(self.folder_items) == 0:
+            return -1
         x, y = event.GetPositionTuple()
         line_height = self.line_height + self.leading
         idx = int(y / line_height) + self.GetScrollPos(wx.SB_VERTICAL)
@@ -753,9 +755,11 @@ class PathListCtrl(wx.PyScrolledWindow):
         '''Handle double click event'''
         idx = self.get_mouse_idx(event)
         if idx == -1:
+            self.fn_do_menu_command([], None)
             return
         item, path_idx = self[idx]
         if item is None:
+            self.fn_do_menu_command([], None)
             return
         treeitem_x = self.get_treeitem_x()
         if path_idx is None:

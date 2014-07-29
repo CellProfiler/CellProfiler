@@ -1480,6 +1480,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def on_pathlist_file_command(self, paths, cmd):
         if cmd == self.PATHLIST_CMD_SHOW or cmd is None:
             if len(paths) == 0:
+                self.on_pathlist_browse(None)
                 return
             self.on_pathlist_show()
         elif cmd == self.PATHLIST_CMD_REMOVE:

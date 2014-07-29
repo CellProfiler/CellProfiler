@@ -704,16 +704,16 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         d = self.get_dictionary(workspace.image_set_list)
         d[D_FIRST_IMAGE_SET] = image_numbers[0]
         d[D_LAST_IMAGE_SET] = image_numbers[-1]
-        if self.wants_to_set_current_image or self.wants_to_get_current_image:
-            # For ImageJ 1.0 and some scripting, the UI has to be open
-            # in order to get or set the current image.
-            #
-            self.on_show_imagej()
         
     def run(self, workspace):
         '''Run the imageJ command'''
         image_set = workspace.image_set
         d = self.get_dictionary(workspace.image_set_list)
+        if self.wants_to_set_current_image or self.wants_to_get_current_image:
+            # For ImageJ 1.0 and some scripting, the UI has to be open
+            # in order to get or set the current image.
+            #
+            self.on_show_imagej()
         if self.wants_to_set_current_image:
             input_image_name = self.current_input_image_name.value
             img = image_set.get_image(input_image_name,

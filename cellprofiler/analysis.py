@@ -773,7 +773,7 @@ class AnalysisRunner(object):
                     args = [aw_path] + aw_args
                     
                 worker = subprocess.Popen(args,
-                                          env=find_worker_env(),
+                                          env=find_worker_env(idx),
                                           stdin=subprocess.PIPE,
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT,
@@ -783,7 +783,7 @@ class AnalysisRunner(object):
                     [find_python(),
                      '-u',  # unbuffered
                      find_analysis_worker_source()] + aw_args,
-                    env=find_worker_env(),
+                    env=find_worker_env(idx),
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -821,7 +821,11 @@ def find_python():
     return sys.executable
 
 
-def find_worker_env():
+def find_worker_env(idx):
+    '''Construct a command-line environment for the worker
+    
+    idx - index of the worker, e.g. 0 for the first, 1 for the second...
+    '''
     newenv = os.environ.copy()
     root_dir = os.path.abspath(
         os.path.join(os.path.dirname(cellprofiler.__file__), '..'))
@@ -845,7 +849,8 @@ def find_worker_env():
     if "CP_JDWP_PORT" in newenv:
         del newenv["CP_JDWP_PORT"]
     if "AW_JDWP_PORT" in newenv:
-        newenv["CP_JDWP_PORT"] = newenv["AW_JDWP_PORT"]
+        port = str(int(newenv["AW_JDWP_PORT"]) + idx)
+        newenv["CP_JDWP_PORT"] = port
         del newenv["AW_JDWP_PORT"]
     return newenv
 

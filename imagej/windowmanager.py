@@ -85,13 +85,22 @@ def set_temp_current_image(imagej_obj):
         J.run_script(script, dict(ip = imagej_obj.o)), True)
 
 def set_current_image(imagej_obj):
-    '''Set the currently active window'''
-    imagej_obj.show()
-    image_window = imagej_obj.getWindow()
+    '''Set the currently active window
+    
+    imagej_obj - an ImagePlus to become the current image
+    '''
     J.execute_runnable_in_main_thread(J.run_script(
         """new java.lang.Runnable() {
-        run:function() { Packages.ij.WindowManager.setCurrentWindow(w); }}
-        """, dict(w=image_window)), synchronous=True)
+            run:function() {
+                var w = imp.getWindow();
+                if (w == null) {
+                    imp.show();
+                } else {
+                    Packages.ij.WindowManager.setCurrentWindow(w);
+                }
+            }
+        }
+        """, dict(imp=imagej_obj.o)), synchronous=True)
 
 def close_all_windows():
     '''Close all ImageJ windows

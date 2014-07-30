@@ -72,11 +72,11 @@ def main(args):
 
     args - command-line arguments, e.g. sys.argv
     '''
+    import cellprofiler.preferences as cpprefs
     if any([arg.startswith('--work-announce') for arg in args]):
         #
         # Go headless ASAP
         #
-        import cellprofiler.preferences as cpprefs
         cpprefs.set_headless()
         for i, arg in enumerate(args):
             if arg == "--ij-plugins-directory" and len(args) > i+1:

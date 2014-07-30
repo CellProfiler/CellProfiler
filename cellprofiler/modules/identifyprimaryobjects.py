@@ -588,9 +588,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             Select <i>%(FH_THRESHOLDING)s</i> to fill in background holes 
             that are smaller than the maximum object size prior to declumping
             and to fill in any holes after declumping.
-            Select <i>%(FH_DECLUMP)s to fill in background holes
+            Select <i>%(FH_DECLUMP)s</i> to fill in background holes
             located within identified objects after declumping. 
-            Select <i>%(FH_NEVER)s to leave holes within objects.
+            Select <i>%(FH_NEVER)s</i> to leave holes within objects.
             <p>Please note that if a foreground object is located within a hole
             and this option is enabled, the object will be lost when the hole
             is filled in. </p>"""%globals())

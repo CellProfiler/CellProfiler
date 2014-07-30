@@ -109,7 +109,8 @@ class TestImagePlus(unittest.TestCase):
         file_name = os.path.join(
             self.root_dir, "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
-        width, height, nChannels, nSlices, nFrames = ip.getDimensions()
+        dims = J.get_env().get_int_array_elements(ip.getDimensions())
+        width, height, nChannels, nSlices, nFrames = dims
         self.assertEqual(width, ip.getWidth())
         self.assertEqual(height, ip.getHeight())
         self.assertEqual(nChannels, ip.getNChannels())

@@ -4,7 +4,7 @@
 import datetime
 import os
 
-from bioformats import load_using_bioformats
+from bioformats import load_image
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -81,9 +81,9 @@ class Example6b(cpm.CPModule):
         #
         path = os.path.join(path_name, file_name)
         #
-        # call load_using_bioformats(path) to load the file into a numpy array
+        # call load_image(path) to load the file into a numpy array
         #
-        pixel_data = load_using_bioformats(path)
+        pixel_data = load_image(path)
         #
         # make a cpi.Image for the image data
         #

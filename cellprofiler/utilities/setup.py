@@ -12,7 +12,7 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
+__test__=False
 
 import logging
 import os

@@ -40,6 +40,41 @@ def get_path_to_jars():
         
     imagej_path = os.path.join(root_path, 'imagej','jars')
     return imagej_path
+
+def get_patcher_args(class_path):
+    '''Return the JVM args needed to patch ij1 classes
+    
+    ImageJ says:
+    
+    Please make sure that you initialize the LegacyService before using
+    any ImageJ 1.x class. You can do that by adding this static initializer:
+    
+        static {
+            LegacyInjector.preinit();
+        }
+    
+    To debug this issue, start the JVM with the option:
+    
+    -javaagent:<path-to>/ij1-patcher-0.2.1.jar
+    
+    To enforce pre-initialization, start the JVM with the option:
+    
+    -javaagent:<path-to>/ij1-patcher-0.2.1.jar=init
+    
+    class_path - absolute path to all jars needed by ImageJ
+    
+    returns a sequence of arguments to add to the JVM args
+    '''
+    
+    patchers = filter((lambda x:x.find("ij1-patcher") >=0), class_path)
+    if len(patchers) > 0:
+        if sys.platform.startswith("win"):
+            patcher = patchers[0].replace(os.path.sep, os.path.altsep)
+        else:
+            patcher = patchers[0]
+        return ["-javaagent:%s=init" % patcher]
+    logger.warn("Did not find ij1-patcher.jar")
+    return []
     
 def cp_start_vm():
     '''Start CellProfiler's JVM via Javabridge
@@ -113,34 +148,7 @@ def cp_start_vm():
         else:
             logger.warning("Failed to find tools.jar")
 
-    #
-    # ImageJ says:
-    #
-    # Please make sure that you initialize the LegacyService before using
-    # any ImageJ 1.x class. You can do that by adding this static initializer:
-    #
-    #    static {
-    #        LegacyInjector.preinit();
-    #    }
-    #
-    # To debug this issue, start the JVM with the option:
-    #
-    # -javaagent:/C:/Users/leek/cpdev/javabridge/CellProfiler/imagej/jars/ij1-patcher-0.2.1.jar
-    #
-    # To enforce pre-initialization, start the JVM with the option:
-    #
-    # -javaagent:/C:/Users/leek/cpdev/javabridge/CellProfiler/imagej/jars/ij1-patcher-0.2.1.jar=init
-    #
-    
-    patchers = filter((lambda x:x.find("ij1-patcher") >=0), class_path)
-    if len(patchers) > 0:
-        if sys.platform.startswith("win"):
-            patcher = patchers[0].replace(os.path.sep, os.path.altsep)
-        else:
-            patcher = patchers[0]
-        args.append(
-            "-javaagent:%s=init" % patcher)
-
+    args += get_patcher_args(class_path)
     awt_headless = cpprefs.get_awt_headless()
     if awt_headless:
         logger.debug("JVM will be started with AWT in headless mode")

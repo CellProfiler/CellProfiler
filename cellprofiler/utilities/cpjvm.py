@@ -68,10 +68,7 @@ def get_patcher_args(class_path):
     
     patchers = filter((lambda x:x.find("ij1-patcher") >=0), class_path)
     if len(patchers) > 0:
-        if sys.platform.startswith("win"):
-            patcher = patchers[0].replace(os.path.sep, os.path.altsep)
-        else:
-            patcher = patchers[0]
+        patcher = patchers[0]
         return ["-javaagent:%s=init" % patcher]
     logger.warn("Did not find ij1-patcher.jar")
     return []

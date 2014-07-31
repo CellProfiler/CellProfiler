@@ -22,8 +22,7 @@ import imagej.imagej2 as ij2
 class TestImagej2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.context = ij2.create_context(None)
-        
+        cls.context = ij2.get_context()
     @classmethod
     def tearDownClass(cls):
         del cls.context

@@ -32,11 +32,47 @@ class CPShutdownPlugin(nose.plugins.Plugin):
     left open.
     '''
     name = "cpshutdown"
-    score = 100
+    score = 101
+    enabled = False
     
     def begin(self):
-        pass
+        #
+        # We monkey-patch javabridge.start_vm here in order to
+        # set up the ImageJ event bus (actually 
+        # org.bushe.swing.event.ThreadSafeEventService) to not start
+        # its cleanup thread which semi-buggy hangs around forever
+        # and prevents Java from exiting.
+        #
+        def patch_start_vm(*args, **kwargs):
+            result = start_vm(*args, **kwargs)
+            if javabridge.get_env() is not None:
+                try:
+                    event_service_cls = javabridge.JClassWrapper(
+                        "org.bushe.swing.event.ThreadSafeEventService")
+                    event_service_cls.CLEANUP_PERIOD_MS_DEFAULT = None
+                except:
+                    pass
+            return result
+        patch_start_vm.func_globals["start_vm"] = javabridge.start_vm
+        javabridge.start_vm = patch_start_vm
     def finalize(self, result):
+        try:
+            javabridge.deactivate_awt()
+            import imagej.imagej2
+            if imagej.imagej2.the_imagej_context is not None:
+                script = """
+                new java.lang.Runnable () {
+                  run: function() {
+                    ctx.getContext().dispose();
+                  }
+                }"""
+                runnable = javabridge.run_script(
+                    script, dict(ctx=imagej.imagej2.the_imagej_context))
+                javabridge.execute_runnable_in_main_thread(runnable, True)
+                imagej.imagej2.the_imagej_context = None
+                javabridge.static_call("java/lang/System", "gc", "()V")
+        except:
+            pass
         try:
             from ilastik.core.jobMachine import GLOBAL_WM
             GLOBAL_WM.stopWorkers()
@@ -47,6 +83,14 @@ class CPShutdownPlugin(nose.plugins.Plugin):
             join_to_the_boundary()
         except:
             logging.root.warn("Failed to stop zmq boundary")
+    
+    def wantFile(self, filename):
+        if filename.endswith("setup.py"):
+            return False
+        
+    def wantDirectory(self, dirname):
+        if dirname.endswith("tutorial"):
+            return False
     
 class MockModule(object):
     def __getattr__(self, *args, **kwargs):
@@ -80,9 +124,9 @@ elif not with_guitests:
     javabridge.execute_runnable_in_main_thread = mock_start_vm
 
 jar_directory = get_path_to_jars()
-class_path = os.pathsep.join(
-    [os.path.join(jar_directory, jarfile) 
-     for jarfile in get_cellprofiler_jars()])
+jar_paths = [os.path.join(jar_directory, jarfile) 
+             for jarfile in get_cellprofiler_jars()]
+class_path = os.pathsep.join(jar_paths)
 
 addplugins = [CPShutdownPlugin()]
 
@@ -93,12 +137,16 @@ if '--with-kill-vm' in sys.argv:
 if '--with-javabridge' in sys.argv:
     javabridge_plugin_class = load_entry_point(
         'javabridge', 'nose.plugins.0.10', 'javabridge')
-    javabridge_plugin_class.extra_jvm_args += get_patcher_args(class_path)
+    javabridge_plugin_class.extra_jvm_args += get_patcher_args(jar_paths)
     if "CP_JDWP_PORT" in os.environ:
         javabridge_plugin_class.extra_jvm_args.append(
             ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"
              ",server=y,suspend=n") % os.environ["CP_JDWP_PORT"])
     addplugins.append(javabridge_plugin_class())
+    #
+    # Run the shutdown plugin before the javabridge plugin when exiting
+    #
+    CPShutdownPlugin.score = javabridge_plugin_class.score + 1
 
 if len(sys.argv) == 0:
     args = ['--testmatch=(?:^)test_.*']

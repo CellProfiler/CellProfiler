@@ -240,7 +240,7 @@ def run_maven(pom_path, goal="package",
     
     Runs mvn package on the POM
     '''
-    from cellprofiler.utilities.setup import find_jdk
+    from javabridge.locate import find_jdk
     
     maven_install_path = get_maven_install_path()
     jdk_home = find_jdk()

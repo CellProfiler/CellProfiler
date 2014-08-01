@@ -405,7 +405,7 @@ data_files += matplotlib.get_py2exe_datafiles()
 #
 ################################
 
-from cellprofiler.utilities.setup import find_jdk
+from javabridge.locate import find_jdk
 jdk_dir = find_jdk()
 def add_jre_files(path):
     files = []

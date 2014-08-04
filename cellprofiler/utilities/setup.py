@@ -38,6 +38,7 @@ if not hasattr(sys, 'frozen'):
         from Cython.Distutils import build_ext
 
     def configuration():
+        extensions = []
         extra_link_args = None
         if is_win:
             extra_link_args = ['/MANIFEST']

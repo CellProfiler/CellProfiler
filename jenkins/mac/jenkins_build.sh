@@ -52,6 +52,7 @@ if [ -a ${tentative_homebrew_home} ] && [ -z "$HOMEBREW_HOME"]
 then
     HOMEBREW_HOME=tentative_homebrew_home
 elif [ -z "$HOMEBREW_HOME" ]
+then
     HOMEBREW_HOME=/usrs/build/homebrew
 fi
 

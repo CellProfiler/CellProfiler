@@ -56,7 +56,7 @@ then
     HOMEBREW_HOME=/usrs/build/homebrew
 fi
 
-. ${HOMEBREW_HOME}/activate-cpdev
+. ${HOMEBREW_HOME}/bin/activate-cpdev
 rm -rf build dist imagej/jars
 arch -i386 python external_dependencies.py -o
 arch -i386 python CellProfiler.py --build-and-exit --do-not-fetch

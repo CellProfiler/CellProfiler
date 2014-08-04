@@ -25,7 +25,7 @@
 # BUILD_ID=2014-03-25_15-00-19
 # HOME=/Users/Shared/Jenkins
 # SHLVL=1
-GIT_BRANCH=origin/master
+# GIT_BRANCH=origin/javavbridge-2
 # JENKINS_SERVER_COOKIE=fa678bfb9d635ec8
 # EXECUTOR_NUMBER=0
 # GIT_URL=https://github.com/CellProfiler/CellProfiler.git
@@ -47,8 +47,15 @@ keychain=/Users/Shared/Jenkins/Library/Keychains/cellprofiler.keychain
 short_branch=$(echo "$GIT_BRANCH" | cut -d/ -f2)
 hash=$(git rev-parse --short "$GIT_BRANCH")
 version="${short_branch}-${hash}"
+tentative_homebrew_home=/Users/build/homebrew-${short_branch}
+if [ -a ${tentative_homebrew_home} ] && [ -z "$HOMEBREW_HOME"]
+then
+    HOMEBREW_HOME=tentative_homebrew_home
+elif [ -z "$HOMEBREW_HOME" ]
+    HOMEBREW_HOME=/usrs/build/homebrew
+fi
 
-. /Users/build/homebrew/bin/activate-cpdev
+. ${HOMEBREW_HOME}/activate-cpdev
 rm -rf build dist imagej/jars
 arch -i386 python external_dependencies.py -o
 arch -i386 python CellProfiler.py --build-and-exit --do-not-fetch

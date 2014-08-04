@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 
 from unittest.case import SkipTest
 from pkg_resources import load_entry_point
+import logging
 import javabridge
 import nose
 import nose.plugins

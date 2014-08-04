@@ -50,7 +50,7 @@ version="${short_branch}-${hash}"
 tentative_homebrew_home=/Users/build/homebrew-${short_branch}
 if [ -a ${tentative_homebrew_home} ] && [ -z "$HOMEBREW_HOME"]
 then
-    HOMEBREW_HOME=tentative_homebrew_home
+    HOMEBREW_HOME=${tentative_homebrew_home}
 elif [ -z "$HOMEBREW_HOME" ]
 then
     HOMEBREW_HOME=/usrs/build/homebrew

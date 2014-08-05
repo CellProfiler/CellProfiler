@@ -106,7 +106,7 @@ def get_version():
 '''Code version'''
 version_string = get_version()
 version_number = int(datetime_from_isoformat(version_string.split(' ')[0]).strftime('%Y%m%d%H%M%S'))
-dotted_version = '2.1.1'
+dotted_version = '2.1.2'
 git_hash = version_string.split(' ', 1)[1]
 title_string = '%s (rev %s)' % (dotted_version, git_hash)
 

@@ -234,7 +234,7 @@ class CellProfilerCodesign(distutils.core.Command):
         
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
-                              "matplotlib", "matplotlib.numerix.random_array",
+                              "matplotlib", 
                               "h5py", "h5py.*", "pdb", "readline",
                               "pyreadline", "pyreadline.console",
                               "pyreadline.console.console",
@@ -249,13 +249,6 @@ opts = {
        }
 
 data_files = []
-####################################
-#
-# H5PY / HDF5 fixups
-#
-####################################
-opts['py2exe']['includes'] += [
-    "h5py", "h5py._stub", "h5py._conv", "h5py.utils", "h5py._proxy"]
 
 ####################################
 #
@@ -351,6 +344,18 @@ except:
 
 ##############################################
 #
+# Matplotlib fixups
+#
+##############################################
+try:
+    import matplotlib.numerix.random_array
+    opts['py2exe']['includes'] += ["matplotlib.numerix.random_array"]
+except:
+    # Matplotlib 1.3 +
+    pass
+
+##############################################
+#
 # Visual Studio DLL fixups - Much better to use the official installer
 #                            than to hand-patch the manifest and DLLs.
 #
@@ -441,6 +446,9 @@ try:
                     'codesign':CellProfilerCodesign
                     },
           options=opts)
+except:
+    import traceback
+    traceback.print_exc()
 finally:
     try:
         from javabridge import kill_vm

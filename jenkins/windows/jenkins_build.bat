@@ -78,7 +78,7 @@ del ..\build.xml
 if not errorlevel 0 (
 exit /b
 )
-copy jenkins\windows\scripts\build.xml ..
+copy "%WORKSPACE%\CellProfiler\jenkins\windows\scripts\build.xml" "%WORKSPACE%"
 if not errorlevel 0 (
 exit /b
 )

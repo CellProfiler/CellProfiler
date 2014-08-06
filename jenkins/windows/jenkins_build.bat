@@ -78,7 +78,12 @@ del ..\build.xml
 if not errorlevel 0 (
 exit /b
 )
-copy "%WORKSPACE%\CellProfiler\jenkins\windows\scripts\build.xml" "%WORKSPACE%"
+set BUILD_XML=%WORKSPACE%\CellProfiler\jenkins\windows\scripts\build.xml
+if not exist "%BUILD_XML% (
+echo "Missing build.xml from CellProfiler git clone at %BUILD_XML%"
+exit /b
+)
+copy "%WORKSPACE%\CellProfiler\jenkins\windows\scripts\build.xml" "%WORKSPACE%\build.xml"
 if not errorlevel 0 (
 exit /b
 )

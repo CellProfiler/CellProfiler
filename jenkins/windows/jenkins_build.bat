@@ -71,8 +71,8 @@ end /b -1
 if not defined ANT_PATH (
 set ANT_PATH=ant
 )
-%VCVARS_BAT%
-pushd %PROJECTS_ROOT%\%PROJECT_NAME%
+"%VCVARS_BAT%"
+pushd "%PROJECTS_ROOT%\%PROJECT_NAME%"
 cd CellProfiler
 git pull origin %GIT_BRANCH%
 if not errorlevel 0 (
@@ -93,21 +93,21 @@ python -c "from javabridge.locate import find_javahome;print find_javahome()" > 
 set /P JAVA_HOME=<my_javahome.txt
 del my_javahome.txt
 cd ..
-%ANT_PATH% clean
+"%ANT_PATH%" clean
 if not errorlevel 0 (
 echo "Failed to clean"
 end /b
 )
-%ANT_PATH% compile
+"%ANT_PATH%" compile
 if not errorlevel 0 (
 echo "Failed to compile"
 end /b
 )
-%ANT_PATH% test
+"%ANT_PATH%" test
 if not errorlevel 0 (
 echo "Failed during tests"
 end /b
 )
-%ANT_PATH% windows-build
+"%ANT_PATH%" windows-build
 popd
 

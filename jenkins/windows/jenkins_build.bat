@@ -41,6 +41,7 @@
 :: VCVARS_BAT=c:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\vcvars64.bat
 ::
 SETLOCAL
+echo off
 if not defined PROJECTS_ROOT (
 echo "PROJECTS_ROOT is not defined"
 end /b -1
@@ -94,14 +95,17 @@ del my_javahome.txt
 cd ..
 %ANT_PATH% clean
 if not errorlevel 0 (
+echo "Failed to clean"
 end /b
 )
 %ANT_PATH% compile
 if not errorlevel 0 (
+echo "Failed to compile"
 end /b
 )
 %ANT_PATH% test
 if not errorlevel 0 (
+echo "Failed during tests"
 end /b
 )
 %ANT_PATH% windows-build

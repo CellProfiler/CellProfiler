@@ -67,11 +67,12 @@ if not defined ANT_PATH (
 set ANT_PATH=ant
 )
 call "%VCVARS_BAT%"
+if defined VCINSTALLDIR (
 echo Using compiler at %VCINSTALLDIR%
-pushd "%WORKSPACE%"
-if exist build.xml (
+)
+if exist %WORKSPACE%\build.xml (
 echo Deleting old build.xml
-del build.xml
+del %WORKSPACE%\build.xml
 if not errorlevel 0 
 exit /b
 )
@@ -89,11 +90,14 @@ exit /b
 ::
 :: Find JAVA_HOME using javabridge.locate
 ::
-python -c "from javabridge.locate import find_javahome;print find_javahome()" > my_javahome.txt
-set /P JAVA_HOME=<my_javahome.txt
-del my_javahome.txt
+if exists %WORKSPACE%\my_javahome.txt (
+del %WORKSPACE%\my_javahome.txt
+)
+python -c "from javabridge.locate import find_javahome;print find_javahome()" > %WORKSPACE%\my_javahome.txt
+set /P JAVA_HOME=<%WORKSPACE%\my_javahome.txt
 echo JAVA_HOME=%JAVA_HOME%
-cd ..
+echo Changing directory to %WORKSPACE%
+pushd %WORKSPACE%
 echo Cleaning derived files (.pyd, .jar etc)
 call "%ANT_PATH%" clean
 if not errorlevel 0 (

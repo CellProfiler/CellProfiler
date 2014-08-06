@@ -19,9 +19,10 @@
 ::
 ::--------
 ::
-:: The root of the network share that contains the projects to build
+:: The Jenkins workspace for the project. The GIT clone should be to
+::     WORKSPACE\CellProfiler.
 ::
-:: PROJECTS_ROOT=x:\projects
+:: WORKSPACE=<jenkins-assigned workspace>
 ::
 :: The branch to pull from
 ::
@@ -42,11 +43,11 @@
 ::
 SETLOCAL
 echo off
-if not defined PROJECTS_ROOT (
-echo "PROJECTS_ROOT is not defined"
+if not defined WORKSPACE (
+echo WORKSPACE is not defined
 end /b -1
 ) else (
-echo "PROJECTS_ROOT=%PROJECTS_ROOT%"
+echo "PROJECT_ROOT=%WORKSPACE%"
 )
 if not defined GIT_BRANCH (
 echo "GIT_BRANCH is not defined"

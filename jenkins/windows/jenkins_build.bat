@@ -68,10 +68,9 @@ if not defined ANT_PATH (
 set ANT_PATH=ant
 )
 call "%VCVARS_BAT%"
-echo "Using compiler at %VCINSTALLDIR%"
-pushd "%PROJECTS_ROOT%\%PROJECT_NAME%"
+echo Using compiler at %VCINSTALLDIR%
+pushd "%WORKSPACE%"
 cd CellProfiler
-git pull origin %GIT_BRANCH%
 if not errorlevel 0 (
 exit /b
 )

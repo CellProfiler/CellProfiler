@@ -45,29 +45,24 @@ SETLOCAL
 echo off
 if not defined WORKSPACE (
 echo WORKSPACE is not defined
-end /b -1
+exit /b -1
 ) else (
 echo "PROJECT_ROOT=%WORKSPACE%"
 )
 if not defined GIT_BRANCH (
 echo "GIT_BRANCH is not defined"
-end /b -1
+exit /b -1
 ) else (
 echo "Building GIT branch %GIT_BRANCH%"
 )
 if not defined PROJECT_NAME (
-echo "PROJECT_NAME is not defined"
-end /b -1
-) else (
-echo "Project folder = %PROJECT_NAME%"
-)
 if not defined VCVARS_BAT (
 echo "Please define VCVARS_BAT to point to the vcvars.bat file that sets up the compiler environment"
 end /b -1
 )
 if not defined MVN_PATH (
 echo "Please install Apache Maven and define MVN_PATH to point to the executable"
-end /b -1
+exit /b -1
 )
 if not defined ANT_PATH (
 set ANT_PATH=ant
@@ -78,15 +73,15 @@ pushd "%PROJECTS_ROOT%\%PROJECT_NAME%"
 cd CellProfiler
 git pull origin %GIT_BRANCH%
 if not errorlevel 0 (
-end /b
+exit /b
 )
 del ..\build.xml
 if not errorlevel 0 (
-end /b
+exit /b
 )
 copy jenkins\windows\scripts\build.xml ..
 if not errorlevel 0 (
-end /b
+exit /b
 )
 ::
 :: Find JAVA_HOME using javabridge.locate
@@ -100,19 +95,19 @@ echo Cleaning derived files (.pyd, .jar etc)
 call "%ANT_PATH%" clean
 if not errorlevel 0 (
 echo "Failed to clean"
-end /b
+exit /b
 )
 echo Compiling Cython and .c files
 call "%ANT_PATH%" compile
 if not errorlevel 0 (
 echo "Failed to compile"
-end /b
+exit /b
 )
 echo Running tests
 call "%ANT_PATH%" test
 if not errorlevel 0 (
 echo "Failed during tests"
-end /b
+exit /b
 )
 echo Building Windows .msi file
 call "%ANT_PATH%" windows-build

@@ -1,0 +1,254 @@
+<project 
+  name="build-cellprofiler" 
+  default="build">
+  <property environment="env"/>
+  <property name="project-root" value="${env.PROJECTS_ROOT}/${env.PROJECT_NAME}"/>
+  <property name="git-root" value="${project-root}/CellProfiler"/>
+  <property name="test-xslt" value="${git-root}/jenkins/windows/scripts/condense-xunit.xslt"/>
+  <property name="mvn-exe" value="env.MVN_PATH"/>
+  <condition property="compile-setup-dot-py" 
+             value="compile-setup-dot-py-amd64">
+    <os family="windows" arch="AMD64"/>
+  </condition>
+  <condition property="compile-setup-dot-py"
+             value="compile-setup-dot-py-x86">
+    <os family="windows" arch="x86"/>
+  </condition>
+  <target name="build" depends="test"/>
+  <target name="clean-and-build">
+     <antcall target="clean" />
+     <antcall target="build" />
+     <antcall target="windows-build" />
+  </target>
+
+  <target name="external-dependencies">
+     <exec executable="python" failonerror="true" dir="${git-root}">
+     <arg value="external_dependencies.py"/>
+     <arg value="-o" />
+     </exec>
+  </target>
+
+  <target name="compile" 
+          depends="compile-cpmath, compile-utilities, external-dependencies"/>
+
+  <target name="compile-setup-dot-py-amd64">
+    <!-- Compiles setup.py in the directory, setup.py.dir -->
+    <exec executable="python" failonerror="true"
+          dir="${setup.py.dir}">
+      <env key="DISTUTILS_USE_SDK" value="1" />
+      <env key="MSSdk" value="1"/>
+      <arg value="setup.py"/>
+      <arg value="build_ext"/>
+      <arg value="-i"/>
+    </exec>
+  </target>
+  <target name="compile-setup-dot-py-x86">
+    <exec executable="python" failonerror="true"
+          dir="${setup.py.dir}">
+        <env key="DISTUTILS_USE_SDK" value="1" />
+        <env key="MSSdk" value="1"/>
+        <arg value="setup.py"/>
+        <arg value="build_ext"/>
+        <arg value="-i"/>
+    </exec>
+  </target>
+  <target name="compile-cpmath">
+    <antcall target="${compile-setup-dot-py}">
+        <param name="setup.py.dir" value="${git-root}/cellprofiler/cpmath"/>
+    </antcall>
+  </target>
+
+  <target name="compile-utilities">
+    <antcall target="${compile-setup-dot-py}">
+        <param name="setup.py.dir" value="${git-root}/cellprofiler/utilities"/>
+    </antcall>
+  </target>
+
+  <target name="test" depends="check-tests,test-java"/>
+
+  <target name="check-tests" depends="test-cellprofiler, test-modules, test-cpmath, test-manual, test-utilities">
+    <xslt style="${test-xslt}"
+          in="target/test-results/cellprofiler.xml"
+          out="target/cellprofiler_failures.xml"/>
+    <xslt style="${test-xslt}"
+          in="target/test-results/cellprofiler_modules.xml"
+          out="target/cellprofiler_modules_failures.xml"/>
+    <xslt style="${test-xslt}"
+          in="target/test-results/cellprofiler_cpmath.xml"
+          out="target/cellprofiler_cpmath_failures.xml"/>
+    <xslt style="${test-xslt}"
+          in="target/test-results/cellprofiler_manual.xml"
+          out="target/cellprofiler_manual_failures.xml"/>
+    <xslt style="${test-xslt}"
+          in="target/test-results/cellprofiler_utilities.xml"
+          out="target/cellprofiler_utilities_failures.xml"/>
+    <xmlproperty file="target/cellprofiler_failures.xml"/>
+    <xmlproperty file="target/cellprofiler_modules_failures.xml"/>
+    <xmlproperty file="target/cellprofiler_cpmath_failures.xml"/>
+    <xmlproperty file="target/cellprofiler_matlab_failures.xml"/>
+    <xmlproperty file="target/cellprofiler_utilities_failures.xml"/>
+    <xmlproperty file="target/cellprofiler_manual_failures.xml"/>
+    <fail if="testsuite.testcase.failure">
+    Test ${testsuite.testcase.failure} failed. See log for more failures and details.
+    </fail>
+  </target>
+
+  <target name="test-java" depends="external-dependencies">
+      <exec executable="${mvn-exe}"
+            failonerror="true" 
+            dir="${git-root}/java">
+          <arg value="test"/>
+      </exec>
+  </target>
+  
+  <target name="test-modules"
+          depends="compile">
+    <exec executable="python" failonerror="true"
+          dir="${git-root}">
+      <env key="PYTHONPATH" path="${git-root}"/>
+      <arg value="cpnose.py"/>
+      <arg value="--exe"/>
+      <arg value="--with-javabridge"/>
+      <arg value="--no-headless"/>
+      <arg value="--with-xunit"/>
+      <arg value="--xunit-file=../target/test-results/cellprofiler_modules.xml"/>
+      <arg value="-v"/>
+      <arg value="-m"/>
+      <arg value="(?:^)test_.*"/>
+      <arg value="-w"/>
+      <arg value="cellprofiler/modules"/>
+    </exec>
+  </target>
+
+  <target name="test-cpmath" depends="compile">
+    <exec executable="python" failonerror="true"
+          dir="${git-root}">
+      <env key="PYTHONPATH" path="${git-root}"/>
+      <arg value="cpnose.py"/>
+      <arg value="--exe"/>
+      <arg value="--with-javabridge"/>
+      <arg value="--no-headless"/>
+      <arg value="--with-xunit"/>
+      <arg value="--xunit-file=../target/test-results/cellprofiler_cpmath.xml"/>
+      <arg value="-m"/>
+      <arg value="(?:^)test_.*"/>
+      <arg value="-w"/>
+      <arg value="cellprofiler/cpmath"/>
+    </exec>
+  </target>
+
+  <target name="test-cellprofiler" depends="compile">
+    <exec executable="python" failonerror="true"
+          dir="${git-root}">
+      <env key="PYTHONPATH" path="${git-root}"/>
+      <arg value="cpnose.py"/>
+      <arg value="--exe"/>
+      <arg value="--with-javabridge"/>
+      <arg value="--no-headless"/>
+      <arg value="--with-xunit"/>
+      <arg value="--xunit-file=../target/test-results/cellprofiler.xml"/>
+      <arg value="-w"/>
+      <arg value="cellprofiler/tests"/>
+    </exec>
+  </target>
+
+  <target name="test-gui" depends="compile">
+    <exec executable="python" failonerror="true"
+          dir="${git-root}">
+      <env key="PYTHONPATH" path="${git-root}"/>
+      <arg value="cpnose.py"/>
+      <arg value="--exe"/>
+      <arg value="--with-javabridge"/>
+      <arg value="--no-headless"/>
+      <arg value="--with-xunit"/>
+      <arg value="--xunit-file=../target/test-results/cellprofiler_gui.xml"/>
+      <arg value="-w"/>
+      <arg value="cellprofiler/gui/tests"/>
+    </exec>
+  </target>
+
+  <target name="test-utilities" depends="compile">
+    <exec executable="python" failonerror="true"
+          dir="${git-root}">
+      <env key="PYTHONPATH" path="${git-root}"/>
+      <arg value="cpnose.py"/>
+      <arg value="--exe"/>
+      <arg value="--with-javabridge"/>
+      <arg value="--no-headless"/>
+      <arg value="--with-xunit"/>
+      <arg value="--xunit-file=../target/test-results/cellprofiler_utilities.xml"/>
+      <arg value="-w"/>
+      <arg value="cellprofiler/utilities/tests"/>
+    </exec>
+  </target>
+  
+  <target name="test-manual" depends="compile">
+    <exec executable="python" failonerror="true"
+          dir="${git-root}">
+      <env key="PYTHONPATH" path="${git-root}"/>
+      <arg value="cpnose.py"/>
+      <arg value="--exe"/>
+      <arg value="--with-javabridge"/>
+      <arg value="--no-headless"/>
+      <arg value="--with-xunit"/>
+      <arg value="--xunit-file=../target/test-results/cellprofiler_manual.xml"/>
+      <arg value="-w"/>
+      <arg value="cellprofiler/gui/html/tests"/>
+    </exec>
+  </target>
+  
+
+  <target name="windows-build" depends="compile">
+    <exec executable="python" failonerror="true" dir="${git-root}">
+      <env key="PYTHONPATH" path="${git-root}" />
+      <arg value="windows_setup.py"/>
+      <arg value="py2exe" />
+      <arg value="msi" />
+      <arg value="codesign" />
+    </exec>
+    <delete>
+      <fileset dir="target/output">
+        <include name="*.exe"/>
+      </fileset>
+    </delete>
+    <copy todir="target/output">
+      <fileset dir="${git-root}/output">
+        <include name="*.exe"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="clean" depends="clean-java">
+    <delete dir="${git-root}/cellprofiler/utilities/build"/>
+    <delete dir="${git-root}/contrib/build"/>
+    <delete dir="${git-root}/cellprofiler/cpmath/build"/>
+    <delete dir="${git-root}/output"/>
+    <delete dir="${git-root}/build"/>
+    <delete dir="${git-root}/dist"/>
+    <delete dir="${git-root}/imagej/maven"/>
+    <delete dir="${git-root}/imagej/jars"/>
+    <delete file="${git-root}/imagej/apache-maven-3.0.4-bin.zip"/>
+    <delete>
+      <fileset dir="${git-root}">
+         <include name="**/*.pyc"/>
+         <include name="**/*.pyd"/>
+         <include name="cellprofiler/cpmath/*.c"/>
+         <include name="cellprofiler/utilities/*.c"/>
+         <exclude name="cellprofiler/utilities/get_proper_case_filename.c"/>
+         <exclude name="cellprofiler/utilities/mac_javabridge_utils.c"/>
+         <exclude name="cellprofiler/utilities/strtoull.c"/>
+         <include name="contrib/LAP.c"/>
+         <include name="cellprofiler/cpmath/*.so"/>
+         <include name="cellprofiler/utilities/javabridge.so"/>
+         <include name="contrib/LAP.so"/>
+      </fileset>
+    </delete>
+  </target>
+  <target name="clean-java">
+      <exec executable="${mvn-exe}"
+            failonerror="clean" 
+            dir="${git-root}/java">
+          <arg value="test"/>
+      </exec>
+  </target>
+</project>

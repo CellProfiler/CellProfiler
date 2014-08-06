@@ -36,4 +36,4 @@ java/.settings
 killjavabridge.egg-info
 plugins
 output
-windows
+windows/**

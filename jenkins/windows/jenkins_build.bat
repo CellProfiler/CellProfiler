@@ -70,18 +70,18 @@ set ANT_PATH=ant
 call "%VCVARS_BAT%"
 echo Using compiler at %VCINSTALLDIR%
 pushd "%WORKSPACE%"
-cd CellProfiler
-if not errorlevel 0 (
-exit /b
-)
-del ..\build.xml
-if not errorlevel 0 (
+if exist build.xml (
+echo Deleting old build.xml
+del build.xml
+if not errorlevel 0 
 exit /b
 )
 set BUILD_XML=%WORKSPACE%\CellProfiler\jenkins\windows\scripts\build.xml
 if not exist "%BUILD_XML%" (
 echo "Missing build.xml from CellProfiler git clone at %BUILD_XML%"
 exit /b
+) else (
+echo Copying build.xml from %BUILD_XML%
 )
 copy "%WORKSPACE%\CellProfiler\jenkins\windows\scripts\build.xml" "%WORKSPACE%\build.xml"
 if not errorlevel 0 (

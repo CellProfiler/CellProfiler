@@ -55,7 +55,6 @@ exit /b -1
 ) else (
 echo "Building GIT branch %GIT_BRANCH%"
 )
-if not defined PROJECT_NAME (
 if not defined VCVARS_BAT (
 echo "Please define VCVARS_BAT to point to the vcvars.bat file that sets up the compiler environment"
 end /b -1

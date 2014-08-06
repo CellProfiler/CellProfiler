@@ -71,7 +71,8 @@ end /b -1
 if not defined ANT_PATH (
 set ANT_PATH=ant
 )
-"%VCVARS_BAT%"
+call "%VCVARS_BAT%"
+echo "Using compiler at %VCINSTALLDIR%"
 pushd "%PROJECTS_ROOT%\%PROJECT_NAME%"
 cd CellProfiler
 git pull origin %GIT_BRANCH%
@@ -92,22 +93,28 @@ end /b
 python -c "from javabridge.locate import find_javahome;print find_javahome()" > my_javahome.txt
 set /P JAVA_HOME=<my_javahome.txt
 del my_javahome.txt
+echo JAVA_HOME=%JAVA_HOME%
 cd ..
-"%ANT_PATH%" clean
+echo Cleaning derived files (.pyd, .jar etc)
+call "%ANT_PATH%" clean
 if not errorlevel 0 (
 echo "Failed to clean"
 end /b
 )
-"%ANT_PATH%" compile
+echo Compiling Cython and .c files
+call "%ANT_PATH%" compile
 if not errorlevel 0 (
 echo "Failed to compile"
 end /b
 )
-"%ANT_PATH%" test
+echo Running tests
+call "%ANT_PATH%" test
 if not errorlevel 0 (
 echo "Failed during tests"
 end /b
 )
-"%ANT_PATH%" windows-build
+echo Building Windows .msi file
+call "%ANT_PATH%" windows-build
 popd
+endlocal
 

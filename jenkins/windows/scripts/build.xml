@@ -5,7 +5,7 @@
   <property name="project-root" value="${env.PROJECTS_ROOT}/${env.PROJECT_NAME}"/>
   <property name="git-root" value="${project-root}/CellProfiler"/>
   <property name="test-xslt" value="${git-root}/jenkins/windows/scripts/condense-xunit.xslt"/>
-  <property name="mvn-exe" value="env.MVN_PATH"/>
+  <property name="mvn-exe" value="${env.MVN_PATH}"/>
   <condition property="compile-setup-dot-py" 
              value="compile-setup-dot-py-amd64">
     <os family="windows" arch="AMD64"/>

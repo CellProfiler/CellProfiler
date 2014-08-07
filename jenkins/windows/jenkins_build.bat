@@ -68,14 +68,14 @@ set ANT_PATH=ant
 )
 call "%VCVARS_BAT%"
 if defined VCINSTALLDIR (
-echo Using compiler at %VCINSTALLDIR%
+echo Using compiler at "%VCINSTALLDIR%"
 )
 if exist %WORKSPACE%\build.xml (
 echo Deleting old build.xml
 del %WORKSPACE%\build.xml
-if not errorlevel 0 
+if not errorlevel 0 (
 exit /b
-)
+))
 set BUILD_XML=%WORKSPACE%\CellProfiler\jenkins\windows\scripts\build.xml
 if not exist "%BUILD_XML%" (
 echo "Missing build.xml from CellProfiler git clone at %BUILD_XML%"
@@ -90,10 +90,6 @@ exit /b
 ::
 :: Find JAVA_HOME using javabridge.locate
 ::
-if exists %WORKSPACE%\my_javahome.txt (
-del %WORKSPACE%\my_javahome.txt
-)
-set mjh=%WORKSPACE%\my_javahome.txt
 python -c "from javabridge.locate import find_javahome;open('%mjh%','w').write(find_javahome)"
 set /P JAVA_HOME=<%mjh%
 del %mjh%

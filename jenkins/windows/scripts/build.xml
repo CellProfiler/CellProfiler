@@ -14,7 +14,7 @@
              value="compile-setup-dot-py-x86">
     <os family="windows" arch="x86"/>
   </condition>
-  <condition name="windows-redistributables-exist">
+  <condition property="windows-redistributables-exist">
       <and>
           <available file="${git-root}/windows/vcredist_x64.exe"/>
           <available file="${git-root}/windows/vcredist_x86.exe"/>

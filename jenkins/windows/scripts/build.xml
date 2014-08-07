@@ -211,21 +211,21 @@
   
 
   <target name="windows-redistributables" unless="windows-redistributables-exist">
-    <mkdir dir="${git-root}/CellProfiler/windows"/>
+    <mkdir dir="${git-root}/windows"/>
     <exec executable="curl">
         <arg value="-o"/>
-        <arg value="${git-root}/CellProfiler/windows/vcredist_x64.exe"/>
+        <arg value="${git-root}/windows/vcredist_x64.exe"/>
         <arg value="http://download.microsoft.com/download/A/8/0/A80747C3-41BD-45DF-B505-E9710D2744E0/vcredist_x64.exe"/>
     </exec>
     <exec executable="curl">
         <arg value="-o"/>
-        <arg value="${git-root}/CellProfiler/windows/vcredist_x86.exe"/>
+        <arg value="${git-root}/windows/vcredist_x86.exe"/>
         <arg value="http://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe"/>
     </exec>
 </target>
 
   <target name="windows-build" depends="compile,windows-redistributables">
-    <mkdir dir="%{git-root}\output"/>
+    <mkdir dir="${git-root}/output"/>
     <mkdir dir="target/output"/>
     <exec executable="python" failonerror="true" dir="${git-root}">
       <env key="PYTHONPATH" path="${git-root}" />

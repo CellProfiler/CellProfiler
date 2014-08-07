@@ -42,7 +42,7 @@
 :: VCVARS_BAT=c:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\vcvars64.bat
 ::
 SETLOCAL
-echo off
+echo on
 if not defined WORKSPACE (
 echo WORKSPACE is not defined
 exit /b -1
@@ -69,13 +69,15 @@ set ANT_PATH=ant
 call "%VCVARS_BAT%"
 if defined VCINSTALLDIR (
 echo Using compiler at "%VCINSTALLDIR%"
+) else (
+echo VCINSTALLDIR undefined, but maybe this is not a problem
 )
 if exist %WORKSPACE%\build.xml (
 echo Deleting old build.xml
 del %WORKSPACE%\build.xml
 if not errorlevel 0 (
 exit /b
-))
+)) else (echo could not find %WORKSPACE%\build.xml)
 set BUILD_XML=%WORKSPACE%\CellProfiler\jenkins\windows\scripts\build.xml
 if not exist "%BUILD_XML%" (
 echo "Missing build.xml from CellProfiler git clone at %BUILD_XML%"

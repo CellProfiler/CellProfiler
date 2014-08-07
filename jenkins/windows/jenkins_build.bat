@@ -43,6 +43,7 @@
 ::
 SETLOCAL
 echo on
+echo PATH=%PATH%
 if not defined WORKSPACE (
 echo WORKSPACE is not defined
 exit /b -1

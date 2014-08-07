@@ -14,6 +14,12 @@
              value="compile-setup-dot-py-x86">
     <os family="windows" arch="x86"/>
   </condition>
+  <condition name="windows-redistributables-exist">
+      <and>
+          <available file="${git-root}/windows/vcredist_x64.exe"/>
+          <available file="${git-root}/windows/vcredist_x86.exe"/>
+      </and>
+  </condition>
   <target name="build" depends="test"/>
   <target name="clean-and-build">
      <antcall target="clean" />
@@ -103,6 +109,7 @@
   
   <target name="test-modules"
           depends="compile">
+    <mkdir dir="target/test-results"/>
     <exec executable="python" failonerror="true"
           dir="${git-root}">
       <env key="PYTHONPATH" path="${git-root}"/>
@@ -121,6 +128,7 @@
   </target>
 
   <target name="test-cpmath" depends="compile">
+    <mkdir dir="../target/test-results"/>
     <exec executable="python" failonerror="true"
           dir="${git-root}">
       <env key="PYTHONPATH" path="${git-root}"/>
@@ -138,6 +146,7 @@
   </target>
 
   <target name="test-cellprofiler" depends="compile">
+    <mkdir dir="target/test-results"/>
     <exec executable="python" failonerror="true"
           dir="${git-root}">
       <env key="PYTHONPATH" path="${git-root}"/>
@@ -153,6 +162,7 @@
   </target>
 
   <target name="test-gui" depends="compile">
+    <mkdir dir="../target/test-results"/>
     <exec executable="python" failonerror="true"
           dir="${git-root}">
       <env key="PYTHONPATH" path="${git-root}"/>
@@ -168,6 +178,7 @@
   </target>
 
   <target name="test-utilities" depends="compile">
+    <mkdir dir="target/test-results"/>
     <exec executable="python" failonerror="true"
           dir="${git-root}">
       <env key="PYTHONPATH" path="${git-root}"/>
@@ -183,6 +194,7 @@
   </target>
   
   <target name="test-manual" depends="compile">
+    <mkdir dir="target/test-results"/>
     <exec executable="python" failonerror="true"
           dir="${git-root}">
       <env key="PYTHONPATH" path="${git-root}"/>
@@ -198,7 +210,23 @@
   </target>
   
 
-  <target name="windows-build" depends="compile">
+  <target name="windows-redistributables" unless="windows-redistributables-exist">
+    <mkdir dir="${git-root}/CellProfiler/windows"/>
+    <exec executable="curl">
+        <arg value="-o"/>
+        <arg value="${git-root}/CellProfiler/windows/vcredist_x64.exe"/>
+        <arg value="http://download.microsoft.com/download/A/8/0/A80747C3-41BD-45DF-B505-E9710D2744E0/vcredist_x64.exe"/>
+    </exec>
+    <exec executable="curl">
+        <arg value="-o"/>
+        <arg value="${git-root}/CellProfiler/windows/vcredist_x86.exe"/>
+        <arg value="http://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe"/>
+    </exec>
+</target>
+
+  <target name="windows-build" depends="compile,windows-redistributables">
+    <mkdir dir="%{git-root}\output"/>
+    <mkdir dir="target/output"/>
     <exec executable="python" failonerror="true" dir="${git-root}">
       <env key="PYTHONPATH" path="${git-root}" />
       <arg value="windows_setup.py"/>

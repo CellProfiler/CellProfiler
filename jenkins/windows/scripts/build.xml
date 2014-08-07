@@ -2,7 +2,7 @@
   name="build-cellprofiler" 
   default="build">
   <property environment="env"/>
-  <property name="project-root" value="${env.PROJECTS_ROOT}/${env.PROJECT_NAME}"/>
+  <property name="project-root" value="${env.WORKSPACE}"/>
   <property name="git-root" value="${project-root}/CellProfiler"/>
   <property name="test-xslt" value="${git-root}/jenkins/windows/scripts/condense-xunit.xslt"/>
   <property name="mvn-exe" value="${env.MVN_PATH}"/>

@@ -94,7 +94,7 @@ set mjh=%WORKSPACE%\my_javahome.txt
 python -c "from javabridge.locate import find_javahome;open('%mjh%','w').write(find_javahome())"
 set /P JAVA_HOME=<"%mjh%"
 del %mjh%
-echo JAVA_HOME=%JAVA_HOME%
+echo JAVA_HOME="%JAVA_HOME%"
 echo Changing directory to %WORKSPACE%
 pushd %WORKSPACE%
 echo Cleaning derived files (.pyd, .jar etc)

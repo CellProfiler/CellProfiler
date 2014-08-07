@@ -42,7 +42,12 @@
 :: VCVARS_BAT=c:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\bin\vcvars64.bat
 ::
 SETLOCAL
-echo on
+::
+:: Oh someone tries to set the path to "c:\Program files\java\jre"
+:: and that just doesn't work.
+::
+echo off
+set PATH=%PATH:"=%
 echo PATH=%PATH%
 if not defined WORKSPACE (
 echo WORKSPACE is not defined

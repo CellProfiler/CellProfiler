@@ -217,7 +217,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         result.append(self.calculate_zernikes)
         return result
     
-    def prepare_settings(self,setting_values):
+    def prepare_settings(self, setting_values):
         """Adjust the number of object groups based on the number of setting_values"""
         object_group_count = len(setting_values)-1
         while len(self.object_groups) > object_group_count:
@@ -263,7 +263,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         else:
             return []
     
-    def get_zernike_name(self,zernike_index):
+    def get_zernike_name(self, zernike_index):
         """Return the name of a Zernike feature, given a (N,M) 2-tuple
         
         zernike_index - a 2 element sequence organized as N,M
@@ -299,7 +299,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         for object_group in self.object_groups:
             self.run_on_objects(object_group.name.value, workspace)
     
-    def run_on_objects(self,object_name, workspace):
+    def run_on_objects(self, object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
         assert isinstance(objects, cpo.Objects)
@@ -485,8 +485,8 @@ class MeasureObjectSizeShape(cpm.CPModule):
             
         
         
-    def upgrade_settings(self,setting_values,variable_revision_number,
-                         module_name,from_matlab):
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         """Adjust the setting_values for older save file versions
         
         setting_values - a list of strings representing the settings for

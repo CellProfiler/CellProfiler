@@ -1777,6 +1777,8 @@ class ModuleView:
         scales = v.get_scale_choices(self.__pipeline)
         def set_up_combobox(ctrl, text_ctrl, choices, value, always_show=False):
             if len(choices):
+                if value is None:
+                    choices = ["[None]"] + choices
                 if not (len(ctrl.Strings) == len(choices) and
                         all([x==y for x,y in zip(ctrl.Strings,choices)])):
                     ctrl.Clear()
@@ -1789,6 +1791,9 @@ class ModuleView:
                     except:
                         # Crashes on the Mac sometimes
                         ctrl.Value = value
+                else:
+                    if ctrl.Value != "[None]":
+                        ctrl.SetSelection(0)
                 ctrl.Show()
                 text_ctrl.Show()
             elif always_show:

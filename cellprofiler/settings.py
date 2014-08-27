@@ -3527,7 +3527,8 @@ class DataTypes(Setting):
         result = json.loads(self.value_text)
         if self.__name_fn is not None:
             for name in self.__name_fn():
-                result[name] = self.DT_TEXT
+                if name not in result:
+                    result[name] = self.DT_TEXT
         return result
     
     @staticmethod

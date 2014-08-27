@@ -295,7 +295,8 @@ class HDF5Dict(object):
                                         chunks = (self.chunksize, ), 
                                         shape = src_chunk.shape,
                                         maxshape = (None, ))
-                                    ds[:] = src_chunk
+                                    if len(src_chunk) > 0:
+                                        ds[:] = src_chunk
                                 else:
                                     dest_feature_group.create_dataset(
                                         'data', data = src_chunk,

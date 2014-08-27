@@ -9,7 +9,7 @@ export HOME=/broad/hptmp/imageweb
 fi
 fi
 
-export PYTHONPATH=
+export PYTHONPATH=/imaging/analysis/CPCluster/CellProfiler-2.0/javabridge-bioformats-site-packages
 . /broad/software/scripts/useuse
 reuse .toolbox-0.11.0
 reuse Java-1.6
@@ -28,7 +28,7 @@ mkdir $tmp
 Xvfb $DISPLAY -fbdir $tmp &
 XVFBPID=$!
 echo "Xvfb PID = $XVFBPID"
-python "$@"
+python -s "$@"
 kill $XVFBPID
 sleep 5
 rmdir $tmp

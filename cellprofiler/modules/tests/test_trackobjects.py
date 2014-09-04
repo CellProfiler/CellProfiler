@@ -327,8 +327,134 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(module.max_merge_score, 53)
             self.assertEqual(module.max_frame_distance, 4)
             
+    def test_01_06_load_v5(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20140723174500
+GitHash:6c2d896
+ModuleCount:1
+HasImagePlaneDetails:False
+
+TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Choose a tracking method:LAP
+    Select the objects to track:Turtles
+    Select object measurement to use for tracking:Steadiness
+    Maximum pixel distance to consider matches:44
+    Select display option:Color and Number
+    Save color-coded image?:No
+    Name the output image:TrackedTurtles
+    Select the motion model:Both
+    Number of standard deviations for search radius:3.0
+    Search radius limit, in pixel units (Min,Max):3.0,11.0
+    Run the second phase of the LAP algorithm?:Yes
+    Gap cost:39
+    Split alternative cost:41
+    Merge alternative cost:42
+    Maximum gap displacement, in frames:6
+    Maximum split score:51
+    Maximum merge score:52
+    Maximum gap:8
+    Filter objects by lifetime?:No
+    Filter using a minimum lifetime?:Yes
+    Minimum lifetime:2
+    Filter using a maximum lifetime?:No
+    Maximum lifetime:1000
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        m = pipeline.modules()[0]
+        assert isinstance(m, T.TrackObjects)
+        self.assertEqual(m.tracking_method, T.TM_LAP)
+        self.assertEqual(m.object_name, "Turtles")
+        self.assertEqual(m.measurement, "Steadiness")
+        self.assertEqual(m.pixel_radius, 44)
+        self.assertEqual(m.display_type, T.DT_COLOR_AND_NUMBER)
+        self.assertFalse(m.wants_image)
+        self.assertEqual(m.image_name, "TrackedTurtles")
+        self.assertEqual(m.model, T.M_BOTH)
+        self.assertEqual(m.radius_std, 3)
+        self.assertEqual(m.radius_limit.min, 3)
+        self.assertEqual(m.radius_limit.max, 11)
+        self.assertTrue(m.wants_second_phase)
+        self.assertEqual(m.gap_cost, 39)
+        self.assertEqual(m.split_cost, 41)
+        self.assertEqual(m.merge_cost, 42)
+        self.assertEqual(m.max_frame_distance, 8)
+        self.assertTrue(m.wants_minimum_lifetime)
+        self.assertEqual(m.min_lifetime, 2)
+        self.assertFalse(m.wants_maximum_lifetime)
+        self.assertEqual(m.max_lifetime, 1000)
         
-        
+    def test_01_07_load_v6(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20140723174500
+GitHash:6c2d896
+ModuleCount:1
+HasImagePlaneDetails:False
+
+TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Choose a tracking method:LAP
+    Select the objects to track:Turtles
+    Select object measurement to use for tracking:Steadiness
+    Maximum pixel distance to consider matches:44
+    Select display option:Color and Number
+    Save color-coded image?:No
+    Name the output image:TrackedTurtles
+    Select the motion model:Both
+    Number of standard deviations for search radius:3.0
+    Search radius limit, in pixel units (Min,Max):3.0,11.0
+    Run the second phase of the LAP algorithm?:Yes
+    Gap cost:39
+    Split alternative cost:41
+    Merge alternative cost:42
+    Maximum gap displacement, in frames:6
+    Maximum split score:51
+    Maximum merge score:52
+    Maximum gap:8
+    Filter objects by lifetime?:No
+    Filter using a minimum lifetime?:Yes
+    Minimum lifetime:2
+    Filter using a maximum lifetime?:No
+    Maximum lifetime:1000
+    Mitosis alternative cost:79
+    Mitosis max distance:41
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        m = pipeline.modules()[0]
+        assert isinstance(m, T.TrackObjects)
+        self.assertEqual(m.tracking_method, T.TM_LAP)
+        self.assertEqual(m.object_name, "Turtles")
+        self.assertEqual(m.measurement, "Steadiness")
+        self.assertEqual(m.pixel_radius, 44)
+        self.assertEqual(m.display_type, T.DT_COLOR_AND_NUMBER)
+        self.assertFalse(m.wants_image)
+        self.assertEqual(m.image_name, "TrackedTurtles")
+        self.assertEqual(m.model, T.M_BOTH)
+        self.assertEqual(m.radius_std, 3)
+        self.assertEqual(m.radius_limit.min, 3)
+        self.assertEqual(m.radius_limit.max, 11)
+        self.assertTrue(m.wants_second_phase)
+        self.assertEqual(m.gap_cost, 39)
+        self.assertEqual(m.split_cost, 41)
+        self.assertEqual(m.merge_cost, 42)
+        self.assertEqual(m.max_frame_distance, 8)
+        self.assertTrue(m.wants_minimum_lifetime)
+        self.assertEqual(m.min_lifetime, 2)
+        self.assertFalse(m.wants_maximum_lifetime)
+        self.assertEqual(m.max_lifetime, 1000)
+        self.assertEqual(m.mitosis_cost, 79)
+        self.assertEqual(m.mitosis_max_distance, 41)
+
     def runTrackObjects(self, labels_list, fn = None, measurement = None):
         '''Run two cycles of TrackObjects
         
@@ -1161,11 +1287,11 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
                       [2, 2, 2, 2, 86,   87, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
-        # The split score should be between 28 and 30.  Set the split
-        # alternative cost to 15 so that the split is favored.
+        # The split score should be 20*sqrt(2) more than the null so a split
+        # alternative cost of 15 is too much and 14 too little
         #
-        module.split_cost.value = 30
-        module.max_split_score.value = 30
+        module.split_cost.value = 15
+        module.max_split_score.value = 15
         module.run_as_data_tool(workspace)
         d200 = np.sqrt(200)
         tot = np.sqrt(13 ** 2 + 14 ** 2)
@@ -1197,8 +1323,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
                       [2, 1, 2, 1, 110, 110, 25],
                       [2, 2, 2, 2, 90,   90, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
-        module.split_cost.value = 28
-        module.max_split_score.value = 30
+        module.split_cost.value = 14
+        module.max_split_score.value = 15
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
@@ -1221,8 +1347,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
                       [2, 1, 2, 1, 110, 110, 25],
                       [2, 2, 2, 2, 90,   90, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
-        module.split_cost.value = 30
-        module.max_split_score.value = 28
+        module.split_cost.value = 15
+        module.max_split_score.value = 14
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
@@ -1461,11 +1587,11 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
                       [2, 1, 2, 1, 100, 100, 50]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
-        # The split score should be between 28 and 30.  Set the split
+        # The split score should be between 14 and 15.  Set the split
         # alternative cost to 28 so that the split is inhibited.
         #
-        module.split_cost.value = 28
-        module.max_split_score.value = 30
+        module.split_cost.value = 14
+        module.max_split_score.value = 15
         #
         # The cost of the merge is 2x 10x sqrt(2) which is between 28 and 29
         #
@@ -1485,6 +1611,96 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_FINAL_AGE: [ np.array([np.nan]), np.array([np.nan, 1]), np.array([3]) ],
             T.F_NEW_OBJECT_COUNT: [ 1, 1, 0 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 0, 1 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0 ],
+            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+            })
+        
+    def test_07_14_mitosis(self):
+        '''Track a mitosis'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 103, 104, 50],
+                      [1, 2, 0, 0, 110, 110, 25],
+                      [1, 3, 0, 0, 90,   90, 25],
+                      [2, 2, 2, 1, 113, 114, 25],
+                      [2, 3, 2, 2, 86,   87, 25]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The parent is off by np.sqrt(3*3+4*4) = 5, so an alternative of
+        # 4 loses and 6 wins
+        #
+        module.merge_cost.value = 1
+        module.gap_cost.value = 1
+        module.mitosis_cost.value = 6
+        module.mitosis_max_distance.value = 20
+        module.run_as_data_tool(workspace)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.array([1,1]), np.array([1,1]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([1,1]), np.array([2,2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,1]), np.array([1,2]) ],
+            T.F_LIFETIME: [ np.ones(1), np.array([2,2]), np.array([3,3]) ],
+            T.F_FINAL_AGE: [ np.array([np.nan]), np.array([np.nan, np.nan]), np.array([3,3]) ],
+            T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0 ],
+            T.F_SPLIT_COUNT: [ 0, 1, 0 ]
+            })
+        
+    def test_07_14_no_mitosis(self):
+        '''Don't track a mitosis'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 103, 104, 50],
+                      [1, 2, 0, 0, 110, 110, 25],
+                      [1, 3, 0, 0, 90,   90, 25],
+                      [2, 2, 2, 1, 113, 114, 25],
+                      [2, 3, 2, 2, 86,   87, 25]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The parent is off by np.sqrt(3*3+4*4) = 5, so an alternative of
+        # 4 loses and 6 wins
+        #
+        module.merge_cost.value = 1
+        module.mitosis_cost.value = 4
+        module.mitosis_max_distance.value = 20
+        module.gap_cost.value = 1
+        module.run_as_data_tool(workspace)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.array([2,3]), np.array([2,3]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([0,0]), np.array([2,2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([0,0]), np.array([1,2]) ],
+            T.F_LIFETIME: [ np.ones(1), np.array([1,1]), np.array([2,2]) ],
+            T.F_FINAL_AGE: [ np.array([1]), np.array([np.nan, np.nan]), np.array([2,2]) ],
+            T.F_NEW_OBJECT_COUNT: [ 1, 2, 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 1, 0 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0 ],
+            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+            })
+        
+    def test_07_15_mitosis_distance_filter(self):
+        '''Don't track a mitosis'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 103, 104, 50],
+                      [1, 2, 0, 0, 110, 110, 25],
+                      [1, 3, 0, 0, 90,   90, 25],
+                      [2, 2, 2, 1, 113, 114, 25],
+                      [2, 3, 2, 2, 86,   87, 25]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The parent is off by np.sqrt(3*3+4*4) = 5, so an alternative of
+        # 4 loses and 6 wins
+        #
+        module.merge_cost.value = 1
+        module.mitosis_cost.value = 6
+        module.mitosis_max_distance.value = 15
+        module.gap_cost.value = 1
+        module.run_as_data_tool(workspace)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.array([2,3]), np.array([2,3]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([0,0]), np.array([2,2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([0,0]), np.array([1,2]) ],
+            T.F_LIFETIME: [ np.ones(1), np.array([1,1]), np.array([2,2]) ],
+            T.F_FINAL_AGE: [ np.array([1]), np.array([np.nan, np.nan]), np.array([2,2]) ],
+            T.F_NEW_OBJECT_COUNT: [ 1, 2, 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 1, 0 ],
             T.F_MERGE_COUNT: [ 0, 0, 0 ],
             T.F_SPLIT_COUNT: [ 0, 0, 0 ]
             })
@@ -1531,21 +1747,30 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             self.assertEqual(len(d), 0)
             
     def test_09_01_get_gap_pair_scores(self):
-        L = np.array([[0.0, 0.0, 1],
-                      [1.0, 1.0, 5],
-                      [3.0, 3.0, 8],
-                      [2.0, 2.0, 9]])
-        F = np.array([[0.0, 0.0, 0],
-                      [1.0, 0.0, 4],
-                      [3.0, 0.0, 6],
-                      [4.0, 0.0, 7]])
+        L = np.array([[0.0, 0.0, 1, 0, 0, 0, 1],
+                      [1.0, 1.0, 5, 0, 0, 0, 1],
+                      [3.0, 3.0, 8, 0, 0, 0, 1],
+                      [2.0, 2.0, 9, 0, 0, 0, 1],
+                      [0.0, 0.0, 9, 0, 0, 0, 1],
+                      [0.0, 0.0, 9, 0, 0, 0, 1]])
+        F = np.array([[0.0, 0.0, 0, 0, 0, 0, 1],
+                      [1.0, 0.0, 4, 0, 0, 0, 1],
+                      [3.0, 0.0, 6, 0, 0, 0, 1],
+                      [4.0, 0.0, 7, 0, 0, 0, 1],
+                      [1.0, 0.0, 2, 0, 0, 0, 2],
+                      [1.0, 0.0, 2, 0, 0, 0, .5]])
         expected = np.array([[0, 1],
+                             [0, 4],
+                             [0, 5],
                              [1, 2],
                              [1, 3]])
         expected_d = np.sqrt(
             np.sum((L[expected[:, 0], :2] - F[expected[:, 1], :2]) ** 2, 1))
+        expected_rho = np.array([1, 2, 2, 1, 1])
         t = T.TrackObjects()
         a, d = t.get_gap_pair_scores(F, L, 4)
+        order = np.lexsort((a[:, 1], a[:, 0]))
+        a, d = a[order], d[order]
         np.testing.assert_array_equal(a, expected)
-        np.testing.assert_array_almost_equal(d, expected_d)
+        np.testing.assert_array_almost_equal(d, expected_d*expected_rho)
                       

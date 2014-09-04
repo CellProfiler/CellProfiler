@@ -204,7 +204,7 @@ class TrackObjects(cpm.CPModule):
 
     module_name = 'TrackObjects'
     category = "Object Processing"
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     def create_settings(self):
         self.tracking_method = cps.Choice(
@@ -432,6 +432,35 @@ class TrackObjects(cpm.CPModule):
             higher if objects that are not merged should be merged.</li>
             </ul></p>'''%globals())
         
+        self.mitosis_cost = cps.Integer(
+            'Mitosis alternative cost', 80, minval=1, doc = '''
+            <i>(Used only if the %(TM_LAP)s tracking method is applied and the
+            second phase is run)</i><br>
+            This setting is the cost of not linking a parent and two daughters
+            via the mitosis model. the %(TM_LAP)s tracking method weighs this 
+            cost against the score of a potential mitosis. The model expects
+            the daughters to be equidistant from the parent after mitosis,
+            so the parent location is expected to be midway between the daughters.
+            In addition, the model expects the daughters' areas to be equal
+            to the parent's area. The mitosis score is the distance error
+            of the parent times the area inequality ratio of the parent and
+            daughters (the larger of Area(daughters) / Area(parent) and
+            Area(parent) / Area(daughters)).<br>
+            An accepted mitosis closes two gaps, so all things being equal,
+            the mitosis alternative cost should be approximately double the
+            gap closing cost.
+            Increase the mitosis alternative cost to favor more mitoses
+            and decrease it to prevent more mitoses candidates from being
+            accepted.''')
+        
+        self.mitosis_max_distance = cps.Integer(
+            'Mitosis max distance', 40, minval=1, doc= '''
+            <i>(Used only if the %(TM_LAP)s tracking method is applied and the
+            second phase is run)</i><br>
+            This setting is the maximum allowed distance in pixels of either of 
+            the daughter candidates after mitosis from the parent candidate.
+            ''')
+        
         self.max_gap_score = cps.Integer(
             'Maximum gap displacement, in frames', 5, minval=1, doc = '''
             <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
@@ -568,7 +597,8 @@ class TrackObjects(cpm.CPModule):
                 self.max_gap_score, self.max_split_score,
                 self.max_merge_score, self.max_frame_distance,
                 self.wants_lifetime_filtering, self.wants_minimum_lifetime,
-                self.min_lifetime, self.wants_maximum_lifetime, self.max_lifetime]
+                self.min_lifetime, self.wants_maximum_lifetime, 
+                self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance]
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected some limits when filtering'''
@@ -589,8 +619,10 @@ class TrackObjects(cpm.CPModule):
             if self.wants_second_phase:
                 result += [ 
                     self.gap_cost, self.split_cost, self.merge_cost,
+                    self.mitosis_cost,
                     self.max_gap_score, self.max_split_score,
-                    self.max_merge_score, self.max_frame_distance]
+                    self.max_merge_score, self.max_frame_distance,
+                    self.mitosis_max_distance]
         else:
             result += [self.pixel_radius]
         
@@ -1218,51 +1250,16 @@ class TrackObjects(cpm.CPModule):
         if (self.tracking_method != TM_LAP or
             not self.wants_second_phase):
             return
-        ############################################
-        #
-        # All of the scores going into the LAP must be positive
-        # so we have to balance the positive costs instead of
-        # doing something simpler, like subtracting the cost of a gap
-        # from the cost of bridging the gap.
-        #
-        # Variables we have to play with:
-        # Gap initiation - cost applied to a start
-        # Gap termination - cost applied to an end
-        # Split termination - alternative cost to splitting.
-        # Merge initiation - alternative cost to merging.
-        #
-        # Cost of gap = 2*gap_termination + 2*gap_initiation
-        # Alternative cost = gap_termination + displacement across gap + gap_initiation
-        #
-        # Cost of split = split displacement + area + split_termination
-        # Cost of alternative = gap_initiation + gap_termination
-        # split_termination = split_cost - gap_initiation + gap_termination
-        #
-        # Cost of merge = gap_initiation + merge displacement + area + gap_termination
-        # Cost of alternative = merge_initiation + gap_initiation
-        # merge_initiation = merge_cost - gap_initiation
-        ############################################
-        
+
         gap_cost = float(self.gap_cost.value)
         split_alternative_cost = float(self.split_cost.value)
         merge_alternative_cost = float(self.merge_cost.value)
+        mitosis_alternative_cost = float(self.mitosis_cost.value)
         
-        # Make the gap closing cost high enough so that 
-        # gap_initiation + gap_termination > merge or split alternative costs
-        gap_closing_cost = split_alternative_cost + merge_alternative_cost
-        gap_initiation_cost = (gap_cost + gap_closing_cost) / 2
-        gap_termination_cost = (gap_cost + gap_closing_cost) / 2
-        split_termination_cost = split_alternative_cost + gap_initiation_cost + gap_termination_cost
-        merge_initiation_cost = merge_alternative_cost
-        
-        para1 = self.max_gap_score.value #max upper-left
-        para2 = self.max_merge_score.value #max upper-middle
-        para3 = gap_termination_cost #value for upper-right
-        para4 = self.max_split_score.value #max for middle-left
-        para5 = split_termination_cost #value for middle-right
-        para6 = gap_initiation_cost #value for lower-left
-        para7 = merge_initiation_cost #value for lower-middle
-        para8 = self.max_frame_distance.value #max frame difference
+        max_gap_score = self.max_gap_score.value
+        max_merge_score = self.max_merge_score.value
+        max_split_score = self.max_split_score.value
+        max_frame_difference = self.max_frame_distance.value
 
         m = workspace.measurements
         assert(isinstance(m, cpmeas.Measurements))
@@ -1347,204 +1344,312 @@ class TrackObjects(cpm.CPModule):
         # Addresses of supplementary nodes:
         # The LAP array is composed of six address ranges.
         # 
-        # 1 to T      = segment starts and ends
-        # T+1 to T+OB = split starts
-        # T+OB+1 to T * 2 + OB = gap alternatives
-        # T * 2 + OB + 1 to T * 2 + OB * 2 = merge ends
-        # T * 2 + OB * 2 + 1 to T * 2 + OB * 2 = split alternatives
-        # T * 2 + OB * 3 + 1 to T * 2 + OB * 3 = merge alternatives
+        # Count | node type
+        # ------------------
+        # T     | segment starts and ends
+        # T     | gap alternatives
+        # OB    | split starts
+        # OB    | merge ends
+        # M     | mitosis left child
+        # M     | mitosis right child
         #
         # T = # tracks
         # OB = # of objects that can serve as merge or split points
+        # M = # of mitotic pairs considered
+        #
+        # The graph:
+        # 
+        # Gap Alternatives (in other words, do nothing)
+        # ----------------------------------------------
+        # End[i] <----> Gap Alternative[i]
+        # Gap Alternative[j] <----> Start[j]
+        # Split[k] <---> Split[k]
+        # Merge[k] <---> Merge[k]
+        #
+        # Daisy chain mitosis alternatives so that if any is used,
+        # all must be used
+        #
+        # Mitosis left child[l] <--->  Mitosis right child[l]
+        # Mitosis right child[l] <--->  Mitosis left child[l]
+        #
+        # Bridge gaps:
+        # -----------------------------------------------
+        #
+        # End[i] <---> Start[j]
+        # Gap Alternative[i] <---> Gap Alternative[j]
+        #
+        # Splits
+        # -----------------------------------------------
+        #
+        # Split[i] <----> Start[j]
+        # Gap Alternative[j] <---> Split[i]
+        #
+        # Merges
+        # -----------------------------------------------
+        # End[i] <----> Merge[j]
+        # Merge[j] <----> Gap alternative[i]
+        #
+        # Mitosis
+        # -----------------------------------------------
+        # The mitosis model uses an intermediate left and right
+        # child in order to create separate subgraphs for each
+        # mitosis without sharing edges.
+        #
+        # End[i] <----> Mitosis left child[j]
+        # Mitosis left child[j] <----> Start[k]
+        # Mitosis right child[j] <----> Start[l]
+        # Gap alternative[k] <----> Gap alternative[i]
+        # Gap alternative[l] <---->  Mitosis right child[j]
+        #
         ##################################################
         
-        ss_off = len(F)
-        ga_off = len(F) + len(P1)
-        me_off = len(F) * 2 + len(P1)
-        sa_off = len(F) * 2 + len(P1) * 2
-        ma_off = len(F) * 2 + len(P1) * 3
-
-        #creates the upper-left block
+        end_nodes = []
+        start_nodes = []
+        scores = []
+        #
+        # The offsets and lengths of the start/end node ranges and
+        # gap ranges
+        #
+        start_end_off = 0
+        start_end_len = len(L)
+        gap_off = len(L)
+        gap_len = len(L)
+        #-------------------------------------------
+        #
+        # Null model (do nothing)
+        #
+        #-------------------------------------------
         
-        a, d = self.get_gap_pair_scores(F, L, para8)
+        #
+        # Create the edges between ends and gap alternatives
+        # The edge weight is the gap termination cost
+        #
+        end_nodes.append(np.arange(len(L)))
+        start_nodes.append(np.arange(len(L)) + gap_off)
+        scores.append(np.ones(len(L)) * gap_cost/2)
+        #
+        # Create the edges between the the gap alternatives and the starts
+        # The edge weight is the gap initiation cost
+        #
+        end_nodes.append(np.arange(len(L)) + gap_off)
+        start_nodes.append(np.arange(len(L)))
+        scores.append(np.ones(len(L)) * gap_cost/2)
+        
+        #------------------------------------------
+        #
+        # Gap-closing model
+        #
+        #------------------------------------------
+        
+        #
+        # Create the edges between ends and starts.
+        # The edge weight is the gap pair cost.
+        #
+        a, d = self.get_gap_pair_scores(F, L, max_frame_difference)
         # filter by max gap score
-        mask = d <= para1
+        mask = d <= max_gap_score
         if np.sum(mask) > 0:
-            d = np.column_stack((a[mask, :].astype(float), 
-                                 d[mask] + gap_closing_cost))
-        else:
-            d = np.zeros((0, 3))
+            a, d = a[mask], d[mask]
+            end_nodes.append(a[:, 0])
+            start_nodes.append(a[:, 1])
+            scores.append(d)
+            #
+            # Create the edges between the gap alternatives that would
+            # have hooked the start nodes and the ones that would have
+            # hooked the end nodes. There is no cost.
+            #
+            end_nodes.append(a[:, 1] + gap_off)
+            start_nodes.append(a[:, 0] + gap_off)
+            scores.append(np.zeros(len(a)))
 
-        #creates the transpose for the lower-right block
-
-        w = np.column_stack((d[:, 1]+len(F)+len(P1), 
-                             d[:, 0]+len(F)+len(P1), 
-                             np.zeros(len(d))+0.0001))
-        d = np.vstack((d, w))
-
-        #upper-right block (which provides terminating alternatives for gaps)
-
-        f = np.column_stack((np.arange(len(F)), 
-                             np.arange(len(F))+len(F)+len(P1), 
-                             np.zeros(len(F))+gap_termination_cost))
-        d = np.vstack((d, f))
+        #---------------------------------------------------
+        #
+        # Merge model
+        #
+        #---------------------------------------------------
         
-        #lower-left (which provides initiating alternatives for gaps)
-
-        a = np.column_stack((np.arange(len(F))+len(F)+len(P1), 
-                             np.arange(len(F)), 
-                             np.zeros(len(F))+gap_initiation_cost))
-
-        d = np.vstack((d, a))
-
-        #finds possible merge points with a small enough gap difference, for upper-middle block
-
-        i = 0
-        j = np.arange(len(P1))
         #
         # The first column of z is the index of the track that ends. The second
         # is the index into P2 of the object to be merged into
         #
-        z = []
-        while i <len(F):
-            y = P1[j, IIDX] - L[i, IIDX]
-            y = y.astype("int32")
-            x = np.argwhere((y <= para8) & (y > 0))
-            y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
-            z.append(y)
-            i = i+1
-        z = np.vstack(z)
-
-        # calculates actual cost according to the formula given in the 
-        # supplementary notes    
-        AreaLast = L[z[:, 0], AIDX]
-        AreaBeforeMerge = P[P1[z[:, 1], PIDX].astype(int) - 1, AIDX]
-        AreaAtMerge = P1[z[:, 1], AIDX]
-        rho = ((AreaLast+AreaBeforeMerge)/AreaAtMerge)**2
-        px = np.argwhere(rho < 1)
-        if(len(px) > 0):
-            rho[px] = np.sqrt((1/rho[px]))
-        if len(z) > 0:
-            rho = np.sqrt(np.sum((L[z[:, 0], :2]-P2[z[:, 1], :2])**2, 1)) * rho
-        else:
-            rho = np.zeros(0)
-        e = rho
-
-        #filters out the costs that are too high
-
-        b = np.argwhere(e <= para2)
-
-        #puts together all the upper blocks
-
-        if len(b) > 0:
-            z = z[b].reshape((len(b), 2))
-            e = e[b].reshape((len(b)))
-        else:
-            z = np.zeros((0,2),z.dtype)
-            e = np.zeros((0,),e.dtype)
-        e = np.column_stack((z, e))
-
-        # link the alternative cost of merging to the merge-end node
-        # with a cost of zero (bookkeeping)
-
-        f = np.column_stack((np.arange(len(P1))+ma_off,
-                             np.arange(len(P1))+me_off,
-                             np.zeros(len(P1))))
-        #
-        # Link the alternative cost of merging to the gap node
-        # with a cost that's equal to the gap termination cost minus
-        # the alternative penalty to merging
-        #
-        
-        g = np.column_stack((e[:,1] + ma_off,
-                             e[:,0] + ga_off,
-                             np.zeros(len(e))+ gap_termination_cost - merge_alternative_cost))
-        #
-        # We also need a path from every merge to every merge 
-        # initiator so that every merge can have an end. This is just
-        # bookkeeping, so again no cost.
-        #
-        h = np.column_stack((np.arange(len(P1))+me_off,
-                             np.arange(len(P1))+ma_off,
-                             np.zeros(len(P1))))
-
-        # Mark the first index as an index into P1 by moving it past the
-        # track number indices.
-        e[0:len(e), 1] = e[0:len(e), 1]+me_off
-        d = np.vstack((d, e, f, g, h))
-        
-        #similar process for the middle-left block as the upper-middle left block
-
+        merge_off = gap_off+gap_len
         if len(P1) > 0:
-            i = 0
-            j = np.arange(len(F))
-            # The first column of Z is the index of the object being split
-            # The second is the index of the track that results from
-            # the split.
-            #
-            z = []
-            while i < len(P1):
-                y = F[j, IIDX] - P2[i, IIDX]
-                y = y.astype("int32")
-                x = np.argwhere((y <= para8) & (y > 0))
-                y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
-                z.append(y)
-                i = i+1
-            z = np.vstack(z)
-    
-            AreaFirst = F[z[:, 1], AIDX]
-            AreaAfterSplit = P[ P2[z[:, 0], PIDX].astype(int) + 1, AIDX]
-            AreaAtSplit = P2[z[:, 0], AIDX]
-            rho = ((AreaFirst+AreaAfterSplit)/AreaAtSplit)**2
-            x = np.argwhere(rho < 1)
-            if(len(x) > 1):
-                rho[x] = (1/rho[x])*(1/rho[x])
-            if len(z):
-                rho = np.sqrt(np.sum((F[z[:, 1], :2]-P1[z[:, 0], :2])**2, 1)) * rho
-            else:
-                rho = np.zeros(0)
-            e = rho
-    
-            b = np.argwhere(e <= para4)
-            if len(b) > 0:
-                z = z[b].reshape((len(b), 2))
-                e = e[b].reshape((len(b)))
-                e = np.column_stack((z, e))
-            else:
-                e = np.zeros((0,3))
+            merge_p1idx, merge_lidx = \
+                [_.flatten() for _ in np.mgrid[0:len(P1), 0:len(L)]]
+            z = (P1[merge_p1idx, IIDX] - L[merge_lidx, IIDX]).astype(np.int32)
+            mask = (z <= max_frame_difference) & (z > 0)
+            merge_p1idx, merge_lidx, z =\
+                [_[mask] for _ in merge_p1idx, merge_lidx, z]
         else:
-            e = np.zeros((0,3))
-
-        #middle-right block - the alternative for each split is that it
-        # terminates with the split cost.
-
-        f = np.column_stack((np.arange(len(P1))+ss_off,
-                             np.arange(len(P1))+sa_off,
-                             np.zeros(len(P1))))
-        #
-        # For bookkeeping, we need to make a path from each segment start's
-        # terminator to each of these alternatives.
+            merge_p1idx = merge_lidx = z = np.zeros(0, np.int32)
         
-        g = np.column_stack((e[:,1] + ga_off,
-                             e[:,0] + sa_off,
-                             np.zeros(len(e))+gap_initiation_cost - split_alternative_cost))
+        if len(z) > 0:
+            # Calculate penalty = distance * area penalty
+            AreaLast = L[merge_lidx, AIDX]
+            AreaBeforeMerge = P[P1[merge_p1idx, PIDX].astype(int) - 1, AIDX]
+            AreaAtMerge = P1[merge_p1idx, AIDX]
+            rho = self.calculate_area_penalty(
+                AreaLast + AreaBeforeMerge, AreaAtMerge)
+            d = np.sqrt(np.sum((L[merge_lidx, :2]-P2[merge_p1idx, :2])**2, 1))
+            merge_scores = d * rho
+            mask = merge_scores <= max_merge_score
+            merge_p1idx, merge_lidx, merge_scores = [
+                _[mask] for _ in merge_p1idx, merge_lidx, merge_scores]
+            merge_len = np.sum(mask)
+            if merge_len > 0:
+                #
+                # The end nodes are the ends being merged to the intermediates
+                # The start nodes are the intermediates and have node #s
+                # that start at merge_off
+                #
+                end_nodes.append(merge_lidx)
+                start_nodes.append(merge_off + np.arange(merge_len))
+                scores.append(merge_scores)
+                #
+                # Hook the gaps that match the ends to the merge nodes
+                #
+                end_nodes.append(merge_off + np.arange(merge_len))
+                start_nodes.append(merge_lidx + gap_off)
+                scores.append(np.ones(merge_len) * gap_cost/2)
+                #
+                # The alternative hypothesis is represented by merges hooked
+                # to merges
+                #
+                end_nodes.append(merge_off + np.arange(merge_len))
+                start_nodes.append(merge_off + np.arange(merge_len))
+                scores.append(np.ones(merge_len) * merge_alternative_cost)
+        else:
+            merge_len = 0
+            
+        #------------------------------------------------------
         #
-        # We also need a path from every split terminators to 
-        # every split so that every split can have a start. This is just
-        # bookkeeping, so again no cost.
+        # Split model
         #
-        h = np.column_stack((np.arange(len(P1))+sa_off,
-                             np.arange(len(P1))+ss_off,
-                             np.zeros(len(P1))))
-
-        # Add the # of tracks to the first column of Z (now E) in order
-        # to mark it as an index into P1.
-        e[0:len(e), 0] = e[0:len(e), 0]+ss_off
- 
-        d = np.vstack((d, e, f, g, h))
-        i = d[:,0].astype(int)
-        j = d[:,1].astype(int)
-        c = d[:,2]
+        #------------------------------------------------------
+        
+        split_off = merge_off + merge_len
+        if len(P2) > 0:
+            split_p2idx, split_fidx = \
+                [_.flatten() for _ in np.mgrid[0:len(P2), 0:len(F)]]
+            z = (F[split_fidx, IIDX] - P2[split_p2idx, IIDX]).astype(np.int32)
+            mask = (z <= max_frame_difference) & (z > 0)
+            split_p2idx, split_fidx, z = \
+                [_[mask] for _ in split_p2idx, split_fidx, z]
+        else:
+            split_p2idx = split_fidx = z = np.zeros(0, int)
+    
+        if len(z) > 0:
+            AreaFirst = F[split_fidx, AIDX]
+            AreaAfterSplit = P[ P2[split_p2idx, PIDX].astype(int) + 1, AIDX]
+            AreaAtSplit = P2[split_p2idx, AIDX]
+            d = np.sqrt(np.sum((F[split_fidx, :2] - P2[split_p2idx, :2])**2, 1))
+            rho = self.calculate_area_penalty(
+                AreaFirst + AreaAfterSplit, AreaAtSplit)
+            split_scores = d * rho
+            mask = (split_scores <= max_split_score)
+            split_p2idx, split_fidx, split_scores = \
+                [_[mask] for _ in split_p2idx, split_fidx, split_scores]
+            split_len = np.sum(mask)
+            if split_len > 0:
+                #
+                # The end nodes are the intermediates (starting at split_off)
+                # The start nodes are the F
+                #
+                end_nodes.append(np.arange(split_len) + split_off)
+                start_nodes.append(split_fidx)
+                scores.append(split_scores)
+                #
+                # Hook the gap alternatives (ends) to the split nodes
+                # We charge the gap closing alternative cost here
+                # so that a split alternative and not a split + gap
+                # alternative is subtracted if we choose a split over
+                # a gap closing or gap.
+                #
+                end_nodes.append(split_fidx + gap_off)
+                start_nodes.append(np.arange(split_len) + split_off)
+                scores.append(np.ones(split_len) * gap_cost / 2)
+                #
+                # The alternate hypothesis is split nodes hooked to themselves
+                #
+                end_nodes.append(np.arange(split_len) + split_off)
+                start_nodes.append(np.arange(split_len) + split_off)
+                scores.append(np.ones(split_len) * split_alternative_cost)
+        else:
+            split_len = 0
+        
+        #----------------------------------------------------------
+        #
+        # Mitosis model
+        #
+        #----------------------------------------------------------
+        
+        mitoses, mitosis_scores = self.get_mitotic_triple_scores(F, L)
+        MDLIDX = 0  # index of left daughter
+        MDRIDX = 1  # index of right daughter
+        MPIDX = 2   # index of parent
+        n_mitoses = len(mitosis_scores)
+        mitoses_parent_lidx = mitoses[:, MPIDX]
+        mitoses_left_child_findx = mitoses[:, MDLIDX]
+        mitoses_right_child_findx = mitoses[:, MDRIDX]
+        #
+        # Create the ranges for the two
+        # ghost mitosis children
+        #
+        mitosis_left_child_len = mitosis_right_child_len = n_mitoses
+        mitosis_left_child_off = split_off + split_len
+        mitosis_right_child_off = \
+            mitosis_left_child_off + mitosis_left_child_len
+        if n_mitoses > 0:
+            #
+            # Hook ends of parents to the mitosis left child. We put the
+            # full cost on this edge (arbitrary choice)
+            #
+            end_nodes.append(mitoses_parent_lidx)
+            start_nodes.append(np.arange(n_mitoses) + mitosis_left_child_off)
+            scores.append(mitosis_scores)
+            #
+            # Hook ends of the left mitosis child to the left child
+            #
+            end_nodes.append(np.arange(n_mitoses) + mitosis_left_child_off)
+            start_nodes.append(mitoses_left_child_findx)
+            scores.append(np.zeros(n_mitoses))
+            #
+            # Hook ends of the mitosis right child to the right child
+            #
+            end_nodes.append(np.arange(n_mitoses) + mitosis_right_child_off)
+            start_nodes.append(mitoses_right_child_findx)
+            scores.append(np.zeros(n_mitoses))
+            #
+            # Hook the left child's gap alternative to the parent's gap
+            # Make sure to charge the gap alternative cost.
+            #
+            end_nodes.append(mitoses_left_child_findx+gap_off)
+            start_nodes.append(mitoses_parent_lidx+gap_off)
+            scores.append(np.ones(n_mitoses) * gap_cost/2)
+            #
+            # Hook the right child's gap alternative to the ghost mitosis
+            # right child. This also competes against a gap closing, so
+            # we have to charge this a gap cost as well.
+            #
+            end_nodes.append(mitoses_right_child_findx+gap_off)
+            start_nodes.append(np.arange(n_mitoses) + mitosis_right_child_off)
+            scores.append(np.ones(n_mitoses) * gap_cost/2)
+            #
+            # The alternative hypothesis links mitosis left child to 
+            # mitosis right child so either both or none are used.
+            # We charge the alternative hypothesis the mitosis_alternative
+            # cost which is applied to only one of the edges.
+            #
+            end_nodes.append(np.arange(n_mitoses) + mitosis_left_child_off)
+            start_nodes.append(np.arange(n_mitoses) + mitosis_right_child_off)
+            scores.append(np.ones(n_mitoses) * mitosis_alternative_cost)
+            end_nodes.append(np.arange(n_mitoses) + mitosis_right_child_off)
+            start_nodes.append(np.arange(n_mitoses) + mitosis_left_child_off)
+            scores.append(np.zeros(n_mitoses))
+            
+        i = np.hstack(end_nodes)
+        j = np.hstack(start_nodes)
+        c = np.hstack(scores)
         x,y = lapjv(i,j,c)
 
         #attaches different segments together if they are matches through the IAP
@@ -1562,11 +1667,19 @@ class TrackObjects(cpm.CPModule):
         #   (<child-image-index>, <child-object-number>))...]
         #
         relationships = []
+        #
+        # Starts can be linked to the following:
+        #    ends             (start_end_off <= j < start_end_off+start_end_len)
+        #    gap alternatives (gap_off <= j < merge_off+merge_len)
+        #    splits           (split_off <= j < split_off+split_len)
+        #    mitosis left     (mitosis_left_child_off <= j < ....)
+        #    mitosis right    (mitosis_right_child_off <= j < ....)
+        #    
         for i in range(len(F)):
             my_image_index = int(F[i, IIDX])
             my_object_index = int(F[i, OIIDX])
             my_object_number = int(F[i, ONIDX])
-            if(y[i] < len(F)):
+            if(y[i] < start_end_len):
                 #
                 # y[i] gives index of last hooked to first
                 #
@@ -1594,11 +1707,11 @@ class TrackObjects(cpm.CPModule):
                 # the image set after the parent)
                 #
                 lost_object_count[parent_image_index + 1] -= 1
-            elif(y[i] >= ss_off and y[i] < ss_off+len(P1)):
+            elif y[i] >= split_off and y[i] < split_off+split_len:
                 #
                 # Hook split objects to their parent
                 #
-                p2_idx = y[i] - ss_off
+                p2_idx = split_p2idx[y[i] - split_off]
                 parent_image_index = int(P2[p2_idx, IIDX])
                 parent_image_number = image_numbers[parent_image_index]
                 parent_object_number = int(P2[p2_idx, ONIDX])
@@ -1619,18 +1732,57 @@ class TrackObjects(cpm.CPModule):
                 # one more split object
                 #
                 split_count[my_image_index] += 1
+            elif y[i] >= mitosis_left_child_off and \
+                 y[i] < mitosis_left_child_off + mitosis_left_child_len:
+                #
+                # The left child of a mitosis
+                #
+                lidx = mitoses_parent_lidx[y[i] - mitosis_left_child_off]
+                parent_image_index = int(L[lidx, IIDX])
+                parent_image_number = image_numbers[parent_image_index]
+                parent_object_number = int(L[lidx, ONIDX])
+                b[i+1] = int(L[lidx, LIDX])
+                c[b[i+1]] = i+1
+                parent_image_numbers[my_image_index][my_object_index] = \
+                                    parent_image_number
+                parent_object_numbers[my_image_index][my_object_index] = \
+                                     parent_object_number
+                relationships.append(
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
+                split_count[my_image_index] += 1
+                new_object_count[my_image_index] -= 1
+            elif y[i] >= mitosis_right_child_off and \
+                 y[i] < mitosis_right_child_off + mitosis_right_child_len:
+                #
+                # The right child of a mitosis
+                #
+                lidx = mitoses_parent_lidx[y[i] - mitosis_right_child_off]
+                parent_image_index = int(L[lidx, IIDX])
+                parent_image_number = image_numbers[parent_image_index]
+                parent_object_number = int(L[lidx, ONIDX])
+                b[i+1] = int(L[lidx, LIDX])
+                c[b[i+1]] = i+1
+                parent_image_numbers[my_image_index][my_object_index] = \
+                                    parent_image_number
+                parent_object_numbers[my_image_index][my_object_index] = \
+                                     parent_object_number
+                relationships.append(
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
+                new_object_count[my_image_index] -= 1
             else:
                 b[i+1] = -1
 
-            if(x[i] < len(F)):
+            if(x[i] < start_end_len):
                 a[i+1] = x[i]+1
                 d[a[i+1]] = i+1
-            elif(x[i] >= me_off and x[i] < me_off+len(P1)):
+            elif(x[i] >= merge_off and x[i] < merge_off+merge_len):
                 #
                 # Handle merged objects. A merge hooks the end (L) of
                 # a segment (the parent) to a gap alternative in P1 (the child)
                 # 
-                p1_idx = x[i]-me_off
+                p1_idx = merge_p1idx[x[i]-merge_off]
                 a[i+1] = P1[p1_idx, LIDX]
                 d[a[i+1]] = i+1
                 parent_image_index = int(L[i, IIDX])
@@ -1640,8 +1792,15 @@ class TrackObjects(cpm.CPModule):
                 relationships.append(
                     ((parent_image_index, parent_object_number),
                      (child_image_index, child_object_number)))
-                lost_object_count[child_image_index] -= 1
+                lost_object_count[parent_image_index+1] -= 1
                 merge_count[child_image_index] += 1
+            elif (x[i] >= mitosis_left_child_off and
+                  x[i] < mitosis_left_child_off + mitosis_left_child_len):
+                #
+                # End hooked to mitosis left. One less lost object
+                #
+                lost_object_count[int(F[i, IIDX])+1] -= 1
+                a[i+1] = L[i, LIDX]
             else:
                 a[i+1] = -1
 
@@ -1714,7 +1873,24 @@ class TrackObjects(cpm.CPModule):
                 child_image_numbers, child_object_numbers)
 
         self.recalculate_group(workspace, image_numbers)
+    
+    def calculate_area_penalty(self, a1, a2):
+        '''Calculate a penalty for areas that don't match
         
+        Ideally, area should be conserved while tracking. We divide the larger
+        of the two by the smaller of the two to get the area penalty
+        which is then multiplied by the distance.
+        
+        Note that this differs from Jaqaman eqn 5 which has an asymmetric
+        penalty (sqrt((a1 + a2) / b) for a1+a2 > b and b / (a1 + a2) for 
+        a1+a2 < b. I can't think of a good reason why they should be
+        asymmetric.
+        '''
+        result = a1 / a2
+        result[result < 1] = 1/result[result < 1]
+        result[np.isnan(result)] = np.inf
+        return result
+    
     def get_gap_pair_scores(self, F, L, max_gap):
         '''Compute scores for matching last frame with first to close gaps
         
@@ -1743,6 +1919,7 @@ class TrackObjects(cpm.CPModule):
         X = 0
         Y = 1
         IIDX = 2
+        AIDX = 6
         
         #
         # Create an indexing ordered by the last frame index and by the first
@@ -1793,7 +1970,74 @@ class TrackObjects(cpm.CPModule):
         #
         d = np.sqrt((L[ai, X] - F[aj, X]) ** 2 + 
                     (L[ai, Y] - F[aj, Y]) ** 2)
-        return np.column_stack((ai, aj)), d
+        #
+        # Rho... the area penalty
+        #
+        rho = self.calculate_area_penalty(L[ai, AIDX], F[aj, AIDX])
+        return np.column_stack((ai, aj)), d * rho
+        
+    def get_mitotic_triple_scores(self, F, L):
+        '''Compute scores for matching a parent to two daughters
+        
+        F - an N x 3 (or more) array giving X, Y and frame # of the first object
+            in each track
+            
+        L - an N x 3 (or more) array giving X, Y and frame # of the last object
+            in each track
+            
+        Returns: an M x 3 array of M triples where the first column is the
+                 index in the L array of the parent cell and the remaining
+                 columns are the indices of the daughters in the F array
+                 
+                 an M-element vector of distances of the parent from the expected
+        '''
+        X = 0
+        Y = 1
+        IIDX = 2
+        AIDX = 6
+        
+        if len(F) <= 1:
+            return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
+        
+        max_distance = self.mitosis_max_distance.value
+        
+        # Find all daughter pairs within same frame
+        i, j = np.where(F[:, np.newaxis, IIDX] == F[np.newaxis, :, IIDX])
+        i, j = i[i < j], j[i < j] # get rid of duplicates and self-compares
+        
+        #
+        # Calculate the maximum allowed distance before one or the other
+        # daughter is farther away than the maximum allowed from the center
+        #
+        # That's the max_distance * 2 minus the distance
+        #
+        dmax = max_distance * 2 - np.sqrt(np.sum((F[i, :2] - F[j, :2]) ** 2, 1))
+        mask = dmax >= 0
+        i, j = i[mask], j[mask]
+        if len(i) == 0:
+            return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
+        center_x = (F[i, X] + F[j, X]) / 2
+        center_y = (F[i, Y] + F[j, Y]) / 2
+        frame = F[i, IIDX]
+        
+        # Find all parent-daughter pairs where the parent
+        # is in the frame previous to the daughters
+        ij, k = [_.flatten() for _ in np.mgrid[0:len(i), 0:len(L)]]
+        mask = F[i[ij], IIDX] == L[k, IIDX]+1
+        ij, k = ij[mask], k[mask]
+        if len(ij) == 0:
+            return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
+        
+        d = np.sqrt((center_x[ij] - L[k, X]) ** 2 +
+                    (center_y[ij] - L[k, Y]) ** 2)
+        mask = d <= dmax[ij]
+        ij, k, d = ij[mask], k[mask], d[mask]
+        if len(ij) == 0:
+            return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
+            
+        rho = self.calculate_area_penalty(
+            F[i[ij], AIDX] + F[j[ij], AIDX], L[k, AIDX])
+        return np.column_stack((i[ij], j[ij], k)), d * rho
         
     def recalculate_group(self, workspace, image_numbers):
         '''Recalculate all measurements once post_group has run
@@ -2258,6 +2502,11 @@ class TrackObjects(cpm.CPModule):
             # Added lifetime filtering: Wants filtering + min/max allowed lifetime
             setting_values = setting_values + [cps.NO, cps.YES, "1", cps.NO, "100"]
             variable_revision_number = 5
+            
+        if (not from_matlab) and variable_revision_number == 5:
+            # Added mitosis alternative score + mitosis_max_distance
+            setting_values = setting_values + ["80", "40"]
+            variable_revision_number = 6
             
         return setting_values, variable_revision_number, from_matlab
 

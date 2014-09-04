@@ -143,11 +143,20 @@ class DataToolFrame(wx.Frame):
     
     def on_save_measurements(self, event):
         with wx.FileDialog(self, "Save measurements file", wildcard = 
+                           "CellProfiler measurements file (*.h5)|*.h5|"
                            "Matlab measurements file (*.mat)|*.mat",
                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
-                self.pipeline.save_measurements(dlg.GetPath(),
-                                                self.measurements)
+                if dlg.GetFilterIndex() == 0:
+                    new_measurements = cpmeas.Measurements(
+                        filename=dlg.Path,
+                        copy = self.measurements)
+                    new_measurements.flush()
+                    new_measurements.close()
+                else:
+                    self.pipeline.save_measurements(dlg.GetPath(),
+                                                    self.measurements)
     
     def on_exit(self, event):
         self.Close()

@@ -3162,7 +3162,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                 rt_id, i1, o1, i2, o2, rt_id, i1, o1, i2, o2)
                             row_stmt = stmt % tuple(row)
                             execute(self.cursor, row_stmt, return_result=False)
-                        if self.show_window:
+                        if self.show_window and len(r) > 0:
                             disp_columns.append((rtbl_name,self.truncate_string_for_display(row_stmt)))   
                     
             if self.show_window: 

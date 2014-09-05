@@ -1197,10 +1197,10 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.wants_properties_image_url_prepend]
             if self.wants_properties_image_url_prepend:
                 result += [self.properties_image_url_prepend]
-                result += [
-                    self.properties_plate_type, self.properties_plate_metadata, 
-                    self.properties_well_metadata, 
-                    self.properties_export_all_image_defaults]
+            result += [
+                self.properties_plate_type, self.properties_plate_metadata, 
+                self.properties_well_metadata, 
+                self.properties_export_all_image_defaults]
             if not self.properties_export_all_image_defaults:
                 for group in self.image_groups:
                     if group.can_remove:

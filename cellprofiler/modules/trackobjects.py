@@ -84,7 +84,8 @@ See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>G
 # 
 # Website: http://www.cellprofiler.org
 
-
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 import numpy.ma
 from scipy.ndimage import distance_transform_edt
@@ -1252,13 +1253,13 @@ class TrackObjects(cpm.CPModule):
             return
 
         gap_cost = float(self.gap_cost.value)
-        split_alternative_cost = float(self.split_cost.value)
+        split_alternative_cost = float(self.split_cost.value) / 2
         merge_alternative_cost = float(self.merge_cost.value)
         mitosis_alternative_cost = float(self.mitosis_cost.value)
         
         max_gap_score = self.max_gap_score.value
         max_merge_score = self.max_merge_score.value
-        max_split_score = self.max_split_score.value
+        max_split_score = self.max_split_score.value / 2 # to match legacy
         max_frame_difference = self.max_frame_distance.value
 
         m = workspace.measurements
@@ -1474,12 +1475,22 @@ class TrackObjects(cpm.CPModule):
         #
         merge_off = gap_off+gap_len
         if len(P1) > 0:
-            merge_p1idx, merge_lidx = \
-                [_.flatten() for _ in np.mgrid[0:len(P1), 0:len(L)]]
-            z = (P1[merge_p1idx, IIDX] - L[merge_lidx, IIDX]).astype(np.int32)
-            mask = (z <= max_frame_difference) & (z > 0)
-            merge_p1idx, merge_lidx, z =\
-                [_[mask] for _ in merge_p1idx, merge_lidx, z]
+            # Do the initial winnowing in chunks of 10m pairs
+            lchunk_size = 10000000 / len(P1)
+            chunks = []
+            for lstart in range(0, len(L), lchunk_size):
+                lend = min(len(L), lstart+lchunk_size)
+                merge_p1idx, merge_lidx = \
+                    [_.flatten() for _ in np.mgrid[0:len(P1), lstart:lend]]
+                z = (P1[merge_p1idx, IIDX] - L[merge_lidx, IIDX]).astype(np.int32)
+                mask = (z <= max_frame_difference) & (z > 0)
+                if np.sum(mask) > 0:
+                    chunks.append([_[mask] for _ in merge_p1idx, merge_lidx, z])
+            if len(chunks) > 0:
+                merge_p1idx, merge_lidx, z = [
+                    np.hstack([_[i] for _ in chunks]) for i in range(3)]
+            else:
+                merge_p1idx = merge_lidx = z = np.zeros(0, np.int32)
         else:
             merge_p1idx = merge_lidx = z = np.zeros(0, np.int32)
         
@@ -1529,12 +1540,22 @@ class TrackObjects(cpm.CPModule):
         
         split_off = merge_off + merge_len
         if len(P2) > 0:
-            split_p2idx, split_fidx = \
-                [_.flatten() for _ in np.mgrid[0:len(P2), 0:len(F)]]
-            z = (F[split_fidx, IIDX] - P2[split_p2idx, IIDX]).astype(np.int32)
-            mask = (z <= max_frame_difference) & (z > 0)
-            split_p2idx, split_fidx, z = \
-                [_[mask] for _ in split_p2idx, split_fidx, z]
+            lchunk_size = 10000000 / len(P2)
+            chunks = []
+            for fstart in range(0, len(L), lchunk_size):
+                fend = min(len(L), fstart+lchunk_size)
+                split_p2idx, split_fidx = \
+                    [_.flatten() for _ in np.mgrid[0:len(P2), fstart:fend]]
+                z = (F[split_fidx, IIDX] - P2[split_p2idx, IIDX]).astype(np.int32)
+                mask = (z <= max_frame_difference) & (z > 0)
+                if np.sum(mask) > 0:
+                    chunks.append(
+                        [_[mask] for _ in split_p2idx, split_fidx, z])
+            if len(chunks) > 0:
+                split_p2idx, split_fidx, z = [
+                    np.hstack([_[i] for _ in chunks]) for i in range(3)]
+            else:
+                split_p2idx = split_fidx = z = np.zeros(0, np.int32)
         else:
             split_p2idx = split_fidx = z = np.zeros(0, int)
     
@@ -1649,7 +1670,7 @@ class TrackObjects(cpm.CPModule):
             
         i = np.hstack(end_nodes)
         j = np.hstack(start_nodes)
-        c = np.hstack(scores)
+        c = scores = np.hstack(scores)
         x,y = lapjv(i,j,c)
 
         #attaches different segments together if they are matches through the IAP
@@ -1707,6 +1728,11 @@ class TrackObjects(cpm.CPModule):
                 # the image set after the parent)
                 #
                 lost_object_count[parent_image_index + 1] -= 1
+                logger.debug("Gap closing: %d:%d to %d:%d, score=%f" %
+                             (parent_image_number, parent_object_number,
+                              image_numbers[my_image_index],
+                              object_numbers[my_image_index][my_object_index],
+                              scores[y[i]]))
             elif y[i] >= split_off and y[i] < split_off+split_len:
                 #
                 # Hook split objects to their parent
@@ -1732,12 +1758,18 @@ class TrackObjects(cpm.CPModule):
                 # one more split object
                 #
                 split_count[my_image_index] += 1
+                logger.debug("split: %d:%d to %d:%d, score=%f" %
+                             (parent_image_number, parent_object_number,
+                              image_numbers[my_image_index],
+                              object_numbers[my_image_index][my_object_index],
+                              split_scores[y[i] - split_off]))
             elif y[i] >= mitosis_left_child_off and \
                  y[i] < mitosis_left_child_off + mitosis_left_child_len:
                 #
                 # The left child of a mitosis
                 #
-                lidx = mitoses_parent_lidx[y[i] - mitosis_left_child_off]
+                midx = y[i] - mitosis_left_child_off
+                lidx = mitoses_parent_lidx[midx]
                 parent_image_index = int(L[lidx, IIDX])
                 parent_image_number = image_numbers[parent_image_index]
                 parent_object_number = int(L[lidx, ONIDX])
@@ -1752,6 +1784,12 @@ class TrackObjects(cpm.CPModule):
                      (my_image_index, my_object_number)))
                 split_count[my_image_index] += 1
                 new_object_count[my_image_index] -= 1
+                logger.debug("Mitosis: %d:%d to %d:%d and %d, score=%f" %
+                             (parent_image_number, parent_object_number,
+                              image_numbers[my_image_index],
+                              object_numbers[my_image_index][my_object_index],
+                              F[mitoses_right_child_findx[midx], ONIDX],
+                              mitosis_scores[midx]))
             elif y[i] >= mitosis_right_child_off and \
                  y[i] < mitosis_right_child_off + mitosis_right_child_len:
                 #
@@ -1794,6 +1832,12 @@ class TrackObjects(cpm.CPModule):
                      (child_image_index, child_object_number)))
                 lost_object_count[parent_image_index+1] -= 1
                 merge_count[child_image_index] += 1
+                logger.debug("Merge: %d:%d to %d:%d, score=%f" %
+                             (image_numbers[parent_image_index]
+                              , parent_object_number,
+                              image_numbers[child_image_index],
+                              child_object_number,
+                              merge_scores[x[i] - merge_off]))
             elif (x[i] >= mitosis_left_child_off and
                   x[i] < mitosis_left_child_off + mitosis_left_child_len):
                 #

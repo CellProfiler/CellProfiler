@@ -1288,10 +1288,11 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertTrue(isinstance(module, T.TrackObjects))
         #
         # The split score should be 20*sqrt(2) more than the null so a split
-        # alternative cost of 15 is too much and 14 too little
+        # alternative cost of 15 is too much and 14 too little. Values
+        # doulbed to mat
         #
-        module.split_cost.value = 15
-        module.max_split_score.value = 15
+        module.split_cost.value = 30
+        module.max_split_score.value = 30
         module.run_as_data_tool(workspace)
         d200 = np.sqrt(200)
         tot = np.sqrt(13 ** 2 + 14 ** 2)
@@ -1323,8 +1324,8 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                       [2, 1, 2, 1, 110, 110, 25],
                       [2, 2, 2, 2, 90,   90, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
-        module.split_cost.value = 14
-        module.max_split_score.value = 15
+        module.split_cost.value = 28
+        module.max_split_score.value = 30
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
@@ -1347,8 +1348,8 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                       [2, 1, 2, 1, 110, 110, 25],
                       [2, 2, 2, 2, 90,   90, 25]]), 3)
         self.assertTrue(isinstance(module, T.TrackObjects))
-        module.split_cost.value = 15
-        module.max_split_score.value = 14
+        module.split_cost.value = 30
+        module.max_split_score.value = 28
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
@@ -1590,8 +1591,8 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         # The split score should be between 14 and 15.  Set the split
         # alternative cost to 28 so that the split is inhibited.
         #
-        module.split_cost.value = 14
-        module.max_split_score.value = 15
+        module.split_cost.value = 28
+        module.max_split_score.value = 30
         #
         # The cost of the merge is 2x 10x sqrt(2) which is between 28 and 29
         #

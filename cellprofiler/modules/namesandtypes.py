@@ -1011,6 +1011,7 @@ class NamesAndTypes(cpm.CPModule):
         joins = self.join.parse()
         anchor_channel = None
         channel_names = self.get_column_names()
+        anchor_cf = None
         for i, group in enumerate(self.assignments):
             name = channel_names[i]
             if anchor_channel is None:
@@ -1022,6 +1023,9 @@ class NamesAndTypes(cpm.CPModule):
                 else:
                     anchor_channel = i
                     anchor_cf = self.make_channel_filter(group, name)
+        if anchor_cf == None:
+            raise ValueError(
+                "Please choose valid metadata keys for at least one channel in the metadata matcher")
         channels = dict([(c, 0 if i == anchor_channel 
                         else i+1 if i < anchor_channel
                         else i) for i, c in enumerate(channel_names)])
@@ -1653,6 +1657,25 @@ class NamesAndTypes(cpm.CPModule):
                 return [FTR_CENTER_X, FTR_CENTER_Y]
         return []
             
+    def validate_module(self, pipeline):
+        '''Validate the settings for the NamesAndTypes module
+        
+        Make sure the metadata matcher has at least one completely
+        specified channel.
+        '''
+        if self.assignment_method == ASSIGN_RULES \
+           and self.matching_choice == MATCH_BY_METADATA:
+            joins = self.join.parse()
+            for name in self.get_column_names():
+                for join in joins:
+                    if join.get(name) == None:
+                        break
+                else:
+                    return
+        raise cps.ValidationError(
+            "At least one channel must have all metadata keys specified. "
+            "All channels have at least one metadata key of (None).", self.join)
+        
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1:

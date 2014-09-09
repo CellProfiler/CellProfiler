@@ -88,6 +88,16 @@ def main(args):
         sys.exit(0)
         
     options, args = parse_args(args)
+    #
+    # Important to go headless ASAP
+    #
+    if not options.show_gui:
+        import cellprofiler.preferences as cpprefs
+        cpprefs.set_headless()
+        # What's there to do but run if you're running headless?
+        # Might want to change later if there's some headless setup 
+        options.run_pipeline = True
+
     if options.jvm_heap_size != None:
         from cellprofiler.preferences import set_jvm_heap_mb
         set_jvm_heap_mb(options.jvm_heap_size, False)
@@ -198,19 +208,10 @@ def main(args):
                 workspace_path = workspace_path,
                 pipeline_path = pipeline_path)
     
-        #
-        # Important to go headless ASAP
-        #
         # cellprofiler.preferences can't be imported before we have a chance
         # to initialize the wx app.
         #
         import cellprofiler.preferences as cpprefs
-        if not options.show_gui:
-            cpprefs.set_headless()
-            # What's there to do but run if you're running headless?
-            # Might want to change later if there's some headless setup 
-            options.run_pipeline = True
-    
             
         if options.plugins_directory is not None:
             cpprefs.set_plugin_directory(options.plugins_directory)

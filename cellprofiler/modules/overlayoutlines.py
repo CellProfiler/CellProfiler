@@ -301,11 +301,8 @@ class OverlayOutlines(cpm.CPModule):
     def run_bw(self, workspace):
         image_set = workspace.image_set
         if self.blank_image.value:
-            outline_image = image_set.get_image(
-                self.outlines[0].outline_name.value,
-                must_be_binary = True)
-            mask = outline_image.pixel_data
-            pixel_data = np.zeros((mask.shape))
+            shape = self.get_outline(workspace, self.outlines[0]).shape[:2]
+            pixel_data = np.zeros(shape)
             maximum = 1
         else:
             image = image_set.get_image(self.image_name.value,

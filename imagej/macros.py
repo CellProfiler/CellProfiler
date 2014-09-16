@@ -14,7 +14,7 @@ __version__="$Revision$"
 import sys
 
 import bioformats
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 
 from cellprofiler.preferences import get_headless
 

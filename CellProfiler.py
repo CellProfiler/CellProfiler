@@ -72,11 +72,11 @@ def main(args):
 
     args - command-line arguments, e.g. sys.argv
     '''
+    import cellprofiler.preferences as cpprefs
     if any([arg.startswith('--work-announce') for arg in args]):
         #
         # Go headless ASAP
         #
-        import cellprofiler.preferences as cpprefs
         cpprefs.set_headless()
         for i, arg in enumerate(args):
             if arg == "--ij-plugins-directory" and len(args) > i+1:
@@ -178,6 +178,21 @@ def main(args):
         return
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)
+    if options.plugins_directory is not None:
+        cpprefs.set_plugin_directory(options.plugins_directory,
+                                     globally=False)
+    if options.ij_plugins_directory is not None:
+        cpprefs.set_ij_plugin_directory(options.ij_plugins_directory,
+                                        globally=False)
+    if options.temp_dir is not None:
+        if not os.path.exists(options.temp_dir):
+            os.makedirs(options.temp_dir)
+        cpprefs.set_temporary_directory(options.temp_dir, globally=False)
+    #
+    # After the crucial preferences are established, we can start the VM
+    #
+    from cellprofiler.utilities.cpjvm import cp_start_vm
+    cp_start_vm()
     try:
         if options.show_gui:
             import wx
@@ -207,20 +222,7 @@ def main(args):
                 show_splashbox = show_splashbox,
                 workspace_path = workspace_path,
                 pipeline_path = pipeline_path)
-    
-        # cellprofiler.preferences can't be imported before we have a chance
-        # to initialize the wx app.
-        #
-        import cellprofiler.preferences as cpprefs
-            
-        if options.plugins_directory is not None:
-            cpprefs.set_plugin_directory(options.plugins_directory)
-        if options.ij_plugins_directory is not None:
-            cpprefs.set_ij_plugin_directory(options.ij_plugins_directory)
-        if options.temp_dir is not None:
-            if not os.path.exists(options.temp_dir):
-                os.makedirs(options.temp_dir)
-            cpprefs.set_temporary_directory(options.temp_dir)
+
         if options.data_file is not None:
             cpprefs.set_data_file(os.path.abspath(options.data_file))
         if options.image_set_file is not None:
@@ -265,7 +267,7 @@ def main(args):
             except:
                 logging.root.warn("Failed to stop zmq boundary")
             try:
-                from cellprofiler.utilities.jutil import kill_vm
+                from javabridge import kill_vm
                 kill_vm()
             except:
                 logging.root.warn("Failed to stop the JVM")
@@ -555,15 +557,15 @@ def set_omero_credentials_from_string(credentials_string):
             K_OMERO_SESSION_ID: cpprefs.get_omero_session_id()
         }
         if k == OMERO_CK_HOST:
-            cpprefs.set_omero_server(v)
+            cpprefs.set_omero_server(v, globally=False)
             credentials[K_OMERO_SERVER] = v
         elif k == OMERO_CK_PORT:
-            cpprefs.set_omero_port(v)
+            cpprefs.set_omero_port(v, globally=False)
             credentials[K_OMERO_PORT] = v
         elif k == OMERO_CK_SESSION_ID:
             credentials[K_OMERO_SESSION_ID] = v
         elif k == OMERO_CK_USER:
-            cpprefs.set_omero_user(v)
+            cpprefs.set_omero_user(v, globally=False)
             credentials[K_OMERO_USER] = v
         elif k == OMERO_CK_PASSWORD:
             credentials[K_OMERO_PASSWORD] = v
@@ -761,7 +763,7 @@ def run_pipeline_headless(options, args):
     if sys.platform == 'darwin':
         if options.start_awt:
             import bioformats
-            from cellprofiler.utilities.jutil import activate_awt
+            from javabridge import activate_awt
             activate_awt()
         
     if not options.first_image_set is None:

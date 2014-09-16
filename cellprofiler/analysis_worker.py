@@ -87,12 +87,12 @@ def aw_parse_args():
     # anything so loading will get them
     #
     if options.plugins_directory is not None:
-        set_plugin_directory(options.plugins_directory)
+        set_plugin_directory(options.plugins_directory, globally=False)
     else:
         logger.warning("Plugins directory not set")
     if options.ij_plugins_directory is not None:
         logger.debug("Using %s as IJ plugins directory" % options.ij_plugins_directory)
-        set_ij_plugin_directory(options.ij_plugins_directory)
+        set_ij_plugin_directory(options.ij_plugins_directory, globally=False)
     else:
         logger.debug("IJ plugins directory not set")
 
@@ -138,7 +138,7 @@ from cellprofiler.analysis import \
      ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
      SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE,  \
      OmeroLoginRequest, OmeroLoginReply
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 from cellprofiler.utilities.rpdb import Rpdb
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 #
@@ -185,8 +185,10 @@ def main():
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
     
-    # Importing bioformats starts the JVM
-    import bioformats
+    # Start the JVM
+    from cellprofiler.utilities.cpjvm import cp_start_vm
+    cp_start_vm()
+    
     # Start the deadman switch thread.
     start_daemon_thread(target=exit_on_stdin_close, 
                         name="exit_on_stdin_close")

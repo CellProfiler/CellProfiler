@@ -153,10 +153,3 @@ class OmeroLoginDlg(wx.Dialog):
     def on_ok(self, event):
         self.EndModal(wx.OK)
     
-if __name__ == "__main__":
-    app = wx.PySimpleApp(True)
-    import bioformats
-    from cellprofiler.utilities.jutil import kill_vm
-    with OmeroLoginDlg(None) as dlg:
-        dlg.ShowModal()
-    kill_vm()

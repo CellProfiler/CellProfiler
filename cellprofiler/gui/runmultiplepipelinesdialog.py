@@ -281,20 +281,3 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 measurements_file))
         return result
         
-if __name__ == "__main__":
-    class MyApp(wx.App):
-        def OnInit(self):
-            wx.InitAllImageHandlers()
-            dlg = RunMultplePipelinesDialog(
-                parent = None, 
-                title = "Run multiple pipelines",
-                style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER |wx.THICK_FRAME,
-                size = (640,480))
-            dlg.ShowModal()
-            return 1
-    app = MyApp(0)
-    try:
-        import cellprofiler.utilities.jutil as J
-        J.kill_vm()
-    except:
-        pass

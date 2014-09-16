@@ -410,7 +410,7 @@ data_files += matplotlib.get_py2exe_datafiles()
 #
 ################################
 
-from cellprofiler.utilities.setup import find_jdk
+from javabridge.locate import find_jdk
 jdk_dir = find_jdk()
 def add_jre_files(path):
     files = []
@@ -451,8 +451,8 @@ except:
     traceback.print_exc()
 finally:
     try:
-        import cellprofiler.utilities.jutil as jutil
-        jutil.kill_vm()
+        from javabridge import kill_vm
+        kill_vm()
         sys.stderr.flush()
         sys.stdout.flush()
         os._exit(0)

@@ -12,7 +12,7 @@
 #
 import numpy as np
 import bioformats
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 
 def get_image(imageprocessor_obj, do_scaling = False):
     '''Retrieve the image from an ImageProcessor

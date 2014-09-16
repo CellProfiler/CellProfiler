@@ -17,7 +17,7 @@ import numpy as np
 import os
 import unittest
 
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 import imagej.imageplus as I
 import imagej.imageprocessor as IP
 

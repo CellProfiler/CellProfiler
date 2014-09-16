@@ -807,11 +807,12 @@ def get_plugin_directory():
             __plugin_directory = os.path.join(wx.StandardPaths.Get().GetUserDataDir(), 'plugins')
     return __plugin_directory
 
-def set_plugin_directory(value):
+def set_plugin_directory(value, globally=True):
     global __plugin_directory
     
     __plugin_directory = value
-    config_write(PLUGIN_DIRECTORY, value)
+    if globally:
+        config_write(PLUGIN_DIRECTORY, value)
 
 __ij_plugin_directory = None
 def get_ij_plugin_directory():
@@ -827,11 +828,12 @@ def get_ij_plugin_directory():
         return os.path.abspath(os.path.join(os.curdir, "plugins"))
     return __ij_plugin_directory
 
-def set_ij_plugin_directory(value):
+def set_ij_plugin_directory(value, globally=True):
     global __ij_plugin_directory
     
     __ij_plugin_directory = value
-    config_write(IJ_PLUGIN_DIRECTORY, value)
+    if globally:
+        config_write(IJ_PLUGIN_DIRECTORY, value)
 
 __data_file=None
 
@@ -1162,11 +1164,12 @@ def get_omero_server():
         __omero_server = config_read(OMERO_SERVER)
     return __omero_server
 
-def set_omero_server(omero_server):
+def set_omero_server(omero_server, globally=True):
     '''Set the DNS name of the Omero server'''
     global __omero_server
     __omero_server = omero_server
-    config_write(OMERO_SERVER, omero_server)
+    if globally:
+        config_write(OMERO_SERVER, omero_server)
     
 def get_omero_port():
     '''Get the port used to connect to the Omero server'''
@@ -1180,11 +1183,12 @@ def get_omero_port():
             return 4064
     return __omero_port
 
-def set_omero_port(omero_port):
+def set_omero_port(omero_port, globally=True):
     '''Set the port used to connect to the Omero server'''
     global __omero_port
     __omero_port = omero_port
-    config_write(OMERO_PORT, str(omero_port))
+    if globally:
+        config_write(OMERO_PORT, str(omero_port))
     
 def get_omero_user():
     '''Get the Omero user name'''
@@ -1195,11 +1199,12 @@ def get_omero_user():
         __omero_user = config_read(OMERO_USER)
     return __omero_user
 
-def set_omero_user(omero_user):
+def set_omero_user(omero_user, globally=True):
     '''Set the Omero user name'''
     global __omero_user
     __omero_user = omero_user
-    config_write(OMERO_USER, omero_user)
+    if globally:
+        config_write(OMERO_USER, omero_user)
     
 def get_omero_session_id():
     '''Get the session ID to use to communicate to Omero'''
@@ -1210,11 +1215,12 @@ def get_omero_session_id():
         __omero_session_id = config_read(OMERO_SESSION_ID)
     return __omero_session_id
 
-def set_omero_session_id(omero_session_id):
+def set_omero_session_id(omero_session_id, globally=True):
     '''Set the Omero session ID'''
     global __omero_session_id
     __omero_session_id = omero_session_id
-    config_write(OMERO_SESSION_ID, omero_session_id)
+    if globally:
+        config_write(OMERO_SESSION_ID, omero_session_id)
 
 def default_max_workers():
     try:
@@ -1256,13 +1262,14 @@ def get_temporary_directory():
         __temp_dir = tempfile.gettempdir()
     return __temp_dir
 
-def set_temporary_directory(tempdir):
+def set_temporary_directory(tempdir, globally=False):
     '''Set the directory to be used for temporary files
     
     tempdir - pathname of the directory
     '''
     global __temp_dir
-    config_write(TEMP_DIR, tempdir)
+    if globally:
+        config_write(TEMP_DIR, tempdir)
     __temp_dir = tempdir
 
 __progress_data = threading.local()

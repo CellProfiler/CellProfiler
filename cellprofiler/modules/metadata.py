@@ -118,7 +118,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate

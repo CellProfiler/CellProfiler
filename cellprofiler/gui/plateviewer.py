@@ -459,12 +459,12 @@ class PlateViewer(object):
             self.image_dict_generation += 1
         
         def fn():
-            from bioformats.formatreader import load_using_bioformats_url
-            import cellprofiler.utilities.jutil
+            from bioformats import load_image_url
+            import javabridge
             from scipy.io.matlab.mio import loadmat
             from cellprofiler.modules.loadimages import url2pathname
 
-            cellprofiler.utilities.jutil.attach()
+            javabridge.attach()
             with self.image_dict_lock:
                 generation = self.image_dict_generation
                 
@@ -486,7 +486,7 @@ class PlateViewer(object):
                                 url2pathname(url), 
                                 struct_as_record=True)["Image"]
                         else:
-                            img = load_using_bioformats_url(url)
+                            img = load_image_url(url)
                         with self.image_dict_lock:
                             if self.image_dict_generation > generation:
                                 return
@@ -495,9 +495,9 @@ class PlateViewer(object):
                         traceback.print_exc()
                         pass
             wx.CallAfter(self.update_figure)
-            cellprofiler.utilities.jutil.static_call(
+            javabridge.static_call(
                 "java/lang/System", "gc", "()V")
-            cellprofiler.utilities.jutil.detach()
+            javabridge.detach()
         t = threading.Thread(target = fn)
         t.setDaemon(True)
         t.start()
@@ -569,6 +569,9 @@ if __name__=="__main__":
     import os
     import re
     import bioformats
+    import javabridge
+    from cellprofiler.utilities.cpjvm import cp_start_vm
+    cp_start_vm()
     app = wx.PySimpleApp(True)
     dlg = wx.Dialog(None, size=(1024, 768), 
                     style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.THICK_FRAME)
@@ -598,7 +601,7 @@ if __name__=="__main__":
     data.add_files(filenames, plates, wells, sites, channel_names = channels)
     viewer = PlateViewer(dlg, data)
     dlg.ShowModal()
-    from cellprofiler.utilities.jutil import kill_vm
+    from javabridge import kill_vm
     kill_vm()
     os._exit(0)
     

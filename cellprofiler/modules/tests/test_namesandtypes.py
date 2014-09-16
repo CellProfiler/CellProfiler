@@ -24,7 +24,7 @@ import cellprofiler.modules.namesandtypes as N
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.loadimages import \

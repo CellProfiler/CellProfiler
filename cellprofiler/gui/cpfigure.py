@@ -196,7 +196,7 @@ def close_all(parent):
     reset_cpfigure_position()
     try:
         from imagej.windowmanager import close_all_windows
-        from cellprofiler.utilities.jutil import attach, detach
+        from javabridge import attach, detach
         attach()
         try:
             close_all_windows()
@@ -1760,8 +1760,8 @@ def show_image(url, parent = None, needs_raise_after = True):
             from cellprofiler.modules.loadimages import url2pathname
             image = loadmat(url2pathname(url), struct_as_record=True)["Image"]
         else:
-            from bioformats.formatreader import load_using_bioformats_url
-            image = load_using_bioformats_url(url)
+            from bioformats import load_image_url
+            image = load_image_url(url)
     except Exception, e:
         from cellprofiler.gui.errordialog import display_error_dialog
         display_error_dialog(None, e, None, 

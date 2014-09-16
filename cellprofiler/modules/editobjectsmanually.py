@@ -294,7 +294,7 @@ class EditObjectsManually(I.Identify):
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
         from cellprofiler.modules.namesandtypes import ObjectsImageProvider
-        from bioformats import load_using_bioformats
+        from bioformats import load_image
         
         with wx.Dialog(None) as dlg:
             dlg.Title = "Choose files for editing"
@@ -355,7 +355,7 @@ class EditObjectsManually(I.Identify):
         #
         # Load the guide image
         #
-        guide_image = load_using_bioformats(guidename)
+        guide_image = load_image(guidename)
         if np.min(guide_image) != np.max(guide_image):
             guide_image = ((guide_image - np.min(guide_image)) / 
                            (np.max(guide_image)  - np.min(guide_image)))

@@ -57,7 +57,7 @@ from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_
 from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
 from bioformats.omexml import OMEXML
 import cellprofiler.utilities.version as cpversion
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = cpmeas.IMAGE_NUMBER

@@ -23,9 +23,9 @@ Website: http://www.cellprofiler.org
 '''
 import sys
 if sys.platform == "darwin":
-    from cellprofiler.utilities.javabridge \
+    from javabridge \
          import mac_enter_run_loop as enter_run_loop
-    from cellprofiler.utilities.javabridge \
+    from javabridge \
          import mac_stop_run_loop as stop_run_loop
 else:
     import threading

@@ -29,7 +29,7 @@ import cellprofiler.analysis as cpanalysis
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.utilities.zmqrequest as cpzmq
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 import cellprofiler.analysis_worker as cpaw
 import cellprofiler.preferences as cpprefs
 

@@ -102,7 +102,7 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.walk_in_background as W
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 import os
 import sys
 import urllib
@@ -274,6 +274,9 @@ class Images(cpm.CPModule):
             passes_filter = J.call(
                 iffilter, "filterURLs", 
                 "([Ljava/lang/String;)[Z", file_array)
+            if isinstance(passes_filter, J.JB_Object):
+                passes_filter = J.get_env().get_boolean_array_elements(
+                    passes_filter)
             file_list = [f for f, passes in zip(file_list, passes_filter)
                          if passes]
         workspace.pipeline.set_filtered_file_list(file_list, self)

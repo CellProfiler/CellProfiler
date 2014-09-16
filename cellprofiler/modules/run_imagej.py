@@ -52,7 +52,7 @@ import imagej.windowmanager as ijwm
 import imagej.imageprocessor as ijiproc
 import imagej.imageplus as ijip
 import imagej.macros as ijmacros
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 
 CM_COMMAND = "Command"
 CM_SCRIPT = "Script"

@@ -19,7 +19,7 @@ import os
 import sys
 import time
 
-import cellprofiler.utilities.jutil as J
+import javabridge as J
 
 REQUIRED_SERVICES = [
     "imagej.script.ScriptService",

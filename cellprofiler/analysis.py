@@ -849,6 +849,9 @@ def find_worker_env(idx):
         port = str(int(newenv["AW_JDWP_PORT"]) + idx)
         newenv["CP_JDWP_PORT"] = port
         del newenv["AW_JDWP_PORT"]
+    for key in newenv:
+        if isinstance(newenv[key], unicode):
+            newenv[key] = newenv[key].encode('utf-8')
     return newenv
 
 

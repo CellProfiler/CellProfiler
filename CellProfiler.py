@@ -88,6 +88,16 @@ def main(args):
         sys.exit(0)
         
     options, args = parse_args(args)
+    #
+    # Important to go headless ASAP
+    #
+    if not options.show_gui:
+        import cellprofiler.preferences as cpprefs
+        cpprefs.set_headless()
+        # What's there to do but run if you're running headless?
+        # Might want to change later if there's some headless setup 
+        options.run_pipeline = True
+
     if options.jvm_heap_size != None:
         from cellprofiler.preferences import set_jvm_heap_mb
         set_jvm_heap_mb(options.jvm_heap_size, False)
@@ -178,18 +188,6 @@ def main(args):
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)
         cpprefs.set_temporary_directory(options.temp_dir, globally=False)
-    #
-    # Important to go headless ASAP
-    #
-    # cellprofiler.preferences can't be imported before we have a chance
-    # to initialize the wx app.
-    #
-    if not options.show_gui:
-        import cellprofiler.preferences as cpprefs
-        cpprefs.set_headless()
-        # What's there to do but run if you're running headless?
-        # Might want to change later if there's some headless setup 
-        options.run_pipeline = True
     #
     # After the crucial preferences are established, we can start the VM
     #

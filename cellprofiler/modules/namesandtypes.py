@@ -1672,9 +1672,9 @@ class NamesAndTypes(cpm.CPModule):
                         break
                 else:
                     return
-        raise cps.ValidationError(
-            "At least one channel must have all metadata keys specified. "
-            "All channels have at least one metadata key of (None).", self.join)
+            raise cps.ValidationError(
+                "At least one channel must have all metadata keys specified. "
+                "All channels have at least one metadata key of (None).", self.join)
         
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

@@ -472,12 +472,18 @@ class Metadata(cpm.CPModule):
         group.append("wants_case_insensitive", cps.Binary(
             "Use case insensitive matching?", False, doc = """
             This setting controls whether row matching takes the metadata case 
-            into account when matching. If you note that your CSV metadata is not being
-            applied, your choice on this setting may be the culprit.
-            <p>Select <i>%(NO)s</i> so that metadata entries that only differ by case 
-            (for instance, "A01" and "a01") will not match.</p>
-            <p>Select <i>%(YES)s</i> to match metadata entries that only differ 
-            by case. </p>"""%globals()))
+            into account when matching. 
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            If you note that your CSV metadata is not being
+            applied, your choice on this setting may be the culprit.</dd>
+            </dl>
+            <ul>
+            <li>Select <i>%(NO)s</i> so that metadata entries that only differ by case 
+            (for instance, "A01" and "a01") will not match.</li>
+            <li>Select <i>%(YES)s</i> to match metadata entries that only differ 
+            by case.</li>
+            </ul>"""%globals()))
         
         group.append("update_metadata", cps.DoSomething(
             "", "Update metadata",

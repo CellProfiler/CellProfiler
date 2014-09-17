@@ -245,8 +245,7 @@ def run_maven(pom_path, goal="package",
     maven_install_path = get_maven_install_path()
     jdk_home = find_jdk()
     env = os.environ.copy()
-    if jdk_home is not None:
-        env["JAVA_HOME"] = jdk_home.encode("utf-8")
+    env["JAVA_HOME"] = jdk_home
             
     executeable_path = get_mvn_executable_path(maven_install_path)
     args = [executeable_path]
@@ -261,6 +260,13 @@ def run_maven(pom_path, goal="package",
     args += additional_args
     args.append(goal)
     logging.debug("Running %s" % (" ".join(args)))
+    for key in list(env.keys()):
+        value = env[key]
+        if isinstance(key, unicode):
+            key = key.encode("utf-8")
+        if isinstance(value, unicode):
+            value = value.encode("utf-8")
+        env[key] = value
     if return_stdout:
         return check_output(args, cwd = pom_path, env=env)
     else:

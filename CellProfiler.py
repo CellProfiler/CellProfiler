@@ -731,6 +731,13 @@ def build_extensions():
 
     use_mingw = (sys.platform == 'win32' and sys.version_info[0] <= 2 and
                  sys.version_info[1] <= 5)
+    for key in list(env.keys()):
+        value = env[key]
+        if isinstance(key, unicode):
+            key = key.encode("utf-8")
+        if isinstance(value, unicode):
+            value = value.encode("utf-8")
+        env[key] = value
     for compile_script, my_module in compile_scripts:
         script_path, script_file = os.path.split(compile_script)
         script_path = os.path.join(root, script_path)

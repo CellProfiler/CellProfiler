@@ -837,6 +837,7 @@ class Pipeline(object):
                     break
                 fd.write(text)
             fd.seek(0)
+            needs_close = False
         elif os.path.exists(fd_or_filename):
             fd = open(fd_or_filename,'rb')
             needs_close = True

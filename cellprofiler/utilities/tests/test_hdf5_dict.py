@@ -865,6 +865,70 @@ class TestHDF5FileList(unittest.TestCase):
         self.filelist.clear_cache()
         self.assertFalse(self.filelist.has_files())
         
+class TestHDF5ImageSet(unittest.TestCase):
+    CHANNEL_NAME = "channelname"
+    ALT_CHANNEL_NAME = "alt_channelname"
+    def setUp(self):
+        self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
+        self.hdf_file = h5py.File(self.temp_filename)
+        
+    def tearDown(self):
+        self.hdf_file.close()
+        os.close(self.temp_fd)
+        os.remove(self.temp_filename)
+        
+    def test_01_01_init(self):
+        image_set = H5DICT.HDF5ImageSet(self.hdf_file)
+        self.assertEqual(image_set.root.name, "/" + H5DICT.IMAGES_GROUP)
+        
+    def test_01_02_reinit(self):
+        image_set = H5DICT.HDF5ImageSet(self.hdf_file)
+        image_set = H5DICT.HDF5ImageSet(self.hdf_file)
+        self.assertEqual(image_set.root.name, "/" + H5DICT.IMAGES_GROUP)
+        
+    def test_02_01_set_and_get(self):
+        r = np.random.RandomState()
+        r.seed(21)
+        data = r.uniform(size=(2, 3, 4, 5, 6))
+        image_set = H5DICT.HDF5ImageSet(self.hdf_file)
+        image_set.set_image(self.CHANNEL_NAME, data)
+        np.testing.assert_array_equal(
+            data, image_set.get_image(self.CHANNEL_NAME))
+        
+    def test_02_02_set_reattach_and_get(self):
+        r = np.random.RandomState()
+        r.seed(22)
+        data = r.uniform(size=(2, 3, 4, 5, 6))
+        image_set = H5DICT.HDF5ImageSet(self.hdf_file)
+        image_set.set_image(self.CHANNEL_NAME, data)
+        image_set = H5DICT.HDF5ImageSet(self.hdf_file)
+        np.testing.assert_array_equal(
+            data, image_set.get_image(self.CHANNEL_NAME))
+
+    def test_02_03_ensure_no_overwrite(self):
+        r = np.random.RandomState()
+        r.seed(23)
+        data = r.uniform(size=(2, 3, 4, 5, 6))
+        image_set = H5DICT.HDF5ImageSet(self.hdf_file)
+        image_set.set_image(self.CHANNEL_NAME, data)
+        copy = image_set.get_image(self.CHANNEL_NAME)
+        copy[:] = 0
+        np.testing.assert_array_equal(
+            data, image_set.get_image(self.CHANNEL_NAME))
+        
+    def test_02_04_set_and_get_two(self):
+        r = np.random.RandomState()
+        r.seed(24)
+        data1 = r.uniform(size=(2, 3, 4, 5, 6))
+        data2 = r.uniform(size=(6, 5, 4, 3, 2))
+        image_set = H5DICT.HDF5ImageSet(self.hdf_file)
+        image_set.set_image(self.CHANNEL_NAME, data1)
+        image_set.set_image(self.ALT_CHANNEL_NAME, data2)
+        np.testing.assert_array_equal(
+            data1, image_set.get_image(self.CHANNEL_NAME))
+        np.testing.assert_array_equal(
+            data2, image_set.get_image(self.ALT_CHANNEL_NAME))
+        
 class TestHDFCSV(unittest.TestCase):
     def setUp(self):
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")

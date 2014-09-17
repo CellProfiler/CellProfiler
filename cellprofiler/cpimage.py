@@ -79,7 +79,12 @@ class Image(object):
         self.__mask = None
         self.__has_mask = False
         self.__parent_image = parent_image
-        self.__crop_mask = crop_mask
+        self.__crop_mask = None
+        if crop_mask is not None:
+            self.set_crop_mask(crop_mask)
+            self.__has_crop_mask = True
+        else:
+            self.__has_crop_mask = False
         self.__masking_objects = masking_objects
         self.__scale = scale
         if image!=None:
@@ -92,7 +97,9 @@ class Image(object):
         
     def get_image(self):
         """Return the primary image"""
-        return self.__image
+        if self.__image is None:
+            return
+        return self.__image.get()
     
     def set_image(self,image,convert=True):
         """Set the primary image
@@ -106,10 +113,7 @@ class Image(object):
         """
         img = np.asanyarray(image)
         if img.dtype.name == "bool" or not convert:
-            if img is image:
-                # make sure we have our own copy.
-                img = img.copy()
-            self.__image = img
+            self.__image = ImageCache(img)
             return
         mval  = 0.
         scale = 1.
@@ -152,7 +156,7 @@ class Image(object):
             # These types will always have ranges between 0 and 1. Make it so.
             np.clip(img, 0, 1, out=img)
         check_consistency(img,self.__mask)
-        self.__image = img
+        self.__image = ImageCache(img)
     
     image=property(get_image,set_image)
     pixel_data=property(get_image,set_image)
@@ -204,7 +208,7 @@ class Image(object):
         """Return the mask (pixels to be considered) for the primary image
         """
         if not self.__mask == None:
-            return self.__mask
+            return self.__mask.get()
         
         if self.has_masking_objects:
             return self.crop_image_similarly(self.crop_mask)
@@ -213,7 +217,17 @@ class Image(object):
             mask = self.parent_image.mask
             return self.crop_image_similarly(mask)
         
-        return np.ones(self.__image.shape[0:2],dtype=np.bool)
+        image = self.image
+        #
+        # Exclude channel, if present, from shape
+        #
+        if image.ndim == 2:
+            shape = image.shape
+        elif image.ndim == 3:
+            shape = image.shape[:2]
+        else:
+            shape = image.shape[1:]
+        return np.ones(shape, dtype=np.bool)
     
     def set_mask(self, mask):
         """Set the mask (pixels to be considered) for the primary image
@@ -224,8 +238,8 @@ class Image(object):
         m = np.array(mask)
         if not(m.dtype.type is np.bool):
             m = (m != 0)
-        check_consistency(self.__image,m)
-        self.__mask = m
+        check_consistency(self.image, m)
+        self.__mask = ImageCache(m)
         self.__has_mask = True
 
     mask=property(get_mask,set_mask)
@@ -245,7 +259,7 @@ class Image(object):
     def get_crop_mask(self):
         """Return the mask used to crop this image"""
         if not self.__crop_mask == None:
-            return self.__crop_mask
+            return self.__crop_mask.get()
         
         if self.has_masking_objects:
             return self.masking_objects.segmented != 0
@@ -258,7 +272,7 @@ class Image(object):
         return self.mask
     
     def set_crop_mask(self,crop_mask):
-        self.__crop_mask = crop_mask
+        self.__crop_mask = ImageCache(crop_mask)
         
     crop_mask = property(get_crop_mask, set_crop_mask)
     
@@ -352,6 +366,80 @@ class Image(object):
             return self.parent_image.scale
         return self.__scale
     scale = property(get_scale)
+    
+    def cache(self, name, hdf5_file):
+        '''Move all images into backing stores
+        
+        name - the channel name of the image
+        hdf5_file - an HDF5 file or group
+        
+        We utilize the sub-groups, "Images", "Masks" and "CropMasks".
+        The best practice is to use a temporary file dedicated to images and
+        maybe objects.
+        '''
+        from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
+        if isinstance(self.__image, ImageCache) and\
+           not self.__image.is_cached():
+            self.__image.cache(name, HDF5ImageSet(hdf5_file))
+        if isinstance(self.__mask, ImageCache) and\
+           not self.__mask.is_cached():
+            self.__mask.cache(name, HDF5ImageSet(hdf5_file, "Masks"))
+        if isinstance(self.__crop_mask, ImageCache) and\
+           not self.__crop_mask.is_cached():
+            self.__crop_mask.cache(name, HDF5ImageSet(hdf5_file, "CropMasks"))
+    
+class ImageCache(object):
+    '''An HDF5 cache that can store an image, mask or crop mask
+    
+    '''
+    IC_MONOCHROME = "Monochrome"
+    IC_COLOR = "Color"
+    IC_5D = "5D"
+    
+    def __init__(self, image):
+        '''Initialize with the image to control'''
+        self.__backing_store = None
+        self.__name = None
+        if image.ndim == 2:
+            self.__type = ImageCache.IC_MONOCHROME
+            self.__image = image.reshape(1, 1, 1, image.shape[0], image.shape[1])
+        elif image.ndim == 3:
+            self.__type = ImageCache.IC_COLOR
+            self.__image = image.transpose(2, 0, 1).reshape(
+                image.shape[2], 1, 1, image.shape[0], image.shape[1])
+        else:
+            self.__type = ImageCache.IC_5D
+            self.__image = image
+    
+    def is_cached(self):
+        '''Return True if image is already cached by a backing store
+        
+        '''
+        return self.__backing_store is not None
+    
+    def cache(self, name, backing_store):
+        '''Cache an image into a backing store
+        
+        name - unique channel name of the image
+        backing_store - an HDF5ImageSet
+        '''
+        self.__backing_store = backing_store
+        self.__name = name
+        self.__backing_store.set_image(self.__name, self.__image)
+        del self.__image
+        
+    def get(self):
+        '''Get the image in its original format'''
+        if self.is_cached():
+            image = self.__backing_store.get_image(self.__name)
+        else:
+            image = self.__image
+        if self.__type == ImageCache.IC_MONOCHROME:
+            return image.reshape(image.shape[3], image.shape[4])
+        elif self.__type == ImageCache.IC_COLOR:
+            return image.reshape(
+                image.shape[0], image.shape[3], image.shape[4]).transpose(1, 2, 0)
+        
     
 def crop_image(image, crop_mask,crop_internal = False):
     """Crop an image to the size of the nonzero portion of a crop mask"""

@@ -76,7 +76,44 @@ class TestImage(unittest.TestCase):
         test = i+j*10
         test_out = x.crop_image_similarly(test)
         self.assertTrue(np.all(test_out == test[2:-1,1:-2]))
-
+        
+    def test_07_02_cache(self):
+        import h5py
+        import os
+        import tempfile
+        
+        r = np.random.RandomState()
+        r.seed(72)
+        test_cases = (
+            { "image": r.uniform(size=(10, 20)) },
+            { "image": r.uniform(size=(20, 10, 3)) },
+            { "image": r.uniform(size=(10, 20)),
+              "mask": r.uniform(size=(10, 20)) > .5},
+            { "image": r.uniform(size=(10, 20)),
+              "crop_mask": np.all(np.mgrid[0:10, 0:20] > 3, 0) })
+        h, path = tempfile.mkstemp(suffix=".h5")
+        hdf_file = h5py.File(path, "w")
+        os.close(h)
+        
+        for test_case in test_cases:
+            image = cpi.Image(**test_case)
+            image.cache("foo", hdf_file)
+            expected = test_case["image"].astype(np.float32)
+            np.testing.assert_array_equal(image.pixel_data, expected)
+            if "mask" in test_case:
+                np.testing.assert_array_equal(image.mask, test_case["mask"])
+            else:
+                np.testing.assert_equal(image.mask, True)
+                np.testing.assert_equal(
+                    tuple(image.mask.shape), tuple(expected.shape[:2]))
+            if "crop_mask" in test_case:
+                np.testing.assert_array_equal(
+                    image.crop_mask, test_case["crop_mask"])
+            else:
+                np.testing.assert_equal(
+                    tuple(image.crop_mask.shape), tuple(expected.shape[:2]))
+            
+                
 IMAGE_NAME = "image"
 class TestImageSet(unittest.TestCase):
     def test_01_01_add(self):

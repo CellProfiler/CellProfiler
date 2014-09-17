@@ -379,7 +379,7 @@ class ModuleRunner(threading.Thread):
             
     def run(self):
         try:
-            self.module.run(self.workspace)
+            self.workspace.pipeline.run(self.module, self.workspace)
         except Exception, instance:
             self.exception = instance
             self.tb = sys.exc_info()[2]
@@ -1582,7 +1582,7 @@ class Pipeline(object):
         for module in self.modules(): 
             workspace = cpw.Workspace(self, module, image_set, object_set, 
                                       measurements, image_set_list)
-            module.run(workspace)
+            self.run_module(module, workspace)
         
         # Populate a dictionary for output with the images to be exported
         output_dict = {}
@@ -1797,7 +1797,7 @@ class Pipeline(object):
                     t0 = sum(os.times()[:-1])
                     if not run_in_background:
                         try:
-                            module.run(workspace)
+                            self.run_module(module, workspace)
                         except Exception, instance:
                             logger.error(
                                 "Error detected during run of module %s",
@@ -1932,7 +1932,7 @@ class Pipeline(object):
             start_time = datetime.datetime.now()
             t0 = sum(os.times()[:-1])
             try:
-                module.run(workspace)
+                self.run_module(module, workspace)
                 if module.show_window:
                     display_handler(module, workspace.display_data, image_set_number)
             except CancelledException:
@@ -2021,7 +2021,7 @@ class Pipeline(object):
                         image_set.providers.extend(old_providers)
                         break
                     else:
-                        module.run(w)
+                        self.run_module(module, w)
                     if progress_dialog is not None:
                         should_continue, skip = progress_dialog.Update(i+1)
                         if not should_continue:
@@ -2031,6 +2031,21 @@ class Pipeline(object):
             if progress_dialog is not None:
                 progress_dialog.Destroy()
             m.image_set_number = orig_image_number
+            
+    def run_module(self, module, workspace):
+        '''Run one CellProfiler module
+        
+        Run the CellProfiler module with whatever preparation and cleanup
+        needs to be done before and after.
+        '''
+        try:
+            module.run(workspace)
+        finally:
+            try:
+                workspace.measurements.cache()
+            except:
+                logger.error("Exception while trying to cache",
+                             exc_info=True)
         
     def write_experiment_measurements(self, m):
         '''Write the standard experiment measurments to the measurements file

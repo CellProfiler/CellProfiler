@@ -21,6 +21,7 @@ from __future__ import with_statement
 
 import bisect
 import os
+import tempfile
 import threading
 import numpy as np
 import h5py
@@ -65,6 +66,7 @@ def infer_hdf5_type(val):
 FILE_LIST_GROUP = "FileList"
 DEFAULT_GROUP = "Default"
 TOP_LEVEL_GROUP_NAME = "Measurements"
+IMAGES_GROUP = "Images"
 FILE_METADATA_GROUP = "FileMetadata"
 A_TIMESTAMP = "Timestamp"
 '''The attribute on a group or dataset that indicates how the data is organized'''
@@ -1468,6 +1470,73 @@ class HDF5FileList(object):
                     roots.pop()
                     path.pop()
 
+class HDF5ImageSet(object):
+    '''An HDF5 backing store for an image set
+    
+    Images are stored in the CellH5 dataset shape:
+    c, t, z, y, x
+    
+    By default, each channel's image is stored in the data set,
+    "/Images/<channel-name>"
+    '''
+    def __init__(self, hdf5_file=None, root_name = IMAGES_GROUP):
+        '''Create an HDF5ImageSet instance
+        
+        hdf5_file the file or other group-like object that is the root.
+        root_name the name of the root group in the hdf5 file. Defaults to
+                      "Images"
+        '''
+        self.hdf5_file = hdf5_file
+        if root_name not in self.hdf5_file:
+            self.root = self.hdf5_file.create_group(root_name)
+        else:
+            self.root = self.hdf5_file[root_name]
+    
+    def set_image(self, image_name, data):
+        '''Store the image data in the HDF5 file
+        
+        The data should be pre-shaped in c, t, z, y, x form.
+        For instance, a monochrome image:
+        my_shape = (1, 1, 1, img.shape[0], img.shape[1])
+        cache.set_image("monochrome", img.reshape(*my_shape)
+        
+        a color image:
+        img1 = img.transpose(2, 0, 1).reshape(img.shape[2], 1, 1, img.shape[0], img.shape[1])
+        cache.set_image("color", img1)
+        
+        image_name - a name for storage and retrieval, the name given to
+                     the data set within its group
+        data - the 5-d image to be stored.
+        '''
+        #
+        # The strategy here is to reuse the dataset. The assumption is
+        # that generally, it will be the same size and data type from
+        # one image set to the next
+        #
+        if image_name not in self.root:
+            self.root.create_dataset(image_name, data=data)
+        else:
+            data_set = self.root[image_name]
+            if tuple(data_set.shape) == tuple(data.shape) and\
+               data_set.dtype == data.dtype:
+                data_set[:] = data
+            else:
+                del self.root[image_name]
+                self.root.create_dataset(image_name, data=data)
+                
+    def get_image(self, image_name):
+        '''Retrieve the image from the HDF5 file
+        
+        image_name - the name of the image for storage and retrieval.
+        
+        returns a 5-d array of indeterminate type with the dimensions in
+        the order, c, t, z, y, x. The array is dereferenced from the dataset,
+        so any changes to it do not propagate back into the cached version.
+        
+        raises KeyError if your image was not there.
+        '''
+        return self.root[image_name][:]
+        
 def get_top_level_group(filename, group_name = 'Measurements', open_mode='r'):
     '''Open and return the Measurements HDF5 group
     

@@ -34,8 +34,6 @@ from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
 logger = logging.getLogger(__name__)
 
-from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
-
 '''get_absolute_path - mode = output. Assume "." is the default output dir'''
 ABSPATH_OUTPUT = 'abspath_output'
 
@@ -422,6 +420,10 @@ def module_extension():
 __default_image_directory = None
 def get_default_image_directory():
     global __default_image_directory
+
+    from cellprofiler.utilities.get_proper_case_filename\
+         import get_proper_case_filename
+
     if __default_image_directory is not None:
         return __default_image_directory
     # I'm not sure what it means for the preference not to exist.  No read-write preferences file?
@@ -477,6 +479,10 @@ class PreferenceChangedEvent:
 __default_output_directory = None
 def get_default_output_directory():
     global __default_output_directory
+    
+    from cellprofiler.utilities.get_proper_case_filename\
+         import get_proper_case_filename
+
     if __default_output_directory is not None:
         return __default_output_directory
     if not config_exists(DEFAULT_OUTPUT_DIRECTORY):

@@ -188,6 +188,8 @@ def main(args):
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)
         cpprefs.set_temporary_directory(options.temp_dir, globally=False)
+    if not options.allow_schema_write:
+        cpprefs.set_allow_schema_write(False)
     #
     # After the crucial preferences are established, we can start the VM
     #
@@ -458,6 +460,13 @@ def parse_args(args):
                       default = None,
                       help = "Specify the image set file that controls the input "
                       "images for the pipeline")
+    parser.add_option("--do-not-write-schema",
+                      dest = 'allow_schema_write',
+                      default = True,
+                      action = "store_false",
+                      help = "Do not execute the schema definition and other "
+                      "per-experiment SQL commands during initialization "
+                      "when running a pipeline in batch mode.")
     parser.add_option("--omero-credentials",
                       dest="omero_credentials",
                       default= None,

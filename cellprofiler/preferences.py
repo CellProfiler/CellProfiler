@@ -1355,6 +1355,31 @@ def set_save_pipeline_with_project(value):
     __save_pipeline_with_project = value
     config_write(SAVE_PIPELINE_WITH_PROJECT, value)
     
+__allow_schema_write = True
+def get_allow_schema_write():
+    '''Returns True if ExportToDatabase is allowed to write the MySQL schema
+    
+    For cluster operation without CreateBatchFiles, it's inappropriate to
+    have multiple processes overwrite the database schema. Although
+    CreateBatchFiles is suggested for this scenario, we put this switch in
+    to support disabling schema writes from the command line.
+    '''
+    return __allow_schema_write
+
+def set_allow_schema_write(value):
+    '''Allow or disallow database schema writes
+    
+    value - True to allow writes (the default) or False to prevent
+            ExportToDatabase from writing the schema.
+    
+    For cluster operation without CreateBatchFiles, it's inappropriate to
+    have multiple processes overwrite the database schema. Although
+    CreateBatchFiles is suggested for this scenario, we put this switch in
+    to support disabling schema writes from the command line.
+    '''
+    global __allow_schema_write
+    __allow_schema_write = value
+    
 def add_progress_callback(callback):
     '''Add a callback function that listens to progress calls
     

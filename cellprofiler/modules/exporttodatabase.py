@@ -1582,7 +1582,7 @@ class ExportToDatabase(cpm.CPModule):
             #
             self.get_pipeline_measurement_columns(pipeline, image_set_list)
             
-            if pipeline.in_batch_mode():
+            if pipeline.in_batch_mode() or not cpprefs.get_allow_schema_write():
                 return True
             if self.db_type == DB_ORACLE:
                 raise NotImplementedError("Writing to an Oracle database is not yet supported")

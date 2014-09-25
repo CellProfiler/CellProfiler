@@ -639,7 +639,10 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         m = workspace.measurements
         for feature in C.FTR_ALL:
             mname = module.measurement_name(feature)
-            self.assertTrue(np.isnan(m[cpmeas.IMAGE, mname, 1]))
+            if feature == C.FTR_RAND_INDEX:
+                self.assertEqual(1, m[cpmeas.IMAGE, mname, 1])
+            else:
+                self.assertTrue(np.isnan(m[cpmeas.IMAGE, mname, 1]))
         
     def test_05_01_test_measure_overlap_objects(self):
         r = np.random.RandomState()

@@ -29,6 +29,26 @@ OBJECT_NAME = "objectname"
 FEATURE_NAME = "featurename"
 ALT_FEATURE_NAME = "featurename2"
 
+class HDF5DictTessstBase(unittest.TestCase):
+    '''Base class for HDF5Dict test cases
+    
+    This class creates a .h5 file per test case during setUp and
+    deletes it during tearDown.
+    
+    Note: misspelling of Tessst is intentional.
+    '''
+    def setUp(self):
+        self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
+        self.hdf_file = h5py.File(self.temp_filename, "w")
+        
+    def tearDown(self):
+        self.hdf_file.close()
+        os.close(self.temp_fd)
+        os.remove(self.temp_filename)
+        self.assertFalse(os.path.exists(self.temp_filename),
+                         "If the file can't be removed, it's a bug. "
+                         "Clean up your trash: %s" % self.temp_filename)
+        
 class TestHDF5Dict(unittest.TestCase):
     def setUp(self):
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
@@ -41,7 +61,7 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertFalse(os.path.exists(self.temp_filename),
                          "If the file can't be removed, it's a bug. "
                          "Clean up your trash: %s" % self.temp_filename)
-        
+
     def test_00_00_init(self):
         # Test setup and teardown - create HDF5 file / close
         pass
@@ -865,17 +885,9 @@ class TestHDF5FileList(unittest.TestCase):
         self.filelist.clear_cache()
         self.assertFalse(self.filelist.has_files())
         
-class TestHDF5ImageSet(unittest.TestCase):
+class TestHDF5ImageSet(HDF5DictTessstBase):
     CHANNEL_NAME = "channelname"
     ALT_CHANNEL_NAME = "alt_channelname"
-    def setUp(self):
-        self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.hdf_file = h5py.File(self.temp_filename)
-        
-    def tearDown(self):
-        self.hdf_file.close()
-        os.close(self.temp_fd)
-        os.remove(self.temp_filename)
         
     def test_01_01_init(self):
         image_set = H5DICT.HDF5ImageSet(self.hdf_file)
@@ -929,15 +941,148 @@ class TestHDF5ImageSet(unittest.TestCase):
         np.testing.assert_array_equal(
             data2, image_set.get_image(self.ALT_CHANNEL_NAME))
         
-class TestHDFCSV(unittest.TestCase):
-    def setUp(self):
-        self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.hdf_file = h5py.File(self.temp_filename)
+class TestHDF5ObjectSet(HDF5DictTessstBase):
+    OBJECTS_NAME = "objectsname"
+    ALT_OBJECTS_NAME = "altobjectsname"
+    SEGMENTATION_NAME = "segmentationname"
+    ALT_SEGMENTATION_NAME = "altsegmentationname"
+    
+    def test_01_01_init(self):
+        object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
         
-    def tearDown(self):
-        self.hdf_file.close()
-        os.close(self.temp_fd)
-        os.remove(self.temp_filename)
+    def test_01_02_set_has_get_dense(self):
+        # Test set_dense, has_dense, get_dense
+        r = np.random.RandomState()
+        r.seed(12)
+        object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
+        self.assertFalse(object_set.has_dense(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        expected = r.randint(0, 10, size=(11, 13))
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
+                             expected)
+        self.assertTrue(object_set.has_dense(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(object_set.has_sparse(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        np.testing.assert_array_equal(
+            expected, 
+            object_set.get_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        
+    def test_01_03_set_has_get_sparse(self):
+        # test set_sparse, has_sparse, get_sparse
+        r = np.random.RandomState()
+        r.seed(13)
+        object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
+        self.assertFalse(object_set.has_sparse(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        expected = np.core.records.fromarrays(
+            r.randint(0, 10, (3,9)),
+            [(object_set.AXIS_Y, np.uint32, 1),
+             (object_set.AXIS_X, np.uint32, 1),
+             (object_set.AXIS_LABELS, np.uint32, 1)])
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, 
+                              expected)
+        self.assertTrue(object_set.has_sparse(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(object_set.has_dense(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        np.testing.assert_array_equal(
+            expected,
+            object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        
+    def test_01_04_clear(self):
+        r = np.random.RandomState()
+        r.seed(14)
+        object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
+        expected = r.randint(0, 10, size=(11, 13))
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
+                             expected)
+        expected = np.core.records.fromarrays(
+            r.randint(0, 10, (3,9)),
+            [(object_set.AXIS_Y, np.uint32, 1),
+             (object_set.AXIS_X, np.uint32, 1),
+             (object_set.AXIS_LABELS, np.uint32, 1)])
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, 
+                              expected)
+        object_set.clear(self.OBJECTS_NAME, self.ALT_SEGMENTATION_NAME)
+        self.assertTrue(object_set.has_dense(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        object_set.clear(self.OBJECTS_NAME)
+        self.assertFalse(object_set.has_dense(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(object_set.has_sparse(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        expected = r.randint(0, 10, size=(11, 13))
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
+                             expected)
+        self.assertTrue(object_set.has_dense(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        self.assertFalse(object_set.has_sparse(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        
+    def test_01_05_set_dense_twice_same_size(self):
+        r = np.random.RandomState()
+        r.seed(15)
+        expected = r.randint(0, 10, size=(11, 13))
+        object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
+                             expected)
+        expected = r.randint(0, 10, size=(11, 13))
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
+                             expected)
+        np.testing.assert_array_equal(
+            expected,
+            object_set.get_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+
+    def test_01_06_set_dense_different_size(self):
+        r = np.random.RandomState()
+        r.seed(16)
+        object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
+        expected = r.randint(0, 10, size=(11, 13))
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
+                             expected)
+        expected = r.randint(0, 10, size=(13, 11))
+        object_set.set_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME,
+                             expected)
+        np.testing.assert_array_equal(
+            expected,
+            object_set.get_dense(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        
+    def test_01_07_set_sparse_many(self):
+        r = np.random.RandomState()
+        r.seed(13)
+        object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
+        self.assertFalse(object_set.has_sparse(
+            self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        expected = np.core.records.fromarrays(
+            r.randint(0, 10, (3,9)),
+            [(object_set.AXIS_Y, np.uint32, 1),
+             (object_set.AXIS_X, np.uint32, 1),
+             (object_set.AXIS_LABELS, np.uint32, 1)])
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, 
+                              expected)
+        expected = np.core.records.fromarrays(
+            r.randint(0, 10, (3, 20)),
+            [(object_set.AXIS_Y, np.uint32, 1),
+             (object_set.AXIS_X, np.uint32, 1),
+             (object_set.AXIS_LABELS, np.uint32, 1)])
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, 
+                              expected)
+        np.testing.assert_array_equal(
+            expected,
+            object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        expected = np.core.records.fromarrays(
+            r.randint(0, 10, (3, 6)),
+            [(object_set.AXIS_Y, np.uint32, 1),
+             (object_set.AXIS_X, np.uint32, 1),
+             (object_set.AXIS_LABELS, np.uint32, 1)])
+        object_set.set_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME, 
+                              expected)
+        np.testing.assert_array_equal(
+            expected,
+            object_set.get_sparse(self.OBJECTS_NAME, self.SEGMENTATION_NAME))
+        
+class TestHDFCSV(HDF5DictTessstBase):
         
     def test_01_01_init(self):
         csv = H5DICT.HDFCSV(self.hdf_file, "csv")
@@ -994,16 +1139,7 @@ class TestHDFCSV(unittest.TestCase):
             self.assertIn(key, csv.keys())
             self.assertIn(key, csv.iterkeys())
             
-class TestVStringArray(unittest.TestCase):
-    def setUp(self):
-        self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.hdf_file = h5py.File(self.temp_filename)
-        
-    def tearDown(self):
-        self.hdf_file.close()
-        os.close(self.temp_fd)
-        os.remove(self.temp_filename)
-        
+class TestVStringArray(HDF5DictTessstBase):
     def test_01_01_init(self):
         H5DICT.VStringArray(self.hdf_file)
         self.assertIn("index", self.hdf_file)
@@ -1298,16 +1434,7 @@ class TestVStringArray(unittest.TestCase):
         for i, expected in enumerate( [True, False, True]):
             self.assertEqual(a.is_not_none(i), expected)
         
-class TestStringReference(unittest.TestCase):
-    def setUp(self):
-        self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.hdf_file = h5py.File(self.temp_filename)
-        
-    def tearDown(self):
-        self.hdf_file.close()
-        os.close(self.temp_fd)
-        os.remove(self.temp_filename)
-
+class TestStringReference(HDF5DictTessstBase):
     def test_01_01_init(self):
         sr = H5DICT.StringReferencer(self.hdf_file.create_group("test"))
         

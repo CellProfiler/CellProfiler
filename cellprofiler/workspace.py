@@ -210,6 +210,10 @@ class Workspace(object):
         '''Add a grid to the workspace'''
         self.__grid[grid_name] = grid_info
         
+    def cache(self):
+        self.measurements.cache()
+        self.measurements.cache_object_set(self.object_set)
+        
     def get_frame(self):
         """The frame is CellProfiler's gui window
 

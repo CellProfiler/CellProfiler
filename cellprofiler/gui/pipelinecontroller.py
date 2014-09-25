@@ -2775,7 +2775,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             def cancel_handler(cancelled = cancelled):
                 cancelled[0] = True
             workspace.cancel_handler = cancel_handler
-            module.run(workspace)
+            self.__pipeline.run_module(module, workspace)
             if cancelled[0]:
                 self.__frame.SetCursor(old_cursor)
                 return False

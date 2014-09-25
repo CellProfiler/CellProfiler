@@ -25,6 +25,7 @@ from itertools import repeat
 import cellprofiler.preferences as cpprefs
 from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
 from cellprofiler.utilities.hdf5_dict import VERSION, HDFCSV, VStringArray
+from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
 from cellprofiler.utilities.hdf5_dict import NullLock
 import tempfile
 import numpy as np
@@ -1668,16 +1669,24 @@ class Measurements(object):
         if self.__images.has_key(name):
             del self.__images[name]
             
-    def cache(self):
-        '''Move all uncached images to an HDF5 backing-store'''
+    def __ensure_cache_file(self):
         if self.__image_cache_file is None:
             h, self.__image_cache_path = tempfile.mkstemp(
                 suffix=".h5", prefix="CellProfilerImageCache")
             self.__image_cache_file = h5py.File(
                 self.__image_cache_path, "w")
+            self.__hdf5_object_set = HDF5ObjectSet(self.__image_cache_file)
             os.close(h)
+        
+    def cache(self):
+        '''Move all uncached images to an HDF5 backing-store'''
+        self.__ensure_cache_file()
         for name, image in self.__images.items():
             image.cache(name, self.__image_cache_file)
+            
+    def cache_object_set(self, object_set):
+        self.__ensure_cache_file()
+        object_set.cache(self.__hdf5_object_set)
             
     def clear_cache(self):
         '''Remove all of the cached images'''

@@ -89,12 +89,6 @@ class TestObjects(unittest.TestCase):
         x.unedited_segmented = self.__unedited_segmented10
         self.assertTrue((x.small_removed_segmented == self.__unedited_segmented10).all())
     
-    def test_04_01_mis_size(self):
-        x = cpo.Objects()
-        x.segmented = self.__segmented10
-        self.assertRaises(AssertionError,x.set_unedited_segmented,np.ones((5,5)))
-        self.assertRaises(AssertionError,x.set_small_removed_segmented,np.ones((5,5)))
-    
     def test_05_01_relate_zero_parents_and_children(self):
         """Test the relate method if both parent and child label matrices are zeros"""
         x = cpo.Objects()
@@ -402,7 +396,7 @@ class TestObjects(unittest.TestCase):
         j = np.hstack([jj[mask] for mask in masks])
         v = np.hstack([[k+1] * np.sum(mask) for k, mask in enumerate(masks)])
         
-        x.ijv = np.column_stack((i,j,v))
+        x.set_ijv(np.column_stack((i,j,v)), ii.shape)
         x.parent_image = cpi.Image(np.zeros((10,20)))
         colors = np.random.uniform(size=(3, 3)).astype(np.float32)
         image = x.make_ijv_outlines(colors)
@@ -546,13 +540,49 @@ class TestObjects(unittest.TestCase):
         y = cpo.Objects()
         y.segmented = np.load(stream)
         labels_children_per_parent, labels_parents_of_children = x.relate_children(y)
-        self.assertFalse(x.has_ijv)
-        self.assertFalse(y.has_ijv)
         # force generation of ijv
         x.ijv, y.ijv
         ijv_children_per_parent, ijv_parents_of_children = x.relate_children(y)
         np.testing.assert_array_equal(labels_children_per_parent, ijv_children_per_parent)
         np.testing.assert_array_equal(labels_parents_of_children, ijv_parents_of_children)
+        
+    def test_08_01_cache(self):
+        import h5py
+        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        import os
+        import tempfile
+        x = cpo.Objects()
+        r = np.random.RandomState()
+        r.seed(81)
+        segmented_unedited = r.randint(0, 5, size=(10, 15))
+        segmented_small_removed = segmented_unedited.copy()
+        segmented_small_removed[segmented_small_removed == 4] = 0
+        segmented = segmented_small_removed.copy()
+        segmented[segmented == 3] = 0
+        x.segmented = segmented
+        x.small_removed_segmented = segmented_small_removed
+        x.unedited_segmented = segmented_unedited
+        y = cpo.Objects()
+        y.segmented = segmented
+        y.small_removed_segmented = segmented_small_removed
+        y.unedited_segmented = segmented_unedited
+        
+        fd, path = tempfile.mkstemp(".h5")
+        f = h5py.File(path)
+        try:
+            cache = HDF5ObjectSet(f)
+            x.cache(cache, "whatever")
+            np.testing.assert_array_equal(x.segmented, segmented)
+            np.testing.assert_array_equal(x.small_removed_segmented,
+                                          segmented_small_removed)
+            np.testing.assert_array_equal(x.unedited_segmented,
+                                          segmented_unedited)
+            np.testing.assert_array_equal(y.ijv, x.ijv)
+        finally:
+            f.close()
+            os.close(fd)
+            os.remove(path)
+            
 
 class TestDownsampleLabels(unittest.TestCase):
     def test_01_01_downsample_127(self):

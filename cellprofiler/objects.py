@@ -47,29 +47,47 @@ class Objects(object):
 
     IdentityPrimAutomatic produces three variants of its segmentation
     result. This object contains all three.
+    
+    There are three formats for segmentation, two of which support
+    overlapping objects:
+    
+    get/set_segmented - legacy, a single plane of labels that does not
+                        support overlapping objects
+    get/set_labels - supports overlapping objects, returns one or more planes
+                     along with indices. A typical usage is to perform an
+                     operation per-plane as if the objects did not overlap.
+    get/set_ijv    - supports overlapping objects, returns a sparse
+                     representation in which the first two columns are the
+                     coordinates and the last is the object number. This
+                     is efficient for doing things like calculating intensity
+                     per-object.
+                     
+    You can set one of the types and then get any of the types (except that
+    get_segmented will raise an exception if objects overlap).
     """
     def __init__(self):
         self.__segmented = None
         self.__unedited_segmented = None
         self.__small_removed_segmented = None
         self.__parent_image = None
-        self.__ijv = None
         self.__shape = None
     
     def get_segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix 
         of object numbers.
         """
-        if self.__segmented is None:
-            label_stack = [l for l,c in self.get_labels()]
-            assert len(label_stack) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
-            return label_stack[0]
-        return self.__segmented
+        assert isinstance(self.__segmented, Segmentation), \
+               "Operation failed because objects were not initialized"
+        dense, indices = self.__segmented.get_dense()
+        assert len(dense) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
+        assert np.all(np.array(dense.shape[1:-2]) == 1), \
+               "Operation failed because the segmentation was not 2D"
+        return dense.reshape(dense.shape[-2:])
     
     def set_segmented(self,labels):
-        check_consistency(labels, self.__unedited_segmented, 
-                          self.__small_removed_segmented)
-        self.__segmented = downsample_labels(labels)
+        dense = downsample_labels(labels)
+        dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
+        self.__segmented = Segmentation(dense=dense)
         # Clear all cached results.
         if getattr(self, "memoize_method_dictionary", False):
             self.memoize_method_dictionary = {}
@@ -82,7 +100,19 @@ class Objects(object):
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         '''
-        self.__ijv = ijv
+        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        if shape is None:
+            if len(ijv) > 0:
+                shape = np.max(ijv[:, :2], 0) + 2
+            else:
+                shape = (2, 2)
+        sparse = np.core.records.fromarrays(
+            (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
+            [(HDF5ObjectSet.AXIS_Y, ijv.dtype, 1),
+             (HDF5ObjectSet.AXIS_X, ijv.dtype, 1),
+             (HDF5ObjectSet.AXIS_LABELS, ijv.dtype, 1)])
+        self.__segmented = Segmentation(
+            sparse=sparse, shape = (1, 1, 1, shape[0], shape[1]))
         self.__shape = shape
         
     def get_ijv(self):
@@ -91,23 +121,14 @@ class Objects(object):
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         '''
-        if self.__ijv is None and self.__segmented is not None:
-            i,j = np.argwhere(self.__segmented > 0).transpose()
-            #
-            # Sort so that same "i" coordinates are close together
-            # so that memory accesses are localized.
-            #
-            order = np.lexsort((j,i))
-            i,j = i[order],j[order]
-            self.__ijv = np.column_stack((i,j,self.__segmented[i,j]))
-        return self.__ijv
+        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        sparse = self.__segmented.get_sparse()
+        return np.column_stack(
+            [sparse[axis] for axis in 
+             HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X, 
+             HDF5ObjectSet.AXIS_LABELS])
     
     ijv = property(get_ijv, set_ijv)
-    
-    @property
-    def has_ijv(self):
-        '''Return true if there is an IJV formulation for the object'''
-        return self.__ijv is not None
     
     @property
     def shape(self):
@@ -115,12 +136,12 @@ class Objects(object):
         if self.__shape is not None:
             return self.__shape
         if self.__segmented is not None:
-            return self.__segmented.shape
+            return self.__segmented.get_dense()[0][0].shape[-2:]
         if self.has_parent_image:
             return self.parent_image.pixel_data.shape
-        if self.__ijv.shape[0] == 0:
+        if len(self.ijv) == 0:
             return (0, 0)
-        return tuple([np.max(self.__ijv[:, i]+1) for i in range(2)])
+        return tuple([np.max(self.ijv[:, i]+1) for i in range(2)])
     
     def get_labels(self, shape = None):
         '''Get a set of labels matrices consisting of non-overlapping labels
@@ -132,150 +153,9 @@ class Objects(object):
         
         returns a list of label matrixes and the indexes in each
         '''
-        if self.__segmented is not None:
-            return [(self.__segmented, self.indices)]
-        elif self.__ijv is not None:
-            if shape is None:
-                shape = self.__shape
-            def ijv_to_segmented(ijv, shape=shape):
-                if shape is not None:
-                    pass
-                elif self.has_parent_image:
-                    shape = self.parent_image.pixel_data.shape
-                elif len(ijv) == 0:
-                    # degenerate case, no parent info and no labels
-                    shape = (1,1)
-                else:
-                    shape = np.max(ijv[:,:2], 0) + 2 # add a border of "0" to the right
-                labels = np.zeros(shape, np.int16)
-                if ijv.shape[0] > 0:
-                    labels[ijv[:,0],ijv[:,1]] = ijv[:,2]
-                return labels
-            
-            if len(self.__ijv) == 0:
-                return [(ijv_to_segmented(self.__ijv), self.indices)]
-            
-            sort_order = np.lexsort((self.__ijv[:,2],
-                                     self.__ijv[:,1], 
-                                     self.__ijv[:,0]))
-            sijv = self.__ijv[sort_order]
-            #
-            # Locations in sorted array where i,j are same consecutively
-            # are locations that have an overlap.
-            #
-            overlap = np.all(sijv[:-1,:2] == sijv[1:,:2],1)
-            #
-            # Find the # at each location by finding the index of the
-            # first example of a location, then subtracting successive indexes
-            #
-            firsts = np.argwhere(np.hstack(([True], ~overlap, [True]))).flatten()
-            counts = firsts[1:] - firsts[:-1]
-            indexer = Indexes(counts)
-            #
-            # Eliminate the locations that are singly labeled
-            #
-            sijv = sijv[counts[indexer.rev_idx] > 1, :]
-            counts = counts[counts > 1]
-            if len(counts) == 0:
-                return [(ijv_to_segmented(self.__ijv), self.indices)]
-            #
-            # There are n * n-1 pairs for each coordinate (n = # labels)
-            # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs
-            #
-            pairs = all_pairs(np.max(counts))
-            pair_counts = counts * (counts - 1)
-            #
-            # Create an indexer for the inputs (sijv) and for the outputs
-            # (first and second of the pairs)
-            #
-            input_indexer = Indexes(counts)
-            output_indexer = Indexes(pair_counts)
-            first = sijv[input_indexer.fwd_idx[output_indexer.rev_idx] +
-                         pairs[output_indexer.idx[0], 0], 2]
-            second = sijv[input_indexer.fwd_idx[output_indexer.rev_idx] +
-                          pairs[output_indexer.idx[0], 1], 2]
-            #
-            # And sort these so that we get consecutive lists for each
-            #
-            sort_order = np.lexsort((second, first))
-            first = first[sort_order]
-            second = second[sort_order]
-            #
-            # Eliminate dupes
-            #
-            to_keep = np.hstack(([True], 
-                                 (first[1:] != first[:-1]) |
-                                 (second[1:] != second[:-1])))
-            first = first[to_keep]
-            second = second[to_keep]
-            #
-            # Bincount each label so we can find the ones that have the
-            # most overlap. See cpmorphology.color_labels and
-            # Welsh, "An upper bound for the chromatic number of a graph and
-            # its application to timetabling problems", The Computer Journal, 10(1)
-            # p 85 (1967)
-            #
-            overlap_counts = np.bincount(first)
-            nlabels = len(self.indices)
-            if len(overlap_counts) < nlabels + 1:
-                overlap_counts = np.hstack(
-                    (overlap_counts, [0] * (nlabels - len(overlap_counts) + 1)))
-            #
-            # The index to the i'th label's stuff
-            #
-            indexes = np.cumsum(overlap_counts) - overlap_counts
-            #
-            # A vector of a current color per label
-            #
-            v_color = np.zeros(len(overlap_counts), int)
-            #
-            # Assign all non-overlapping to color 1
-            #
-            v_color[overlap_counts == 0] = 1
-            #
-            # Assign all absent objects to color -1
-            #
-            v_color[1:][self.areas == 0] = -1
-            #
-            # The processing order is from most overlapping to least
-            #
-            processing_order = np.lexsort((np.arange(len(overlap_counts)), overlap_counts))
-            processing_order = processing_order[overlap_counts[processing_order] > 0]
-            
-            for index in processing_order:
-                neighbors = second[indexes[index]:indexes[index] + overlap_counts[index]]
-                colors = np.unique(v_color[neighbors])
-                if colors[0] == 0:
-                    if len(colors) == 1:
-                        # all unassigned - put self in group 1
-                        v_color[index] = 1
-                        continue
-                    else:
-                        # otherwise, ignore the unprocessed group and continue
-                        colors = colors[1:]
-                # Match a range against the colors array - the first place
-                # they don't match is the first color we can use
-                crange = np.arange(1, len(colors)+1)
-                misses = crange[colors != crange]
-                if len(misses):
-                    color = misses[0]
-                else:
-                    max_color = len(colors) + 1
-                    color = max_color
-                v_color[index] = color
-            #
-            # Now, get ijv groups by color
-            #
-            result = []
-            for color in np.unique(v_color):
-                if color == -1:
-                    continue
-                ijv = self.__ijv[v_color[self.__ijv[:,2]] == color]
-                indices = np.arange(1, len(v_color))[v_color[1:] == color]
-                result.append((ijv_to_segmented(ijv), indices))
-            return result
-        else:
-            return []
+        dense, indices = self.__segmented.get_dense()
+        return [
+            (dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
     
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""
@@ -289,13 +169,15 @@ class Objects(object):
         segmented labeling.
         """
         if self.__unedited_segmented != None:
-            return self.__unedited_segmented
+            dense, indices = self.__unedited_segmented.get_dense()
+            return dense[0, 0, 0, 0]
         return self.segmented
     
     def set_unedited_segmented(self,labels):
-        check_consistency(self.__segmented, labels, 
-                          self.__small_removed_segmented)
-        self.__unedited_segmented = downsample_labels(labels)
+        dense = downsample_labels(labels).reshape(
+            (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
+        self.__unedited_segmented = Segmentation(dense=dense)
+        
     
     unedited_segmented = property(get_unedited_segmented, 
                                   set_unedited_segmented)
@@ -312,17 +194,32 @@ class Objects(object):
         or the image mask still present.
         """
         if self.__small_removed_segmented != None:
-            return self.__small_removed_segmented
+            dense, indices = self.__small_removed_segmented.get_dense()
+            return dense[0, 0, 0, 0]
         return self.unedited_segmented
     
     def set_small_removed_segmented(self,labels):
-        check_consistency(self.__segmented, self.__unedited_segmented, labels)
-        self.__small_removed_segmented = downsample_labels(labels)
+        dense = downsample_labels(labels).reshape(
+            (1, 1, 1, 1, labels.shape[0], labels.shape[1]))
+        self.__small_removed_segmented = Segmentation(dense=dense)
     
     small_removed_segmented = property(get_small_removed_segmented, 
                                        set_small_removed_segmented)
     
-    
+    def cache(self, hdf5_object_set, objects_name):
+        '''Move the segmentations out of memory and into HDF5
+        
+        hdf5_object_set - an HDF5ObjectSet attached to an HDF5 file
+        objects_name - name of the objects
+        '''
+        for segmentation, segmentation_name in (
+            (self.__segmented, Segmentation.SEGMENTED),
+            (self.__unedited_segmented, Segmentation.UNEDITED_SEGMENTED),
+            (self.__small_removed_segmented, Segmentation.SMALL_REMOVED_SEGMENTED)):
+            if segmentation is not None:
+                segmentation.cache(
+                    hdf5_object_set, objects_name, segmentation_name)
+            
     def get_parent_image(self):
         """The image that was analyzed to yield the objects.
         
@@ -407,10 +304,7 @@ class Objects(object):
         each parent. The second gives the mapping of each child to its parent's
         object number.
         """
-        if self.has_ijv or children.has_ijv:
-            histogram = self.histogram_from_ijv(self.ijv, children.ijv)
-        else:
-            histogram = self.histogram_from_labels(self.segmented, children.segmented)
+        histogram = self.histogram_from_ijv(self.ijv, children.ijv)
         return self.relate_histogram(histogram)
     
     def relate_labels(self, parent_labels, child_labels):
@@ -519,13 +413,9 @@ class Objects(object):
         """Get the indices for a scipy.ndimage-style function from the segmented labels
         
         """
-        if self.__ijv is not None:
-            if len(self.__ijv) == 0:
-                max_label = 0
-            else:
-                max_label = np.max(self.__ijv[:,2])
-        else:
-            max_label = np.max(self.segmented)
+        if len(self.ijv) == 0:
+            return np.zeros(0, np.int32)
+        max_label = np.max(self.ijv[:, 2])
         return np.arange(max_label).astype(np.int32) + 1
     
     indices = property(get_indices)
@@ -540,10 +430,7 @@ class Objects(object):
         """The area of each object"""
         if len(self.indices) == 0:
             return np.zeros(0, int)
-        if self.__ijv is not None:
-            return np.bincount(self.__ijv[:,2])[self.indices]
-        else:
-            return np.bincount(self.segmented.ravel())[self.indices]
+        return np.bincount(self.ijv[:,2])[self.indices]
      
     areas = property(get_areas)
     @memoize_method
@@ -596,6 +483,317 @@ class Objects(object):
         return function(image,
                 self.segmented,
                 self.indices)
+    
+class Segmentation(object):
+    '''A segmentation of a space into labeled objects
+    
+    Supports overlapping objects and cacheing. Retrieval can be as a
+    single plane (legacy), as multiple planes and as sparse ijv.
+    '''
+    SEGMENTED = "segmented"
+    UNEDITED_SEGMENTED = "unedited segmented"
+    SMALL_REMOVED_SEGMENTED = "small removed segmented"
+    
+    def __init__(self, dense=None, sparse=None, shape=None):
+        '''Initialize the segmentation with either a dense or sparse labeling
+        
+        dense - a 6-D labeling with the first axis allowing for alternative
+                labelings of the same hyper-voxel.
+        sparse - the sparse labeling as a record array with axes from
+                 cellprofiler.utilities.hdf_dict.HDF5ObjectSet
+        shape - the 5-D shape of the imaging site if sparse.
+        '''
+
+        self.__dense = dense
+        self.__sparse = sparse
+        if shape is not None:
+            self.__shape = shape
+        else:
+            self.__shape = dense.shape[1:]
+        self.__cache = None
+        if dense is not None:
+            self.__indices = [np.unique(d) for d in dense]
+            self.__indices = [
+                idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
+    
+    def cache(self, hdf5_object_set, objects_name, segmentation_name):
+        '''Cache the segmentation in the given object set
+        
+        hdf5_object_set - an HDF5ObjectSet for moving objects out of memory
+        objects_name - name to use to store the objects
+        segmentation_name - name of this particular segmentation, for instance,
+                            Segmentation.SEGMENTED for the user-visible
+                            segmentation.
+        '''
+        if self.__cache is not None:
+            return
+        self.__objects_name = objects_name
+        self.__segmentation_name = segmentation_name
+        hdf5_object_set.clear(objects_name, segmentation_name)
+        if self.__dense is not None:
+            hdf5_object_set.set_dense(objects_name, segmentation_name,
+                                      self.__dense)
+        if self.__sparse is not None:
+            hdf5_object_set.set_sparse(objects_name, segmentation_name,
+                                       self.__sparse)
+        self.__dense = None
+        self.__sparse = None
+        self.__cache = hdf5_object_set
+        
+    def get_sparse(self):
+        '''Get the sparse representation of the segmentation
+        
+        returns a Numpy record array where every row represents
+        the labeling of a pixel. The dtype record names are taken from
+        HDF5ObjectSet.AXIS_[X,Y,Z,C,T] and AXIS_LABELS for the object
+        numbers.
+        '''
+        if self.__sparse is not None:
+            return self.__sparse
+        if self.__cache is not None and self.__cache.has_sparse(
+            self.__objects_name, self.__segmentation_name):
+            return self.__cache.get_sparse(
+                self.__objects_name, self.__segmentation_name)
+        if self.__dense is None and (
+            self.__cache is None or not self.__cache.has_dense(
+                self.__objects_name, self.__segmentation_name)):
+            raise ValueError(
+                "Can't find object, \"%s\", segmentation, \"%s\"." %
+                (self.__objects_name, self.__segmentation_name))
+        return self.__convert_dense_to_sparse()
+    
+    sparse = property(get_sparse)
+    
+    def get_dense(self):
+        '''Get the dense representation of the segmentation
+        
+        return the segmentation as a 6-D array and a sequence of arrays of the
+        object numbers in each 5-D hyperplane of the segmentation. The first
+        axis of the segmentation allows us to assign multiple labels to 
+        individual pixels. Given a 5-D algorithm, the code typically iterates 
+        over the first axis:
+        
+        for labels in self.get_dense():
+            # do something
+            
+        The remaining axes are in the order, C, T, Z, Y and X
+        '''
+        if self.__dense is not None:
+            return (self.__dense, self.__indices)
+        if self.__cache is not None and self.__cache.has_dense(
+            self.__objects_name, self.__segmentation_name):
+            return (self.__cache.get_dense(
+                self.__objects_name, self.__segmentation_name),
+                    self.__indices)
+        if self.__sparse is None and (
+            self.__cache is None or not self.__cache.has_sparse(
+                self.__objects_name, self.__segmentation_name)):
+            raise ValueError(
+                "Can't find object, \"%s\", segmentation, \"%s\"." %
+                (self.__objects_name, self.__segmentation_name))
+        return self.__convert_sparse_to_dense()
+        
+    def __convert_dense_to_sparse(self):
+        dense, indices = self.get_dense()
+        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        axes = list(HDF5ObjectSet.AXES)
+        axes, shape = [
+            [a for a, s in zip(aa, self.__shape) if s > 1]
+            for aa in axes, self.__shape]
+        #
+        # dense.shape[0] is the overlap-axis - it's usually 1
+        # except if there are multiply-labeled pixels and overlapping
+        # objects. When collecting the coords, we can discard this axis.
+        #
+        dense = dense.reshape([dense.shape[0]] + shape)
+        coords = np.where(dense != 0)
+        plane, coords = coords[0], coords[1:]
+        if np.max(shape) < 2**16:
+            coords_dtype = np.uint16
+        else:
+            coords_dtype = np.uint32
+        if len(plane) > 0:
+            labels = dense[tuple([plane]+list(coords))]
+            max_label = np.max(indices)
+            if max_label < 2**8:
+                labels_dtype = np.uint8
+            elif max_label < 2**16:
+                labels_dtype = np.uint16
+            else:
+                labels_dtype = np.uint32
+        else:
+            labels = np.zeros(0, dense.dtype)
+            labels_dtype = np.uint8
+        dtype = [(axis, coords_dtype, 1) for axis in axes]
+        dtype.append((HDF5ObjectSet.AXIS_LABELS, labels_dtype, 1))
+        sparse = np.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
+        if self.__cache is not None:
+            self.__cache.set_sparse(
+                self.__objects_name, self.__segmentation_name, sparse)
+        else:
+            self.__sparse = sparse
+        return sparse
+    
+    def __set_or_cache_dense(self, dense, indices = None):
+        if self.__cache is not None:
+            self.__cache.set_dense(
+                self.__objects_name, self.__segmentation_name, dense)
+        else:
+            self.__dense = dense
+        if indices is not None:
+            self.__indices = indices
+        else:
+            self.__indices = [np.unique(d) for d in dense]
+            self.__indices = [
+                idx[1:] if idx[0] == 0 else idx for idx in self.__indices]
+        return (dense, self.__indices)
+    
+    def __convert_sparse_to_dense(self):
+        from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+        sparse = self.get_sparse()
+        if len(sparse) == 0:
+            return self.__set_or_cache_dense(
+                np.zeros([1] + list(self.__shape), np.uint16))
+
+        #
+        # The code below assigns a "color" to each label so that no
+        # two labels have the same color
+        #
+        positional_columns = []
+        available_columns = []
+        lexsort_columns = []
+        for axis in HDF5ObjectSet.AXES:
+            if axis in sparse.dtype.fields.keys():
+                positional_columns.append(sparse[axis])
+                available_columns.append(sparse[axis])
+                lexsort_columns.insert(0, sparse[axis])
+            else:
+                positional_columns.append(0)
+        labels = sparse[HDF5ObjectSet.AXIS_LABELS]
+        lexsort_columns.insert(0, labels)
+        
+        sort_order = np.lexsort(lexsort_columns)
+        n_labels = np.max(labels)
+        #
+        # Find the first of a run that's different from the rest
+        #
+        mask = available_columns[0][sort_order[:-1]] != \
+            available_columns[0][sort_order[1:]]
+        for column in available_columns[1:]:
+            mask = mask | (column[sort_order[:-1]] !=
+                           column[sort_order[1:]])
+        breaks = np.hstack(([0], np.where(mask)[0]+1, [len(labels)]))
+        firsts = breaks[:-1]
+        counts = breaks[1:] - firsts
+        indexer = Indexes(counts)
+        #
+        # Eliminate the locations that are singly labeled
+        #
+        mask = counts > 1
+        firsts = firsts[mask]
+        counts = counts[mask]
+        if len(counts) == 0:
+            dense = np.zeros([1]+list(self.__shape), labels.dtype)
+            dense[[0] + positional_columns] = labels
+            return self.__set_or_cache_dense(dense)
+        #
+        # There are n * n-1 pairs for each coordinate (n = # labels)
+        # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs
+        #
+        pairs = all_pairs(np.max(counts))
+        pair_counts = counts * (counts - 1)
+        #
+        # Create an indexer for the inputs (indexes) and for the outputs
+        # (first and second of the pairs)
+        #
+        # Remember idx points into sort_order which points into labels
+        # to get the nth label, grouped into consecutive positions.
+        #
+        input_indexer = Indexes(counts)
+        output_indexer = Indexes(pair_counts)
+        #
+        # The start of the run of overlaps and the offsets
+        #
+        run_starts = firsts[output_indexer.rev_idx]
+        offs = pairs[output_indexer.idx[0], :]
+        first = labels[sort_order[run_starts + offs[:, 0]]]
+        second = labels[sort_order[run_starts + offs[:, 1]]]
+        #
+        # And sort these so that we get consecutive lists for each
+        #
+        pair_sort_order = np.lexsort((second, first))
+        #
+        # Eliminate dupes
+        #
+        to_keep = np.hstack(([True], 
+                             (first[1:] != first[:-1]) |
+                             (second[1:] != second[:-1])))
+        to_keep = to_keep & (first != second)
+        pair_idx = pair_sort_order[to_keep]
+        first = first[pair_idx]
+        second = second[pair_idx]
+        #
+        # Bincount each label so we can find the ones that have the
+        # most overlap. See cpmorphology.color_labels and
+        # Welsh, "An upper bound for the chromatic number of a graph and
+        # its application to timetabling problems", The Computer Journal, 10(1)
+        # p 85 (1967)
+        #
+        overlap_counts = np.bincount(first)
+        #
+        # The index to the i'th label's stuff
+        #
+        indexes = np.cumsum(overlap_counts) - overlap_counts
+        #
+        # A vector of a current color per label. All non-overlapping
+        # objects are assigned to plane 1
+        #
+        v_color = np.ones(n_labels+1, int)
+        v_color[0] = 0
+        #
+        # Clear all overlapping objects
+        #
+        v_color[np.unique(first)] = 0
+        #
+        # The processing order is from most overlapping to least
+        #
+        ol_labels = np.where(overlap_counts > 0)[0]
+        processing_order = np.lexsort((ol_labels, overlap_counts[ol_labels]))
+        
+        for index in ol_labels[processing_order]:
+            neighbors = second[
+                indexes[index]:indexes[index] + overlap_counts[index]]
+            colors = np.unique(v_color[neighbors])
+            if colors[0] == 0:
+                if len(colors) == 1:
+                    # all unassigned - put self in group 1
+                    v_color[index] = 1
+                    continue
+                else:
+                    # otherwise, ignore the unprocessed group and continue
+                    colors = colors[1:]
+            # Match a range against the colors array - the first place
+            # they don't match is the first color we can use
+            crange = np.arange(1, len(colors)+1)
+            misses = crange[colors != crange]
+            if len(misses):
+                color = misses[0]
+            else:
+                max_color = len(colors) + 1
+                color = max_color
+            v_color[index] = color
+        #
+        # Create the dense matrix by using the color to address the
+        # 5-d hyperplane into which we place each label
+        #
+        result = []
+        dense = np.zeros([np.max(v_color)]+list(self.__shape), labels.dtype)
+        slices = tuple([v_color[labels]-1] + positional_columns)
+        dense[slices] = labels
+        indices = [
+            np.where(v_color == i)[0] for i in range(1, dense.shape[0]+1)]
+        
+        return self.__set_or_cache_dense(dense, indices)
 
 def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     """Check the three components of Objects to make sure they are consistent
@@ -689,6 +887,16 @@ class ObjectSet(object):
             instance_name not in self.__types_and_instances[type_name]):
             return None
         return self.__types_and_instances[type_name][instance_name]
+    
+    def cache(self, hdf5_object_set):
+        '''Cache all objects in the object set to an HDF5 backing store
+        
+        hdf5_object_set - an HDF5ObjectSet that is used to store
+                          the segmentations so that they can be
+                          flushed out of memory.
+        '''
+        for objects_name in self.get_object_names():
+            self.get_objects(objects_name).cache(hdf5_object_set, objects_name)
 
 def downsample_labels(labels):
     '''Convert a labels matrix to the smallest possible integer format'''

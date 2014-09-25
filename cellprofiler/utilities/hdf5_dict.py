@@ -67,6 +67,7 @@ FILE_LIST_GROUP = "FileList"
 DEFAULT_GROUP = "Default"
 TOP_LEVEL_GROUP_NAME = "Measurements"
 IMAGES_GROUP = "Images"
+OBJECTS_GROUP = "Objects"
 FILE_METADATA_GROUP = "FileMetadata"
 A_TIMESTAMP = "Timestamp"
 '''The attribute on a group or dataset that indicates how the data is organized'''
@@ -76,6 +77,7 @@ CLASS_DIRECTORY = "Directory"
 CLASS_VSTRING_ARRAY_INDEX = "VStringArrayIndex"
 CLASS_VSTRING_ARRAY_DATA = "VStringArrayData"
 CLASS_FILELIST_GROUP = "FileListGroup"
+CLASS_SEGMENTATION_GROUP = "SegmentationGroup"
 
 class HDF5Dict(object):
     '''The HDF5Dict can be used to store data indexed by a tuple of
@@ -1536,6 +1538,203 @@ class HDF5ImageSet(object):
         raises KeyError if your image was not there.
         '''
         return self.root[image_name][:]
+    
+class HDF5ObjectSet(object):
+    '''An HDF5 backing-store for segmentations
+    
+    Segmentations are stored in one of two formats:
+    
+    A 6-d array composed of one or more 5-d integer labelings of
+    each pixel. The dimension order is labeling, c, t, z, y, x. Typically,
+    a 2-D non-overlapping segmentation has dimensions of 1, 1, 1, 1, y, x.
+    
+    The i, j, v labeling of the pixels. The labeling is stored in a record
+    data type with each column having a name of "c", "t", "z", "y", "x" or
+    "label". The "label" column is the object number, starting with 1.
+    
+    Naming is in 2 parts: object_name, segmentation. One group is reserved
+    per 2-part name and the datasets within are named, "dense" and "sparse" with
+    "dense" being the 6-d array and "sparse" being the i, j, v format. It is
+    the caller's responsibility to populate each and to test to see which is
+    present.
+    '''
+    DENSE = "dense"
+    SPARSE = "sparse"
+    ATTR_STALE = "stale"
+    AXIS_LABELS = "label"
+    AXIS_C = "c"
+    AXIS_T = "t"
+    AXIS_Z = "z"
+    AXIS_Y = "y"
+    AXIS_X = "x"
+    AXES = (AXIS_C, AXIS_T, AXIS_Z, AXIS_Y, AXIS_X)
+    def __init__(self, hdf5_file, root_name = OBJECTS_GROUP):
+        '''Create an HDF5ObjectSet instance
+        
+        hdf5_file the file or other group-like object that is the root.
+        root_name the name of the root group in the hdf5 file. Defaults to
+                      "Objects"
+        '''
+        self.hdf5_file = hdf5_file
+        if root_name not in self.hdf5_file:
+            self.root = self.hdf5_file.create_group(root_name)
+        else:
+            self.root = self.hdf5_file[root_name]
+            
+    def set_dense(self, objects_name, segmentation_name, data):
+        '''Store the dense 6-d representation of the segmentation
+        
+        objects_name - name of the labeled objects
+        segmentation_name - name of the segmentation, for instance "segmented"
+                            or "small_removed"
+        data - a 6-dimensional array with axes of "labeling", "c", "t", "z",
+               "y", and "x". Values are unsigned integers starting at one with
+               zero signifying unlabeled. The "labeling" axis allows the caller
+               to specify multiple labels per pixel by placing their label
+               numbers for that pixel in array locations that only differ by
+               their position on the "labeling axis".
+        '''
+        segmentation_group = self.__ensure_group(objects_name, segmentation_name)
+        if self.DENSE in segmentation_group:
+            data_set = segmentation_group[self.DENSE]
+            if tuple(data_set.shape) == tuple(data.shape) and\
+               data_set.dtype == data.dtype:
+                data_set[:] = data
+            else:
+                del segmentation_group[self.DENSE]
+                data_set = segmentation_group.create_dataset(
+                    self.DENSE, data=data)
+        else:
+            data_set = segmentation_group.create_dataset(self.DENSE, data=data)
+        data_set.attrs[self.ATTR_STALE] = False
+        
+    def has_dense(self, objects_name, segmentation_name):
+        '''Return True if a dense segmentation dataset is available
+        
+        objects_name - name of the objects
+        segmentation_name - name of the segmentation of these objects
+        '''
+        return self.__has(objects_name, segmentation_name, self.DENSE)
+    
+    def get_dense(self, objects_name, segmentation_name):
+        '''Get the dense representation of a data set
+        
+        objects_name - name of the objects
+        segmentation_name - name of the segmentation of the objects
+        
+        Note that this call does not check and raise an exception if the
+        data is stale. Call has_dense beforehand to check this.
+        '''
+        return self.root[objects_name][segmentation_name][self.DENSE][:]
+    
+    def set_sparse(self, objects_name, segmentation_name, data):
+        '''Set the sparse representation of a segmentation
+        
+        objects_name - name of the objects
+        segmentation_name - name of the segmentation
+        data - the per-pixel labeling of the objects. Each row represents
+               the labeling of a pixel. The array should have a record data type
+               with each of the columns labeled with one of the AXIS_ constants.
+               For instance: 
+               dtype = [(HDF5ObjectSet.AXIS_Y, np.uint32, 1),
+                        (HDF5ObjectSet.AXIS_X, np.uint32, 1),
+                        (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)]
+               data = np.array([(100, 200, 1)], dtype)
+        '''
+        segmentation_group = self.__ensure_group(objects_name, segmentation_name)
+        create = False
+        if not self.has_sparse(objects_name, segmentation_name):
+            create = True
+        else:
+            ds = segmentation_group[self.SPARSE]
+            create = (data.dtype != ds.dtype)
+            if create:
+                del segmentation_group[self.SPARSE]
+        if create:
+            ds = segmentation_group.create_dataset(
+                self.SPARSE, data=data,
+                chunks=True,
+                maxshape = (None,))
+        else:
+            ds = segmentation_group[self.SPARSE]
+            ds.resize((len(data),))
+            ds[:] = data
+        ds.attrs[self.ATTR_STALE] = False
+    
+    def has_sparse(self, objects_name, segmentation_name):
+        '''Return True if sparse representation of segmentation is available
+        
+        objects_name - name of the objects
+        segmentation_name - name of the segmentation of these objects
+        '''
+        return self.__has(objects_name, segmentation_name, self.SPARSE)
+    
+    def get_sparse(self, objects_name, segmentation_name):
+        '''Return the sparse-style data records for the segmentation
+        objects_name - name of the objects
+        segmentation_name - name of the segmentation of these objects
+        
+        Returns a Numpy record array with one row per pixel per label
+        and columns denoting the pixel coordinates and the label.
+        '''
+        ds = self.root[objects_name][segmentation_name][self.SPARSE]
+        if len(ds) == 0:
+            return np.zeros(0, ds.dtype)
+        return ds[:]
+    
+    def __ensure_group(self, objects_name, segmentation_name):
+        if objects_name not in self.root:
+            objects_group = self.root.create_group(objects_name)
+        else:
+            objects_group = self.root[objects_name]
+        if segmentation_name not in objects_group:
+            segmentation_group = objects_group.create_group(segmentation_name)
+            segmentation_group.attrs[A_CLASS] = CLASS_SEGMENTATION_GROUP
+        else:
+            segmentation_group = objects_group[segmentation_name]
+        return segmentation_group
+        
+    def __has(self, objects_name, segmentation_name, data_format):
+        if objects_name not in self.root:
+            return False
+        objects_group = self.root[objects_name]
+        if segmentation_name not in objects_group:
+            return False
+        segmentation_group = objects_group[segmentation_name]
+        if segmentation_group.attrs[A_CLASS] != CLASS_SEGMENTATION_GROUP:
+            return False
+        if data_format not in segmentation_group:
+            return False
+        return not segmentation_group[data_format].attrs[self.ATTR_STALE]
+        
+    def clear(self, objects_name, segmentation_name=None):
+        '''Remove a segmentation from the object set
+        
+        Clearing should be done before adding a dense or sparse segmentation
+        to mark the sparse representation of a dense segmentation or vice-versa
+        as stale. Conceptually, it is as if the segmentation were deleted,
+        but practically, we mark, anticipating a reuse of existing storage.
+        
+        objects_name - name of the labeled objects
+        segmentation_name - name of the segmentation being cleared or None if
+                            all.
+        '''
+        if objects_name not in self.root:
+            return
+        objects_group = self.root[objects_name]
+        if segmentation_name is None:
+            for name in objects_group:
+                segmentation_group = objects_group[name]
+                if segmentation_group.attrs[A_CLASS] == CLASS_SEGMENTATION_GROUP:
+                    self.clear(objects_name, name)
+        elif segmentation_name not in objects_group:
+            return
+        else:
+            segmentation_group = objects_group[segmentation_name]
+            for dataset_name in self.DENSE, self.SPARSE:
+                if dataset_name in segmentation_group:
+                    dataset = segmentation_group[dataset_name]
+                    dataset.attrs[self.ATTR_STALE] = True
         
 def get_top_level_group(filename, group_name = 'Measurements', open_mode='r'):
     '''Open and return the Measurements HDF5 group

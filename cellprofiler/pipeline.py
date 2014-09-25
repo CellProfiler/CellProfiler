@@ -2042,7 +2042,7 @@ class Pipeline(object):
             module.run(workspace)
         finally:
             try:
-                workspace.measurements.cache()
+                workspace.cache()
             except:
                 logger.error("Exception while trying to cache",
                              exc_info=True)

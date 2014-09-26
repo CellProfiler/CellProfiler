@@ -678,6 +678,9 @@ def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     If a "path" has no path component then make the path relative to
     the Default Output Folder.
     """
+    from cellprofiler.utilities.get_proper_case_filename\
+         import get_proper_case_filename
+    
     if abspath_mode == ABSPATH_OUTPUT:
         osep = '.'
         isep = '&'

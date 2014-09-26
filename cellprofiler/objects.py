@@ -70,7 +70,6 @@ class Objects(object):
         self.__unedited_segmented = None
         self.__small_removed_segmented = None
         self.__parent_image = None
-        self.__shape = None
     
     def get_segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix 
@@ -88,6 +87,7 @@ class Objects(object):
         dense = downsample_labels(labels)
         dense = dense.reshape((1, 1, 1, 1, dense.shape[0], dense.shape[1]))
         self.__segmented = Segmentation(dense=dense)
+            
         # Clear all cached results.
         if getattr(self, "memoize_method_dictionary", False):
             self.memoize_method_dictionary = {}
@@ -101,19 +101,14 @@ class Objects(object):
         and the label at the pixel in slot 2.
         '''
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-        if shape is None:
-            if len(ijv) > 0:
-                shape = np.max(ijv[:, :2], 0) + 2
-            else:
-                shape = (2, 2)
         sparse = np.core.records.fromarrays(
             (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
             [(HDF5ObjectSet.AXIS_Y, ijv.dtype, 1),
              (HDF5ObjectSet.AXIS_X, ijv.dtype, 1),
              (HDF5ObjectSet.AXIS_LABELS, ijv.dtype, 1)])
-        self.__segmented = Segmentation(
-            sparse=sparse, shape = (1, 1, 1, shape[0], shape[1]))
-        self.__shape = shape
+        if shape is not None:
+            shape = (1, 1, 1, shape[0], shape[1])
+        self.__segmented = Segmentation(sparse=sparse, shape=shape)
         
     def get_ijv(self):
         '''Get the segmentation in IJV object format
@@ -133,15 +128,7 @@ class Objects(object):
     @property
     def shape(self):
         '''The i and j extents of the labels'''
-        if self.__shape is not None:
-            return self.__shape
-        if self.__segmented is not None:
-            return self.__segmented.get_dense()[0][0].shape[-2:]
-        if self.has_parent_image:
-            return self.parent_image.pixel_data.shape
-        if len(self.ijv) == 0:
-            return (0, 0)
-        return tuple([np.max(self.ijv[:, i]+1) for i in range(2)])
+        return self.__segmented.get_shape()[-2:]
     
     def get_labels(self, shape = None):
         '''Get a set of labels matrices consisting of non-overlapping labels
@@ -230,6 +217,13 @@ class Objects(object):
     
     def set_parent_image(self, parent_image):
         self.__parent_image = parent_image
+        for segmentation in self.__segmented, self.__small_removed_segmented,\
+            self.__unedited_segmented:
+            if segmentation is not None and not segmentation.has_shape():
+                shape = (1, 1, 1, 
+                         parent_image.pixel_data.shape[0],
+                         parent_image.pixel_data.shape[1])
+                segmentation.set_shape(shape)
         
     parent_image = property(get_parent_image, set_parent_image)
     
@@ -508,8 +502,10 @@ class Segmentation(object):
         self.__sparse = sparse
         if shape is not None:
             self.__shape = shape
+            self.__explicit_shape = True
         else:
-            self.__shape = dense.shape[1:]
+            self.__shape = None
+            self.__explicit_shape = False
         self.__cache = None
         if dense is not None:
             self.__indices = [np.unique(d) for d in dense]
@@ -540,6 +536,58 @@ class Segmentation(object):
         self.__sparse = None
         self.__cache = hdf5_object_set
         
+    def get_shape(self):
+        '''Get or estimate the shape of the segmentation matrix
+        
+        Order of precedence:
+        Shape supplied in the constructor
+        Shape of the dense representation
+        maximum extent of the sparse representation + 1
+        '''
+        if self.__shape is not None:
+            return self.__shape
+        if self.has_dense():
+            self.__shape = self.get_dense()[0].shape[1:]
+        else:
+            sparse = self.get_sparse()
+            if len(sparse) == 0:
+                self.__shape = (1, 1, 1, 1, 1)
+            else:
+                from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+                self.__shape = tuple(
+                    [np.max(sparse[axis])+2 
+                     if axis in sparse.dtype.fields.keys() else 1
+                     for axis in HDF5ObjectSet.AXES])
+        return self.__shape
+    
+    def set_shape(self, shape):
+        '''Set the shape of the segmentation array
+        
+        shape - the 5D shape of the array
+        
+        This fixes the shape of the 5D array for sparse representations
+        '''
+        self.__shape = shape
+        self.__explicit_shape = True
+    
+    shape = property(get_shape, set_shape)
+    
+    def has_dense(self):
+        return self.__dense is not None or (
+            self.__cache is not None and self.__cache.has_dense(
+                self.__objects_name, self.__segmentation_name))
+        
+    def has_sparse(self):
+        return self.__sparse is not None or (
+            self.__cache is not None and self.__cache.has_sparse(
+                self.__objects_name, self.__segmentation_name))
+    
+    def has_shape(self):
+        if self.__explicit_shape:
+            return True
+        
+        return self.has_dense()
+    
     def get_sparse(self):
         '''Get the sparse representation of the segmentation
         
@@ -554,9 +602,7 @@ class Segmentation(object):
             self.__objects_name, self.__segmentation_name):
             return self.__cache.get_sparse(
                 self.__objects_name, self.__segmentation_name)
-        if self.__dense is None and (
-            self.__cache is None or not self.__cache.has_dense(
-                self.__objects_name, self.__segmentation_name)):
+        if not self.has_dense():
             raise ValueError(
                 "Can't find object, \"%s\", segmentation, \"%s\"." %
                 (self.__objects_name, self.__segmentation_name))
@@ -585,9 +631,7 @@ class Segmentation(object):
             return (self.__cache.get_dense(
                 self.__objects_name, self.__segmentation_name),
                     self.__indices)
-        if self.__sparse is None and (
-            self.__cache is None or not self.__cache.has_sparse(
-                self.__objects_name, self.__segmentation_name)):
+        if not self.has_sparse():
             raise ValueError(
                 "Can't find object, \"%s\", segmentation, \"%s\"." %
                 (self.__objects_name, self.__segmentation_name))
@@ -598,8 +642,8 @@ class Segmentation(object):
         from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
         axes = list(HDF5ObjectSet.AXES)
         axes, shape = [
-            [a for a, s in zip(aa, self.__shape) if s > 1]
-            for aa in axes, self.__shape]
+            [a for a, s in zip(aa, self.shape) if s > 1]
+            for aa in axes, self.shape]
         #
         # dense.shape[0] is the overlap-axis - it's usually 1
         # except if there are multiply-labeled pixels and overlapping
@@ -653,7 +697,7 @@ class Segmentation(object):
         sparse = self.get_sparse()
         if len(sparse) == 0:
             return self.__set_or_cache_dense(
-                np.zeros([1] + list(self.__shape), np.uint16))
+                np.zeros([1] + list(self.shape), np.uint16))
 
         #
         # The code below assigns a "color" to each label so that no
@@ -693,7 +737,7 @@ class Segmentation(object):
         firsts = firsts[mask]
         counts = counts[mask]
         if len(counts) == 0:
-            dense = np.zeros([1]+list(self.__shape), labels.dtype)
+            dense = np.zeros([1]+list(self.shape), labels.dtype)
             dense[[0] + positional_columns] = labels
             return self.__set_or_cache_dense(dense)
         #
@@ -787,7 +831,7 @@ class Segmentation(object):
         # 5-d hyperplane into which we place each label
         #
         result = []
-        dense = np.zeros([np.max(v_color)]+list(self.__shape), labels.dtype)
+        dense = np.zeros([np.max(v_color)]+list(self.shape), labels.dtype)
         slices = tuple([v_color[labels]-1] + positional_columns)
         dense[slices] = labels
         indices = [

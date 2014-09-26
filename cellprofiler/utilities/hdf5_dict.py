@@ -1643,7 +1643,7 @@ class HDF5ObjectSet(object):
         '''
         segmentation_group = self.__ensure_group(objects_name, segmentation_name)
         create = False
-        if not self.has_sparse(objects_name, segmentation_name):
+        if not self.SPARSE in segmentation_group:
             create = True
         else:
             ds = segmentation_group[self.SPARSE]

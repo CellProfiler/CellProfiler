@@ -12,6 +12,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <org.cellprofiler.java.version>2.2.1-SNAPSHOT</org.cellprofiler.java.version>
+    <bio-formats.version>5.0.5</bio-formats.version>
   </properties>
   <groupId>org.cellprofiler</groupId>
   <artifactId>cellprofiler-java</artifactId>
@@ -130,12 +131,12 @@
     <dependency>
       <groupId>${bio-formats.groupId}</groupId>
       <artifactId>formats-api</artifactId>
-      <version>${bio-formats.version}-rc4</version>
+      <version>${bio-formats.version}</version>
     </dependency>
     <dependency>
       <groupId>${bio-formats.groupId}</groupId>
       <artifactId>ome-io</artifactId>
-      <version>${bio-formats.version}-rc2</version>
+      <version>5.0.0-rc2</version>
       <exclusions>
       	<exclusion>
     	  <artifactId>omero-client</artifactId>

@@ -19,8 +19,6 @@ cp=/jenkins/CellProfiler
 
 rpmbuild=/home/build/rpmbuild
 mkdir $rpmbuild $rpmbuild/SOURCES
-cp $cp/jenkins/linux/cellprofiler-avoid-blank-libdir-for-libjvm.diff $rpmbuild/SOURCES/
-cp $cp/jenkins/linux/cellprofiler-frozen.diff $rpmbuild/SOURCES/
 tar -C /jenkins -cf $rpmbuild/SOURCES/cellprofiler.tar.gz CellProfiler
 chown -R build:build $rpmbuild
 

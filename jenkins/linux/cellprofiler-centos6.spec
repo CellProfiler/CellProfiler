@@ -26,6 +26,9 @@ Cell image analysis software
 
 %build
 
+pip install --no-deps git+git://github.com/CellProfiler/python-javabridge@1.0.9
+pip install --no-deps git+git://github.com/CellProfiler/python-bioformats@67133c7
+
 PATH=%{pref}/bin:%{pref}/jdk/bin:$PATH \
     LD_LIBRARY_PATH=%{pref}/jdk/lib:%{pref}/jdk/jre/lib/amd64/server: \
     JAVA_HOME=%{pref}/jdk \

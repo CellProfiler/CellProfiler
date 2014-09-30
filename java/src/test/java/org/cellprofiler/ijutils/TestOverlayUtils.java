@@ -13,6 +13,7 @@
 package org.cellprofiler.ijutils;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +51,11 @@ public class TestOverlayUtils {
 	static ImageJ context;
 	@BeforeClass
 	public static void setUpClass() {
-		context = new ImageJ();
+		try {
+			context = new ImageJ();
+		} catch (Exception e) {
+			assumeNoException(e);
+		}
 	}
 	public static ImageDisplayService getImageDisplayService() {
 		return context.imageDisplay();

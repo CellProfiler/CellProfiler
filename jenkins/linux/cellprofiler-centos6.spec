@@ -9,8 +9,6 @@ Summary:   Cell image analysis software
 Version:   %{version}
 Release:   %{release}
 Source0:   %{tarname}.tar.gz
-Patch0:    cellprofiler-avoid-blank-libdir-for-libjvm.diff
-Patch1:    cellprofiler-frozen.diff
 License:   GPLv2
 URL:       http://www.cellprofiler.org/
 Packager:  Vebjorn Ljosa <ljosa@broad.mit.edu>
@@ -25,7 +23,6 @@ Cell image analysis software
 %prep
 
 %setup -q -n CellProfiler
-%patch0
 
 %build
 

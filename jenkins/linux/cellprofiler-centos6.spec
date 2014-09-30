@@ -36,6 +36,7 @@ PATH=%{pref}/bin:%{pref}/jdk/bin:$PATH \
 PATH=%{pref}/bin:%{pref}/jdk/bin:$PATH \
     LD_LIBRARY_PATH=%{pref}/jdk/lib:%{pref}/jdk/jre/lib/amd64/server: \
     JAVA_HOME=%{pref}/jdk \
+    MAVEN_OPTS="-Xmx1024m" \
     python external_dependencies.py
 
 patch <<EOF

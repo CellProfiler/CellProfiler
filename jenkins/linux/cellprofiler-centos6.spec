@@ -3,6 +3,9 @@
 %define tarname cellprofiler
 %define pref /usr/cellprofiler
 %define python %{pref}/bin/python
+%define githuburl git+git://github.com/CellProfiler
+%define javabridge_version 1.0.9
+%define bioformats_version 67133c7
 
 Name:      %{pkgname}
 Summary:   Cell image analysis software
@@ -26,8 +29,10 @@ Cell image analysis software
 
 %build
 
-pip install --no-deps git+git://github.com/CellProfiler/python-javabridge@1.0.9
-pip install --no-deps git+git://github.com/CellProfiler/python-bioformats@67133c7
+curl https://bootstrap.pypa.io/get-pip.py -o %{_tmppath}/get-pip.py
+PATH=%{pref}/bin python %{_tmppath}/get-pip.py
+PATH=%{pref}/bin pip install --no-deps %{githuburl}/python-javabridge@%{javabridge_version}
+PATH=%{pref}/bin pip install --no-deps %{githuburl}/python-bioformats@{bioformats_version}
 
 PATH=%{pref}/bin:%{pref}/jdk/bin:$PATH \
     LD_LIBRARY_PATH=%{pref}/jdk/lib:%{pref}/jdk/jre/lib/amd64/server: \

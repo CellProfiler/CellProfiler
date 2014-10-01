@@ -783,7 +783,7 @@ class Segmentation(object):
         # its application to timetabling problems", The Computer Journal, 10(1)
         # p 85 (1967)
         #
-        overlap_counts = np.bincount(first)
+        overlap_counts = np.bincount(first.astype(np.int32))
         #
         # The index to the i'th label's stuff
         #

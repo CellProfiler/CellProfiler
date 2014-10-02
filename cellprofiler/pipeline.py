@@ -1967,6 +1967,8 @@ class Pipeline(object):
                              'ExecutionTime_%02d%s' % (module.module_num, module.module_name)] = delta_secs
 
             measurements.flush()
+            if workspace.disposition == cpw.DISPOSITION_SKIP:
+                return
 
     def end_run(self):
         '''Tell everyone that a run is ending'''

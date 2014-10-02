@@ -338,6 +338,7 @@ class CalculateImageOverlap(cpm.CPModule):
                 shape = (ID_obj+1, GT_obj+1)).toarray()[1:, 1:]
         
         gt_areas = objects_GT.areas
+        id_areas = objects_ID.areas
         FN_area = gt_areas[np.newaxis, :] - intersect_matrix
         all_intersecting_area = np.sum(intersect_matrix)
         
@@ -351,7 +352,7 @@ class CalculateImageOverlap(cpm.CPModule):
             ID_pixels[id_i, id_j] = 1
 
         for i in intersect_matrix:  # loop through the GT objects first                                
-            if max(i) == 0:
+            if len(i) == 0 or max(i) == 0:
                 id = -1  # we missed the object; arbitrarily assign -1 index                                                          
             else:
                 id = np.where(i == max(i))[0][0] # what is the ID of the max pixels?                                                            
@@ -370,40 +371,37 @@ class CalculateImageOverlap(cpm.CPModule):
             else :
                 continue
 
-        TP = []
-        TN = []
-        FN = []
+        TP = 0
+        FN = 0
+        FP = 0
         for i in range(0,len(dom_ID)):
             d = dom_ID[i]
-            tp = intersect_matrix[i][d]
-            TP += [tp]
-            tp = intersect_matrix[i][d]
-            fn = FN_area[i][d]
-            tn = total_pixels - tp
-            TP += [tp]
-            TN += [tn]
-            FN += [fn]
+            if d == -1:
+                tp = 0
+                fn = id_areas[i]
+                fp = 0
+            else:
+                fp = np.sum(intersect_matrix[i][0:d])+np.sum(intersect_matrix[i][(d+1)::])
+                tp = intersect_matrix[i][d]
+                fn = FN_area[i][d]
+            TP += tp
+            FN += fn
+            FP += fp
 
-        FP = []
-        for i in range(0,len(dom_ID)):
-            d = dom_ID[i]
-            fp = np.sum(intersect_matrix[i][0:d])+np.sum(intersect_matrix[i][(d+1)::])
-            FP += [fp]
-            d = dom_ID[i]
-   
-        FN = np.sum(FN)
-        TN = np.sum(TN)
-        TP = np.sum(TP)
-        FP = np.sum(FP)
+        TN = max(0, total_pixels - TP - FN - FP)
 
-        accuracy = TP/all_intersecting_area
-        recall  = TP/GT_tot_area
-        precision = TP/(TP+FP)
-        F_factor = 2*(precision*recall)/(precision+recall)
-        true_positive_rate = TP/(FN+TP)
-        false_positive_rate = FP/(FP+TN)
-        false_negative_rate = FN/(FN+TP)
-        true_negative_rate = TN / (FP+TN)
+        def nan_divide(numerator, denominator):
+            if denominator == 0:
+                return np.nan
+            return float(numerator) / float(denominator)
+        accuracy = nan_divide(TP, all_intersecting_area)
+        recall  = nan_divide(TP, GT_tot_area)
+        precision = nan_divide(TP, (TP+FP))
+        F_factor = nan_divide(2*(precision*recall), (precision+recall))
+        true_positive_rate = nan_divide(TP, (FN+TP))
+        false_positive_rate = nan_divide(FP, (FP+TN))
+        false_negative_rate = nan_divide(FN, (FN+TP))
+        true_negative_rate = nan_divide(TN , (FP+TN))
         shape = np.maximum(np.maximum(
             np.array(objects_GT.shape), np.array(objects_ID.shape)),
                            np.ones(2, int))

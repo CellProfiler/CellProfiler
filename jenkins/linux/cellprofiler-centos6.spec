@@ -90,7 +90,6 @@ chmod 755 $RPM_BUILD_ROOT/usr/bin/cellprofiler
 %{pref}/lib/python%{pyversion}/site-packages/_lapjv.so
 %{pref}/lib/python%{pyversion}/site-packages/_propagate.so
 %{pref}/lib/python%{pyversion}/site-packages/_watershed.so
-%{pref}/lib/python%{pyversion}/site-packages/javabridge.so
 %{pref}/lib/python%{pyversion}/site-packages/cpmath-0.0.0-py2.7.egg-info
 %{pref}/lib/python%{pyversion}/site-packages/utilities-0.0.0-py2.7.egg-info
 /usr/bin/cellprofiler

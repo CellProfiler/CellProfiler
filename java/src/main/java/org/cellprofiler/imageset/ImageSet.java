@@ -275,7 +275,7 @@ public class ImageSet extends ArrayList<ImagePlaneDetailsStack> {
 				final byte[] myData = data[imageSetIdx];
 				final byte[] otherData = data[other.imageSetIdx];
 				if ((imageSetIdx != other.imageSetIdx) || (dataIdx != other.dataIdx)) {
-					for (int i=0; i < dataLength && i < other.dataLength - other.dataIdx; i++) {
+					for (int i=0; i < dataLength && i < other.dataLength; i++) {
 						final int result = (int)(myData[i+dataIdx]) - (int)(otherData[i+other.dataIdx]);
 						if (result != 0) return result;
 					}

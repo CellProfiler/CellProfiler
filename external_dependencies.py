@@ -245,7 +245,8 @@ def run_maven(pom_path, goal="package",
     maven_install_path = get_maven_install_path()
     jdk_home = find_jdk()
     env = os.environ.copy()
-    env["JAVA_HOME"] = jdk_home
+    if jdk_home is not None:
+        env["JAVA_HOME"] = jdk_home
             
     executeable_path = get_mvn_executable_path(maven_install_path)
     args = [executeable_path]

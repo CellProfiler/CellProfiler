@@ -32,12 +32,13 @@ Cell image analysis software
 PATH=%{pref}/bin:%{pref}/jdk/bin:$PATH \
     LD_LIBRARY_PATH=%{pref}/jdk/lib:%{pref}/jdk/jre/lib/amd64/server: \
     JAVA_HOME=%{pref}/jdk \
-    python CellProfiler.py --build-and-exit
+    MAVEN_OPTS="-Xmx1024m" \
+    python external_dependencies.py
+
 PATH=%{pref}/bin:%{pref}/jdk/bin:$PATH \
     LD_LIBRARY_PATH=%{pref}/jdk/lib:%{pref}/jdk/jre/lib/amd64/server: \
     JAVA_HOME=%{pref}/jdk \
-    MAVEN_OPTS="-Xmx1024m" \
-    python external_dependencies.py
+    python CellProfiler.py --build-and-exit --do-not-fetch
 
 patch <<EOF
 --- CellProfiler.py.orig	2013-10-16 20:59:07.459360385 -0400

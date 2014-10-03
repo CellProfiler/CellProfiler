@@ -343,6 +343,14 @@ class Measurements(object):
             self.hdf5_dict.close()
             del self.hdf5_dict
         if self.__image_cache_file is not None:
+            #
+            # Discard the contents of the image cache,
+            # "flush" in order to end any disk activity
+            #
+            keys = self.__image_cache_file.keys()
+            for key in key:
+                del self.__image_cache_file[key]
+            self.image_cache_file.flush()
             self.__image_cache_file.close()
             self.__image_cache_file = None
             os.remove(self.__image_cache_path)

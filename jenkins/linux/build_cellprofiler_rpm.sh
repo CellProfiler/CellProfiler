@@ -28,9 +28,19 @@ yum makecache
 (echo "%define version 0.0.0"; echo "%define release 0"; cat $spec) > /tmp/fake.spec
 yum-builddep -q -y /tmp/fake.spec
 
-describe=$(git --git-dir=$cp/.git describe)
-version=$(echo $describe|sed 's/-/./'|sed 's/-.*//')
-release=$BUILD_NUMBER.$(date +%Y%m%d)git$(echo $describe|sed 's/.*-g//')
+describe=$(git --git-dir=$cp/.git describe --long)
+#
+# Tags should be in the form, "N.N.N", for release
+# or "N.N.N-SNAPSHOT" for snapshots
+#
+# git describe --long has an output of
+# <TAG>-<COMMITS-PAST-TAG>-g<GIT-HASH>
+#
+version=$(echo $describe | sed 's/\([0-9.]\+\)-\(SNAPSHOT\|\)-\?\([0-9]\+\)-g\([0-9a-f]\+\)/\1/')
+snapshot=$(echo $describe | sed 's/\([0-9.]\+\)-\(SNAPSHOT\|\)-\?\([0-9]\+\)-g\([0-9a-f]\+\)/\2/')
+commits_past_tag=$(echo $describe | sed 's/\([0-9.]\+\)-\(SNAPSHOT\|\)-\?\([0-9]\+\)-g\([0-9a-f]\+\)/\3/')
+git_hash=$(echo $describe | sed 's/\([0-9.]\+\)-\(SNAPSHOT\|\)-\?\([0-9]\+\)-g\([0-9a-f]\+\)/\4/')
+release=$BUILD_NUMBER.$(date +%Y%m%d).$commits_past_tag.$git_hash$snapshot
 #exec /bin/bash -l
 su -c 'rpmbuild -ba --define="release '$release'" --define="version '$version'" '$spec build
 cp /home/build/rpmbuild/SRPMS/cellprofiler-${version}-${release}.src.rpm $cp/

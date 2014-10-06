@@ -24,6 +24,7 @@ import uuid
 import zlib
 
 import cellprofiler.measurements as cpmeas
+import cellprofiler.cpimage as cpi
 from cStringIO import StringIO
 
 OBJECT_NAME = "myobjects"
@@ -1408,6 +1409,13 @@ class TestImageSetCache(unittest.TestCase):
                 idx, msg = image_set_data.errors[0]
                 self.assertEqual(idx, i)
                 self.assertEqual(msg, expected.errors[0][1])
+                
+    def test_04_01_close_measurements(self):
+        m = cpmeas.Measurements()
+        image = cpi.Image(np.zeros((10, 10)))
+        m.add(IMAGE_NAME, image)
+        m.cache()
+        m.close()
                 
 if __name__ == "__main__":
     unittest.main()

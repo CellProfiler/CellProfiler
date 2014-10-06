@@ -348,9 +348,9 @@ class Measurements(object):
             # "flush" in order to end any disk activity
             #
             keys = self.__image_cache_file.keys()
-            for key in key:
+            for key in keys:
                 del self.__image_cache_file[key]
-            self.image_cache_file.flush()
+            self.__image_cache_file.flush()
             self.__image_cache_file.close()
             self.__image_cache_file = None
             os.remove(self.__image_cache_path)

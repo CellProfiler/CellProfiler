@@ -4,8 +4,8 @@
 %define pref /usr/cellprofiler
 %define python %{pref}/bin/python
 %define githuburl git+git://github.com/CellProfiler
-%define javabridge_version 1.0.9
-%define bioformats_version 1.0.3
+%define javabridge-version 1.0.9
+%define bioformats-version 1.0.3
 
 Name:      %{pkgname}
 Summary:   Cell image analysis software

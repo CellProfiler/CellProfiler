@@ -61,6 +61,8 @@ from cellprofiler.gui.omerologin import OmeroLoginDlg
 from cellprofiler.icons import get_builtin_image
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.pathlist import EVT_PLC_SELECTION_CHANGED
+from cellprofiler.gui.viewworkspace import \
+     show_workspace_viewer, update_workspace_viewer
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -172,6 +174,8 @@ class PipelineController:
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_IMAGE_SET, self.on_debug_choose_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, self.on_debug_random_image_set)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_RELOAD, self.on_debug_reload)
+        wx.EVT_MENU(frame, cpframe.ID_DEBUG_VIEW_WORKSPACE,
+                    self.on_debug_view_workspace)
 
         # ~*~
         wx.EVT_MENU(frame, cpframe.ID_SAMPLE_INIT, self.on_sample_init)
@@ -2791,6 +2795,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                   select_next_module):
                 self.__pipeline_list_view.select_one_module(module.module_num+1)
             failure=0
+            update_workspace_viewer(workspace)
         except Exception,instance:
             logger.error("Failed to run module %s", module.module_name,
                          exc_info=True)
@@ -3149,6 +3154,17 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                           "Error reloading modules.",
                           wx.ICON_ERROR | wx.OK)
 
+    def on_debug_view_workspace(self, event):
+        '''Show the workspace viewer'''
+        workspace = cpw.Workspace(
+            self.__pipeline,
+            None,
+            self.__debug_measurements,
+            self.__debug_object_set,
+            self.__debug_measurements,
+            self.__debug_image_set_list)
+        show_workspace_viewer(self.__frame, workspace)
+        
     def on_sample_init(self, event):
         if self.__module_view != None:
             if self.__module_view.get_current_module() != None:

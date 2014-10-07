@@ -301,7 +301,10 @@ class CPFigureFrame(wx.Frame):
             matplotlib.rcdefaults()
         self.figure = figure = matplotlib.figure.Figure()
         self.panel = FigureCanvasWxAgg(self, -1, self.figure)
-        sizer.Add(self.panel, 1, wx.EXPAND) 
+        sizer.Add(self.panel, 1, wx.EXPAND)
+        self.secret_panel = wx.Panel(self)
+        self.secret_panel.Hide()
+        sizer.Add(self.secret_panel, 0, wx.EXPAND)
         self.status_bar = self.CreateStatusBar()
         wx.EVT_CLOSE(self, self.on_close)
         if subplots:
@@ -864,17 +867,24 @@ class CPFigureFrame(wx.Frame):
             # Store zoom limits
             xlims = self.subplot(x,y).get_xlim()
             ylims = self.subplot(x,y).get_ylim()
+            axes = self.subplot(x, y)
             if evt.Id == MENU_CONTRAST_RAW:
                 params['normalize'] = False
             elif evt.Id == MENU_CONTRAST_NORMALIZED:
                 params['normalize'] = True
             elif evt.Id == MENU_CONTRAST_LOG:
                 params['normalize'] = 'log'
-            self.subplot_imshow(x, y, self.images[(x,y)], **params)
-            # Restore plot zoom
-            self.subplot(x,y).set_xlim(xlims[0], xlims[1])
-            self.subplot(x,y).set_ylim(ylims[0], ylims[1])                
-            self.figure.canvas.draw()
+            for artist in axes.artists:
+                if isinstance(artist, CPImageArtist):
+                    artist.interpolation = params['normalize']
+                    self.figure.canvas.draw()
+                    return
+            else:
+                self.subplot_imshow(x, y, self.images[(x,y)], **params)
+                # Restore plot zoom
+                self.subplot(x,y).set_xlim(xlims[0], xlims[1])
+                self.subplot(x,y).set_ylim(ylims[0], ylims[1])                
+                self.figure.canvas.draw()
             
         def change_interpolation(evt):
             if evt.Id == MENU_INTERPOLATION_NEAREST:
@@ -890,6 +900,8 @@ class CPFigureFrame(wx.Frame):
                     self.figure.canvas.draw()
                     return
             else:
+                xlims = self.subplot(x,y).get_xlim()
+                ylims = self.subplot(x,y).get_ylim()
                 self.subplot_imshow(x, y, self.images[(x,y)], **params)
                 # Restore plot zoom
                 self.subplot(x,y).set_xlim(xlims[0], xlims[1])

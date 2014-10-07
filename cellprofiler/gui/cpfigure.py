@@ -876,7 +876,7 @@ class CPFigureFrame(wx.Frame):
                 params['normalize'] = 'log'
             for artist in axes.artists:
                 if isinstance(artist, CPImageArtist):
-                    artist.interpolation = params['normalize']
+                    artist.kwargs["normalize"] = params['normalize']
                     self.figure.canvas.draw()
                     return
             else:
@@ -897,6 +897,7 @@ class CPFigureFrame(wx.Frame):
             for artist in axes.artists:
                 if isinstance(artist, CPImageArtist):
                     artist.interpolation = params['interpolation']
+                    artist.kwargs["interpolation"] = params["interpolation"]
                     self.figure.canvas.draw()
                     return
             else:

@@ -193,7 +193,7 @@ class ViewWorkspace(object):
         
         remove_button = wx.BitmapButton(panel, 
                                         bitmap = bitmap)
-        self.image_grid.Add(remove_button, (row, self.C_REMOVE),
+        grid_sizer.Add(remove_button, (row, self.C_REMOVE),
                             flag = wx.ALIGN_CENTER)
         remove_button.Bind(
             wx.EVT_BUTTON, 

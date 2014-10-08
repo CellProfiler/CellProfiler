@@ -1658,7 +1658,8 @@ class HDF5ObjectSet(object):
         else:
             ds = segmentation_group[self.SPARSE]
             ds.resize((len(data),))
-            ds[:] = data
+            if len(data) > 0:
+                ds[:] = data
         ds.attrs[self.ATTR_STALE] = False
     
     def has_sparse(self, objects_name, segmentation_name):

@@ -309,7 +309,9 @@ class Groups(cpm.CPModule):
             workspace = self.workspace
             self.on_deactivated()
             self.on_activated(workspace)
-            
+            needs_prepare_run = False
+        else:
+            needs_prepare_run = True
         #
         # Unfortunately, test_valid has the side effect of getting
         # the choices set which is why it's called here
@@ -321,6 +323,10 @@ class Groups(cpm.CPModule):
             except:
                 is_valid = False
         if is_valid:
+            if needs_prepare_run:
+                result = self.prepare_run(self.workspace)
+                if not result:
+                    return
             self.update_tables()
         
     def update_tables(self):

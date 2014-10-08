@@ -11,7 +11,8 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-
+import logging
+logger = logging.getLogger(__name__)
 import base64
 import matplotlib.image
 import numpy as np
@@ -68,13 +69,13 @@ class TestSaveImages(unittest.TestCase):
                 try:
                     os.remove(os.path.join(subdir, filename))
                 except:
-                    sys.stderr.write("Failed to remove %s" % filename)
-                    traceback.print_exc()
+                    logger.warn("Failed to remove %s" % filename,
+                                exc_info=True)
             try:
                 os.rmdir(subdir)
             except:
-                sys.stderr.write("Failed to remove %s directory" % subdir)
-                traceback.print_exc()
+                logger.warn("Failed to remove %s directory" % subdir,
+                            exc_info=True)
     
     def on_event(self, pipeline, event):
         self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
@@ -1517,7 +1518,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             self.assertTrue(column[1] in ("PathName_MyImage","FileName_MyImage"))
             
     def make_workspace(self, image, filename = None, path = None, 
-                       convert=True, save_objects=False, shape=None):
+                       convert=True, save_objects=False, shape=None,
+                       mask=None, cropping = None):
         '''Make a workspace and module appropriate for running saveimages'''
         module = cpm_si.SaveImages()
         module.module_num = 1
@@ -1539,7 +1541,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             object_set.add_objects(objects, OBJECTS_NAME)
             module.save_image_or_figure.value = cpm_si.IF_OBJECTS
         else:
-            img = cpi.Image(image, convert=convert)
+            img = cpi.Image(image, mask = mask, crop_mask= cropping,
+                            convert=convert)
             image_set.add(IMAGE_NAME, img)
             module.save_image_or_figure.value = cpm_si.IF_IMAGE
         
@@ -1872,8 +1875,9 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
                 try:
                     os.remove(filename)
                 except:
-                    sys.stderr.write("Not ideal, Bioformats still holding onto file handle.\n")
-                    traceback.print_exc()
+                    logger.warn(
+                        "Not ideal, Bioformats still holding onto file handle.",
+                        exc_info=True)
     
     def test_06_02_save_bmp(self):
         # Special code for saving bitmaps
@@ -1913,12 +1917,52 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
                 try:
                     os.remove(filename)
                 except:
-                    sys.stderr.write("Not ideal, Bioformats still holding onto file handle.\n")
-                    traceback.print_exc()
+                    logger.warn(
+                        "Not ideal, Bioformats still holding onto file handle.",
+                        exc_info=True)
         
+    def test_06_03_save_mask(self):
+        # regression test of issue #1215
+        r = np.random.RandomState()
+        r.seed(63)
+        for image_type in cpm_si.IF_MASK, cpm_si.IF_CROPPING:
+            image = r.uniform(size=(11, 15)) > .5
+            if image_type == cpm_si.IF_MASK:
+                workspace, module = self.make_workspace(
+                    np.zeros(image.shape), mask=image)
+            else:
+                workspace, module = self.make_workspace(
+                    np.zeros(image.shape), cropping=image)
+                
+            assert isinstance(module, cpm_si.SaveImages)
+            module.save_image_or_figure.value = image_type
+            module.image_name.value = IMAGE_NAME
+            module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+            module.pathname.custom_path = self.custom_directory
+            module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+            module.single_file_name.value = FILE_NAME
+            module.file_format.value = cpm_si.FF_TIF
+            #
+            # bug would make it throw an exception here
+            #
+            module.save_image(workspace)
+            filename = module.get_filename(workspace,
+                                           make_dirs = False,
+                                           check_overwrite = False)
+            im = load_image(filename, rescale=False)
+            np.testing.assert_array_equal(im > 0, image)
+            if os.path.isfile(filename):
+                try:
+                    os.remove(filename)
+                except:
+                    logger.warn(
+                        "Not ideal, Bioformats still holding onto file handle.",
+                        exc_info=True)
+                    
                 
     def test_07_01_save_objects_grayscale8_tiff(self):
         r = np.random.RandomState()
+        r.seed(71)
         labels = r.randint(0, 10, size=(30,20))
         workspace, module = self.make_workspace(labels, save_objects = True)
         assert isinstance(module, cpm_si.SaveImages)

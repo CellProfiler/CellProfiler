@@ -680,11 +680,11 @@ class SaveImages(cpm.CPModule):
                 
         elif self.save_image_or_figure == IF_MASK:
             pixels = image.mask.astype(np.uint8) * 255
-            pixel_type = ome.PT_BIT
+            pixel_type = ome.PT_UINT8
             
         elif self.save_image_or_figure == IF_CROPPING:
             pixels = image.crop_mask.astype(np.uint8) * 255
-            pixel_type = ome.PT_BIT
+            pixel_type = ome.PT_UINT8
 
         filename = self.get_filename(workspace)
         if filename is None:  # failed overwrite check

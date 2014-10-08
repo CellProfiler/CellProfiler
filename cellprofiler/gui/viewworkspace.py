@@ -247,6 +247,8 @@ class ViewWorkspace(object):
             assert isinstance(choice, wx.Choice)
             current_selection = choice.GetCurrentSelection()
             current_names = choice.GetItems()
+            if current_names[current_selection] not in names:
+                names.append(current_names[current_selection])
             if tuple(sorted(names)) != tuple(sorted(current_names)):
                 choice.SetItems(names)
                 if current_selection >=0 and current_selection < len(current_names):
@@ -283,7 +285,7 @@ class ViewWorkspace(object):
             height = max(height, image.pixel_data.shape[0])
         image = np.zeros((height, width, 3))
         for src_image, red, green, blue in images:
-            pixel_data = src_image.pixel_data
+            pixel_data = src_image.pixel_data.astype(np.float32)
             src_height, src_width = pixel_data.shape[:2]
             if pixel_data.ndim == 3:
                 src_depth = min(pixel_data.shape[2], 3)

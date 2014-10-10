@@ -623,8 +623,7 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, 'Random Image Set','Advance to a random image set')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_GROUP, 'Choose Image Group', 'Choose which image set group to process in test-mode')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose Image Set','Choose any of the available image sets')
-        self.__menu_debug.Append(ID_DEBUG_VIEW_WORKSPACE, "View workspace", 
-                                 "Show the workspace viewer")
+        self.__menu_debug.Append(ID_DEBUG_VIEW_WORKSPACE, "View Workspace","Show the workspace viewer")
         if not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_NUMPY, "Numpy Memory Usage...")

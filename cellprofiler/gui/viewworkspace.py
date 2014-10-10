@@ -22,6 +22,8 @@ from cellprofiler.gui.cpfigure import \
      CPFigureFrame, CPImageArtist, get_matplotlib_interpolation_preference, \
      CPLD_LABELS, CPLD_NAME, CPLD_OUTLINE_COLOR, CPLDM_OUTLINES, \
      CPLD_MODE, CPLD_LINE_WIDTH, CPLD_ALPHA_COLORMAP, CPLD_ALPHA_VALUE
+from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 
 __the_workspace_viewer = None
@@ -56,7 +58,7 @@ class ViewWorkspace(object):
         self.axes = self.frame.subplot(0, 0)
         self.image = None
         panel = self.frame.secret_panel
-        panel.Sizer = wx.BoxSizer(wx.VERTICAL)
+        panel.Sizer = wx.BoxSizer(wx.HORIZONTAL)
         #
         # Make a grid of image controls
         #
@@ -86,7 +88,8 @@ class ViewWorkspace(object):
             wx.EVT_BUTTON,
             lambda event:self.add_image_row())
         panel.Sizer.AddSpacer(4)
-        panel.Sizer.Add(wx.StaticLine(panel), 0, wx.EXPAND)
+        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_VERTICAL), 
+                        0, wx.EXPAND)
         panel.Sizer.AddSpacer(4)
         #
         # Make a grid of object controls
@@ -115,7 +118,8 @@ class ViewWorkspace(object):
             wx.EVT_BUTTON,
             lambda event:self.add_objects_row())
         panel.Sizer.AddSpacer(4)
-        panel.Sizer.Add(wx.StaticLine(panel), 0, wx.EXPAND)
+        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_VERTICAL),
+                        0, wx.EXPAND)
         panel.Sizer.AddSpacer(4)
         #
         # Make a grid of measurements to display
@@ -128,7 +132,7 @@ class ViewWorkspace(object):
             wx.StaticText(panel, label="Measurement"), (0, self.C_CHOOSER),
             flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.m_grid.Add(
-            wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
+            wx.StaticText(panel, label="Font"), (0, self.C_COLOR),
             flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.m_grid.Add(
             wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
@@ -142,7 +146,7 @@ class ViewWorkspace(object):
         sub_sizer.Add(add_measurement_button, 0, wx.ALIGN_RIGHT)
         add_measurement_button.Bind(
             wx.EVT_BUTTON,
-            lambda event:self.add_measurement_row())
+            self.on_add_measurement_row)
         
         self.frame.Bind(wx.EVT_CLOSE, self.on_frame_close)
         self.set_workspace(workspace)
@@ -225,8 +229,57 @@ class ViewWorkspace(object):
                      self.workspace.object_set.get_object_names(), 
                      can_delete)
     
+    def on_add_measurement_row(self, event):
+        self.add_measurement_row()
+        self.frame.Layout()
+        self.redraw()
+        
     def add_measurement_row(self, can_delete = True):
-        pass
+        row_idx = len(self.measurement_rows)+1
+        mr = []
+        panel = self.frame.secret_panel
+        row = MeasurementRow(panel,
+                             self.m_grid,
+                             row_idx,
+                             lambda : self.on_measurement_changed(mr[0]))
+        mr.append(row)
+        self.measurement_rows.append(row)
+        bitmap = wx.ArtProvider.GetBitmap(
+            wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
+        
+        remove_button = wx.BitmapButton(panel, 
+                                        bitmap = bitmap)
+        self.m_grid.Add(remove_button, (row_idx, self.C_REMOVE),
+                        flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
+        remove_button.Bind(
+            wx.EVT_BUTTON, 
+            lambda event: self.remove_measurement_row(row, remove_button))
+        if not can_delete:
+            remove_button.Hide()
+        row.update(self.workspace)
+    
+    def remove_measurement_row(self, measurement_row, remove_button):
+        if measurement_row in self.measurement_rows:
+            idx = self.measurement_rows.index(measurement_row)
+            measurement_row.destroy(self.m_grid)
+            self.m_grid.Remove(remove_button)
+            remove_button.Destroy()
+            self.measurement_rows.remove(measurement_row)
+            for ii in range(idx, len(self.measurement_rows)):
+                for j in (self.C_CHOOSER, self.C_COLOR, 
+                          self.C_SHOW, self.C_REMOVE):
+                    item = self.m_grid.FindItemAtPosition(
+                        wx.GBPosition(ii+1, j))
+                    self.m_grid.SetItemPosition(item, (ii, j))
+            self.frame.Layout()
+            self.redraw()
+                        
+                             
+    def on_measurement_changed(self, measurement_row):
+        assert isinstance(measurement_row, MeasurementRow)
+        measurement_row.update(self.workspace)
+        self.frame.Layout()
+        self.redraw()
     
     def set_workspace(self, workspace):
         '''Rebuild the workspace control panel'''
@@ -237,6 +290,8 @@ class ViewWorkspace(object):
                                 workspace.image_set.get_names())
             self.update_choices(self.object_rows,
                                 workspace.object_set.get_object_names())
+            for measurement_row in self.measurement_rows:
+                measurement_row.update(workspace)
         finally:
             self.ignore_redraw = False
         self.redraw()
@@ -247,8 +302,9 @@ class ViewWorkspace(object):
             assert isinstance(choice, wx.Choice)
             current_selection = choice.GetCurrentSelection()
             current_names = choice.GetItems()
-            if current_names[current_selection] not in names:
-                names.append(current_names[current_selection])
+            if current_selection != wx.NOT_FOUND:
+                if current_names[current_selection] not in names:
+                    names.append(current_names[current_selection])
             if tuple(sorted(names)) != tuple(sorted(current_names)):
                 choice.SetItems(names)
                 if current_selection >=0 and current_selection < len(current_names):
@@ -337,6 +393,236 @@ class ViewWorkspace(object):
         else:
             self.image.image = image
             self.image.kwargs["cplabels"] = cplabels
+        #
+        # Remove all the old text labels
+        #
+        to_remove = []
+        for artist in self.axes.artists:
+            if not isinstance(artist, CPImageArtist):
+                to_remove.append(artist)
+        for artist in to_remove:
+            self.axes.remove(artist)
+        
+        m = self.workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        title_lines = []
+        object_values = {}
+        for measurement_row in self.measurement_rows:
+            assert isinstance(measurement_row, MeasurementRow)
+            if not measurement_row.should_show():
+                continue
+            object_name = measurement_row.get_object_name()
+            if object_name is None or object_name not in m.get_object_names():
+                continue
+            feature = measurement_row.get_measurement_name()
+            if feature is None or not m.has_feature(object_name, feature):
+                continue
+            
+            value = m[object_name, feature]
+            if object_name in (cpmeas.IMAGE, cpmeas.EXPERIMENT):
+                if isinstance(value, int):
+                    fmt = "%s: %d" 
+                elif isinstance(value, float):
+                    fmt = "%s: %.4f"
+                else:
+                    fmt = "%s: %s"
+                title_lines.append(fmt % (feature, value))
+            else:
+                if object_name not in object_values:
+                    if any([not m.has_feature(object_name, lf) for lf in
+                            M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y]):
+                        continue
+                    object_values[object_name] = []
+                object_values[object_name].append(
+                    (value, measurement_row))
+        if len(title_lines) > 0:
+            self.axes.set_title("\n".join(title_lines))
+        else:
+            self.axes.set_title("Image set # %d" % m.image_number)
+        for object_name, value_rows in object_values.items():
+            values = [vr[0] for vr in value_rows]
+            measurement_rows = [vr[1] for vr in value_rows]
+            x, y = [m[object_name, ftr] for ftr in 
+                    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y]
+            for i in range(len(x)):
+                xi, yi = x[i], y[i]
+                if np.isnan(xi) or np.isnan(yi):
+                    continue
+                height = 0
+                for j, measurement_row in enumerate(measurement_rows):
+                    if len(values[j]) <= i or np.isnan(values[j][i]):
+                        continue
+                    value = values[j][i]
+                    font = measurement_row.get_font()
+                    assert isinstance(font, wx.Font)
+                    if font.GetStyle() == wx.ITALIC:
+                        fontstyle="italic"
+                    else:
+                        fontstyle="normal"
+                    color = measurement_row.get_color()
+                    fontcolor = tuple([float(c)/255 for c in color][:3])
+                    self.axes.annotate(
+                        "%.4f" % value,
+                        (xi, yi), 
+                        xytext = (0, -height),
+                        textcoords = "offset points",
+                        ha = "center",
+                        va = "center",
+                        color = fontcolor,
+                        family = font.GetFaceName(),
+                        fontsize = font.GetPointSize(),
+                        fontstyle = fontstyle,
+                        weight = font.GetWeight())
+                    height = font.GetPointSize() + 1
+        
         self.frame.figure.canvas.draw()
             
+class MeasurementRow(object):
+    '''Container for measurement controls'''
+    def __init__(self, panel, grid_sizer, row_idx, on_change):
+        '''MeasurementRow contstructor
         
+        panel - the panel that's going to be the host for the controls
+        grid_sizer - put the controls in this grid sizer
+        row_idx - the row # in the grid sizer
+        on_change - a function (with no args) that's called whenever any control
+                    is changed. This handler should call MeasurementRow.update
+        '''
+        #
+        # Create three-tiered measurement choice:
+        #    object name
+        #    category
+        #    measurement name
+        #
+        assert isinstance(grid_sizer, wx.GridBagSizer)
+        self.process_events = True
+        self.change_fn = on_change
+        self.choice_panel = wx.Panel(panel)
+        grid_sizer.Add(self.choice_panel, (row_idx, ViewWorkspace.C_CHOOSER),
+                       flag=wx.EXPAND)
+        self.choice_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.choice_panel.SetSizer(self.choice_sizer)
+        self.object_choice = wx.Choice(self.choice_panel)
+        self.choice_sizer.Add(self.object_choice, 0, wx.EXPAND)
+        self.category_choice = wx.Choice(self.choice_panel)
+        self.category_choice.Hide()
+        self.choice_sizer.Add(self.category_choice, 0, wx.EXPAND | wx.TOP, 2)
+        self.measurement_choice = wx.Choice(self.choice_panel)
+        self.measurement_choice.Hide()
+        self.choice_sizer.Add(self.measurement_choice, 0, wx.EXPAND | wx.TOP, 2)
+        #
+        # Font button
+        #
+        self.font_button = wx.Button(panel, label = "Font")
+        grid_sizer.Add(self.font_button, (row_idx, ViewWorkspace.C_COLOR),
+                       flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
+        self.font_button.Bind(wx.EVT_BUTTON, self.on_choose_font)
+        self.show_ctrl = wx.CheckBox(panel)
+        grid_sizer.Add(self.show_ctrl, (row_idx, ViewWorkspace.C_SHOW), 
+                       flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
+        
+        for control, event in (
+            (self.object_choice, wx.EVT_CHOICE),
+            (self.category_choice, wx.EVT_CHOICE),
+            (self.measurement_choice, wx.EVT_CHOICE),
+            (self.show_ctrl, wx.EVT_CHECKBOX)):
+            control.Bind(event, self.on_change)
+        
+    def on_choose_font(self, event):
+        font_data = wx.FontData()
+        font_data.SetColour(self.font_button.GetForegroundColour())
+        font_data.SetInitialFont(self.font_button.Font)
+        with wx.FontDialog(self.font_button, font_data) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                font_data = dlg.GetFontData()
+                self.font_button.SetForegroundColour(font_data.GetColour())
+                self.font_button.SetFont(font_data.GetChosenFont())
+        self.on_change(event)
+        
+    def on_change(self, event):
+        if self.process_events:
+            self.change_fn()
+    
+    @staticmethod
+    def __get_selected_choice(control):
+        assert isinstance(control, wx.Choice)
+        if not control.IsShown():
+            return None
+        selection = control.GetSelection()
+        if selection == wx.NOT_FOUND:
+            return None
+        return control.GetItems()[selection]
+    
+    def get_object_name(self):
+        return self.__get_selected_choice(self.object_choice)
+    
+    def get_measurement_name(self):
+        if self.get_object_name() is None:
+            return None
+        category = self.__get_selected_choice(self.category_choice)
+        if category is None:
+            return None
+        feature = self.__get_selected_choice(self.measurement_choice)
+        if feature is None:
+            return None
+        return "_".join((category, feature))
+    
+    def get_font(self):
+        return self.font_button.Font
+    
+    def get_color(self):
+        return self.font_button.GetForegroundColour()
+    
+    def should_show(self):
+        return self.show_ctrl.IsChecked()
+    
+    def update_choices(self, control, choices):
+        assert isinstance(control, wx.Choice)
+        old_names = control.GetItems()
+        if tuple(sorted(old_names)) == tuple(sorted(choices)):
+            return
+        self.process_events = False
+        try:
+            old_choice = self.__get_selected_choice(control)
+            if old_choice is not None and old_choice not in choices:
+                choices = choices + [old_choice]
+            control.SetItems(choices)
+            if old_choice is not None:
+                control.SetStringSelection(old_choice)
+        finally:
+            self.process_events = True
+        
+    def update(self, workspace):
+        m = workspace.measurements
+        self.update_choices(self.object_choice, m.get_object_names())
+        object_name = self.get_object_name()
+        if object_name is None:
+            self.category_choice.Hide()
+            self.measurement_choice.Hide()
+            return
+        self.category_choice.Show()
+        self.measurement_choice.Show()
+        categories = set()
+        measurements = set()
+        current_category = self.__get_selected_choice(self.category_choice)
+        for feature in m.get_feature_names(object_name):
+            category, measurement = feature.split("_", 1)
+            categories.add(category)
+            if category == current_category:
+                measurements.add(measurement)
+        self.update_choices(self.category_choice, sorted(categories))
+        self.update_choices(self.measurement_choice, sorted(measurements))
+        
+    def destroy(self, grid_sizer):
+        grid_sizer.Remove(self.choice_panel)
+        grid_sizer.Remove(self.font_button)
+        grid_sizer.Remove(self.show_ctrl)
+        self.object_choice.Destroy()
+        self.category_choice.Destroy()
+        self.measurement_choice.Destroy()
+        self.choice_panel.Destroy()
+        self.font_button.Destroy()
+        self.show_ctrl.Destroy()
+            
+        
+    

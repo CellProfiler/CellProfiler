@@ -34,7 +34,7 @@ def show_workspace_viewer(parent, workspace):
         __the_workspace_viewer = ViewWorkspace(parent, workspace)
     else:
         __the_workspace_viewer.set_workspace(workspace)
-        __the_workspace_viewer.frame.show()
+        __the_workspace_viewer.frame.Show()
         
 def update_workspace_viewer(workspace):
     if __the_workspace_viewer is not None:
@@ -151,11 +151,15 @@ class ViewWorkspace(object):
         self.frame.Bind(wx.EVT_CLOSE, self.on_frame_close)
         self.set_workspace(workspace)
         panel.Show()
-        self.frame.Layout()
+        self.layout()
         for child in panel.GetChildren():
             child.Refresh()
         panel.Refresh()
 
+    def layout(self):
+        self.frame.secret_panel.Layout()
+        self.frame.Layout()
+        
     def on_frame_close(self, event):
         assert isinstance(event, wx.CloseEvent)
         if event.CanVeto():
@@ -206,7 +210,7 @@ class ViewWorkspace(object):
             remove_button.Hide()
         controls.append(remove_button)
         rows.append(controls)
-        self.frame.Layout()
+        self.layout()
         
     def remove_row(self, rows, grid_sizer, remove_button):
         for i, row in enumerate(rows):
@@ -221,7 +225,7 @@ class ViewWorkspace(object):
         for ii in range(i, len(rows)):
             for j, control in enumerate(rows[ii]):
                 grid_sizer.SetItemPosition(control, (ii, j))
-        self.frame.Layout()
+        self.layout()
         self.redraw()
     
     def add_objects_row(self, can_delete = True):
@@ -231,7 +235,7 @@ class ViewWorkspace(object):
     
     def on_add_measurement_row(self, event):
         self.add_measurement_row()
-        self.frame.Layout()
+        self.layout()
         self.redraw()
         
     def add_measurement_row(self, can_delete = True):
@@ -271,14 +275,14 @@ class ViewWorkspace(object):
                     item = self.m_grid.FindItemAtPosition(
                         wx.GBPosition(ii+1, j))
                     self.m_grid.SetItemPosition(item, (ii, j))
-            self.frame.Layout()
+            self.layout()
             self.redraw()
                         
                              
     def on_measurement_changed(self, measurement_row):
         assert isinstance(measurement_row, MeasurementRow)
         measurement_row.update(self.workspace)
-        self.frame.Layout()
+        self.layout()
         self.redraw()
     
     def set_workspace(self, workspace):
@@ -334,7 +338,7 @@ class ViewWorkspace(object):
         
         if not self.frame.figure.canvas.IsShown():
             self.frame.figure.canvas.Show()
-            self.frame.Layout()
+            self.layout()
         width = height = 0
         for image, _, _, _ in images:
             width = max(width, image.pixel_data.shape[1])
@@ -397,11 +401,8 @@ class ViewWorkspace(object):
         # Remove all the old text labels
         #
         to_remove = []
-        for artist in self.axes.artists:
-            if not isinstance(artist, CPImageArtist):
-                to_remove.append(artist)
-        for artist in to_remove:
-            self.axes.remove(artist)
+        for artist in list(self.axes.texts):
+            artist.remove()
         
         m = self.workspace.measurements
         assert isinstance(m, cpmeas.Measurements)

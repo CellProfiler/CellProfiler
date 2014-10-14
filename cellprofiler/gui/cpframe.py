@@ -12,7 +12,8 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-
+import logging
+logger = logging.getLogger(__name__)
 import inspect
 import os
 import pdb
@@ -467,10 +468,22 @@ class CPFrame(wx.Frame):
         if event.CanVeto() and not self.pipeline_controller.check_close():
             event.Veto()
             return
-        self.__workspace.measurements.flush()
-        self.__preferences_view.close()
-        self.pipeline_controller.on_close()
-        stop_validation_queue_thread()
+        try:
+            self.__workspace.measurements.flush()
+        except:
+            logger.warn("Failed to flush temporary measurements file during close", exc_info=True)
+        try:
+            self.__preferences_view.close()
+        except:
+            logger.warn("Failed during close", exc_info=True)
+        try:
+            self.pipeline_controller.on_close()
+        except:
+            logger.warn("Failed to close the pipeline controller", exc_info=True)
+        try:
+            stop_validation_queue_thread()
+        except:
+            logger.warn("Failed to stop pipeline validation thread", exc_info=True)
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):

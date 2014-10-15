@@ -597,7 +597,7 @@ class MeasurementRow(object):
         m = workspace.measurements
         self.update_choices(self.object_choice, m.get_object_names())
         object_name = self.get_object_name()
-        if object_name is None:
+        if object_name is None or object_name not in m.get_object_names():
             self.category_choice.Hide()
             self.measurement_choice.Hide()
             return

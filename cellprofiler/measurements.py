@@ -353,7 +353,11 @@ class Measurements(object):
             self.__image_cache_file.flush()
             self.__image_cache_file.close()
             self.__image_cache_file = None
-            os.remove(self.__image_cache_path)
+            try:
+                os.remove(self.__image_cache_path)
+            except:
+                logger.warn("So sorry: Failed to delete temporary file, %s" %
+                            self.__image_cache_path, exc_info=True)
             del self.__image_cache_path
         
     def __getitem__(self, key):

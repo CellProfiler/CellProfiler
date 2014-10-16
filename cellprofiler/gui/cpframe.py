@@ -1019,12 +1019,13 @@ Dustman; omero © 2002-2013 Open Microscopy Environment; and ZeroMQ ©
 2007-2012 iMatix Corporation and Contributors; (g) wxWidgets ©
 1999-2005 Julian Smart, et al.; and wxPython © 1992-2006 Julian Smart,
 et al. and © 1996 Artificial Intelligence Applications Institute under
-the wxWindows license; and (h) Intel Visual Fortran Compiler Run-time
+the wxWindows license; (h) Intel Visual Fortran Compiler Run-time
 Library, Intel Fortran Portability Library, Intel OMP Runtime Library,
 Math Library for Intel Compilers, Short Vector Math Library for Intel
 Compilers under the Single User license provision for
 Resdistributables © 2013 Intel Corporation under the End User License
-Agreement for the Intel Software Development Products.
+Agreement for the Intel Software Development Products; and
+(i) FastEMD © Copyright (c) 2009-2012, Ofir Pele. under BSD licenses
 
 """
 

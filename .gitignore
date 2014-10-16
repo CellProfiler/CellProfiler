@@ -18,6 +18,7 @@ cellprofiler/cpmath/_lapjv.c
 cellprofiler/cpmath/_propagate.c
 cellprofiler/cpmath/_watershed.c
 cellprofiler/cpmath/_convex_hull.c
+cellprofiler/cpmath/_fastemd.cpp
 cellprofiler/cpmath/build
 cellprofiler/utilities/build
 cellprofiler/utilities/javabridge.c

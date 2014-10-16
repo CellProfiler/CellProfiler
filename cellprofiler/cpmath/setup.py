@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 """
 
 from distutils.core import setup,Extension
+import glob
 import os
 import sys
 is_win = sys.platform.startswith("win")
@@ -68,6 +69,17 @@ def configuration():
                             include_dirs=['src']+[get_include()],
                             extra_compile_args=extra_compile_args,
                             extra_link_args=extra_link_args),
+                  Extension(name="_fastemd",
+                            sources=["_fastemd.pyx"],
+                            include_dirs = [
+                                "include", get_include(), 
+                                "../../contrib/include/FastEMD"],
+                            depends=["include/fastemd_hat.hpp",
+                                     "include/npy_helpers.hpp"] +
+                            glob.glob("../../contrib/include/FastEMD/*.hpp"),
+                            extra_compile_args = extra_compile_args,
+                            extra_link_args=extra_link_args,
+                            language="c++")
                   ]
     dict = { "name":"cpmath",
              "description":"algorithms for CellProfiler",

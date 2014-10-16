@@ -30,7 +30,7 @@ template<typename T> void np1D_to_vector(PyArrayObject *obj, std::vector<T> &v) 
 }
 
 template<typename T> void np2D_to_vector(
-    PyArrayObject *obj, std::vector<std::vector<T>> &v) 
+    PyArrayObject *obj, std::vector<std::vector<T> > &v) 
 {
     const npy_intp n_i = PyArray_DIM(obj, 0);
     const npy_intp n_j = PyArray_DIM(obj, 1);
@@ -42,9 +42,10 @@ template<typename T> void np2D_to_vector(
 }
 
 template<typename T> void vector_to_np2D(
-    PyArrayObject *obj, std::vector<std::vector<T>> &v) 
+    PyArrayObject *obj, std::vector<std::vector<T> > &v) 
 {
-    for (std::vector<std::vector<T>>::iterator i=v.begin(); i<v.end(); i++) {
+    for (typename std::vector<std::vector<T> >::iterator i=v.begin(); 
+         i<v.end(); i++) {
         T *ptr = npy_getptr2<T>(obj, i-v.begin(), 0);
         copy(i->begin(), i->end(), ptr);
     }

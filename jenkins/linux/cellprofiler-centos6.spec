@@ -87,6 +87,7 @@ chmod 755 $RPM_BUILD_ROOT/usr/bin/cellprofiler
 %{pref}/lib/python%{pyversion}/site-packages/_cpmorphology.so
 %{pref}/lib/python%{pyversion}/site-packages/_cpmorphology2.so
 %{pref}/lib/python%{pyversion}/site-packages/_filter.so
+%{pref}/lib/python%{pyversion}/site-packages/_fastemd.so
 %{pref}/lib/python%{pyversion}/site-packages/_lapjv.so
 %{pref}/lib/python%{pyversion}/site-packages/_propagate.so
 %{pref}/lib/python%{pyversion}/site-packages/_watershed.so

@@ -513,14 +513,14 @@ def handle_open_group(s, state):
                 match = re.match(r"\(\?[iLmsux]+\)",s)
                 if not match:
                     raise ValueError("Incomplete or badly formatted switch expression")
-                state.position += len(match.group())
+                state.parsed_special(len(match.group()))
                 return len(match.group())
             elif s[2] == '#':
                 # comment
                 match = re.match(r"\(\?#.*\)", s)
                 if not match:
                     raise ValueError("Incomplete or badly formatted comment")
-                state.position += len(match.group())
+                state.parsed_special(len(match.group()))
                 return len(match.group())
             elif s[2] == '(':
                 # (?(name/id)) construct

@@ -210,13 +210,14 @@ class MeasureTexture(cpm.CPModule):
         self.images_or_objects = cps.Choice(
             "Measure images or objects?", [IO_IMAGES, IO_OBJECTS, IO_BOTH],
             value = IO_BOTH,
-            doc = """This setting determines whether <b>MeasureTexture</b>
+            doc = """This setting determines whether the module 
             computes image-wide measurements, per-object measurements or both.
-            If you want to only measure the texture of objects, select
-            <i>%(IO_OBJECTS)s</i>. If your pipeline does not contain objects or if
-            you only want to make per-image measurements, select <i>%(IO_IMAGES)s.</i>
-            To measure both images and objects, select <i>%(IO_BOTH)s</i>
-            """ % globals())
+            <ul>
+            <li><i>%(IO_IMAGES)s:</i> Select if you only want to measure the texture of objects.</li>
+            <li><i>%(IO_OBJECTS)s:</i> Select if your pipeline does not contain objects or if
+            you only want to make per-image measurements.</li>
+            <li><i>%(IO_BOTH)s:</i> Select to make both image and object measurements.</li>
+            </ul>""" % globals())
 
     def settings(self):
         """The settings as they appear in the save file."""

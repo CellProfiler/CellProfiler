@@ -15,7 +15,8 @@ Website: http://www.cellprofiler.org
 import base64
 import numpy as np
 import os
-from scipy.misc import imsave
+from bioformats.formatwriter import write_image
+from bioformats import PT_UINT8
 import shutil
 from StringIO import StringIO
 import tempfile
@@ -354,7 +355,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                     full_path = url
                     path = path_name
                 if is_file:
-                    imsave(full_path, pixel_data)
+                    write_image(full_path, pixel_data, PT_UINT8)
                 path_feature = '_'.join((C_PATH_NAME, image_name))
                 file_feature = '_'.join((C_FILE_NAME, image_name))
                 url_feature = '_'.join((C_URL, image_name))

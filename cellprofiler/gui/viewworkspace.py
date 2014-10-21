@@ -16,7 +16,9 @@ import numpy as np
 import matplotlib
 import wx
 from wx.lib.intctrl import IntCtrl, EVT_INT
+from wx.lib.resizewidget import ResizeWidget
 from wx.lib.colourselect import ColourSelect, EVT_COLOURSELECT
+from wx.lib.scrolledpanel import ScrolledPanel
 
 from cellprofiler.gui.cpfigure import \
      CPFigureFrame, CPImageArtist, get_matplotlib_interpolation_preference, \
@@ -57,8 +59,12 @@ class ViewWorkspace(object):
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
         self.image = None
-        panel = self.frame.secret_panel
-        panel.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        panel = ScrolledPanel(self.frame.secret_panel)
+        self.frame.secret_panel.Sizer = wx.BoxSizer()
+        self.frame.secret_panel.Sizer.Add(panel, 0, wx.EXPAND)
+        panel.Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.panel = panel
         #
         # Make a grid of image controls
         #
@@ -88,7 +94,7 @@ class ViewWorkspace(object):
             wx.EVT_BUTTON,
             lambda event:self.add_image_row())
         panel.Sizer.AddSpacer(4)
-        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_VERTICAL), 
+        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_HORIZONTAL), 
                         0, wx.EXPAND)
         panel.Sizer.AddSpacer(4)
         #
@@ -118,7 +124,7 @@ class ViewWorkspace(object):
             wx.EVT_BUTTON,
             lambda event:self.add_objects_row())
         panel.Sizer.AddSpacer(4)
-        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_VERTICAL),
+        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_HORIZONTAL),
                         0, wx.EXPAND)
         panel.Sizer.AddSpacer(4)
         #
@@ -150,13 +156,16 @@ class ViewWorkspace(object):
         
         self.frame.Bind(wx.EVT_CLOSE, self.on_frame_close)
         self.set_workspace(workspace)
-        panel.Show()
+        self.frame.secret_panel.Show()
         self.layout()
         for child in panel.GetChildren():
             child.Refresh()
         panel.Refresh()
 
     def layout(self):
+        self.panel.SetupScrolling()
+        self.panel.SetMinSize((self.panel.GetVirtualSize()[0], -1))
+        self.panel.Layout()
         self.frame.secret_panel.Layout()
         self.frame.Layout()
         
@@ -175,7 +184,7 @@ class ViewWorkspace(object):
     def add_row(self, rows, grid_sizer, names, can_delete):
         row = len(rows) + 1
         controls = []
-        panel = self.frame.secret_panel
+        panel = self.panel
         chooser = wx.Choice(panel, choices = names)
         grid_sizer.Add(chooser, (row, self.C_CHOOSER), flag = wx.EXPAND)
         controls.append(chooser)
@@ -241,7 +250,7 @@ class ViewWorkspace(object):
     def add_measurement_row(self, can_delete = True):
         row_idx = len(self.measurement_rows)+1
         mr = []
-        panel = self.frame.secret_panel
+        panel = self.panel
         row = MeasurementRow(panel,
                              self.m_grid,
                              row_idx,

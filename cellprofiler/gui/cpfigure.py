@@ -285,7 +285,7 @@ class CPFigureFrame(wx.Frame):
         self.widgets = []
         self.mouse_down = None
         self.remove_menu = []
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.SetSizer(sizer)
         if cpprefs.get_use_more_figure_space():
             matplotlib.rcParams.update(dict([('figure.subplot.left', 0.025),

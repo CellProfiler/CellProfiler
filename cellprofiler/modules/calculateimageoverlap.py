@@ -1,4 +1,7 @@
-'''<b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
+import cellprofiler.icons 
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON
+__doc__ = '''
+<b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
 <hr>
 This module calculates overlap by determining a set of statistics that measure the closeness of an image or object 
 to its' true value.  One image/object is considered the "ground truth" (possibly the result of hand-segmentation) and the other
@@ -155,7 +158,6 @@ class CalculateImageOverlap(cpm.CPModule):
             test image to some foreground pixel in the reference image.
             "Earth mover's" refers to an analogy: the pixels are "earth" that
             has to be moved by some machine at the smallest possible cost.
-            There
             <br>
             It would take too much memory and processing time to compute the
             exact earth mover's distance, so <b>CalculateImageOverlap</b>
@@ -180,16 +182,22 @@ class CalculateImageOverlap(cpm.CPModule):
             doc = """
             <i>(Used only when computing the earth mover's distance)</i> <br>
             The point selection setting determines how the
-            representative points are chosen. Choose <i>%(DM_KMEANS)s</i> to
-            pick representative points using a K-Means clustering technique.
-            The foregrounds of both images are combined and representatives are
-            picked that minimize the distance to the nearest representative.
-            The same representatives are then used for the test and reference
-            images.
-            Choose <i>%(DM_SKEL)s</i> to skeletonize the image and pick
-            points eqidistant along the skeleton. <i>%(DM_KMEANS)s</i> is a
+            representative points are chosen. 
+            <ul>
+            <li><i>%(DM_KMEANS)s:</i> Select to pick representative points using a 
+            K-Means clustering technique. The foregrounds of both images are combined 
+            and representatives are picked that minimize the distance to the nearest 
+            representative. The same representatives are then used for the test and 
+            reference images.</li>
+            <li><i>%(DM_SKEL)s:</i> Select to skeletonize the image and pick
+            points eqidistant along the skeleton. </li>
+            </ul>
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            <i>%(DM_KMEANS)s</i> is a
             choice that's generally applicable to all images. <i>%(DM_SKEL)s</i>
-            is best suited to long, skinny objects such as worms or neurites.
+            is best suited to long, skinny objects such as worms or neurites.</dd>
+            </dl>
             """ % globals())
         self.max_distance = cps.Integer(
             "Maximum distance", value=250, minval=1,

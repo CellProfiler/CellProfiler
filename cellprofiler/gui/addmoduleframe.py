@@ -201,7 +201,7 @@ class AddModuleFrame(wx.Frame):
                           parent = self,
                           style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION)
         else:
-            self.display_helpframe(html, "Help matching %s" % self.search_text)
+            self.display_helpframe(html, 'Help matching "%s"' % self.search_text.Value)
             
     def __on_getting_started(self,event):
         from cellprofiler.gui.help import BUILDING_A_PIPELINE_HELP

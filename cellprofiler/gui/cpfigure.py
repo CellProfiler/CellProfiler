@@ -1787,7 +1787,7 @@ def show_image(url, parent = None, needs_raise_after = True):
     if image.ndim == 2:
         frame.subplot_imshow_grayscale(0, 0, image, title = filename)
     else:
-        frame.subplot_imshow_color(0, 0, image, title = filename)
+        frame.subplot_imshow_color(0, 0, image[:, :, :3], title = filename)
     frame.panel.draw()
     if needs_raise_after:
         #%$@ hack hack hack

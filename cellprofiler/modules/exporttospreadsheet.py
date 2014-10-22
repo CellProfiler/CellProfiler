@@ -806,16 +806,29 @@ class ExportToSpreadsheet(cpm.CPModule):
                     if image_features is None:
                         return
                     writer.writerow(image_features)
-                row = [ img_number
-                       if feature_name == IMAGE_NUMBER
-                       else agg_measurements[feature_name]
-                       if agg_measurements.has_key(feature_name)
-                       else m.get_measurement(IMAGE, feature_name, img_number)
-                       for feature_name in image_features]
-                row = ['' if x is None
-                       else x if np.isscalar(x) 
-                       else x[0] for x in row]
-                row = [unicode(x).encode('utf8') for x in row]
+                row = []
+                for feature_name in image_features:
+                    
+                    if feature_name == IMAGE_NUMBER:
+                        row.append(str(img_number))
+                    else:
+                        if agg_measurements.has_key(feature_name):
+                            value = agg_measurements[feature_name]
+                        else:
+                            value = m[IMAGE, feature_name, img_number]
+                        if value is None:
+                            row.append('')
+                        elif isinstance(value, unicode):
+                            row.append(value.encode('utf8'))
+                        elif isinstance(value, basestring):
+                            row.append(value)
+                        elif np.isnan(value):
+                            if self.nan_representation == NANS_AS_NULLS:
+                                row.append('')
+                            else:
+                                row.append(str(np.NaN))
+                        else:
+                            row.append(str(value))
                 writer.writerow(row)
         finally:
             fd.close()

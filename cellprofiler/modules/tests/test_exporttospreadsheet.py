@@ -36,6 +36,8 @@ from cellprofiler.modules import identifyprimaryobjects
 from cellprofiler.modules.tests import example_images_directory
 
 OBJECTS_NAME = "MyObjects"
+IMG_MEAS = "my_image_measurement"
+OBJ_MEAS = "my_object_measurement"
 
 class TestExportToSpreadsheet(unittest.TestCase):
 
@@ -1264,6 +1266,124 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
+            
+    def test_03_06_nan_image_measurements(self):
+        path = os.path.join(self.output_dir, "my_file.csv")
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.wants_everything.value = False
+        module.wants_prefix.value = False
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
+        module.wants_aggregate_means.value = True
+        module.nan_representation.value = E.NANS_AS_NANS
+        m = cpmeas.Measurements()
+        m.add_measurement(
+            cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
+            data_type=np.float64)
+        mvalues = np.array([np.NaN, np.NaN])
+        m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues, 
+                          image_set_number=1, data_type = np.float64)
+        m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
+                          image_set_number = 1)
+        m.add_measurement(
+            cpmeas.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
+            data_type=np.float64)
+        m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
+                          image_set_number = 2)
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        with  open(path,"r") as fd:
+            reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
+            d = dict([(h, i) for i, h in enumerate(header)])
+            agg_meas = "Mean_%s_%s" % (OBJECTS_NAME, OBJ_MEAS)
+            self.assertIn(agg_meas, d)
+            self.assertIn(IMG_MEAS, d)
+            row = reader.next()
+            value = row[d[agg_meas]]
+            self.assertEqual(
+                value, str(np.NaN),
+                msg = "Expected nan %s measurement, got %s" % 
+                (agg_meas, value))
+            self.assertEqual(float(row[d[IMG_MEAS]]), 13)
+            row = reader.next()
+            for meas in agg_meas, IMG_MEAS:
+                value = row[d[meas]]
+                self.assertEqual(
+                    value, str(np.NaN),
+                    msg = "Expected nan %s measurement, got %s" % 
+                    (meas, value))
+            self.assertRaises(StopIteration,reader.next)
+
+    def test_03_07_null_image_measurements(self):
+        path = os.path.join(self.output_dir, "my_file.csv")
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.wants_everything.value = False
+        module.wants_prefix.value = False
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
+        module.wants_aggregate_means.value = True
+        module.nan_representation.value = E.NANS_AS_NULLS
+        m = cpmeas.Measurements()
+        m.add_measurement(
+            cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
+            data_type=np.float64)
+        mvalues = np.array([np.NaN, np.NaN])
+        m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues, 
+                          image_set_number=1, data_type = np.float64)
+        m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
+                          image_set_number = 1)
+        m.add_measurement(
+            cpmeas.IMAGE, IMG_MEAS, np.NaN, image_set_number=2,
+            data_type=np.float64)
+        m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 0,
+                          image_set_number = 2)
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        object_set.add_objects(cpo.Objects(), OBJECTS_NAME)
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        with  open(path,"r") as fd:
+            reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
+            d = dict([(h, i) for i, h in enumerate(header)])
+            agg_meas = "Mean_%s_%s" % (OBJECTS_NAME, OBJ_MEAS)
+            self.assertIn(agg_meas, d)
+            self.assertIn(IMG_MEAS, d)
+            row = reader.next()
+            value = row[d[agg_meas]]
+            self.assertEqual(
+                len(value), 0,
+                msg = "Expected null %s measurement, got %s" % 
+                (agg_meas, value))
+            self.assertEqual(float(row[d[IMG_MEAS]]), 13)
+            row = reader.next()
+            for meas in agg_meas, IMG_MEAS:
+                value = row[d[meas]]
+                self.assertEqual(
+                    len(value), 0,
+                    msg = "Expected null %s measurement, got %s" % 
+                    (meas, value))
+            self.assertRaises(StopIteration,reader.next)
         
     def test_04_01_01_object_with_metadata(self):
         '''Test writing objects with 2 pairs of 2 image sets w same metadata'''

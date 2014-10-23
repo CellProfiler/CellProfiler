@@ -417,7 +417,7 @@ def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     # data
     #
     r = np.random.RandomState()
-    r.seed(cropped_image[:100].tolist())
+    r.seed(np.frombuffer(cropped_image[:100].data, np.uint8).tolist())
     for data in (
         r.permutation(cropped_image)[0:(len(cropped_image) / 10)],
         cropped_image):

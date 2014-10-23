@@ -334,7 +334,10 @@ class DisplayDataOnImage(cpm.CPModule):
         
         if self.use_color_map():
             labels = workspace.display_data.labels
-            pixel_data = workspace.display_data.pixel_data
+            if self.wants_image:
+                pixel_data = workspace.display_data.pixel_data
+            else:
+                pixel_data = (labels != 0).astype(np.float32)
             if pixel_data.ndim == 3:
                 pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
             colormap_name = self.colormap.value

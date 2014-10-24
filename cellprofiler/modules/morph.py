@@ -70,13 +70,13 @@ sides of this pixel:<br>
 <tr>
 <td><table border=1>
 <tr><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>0</td></tr>  
+<tr><td>0</td><td>1</td><td>0</td></tr>  
 <tr><td>0</td><td>0</td><td>0</td></tr>      
 </table></td>
 <td>&rarr;</td>
 <td><table border=1>
 <tr><td>0</td><td>0</td><td>0</td></tr>
-<tr><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
 <tr><td>0</td><td>0</td><td>0</td></tr>
 </table></td>
 </tr>

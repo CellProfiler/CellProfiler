@@ -1019,7 +1019,7 @@ $(SITEPKGPREFIX)/$(QIMGTOARRVERSION)-py$(PYVERSION).egg-info:	$(SRCDIR)/$(QIMGTO
 
 
 cp2:					cellprofiler
-cellprofiler:				$(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py
+cellprofiler:				$(CELLPROFILERPREFIX)/CellProfiler.py
 $(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $(WXPYTHONPREFIX)/bin/pywxrc $(SITEPKGPREFIX)/$(H5PYVERSION)-py$(PYVERSION)-linux-i686.egg $(SCIPYPREFIX)/lib/python$(PYVERSION)/site-packages/$(SCIPYVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/vigra/vigranumpycore.so $(SITEPKGPREFIX)/ilastik-$(ILASTIKMAJVERSION)-py$(PYVERSION).egg $(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(DECORATORVERSION)-py$(PYVERSION).egg $(PYPIPREFIX)/bin/easy_install $(SITEPKGPREFIX)/MySQL_python-$(MYSQLPYTHONVERSION)-py$(PYVERSION)-linux-i686.egg $(PYSQLITEPREFIX)/lib/python$(PYVERSION)/site-packages/$(PYSQLITEVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py$(PYVERSION).egg $(PYTHONPREFIX)/bin/pilfile.py
 					mkdir -p "$(CELLPROFILERPREFIX)" && \
 					cd "$(CELLPROFILERPREFIX)" && \

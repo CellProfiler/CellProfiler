@@ -317,27 +317,27 @@ sethost:
 # NOTE: Some of these prechecks where kindly provided by
 # the XuvTools project at http://xuvtools.org/
 #
-precheck-java:				$(SRCDIR)/findlibjvm.class
-					@if test "$(DISABLE_PRECHECKS)" != "YES" ; then \
-						if test -z "$(JAVA_HOME)" ; then \
-							echo "Could not detect JAVA_HOME variable. Please export JAVA_HOME from" ; \
-							echo "your SHELL to the path of the JRE, and add it to LD_LIBRARY_PATH." ; \
-							false ; \
-						elif ! echo "$(LD_LIBRARY_PATH)"|grep -qs "$(JAVA_HOME)" ; then \
-							echo "It seems JAVA_HOME is missing from the LD_LIBRARY_PATH variable." ; \
-							echo "Please read the setup guide on how to fix that." ; \
-							false ; \
-						else \
-							cd "$(SRCDIR)" && \
-							LIBJVMPATH=$$($${JAVA_HOME}/bin/java findlibjvm 2>/dev/zero) && \
-							if ! test -r "$${LIBJVMPATH}/libjvm.so" ; then \
-								echo "Could not find 'libjvm.so' in the following path:" ; \
-								echo "  '$${LIBJVMPATH}'" ; \
-								echo "Please read the setup guide on how to fix that." ; \
-								false ; \
-							fi ; \
-						fi ; \
-					fi
+#precheck-java:				$(SRCDIR)/findlibjvm.class
+#					@if test "$(DISABLE_PRECHECKS)" != "YES" ; then \
+#						if test -z "$(JAVA_HOME)" ; then \
+#							echo "Could not detect JAVA_HOME variable. Please export JAVA_HOME from" ; \
+#							echo "your SHELL to the path of the JRE, and add it to LD_LIBRARY_PATH." ; \
+#							false ; \
+#						elif ! echo "$(LD_LIBRARY_PATH)"|grep -qs "$(JAVA_HOME)" ; then \
+#							echo "It seems JAVA_HOME is missing from the LD_LIBRARY_PATH variable." ; \
+#							echo "Please read the setup guide on how to fix that." ; \
+#							false ; \
+#						else \
+#							cd "$(SRCDIR)" && \
+#							LIBJVMPATH=$$($${JAVA_HOME}/bin/java findlibjvm 2>/dev/zero) && \
+#							if ! test -r "$${LIBJVMPATH}/libjvm.so" ; then \
+#								echo "Could not find 'libjvm.so' in the following path:" ; \
+#								echo "  '$${LIBJVMPATH}'" ; \
+#								echo "Please read the setup guide on how to fix that." ; \
+#								false ; \
+#							fi ; \
+#						fi ; \
+#					fi
 
 precheck-env:
 					@if test "$(DISABLE_PRECHECKS)" != "YES" ; then \

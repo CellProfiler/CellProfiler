@@ -710,40 +710,40 @@ $(SITEPKGPREFIX)/sip.so:		$(SRCDIR)/$(SIPVERSION).tar.gz $(PYTHONPREFIX)/bin/pyt
 					$(MAKE) $(MAKE_FLAGS) && \
 					$(MAKE) -j1 install
 
-#wxpython:				$(WXPYTHONPREFIX)/bin/pywxrc
-#$(WXPYTHONPREFIX)/bin/pywxrc:		$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(PYTHONPREFIX)/bin/python $(PNGPREFIX)/lib/libpng.la $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
-#					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
-#					rm -fr "wxPython-src-$(WXPYTHONVERSION)" && \
-#					tar -xjf "$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2" && \
-#					rm -fr "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
-#					mkdir "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
-#					cd "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
-#					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
-#					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-#					export CPPFLAGS="-I$(PNGPREFIX)/include -I$(JPEGPREFIX)/include -I$(TIFFPREFIX)/include -I$(ZLIBPREFIX)/include -I$(SQLITEPREFIX)/include $${CPPFLAGS}" && \
-#					export LDFLAGS="-L$(PNGPREFIX)/lib -L$(JPEGPREFIX)/lib -L$(TIFFPREFIX)/lib -L$(ZLIBPREFIX)/lib -L$(SQLITEPREFIX)/lib $${LDFLAGS}" && \
-#					export LD_LIBRARY_PATH="$(PNGPREFIX)/lib:$(JPEGPREFIX)/lib:$(TIFFPREFIX)/lib:$(ZLIBPREFIX)/lib:$(SQLITEPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-#					if test -f "$(GTKPREFIX)/lib/libgtk-x11-2.0.la" ; then \
-#						export CPPFLAGS="-I$(GTKPREFIX)/include $${CPPFLAGS}" && \
-#						export LDFLAGS="-L$(GTKPREFIX)/lib $${LDFLAGS}" && \
-#						export LD_LIBRARY_PATH="$(GTKPREFIX)/lib:$${LD_LIBRARY_PATH}" ; \
-#					fi && \
-#					if test -d "$(GLIBPREFIX)/lib/pkgconfig" ; then \
-#						export PKG_CONFIG_PATH="$(GLIBPREFIX)/lib/pkgconfig:$${PKG_CONFIG_PATH}" ; \
-#					fi && \
-#					"../wxPython-src-$(WXPYTHONVERSION)/configure" \
-#						--prefix="$(WXPYTHONPREFIX)" \
-#						$(WXPYTHONTOOLKIT_$(WXUSEGTK)) \
-#						$(WXFLAGS) && \
-#					$(MAKE) $(MAKE_FLAGS) && \
-#					$(MAKE) $(MAKE_FLAGS) -C contrib/src/gizmos && \
-#					$(MAKE) $(MAKE_FLAGS) -C contrib/src/stc && \
-#					$(MAKE) -j1 install && \
-#					$(MAKE) -j1 install -C contrib/src/gizmos && \
-#					$(MAKE) -j1 install -C contrib/src/stc && \
-#					cd "../wxPython-src-$(WXPYTHONVERSION)/wxPython/" && \
-#					$(PYTHONPREFIX)/bin/python setup.py build_ext --inplace && \
-#					$(PYTHONPREFIX)/bin/python setup.py install
+wxpython:				$(WXPYTHONPREFIX)/bin/pywxrc
+$(WXPYTHONPREFIX)/bin/pywxrc:		$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(PYTHONPREFIX)/bin/python $(PNGPREFIX)/lib/libpng.la $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "wxPython-src-$(WXPYTHONVERSION)" && \
+					tar -xjf "$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2" && \
+					rm -fr "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
+					mkdir "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
+					cd "wxPython-src-$(WXPYTHONVERSION)-$(HOSTTYPE)" && \
+					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+					export CPPFLAGS="-I$(PNGPREFIX)/include -I$(JPEGPREFIX)/include -I$(TIFFPREFIX)/include -I$(ZLIBPREFIX)/include -I$(SQLITEPREFIX)/include $${CPPFLAGS}" && \
+					export LDFLAGS="-L$(PNGPREFIX)/lib -L$(JPEGPREFIX)/lib -L$(TIFFPREFIX)/lib -L$(ZLIBPREFIX)/lib -L$(SQLITEPREFIX)/lib $${LDFLAGS}" && \
+					export LD_LIBRARY_PATH="$(PNGPREFIX)/lib:$(JPEGPREFIX)/lib:$(TIFFPREFIX)/lib:$(ZLIBPREFIX)/lib:$(SQLITEPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+					if test -f "$(GTKPREFIX)/lib/libgtk-x11-2.0.la" ; then \
+						export CPPFLAGS="-I$(GTKPREFIX)/include $${CPPFLAGS}" && \
+						export LDFLAGS="-L$(GTKPREFIX)/lib $${LDFLAGS}" && \
+						export LD_LIBRARY_PATH="$(GTKPREFIX)/lib:$${LD_LIBRARY_PATH}" ; \
+					fi && \
+					if test -d "$(GLIBPREFIX)/lib/pkgconfig" ; then \
+						export PKG_CONFIG_PATH="$(GLIBPREFIX)/lib/pkgconfig:$${PKG_CONFIG_PATH}" ; \
+					fi && \
+					"../wxPython-src-$(WXPYTHONVERSION)/configure" \
+						--prefix="$(WXPYTHONPREFIX)" \
+						$(WXPYTHONTOOLKIT_$(WXUSEGTK)) \
+						$(WXFLAGS) && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) $(MAKE_FLAGS) -C contrib/src/gizmos && \
+					$(MAKE) $(MAKE_FLAGS) -C contrib/src/stc && \
+					$(MAKE) -j1 install && \
+					$(MAKE) -j1 install -C contrib/src/gizmos && \
+					$(MAKE) -j1 install -C contrib/src/stc && \
+					cd "../wxPython-src-$(WXPYTHONVERSION)/wxPython/" && \
+					$(PYTHONPREFIX)/bin/python setup.py build_ext --inplace && \
+					$(PYTHONPREFIX)/bin/python setup.py install
 
 nose:					$(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py$(PYVERSION).egg
 $(SITEPKGPREFIX)/$(PYTHONNOSEVERSION)-py$(PYVERSION).egg:	$(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(PYTHONPREFIX)/bin/python
@@ -1227,10 +1227,10 @@ $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz:
 					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/matplotlib/matplotlib/$(MATPLOTLIBVERSION)/$(MATPLOTLIBVERSION).tar.gz" && \
 					touch "$@"
 
-#$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2:
-#					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-#					wget $(WGETFLAGS) "http://downloads.sourceforge.net/wxpython/wxPython-src-$(WXPYTHONVERSION).tar.bz2" && \
-#					touch "$@"
+$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2:
+					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+					wget $(WGETFLAGS) "http://downloads.sourceforge.net/wxpython/wxPython-src-$(WXPYTHONVERSION).tar.bz2" && \
+					touch "$@"
 
 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \

@@ -1,5 +1,7 @@
 # branche release_2.1.1
 
+# wxpython http://wiki.wxpython.org/CheckInstall
+sudo apt-get install --yes dpkg-dev build-essential swig python2.7-dev libwebkitgtk-dev libjpeg-dev libtiff-dev checkinstall ubuntu-restricted-extras freeglut3 freeglut3-dev libgtk2.0-dev  libsdl1.2-dev libgstreamer-plugins-base0.10-dev 
 
 # we need ssh for remote acces and aptitude for libgtk2.0 isntallation
 sudo apt-get install --yes openjdk-7-jdk ssh gtk2.0-dev build-essential aptitude gfortran cmake freeglut3 mesa-common-dev freeglut3-dev libglew1.5-dev libglm-dev python-wxgtk2.8

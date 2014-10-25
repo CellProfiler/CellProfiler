@@ -139,7 +139,7 @@ TMPDIR					?= $(PREFIX)/tmp
 # disable prechecks. Disabling is not recommended. It may lead
 # to failed builds because of missing/wrong dependencies.
 DISABLE_PRECHECKS			?= NO
-WXUSEGTK				?= yes
+WXUSEGTK				?= YES
 WGETFLAGS				?= --continue --tries=10 --timeout=60 --no-check-certificate 
 
 # Versions and prefixes of packages:

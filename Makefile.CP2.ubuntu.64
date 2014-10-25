@@ -1252,10 +1252,10 @@ distclean:				clean
 #
 # Downloads and fetching of sources
 #
-$(SRCDIR)/findlibjvm.class:
-					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/findlibjvm.class" && \
-					touch "$@"
+#$(SRCDIR)/findlibjvm.class:
+#					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
+#					wget $(WGETFLAGS) "https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/findlibjvm.class" && \
+#					touch "$@"
 
 $(SRCDIR)/$(NUMPYVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \

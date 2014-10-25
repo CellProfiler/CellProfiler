@@ -1,0 +1,52 @@
+# branche release_2.1.1
+
+
+# we need ssh for remote acces and aptitude for libgtk2.0 isntallation
+sudo apt-get install --yes openjdk-7-jdk ssh gtk2.0-dev build-essential aptitude gfortran cmake freeglut3 mesa-common-dev freeglut3-dev libglew1.5-dev libglm-dev python-wxgtk2.8
+
+# isntall java 
+# http://www.mkyong.com/java/how-to-install-java-jdk-on-ubuntu-linux/
+java -version     # check installation
+echo $JAVA_HOME   # is empty
+JAVA_HOME_ADD="/usr/lib/jvm/java-7-openjdk-amd64"   # set temp path for JAVA_HOME
+if [[ -z "$(touch ~/.bash_profile && grep "$JAVA_HOME_ADD" ~/.bash_profile)" ]] ; then \
+  printf "\n# Add "$JAVA_HOME_ADD" to your JAVA_HOME\nexport JAVA_HOME=\"$JAVA_HOME_ADD:\$JAVA_HOME\" \n" >> ~/.bash_profile
+fi
+
+# set locals
+export LANGUAGE=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+sudo locale-gen en_US en_US.UTF-8
+sudo dpkg-reconfigure locales
+
+
+
+# Export HOSTTYPE (not shure if this is needed)
+echo $HOSTTYPE && export HOSTTYPE
+if [[ -z "$(touch ~/.bash_profile && grep "export \$HOSTTYPE" ~/.bash_profile)" ]] ; then \
+  printf "\n# Export HOSTTYPE to your enviroment\nexport \$HOSTTYPE \n" >> ~/.bash_profile
+fi
+
+# ubuntu installatie cellprofiler
+mkdir -p ~/git && cd ~/git
+git clone https://github.com/CellProfiler/CellProfiler.git || \
+cd CellProfiler && git pull https://github.com/CellProfiler/CellProfiler.git
+
+# on host you can add commit and push the changes to the client
+git add . && git commit -m "slideToolkit makefile in progress" && git push
+
+
+
+# After installation, you need to run the following every time
+# you want to start CellProfiler (or place it in your SHELL
+# startup scripts, i.e. ~/.bashrc for bash):
+   CP2DEST="$HOME/usr/CellProfiler2"
+   export PATH="${CP2DEST}/bin:${PATH}"
+   export LD_LIBRARY_PATH="${CP2DEST}/lib:${CP2DEST}/lib64:${LD_LIBRARY_PATH}":${CP2DEST}/lib/mysql
+   export PYTHONPATH="${CP2DEST}/lib/python2.5/site-packages:${PYTHONPATH}"
+   export JAVA_HOME="<your path to JDK or JRE>"
+#
+# To run CellProfiler:
+#   cd ${CP2DEST}
+#   python CellProfiler.py -b

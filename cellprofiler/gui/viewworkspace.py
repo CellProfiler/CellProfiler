@@ -326,6 +326,9 @@ class ViewWorkspace(object):
     def redraw(self, event=None):
         if self.ignore_redraw:
             return
+        min_height = min_width = np.iinfo(np.int32).max
+        smallest = None
+        size_mismatch = False
         images = []
         for chooser, color, check, _ in self.image_rows:
             if not check.IsChecked():
@@ -341,29 +344,18 @@ class ViewWorkspace(object):
             image = self.workspace.image_set.get_image(image_name)
             red, green, blue = color.GetValue()
             images.append((image, red, green, blue))
+            height, width = image.pixel_data.shape[:2]
+            if height < min_height or width < min_width:
+                min_height, min_width = height, width
+                smallest = image
+                size_mismatch = True
+            elif height > min_height or width > min_width:
+                size_mismatch = True
+            
         if len(images) == 0:
             self.frame.figure.canvas.Hide()
             return
-        
-        if not self.frame.figure.canvas.IsShown():
-            self.frame.figure.canvas.Show()
-            self.layout()
-        width = height = 0
-        for image, _, _, _ in images:
-            width = max(width, image.pixel_data.shape[1])
-            height = max(height, image.pixel_data.shape[0])
-        image = np.zeros((height, width, 3))
-        for src_image, red, green, blue in images:
-            pixel_data = src_image.pixel_data.astype(np.float32)
-            src_height, src_width = pixel_data.shape[:2]
-            if pixel_data.ndim == 3:
-                src_depth = min(pixel_data.shape[2], 3)
-                image[:src_height, :src_width, :src_depth] += \
-                    pixel_data[:, :, :src_depth]
-            else:
-                image[:src_height, :src_width, 0] += pixel_data * red / 255
-                image[:src_height, :src_width, 1] += pixel_data * green / 255
-                image[:src_height, :src_width, 2] += pixel_data * blue / 255
+
         cplabels = []
         for chooser, color, check, _ in self.object_rows:
             if not check.IsChecked():
@@ -379,6 +371,13 @@ class ViewWorkspace(object):
             red, green, blue = color.GetValue()
             color = (red, green, blue)
             alpha_colormap = cpprefs.get_default_colormap()
+            height, width = objects.shape[:2]
+            if height < min_height or width < min_width:
+                min_height, min_width = height, width
+                smallest = objects
+                size_mismatch = True
+            elif height > min_height or width > min_width:
+                size_mismatch = True
             
             cplabels.append( {
                 CPLD_NAME: objects_name,
@@ -388,6 +387,29 @@ class ViewWorkspace(object):
                 CPLD_ALPHA_VALUE: .25,
                 CPLD_ALPHA_COLORMAP: alpha_colormap,
                 CPLD_LINE_WIDTH: 1})
+            
+        if size_mismatch:
+            for d in cplabels:
+                d[CPLD_LABELS] = [
+                    smallest.crop_image_similarly(l) for l in d[CPLD_LABELS]]
+        
+        if not self.frame.figure.canvas.IsShown():
+            self.frame.figure.canvas.Show()
+            self.layout()
+        width, height = min_width, min_height
+        image = np.zeros((height, width, 3))
+        for src_image, red, green, blue in images:
+            pixel_data = src_image.pixel_data.astype(np.float32)
+            if size_mismatch:
+                pixel_data = smallest.crop_image_similarly(pixel_data)
+            if pixel_data.ndim == 3:
+                src_depth = min(pixel_data.shape[2], 3)
+                image[:, :, :src_depth] += \
+                    pixel_data[:, :, :src_depth]
+            else:
+                image[:, :, 0] += pixel_data * red / 255
+                image[:, :, 1] += pixel_data * green / 255
+                image[:, :, 2] += pixel_data * blue / 255
                 
         if self.image is not None and \
            tuple(self.image.image.shape) != tuple(image.shape):

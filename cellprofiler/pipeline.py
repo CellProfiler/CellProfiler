@@ -2593,7 +2593,54 @@ class Pipeline(object):
         self.__filtered_image_plane_details_images_settings = tuple()
         self.__filtered_image_plane_details_metadata_settings = tuple()
         self.__image_plane_details_generation = file_list.generation
-    
+        
+    def read_file_list(self, path_or_fd, add_undo=True):
+        '''Read a file of one file or URL per line into the file list
+        
+        path - a path to a file or a URL
+        '''
+        if isinstance(path_or_fd, basestring):
+            from cellprofiler.modules.loadimages import \
+                 url2pathname, FILE_SCHEME, PASSTHROUGH_SCHEMES
+            pathname = path_or_fd
+            if pathname.startswith(FILE_SCHEME):
+                pathname = url2pathname(pathname)
+                with open(pathname, "r") as fd:
+                    self.read_file_list(fd, add_undo=add_undo)
+            elif any(pathname.startswith(_) for _ in PASSTHROUGH_SCHEMES):
+                import urllib2
+                try:
+                    fd = urllib2.urlopen(pathname)
+                    self.read_file_list(fd, add_undo=add_undo)
+                finally:
+                    fd.close()
+            else:
+                with open(pathname, "r") as fd:
+                    self.read_file_list(fd, add_undo=add_undo)
+            return
+        self.add_pathnames_to_file_list(
+            map((lambda x: x.strip()), 
+                filter((lambda x: len(x) > 0), path_or_fd)),
+            add_undo=add_undo)
+        
+            
+    def add_pathnames_to_file_list(self, pathnames, add_undo=True):
+        '''Add a sequence of paths or URLs to the file list'''
+        from cellprofiler.modules.loadimages import pathname2url
+        urls = []
+        for pathname in pathnames:
+            if len(pathname) == 0:
+                continue
+            if (pathname.startswith("http:") or 
+                pathname.startswith("https:") or
+                pathname.startswith("ftp:") or
+                pathname.startswith("omero:") or
+                pathname.startswith("file:")):
+                urls.append(pathname)
+            else:
+                urls.append(pathname2url(pathname))
+        self.add_urls(urls, add_undo=add_undo)
+            
     def get_module_state(self, module_name_or_module):
         '''Return an object representing the state of the named module
         

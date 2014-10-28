@@ -1180,6 +1180,59 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             if isinstance(tt, unicode):
                 tt = tt.encode("utf-8")
             self.assertEquals(rr, tt)
+            
+    def test_19_01_read_file_list_pathnames(self):
+        root = os.path.split(__file__)[0]
+        paths = [os.path.join(root, x) for x in "foo.tif", "bar.tif"]
+        fd = cStringIO.StringIO("\n".join([
+            paths[0], "", paths[1]]))
+        p = cpp.Pipeline()
+        p.read_file_list(fd)
+        self.assertEqual(len(p.file_list), 2)
+        for path in paths:
+            self.assertIn(LI.pathname2url(path), p.file_list)
+            
+    def test_19_02_read_file_list_urls(self):
+        root = os.path.split(__file__)[0]
+        file_url = LI.pathname2url(os.path.join(root, "foo.tif"))
+        urls = ["http://cellprofiler.org/foo.tif",
+                file_url,
+                "https://github.com/foo.tif",
+                "ftp://example.com/foo.tif"]
+        fd = cStringIO.StringIO("\n".join(urls))
+        p = cpp.Pipeline()
+        p.read_file_list(fd)
+        self.assertEqual(len(p.file_list), len(urls))
+        for url in urls:
+            self.assertIn(url, p.file_list)
+            
+    def test_19_03_read_file_list_file(self):
+        urls = ["http://cellprofiler.org/foo.tif",
+                "https://github.com/foo.tif",
+                "ftp://example.com/foo.tif"]
+        fd, path = tempfile.mkstemp(".txt", text=True)
+        try:
+            os.write(fd, "\n".join(urls))
+            p = cpp.Pipeline()
+            p.read_file_list(path)
+        finally:
+            os.close(fd)
+            os.remove(path)
+        self.assertEqual(len(p.file_list), len(urls))
+        for url in urls:
+            self.assertIn(url, p.file_list)
+    
+    def test_19_04_read_http_file_list(self):
+        url = "http://cellprofiler.org/linked_files/unit_test_data/"\
+            "url_file_list.txt"
+        urls = ["http://cellprofiler.org/foo.tif",
+                "https://github.com/foo.tif",
+                "ftp://example.com/foo.tif"]
+        p = cpp.Pipeline()
+        p.read_file_list(url)
+        self.assertEqual(len(p.file_list), len(urls))
+        for url in urls:
+            self.assertIn(url, p.file_list)
 
 class TestImagePlaneDetails(unittest.TestCase):
     def get_ipd(self, 

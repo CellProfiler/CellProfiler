@@ -1382,7 +1382,32 @@ def set_allow_schema_write(value):
     '''
     global __allow_schema_write
     __allow_schema_write = value
+
+__image_set_filename = None
+def set_image_set_file(filename):
+    '''Record the name of the image set that should be loaded upon startup'''
+    global __image_set_filename
+    __image_set_filename = filename
     
+def clear_image_set_file():
+    '''Remove the recorded image set file name
+    
+    Call this after loading the image set file to cancel reloading of the
+    file during subsequent operations.
+    '''
+    global __image_set_filename
+    __image_set_filename = None
+    
+def get_image_set_file():
+    '''Recover the name of the image set file to use to populate the file list
+    
+    Returns either None or the name of the file to use. For the UI, the
+    file list should be loaded and clear_image_set_file() should be called,
+    for headless, the file list should be loaded after the pipeline has been
+    loaded.
+    '''
+    return __image_set_filename
+
 def add_progress_callback(callback):
     '''Add a callback function that listens to progress calls
     

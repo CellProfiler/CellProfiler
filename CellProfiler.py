@@ -195,6 +195,11 @@ def main(args):
     #
     from cellprofiler.utilities.cpjvm import cp_start_vm
     cp_start_vm()
+    #
+    # Not so crucial preferences...
+    #
+    if options.image_set_file is not None:
+        cpprefs.set_image_set_file(options.image_set_file)
     try:
         if options.show_gui:
             import wx
@@ -227,8 +232,6 @@ def main(args):
 
         if options.data_file is not None:
             cpprefs.set_data_file(os.path.abspath(options.data_file))
-        if options.image_set_file is not None:
-            cpprefs.set_image_set_file(options.image_set_file, False)
             
         from cellprofiler.utilities.version import version_string, version_number
         logging.root.info("Version: %s / %d" % (version_string, version_number))
@@ -455,11 +458,12 @@ def parse_args(args):
                       default = None,
                       help = "Specify a data file for LoadData modules that "
                       'use the "From command-line" option')
-    parser.add_option("--image-set-file",
+    parser.add_option("--file-list",
                       dest = "image_set_file",
                       default = None,
-                      help = "Specify the image set file that controls the input "
-                      "images for the pipeline")
+                      help = "Specify a file list of one file or URL per line "
+                      "to be used to initially populate the Images module's "
+                      "file list.")
     parser.add_option("--do-not-write-schema",
                       dest = 'allow_schema_write',
                       default = True,
@@ -808,6 +812,7 @@ def run_pipeline_headless(options, args):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
     from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
     import cellprofiler.measurements as cpmeas
+    import cellprofiler.preferences as cpprefs
     pipeline = Pipeline()
     initial_measurements = None
     try:
@@ -839,6 +844,9 @@ def run_pipeline_headless(options, args):
         groups = dict(kvs)
     else:
         groups = None
+    file_list = cpprefs.get_image_set_file()
+    if file_list is not None:
+        pipeline.read_file_list(file_list)
     use_hdf5 = len(args) > 0 and not args[0].lower().endswith(".mat")
     measurements = pipeline.run(
         image_set_start=image_set_start, 

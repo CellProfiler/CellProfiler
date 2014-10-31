@@ -1,4 +1,13 @@
 from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
+LT_NONE = 0
+LT_PHASE_1 = 1
+LT_SPLIT = 2
+LT_MITOSIS = 3
+LT_GAP = 4
+KM_VEL = 1
+KM_NO_VEL = 0
+KM_NONE = -1
+
 __doc__ = """
 <b>Track Objects</b> allows tracking objects throughout sequential 
 frames of a series of images, so that from frame to frame
@@ -58,6 +67,36 @@ frame of the object's life (or the movie ends, whichever comes first). At this p
 the final age of the object is output; no values are stored for earlier frames. This
 is useful if you want to plot a histogram of the object lifetimes; all but the final age
 can be ignored or filtered out.</li>
+<li><i>LinkType:</i> The linking method used to link the object to its parent.
+Values are <b>%(LT_NONE)d</b> if the object was not linked to a parent,
+<b>%(LT_PHASE_1)d</b> if the object was linked to a parent in the previous frame,
+<b>%(LT_SPLIT)d</b> if the object is linked as the start of a split path,
+<b>%(LT_GAP)d</b> if the object was linked to a parent in a frame prior to the
+previous frame (a gap),
+<b>%(LT_MITOSIS)s</b> if the object was linked to its parent as a daughter of
+a mitotic pair.</li>
+<li><i>MovementModel:</i>The movement model used to track the object. 
+<b>%(KM_NO_VEL)d</b> if the random motion model was used and <b>%(KM_VEL)d</b>
+if a constant-velocity model was used.</li>
+<li><i>LinkingDistance:</i>The difference between the propagated position of an
+object and the object to which it is matched. A slowly decaying histogram of
+these distances indicates that the search radius is large enough.</li>
+<li><i>StandardDeviation:</i>The Kalman filter maintains a running estimate
+of the variance of the error in estimated position for each model. 
+This measurement records the linking distance divided by the standard deviation
+of the error when linking the object with its parent.
+</li>
+<li><i>GapLength:</i>The number of frames between an object and its parent.
+For instance, an object in frame 3 with a parent in frame 1 has a gap length of
+2.</li>
+<li><i>GapScore:</i>For an object linked to its parent by bridging a gap, 
+the score for the gap.</li>
+<li><i>SplitScore:</i>For an object linked to its parent via a split, the score
+for the split.</li>
+<li><i>MergeScore:</i>For an object linked to a child via a merge, the score
+for the merge.</li>
+<li><i>MitosisScore:</i>For an object linked to two children via a mitosis,
+the score for the mitosis.</li>
 </ul>
 
 <b>Image measurements</b>
@@ -133,6 +172,15 @@ F_INTEGRATED_DISTANCE = "IntegratedDistance"
 F_LINEARITY = "Linearity"
 F_LIFETIME = "Lifetime"
 F_FINAL_AGE = "FinalAge"
+F_MOVEMENT_MODEL = "MovementModel"
+F_LINK_TYPE = "LinkType"
+F_LINKING_DISTANCE = "LinkingDistance"
+F_STANDARD_DEVIATION = "StandardDeviation"
+F_GAP_LENGTH = "GapLength"
+F_GAP_SCORE = "GapScore"
+F_MERGE_SCORE = "MergeScore"
+F_SPLIT_SCORE = "SplitScore"
+F_MITOSIS_SCORE = "MitosisScore"
 F_KALMAN = "Kalman"
 F_STATE = "State"
 F_COV = "COV"
@@ -908,6 +956,9 @@ class TrackObjects(cpm.CPModule):
             np.ones(objects.segmented.shape), objects.segmented, 
             np.arange(1, np.max(objects.segmented) + 1,dtype=np.int32)))
         areas = areas.astype(int)
+        model_types = np.array(
+            [m for m, s in ((KM_NO_VEL, self.static_model),
+                            (KM_VEL, self.velocity_model)) if s], int)
 
         if n_old > 0:
             new_i, new_j = centers_of_labels(objects.segmented)
@@ -922,6 +973,7 @@ class TrackObjects(cpm.CPModule):
             #
             minDist = np.ones((n_old, n_new)) * self.radius_limit.max
             d = np.ones((n_old, n_new)) * np.inf
+            sd = np.zeros((n_old, n_new))
             # The index of the Kalman filter used: -1 means not used
             kalman_used = -np.ones((n_old, n_new), int)
             for nkalman, kalman_state in enumerate(kalman_states):
@@ -993,10 +1045,19 @@ class TrackObjects(cpm.CPModule):
             #  Kalman filter update
             #
             model_idx = np.zeros(len(old_object_numbers), int)
+            linking_distance = np.ones(len(old_object_numbers)) * np.NaN
+            standard_deviation = np.ones(len(old_object_numbers)) * np.NaN
+            model_type = np.ones(len(old_object_numbers), int) * KM_NONE
+            link_type = np.ones(len(old_object_numbers), int) * LT_NONE
             mask = old_object_numbers > 0
             old_idx = old_object_numbers - 1
             model_idx[mask] =\
                 kalman_used[old_idx[mask], mask]
+            linking_distance[mask] = d[old_idx[mask], mask]
+            standard_deviation[mask] = \
+                linking_distance[mask] / noise_sd[old_idx[mask]]
+            model_type[mask] = model_types[model_idx[mask]]
+            link_type[mask] = LT_PHASE_1
             #
             # The measurement covariance is the square of the
             # standard deviation of the measurement error. Assume
@@ -1043,6 +1104,10 @@ class TrackObjects(cpm.CPModule):
         else:
             i,j = centers_of_labels(objects.segmented)
             count = len(i)
+            link_type = np.ones(count, int) * LT_NONE
+            model_type = np.ones(count, int) * KM_NONE
+            linking_distance = np.ones(count) * np.NaN
+            standard_deviation = np.ones(count) * np.NaN
             #
             # Initialize the kalman_state with the new objects
             #
@@ -1065,6 +1130,14 @@ class TrackObjects(cpm.CPModule):
         m.add_measurement(self.object_name.value,
                           self.measurement_name(F_AREA),
                           areas)
+        m[self.object_name.value,
+          self.measurement_name(F_LINKING_DISTANCE)] = linking_distance
+        m[self.object_name.value,
+          self.measurement_name(F_STANDARD_DEVIATION)] = standard_deviation
+        m[self.object_name.value,
+          self.measurement_name(F_MOVEMENT_MODEL)] = model_type
+        m[self.object_name.value,
+          self.measurement_name(F_LINK_TYPE)] = link_type
         self.save_kalman_measurements(workspace)
         self.set_saved_labels(workspace, objects.segmented)
         
@@ -1343,64 +1416,65 @@ class TrackObjects(cpm.CPModule):
         ##################################################
         #
         # Addresses of supplementary nodes:
-        # The LAP array is composed of six address ranges.
+        #
+        # The LAP array is composed of the following ranges
         # 
         # Count | node type
         # ------------------
         # T     | segment starts and ends
-        # T     | gap alternatives
+        # T     | gaps
         # OB    | split starts
         # OB    | merge ends
-        # M     | mitosis left child
-        # M     | mitosis right child
+        # M     | mitoses
         #
         # T = # tracks
         # OB = # of objects that can serve as merge or split points
-        # M = # of mitotic pairs considered
+        # M = # of mitoses
         #
         # The graph:
         # 
         # Gap Alternatives (in other words, do nothing)
         # ----------------------------------------------
-        # End[i] <----> Gap Alternative[i]
-        # Gap Alternative[j] <----> Start[j]
-        # Split[k] <---> Split[k]
-        # Merge[k] <---> Merge[k]
+        # End[i] <----> Gap alternative[i]
+        # Gap alternative[i] <----> Start[i]
+        # Split[i] <----> Split[i]
+        # Merge[j] <----> Merge[j]
+        # Mitosis[i] <----> Mitosis[i]
         #
-        # Daisy chain mitosis alternatives so that if any is used,
-        # all must be used
-        #
-        # Mitosis left child[l] <--->  Mitosis right child[l]
-        # Mitosis right child[l] <--->  Mitosis left child[l]
         #
         # Bridge gaps:
         # -----------------------------------------------
         #
         # End[i] <---> Start[j]
-        # Gap Alternative[i] <---> Gap Alternative[j]
+        # Gap alternative[i] <----> Gap alternative[j]
         #
         # Splits
         # -----------------------------------------------
         #
         # Split[i] <----> Start[j]
-        # Gap Alternative[j] <---> Split[i]
+        # Gap alternative[j] <----> Split[i]
         #
         # Merges
         # -----------------------------------------------
         # End[i] <----> Merge[j]
         # Merge[j] <----> Gap alternative[i]
         #
-        # Mitosis
+        # Mitoses
         # -----------------------------------------------
-        # The mitosis model uses an intermediate left and right
-        # child in order to create separate subgraphs for each
-        # mitosis without sharing edges.
+        # The mitosis model is somewhat imperfect. The mitosis
+        # caps the parent and makes it unavailable as a candidate
+        # for a gap closing. In the best case, there is only one
+        # mitosis candidate for the left and right child and
+        # the left and right child are connected to gap alternatives,
+        # but there may be competing splits, gap closings or
+        # other mitoses.
         #
-        # End[i] <----> Mitosis left child[j]
-        # Mitosis left child[j] <----> Start[k]
-        # Mitosis right child[j] <----> Start[l]
-        # Gap alternative[k] <----> Gap alternative[i]
-        # Gap alternative[l] <---->  Mitosis right child[j]
+        # We take a greedy approach, ordering the mitoses by their
+        # scores and fulfilling them. After processing the mitoses,
+        # we run LAP again, keeping only the parent nodes of untaken
+        # mitoses and child nodes connected to gap alternatives
+        #
+        # End[i] <----> Mitosis[j]
         #
         ##################################################
         
@@ -1408,33 +1482,23 @@ class TrackObjects(cpm.CPModule):
         start_nodes = []
         scores = []
         #
-        # The offsets and lengths of the start/end node ranges and
-        # gap ranges
+        # The offsets and lengths of the start/end node ranges 
         #
         start_end_off = 0
         start_end_len = len(L)
-        gap_off = len(L)
-        gap_len = len(L)
+        gap_off = start_end_end = start_end_len
+        gap_end = gap_off + start_end_len
         #-------------------------------------------
         #
         # Null model (do nothing)
         #
         #-------------------------------------------
         
-        #
-        # Create the edges between ends and gap alternatives
-        # The edge weight is the gap termination cost
-        #
-        end_nodes.append(np.arange(len(L)))
-        start_nodes.append(np.arange(len(L)) + gap_off)
-        scores.append(np.ones(len(L)) * gap_cost/2)
-        #
-        # Create the edges between the the gap alternatives and the starts
-        # The edge weight is the gap initiation cost
-        #
-        end_nodes.append(np.arange(len(L)) + gap_off)
-        start_nodes.append(np.arange(len(L)))
-        scores.append(np.ones(len(L)) * gap_cost/2)
+        for first, second in ((end_nodes, start_nodes),
+                              (start_nodes, end_nodes)):
+            first.append(np.arange(start_end_len))
+            second.append(np.arange(start_end_len) + gap_off)
+            scores.append(np.ones(start_end_len) * gap_cost/2)
         
         #------------------------------------------
         #
@@ -1446,22 +1510,21 @@ class TrackObjects(cpm.CPModule):
         # Create the edges between ends and starts.
         # The edge weight is the gap pair cost.
         #
-        a, d = self.get_gap_pair_scores(F, L, max_frame_difference)
+        a, gap_scores = self.get_gap_pair_scores(F, L, max_frame_difference)
         # filter by max gap score
-        mask = d <= max_gap_score
+        mask = gap_scores <= max_gap_score
         if np.sum(mask) > 0:
-            a, d = a[mask], d[mask]
+            a, gap_scores = a[mask], gap_scores[mask]
             end_nodes.append(a[:, 0])
             start_nodes.append(a[:, 1])
-            scores.append(d)
+            scores.append(gap_scores)
             #
-            # Create the edges between the gap alternatives that would
-            # have hooked the start nodes and the ones that would have
-            # hooked the end nodes. There is no cost.
+            # Hook the gap alternative ends of the starts to
+            # the gap alternative starts of the ends
             #
             end_nodes.append(a[:, 1] + gap_off)
             start_nodes.append(a[:, 0] + gap_off)
-            scores.append(np.zeros(len(a)))
+            scores.append(np.zeros(len(gap_scores)))
 
         #---------------------------------------------------
         #
@@ -1473,7 +1536,7 @@ class TrackObjects(cpm.CPModule):
         # The first column of z is the index of the track that ends. The second
         # is the index into P2 of the object to be merged into
         #
-        merge_off = gap_off+gap_len
+        merge_off = gap_end
         if len(P1) > 0:
             # Do the initial winnowing in chunks of 10m pairs
             lchunk_size = 10000000 / len(P1)
@@ -1517,11 +1580,12 @@ class TrackObjects(cpm.CPModule):
                 start_nodes.append(merge_off + np.arange(merge_len))
                 scores.append(merge_scores)
                 #
-                # Hook the gaps that match the ends to the merge nodes
+                # Hook the gap alternative starts for the ends to
+                # the merge nodes
                 #
                 end_nodes.append(merge_off + np.arange(merge_len))
                 start_nodes.append(merge_lidx + gap_off)
-                scores.append(np.ones(merge_len) * gap_cost/2)
+                scores.append(np.ones(merge_len) * gap_cost / 2)
                 #
                 # The alternative hypothesis is represented by merges hooked
                 # to merges
@@ -1531,6 +1595,7 @@ class TrackObjects(cpm.CPModule):
                 scores.append(np.ones(merge_len) * merge_alternative_cost)
         else:
             merge_len = 0
+        merge_end = merge_off+merge_len
             
         #------------------------------------------------------
         #
@@ -1538,7 +1603,7 @@ class TrackObjects(cpm.CPModule):
         #
         #------------------------------------------------------
         
-        split_off = merge_off + merge_len
+        split_off = merge_end
         if len(P2) > 0:
             lchunk_size = 10000000 / len(P2)
             chunks = []
@@ -1580,15 +1645,11 @@ class TrackObjects(cpm.CPModule):
                 start_nodes.append(split_fidx)
                 scores.append(split_scores)
                 #
-                # Hook the gap alternatives (ends) to the split nodes
-                # We charge the gap closing alternative cost here
-                # so that a split alternative and not a split + gap
-                # alternative is subtracted if we choose a split over
-                # a gap closing or gap.
+                # Hook the alternate ends to the split starts
                 #
                 end_nodes.append(split_fidx + gap_off)
                 start_nodes.append(np.arange(split_len) + split_off)
-                scores.append(np.ones(split_len) * gap_cost / 2)
+                scores.append(np.ones(split_len) * gap_cost/2)
                 #
                 # The alternate hypothesis is split nodes hooked to themselves
                 #
@@ -1597,6 +1658,7 @@ class TrackObjects(cpm.CPModule):
                 scores.append(np.ones(split_len) * split_alternative_cost)
         else:
             split_len = 0
+        split_end = split_off + split_len
         
         #----------------------------------------------------------
         #
@@ -1605,79 +1667,191 @@ class TrackObjects(cpm.CPModule):
         #----------------------------------------------------------
         
         mitoses, mitosis_scores = self.get_mitotic_triple_scores(F, L)
+        n_mitoses = len(mitosis_scores)
+        if n_mitoses > 0:
+            order = np.argsort(mitosis_scores)
+            mitoses, mitosis_scores = mitoses[order], mitosis_scores[order]
         MDLIDX = 0  # index of left daughter
         MDRIDX = 1  # index of right daughter
         MPIDX = 2   # index of parent
-        n_mitoses = len(mitosis_scores)
         mitoses_parent_lidx = mitoses[:, MPIDX]
         mitoses_left_child_findx = mitoses[:, MDLIDX]
         mitoses_right_child_findx = mitoses[:, MDRIDX]
         #
-        # Create the ranges for the two
-        # ghost mitosis children
+        # Create the ranges for mitoses
         #
-        mitosis_left_child_len = mitosis_right_child_len = n_mitoses
-        mitosis_left_child_off = split_off + split_len
-        mitosis_right_child_off = \
-            mitosis_left_child_off + mitosis_left_child_len
+        mitosis_off = split_end
+        mitosis_len = n_mitoses
+        mitosis_end = mitosis_off + mitosis_len
         if n_mitoses > 0:
             #
-            # Hook ends of parents to the mitosis left child. We put the
-            # full cost on this edge (arbitrary choice)
+            # Taking the mitosis score will cost us the parent gap at least.
             #
             end_nodes.append(mitoses_parent_lidx)
-            start_nodes.append(np.arange(n_mitoses) + mitosis_left_child_off)
+            start_nodes.append(np.arange(n_mitoses) + mitosis_off)
             scores.append(mitosis_scores)
             #
-            # Hook ends of the left mitosis child to the left child
+            # Balance the mitosis against the gap alternative.
             #
-            end_nodes.append(np.arange(n_mitoses) + mitosis_left_child_off)
-            start_nodes.append(mitoses_left_child_findx)
-            scores.append(np.zeros(n_mitoses))
+            end_nodes.append(np.arange(n_mitoses) + mitosis_off)
+            start_nodes.append(mitoses_parent_lidx + gap_off)
+            scores.append(np.ones(n_mitoses) * gap_cost / 2)
             #
-            # Hook ends of the mitosis right child to the right child
-            #
-            end_nodes.append(np.arange(n_mitoses) + mitosis_right_child_off)
-            start_nodes.append(mitoses_right_child_findx)
-            scores.append(np.zeros(n_mitoses))
-            #
-            # Hook the left child's gap alternative to the parent's gap
-            # Make sure to charge the gap alternative cost.
-            #
-            end_nodes.append(mitoses_left_child_findx+gap_off)
-            start_nodes.append(mitoses_parent_lidx+gap_off)
-            scores.append(np.ones(n_mitoses) * gap_cost/2)
-            #
-            # Hook the right child's gap alternative to the ghost mitosis
-            # right child. This also competes against a gap closing, so
-            # we have to charge this a gap cost as well.
-            #
-            end_nodes.append(mitoses_right_child_findx+gap_off)
-            start_nodes.append(np.arange(n_mitoses) + mitosis_right_child_off)
-            scores.append(np.ones(n_mitoses) * gap_cost/2)
-            #
-            # The alternative hypothesis links mitosis left child to 
-            # mitosis right child so either both or none are used.
+            # The alternative hypothesis links mitosis to mitosis
             # We charge the alternative hypothesis the mitosis_alternative
-            # cost which is applied to only one of the edges.
+            # cost.
             #
-            end_nodes.append(np.arange(n_mitoses) + mitosis_left_child_off)
-            start_nodes.append(np.arange(n_mitoses) + mitosis_right_child_off)
+            end_nodes.append(np.arange(n_mitoses) + mitosis_off)
+            start_nodes.append(np.arange(n_mitoses) + mitosis_off)
             scores.append(np.ones(n_mitoses) * mitosis_alternative_cost)
-            end_nodes.append(np.arange(n_mitoses) + mitosis_right_child_off)
-            start_nodes.append(np.arange(n_mitoses) + mitosis_left_child_off)
-            scores.append(np.zeros(n_mitoses))
-            
+        
         i = np.hstack(end_nodes)
         j = np.hstack(start_nodes)
         c = scores = np.hstack(scores)
-        x,y = lapjv(i,j,c)
-
+        #-------------------------------------------------------
+        #
+        #      LAP Processing # 1
+        #
+        x, y = lapjv(i, j, c)
+        score_matrix = scipy.sparse.coo.coo_matrix((c, (i, j))).tocsr()
+        #---------------------------
+        #
+        # Useful debugging diagnostics
+        #
+        def desc(node):
+            '''Describe a node for graphviz'''
+            fl = F
+            if node < start_end_end:
+                fmt = "N%d:%d"
+                idx = node
+            elif node < gap_end:
+                fmt = "G%d:%d"
+                idx = node - gap_off
+            elif node < merge_end:
+                fmt = "M%d:%d"
+                idx = merge_p1idx[node - merge_off]
+                fl = P1
+            elif node < split_end:
+                fmt = "S%d:%d"
+                idx = split_p2idx[node - split_off]
+                fl = P2
+            else:
+                mitosis = mitoses[node - mitosis_off]
+                (lin, lon), (rin, ron), (pin, pon) = [
+                    (image_numbers[fl[idx, IIDX]], fl[idx, ONIDX])
+                    for idx, fl in zip(mitosis, (F, F, L))]
+                return "n%d[label=\"MIT%d:%d->%d:%d+%d:%d\"]" % (
+                    node, pin, pon, lin, lon, rin, ron)
+            return "n%d[label=\"%s\"]" % (
+                node, fmt % (image_numbers[int(fl[idx, IIDX])], 
+                             int(fl[idx, ONIDX])))
+        def write_graph(path, x, y):
+            '''Write a graphviz DOT file'''
+            with open(path, "w") as fd:
+                fd.write("digraph trackobjects {\n")
+                graph_idx = np.where(
+                    (x != np.arange(len(x))) & (y != np.arange(len(y))))[0]
+                for idx in graph_idx:
+                    fd.write(desc(idx)+";\n")
+                for idx in graph_idx:
+                    fd.write("n%d -> n%d [label=%0.2f];\n" % 
+                             (idx, x[idx], score_matrix[idx, x[idx]]))
+                fd.write("}\n")
+        #
+        #--------------------------------------------------------
+        #
+        # Mitosis fixup.
+        #
+        good_mitoses = np.zeros(len(mitoses), bool)
+        for midx, (lidx, ridx, pidx) in enumerate(mitoses):
+            #
+            # If the parent was not accepted or either of the children
+            # have been assigned to a mitosis, skip
+            #
+            if x[pidx] == midx + mitosis_off and not \
+               any([y[idx] >= mitosis_off and y[idx] < mitosis_end
+                    for idx in lidx, ridx]):
+                alt_score = sum([score_matrix[y[idx], idx] for idx in lidx, ridx])
+                #
+                # Taking the alt score would cost us a mitosis alternative
+                # cost, but would remove half of a gap alternative.
+                #
+                alt_score += mitosis_alternative_cost - gap_cost / 2
+                #
+                # Alternatively, taking the mitosis score would cost us
+                # the gap alternatives of the left and right.
+                # 
+                if alt_score > mitosis_scores[midx] + gap_cost:
+                    for idx in lidx, ridx:
+                        old_y = y[idx]
+                        if old_y < start_end_end:
+                            x[old_y] = old_y + gap_off
+                        else:
+                            x[old_y] = old_y
+                    y[lidx] = midx + mitosis_off
+                    y[ridx] = midx + mitosis_off
+                    good_mitoses[midx] = True
+                    continue
+            x[pidx] = pidx + gap_off
+            y[pidx+gap_off] = pidx
+            x[midx+mitosis_off] = midx+mitosis_off
+            y[midx+mitosis_off] = midx+mitosis_off
+        if np.sum(good_mitoses) == 0:
+            good_mitoses = np.zeros((0, 3), int)
+            good_mitosis_scores = np.zeros(0)
+        else:
+            good_mitoses, good_mitosis_scores = \
+                mitoses[good_mitoses], mitosis_scores[good_mitoses]
+        #
+        #-------------------------------------
+        #
+        # Rerun to see if reverted mitoses could close gaps.
+        #
+        if np.any(x[mitoses[:, MPIDX]] != np.arange(len(mitoses)) + mitosis_off):
+            rerun_end = np.ones(mitosis_end, bool)
+            rerun_start = np.ones(mitosis_end, bool)
+            rerun_end[:start_end_end] = x[:start_end_end] < mitosis_off
+            rerun_end[mitosis_off:] = False
+            rerun_start[:start_end_end] = y[:start_end_end] < mitosis_off
+            rerun_start[mitosis_off:] = False
+            mask = rerun_end[i] & rerun_start[j]
+            i, j, c = i[mask], j[mask], c[mask]
+            i = np.hstack((i, 
+                           good_mitoses[:, MPIDX],
+                           good_mitoses[:, MDLIDX] + gap_off,
+                           good_mitoses[:, MDRIDX] + gap_off))
+            j = np.hstack((j,
+                           good_mitoses[:, MPIDX] + gap_off,
+                           good_mitoses[:, MDLIDX],
+                           good_mitoses[:, MDRIDX]))
+            c = np.hstack((c, np.zeros(len(good_mitoses) *3)))
+            x, y = lapjv(i, j, c)
+        #
+        # Fixups to measurements
+        #
+        # fixup[N] gets the fixup dictionary for image set, N
+        #
+        # fixup[N][FEATURE] gets a tuple of a list of object numbers and
+        #                   values.
+        #
+        fixups = {}
+        def add_fixup(feature, image_number, object_number, value):
+            if image_number not in fixups:
+                fixups[image_number] = { feature: ([object_number], [value])}
+            else:
+                fid = fixups[image_number]
+                if feature not in fid:
+                    fid[feature] = ([object_number], [value])
+                else:
+                    object_numbers, values = fid[feature]
+                    object_numbers.append(object_number)
+                    values.append(value)
+        
         #attaches different segments together if they are matches through the IAP
-        a = np.zeros(len(F)+1, dtype="int32")
-        b = np.zeros(len(F)+1, dtype="int32")
-        c = np.zeros(len(F)+1, dtype="int32")-1
-        d = np.zeros(len(F)+1, dtype="int32")-1
+        a = -np.ones(len(F)+1, dtype="int32")
+        b = -np.ones(len(F)+1, dtype="int32")
+        c = -np.ones(len(F)+1, dtype="int32")
+        d = -np.ones(len(F)+1, dtype="int32")
         z = np.zeros(len(F)+1, dtype="int32")
         
         # relationships is a list of parent-child relationships. Each element
@@ -1695,22 +1869,31 @@ class TrackObjects(cpm.CPModule):
         #    splits           (split_off <= j < split_off+split_len)
         #    mitosis left     (mitosis_left_child_off <= j < ....)
         #    mitosis right    (mitosis_right_child_off <= j < ....)
-        #    
-        for i in range(len(F)):
+        #
+        # Discard starts linked to self = "do nothing"
+        #
+        start_idxs = np.where(
+            y[:start_end_end] != np.arange(gap_off, gap_end))[0]
+        for i in start_idxs:
             my_image_index = int(F[i, IIDX])
+            my_image_number = image_numbers[my_image_index]
             my_object_index = int(F[i, OIIDX])
             my_object_number = int(F[i, ONIDX])
-            if(y[i] < start_end_len):
+            yi = y[i]
+            if yi < gap_end:
+                #-------------------------------
+                #
+                #     GAP
                 #
                 # y[i] gives index of last hooked to first
                 #
-                b[i+1] = y[i]+1
-                c[y[i]+1] = i+1
+                b[i+1] = yi+1
+                c[yi+1] = i+1
                 #
                 # Hook our parent image/object number to found parent
                 #
-                parent_image_index = int(L[y[i], IIDX])
-                parent_object_number = int(L[y[i], ONIDX])
+                parent_image_index = int(L[yi, IIDX])
+                parent_object_number = int(L[yi, ONIDX])
                 parent_image_number = image_numbers[parent_image_index]
                 parent_image_numbers[my_image_index][my_object_index] = \
                                     parent_image_number
@@ -1719,6 +1902,12 @@ class TrackObjects(cpm.CPModule):
                 relationships.append(
                     ((parent_image_index, parent_object_number),
                      (my_image_index, my_object_number)))
+                add_fixup(F_LINK_TYPE, my_image_number, my_object_number, 
+                          LT_GAP)
+                add_fixup(F_GAP_LENGTH, my_image_number, my_object_number, 
+                          my_image_index - parent_image_index)
+                add_fixup(F_GAP_SCORE, my_image_number, my_object_number,
+                          scores[yi])
                 #
                 # One less new object
                 #
@@ -1732,12 +1921,13 @@ class TrackObjects(cpm.CPModule):
                              (parent_image_number, parent_object_number,
                               image_numbers[my_image_index],
                               object_numbers[my_image_index][my_object_index],
-                              scores[y[i]]))
-            elif y[i] >= split_off and y[i] < split_off+split_len:
+                              score_matrix[yi, i]))
+            elif yi >= split_off and yi < split_end:
+                #------------------------------------
                 #
-                # Hook split objects to their parent
+                #     SPLIT
                 #
-                p2_idx = split_p2idx[y[i] - split_off]
+                p2_idx = split_p2idx[yi - split_off]
                 parent_image_index = int(P2[p2_idx, IIDX])
                 parent_image_number = image_numbers[parent_image_index]
                 parent_object_number = int(P2[p2_idx, ONIDX])
@@ -1750,6 +1940,10 @@ class TrackObjects(cpm.CPModule):
                 relationships.append(
                     ((parent_image_index, parent_object_number),
                      (my_image_index, my_object_number)))
+                add_fixup(F_LINK_TYPE, my_image_number, my_object_number, 
+                          LT_SPLIT)
+                add_fixup(F_SPLIT_SCORE, my_image_number, my_object_number,
+                          split_scores[yi - split_off])
                 #
                 # one less new object
                 #
@@ -1763,59 +1957,20 @@ class TrackObjects(cpm.CPModule):
                               image_numbers[my_image_index],
                               object_numbers[my_image_index][my_object_index],
                               split_scores[y[i] - split_off]))
-            elif y[i] >= mitosis_left_child_off and \
-                 y[i] < mitosis_left_child_off + mitosis_left_child_len:
-                #
-                # The left child of a mitosis
-                #
-                midx = y[i] - mitosis_left_child_off
-                lidx = mitoses_parent_lidx[midx]
-                parent_image_index = int(L[lidx, IIDX])
-                parent_image_number = image_numbers[parent_image_index]
-                parent_object_number = int(L[lidx, ONIDX])
-                b[i+1] = int(L[lidx, LIDX])
-                c[b[i+1]] = i+1
-                parent_image_numbers[my_image_index][my_object_index] = \
-                                    parent_image_number
-                parent_object_numbers[my_image_index][my_object_index] = \
-                                     parent_object_number
-                relationships.append(
-                    ((parent_image_index, parent_object_number),
-                     (my_image_index, my_object_number)))
-                split_count[my_image_index] += 1
-                new_object_count[my_image_index] -= 1
-                logger.debug("Mitosis: %d:%d to %d:%d and %d, score=%f" %
-                             (parent_image_number, parent_object_number,
-                              image_numbers[my_image_index],
-                              object_numbers[my_image_index][my_object_index],
-                              F[mitoses_right_child_findx[midx], ONIDX],
-                              mitosis_scores[midx]))
-            elif y[i] >= mitosis_right_child_off and \
-                 y[i] < mitosis_right_child_off + mitosis_right_child_len:
-                #
-                # The right child of a mitosis
-                #
-                lidx = mitoses_parent_lidx[y[i] - mitosis_right_child_off]
-                parent_image_index = int(L[lidx, IIDX])
-                parent_image_number = image_numbers[parent_image_index]
-                parent_object_number = int(L[lidx, ONIDX])
-                b[i+1] = int(L[lidx, LIDX])
-                c[b[i+1]] = i+1
-                parent_image_numbers[my_image_index][my_object_index] = \
-                                    parent_image_number
-                parent_object_numbers[my_image_index][my_object_index] = \
-                                     parent_object_number
-                relationships.append(
-                    ((parent_image_index, parent_object_number),
-                     (my_image_index, my_object_number)))
-                new_object_count[my_image_index] -= 1
-            else:
-                b[i+1] = -1
-
-            if(x[i] < start_end_len):
+        #---------------------
+        #
+        # Process ends (parents)
+        #
+        end_idxs = np.where(
+            x[:start_end_end] != np.arange(gap_off, gap_end))[0]
+        for i in end_idxs:
+            if(x[i] < start_end_end):
                 a[i+1] = x[i]+1
                 d[a[i+1]] = i+1
-            elif(x[i] >= merge_off and x[i] < merge_off+merge_len):
+            elif(x[i] >= merge_off and x[i] < merge_end):
+                #-------------------
+                #
+                #    MERGE
                 #
                 # Handle merged objects. A merge hooks the end (L) of
                 # a segment (the parent) to a gap alternative in P1 (the child)
@@ -1825,11 +1980,15 @@ class TrackObjects(cpm.CPModule):
                 d[a[i+1]] = i+1
                 parent_image_index = int(L[i, IIDX])
                 parent_object_number = int(L[i, ONIDX])
+                parent_image_number = image_numbers[parent_image_index]
                 child_image_index = int(P1[p1_idx, IIDX])
                 child_object_number = int(P1[p1_idx, ONIDX])
                 relationships.append(
                     ((parent_image_index, parent_object_number),
                      (child_image_index, child_object_number)))
+                add_fixup(F_MERGE_SCORE, parent_image_number, 
+                          parent_object_number, 
+                          merge_scores[x[i] - merge_off])
                 lost_object_count[parent_image_index+1] -= 1
                 merge_count[child_image_index] += 1
                 logger.debug("Merge: %d:%d to %d:%d, score=%f" %
@@ -1838,16 +1997,49 @@ class TrackObjects(cpm.CPModule):
                               image_numbers[child_image_index],
                               child_object_number,
                               merge_scores[x[i] - merge_off]))
-            elif (x[i] >= mitosis_left_child_off and
-                  x[i] < mitosis_left_child_off + mitosis_left_child_len):
+        
+        for (mlidx, mridx, mpidx), score in\
+            zip(good_mitoses, good_mitosis_scores):
+            #
+            # The parent is attached, one less lost object
+            #
+            lost_object_count[int(L[mpidx, IIDX])+1] -= 1
+            a[mpidx+1] = F[mlidx, LIDX]
+            d[a[mpidx+1]] = mpidx+1
+            parent_image_index = int(L[mpidx, IIDX])
+            parent_image_number = image_numbers[parent_image_index]
+            parent_object_number = int(L[mpidx, ONIDX])
+            split_count[int(F[lidx, IIDX])] += 1
+            for idx in mlidx, mridx:
+                #--------------------------------------
                 #
-                # End hooked to mitosis left. One less lost object
+                #     MITOSIS child
                 #
-                lost_object_count[int(F[i, IIDX])+1] -= 1
-                a[i+1] = L[i, LIDX]
-            else:
-                a[i+1] = -1
-
+                my_image_index = int(F[idx, IIDX])
+                my_image_number = image_numbers[my_image_index]
+                my_object_index = int(F[idx, OIIDX])
+                my_object_number = int(F[idx, ONIDX])
+                
+                b[idx+1] = int(L[mpidx, LIDX])
+                c[b[idx+1]] = idx+1
+                parent_image_numbers[my_image_index][my_object_index] = \
+                                    parent_image_number
+                parent_object_numbers[my_image_index][my_object_index] = \
+                                     parent_object_number
+                relationships.append(
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
+                add_fixup(F_LINK_TYPE, my_image_number, my_object_number,
+                          LT_MITOSIS)
+                add_fixup(F_MITOSIS_SCORE, my_image_number, my_object_number,
+                          score)
+                new_object_count[my_image_index] -= 1
+            logger.debug("Mitosis: %d:%d to %d:%d and %d, score=%f" %
+                         (parent_image_number, parent_object_number,
+                          image_numbers[F[mlidx, IIDX]],
+                          F[mlidx, ONIDX],
+                          F[mridx, ONIDX],
+                          score))
         #
         # At this point a gives the label # of the track that connects
         # to the end of the indexed track. b gives the label # of the
@@ -1875,7 +2067,23 @@ class TrackObjects(cpm.CPModule):
         # Replace the labels for the image sets in the group
         # inside the list retrieved from the measurements
         #
+        m_link_type = self.measurement_name(F_LINK_TYPE)
         for i, image_number in enumerate(image_numbers):
+            n_objects = len(newlabel[i])
+            m.add_measurement(cpmeas.IMAGE,
+                              self.image_measurement_name(F_LOST_OBJECT_COUNT),
+                              lost_object_count[i], True, image_number)
+            m.add_measurement(cpmeas.IMAGE,
+                              self.image_measurement_name(F_NEW_OBJECT_COUNT),
+                              new_object_count[i], True, image_number)
+            m.add_measurement(cpmeas.IMAGE,
+                              self.image_measurement_name(F_MERGE_COUNT),
+                              merge_count[i], True, image_number)
+            m.add_measurement(cpmeas.IMAGE,
+                              self.image_measurement_name(F_SPLIT_COUNT),
+                              split_count[i], True, image_number)
+            if n_objects == 0:
+                continue
             m.add_measurement(object_name, 
                               self.measurement_name(F_LABEL),
                               newlabel[i], can_overwrite = True,
@@ -1890,18 +2098,29 @@ class TrackObjects(cpm.CPModule):
                               parent_object_numbers[i],
                               can_overwrite = True,
                               image_set_number = image_number)
-            m.add_measurement(cpmeas.IMAGE,
-                              self.image_measurement_name(F_LOST_OBJECT_COUNT),
-                              lost_object_count[i], True, image_number)
-            m.add_measurement(cpmeas.IMAGE,
-                              self.image_measurement_name(F_NEW_OBJECT_COUNT),
-                              new_object_count[i], True, image_number)
-            m.add_measurement(cpmeas.IMAGE,
-                              self.image_measurement_name(F_MERGE_COUNT),
-                              merge_count[i], True, image_number)
-            m.add_measurement(cpmeas.IMAGE,
-                              self.image_measurement_name(F_SPLIT_COUNT),
-                              split_count[i], True, image_number)
+            is_fixups = fixups.get(image_number, None)
+            if (is_fixups is not None) and (F_LINK_TYPE in is_fixups):
+                link_types = m[object_name, m_link_type, image_number]
+                object_numbers, values = [
+                    np.array(_) for _ in is_fixups[F_LINK_TYPE]]
+                link_types[object_numbers-1] = values
+                m[object_name, m_link_type, image_number] = link_types
+            for feature, data_type in (
+                (F_GAP_LENGTH, np.int32),
+                (F_GAP_SCORE, np.float32),
+                (F_MERGE_SCORE, np.float32),
+                (F_SPLIT_SCORE, np.float32),
+                (F_MITOSIS_SCORE, np.float32)):
+                if data_type == np.int32:
+                    values = np.zeros(n_objects, data_type)
+                else:
+                    values = np.ones(n_objects, data_type) * np.NaN
+                if (is_fixups is not None) and (feature in is_fixups):
+                    object_numbers, fixup_values = [
+                        np.array(_) for _ in is_fixups[feature]]
+                    values[object_numbers-1] = fixup_values
+                m[object_name, self.measurement_name(feature), image_number] =\
+                    values
         #
         # Write the relationships.
         #
@@ -2453,12 +2672,26 @@ class TrackObjects(cpm.CPModule):
                    for feature, coltype in F_IMAGE_COLTYPE_ALL]
         if self.tracking_method == TM_LAP:
             result += [( self.object_name.value,
-                         self.measurement_name(F_AREA),
-                         cpmeas.COLTYPE_INTEGER)]
+                         self.measurement_name(name),
+                         coltype) for name, coltype in (
+                             (F_AREA, cpmeas.COLTYPE_INTEGER),
+                             (F_LINK_TYPE, cpmeas.COLTYPE_INTEGER),
+                             (F_LINKING_DISTANCE, cpmeas.COLTYPE_FLOAT),
+                             (F_STANDARD_DEVIATION, cpmeas.COLTYPE_FLOAT),
+                             (F_MOVEMENT_MODEL, cpmeas.COLTYPE_INTEGER))]
             result += [( self.object_name.value,
                          self.measurement_name(name),
-                         cpmeas.COLTYPE_FLOAT) for name in self.get_kalman_feature_names()]
+                         cpmeas.COLTYPE_FLOAT) for name in 
+                       list(self.get_kalman_feature_names())]
             if self.wants_second_phase:
+                result += [
+                    (self.object_name.value, self.measurement_name(name), coltype)
+                    for name, coltype in (
+                        (F_GAP_LENGTH, cpmeas.COLTYPE_INTEGER),
+                        (F_GAP_SCORE, cpmeas.COLTYPE_FLOAT),
+                        (F_MERGE_SCORE, cpmeas.COLTYPE_FLOAT),
+                        (F_SPLIT_SCORE, cpmeas.COLTYPE_FLOAT),
+                        (F_MITOSIS_SCORE, cpmeas.COLTYPE_FLOAT))]
                 # Add the post-group attribute to all measurements
                 attributes = { cpmeas.MCA_AVAILABLE_POST_GROUP: True }
                 result = [ ( c[0], c[1], c[2], attributes) for c in result]
@@ -2485,7 +2718,11 @@ class TrackObjects(cpm.CPModule):
         if object_name == self.object_name.value and category == F_PREFIX:
             result = list(F_ALL)
             if self.tracking_method == TM_LAP:
-                result += [F_AREA]
+                result += [F_AREA, F_LINKING_DISTANCE, F_STANDARD_DEVIATION,
+                           F_LINK_TYPE, F_MOVEMENT_MODEL]
+                if self.wants_second_phase:
+                    result += [F_GAP_LENGTH, F_GAP_SCORE, F_MERGE_SCORE, 
+                               F_SPLIT_SCORE, F_MITOSIS_SCORE]
                 result += self.get_kalman_feature_names()
             return result
         if object_name == cpmeas.IMAGE:

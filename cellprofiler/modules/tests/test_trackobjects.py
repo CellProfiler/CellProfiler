@@ -896,11 +896,16 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         for wants in (True, False):
             module.wants_second_phase.value = wants
             columns = module.get_measurement_columns(None)
-            # 1 for area
             # 2, 2, 4 for the static model
             # 4, 4, 16 for the velocity model
+            other_features = [T.F_AREA, T.F_LINKING_DISTANCE, T.F_LINK_TYPE,
+                              T.F_MOVEMENT_MODEL, T.F_STANDARD_DEVIATION]
+            if wants:
+                other_features += [ 
+                    T.F_GAP_LENGTH, T.F_GAP_SCORE, T.F_MERGE_SCORE,
+                    T.F_SPLIT_SCORE, T.F_MITOSIS_SCORE]
             self.assertEqual(len(columns), len(T.F_ALL) + len(T.F_IMAGE_ALL) + 
-                             1 + 2 + 2 + 4 + 4 + 4+ 16)
+                             len(other_features) + 2 + 2 + 4 + 4 + 4+ 16)
             kalman_features = [ 
                 T.kalman_feature(T.F_STATIC_MODEL, T.F_STATE, T.F_X),
                 T.kalman_feature(T.F_STATIC_MODEL, T.F_STATE, T.F_Y),
@@ -934,8 +939,9 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                 T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_Y),
                 T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_VX),
                 T.kalman_feature(T.F_VELOCITY_MODEL, T.F_COV, T.F_VY, T.F_VY)]
-            for object_name, features in ((OBJECT_NAME, T.F_ALL + kalman_features),
-                                          (cpmeas.IMAGE, T.F_IMAGE_ALL)):
+            for object_name, features in (
+                (OBJECT_NAME, T.F_ALL + kalman_features + other_features),
+                (cpmeas.IMAGE, T.F_IMAGE_ALL)):
                 for feature in features:
                     if object_name == OBJECT_NAME:
                         name = "_".join((T.F_PREFIX, feature))
@@ -1044,14 +1050,19 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                nobjects[i], i+1)
             for feature in (T.F_DISTANCE_TRAVELED, T.F_DISPLACEMENT,
                             T.F_INTEGRATED_DISTANCE, T.F_TRAJECTORY_X,
-                            T.F_TRAJECTORY_Y, T.F_LINEARITY, T.F_LIFETIME, T.F_FINAL_AGE):
+                            T.F_TRAJECTORY_Y, T.F_LINEARITY, T.F_LIFETIME, 
+                            T.F_FINAL_AGE, T.F_LINKING_DISTANCE,
+                            T.F_LINK_TYPE, T.F_MOVEMENT_MODEL, 
+                            T.F_STANDARD_DEVIATION):
                 dtype = int if feature in (
                     T.F_PARENT_OBJECT_NUMBER, T.F_PARENT_IMAGE_NUMBER, 
-                    T.F_LIFETIME) else float
-                m.add_measurement(OBJECT_NAME,
-                                  module.measurement_name(feature),
-                                  np.NaN*np.ones(nobjects[i], dtype) if feature == T.F_FINAL_AGE else np.zeros(nobjects[i], dtype), 
-                                  i+1)
+                    T.F_LIFETIME, T.F_LINK_TYPE, T.F_MOVEMENT_MODEL) else float
+                m.add_measurement(
+                    OBJECT_NAME,
+                    module.measurement_name(feature),
+                    np.NaN*np.ones(nobjects[i], dtype) if feature == T.F_FINAL_AGE 
+                    else np.zeros(nobjects[i], dtype), 
+                    i+1)
             for feature in (T.F_SPLIT_COUNT, T.F_MERGE_COUNT):
                 m.add_measurement(cpmeas.IMAGE,
                                   module.image_measurement_name(feature),
@@ -1640,10 +1651,16 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,1]), np.array([1,2]) ],
             T.F_LIFETIME: [ np.ones(1), np.array([2,2]), np.array([3,3]) ],
             T.F_FINAL_AGE: [ np.array([np.nan]), np.array([np.nan, np.nan]), np.array([3,3]) ],
+            T.F_LINK_TYPE: [ np.array([T.LT_NONE]),
+                             np.array([T.LT_MITOSIS, T.LT_MITOSIS]),
+                             np.array([T.LT_NONE, T.LT_NONE])],
+            T.F_MITOSIS_SCORE: [ np.array([np.nan]),
+                                 np.array([5, 5]), 
+                                 np.array([np.nan, np.nan])],
             T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
             T.F_MERGE_COUNT: [ 0, 0, 0 ],
-            T.F_SPLIT_COUNT: [ 0, 1, 0 ]
+            T.F_SPLIT_COUNT: [ 0, 1, 0 ],
             })
         
     def test_07_14_no_mitosis(self):
@@ -1704,6 +1721,48 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             T.F_LOST_OBJECT_COUNT: [ 0, 1, 0 ],
             T.F_MERGE_COUNT: [ 0, 0, 0 ],
             T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+            })
+        
+    def test_07_16_alternate_child_mitoses(self):
+        # Test that LAP can pick the best of two possible child alternates
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 103, 104, 50],
+                      [1, 2, 0, 0, 110, 110, 25],
+                      [1, 3, 0, 0, 91,   91, 25],
+                      [1, 4, 0, 0, 90,   90, 25],
+                      [2, 2, 2, 1, 113, 114, 25],
+                      [2, 3, 2, 2, 86,   87, 25]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        module.merge_cost.value = 1
+        module.gap_cost.value = 1
+        module.mitosis_cost.value = 6
+        module.mitosis_max_distance.value = 20
+        module.run_as_data_tool(workspace)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.array([1,1,2]), np.array([1,1]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([1,1,0]), np.array([2,2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,1,0]), np.array([1,2]) ]
+            })
+        
+    def test_07_17_alternate_parent_mitoses(self):
+        # Test that LAP can pick the best of two possible parent alternates
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 100, 100, 50],
+                      [0, 2, 0, 0, 103, 104, 50],                      
+                      [1, 3, 0, 0, 110, 110, 25],
+                      [1, 4, 0, 0, 90,   90, 25],
+                      [2, 3, 2, 1, 113, 114, 25],
+                      [2, 4, 2, 2, 86,   87, 25]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        module.merge_cost.value = 1
+        module.gap_cost.value = 1
+        module.mitosis_cost.value = 6
+        module.mitosis_max_distance.value = 20
+        module.run_as_data_tool(workspace)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1, 2]), np.array([1,1]), np.array([1,1]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0, 0]), np.array([1,1]), np.array([2,2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0, 0]), np.array([1,1]), np.array([1,2]) ]
             })
         
     def test_08_01_save_image(self):

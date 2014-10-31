@@ -28,7 +28,7 @@ from cellprofiler.cpmath.cpmorphology import opening, closing, white_tophat
 from cellprofiler.cpmath.filter import enhance_dark_holes, circular_hough
 from cellprofiler.cpmath.filter import variance_transform, line_integration
 from cellprofiler.cpmath.filter import hessian
-from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES, PROTIP_AVOID_ICON
+from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
 ENHANCE = 'Enhance'
 SUPPRESS = 'Suppress'
@@ -127,7 +127,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             <i>(Used only if circles, speckles or neurites are selected, or if suppressing features)</i><br>
             Enter the diameter of the largest speckle, the width of the circle
             or the width of the neurites to be enhanced or suppressed, which
-            will be used to calculate an adequate filter size. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
+            will be used to calculate an adequate filter size. %(HELP_ON_MEASURING_DISTANCES)s"""%globals())
 
         self.hole_size = cps.IntegerRange(
             'Range of hole sizes', value=(1,10),minval=1, doc="""

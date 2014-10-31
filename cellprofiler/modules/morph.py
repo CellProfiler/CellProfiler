@@ -352,7 +352,9 @@ page 359. The result generally preserves the lines in an image while eroding the
 <tr>
 <td><i>Tophat</i></td>
 <td>Subtracts the morphological opening of the image from the image. This enhances white spots 
-in a black background.</td>
+in a black background. Note that this tophat operation is slightly different than that in the
+<b>EnhanceOrSupressFeatures</b> module, in that you would need to subtract 1 from the diameter 
+in <b>Morph</b> to achieve the same result.</td>
 <td>Binary, grayscale</td>
 </tr>
 <tr>
@@ -531,25 +533,25 @@ class Morph(cpm.CPModule):
             
             <p>The structuring elements are:<br>
             <ul>
-            <li><i>%(SE_DISK)s</i>: A disk centered on the pixel. The scale
+            <li><i>%(SE_DISK)s</i>: A disk centered on the pixel. The diameter
             setting determines the circle's diameter and all pixels that are
             at or closer than that diameter will be in the neighborhood.</li>
             <li><i>%(SE_ARBITRARY)s</i>: A structuring element which lets
             the user choose the exact neighborhood pixels to use.</li>
             <li><i>%(SE_DIAMOND)s</i>: A diamond centered on the pixel. The 
-            scale setting determines the distance between the top and bottom
+            diameter setting determines the distance between the top and bottom
             and left and right corners of the diamond.</li>
             <li><i>%(SE_LINE)s</i>: A line centered on the pixel. The line
             has two settings. The angle setting gives the rotation of the line
             in the counter-clockwise direction in degrees, with a horizontal
             line having an angle of zero. The length of the line is determined
-            by the scale setting - only pixels at or closer than 1/2 of the
-            scale are included in the neighborhood. The line is drawn using
+            by the diameter setting - only pixels at or closer than 1/2 of the
+            diameter are included in the neighborhood. The line is drawn using
             the <a href="http://dx.doi.org/10.1147%%2Fsj.41.0025">
             Bresenham algorithm</a>.</li>
             <li><i>%(SE_OCTAGON)s</i>: An octagon centered on the pixel. The
-            octagon is inscribed inside a square. The scale setting controls
-            the length of the square's side. The scale is rounded to the nearest
+            octagon is inscribed inside a square. The diameter setting controls
+            the length of the square's side. The diameter is rounded to the nearest
             integer in the series, n * 6 + 1 so a perfect octagon can be drawn.</li>
             <li><i>%(SE_PAIR)s</i>: The neighborhood of the pixel is
             composed of the pixel itself and the pixel at the x and y offsets
@@ -557,17 +559,17 @@ class Morph(cpm.CPModule):
             <li><i>%(SE_PERIODIC_LINE)s</i>: The points along a line described
             by an offset, centered on the pixel. The periodic line has three 
             settings. The neighborhood pixels are all within a circle whose
-            diameter is the scale setting. Within the circle, pixels are
+            diameter is the diameter setting. Within the circle, pixels are
             chosen at N times the x and y offset from the center for positive
             and negative values of N.</li>
             <li><i>%(SE_RECTANGLE)s</i>: A rectangle centered on the pixel.
             The rectangle's height and width are given by two settings.</li>
             <li><i>%(SE_SQUARE)s</i>: a square centered on the pixel. The
-            scale setting determines the length of the square's side.</li>
+            diameter setting determines the length of the square's side.</li>
             </ul></p>""" % globals()))
         
         group.append("scale", cps.Float(
-            "Scale",3, minval=3,doc="""
+            "Diameter",3, minval=3,doc="""
             Morphological open, close, erode and dialate are performed
             with structuring elements which determine the diameter of the
             circle enclosing the pixels to consider when applying the operation.

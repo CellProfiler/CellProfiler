@@ -448,30 +448,18 @@ class DirectoryPath(Text):
             custom_path = r".\\" + custom_path
     
         if self.dir_choice == DEFAULT_INPUT_FOLDER_NAME:
-            self.dir_choice = ABSOLUTE_FOLDER_NAME
-            self.custom_path = fn_alter_path(get_default_image_directory())
+            pass
         elif self.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME:
-            self.dir_choice = ABSOLUTE_FOLDER_NAME
-            self.custom_path = fn_alter_path(get_default_output_directory())
+            pass
         elif self.dir_choice == ABSOLUTE_FOLDER_NAME:
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution = self.allow_metadata)
         elif self.dir_choice == DEFAULT_INPUT_SUBFOLDER_NAME:
-            self.dir_choice = ABSOLUTE_FOLDER_NAME
-            root = get_default_image_directory() + os.path.sep
-            if self.allow_metadata:
-                root = unicode(root.encode("utf-8").encode("string_escape"), "utf-8")
-            path = root + custom_path
             self.custom_path = fn_alter_path(
-                path, regexp_substitution=self.allow_metadata)
+                self.custom_path, regexp_substitution=self.allow_metadata)
         elif self.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME:
-            self.dir_choice = ABSOLUTE_FOLDER_NAME
-            root = get_default_output_directory() + os.path.sep
-            if self.allow_metadata:
-                root = unicode(root.encode("utf-8").encode("string_escape"), "utf-8")
-            path = root + custom_path
             self.custom_path = fn_alter_path(
-                path, regexp_substitution=self.allow_metadata)
+                self.custom_path, regexp_substitution=self.allow_metadata)
         
     def test_valid(self, pipeline):
         if self.dir_choice not in self.dir_choices + [NO_FOLDER_NAME]:

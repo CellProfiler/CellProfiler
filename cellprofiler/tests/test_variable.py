@@ -397,31 +397,42 @@ class TestDirectoryPath(unittest.TestCase):
         s = cps.DirectoryPath("whatever")
         s.dir_choice = cps.DEFAULT_INPUT_FOLDER_NAME
         s.alter_for_create_batch_files(TestDirectoryPath.fn_alter_path)
-        self.assertEqual(s.get_absolute_path(), 
-                         cpprefs.get_default_image_directory() + "altered")
+        self.assertEqual(
+            s.get_absolute_path(), 
+            cpprefs.get_default_image_directory())
         
     def test_04_02_alter_output_folder_path(self):
         s = cps.DirectoryPath("whatever")
         s.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
         s.alter_for_create_batch_files(TestDirectoryPath.fn_alter_path)
-        self.assertEqual(s.get_absolute_path(), 
-                         cpprefs.get_default_output_directory()  + "altered")
+        self.assertEqual(
+            s.get_absolute_path(), 
+            cpprefs.get_default_output_directory())
 
     def test_04_03_alter_input_subfolder_path(self):
         s = cps.DirectoryPath("whatever")
         s.dir_choice = cps.DEFAULT_INPUT_SUBFOLDER_NAME
         s.custom_path = "2"
-        s.alter_for_create_batch_files(TestDirectoryPath.fn_alter_path)
-        self.assertEqual(s.get_absolute_path(),
-                         os.path.join(cpprefs.get_default_image_directory(), "2altered"))
+        def fn_alter_path(path, **kwargs):
+            self.assertEqual(path, "2")
+            return "3"
+            
+        s.alter_for_create_batch_files(fn_alter_path)
+        self.assertEqual(
+            s.get_absolute_path(),
+            os.path.join(cpprefs.get_default_image_directory(), "3"))
 
     def test_04_04_alter_output_subfolder_path(self):
         s = cps.DirectoryPath("whatever")
         s.dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
         s.custom_path = "0"
-        s.alter_for_create_batch_files(TestDirectoryPath.fn_alter_path)
-        self.assertEqual(s.get_absolute_path(),
-                         os.path.join(cpprefs.get_default_output_directory(), "0altered"))
+        def fn_alter_path(path, **kwargs):
+            self.assertEqual(path, "0")
+            return "5"
+        s.alter_for_create_batch_files(fn_alter_path)
+        self.assertEqual(
+            s.get_absolute_path(),
+            os.path.join(cpprefs.get_default_output_directory(), "5"))
         
     def test_04_05_alter_absolute_path(self):
         s = cps.DirectoryPath("whatever")

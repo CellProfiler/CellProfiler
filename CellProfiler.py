@@ -847,6 +847,22 @@ def run_pipeline_headless(options, args):
     file_list = cpprefs.get_image_set_file()
     if file_list is not None:
         pipeline.read_file_list(file_list)
+    #
+    # Fixup CreateBatchFiles with any command-line input or output directories
+    #
+    if pipeline.in_batch_mode():
+        create_batch_files = [
+            m for m in pipeline.modules()
+            if m.is_create_batch_module()]
+        if len(create_batch_files) > 0:
+            create_batch_files = create_batch_files[0]
+            if options.output_directory is not None:
+                create_batch_files.custom_output_directory.value = \
+                    options.output_directory
+            if options.image_directory is not None:
+                create_batch_files.default_image_directory.value = \
+                    options.image_directory
+        
     use_hdf5 = len(args) > 0 and not args[0].lower().endswith(".mat")
     measurements = pipeline.run(
         image_set_start=image_set_start, 

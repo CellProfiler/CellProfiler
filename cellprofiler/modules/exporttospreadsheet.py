@@ -52,6 +52,7 @@ See also <b>ExportToDatabase</b>.
 
 import logging
 logger = logging.getLogger(__name__)
+import base64
 import csv
 import errno
 import numpy as np
@@ -761,7 +762,12 @@ class ExportToSpreadsheet(cpm.CPModule):
             writer = csv.writer(fd,delimiter=self.delimiter_char)
             for feature_name in feature_names:
                 v = m.get_all_measurements(EXPERIMENT, feature_name)
-                writer.writerow((feature_name, unicode(v).encode('utf8')))
+                if isinstance(v, np.ndarray) and \
+                   v.dtype == np.uint8:
+                    v = base64.b64encode(v.data)
+                else:
+                    unicode(v).encode('utf8')
+                writer.writerow((feature_name, v))
         finally:
             fd.close()
     
@@ -822,6 +828,9 @@ class ExportToSpreadsheet(cpm.CPModule):
                             row.append(value.encode('utf8'))
                         elif isinstance(value, basestring):
                             row.append(value)
+                        elif isinstance(value, np.ndarray) and \
+                             value.dtype == np.uint8:
+                            row.append(base64.b64encode(value.data))
                         elif np.isnan(value):
                             if self.nan_representation == NANS_AS_NULLS:
                                 row.append('')

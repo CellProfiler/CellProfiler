@@ -1384,6 +1384,81 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     msg = "Expected null %s measurement, got %s" % 
                     (meas, value))
             self.assertRaises(StopIteration,reader.next)
+            
+    def test_03_08_blob_image_measurements(self):
+        path = os.path.join(self.output_dir, "my_file.csv")
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.wants_everything.value = False
+        module.wants_prefix.value = False
+        module.object_groups[0].name.value = cpmeas.IMAGE
+        module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
+        module.wants_aggregate_means.value = False
+        m = cpmeas.Measurements()
+        r = np.random.RandomState()
+        r.seed(38)
+        my_blob = r.randint(0, 256, 100).astype(np.uint8)
+        m.add_measurement(
+            cpmeas.IMAGE, IMG_MEAS, my_blob, image_set_number=1,
+            data_type = np.uint8)
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        with  open(path,"r") as fd:
+            reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
+            d = dict([(h, i) for i, h in enumerate(header)])
+            self.assertIn(IMG_MEAS, d)
+            row = reader.next()
+            data = base64.b64decode(row[d[IMG_MEAS]])
+            value = np.frombuffer(data, np.uint8)
+            np.testing.assert_array_equal(value, my_blob)
+    
+    def test_03_09_blob_experiment_measurements(self):
+        path = os.path.join(self.output_dir, "my_file.csv")
+        module = E.ExportToSpreadsheet()
+        module.module_num = 1
+        module.wants_everything.value = False
+        module.wants_prefix.value = False
+        module.object_groups[0].name.value = cpmeas.EXPERIMENT
+        module.object_groups[0].file_name.value = path
+        module.object_groups[0].wants_automatic_file_name.value = False
+        module.wants_aggregate_means.value = False
+        m = cpmeas.Measurements()
+        r = np.random.RandomState()
+        r.seed(38)
+        my_blob = r.randint(0, 256, 100).astype(np.uint8)
+        m.add_measurement(
+            cpmeas.EXPERIMENT, IMG_MEAS, my_blob, image_set_number=1,
+            data_type = np.uint8)
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        object_set = cpo.ObjectSet()
+        workspace = cpw.Workspace(cpp.Pipeline(),
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  m,
+                                  image_set_list)
+        module.post_run(workspace)
+        with  open(path,"r") as fd:
+            reader = csv.reader(fd, delimiter=module.delimiter_char)
+            for feature, value in reader:
+                if feature == IMG_MEAS: 
+                    data = base64.b64decode(value)
+                    value = np.frombuffer(data, np.uint8)
+                    np.testing.assert_array_equal(value, my_blob)
+                    break
+            else:
+                self.fail("Could not find %s in experiment CSV" % IMG_MEAS)
         
     def test_04_01_01_object_with_metadata(self):
         '''Test writing objects with 2 pairs of 2 image sets w same metadata'''

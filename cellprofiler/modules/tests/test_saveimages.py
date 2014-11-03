@@ -1777,12 +1777,14 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         def fn(module):
             self.assertTrue(isinstance(module, cpm_si.SaveImages))
             module.movie_format.value = cpm_si.FF_TIF
-            
-        frames = self.run_movie(fn=fn)
-        for i, frame in enumerate(frames):
-            path = os.path.join(self.custom_directory, FILE_NAME + ".tif")
-            frame_out = load_image(path, index=i)
-            self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
+            module.overwrite.value = True
+
+        for wants_color in False, True:
+            frames = self.run_movie(fn=fn, color=wants_color)
+            for i, frame in enumerate(frames):
+                path = os.path.join(self.custom_directory, FILE_NAME + ".tif")
+                frame_out = load_image(path, index=i)
+                self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_05_05_save_mov_movie(self):
         def fn(module):

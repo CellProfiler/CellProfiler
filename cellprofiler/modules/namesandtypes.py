@@ -135,6 +135,12 @@ LOAD_AS_ALL = [ LOAD_AS_GRAYSCALE_IMAGE,
 
 INTENSITY_RESCALING_BY_METADATA = "Image metadata"
 INTENSITY_RESCALING_BY_DATATYPE = "Image bit-depth"
+INTENSITY_MANUAL = "Manual"
+INTENSITY_ALL = [INTENSITY_RESCALING_BY_METADATA,
+                 INTENSITY_RESCALING_BY_DATATYPE,
+                 INTENSITY_MANUAL]
+MANUAL_INTENSITY_LABEL = "Maximum intensity"
+
 RESCALING_HELP_TEXT = """
 This option determines how the image intensity should be 
 rescaled from 0.0 &ndash; 1.0.
@@ -153,12 +159,23 @@ by the file format. </li>
 <li><i>%(INTENSITY_RESCALING_BY_DATATYPE)s:</i> Ignore the image 
 metadata and rescale the image to 0 &ndash; 1 by dividing by 255 
 or 65535, depending on the number of bits used to store the image.</li>
+<li><i>%(INTENSITY_MANUAL)s:</i> Divide each pixel value by the value entered
+in the <i>%(MANUAL_INTENSITY_LABEL)s</i> setting. <i>%(INTENSITY_MANUAL)s</i> can be
+used to rescale an image whose maximum intensity metadata value is absent or
+incorrect, but is less than the value that would be supplied if
+<i>%(INTENSITY_RESCALING_BY_DATATYPE)s</i> were specified.</li>
 </ul>
 Please note that CellProfiler does not provide the option of loading
 the image as the raw, unscaled values. If you wish to make measurements
 on the unscaled image, use the <b>ImageMath</b> module to multiply the 
 scaled image by the actual image bit-depth."""%globals()
-        
+
+MANUAL_RESCALE_HELP_TEXT = """
+<i>(Used only if %(INTENSITY_MANUAL)s is chosen)</i><br>
+<b>NamesAndTypes</b> divides the pixel value, as read from the image file, by
+this value to get the loaded image's per-pixel intensity.
+""" % globals()
+
 LOAD_AS_CHOICE_HELP_TEXT = """
     You can specify how these images should be treated:
     <ul>
@@ -216,22 +233,28 @@ LOAD_AS_CHOICE_HELP_TEXT = """
 IDX_ASSIGNMENTS_COUNT_V2 = 5
 IDX_ASSIGNMENTS_COUNT_V3 = 6
 IDX_ASSIGNMENTS_COUNT_V5 = 6
+IDX_ASSIGNMENTS_COUNT_V6 = 6
 IDX_ASSIGNMENTS_COUNT = 6
 
 IDX_SINGLE_IMAGES_COUNT_V5 = 7
+IDX_SINGLE_IMAGES_COUNT_V6 = 7
 IDX_SINGLE_IMAGES_COUNT = 7
 
 IDX_FIRST_ASSIGNMENT_V3 = 7
 IDX_FIRST_ASSIGNMENT_V4 = 7
 IDX_FIRST_ASSIGNMENT_V5 = 8
+IDX_FIRST_ASSIGNMENT_V6 = 9
+IDX_FIRST_ASSIGNMENT = 9
 
 NUM_ASSIGNMENT_SETTINGS_V2 = 4
 NUM_ASSIGNMENT_SETTINGS_V3 = 5
 NUM_ASSIGNMENT_SETTINGS_V5 = 7
-NUM_ASSIGNMENT_SETTINGS = 7
+NUM_ASSIGNMENT_SETTINGS_V6 = 8
+NUM_ASSIGNMENT_SETTINGS = 8
 
 NUM_SINGLE_IMAGE_SETTINGS_V5 = 7
-NUM_SINGLE_IMAGE_SETTINGS = 7
+NUM_SINGLE_IMAGE_SETTINGS_V6 = 8
+NUM_SINGLE_IMAGE_SETTINGS = 8
 
 OFF_LOAD_AS_CHOICE_V5 = 3
 OFF_LOAD_AS_CHOICE = 3
@@ -245,13 +268,15 @@ MATCH_BY_METADATA = "Metadata"
 IMAGE_NAMES = ["DNA", "GFP", "Actin"]
 OBJECT_NAMES = ["Cell", "Nucleus", "Cytoplasm", "Speckle"]
 
+DEFAULT_MANUAL_RESCALE = 255
+
 '''The experiment measurement that holds the ZLIB compression dictionary for image sets'''
 M_IMAGE_SET_ZIP_DICTIONARY = "ImageSet_Zip_Dictionary"
 '''The image measurement that holds the compressed image set'''
 M_IMAGE_SET = "ImageSet_ImageSet"
 
 class NamesAndTypes(cpm.CPModule):
-    variable_revision_number = 5
+    variable_revision_number = 6
     module_name = "NamesAndTypes"
     category = "File Processing"
     
@@ -291,15 +316,22 @@ class NamesAndTypes(cpm.CPModule):
         self.single_load_as_choice = cps.Choice(
             "Select the image type", [ LOAD_AS_GRAYSCALE_IMAGE,
                          LOAD_AS_COLOR_IMAGE,
-                         LOAD_AS_MASK])
+                         LOAD_AS_MASK],
+            doc = LOAD_AS_CHOICE_HELP_TEXT)
         
         self.single_image_provider = cps.FileImageNameProvider(
             "Name to assign these images", IMAGE_NAMES[0])
         
         self.single_rescale = cps.Choice(
             "Set intensity range from", 
-            [INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE], 
-            value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT)
+            INTENSITY_ALL, 
+            value=INTENSITY_RESCALING_BY_METADATA, 
+            doc = RESCALING_HELP_TEXT)
+        
+        self.manual_rescale = cps.Float(
+            MANUAL_INTENSITY_LABEL, DEFAULT_MANUAL_RESCALE,
+            minval=np.finfo(np.float32).eps,
+            doc = MANUAL_RESCALE_HELP_TEXT)
         
         self.assignments = []
         self.single_images = []
@@ -452,8 +484,14 @@ class NamesAndTypes(cpm.CPModule):
         
         group.append("rescale", cps.Choice(
             "Set intensity range from", 
-            [INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE], 
-            value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT))
+            INTENSITY_ALL, 
+            value=INTENSITY_RESCALING_BY_METADATA, 
+            doc = RESCALING_HELP_TEXT))
+        
+        group.append("manual_rescale", cps.Float(
+            MANUAL_INTENSITY_LABEL, value=DEFAULT_MANUAL_RESCALE, 
+            minval = np.finfo(np.float32).eps,
+            doc = MANUAL_RESCALE_HELP_TEXT))
         
         group.append("should_save_outlines", cps.Binary(
             "Retain outlines of loaded objects?", False, doc="""
@@ -532,8 +570,13 @@ class NamesAndTypes(cpm.CPModule):
         
         group.append("rescale", cps.Choice(
             "Set intensity range from", 
-            [INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE], 
+            INTENSITY_ALL, 
             value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT))
+        
+        group.append("manual_rescale", cps.Float(
+            MANUAL_INTENSITY_LABEL, value=DEFAULT_MANUAL_RESCALE, 
+            minval = np.finfo(np.float32).eps,
+            doc = MANUAL_RESCALE_HELP_TEXT))
         
         group.append("should_save_outlines", cps.Binary(
             "Retain object outlines?", False, doc=RETAINING_OUTLINES_HELP))
@@ -552,18 +595,18 @@ class NamesAndTypes(cpm.CPModule):
         result = [self.assignment_method, self.single_load_as_choice,
                   self.single_image_provider, self.join, self.matching_choice,
                   self.single_rescale, self.assignments_count,
-                  self.single_images_count]
+                  self.single_images_count, self.manual_rescale]
         for assignment in self.assignments:
             result += [assignment.rule_filter, assignment.image_name,
                        assignment.object_name, assignment.load_as_choice,
                        assignment.rescale, assignment.should_save_outlines,
-                       assignment.save_outlines]
+                       assignment.save_outlines, assignment.manual_rescale]
         for single_image in self.single_images:
             result += [
                 single_image.image_plane, single_image.image_name,
                 single_image.object_name, single_image.load_as_choice,
                 single_image.rescale, single_image.should_save_outlines,
-                single_image.save_outlines]
+                single_image.save_outlines, single_image.manual_rescale]
         return result
     
     def visible_settings(self):
@@ -573,6 +616,8 @@ class NamesAndTypes(cpm.CPModule):
             if self.single_load_as_choice in (LOAD_AS_COLOR_IMAGE,
                                               LOAD_AS_GRAYSCALE_IMAGE):
                 result += [self.single_rescale]
+                if self.single_rescale == INTENSITY_MANUAL:
+                    result += [self.manual_rescale]
         elif self.assignment_method == ASSIGN_RULES:
             for assignment in self.assignments:
                 if assignment.can_remove:
@@ -586,6 +631,8 @@ class NamesAndTypes(cpm.CPModule):
                 if assignment.load_as_choice in (LOAD_AS_COLOR_IMAGE,
                                                  LOAD_AS_GRAYSCALE_IMAGE):
                     result += [assignment.rescale]
+                    if assignment.rescale == INTENSITY_MANUAL:
+                        result += [self.manual_rescale]
                 elif assignment.load_as_choice == LOAD_AS_OBJECTS:
                     result += [assignment.should_save_outlines]
                     if assignment.should_save_outlines.value:
@@ -602,6 +649,8 @@ class NamesAndTypes(cpm.CPModule):
                 if single_image.load_as_choice in (
                     LOAD_AS_COLOR_IMAGE, LOAD_AS_GRAYSCALE_IMAGE):
                     result += [single_image.rescale]
+                    if single_image.rescale == INTENSITY_MANUAL:
+                        result += [single_image.manual_rescale]
                 elif single_image.load_as_choice == LOAD_AS_OBJECTS:
                     result += [single_image.should_save_outlines]
                     if single_image.should_save_outlines.value:
@@ -1298,10 +1347,13 @@ class NamesAndTypes(cpm.CPModule):
             name = self.single_image_provider.value
             load_choice = self.single_load_as_choice.value
             rescale = self.single_rescale.value
+            if rescale == INTENSITY_MANUAL:
+                rescale = self.manual_rescale.value
             self.add_image_provider(workspace, name, load_choice,
                                     rescale, image_set[0])
         else:
-            for group, stack in zip(self.assignments+self.single_images, image_set):
+            for group, stack in zip(self.assignments+self.single_images,
+                                    image_set):
                 if group.load_as_choice == LOAD_AS_OBJECTS:
                     self.add_objects(workspace, 
                                      group.object_name.value,
@@ -1310,6 +1362,8 @@ class NamesAndTypes(cpm.CPModule):
                                      stack)
                 else:
                     rescale = group.rescale.value
+                    if rescale == INTENSITY_MANUAL:
+                        rescale = group.manual_rescale.value
                     self.add_image_provider(workspace, 
                                             group.image_name.value,
                                             group.load_as_choice.value,
@@ -1323,9 +1377,16 @@ class NamesAndTypes(cpm.CPModule):
         name - name of the image
         load_choice - one of the LOAD_AS_... choices
         rescale - whether or not to rescale the image intensity (ignored
-                  for mask and illumination function)
+                  for mask and illumination function). Either 
+                  INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE
+                  or a floating point manual value.
         stack - the ImagePlaneDetailsStack that describes the image's planes
         '''
+        if rescale == INTENSITY_RESCALING_BY_METADATA:
+            rescale = True
+        elif rescale == INTENSITY_RESCALING_BY_DATATYPE:
+            rescale = False
+        # else it's a manual rescale.
         num_dimensions = J.call(stack, "numDimensions", "()I")
         if num_dimensions == 2:
             coords = J.get_env().make_int_array(np.zeros(2, np.int32))
@@ -1717,20 +1778,40 @@ class NamesAndTypes(cpm.CPModule):
             #
             # Convert LOAD_AS_MASK_V5A to LOAD_AS_MASK if present
             #
-            setting_values = list(setting_values)
+            #
+            # Added manual_rescale
+            #
+            new_setting_values = setting_values[
+                :IDX_FIRST_ASSIGNMENT_V5] + [DEFAULT_MANUAL_RESCALE]
             n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V5])
             n_single_images = int(setting_values[IDX_SINGLE_IMAGES_COUNT_V5])
             for i in range(n_assignments):
                 offset = IDX_FIRST_ASSIGNMENT_V5 + \
-                    NUM_ASSIGNMENT_SETTINGS_V5 * i + OFF_LOAD_AS_CHOICE_V5
-                if setting_values[offset] == LOAD_AS_MASK_V5A:
-                    setting_values[offset] = LOAD_AS_MASK
+                    NUM_ASSIGNMENT_SETTINGS_V5 * i
+                new_setting_values += \
+                    setting_values[offset : offset+OFF_LOAD_AS_CHOICE_V5]
+                load_as = setting_values[offset + OFF_LOAD_AS_CHOICE_V5]
+                if load_as == LOAD_AS_MASK_V5A:
+                    load_as = LOAD_AS_MASK
+                new_setting_values += [load_as] +\
+                    setting_values[offset + OFF_LOAD_AS_CHOICE_V5 + 1:
+                                   offset + NUM_ASSIGNMENT_SETTINGS_V5] +\
+                    [DEFAULT_MANUAL_RESCALE]
             for i in range(n_single_images):
                 offset = IDX_FIRST_ASSIGNMENT_V5 + \
                     NUM_ASSIGNMENT_SETTINGS_V5 * n_assignments + \
-                    NUM_SINGLE_IMAGE_SETTINGS_V5 * i + OFF_SI_LOAD_AS_CHOICE_V5
-                if setting_values[offset] == LOAD_AS_MASK_V5A:
-                    setting_values[offset] = LOAD_AS_MASK
+                    NUM_SINGLE_IMAGE_SETTINGS_V5 * i
+                new_setting_values += \
+                    setting_values[offset : offset+OFF_SI_LOAD_AS_CHOICE_V5]
+                load_as = setting_values[offset + OFF_SI_LOAD_AS_CHOICE_V5]
+                if load_as == LOAD_AS_MASK_V5A:
+                    load_as = LOAD_AS_MASK
+                new_setting_values += [load_as] +\
+                    setting_values[offset + OFF_SI_LOAD_AS_CHOICE_V5 + 1:
+                                   offset + NUM_ASSIGNMENT_SETTINGS_V5] +\
+                    [DEFAULT_MANUAL_RESCALE]
+            setting_values = new_setting_values
+            variable_revision_number = 6
             
         return setting_values, variable_revision_number, from_matlab
     

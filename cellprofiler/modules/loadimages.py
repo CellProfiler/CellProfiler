@@ -3209,6 +3209,10 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
+        if isinstance(self.rescale, float):
+            rescale = False
+        else:
+            rescale = self.rescale
         if self.is_matlab_file():
             with open(self.get_full_name(), "rb") as fd:
                 imgdata = scipy.io.matlab.mio.loadmat(
@@ -3254,6 +3258,9 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                         channel_names=channel_names)
                     stack.append(img)
                 img = np.dstack(stack)
+        if isinstance(self.rescale, float):
+            # Apply a manual rescale
+            img = img.astype(np.float32) / self.rescale
         image = cpimage.Image(img,
                               path_name = self.get_pathname(),
                               file_name = self.get_filename(),

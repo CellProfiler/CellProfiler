@@ -420,6 +420,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
                 self.assertEqual(assignment.rescale, rescale)
                 self.assertEqual(assignment.should_save_outlines, should_save_outlines)
                 self.assertEqual(assignment.save_outlines, outlines_name)
+                self.assertEqual(assignment.manual_rescale, N.DEFAULT_MANUAL_RESCALE)
             self.assertEqual(len(module.single_images), 0)
                             
     def test_00_05_load_v5(self):
@@ -547,6 +548,147 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
                 self.assertEqual(assignment.should_save_outlines.value, should_save_outlines)
                 self.assertEqual(assignment.save_outlines.value, outlines_name)
                 first = False
+                
+    def test_00_06_load_v6(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20141031194728
+GitHash:49bd1a0
+ModuleCount:3
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    :{"ShowFiltered"\x3A false}
+    Filter images?:Custom
+    Select the rule criteria:or (extension does istif)
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Extract metadata?:Yes
+    Metadata data type:Text
+    Metadata types:{}
+    Extraction method count:1
+    Metadata extraction method:Extract from file/folder names
+    Metadata source:File name
+    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})f(?P<Site>\x5B0-9\x5D{2})d(?P<ChannelNumber>\x5B0-9\x5D)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Extract metadata from:All images
+    Select the filtering criteria:or (file does contain "")
+    Metadata file location:
+    Match file and image metadata:\x5B\x5D
+    Use case insensitive matching?:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Assign a name to:Images matching rules
+    Select the image type:Color image
+    Name to assign these images:PI
+    Match metadata:\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
+    Image set matching method:Order
+    Set intensity range from:Image bit-depth
+    Assignments count:1
+    Single images count:5
+    Maximum intensity:100
+    Select the rule criteria:or (metadata does ChannelNumber "0")
+    Name to assign these images:DNA
+    Name to assign these objects:Nuclei
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedOutlines
+    Maximum intensity:200
+    Single image location:file\x3A///foo/bar   
+    Name to assign this image:sDNA
+    Name to assign these objects:sNuclei
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain object outlines?:No
+    Name the outline image:LoadedOutlines
+    Maximum intensity:300
+    Single image location:file\x3A///foo/bar 1 2 3
+    Name to assign this image:Actin
+    Name to assign these objects:Cells
+    Select the image type:Color image
+    Set intensity range from:Image bit-depth
+    Retain object outlines?:No
+    Name the outline image:LoadedOutlines
+    Maximum intensity:400
+    Single image location:file\x3A///foo/bar 1 2 3
+    Name to assign this image:GFP
+    Name to assign these objects:Cells
+    Select the image type:Binary mask
+    Set intensity range from:Image metadata
+    Retain object outlines?:No
+    Name the outline image:LoadedOutlines
+    Maximum intensity:500
+    Single image location:file\x3A///foo/bar 1 2 3
+    Name to assign this image:Foo
+    Name to assign these objects:Cells
+    Select the image type:Objects
+    Set intensity range from:Image bit-depth
+    Retain object outlines?:Yes
+    Name the outline image:MyCellOutlines
+    Maximum intensity:600
+    Single image location:file\x3A///foo/bar 1 2 3
+    Name to assign this image:Illum
+    Name to assign these objects:Cells
+    Select the image type:Illumination function
+    Set intensity range from:Image metadata
+    Retain object outlines?:No
+    Name the outline image:LoadedOutlines
+    Maximum intensity:700
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 3)
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, N.NamesAndTypes))
+        self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
+        self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
+        self.assertEqual(module.single_image_provider.value, "PI")
+        self.assertEqual(module.single_rescale, N.INTENSITY_RESCALING_BY_DATATYPE)
+        self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
+        self.assertEqual(module.assignments_count.value, 1)
+        self.assertEqual(module.single_images_count.value, 5)
+        self.assertEqual(module.manual_rescale.value, 100)
+        assignment = module.assignments[0]
+        self.assertEqual(assignment.rule_filter, 
+                         'or (metadata does ChannelNumber "0")')
+        self.assertEqual(assignment.image_name, "DNA")
+        self.assertEqual(assignment.object_name, "Nuclei")
+        self.assertEqual(assignment.load_as_choice, N.LOAD_AS_GRAYSCALE_IMAGE)
+        self.assertEqual(assignment.rescale, N.INTENSITY_RESCALING_BY_METADATA)
+        self.assertEqual(assignment.should_save_outlines, False)
+        self.assertEqual(assignment.save_outlines, "LoadedOutlines")
+        self.assertEqual(assignment.manual_rescale.value, 200)
+        aa = module.single_images
+        first = True
+        for assignment, image_name, objects_name, load_as, \
+            rescale, should_save_outlines, outlines_name, manual_rescale in (
+            (aa[0], "sDNA", "sNuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 300),
+            (aa[1], "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines", 400),
+            (aa[2], "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 500),
+            (aa[3], "Foo", "Cells", N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines", 600),
+            (aa[4], "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 700)):
+            ipd = assignment.image_plane
+            self.assertEqual(ipd.url, "file:///foo/bar")
+            if first:
+                self.assertTrue(all([
+                    x is None for x in ipd.series, ipd.index, ipd.channel]))
+            else:
+                self.assertEqual(ipd.series, 1)
+                self.assertEqual(ipd.index, 2)
+                self.assertEqual(ipd.channel, 3)
+            self.assertEqual(assignment.image_name.value, image_name)
+            self.assertEqual(assignment.object_name.value, objects_name)
+            self.assertEqual(assignment.load_as_choice.value, load_as)
+            self.assertEqual(assignment.rescale.value, rescale)
+            self.assertEqual(assignment.should_save_outlines.value, should_save_outlines)
+            self.assertEqual(assignment.save_outlines.value, outlines_name)
+            self.assertEqual(assignment.manual_rescale, manual_rescale)
+            first = False
+        
             
     url_root = "file:" + urllib.pathname2url(os.path.abspath(os.path.curdir))
 
@@ -1124,7 +1266,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
         
     def run_workspace(self, path, load_as_type, 
                       series = None, index = None, channel = None,
-                      single=False, rescaled=True, lsi = []):
+                      single=False,
+                      rescaled=N.INTENSITY_RESCALING_BY_METADATA, lsi = []):
         '''Run a workspace to load a file
         
         path - path to the file
@@ -1141,15 +1284,22 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
         
         returns the workspace after running
         '''
+        if isinstance(rescaled, float):
+            manual_rescale = rescaled
+            rescaled = N.INTENSITY_MANUAL
+        else:
+            manual_rescale = 255.
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_ALL if single else N.ASSIGN_RULES
         n.single_image_provider.value = IMAGE_NAME
         n.single_load_as_choice.value = load_as_type
         n.single_rescale.value = rescaled
+        n.manual_rescale.value = manual_rescale
         n.assignments[0].image_name.value = IMAGE_NAME
         n.assignments[0].object_name.value = OBJECTS_NAME
         n.assignments[0].load_as_choice.value = load_as_type
         n.assignments[0].rescale.value = rescaled
+        n.assignments[0].manual_rescale.value = manual_rescale
         n.assignments[0].should_save_outlines.value = True
         n.assignments[0].save_outlines.value = OUTLINES_NAME
         n.module_num = 1
@@ -1216,6 +1366,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
             si.object_name.value = name
             si.load_as_choice.value = load_as_type
             si.rescale.value = rescaled
+            si.manual_rescale.value = manual_rescale
             si.should_save_outlines.value = should_save_outlines
             si.save_outlines.value = outlines_name
             
@@ -1415,17 +1566,22 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
                             "ExampleSpecklesImages",
                             "1-162hrh2ax2.tif")
         for single in (True, False):
-            for rescaled in (True, False):
+            for rescaled in (N.INTENSITY_RESCALING_BY_METADATA, 
+                             N.INTENSITY_RESCALING_BY_DATATYPE,
+                             float(2**17)):
                 for load_as in N.LOAD_AS_COLOR_IMAGE, N.LOAD_AS_GRAYSCALE_IMAGE:
                     workspace = self.run_workspace(
                         path, load_as, single=single, rescaled=rescaled)
                     image = workspace.image_set.get_image(IMAGE_NAME)
                     pixel_data = image.pixel_data
                     self.assertTrue(np.all(pixel_data >= 0))
-                    if rescaled:
+                    if rescaled == N.INTENSITY_RESCALING_BY_METADATA:
                         self.assertTrue(np.any(pixel_data > 1. / 16.))
-                    else:
+                    elif rescaled == N.INTENSITY_RESCALING_BY_DATATYPE:
                         self.assertTrue(np.all(pixel_data <= 1. / 16.))
+                        self.assertTrue(np.any(pixel_data > 1. / 32.))
+                    else:
+                        self.assertTrue(np.all(pixel_data <= 1. / 32.))
                         
     def test_03_12_load_single_image(self):
         # Test loading a pipeline whose image set loads a single image

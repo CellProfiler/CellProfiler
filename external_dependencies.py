@@ -83,9 +83,8 @@ files = [
      OMERO_CLIENTS_URL + '/ice-grid.jar', None]
 ]
 
-pom_folders = ["imagej", "java"]
-classpath_filenames = ("cellprofiler-dependencies-classpath.txt",
-                       "cellprofiler-java-dependencies-classpath.txt")
+pom_folders = ["java"]
+classpath_filenames = ("cellprofiler-java-dependencies-classpath.txt",)
 
 def filehash(filename):
     sha1 = hashlib.sha1()

@@ -12,10 +12,10 @@
  */
 package org.cellprofiler.ijutils;
 
-import imagej.data.display.DataView;
-import imagej.data.display.ImageDisplay;
-import imagej.data.display.OverlayView;
-import imagej.data.overlay.Overlay;
+import net.imagej.display.DataView;
+import net.imagej.display.ImageDisplay;
+import net.imagej.display.OverlayView;
+import net.imagej.overlay.Overlay;
 import net.imglib2.Cursor;
 import net.imglib2.Interval;
 import net.imglib2.IterableInterval;

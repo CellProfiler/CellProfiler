@@ -14,7 +14,6 @@ package org.cellprofiler.preferences;
 
 import static org.junit.Assert.*;
 
-import imagej.updater.core.UpToDate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,6 +28,8 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+
+import net.imagej.updater.UpToDate;
 
 import org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory;
 import org.junit.Ignore;

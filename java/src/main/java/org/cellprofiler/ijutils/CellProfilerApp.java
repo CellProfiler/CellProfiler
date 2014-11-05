@@ -13,14 +13,16 @@
  */
 package org.cellprofiler.ijutils;
 
-import org.scijava.Priority;
-import org.scijava.log.LogService;
-import org.scijava.plugin.Plugin;
-import org.scijava.service.Service;
+import net.imagej.app.ToplevelImageJApp;
 
-import imagej.platform.DefaultAppEventService;
-import imagej.ui.UIService;
-import imagej.ui.UserInterface;
+import org.scijava.Priority;
+import org.scijava.app.App;
+import org.scijava.log.LogService;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.scijava.ui.UIService;
+import org.scijava.ui.UserInterface;
+
 
 
 /**
@@ -29,8 +31,13 @@ import imagej.ui.UserInterface;
  * Prevent quit from happening.
  * 
  */
-@Plugin(type = Service.class, priority = Priority.HIGH_PRIORITY)
-public class CellProfilerAppEventService extends DefaultAppEventService {
+@Plugin(type = App.class,
+		name = "ImageJ for CellProfiler",
+		priority = Priority.HIGH_PRIORITY + 2)
+public class CellProfilerApp extends ToplevelImageJApp {
+	@Parameter
+	private LogService logService;
+	
 	static boolean canQuit = false;
 	
 	/**
@@ -46,16 +53,25 @@ public class CellProfilerAppEventService extends DefaultAppEventService {
 	public static void preventQuit() {
 		canQuit = false;
 	}
+	@Override
+	public String getGroupId() {
+		return "org.cellprofiler";
+	}
+
+	@Override
+	public String getArtifactId() {
+		return "cellprofiler-java";
+	}
+	
 	/* (non-Javadoc)
-	 * @see imagej.platform.DefaultAppEventService#quit()
+	 * @see net.imagej.app.ImageJApp#quit()
 	 */
 	@Override
 	public void quit() {
 		if (canQuit) {
 			super.quit();
 		} else {
-			LogService logService = getContext().getService(LogService.class);
-			UIService uiService = getContext().getService(UIService.class);
+			final UIService uiService = getContext().getService(UIService.class);
 			if (uiService.isVisible()) {
 				UserInterface ui = uiService.getDefaultUI();
 				logService.info("Quit action: hide the application frame");

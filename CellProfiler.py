@@ -272,6 +272,13 @@ def main(args):
             except:
                 logging.root.warn("Failed to stop zmq boundary")
             try:
+                from imagej.imagej2 import allow_quit, quit
+                allow_quit()
+                quit()
+                    
+            except:
+                logging.root.warn("Failed to dispose of ImageJ")
+            try:
                 from javabridge import kill_vm
                 kill_vm()
             except:

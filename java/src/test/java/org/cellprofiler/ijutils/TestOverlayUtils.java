@@ -18,19 +18,16 @@ import static org.junit.Assume.*;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import imagej.ImageJ;
-import imagej.data.Dataset;
-import imagej.data.DatasetService;
-import imagej.data.autoscale.AutoscaleService;
-import imagej.data.display.DataView;
-import imagej.data.display.ImageDisplay;
-import imagej.data.display.ImageDisplayService;
-import imagej.data.display.OverlayService;
-import imagej.data.overlay.AbstractROIOverlay;
-import imagej.data.overlay.Overlay;
-import imagej.data.overlay.RectangleOverlay;
-import imagej.display.Display;
-import imagej.display.DisplayService;
+import net.imagej.Dataset;
+import net.imagej.DatasetService;
+import net.imagej.ImageJ;
+import net.imagej.display.DataView;
+import net.imagej.display.ImageDisplay;
+import net.imagej.display.ImageDisplayService;
+import net.imagej.display.OverlayService;
+import net.imagej.overlay.AbstractROIOverlay;
+import net.imagej.overlay.Overlay;
+import net.imagej.overlay.RectangleOverlay;
 
 import net.imglib2.Cursor;
 import net.imglib2.img.Img;
@@ -42,6 +39,8 @@ import net.imglib2.type.logic.BitType;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.scijava.display.Display;
+import org.scijava.display.DisplayService;
 
 /**
  * @author Lee Kamentsky

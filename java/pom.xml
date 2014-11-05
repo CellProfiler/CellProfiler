@@ -4,19 +4,18 @@
   	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>1.150</version>
+		<version>3.7</version>
 		<relativePath />
 	</parent>
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <org.cellprofiler.java.version>2.2.1-SNAPSHOT</org.cellprofiler.java.version>
     <bio-formats.version>5.0.5</bio-formats.version>
   </properties>
   <groupId>org.cellprofiler</groupId>
   <artifactId>cellprofiler-java</artifactId>
-  <version>${org.cellprofiler.java.version}</version>
+  <version>2.2.2-SNAPSHOT</version>
   <name>CellProfiler-java</name>
   <description>CellProfiler-java is a package of Java support routines for CellProfiler.</description>
   <url>http://cellprofiler.org</url>
@@ -114,11 +113,11 @@
  	<dependency>
  	  <groupId>junit</groupId>
  	  <artifactId>junit</artifactId>
- 	  <version>${junit.version}</version>
+ 	  <version>4.9</version>
  	  <scope>test</scope>
  	</dependency>
     <dependency>
-      <groupId>${bio-formats.groupId}</groupId>
+      <groupId>ome</groupId>
       <artifactId>formats-gpl</artifactId>
       <version>${bio-formats.version}</version>
 	  <exclusions>
@@ -129,52 +128,26 @@
       </exclusions>       
     </dependency>
     <dependency>
-      <groupId>${bio-formats.groupId}</groupId>
+      <groupId>ome</groupId>
       <artifactId>formats-api</artifactId>
       <version>${bio-formats.version}</version>
     </dependency>
     <dependency>
-      <groupId>${bio-formats.groupId}</groupId>
+      <groupId>ome</groupId>
       <artifactId>ome-io</artifactId>
       <version>5.0.0-rc2</version>
       <exclusions>
       	<exclusion>
     	  <artifactId>omero-client</artifactId>
-	      <groupId>${bio-formats.groupId}</groupId>
+	      <groupId>ome</groupId>
       	</exclusion>
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>${imagej.groupId}</groupId>
-      <artifactId>ij-core</artifactId>
-      <version>${imagej.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${imagej.groupId}</groupId>
-      <artifactId>ij-data</artifactId>
-      <version>${imagej.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${imagej.groupId}</groupId>
-      <artifactId>ij-ui</artifactId>
-      <version>${imagej.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${imagej.groupId}</groupId>
-      <artifactId>ij-app</artifactId>
-      <version>${imagej.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>${imagej.groupId}</groupId>
-      <artifactId>ij-options</artifactId>
-      <version>${imagej.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${imagej.groupId}</groupId>
-      <artifactId>ij-updater-core</artifactId>
-      <version>${imagej.version}</version>
-    </dependency>
+        <groupId>net.imagej</groupId>
+		<artifactId>imagej</artifactId>
+		<version>2.0.0-rc-16</version>
+	</dependency>
   <dependency>
 	<groupId>net.sf.opencsv</groupId>
 	<artifactId>opencsv</artifactId>
@@ -203,31 +176,19 @@
 	 <dependency>
 		<groupId>org.glassfish</groupId>
     	<artifactId>javax.json</artifactId>
-    	<version>1.0</version>
+    	<version>1.0.1</version>
      </dependency>
  </dependencies>
-  <dependencyManagement>
-  <dependencies>
-  <dependency>
-    	<groupId>org.jruby</groupId>
-	    <artifactId>jruby</artifactId>
- 	    <version>1.7.11</version>
- 	    <scope>runtime</scope>
-  </dependency>
-  </dependencies>
-  </dependencyManagement>
   <repositories>
-				<repository>
-					<id>sonatype-nexus-releases</id>
-					<name>Sonatype Nexus Releases</name>
-					<url>https://oss.sonatype.org/content/repositories/releases</url>
-					<releases>
-						<enabled>true</enabled>
-					</releases>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
+	<repository>
+		<id>sonatype-nexus-releases</id>
+		<name>Sonatype Nexus Releases</name>
+		<url>https://oss.sonatype.org/content/repositories/releases</url>
+	</repository>
+    <repository>
+		<id>imagej.public</id>
+		<url>http://maven.imagej.net/content/groups/public</url>
+	</repository>
 	<repository>
 	  <id>ome.releases</id>
 	  <url>http://artifacts.openmicroscopy.org/artifactory/ome.releases</url>
@@ -236,10 +197,6 @@
 	  <id>ome.snapshots</id>
 	  <url>http://artifacts.openmicroscopy.org/artifactory/ome.snapshots</url>
 	</repository>
-  	<repository>
-      <id>imagej.releases</id>
-      <url>http://maven.imagej.net/content/repositories/releases</url>
-  	</repository>
   </repositories>
   <build>
   <plugins>
@@ -268,7 +225,7 @@
                 <artifactItem>
 				  <groupId>org.cellprofiler</groupId>
   				  <artifactId>cellprofiler-java</artifactId>
-                  <version>${org.cellprofiler.java.version}</version>
+                  <version>2.2.2-SNAPSHOT</version>
                   <overWrite>true</overWrite>
                 </artifactItem>
 			  </artifactItems>
@@ -319,6 +276,62 @@
         <artifactId>maven-help-plugin</artifactId>
         <version>2.2</version>
       </plugin>
+      <!-- I (leek) lifted this from imagej.pom because I was having the same problem -->
+	  <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-enforcer-plugin</artifactId>
+		<configuration>
+			<rules>
+				<banDuplicateClasses>
+					<dependencies>
+						<!-- JRuby/JRuby clashes -->
+						<dependency>
+							<artifactId>jcodings</artifactId>
+							<ignoreClasses>
+								<ignoreClass>org/jcodings/*</ignoreClass>
+							</ignoreClasses>
+						</dependency>
+						<dependency>
+							<artifactId>jnr-constants</artifactId>
+							<ignoreClasses>
+								<ignoreClass>com/kenai/constantine/*</ignoreClass>
+								<ignoreClass>jnr/constants/*</ignoreClass>
+							</ignoreClasses>
+						</dependency>
+						<dependency>
+							<artifactId>jnr-ffi</artifactId>
+							<ignoreClasses>
+								<ignoreClass>jnr/ffi/*</ignoreClass>
+							</ignoreClasses>
+						</dependency>
+
+						<!-- JRuby/Jython clashes -->
+						<dependency>
+							<artifactId>jython-standalone</artifactId>
+							<ignoreClasses>
+								<ignoreClass>jnr/netdb/*</ignoreClass>
+								<ignoreClass>com/kenai/jffi/*</ignoreClass>
+							</ignoreClasses>
+						</dependency>
+
+						<!-- ImgLib2-ops is still referenced, but already dissolved into ImageJ-OPS -->
+						<dependency>
+							<artifactId>imglib2-ops</artifactId>
+							<ignoreClasses>
+								<ignoreClass>net/imglib2/ops/*</ignoreClass>
+							</ignoreClasses>
+						</dependency>
+					</dependencies>
+				</banDuplicateClasses>
+				<enforceBytecodeVersion>
+					<excludes>
+						<exclude>com.headius:invokebinder</exclude>
+					</excludes>
+				</enforceBytecodeVersion>
+			</rules>
+			<fail>false</fail>
+		</configuration>
+	</plugin>
     </plugins>
  </build>
 </project>

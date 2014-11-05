@@ -22,17 +22,17 @@ import time
 import javabridge as J
 
 REQUIRED_SERVICES = [
-    "imagej.script.ScriptService",
-    "imagej.event.EventService",
-    "imagej.object.ObjectService",
-    "imagej.platform.PlatformService",
+    "org.scijava.script.ScriptService",
+    "org.scijava.event.EventService",
+    "org.scijava.object.ObjectService",
+    "org.scijava.platform.PlatformService",
     "org.scijava.plugin.PluginService",
-    "imagej.module.ModuleService",
-    'imagej.display.DisplayService',
-    "imagej.command.CommandService",
-    'imagej.data.DatasetService',
-    'imagej.data.display.OverlayService',
-    'imagej.ui.UIService'    
+    "org.scijava.module.ModuleService",
+    'org.scijava.display.DisplayService',
+    "org.scijava.command.CommandService",
+    'net.imagej.DatasetService',
+    'net.imagej.display.OverlayService',
+    'org.scijava.ui.UIService'    
 ]
 
 '''Field type = integer'''
@@ -78,15 +78,15 @@ field_mapping = {
 
 def field_class_mapping():
     return (
-        (J.class_for_name('imagej.data.display.ImageDisplay'), FT_IMAGE),
-        (J.class_for_name('imagej.data.Dataset'), FT_IMAGE),
-        (J.class_for_name('imagej.data.display.DatasetView'), FT_IMAGE),
-        (J.class_for_name('imagej.data.table.TableDisplay'), FT_TABLE),
+        (J.class_for_name('net.imagej.display.ImageDisplay'), FT_IMAGE),
+        (J.class_for_name('net.imagej.Dataset'), FT_IMAGE),
+        (J.class_for_name('net.imagej.display.DatasetView'), FT_IMAGE),
+        (J.class_for_name('net.imagej.table.TableDisplay'), FT_TABLE),
         (J.class_for_name('org.scijava.plugin.SciJavaPlugin'), FT_PLUGIN)
     )
 
 def run_imagej(*args):
-    J.static_call("imagej/Main", "main", "([Ljava/lang/String;)V",
+    J.static_call("net/imagej/Main", "main", "([Ljava/lang/String;)V",
                   *[unicode(arg) for arg in args])
 
 def create_context(service_classes):
@@ -103,7 +103,7 @@ def create_context(service_classes):
                 ctxt_fn = J.run_script(
                     """new java.util.concurrent.Callable() {
                         call: function() {
-                            return new Packages.imagej.ImageJ(false);
+                            return new Packages.net.imagej.ImageJ(false);
                         }
                     }""")
             else:
@@ -114,7 +114,7 @@ def create_context(service_classes):
                 ctxt_fn = J.run_script(
                     """new java.util.concurrent.Callable() {
                         call: function() {
-                            return new Packages.imagej.ImageJ(classes);
+                            return new Packages.net.imagej.ImageJ(classes);
                         }
                     }""", dict(classes = classes.o))
             
@@ -129,11 +129,11 @@ def create_context(service_classes):
             returns the class or None if no implementor loaded.
             '''
             klass = J.class_for_name(class_name)
-            return J.call(self.o, 'get', 
-                          '(Ljava/lang/Class;)Lorg/scijava/service/Service;', klass)
+            return J.call(
+                self.o, 'get', 
+                '(Ljava/lang/Class;)Lorg/scijava/service/Service;', klass)
         getContext = J.make_method("getContext", "()Lorg/scijava/Context;")
         getVersion = J.make_method("getVersion", "()Ljava/lang/String;")
-        dispose = make_invoke_method("dispose")
     return Context()
     
 
@@ -160,11 +160,11 @@ def get_context():
         max_value = J.run_script(
             "java.lang.Long.toString(java.lang.Long.MAX_VALUE);")
         prefs = [
-            ("imagej.updater.core.UpToDate", "latestNag", max_value),
-            ("imagej.core.options.OptionsMisc", "exitWhenQuitting", "false")]
+            ("net.imagej.updater.UpToDate", "latestNag", max_value),
+            ("net.imagej.options.OptionsMisc", "exitWhenQuitting", "false")]
         plugin_service = the_imagej_context.getService(
             "org.scijava.plugin.PluginService")
-        ui_interface = J.class_for_name("imagej.ui.UserInterface")
+        ui_interface = J.class_for_name("org.scijava.ui.UserInterface")
         script = """
         var result = java.lang.System.getProperty('ij.ui');
         if (! result) {
@@ -182,7 +182,7 @@ def get_context():
         for class_name, key, value in prefs:
             c = J.class_for_name(class_name)
             J.static_call(
-                "imagej/util/Prefs", "put",
+                "org/scijava/util/Prefs", "put",
                 "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;)V",
                 c, key, value)
     return the_imagej_context
@@ -190,9 +190,16 @@ def get_context():
 def allow_quit():
     '''Allow the CellProfilerAppEventService to dispose of ImageJ
     '''
-    J.static_call("org/cellprofiler/ijutils/CellProfilerAppEventService",
+    J.static_call("org/cellprofiler/ijutils/CellProfilerApp",
                   "allowQuit", "()V")
 
+def quit():
+    if the_imagej_context is not None:
+        app_service = the_imagej_context.getService(
+            "org.scijava.app.AppService")
+        app = J.call(app_service, "getApp", "()Lorg/scijava/app/App;")
+        J.call(app, "quit", "()V")
+        
 def get_module_service(context):
     '''Get the module service for a given context
     
@@ -200,7 +207,7 @@ def get_module_service(context):
     
     returns a module service
     '''
-    o = context.getService('imagej.module.ModuleService')
+    o = context.getService('org.scijava.module.ModuleService')
     class ModuleService(object):
         def __init__(self):
             self.o = o
@@ -213,7 +220,8 @@ def get_module_service(context):
             return [wrap_module_info(x) for x in J.iterate_java(module_iterator)]
         
         def getIndex(self):
-            index = J.call(self.o, "getIndex", "()Limagej/module/ModuleIndex;")
+            index = J.call(
+                self.o, "getIndex", "()Lorg/scijava/module/ModuleIndex;")
             index = J.get_collection_wrapper(index, wrap_module_info)
             index.getC = lambda c: J.get_collection_wrapper(
                 J.call(index.o, "get", "(Ljava/lang/Class;)Ljava/util/List;",c),
@@ -247,7 +255,7 @@ def get_module_service(context):
                                      post)
             future = J.call(
                 self.o, "run", 
-                "(Limagej/module/ModuleInfo;"
+                "(Lorg/scijava/module/ModuleInfo;"
                 "Ljava/util/List;"
                 "Ljava/util/List;"
                 "Ljava/util/Map;)"
@@ -255,25 +263,25 @@ def get_module_service(context):
                 module_info, pre, post, input_map)
             return J.call(
                 self.o, "waitFor", 
-                "(Ljava/util/concurrent/Future;)Limagej/module/Module;",
+                "(Ljava/util/concurrent/Future;)Lorg/scijava/module/Module;",
                 future)
     return ModuleService()
 
 def wrap_module_info(instance):
-    '''Wrap a java object of class imagej/module/ModuleInfo'''
+    '''Wrap a java object of class org/scijava/module/ModuleInfo'''
     class ModuleInfo(object):
         def __init__(self):
             self.o = instance
 
         getInput = J.make_method(
             "getInput", 
-            "(Ljava/lang/String;)Limagej/module/ModuleItem;", 
+            "(Ljava/lang/String;)Lorg/scijava/module/ModuleItem;", 
             doc = "Gets the input item with the given name.",
             fn_post_process=wrap_module_item)
 
         getOutput = J.make_method(
             "getOutput", 
-            "(Ljava/lang/String;)Limagej/module/ModuleItem;",
+            "(Ljava/lang/String;)Lorg/scijava/module/ModuleItem;",
             doc = "Gets the output item with the given name.",
             fn_post_process=wrap_module_item)
 
@@ -294,7 +302,7 @@ def wrap_module_info(instance):
             "()Ljava/lang/String;")
         createModule = J.make_method(
             "createModule",
-            "()Limagej/module/Module;",
+            "()Lorg/scijava/module/Module;",
             fn_post_process=wrap_module)
         getMenuPath = J.make_method(
             "getMenuPath", "()Lorg/scijava/MenuPath;")
@@ -347,9 +355,9 @@ def wrap_module_item(instance):
         getColumnCount = J.make_method("getColumnCount", "()I")
         getChoices = J.make_method("getChoices", "()Ljava/util/List;")
         getValue = J.make_method("getValue", 
-                                 "(Limagej/module/Module;)Ljava/lang/Object;")
+                                 "(Lorg/scijava/module/Module;)Ljava/lang/Object;")
         setValue = J.make_method(
-            "setValue", "(Limagej/module/Module;Ljava/lang/Object;)V",
+            "setValue", "(Lorg/scijava/module/Module;Ljava/lang/Object;)V",
             "Set the value associated with this item on the module")
         getName = J.make_method("getName", "()Ljava/lang/String;")
         getLabel = J.make_method("getLabel", "()Ljava/lang/String;")
@@ -366,11 +374,16 @@ def wrap_module(module):
         def __init__(self, o = module):
             self.o = o
             
-        getInfo = J.make_method("getInfo", "()Limagej/module/ModuleInfo;")
-        getInput = J.make_method("getInput", "(Ljava/lang/String;)Ljava/lang/Object;")
-        getOutput = J.make_method("getOutput", "(Ljava/lang/String;)Ljava/lang/Object;")
-        setInput = J.make_method("setInput", "(Ljava/lang/String;Ljava/lang/Object;)V")
-        setOutput = J.make_method("setOutput", "(Ljava/lang/String;Ljava/lang/Object;)V")
+        getInfo = J.make_method(
+            "getInfo", "()Lorg/scijava/module/ModuleInfo;")
+        getInput = J.make_method(
+            "getInput", "(Ljava/lang/String;)Ljava/lang/Object;")
+        getOutput = J.make_method(
+            "getOutput", "(Ljava/lang/String;)Ljava/lang/Object;")
+        setInput = J.make_method(
+            "setInput", "(Ljava/lang/String;Ljava/lang/Object;)V")
+        setOutput = J.make_method(
+            "setOutput", "(Ljava/lang/String;Ljava/lang/Object;)V")
         isResolved = J.make_method("isResolved", "(Ljava/lang/String;)Z")
         setResolved = J.make_method("setResolved", "(Ljava/lang/String;Z)V")
         setContext = J.make_method("setContext", "(Lorg/scijava/Context;)V")
@@ -404,7 +417,7 @@ def get_command_service(context):
     The command service is used to run modules with command pre and post
     processing.
     '''
-    command_service = context.getService("imagej.command.CommandService")
+    command_service = context.getService("org.scijava.command.CommandService")
     class CommandService(object):
         def __init__(self):
             self.o = command_service
@@ -426,7 +439,8 @@ def get_command_service(context):
             """, 
             fn_post_process=J.get_future_wrapper)
         getCommandS = J.make_method(
-            "getCommand", "(Ljava/lang/String;)Limagej/command/CommandInfo;",
+            "getCommand", 
+            "(Ljava/lang/String;)Lorg/scijava/command/CommandInfo;",
             doc = """Get command by class name
             
             className - dotted class name, e.g. imagej.core.commands.app.AboutImageJ
@@ -454,7 +468,7 @@ def get_display_service(context):
     
     context - the ImageJ context for the thread
     '''
-    o = context.getService('imagej.display.DisplayService')
+    o = context.getService('org.scijava.display.DisplayService')
     class DisplayService(object):
         def __init__(self):
             self.o = o
@@ -495,7 +509,7 @@ def get_display_service(context):
             return wrap_display(J.call(
                 self.o, "getActiveDisplay",
                 "()Limagej/display/Display;",
-                J.class_for_name("imagej.data.display.ImageDisplay")))
+                J.class_for_name("net.imagej.display.ImageDisplay")))
         
         def setActiveDisplay(self, display):
             '''Make this the active display'''
@@ -572,18 +586,18 @@ def wrap_display(display):
         # ImageDisplay methods
         #
         getActiveView = J.make_method(
-            "getActiveView", "()Limagej/data/display/DataView;",
+            "getActiveView", "()Lnet/imagej/display/DataView;",
             fn_post_process=wrap_data_view)
         getActiveAxis = J.make_method(
             "getActiveAxis", "()Lnet/imglib2/meta/AxisType;")
         setActiveAxis = J.make_method(
             "setActiveAxis", "(Lnet/imglib2/meta/AxisType;)V")
         getCanvas = J.make_method(
-            "getCanvas", "()Limagej/data/display/ImageCanvas;")
+            "getCanvas", "()Lnet/imagej/display/ImageCanvas;")
     return ImageDisplay()
                 
 def get_dataset_service(context):
-    o = context.getService('imagej.data.DatasetService')
+    o = context.getService('net.imagej.DatasetService')
     class DatasetService(object):
         def __init__(self, o=o):
             self.o = o
@@ -593,12 +607,12 @@ def get_dataset_service(context):
             doc = "Get all dataset objects in the context")
         getDatasets = J.make_method(
             "getDatasets", 
-            "(Limagej/data/display/ImageDisplay)Ljava/util/List;",
+            "(Lnet/imagej/display/ImageDisplay)Ljava/util/List;",
             doc = """Get the datasets linked to a particular image display""")
         create1 = J.make_method(
             "create",
             "([JLjava/lang/String;[Lnet/imglib2/meta/AxisType;IZZ)"
-            "Limagej/data/Dataset;",
+            "Lnet/imagej/Dataset;",
             doc = """Create a dataset with a given bitdepth
             
             dims - # of dimensions
@@ -616,7 +630,7 @@ def get_dataset_service(context):
         create2 = J.make_method(
             "create",
             "(Lnet/imglib2/type/numeric/RealType;[JLjava/lang/String;[Lnet/imglib2/meta/AxisType;)"
-            "Limagej/data/Dataset;",
+            "Lnet/imagej/Dataset;",
             doc = """Create a dataset based on an IMGLIB type
             
             type - The type of the dataset.
@@ -629,7 +643,7 @@ def get_dataset_service(context):
             "(Lnet/imglib2/img/ImgFactory;"
             "Lnet/imglib2/type/numeric/RealType;"
             "[JLjava/lang/String;[Lnet/imglib2/meta/AxisType)"
-            "Limagej/data/Dataset;",
+            "Lnet/imagej/Dataset;",
             doc = """Create a dataset from an IMGLIB image factory
             
             factory - The ImgFactory to use to create the data.
@@ -647,7 +661,7 @@ def get_dataset_service(context):
 
 def get_overlay_service(context):
     '''Get the context's overlay service'''
-    o = context.getService('imagej.data.display.OverlayService')
+    o = context.getService('net.imagej.display.OverlayService')
     class OverlayService(object):
         def __init__(self, o=o):
             self.o = o
@@ -656,13 +670,13 @@ def get_overlay_service(context):
                                     fn_post_process=J.get_collection_wrapper)
         getDisplayOverlays = J.make_method(
             "getOverlays",
-            "(Limagej/data/display/ImageDisplay;)Ljava/util/List;",
+            "(Lnet/imagej/display/ImageDisplay;)Ljava/util/List;",
             fn_post_process=J.get_collection_wrapper)
         addOverlays = make_invoke_method("addOverlays")
         removeOverlay = make_invoke_method("removeOverlay")
         getSelectionBounds = J.make_method(
             "getSelectionBounds",
-            "(Limagej/data/display/ImageDisplay;)Limagej/util/RealRect;")
+            "(Lnet/imagej/display/ImageDisplay;)Lorg/scijava/util/RealRect;")
     return OverlayService()
 
 def select_overlay(display, overlay, select=True):
@@ -763,7 +777,7 @@ def create_overlay(context, mask):
         "net/imglib2/roi/BinaryMaskRegionOfInterest",
         "(Lnet/imglib2/RandomAccessibleInterval;)V", img)
     overlay = J.make_instance(
-        "imagej/data/overlay/BinaryMaskOverlay",
+        "net/imagej/overlay/BinaryMaskOverlay",
         "(Lorg/scijava/Context;Lnet/imglib2/roi/BinaryMaskRegionOfInterest;)V", 
         context.getContext(), roi)
     return overlay
@@ -778,7 +792,7 @@ def create_mask(display):
     jmask = J.static_call(
         "org/cellprofiler/ijutils/OverlayUtils",
         "extractMask",
-        "(Limagej/data/display/ImageDisplay;)Lnet/imglib2/img/Img;",
+        "(Lnet/imagej/display/ImageDisplay;)Lnet/imglib2/img/Img;",
         display.o)
     if jmask is None:
         return None
@@ -788,11 +802,11 @@ def wrap_data_view(view):
     class DataView(object):
         def __init__(self, o=view):
             self.o = o
-        isCompatible = J.make_method("isCompatible", "(Limagej/data/Data;)Z")
-        initialize = J.make_method("initialize", "(Limagej/data/Data;)V")
-        getData = J.make_method("getData", "()Limagej/data/Data;")
+        isCompatible = J.make_method("isCompatible", "(Lnet/imagej/Data;)Z")
+        initialize = J.make_method("initialize", "(Lnet/imagej/Data;)V")
+        getData = J.make_method("getData", "()Lnet/imagej/Data;")
         getPlanePosition = J.make_method(
-            "getPlanePosition", "()Limagej/data/Position;")
+            "getPlanePosition", "()Lnet/imagej/Position;")
         setSelected = J.make_method("setSelected", "(Z)V")
         isSelected = J.make_method("isSelected", "()Z")
         getPreferredWidth = J.make_method("getPreferredWidth", "()I")
@@ -942,7 +956,7 @@ def get_script_service(context):
     
     returns a script service
     '''
-    o = context.getService('imagej.script.ScriptService')
+    o = context.getService('org.scijava.script.ScriptService')
     class ScriptService(object):
         def __init__(self, o=o):
             self.o = o
@@ -950,7 +964,7 @@ def get_script_service(context):
         getPluginService = J.make_method(
             "getPluginService", "()Lorg/scijava/plugin/PluginService;")
         getIndex = J.make_method(
-            "getIndex", "()Limagej/script/ScriptLanguageIndex;")
+            "getIndex", "()Lorg/scijava/script/ScriptLanguageIndex;")
         getLanguages = J.make_method(
             "getLanguages", "()Ljava/util/List;",
             doc = "Return the script engine factories supported by this service",
@@ -959,11 +973,11 @@ def get_script_service(context):
                 for o in J.iterate_collection(jlangs)])
         getByFileExtension = J.make_method(
             "getLanguageByExtension", 
-            "(Ljava/lang/String;)Limagej/script/ScriptLanguage;",
+            "(Ljava/lang/String;)Lorg/scijava/script/ScriptLanguage;",
             fn_post_process=wrap_script_engine_factory)
         getByName = J.make_method(
             "getLanguageByName", 
-            "(Ljava/lang/String;)Limagej/script/ScriptLanguage;",
+            "(Ljava/lang/String;)Lorg/scijava/script/ScriptLanguage;",
             fn_post_process=wrap_script_engine_factory)
     return ScriptService()
         
@@ -1089,7 +1103,7 @@ def wrap_script_engine(o):
 
 def get_ui_service(context):
     '''Return a wrapped imagej.ui.UIService for this context'''
-    ui_service = context.getService('imagej.ui.UIService')
+    ui_service = context.getService('org.scijava.ui.UIService')
     if ui_service is None:
         return None
     class UIService(object):
@@ -1100,10 +1114,10 @@ def get_ui_service(context):
         isVisible = J.make_method("isVisible", "()Z")
         getDefaultUI = J.make_method(
             "getDefaultUI", 
-            "()Limagej/ui/UserInterface;",
+            "()Lorg/scijava/ui/UserInterface;",
             fn_post_process=wrap_user_interface)
         getUI = J.make_method(
-            "getUI", "(Ljava/lang/String;)Limagej/ui/UserInterface;",
+            "getUI", "(Ljava/lang/String;)Lorg/scijava/ui/UserInterface;",
             fn_post_process=wrap_user_interface)
         
     return UIService()
@@ -1115,7 +1129,7 @@ def update_never_remind():
     which go to /dev/null.
     '''
     never = J.get_static_field("java/lang/Long", "MAX_VALUE", "J")
-    J.static_call("imagej/updater/core/UpToDate", 
+    J.static_call("net/imagej/updater/UpToDate", 
                   "setLatestNag", "(J)V", never)
     
 def wrap_user_interface(o):
@@ -1126,7 +1140,7 @@ def wrap_user_interface(o):
         show = make_invoke_method("show")
         isVisible = J.make_method("isVisible", "()Z")
         getApplicationFrame = J.make_method(
-            "getApplicationFrame", "()Limagej/ui/ApplicationFrame;")
+            "getApplicationFrame", "()Lorg/scijava/ui/ApplicationFrame;")
         
     return UserInterface()
 

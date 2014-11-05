@@ -909,7 +909,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 assert isinstance(setting, cps.Color)
                 red, green, blue = setting.to_rgb()
                 jobject = J.make_instance(
-                    "imagej/util/ColorRGB", "(III)V", red, green, blue)
+                    "org/scijava/util/ColorRGB", "(III)V", red, green, blue)
                 input_dictionary.put(field_name, jobject)
             elif field_type == ij2.FT_IMAGE:
                 data_class = J.call(module_item.o, "getType", "()Ljava/lang/Class;")
@@ -921,7 +921,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     context, pixel_data, image_name)
                 if J.call(data_class, "isAssignableFrom",
                           "(Ljava/lang/Class;)Z",
-                          J.class_for_name("imagej.data.Dataset")):
+                          J.class_for_name("net.imagej.Dataset")):
                     o = dataset.o
                 else:
                     display = display_service.createDisplay(image_name, dataset)
@@ -936,7 +936,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         ij2.select_overlay(display.o, overlay)
                     if J.call(data_class, "isAssignableFrom",
                               "(Ljava/lang/Class;)Z",
-                              J.class_for_name("imagej.data.display.DatasetView")):
+                              J.class_for_name("net.imagej.display.DatasetView")):
                         o = display.getActiveView().o
                     else:
                         o = display.o
@@ -990,13 +990,13 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             J.call(pluginService, "createInstancesOfType", 
                    "(Ljava/lang/Class;)Ljava/util/List;",
                    J.class_for_name(x))
-            for x in ("imagej.module.process.PreprocessorPlugin",
-                      "imagej.module.process.PostprocessorPlugin")]
+            for x in ("org.scijava.module.process.PreprocessorPlugin",
+                      "org.scijava.module.process.PostprocessorPlugin")]
         if filter_pre:
             good_preprocessors = []
             for preprocessor in J.get_collection_wrapper(preprocessors):
                 if not J.is_instance_of(
-                    preprocessor, "imagej/module/process/InitPreprocessor"):
+                    preprocessor, "org/scijava/module/process/InitPreprocessor"):
                     good_preprocessors.append(preprocessor)
             preprocessors = J.make_list(good_preprocessors).o
         #
@@ -1004,7 +1004,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         #
         jfuture = J.call(
             module_service.o, "run", 
-            "(Limagej/module/Module;Ljava/util/List;Ljava/util/List;Ljava/util/Map;)Ljava/util/concurrent/Future;",
+            "(Lorg/scijava/module/Module;Ljava/util/List;Ljava/util/List;Ljava/util/Map;)Ljava/util/concurrent/Future;",
             module.o, preprocessors, postprocessors, input_dictionary.o)
         future = J.get_future_wrapper(jfuture, ij2.wrap_module)
         module = future.get()
@@ -1018,11 +1018,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         workspace, display, output_name)
                 else:
                     o = module.getOutput(name)
-                    if J.is_instance_of(o, "imagej/data/display/ImageDisplay"):
+                    if J.is_instance_of(o, "net/imagej/display/ImageDisplay"):
                         display = ij2.wrap_display(o)
                         pixel_data = self.save_display_as_image(
                             workspace, display, output_name)
-                    elif J.is_instance_of(o, "imagej/data/display/DatasetView"):
+                    elif J.is_instance_of(o, "net/imagej/display/DatasetView"):
                         pixel_data = self.save_dataset_as_image(
                             workspace,
                             ij2.wrap_dataset(ij2.wrap_data_view(o).getData()),
@@ -1201,7 +1201,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         
         
 IJ_TABLE_SETTING_GROUP = "ijtable"
-IJ_TABLE_TYPE = "imagej.data.table.TableDisplay"
+IJ_TABLE_TYPE = "net.imagej.table.TableDisplay"
 
 class IJTableProvider(cps.NameProvider):
     '''A setting provider of ImageJ table names'''

@@ -12,9 +12,6 @@
  */
 package org.cellprofiler.preferences;
 
-import imagej.core.options.OptionsMisc;
-import imagej.updater.core.UpToDate;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
@@ -30,6 +27,9 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import java.util.prefs.PreferencesFactory;
+
+import net.imagej.options.OptionsMisc;
+import net.imagej.updater.UpToDate;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory;

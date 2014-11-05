@@ -332,7 +332,7 @@ public class ChannelFilter {
 			if (imagePlane.hasCZT()) {
 				groupingPlanes.add(ipd);
 			} else {
-				result.add(ImagePlaneDetailsStack.makeColorStack(ipd));
+				result.add(ImagePlaneDetailsStack.makeColorStack(ipd.coerceToColor()));
 			}
 		}
 		if (groupingPlanes.size() > 0) {

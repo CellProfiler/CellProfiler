@@ -1403,13 +1403,21 @@ class NamesAndTypes(cpm.CPModule):
                     J.call(stack, "get", "([I)Ljava/lang/Object;", coords)))
                 
         if len(ipds) == 1:
+            interleaved = J.get_static_field(
+                "org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I")
+            monochrome = J.get_static_field(
+                "org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I")
             ipd = ipds[0]
             url = ipd.url
             series = ipd.series
             index = ipd.index
             channel = ipd.channel
-            if channel < 0:
+            if channel == monochrome:
                 channel = None
+            elif channel == interleaved:
+                channel = None
+                if index == 0:
+                    index = None
             self.add_simple_image(
                 workspace, name, load_choice, rescale, url, 
                 series, index, channel)

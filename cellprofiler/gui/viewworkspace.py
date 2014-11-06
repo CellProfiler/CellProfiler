@@ -427,7 +427,15 @@ class ViewWorkspace(object):
                     self.image = artist
         else:
             self.image.image = image
-            self.image.kwargs["cplabels"] = cplabels
+            old_cplabels = self.image.kwargs["cplabels"]
+            for cplabel in cplabels:
+                name = cplabel[CPLD_NAME]
+                matches = filter((lambda x: x[CPLD_NAME] == name), old_cplabels)
+                if not len(matches):
+                    old_cplabels.append(cplabel)
+            self.image.kwargs["cplabels"] = old_cplabels
+            self.frame.subplot_params[(0, 0)]['cplabels'] = old_cplabels
+            self.frame.update_line_labels(self.axes, self.image.kwargs)
         #
         # Remove all the old text labels
         #

@@ -30,7 +30,7 @@ from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
 from scipy.sparse import coo_matrix
-from scipy.ndimage import distance_transform_edt
+from scipy.ndimage import distance_transform_edt, label
 import functools
 
 from cellprofiler.gui import get_cp_icon
@@ -38,6 +38,7 @@ from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
 from cpfigure_tools import figure_to_image, only_display_image, renumber_labels_for_display
 import cellprofiler.cpmath.outline
+from cellprofiler.cpmath.cpmorphology import get_outline_pts
 
 #
 # Monkey-patch the backend canvas to only report the truly supported filetypes
@@ -102,6 +103,8 @@ CPLD_MODE = "mode"
 CPLDM_OUTLINES = "outlines"
 """subplot_imshow cplabels mode value: show objects as an alpha-transparent color overlay"""
 CPLDM_ALPHA = "alpha"
+"""subplot_imshow cplabels mode value: draw outlines using matplotlib plot"""
+CPLDM_LINES = "lines"
 """subplot_imshow cplabels mode value: don't show these objects"""
 CPLDM_NONE = "none"
 """subplot_imshow cplabels dictionary key: line width of outlines"""
@@ -231,6 +234,7 @@ MENU_INTERPOLATION_BILINEAR = wx.NewId()
 MENU_INTERPOLATION_BICUBIC = wx.NewId()
 MENU_LABELS_OUTLINE = {}
 MENU_LABELS_OVERLAY = {}
+MENU_LABELS_LINES = {}
 MENU_LABELS_OFF = {}
 MENU_LABELS_ALPHA = {}
 MENU_SAVE_SUBPLOT = {}
@@ -951,6 +955,8 @@ class CPFigureFrame(wx.Frame):
                      "Outlines", "Display outlines of objects"),
                     (CPLDM_ALPHA, MENU_LABELS_OVERLAY,
                      "Overlay", "Display objects as an alpha-overlay"),
+                    (CPLDM_LINES, MENU_LABELS_LINES,
+                     "Lines", "Draw lines around objects"),
                     (CPLDM_NONE, MENU_LABELS_OFF,
                      "Off", "Turn object labels off")):
                     menu_id = get_menu_id(menud, (x, y, i))
@@ -959,6 +965,8 @@ class CPFigureFrame(wx.Frame):
                         item.Check()
                     def select_mode(event, cplabels = cplabels, mode=mode):
                         cplabels[CPLD_MODE] = mode
+                        self.update_line_labels(
+                            self.subplot(x, y), params)
                         self.figure.canvas.draw()
                     self.Bind(wx.EVT_MENU, select_mode, id=menu_id)
                 if cplabels[CPLD_MODE] == CPLDM_ALPHA:
@@ -1190,6 +1198,8 @@ class CPFigureFrame(wx.Frame):
         else:
             subplot.add_artist(CPImageArtist(self.images[(x,y)], self, kwargs))
         
+        self.update_line_labels(subplot, kwargs)
+        
         # Also add this menu to the main menu
         if (x,y) in self.subplot_menus:
             # First trash the existing menu if there is one
@@ -1215,6 +1225,19 @@ class CPFigureFrame(wx.Frame):
                                        bins=200, xlabel='pixel intensity')
             hist_fig.figure.canvas.draw()
         return subplot
+    
+    def update_line_labels(self, subplot, kwargs):
+        outlines = [x for x in subplot.collections 
+                    if isinstance(x, CPOutlineArtist)]
+        for outline in outlines:
+            outline.remove()
+        for cplabels in kwargs['cplabels']:
+            if cplabels[CPLD_MODE] == CPLDM_LINES:
+                subplot.add_collection(CPOutlineArtist(
+                    cplabels[CPLD_NAME],
+                    cplabels[CPLD_LABELS],
+                    linewidth = cplabels[CPLD_LINE_WIDTH],
+                    colors = np.array(cplabels[CPLD_OUTLINE_COLOR], float) / 255.))
 
     @allow_sharexy
     def subplot_imshow_color(self, x, y, image, title=None,
@@ -1398,7 +1421,7 @@ class CPFigureFrame(wx.Frame):
                         lo[(d > .5) & (d < hw)] = (hw + .5 - d) / hw
                     image = image * (1 - lo[:, :, np.newaxis]) + \
                         lo[:, :, np.newaxis] * oc[np.newaxis, np.newaxis, :]
-                else:
+                elif cplabel[CPLD_MODE] == CPLDM_ALPHA:
                     #
                     # For alpha overlays, renumber
                     lnumbers = renumber_labels_for_display(labels) + loffset
@@ -1796,6 +1819,50 @@ def show_image(url, parent = None, needs_raise_after = True):
     return True
 
 roundoff = True
+class CPOutlineArtist(matplotlib.collections.LineCollection):
+    '''An artist that is a plot of the outline around an object
+    
+    This class is here so that we can add and remove artists for certain
+    outlines.
+    '''
+    def __init__(self, name, labels, *args, **kwargs):
+        '''Draw outlines for objects
+        
+        name - the name of the outline
+        
+        labels - a sequence of labels matrices
+        
+        kwargs - further arguments for Line2D
+        '''
+        # get_outline_pts has its faults:
+        # * it doesn't do holes
+        # * it only does one of two disconnected objects
+        #
+        # We get around the second failing by resegmenting with
+        # connected components and combining the original and new segmentation
+        #
+        lines = []
+        for l in labels:
+            new_labels, counts = label(l != 0, np.ones((3, 3), bool))
+            if counts == 0:
+                continue
+            l = l.astype(np.uint64) * counts + new_labels
+            unique, idx = np.unique(l.flatten(), return_inverse=True)
+            if unique[0] == 0:
+                my_range = np.arange(len(unique))
+            else:
+                my_range = np.arange(1, len(unique))
+            idx.shape = l.shape
+            pts, offs, counts = get_outline_pts(idx, my_range)
+            pts = pts[:, ::-1] # matplotlib x, y reversed from i,j
+            for off, count in zip(offs, counts):
+                lines.append(np.vstack((pts[off:off+count], pts[off:off+1])))
+        matplotlib.collections.LineCollection.__init__(
+            self, lines, *args, **kwargs)
+        
+    def get_outline_name(self):
+        return self.__outline_name
+
 class CPImageArtist(matplotlib.artist.Artist):
     def __init__(self, image, frame, kwargs):
         super(CPImageArtist, self).__init__()

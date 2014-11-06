@@ -954,6 +954,11 @@ class LoadData(cpm.CPModule):
             columns = new_columns
         for feature, values in columns.iteritems():
             m.add_all_measurements(cpmeas.IMAGE, feature, values)
+        if self.wants_image_groupings and \
+           len(self.metadata_fields.selections) > 0:
+            keys = ["_".join((cpmeas.C_METADATA, k)) 
+                    for k in self.metadata_fields.selections]
+            m.set_grouping_tags(keys)
                 
         return True
     

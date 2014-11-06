@@ -706,6 +706,30 @@ def get_batch_commands(filename):
     
     path = os.path.expanduser(filename)
     m = cpmeas.Measurements(filename = path, mode="r")
+
+    image_numbers = m.get_image_numbers()
+    if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
+        group_numbers = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers]
+        group_indexes = m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers]
+        if np.any(group_numbers != 1) and np.all(
+            (group_indexes[1:] == group_indexes[:-1] + 1) |
+            ((group_indexes[1:] == 1) & 
+             (group_numbers[1:] == group_numbers[:-1]+1))):
+            #
+            # Do -f and -l if more than one group and group numbers
+            # and indices are properly constructed
+            #
+            bins = np.bincount(group_numbers)
+            cumsums = np.cumsum(bins)
+            prev = 0
+            for i, off in enumerate(cumsums):
+                if off == prev:
+                    continue
+                print "CellProfiler -c -r -b -p %s -f %d -l %d" % (
+                    filename, prev+1, off)
+                prev = off
+            return
+    
     metadata_tags = m.get_grouping_tags()
     groupings = m.get_groupings(metadata_tags)
     for grouping in groupings:

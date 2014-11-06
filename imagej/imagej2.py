@@ -366,7 +366,7 @@ def wrap_module_item(instance):
         isInput = J.make_method("isInput", "()Z")
         isOutput = J.make_method("isOutput", "()Z")
         isRequired = J.make_method("isRequired", "()Z")
-        initialize = J.make_method("initialize", "(Limagej/module/Module;)V")
+        initialize = J.make_method("initialize", "(Lorg/scijava/module/Module;)V")
     return ModuleItem()
     
 def wrap_module(module):
@@ -408,7 +408,7 @@ def wrap_menu_entry(menu_entry):
         setIconPath = J.make_method("setIconPath", "(Ljava/lang/String;)V")
         getIconPath = J.make_method("getIconPath", "()Ljava/lang/String;")
         assignProperties = J.make_method("assignProperties", 
-                                         "(Limagej/MenuEntry;)V")
+                                         "(Lorg/scijava/MenuEntry;)V")
     return MenuEntry(menu_entry)
 
 def get_command_service(context):
@@ -498,17 +498,17 @@ def get_display_service(context):
             if klass is None:
                 return wrap_display(J.call(
                     self.o, "getActiveDisplay",
-                    "()Limagej/display/Display;"))
+                    "()Lorg/scijava/display/Display;"))
             else:
                 return wrap_display(J.call(
                     self.o, "getActiveDisplay",
-                    "(Ljava/lang/Class;)Limagej/display/Display;", klass))
+                    "(Ljava/lang/Class;)Lorg/scijava/display/Display;", klass))
 
         def getActiveImageDisplay(self):
             '''Get the active imagej.data.display.ImageDisplay'''
             return wrap_display(J.call(
                 self.o, "getActiveDisplay",
-                "()Limagej/display/Display;",
+                "()Lorg/scijava/display/Display;",
                 J.class_for_name("net.imagej.display.ImageDisplay")))
         
         def setActiveDisplay(self, display):
@@ -527,7 +527,7 @@ def get_display_service(context):
             map(wrap_display, J.iterate_collection(x)))
         getDisplay = J.make_method(
             "getDisplay",
-            "(Ljava/lang/String;)Limagej/display/Display;",
+            "(Ljava/lang/String;)Lorg/scijava/display/Display;",
             fn_post_process=wrap_display)
         isUniqueName = J.make_method("isUniqueName", "(Ljava/lang/String;)Z")
         

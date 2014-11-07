@@ -505,8 +505,16 @@ class NamesAndTypes(cpm.CPModule):
             self.copy_assignment(group, self.assignments, self.add_assignment)
             
         group.append("copy_button", cps.DoSomething(
-            "", "Copy", copy_assignment,
-            doc = "Make a copy of this channel specification"))
+            "", "Duplicate this image", copy_assignment,doc = """
+            Duplicate the channel specification, creating a new image assignment
+            with the same settings as this one.
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; This button is 
+            useful if you are specifying a long series of channels which differ
+            by one or two settings (e.g., an image stack with many frames). Using
+            this button will help avoid the tedium of having to select the same settings 
+            multiple times.</dd>
+            </dl>"""%globals()))
 
         group.can_remove = can_remove
         if can_remove:

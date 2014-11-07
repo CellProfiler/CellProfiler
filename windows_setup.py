@@ -319,6 +319,14 @@ except:
 
 ##############################################
 #
+# Sklearn fixups
+#
+##############################################
+
+opts['py2exe']['includes'] += [ "scipy.sparse.csgraph._validation" ]
+
+##############################################
+#
 # 0MQ fixups
 #
 # libzmq.dll is not found by py2exe, so we

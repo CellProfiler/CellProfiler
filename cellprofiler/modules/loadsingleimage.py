@@ -135,7 +135,7 @@ class LoadSingleImage(cpm.CPModule):
                     cps.NONE,
                     metadata=True,
                     get_directory_fn = get_directory_fn,
-                    exts = [("TIF - Tagged Image File format (*.tif,*.tiff)","*.tif,*.tiff"),
+                    exts = [("TIF - Tagged Image File format (*.tif,*.tiff)","*.tif;*.tiff"),
                             ("PNG - Portable Network Graphics (*.png)", "*.png"),
                             ("JPG/JPEG file (*.jpg,*.jpeg)", "*.jpg,*.jpeg"),
                             ("BMP - Windows Bitmap (*.bmp)", "*.bmp"),

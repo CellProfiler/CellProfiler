@@ -522,7 +522,7 @@ class TrackObjects(cpm.CPModule):
             alternative cost is (conceptually) subtracted from the
             cost of making the merge.
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:</b></i>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
             <ul>
             <li>Set the merge alternative cost lower if objects are being
             merged when they should otherwise be kept separate. </li>

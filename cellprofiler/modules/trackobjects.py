@@ -1,4 +1,11 @@
 from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
+
+TM_OVERLAP = 'Overlap'
+TM_DISTANCE = 'Distance'
+TM_MEASUREMENTS = 'Measurements'
+TM_LAP = "LAP"
+TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS,TM_LAP]
+
 LT_NONE = 0
 LT_PHASE_1 = 1
 LT_SPLIT = 2
@@ -8,6 +15,17 @@ KM_VEL = 1
 KM_NO_VEL = 0
 KM_NONE = -1
 
+'''Random motion model, for instance Brownian motion'''
+M_RANDOM = "Random"
+'''Velocity motion model, object position depends on prior velocity'''
+M_VELOCITY = "Velocity"
+'''Random and velocity models'''
+M_BOTH = "Both"
+
+RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
+RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
+import cellprofiler.icons 
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 __doc__ = """
 <b>Track Objects</b> allows tracking objects throughout sequential 
 frames of a series of images, so that from frame to frame
@@ -39,8 +57,7 @@ For complete details, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.</p>
 <b>Object measurements</b>
 <ul>
 <li><i>Label:</i> Each tracked object is assigned a unique identifier (label). 
-Results of splits or merges are seen as new objects and assigned a new
-label.</li>
+Child objects resulting from a split or merge are assigned the label of the ancestor.</li>
 <li><i>ParentImageNumber, ParentObjectNumber:</i> The <i>ImageNumber</i> and 
 <i>ObjectNumber</i> of the parent object in the prior frame. For a split, each
 child object will have the label of the object it split from. For a merge,
@@ -64,39 +81,64 @@ object persists. At the final frame of the image set/movie, the
 lifetimes of all remaining objects are output.</li>
 <li><i>FinalAge:</i> Similar to <i>LifeTime</i> but is only output at the final
 frame of the object's life (or the movie ends, whichever comes first). At this point, 
-the final age of the object is output; no values are stored for earlier frames. This
+the final age of the object is output; no values are stored for earlier frames. 
+<dl>
+<dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;This value 
 is useful if you want to plot a histogram of the object lifetimes; all but the final age
-can be ignored or filtered out.</li>
+can be ignored or filtered out.</dd>
+</dl></li>
+</ul>
+The following object measurements are specific to the %(TM_LAP)s tracking method:
+<ul>
 <li><i>LinkType:</i> The linking method used to link the object to its parent.
-Values are <b>%(LT_NONE)d</b> if the object was not linked to a parent,
-<b>%(LT_PHASE_1)d</b> if the object was linked to a parent in the previous frame,
-<b>%(LT_SPLIT)d</b> if the object is linked as the start of a split path,
-<b>%(LT_GAP)d</b> if the object was linked to a parent in a frame prior to the
-previous frame (a gap),
-<b>%(LT_MITOSIS)s</b> if the object was linked to its parent as a daughter of
+Possible values are 
+<ul>
+<li><b>%(LT_NONE)d</b>: The object was not linked to a parent.</li>
+<li><b>%(LT_PHASE_1)d</b>: The object was linked to a parent in the previous frame.</li>
+<li><b>%(LT_SPLIT)d</b>: The object is linked as the start of a split path.</li>
+<li><b>%(LT_MITOSIS)s</b>: The object was linked to its parent as a daughter of
 a mitotic pair.</li>
+<li><b>%(LT_GAP)d</b>: The object was linked to a parent in a frame prior to the
+previous frame (a gap).</li>
+</ul>
+Under some circumstances, multiple linking methods may apply to a given object, e.g, an
+object may be both the beginning of a split path and not have a parent. However, only
+one linking method is assigned.</li>
 <li><i>MovementModel:</i>The movement model used to track the object. 
-<b>%(KM_NO_VEL)d</b> if the random motion model was used and <b>%(KM_VEL)d</b>
-if a constant-velocity model was used.</li>
+<ul>
+<li><b>%(KM_NO_VEL)d</b>: The <i>%(M_RANDOM)s</i> model was used.</li>
+<li><b>%(KM_VEL)d</b>: The <i>%(M_VELOCITY)s</i> model was used.</li>
+</ul>
+</li>
 <li><i>LinkingDistance:</i>The difference between the propagated position of an
-object and the object to which it is matched. A slowly decaying histogram of
-these distances indicates that the search radius is large enough.</li>
+object and the object to which it is matched. 
+<dl>
+<dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;A slowly decaying histogram of
+these distances indicates that the search radius is large enough. A cut-off histogram 
+is a sign that the search radius is too small.</dd>
+</dl></li>
 <li><i>StandardDeviation:</i>The Kalman filter maintains a running estimate
 of the variance of the error in estimated position for each model. 
 This measurement records the linking distance divided by the standard deviation
 of the error when linking the object with its parent.
+<dl>
+<dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; This value is multiplied by 
+the <i>"%(RADIUS_STD_SETTING_TEXT)s"</i> setting to constrain the search distance.
+A histogram of this value can help determine if the <i>"%(RADIUS_LIMIT_SETTING_TEXT)s"</i>
+setting is appropriate.</dd>
+</dl>
 </li>
-<li><i>GapLength:</i>The number of frames between an object and its parent.
+<li><i>GapLength:</i> The number of frames between an object and its parent.
 For instance, an object in frame 3 with a parent in frame 1 has a gap length of
 2.</li>
-<li><i>GapScore:</i>For an object linked to its parent by bridging a gap, 
-the score for the gap.</li>
-<li><i>SplitScore:</i>For an object linked to its parent via a split, the score
-for the split.</li>
-<li><i>MergeScore:</i>For an object linked to a child via a merge, the score
-for the merge.</li>
-<li><i>MitosisScore:</i>For an object linked to two children via a mitosis,
-the score for the mitosis.</li>
+<li><i>GapScore:</i> If an object is linked to its parent by bridging a gap, 
+this value is the score for the gap.</li>
+<li><i>SplitScore:</i> If an object linked to its parent via a split, this 
+value is the score for the split.</li>
+<li><i>MergeScore:</i> If an object linked to a child via a merge, this value is
+the score for the merge.</li>
+<li><i>MitosisScore:</i> If an object linked to two children via a mitosis,
+this value is the score for the mitosis.</li>
 </ul>
 
 <b>Image measurements</b>
@@ -147,12 +189,6 @@ from cellprofiler.cpmath.cpmorphology import all_connected_components
 from cellprofiler.cpmath.index import Indexes
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
-
-TM_OVERLAP = 'Overlap'
-TM_DISTANCE = 'Distance'
-TM_MEASUREMENTS = 'Measurements'
-TM_LAP = "LAP"
-TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS,TM_LAP]
 
 DT_COLOR_AND_NUMBER = 'Color and Number'
 DT_COLOR_ONLY = 'Color Only'
@@ -242,13 +278,6 @@ F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 
 F_IMAGE_ALL = [feature for feature, coltype in F_IMAGE_COLTYPE_ALL]
 
-'''Random motion model, for instance Brownian motion'''
-M_RANDOM = "Random"
-'''Velocity motion model, object position depends on prior velocity'''
-M_VELOCITY = "Velocity"
-'''Random and velocity models'''
-M_BOTH = "Both"
-
 class TrackObjects(cpm.CPModule):
 
     module_name = 'TrackObjects'
@@ -271,21 +300,28 @@ class TrackObjects(cpm.CPModule):
             <ul>
             <li><i>%(TM_OVERLAP)s:</i> Compares the amount of spatial overlap between identified objects in 
             the previous frame with those in the current frame. The object with the
-            greatest amount of spatial overlap will be assigned the same number (label). Recommended
-            when there is a high degree of overlap of an object from one frame to the next, 
-            which is the case for movies with high frame rates relative to object motion.</li>
+            greatest amount of spatial overlap will be assigned the same number (label). 
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            Recommended when there is a high degree of overlap of an object from one frame to the next, 
+            which is the case for movies with high frame rates relative to object motion.</dd>
+            </dl></li>
 
             <li><i>%(TM_DISTANCE)s:</i> Compares the distance between each identified
             object in the previous frame with that of the current frame. The 
             closest objects to each other will be assigned the same number (label).
-            Distances are measured from the perimeter of each object. Recommended
-            for cases where the objects are not very crowded but where <i>Overlap</i> 
-            does not work sufficiently well, which is the case
-            for movies with low frame rates relative to object motion.</li>
+            Distances are measured from the perimeter of each object. 
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            Recommended for cases where the objects are not very crowded but where 
+            <i>%(TM_OVERLAP)s</i> does not work sufficiently well, which is the case
+            for movies with low frame rates relative to object motion.</dd>
+            </dl></li>
 
             <li><i>%(TM_MEASUREMENTS)s:</i> Compares each object in the 
             current frame with objects in the previous frame based on a particular 
-            feature you have measured for the objects (for example, a particular intensity or shape measurement that can distinguish nearby objects). The object 
+            feature you have measured for the objects (for example, a particular intensity 
+            or shape measurement that can distinguish nearby objects). The object 
             with the closest-matching measurement will be selected as a match and will be 
             assigned the same number (label). This selection requires that you run the 
             specified <b>Measure</b> module previous to this module in the pipeline so
@@ -300,15 +336,15 @@ class TrackObjects(cpm.CPModule):
             as global combinatorial optimization problems whose solution identifies the overall 
             most likely set of object trajectories throughout a movie.
 
-            Tracks are constructed from an image sequence by detecting objects in each 
+            <p>Tracks are constructed from an image sequence by detecting objects in each 
             frame and linking objects between consecutive frames as a first step. This step alone
             may result in incompletely tracked objects due to the appearance and disappearance
             of objects, either in reality or apparently because of noise and imaging limitations.
             To correct this, you may apply an optional second step which closes temporal gaps 
             between tracked objects and captures merging and splitting events. This step takes
-            place at the end of the analysis run.  
+            place at the end of the analysis run.</p>
             
-            <b>References</b>
+            <p><b>References</b>
             <ul>
             <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
             "Robust single-particle tracking in live-cell time-lapse sequences."
@@ -317,7 +353,7 @@ class TrackObjects(cpm.CPModule):
             <li>Jaqaman K, Danuser G. (2009) "Computational image analysis of cellular dynamics: 
             a case study based on particle tracking." Cold Spring Harb Protoc. 2009(12):pdb.top65.
             <a href="http://dx.doi.org/10.1101/pdb.top65">(link)</a></li>
-            </ul>
+            </ul></p>
             </li>
             </ul>"""%globals())
 
@@ -344,7 +380,7 @@ class TrackObjects(cpm.CPModule):
             use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s"""%globals())
 
         self.model = cps.Choice(
-            "Select the motion model",[M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH,doc = """
+            "Select the movement model",[M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH,doc = """
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
             This setting controls how to predict an object's position in
             the next frame, assuming that each object moves randomly with
@@ -353,21 +389,30 @@ class TrackObjects(cpm.CPModule):
             <ul>
             <li><i>%(M_RANDOM)s:</i> A model in which objects move due to 
             Brownian Motion or a similar process where the variance in position
-            differs between objects. Use this model if the objects move with some
-            random jitter around a stationary location.</li>
+            differs between objects. 
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            Use this model if the objects move with some
+            random jitter around a stationary location.</dd>
+            </dl></li>
             <li><i>%(M_VELOCITY)s:</i> A model in which the object moves with
             a velocity. Both velocity and position (after correcting for
-            velocity) vary following a Gaussian distribution. Use this model if
-            the objects move along a spatial trajectory in some direction over time.</li>
+            velocity) vary following a Gaussian distribution. 
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Use this model if
+            the objects move along a spatial trajectory in some direction over time.</dd>
+            </dl></li>
             <li><i>%(M_BOTH)s:</i> <b>TrackObjects</b> will predict each
             object's position using both models and use the model with the
-            lowest penalty to join an object in one frame with one in another. Use this
-            option if both models above are applicable over time.
-            </li>
+            lowest penalty to join an object in one frame with one in another. 
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Use this
+            option if both models above are applicable over time.</dd>
+            </dl></li>
             </ul>""" % globals())
         
         self.radius_std = cps.Float(
-            'Number of standard deviations for search radius', 3, minval=1,doc = """
+            RADIUS_STD_SETTING_TEXT, 3, minval=1,doc = """
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i>
             <br>
             <b>TrackObjects</b> will estimate the variance of the error
@@ -378,7 +423,7 @@ class TrackObjects(cpm.CPModule):
             deviations that you enter here."""%globals())
         
         self.radius_limit = cps.FloatRange(
-            'Search radius limit, in pixel units (Min,Max)', (2, 10), minval = 0,doc = """
+            RADIUS_LIMIT_SETTING_TEXT, (2, 10), minval = 0,doc = """
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
             <b>Care must be taken to adjust the upper limit appropriate to the data.</b><br>
             <b>TrackObjects</b> derives a search radius based on the error
@@ -388,11 +433,13 @@ class TrackObjects(cpm.CPModule):
             at a small estimated error by chance, leading to a maximum radius
             that does not track the object in a subsequent frame. The radius
             limit constrains the maximum radius to reasonable values. 
-            
-            <p>The lower limit should be set to a radius (in pixels) that is a
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            The lower limit should be set to a radius (in pixels) that is a
             reasonable displacement for any object from one frame to the next.
             The upper limit should be set to the maximum reasonable 
-            displacement under any circumstances.</p>"""%globals())
+            displacement under any circumstances.</dd>
+            </dl>"""%globals())
         
         self.wants_second_phase = cps.Binary(
             "Run the second phase of the LAP algorithm?", True, doc="""
@@ -401,18 +448,15 @@ class TrackObjects(cpm.CPModule):
             after processing all images. Select <i>%(NO)s</i> to omit the
             second phase or to perform the second phase when running the module
             as a data tool.
+            
             <p>Since object tracks may start and end not only because of the true appearance 
             and disappearance of objects, but also because of apparent disappearances due
             to noise and limitations in imaging, you may want to run the second phase 
             which attempts to close temporal gaps between tracked objects and tries to
             capture merging and splitting events.</p>
             
-            <p>For additional details on optimizing the LAP settings, refer to Jaqaman K, Danuser G. 
-            "Computational image analysis of cellular dynamics: a case study based on particle 
-            tracking." <i>Cold Spring Harb Protocols</i> 2009(12) 
-            (<a href="http://cshprotocols.cshlp.org/cgi/content/full/2009/12/pdb.top65">link</a>),
-            in particular the section "Adjustment of control parameters and 
-            diagnostics for track evaluation."</p>"""%globals())
+            <p>For additional details on optimizing the LAP settings, see the help for each
+            the settings.</p>"""%globals())
         
         self.gap_cost = cps.Integer(
             'Gap cost', 40, minval=1, doc = '''
@@ -423,14 +467,16 @@ class TrackObjects(cpm.CPModule):
             the tracks on either side of the missing frames).
             The cost of bridging a gap is the distance, in pixels, of the 
             displacement of the object between frames.
-            <p><i><b>Recommendations:</b></i>
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
             <li>Set the gap cost higher if tracks from objects in previous
             frames are being erroneously joined, across a gap, to tracks from 
             objects in subsequent frames. </li>
             <li>Set the cost lower if tracks
             are not properly joined due to gaps caused by mis-segmentation.</li>
-            </ul></p>'''%globals())
+            </ul></dd>
+            </dl></p>'''%globals())
         
         self.split_cost = cps.Integer(
             'Split alternative cost', 40, minval=1, doc = '''
@@ -448,13 +494,15 @@ class TrackObjects(cpm.CPModule):
             </ul>
             The split cost is roughly measured in pixels. The split alternative cost is 
             (conceptually) subtracted from the cost of making the split.
-            <p><i><b>Recommendations:</b></i>
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
             <ul>
             <li>The split cost should be set lower if objects are being split
             that should not be split. </li>
             <li>The split cost should be set higher if objects
             that should be split are not.</li>
-            </ul></p>'''%globals())
+            </ul></dd>
+            </dl>'''%globals())
         
         self.merge_cost = cps.Integer(
             'Merge alternative cost', 40, minval=1,doc = '''
@@ -473,13 +521,15 @@ class TrackObjects(cpm.CPModule):
             The merge cost is measured in pixels. The merge
             alternative cost is (conceptually) subtracted from the
             cost of making the merge.
-            <p><i><b>Recommendations:</b></i>
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:</b></i>
             <ul>
             <li>Set the merge alternative cost lower if objects are being
             merged when they should otherwise be kept separate. </li>
             <li>Set the merge alternative cost
             higher if objects that are not merged should be merged.</li>
-            </ul></p>'''%globals())
+            </ul></dd>
+            </dl>'''%globals())
         
         self.mitosis_cost = cps.Integer(
             'Mitosis alternative cost', 80, minval=1, doc = '''
@@ -495,23 +545,27 @@ class TrackObjects(cpm.CPModule):
             of the parent times the area inequality ratio of the parent and
             daughters (the larger of Area(daughters) / Area(parent) and
             Area(parent) / Area(daughters)).<br>
-            An accepted mitosis closes two gaps, so all things being equal,
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
+            <ul>
+            <li>An accepted mitosis closes two gaps, so all things being equal,
             the mitosis alternative cost should be approximately double the
-            gap closing cost.
-            Increase the mitosis alternative cost to favor more mitoses
+            gap closing cost.</li>
+            <li>Increase the mitosis alternative cost to favor more mitoses
             and decrease it to prevent more mitoses candidates from being
-            accepted.''')
+            accepted.</li>
+            </ul></dl>'''%globals())
         
         self.mitosis_max_distance = cps.Integer(
-            'Mitosis max distance', 40, minval=1, doc= '''
+            'Mitosis max distance, in pixel units', 40, minval=1, doc= '''
             <i>(Used only if the %(TM_LAP)s tracking method is applied and the
             second phase is run)</i><br>
             This setting is the maximum allowed distance in pixels of either of 
             the daughter candidates after mitosis from the parent candidate.
-            ''')
+            '''%globals())
         
         self.max_gap_score = cps.Integer(
-            'Maximum gap displacement, in frames', 5, minval=1, doc = '''
+            'Maximum gap displacement, in pixel units', 5, minval=1, doc = '''
             <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
             displacements during the second phase. 
@@ -552,12 +606,13 @@ class TrackObjects(cpm.CPModule):
             two objects resulting from the split.</li>
             <li>The distances between the original and resulting objects. </li>
             </ul>
-            <p><i><b>Recommendations:</b></i>
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
             <li>The LAP algorithm will run more slowly with a maximum split score value. </li>
             <li>Objects that would have been split at a lower maximum split score will not be considered for splitting.</li>
-            </ul></p>
-            '''%globals())
+            </ul></dd>
+            </dl>'''%globals())
         
         self.max_frame_distance = cps.Integer(
             'Maximum gap', 5, minval=1, doc = '''
@@ -567,13 +622,15 @@ class TrackObjects(cpm.CPModule):
             be skipped when merging a gap caused by an unsegmented object.
             These gaps occur when an image is mis-segmented and identification
             fails to find an object in one or more frames.
-            <p><i><b>Recommendations:</b></i>
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
             <li>Set the maximum gap higher in order to have more chance of correctly recapturing an object after 
             erroneously losing the original for a few frames.</li>
             <li>Set the maximum gap lower to reduce the chance of erroneously connecting to the wrong object after
             correctly losing the original object (e.g., if the cell dies or moves off-screen).</li>
-            </ul></p>'''%globals())
+            </ul></dd>
+            </dl>'''%globals())
         
         self.wants_lifetime_filtering = cps.Binary(
             'Filter objects by lifetime?', False, doc = '''

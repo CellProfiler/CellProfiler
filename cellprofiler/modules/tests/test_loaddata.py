@@ -944,6 +944,66 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_color=True)
         self.assertEqual(tuple(img.pixel_data.shape), (157, 400, 3))
+        
+    def test_13_04_extra_lines(self):
+        #
+        # Regression test of issue #1211 - extra line at end / blank lines
+        #
+        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        file_name = 'Channel2-01-A-01.tif'
+        
+        csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
+"%s","%s"
+
+'''%(file_name, dir)
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        try:
+            assert isinstance(module, L.LoadData)
+            m = cpmeas.Measurements()
+            workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+                                      m, cpi.ImageSetList())
+            self.assertTrue(module.prepare_run(workspace))
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertEqual(m.image_set_count, 1)
+            self.assertTrue('FileName_DNA' in m.get_feature_names(cpmeas.IMAGE))
+            self.assertEqual(m[cpmeas.IMAGE, 'FileName_DNA', 1], file_name)
+        finally:
+            os.remove(filename)
+            
+    def test_13_05_extra_lines_skip_rows(self):
+        #
+        # Regression test of issue #1211 - extra line at end / blank lines
+        # Different code path from 13_04
+        #
+        path = os.path.join(example_images_directory(), "ExampleSBSImages")
+        file_names = ['Channel2-01-A-01.tif',
+                      'Channel2-02-A-02.tif']
+        
+        csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
+        
+"%s","%s"
+
+"%s","%s"
+
+'''%(file_names[0], path, file_names[1], path)
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        try:
+            assert isinstance(module, L.LoadData)
+            m = cpmeas.Measurements()
+            workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+                                      m, cpi.ImageSetList())
+            module.wants_rows.value = True
+            module.row_range.min = 2
+            module.row_range.max = 3
+            self.assertTrue(module.prepare_run(workspace))
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertEqual(m.image_set_count, 1)
+            self.assertTrue('FileName_DNA' in m.get_feature_names(cpmeas.IMAGE))
+            self.assertEqual(m[cpmeas.IMAGE, 'FileName_DNA', 1], file_names[0])
+        finally:
+            os.remove(filename)
+        
+        
     
 class C0(cpm.CPModule):
     module_name = 'C0'

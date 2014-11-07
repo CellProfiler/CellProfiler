@@ -761,24 +761,24 @@ class LoadData(cpm.CPModule):
             header = list(reader.dtype.names)
         if self.wants_rows.value:
             # skip initial rows
-            n_to_skip = self.row_range.min-1
-            for i in range(n_to_skip):
-                reader.next()
-            i = self.row_range.min
             rows = []
-            for row in reader:
+            for idx, row in enumerate(reader):
+                if idx+1 < self.row_range.min:
+                    continue
+                if idx+1 > self.row_range.max:
+                    break
+                if len(row) == 0:
+                    continue
                 row = [unicode(s, 'utf8') if isinstance(s, str) else s
                        for s in row]
                 if len(row) != len(header):
                     raise ValueError("Row # %d has the wrong number of elements: %d. Expected %d"%
                                      (i,len(row),len(header)))
                 rows.append(row)
-                if i >= self.row_range.max:
-                    break
-                i += 1
         else:
             rows = [[unicode(s, 'utf8') if isinstance(s, str) else s
-                     for s in row] for row in reader]
+                     for s in row] for row in reader
+                    if len(row) > 0]
         fd.close()
         #
         # Check for correct # of columns

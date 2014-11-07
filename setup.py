@@ -54,7 +54,8 @@ DATA_FILES = [('cellprofiler/icons',
                glob.glob(os.path.join(icon_src_path, '*.png'))+
                [os.path.join(icon_src_path, "icon_copyrights.txt")])]
 OPTIONS = {'argv_emulation': True,
-           'packages': ['bioformats', 'cellprofiler', 'contrib', 'imagej', 'zmq'],
+           'packages': ['bioformats', 'cellprofiler', 'contrib', 'imagej', 
+                        'javabridge', 'zmq'],
            'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib',
                         'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name,
                         'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy', 'readline'],

@@ -432,6 +432,8 @@ def add_jre_files(path):
     
 add_jre_files("jre")
 data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
+from javabridge import JARS
+data_files += ['imagej\\jars', JARS]
 #
 # Call setup
 #

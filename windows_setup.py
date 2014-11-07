@@ -323,7 +323,12 @@ except:
 #
 ##############################################
 
-opts['py2exe']['includes'] += [ "scipy.sparse.csgraph._validation" ]
+try:
+    import scipy.sparse.csgraph._validation
+except:
+    pass
+opts['py2exe']['includes'] += [ 
+    "sklearn.*", "scipy.sparse.csgraph._validation" ]
 
 ##############################################
 #

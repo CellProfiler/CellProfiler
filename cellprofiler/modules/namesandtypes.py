@@ -500,6 +500,13 @@ class NamesAndTypes(cpm.CPModule):
         group.append("save_outlines", cps.OutlineNameProvider(
             "Name the outline image", "LoadedOutlines", doc = 
             """%(NAMING_OUTLINES_HELP)s""" % globals()))
+        
+        def copy_assignment(group = group):
+            self.copy_assignment(group, self.assignments, self.add_assignment)
+            
+        group.append("copy_button", cps.DoSomething(
+            "", "Copy", copy_assignment,
+            doc = "Make a copy of this channel specification"))
 
         group.can_remove = can_remove
         if can_remove:
@@ -507,6 +514,25 @@ class NamesAndTypes(cpm.CPModule):
                 "remover", 
                 cps.RemoveSettingButton(
                 '', "Remove this image", self.assignments, group))
+    
+    def copy_assignment(self, assignment, assignment_list, add_assignment_fn):
+        '''Make a copy of an assignment
+        
+        Make a copy of the assignment and add it directly after the
+        one being copied.
+        
+        assignment - assignment to copy
+        assignment_list - add the assignment to this list
+        add_assignment_fn - this appends a new assignment to the list
+        '''
+        add_assignment_fn()
+        new_assignment = assignment_list.pop()
+        idx = assignment_list.index(assignment) + 1
+        assignment_list.insert(idx, new_assignment)
+        for old_setting, new_setting in zip(
+            assignment.pipeline_settings(),
+            new_assignment.pipeline_settings()):
+            new_setting.set_value_text(old_setting.get_value_text())
             
     def get_unique_image_name(self):
         '''Return an unused name for naming images'''
@@ -584,6 +610,14 @@ class NamesAndTypes(cpm.CPModule):
         group.append("save_outlines", cps.OutlineNameProvider(
             "Name the outline image", "LoadedOutlines", 
             doc = NAMING_OUTLINES_HELP))
+        
+        def copy_assignment(group = group):
+            self.copy_assignment(
+                group, self.single_images, self.add_single_image)
+            
+        group.append("copy_button", cps.DoSomething(
+            "", "Copy", copy_assignment,
+            doc = "Make a copy of this channel specification"))
 
         group.can_remove = True
         group.append(
@@ -637,6 +671,7 @@ class NamesAndTypes(cpm.CPModule):
                     result += [assignment.should_save_outlines]
                     if assignment.should_save_outlines.value:
                         result += [assignment.save_outlines]
+                result += [assignment.copy_button]
                 if assignment.can_remove:
                     result += [assignment.remover]
             for single_image in self.single_images:
@@ -655,7 +690,7 @@ class NamesAndTypes(cpm.CPModule):
                     result += [single_image.should_save_outlines]
                     if single_image.should_save_outlines.value:
                         result += [single_image.save_outlines]
-                result += [single_image.remover]
+                result += [single_image.copy_button, single_image.remover]
             result += [self.add_assignment_divider, self.add_assignment_button]
             if len(self.assignments) > 1:
                 result += [self.matching_choice]

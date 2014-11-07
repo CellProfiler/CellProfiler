@@ -834,6 +834,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         try:
             fd = open(path,"r")
             reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
+            self.assertEqual(len(header), 2)
+            self.assertEqual(header[0], E.EH_KEY)
+            self.assertEqual(header[1], E.EH_VALUE)
             row = reader.next()
             self.assertEqual(len(row),2)
             self.assertEqual(row[0],"my_measurement")
@@ -871,6 +875,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         fd = open(path,"r")
         try:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
             row = reader.next()
             self.assertEqual(len(row),2)
             self.assertEqual(row[0],"my_measurement")
@@ -1451,6 +1456,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.post_run(workspace)
         with  open(path,"r") as fd:
             reader = csv.reader(fd, delimiter=module.delimiter_char)
+            header = reader.next()
             for feature, value in reader:
                 if feature == IMG_MEAS: 
                     data = base64.b64decode(value)

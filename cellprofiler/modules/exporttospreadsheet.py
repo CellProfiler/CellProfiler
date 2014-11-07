@@ -113,6 +113,12 @@ IMAGE_NUMBER = "ImageNumber"
 """The caption for the object # within an image set"""
 OBJECT_NUMBER = "ObjectNumber"
 
+"""The heading for the "Key" column in the experiment CSV"""
+EH_KEY = "Key"
+
+"""The heading for the "Value" column in the experiment CSV"""
+EH_VALUE = "Value"
+
 DIR_CUSTOM = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom folder with metadata"
 
@@ -760,6 +766,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         fd = open(file_name,"wb")
         try:
             writer = csv.writer(fd,delimiter=self.delimiter_char)
+            writer.writerow((EH_KEY, EH_VALUE))
             for feature_name in feature_names:
                 v = m.get_all_measurements(EXPERIMENT, feature_name)
                 if isinstance(v, np.ndarray) and \

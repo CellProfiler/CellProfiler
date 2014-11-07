@@ -58,7 +58,6 @@ DATA_FILES.append(('imagej/jars', JARS))
 OPTIONS = {'argv_emulation': True,
            'packages': ['bioformats', 'cellprofiler', 'contrib', 'imagej',
                         'javabridge', 'zmq'],
-           'package_data': { 'javabridge': ['jars/*.jar'] },
            'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib',
                         'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name,
                         'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy', 'readline'],
@@ -94,6 +93,7 @@ if sys.argv[-1] == 'py2app':
 setup(
     app=APP,
     data_files=DATA_FILES,
+    package_data= { 'javabridge': ['jars/*.jar'] },
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
     name="CellProfiler"

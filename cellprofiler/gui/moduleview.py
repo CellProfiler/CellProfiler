@@ -369,6 +369,9 @@ class ModuleView:
         """Initialize the controls in the view to the settings of the module"""
         self.module_panel.Freeze()
         self.__handle_change = False
+        imageset_control    = None
+        path_control        = None
+        table_control       = None
         try:
             new_module          = self.__pipeline.module(module_num)
             reselecting         = (self.__module and
@@ -388,9 +391,6 @@ class ModuleView:
             self.__controls     = []
             self.__static_texts = []
             data                = []
-            imageset_control    = None
-            path_control        = None
-            table_control       = None
             if reselecting:
                 self.hide_settings()
             else:

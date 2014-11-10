@@ -56,9 +56,10 @@ DATA_FILES = [('cellprofiler/icons',
 from javabridge import JARS
 DATA_FILES.append(('imagej/jars', JARS))
 OPTIONS = {'argv_emulation': True,
-           'packages': ['bioformats', 'cellprofiler', 'contrib', 'imagej',
-                        'javabridge', 'zmq'],
-           'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib',
+           'packages': ['cellprofiler', 'contrib', 'imagej'],
+           'includes': ['numpy', 'scipy', 'sklearn', 'sklearn.utils.sparsetools.*',
+                        'wx', 'matplotlib','email.iterators', 'smtplib', 'zmq',
+                        'javabridge', 'bioformats',
                         'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name,
                         'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy', 'readline'],
            'excludes': ['pylab', 'nose', 'Tkinter', 'Cython', 'scipy.weave',

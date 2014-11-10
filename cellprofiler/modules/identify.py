@@ -815,21 +815,22 @@ class Identify(cellprofiler.cpmodule.CPModule):
                             self.masking_objects.value)
                     if masking_objects is not None:
                         label_planes = masking_objects.get_labels(img.shape[:2])
+                        if len(label_planes) == 1:
+                            labels = label_planes[0][0]
+                        else:
+                            # For overlaps, we arbitrarily assign a pixel to
+                            # the first label it appears in. Alternate would be
+                            # to average, seems like it's too fine a point
+                            # to deal with it. A third possibility would be to 
+                            # treat overlaps as distinct entities since the overlapping
+                            # areas will likely be different than either object.
+                            labels = np.zeros(label_planes[0][0].shape,
+                                              label_planes[0][0].dtype)
+                            for label_plane, indices in label_planes:
+                                labels[labels == 0] = label_plane[labels == 0]
                     else:
-                        label_planes = [image.mask.astype(int)]
-                    if len(label_planes) == 1:
-                        labels = label_planes[0][0]
-                    else:
-                        # For overlaps, we arbitrarily assign a pixel to
-                        # the first label it appears in. Alternate would be
-                        # to average, seems like it's too fine a point
-                        # to deal with it. A third possibility would be to 
-                        # treat overlaps as distinct entities since the overlapping
-                        # areas will likely be different than either object.
-                        labels = np.zeros(label_planes[0][0].shape,
-                                          label_planes[0][0].dtype)
-                        for label_plane, indices in label_planes:
-                            labels[labels == 0] = label_plane[labels == 0]
+                        # use the image mask as the masking objects
+                        labels = image.mask.astype(int)
                 else:
                     labels = None
                 if self.threshold_scope == TS_ADAPTIVE:

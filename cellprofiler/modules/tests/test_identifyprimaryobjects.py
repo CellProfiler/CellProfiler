@@ -2064,6 +2064,29 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
 
 
         self.assertTrue(np.all(indexes[labels] == expected_labels))
+        
+    def test_08_03_per_objects_image_mask(self):
+        image = np.ones((20,20))*0.06
+        draw_circle(image,(5,5),5,.05)
+        draw_circle(image,(5,5),2,.15)
+        image = add_noise(image, .01)
+        mask = np.zeros((20,20), bool)
+        draw_circle(mask, (5,5), 5, 1)
+        
+        expected_labels = np.zeros((20,20),int)
+        draw_circle(expected_labels,(5,5),2,1)
+        
+        workspace, x = self.make_workspace(image, mask=mask)
+        x.masking_objects.value = I.O_FROM_IMAGE
+        x.exclude_size.value = False
+        x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_PER_OBJECT
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_correction_factor.value = 1.05
+        x.run(workspace)
+        labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
+        self.assertTrue(np.all(labels == expected_labels))
+        
     
     def test_09_01_small_images(self):
         """Test mixture of gaussians thresholding with few pixels

@@ -225,6 +225,9 @@ def grid_control_name(v):
 def custom_label_name(v):
     return "%s_customlabel" % str(v.key())
 
+def folder_label_name(v):
+    return "%s_folderlabel" % str(v.key())
+
 def encode_label(text):
     """Encode text escapes for the static control and button labels
     
@@ -1278,15 +1281,24 @@ class ModuleView:
         custom_ctrl_name = subedit_control_name(v)
         custom_ctrl_label_name = custom_label_name(v)
         browse_ctrl_name = button_control_name(v)
+        folder_label_ctrl_name = folder_label_name(v)
+        
         if control is None:
             control = wx.Panel(self.module_panel, 
                                style = wx.TAB_TRAVERSAL,
                                name=control_name)
             sizer = wx.BoxSizer(wx.VERTICAL)
             control.SetSizer(sizer)
+            choice_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(choice_sizer, 0, wx.ALIGN_TOP | wx.ALIGN_LEFT)
             dir_ctrl = wx.Choice(control, choices = v.dir_choices, 
                                  name= dir_ctrl_name)
-            sizer.Add(dir_ctrl, 0, wx.ALIGN_LEFT | wx.BOTTOM, 2)
+            choice_sizer.Add(dir_ctrl, 0, wx.ALIGN_LEFT | wx.BOTTOM, 2)
+            choice_sizer.AddSpacer(3)
+            folder_label = wx.StaticText(
+                control, name = folder_label_ctrl_name)
+            choice_sizer.Add(folder_label, 0, wx.ALIGN_CENTER_VERTICAL)
+            
             custom_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(custom_sizer, 1, wx.EXPAND)
             custom_label = wx.StaticText(control, name = custom_ctrl_label_name)
@@ -1352,6 +1364,7 @@ class ModuleView:
             custom_ctrl = self.module_panel.FindWindowByName(custom_ctrl_name)
             custom_label = self.module_panel.FindWindowByName(custom_ctrl_label_name)
             browse_ctrl = self.module_panel.FindWindowByName(browse_ctrl_name)
+            folder_label = self.module_panel.FindWindowByName(folder_label_ctrl_name)
         if dir_ctrl.StringSelection != v.dir_choice:
             dir_ctrl.StringSelection = v.dir_choice
         if v.is_custom_choice:
@@ -1379,6 +1392,17 @@ class ModuleView:
             custom_label.Hide()
             custom_ctrl.Hide()
             browse_ctrl.Hide()
+        if v.dir_choice in (cps.DEFAULT_INPUT_FOLDER_NAME, 
+                            cps.DEFAULT_INPUT_SUBFOLDER_NAME):
+            folder_label.Label = \
+                "( %s )" % cpprefs.get_default_image_directory()
+        elif v.dir_choice in (cps.DEFAULT_OUTPUT_FOLDER_NAME,
+                              cps.DEFAULT_OUTPUT_SUBFOLDER_NAME):
+            folder_label.Label = \
+                "( %s )" % cpprefs.get_default_output_directory()
+        else:
+            folder_label.Label = wx.EmptyString
+        folder_label.SetToolTipString(folder_label.Label)
         return control
     
     def make_pathname_control(self, v, control):

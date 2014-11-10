@@ -1402,7 +1402,7 @@ class ModuleView:
                 "( %s )" % cpprefs.get_default_output_directory()
         else:
             folder_label.Label = wx.EmptyString
-        folder_label.SetToolTipString(folder_label.Label)
+        dir_ctrl.SetToolTipString(folder_label.Label)
         return control
     
     def make_pathname_control(self, v, control):

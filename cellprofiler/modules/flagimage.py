@@ -248,14 +248,16 @@ class FlagImage(cpm.CPModule):
         group.append("wants_minimum",
                      cps.Binary(
                          "Flag images based on low values?",True, doc = '''
-                         Select <i>%(YES)s</i> to flag images with measurements below the specified cutoff.'''%globals()))
+                         Select <i>%(YES)s</i> to flag images with measurements below the specified cutoff.
+                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.'''%globals()))
         
         group.append("minimum_value", cps.Float("Minimum value", 0))
         
         group.append("wants_maximum",
                      cps.Binary(
                          "Flag images based on high values?",True, doc = '''
-                         Select <i>%(YES)s</i> to flag images with measurements above the specified cutoff.'''%globals()))
+                         Select <i>%(YES)s</i> to flag images with measurements above the specified cutoff.
+                         If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.'''%globals()))
         
         group.append("maximum_value", cps.Float("Maximum value", 1))
         

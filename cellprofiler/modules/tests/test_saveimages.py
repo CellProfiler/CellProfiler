@@ -218,7 +218,7 @@ SaveImages:[module_num:60|svn_version:\'9438\'|variable_revision_number:4|show_w
                          cps.DEFAULT_INPUT_SUBFOLDER_NAME)
         self.assertEqual(module.pathname.custom_path, 
                          "./\\g<Directory>/\\g<Subdirectory>")
-        self.assertEqual(module.bit_depth, "8")
+        self.assertEqual(module.bit_depth, cpm_si.BIT_DEPTH_8)
         self.assertTrue(module.overwrite)
         self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
         self.assertEqual(module.rescale, False)
@@ -391,7 +391,7 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
             self.assertEqual(module.file_format, ff[i])
             self.assertEqual(module.pathname.dir_choice, dir_choice[i])
             self.assertEqual(module.pathname.custom_path, "cp%d" %(i+1))
-            self.assertEqual(module.bit_depth, "8")
+            self.assertEqual(module.bit_depth, cpm_si.BIT_DEPTH_8)
             self.assertEqual(module.when_to_save, wts[i])
             self.assertEqual(module.rescale, rescale[i])
             self.assertEqual(module.colormap, cm[i])
@@ -441,7 +441,7 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
         self.assertEqual(module.file_format, cpm_si.FF_BMP)
         self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(module.pathname.custom_path, r"DNA_\g<WellRow>")
-        self.assertEqual(module.bit_depth, 8)
+        self.assertEqual(module.bit_depth, cpm_si.BIT_DEPTH_8)
         self.assertFalse(module.overwrite)
         self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
         self.assertEqual(module.colormap, "gray")
@@ -513,7 +513,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         self.assertEqual(module.file_format, cpm_si.FF_PNG)
         self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.pathname.custom_path, r"None")
-        self.assertEqual(module.bit_depth, 8)
+        self.assertEqual(module.bit_depth, cpm_si.BIT_DEPTH_8)
         self.assertFalse(module.overwrite)
         self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
         self.assertFalse(module.rescale)
@@ -576,7 +576,7 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
         self.assertEqual(module.file_format, cpm_si.FF_TIFF)
         self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.pathname.custom_path, r"None")
-        self.assertEqual(module.bit_depth, 8)
+        self.assertEqual(module.bit_depth, cpm_si.BIT_DEPTH_8)
         self.assertFalse(module.overwrite)
         self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
         self.assertFalse(module.rescale)
@@ -637,7 +637,7 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
         self.assertEqual(module.file_format, cpm_si.FF_TIF)
         self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.pathname.custom_path, r"None")
-        self.assertEqual(module.bit_depth, 8)
+        self.assertEqual(module.bit_depth, cpm_si.BIT_DEPTH_8)
         self.assertFalse(module.overwrite)
         self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
         self.assertFalse(module.rescale)
@@ -703,7 +703,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:10|sho
         self.assertEqual(module.file_format, cpm_si.FF_TIF)
         self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.pathname.custom_path, r"None")
-        self.assertEqual(module.bit_depth, 8)
+        self.assertEqual(module.bit_depth, cpm_si.BIT_DEPTH_8)
         self.assertFalse(module.overwrite)
         self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
         self.assertFalse(module.rescale)
@@ -742,7 +742,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Text to append to the image name:Whatever
     Saved file format:tif
     Output file location:Default Output Folder\x7CNone
-    Image bit depth:8
+    Image bit depth:8-bit integer
     Overwrite existing files without warning?:No
     When to save:Every cycle
     Rescale the images? :No
@@ -770,7 +770,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.assertEqual(module.file_format, cpm_si.FF_TIF)
         self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.pathname.custom_path, r"None")
-        self.assertEqual(module.bit_depth, 8)
+        self.assertEqual(module.bit_depth, cpm_si.BIT_DEPTH_8)
         self.assertFalse(module.overwrite)
         self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
         self.assertFalse(module.rescale)
@@ -1816,31 +1816,43 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             # 16-bit TIF from all image types
             {'rescale'       : False, 
              'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
+             'bit_depth'     : cpm_si.BIT_DEPTH_16,
              'input_image'   : imagefloat,
              'expected'      : (imagefloat * 65535).astype(np.uint16) },
             {'rescale'       : False, 
              'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '8',
+             'bit_depth'     : cpm_si.BIT_DEPTH_8,
              'input_image'   : imagefloat,
              'expected'      : (imagefloat * 255).astype(np.uint8) },
             {'rescale'       : False,
              'file_format'   : cpm_si.FF_TIF,
-             'bit_depth'     : '16',
+             'bit_depth'     : cpm_si.BIT_DEPTH_16,
              'input_image'   : image16s,
              'expected'      : image16s },
 
             # Rescaled 16-bit image
             {'rescale'       : True, 
              'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
+             'bit_depth'     : cpm_si.BIT_DEPTH_16,
              'input_image'   : imagefloats / 2,
              'expected'      : imagefloats*65535. },
             {'rescale'       : True, 
              'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '8',
+             'bit_depth'     : cpm_si.BIT_DEPTH_8,
              'input_image'   : imagefloats / 2,
-             'expected'      : imagefloats * 255 }
+             'expected'      : imagefloats * 255 },
+            # Rescaled 32-bit float
+            {'rescale'       : True,
+             'file_format'   : cpm_si.FF_TIF,
+             'bit_depth'     : cpm_si.BIT_DEPTH_FLOAT,
+             'input_image'   : imagefloats / 2,
+             'expected'      : imagefloats },
+            # Unscaled 32-bit float
+            {'rescale'       : False,
+             'file_format'   : cpm_si.FF_TIF,
+             'bit_depth'     : cpm_si.BIT_DEPTH_FLOAT,
+             'input_image'   : (imagefloats * 16).astype(np.float32),
+             'expected'      : (imagefloats * 16).astype(np.float32) }
         ]
 
         for i, setting in enumerate(test_settings):
@@ -1905,7 +1917,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             
             module.rescale.value = False
             module.file_format.value = cpm_si.FF_BMP
-            module.bit_depth.value = 8
+            module.bit_depth.value = cpm_si.BIT_DEPTH_8
         
             module.save_image(workspace)
 

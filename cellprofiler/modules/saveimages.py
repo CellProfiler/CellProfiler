@@ -68,8 +68,11 @@ IF_MOVIE       = "Movie"
 IF_OBJECTS     = "Objects"
 IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE, IF_OBJECTS]
 
-BIT_DEPTH_8 = "8"
-BIT_DEPTH_16 = "16"
+OLD_BIT_DEPTH_8 = "8"
+OLD_BIT_DEPTH_16 = "16"
+BIT_DEPTH_8 = "8-bit integer"
+BIT_DEPTH_16 = "16-bit integer"
+BIT_DEPTH_FLOAT = "32-bit floating point"
 
 FN_FROM_IMAGE  = "From image filename"
 FN_SEQUENTIAL  = "Sequential numbers"
@@ -110,6 +113,10 @@ GC_COLOR = "Color"
 
 '''Offset to the directory path setting'''
 OFFSET_DIRECTORY_PATH = 11
+
+'''Offset to the bit depth setting in version 11'''
+OFFSET_BIT_DEPTH_V11 = 12
+
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
@@ -273,11 +280,15 @@ class SaveImages(cpm.CPModule):
         # TODO: 
         self.bit_depth = cps.Choice(
             "Image bit depth",
-            [BIT_DEPTH_8, BIT_DEPTH_16],doc="""
+            [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT],doc="""
             <i>(Used only when saving files in a non-MAT format)</i><br>
             Select the bit-depth at which you want to save the images.
-            <b>16-bit images are supported only for TIF formats.
-            Currently, saving images in 12-bit is not supported.</b>""")
+            <i>%(BIT_DEPTH_FLOAT)s</i> saves the image as floating-point decimals
+            with 32-bit precision in its raw form, typically scaled between
+            0 and 1.
+            <b>%(BIT_DEPTH_16)s and %(BIT_DEPTH_FLOAT)s images are supported only
+            for TIF formats. Currently, saving images in 12-bit is not supported.</b>""" %
+            globals())
         
         self.overwrite = cps.Binary(
             "Overwrite existing files without warning?",False,doc="""
@@ -417,8 +428,9 @@ class SaveImages(cpm.CPModule):
             result.append(self.movie_format)
         else:
             result.append(self.file_format)
-        if (self.file_format in FF_SUPPORTING_16_BIT and 
-            self.save_image_or_figure == IF_IMAGE):
+        supports_16_bit = (self.file_format in FF_SUPPORTING_16_BIT and 
+                           self.save_image_or_figure == IF_IMAGE)
+        if supports_16_bit:
             # TIFF supports 8 & 16-bit, all others are written 8-bit
             result.append(self.bit_depth)
         result.append(self.pathname)
@@ -428,7 +440,8 @@ class SaveImages(cpm.CPModule):
         if (self.save_image_or_figure == IF_IMAGE and
             self.file_format != FF_MAT):
             result.append(self.rescale)
-            result.append(self.colormap)
+            if self.get_bit_depth() == "8":
+                result.append(self.colormap)
         elif self.save_image_or_figure == IF_OBJECTS:
             result.append(self.gray_or_color)
             if self.gray_or_color == GC_COLOR:
@@ -626,7 +639,7 @@ class SaveImages(cpm.CPModule):
         image = workspace.image_set.get_image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
             pixels = image.pixel_data
-            u16hack = (self.get_bit_depth() == '16' and
+            u16hack = (self.get_bit_depth() == BIT_DEPTH_16 and
                        pixels.dtype.kind in ('u', 'i'))
             if self.file_format != FF_MAT:
                 if self.rescale.value:
@@ -645,7 +658,7 @@ class SaveImages(cpm.CPModule):
                         img_max = np.max(pixels)
                         if img_max > img_min:
                             pixels = (pixels - img_min) / (img_max - img_min)
-                elif not u16hack:
+                elif not (u16hack or self.get_bit_depth() == BIT_DEPTH_FLOAT):
                     # Clip at 0 and 1
                     if np.max(pixels) > 1 or np.min(pixels) < 0:
                         sys.stderr.write(
@@ -655,7 +668,8 @@ class SaveImages(cpm.CPModule):
                         pixels[pixels < 0] = 0
                         pixels[pixels > 1] = 1
                         
-                if pixels.ndim == 2 and self.colormap != CM_GRAY:
+                if pixels.ndim == 2 and self.colormap != CM_GRAY and\
+                   self.get_bit_depth() == BIT_DEPTH_8:
                     # Convert grayscale image to rgb for writing
                     if self.colormap == cps.DEFAULT:
                         colormap = cpp.get_default_colormap()
@@ -663,16 +677,14 @@ class SaveImages(cpm.CPModule):
                         colormap = self.colormap.value
                     cm = matplotlib.cm.get_cmap(colormap)
                     
-                    if self.get_bit_depth() == '8':
-                        mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-                        pixels = mapper.to_rgba(pixels, bytes=True)
-                        pixel_type = ome.PT_UINT8
-                    else:
-                        pixel_type = ome.PT_UINT16
-                        pixels *= 255
-                elif self.get_bit_depth() == '8':
+                    mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+                    pixels = mapper.to_rgba(pixels, bytes=True)
+                    pixel_type = ome.PT_UINT8
+                elif self.get_bit_depth() == BIT_DEPTH_8:
                     pixels = (pixels*255).astype(np.uint8)
                     pixel_type = ome.PT_UINT8
+                elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
+                    pixel_type = ome.PT_FLOAT
                 else:
                     if not u16hack:
                         pixels = (pixels*65535)
@@ -856,7 +868,7 @@ class SaveImages(cpm.CPModule):
             self.get_file_format() in FF_SUPPORTING_16_BIT):
             return self.bit_depth.value
         else:
-            return '8'
+            return BIT_DEPTH_8
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -1063,7 +1075,22 @@ class SaveImages(cpm.CPModule):
         ######################   
         if (not from_matlab) and (variable_revision_number == 10):
             setting_values = setting_values + [ FF_AVI ]
-
+            variable_revision_number = 11
+        
+        ######################
+        #
+        # Version 11.5 - name of bit depth changed
+        #                (can fix w/o version change)
+        #
+        ######################
+        if variable_revision_number == 11:
+            bit_depth = setting_values[OFFSET_BIT_DEPTH_V11]
+            bit_depth = {
+                OLD_BIT_DEPTH_8:BIT_DEPTH_8,
+                OLD_BIT_DEPTH_16:BIT_DEPTH_16 }.get(bit_depth, bit_depth)
+            setting_values = setting_values[:OFFSET_BIT_DEPTH_V11] + \
+                [bit_depth] + setting_values[OFFSET_BIT_DEPTH_V11+1:]
+        
         setting_values[OFFSET_DIRECTORY_PATH] = \
             SaveImagesDirectoryPath.upgrade_setting(setting_values[OFFSET_DIRECTORY_PATH])
         

@@ -140,9 +140,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             <a href="http://www.beanshell.org/manual/contents.html">
             (Beanshell documentation)</a>."""%globals())
         
-        all_engines = ij2.get_script_service(get_context()).getLanguages()
-        self.language_dictionary = dict(
-            [(engine.getLanguageName(), engine) for engine in all_engines])
+        self.populate_language_dictionary()
             
         self.macro_language = cps.Choice(
             "Macro language",
@@ -284,6 +282,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         
         logger.debug("Finished creating settings")
 
+    def populate_language_dictionary(self):
+        all_engines = ij2.get_script_service(get_context()).getLanguages()
+        self.language_dictionary = dict(
+            [(engine.getLanguageName(), engine) for engine in all_engines])
+        
     @staticmethod
     def is_leaf(node):
         '''Return True if a tree node holds a command'''

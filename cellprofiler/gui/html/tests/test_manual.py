@@ -19,14 +19,30 @@ import unittest
 import tempfile
 import traceback
 import cellprofiler.gui.html.manual as M
-from cellprofiler.modules import get_module_names, instantiate_module
 import cellprofiler.preferences as cpprefs
 
 class TestManual(unittest.TestCase):
     def setUp(self):
         self.temp_dir = tempfile.mkdtemp()
+        # Monkey-patch RunImageJ to keep it from calling ImageJ during
+        # create_settings
+        from cellprofiler.modules.run_imagej import RunImageJ
+        from cellprofiler.settings import Text
+        self.old_make_command_choice = RunImageJ.make_command_choice
+        def make_command_choice(self, label, doc):
+            return Text(label, "None", doc=doc)
+        RunImageJ.make_command_choice = make_command_choice
+        self.old_populate_language_dictionary = \
+            RunImageJ.populate_language_dictionary
+        def populate_language_dictionary(self):
+            self.language_dictionary = dict(swedish="SwedishEngine")
+        RunImageJ.populate_language_dictionary = populate_language_dictionary
         
     def tearDown(self):
+        from cellprofiler.modules.run_imagej import RunImageJ
+        RunImageJ.make_command_choice = self.old_make_command_choice
+        RunImageJ.populate_language_dictionary = \
+            self.old_populate_language_dictionary
         for root, dirnames, filenames in os.walk(self.temp_dir, False):
             for x in filenames:
                 os.remove(os.path.join(root, x))
@@ -35,6 +51,7 @@ class TestManual(unittest.TestCase):
         os.rmdir(self.temp_dir)
     
     def test_01_01_output_module_html(self):
+        from cellprofiler.modules import get_module_names, instantiate_module
         M.output_module_html(self.temp_dir)
         for module_name in sorted(get_module_names()):
             fd = None

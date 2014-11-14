@@ -431,8 +431,10 @@ class ViewWorkspace(object):
             for cplabel in cplabels:
                 name = cplabel[CPLD_NAME]
                 matches = filter((lambda x: x[CPLD_NAME] == name), old_cplabels)
-                if not len(matches):
+                if len(matches) == 0:
                     old_cplabels.append(cplabel)
+                else:
+                    matches[0][CPLD_LABELS] = cplabel[CPLD_LABELS]
             self.image.kwargs["cplabels"] = old_cplabels
             self.frame.subplot_params[(0, 0)]['cplabels'] = old_cplabels
             self.frame.update_line_labels(self.axes, self.image.kwargs)

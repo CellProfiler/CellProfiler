@@ -15,6 +15,7 @@ Website: http://www.cellprofiler.org
 
 import numpy as np
 from scipy.ndimage import convolve1d
+import scipy.stats
 import unittest
 
 import cellprofiler.cpmath.threshold as T
@@ -87,6 +88,92 @@ class TestThreshold(unittest.TestCase):
         gradient = convolve1d(adaptive_threshold, [-1, 0, 1], 1)
         self.assertTrue(np.all(gradient[20:30, 20:25] < 0))
         self.assertTrue(np.all(gradient[20:30, 25:30] > 0))
+        
+    def make_mog_image(self, loc1, sigma1, loc2, sigma2, frac1, size):
+        '''Make an image that is a mixture of gaussians
+        
+        loc{1,2} - mean of distribution # 1 and 2
+        sigma{1,2} - standard deviation of distribution # 1 and 2
+        frac1 - the fraction of pixels that are in distribution 1
+        size - the shape of the image.
+        '''
+        r = np.random.RandomState()
+        r.seed(np.frombuffer(np.array(
+            [loc1, sigma1, loc2, sigma2, frac1] + list(size)).data, np.int32))
+        n_pixels = np.prod(size)
+        p = r.permutation(n_pixels).reshape(size)
+        s1 = int(n_pixels * frac1)
+        s2 = n_pixels - s1
+        d = np.hstack([
+            r.normal(loc=loc1, scale=sigma1, size=s1),
+            r.normal(loc=loc2, scale=sigma2, size=s2)])
+        d[d<0] = 0
+        d[d>1] = 1
+        return d[p]
+        
+    def test_04_01_robust_background(self):
+        img = self.make_mog_image(.1, .05, .5, .2, .975, (45, 35))
+        t = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img)
+        self.assertLess(abs(t-.2), .025)
+        
+    def test_04_02_robust_background_lower_outliers(self):
+        img = self.make_mog_image(.1, .05, .5, .2, .5, (45, 35))
+        t0 = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img,
+                                    lower_outlier_fraction=0)
+        t05 = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img,
+                                     lower_outlier_fraction=0.05)
+        self.assertNotEqual(t0, t05)
+        
+    def test_04_03_robust_background_upper_outliers(self):
+        img = self.make_mog_image(.1, .05, .5, .2, .9, (45, 35))
+        t0 = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img,
+                                    upper_outlier_fraction=0)
+        t05 = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img,
+                                     upper_outlier_fraction=0.05)
+        self.assertNotEqual(t0, t05)
+        
+    def test_04_04_robust_background_sd(self):
+        img = self.make_mog_image(.5, .1, .8, .01, .99, (45, 35))
+        t2 = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img,
+                                    lower_outlier_fraction = 0,
+                                    upper_outlier_fraction = 0)
+        self.assertLess(abs(t2 - .7), .02)
+        t3 = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img,
+                                    lower_outlier_fraction = 0,
+                                    upper_outlier_fraction = 0,
+                                    deviations_above_average = 2.5)
+        self.assertLess(abs(t3 - .75), .02)
+        
+    def test_04_05_robust_background_median(self):
+        img = self.make_mog_image(.3, .05, .5, .2, .9, (45, 35))
+        t = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img,
+                                   average_fn = np.median,
+                                   deviations_above_average = 0,
+                                   lower_outlier_fraction = 0,
+                                   upper_outlier_fraction = 0)
+        self.assertLess(abs(t - .3), .01)
+        
+    def test_04_06_robust_background_mode(self):
+        img = self.make_mog_image(.3, .05, .5, .2, .9, (45, 35))
+        img[(img > .25) & (img < .35)] = .304
+        t = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img,
+                                   average_fn = T.binned_mode,
+                                   deviations_above_average = 0,
+                                   lower_outlier_fraction = 0,
+                                   upper_outlier_fraction = 0)
+        self.assertAlmostEqual(t, .304)
+        
+    def test_04_08_mad(self):
+        img = self.make_mog_image(.3, .05, .5, .2, .95, (45, 35))
+        t = T.get_global_threshold(T.TM_ROBUST_BACKGROUND, img,
+                                   variance_fn = T.mad,
+                                   deviations_above_average = 2,
+                                   lower_outlier_fraction = 0,
+                                   upper_outlier_fraction = 0)
+        norm = scipy.stats.norm(0, .05)
+        # the MAD should be the expected value at the 75th percentile
+        expected = .3 + 2 * norm.ppf(.75)
+        self.assertLess(np.abs(t - expected), .02)
         
 if __name__=="__main__":
     unittest.main()

@@ -76,11 +76,7 @@ def get_threshold(threshold_method, threshold_modifier, image,
                   mask=None, labels = None,
                   threshold_range_min = None, threshold_range_max = None,
                   threshold_correction_factor = 1.0,
-                  object_fraction = 0.2,
-                  two_class_otsu = True,
-                  use_weighted_variance = True,
-                  assign_middle_to_foreground = True,
-                  adaptive_window_size = 10):
+                  adaptive_window_size = 10, **kwargs):
     """Compute a threshold for an image
     
     threshold_method - one of the TM_ methods above
@@ -125,11 +121,8 @@ def get_threshold(threshold_method, threshold_modifier, image,
                                in a three-class Otsu to the foreground if true
                                or the background if false.
     """
-    global_threshold = get_global_threshold(threshold_method, image, mask, 
-                                            object_fraction,
-                                            two_class_otsu,
-                                            use_weighted_variance,
-                                            assign_middle_to_foreground)
+    global_threshold = get_global_threshold(
+        threshold_method, image, mask, **kwargs)
     global_threshold *= threshold_correction_factor
     if not threshold_range_min is None:
         global_threshold = max(global_threshold, threshold_range_min)
@@ -138,24 +131,14 @@ def get_threshold(threshold_method, threshold_modifier, image,
     if threshold_modifier == TM_GLOBAL:
         local_threshold=global_threshold
     elif threshold_modifier == TM_ADAPTIVE:
-        local_threshold = get_adaptive_threshold(threshold_method, 
-                                                 image, global_threshold,
-                                                 mask, object_fraction,
-                                                 two_class_otsu,
-                                                 use_weighted_variance,
-                                                 assign_middle_to_foreground,
-                                                 adaptive_window_size)
+        local_threshold = get_adaptive_threshold(
+            threshold_method, image, global_threshold,
+            mask, adaptive_window_size = adaptive_window_size, **kwargs)
         local_threshold = local_threshold * threshold_correction_factor
     elif threshold_modifier == TM_PER_OBJECT:
-        local_threshold = get_per_object_threshold(threshold_method, image,
-                                                   global_threshold,
-                                                   mask, labels,
-                                                   threshold_range_min,
-                                                   threshold_range_max,
-                                                   object_fraction,
-                                                   two_class_otsu,
-                                                   use_weighted_variance,
-                                                   assign_middle_to_foreground)
+        local_threshold = get_per_object_threshold(
+            threshold_method, image, global_threshold, mask, labels,
+            threshold_range_min, threshold_range_max,**kwargs)
         local_threshold = local_threshold * threshold_correction_factor
     else:
         raise NotImplementedError("%s thresholding is not implemented"%(threshold_modifier))
@@ -180,42 +163,35 @@ def get_threshold(threshold_method, threshold_modifier, image,
             local_threshold = min(local_threshold, threshold_range_max)
     return local_threshold, global_threshold
 
-def get_global_threshold(threshold_method, image, mask = None,
-                         object_fraction = 0.2,
-                         two_class_otsu = True,
-                         use_weighted_variance = True,
-                         assign_middle_to_foreground = True):
+def get_global_threshold(threshold_method, image, mask = None, **kwargs):
     """Compute a single threshold over the whole image"""
     if mask is not None and not np.any(mask):
         return 1
     
     if threshold_method == TM_OTSU:
-        return get_otsu_threshold(image, mask,
-                                  two_class_otsu,
-                                  use_weighted_variance,
-                                  assign_middle_to_foreground)
+        fn = get_otsu_threshold
     elif threshold_method == TM_MOG:
-        return get_mog_threshold(image, mask, object_fraction)
+        fn = get_mog_threshold
     elif threshold_method == TM_BACKGROUND:
-        return get_background_threshold(image, mask)
+        fn = get_background_threshold
     elif threshold_method == TM_ROBUST_BACKGROUND:
-        return get_robust_background_threshold(image,mask)
+        fn = get_robust_background_threshold
     elif threshold_method == TM_RIDLER_CALVARD:
-        return get_ridler_calvard_threshold(image, mask)
+        fn = get_ridler_calvard_threshold
     elif threshold_method == TM_KAPUR:
-        return get_kapur_threshold(image,mask)
+        fn = get_kapur_threshold
     elif threshold_method == TM_MCT:
-        return get_maximum_correlation_threshold(image, mask)
+        fn = get_maximum_correlation_threshold
     else:
         raise NotImplementedError("%s algorithm not implemented"%(threshold_method))
+    kwargs = dict([(k, v) for k, v in kwargs.items()
+                   if k in fn.args])
+    return fn(image, mask, **kwargs)
 
 def get_adaptive_threshold(threshold_method, image, threshold,
                            mask = None,
-                           object_fraction = 0.2,
-                           two_class_otsu = True,
-                           use_weighted_variance = True,
-                           assign_middle_to_foreground = True,
-                           adaptive_window_size = 10):
+                           adaptive_window_size = 10,
+                           **kwargs):
     
     """Given a global threshold, compute a threshold per pixel
     
@@ -255,10 +231,7 @@ def get_adaptive_threshold(threshold_method, image, threshold,
             block_threshold[i,j] = get_global_threshold(
                 threshold_method, 
                 block, mask = block_mask,
-                object_fraction = object_fraction,
-                two_class_otsu = two_class_otsu,
-                use_weighted_variance = use_weighted_variance,
-                assign_middle_to_foreground = assign_middle_to_foreground)
+                **kwargs)
     #
     # Use a cubic spline to blend the thresholds across the image to avoid image artifacts
     #
@@ -287,10 +260,7 @@ def get_adaptive_threshold(threshold_method, image, threshold,
 def get_per_object_threshold(method, image, threshold, mask=None, labels=None,
                              threshold_range_min = None,
                              threshold_range_max = None,
-                             object_fraction = 0.2,
-                             two_class_otsu = True,
-                             use_weighted_variance = True,
-                             assign_middle_to_foreground = True):
+                             **kwargs):
     """Return a matrix giving threshold per pixel calculated per-object
     
     image - image to be thresholded
@@ -309,12 +279,8 @@ def get_per_object_threshold(method, image, threshold, mask=None, labels=None,
         if not mask is None:
             label_mask = np.logical_and(mask[extent], label_mask)
         values = image[extent]
-        per_object_threshold = get_global_threshold(method, values, 
-                                                    mask = label_mask,
-                                                    object_fraction = object_fraction,
-                                                   two_class_otsu = two_class_otsu,
-                                                   use_weighted_variance = use_weighted_variance,
-                                                   assign_middle_to_foreground = assign_middle_to_foreground)
+        per_object_threshold = get_global_threshold(
+            method, values, mask = label_mask, **kwargs)
         local_threshold[extent][label_mask] = per_object_threshold
     return local_threshold
 
@@ -343,6 +309,8 @@ def get_otsu_threshold(image, mask = None,
         threshold = t1 if assign_middle_to_foreground else t2  
     threshold = inverse_log_transform(threshold, d)
     return threshold
+
+get_otsu_threshold.args = inspect.getargspec(get_otsu_threshold).args
         
 def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     """Compute a background using a mixture of gaussians
@@ -474,6 +442,8 @@ def get_mog_threshold(image, mask=None, object_fraction = 0.2):
     index = np.argmin(np.abs(background_distribution - object_distribution))
     return level[index]
 
+get_mog_threshold.args = inspect.getargspec(get_mog_threshold).args
+
 def get_background_threshold(image, mask = None):
     """Get threshold based on the mode of the image
     The threshold is calculated by calculating the mode and multiplying by
@@ -508,25 +478,83 @@ def get_background_threshold(image, mask = None):
     cutoff = (cutoff + 0.02) / 1.04
     return img_min + cutoff * 2 * (img_max - img_min)
 
-def get_robust_background_threshold(image, mask = None):
+get_background_threshold.args = inspect.getargspec(get_background_threshold).args
+
+def get_robust_background_threshold(image, 
+                                    mask = None,
+                                    lower_outlier_fraction = 0.05,
+                                    upper_outlier_fraction = 0.05,
+                                    deviations_above_average = 2.0,
+                                    average_fn = np.mean,
+                                    variance_fn = np.std):
     """Calculate threshold based on mean & standard deviation
        The threshold is calculated by trimming the top and bottom 5% of
        pixels off the image, then calculating the mean and standard deviation
        of the remaining image. The threshold is then set at 2 (empirical
-       value) standard deviations above the mean.""" 
+       value) standard deviations above the mean.
+
+       image - the image to threshold
+       mask - mask of pixels to consider (default = all pixels)
+       lower_outlier_fraction - after ordering the pixels by intensity, remove
+           the pixels from 0 to len(image) * lower_outlier_fraction from
+           the threshold calculation (default = .05).
+        upper_outlier_fraction - remove the pixels from 
+           len(image) * (1 - upper_outlier_fraction) to len(image) from 
+           consideration (default = .05).
+        deviations_above_average - calculate the standard deviation or MAD and
+           multiply by this number and add to the average to get the final 
+           threshold (default = 2)
+        average_fn - function used to calculate the average intensity (e.g.
+           np.mean, np.median or some sort of mode function). Default = np.mean
+        variance_fn - function used to calculate the amount of variance.
+                      Default = np.sd
+    """ 
 
     cropped_image = np.array(image.flat) if mask is None else image[mask]
-    if np.product(cropped_image.shape)<3:
+    n_pixels = np.product(cropped_image.shape)
+    if n_pixels<3:
         return 0
-    if np.min(cropped_image) == np.max(cropped_image):
-        return cropped_image[0]
     
     cropped_image.sort()
-    chop = int(round(np.product(cropped_image.shape) * .05))
-    im   = cropped_image if chop == 0 else cropped_image[chop:-chop]
-    mean = im.mean()
-    sd   = im.std()
-    return mean+sd*2
+    if cropped_image[0] == cropped_image[-1]:
+        return cropped_image[0]
+    low_chop = int(round(n_pixels * lower_outlier_fraction))
+    hi_chop = n_pixels - int(round(n_pixels * upper_outlier_fraction))
+    im   = cropped_image if low_chop == 0 else cropped_image[low_chop:hi_chop]
+    mean = average_fn(im)
+    sd   = variance_fn(im)
+    return mean+sd*deviations_above_average
+
+get_robust_background_threshold.args = inspect.getargspec(
+    get_robust_background_threshold).args
+
+def mad(a):
+    '''Calculate the median absolute deviation of a sample
+    
+    a - a numpy array-like collection of values
+    
+    returns the median of the deviation of a from its median.
+    '''
+    a = np.asfarray(a).flatten()
+    return np.median(np.abs(a - np.median(a)))
+
+def binned_mode(a):
+    '''Calculate a binned mode of a sample
+    
+    a - array of values
+    
+    This routine bins the sample into np.sqrt(len(a)) bins. This is a
+    number that is a compromise between fineness of measurement and
+    the stochastic nature of counting which roughly scales as the
+    square root of the sample size.
+    '''
+    a = np.asarray(a).flatten()
+    a_min = np.min(a)
+    a_max = np.max(a)
+    n_bins = np.ceil(np.sqrt(len(a)))
+    b = ((a - a_min) / (a_max - a_min) * n_bins).astype(int)
+    idx = np.argmax(np.bincount(b))
+    return np.percentile(a, 100 * float(idx+.5) / n_bins)
 
 def get_ridler_calvard_threshold(image, mask = None):
     """Find a threshold using the method of Ridler and Calvard
@@ -563,6 +591,9 @@ def get_ridler_calvard_threshold(image, mask = None):
         mean2 = np.mean(im[im>=pre_thresh]);
         new_thresh = np.mean([mean1,mean2]);
     return math.exp(min_val + (max_val-min_val)*new_thresh);
+
+get_ridler_calvard_threshold.args = inspect.getargspec(
+    get_ridler_calvard_threshold).args
 
 def get_kapur_threshold(image, mask=None):
     """The Kapur, Sahoo, & Wong method of thresholding, adapted to log-space."""
@@ -603,6 +634,8 @@ def get_kapur_threshold(image, mask=None):
     sum_entropy[np.logical_not(np.isfinite(sum_entropy))] = np.Inf
     entry = np.argmin(sum_entropy);
     return 2**((histogram_values[entry] + histogram_values[entry+1]) / 2);
+
+get_kapur_threshold.args = inspect.getargspec(get_kapur_threshold).args
 
 def get_maximum_correlation_threshold(image, mask = None, bins = 256):
     '''Return the maximum correlation threshold of the image
@@ -662,7 +695,10 @@ def get_maximum_correlation_threshold(image, mask = None, bins = 256):
     mct[denominator == 0] = 0
     my_bin = np.argmax(mct)-1
     return min_value + my_bin * (max_value - min_value) / (bins - 1)
-    
+
+get_maximum_correlation_threshold.args = \
+    inspect.getargspec(get_maximum_correlation_threshold).args
+
 def weighted_variance(image, mask, binary_image):
     """Compute the log-transformed variance of foreground and background
     

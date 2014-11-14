@@ -30,6 +30,7 @@ from cellprofiler.cpmath.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS,
 from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_BINARY_IMAGE
 from cellprofiler.cpmath.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_BACKGROUND, TM_KAPUR, TM_ROBUST_BACKGROUND, TM_RIDLER_CALVARD
 from cellprofiler.cpmath.threshold import weighted_variance, sum_of_entropies
+from cellprofiler.cpmath.threshold import mad, binned_mode
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
 import cellprofiler.icons 
         
@@ -44,6 +45,14 @@ O_BACKGROUND = 'Background'
 
 FI_IMAGE_SIZE    = 'Image size'
 FI_CUSTOM        = 'Custom'
+
+RB_DEFAULT = "Default"
+RB_CUSTOM = "Custom"
+RB_MEAN = "Mean"
+RB_MEDIAN = "Median"
+RB_MODE = "Mode"
+RB_SD = "Standard deviation"
+RB_MAD = "Median absolute deviation"
 
 '''The location measurement category'''
 C_LOCATION = "Location"
@@ -156,7 +165,7 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 class Identify(cellprofiler.cpmodule.CPModule):
-    threshold_setting_version = 1
+    threshold_setting_version = 2
     def create_threshold_settings(self, methods = TM_METHODS):
         
         '''Create settings related to thresholding'''
@@ -580,6 +589,88 @@ class Identify(cellprofiler.cpmodule.CPModule):
             Choose whether you want the pixels with middle grayscale intensities to be assigned 
             to the foreground class or the background class.""")
         
+        self.rb_custom_choice = cps.Choice(
+            "Use default parameters?", [RB_DEFAULT, RB_CUSTOM],
+            doc = """
+            <i>(Used only with the robust background method)</i><br>
+            This setting determines whether the robust background method
+            uses its default parameters or lets the user customize them.
+            <br>
+            <ul><li>Choose <i>%(RB_DEFAULT)s</i> to use the default parameters
+            for robust background, discarding the 5%% highest and lowest
+            intensity pixels and calculating the threshold as the mean plus
+            two standard deviations of the remaining pixels.</li>
+            <li>Choose <i>%(RB_CUSTOM)s</i> to fully customize the method.</li>
+            </ul>
+            """ % globals())
+
+        self.lower_outlier_fraction = cps.Float(
+            "Lower outlier fraction", .05,
+            minval = 0,
+            maxval = 1,
+            doc = """
+            <i>(Used only when customizing the robust background method)</i><br>
+            Discard this fraction of the pixels in the image starting with
+            those of the lowest intensity.
+            """)
+        
+        self.upper_outlier_fraction = cps.Float(
+            "Upper outlier fraction", .05,
+            minval = 0,
+            maxval = 1,
+            doc = """
+            <i>(Used only when customizing the robust background method)</i><br>
+            Discard this fraction of the pixels in the image starting with
+            those of the highest intensity.
+            """)
+        
+        self.averaging_method = cps.Choice(
+            "Averaging method",
+            [RB_MEAN, RB_MEDIAN, RB_MODE],
+            doc = """
+            <i>(Used only when customizing the robust background method)</i><br>
+            This setting determines how the intensity midpoint is determined.
+            <br><ul><li><i>%(RB_MEAN)s</i>: use the mean of the pixels
+            remaining after discarding the outliers. This is a good choice if
+            the cell density is variable or high.</li>
+            <li><i>%(RB_MEDIAN)s</i>: use the median of the pixels. This is a
+            good choice if, for all images, more than half of the pixels
+            are in the background after removing outliers.</li>
+            <li><i>%(RB_MODE)s</i>: use the most frequently occurring value
+            from among the pixel values. The robust background method groups
+            the intensities into bins (the number of bins is the square root
+            of the number of pixels in the unmasked portion of the image) and
+            chooses the intensity associated with the bin with the most pixels.
+            </li></ul>
+            """ %globals())
+        self.variance_method = cps.Choice(
+            "Variance method",
+            [RB_SD, RB_MAD],
+            doc="""
+            <i>(Used only when customizing the robust background method)</i><br>
+            Robust background adds a number of deviations (standard or MAD) to
+            the average to get the final background. This setting chooses the
+            method used to assess the variance in the pixels, after removing
+            outliers.<br>Choose one of <i>%(RB_SD)s</i> or <i>%(RB_MAD)s</i>
+            (the median of the absolute difference of the pixel intensities
+            from their median).
+            """%globals())
+        
+        self.number_of_deviations = cps.Float(
+            "# of deviations", 2,
+            doc = """
+            <i>(Used only when customizing the robust background method)</i><br>
+            Robust background calculates the variance, multiplies it by the
+            value given by this setting and adds it to the average. Adding
+            several deviations raises the background value above the average,
+            which should be close to the average background, excluding most
+            background pixels. Use a larger number to exclude more background
+            pixels. Use a smaller number to include more low-intensity
+            foreground pixels. It's possible to use a negative number 
+            to lower the threshold if the averaging method picks a threshold
+            that is within the range of foreground pixel intensities.
+            """)
+            
         self.adaptive_window_method = cps.Choice(
             "Method to calculate adaptive window size",
             [FI_IMAGE_SIZE, FI_CUSTOM], doc="""
@@ -616,7 +707,13 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 self.use_weighted_variance,
                 self.assign_middle_to_foreground,
                 self.adaptive_window_method,
-                self.adaptive_window_size]
+                self.adaptive_window_size,
+                self.rb_custom_choice,
+                self.lower_outlier_fraction,
+                self.upper_outlier_fraction,
+                self.averaging_method,
+                self.variance_method,
+                self.number_of_deviations]
     
     def get_threshold_help_settings(self):
         '''Return the threshold settings to be displayed in help'''
@@ -629,6 +726,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 self.use_weighted_variance,
                 self.assign_middle_to_foreground,
                 self.object_fraction,
+                self.rb_custom_choice,
+                self.lower_outlier_fraction,
+                self.upper_outlier_fraction,
+                self.averaging_method,
+                self.variance_method,
+                self.number_of_deviations,                
                 self.adaptive_window_method,
                 self.adaptive_window_size,
                 self.threshold_correction_factor,
@@ -686,6 +789,16 @@ class Identify(cellprofiler.cpmodule.CPModule):
         threshold settings version and upgrade as appropriate
         '''
         version = int(setting_values[0])
+        if version == 1:
+            # Added robust background settings
+            #
+            setting_values = setting_values + [
+                RB_DEFAULT,    # Robust background custom choice
+                .05, .05,      # lower and upper outlier fractions
+                RB_MEAN,       # averaging method
+                RB_SD,         # variance method
+                2]             # of standard deviations
+            version = 2
         if version > self.threshold_setting_version:
             raise ValueError("Unsupported pipeline version: threshold setting version = %d" % version)
         return setting_values
@@ -709,8 +822,16 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 vv += [self.two_class_otsu, self.use_weighted_variance]
                 if self.two_class_otsu == O_THREE_CLASS:
                     vv.append(self.assign_middle_to_foreground)
-            if self.threshold_method == TM_MOG:
+            elif self.threshold_method == TM_MOG:
                 vv += [self.object_fraction]
+            elif self.threshold_method == TM_ROBUST_BACKGROUND:
+                vv += [self.rb_custom_choice]
+                if self.rb_custom_choice == RB_CUSTOM:
+                    vv += [self.lower_outlier_fraction, 
+                           self.upper_outlier_fraction,
+                           self.averaging_method,
+                           self.variance_method,
+                           self.number_of_deviations]
         if self.threshold_scope not in \
            (TS_BINARY_IMAGE, TS_MEASUREMENT, TS_MANUAL):
             vv += [ self.threshold_smoothing_choice]
@@ -844,33 +965,60 @@ class Identify(cellprofiler.cpmodule.CPModule):
                             np.array([1,1])
                 else:
                     block_size = None
-                object_fraction = self.object_fraction.value
-                if object_fraction.endswith("%"):
-                    object_fraction = float(object_fraction[:-1])/100.0
-                else:
-                    object_fraction = float(object_fraction)
-                if self.threshold_scope == TS_AUTOMATIC:
-                    threshold_range_min = 0
-                    threshold_range_max = 1
-                    threshold_correction_factor = 1
-                else:
-                    threshold_range_min = self.threshold_range.min
-                    threshold_range_max = self.threshold_range.max
-                    threshold_correction_factor = self.threshold_correction_factor.value
+                kwparams = {}
+                if self.threshold_scope != TS_AUTOMATIC:
+                    #
+                    # General manual parameters
+                    #
+                    kwparams['threshold_range_min'] = self.threshold_range.min
+                    kwparams['threshold_range_max'] = self.threshold_range.max
+                    kwparams['threshold_correction_factor'] = \
+                        self.threshold_correction_factor.value
+                if self.get_threshold_algorithm() == TM_OTSU:
+                    #
+                    # Otsu-specific parameters
+                    #
+                    kwparams['use_weighted_variance'] = \
+                        self.use_weighted_variance.value == O_WEIGHTED_VARIANCE
+                    kwparams['two_class_otsu'] = \
+                        self.two_class_otsu.value == O_TWO_CLASS
+                    kwparams['assign_middle_to_foreground'] =\
+                        self.assign_middle_to_foreground.value == O_FOREGROUND
+                elif self.get_threshold_algorithm() == TM_MOG:
+                    #
+                    # Mixture of gaussian parameters
+                    #
+                    object_fraction = self.object_fraction.value
+                    if object_fraction.endswith("%"):
+                        object_fraction = float(object_fraction[:-1])/100.0
+                    else:
+                        object_fraction = float(object_fraction)
+                    kwparams['object_fraction'] = object_fraction
+                elif self.get_threshold_algorithm() == TM_ROBUST_BACKGROUND and\
+                     self.rb_custom_choice == RB_CUSTOM:
+                    kwparams['lower_outlier_fraction'] = \
+                        self.lower_outlier_fraction.value
+                    kwparams['upper_outlier_fraction'] = \
+                        self.upper_outlier_fraction.value
+                    kwparams['deviations_above_average' ] = \
+                        self.number_of_deviations.value
+                    kwparams['average_fn'] = {
+                        RB_MEAN: np.mean,
+                        RB_MEDIAN: np.median,
+                        RB_MODE: binned_mode 
+                        }.get(self.averaging_method.value, np.mean)
+                    kwparams['variance_fn'] = {
+                        RB_SD: np.std,
+                        RB_MAD: mad }.get(self.variance_method, np.std)
+                    
                 local_threshold, global_threshold = get_threshold(
                     self.threshold_algorithm,
                     self.threshold_modifier,
                     img, 
                     mask = mask,
                     labels = labels,
-                    threshold_range_min = threshold_range_min,
-                    threshold_range_max = threshold_range_max,
-                    threshold_correction_factor = threshold_correction_factor,
-                    object_fraction = object_fraction,
-                    two_class_otsu = self.two_class_otsu.value == O_TWO_CLASS,
-                    use_weighted_variance = self.use_weighted_variance.value == O_WEIGHTED_VARIANCE,
-                    assign_middle_to_foreground = self.assign_middle_to_foreground.value == O_FOREGROUND,
-                    adaptive_window_size = block_size)
+                    adaptive_window_size = block_size,
+                    **kwparams)
         self.add_threshold_measurements(workspace.measurements,
                                         local_threshold, global_threshold)
         if hasattr(workspace.display_data, "statistics"):
@@ -929,17 +1077,29 @@ class Identify(cellprofiler.cpmodule.CPModule):
                                      np.array([entropies],dtype=float))
         
     def validate_module(self, pipeline):
-        if hasattr(self, "object_fraction"):
-            try:
-                if self.object_fraction.value.endswith("%"):
-                    float(self.object_fraction.value[:-1])
-                else:
-                    float(self.object_fraction.value)
-            except ValueError:
-                raise cps.ValidationError("%s is not a floating point value"%
-                                          self.object_fraction.value,
-                                          self.object_fraction)
-
+        if self.threshold_scope in (TS_ADAPTIVE, TS_GLOBAL, TS_PER_OBJECT):
+            if self.get_threshold_algorithm() == TM_MOG:
+                try:
+                    if self.object_fraction.value.endswith("%"):
+                        float(self.object_fraction.value[:-1])
+                    else:
+                        float(self.object_fraction.value)
+                except ValueError:
+                    raise cps.ValidationError("%s is not a floating point value"%
+                                              self.object_fraction.value,
+                                              self.object_fraction)
+            elif self.get_threshold_algorithm() == TM_ROBUST_BACKGROUND and \
+                 self.rb_custom_choice == RB_CUSTOM:
+                if self.lower_outlier_fraction.value + \
+                   self.upper_outlier_fraction.value >= 1:
+                    raise cps.ValidationError(
+                        ("The sum of the lower robust background outlier "
+                         "fraction (%f) and the upper fraction (%f) must "
+                         "be less than one.") % (
+                             self.lower_outlier_fraction.value,
+                             self.upper_outlier_fraction.value),
+                        self.upper_outlier_fraction)
+                
     def get_threshold_modifier(self):
         """The threshold algorithm modifier
         

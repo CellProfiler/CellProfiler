@@ -592,12 +592,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
         self.rb_custom_choice = cps.Choice(
             "Use default parameters?", [RB_DEFAULT, RB_CUSTOM],
             doc = """
-            <i>(Used only with the robust background method)</i><br>
-            This setting determines whether the robust background method
+            <i>(Used only with the %(TM_ROBUST_BACKGROUND)s method)</i><br>
+            This setting determines whether the %(TM_ROBUST_BACKGROUND)s method
             uses its default parameters or lets the user customize them.
             <br>
-            <ul><li>Choose <i>%(RB_DEFAULT)s</i> to use the default parameters
-            for robust background, discarding the 5%% highest and lowest
+            <ul><li>Choose <i>%(RB_DEFAULT)s</i> to use the default parameters,
+            discarding the 5%% highest and lowest
             intensity pixels and calculating the threshold as the mean plus
             two standard deviations of the remaining pixels.</li>
             <li>Choose <i>%(RB_CUSTOM)s</i> to fully customize the method.</li>
@@ -609,35 +609,35 @@ class Identify(cellprofiler.cpmodule.CPModule):
             minval = 0,
             maxval = 1,
             doc = """
-            <i>(Used only when customizing the robust background method)</i><br>
+            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND) method)</i><br>
             Discard this fraction of the pixels in the image starting with
             those of the lowest intensity.
-            """)
+            """%globals())
         
         self.upper_outlier_fraction = cps.Float(
             "Upper outlier fraction", .05,
             minval = 0,
             maxval = 1,
             doc = """
-            <i>(Used only when customizing the robust background method)</i><br>
+            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             Discard this fraction of the pixels in the image starting with
             those of the highest intensity.
-            """)
+            """%globals())
         
         self.averaging_method = cps.Choice(
             "Averaging method",
             [RB_MEAN, RB_MEDIAN, RB_MODE],
             doc = """
-            <i>(Used only when customizing the robust background method)</i><br>
+            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             This setting determines how the intensity midpoint is determined.
-            <br><ul><li><i>%(RB_MEAN)s</i>: use the mean of the pixels
+            <br><ul><li><i>%(RB_MEAN)s</i>: Use the mean of the pixels
             remaining after discarding the outliers. This is a good choice if
             the cell density is variable or high.</li>
-            <li><i>%(RB_MEDIAN)s</i>: use the median of the pixels. This is a
+            <li><i>%(RB_MEDIAN)s</i>: Use the median of the pixels. This is a
             good choice if, for all images, more than half of the pixels
             are in the background after removing outliers.</li>
-            <li><i>%(RB_MODE)s</i>: use the most frequently occurring value
-            from among the pixel values. The robust background method groups
+            <li><i>%(RB_MODE)s</i>: Use the most frequently occurring value
+            from among the pixel values. The %(TM_ROBUST_BACKGROUND)s method groups
             the intensities into bins (the number of bins is the square root
             of the number of pixels in the unmasked portion of the image) and
             chooses the intensity associated with the bin with the most pixels.
@@ -647,7 +647,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             "Variance method",
             [RB_SD, RB_MAD],
             doc="""
-            <i>(Used only when customizing the robust background method)</i><br>
+            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             Robust background adds a number of deviations (standard or MAD) to
             the average to get the final background. This setting chooses the
             method used to assess the variance in the pixels, after removing
@@ -659,7 +659,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         self.number_of_deviations = cps.Float(
             "# of deviations", 2,
             doc = """
-            <i>(Used only when customizing the robust background method)</i><br>
+            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             Robust background calculates the variance, multiplies it by the
             value given by this setting and adds it to the average. Adding
             several deviations raises the background value above the average,
@@ -669,7 +669,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             foreground pixels. It's possible to use a negative number 
             to lower the threshold if the averaging method picks a threshold
             that is within the range of foreground pixel intensities.
-            """)
+            """%globals())
             
         self.adaptive_window_method = cps.Choice(
             "Method to calculate adaptive window size",

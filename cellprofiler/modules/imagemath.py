@@ -386,7 +386,7 @@ class ImageMath(cpm.CPModule):
         columns = (len(pixel_data) + 1) / 2
         figure.set_subplots((columns, 2))
         for i in range(len(pixel_data)):
-            show = figure.subplot_imshow if pixel_data[i].ndim == 3 else figure.subplot_imshow_bw
+            show = figure.subplot_imshow if pixel_data[i].ndim == 3 else (figure.subplot_imshow_bw if pixel_data.dtype.kind == 'b' else subplot_imshow_grayscale)
             show(i % columns, int(i / columns),
                  pixel_data[i],
                  title=display_names[i],

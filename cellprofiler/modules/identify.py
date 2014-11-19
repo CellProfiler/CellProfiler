@@ -609,7 +609,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             minval = 0,
             maxval = 1,
             doc = """
-            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND) method)</i><br>
+            <i>(Used only when customizing the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             Discard this fraction of the pixels in the image starting with
             those of the lowest intensity.
             """%globals())

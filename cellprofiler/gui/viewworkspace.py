@@ -23,7 +23,7 @@ from wx.lib.scrolledpanel import ScrolledPanel
 from cellprofiler.gui.cpfigure import \
      CPFigureFrame, CPImageArtist, get_matplotlib_interpolation_preference, \
      CPLD_LABELS, CPLD_NAME, CPLD_OUTLINE_COLOR, CPLDM_OUTLINES, \
-     CPLD_MODE, CPLD_LINE_WIDTH, CPLD_ALPHA_COLORMAP, CPLD_ALPHA_VALUE
+     CPLD_MODE, CPLD_LINE_WIDTH, CPLD_ALPHA_COLORMAP, CPLD_ALPHA_VALUE, CPLD_SHOW
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -386,7 +386,8 @@ class ViewWorkspace(object):
                 CPLD_MODE: CPLDM_OUTLINES,
                 CPLD_ALPHA_VALUE: .25,
                 CPLD_ALPHA_COLORMAP: alpha_colormap,
-                CPLD_LINE_WIDTH: 1})
+                CPLD_LINE_WIDTH: 1,
+                CPLD_SHOW: True})
             
         if size_mismatch:
             for d in cplabels:
@@ -428,6 +429,8 @@ class ViewWorkspace(object):
         else:
             self.image.image = image
             old_cplabels = self.image.kwargs["cplabels"]
+            for cplabel in old_cplabels:
+                cplabel[CPLD_SHOW] = False
             for cplabel in cplabels:
                 name = cplabel[CPLD_NAME]
                 matches = filter((lambda x: x[CPLD_NAME] == name), old_cplabels)
@@ -435,6 +438,8 @@ class ViewWorkspace(object):
                     old_cplabels.append(cplabel)
                 else:
                     matches[0][CPLD_LABELS] = cplabel[CPLD_LABELS]
+                    matches[0][CPLD_OUTLINE_COLOR] = cplabel[CPLD_OUTLINE_COLOR]
+                    matches[0][CPLD_SHOW] = True
             self.image.kwargs["cplabels"] = old_cplabels
             self.frame.subplot_params[(0, 0)]['cplabels'] = old_cplabels
             self.frame.update_line_labels(self.axes, self.image.kwargs)

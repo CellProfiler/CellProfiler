@@ -113,6 +113,8 @@ CPLD_LINE_WIDTH = "line_width"
 CPLD_ALPHA_COLORMAP = "alpha_colormap"
 """subplot_imshow cplabels dictionary key: alpha value to use in overlay mode"""
 CPLD_ALPHA_VALUE = "alpha_value"
+"""subplot_imshow cplabels dictionary key: show (TRUE) or hide (False)"""
+CPLD_SHOW = "show"
 
 def wraparound(list):
     while True:
@@ -1232,6 +1234,8 @@ class CPFigureFrame(wx.Frame):
         for outline in outlines:
             outline.remove()
         for cplabels in kwargs['cplabels']:
+            if not cplabels.get(CPLD_SHOW, True):
+                continue
             if cplabels[CPLD_MODE] == CPLDM_LINES:
                 subplot.add_collection(CPOutlineArtist(
                     cplabels[CPLD_NAME],
@@ -1402,7 +1406,8 @@ class CPFigureFrame(wx.Frame):
         # add the segmentations
         #
         for cplabel in kwargs['cplabels']:
-            if cplabel[CPLD_MODE] == CPLDM_NONE:
+            if cplabel[CPLD_MODE] == CPLDM_NONE or\
+               not cplabel.get(CPLD_SHOW, True):
                 continue
             loffset = 0
             ltotal = sum([np.max(labels) for labels in cplabel[CPLD_LABELS]])

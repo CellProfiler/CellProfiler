@@ -26,7 +26,7 @@
 
 static void to_stdout(const char *text)
 {
-     PySys_WriteStdout(text);     
+     PySys_WriteStdout("%s", text);     
 }
 
 static PyObject *

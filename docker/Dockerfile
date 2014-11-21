@@ -3,7 +3,7 @@ FROM centos:centos6
 # See cellprofiler.org/linux.shtml
 
 COPY cellprofiler.repo /etc/yum.repos.d/
-RUN yum install -y cellprofiler
+RUN yum install -y cellprofiler-2.1.1
 
 RUN useradd cellprofiler
 USER cellprofiler

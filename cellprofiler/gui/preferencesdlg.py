@@ -36,6 +36,32 @@ class IntegerPreference(object):
         self.minval = minval
         self.maxval = maxval
 
+class ClassPathValidator(wx.PyValidator):
+    def __init__(self):
+        wx.PyValidator.__init__(self)
+        
+    def Validate(self, win):
+        ctrl = self.GetWindow()
+        for c in ctrl.Value:
+            if ord(c) > 254:
+                wx.MessageBox(
+                    "Due to technical limitations, the path to the ImageJ plugins "
+                    "folder cannot contain the character, \"%s\"." % c,
+                    caption = "Unsupported character in path name",
+                    style = wx.OK | wx.ICON_ERROR, parent = win)
+                ctrl.SetFocus()
+                return False
+        return True
+    
+    def TransferToWindow(self):
+        return True
+    
+    def TransferFromWindow(self):
+        return True
+    
+    def Clone(self):
+        return ClassPathValidator()
+            
 class PreferencesDlg(wx.Dialog):
     '''Display a dialog for setting preferences
     
@@ -44,9 +70,11 @@ class PreferencesDlg(wx.Dialog):
     '''
     def __init__(self, parent=None, ID=-1, title="CellProfiler preferences",
                  size=wx.DefaultSize, pos=wx.DefaultPosition, 
-                 style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.THICK_FRAME,
+                 style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | 
+                 wx.THICK_FRAME,
                  name=wx.DialogNameStr):
         wx.Dialog.__init__(self, parent, ID, title, pos, size, style,name)
+        self.SetExtraStyle(wx.WS_EX_VALIDATE_RECURSIVELY)
         p = self.get_preferences()
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         scrollpanel_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -90,7 +118,12 @@ class PreferencesDlg(wx.Dialog):
                                   max = maxval,
                                   initial = getter())
             else:
-                ctl = wx.TextCtrl(scrollpanel, -1, getter())
+                if getter == cpprefs.get_ij_plugin_directory:
+                    validator = ClassPathValidator()
+                else:
+                    validator = wx.DefaultValidator
+                ctl = wx.TextCtrl(scrollpanel, -1, getter(), 
+                                  validator = validator)
                 min_height = ctl.GetMinHeight()
                 min_width  = ctl.GetTextExtent("Make sure the window can display this")[0]
                 ctl.SetMinSize((min_width, min_height))

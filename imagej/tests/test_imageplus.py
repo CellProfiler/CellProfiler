@@ -21,12 +21,17 @@ import imagej.imageplus as I
 
 
 class TestImagePlus(unittest.TestCase):
-    def setUp(self):
-        from cellprofiler.modules.tests import example_images_directory
-        self.root_dir = example_images_directory()
+    @classmethod
+    def setUpClass(cls):
+        from cellprofiler.modules.tests \
+             import example_images_directory, maybe_download_sbs
+        maybe_download_sbs()
+        cls.root_dir = example_images_directory()
+        
         J.attach()
         
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         J.detach()
         
     def test_01_01_load_imageplus(self):

@@ -36,7 +36,8 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.identify import C_COUNT, M_LOCATION_CENTER_X
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
-from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.tests import\
+     example_images_directory, maybe_download_example_image
 from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 
 cpprefs.set_headless()
@@ -322,6 +323,10 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
         
+        maybe_download_example_image(["ExampleSBSImages"],
+                                     "Channel1-01-A-01.tif")
+        maybe_download_example_image(["ExampleHT29"],
+                                     "AS_09125_050116030001_D03f00d0.tif")
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         output_dir = os.path.join(example_images_directory(), "ExampleHT29")
         cpprefs.set_default_image_directory(input_dir)

@@ -11,17 +11,22 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-
+import logging
+logger = logging.getLogger(__name__)
 import base64
 import os
 import unittest
+from urllib import urlretrieve
 import tempfile
 
 import scipy.io.matlab.mio
 from cellprofiler.preferences import set_headless
 set_headless()
 
+__temp_example_images_folder = None
+
 def example_images_directory():
+    global __temp_example_images_folder
     if os.environ.has_key('CP_EXAMPLEIMAGES'):
         return os.environ['CP_EXAMPLEIMAGES']
     fyle = os.path.abspath(__file__)
@@ -34,9 +39,28 @@ def example_images_directory():
         path = os.path.join(d,imagedir)
         if os.path.exists(path):
             return path
-    raise Exception("Can't find example images; please set $CP_EXAMPLEIMAGES.")
+    if __temp_example_images_folder is None:
+        __temp_example_images_folder = tempfile.mkdtemp(
+            prefix="cp_exampleimages")
+        logger.warn("Creating temporary folder %s for example images" %
+                    __temp_example_images_folder)
+    return __temp_example_images_folder
 
+def svn_mirror_url():
+    '''Return the URL for the SVN mirror
+    
+    Use the value of the environment variable, "CP_SVNMIRROR_URL" with
+    a default of http://cellprofiler.org/svnmirror.
+    '''
+    return os.environ.get("CP_SVNMIRROR_URL", 
+                          "http://cellprofiler.org/svnmirror")
+
+def example_images_url():
+    return svn_mirror_url() + os.path.altsep + "ExampleImages"
+
+__temp_test_images_folder = None
 def testimages_directory():
+    global __temp_test_images_folder
     if os.environ.has_key('CP_TESTIMAGES'):
         return os.environ['CP_TESTIMAGES']
     fyle = os.path.abspath(__file__)
@@ -48,7 +72,15 @@ def testimages_directory():
     path = os.path.join(d, "TestImages")
     if os.path.exists(path):
         return path
-    raise Exception("Can't find directory for test images; please set $CP_TESTIMAGES.")
+    if __temp_test_images_folder is None:
+        __temp_test_images_folder = tempfile.mkdtemp(
+            prefix="cp_testimages")
+        logger.warn("Creating temporary folder %s for test images" %
+                    __temp_test_images_folder)
+    return __temp_test_images_folder
+
+def testimages_url():
+    return svn_mirror_url() + os.path.altsep + "TestImages"
     
 class testExampleImagesDirectory(unittest.TestCase):
     def test_00_00_got_something(self):
@@ -86,6 +118,76 @@ def load_pipeline(test_case, encoded_data):
     pipeline.create_from_handles(handles)
     return pipeline
 
+def maybe_download_example_image(folders, file_name):
+    '''Download the given ExampleImages file if not in the directory
+    
+    folders - sequence of subfolders starting at ExampleImages
+    file_name - name of file to fetch
+    
+    Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
+    
+    Returns the local path to the file which is often useful.
+    '''
+    local_path = os.path.join(*tuple([
+        example_images_directory()] + folders + [file_name]))
+    if not os.path.exists(local_path):
+        directory = os.path.join(*tuple([
+            example_images_directory()] + folders))
+        if not os.path.isdir(directory):
+            os.makedirs(directory)
+        url = example_images_url() + os.path.altsep + \
+            os.path.altsep.join(folders) + os.path.altsep + file_name
+        urlretrieve(url, local_path)
+    return local_path
+        
+def maybe_download_example_images(folders, file_names):
+    '''Download multiple files to the example images directory
+    
+    folders - sequence of subfolders of ExampleImages
+    file_names - sequence of file names to be fetched from the single directory
+                described by the list of folders
+    
+    Returns the local directory containing the images.
+    '''
+    for file_name in file_names:
+        maybe_download_example_image(folders, file_name)
+    return os.path.join(example_images_directory(), *folders)
+        
+def maybe_download_sbs():
+    '''Download the SBS dataset to its expected location if necessary'''
+    files = ["1049_Metadata.csv", "Channel1ILLUM.mat", "Channel2ILLUM.mat",
+             "ExampleSBS.cppipe", "ExampleSBSIllumination.cppipe"]
+    for channel in 1,2:
+        idx = 1
+        for row in "ABCDEFGH":
+            for col in range(1, 13):
+                files.append("Channel%d-%02d-%s-%02d.tif" % (
+                    channel, idx, row, col))
+                idx += 1
+    maybe_download_example_images(["ExampleSBSImages"], files)
+    
+def maybe_download_fly():
+    '''Download the fly example directory'''
+    maybe_download_example_images(
+        ["ExampleFlyImages"],
+        ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF", 
+         "01_POS076_D.TIF", "01_POS076_F.TIF", "01_POS076_R.TIF",
+         "01_POS218_D.TIF", "01_POS218_F.TIF", "01_POS218_R.TIF",
+         "ExampleFly.cppipe", "ExampleFly.csv", "ExampleFlyURL.cppipe"])
+    
+def maybe_download_test_image( file_name):
+    '''Download the given TestImages file if not in the directory
+    
+    file_name - name of file to fetch
+    
+    Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
+    '''
+    local_path = os.path.join(testimages_directory(), file_name)
+    if not os.path.exists(local_path):
+        url = testimages_url() + os.path.altsep + file_name
+        urlretrieve(url, local_path)
+    return local_path
+    
 def read_example_image(folder, file_name, **kwargs):
     '''Read an example image from one of the example image directories
     
@@ -97,6 +199,7 @@ def read_example_image(folder, file_name, **kwargs):
     '''
     from bioformats import load_image
     path = os.path.join(example_images_directory(), folder, file_name)
+    maybe_download_example_image([folder], file_name)
     return load_image(path, **kwargs)
 
 @unittest.skip

@@ -35,12 +35,18 @@ import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.loadimages import pathname2url
-from cellprofiler.modules.tests import example_images_directory, testimages_directory
+from cellprofiler.modules.tests import \
+     example_images_directory, testimages_directory, maybe_download_sbs,\
+     maybe_download_example_image
 from bioformats.formatreader import clear_image_reader_cache
 
 OBJECTS_NAME = "objects"
 
 class TestLoadData(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        maybe_download_sbs()
+        
     def make_pipeline(self, csv_text, name = None):
         if name is None:
             handle, name = tempfile.mkstemp(".csv")
@@ -719,10 +725,11 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             
     def test_10_01_scaling(self):
         '''Test loading an image scaled and unscaled'''
-        d = os.path.join(example_images_directory(), "ExampleSpecklesImages")
+        folder = "ExampleSpecklesImages"
         file_name = "1-162hrh2ax2.tif"
-        csv_text = ("Image_FileName_MyFile,Image_PathName_MyFile\n"
-                    "%s,%s\n" % (file_name, d))
+        path = maybe_download_example_image([folder], file_name)
+        csv_text = ("Image_PathName_MyFile,Image_FileName_MyFile\n"
+                    "%s,%s\n" % os.path.split(path))
         c0_image = []
         for rescale in (False, True):
             pipeline, module, filename = self.make_pipeline(csv_text)

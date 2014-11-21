@@ -33,7 +33,8 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E 
 from cellprofiler.modules import identifyprimaryobjects
-from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.tests import \
+     example_images_directory, maybe_download_sbs
 
 OBJECTS_NAME = "MyObjects"
 IMG_MEAS = "my_image_measurement"

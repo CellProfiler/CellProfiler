@@ -404,6 +404,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        T.maybe_download_sbs()
         for windows_mode in ((False, True) if sys.platform.startswith("win")
                              else (False,)):
             pipeline = cpp.Pipeline()

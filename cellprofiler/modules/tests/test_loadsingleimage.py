@@ -34,7 +34,9 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.loadsingleimage as L
 import cellprofiler.modules.loadimages as LI
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
-from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.tests import \
+     example_images_directory, maybe_download_example_image, \
+     maybe_download_example_images, maybe_download_sbs
 from cellprofiler.modules.tests.test_loadimages import ConvtesterMixin
 
 
@@ -336,9 +338,11 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         return workspace, module
     
     def test_02_01_load_one(self):
-        path = os.path.join(example_images_directory(), "ExampleSpecklesImages")
-        cpprefs.set_default_image_directory(path)
+        folder = "ExampleSpecklesImages"
         file_name = "1-162hrh2ax2.tif"
+        path = os.path.dirname(
+            maybe_download_example_image([folder], file_name))
+        cpprefs.set_default_image_directory(path)
         workspace, module = self.make_workspace([file_name])
         assert isinstance(module, L.LoadSingleImage)
         module.prepare_run(workspace)
@@ -368,9 +372,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         
     def test_02_02_scale(self):
         '''Load an image twice, as scaled and unscaled'''
-        path = os.path.join(example_images_directory(), "ExampleSpecklesImages")
-        cpprefs.set_default_image_directory(path)
+        folder = "ExampleSpecklesImages"
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
+        path = maybe_download_example_images([folder], file_names)
+        cpprefs.set_default_image_directory(path)
         workspace, module = self.make_workspace(file_names)
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         module.file_settings[0].rescale.value = False
@@ -387,7 +392,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         # If LoadSingleImage appears first, pathname data does not show
         # up in the measurements.
         #
-        path = os.path.join(example_images_directory(), "ExampleSBSImages")
+        maybe_download_sbs()
+        folder = "ExampleSBSImages"
+        path = os.path.join(example_images_directory(), folder)
         filename = "Channel1-01-A-01.tif"
         pipeline = cpp.Pipeline()
         lsi = L.LoadSingleImage()
@@ -678,6 +685,7 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
     Name the outlines:NucleiOutlines
     Rescale intensities?:No
 """
+        maybe_download_sbs()
         directory = os.path.join(example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
@@ -752,6 +760,7 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
     Name the outlines:NucleiOutlines
     Rescale intensities?:No
 """
+        maybe_download_sbs()
         directory = os.path.join(example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
@@ -817,6 +826,7 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
     Name the outlines:NucleiOutlines
     Rescale intensities?:Yes
 """
+        maybe_download_sbs()
         directory = os.path.join(example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
@@ -884,6 +894,7 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
     Name the outlines:NucleiOutlines
     Rescale intensities?:No
 """
+        maybe_download_sbs()
         directory = os.path.join(example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)

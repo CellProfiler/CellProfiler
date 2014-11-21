@@ -37,7 +37,10 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as measurements
 import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
-from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.tests import \
+     example_images_directory, maybe_download_example_images, \
+     maybe_download_sbs, maybe_download_test_image, maybe_download_fly,\
+     example_images_url
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 import cellprofiler.preferences as cpprefs
 from bioformats.formatreader import clear_image_reader_cache
@@ -136,6 +139,10 @@ class ConvtesterMixin:
                 np.testing.assert_array_equal(v1, v2)
 
 class testLoadImages(unittest.TestCase, ConvtesterMixin):
+    @classmethod
+    def setUpClass(cls):
+        maybe_download_sbs()
+        
     def setUp(self):
         self.directory = None
         
@@ -1430,6 +1437,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         '''Load a 5-channel image'''
         
         path = T.testimages_directory()
+        file_name = "5channel.tif"
+        maybe_download_test_image(file_name)
         module = LI.LoadImages()
         module.module_num = 1
         module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
@@ -1437,7 +1446,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = path
         module.images[0].channels[0].image_name.value = IMAGE_NAME
-        module.images[0].common_text.value = "5channel.tif"
+        module.images[0].common_text.value = file_name
         
         pipeline = P.Pipeline()
         def callback(caller, event):
@@ -1468,10 +1477,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
 
     def test_05_09_load_C01(self):
         """IMG-457: Test loading of a .c01 file"""
+        file_name = "icd002235_090127090001_a01f00d1.c01"
+        maybe_download_test_image(file_name)
         lip = LI.LoadImagesImageProvider(
             "nikon", 
             T.testimages_directory(),
-            "icd002235_090127090001_a01f00d1.c01",
+            file_name,
             True)
         image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (512,512))
@@ -2281,10 +2292,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         if LI.FF_AVI_MOVIES not in LI.FF:
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
+        file_name = 'DrosophilaEmbryo_GFPHistone.avi'
         avi_path = T.testimages_directory()
+        maybe_download_test_image(file_name)
         module = LI.LoadImages()
         module.file_types.value = LI.FF_AVI_MOVIES
-        module.images[0].common_text.value = 'DrosophilaEmbryo_GFPHistone.avi'
+        module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = 'MyImage'
         module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
         module.location.custom_path = avi_path
@@ -2374,6 +2387,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
     def test_09_02_01_load_2_stk(self):
         # Regression test of bug 327
         path = T.testimages_directory()
+        maybe_download_test_image("C0.stk")
+        maybe_download_test_image("C1.stk")
         files = [os.path.join(path, x) for x in ("C0.stk", "C1.stk")]
         if not all([os.path.exists(f) for f in files]):
             sys.stderr.write("Warning, could not find test files for STK test: %s\n" % str(files))
@@ -2403,9 +2418,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
     def test_09_02_02_load_stk(self):
         # Regression test of issue #783 - color STK.
         path = T.testimages_directory()
-        if not os.path.exists(os.path.join(path, "C1.stk")):
-            sys.stderr.write("Warning, could not find C1.stk test file")
-            return
+        maybe_download_test_image("C0.stk")
+        maybe_download_test_image("C1.stk")
         module = LI.LoadImages()
         module.file_types.value = LI.FF_STK_MOVIES
         module.images[0].common_text.value = 'C0.stk'
@@ -2429,10 +2443,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(tuple(pixel_data.shape), (800, 800, 3))
     
     def test_09_03_load_flex(self):
+        file_name = 'RLM1 SSN3 300308 008015000.flex'
+        maybe_download_test_image(file_name)
         flex_path = T.testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_OTHER_MOVIES
-        module.images[0].common_text.value = 'RLM1 SSN3 300308 008015000.flex'
+        module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = 'Green'
         module.images[0].channels[0].channel_number.value = "2"
         module.add_channel(module.images[0])
@@ -2479,11 +2495,13 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         if LI.FF_AVI_MOVIES not in LI.FF:
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
+        file_name = 'DrosophilaEmbryo_GFPHistone.avi'
+        maybe_download_test_image(file_name)
         avi_path = T.testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_AVI_MOVIES
         image = module.images[0]
-        image.common_text.value = 'DrosophilaEmbryo_GFPHistone.avi'
+        image.common_text.value = file_name
         image.wants_movie_frame_grouping.value = True
         image.interleaving.value = LI.I_INTERLEAVED
         image.channels_per_group.value = 5
@@ -2547,11 +2565,13 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         if LI.FF_AVI_MOVIES not in LI.FF:
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
+        file_name = 'DrosophilaEmbryo_GFPHistone.avi'
+        maybe_download_test_image(file_name)
         avi_path = T.testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_AVI_MOVIES
         image = module.images[0]
-        image.common_text.value = 'DrosophilaEmbryo_GFPHistone.avi'
+        image.common_text.value = file_name
         image.wants_movie_frame_grouping.value = True
         image.interleaving.value = LI.I_SEPARATED
         image.channels_per_group.value = 5
@@ -2609,10 +2629,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
     def test_09_06_load_flex_interleaved(self):
         # needs better test case file
+        file_name = 'RLM1 SSN3 300308 008015000.flex'
+        maybe_download_test_image(file_name)
         flex_path = T.testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_OTHER_MOVIES
-        module.images[0].common_text.value = 'RLM1 SSN3 300308 008015000.flex'
+        module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = 'Green'
         module.images[0].channels[0].channel_number.value = "2"
         module.add_channel(module.images[0])
@@ -2664,9 +2686,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
     def test_09_07_load_flex_separated(self):
         # Needs better test case file
         flex_path = T.testimages_directory()
+        file_name = 'RLM1 SSN3 300308 008015000.flex'
+        maybe_download_test_image(file_name)
         module = LI.LoadImages()
         module.file_types.value = LI.FF_OTHER_MOVIES
-        module.images[0].common_text.value = 'RLM1 SSN3 300308 008015000.flex'
+        module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = 'Green'
         module.images[0].channels[0].channel_number.value = "2"
         module.add_channel(module.images[0])
@@ -2993,6 +3017,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         orig_url_path = LI.url2pathname(orig_url)
             
         file_name = "DrosophilaEmbryo_GFPHistone.avi"
+        maybe_download_test_image(file_name)
         target_url = LI.pathname2url(os.path.join(target_path, file_name))
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
@@ -3048,6 +3073,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         orig_url_path = LI.url2pathname(orig_url)
             
         file_name = "RLM1 SSN3 300308 008015000.flex"
+        maybe_download_test_image(file_name)
         target_url = LI.pathname2url(os.path.join(orig_path, file_name))
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
@@ -3262,7 +3288,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         #
         image_provider = LI.LoadImagesImageProviderURL(
             IMAGE_NAME, 
-            "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/Channel1ILLUM.mat?r11710")
+            example_images_url() + "/ExampleSBSImages/Channel1ILLUM.mat?r11710")
         pathname = image_provider.get_full_name()
         image = image_provider.provide_image(None)
         self.assertEqual(tuple(image.pixel_data.shape), (640, 640))
@@ -3355,6 +3381,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
+        maybe_download_fly()
         directory = os.path.join(example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
@@ -3428,6 +3455,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
+        maybe_download_fly()
         directory = os.path.join(example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
@@ -3501,6 +3529,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
+        maybe_download_fly()
         directory = os.path.join(example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
@@ -3574,6 +3603,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
+        maybe_download_fly()
         directory = os.path.join(example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
@@ -3647,6 +3677,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
+        maybe_download_fly()
         directory = os.path.join(example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
@@ -3720,6 +3751,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
+        maybe_download_fly()
         directory = os.path.join(example_images_directory(),
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)

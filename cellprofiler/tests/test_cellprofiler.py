@@ -15,7 +15,8 @@ from cStringIO import StringIO
 import shutil
 import sys
 import tempfile
-from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.tests import \
+     example_images_directory, maybe_download_example_images
 
 import CellProfiler
 
@@ -65,9 +66,12 @@ class TestCellProfiler(unittest.TestCase):
             #
             # Run with a .cp file
             #
-            input_directory = os.path.join(
-                example_images_directory(),
-                "ExampleHT29")
+            input_directory = maybe_download_example_images(
+                ["ExampleHT29"],
+                ['AS_09125_050116030001_D03f00d0.tif', 
+                 'AS_09125_050116030001_D03f00d1.tif', 
+                 'AS_09125_050116030001_D03f00d2.tif', 
+                 'ExampleHT29.cp', 'k27IllumCorrControlv1.mat'])
             pipeline_file = os.path.join(input_directory, "ExampleHT29.cp")
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")

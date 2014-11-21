@@ -44,7 +44,7 @@ class TestImagej2(unittest.TestCase):
         outputs - a dictionary of keys to be filled with the command's outputs
         '''
         module_index = ij2.get_module_service(self.context).getIndex()
-        module_infos = module_index.getS('imagej.command.CommandInfo')
+        module_infos = module_index.getS('org.scijava.command.CommandInfo')
         module_info = filter(lambda x:x.getClassName() == command_class, 
                              module_infos)[0]
         svc = ij2.get_command_service(self.context)
@@ -57,7 +57,7 @@ class TestImagej2(unittest.TestCase):
         
     def test_01_01_get_service(self):
         self.assertIsNotNone(
-            self.context.getService("imagej.data.DatasetService"))
+            self.context.getService("net.imagej.DatasetService"))
         
     def test_02_01_get_module_service(self):
         self.assertIsNotNone(ij2.get_module_service(self.context))
@@ -66,16 +66,16 @@ class TestImagej2(unittest.TestCase):
         svc = ij2.get_module_service(self.context)
         module_infos = svc.getModules()
         self.assertTrue(J.is_instance_of(module_infos[0].o,
-                                         "imagej/module/ModuleInfo"))
+                                         "org/scijava/module/ModuleInfo"))
         
     def test_02_02_02_get_module_index(self):
         svc = ij2.get_module_service(self.context)
         module_index = svc.getIndex()
         self.assertTrue(any([
-            x.getClassName() == 'imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues'
+            x.getClassName() == 'net.imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues'
             for x in module_index]))
         self.assertGreaterEqual(
-            len(module_index.getS('imagej.command.CommandInfo')), 1)
+            len(module_index.getS('org.scijava.command.CommandInfo')), 1)
         
     def test_02_03_module_info(self):
         svc = ij2.get_module_service(self.context)
@@ -131,7 +131,7 @@ class TestImagej2(unittest.TestCase):
         module_infos = svc.getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
+               'net.imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
                 module = module_info.createModule()
                 module.getInfo()
                 module.getInput('stdDev')
@@ -149,7 +149,7 @@ class TestImagej2(unittest.TestCase):
         module_infos = svc.getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
+               'net.imagej.plugins.commands.assign.AddSpecifiedNoiseToDataValues':
                 menu_path = module_info.getMenuPath()
                 for item in J.iterate_collection(menu_path):
                     menu_entry = ij2.wrap_menu_entry(item)
@@ -175,7 +175,7 @@ class TestImagej2(unittest.TestCase):
         module_infos = ij2.get_module_service(self.context).getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'imagej.plugins.commands.app.AboutImageJ':
+               'net.imagej.app.AboutImageJ':
                 d = J.get_map_wrapper(J.make_instance('java/util/HashMap', '()V'))
                 future = svc.run(module_info.o, True, d.o)
                 module = future.get()
@@ -314,7 +314,7 @@ class TestImagej2(unittest.TestCase):
         display = display_svc.createDisplay("Foo", ds)
         d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         overlay = J.run_script(
-            """var o = new Packages.imagej.data.overlay.RectangleOverlay(context.getContext());
+            """var o = new Packages.net.imagej.overlay.RectangleOverlay(context.getContext());
                o.setOrigin(5, 0);
                o.setOrigin(3, 1);
                o.setExtent(6, 0);
@@ -447,7 +447,7 @@ class TestImagej2(unittest.TestCase):
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = svc.createDisplay("Foo", ds)
         outputs = dict(display=None)
-        self.run_command("imagej.plugins.commands.rotate.Rotate90DegreesLeft",
+        self.run_command("net.imagej.plugins.commands.rotate.Rotate90DegreesLeft",
                          dict(display=display),
                          outputs)
         display_out = ij2.wrap_display(outputs["display"])
@@ -469,7 +469,7 @@ class TestImagej2(unittest.TestCase):
         ij2.get_overlay_service(self.context).addOverlays(
             display.o, J.make_list([overlay]))
         ij2.select_overlay(display.o, overlay)
-        self.run_command("imagej.plugins.commands.imglib.CropImage",
+        self.run_command("net.imagej.plugins.commands.imglib.CropImage",
                          dict(display=display), {})
         dataset = ij2.wrap_dataset(display.getActiveView().getData())
         image_out = dataset.get_pixel_data()

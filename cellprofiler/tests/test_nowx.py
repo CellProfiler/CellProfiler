@@ -15,7 +15,8 @@ Website: http://www.cellprofiler.org
 import tempfile
 import traceback
 import unittest
-from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.tests import \
+     example_images_directory, maybe_download_sbs, maybe_download_fly
 
 import __builtin__
 
@@ -68,9 +69,10 @@ class TestNoWX(unittest.TestCase):
     def test_01_05_load_pipeline(self):
         import cellprofiler.pipeline as cpp
         import os
+        maybe_download_sbs()
         pipeline_file = os.path.join(self.example_dir(), 
-                                     "ExampleSBSImages", "ExampleSBS.cp")
-        self.assertTrue(os.path.isfile(pipeline_file), "No ExampleSBS.cp file")
+                                     "ExampleSBSImages", "ExampleSBS.cppipe")
+        self.assertTrue(os.path.isfile(pipeline_file), "No ExampleSBS.cppipe file")
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
@@ -81,7 +83,9 @@ class TestNoWX(unittest.TestCase):
         import cellprofiler.pipeline as cpp
         import cellprofiler.cpmodule as cpm
         import os
-        from cellprofiler.preferences import set_default_image_directory, set_default_output_directory
+        from cellprofiler.preferences import \
+             set_default_image_directory, set_default_output_directory
+        maybe_download_fly()
         example_fly_dir = os.path.join(self.example_dir(), 
                                        "ExampleFlyImages")
         set_default_image_directory(example_fly_dir)

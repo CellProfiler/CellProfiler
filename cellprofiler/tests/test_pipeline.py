@@ -40,7 +40,8 @@ import cellprofiler.modules
 import cellprofiler.modules.loadimages as LI
 from cellprofiler.modules.injectimage import InjectImage
 
-from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.tests import \
+     example_images_directory, maybe_download_fly
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
 
 IMAGE_NAME = "myimage"
@@ -884,18 +885,11 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         """
         Profile ExampleFlyImages pipeline
 
-        Dependencies:
-        User must have ExampleImages on their machine,
-        in a location which can be found by example_images_directory().
-        This directory should contain the ExampleFlyImages direcory.
         """
+        maybe_download_fly()
         example_dir = example_images_directory()
-        if(not example_dir):
-            import warnings
-            warnings.warn('example_images_directory not found, skipping profiling of ExampleAllModulesPipeline')
-            return
         pipeline_dir = os.path.join(example_dir, 'ExampleFlyImages')
-        pipeline_filename = os.path.join(pipeline_dir, 'ExampleFly.cp')
+        pipeline_filename = os.path.join(pipeline_dir, 'ExampleFly.cppipe')
 
         #Might be better to write these paths into the pipeline
         old_image_dir = cpprefs.get_default_image_directory()

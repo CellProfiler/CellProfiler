@@ -23,16 +23,17 @@ import imagej.imageprocessor as IP
 
 class TestImageProcessor(unittest.TestCase):
     def setUp(self):
-        from cellprofiler.modules.tests import example_images_directory
-        self.root_dir = example_images_directory()
         J.attach()
         
     def tearDown(self):
         J.detach()
         
     def test_01_01_get_image(self):
-        file_name = os.path.join(self.root_dir, 
-                                 "ExampleCometAssay", "CometTails.tif")
+        from cellprofiler.modules.tests import maybe_download_example_image
+        
+        folder = "ExampleCometAssay"
+        fn = "CometTails.tif"
+        file_name = maybe_download_example_image([folder], fn)
         imageplus_obj = I.load_imageplus(file_name)
         pixels = IP.get_image(imageplus_obj.getProcessor())
         pass

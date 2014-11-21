@@ -18,6 +18,7 @@ import javabridge
 import nose
 import nose.plugins
 import os
+import tempfile
 import sys
 
 from cellprofiler.utilities.cpjvm import \
@@ -56,7 +57,26 @@ class CPShutdownPlugin(nose.plugins.Plugin):
             return result
         patch_start_vm.func_globals["start_vm"] = javabridge.start_vm
         javabridge.start_vm = patch_start_vm
+        if "CP_EXAMPLEIMAGES" in os.environ:
+            self.temp_exampleimages = None
+        else:
+            self.temp_exampleimages = tempfile.mkdtemp(prefix="cpexampleimages")
+
+        if "CP_TEMPIMAGES" in os.environ:
+            self.temp_images = None
+        else:
+            self.temp_images = tempfile.mkdtemp(prefix="cptempimages")
+            
     def finalize(self, result):
+        try:
+            if self.temp_images is not None:
+                import shutil
+                shutil.rmtree(self.temp_images)
+            if self.temp_exampleimages is not None:
+                import shutil
+                shutil.rmtree(self.temp_exampleimages)
+        except:
+            pass
         try:
             javabridge.deactivate_awt()
             import imagej.imagej2

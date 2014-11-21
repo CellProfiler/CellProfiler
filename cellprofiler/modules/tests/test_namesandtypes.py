@@ -25,7 +25,10 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import javabridge as J
-from cellprofiler.modules.tests import example_images_directory, testimages_directory
+from cellprofiler.modules.tests import \
+     example_images_directory, testimages_directory, \
+     maybe_download_example_image, maybe_download_example_images,\
+     maybe_download_test_image
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.loadimages import \
      C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
@@ -1196,6 +1199,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         # Once imagesets are pickled in the M_IMAGE_SET measurement,
         # their path names are smoewhat inaccessible, yet need conversion.
         #
+        folders = ["ExampleAllModulesPipeline", "Images"]
+        aoi = "all_ones_image.tif"
+        ooi = "one_object_00_A.tif"
+        maybe_download_example_images(folders, [aoi, ooi])
         m = cpmeas.Measurements()
         pipeline = cpp.Pipeline()
         pipeline.init_modules()
@@ -1212,12 +1219,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         # Add two files
         #
         current_path = os.path.abspath(os.curdir)
-        target_path = os.path.join(example_images_directory(), 
-                                   "ExampleAllModulesPipeline",
-                                   "Images")
-        img_url = pathname2url(os.path.join(current_path, "all_ones_image.tif"))
-        objects_url = pathname2url(os.path.join(current_path,
-                                                "one_object_00_A.tif"))
+        target_path = os.path.join(example_images_directory(), *folders)
+        img_url = pathname2url(os.path.join(current_path, aoi))
+        objects_url = pathname2url(os.path.join(current_path, ooi))
         pipeline.add_urls([img_url, objects_url])
         workspace.file_list.add_files_to_filelist([img_url, objects_url])
         #
@@ -1414,9 +1418,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         return workspace
         
     def test_03_01_load_color(self):
-        path = os.path.join(example_images_directory(), 
-                            "ExampleColorToGray",
-                            "AS_09125_050116030001_D03f00_color.tif")
+        path = maybe_download_example_image(
+            ["ExampleColorToGray"], "AS_09125_050116030001_D03f00_color.tif")
         workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -1431,9 +1434,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         
         
     def test_03_02_load_monochrome_as_color(self):
-        path = os.path.join(example_images_directory(),
-                            "ExampleGrayToColor",
-                            "AS_09125_050116030001_D03f00d0.tif")
+        path = self.get_monochrome_image_path()
         workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -1444,8 +1445,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         np.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 2])
         
     def test_03_03_load_color_frame(self):
-        path = os.path.join(testimages_directory(),
-                            "DrosophilaEmbryo_GFPHistone.avi")
+        path = maybe_download_test_image("DrosophilaEmbryo_GFPHistone.avi")
         workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE,
                                        index = 3)
         image = workspace.image_set.get_image(IMAGE_NAME)
@@ -1455,11 +1455,14 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(np.all(pixel_data <= 1))
         self.assertTrue(np.any(pixel_data[:, :, 0] != pixel_data[:, :, 1]))
         self.assertTrue(np.any(pixel_data[:, :, 0] != pixel_data[:, :, 2]))
-        
+
+    def get_monochrome_image_path(self):
+        folder = "ExampleGrayToColor"
+        file_name = "AS_09125_050116030001_D03f00d0.tif"
+        return maybe_download_example_image([folder], file_name)
+    
     def test_03_04_load_monochrome(self):
-        path = os.path.join(example_images_directory(),
-                            "ExampleGrayToColor",
-                            "AS_09125_050116030001_D03f00d0.tif")
+        path = self.get_monochrome_image_path()
         workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -1468,9 +1471,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(np.all(pixel_data <= 1))
 
     def test_03_05_load_color_as_monochrome(self):
-        path = os.path.join(example_images_directory(),
-                            "ExampleGrayToColor",
-                            "AS_09125_050116030001_D03f00d0.tif")
+        path = maybe_download_example_image(
+            ["ExampleGrayToColor"], "AS_09125_050116030001_D03f00d0.tif")
         workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -1479,7 +1481,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(np.all(pixel_data <= 1))
         
     def test_03_06_load_monochrome_plane(self):
-        path = os.path.join(testimages_directory(), "5channel.tif")
+        path = maybe_download_test_image("5channel.tif")
         
         for i in range(5):
             workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE,
@@ -1493,9 +1495,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                 self.assertTrue(np.any(pixel_data != plane_0))
                 
     def test_03_07_load_raw(self):
-        path = os.path.join(example_images_directory(),
-                            "ExampleSpecklesImages",
-                            "1-162hrh2ax2.tif")
+        folder = "ExampleSpecklesImages"
+        file_name = "1-162hrh2ax2.tif"
+        path = maybe_download_example_image([folder], file_name)
         workspace = self.run_workspace(path, N.LOAD_AS_ILLUMINATION_FUNCTION)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -1504,9 +1506,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(np.all(pixel_data <= 1. / 16.))
         
     def test_03_08_load_mask(self):
-        path = os.path.join(example_images_directory(),
-                            "ExampleSBSImages",
-                            "Channel2-01-A-01.tif")
+        path = maybe_download_example_image(
+            ["ExampleSBSImages"], "Channel2-01-A-01.tif")
         workspace = self.run_workspace(path, N.LOAD_AS_MASK)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
@@ -1514,9 +1515,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertEqual(np.sum(~pixel_data), 627)
         
     def test_03_09_load_objects(self):
-        path = os.path.join(example_images_directory(),
-                            "ExampleSBSImages",
-                            "Channel2-01-A-01.tif")
+        path = maybe_download_example_image(
+            ["ExampleSBSImages"], "Channel2-01-A-01.tif")
         workspace = self.run_workspace(path, N.LOAD_AS_OBJECTS)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         assert isinstance(o, N.cpo.Objects)
@@ -1562,9 +1562,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         
     def test_03_11_load_rescaled(self):
         # Test all color/monochrome rescaled paths
-        path = os.path.join(example_images_directory(),
-                            "ExampleSpecklesImages",
-                            "1-162hrh2ax2.tif")
+        folder = "ExampleSpecklesImages"
+        file_name = "1-162hrh2ax2.tif"
+        path = maybe_download_example_image([folder], file_name)
+        path = os.path.join(
+            example_images_directory(), folder, file_name)
         for single in (True, False):
             for rescaled in (N.INTENSITY_RESCALING_BY_METADATA, 
                              N.INTENSITY_RESCALING_BY_DATATYPE,
@@ -1585,12 +1587,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                         
     def test_03_12_load_single_image(self):
         # Test loading a pipeline whose image set loads a single image
-        path = os.path.join(example_images_directory(),
-                            "ExampleSBSImages",
-                            "Channel1-01-A-01.tif")
-        lsi_path = os.path.join(example_images_directory(),
-                                "ExampleGrayToColor",
-                                "AS_09125_050116030001_D03f00d0.tif")
+        path = maybe_download_example_image(
+            ["ExampleSBSImages"], "Channel1-01-A-01.tif")
+        lsi_path = maybe_download_example_image(
+            ["ExampleGrayToColor"], "AS_09125_050116030001_D03f00d0.tif")
         workspace = self.run_workspace(
             path, N.LOAD_AS_COLOR_IMAGE, lsi= [{
                 "path":lsi_path,
@@ -1601,12 +1601,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertSequenceEqual(pixel_data.shape, (512, 512))
         
     def test_03_13_load_single_object(self):
-        path = os.path.join(example_images_directory(),
-                            "ExampleSBSImages",
-                            "Channel1-01-A-01.tif")
-        lsi_path = os.path.join(example_images_directory(),
-                            "ExampleSBSImages",
-                            "Channel2-01-A-01.tif")
+        path = maybe_download_example_image(
+            ["ExampleSBSImages"], "Channel1-01-A-01.tif")
+        lsi_path = maybe_download_example_image(
+            ["ExampleSBSImages"], "Channel2-01-A-01.tif")
         workspace = self.run_workspace(
             path, N.LOAD_AS_GRAYSCALE_IMAGE, lsi= [{
                 "path":lsi_path,

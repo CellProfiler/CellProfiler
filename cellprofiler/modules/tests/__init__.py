@@ -56,7 +56,7 @@ def svn_mirror_url():
                           "http://cellprofiler.org/svnmirror")
 
 def example_images_url():
-    return svn_mirror_url() + os.path.altsep + "ExampleImages"
+    return svn_mirror_url() + "/" + "ExampleImages"
 
 __temp_test_images_folder = None
 def testimages_directory():
@@ -80,7 +80,7 @@ def testimages_directory():
     return __temp_test_images_folder
 
 def testimages_url():
-    return svn_mirror_url() + os.path.altsep + "TestImages"
+    return svn_mirror_url() + "/" + "TestImages"
     
 class testExampleImagesDirectory(unittest.TestCase):
     def test_00_00_got_something(self):
@@ -135,8 +135,7 @@ def maybe_download_example_image(folders, file_name):
             example_images_directory()] + folders))
         if not os.path.isdir(directory):
             os.makedirs(directory)
-        url = example_images_url() + os.path.altsep + \
-            os.path.altsep.join(folders) + os.path.altsep + file_name
+        url = example_images_url() + "/" + "/".join(folders) + "/" + file_name
         urlretrieve(url, local_path)
     return local_path
         
@@ -184,7 +183,7 @@ def maybe_download_test_image( file_name):
     '''
     local_path = os.path.join(testimages_directory(), file_name)
     if not os.path.exists(local_path):
-        url = testimages_url() + os.path.altsep + file_name
+        url = testimages_url() + "/" + file_name
         urlretrieve(url, local_path)
     return local_path
     

@@ -54,6 +54,7 @@ class DataToolFrame(wx.Frame):
         kwds_copy["title"]="%s data tool"%module_name
         wx.Frame.__init__(self, *args, **kwds_copy)
         self.module = instantiate_module(module_name)
+        self.module.use_as_data_tool = True
         self.pipeline = cpp.Pipeline()
         if h5py.is_hdf5(measurements_file_name):
             self.workspace = cpw.Workspace(self.pipeline, self.module, None, None, None,

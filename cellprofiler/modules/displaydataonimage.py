@@ -175,7 +175,7 @@ class DisplayDataOnImage(cpm.CPModule):
         if self.objects_or_image == OI_OBJECTS:
             result += [self.objects_name]
         result += [self.measurement, self.wants_image, self.image_name]
-        if self.objects_or_image == OI_OBJECTS:
+        if self.objects_or_image == OI_OBJECTS and not self.use_as_data_tool:
             result += [self.color_or_text]
         if self.use_color_map():
             result += [self.colormap]
@@ -188,7 +188,7 @@ class DisplayDataOnImage(cpm.CPModule):
     def use_color_map(self):
         '''True if the measurement values are rendered using a color map'''
         return self.objects_or_image == OI_OBJECTS and \
-               self.color_or_text == CT_COLOR
+               self.color_or_text == CT_COLOR and not self.use_as_data_tool
     
     def run(self, workspace):
         import matplotlib
@@ -204,8 +204,12 @@ class DisplayDataOnImage(cpm.CPModule):
             pixel_data = image.pixel_data
         else:
             pixel_data = np.zeros(image.pixel_data.shape[:2])
+        object_set = workspace.object_set
         if self.objects_or_image == OI_OBJECTS:
-            objects = workspace.object_set.get_objects(self.objects_name.value)
+            if self.objects_name.value in object_set.get_object_names():
+                objects = object_set.get_objects(self.objects_name.value)
+            else:
+                objects = None
         workspace.display_data.pixel_data = pixel_data
         if self.use_color_map():
             workspace.display_data.labels = objects.segmented
@@ -227,7 +231,7 @@ class DisplayDataOnImage(cpm.CPModule):
             values = measurements.get_current_measurement(
                 self.objects_name.value,
                 self.measurement.value)
-            if len(values) < objects.count:
+            if objects is not None and len(values) < objects.count:
                 temp = np.zeros(objects.count, values.dtype)
                 temp[:len(values)] = values
                 temp[len(values):] = np.nan

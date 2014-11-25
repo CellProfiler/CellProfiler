@@ -27,6 +27,8 @@ RUN useradd cellprofiler
 USER cellprofiler
 ENV HOME /home/cellprofiler
 WORKDIR /home/cellprofiler
+RUN mkdir /home/cellprofiler/plugins
+RUN chown cellprofiler:cellprofiler /home/cellprofiler/plugins
 
 ENTRYPOINT ["/usr/bin/cellprofiler", "-r", "-c"]
 CMD ["-h"]

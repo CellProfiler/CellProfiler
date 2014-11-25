@@ -520,7 +520,7 @@ class ViewWorkspace(object):
                         fontsize = font.GetPointSize(),
                         fontstyle = fontstyle,
                         weight = font.GetWeight())
-                    height = font.GetPointSize() + 1
+                    height += font.GetPointSize() + 1
         
         self.frame.figure.canvas.draw()
             

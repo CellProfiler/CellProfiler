@@ -1,0 +1,11 @@
+--- CellProfiler.py.orig	2013-10-16 20:59:07.459360385 -0400
++++ CellProfiler.py	2013-10-16 20:16:34.079360393 -0400
+@@ -20,6 +20,8 @@
+ import tempfile
+ from cStringIO import StringIO
+ 
++sys.frozen = True
++
+ if sys.platform.startswith('win'):
+     # This recipe is largely from zmq which seems to need this magic
+     # in order to import in frozen mode - a topic the developers never

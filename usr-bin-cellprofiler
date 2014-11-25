@@ -2,9 +2,16 @@
 #
 # Wrapper script used to start CellProfiler on Linux.
 
+set -e
+
 prefix=/usr/cellprofiler
+
+# CellProfiler doesn't work right without and X server, so run it
+# under xvfb if $DISPLAY is not set.
+if [ -z "$DISPLAY" ]; then
+    xvfb-run "$0" "$@"
+fi
 
 export LD_LIBRARY_PATH=$prefix/jdk/jre/lib/amd64/server
 export PATH=$prefix/bin:$prefix/jdk/bin:$PATH
 $prefix/bin/python $prefix/src/CellProfiler/CellProfiler.py "$@"
-

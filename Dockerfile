@@ -6,8 +6,6 @@ RUN yum install -y cellprofiler-cython-0.20.2-1 cellprofiler-python-2.7.2-1 cell
 RUN mkdir -p /usr/cellprofiler/src
 ADD . /usr/cellprofiler/src/CellProfiler
 
-# RUN cd /usr/cellprofiler/src/CellProfiler; patch -p0 < docker/threshold.diff
-
 RUN cd /usr/cellprofiler/src/CellProfiler; PATH=/usr/cellprofiler/bin:/usr/cellprofiler/jdk/bin:$PATH LD_LIBRARY_PATH=/usr/cellprofiler/jdk/lib:/usr/cellprofiler/jdk/jre/lib/amd64/server: JAVA_HOME=/usr/cellprofiler/jdk /usr/cellprofiler/bin/python CellProfiler.py --build-and-exit
 
 RUN cd /usr/cellprofiler/src/CellProfiler; PATH=/usr/cellprofiler/bin:/usr/cellprofiler/jdk/bin:$PATH LD_LIBRARY_PATH=/usr/cellprofiler/jdk/lib:/usr/cellprofiler/jdk/jre/lib/amd64/server: JAVA_HOME=/usr/cellprofiler/jdk MAVEN_OPTS="-Xmx1024m" /usr/cellprofiler/bin/python external_dependencies.py -o

@@ -88,6 +88,14 @@ def main(args):
         sys.exit(0)
         
     options, args = parse_args(args)
+    if options.print_version:
+        from cellprofiler.utilities.version import \
+             dotted_version, version_string, git_hash, version_number
+        print "CellProfiler %s" % dotted_version
+        print "Git %s" % git_hash
+        print "Version %s" % version_number
+        print "Built %s" % version_string.split(" ")[0]
+        sys.exit(0)
     #
     # Important to go headless ASAP
     #
@@ -387,6 +395,11 @@ def parse_args(args):
                       help = ("This option lets you add a message to a pipeline "
                               "or project file which will appear in a message box"
                               "when that pipeline or project file is opened. "))
+    parser.add_option("--version",
+                      dest = "print_version",
+                      default = False,
+                      action = "store_true",
+                      help = "Print the version and exit")
     
     if not hasattr(sys, 'frozen'):
         parser.add_option("-b", "--do-not-build", "--do-not_build",

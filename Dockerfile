@@ -18,8 +18,6 @@ RUN (cd /usr/cellprofiler/src/CellProfiler/cellprofiler/utilities && PATH=/usr/c
 RUN (cd /usr/cellprofiler/src/CellProfiler/cellprofiler/cpmath && PATH=/usr/cellprofiler/bin:$PATH /usr/cellprofiler/bin/python setup.py install --root=/)
 
 RUN git --git-dir=/usr/cellprofiler/src/CellProfiler/.git log -n 1 --format="import datetime; print 'version_string = \"%%s %%s\"' %% (datetime.datetime.utcfromtimestamp(float(%ct)).isoformat('T'), '%h')"| /usr/cellprofiler/bin/python > /usr/cellprofiler/src/CellProfiler/cellprofiler/frozen_version.py
-RUN ls -l /usr/cellprofiler/src/CellProfiler/cellprofiler/frozen_version.py
-RUN cat /usr/cellprofiler/src/CellProfiler/cellprofiler/frozen_version.py
 
 RUN cp /usr/cellprofiler/src/CellProfiler/usr-bin-cellprofiler /usr/bin/cellprofiler
 RUN chmod 755 /usr/bin/cellprofiler

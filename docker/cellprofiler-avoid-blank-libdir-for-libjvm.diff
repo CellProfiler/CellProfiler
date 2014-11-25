@@ -1,0 +1,12 @@
+--- cellprofiler/utilities/setup.py.orig	2013-10-16 19:26:11.279334211 -0400
++++ cellprofiler/utilities/setup.py	2013-10-16 19:26:38.739329959 -0400
+@@ -106,7 +106,8 @@
+                                      stdout=subprocess.PIPE)
+                 stdout, stderr = p.communicate()
+                 jvm_dir = stdout.strip()
+-                library_dirs.append(jvm_dir)
++                if jvm_dir:
++                    library_dirs.append(jvm_dir)
+                 libraries = ["jvm"]
+             extensions += [Extension(name="javabridge",
+                                      sources=javabridge_sources,

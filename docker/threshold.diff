@@ -1,0 +1,11 @@
+--- cellprofiler/cpmath/threshold.py    2014-07-23 13:39:57.000000000 -0400
++++ cellprofiler/cpmath/threshold.py 2014-10-27 16:21:40.719976873 -0400
+@@ -417,7 +417,7 @@
+     # data
+     #
+     r = np.random.RandomState()
+-    r.seed(cropped_image[:100].tolist())
++    r.seed(np.frombuffer(cropped_image[:100].data, np.uint8).tolist())
+     for data in (
+         r.permutation(cropped_image)[0:(len(cropped_image) / 10)],
+         cropped_image):

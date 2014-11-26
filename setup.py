@@ -21,6 +21,7 @@ import ctypes.util
 
 sys.path.append('.')
 import cellprofiler.utilities.version
+from external_dependencies import get_cellprofiler_jars
 
 # fix from
 #  http://mail.python.org/pipermail/pythonmac-sig/2008-June/020111.html
@@ -54,9 +55,11 @@ DATA_FILES = [('cellprofiler/icons',
                glob.glob(os.path.join(icon_src_path, '*.png'))+
                [os.path.join(icon_src_path, "icon_copyrights.txt")])]
 from javabridge import JARS
-DATA_FILES.append(('imagej/jars', JARS))
+imagej_path = os.path.abspath(os.path.join(".", "imagej", "jars"))
+jars = JARS + [os.path.join(imagej_path, jar) for jar in get_cellprofiler_jars()]
+DATA_FILES.append(('imagej/jars', jars))
 OPTIONS = {'argv_emulation': True,
-           'packages': ['cellprofiler', 'contrib', 'imagej'],
+           'packages': ['cellprofiler', 'contrib', 'imagej', 'javabridge'],
            'includes': ['numpy', 'scipy', 'sklearn', 'sklearn.utils.sparsetools.*',
                         'wx', 'matplotlib','email.iterators', 'smtplib', 'zmq',
                         'javabridge', 'bioformats',
@@ -93,8 +96,8 @@ if sys.argv[-1] == 'py2app':
 
 setup(
     app=APP,
+    package_data={'javabridge':['jars/*.jar']},
     data_files=DATA_FILES,
-    package_data= { 'javabridge': ['jars/*.jar'] },
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
     name="CellProfiler"

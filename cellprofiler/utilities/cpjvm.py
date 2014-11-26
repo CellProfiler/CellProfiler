@@ -157,7 +157,6 @@ def cp_start_vm():
         args.append(
             ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"
              ",server=y,suspend=n") % os.environ["CP_JDWP_PORT"])
-
     javabridge.start_vm(args=args,
                         class_path=class_path,
                         max_heap_size = heap_size)

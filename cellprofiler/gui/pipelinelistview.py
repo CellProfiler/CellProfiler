@@ -934,14 +934,11 @@ class PipelineListView(object):
         The debugging viewer needs to rewind to rerun a module after a change
         """
         setting = event.get_setting()
-        for module in self.__pipeline.modules(False):
-            for module_setting in module.settings():
-                if setting is module_setting:
-                    list_ctrl, index = self.get_ctrl_and_index(module)
-                    if (not module.is_input_module() and
-                        self.list_ctrl.running_item > index):
-                        self.list_ctrl.set_running_item(index)
-                    return
+        module = event.get_module()
+        list_ctrl, index = self.get_ctrl_and_index(module)
+        if (not module.is_input_module() and
+            self.list_ctrl.running_item > index):
+            self.list_ctrl.set_running_item(index)
                 
     def on_stop_debugging(self):
         self.list_ctrl.set_test_mode(False)

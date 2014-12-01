@@ -1275,6 +1275,22 @@ class TestMeasurements(unittest.TestCase):
             np.testing.assert_array_equal(ri2[rorder], ei2[eorder])
             np.testing.assert_array_equal(ro1[rorder], eo1[eorder])
             np.testing.assert_array_equal(ro2[rorder], eo2[eorder])
+            
+        
+    def test_21_01_load_measurements_from_buffer(self):
+        r = np.random.RandomState()
+        r.seed(51)
+        m_in = cpmeas.Measurements()
+        m_in[cpmeas.IMAGE, FEATURE_NAME, 1] = r.uniform()
+        m_in[OBJECT_NAME, FEATURE_NAME, 1] = r.uniform(size=100)
+        m_out = cpmeas.load_measurements_from_buffer(
+            m_in.file_contents())
+        self.assertAlmostEqual(m_in[cpmeas.IMAGE, FEATURE_NAME, 1],
+                               m_out[cpmeas.IMAGE, FEATURE_NAME, 1])
+        np.testing.assert_array_almost_equal(
+            m_in[OBJECT_NAME, FEATURE_NAME, 1],
+            m_out[OBJECT_NAME, FEATURE_NAME, 1])
+
         
 IMAGE_NAME = "ImageName"
 ALT_IMAGE_NAME = "AltImageName"
@@ -1416,6 +1432,6 @@ class TestImageSetCache(unittest.TestCase):
         m.add(IMAGE_NAME, image)
         m.cache()
         m.close()
-                
+        
 if __name__ == "__main__":
     unittest.main()

@@ -9,10 +9,13 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
+import datetime
+import dateutil.parser
 import os
 import unittest
 from cStringIO import StringIO
 import shutil
+import subprocess
 import sys
 import tempfile
 from cellprofiler.modules.tests import \
@@ -57,6 +60,25 @@ class TestCellProfiler(unittest.TestCase):
         self.assertTrue(found_module_stats)
         self.assertTrue(found_setting_stats)
         self.assertTrue(found_lines_of_code)
+        
+    def test_01_03_version(self):
+        import cellprofiler.utilities.version as V
+        if hasattr(sys, "frozen"):
+            args = [sys.argv[0]]
+        else:
+            args = [sys.executable, "CellProfiler.py"]
+        args.append("--version")
+        output = subprocess.check_output(args)
+        version = dict([tuple(line.strip().split(" "))
+                        for line in output.split("\n")
+                        if " " in line])
+        self.assertEqual(version["CellProfiler"], V.dotted_version)
+        self.assertEqual(version["Git"], V.git_hash)
+        self.assertEqual(int(version["Version"][:8]), 
+                         int(V.version_number / 1000000))
+        built = dateutil.parser.parse(version["Built"])
+        # Tough luck if run at 23:59:59.999999999999
+        self.assertEqual(built.date(), datetime.date.today())
         
     def test_02_01_run_headless(self):
         output_directory = tempfile.mkdtemp()

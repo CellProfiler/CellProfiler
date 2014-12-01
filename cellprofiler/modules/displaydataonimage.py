@@ -39,10 +39,13 @@ E_IMAGE = "Image"
 CT_COLOR = "Color"
 CT_TEXT = "Text"
 
+CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
+CMS_MANUAL = "Manual"
+
 class DisplayDataOnImage(cpm.CPModule):
     module_name = 'DisplayDataOnImage'
     category = 'Data Tools'
-    variable_revision_number = 5
+    variable_revision_number = 6
     
     def create_settings(self):
         """Create your settings by subclassing this function
@@ -154,6 +157,32 @@ class DisplayDataOnImage(cpm.CPModule):
             the object. This setting adds a specified offset to the text, in a random
             direction.""")
         
+        self.color_map_scale_choice = cps.Choice(
+            "Color map scale",
+            [CMS_USE_MEASUREMENT_RANGE, CMS_MANUAL],
+            doc = """<i>(Used only when displaying object measurements as a 
+            colormap)</i><br>
+            <b>DisplayDataOnImage</b> assigns a color to each object's
+            measurement value from a colormap when in colormap-mode, mapping
+            the value to a color along the colormap's continuum. This mapping
+            has implicit upper and lower bounds to its range which are the
+            extremes of the colormap. This setting determines whether the
+            extremes are the minimum and maximum values of the measurement
+            from among the objects in the current image or manually-entered
+            extremes. Choose <i>%(CMS_USE_MEASUREMENT_RANGE)s</i> to use
+            the full range of colors to get the maximum contrast within the
+            image. Choose <i>%(CMS_MANUAL)s</i> to manually set the upper and
+            lower bounds so that images with different maxima and minima
+            can be compared by a uniform color mapping.
+            """ % globals())
+        self.color_map_scale = cps.FloatRange(
+            "Color map range", 
+            value = (0.0, 1.0),
+            doc = """<i>(Used only when setting a manual colormap range)</i><br>
+            This setting determines the lower and upper bounds of the values
+            for the color map.
+            """)
+        
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
         
@@ -166,7 +195,8 @@ class DisplayDataOnImage(cpm.CPModule):
                 self.image_name, self.text_color, self.display_image,
                 self.font_size, self.decimals, self.saved_image_contents,
                 self.offset, self.color_or_text, self.colormap, 
-                self.wants_image]
+                self.wants_image, self.color_map_scale_choice,
+                self.color_map_scale]
     
     def visible_settings(self):
         """The settings that are visible in the UI
@@ -178,7 +208,9 @@ class DisplayDataOnImage(cpm.CPModule):
         if self.objects_or_image == OI_OBJECTS and not self.use_as_data_tool:
             result += [self.color_or_text]
         if self.use_color_map():
-            result += [self.colormap]
+            result += [self.colormap, self.color_map_scale_choice]
+            if self.color_map_scale_choice == CMS_MANUAL:
+                result += [self.color_map_scale]
         else:
             result += [ self.text_color, self.font_size, self.decimals,
                         self.offset]
@@ -353,6 +385,9 @@ class DisplayDataOnImage(cpm.CPModule):
             colors = np.ones((len(vmask) + 1, 4))
             colors[1:][~vmask, :3] = 1
             sm = matplotlib.cm.ScalarMappable(cmap = colormap)
+            if self.color_map_scale_choice == CMS_MANUAL:
+                sm.set_clim(self.color_map_scale.min,
+                            self.color_map_scale.max)
             sm.set_array(values)
             colors[1:][vmask, :] = sm.to_rgba(values)
             img = colors[labels, :3] * pixel_data[:, :, np.newaxis]
@@ -417,10 +452,12 @@ class DisplayDataOnImage(cpm.CPModule):
             # added wants_image
             setting_values = setting_values + [ cps.YES ]
             variable_revision_number = 5
-        
+        if variable_revision_number == 5:
+            # added color_map_scale_choice and color_map_scale
+            setting_values = setting_values + [
+                CMS_USE_MEASUREMENT_RANGE, "0.0,1.0"]
+            variable_revision_number = 6
         return setting_values, variable_revision_number, from_matlab
-        
-
     
 if __name__ == "__main__":
     ''' For debugging purposes only...

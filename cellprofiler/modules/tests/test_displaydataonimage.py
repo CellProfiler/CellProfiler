@@ -197,7 +197,82 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertEqual(module.color_or_text, D.CT_COLOR)
         self.assertEqual(module.colormap, "jet")
         self.assertFalse(module.wants_image)
+        self.assertEqual(module.color_map_scale_choice,
+                         D.CMS_USE_MEASUREMENT_RANGE)
+        self.assertEqual(module.color_map_scale.min, 0)
+        self.assertEqual(module.color_map_scale.max, 1)
+        
+    def test_01_06_load_v6(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20141125133416
+GitHash:389a5b5
+ModuleCount:2
+HasImagePlaneDetails:False
 
+DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Display object or image measurements?:Object
+    Select the input objects:Nuclei
+    Measurement to display:Texture_AngularSecondMoment_CropBlue_3_0
+    Select the image on which to display the measurements:RGBImage
+    Text color:red
+    Name the output image that has the measurements displayed:Whatever
+    Font size (points):11
+    Number of decimals:3
+    Image elements to save:Image
+    Annotation offset (in pixels):1
+    Display mode:Color
+    Color map:jet
+    Display background image?:Yes
+    Color map scale:Manual
+    Color map range:0.05,1.5
+
+DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Display object or image measurements?:Object
+    Select the input objects:Nuclei
+    Measurement to display:Texture_AngularSecondMoment_CropBlue_3_0
+    Select the image on which to display the measurements:RGBImage
+    Text color:red
+    Name the output image that has the measurements displayed:DisplayImage
+    Font size (points):12
+    Number of decimals:4
+    Image elements to save:Image
+    Annotation offset (in pixels):1
+    Display mode:Color
+    Color map:Default
+    Display background image?:Yes
+    Color map scale:Use this image\'s measurement range
+    Color map range:0.05,1.5
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, D.DisplayDataOnImage))
+        self.assertEqual(module.objects_or_image, D.OI_OBJECTS)
+        self.assertEqual(module.objects_name, "Nuclei")
+        self.assertEqual(
+            module.measurement, "Texture_AngularSecondMoment_CropBlue_3_0")
+        self.assertEqual(module.image_name, "RGBImage")
+        self.assertEqual(module.display_image, "Whatever")
+        self.assertEqual(module.font_size, 11)
+        self.assertEqual(module.decimals, 3)
+        self.assertEqual(module.saved_image_contents, D.E_IMAGE)
+        self.assertEqual(module.offset, 1)
+        self.assertEqual(module.color_or_text, D.CT_COLOR)
+        self.assertEqual(module.colormap, "jet")
+        self.assertTrue(module.wants_image)
+        self.assertEqual(module.color_map_scale_choice,
+                         D.CMS_MANUAL)
+        self.assertEqual(module.color_map_scale.min, 0.05)
+        self.assertEqual(module.color_map_scale.max, 1.5)
+        module = pipeline.modules()[1]
+        self.assertEqual(module.color_map_scale_choice,
+                         D.CMS_USE_MEASUREMENT_RANGE)
+        
     def make_workspace(self, measurement, labels = None, image = None):
         object_set = cpo.ObjectSet()
         module = D.DisplayDataOnImage()
@@ -320,6 +395,23 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         workspace, module = self.make_workspace([1.1, np.nan, 2.2], labels)
         assert isinstance(module, D.DisplayDataOnImage)
         module.color_or_text.value = D.CT_COLOR
+        module.run(workspace)
+        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        
+    def test_02_09_display_colors_manual(self):
+        #
+        # Just run the code path for manual color map scale
+        #
+        labels = np.zeros((50,120),int)
+        labels[10:20,20:27] = 1
+        labels[30:35,35:50] = 2
+        labels[5:18,44:100] = 3
+        workspace, module = self.make_workspace([1.1, 2.2, 3.3], labels)
+        assert isinstance(module, D.DisplayDataOnImage)
+        module.color_or_text.value = D.CT_COLOR
+        module.color_map_scale_choice.value = D.CMS_MANUAL
+        module.color_map_scale.min = 2.0
+        module.color_map_scale.max = 3.0
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         

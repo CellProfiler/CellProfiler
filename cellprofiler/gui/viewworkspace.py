@@ -500,21 +500,30 @@ class ViewWorkspace(object):
                     if len(values[j]) <= i or np.isnan(values[j][i]):
                         continue
                     value = values[j][i]
-                    font = measurement_row.get_font()
-                    assert isinstance(font, wx.Font)
+                    font = measurement_row.font
                     if font.GetStyle() == wx.ITALIC:
                         fontstyle="italic"
                     else:
                         fontstyle="normal"
-                    color = measurement_row.get_color()
-                    fontcolor = tuple([float(c)/255 for c in color][:3])
-                    self.axes.annotate(
-                        "%.4f" % value,
+                    color = measurement_row.foreground_color
+                    fontcolor, backgroundcolor = [
+                        tuple([float(c)/255 for c in color][:3]) for color in
+                        measurement_row.foreground_color,
+                        measurement_row.background_color]
+                    
+                    fmt = "%%.%df" % measurement_row.precision
+                    a = self.axes.annotate(
+                        fmt % value,
                         (xi, yi), 
                         xytext = (0, -height),
                         textcoords = "offset points",
                         ha = "center",
                         va = "center",
+                        bbox = {
+                            "boxstyle": measurement_row.box_style,
+                            "fc": backgroundcolor,
+                            "alpha": measurement_row.background_alpha
+                            },
                         color = fontcolor,
                         family = font.GetFaceName(),
                         fontsize = font.GetPointSize(),
@@ -567,6 +576,17 @@ class MeasurementRow(object):
         self.show_ctrl = wx.CheckBox(panel)
         grid_sizer.Add(self.show_ctrl, (row_idx, ViewWorkspace.C_SHOW), 
                        flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP)
+        #
+        # The drawing characteristics
+        #
+        self.font = self.font_button.Font
+        self.foreground_color = wx.SystemSettings.GetColour(
+            wx.SYS_COLOUR_BTNTEXT)
+        self.background_color = wx.SystemSettings.GetColour(
+            wx.SYS_COLOUR_WINDOW)
+        self.background_alpha = 0.5
+        self.box_style = "round"
+        self.precision = 4 # of decimal places
         
         for control, event in (
             (self.object_choice, wx.EVT_CHOICE),
@@ -576,15 +596,97 @@ class MeasurementRow(object):
             control.Bind(event, self.on_change)
         
     def on_choose_font(self, event):
-        font_data = wx.FontData()
-        font_data.SetColour(self.font_button.GetForegroundColour())
-        font_data.SetInitialFont(self.font_button.Font)
-        with wx.FontDialog(self.font_button, font_data) as dlg:
+        with wx.Dialog(self.choice_panel.Parent,
+                       title = "Measurement appearance") as dlg:
+            labels = []
+            def add_label(sizer, label):
+                ctrl = wx.StaticText(dlg, label=label)
+                sizer.Add(ctrl, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+                labels.append(ctrl)
+                sizer.AddSpacer(2)
+            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            dlg.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 5)
+            subsizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(subsizer, 0, wx.EXPAND)
+            sizer.AddSpacer(2)
+            add_label(subsizer, "Font")
+            font_picker = wx.FontPickerCtrl(dlg)
+            font_picker.SetSelectedFont(self.font)
+            font_picker.SetPickerCtrlGrowable(True)
+            font_picker.Bind(wx.EVT_FONTPICKER_CHANGED,
+                             lambda event: dlg.Layout())
+            subsizer.Add(font_picker, 0, wx.ALIGN_LEFT)
+            #
+            # Foreground color
+            #
+            subsizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(subsizer, 0, wx.EXPAND)
+            sizer.AddSpacer(2)
+            add_label(subsizer, "Text color")
+            foreground_color = ColourSelect(
+                dlg, colour = self.foreground_color)
+            subsizer.Add(foreground_color, 0, wx.ALIGN_LEFT)
+            #
+            # Background color and alpha
+            #
+            subsizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(subsizer, 0, wx.EXPAND)
+            sizer.AddSpacer(2)
+            add_label(subsizer, "Background color")
+            background_color = ColourSelect(
+                dlg, colour = self.background_color)
+            subsizer.Add(background_color, 0, wx.ALIGN_LEFT)
+            
+            subsizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(subsizer, 0, wx.EXPAND)
+            sizer.AddSpacer(2)
+            add_label(subsizer, "Alpha")
+            alpha = wx.Slider(
+                dlg, value=self.background_alpha * 100,
+                minValue = 0, maxValue = 100,
+                style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS)
+            alpha.SetMinSize(wx.Size(200, alpha.GetMinSize()[0]))
+            subsizer.Add(alpha, 0, wx.EXPAND)
+
+            subsizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(subsizer, 0, wx.EXPAND)
+            sizer.AddSpacer(2)
+            add_label(subsizer, "Box shape")
+            box_style = wx.Choice(
+                dlg, choices = ["circle", "round", "roundtooth", "sawtooth",
+                                "square"])
+            box_style.SetStringSelection(self.box_style)
+            subsizer.Add(box_style, 0, wx.ALIGN_LEFT)
+            
+            subsizer = wx.BoxSizer(wx.HORIZONTAL)
+            sizer.Add(subsizer, 0, wx.EXPAND)
+            sizer.AddSpacer(2)
+            add_label(subsizer, "Precision")
+            precision = wx.SpinCtrl(dlg, value=str(self.precision), min = 0)
+            subsizer.AddSpacer(2)
+            subsizer.Add(precision, 0, wx.ALIGN_LEFT)
+            
+            width = 0
+            for label in labels:
+                width = max(width, label.GetBestSize()[0])
+            for label in labels:
+                label.SetMinSize(wx.Size(width, label.GetBestSize()[1]))
+            
+            button_sizer = wx.StdDialogButtonSizer()
+            dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL |wx.ALL, 5)
+            button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+            button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+            button_sizer.Realize()
+            dlg.Fit()
             if dlg.ShowModal() == wx.ID_OK:
-                font_data = dlg.GetFontData()
-                self.font_button.SetForegroundColour(font_data.GetColour())
-                self.font_button.SetFont(font_data.GetChosenFont())
-        self.on_change(event)
+                self.font = font_picker.GetSelectedFont()
+                self.foreground_color = foreground_color.GetColour()
+                self.background_color = background_color.GetColour()
+                self.background_alpha = float(alpha.Value) / 100
+                self.box_style = box_style.GetStringSelection()
+                self.precision = precision.Value
+                self.on_change(event)
         
     def on_change(self, event):
         if self.process_events:
@@ -613,12 +715,6 @@ class MeasurementRow(object):
         if feature is None:
             return None
         return "_".join((category, feature))
-    
-    def get_font(self):
-        return self.font_button.Font
-    
-    def get_color(self):
-        return self.font_button.GetForegroundColour()
     
     def should_show(self):
         return self.show_ctrl.IsChecked()

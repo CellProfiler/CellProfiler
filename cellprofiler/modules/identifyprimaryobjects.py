@@ -585,15 +585,18 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             'Fill holes in identified objects?', 
             FH_ALL, value = FH_THRESHOLDING,
             doc="""
-            Select <i>%(FH_THRESHOLDING)s</i> to fill in background holes 
+            This option controls how holes are filled in:
+            <ul>
+            <li><i>%(FH_THRESHOLDING)s:</i> Fill in background holes 
             that are smaller than the maximum object size prior to declumping
-            and to fill in any holes after declumping.
-            Select <i>%(FH_DECLUMP)s</i> to fill in background holes
-            located within identified objects after declumping. 
-            Select <i>%(FH_NEVER)s</i> to leave holes within objects.
-            <p>Please note that if a foreground object is located within a hole
+            and to fill in any holes after declumping.</li>
+            <li><i>%(FH_DECLUMP)s:</i> Fill in background holes
+            located within identified objects after declumping.</li>
+            <li><i>%(FH_NEVER)s:</i> Leave holes within objects.<br>
+            Please note that if a foreground object is located within a hole
             and this option is enabled, the object will be lost when the hole
-            is filled in. </p>"""%globals())
+            is filled in.</li>
+            </ul>"""%globals())
         
         self.wants_automatic_log_threshold = cps.Binary(
             'Automatically calculate the threshold using the Otsu method?', True)

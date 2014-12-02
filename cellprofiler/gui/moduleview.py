@@ -2474,16 +2474,20 @@ class FilterPanelController(object):
         
     def on_literal_changed(self, event, index, address):
         logger.debug("Literal at %d / %s changed" % (index, self.saddress(address)))
-        structure = self.v.parse()
-        sequence = self.find_address(structure, address)
-        while len(sequence) <= index:
-            # The sequence is bad (e.g. bad pipeline or metadata collection)
-            # Fill in enough to deal
-            #
-            sequence.append(self.v.predicates[0] 
-                            if len(sequence) == 0
-                            else sequence[-1].subpredicates[0])
-        sequence[index] = event.GetString()
+        try:
+            structure = self.v.parse()
+            sequence = self.find_address(structure, address)
+            while len(sequence) <= index:
+                # The sequence is bad (e.g. bad pipeline or metadata collection)
+                # Fill in enough to deal
+                #
+                sequence.append(self.v.predicates[0] 
+                                if len(sequence) == 0
+                                else sequence[-1].subpredicates[0])
+            sequence[index] = event.GetString()
+        except:
+            structure = self.v.default()
+            
         new_text = self.v.build_string(structure)
         self.on_value_change(event, new_text,
                              timeout = None if self.v.reset_view else False)

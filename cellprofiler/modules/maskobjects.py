@@ -424,6 +424,10 @@ class MaskObjects(I.Identify):
         return self.get_object_measurements(pipeline, object_name, category,
                                             self.get_object_dictionary())
         
+    def validate_module(self, pipeline):
+        """Bypass Identify.validate_module"""
+        pass
+    
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 2:

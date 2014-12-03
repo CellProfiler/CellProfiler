@@ -70,15 +70,9 @@ class TestCellProfiler(unittest.TestCase):
             test_dir = os.path.dirname(__file__)
             cellprofiler_dir = os.path.dirname(test_dir)
             root_dir = os.path.dirname(cellprofiler_dir)
-            self.assertTrue(os.path.isfile(os.path.join(
-                root_dir, "CellProfiler.py")))
-            output = subprocess.check_output(
-                [sys.executable, "-c", "import os;print os.listdir('.')"],
-                cwd=root_dir)
-            self.assertGreaterEqual(
-                output.find("CellProfiler.py"), 0,
-                msg="Could not find CellProfiler.py in %s" % output)
-            args = [sys.executable, "CellProfiler.py", "--version"]
+            cellprofiler_path = os.path.join(root_dir, "CellProfiler.py")
+            self.assertTrue(os.path.isfile(cellprofiler_path))
+            args = [sys.executable, cellprofiler_path, "--version"]
             output = subprocess.check_output(args, cwd=root_dir)
         output = subprocess.check_output(args)
         version = dict([tuple(line.strip().split(" "))

@@ -64,10 +64,16 @@ class TestCellProfiler(unittest.TestCase):
     def test_01_03_version(self):
         import cellprofiler.utilities.version as V
         if hasattr(sys, "frozen"):
-            args = [sys.argv[0]]
+            args = [sys.argv[0], "--version"]
+            output = subprocess.check_output(args)
         else:
-            args = [sys.executable, "CellProfiler.py"]
-        args.append("--version")
+            test_dir = os.path.dirname(__file__)
+            cellprofiler_dir = os.path.dirname(test_dir)
+            root_dir = os.path.dirname(cellprofiler_dir)
+            self.assertTrue(os.path.isfile(os.path.join(
+                root_dir, "CellProfiler.py")))
+            args = [sys.executable, "CellProfiler.py", "--version"]
+            output = subprocess.check_output(args, cwd=root_dir)
         output = subprocess.check_output(args)
         version = dict([tuple(line.strip().split(" "))
                         for line in output.split("\n")
@@ -77,8 +83,7 @@ class TestCellProfiler(unittest.TestCase):
         self.assertEqual(int(version["Version"][:8]), 
                          int(V.version_number / 1000000))
         built = dateutil.parser.parse(version["Built"])
-        # Tough luck if run at 23:59:59.999999999999
-        self.assertEqual(built.date(), datetime.date.today())
+        self.assertLess(built.date(), datetime.date.today())
         
     def test_02_01_run_headless(self):
         output_directory = tempfile.mkdtemp()

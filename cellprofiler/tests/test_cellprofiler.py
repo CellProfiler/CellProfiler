@@ -72,6 +72,12 @@ class TestCellProfiler(unittest.TestCase):
             root_dir = os.path.dirname(cellprofiler_dir)
             self.assertTrue(os.path.isfile(os.path.join(
                 root_dir, "CellProfiler.py")))
+            output = subprocess.check_output(
+                [sys.executable, "-c", "import os;print os.listdir('.')"],
+                cwd=root_dir)
+            self.assertGreaterEqual(
+                output.find("CellProfiler.py"), 0,
+                msg="Could not find CellProfiler.py in %s" % output)
             args = [sys.executable, "CellProfiler.py", "--version"]
             output = subprocess.check_output(args, cwd=root_dir)
         output = subprocess.check_output(args)
@@ -83,7 +89,7 @@ class TestCellProfiler(unittest.TestCase):
         self.assertEqual(int(version["Version"][:8]), 
                          int(V.version_number / 1000000))
         built = dateutil.parser.parse(version["Built"])
-        self.assertLess(built.date(), datetime.date.today())
+        self.assertLessEqual(built.date(), datetime.date.today())
         
     def test_02_01_run_headless(self):
         output_directory = tempfile.mkdtemp()

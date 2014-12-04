@@ -1416,14 +1416,15 @@ class CPFigureFrame(wx.Frame):
             for labels in cplabel[CPLD_LABELS]:
                 if cplabel[CPLD_MODE] == CPLDM_OUTLINES:
                     oc = np.array(cplabel[CPLD_OUTLINE_COLOR], float)[:3]/255
-                    lo = cellprofiler.cpmath.outline.outline(labels) != 0
-                    lo = lo.astype(float)
+                    lm = cellprofiler.cpmath.outline.outline(labels) != 0
+                    lo = lm.astype(float)
                     lw = float(cplabel[CPLD_LINE_WIDTH])
                     if lw > 1:
                         # Alpha-blend for distances beyond 1
                         hw = lw / 2
-                        d = distance_transform_edt(lo)
-                        lo[(d > .5) & (d < hw)] = (hw + .5 - d) / hw
+                        d = distance_transform_edt(~lm)
+                        dti, dtj = np.where((d < hw+.5) & ~lm)
+                        lo[dti, dtj] = np.minimum(1, hw + .5 - d[dti, dtj])
                     image = image * (1 - lo[:, :, np.newaxis]) + \
                         lo[:, :, np.newaxis] * oc[np.newaxis, np.newaxis, :]
                 elif cplabel[CPLD_MODE] == CPLDM_ALPHA:

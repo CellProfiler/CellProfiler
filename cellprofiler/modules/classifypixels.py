@@ -122,8 +122,9 @@ class ClassifyPixels(cpm.CPModule):
         self.add_probability_map(False)
         
         self.add_probability_button = cps.DoSomething(
-            "Add another probability map", "Add", self.add_probability_map,doc = """
-            Press the <i>Add</i> button to output another
+            "", "Add another probability map", 
+            self.add_probability_map,doc = """
+            Press this button to output another
             probability map image from the classifier. Ilastik can be trained
             to recognize any number of classes of pixels. You can generate
             probability maps for any or all of them simultaneously by adding
@@ -181,11 +182,11 @@ class ClassifyPixels(cpm.CPModule):
         
         if can_remove:
             group.remover = cps.RemoveSettingButton(
-                "Remove probability map", 
-                "Remove", self.probability_maps, group,doc = """
-                Press the <i>Remove</i> button to remove the
+                "", "Remove this probability map", 
+                self.probability_maps, group,doc = """
+                Press this button to remove the
                 probability map image from the list of images produced by this
-                module""")
+                module.""")
         
     def settings(self):
         result = [self.image_name, self.h5_directory, self.classifier_file_name,

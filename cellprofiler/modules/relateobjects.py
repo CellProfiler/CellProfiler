@@ -8,7 +8,9 @@ associated with each parent.
 
 <p>An object will be considered a child even if the edge is the only part
 touching a parent object. If an child object is touching multiple parent objects,
-the object will be assigned as a child of all parents that it overlaps with.
+the object will be assigned to the parent with maximal overlap. For an 
+alternate approach to assigning parent/child relationships, consider using the 
+<b>MaskObjects</b> module.</p>
 
 <h4>Available measurements</h4>
 <b>Parent object measurements:</b>
@@ -25,7 +27,7 @@ calculated for each parent object.</li>
 module.</li>
 </ul>
 
-See also: <b>ReassignObjectNumbers</b>.
+See also: <b>ReassignObjectNumbers</b>, <b>MaskObjects</b>.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.

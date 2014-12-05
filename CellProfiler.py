@@ -21,6 +21,8 @@ import numpy as np
 import tempfile
 from cStringIO import StringIO
 
+import cpnose
+
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
 OMERO_CK_USER = "user"
@@ -87,6 +89,9 @@ def main(args):
         cellprofiler.analysis_worker.main()
         sys.exit(0)
         
+    if any([arg.startswith('--xml-test-file=') for arg in sys.argv]):
+        cpnose.main(*sys.argv)
+        return
     options, args = parse_args(args)
     if options.print_version:
         from cellprofiler.utilities.version import \
@@ -176,14 +181,6 @@ def main(args):
         if options.build_and_exit:
             return
     
-    if options.output_html:
-        from cellprofiler.gui.html.manual import generate_html
-        webpage_path = options.output_directory if options.output_directory else None
-        generate_html(webpage_path)
-        return
-    if options.print_measurements:
-        print_measurements(options)
-        return
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)
     if options.plugins_directory is not None:
@@ -209,6 +206,20 @@ def main(args):
     if options.image_set_file is not None:
         cpprefs.set_image_set_file(options.image_set_file)
     try:
+        #---------------------------------------
+        #
+        # Handle command-line tasks that that need to load the modules to run
+        # 
+        if options.output_html:
+            from cellprofiler.gui.html.manual import generate_html
+            webpage_path = options.output_directory if options.output_directory else None
+            generate_html(webpage_path)
+            return
+        if options.print_measurements:
+            print_measurements(options)
+            return
+        #
+        #------------------------------------------
         if options.show_gui:
             import wx
             wx.Log.EnableLogging(False)
@@ -519,8 +530,16 @@ def parse_args(args):
                               ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
                               " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
     
-    if not hasattr(sys, 'frozen'):
-        parser.add_option("--code-statistics", 
+    parser.add_option(
+        "--xml-test-file",
+        dest = "tests",
+        default = None,
+        metavar = "XML-FILE",
+        help = ("Run unit tests. Tests can be collected by nose using a "
+                "command line such as \"python cpnose.py --collect-only "
+                "--with-xunit --xunit-file=XML-FILE"))
+    
+    parser.add_option("--code-statistics", 
                           dest = "code_statistics",
                           action = "store_true",
                           default = False,

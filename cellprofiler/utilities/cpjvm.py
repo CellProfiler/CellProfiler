@@ -73,23 +73,9 @@ def get_patcher_args(class_path):
         return ["-javaagent:%s=init" % patcher]
     logger.warn("Did not find ij1-patcher.jar")
     return []
-    
-def cp_start_vm():
-    '''Start CellProfiler's JVM via Javabridge
-    
-    JVM parameters are harvested from preferences and
-    the environment variables:
-    
-    CP_JDWP_PORT - port # for debugging Java within the JVM
-    cpprefs.get_awt_headless() - controls java.awt.headless to prevent
-        awt from being invoked
-    '''
-    
-    args = ["-Dloci.bioformats.loaded=true",
-            "-Dlogback.configurationFile=logback.xml",
-            "-Djava.util.prefs.PreferencesFactory="+
-            "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
 
+def get_jars():
+    '''Get the final list of JAR files passed to javabridge'''
     imagej_path = get_path_to_jars()
     if hasattr(sys, 'frozen'):
         jar_files = [
@@ -145,7 +131,25 @@ def cp_start_vm():
             class_path.append(tools_jar)
         else:
             logger.warning("Failed to find tools.jar")
+    return class_path
+    
+def cp_start_vm():
+    '''Start CellProfiler's JVM via Javabridge
+    
+    JVM parameters are harvested from preferences and
+    the environment variables:
+    
+    CP_JDWP_PORT - port # for debugging Java within the JVM
+    cpprefs.get_awt_headless() - controls java.awt.headless to prevent
+        awt from being invoked
+    '''
+    
+    args = ["-Dloci.bioformats.loaded=true",
+            "-Dlogback.configurationFile=logback.xml",
+            "-Djava.util.prefs.PreferencesFactory="+
+            "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
 
+    class_path = get_jars()
     args += get_patcher_args(class_path)
     awt_headless = cpprefs.get_awt_headless()
     if awt_headless:

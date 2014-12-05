@@ -37,7 +37,7 @@ import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.tests import \
      example_images_directory, testimages_directory, maybe_download_sbs,\
-     maybe_download_example_image
+     maybe_download_example_image, maybe_download_test_image
 from bioformats.formatreader import clear_image_reader_cache
 
 OBJECTS_NAME = "objects"
@@ -435,6 +435,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             
     def test_04_03_load_planes(self):
         file_name = "RLM1 SSN3 300308 008015000.flex"
+        maybe_download_test_image(file_name)
         path = testimages_directory()
         pathname = os.path.join(path, file_name)
         url = pathname2url(pathname)

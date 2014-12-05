@@ -12,15 +12,18 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
+from bioformats import load_image
+from bioformats.formatreader import load_using_bioformats_url
 import base64
-from matplotlib.image import pil_to_array
 import numpy as np
 import os
-import PIL.Image as PILImage
 from scipy.io.matlab import loadmat
 import scipy.ndimage as scind
+import shutil
 from StringIO import StringIO
+import tempfile
 import unittest
+import urllib2
 import zlib
 
 import cellprofiler.pipeline as cpp
@@ -31,7 +34,8 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measuretexture as M
 from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_example_image, maybe_download_sbs
+     example_images_directory, maybe_download_example_image, \
+     maybe_download_sbs, github_url
 import cellprofiler.preferences as cpprefs
 
 INPUT_IMAGE_NAME = 'Cytoplasm'
@@ -365,23 +369,32 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         
     def test_02_01_compare_to_matlab(self):
         path = os.path.split(__file__)[0]
-        mask_file = os.path.join(path, 'Channel2-01-A-01Mask.png')
-        pimg = PILImage.open(mask_file)
-        mask = np.fromstring(pimg.tostring("raw", pimg.mode, 0, -1), np.uint8)
-        mask.shape = pimg.size
-        mask = np.flipud(mask)
-        texture_measurements = loadmat(os.path.join(path,'texturemeasurements.mat'), struct_as_record=True)
+        png_file = 'Channel2-01-A-01Mask.png'
+        mat_file = 'texturemeasurements.mat'
+        mask_file = os.path.join(path, png_file)
+        if not os.path.isfile(mask_file):
+            github_fmt = github_url + "/cellprofiler/modules/tests/%s"
+            mask = load_using_bioformats_url(github_fmt % png_file) != 0
+            fin = urllib2.urlopen(github_fmt % mat_file)
+            fd, tempmat = tempfile.mkstemp(".mat")
+            fout = os.fdopen(fd, "wb")
+            shutil.copyfileobj(fin, fout)
+            fout.close()
+            texture_measurements = loadmat(tempmat, struct_as_record=True)
+            os.remove(tempmat)
+        else:
+            mask = load_image(mask_file) != 0
+            texture_measurements = loadmat(
+                os.path.join(path, mat_file), 
+                struct_as_record=True)
+                
         texture_measurements = texture_measurements['m'][0,0]
         folder = 'ExampleSBSImages'
         file_name = 'Channel1-01-A-01.tif'
         image_file = os.path.join(
             example_images_directory(), folder, file_name)
         maybe_download_example_image([folder], file_name)
-        pimg = PILImage.open(image_file)
-        image = np.fromstring(pimg.tostring("raw", pimg.mode, 0, -1), np.uint8)
-        image.shape = pimg.size
-        image = np.flipud(image)
-        image = image.astype(float) / 255.0
+        image = load_image(image_file, rescale=False).astype(float)/255.0
         labels,count = scind.label(mask.astype(bool),np.ones((3,3),bool))
         centers = scind.center_of_mass(np.ones(labels.shape), labels, 
                                        np.arange(count)+1)

@@ -20,11 +20,11 @@
           <available file="${git-root}/windows/vcredist_x86.exe"/>
       </and>
   </condition>
-  <target name="build" depends="test"/>
+  <target name="build" depends="compile"/>
   <target name="clean-and-build">
      <antcall target="clean" />
-     <antcall target="build" />
      <antcall target="windows-build" />
+     <antcall target="check-tests" />
   </target>
 
   <target name="external-dependencies">
@@ -75,20 +75,20 @@
 
   <target name="check-tests" depends="test-cellprofiler, test-modules, test-cpmath, test-manual, test-utilities">
     <xslt style="${test-xslt}"
-          in="target/test-results/cellprofiler.xml"
-          out="target/cellprofiler_failures.xml"/>
+          in="${project-root}/target/test-results/cellprofiler.xml"
+          out="${project-root}/target/cellprofiler_failures.xml"/>
     <xslt style="${test-xslt}"
-          in="target/test-results/cellprofiler_modules.xml"
-          out="target/cellprofiler_modules_failures.xml"/>
+          in="${project-root}/target/test-results/cellprofiler_modules.xml"
+          out="${project-root}/target/cellprofiler_modules_failures.xml"/>
     <xslt style="${test-xslt}"
-          in="target/test-results/cellprofiler_cpmath.xml"
-          out="target/cellprofiler_cpmath_failures.xml"/>
+          in="${project-root}/target/test-results/cellprofiler_cpmath.xml"
+          out="${project-root}/target/cellprofiler_cpmath_failures.xml"/>
     <xslt style="${test-xslt}"
-          in="target/test-results/cellprofiler_manual.xml"
-          out="target/cellprofiler_manual_failures.xml"/>
+          in="${project-root}/target/test-results/cellprofiler_manual.xml"
+          out="${project-root}/target/cellprofiler_manual_failures.xml"/>
     <xslt style="${test-xslt}"
-          in="target/test-results/cellprofiler_utilities.xml"
-          out="target/cellprofiler_utilities_failures.xml"/>
+          in="${project-root}/target/test-results/cellprofiler_utilities.xml"
+          out="${project-root}/target/cellprofiler_utilities_failures.xml"/>
     <xmlproperty file="target/cellprofiler_failures.xml"/>
     <xmlproperty file="target/cellprofiler_modules_failures.xml"/>
     <xmlproperty file="target/cellprofiler_cpmath_failures.xml"/>
@@ -108,106 +108,103 @@
       </exec>
   </target>
   
-  <target name="test-modules"
-          depends="compile">
-    <mkdir dir="target/test-results"/>
+  <!--
+      run-tests
+      
+      Parameters:
+          ts-directory: directory holding the tests
+          ts-pattern: search pattern for the tests
+          ts-output-file: the name of the xunit file output by the test
+  -->
+  <condition property="ts-directory" value="${git-root}">
+    <not>
+      <isset property="ts-directory"/>
+    </not>
+  </condition>
+  <condition property="ts-pattern" value="(:?^)test_.*">
+    <not>
+      <isset property="ts-pattern"/>
+    </not>
+  </condition>
+  <target name="run-tests" depends="windows-build">
+    <mkdir dir="${project-root}/target/test-results"/>
+    <!--
+        Collect tests
+            output: xunit file at ../target/${ts-output-file}
+    -->
     <exec executable="python" failonerror="true"
           dir="${git-root}">
       <env key="PYTHONPATH" path="${git-root}"/>
       <arg value="cpnose.py"/>
-      <arg value="--exe"/>
+      <arg value="--collect-only"/>
+      <arg value="--with-xunit"/>
+      <arg value="--xunit-file=${project-root}/${ts-output-file}"/>
+      <arg value="-m"/>
+      <arg value="${ts-pattern}"/>
+      <arg value="-w"/>
+      <arg value="${ts-directory}"/>
+    </exec>
+    <!--
+        Run tests
+            output: xunit file at ../target/test-results/${ts-output-file}
+    -->
+    
+    <exec executable="${git-root}/dist/cellprofiler.exe" failonerror="true"
+          dir="${git-root}/dist">
       <arg value="--with-javabridge"/>
       <arg value="--no-headless"/>
       <arg value="--with-xunit"/>
-      <arg value="--xunit-file=../target/test-results/cellprofiler_modules.xml"/>
+      <arg value="--xunit-file=${project-root}/target/test-results/${ts-output-file}"/>
+      <arg value="--xml-test-file=${project-root}/${ts-output-file}"/>
       <arg value="-v"/>
-      <arg value="-m"/>
-      <arg value="(?:^)test_.*"/>
-      <arg value="-w"/>
-      <arg value="cellprofiler/modules"/>
     </exec>
+    <delete>
+      <fileset dir="${project-root}/target">
+        <include name="${ts-output-file}"/>
+      </fileset>
+    </delete>
   </target>
 
-  <target name="test-cpmath" depends="compile">
-    <mkdir dir="../target/test-results"/>
-    <exec executable="python" failonerror="true"
-          dir="${git-root}">
-      <env key="PYTHONPATH" path="${git-root}"/>
-      <arg value="cpnose.py"/>
-      <arg value="--exe"/>
-      <arg value="--with-javabridge"/>
-      <arg value="--no-headless"/>
-      <arg value="--with-xunit"/>
-      <arg value="--xunit-file=../target/test-results/cellprofiler_cpmath.xml"/>
-      <arg value="-m"/>
-      <arg value="(?:^)test_.*"/>
-      <arg value="-w"/>
-      <arg value="cellprofiler/cpmath"/>
-    </exec>
+  <target name="test-modules">
+    <antcall target="run-tests">
+      <param name="ts-directory" value="cellprofiler/modules"/>
+      <param name="ts-output-file" value = "cellprofiler_modules.xml"/>
+    </antcall>
+  </target>
+
+  <target name="test-cpmath">
+    <antcall target="run-tests">
+      <param name="ts-directory" value="cellprofiler/cpmath"/>
+      <param name="ts-output-file" value = "cellprofiler_cpmath.xml"/>
+    </antcall>
   </target>
 
   <target name="test-cellprofiler" depends="compile">
-    <mkdir dir="target/test-results"/>
-    <exec executable="python" failonerror="true"
-          dir="${git-root}">
-      <env key="PYTHONPATH" path="${git-root}"/>
-      <arg value="cpnose.py"/>
-      <arg value="--exe"/>
-      <arg value="--with-javabridge"/>
-      <arg value="--no-headless"/>
-      <arg value="--with-xunit"/>
-      <arg value="--xunit-file=../target/test-results/cellprofiler.xml"/>
-      <arg value="-w"/>
-      <arg value="cellprofiler/tests"/>
-    </exec>
+    <antcall target="run-tests">
+      <param name="ts-directory" value="cellprofiler/tests"/>
+      <param name="ts-output-file" value = "cellprofiler.xml"/>
+    </antcall>
   </target>
 
   <target name="test-gui" depends="compile">
-    <mkdir dir="../target/test-results"/>
-    <exec executable="python" failonerror="true"
-          dir="${git-root}">
-      <env key="PYTHONPATH" path="${git-root}"/>
-      <arg value="cpnose.py"/>
-      <arg value="--exe"/>
-      <arg value="--with-javabridge"/>
-      <arg value="--no-headless"/>
-      <arg value="--with-xunit"/>
-      <arg value="--xunit-file=../target/test-results/cellprofiler_gui.xml"/>
-      <arg value="-w"/>
-      <arg value="cellprofiler/gui/tests"/>
-    </exec>
+    <antcall target="run-tests">
+      <param name="ts-directory" value="cellprofiler/gui/tests"/>
+      <param name="ts-output-file" value = "cellprofiler_gui.xml"/>
+    </antcall>
   </target>
 
   <target name="test-utilities" depends="compile">
-    <mkdir dir="target/test-results"/>
-    <exec executable="python" failonerror="true"
-          dir="${git-root}">
-      <env key="PYTHONPATH" path="${git-root}"/>
-      <arg value="cpnose.py"/>
-      <arg value="--exe"/>
-      <arg value="--with-javabridge"/>
-      <arg value="--no-headless"/>
-      <arg value="--with-xunit"/>
-      <arg value="--xunit-file=../target/test-results/cellprofiler_utilities.xml"/>
-      <arg value="-w"/>
-      <arg value="cellprofiler/utilities/tests"/>
-    </exec>
+    <antcall target="run-tests">
+      <param name="ts-directory" value="cellprofiler/utilities/tests"/>
+      <param name="ts-output-file" value = "cellprofiler_utilities.xml"/>
+    </antcall>
   </target>
   
   <target name="test-manual" depends="compile">
-    <mkdir dir="target/test-results"/>
-    <exec executable="python" failonerror="true"
-          dir="${git-root}">
-      <env key="PYTHONPATH" path="${git-root}"/>
-      <arg value="cpnose.py"/>
-      <arg value="--exe"/>
-      <arg value="--with-javabridge"/>
-      <arg value="--no-headless"/>
-      <arg value="--with-xunit"/>
-      <arg value="--xunit-file=../target/test-results/cellprofiler_manual.xml"/>
-      <arg value="-w"/>
-      <arg value="cellprofiler/gui/html/tests"/>
-    </exec>
+    <antcall target="run-tests">
+      <param name="ts-directory" value="cellprofiler/gui/html/tests"/>
+      <param name="ts-output-file" value = "cellprofiler_manual.xml"/>
+    </antcall>
   </target>
   
 
@@ -225,7 +222,7 @@
     </exec>
 </target>
 
-  <target name="windows-build" depends="compile,windows-redistributables">
+  <target name="windows-build" depends="compile, windows-redistributables">
     <mkdir dir="${git-root}/output"/>
     <mkdir dir="target/output"/>
     <exec executable="python" failonerror="true" dir="${git-root}">

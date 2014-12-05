@@ -152,13 +152,12 @@ np.seterr(all='ignore')
 # close them on exit.
 all_measurements = WeakSet()
 
+DEADMAN_START_ADDR = "inproc://deadmanstart"
+DEADMAN_START_MSG = "STARTED"
 NOTIFY_ADDR = "inproc://notify"
 NOTIFY_STOP = "STOP"
 
 the_zmq_context = zmq.Context.instance()
-stdin_monitor_lock = threading.Lock()
-stdin_monitor_cv = threading.Condition(stdin_monitor_lock)
-stdin_monitor_started = False
 
 def main():
     #
@@ -189,21 +188,21 @@ def main():
     from cellprofiler.utilities.cpjvm import cp_start_vm
     cp_start_vm()
     
+    deadman_start_socket = the_zmq_context.socket(zmq.PAIR)
+    deadman_start_socket.bind(DEADMAN_START_ADDR)
+    
     # Start the deadman switch thread.
     start_daemon_thread(target=exit_on_stdin_close, 
                         name="exit_on_stdin_close")
-    with stdin_monitor_lock:
-        while not stdin_monitor_started:
-            stdin_monitor_cv.wait()
+    deadman_start_socket.recv()
+    deadman_start_socket.close()
         
     with AnalysisWorker(work_announce_address) as worker:
         worker_thread = threading.Thread(target = worker.run, 
                                          name="WorkerThread")
         worker_thread.setDaemon(True)
         worker_thread.start()
-        print "Entering run loop"
         enter_run_loop()
-        print "Exiting run loop"
         worker_thread.join()
             
     #
@@ -722,15 +721,24 @@ class PipelineEventListener(object):
                 event.cancel_run = False
                 event.skip_thisset = True
 
+__the_notify_pub_socket = None
 
+def get_the_notify_pub_socket():
+    '''Get the socket used to publish the worker stop message'''
+    global __the_notify_pub_socket
+    if __the_notify_pub_socket is None or __the_notify_pub_socket.closed:
+        __the_notify_pub_socket = the_zmq_context.socket(zmq.PUB)
+        __the_notify_pub_socket.bind(NOTIFY_ADDR)
+    return __the_notify_pub_socket
+        
 def exit_on_stdin_close():
     '''Read until EOF, then exit, possibly without cleanup.'''
-    global stdin_monitor_started
-    notify_pub_socket = the_zmq_context.socket(zmq.PUB)
-    notify_pub_socket.bind(NOTIFY_ADDR)
-    with stdin_monitor_lock:
-        stdin_monitor_started = True
-        stdin_monitor_cv.notify_all()
+    notify_pub_socket = get_the_notify_pub_socket()
+    deadman_socket = the_zmq_context.socket(zmq.PAIR)
+    deadman_socket.connect(DEADMAN_START_ADDR)
+    deadman_socket.send(DEADMAN_START_MSG)
+    deadman_socket.close()
+    
     # If sys.stdin closes, either our parent has closed it (indicating we
     # should exit), or our parent has died.  Attempt to exit cleanly via main
     # thread, but if that takes too long (hung filesystem or socket, perhaps),

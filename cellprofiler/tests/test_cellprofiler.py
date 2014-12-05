@@ -24,28 +24,43 @@ from cellprofiler.modules.tests import \
 import CellProfiler
 
 if hasattr(sys, 'frozen'):
-    ARGLIST_START = ["CellProfiler.py"]
+    ARGLIST_START = [sys.executable]
 else:
     ARGLIST_START = ["CellProfiler.py", "-b"]
 
 class TestCellProfiler(unittest.TestCase):
+    def run_cellprofiler(self, *args):
+        '''Run CellProfiler with the given arguments list
+        
+        returns STDOUT from running it.
+        '''
+        if hasattr(sys, "frozen"):
+            args = [sys.argv[0]] + list(args)
+            return subprocess.check_output(args)
+        else:
+            test_dir = os.path.dirname(__file__)
+            cellprofiler_dir = os.path.dirname(test_dir)
+            root_dir = os.path.dirname(cellprofiler_dir)
+            cellprofiler_path = os.path.join(root_dir, "CellProfiler.py")
+            self.assertTrue(os.path.isfile(cellprofiler_path))
+            args = [sys.executable, cellprofiler_path,
+                    "--do-not-build", "--do-not-fetch"] + list(args)
+            return subprocess.check_output(args, cwd=root_dir)
+        
     def test_01_01_html(self):
         path = tempfile.mkdtemp()
         try:
-            CellProfiler.main(ARGLIST_START + ["--html","-o",path])
+            self.run_cellprofiler("--html", "-o", path)
             filenames = os.listdir(path)
             self.assertTrue("index.html" in filenames)
         finally:
             shutil.rmtree(path)
             
+    @unittest.skipIf(hasattr(sys, "frozen"))
     def test_01_02_code_statistics(self):
         old_stdout = sys.stdout
-        fake_stdout = StringIO()
-        sys.stdout = fake_stdout
-        try:
-            CellProfiler.main(ARGLIST_START + ["--code-statistics"])
-        finally:
-            sys.stdout = old_stdout
+        fake_stdout = StringIO(
+            self.run_cellprofiler("--code-statistics"))
         fake_stdout.seek(0)
         found_module_stats = False
         found_setting_stats = False
@@ -63,18 +78,7 @@ class TestCellProfiler(unittest.TestCase):
         
     def test_01_03_version(self):
         import cellprofiler.utilities.version as V
-        if hasattr(sys, "frozen"):
-            args = [sys.argv[0], "--version"]
-            output = subprocess.check_output(args)
-        else:
-            test_dir = os.path.dirname(__file__)
-            cellprofiler_dir = os.path.dirname(test_dir)
-            root_dir = os.path.dirname(cellprofiler_dir)
-            cellprofiler_path = os.path.join(root_dir, "CellProfiler.py")
-            self.assertTrue(os.path.isfile(cellprofiler_path))
-            args = [sys.executable, cellprofiler_path, "--version"]
-            output = subprocess.check_output(args, cwd=root_dir)
-        output = subprocess.check_output(args)
+        output = self.run_cellprofiler("--version")
         version = dict([tuple(line.strip().split(" "))
                         for line in output.split("\n")
                         if " " in line])
@@ -102,14 +106,13 @@ class TestCellProfiler(unittest.TestCase):
             pipeline_file = os.path.join(input_directory, "ExampleHT29.cp")
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
-            args = ARGLIST_START + ["-c", "-r", 
-                                    "-i", input_directory,
-                                    "-o", output_directory,
-                                    "-p", pipeline_file,
-                                    "-d", done_file,
-                                    "-t", temp_directory,
-                                    measurements_file]
-            CellProfiler.main(args)
+            self.run_cellprofiler("-c", "-r", 
+                                  "-i", input_directory,
+                                  "-o", output_directory,
+                                  "-p", pipeline_file,
+                                  "-d", done_file,
+                                  "-t", temp_directory,
+                                  measurements_file)
             import cellprofiler.preferences as cpprefs
             self.assertTrue(os.path.exists(measurements_file))
             self.assertTrue(os.path.exists(done_file))
@@ -118,12 +121,11 @@ class TestCellProfiler(unittest.TestCase):
             # Re-run using the measurements file.
             #
             m2_file = os.path.join(output_directory, "M2.h5")
-            args = ARGLIST_START + ["-c", "-r", 
-                                    "-i", input_directory,
-                                    "-o", output_directory,
-                                    "-p", measurements_file,
-                                    m2_file]
-            CellProfiler.main(args)
+            self.run_cellprofiler("-c", "-r", 
+                                  "-i", input_directory,
+                                  "-o", output_directory,
+                                  "-p", measurements_file,
+                                  m2_file)
             self.assertTrue(os.path.exists(m2_file))
         finally:
             shutil.rmtree(output_directory)

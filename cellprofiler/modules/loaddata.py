@@ -318,9 +318,9 @@ class LoadData(cpm.CPModule):
             <p>An additional option is the following:
             <ul>
             <li><i>URL</i>: Use the path part of a URL. For instance, an example .CSV file 
-            is hosted at <i>https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/1049_Metadata.csv</i>
+            is hosted at <i>http://cellprofiler.org/svnmirror/ExampleImages/ExampleSBSImages/1049_Metadata.csv</i>
             To access this file, you would choose <i>URL</i> and enter
-            <i>https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages</i>
+            <i>http://cellprofiler.org/svnmirror/ExampleImages/ExampleSBSImages</i>
             as the path location.</li>
             </ul></p>"""%globals())
         

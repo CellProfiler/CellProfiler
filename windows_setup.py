@@ -39,6 +39,7 @@ import glob
 import subprocess
 import re
 import os
+import shutil
 import _winreg
 import matplotlib
 import pyreadline
@@ -235,6 +236,7 @@ class CellProfilerCodesign(distutils.core.Command):
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
                               "matplotlib", 
+                              "nose", "nose.*", "nose.plugins.*",
                               "h5py", "h5py.*", "pdb", "readline",
                               "pyreadline", "pyreadline.console",
                               "pyreadline.console.console",
@@ -391,6 +393,25 @@ try:
 except:
     pass
 
+#############################################
+#
+# Unit testing fixups
+#
+#############################################
+
+opts['py2exe']['includes'] += ["cellprofiler.tests.*",
+                               "cellprofiler.cpmath.tests",
+                               "cellprofiler.cpmath.tests.*",
+                               "cellprofiler.gui.tests",
+                               "cellprofiler.gui.tests.*",
+                               "cellprofiler.gui.html.tests.*",
+                               "cellprofiler.modules.tests",
+                               "cellprofiler.modules.tests.*",
+                               "cellprofiler.utilities.tests",
+                               "cellprofiler.utilities.tests.*",
+                               "imagej.tests",
+                               "imagej.tests.*"]
+
 if do_modify:
     # A trick to load the dlls
     ver = get_visual_studio_version()
@@ -426,6 +447,8 @@ data_files += matplotlib.get_py2exe_datafiles()
 
 from javabridge.locate import find_jdk
 jdk_dir = find_jdk()
+temp_dir = tempfile.mkdtemp()
+rofiles = []
 def add_jre_files(path):
     files = []
     directories = []
@@ -435,6 +458,15 @@ def add_jre_files(path):
             continue
         local_file = os.path.join(jdk_dir, path, filename)
         relative_path = os.path.join(path, filename) 
+        if not os.access(local_file, os.W_OK):
+            # distutils can't deal so well with read-only files
+            old_local_file = local_file
+            temp_path = os.path.join(temp_dir, path)
+            local_file = os.path.join(temp_path, filename)
+            if not os.path.isdir(temp_path):
+                os.makedirs(temp_path)
+            shutil.copyfile(old_local_file, local_file)
+            rofiles.append((local_file, relative_path))
         if os.path.isfile(local_file):
             files.append(local_file)
         elif os.path.isdir(local_file):
@@ -452,20 +484,26 @@ data_files += [('imagej\\jars', JARS)]
 # Call setup
 #
 try:
-    setup(console=[{'script':'CellProfiler.py',
-                    'icon_resources':[(1,'CellProfilerIcon.ico')]},
-                   {'script':'cellprofiler\\analysis_worker.py',
-                    'icon_resources':[(1,'CellProfilerIcon.ico')]}],
-          name='Cell Profiler',
-          data_files = data_files,
-          cmdclass={'msi':CellProfilerMSI,
-                    'codesign':CellProfilerCodesign
-                    },
-          options=opts)
+    dist = setup(
+        console=[{'script':'CellProfiler.py',
+                  'icon_resources':[(1,'CellProfilerIcon.ico')]},
+                 {'script':'cellprofiler\\analysis_worker.py',
+                  'icon_resources':[(1,'CellProfilerIcon.ico')]}],
+        name='Cell Profiler',
+        data_files = data_files,
+        cmdclass={'msi':CellProfilerMSI,
+                  'codesign':CellProfilerCodesign
+                  },
+        options=opts)
 except:
     import traceback
     traceback.print_exc()
 finally:
+    for tempfile, relative_path in rofiles:
+        # TODO: extra credit for finding where the distribution
+        #       is and changing the files back to read-only
+        os.remove(tempfile)
+        
     try:
         from javabridge import kill_vm
         kill_vm()

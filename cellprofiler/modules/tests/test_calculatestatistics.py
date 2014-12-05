@@ -18,6 +18,7 @@ import numpy as np
 import os
 from StringIO import StringIO
 import tempfile
+import urllib
 import unittest
 import zlib
 from scipy.io.matlab import loadmat
@@ -33,6 +34,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.preferences as cpprefs
+from cellprofiler.modules.tests import github_url
 
 import cellprofiler.modules.calculatestatistics as C
 
@@ -411,7 +413,15 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
             cpprefs.set_default_output_directory(temp_dir)
             print "Writing output to %s"%temp_dir
             path = os.path.split(__file__)[0]
-            measurements = loadmat(os.path.join(path,'calculatestatistics.mat'),
+            matfile_path = os.path.join(path,'calculatestatistics.mat')
+            if not os.path.isfile(matfile_path):
+                # Download from GIT URL
+                matfile_path = os.path.join(temp_dir, 'calculatestatistics.mat')
+                url = github_url + (
+                    "/cellprofiler/modules/tests/"
+                    "calculatestatistics.mat")
+                urllib.urlretrieve(url, matfile_path)
+            measurements = loadmat(matfile_path,
                                    struct_as_record = True)
             measurements = measurements['m']
             image_set_list = cpi.ImageSetList()

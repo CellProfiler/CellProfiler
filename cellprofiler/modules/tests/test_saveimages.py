@@ -13,12 +13,13 @@ Website: http://www.cellprofiler.org
 """
 import logging
 logger = logging.getLogger(__name__)
+
 import base64
-import matplotlib.image
+from bioformats import load_image
+import matplotlib
 import numpy as np
 import os
 import sys
-import PIL.Image as PILImage
 from StringIO import StringIO
 import unittest
 import tempfile
@@ -892,11 +893,11 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pathnames = measurements.get_all_measurements('Image','PathName_Derived')
         self.assertEqual(filenames[0],fn)
         self.assertEqual(pathnames[0],pn)
-        data = matplotlib.image.imread(img1_out_filename)
-        expected_data = matplotlib.image.imread(img1_filename) 
+        data = load_image(img1_out_filename)
+        expected_data = load_image(img1_filename) 
         self.assertTrue(np.all(data==expected_data))
-        data = matplotlib.image.imread(img2_out_filename)
-        expected_data = matplotlib.image.imread(img2_filename) 
+        data = load_image(img2_out_filename)
+        expected_data = load_image(img2_filename) 
         self.assertTrue(np.all(data==expected_data))
 
     def test_01_03_save_last_to_same_tif(self):
@@ -945,8 +946,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         measurements = pipeline.run()
         self.assertFalse(os.path.isfile(img1_out_filename))
         self.assertTrue(os.path.isfile(img2_out_filename))
-        data = matplotlib.image.imread(img2_out_filename)
-        expected_data = matplotlib.image.imread(img2_filename) 
+        data = load_image(img2_out_filename)
+        expected_data = load_image(img2_filename) 
         self.assertTrue(np.all(data==expected_data))
 
     def test_01_04_save_all_to_output_tif(self):
@@ -1000,11 +1001,11 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pathnames = measurements.get_all_measurements('Image','PathName_Derived')
         self.assertEqual(filenames[0],fn)
         self.assertEqual(pathnames[0],pn)
-        data = matplotlib.image.imread(img1_out_filename)
-        expected_data = matplotlib.image.imread(img1_filename)
+        data = load_image(img1_out_filename)
+        expected_data = load_image(img1_filename)
         self.assertTrue(np.all(data==expected_data))
-        data = matplotlib.image.imread(img2_out_filename)
-        expected_data = matplotlib.image.imread(img2_filename) 
+        data = load_image(img2_out_filename)
+        expected_data = load_image(img2_filename) 
         self.assertTrue(np.all(data==expected_data))
 
     def test_01_05_save_all_to_custom_tif(self):
@@ -1059,11 +1060,11 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pathnames = measurements.get_all_measurements('Image','PathName_Derived')
         self.assertEqual(filenames[0],fn)
         self.assertEqual(pathnames[0],pn)
-        data = matplotlib.image.imread(img1_out_filename)
-        expected_data = matplotlib.image.imread(img1_filename) 
+        data = load_image(img1_out_filename)
+        expected_data = load_image(img1_filename) 
         self.assertTrue(np.all(data==expected_data))
-        data = matplotlib.image.imread(img2_out_filename)
-        expected_data = matplotlib.image.imread(img2_filename) 
+        data = load_image(img2_out_filename)
+        expected_data = load_image(img2_filename) 
         self.assertTrue(np.all(data==expected_data))
 
     def test_01_06_save_all_to_custom_png(self):
@@ -1118,15 +1119,11 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pathnames = measurements.get_all_measurements('Image','PathName_Derived')
         self.assertEqual(filenames[0],fn)
         self.assertEqual(pathnames[0],pn)
-        pil = PILImage.open(img1_out_filename)
-        data = matplotlib.image.pil_to_array(pil)
-        pil = PILImage.open(img1_filename)
-        expected_data = matplotlib.image.pil_to_array(pil) 
+        data = load_image(img1_out_filename)
+        expected_data = load_image(img1_filename)
         self.assertTrue(np.all(data==expected_data))
-        pil = PILImage.open(img2_out_filename)
-        data = matplotlib.image.pil_to_array(pil)
-        pil = PILImage.open(img2_filename)
-        expected_data = matplotlib.image.pil_to_array(pil) 
+        data = load_image(img2_out_filename)
+        expected_data = load_image(img2_filename)
         self.assertTrue(np.all(data==expected_data))
 
     def test_01_07_save_all_to_custom_jpg(self):
@@ -1181,13 +1178,12 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pathnames = measurements.get_all_measurements('Image','PathName_Derived')
         self.assertEqual(filenames[0],fn)
         self.assertEqual(pathnames[0],pn)
-        data = matplotlib.image.imread(img1_out_filename)
-        expected_data = matplotlib.image.imread(img1_filename) 
-        #crud - no lossless jpeg in PIL
+        data = load_image(img1_out_filename)
+        expected_data = load_image(img1_filename) 
         self.assertTrue(np.all(np.abs(data.astype(int)-
                                             expected_data.astype(int))<=4))
-        data = matplotlib.image.imread(img2_out_filename)
-        expected_data = matplotlib.image.imread(img2_filename) 
+        data = load_image(img2_out_filename)
+        expected_data = load_image(img2_filename) 
         self.assertTrue(np.all(np.abs(data.astype(int)-
                                             expected_data.astype(int))<=4))
 
@@ -1236,8 +1232,8 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pipeline.test_valid()
         measurements = pipeline.run()
         self.assertTrue(os.path.isfile(img1_out_filename))
-        data = matplotlib.image.imread(img1_out_filename)
-        expected_data = matplotlib.image.imread(img1_filename) 
+        data = load_image(img1_out_filename)
+        expected_data = load_image(img1_filename) 
         self.assertTrue(np.all(data==expected_data))
         
     def test_01_10_save_all_to_custom_png_rgb(self):
@@ -1297,19 +1293,15 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         pathnames = measurements.get_all_measurements('Image','PathName_Derived')
         self.assertEqual(filenames[0],fn)
         self.assertEqual(pathnames[0],pn)
-        pil = PILImage.open(img1_out_filename)
-        data = matplotlib.image.pil_to_array(pil)
-        pil = PILImage.open(img1_filename)
+        data = load_image(img1_out_filename, rescale=False)
+        image = load_image(img1_filename)
         mapper = matplotlib.cm.ScalarMappable(cmap=matplotlib.cm.jet)
-        expected_data = mapper.to_rgba(matplotlib.image.pil_to_array(pil), 
-                                       bytes=True)
+        expected_data = mapper.to_rgba(image, bytes=True)[:, :, :3]
         self.assertTrue(np.all(data==expected_data))
-        pil = PILImage.open(img2_out_filename)
-        data = matplotlib.image.pil_to_array(pil)
-        pil = PILImage.open(img2_filename)
+        data = load_image(img2_out_filename, rescale=False)
+        image = load_image(img2_filename)
         mapper = matplotlib.cm.ScalarMappable(cmap=matplotlib.cm.jet)
-        expected_data = mapper.to_rgba(matplotlib.image.pil_to_array(pil), 
-                                       bytes=True)
+        expected_data = mapper.to_rgba(image, bytes=True)[:, :, :3]
         self.assertTrue(np.all(data==expected_data))
         
     def test_01_11_save_to_image_subfolder(self):

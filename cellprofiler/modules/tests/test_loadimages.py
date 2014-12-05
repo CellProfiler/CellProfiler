@@ -26,7 +26,6 @@ import sys
 import zlib
 from StringIO import StringIO
 import traceback
-import PIL.Image
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as CPM
@@ -43,7 +42,9 @@ from cellprofiler.modules.tests import \
      example_images_url
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 import cellprofiler.preferences as cpprefs
+from bioformats.omexml import PT_UINT8
 from bioformats.formatreader import clear_image_reader_cache
+from bioformats.formatwriter import write_image
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
@@ -1407,6 +1408,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
     def test_05_06_load_Nikon_tif(self):
         '''This is the Nikon format TIF file from IMG-838'''
+        maybe_download_test_image("NikonTIF.tif")
         lip = LI.LoadImagesImageProvider(
             "nikon", 
             T.testimages_directory(),
@@ -1421,6 +1423,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
         This file generated a null-pointer exception in the MetamorphReader
         '''
+        maybe_download_test_image(
+            "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif")
         lip = LI.LoadImagesImageProvider(
             "nikon", 
             T.testimages_directory(),
@@ -1435,7 +1439,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
     @unittest.skip
     def test_05_08_load_5channel_tif(self):
         '''Load a 5-channel image'''
-        
+        maybe_download_test_image("5channel.tif")
         path = T.testimages_directory()
         file_name = "5channel.tif"
         maybe_download_test_image(file_name)
@@ -2830,8 +2834,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             fd.write(image)
             fd.close()
         else:
-            pilimage = PIL.Image.fromarray(image.astype(np.uint8), mode)
-            pilimage.save(path)
+            write_image(path, image.astype(np.uint8), PT_UINT8)
         module = LI.LoadImages()
         module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
         module.images[0].common_text.value = filename

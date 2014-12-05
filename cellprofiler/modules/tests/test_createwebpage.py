@@ -745,7 +745,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
             module.directory_choice.dir_choice = C.ABSOLUTE_FOLDER_NAME
             module.directory_choice.custom_path = cpprefs.get_default_image_directory()
             
-        url_root = "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages/"
+        url_root = "http://cellprofiler.org/svnmirror/ExampleImages/ExampleSBSImages/"
         url_query = "?r=11710"
         filenames = [ (url_root,  fn + url_query) for fn in
                       ("Channel1-01-A-01.tif", "Channel2-01-A-01.tif",

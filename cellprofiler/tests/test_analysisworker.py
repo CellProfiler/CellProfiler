@@ -37,18 +37,17 @@ from cellprofiler.modules.identify import C_COUNT, M_LOCATION_CENTER_X
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from cellprofiler.modules.tests import\
-     example_images_directory, maybe_download_example_image
+     example_images_directory, maybe_download_example_image, maybe_download_sbs
 from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 
 cpprefs.set_headless()
 
+
 class TestAnalysisWorker(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import bioformats
         cls.zmq_context = cpaw.the_zmq_context
-        cls.notify_pub_socket = cls.zmq_context.socket(zmq.PUB)
-        cls.notify_pub_socket.bind(cpaw.NOTIFY_ADDR)
+        cls.notify_pub_socket = cpaw.get_the_notify_pub_socket()
         #
         # Install a bogus display_post_group method in FlipAndRotate
         # to elicit a post-group interaction request
@@ -57,6 +56,7 @@ class TestAnalysisWorker(unittest.TestCase):
         def bogus_display_post_group(self, workspace, figure):
             pass
         FlipAndRotate.display_post_group = bogus_display_post_group
+        maybe_download_sbs()
         
     @classmethod
     def tearDownClass(cls):

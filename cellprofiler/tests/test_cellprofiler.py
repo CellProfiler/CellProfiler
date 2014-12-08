@@ -56,7 +56,8 @@ class TestCellProfiler(unittest.TestCase):
         finally:
             shutil.rmtree(path)
             
-    @unittest.skipIf(hasattr(sys, "frozen"))
+    @unittest.skipIf(hasattr(sys, "frozen"),
+                     "Code statistics are not available in frozen-mode")
     def test_01_02_code_statistics(self):
         old_stdout = sys.stdout
         fake_stdout = StringIO(

@@ -117,7 +117,6 @@ class TestCellProfiler(unittest.TestCase):
             import cellprofiler.preferences as cpprefs
             self.assertTrue(os.path.exists(measurements_file))
             self.assertTrue(os.path.exists(done_file))
-            self.assertEqual(temp_directory, cpprefs.get_temporary_directory())
             #
             # Re-run using the measurements file.
             #

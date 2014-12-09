@@ -331,6 +331,7 @@ except:
     pass
 opts['py2exe']['includes'] += [ 
     "sklearn.*", "scipy.sparse.csgraph._validation",
+    "sklearn.utils.*",
     "sklearn.utils.sparsetools.*"]
 
 ##############################################

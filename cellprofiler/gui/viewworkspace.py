@@ -420,7 +420,8 @@ class ViewWorkspace(object):
             self.frame.subplot_imshow_color(
                 0, 0, image,
                 clear = False,
-                cplabels = cplabels)
+                cplabels = cplabels,
+                normalize=None)
             self.axes.set_xbound(-.5, width -.5)
             self.axes.set_ybound(-.5, height -.5)
             for artist in self.axes.artists:

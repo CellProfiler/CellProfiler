@@ -341,11 +341,16 @@ TEMP_DIR = "TempDir"
 WORKSPACE_CHOICE = "WorkspaceChoice"
 ERROR_COLOR = "ErrorColor"
 INTERPOLATION_MODE = "InterpolationMode"
+INTENSITY_MODE = "IntensityMode"
 SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
 
 IM_NEAREST = "Nearest"
 IM_BILINEAR = "Bilinear"
 IM_BICUBIC = "Bicubic"
+
+INTENSITY_MODE_RAW = "raw"
+INTENSITY_MODE_NORMAL = "normalized"
+INTENSITY_MODE_LOG = "log"
 
 WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
 WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
@@ -1303,6 +1308,27 @@ def set_interpolation_mode(value):
     global __interpolation_mode
     __interpolation_mode = value
     config_write(INTERPOLATION_MODE, value)
+    
+__intensity_mode = None
+def get_intensity_mode():
+    '''Get the intensity scaling mode for matplotlib
+    
+    Returns one of INTENSITY_MODE_RAW, INTENSITY_MODE_NORMAL, INTENSITY_MODE_LOG
+    '''
+    global __intensity_mode
+    if __intensity_mode is not None:
+        return __intensity_mode
+    if config_exists(INTENSITY_MODE):
+        __intensity_mode = config_read(INTENSITY_MODE)
+    else:
+        __intensity_mode = INTENSITY_MODE_RAW
+    return __intensity_mode
+
+def set_intensity_mode(value):
+    '''Set the intensity scaling mode for matplotlib'''
+    global __intensity_mode
+    __intensity_mode = value
+    config_write(INTENSITY_MODE, value)
     
 __jvm_heap_mb = None
 def get_jvm_heap_mb():

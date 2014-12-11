@@ -1598,6 +1598,18 @@ an image that is more visually appealing and easier to interpret, but obscures
 the true pixel nature of the real data.
 """
 
+INTENSITY_MODE_HELP = """
+Sets the way CellProfiler normalizes pixel intensities when displaying.
+If you choose "raw", CellProfiler will display a pixel with a value of "1" or
+above with the maximum brightness and a pixel with a value of "0" or below
+as black. If you choose "normalize", CellProfiler will find the minimum and
+maximum intensities in the display image and show pixels at maximum intensity
+with the maximum brightness and pixels at the minimum intensity as black. This
+can be used to view dim images. If you choose "log", CellProfiler will use
+the full brightness range and will use a log scale to scale the intensities.
+This can be used to view the image background in more detail.
+"""
+
 REPORT_JVM_ERROR_HELP = """
 Determines whether CellProfiler will display a warning on startup
 if CellProfiler can't locate the Java installation on your computer. Check
@@ -1671,6 +1683,7 @@ EACH_PREFERENCE_HELP = (
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
     ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
     ( "Interpolation mode", INTERPOLATION_MODE_HELP),
+    ( "Intensity mode", INTENSITY_MODE_HELP),
     ( "CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP ),
     ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
     #( "ImageJ version", IJ_VERSION_HELP),

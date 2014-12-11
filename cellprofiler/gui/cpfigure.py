@@ -1060,7 +1060,13 @@ class CPFigureFrame(wx.Frame):
         if interpolation is None:
             interpolation = get_matplotlib_interpolation_preference()
         if normalize is None:
-            normalize = True
+            normalize = cpprefs.get_intensity_mode()
+            if normalize == cpprefs.INTENSITY_MODE_RAW:
+                normalize = False
+            elif normalize == cpprefs.INTENSITY_MODE_LOG:
+                normalize = "log"
+            else:
+                normalize = True
         if cplabels is None:
             cplabels = []
         else:

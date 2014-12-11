@@ -458,6 +458,8 @@ SE_ALL = sorted([ SE_DISK, SE_DIAMOND, SE_LINE, SE_OCTAGON,
 F_NEED_SE = [F_BOTHAT, F_CLOSE, F_DILATE, F_ERODE, F_OPEN, F_TOPHAT]
 SE_F_TEXT = ", ".join(F_NEED_SE[:-1]) + " and " + F_NEED_SE[-1]
 
+F_NO_REPEATS = [F_CLOSE, F_OPEN, F_INVERT]
+
 FUNCTION_SETTING_COUNT_V1 = 3
 FUNCTION_SETTING_COUNT_V2 = 4
 FUNCTION_SETTING_COUNT_V3 = 11
@@ -658,7 +660,7 @@ class Morph(cpm.CPModule):
             if function.can_remove:
                 result.append(function.divider)
             result.append(function.function)
-            if function.function in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN, F_INVERT):
+            if function.function in F_NO_REPEATS:
                 # Iterating open/close, erode/dilate can be handled by
                 # 
                 pass 
@@ -672,6 +674,7 @@ class Morph(cpm.CPModule):
             elif function.repeats_choice != R_CUSTOM:
                 result.append(function.repeats_choice)
             else:
+                result.append(function.repeats_choice)
                 function.custom_repeats.text = self.CUSTOM_REPEATS_TEXT
                 function.custom_repeats.doc = self.CUSTOM_REPEATS_DOC
                 result.append(function.custom_repeats)

@@ -116,10 +116,6 @@ def main(args):
         set_jvm_heap_mb(options.jvm_heap_size, False)
     set_log_level(options)
     
-    if not hasattr(sys, "frozen") and options.code_statistics:
-        print_code_statistics()
-        return
-    
     if options.print_groups_file is not None:
         print_groups(options.print_groups_file)
         return
@@ -217,6 +213,9 @@ def main(args):
             return
         if options.print_measurements:
             print_measurements(options)
+            return
+        if not hasattr(sys, "frozen") and options.code_statistics:
+            print_code_statistics()
             return
         #
         #------------------------------------------

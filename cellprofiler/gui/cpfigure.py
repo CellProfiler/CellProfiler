@@ -259,7 +259,8 @@ class CPFigureFrame(wx.Frame):
     def __init__(self, parent=None, id=-1, title="", 
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr, 
-                 subplots=None, on_close = None):
+                 subplots=None, on_close = None,
+                 secret_panel_class = None):
         """Initialize the frame:
         
         parent   - parent window to this one, typically CPFrame
@@ -271,6 +272,7 @@ class CPFigureFrame(wx.Frame):
         name     - searchable window name
         subplots - 2-tuple indicating the layout of subplots inside the window
         on_close - a function to run when the window closes
+        secret_panel_class - class to use to construct the secret panel
         """
         global window_ids
         if pos == wx.DefaultPosition:
@@ -308,7 +310,9 @@ class CPFigureFrame(wx.Frame):
         self.figure = figure = matplotlib.figure.Figure()
         self.panel = FigureCanvasWxAgg(self, -1, self.figure)
         sizer.Add(self.panel, 1, wx.EXPAND)
-        self.secret_panel = wx.Panel(self)
+        if secret_panel_class is None:
+            secret_panel_class = wx.Panel
+        self.secret_panel = secret_panel_class(self)
         self.secret_panel.Hide()
         sizer.Add(self.secret_panel, 0, wx.EXPAND)
         self.status_bar = self.CreateStatusBar()

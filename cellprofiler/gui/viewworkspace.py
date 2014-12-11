@@ -50,7 +50,8 @@ class ViewWorkspace(object):
     def __init__(self, parent, workspace):
         self.frame = CPFigureFrame(
             parent,
-            title = "CellProfiler Workspace")
+            title = "CellProfiler Workspace",
+            secret_panel_class=ScrolledPanel)
         self.workspace = workspace
         self.ignore_redraw = False
         self.image_rows = []
@@ -60,9 +61,7 @@ class ViewWorkspace(object):
         self.axes = self.frame.subplot(0, 0)
         self.image = None
         
-        panel = ScrolledPanel(self.frame.secret_panel)
-        self.frame.secret_panel.Sizer = wx.BoxSizer()
-        self.frame.secret_panel.Sizer.Add(panel, 0, wx.EXPAND)
+        panel = self.frame.secret_panel
         panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.panel = panel
         #
@@ -163,11 +162,11 @@ class ViewWorkspace(object):
         panel.Refresh()
 
     def layout(self):
-        self.panel.SetupScrolling()
         self.panel.SetMinSize((self.panel.GetVirtualSize()[0], -1))
         self.panel.Layout()
         self.frame.secret_panel.Layout()
         self.frame.Layout()
+        self.panel.SetupScrolling()
         
     def on_frame_close(self, event):
         assert isinstance(event, wx.CloseEvent)

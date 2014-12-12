@@ -293,8 +293,6 @@ class CPFigureFrame(wx.Frame):
         self.widgets = []
         self.mouse_down = None
         self.remove_menu = []
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.SetSizer(sizer)
         if cpprefs.get_use_more_figure_space():
             matplotlib.rcParams.update(dict([('figure.subplot.left', 0.025),
                                              ('figure.subplot.right', 0.975),
@@ -309,14 +307,13 @@ class CPFigureFrame(wx.Frame):
             matplotlib.rcdefaults()
         self.figure = figure = matplotlib.figure.Figure()
         self.panel = FigureCanvasWxAgg(self, -1, self.figure)
-        sizer.Add(self.panel, 1, wx.EXPAND)
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
         self.secret_panel.Hide()
-        sizer.Add(self.secret_panel, 0, wx.EXPAND)
         self.status_bar = self.CreateStatusBar()
         wx.EVT_CLOSE(self, self.on_close)
+        self.Bind(wx.EVT_SIZE, self.on_size)
         if subplots:
             self.subplots = np.zeros(subplots,dtype=object)
         self.create_menu()
@@ -478,6 +475,37 @@ class CPFigureFrame(wx.Frame):
             width = best_width
         ctrl.SetPosition(wx.Point(x, y))
         ctrl.SetSize(wx.Size(width, height))
+        
+    def on_size(self, event):
+        '''Handle resizing of canvas, bars and secret panel
+        
+        Sizers have proven to be too unpredictable and useless. So
+        we do it manually here. Reinventing the wheel is so much quicker
+        and works much better.
+        '''
+        if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
+            return
+        available_width, available_height = self.GetClientSize()
+        if self.secret_panel.IsShown():
+            sp_width = self.secret_panel.GetVirtualSize()[0]
+            canvas_width = min(max(available_width - sp_width, 250),
+                               available_width - 100)
+            sp_width = available_width - canvas_width
+            self.secret_panel.SetPosition((canvas_width, 0))
+            self.secret_panel.SetSize((sp_width, available_height))
+            self.secret_panel.Layout()
+            self.secret_panel.SetupScrolling()
+            self.secret_panel.BackgroundColour = self.BackgroundColour
+            self.secret_panel.ClearBackground()
+            self.secret_panel.Refresh()
+            for kid in self.secret_panel.GetChildren():
+                kid.Refresh()
+                kid.Update()
+        else:
+            canvas_width = available_width
+        self.panel.SetPosition((0, 0))
+        self.panel.SetSize((canvas_width, available_height))
+        self.ClearBackground()
             
     def on_close(self, event):
         if self.close_fn is not None:

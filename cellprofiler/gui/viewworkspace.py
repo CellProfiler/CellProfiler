@@ -198,7 +198,7 @@ class ViewWorkspace(object):
         grid_sizer.Add(color, (row, self.C_COLOR),
                        flag = wx.EXPAND)
         show_check = wx.CheckBox(panel)
-        show_check.SetValue(True)
+        show_check.SetValue(False)
         grid_sizer.Add(show_check, (row, self.C_SHOW),
                        flag = wx.ALIGN_CENTER)
         show_check.Bind(wx.EVT_CHECKBOX, self.redraw)

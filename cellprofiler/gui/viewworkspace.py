@@ -156,17 +156,10 @@ class ViewWorkspace(object):
         self.frame.Bind(wx.EVT_CLOSE, self.on_frame_close)
         self.set_workspace(workspace)
         self.frame.secret_panel.Show()
-        self.layout()
-        for child in panel.GetChildren():
-            child.Refresh()
-        panel.Refresh()
-
+        self.frame.on_size(None)
+        
     def layout(self):
-        self.panel.SetMinSize((self.panel.GetVirtualSize()[0], -1))
-        self.panel.Layout()
-        self.frame.secret_panel.Layout()
-        self.frame.Layout()
-        self.panel.SetupScrolling()
+        self.frame.secret_panel.SetupScrolling()
         
     def on_frame_close(self, event):
         assert isinstance(event, wx.CloseEvent)

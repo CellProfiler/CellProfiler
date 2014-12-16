@@ -405,6 +405,7 @@ class AnalysisWorker(object):
                     image_set_numbers):
                     # exception handled elsewhere, possibly cancelling this run.
                     should_process = False
+                del workspace
         
             # process the images
             if should_process:

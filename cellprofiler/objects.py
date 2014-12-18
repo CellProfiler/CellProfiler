@@ -388,8 +388,10 @@ class Objects(object):
 
         dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + 1
         dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + 1
-        parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1]
-        child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1]
+        parent_linear_ij = parent_ijv[:, 0] +\
+            dim_i * parent_ijv[:, 1].astype(np.uint64)
+        child_linear_ij = child_ijv[:, 0] +\
+            dim_i * child_ijv[:, 1].astype(np.uint64)
 
         parent_matrix = coo_matrix((np.ones((parent_ijv.shape[0],)),
                                     (parent_ijv[:, 2], parent_linear_ij)),

@@ -286,6 +286,17 @@ class TestObjects(unittest.TestCase):
         self.assertEqual(parents_of[1], 2)
         self.assertEqual(parents_of[2], 0)
         
+    def test_05_16_relate_uint16(self):
+        # Regression test of issue 1285 - uint16 ijv values
+        # wrap-around when flattened
+        #
+        # 4096 * 16 = 0 in uint16 arithmetic
+        child_ijv = np.array([[4095, 0, 1]], np.uint16)
+        parent_ijv = np.array([[4095, 16, 1]], np.uint16)
+        child_counts, parents_of = self.relate_ijv(
+            parent_ijv, child_ijv)
+        assert(np.all(child_counts==0))
+        
         
     def test_06_01_segmented_to_ijv(self):
         '''Convert the segmented representation to an IJV one'''

@@ -1471,8 +1471,11 @@ def convex_hull_transform(image, levels=256, mask = None,
         img_min = np.min(image)
         img_max = np.max(image)
     else:
-        img_min = np.min(image[mask])
-        img_max = np.max(image[mask])
+        unmasked_pixels = image[mask]
+        if len(unmasked_pixels) == 0:
+            return np.zeros(image.shape, image.dtype)
+        img_min = np.min(unmasked_pixels)
+        img_max = np.max(unmasked_pixels)
     img_shape = tuple(image.shape)
     if img_min == img_max:
         return image

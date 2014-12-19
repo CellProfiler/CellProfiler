@@ -1697,6 +1697,15 @@ class TestConvexHullTransform(unittest.TestCase):
         result = F.convex_hull_transform(image, levels = 7, mask = mask)
         self.assertTrue(np.all(result == expected))
         
+    def test_03_02_all_masked(self):
+        # Regression test of 1286 - exception if totally masked image
+        #
+        i = np.linspace(-1, 1, 11) **2
+        i, j = i[:, np.newaxis], i[np.newaxis, :]
+        image = np.sqrt(i*i + j*j)
+        mask = np.zeros(image.shape, bool)
+        F.convex_hull_transform(image, levels=8, mask=mask)
+        
     def test_04_01_many_chunks(self):
         '''Test the two-pass at a single level chunk looping'''
         np.random.seed(41)

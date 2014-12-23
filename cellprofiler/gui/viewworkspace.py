@@ -186,6 +186,34 @@ class VWObjectsRow(VWRow):
         objects = object_set.get_objects(name)
         self.data.labels = [l for l, i in objects.get_labels()]
         
+class VWMaskRow(VWRow):
+    '''A row of controls for controlling masks'''
+    def __init__(self, vw, color, can_delete):
+        super(VWMaskRow, self).__init__(vw, color, can_delete)
+        self.__cached_names = None
+        self.update_chooser(first=True)
+        name = self.chooser.GetStringSelection()
+        self.data = bind_data_class(MaskData, self.color_ctrl, vw.redraw)(
+            name, None, 
+            color = self.color, 
+            alpha = 1, 
+            mode = MODE_HIDE)
+        vw.image.add(self.data)
+        self.last_mode = MODE_LINES
+    
+    def get_names(self):
+        image_set = self.vw.workspace.image_set
+        names = [
+            name for name in image_set.get_names()
+            if image_set.get_image(name).has_mask]
+        return names
+    
+    def update_data(self, name):
+        '''Update the image data from the workspace'''
+        image_set = self.vw.workspace.image_set
+        image = image_set.get_image(name)
+        self.data.mask = image.mask
+        
 class ViewWorkspace(object):
     C_CHOOSER = 0
     C_COLOR = 1
@@ -200,6 +228,7 @@ class ViewWorkspace(object):
         self.ignore_redraw = False
         self.image_rows = []
         self.object_rows = []
+        self.mask_rows = []
         self.measurement_rows = []
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
@@ -282,6 +311,36 @@ class ViewWorkspace(object):
                         0, wx.EXPAND)
         panel.Sizer.AddSpacer(4)
         #
+        # Make a grid of mask controls
+        #
+        self.mask_grid = wx.GridBagSizer(vgap = 3, hgap = 3)
+        sub_sizer = wx.BoxSizer(wx.VERTICAL)
+        panel.Sizer.Add(sub_sizer, 0, wx.ALIGN_LEFT | wx.LEFT | wx.RIGHT, 3)
+        sub_sizer.Add(self.mask_grid, 0, wx.ALIGN_LEFT)
+        self.mask_grid.Add(
+            wx.StaticText(panel, label="Masks"), (0, self.C_CHOOSER),
+            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+        self.mask_grid.Add(
+            wx.StaticText(panel, label="Color"), (0, self.C_COLOR),
+            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+        self.mask_grid.Add(
+            wx.StaticText(panel, label="Show"), (0, self.C_SHOW),
+            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+        self.mask_grid.Add(
+            wx.StaticText(panel, label="Remove"), (0, self.C_REMOVE),
+            flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
+        self.add_mask_row(can_delete = False)
+        add_mask_button = wx.Button(panel,
+                                    label = "Add mask")
+        sub_sizer.Add(add_mask_button, 0, wx.ALIGN_RIGHT)
+        add_mask_button.Bind(
+            wx.EVT_BUTTON,
+            lambda event:self.add_mask_row())
+        panel.Sizer.AddSpacer(4)
+        panel.Sizer.Add(wx.StaticLine(panel, style = wx.LI_HORIZONTAL),
+                        0, wx.EXPAND)
+        panel.Sizer.AddSpacer(4)
+        #
         # Make a grid of measurements to display
         #
         self.m_grid = wx.GridBagSizer(vgap = 3, hgap = 3)
@@ -355,6 +414,13 @@ class ViewWorkspace(object):
             self.image_rows, self.image_grid,
             can_delete)
         
+    def add_objects_row(self, can_delete = True):
+        self.add_row(VWObjectsRow, self.object_rows, self.object_grid,
+                     can_delete)
+
+    def add_mask_row(self, can_delete = True):
+        self.add_row(VWMaskRow, self.mask_rows, self.mask_grid, can_delete)
+        
     def add_row(self, row_class, rows, grid_sizer, can_delete):
         row = len(rows) + 1
         color = wx.RED if row == 1 else wx.GREEN if row == 2 \
@@ -394,10 +460,6 @@ class ViewWorkspace(object):
         self.update_menu(self.frame.menu_subplots)
         self.layout()
         self.redraw()
-    
-    def add_objects_row(self, can_delete = True):
-        self.add_row(VWObjectsRow, self.object_rows, self.object_grid,
-                     can_delete)
     
     def on_add_measurement_row(self, event):
         self.add_measurement_row()
@@ -457,10 +519,9 @@ class ViewWorkspace(object):
         self.ignore_redraw = True
         try:
             self.update_menu(self.frame.menu_subplots)
-            self.update_choices(self.image_rows,
-                                workspace.image_set.get_names())
-            self.update_choices(self.object_rows,
-                                workspace.object_set.get_object_names())
+            self.update_choices(self.image_rows)
+            self.update_choices(self.object_rows)
+            self.update_choices(self.mask_rows)
             for measurement_row in self.measurement_rows:
                 measurement_row.update(workspace)
         finally:
@@ -473,7 +534,7 @@ class ViewWorkspace(object):
         event.SetEventObject(self.frame)
         self.image.on_update_menu(event, menu)
         
-    def update_choices(self, rows, names):
+    def update_choices(self, rows):
         for row in rows:
             row.update_chooser()
         
@@ -489,7 +550,7 @@ class ViewWorkspace(object):
     def redraw(self, event=None):
         if self.ignore_redraw:
             return
-        for vw_row in self.image_rows + self.object_rows:
+        for vw_row in self.image_rows + self.object_rows + self.mask_rows:
             vw_row.update()
         if not self.frame.figure.canvas.IsShown():
             self.frame.figure.canvas.Show()

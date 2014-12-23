@@ -16,7 +16,7 @@ import matplotlib
 import matplotlib.artist
 import matplotlib.collections
 import numpy as np
-from scipy.ndimage import distance_transform_edt
+from scipy.ndimage import distance_transform_edt, label
 
 from cellprofiler.cpmath.cpmorphology import get_outline_pts
 from cellprofiler.cpmath.outline import outline
@@ -30,6 +30,8 @@ MODE_COLORIZE = "colorize"
 MODE_COLORMAP = "colormap"
 '''Render the image as RGB'''
 MODE_RGB = "rgb"
+'''Do not display'''
+MODE_HIDE = "hide"
 
 NORMALIZE_RAW = "raw"
 NORMALIZE_LOG = "log"
@@ -184,6 +186,8 @@ class ImageData(ColorMixin):
         self.__mode = mode
     
     def get_mode(self):
+        if self.__mode == MODE_HIDE:
+            return MODE_HIDE
         if self.pixel_data.ndim == 3:
             return MODE_RGB
         elif self.__mode is None:
@@ -426,6 +430,57 @@ class CPImageArtist(matplotlib.artist.Artist):
         get_interpolation, set_interpolation,
         "The interpolation to use when stretching intensities")
     
+    def add(self, data):
+        '''Add an image, objects or mask to the artist
+        
+        data - ImageData, ObjectsData or MaskData to be added
+        '''
+        assert isinstance(data, (ImageData, ObjectsData, MaskData))
+        if isinstance(data, ImageData):
+            self.__images.append(data)
+        elif isinstance(data, ObjectsData):
+            self.__objects.append(data)
+        else:
+            self.__masks.append(data)
+            
+    def remove(self, data):
+        '''Remove an image, object or mask from the artist
+        
+        data - an ImageData, ObjectData or MaskData previously
+               added (via constructor or add)
+        '''
+        assert isinstance(data, (ImageData, ObjectsData, MaskData))
+        if isinstance(data, ImageData):
+            self.__images.remove(data)
+        elif isinstance(data, ObjectsData):
+            self.__objects.remove(data)
+        else:
+            self.__masks.remove(data)
+            
+    def remove_image_by_name(self, name):
+        '''Remove an image via the name given to it in its data'''
+        for data in self.__images:
+            if data.name == name:
+                return self.remove(data)
+        else:
+            raise ValueError("Could not find image named %s" % name)
+        
+    def remove_objects_by_name(self, name):
+        '''Remove objects via their name given to it in its data'''
+        for data in self.__objects:
+            if data.name == name:
+                return self.remove(data)
+        else:
+            raise ValueError("Could not find objects named %s" % name)
+
+    def remove_mask_by_name(self, name):
+        '''Remove a mask via the name given to it in its data'''
+        for data in self.__masks:
+            if data.name == name:
+                return self.remove(data)
+        else:
+            raise ValueError("Could not find mask named %s" % name)
+        
     def get_border_count(self):
         '''# of pixels needed for interpolation'''
         if self.interpolation == INTERPOLATION_NEAREST:
@@ -447,8 +502,12 @@ class CPImageArtist(matplotlib.artist.Artist):
         magnification = renderer.get_image_magnification()
         shape = [0, 0]
         for image in self.__images:
+            if image.mode == MODE_HIDE:
+                continue
             for i in range(2):
                 shape[i] = max(shape[i], image.pixel_data.shape[i])
+        if any([x==0 for x in shape]):
+            return
         border = self.get_border_count()
             
         vl = self.axes.viewLim
@@ -484,6 +543,8 @@ class CPImageArtist(matplotlib.artist.Artist):
             
         for image in self.__images:
             assert isinstance(image, ImageData)
+            if image.mode == MODE_HIDE:
+                continue
             if image.pixel_data.shape[1] <= abs(view_xmin) or \
                image.pixel_data.shape[0] <= abs(view_ymin):
                 continue
@@ -532,7 +593,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         
         for om in list(self.__objects) + list(self.__masks):
             assert isinstance(om, OutlinesMixin)
-            if om.mode == MODE_LINES:
+            if om.mode in (MODE_LINES, MODE_HIDE):
                 continue
             if om.mode == MODE_OUTLINES:
                 oshape = om.outlines.shape
@@ -564,7 +625,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                 ocolor = mask * color
                 oalpha = mask * om.alpha
             else:
-                pass
+                continue
             tv_image[:] = tv_image * tv_alpha * (1 - oalpha) + ocolor * oalpha
             tv_alpha[:] = tv_alpha + oalpha - tv_alpha * oalpha
             tv_image[tv_alpha != 0] /= tv_alpha[tv_alpha != 0]
@@ -622,18 +683,13 @@ class CPImageArtist(matplotlib.artist.Artist):
                 om.points.set_clip_path(self.axes.patch)
                 om.points.draw(renderer)
     
-    def add_to_menu(self, target, menu_item):
+    def add_to_menu(self, target, menu):
         '''Add to a context menu for a WX ui
         
         target - target window that will receive menu events.
         '''
         import wx
-        assert isinstance(menu_item, wx.MenuItem)
-        target.Bind(wx.EVT_UPDATE_UI, 
-                    (lambda event, menu_item=menu_item: 
-                     self.on_update_menu(event, menu_item)),
-                    id = menu_item.GetId())
-        menu = menu_item.GetSubMenu()
+        assert isinstance(menu, wx.Menu)
         interpolation_menu = wx.Menu()
         assert isinstance(menu, wx.Menu)
         menu.AppendSeparator()
@@ -663,48 +719,66 @@ class CPImageArtist(matplotlib.artist.Artist):
         self.refresh()
             
     def on_interpolation_update_event(self, event, target):
+        import wx
         assert isinstance(event, wx.UpdateUIEvent)
         event.Check(self.interpolation == target)
         
-    def on_update_menu(self, event, menu_item):
+    def on_update_menu(self, event, menu):
         import wx
-        assert isinstance(event, wx.UpdateUIEvent)
-        menu = menu_item.GetSubMenu()
         assert isinstance(menu, wx.Menu)
         menu_items = list(menu.GetMenuItems())
-        breaks = [(k, sorted(v, key=lambda x:x.name))
-                  for k, v in ((self.MI_IMAGES, self.__images),
-                               (self.MI_OBJECTS, self.__objects),
-                               (self.MI_MASKS, self.__masks))]
+        breaks = ((self.MI_IMAGES, self.__images),
+                  (self.MI_OBJECTS, self.__objects),
+                  (self.MI_MASKS, self.__masks))
         for start, item in enumerate(menu_items):
             assert isinstance(item, wx.MenuItem)
             if item.Label == self.MI_INTERPOLATION:
                 break
         else:
             return
+        window = self.__get_window_from_event(event)
         idx = start + 1
-        item = menu_items[idx]
-        while len(breaks) > 0:
-            key, sequence = breaks.pop(0)
-            while len(sequence):
-                data = sequence.pop(0)
+        if menu_items[idx].IsSeparator():
+            idx += 1
+        label_fmt = "--- %s ---"
+        for key, sequence in breaks:
+            label = label_fmt % key
+            if idx >= len(menu_items) or menu_items[idx].Text != label:
+                item = menu.Insert(idx, wx.NewId(), label)
+                item.Enable(False)
+                menu_items.insert(idx, item)
+            idx += 1
+            #
+            # Pair data items with menu items
+            #
+            for data in sequence:
                 name = data.name
-                if item.IsSeparator() or (not item.IsEnabled()) or \
-                   item.Label > name:
+                if idx == len(menu_items) or\
+                   menu_items[idx].Text.startswith("---") or\
+                   menu_items[idx].IsSeparator():
                     sub_menu = wx.Menu()
+                    my_id =  wx.NewId()
                     sub_menu_item = menu.InsertMenu(
-                        idx, wx.NewId(), name, sub_menu)
+                        idx, my_id, name, sub_menu)
+                    if data.mode == MODE_HIDE:
+                        sub_menu_item.Enable(False)
                     menu_items.insert(idx, sub_menu_item)
                     self.__initialize_sub_menu(event, sub_menu, data)
+                    def on_update_ui(event, sub_menu = sub_menu, data=data):
+                        self.__update_sub_menu(event, sub_menu, data)
+                    window.Bind(
+                        wx.EVT_UPDATE_UI, on_update_ui, id = my_id)
                     idx += 1
-                elif item.Label == name:
-                    self.__update_sub_menu(event, item.GetSubMenu(), data)
-                    idx += 1
-                    item = menu_items[idx]
                 else:
+                    self.__update_sub_menu(
+                        menu_items[idx], menu_items[idx].GetMenu(), data)
                     idx += 1
-                    item = menu_items[idx]
-                    sequence.insert(data)
+            #
+            # Remove excess menu items
+            #
+            while len(menu_items) < idx and menu_items[idx].IsEnabled():
+                menu.RemoveItem(item)
+                del menu_items[idx]
     
     def __initialize_sub_menu(self, event, sub_menu, data):
         import wx
@@ -717,20 +791,22 @@ class CPImageArtist(matplotlib.artist.Artist):
             self.__initialize_mask_sub_menu(event, sub_menu, data)
             
     def __initialize_image_sub_menu(self, event, sub_menu, data):
+        import wx
         item = sub_menu.Append(wx.NewId(), self.MI_NORMALIZATION)
         item.Enable(False)
+        window = self.__get_window_from_event(event)
         for label, target in (
             (self.MI_RAW, NORMALIZE_RAW),
             (self.MI_LINEAR, NORMALIZE_LINEAR),
             (self.MI_LOG, NORMALIZE_LOG)):
             my_id = wx.NewId()
             sub_menu.AppendRadioItem(my_id, label)
-            event.EventObject.Bind(
+            window.Bind(
                 wx.EVT_MENU,
                 (lambda event, data = data, target=target:
                  self.__on_set_normalization(data, target)),
                 id = my_id)
-            event.EventObject.Bind(
+            window.Bind(
                 wx.EVT_UPDATE_UI,
                 (lambda event, data = data, target=target:
                  self.__on_update_normalization(event, data, target)),
@@ -755,8 +831,8 @@ class CPImageArtist(matplotlib.artist.Artist):
             my_id = wx.NewId()
             item = sub_menu.AppendRadioItem(my_id, label)
             update_mode(item)
-            event.EventObject.Bind(wx.EVT_MENU, on_mode, id=my_id)
-            event.EventObject.Bind(wx.EVT_UPDATE_UI, update_mode, id=my_id)
+            window.Bind(wx.EVT_MENU, on_mode, id=my_id)
+            window.Bind(wx.EVT_UPDATE_UI, update_mode, id=my_id)
         sub_menu.AppendSeparator()
         self.__add_color_item(
             event, sub_menu, data, 
@@ -769,9 +845,11 @@ class CPImageArtist(matplotlib.artist.Artist):
         self.refresh()
 
     def __add_color_item(self, event, sub_menu, data, color_msg, colormap_msg):
+        import wx
         assert isinstance(data, ColorMixin)
         my_id = wx.NewId()
         item = sub_menu.Append(my_id, self.MI_COLOR)
+        window = self.__get_window_from_event(event)
             
         def on_color(event, 
                      data = data,
@@ -785,15 +863,17 @@ class CPImageArtist(matplotlib.artist.Artist):
         def on_update(event_or_item, data=data):
             assert isinstance(data, ColorMixin)
             event_or_item.Enable(data.using_color or data.using_colormap)
-        event.EventObject.Bind(
+        window.Bind(
             wx.EVT_MENU, on_color, id = my_id)
-        event.EventObject.Bind(
+        window.Bind(
             wx.EVT_UPDATE_UI, on_update, id= my_id)
         on_update(item)
         
     def __add_alpha_item(self, event, sub_menu, data, msg):
+        import wx
         my_id = wx.NewId()
         item = sub_menu.Append(my_id, self.MI_ALPHA)
+        window = self.__get_window_from_event(event)
         def set_alpha(alpha, data=data):
             data.alpha = alpha
             self.refresh()
@@ -805,14 +885,21 @@ class CPImageArtist(matplotlib.artist.Artist):
             assert isinstance(data, ColorMixin)
             event_or_item.Enable(data.using_alpha)
         
-        event.EventObject.Bind(wx.EVT_MENU, on_alpha, id=my_id)
-        event.EventObject.Bind(wx.EVT_UPDATE_UI, update_alpha, id= my_id)
+        window.Bind(wx.EVT_MENU, on_alpha, id=my_id)
+        window.Bind(wx.EVT_UPDATE_UI, update_alpha, id= my_id)
         update_alpha(item)
         
     def refresh(self):
         if self.figure is not None and self.figure.canvas is not None:
             self.figure.canvas.draw_idle()
         
+    def __get_window_from_event(self, event):
+        import wx
+        o = event.EventObject
+        if isinstance(o, wx.Menu):
+            return o.GetInvokingWindow()
+        return o
+    
     def __on_update_normalization(self, event, data, target):
         assert isinstance(data, ImageData)
         event.Check(data.normalization == target)
@@ -826,17 +913,18 @@ class CPImageArtist(matplotlib.artist.Artist):
         assert isinstance(sub_menu, wx.Menu)
         item = sub_menu.Append(wx.NewId(), "Display mode")
         item.Enable(False)
+        window = self.__get_window_from_event(event)
         for label, mode in ((self.MI_LINES, MODE_LINES),
                             (self.MI_OUTLINES, MODE_OUTLINES),
                             (self.MI_OVERLAY, MODE_OVERLAY)):
             my_id = wx.NewId()
             sub_menu.AppendRadioItem(my_id, label)
-            event.EventObject.Bind(
+            window.Bind(
                 wx.EVT_MENU,
                 (lambda event, data = data, mode=mode:
                  self.__on_set_objects_mode(event, data, mode)),
                 id = my_id)
-            event.EventObject.Bind(
+            window.Bind(
                 wx.EVT_UPDATE_UI,
                 (lambda event, data = data, mode=mode:
                  self.__on_update_objects_mode(event, data, mode)),
@@ -859,6 +947,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         assert isinstance(sub_menu, wx.Menu)
         item = sub_menu.Append(wx.NewId(), self.MI_MODE)
         item.Enable(False)
+        window = self.__get_window_from_event(event)
         for label, target in (
             (self.MI_LINES, MODE_LINES),
             (self.MI_OUTLINES, MODE_OUTLINES),
@@ -869,8 +958,8 @@ class CPImageArtist(matplotlib.artist.Artist):
             my_id = wx.NewId()
             item = sub_menu.AppendRadioItem(my_id, label)
             self.__on_update_mask_mode(item, data, target)
-            event.EventObject.Bind(wx.EVT_MENU, set_fn, id=my_id)
-            event.EventObject.Bind(
+            window.Bind(wx.EVT_MENU, set_fn, id=my_id)
+            window.Bind(
                 wx.EVT_UPDATE_UI, 
                 (lambda event, data=data, target=target:
                  self.__on_update_mask_mode(event, data, target)),
@@ -903,7 +992,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         orig_color = data.color
         r, g, b = [ int(x*255) for x in data.color]
         color_data.SetColour(wx.Colour(r, g, b))
-        with wx.ColourDialog(event.EventObject, color_data) as dlg:
+        window = self.__get_window_from_event(event)
+        with wx.ColourDialog(window, color_data) as dlg:
             assert isinstance(dlg, wx.ColourDialog)
             dlg.Title = msg
             if dlg.ShowModal() == wx.ID_OK:
@@ -916,7 +1006,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         import wx
         assert isinstance(data, ColorMixin)
         old_colormap = data.colormap
-        with wx.Dialog(event.EventObject) as dlg:
+        window = self.__get_window_from_event(event)
+        with wx.Dialog(window) as dlg:
             assert isinstance(dlg, wx.Dialog)
             dlg.Title = msg
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -944,7 +1035,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         import wx
         assert isinstance(data, ColorMixin)
         old_alpha = data.alpha
-        with wx.Dialog(event.EventObject) as dlg:
+        window = self.__get_window_from_event(event)
+        with wx.Dialog(window) as dlg:
             assert isinstance(dlg, wx.Dialog)
             dlg.Title = msg
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -971,8 +1063,8 @@ class CPImageArtist(matplotlib.artist.Artist):
             
             
     def __update_sub_menu(self, event, sub_menu, data):
-        pass
-        
+        event.Enable(data.mode != MODE_HIDE)
+        event.Text = data.name
 
 class CPOutlineArtist(matplotlib.collections.LineCollection):
     '''An artist that is a plot of the outline around an object

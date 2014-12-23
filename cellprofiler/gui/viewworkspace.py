@@ -21,9 +21,12 @@ from wx.lib.colourselect import ColourSelect, EVT_COLOURSELECT
 from wx.lib.scrolledpanel import ScrolledPanel
 
 from cellprofiler.gui.cpfigure import \
-     CPFigureFrame, CPImageArtist, get_matplotlib_interpolation_preference, \
-     CPLD_LABELS, CPLD_NAME, CPLD_OUTLINE_COLOR, CPLDM_OUTLINES, \
-     CPLD_MODE, CPLD_LINE_WIDTH, CPLD_ALPHA_COLORMAP, CPLD_ALPHA_VALUE, CPLD_SHOW
+     CPFigureFrame, get_matplotlib_interpolation_preference
+from cellprofiler.gui.cpartists import \
+     CPImageArtist, ImageData, ObjectsData, MaskData, ColorMixin,\
+     MODE_COLORIZE, MODE_HIDE, MODE_LINES,\
+     NORMALIZE_LINEAR, NORMALIZE_LOG, NORMALIZE_RAW,\
+     INTERPOLATION_BICUBIC, INTERPOLATION_BILINEAR, INTERPOLATION_NEAREST
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -41,6 +44,147 @@ def show_workspace_viewer(parent, workspace):
 def update_workspace_viewer(workspace):
     if __the_workspace_viewer is not None:
         __the_workspace_viewer.set_workspace(workspace)
+
+def bind_data_class(data_class, color_select, fn_redraw):
+    '''Bind ImageData etc to synchronize to color select button
+
+    data_class - ImageData, ObjectData or MaskData
+    color_select - a color select button whose color synchronizes
+                   to that of the data
+    fn_redraw - function to be called
+    '''
+    assert issubclass(data_class, ColorMixin)
+    assert isinstance(color_select, ColourSelect)
+    class bdc(data_class):
+        def _on_color_changed(self):
+            super(bdc, self)._on_color_changed()
+            r, g, b = [int(x*255) for x in self.color]
+            rold, gold, bold = self.color_select.GetColour()
+            if r != rold or g != gold or b != bold:
+                self.color_select.SetColour(wx.Colour(r, g, b))
+    bdc.color_select = color_select
+    return bdc
+         
+class VWRow(object):
+    '''A row of controls and a data item'''
+    def __init__(self, vw, color, can_delete):
+        self.vw = vw
+        panel = vw.panel
+        self.chooser = wx.Choice(panel)
+        self.color_ctrl = ColourSelect(panel, colour=color)
+        self.show_check = wx.CheckBox(panel)
+        bitmap = wx.ArtProvider.GetBitmap(
+            wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
+        self.remove_button = wx.BitmapButton(
+            panel, bitmap = bitmap)
+        if not can_delete:
+            self.remove_button.Hide()
+        self.chooser.Bind(wx.EVT_CHOICE, self.on_choice)
+        self.color_ctrl.Bind(EVT_COLOURSELECT, self.on_color_change)
+        self.show_check.Bind(wx.EVT_CHECKBOX, self.on_check_change)
+        self.update_chooser(first=True)
+            
+    @property
+    def color(self):
+        '''The color control's current color scaled for matplotlib'''
+        return tuple([float(x)/255 for x in self.color_ctrl.GetColour()])
+
+    def on_choice(self, event):
+        self.data.name = self.chooser.GetStringSelection()
+        self.vw.redraw()
+        
+    def on_color_change(self, event):
+        self.data.color = tuple(
+            [float(c) / 255. for c in self.color_ctrl.GetColour()])
+        self.vw.redraw()
+        
+    def on_check_change(self, event):
+        self.vw.redraw()
+        
+    def update(self):
+        name = self.chooser.GetStringSelection()
+        names = sorted(self.get_names())
+        image_set = self.vw.workspace.image_set
+        if self.show_check.IsChecked() and name in names:
+            self.data.name = name
+            self.update_data(name)
+            if self.data.mode == MODE_HIDE:
+                self.data.mode = self.last_mode
+        elif self.data.mode != MODE_HIDE:
+            self.last_mode = self.data.mode
+            self.data.mode = MODE_HIDE
+        self.update_chooser()
+
+    def update_chooser(self, first = False):
+        '''Update the chooser with the given list of names'''
+        name = self.chooser.GetStringSelection()
+        names = self.get_names()
+        current_names = sorted(self.chooser.GetItems())
+        if tuple(current_names) != tuple(names):
+            if name not in names:
+                names = sorted(list(names) + [name])
+            self.chooser.SetItems(names)
+            self.chooser.SetStringSelection(name)
+        if first and len(names) > 0:
+            name = names[0]
+            self.chooser.SetStringSelection(name)
+            
+        
+class VWImageRow(VWRow):
+    def __init__(self, vw, color, can_delete):
+        super(VWImageRow, self).__init__(vw, color, can_delete)
+        image_set = vw.workspace.image_set
+        name = self.chooser.GetStringSelection()
+        
+        im = cpprefs.get_intensity_mode()
+        if im == cpprefs.INTENSITY_MODE_LOG:
+            normalization = NORMALIZE_LOG
+        elif im == cpprefs.INTENSITY_MODE_NORMAL:
+            normalization = NORMALIZE_LINEAR
+        else:
+            normalization = NORMALIZE_RAW
+        self.data = bind_data_class(ImageData, self.color_ctrl, vw.redraw)(
+            name, None,
+            mode = MODE_HIDE,
+            color = self.color,
+            colormap = cpprefs.get_default_colormap(),
+            alpha = .5,
+            normalization = normalization)
+        vw.image.add(self.data)
+        self.last_mode = MODE_COLORIZE
+    
+    def get_names(self):
+        return self.vw.workspace.image_set.get_names()
+    
+    def update_data(self, name):
+        '''Update the image data from the workspace'''
+        image_set = self.vw.workspace.image_set
+        image = image_set.get_image(name)
+        self.data.pixel_data = image.pixel_data
+                
+class VWObjectsRow(VWRow):
+    '''A row of controls for controlling objects'''
+    def __init__(self, vw, color, can_delete):
+        super(VWObjectsRow, self).__init__(vw, color, can_delete)
+        self.update_chooser(first=True)
+        name = self.chooser.GetStringSelection()
+        self.data = bind_data_class(ObjectsData, self.color_ctrl, vw.redraw)(
+            name, None, 
+            outline_color = self.color, 
+            colormap = cpprefs.get_default_colormap(), 
+            alpha = 1, 
+            mode = MODE_HIDE)
+        vw.image.add(self.data)
+        self.last_mode = MODE_LINES
+    
+    def get_names(self):    
+        object_set = self.vw.workspace.object_set
+        return object_set.get_object_names()
+    
+    def update_data(self, name):
+        object_set = self.vw.workspace.object_set
+        objects = object_set.get_objects(name)
+        self.data.labels = [l for l, i in objects.get_labels()]
         
 class ViewWorkspace(object):
     C_CHOOSER = 0
@@ -59,7 +203,18 @@ class ViewWorkspace(object):
         self.measurement_rows = []
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
-        self.image = None
+        interpolation = cpprefs.get_interpolation_mode()
+        if interpolation == cpprefs.IM_NEAREST:
+            interpolation = INTERPOLATION_NEAREST
+        elif interpolation == cpprefs.IM_BILINEAR:
+            interpolation = INTERPOLATION_BILINEAR
+        else:
+            interpolation = INTERPOLATION_BICUBIC
+        self.image = CPImageArtist(interpolation = interpolation)
+        assert isinstance(self.axes, matplotlib.axes.Axes)
+        self.axes.add_artist(self.image)
+        self.axes.set_aspect('equal')
+        self.__axes_scale = None
         
         panel = self.frame.secret_panel
         panel.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -153,13 +308,40 @@ class ViewWorkspace(object):
             wx.EVT_BUTTON,
             self.on_add_measurement_row)
         
+        self.image.add_to_menu(self.frame, self.frame.menu_subplots)
+        self.frame.Bind(wx.EVT_CONTEXT_MENU, self.on_context_menu)
         self.frame.Bind(wx.EVT_CLOSE, self.on_frame_close)
         self.set_workspace(workspace)
         self.frame.secret_panel.Show()
-        self.frame.on_size(None)
+        w, h = self.frame.GetSize()
+        w += self.frame.secret_panel.GetMinWidth()
+        self.frame.SetSize(wx.Size(w, h))
+
+    def scale_axes(self):
+        '''Set the axes limits appropriate to the images we have'''
+        ax = self.image.axes
+        if self.__axes_scale == None or \
+           (self.__axes_scale[0] == ax.get_ylim()[1] and
+            self.__axes_scale[1] == ax.get_xlim()[1]):
+            max_x = max_y = 0
+            for image_row in self.image_rows:
+                if image_row.data.mode != MODE_HIDE:
+                    shape = image_row.data.pixel_data.shape
+                    max_x = max(shape[1], max_x)
+                    max_y = max(shape[0], max_y)
+            if max_x > 0 and max_y > 0:
+                max_x -= .5
+                max_y -= .5
+                ax.set_xlim(-.5, max_x)
+                ax.set_ylim(-.5, max_y)
+                self.__axes_scale = (max_y, max_x)
         
     def layout(self):
-        self.frame.secret_panel.SetupScrolling()
+        self.panel.SetMinSize((self.panel.GetVirtualSize()[0], 
+                               self.panel.GetMinHeight()))
+        self.panel.Layout()
+        self.frame.secret_panel.Layout()
+        self.panel.SetupScrolling()
         
     def on_frame_close(self, event):
         assert isinstance(event, wx.CloseEvent)
@@ -169,69 +351,52 @@ class ViewWorkspace(object):
             
     def add_image_row(self, can_delete = True):
         self.add_row(
+            VWImageRow,
             self.image_rows, self.image_grid,
-            self.workspace.image_set.get_names(),
             can_delete)
         
-    def add_row(self, rows, grid_sizer, names, can_delete):
+    def add_row(self, row_class, rows, grid_sizer, can_delete):
         row = len(rows) + 1
-        controls = []
-        panel = self.panel
-        chooser = wx.Choice(panel, choices = names)
-        grid_sizer.Add(chooser, (row, self.C_CHOOSER), flag = wx.EXPAND)
-        controls.append(chooser)
-        chooser.Bind(wx.EVT_CHOICE, self.redraw)
+        color = wx.RED if row == 1 else wx.GREEN if row == 2 \
+            else wx.BLUE if row == 3 else wx.WHITE
+        vw_row = row_class(self, color, can_delete)
         
-        color = ColourSelect(
-            panel,
-            colour = wx.RED if row == 1 else wx.GREEN if row == 2 \
-            else wx.BLUE if row == 3 else wx.WHITE)
-        color.Bind(EVT_COLOURSELECT, self.redraw)
-        controls.append(color)
-        grid_sizer.Add(color, (row, self.C_COLOR),
+        grid_sizer.Add(vw_row.chooser, (row, self.C_CHOOSER), flag = wx.EXPAND)
+        grid_sizer.Add(vw_row.color_ctrl, (row, self.C_COLOR),
                        flag = wx.EXPAND)
-        show_check = wx.CheckBox(panel)
-        show_check.SetValue(False)
-        grid_sizer.Add(show_check, (row, self.C_SHOW),
+        grid_sizer.Add(vw_row.show_check, (row, self.C_SHOW),
                        flag = wx.ALIGN_CENTER)
-        show_check.Bind(wx.EVT_CHECKBOX, self.redraw)
-        controls.append(show_check)
-        
-        bitmap = wx.ArtProvider.GetBitmap(
-            wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
-        
-        remove_button = wx.BitmapButton(panel, 
-                                        bitmap = bitmap)
-        grid_sizer.Add(remove_button, (row, self.C_REMOVE),
+        grid_sizer.Add(vw_row.remove_button, (row, self.C_REMOVE),
                             flag = wx.ALIGN_CENTER)
-        remove_button.Bind(
-            wx.EVT_BUTTON, 
-            lambda event: self.remove_row(rows, grid_sizer, remove_button))
-        if not can_delete:
-            remove_button.Hide()
-        controls.append(remove_button)
-        rows.append(controls)
-        self.layout()
+        rows.append(vw_row)
+        if can_delete:
+            self.update_menu(self.frame.menu_subplots)
+            self.layout()
         
     def remove_row(self, rows, grid_sizer, remove_button):
-        for i, row in enumerate(rows):
-            if row[self.C_REMOVE] == remove_button:
+        for i, vw_row in enumerate(rows):
+            if row.remove_button == remove_button:
                 break
         else:
             return
-        for j, control in enumerate(rows[i]):
+        for control in vw_row.chooser, vw_row.color_ctrl, vw_row.show_check, \
+            vw_row.remove_button:
             grid_sizer.Remove(control)
             control.Destroy()
-        rows.remove(row)
+        self.image.remove(vw_row)
+        rows.remove(vw_row)
         for ii in range(i, len(rows)):
-            for j, control in enumerate(rows[ii]):
+            vw_row = rows[ii]
+            for j, control in enumerate(
+                vw_row.chooser, vw_row.color_ctrl, vw_row.show_check,
+                vw_row.remove_button):
                 grid_sizer.SetItemPosition(control, (ii, j))
+        self.update_menu(self.frame.menu_subplots)
         self.layout()
         self.redraw()
     
     def add_objects_row(self, can_delete = True):
-        self.add_row(self.object_rows, self.object_grid,
-                     self.workspace.object_set.get_object_names(), 
+        self.add_row(VWObjectsRow, self.object_rows, self.object_grid,
                      can_delete)
     
     def on_add_measurement_row(self, event):
@@ -291,6 +456,7 @@ class ViewWorkspace(object):
         self.workspace = workspace
         self.ignore_redraw = True
         try:
+            self.update_menu(self.frame.menu_subplots)
             self.update_choices(self.image_rows,
                                 workspace.image_set.get_names())
             self.update_choices(self.object_rows,
@@ -301,141 +467,33 @@ class ViewWorkspace(object):
             self.ignore_redraw = False
         self.redraw()
         
+    def update_menu(self, menu):
+        event = wx.CommandEvent(wx.EVT_MENU_OPEN.evtType[0],
+                                self.frame.GetId())
+        event.SetEventObject(self.frame)
+        self.image.on_update_menu(event, menu)
+        
     def update_choices(self, rows, names):
         for row in rows:
-            choice = row[self.C_CHOOSER]
-            assert isinstance(choice, wx.Choice)
-            current_selection = choice.GetCurrentSelection()
-            current_names = choice.GetItems()
-            if current_selection != wx.NOT_FOUND:
-                if current_names[current_selection] not in names:
-                    names.append(current_names[current_selection])
-            if tuple(sorted(names)) != tuple(sorted(current_names)):
-                choice.SetItems(names)
-                if current_selection >=0 and current_selection < len(current_names):
-                    choice.SetStringSelection(current_names[current_selection])
+            row.update_chooser()
         
+    def on_context_menu(self, event):
+        menu = wx.Menu()
+        try:
+            self.image.add_to_menu(self.frame, menu)
+            self.update_menu(menu)
+            self.frame.PopupMenu(menu)
+        finally:
+            menu.Destroy()
+            
     def redraw(self, event=None):
         if self.ignore_redraw:
             return
-        min_height = min_width = np.iinfo(np.int32).max
-        smallest = None
-        size_mismatch = False
-        images = []
-        for chooser, color, check, _ in self.image_rows:
-            if not check.IsChecked():
-                continue
-            assert isinstance(chooser, wx.Choice)
-            selection = chooser.GetCurrentSelection()
-            items = chooser.GetItems()
-            if selection < 0 or selection >= len(items):
-                continue
-            image_name = items[selection]
-            if not image_name in self.workspace.image_set.get_names():
-                continue
-            image = self.workspace.image_set.get_image(image_name)
-            red, green, blue = color.GetValue()
-            images.append((image, red, green, blue))
-            height, width = image.pixel_data.shape[:2]
-            if height < min_height or width < min_width:
-                min_height, min_width = height, width
-                smallest = image
-                size_mismatch = True
-            elif height > min_height or width > min_width:
-                size_mismatch = True
-            
-        if len(images) == 0:
-            self.frame.figure.canvas.Hide()
-            return
-
-        cplabels = []
-        for chooser, color, check, _ in self.object_rows:
-            if not check.IsChecked():
-                continue
-            idx = chooser.GetCurrentSelection()
-            names = chooser.GetItems()
-            if idx < 0 or idx >= len(names):
-                continue
-            objects_name = names[idx]
-            if objects_name not in self.workspace.object_set.get_object_names():
-                continue
-            objects = self.workspace.object_set.get_objects(objects_name)
-            red, green, blue = color.GetValue()
-            color = (red, green, blue)
-            alpha_colormap = cpprefs.get_default_colormap()
-            height, width = objects.shape[:2]
-            if height < min_height or width < min_width:
-                min_height, min_width = height, width
-                smallest = objects
-                size_mismatch = True
-            elif height > min_height or width > min_width:
-                size_mismatch = True
-            
-            cplabels.append( {
-                CPLD_NAME: objects_name,
-                CPLD_LABELS: [x[0] for x in objects.get_labels()],
-                CPLD_OUTLINE_COLOR: color,
-                CPLD_MODE: CPLDM_OUTLINES,
-                CPLD_ALPHA_VALUE: .25,
-                CPLD_ALPHA_COLORMAP: alpha_colormap,
-                CPLD_LINE_WIDTH: 1,
-                CPLD_SHOW: True})
-            
-        if size_mismatch:
-            for d in cplabels:
-                d[CPLD_LABELS] = [
-                    smallest.crop_image_similarly(l) for l in d[CPLD_LABELS]]
-        
+        for vw_row in self.image_rows + self.object_rows:
+            vw_row.update()
         if not self.frame.figure.canvas.IsShown():
             self.frame.figure.canvas.Show()
             self.layout()
-        width, height = min_width, min_height
-        image = np.zeros((height, width, 3))
-        for src_image, red, green, blue in images:
-            pixel_data = src_image.pixel_data.astype(np.float32)
-            if size_mismatch:
-                pixel_data = smallest.crop_image_similarly(pixel_data)
-            if pixel_data.ndim == 3:
-                src_depth = min(pixel_data.shape[2], 3)
-                image[:, :, :src_depth] += \
-                    pixel_data[:, :, :src_depth]
-            else:
-                image[:, :, 0] += pixel_data * red / 255
-                image[:, :, 1] += pixel_data * green / 255
-                image[:, :, 2] += pixel_data * blue / 255
-                
-        if self.image is not None and \
-           tuple(self.image.image.shape) != tuple(image.shape):
-            self.image = None
-            self.axes.cla()
-        if self.image == None:
-            self.frame.subplot_imshow_color(
-                0, 0, image,
-                clear = False,
-                cplabels = cplabels,
-                normalize=None)
-            self.axes.set_xbound(-.5, width -.5)
-            self.axes.set_ybound(-.5, height -.5)
-            for artist in self.axes.artists:
-                if isinstance(artist, CPImageArtist):
-                    self.image = artist
-        else:
-            self.image.image = image
-            old_cplabels = self.image.kwargs["cplabels"]
-            for cplabel in old_cplabels:
-                cplabel[CPLD_SHOW] = False
-            for cplabel in cplabels:
-                name = cplabel[CPLD_NAME]
-                matches = filter((lambda x: x[CPLD_NAME] == name), old_cplabels)
-                if len(matches) == 0:
-                    old_cplabels.append(cplabel)
-                else:
-                    matches[0][CPLD_LABELS] = cplabel[CPLD_LABELS]
-                    matches[0][CPLD_OUTLINE_COLOR] = cplabel[CPLD_OUTLINE_COLOR]
-                    matches[0][CPLD_SHOW] = True
-            self.image.kwargs["cplabels"] = old_cplabels
-            self.frame.subplot_params[(0, 0)]['cplabels'] = old_cplabels
-            self.frame.update_line_labels(self.axes, self.image.kwargs)
         #
         # Remove all the old text labels
         #
@@ -524,6 +582,7 @@ class ViewWorkspace(object):
                         weight = font.GetWeight())
                     height += font.GetPointSize() + 1
         
+        self.scale_axes()
         self.frame.figure.canvas.draw()
             
 class MeasurementRow(object):

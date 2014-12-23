@@ -1321,7 +1321,7 @@ def get_intensity_mode():
     if config_exists(INTENSITY_MODE):
         __intensity_mode = config_read(INTENSITY_MODE)
     else:
-        __intensity_mode = INTENSITY_MODE_RAW
+        __intensity_mode = INTENSITY_MODE_NORMAL
     return __intensity_mode
 
 def set_intensity_mode(value):

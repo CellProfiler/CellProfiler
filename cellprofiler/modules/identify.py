@@ -1077,6 +1077,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
                                      np.array([entropies],dtype=float))
         
     def validate_module(self, pipeline):
+        if not hasattr(self, "threshold_scope"):
+            # derived class does not have thresholding settings
+            return
         if self.threshold_scope in (TS_ADAPTIVE, TS_GLOBAL, TS_PER_OBJECT):
             if self.get_threshold_algorithm() == TM_MOG:
                 try:

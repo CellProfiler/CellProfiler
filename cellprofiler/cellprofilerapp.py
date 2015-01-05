@@ -72,7 +72,10 @@ class CellProfilerApp(wx.App):
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")
         self.destroy_splash_screen()
-        self.frame.start(self.workspace_path, self.pipeline_path)
+        try:
+            self.frame.start(self.workspace_path, self.pipeline_path)
+        except:
+            return 0
         if self.abort_initialization:
             return 0
 

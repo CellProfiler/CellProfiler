@@ -584,6 +584,9 @@ class PipelineController:
                 self.__dirty_workspace = False
                 self.set_title()
                 self.display_pipeline_message_for_user()
+            except cpp.PipelineLoadCancelledException:
+                # In response to user interaction, so pass
+                self.__pipeline.clear()
             finally:
                 cpprefs.remove_progress_callback(progress_callback_fn)
     
@@ -919,7 +922,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 cpprefs.set_current_workspace_path(target_project_path)
                 self.set_title()
                 
-            
+        except cpp.PipelineLoadCancelledException:
+            self.__pipeline.clear()
         except Exception,instance:
             from cellprofiler.gui.errordialog import display_error_dialog
             display_error_dialog(self.__frame, instance, self.__pipeline,

@@ -999,21 +999,18 @@ class Pipeline(object):
                 if cpprefs.get_headless():
                     logging.warning(message)
                 else:
-                    try:
-                        import wx
-                        if wx.GetApp():
-                            dlg = wx.MessageDialog(
-                                parent = None,
-                                message = message + " Continue?",
-                                caption = 'Pipeline version mismatch',
-                                style = wx.OK | wx.CANCEL | wx.ICON_QUESTION)
-                            if dlg.ShowModal() != wx.ID_OK:
-                                dlg.Destroy()
-                                return None
+                    import wx
+                    if wx.GetApp():
+                        dlg = wx.MessageDialog(
+                            parent = None,
+                            message = message + " Continue?",
+                            caption = 'Pipeline version mismatch',
+                            style = wx.OK | wx.CANCEL | wx.ICON_QUESTION)
+                        if dlg.ShowModal() != wx.ID_OK:
                             dlg.Destroy()
-                        else:
-                            raise Exception  # fall through to sys.stderr.write
-                    except:
+                            raise PipelineLoadCancelledException(message)
+                        dlg.Destroy()
+                    else:
                         logger.error('Your pipeline version is %d but you are running CellProfiler version %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(pipeline_version, CURRENT_VERSION))
             else:
                 if ((not cpprefs.get_headless()) and
@@ -3677,7 +3674,10 @@ class CancelledException(Exception):
     '''
     pass
 
-    
+class PipelineLoadCancelledException(Exception):
+    '''Exception thrown if user cancels pipeline load'''
+    pass
+
 class EndRunEvent(AbstractPipelineEvent):
     """A run ended"""
     def event_type(self):

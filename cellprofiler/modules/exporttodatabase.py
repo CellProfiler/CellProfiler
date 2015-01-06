@@ -2756,8 +2756,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.ignore_feature(object_name, feature, measurements):
                     continue
                 feature_name = "%s_%s" % (object_name,feature)
-                value = measurements.get_measurement(
-                    cpmeas.IMAGE, feature, image_number)
+                if not measurements.has_feature(cpmeas.IMAGE, feature):
+                    value = np.NaN
+                else:
+                    value = measurements.get_measurement(
+                        cpmeas.IMAGE, feature, image_number)
                 if isinstance(value, np.ndarray):
                     value = value[0]
                 if coltype.startswith(cpmeas.COLTYPE_VARCHAR):
@@ -2817,8 +2820,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                 continue
                             key = (object_name, feature)
                             if key not in d:
-                                values = measurements.get_measurement(
-                                    object_name, feature, image_number)
+                                if not measurements.has_feature(
+                                    object_name, feature):
+                                    values = None
+                                else:
+                                    values = measurements.get_measurement(
+                                        object_name, feature, image_number)
                                 d[key] = values
                             else:
                                 values = d[key]

@@ -1023,6 +1023,8 @@ Do you want to save it anyway?""" %
             mdfeatures.sort()
             features += mdfeatures
         for object_name in object_names:
+            if not object_name in m.get_object_names():
+                continue
             ofeatures = m.get_feature_names(object_name)
             ofeatures = self.filter_columns(ofeatures, object_name)
             ofeatures = [(object_name, feature_name)

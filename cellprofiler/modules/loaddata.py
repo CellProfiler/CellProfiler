@@ -560,7 +560,10 @@ class LoadData(cpm.CPModule):
             output = []
             for h in header:
                 if not h.startswith('file_'):
-                    output.append(h)
+                    if isinstance(h, unicode):
+                        output.append(h.encode("utf-8"))
+                    else:
+                        output.append(h)
             return output
 
         def data_for_one_wave(data):

@@ -199,7 +199,7 @@ class KnimeBridgeServer(threading.Thread):
                 msg = "Encountered error while running module, \"%s\": %s" % (
                     module.module_name, e.message)
                 logger.warning(msg, exc_info=1)
-                self.raise_cellprofiler_exception(session_id, message)
+                self.raise_cellprofiler_exception(session_id, msg)
                 return
         type_names, feature_dict = self.find_measurements(
             other_modules, pipeline)

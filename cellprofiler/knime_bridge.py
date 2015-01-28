@@ -194,6 +194,9 @@ class KnimeBridgeServer(threading.Thread):
             workspace = cpw.Workspace(
                 pipeline, module, m, object_set, m, None)
             try:
+                logger.info(
+                    "Running module # %d: %s" % 
+                    (module.module_num, module.module_name))
                 module.run(workspace)
             except Exception, e:
                 msg = "Encountered error while running module, \"%s\": %s" % (

@@ -364,7 +364,7 @@ class TrackObjects(cpm.CPModule):
             <li>For example, if splits characterize your data, trying narrowing down to following just
             one cell that undergoes a split and examine a few frames before and after the event.</li>
             <li>You can insert the <b>Crop</b> module to zoom in a region of interest, optimize the
-            settings and then either remove or disable the module when done.
+            settings and then either remove or disable the module when done.</li>
             <li>You can also use the <b>Input</b> modules to limit yourself to a few frames under
             consideration. For example, use the filtering settings in the <b>Images</b> module to 
             use only certain files from the movie in the pipeline.</li>
@@ -382,7 +382,7 @@ class TrackObjects(cpm.CPModule):
             of standard deviations for the search radius and/or the radius limits (most likely 
             the maximum limit). See the help for these settings for details.</li>
             </ul></li>
-            <li><i>Use any visualization tools at your disposal:<i>Visualizing the data often allows for
+            <li><i>Use any visualization tools at your disposal:</i>Visualizing the data often allows for
             easier decision making as opposed to sorting through tabular data alone.
             <ul>
             <li>The <a href="http://cran.r-project.org/">R</a> open-source software package has

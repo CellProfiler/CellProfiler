@@ -221,8 +221,8 @@ class TestManual(unittest.TestCase):
                 self.assertTrue(
                     state_transitions[top_state].has_key(token),
                     "Nesting error in %s near position %d (%s)" %
-                    (module_name, pos, data[max(0,pos - 30):
-                                            min(pos + 30, len(data))]))
+                    (module_name, pos, data[max(0,pos - 50):pos]+"^^^"+
+                     data[pos:min(pos + 50, len(data))]))
                 next_state = state_transitions[top_state][token]
                 if next_state == S_INIT:
                     state.pop()

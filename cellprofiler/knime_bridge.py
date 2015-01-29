@@ -23,6 +23,7 @@ import json
 import javabridge
 import numpy as np
 import threading
+import uuid
 import zmq
 
 import cellprofiler.cpmodule as cpm
@@ -60,19 +61,24 @@ class KnimeBridgeServer(threading.Thread):
         notify_socket.send("Stop")
     '''
     
-    def __init__(self, context, address, notify_address, **kwargs):
+    def __init__(self, context, address, notify_address, notify_stop, **kwargs):
         super(KnimeBridgeServer, self).__init__(**kwargs)
         self.setDaemon(True)
         self.setName("Knime bridge server")
         self.address = address
         self.context = context
         self.notify_addr = notify_address
+        self.stop_msg = notify_stop
         self.dispatch = {
             CONNECT_REQ_1: self.connect,
             PIPELINE_INFO_REQ_1: self.pipeline_info,
             RUN_REQ_1: self.run_request,
             RUN_GROUP_REQ_1: self.run_group_request
         }
+        self.start_addr = "inproc://"+uuid.uuid4().hex
+        self.start_socket = context.socket(zmq.SUB)
+        self.start_socket.setsockopt(zmq.SUBSCRIBE, "")
+        self.start_socket.connect(self.start_addr)
         
     def __enter__(self):
         if self.address is not None:
@@ -80,7 +86,11 @@ class KnimeBridgeServer(threading.Thread):
     def __exit__(self, exc_type, value, tb):
         if self.address is not None:
             self.join()
-            
+    def start(self):
+        super(KnimeBridgeServer, self).start()
+        self.start_socket.recv()
+        self.start_socket.close()
+        
     def run(self):
         javabridge.attach()
         try:
@@ -96,9 +106,13 @@ class KnimeBridgeServer(threading.Thread):
                 poller.register(self.notify_socket, flags=zmq.POLLIN)
             else:
                 self.notify_socket = None
+            start_socket = self.context.socket(zmq.PUB)
+            start_socket.bind(self.start_addr)
+            start_socket.send("OK")
+            start_socket.close()
             try:
                 while True:
-                    for socket, event in poller.poll():
+                    for socket, event in poller.poll(1):
                         if socket == self.notify_socket:
                             msg = self.notify_socket.recv_string()
                             if msg == self.stop_msg:
@@ -122,6 +136,9 @@ class KnimeBridgeServer(threading.Thread):
                                     logger.warn(e.message, exc_info=1)
                                     self.raise_cellprofiler_exception(
                                         session_id, e.message)
+                    else:
+                        continue
+                    break
             finally:
                 if self.notify_socket:
                     self.notify_socket.close()
@@ -164,6 +181,8 @@ class KnimeBridgeServer(threading.Thread):
     def run_request(self, session_id, message_type, message):
         '''Handle the run request message'''
         pipeline, m, object_set = self.prepare_run(message, session_id)
+        if pipeline is None:
+            return
         m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER] = 1
         m[cpmeas.IMAGE, cpmeas.GROUP_INDEX] = 1
         input_modules, other_modules = self.split_pipeline(pipeline)
@@ -442,6 +461,7 @@ class KnimeBridgeServer(threading.Thread):
                     grouping_allowed=grouping_allowed)
                 m.add(channel_name, cpi.Image(pixel_data))
         except Exception, e:
+            logger.warn("Failed to decode message", exc_info=1)
             self. raise_cellprofiler_exception(
                 session_id, e.message)
             return None, None, None
@@ -452,7 +472,7 @@ class KnimeBridgeServer(threading.Thread):
                 "Failed to load pipeline: sending pipeline exception", 
                 exc_info=1)
             self.raise_pipeline_exception(session_id, str(e))
-            return
+            return None, None, None
         
         return pipeline, m, object_set
                             
@@ -588,3 +608,11 @@ class KnimeBridgeServer(threading.Thread):
         pixel_data.strides = tuple(strides_out)
         return pixel_data
                 
+__all__ = [KnimeBridgeServer]
+#
+# For testing only
+#
+__all__ += [CONNECT_REQ_1, CONNECT_REPLY_1, 
+        PIPELINE_INFO_REQ_1, PIPELINE_INFO_REPLY_1,
+        RUN_REQ_1, RUN_GROUP_REQ_1, RUN_REPLY_1,
+        PIPELINE_EXCEPTION_1, CELLPROFILER_EXCEPTION_1]

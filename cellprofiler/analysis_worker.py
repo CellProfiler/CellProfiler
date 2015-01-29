@@ -212,7 +212,7 @@ def main():
         worker_thread.start()
         with KnimeBridgeServer(the_zmq_context,
                                knime_bridge_address,
-                               NOTIFY_ADDR):
+                               NOTIFY_ADDR, NOTIFY_STOP):
             enter_run_loop()
             worker_thread.join()
             

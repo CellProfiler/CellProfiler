@@ -164,6 +164,8 @@ class KnimeBridgeServer(threading.Thread):
     def run_request(self, session_id, message_type, message):
         '''Handle the run request message'''
         pipeline, m, object_set = self.prepare_run(message, session_id)
+        m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER] = 1
+        m[cpmeas.IMAGE, cpmeas.GROUP_INDEX] = 1
         input_modules, other_modules = self.split_pipeline(pipeline)
         for module in other_modules:
             workspace = cpw.Workspace(pipeline, module, m, None, m, None)
@@ -297,6 +299,9 @@ class KnimeBridgeServer(threading.Thread):
             return
         
         image_numbers = np.arange(1, n_image_sets+1)
+        for image_number in image_numbers:
+            m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number] = 1
+            m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_number] = image_number
         input_modules, other_modules = self.split_pipeline(pipeline)
         workspace = cpw.Workspace(
             pipeline, None, m, None, m, None)

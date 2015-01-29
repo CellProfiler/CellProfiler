@@ -26,6 +26,13 @@ import threading
 import uuid
 import zmq
 
+if not hasattr(zmq, "Frame"):
+    # Apparently, not in some versions of ZMQ?
+    #
+    def ZmqFrame(self, data=""):
+        return data
+    zmq.Frame = ZmqFrame
+
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi

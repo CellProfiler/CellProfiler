@@ -76,9 +76,8 @@ class KnimeBridgeServer(threading.Thread):
             RUN_GROUP_REQ_1: self.run_group_request
         }
         self.start_addr = "inproc://"+uuid.uuid4().hex
-        self.start_socket = context.socket(zmq.SUB)
-        self.start_socket.setsockopt(zmq.SUBSCRIBE, "")
-        self.start_socket.connect(self.start_addr)
+        self.start_socket = context.socket(zmq.PAIR)
+        self.start_socket.bind(self.start_addr)
         
     def __enter__(self):
         if self.address is not None:
@@ -106,8 +105,8 @@ class KnimeBridgeServer(threading.Thread):
                 poller.register(self.notify_socket, flags=zmq.POLLIN)
             else:
                 self.notify_socket = None
-            start_socket = self.context.socket(zmq.PUB)
-            start_socket.bind(self.start_addr)
+            start_socket = self.context.socket(zmq.PAIR)
+            start_socket.connect(self.start_addr)
             start_socket.send("OK")
             start_socket.close()
             try:

@@ -38,6 +38,7 @@ CONNECT_REPLY_1 = "connect-reply-1"
 PIPELINE_INFO_REQ_1 = "pipeline-info-req-1"
 PIPELINE_INFO_REPLY_1 = "pipeline-info-reply-1"
 RUN_REQ_1 = "run-request-1"
+RUN_GROUP_REQ_1 = "run-group-request-1"
 RUN_REPLY_1 = "run-reply-1"
 CELLPROFILER_EXCEPTION_1 = "cellprofiler-exception-1"
 PIPELINE_EXCEPTION_1 = "pipeline-exception-1"
@@ -69,7 +70,8 @@ class KnimeBridgeServer(threading.Thread):
         self.dispatch = {
             CONNECT_REQ_1: self.connect,
             PIPELINE_INFO_REQ_1: self.pipeline_info,
-            RUN_REQ_1: self.run_request
+            RUN_REQ_1: self.run_request,
+            RUN_GROUP_REQ_1: self.run_group_request
         }
         
     def __enter__(self):
@@ -113,9 +115,13 @@ class KnimeBridgeServer(threading.Thread):
                                     session_id, 
                                     "Unhandled message type: %s" % message_type)
                             else:
-                                self.dispatch[message_type](
-                                    session_id, message_type, msg)
-                            
+                                try:
+                                    self.dispatch[message_type](
+                                        session_id, message_type, msg)
+                                except Exception, e:
+                                    logger.warn(e.message, exc_info=1)
+                                    self.raise_cellprofiler_exception(
+                                        session_id, e.message)
             finally:
                 if self.notify_socket:
                     self.notify_socket.close()
@@ -157,39 +163,11 @@ class KnimeBridgeServer(threading.Thread):
     
     def run_request(self, session_id, message_type, message):
         '''Handle the run request message'''
-        pipeline = cpp.Pipeline()
-        m = cpmeas.Measurements()
-        object_set = cpo.ObjectSet()
-        if len(message) < 2:
-            self.raise_cellprofiler_exception(
-                session_id, "Missing run request sections")
-            return
-        pipeline_txt = message.pop(0).bytes
-        image_metadata = message.pop(0).bytes
-        try:
-            image_metadata = json.loads(image_metadata)
-            for channel_name, channel_metadata in image_metadata:
-                if len(message) < 1:
-                    self.raise_cellprofiler_exception(
-                        session_id,
-                        "Missing binary data for channel %s" % channel_name)
-                    return
-                pixel_data = self.decode_image(
-                    channel_metadata, message.pop(0).bytes)
-                m.add(channel_name, cpi.Image(pixel_data))
-        except Exception, e:
-            self. raise_cellprofiler_exception(
-                session_id, e.message)
-        try:
-            pipeline.loadtxt(StringIO(pipeline_txt))
-        except Exception, e:
-            logger.warning(
-                "Failed to load pipeline: sending pipeline exception", 
-                exc_info=1)
-            self.raise_pipeline_exception(session_id, str(e))
-            return
-        
+        pipeline, m, object_set = self.prepare_run(message, session_id)
         input_modules, other_modules = self.split_pipeline(pipeline)
+        for module in other_modules:
+            workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+            module.prepare_run(workspace)
         for module in other_modules:
             workspace = cpw.Workspace(
                 pipeline, module, m, object_set, m, None)
@@ -197,7 +175,7 @@ class KnimeBridgeServer(threading.Thread):
                 logger.info(
                     "Running module # %d: %s" % 
                     (module.module_num, module.module_name))
-                module.run(workspace)
+                pipeline.run_module(module, workspace)
             except Exception, e:
                 msg = "Encountered error while running module, \"%s\": %s" % (
                     module.module_name, e.message)
@@ -265,8 +243,219 @@ class KnimeBridgeServer(threading.Thread):
              zmq.Frame(RUN_REPLY_1),
              zmq.Frame(json.dumps(metadata)),
              zmq.Frame(data.data)])
+        
+    def run_group_request(self, session_id, message_type, message):
+        '''Handle a run-group request message'''
+        pipeline = cpp.Pipeline()
+        m = cpmeas.Measurements()
+        image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
+        if len(message) < 2:
+            self.raise_cellprofiler_exception(
+                session_id, "Missing run request sections")
+            return
+        pipeline_txt = message.pop(0).bytes
+        image_metadata = message.pop(0).bytes
+        n_image_sets = None
+        try:
+            image_metadata = json.loads(image_metadata)
+            channel_names = []
+            for channel_name, channel_metadata in image_metadata:
+                channel_names.append(channel_name)
+                if len(message) < 1:
+                    self.raise_cellprofiler_exception(
+                        session_id,
+                        "Missing binary data for channel %s" % channel_name)
+                    return None, None, None
+                pixel_data = self.decode_image(
+                    channel_metadata, message.pop(0).bytes,
+                    grouping_allowed=True)
+                if pixel_data.ndim < 3:
+                    self.raise_cellprofiler_exception(
+                        session_id, 
+                        "The image for channel %s does not have a Z or T dimension")
+                    return
+                if n_image_sets is None:
+                    n_image_sets = pixel_data.shape[0] 
+                elif n_image_sets != pixel_data.shape[0]:
+                    self.raise_cellprofiler_exception(
+                        session_id,
+                        "The images passed have different numbers of Z or T planes")    
+                    return
+                image_group.create_dataset(channel_name,
+                                           data = pixel_data)
+        except Exception, e:
+            self. raise_cellprofiler_exception(
+                session_id, e.message)
+            return None, None, None
+        try:
+            pipeline.loadtxt(StringIO(pipeline_txt))
+        except Exception, e:
+            logger.warning(
+                "Failed to load pipeline: sending pipeline exception", 
+                exc_info=1)
+            self.raise_pipeline_exception(session_id, str(e))
+            return
+        
+        image_numbers = np.arange(1, n_image_sets+1)
+        input_modules, other_modules = self.split_pipeline(pipeline)
+        workspace = cpw.Workspace(
+            pipeline, None, m, None, m, None)
+        logger.info("Preparing group")
+        for module in other_modules:
+            module.prepare_group(
+                workspace,
+                dict([("image_number", i) for i in image_numbers]),
+                image_numbers)
+            
+        for image_index in range(n_image_sets):
+            object_set = cpo.ObjectSet()
+            m.next_image_set(image_index+1)
+            for channel_name in channel_names:
+                dataset = image_group[channel_name]
+                pixel_data = dataset[image_index]
+                m.add(channel_name, cpi.Image(pixel_data))
+                
+            for module in other_modules:
+                workspace = cpw.Workspace(
+                    pipeline, module, m, object_set, m, None)
+                try:
+                    logger.info(
+                        "Running module # %d: %s" % 
+                        (module.module_num, module.module_name))
+                    pipeline.run_module(module, workspace)
+                except Exception, e:
+                    msg = "Encountered error while running module, \"%s\": %s" % (
+                        module.module_name, e.message)
+                    logger.warning(msg, exc_info=1)
+                    self.raise_cellprofiler_exception(session_id, msg)
+                    return
+        for module in other_modules:
+            module.post_group(
+                workspace,
+                dict([("image_number", i) for i in image_numbers]))
+        logger.info("Finished group")
+        
+        type_names, feature_dict = self.find_measurements(
+            other_modules, pipeline)
+                
+        double_features = []
+        double_data = []
+        float_features = []
+        float_data = []
+        int_features = []
+        int_data = []
+        string_features = []
+        string_data = []
+        metadata = [double_features, float_features, 
+                    int_features, string_features]
+        
+        for object_name, features in feature_dict.items():
+            df = []
+            double_features.append((object_name, df))
+            ff = []
+            float_features.append((object_name, ff))
+            intf = []
+            int_features.append((object_name, intf))
+            sf = []
+            string_features.append((object_name, sf))
+            if object_name == cpmeas.IMAGE:
+                object_counts = [] * n_image_sets
+            else:
+                object_numbers = m[object_name, cpmeas.OBJECT_NUMBER, 
+                                   image_numbers]
+                object_counts = [len(x) for x in object_numbers]
+            for feature, data_type in features:
+                if data_type == 'java.lang.String':
+                    continue
+                if not m.has_feature(object_name, feature):
+                    data = np.zeros(np.sum(object_counts))
+                else:
+                    data = m[object_name, feature, image_numbers]
+                temp = []
+                for i, (di, count) in enumerate(zip(data, object_counts)):
+                    if count == 0:
+                        continue
+                    di = np.atleast_1d(di)
+                    if len(di) > count:
+                        di = di[:count]
+                    elif len(di) == count:
+                        temp.append(di)
+                    else:
+                        temp += [di + np.zeros(len(di)-count)]
+                if len(temp) > 0:
+                    data = np.hstack(temp)
+                    
+                if type_names[data_type] == 'java.lang.Double':
+                    df.append((feature, len(data)))
+                    if len(data) > 0:
+                        double_data.append(data.astype("<f8"))
+                elif type_names[data_type] == 'java.lang.Float':
+                    ff.append((feature, len(data)))
+                    if len(data) > 0:
+                        float_data.append(data.astype('<f4'))
+                elif type_names[data_type] == 'java.lang.Integer':
+                    intf.append((feature, len(data)))
+                    if len(data) > 0:
+                        int_data.append(data.astype('<i4'))
+        data = np.hstack([np.ascontiguousarray(np.hstack(ditem)).data
+                          for ditem in double_data, float_data, int_data
+                          if len(ditem) > 0])
+        data = np.ascontiguousarray(data)
+        self.socket.send_multipart(
+            [zmq.Frame(session_id),
+             zmq.Frame(),
+             zmq.Frame(RUN_REPLY_1),
+             zmq.Frame(json.dumps(metadata)),
+             zmq.Frame(data.data)])
+
+    def prepare_run(self, message, session_id, grouping_allowed=False):
+        '''Prepare a pipeline and measurements to run
+        
+        message - the run-request or run-groups-request message
+        session_id - the session ID for the session
+        grouping_allowed - true to allow grouped images
+        '''
+        pipeline = cpp.Pipeline()
+        m = cpmeas.Measurements()
+        object_set = cpo.ObjectSet()
+        if len(message) < 2:
+            self.raise_cellprofiler_exception(
+                session_id, "Missing run request sections")
+            return
+        pipeline_txt = message.pop(0).bytes
+        image_metadata = message.pop(0).bytes
+        try:
+            image_metadata = json.loads(image_metadata)
+            for channel_name, channel_metadata in image_metadata:
+                if len(message) < 1:
+                    self.raise_cellprofiler_exception(
+                        session_id,
+                        "Missing binary data for channel %s" % channel_name)
+                    return None, None, None
+                pixel_data = self.decode_image(
+                    channel_metadata, message.pop(0).bytes,
+                    grouping_allowed=grouping_allowed)
+                m.add(channel_name, cpi.Image(pixel_data))
+        except Exception, e:
+            self. raise_cellprofiler_exception(
+                session_id, e.message)
+            return None, None, None
+        try:
+            pipeline.loadtxt(StringIO(pipeline_txt))
+        except Exception, e:
+            logger.warning(
+                "Failed to load pipeline: sending pipeline exception", 
+                exc_info=1)
+            self.raise_pipeline_exception(session_id, str(e))
+            return
+        
+        return pipeline, m, object_set
                             
     def raise_pipeline_exception(self, session_id, message):
+        if isinstance(message, unicode):
+            message = message.encode("utf-8")
+        else:
+            message = str(message)
         self.socket.send_multipart(
             [zmq.Frame(session_id),
              zmq.Frame(),
@@ -274,6 +463,10 @@ class KnimeBridgeServer(threading.Thread):
              zmq.Frame(message)])
         
     def raise_cellprofiler_exception(self, session_id, message):
+        if isinstance(message, unicode):
+            message = message.encode("utf-8")
+        else:
+            message = str(message)
         self.socket.send_multipart(
             [zmq.Frame(session_id),
              zmq.Frame(),
@@ -317,7 +510,7 @@ class KnimeBridgeServer(threading.Thread):
             value is a list of two-tuples of feature name and index into
             the java types array.
         '''
-        jtypes = []
+        jtypes = ["java.lang.Integer"]
         features = {}
         for module in modules:
             assert isinstance(module, cpm.CPModule)
@@ -342,20 +535,24 @@ class KnimeBridgeServer(threading.Thread):
                     ofeatures = features[objects]
                 if name not in ofeatures:
                     ofeatures[name] = type_idx
+        for key in features:
+            features[key][cpmeas.IMAGE_NUMBER] = 0
         features_out = dict([(k, v.items()) for k, v in features.items()])
         return jtypes, features_out
     
-    def decode_image(self, channel_metadata, buf):
+    def decode_image(self, channel_metadata, buf, grouping_allowed = False):
         '''Decode an image sent via the wire format
         
         channel_metadata: sequence of 3 tuples of axis name, dimension and stride
         buf: byte-buffer, low-endian representation of doubles
+        grouping_allowed: true if we can accept images grouped by X or T
         
         returns numpy array in y, x indexing format.
         '''
         pixel_data = np.frombuffer(buf, "<f8")
         strides_out = [None] * len(channel_metadata)
         dimensions_out = [None] * len(channel_metadata)
+        grouping = False
         for axis_name, dim, stride in channel_metadata:
             if axis_name.lower() == "y":
                 if strides_out[0] != None:
@@ -372,9 +569,16 @@ class KnimeBridgeServer(threading.Thread):
                     raise RuntimeError("Channel doubly specified")
                 strides_out[2] = stride * 8
                 dimensions_out[2] = dim
+            elif grouping == False and grouping_allowed:
+                grouping = True
+                strides_out[-1] = stride * 8
+                dimensions_out[-1] = dim
             else:
                 raise RuntimeError("Unknown dimension: " + axis_name)
-
+        if grouping:
+            strides_out[0], strides_out[1:] = strides_out[-1], strides_out[:-1]
+            dimensions_out[0], dimensions_out[1:] =\
+                dimensions_out[-1], dimensions_out[:-1]
         pixel_data.shape = tuple(dimensions_out)
         pixel_data.strides = tuple(strides_out)
         return pixel_data

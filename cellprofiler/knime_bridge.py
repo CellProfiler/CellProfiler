@@ -29,7 +29,7 @@ import zmq
 if not hasattr(zmq, "Frame"):
     # Apparently, not in some versions of ZMQ?
     #
-    def ZmqFrame(self, data=""):
+    def ZmqFrame(data=""):
         return data
     zmq.Frame = ZmqFrame
 

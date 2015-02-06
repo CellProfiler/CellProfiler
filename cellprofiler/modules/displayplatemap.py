@@ -222,7 +222,8 @@ class DisplayPlatemap(cpm.CPModule):
 
     def display(self, workspace, figure):
         pm_dict = workspace.display_data.pm_dict
-        figure.set_subplots((1, 1))
+        if not hasattr(figure, "subplots"):
+            figure.set_subplots((1, 1))
         if self.title.value != '':
             title = '%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number)
         else:

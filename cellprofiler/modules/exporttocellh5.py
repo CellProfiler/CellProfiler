@@ -426,7 +426,7 @@ class ExportToCellH5(cpm.CPModule):
                         #                parent in the parent segmentation
                         # object_number2 is the index used to label the
                         #                child in the child segmentation
-                        pass
+                        continue
                     if image_number1 != m.image_set_number:
                         path1 = self.get_site_path(workspace, image_number1)
                     else:
@@ -443,10 +443,10 @@ class ExportToCellH5(cpm.CPModule):
                     #       So, given object 1 and object 2, path1 and path2
                     #       tell you how the objects are related between planes.
                     pass
-                cpmeas.R_FIRST_IMAGE_NUMBER
             
     def post_run(self, workspace):
         if self.repack:
+            measurements = workspace.measurements
             fd, temp_name = tempfile.mkstemp(
                 suffix = ".cellh5",
                 dir = self.directory.get_absolute_path())

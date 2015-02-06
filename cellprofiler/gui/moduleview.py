@@ -1251,7 +1251,13 @@ class ModuleView:
                                              name = button_name)
             def on_press(event):
                 '''Open a file browser'''
-                dlg = wx.FileDialog(control, v.browse_msg)
+                if v.mode == cps.FilenameText.MODE_OPEN:
+                    mode = wx.FD_OPEN
+                elif v.mode == cps.FilenameText.MODE_APPEND:
+                    mode = wx.FD_SAVE
+                else:
+                    mode = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
+                dlg = wx.FileDialog(control, v.browse_msg, style = mode)
                 if v.get_directory_fn is not None:
                     dlg.Directory = v.get_directory_fn()
                 if v.exts is not None:

@@ -216,10 +216,10 @@ def cp_start_vm():
             javabridge.call(stream, "close", "()V")
             os.remove(path)
                     
-        for classname in ("loci.formats.in.FlowSightReader", 
-                          "loci.formats.in.IM3Reader"):
-            klass = javabridge.class_for_name(classname)
-            class_list.add_class(klass)
+#         for classname in ("loci.formats.in.FlowSightReader", 
+#                           "loci.formats.in.IM3Reader"):
+#             klass = javabridge.class_for_name(classname)
+#             class_list.add_class(klass)
         for klass in problem_classes:
             class_list.add_class(klass)
         return class_list

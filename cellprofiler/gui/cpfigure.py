@@ -1812,16 +1812,18 @@ class CPFigureFrame(wx.Frame):
         axes.set_title(title)
         axes.set_xticks(range(ncols))
         axes.set_yticks(range(nrows))
-        axes.set_xticklabels(range(1, ncols+1), minor=True)
-        axes.set_yticklabels(alphabet[:nrows], minor=True)
+        axes.set_xticklabels(range(1, ncols+1), minor=False)
+        axes.set_yticklabels(alphabet[:nrows], minor=False)
         axes.axis('image')
 
         if colorbar and not np.all(np.isnan(data)):
             if self.colorbar.has_key(axes):
                 cb = self.colorbar[axes]
                 cb.set_clim(np.min(clean_data), np.max(clean_data))
+                cb.update_normal(clean_data)
             else:
-                self.colorbar[axes] = self.figure.colorbar(plot)
+                self.colorbar[axes] = self.figure.colorbar(
+                    plot, ax=axes)
                 
         def format_coord(x, y):
             col = int(x + 0.5)

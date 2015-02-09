@@ -451,7 +451,7 @@ class ExportToCellH5(cpm.CPModule):
                 suffix = ".cellh5",
                 dir = self.directory.get_absolute_path())
                 
-            master_name = self.get_path_to_master_file(workspace, measurements)
+            master_name = self.get_path_to_master_file(workspace.measurements)
             src = h5py.File(master_name, "r")
             dest = h5py.File(temp_name)
             os.close(fd)

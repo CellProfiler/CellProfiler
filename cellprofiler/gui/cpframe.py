@@ -5,7 +5,7 @@ CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
+Copyright (c) 2009-2015 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -979,7 +979,7 @@ CellProfiler (BI-2013-070) is cell image analysis software that was
 developed with funding from the U.S. National Institutes of Health and
 National Science Foundation and is made available through the
 generosity of the Broad Institute, Inc.
-Copyright © 2009-2014 Broad Institute, Inc.
+Copyright © 2009-2015 Broad Institute, Inc.
 Copyright © 2008-2009 Massachusetts Institute of Technology
 All rights reserved."""
         copyright_ctl = wx.StaticText(dlg, -1, cellprofiler_copyright)

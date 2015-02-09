@@ -4,7 +4,7 @@ CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
+Copyright (c) 2009-2015 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -175,7 +175,8 @@ def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
         if window:
             if len(title) and title != window.Title:
                 window.Title = title
-            window.set_subplots(subplots)
+            if subplots is not None:
+                window.set_subplots(subplots)
         return window
 
 def create_or_find(parent=None, id=-1, title="", 
@@ -1712,8 +1713,7 @@ class CPFigureFrame(wx.Frame):
         return plot
     
     def subplot_platemap(self, x, y, plates_dict, plate_type,
-                         cmap=matplotlib.cm.jet, colorbar=True, title='',
-                         clear=True):
+                         cmap=matplotlib.cm.jet, colorbar=True, title=''):
         '''Draws a basic plate map (as an image).
         x, y       - subplot's column and row (should be 0,0)
         plates_dict - dict of the form: d[plate][well] --> numeric value
@@ -1724,26 +1724,48 @@ class CPFigureFrame(wx.Frame):
         title      - name for this subplot
         clear      - clear the subplot axes before display if True
         '''
-        if clear:
-            self.clear_subplot(x, y)
-        axes = self.subplot(x, y)
-        
-        alphabet = 'ABCDEFGHIJKLMNOP'  #enough letters for a 384 well plate
         plate_names = sorted(plates_dict.keys())
         
         if 'plate_choice' not in self.__dict__:
             platemap_plate = plate_names[0]
             # Add plate selection choice
-            sz = wx.BoxSizer(wx.HORIZONTAL)
-            sz.AddStretchSpacer()
-            plate_static_text = wx.StaticText(self, -1, 'Plate: ')
-            self.plate_choice = wx.Choice(self, -1, choices=plate_names)
+            #
+            # Make the text transparent so the gradient shows.
+            # Intercept paint to paint the foreground only
+            # Intercept erase background to do nothing
+            # Intercept size to make sure we redraw
+            #
+            plate_static_text = wx.StaticText(
+                self.ToolBar, -1, 'Plate: ',
+                style = wx.TRANSPARENT_WINDOW)
+            def on_paint_text(event):
+                dc = wx.PaintDC(plate_static_text)
+                dc.SetFont(plate_static_text.GetFont())
+                dc.DrawText(plate_static_text.GetLabel(), 0, 0)
+                
+            def on_size(event):
+                plate_static_text.Refresh()
+                event.Skip()
+            plate_static_text.Bind(wx.EVT_ERASE_BACKGROUND, lambda event: None)
+            plate_static_text.Bind(wx.EVT_PAINT, on_paint_text)
+            plate_static_text.Bind(wx.EVT_SIZE, on_size)
+
+            self.plate_choice = wx.Choice(self.ToolBar, -1, choices=plate_names)
+            def on_plate_selected(event):
+                self.draw_platemap()
+                
+            self.plate_choice.Bind(wx.EVT_CHOICE, on_plate_selected)
             self.plate_choice.SetSelection(0)
-            sz.Add(plate_static_text, 0, wx.EXPAND)
-            sz.Add(self.plate_choice, 0, wx.EXPAND)
-            sz.AddStretchSpacer()
-            self.Sizer.Insert(0, sz, 0, wx.EXPAND)
-            self.Layout()
+            self.ToolBar.AddControl(plate_static_text)
+            self.ToolBar.AddControl(self.plate_choice)
+            self.ToolBar.Realize()
+            self.plate_choice.plates_dict = plates_dict
+            self.plate_choice.plate_type = plate_type
+            self.plate_choice.x = x
+            self.plate_choice.y = y
+            self.plate_choice.cmap = cmap
+            self.plate_choice.axis_title = title
+            self.plate_choice.colorbar = colorbar
         else:
             selection = self.plate_choice.GetStringSelection()
             self.plate_choice.SetItems(plate_names)
@@ -1751,12 +1773,32 @@ class CPFigureFrame(wx.Frame):
                 self.plate_choice.SetStringSelection(selection)
             else:
                 self.plate_choice.SetSelection(0)
-        def on_plate_selected(evt):
-            self.subplot_platemap(x,y, plates_dict, plate_type, cmap=cmap, 
-                                  colorbar=colorbar, title=title, clear=True)
-        self.plate_choice.Bind(wx.EVT_CHOICE, on_plate_selected)
+            dest = self.plate_choice.plates_dict
+            for key in plates_dict:
+                if key not in dest:
+                    dest[key] = plates_dict[key]
+                else:
+                    destplate = dest[key]
+                    srcplate = plates_dict[key]
+                    for subkey in srcplate:
+                        if subkey not in destplate:
+                            destplate[subkey] = srcplate[subkey]
+                        elif not np.isnan(srcplate[subkey]):
+                            destplate[subkey] = srcplate[subkey]
         
+        return self.draw_platemap()
+    
+    def draw_platemap(self):
+        alphabet = 'ABCDEFGHIJKLMNOP'  #enough letters for a 384 well plate
+        x = self.plate_choice.x
+        y = self.plate_choice.y
+        axes = self.subplot(x, y)
         platemap_plate = self.plate_choice.GetStringSelection()
+        plates_dict = self.plate_choice.plates_dict
+        plate_type = self.plate_choice.plate_type
+        title = self.plate_choice.axis_title
+        cmap = self.plate_choice.cmap
+        colorbar = self.plate_choice.colorbar
         data = format_plate_data_as_array(plates_dict[platemap_plate], plate_type)
         
         nrows, ncols = data.shape
@@ -1765,7 +1807,6 @@ class CPFigureFrame(wx.Frame):
         # XXX: What if colormap with gray in it?
         cmap.set_bad('gray', 1.)
         clean_data = np.ma.array(data, mask=np.isnan(data))
-        
         plot = axes.imshow(clean_data, cmap=cmap, interpolation='nearest',
                            shape=data.shape)
         axes.set_title(title)
@@ -1775,13 +1816,12 @@ class CPFigureFrame(wx.Frame):
         axes.set_yticklabels(alphabet[:nrows], minor=True)
         axes.axis('image')
 
-        if colorbar:
-            subplot = self.subplot(x,y)
-            if self.colorbar.has_key(subplot):
-                cb = self.colorbar[subplot]
-                self.colorbar[subplot] = self.figure.colorbar(plot, cax=cb.ax)
+        if colorbar and not np.all(np.isnan(data)):
+            if self.colorbar.has_key(axes):
+                cb = self.colorbar[axes]
+                cb.set_clim(np.min(clean_data), np.max(clean_data))
             else:
-                self.colorbar[subplot] = self.figure.colorbar(plot)
+                self.colorbar[axes] = self.figure.colorbar(plot)
                 
         def format_coord(x, y):
             col = int(x + 0.5)
@@ -1797,7 +1837,7 @@ class CPFigureFrame(wx.Frame):
             return res
         
         axes.format_coord = format_coord
-        
+        axes.figure.canvas.draw()
         return plot
         
 def format_plate_data_as_array(plate_dict, plate_type):

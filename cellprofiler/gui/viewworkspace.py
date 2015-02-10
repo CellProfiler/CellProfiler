@@ -232,6 +232,7 @@ class ViewWorkspace(object):
         self.measurement_rows = []
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
+        self.axes.invert_yaxis()
         interpolation = cpprefs.get_interpolation_mode()
         if interpolation == cpprefs.IM_NEAREST:
             interpolation = INTERPOLATION_NEAREST
@@ -393,6 +394,7 @@ class ViewWorkspace(object):
                 max_y -= .5
                 ax.set_xlim(-.5, max_x)
                 ax.set_ylim(-.5, max_y)
+                ax.invert_yaxis()
                 self.__axes_scale = (max_y, max_x)
         
     def layout(self):

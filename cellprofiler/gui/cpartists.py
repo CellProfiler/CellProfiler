@@ -649,7 +649,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         # which is from the bottom of the screen
         #
         if self.axes.viewLim.height < 0:
-            ty = (self.axes.viewLim.y0 - view_ymin) + .5
+            ty = (self.axes.viewLim.y1 - view_ymin) + .5
         else:
             ty = view_ymin - self.axes.viewLim.y0 - .5
         im.apply_translation(tx, ty)

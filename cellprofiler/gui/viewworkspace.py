@@ -401,6 +401,8 @@ class ViewWorkspace(object):
         self.panel.Layout()
         self.frame.secret_panel.Layout()
         self.panel.SetupScrolling()
+        for child in self.panel.GetChildren():
+            child.Refresh()
         
     def on_frame_close(self, event):
         assert isinstance(event, wx.CloseEvent)
@@ -436,12 +438,18 @@ class ViewWorkspace(object):
                             flag = wx.ALIGN_CENTER)
         rows.append(vw_row)
         if can_delete:
-            self.update_menu(self.frame.menu_subplots)
-            self.layout()
-        
+            def remove_this_row(
+                event, rows=rows, grid_sizer=grid_sizer, 
+                remove_button = vw_row.remove_button):
+                self.remove_row(rows, grid_sizer, remove_button)
+            vw_row.remove_button.Bind(
+                wx.EVT_BUTTON, remove_this_row)
+        self.update_menu(self.frame.menu_subplots)
+        self.layout()
+
     def remove_row(self, rows, grid_sizer, remove_button):
         for i, vw_row in enumerate(rows):
-            if row.remove_button == remove_button:
+            if vw_row.remove_button == remove_button:
                 break
         else:
             return
@@ -449,7 +457,7 @@ class ViewWorkspace(object):
             vw_row.remove_button:
             grid_sizer.Remove(control)
             control.Destroy()
-        self.image.remove(vw_row)
+        self.image.remove(vw_row.data)
         rows.remove(vw_row)
         for ii in range(i, len(rows)):
             vw_row = rows[ii]

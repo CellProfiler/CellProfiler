@@ -27,6 +27,8 @@ from cellprofiler.gui.cpartists import \
      MODE_COLORIZE, MODE_HIDE, MODE_LINES,\
      NORMALIZE_LINEAR, NORMALIZE_LOG, NORMALIZE_RAW,\
      INTERPOLATION_BICUBIC, INTERPOLATION_BILINEAR, INTERPOLATION_NEAREST
+from cellprofiler.gui.help import WV_FIGURE_HELP, WORKSPACE_VIEWER_HELP
+from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -223,7 +225,8 @@ class ViewWorkspace(object):
         self.frame = CPFigureFrame(
             parent,
             title = "CellProfiler Workspace",
-            secret_panel_class=ScrolledPanel)
+            secret_panel_class=ScrolledPanel,
+        help_menu_items=WV_FIGURE_HELP)
         self.workspace = workspace
         self.ignore_redraw = False
         self.image_rows = []
@@ -367,7 +370,13 @@ class ViewWorkspace(object):
         add_measurement_button.Bind(
             wx.EVT_BUTTON,
             self.on_add_measurement_row)
-        
+        panel.Sizer.AddSpacer(6)
+        help_button = wx.Button(panel, wx.ID_HELP)
+        panel.Sizer.Add(help_button, 0, wx.ALIGN_RIGHT)
+        def on_help(event):
+            HTMLDialog(panel, "Workspace viewer help", 
+                       WORKSPACE_VIEWER_HELP).Show()
+        help_button.Bind(wx.EVT_BUTTON, on_help)
         self.image.add_to_menu(self.frame, self.frame.menu_subplots)
         self.frame.Bind(wx.EVT_CONTEXT_MENU, self.on_context_menu)
         self.frame.Bind(wx.EVT_CLOSE, self.on_frame_close)

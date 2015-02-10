@@ -261,7 +261,8 @@ class CPFigureFrame(wx.Frame):
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr, 
                  subplots=None, on_close = None,
-                 secret_panel_class = None):
+                 secret_panel_class = None,
+                 help_menu_items = FIGURE_HELP):
         """Initialize the frame:
         
         parent   - parent window to this one, typically CPFrame
@@ -274,6 +275,7 @@ class CPFigureFrame(wx.Frame):
         subplots - 2-tuple indicating the layout of subplots inside the window
         on_close - a function to run when the window closes
         secret_panel_class - class to use to construct the secret panel
+        help_menu_items - menu items to place in the help menu
         """
         global window_ids
         if pos == wx.DefaultPosition:
@@ -317,7 +319,7 @@ class CPFigureFrame(wx.Frame):
         self.Bind(wx.EVT_SIZE, self.on_size)
         if subplots:
             self.subplots = np.zeros(subplots,dtype=object)
-        self.create_menu()
+        self.create_menu(help_menu_items)
         self.create_toolbar()
         self.figure.canvas.mpl_connect('button_press_event', self.on_button_press)
         self.figure.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
@@ -354,7 +356,7 @@ class CPFigureFrame(wx.Frame):
                         wx.EVT_MENU(parent, window_id, on_menu_command)
                         self.remove_menu.append([menu, window_id])
     
-    def create_menu(self):
+    def create_menu(self, figure_help = FIGURE_HELP):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE,"&Save")
@@ -389,7 +391,7 @@ class CPFigureFrame(wx.Frame):
 
         self.SetAcceleratorTable(accelerators)
         wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
-        self.MenuBar.Append(make_help_menu(FIGURE_HELP, self), "&Help")
+        self.MenuBar.Append(make_help_menu(figure_help, self), "&Help")
     
     
     def create_toolbar(self):

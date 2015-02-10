@@ -18,7 +18,7 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>,
 #See the accompanying file LICENSE for details.
 #
 # Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2014 Broad Institute
+# Copyright (c) 2009-2015 Broad Institute
 #
 #Please see the AUTHORS file for credits.
 #
@@ -182,7 +182,9 @@ class DisplayPlatemap(cpm.CPModule):
         if self.show_window:
             m = workspace.get_measurements()
             # Get plates
-            plates = m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value)
+            plates = map(
+                unicode, 
+                m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value))
             # Get wells
             if self.well_format == WF_NAME:
                 wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)
@@ -222,7 +224,8 @@ class DisplayPlatemap(cpm.CPModule):
 
     def display(self, workspace, figure):
         pm_dict = workspace.display_data.pm_dict
-        figure.set_subplots((1, 1))
+        if not hasattr(figure, "subplots"):
+            figure.set_subplots((1, 1))
         if self.title.value != '':
             title = '%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number)
         else:

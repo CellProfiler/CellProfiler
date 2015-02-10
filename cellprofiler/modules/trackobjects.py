@@ -24,6 +24,8 @@ M_BOTH = "Both"
 
 RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
 RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
+ONLY_IF_2ND_PHASE_LAP_TEXT = '''<i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i>'''%globals()
+
 import cellprofiler.icons 
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 __doc__ = """
@@ -108,6 +110,13 @@ one linking method is assigned.</li>
 <ul>
 <li><b>%(KM_NO_VEL)d</b>: The <i>%(M_RANDOM)s</i> model was used.</li>
 <li><b>%(KM_VEL)d</b>: The <i>%(M_VELOCITY)s</i> model was used.</li>
+<li><b>-1</b>: Neither model was used. This can occur under two circumstances:
+<ul>
+<li>At the beginning of a trajectory, when there is no data to determine the model as 
+yet.</li>
+<li>At the beginning of a closed gap, since a model was not actually applied to make 
+the link in the first phase.</li>
+</ul></li>
 </ul>
 </li>
 <li><i>LinkingDistance:</i>The difference between the propagated position of an
@@ -159,7 +168,7 @@ See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>G
 # See the accompanying file LICENSE for details.
 # 
 # Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2014 Broad Institute
+# Copyright (c) 2009-2015 Broad Institute
 # 
 # Please see the AUTHORS file for credits.
 # 
@@ -344,6 +353,49 @@ class TrackObjects(cpm.CPModule):
             between tracked objects and captures merging and splitting events. This step takes
             place at the end of the analysis run.</p>
             
+            <p><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Some recommendations on optimizing 
+            the LAP settings<br>
+            <ul>
+            <li><i>Work with a minimal subset of your data:</i> Attempting to optimize these settings
+            by examining a dataset containing many objects may be complicated and frustrating. 
+            Therefore, it is a good idea to work with a smaller portion of the data containing the
+            behavior of interest.
+            <ul>
+            <li>For example, if splits characterize your data, trying narrowing down to following just
+            one cell that undergoes a split and examine a few frames before and after the event.</li>
+            <li>You can insert the <b>Crop</b> module to zoom in a region of interest, optimize the
+            settings and then either remove or disable the module when done.</li>
+            <li>You can also use the <b>Input</b> modules to limit yourself to a few frames under
+            consideration. For example, use the filtering settings in the <b>Images</b> module to 
+            use only certain files from the movie in the pipeline.</li>
+            </ul></li>
+            <li><i>Begin by optimzing the settings for the first phase of the LAP:</i> The 2nd phase of 
+            the LAP method depends on the results of the first phase. Therefore, it is a good idea to
+            optimize the first phase settings as the initial step.
+            <ul>
+            <li>You can disable 2nd phase calculation by selecting <i>%(NO)s</i> for "Run the second 
+            phase of the LAP algorithm?"</li>
+            <li>By maximizing the the number of correct frame-to-frame links in the first phase, the 
+            2nd phase will have less candidates to consider for linking and have a better chance of
+            closing gaps correctly. </li>
+            <li>If tracks are not being linked in the first phase, you may need to adjust the number 
+            of standard deviations for the search radius and/or the radius limits (most likely 
+            the maximum limit). See the help for these settings for details.</li>
+            </ul></li>
+            <li><i>Use any visualization tools at your disposal:</i>Visualizing the data often allows for
+            easier decision making as opposed to sorting through tabular data alone.
+            <ul>
+            <li>The <a href="http://cran.r-project.org/">R</a> open-source software package has
+            analysis and visualization tools that can query a database. See <a href=
+            "http://www.broadinstitute.org/~leek/rtracking.html">here</a> for a use case by our
+            lead software engineer.</li>
+            <li><a href="http://cellprofiler.org/tracer/">CellProfiler Tracer</a> is a version of 
+            CellProfiler Analyst that contains tools for visualizing time-lapse data that has been exported
+            using the <b>ExportToDatabase</b> module.</li>
+            </ul></li>
+            </ul>
+            </p>
+            
             <p><b>References</b>
             <ul>
             <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
@@ -415,17 +467,25 @@ class TrackObjects(cpm.CPModule):
             RADIUS_STD_SETTING_TEXT, 3, minval=1,doc = """
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i>
             <br>
-            <b>TrackObjects</b> will estimate the variance of the error
+            <b>TrackObjects</b> will estimate the standard deviation of the error
             between the observed and predicted positions of an object for
             each movement model. It will constrain the search for matching
             objects from one frame to the next to the standard deviation
             of the error times the number of standard
-            deviations that you enter here."""%globals())
+            deviations that you enter here.
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Recommendations:
+            <ul>
+            <li>If the standard deviation is quite small, but the object makes a 
+            large spatial jump, this value may need to be set higher in order 
+            to increase the search area and thereby make the frame-to-frame
+            linkage.</li>
+            </ul></dd>
+            </dl>"""%globals())
         
         self.radius_limit = cps.FloatRange(
             RADIUS_LIMIT_SETTING_TEXT, (2, 10), minval = 0,doc = """
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
-            <b>Care must be taken to adjust the upper limit appropriate to the data.</b><br>
             <b>TrackObjects</b> derives a search radius based on the error
             estimation. Potentially, the module can make an erroneous assignment
             with a large error, leading to a large estimated error for
@@ -434,11 +494,20 @@ class TrackObjects(cpm.CPModule):
             that does not track the object in a subsequent frame. The radius
             limit constrains the maximum radius to reasonable values. 
             <dl>
-            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            The lower limit should be set to a radius (in pixels) that is a
-            reasonable displacement for any object from one frame to the next.
-            The upper limit should be set to the maximum reasonable 
-            displacement under any circumstances.</dd>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Recommendations:
+            <ul>
+            <li>Special care must be taken to adjust the upper limit appropriate 
+            to the data.</li>
+            <li>The lower limit should be set to a radius (in pixels) that is a
+            reasonable displacement for any object from one frame to the next. Hence, 
+            if you notice that a frame-to-frame linkage is not being made for a 
+            steadily-moving object, it may be that this value needs to be decreased  
+            such that the displacement falls above the lower limit.</li>
+            <li>The upper limit should be set to the maximum reasonable 
+            displacement (in pixels) under any circumstances. Hence, if you notice that
+            a frame-to-frame linkage is not being made in the case of a unusually 
+            large displacement, this value may need to be increased.</li>
+            </ul></dd>
             </dl>"""%globals())
         
         self.wants_second_phase = cps.Binary(
@@ -459,8 +528,8 @@ class TrackObjects(cpm.CPModule):
             the settings.</p>"""%globals())
         
         self.gap_cost = cps.Integer(
-            'Gap cost', 40, minval=1, doc = '''
-            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
+            'Gap closing cost', 40, minval=1, doc = '''
+            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting assigns a cost to keeping a gap caused
             when an object is missing from one of the frames of a track (the
             alternative to keeping the gap is to bridge it by connecting
@@ -470,17 +539,17 @@ class TrackObjects(cpm.CPModule):
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
-            <li>Set the gap cost higher if tracks from objects in previous
+            <li>Set the gap closing cost higher if tracks from objects in previous
             frames are being erroneously joined, across a gap, to tracks from 
             objects in subsequent frames. </li>
-            <li>Set the cost lower if tracks
+            <li>Set the gap closing cost lower if tracks
             are not properly joined due to gaps caused by mis-segmentation.</li>
             </ul></dd>
             </dl></p>'''%globals())
         
         self.split_cost = cps.Integer(
             'Split alternative cost', 40, minval=1, doc = '''
-            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
+            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the cost of keeping two tracks distinct
             when the alternative is to make them into one track that
             splits. A split occurs when an object in one frame is assigned
@@ -501,12 +570,14 @@ class TrackObjects(cpm.CPModule):
             that should not be split. </li>
             <li>The split cost should be set higher if objects
             that should be split are not.</li>
+            <li>If you are confident that there should be no splits present in the data,
+            the cost can be set to 1 (the minimum value possible)</li>
             </ul></dd>
             </dl>'''%globals())
         
         self.merge_cost = cps.Integer(
             'Merge alternative cost', 40, minval=1,doc = '''
-            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
+            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the cost of keeping two tracks
             distinct when the alternative is to merge them into one.
             A merge occurs when two objects in one frame are assigned to
@@ -528,13 +599,14 @@ class TrackObjects(cpm.CPModule):
             merged when they should otherwise be kept separate. </li>
             <li>Set the merge alternative cost
             higher if objects that are not merged should be merged.</li>
+            <li>If you are confident that there should be no merges present in the data,
+            the cost can be set to 1 (the minimum value possible)</li>
             </ul></dd>
             </dl>'''%globals())
         
         self.mitosis_cost = cps.Integer(
             'Mitosis alternative cost', 80, minval=1, doc = '''
-            <i>(Used only if the %(TM_LAP)s tracking method is applied and the
-            second phase is run)</i><br>
+            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting is the cost of not linking a parent and two daughters
             via the mitosis model. the %(TM_LAP)s tracking method weighs this 
             cost against the score of a potential mitosis. The model expects
@@ -554,22 +626,23 @@ class TrackObjects(cpm.CPModule):
             <li>Increase the mitosis alternative cost to favor more mitoses
             and decrease it to prevent more mitoses candidates from being
             accepted.</li>
-            </ul></dl>'''%globals())
+            </ul></dd>
+            </dl>'''%globals())
         
         self.mitosis_max_distance = cps.Integer(
-            'Mitosis max distance, in pixel units', 40, minval=1, doc= '''
-            <i>(Used only if the %(TM_LAP)s tracking method is applied and the
-            second phase is run)</i><br>
-            This setting is the maximum allowed distance in pixels of either of 
-            the daughter candidates after mitosis from the parent candidate.
+            'Maximum mitosis distance, in pixel units', 40, minval=1, doc= '''
+            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            This setting is the maximum allowed distance in pixels of either 
+            of the daughter candidate centroids after mitosis from the parent candidate.
             '''%globals())
         
         self.max_gap_score = cps.Integer(
             'Maximum gap displacement, in pixel units', 5, minval=1, doc = '''
-            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
+            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting acts as a filter for unreasonably large
             displacements during the second phase. 
-            <p><i><b>Recommendations:</b></i>
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
             <ul>
             <li>The maximum gap displacement should be set to roughly
             the maximum displacement of an object's center from frame to frame. An object that makes large
@@ -578,11 +651,14 @@ class TrackObjects(cpm.CPModule):
             value, since the higher this value, the more objects that must be compared at each step.</li>
             <li>Objects that would have been tracked between successive frames for a lower maximum displacement 
             may not be tracked if the value is set higher.</li>
-            </ul></p>'''%globals())
+            <li>This setting may be the culprit if an object is not tracked fame-to-frame despite optimizing
+            the LAP first-pass settings.</li>
+            </ul></dd>
+            </dl>'''%globals())
         
         self.max_merge_score = cps.Integer(
             'Maximum merge score', 50, minval=1, doc = '''
-            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
+            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             This setting acts as a filter for unreasonably large
             merge scores. The merge score has two components: 
             <ul>
@@ -590,17 +666,18 @@ class TrackObjects(cpm.CPModule):
             two objects to be merged.</li>
             <li>The distances between the objects to be merged and the resulting object. </li>
             </ul>
-            <p><i><b>Recommendations:</b></i>
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:
             <ul>
             <li>The LAP algorithm will run more slowly with a higher maximum merge score value. </li>
             <li>Objects that would have been merged at a lower maximum merge score will not be considered for merging.</li>
-            </ul></p>'''%globals())
+            </ul></dd>
+            </dl>'''%globals())
         
         self.max_split_score = cps.Integer(
             'Maximum split score', 50, minval=1, doc = '''
-            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
-            This setting acts as a filter for unreasonably large
-            split scores. The split score has two components: 
+            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
+            This setting acts as a filter for unreasonably large split scores. The split score has two components: 
             <ul>
             <li>The area of the initial object relative to the area of the
             two objects resulting from the split.</li>
@@ -615,11 +692,11 @@ class TrackObjects(cpm.CPModule):
             </dl>'''%globals())
         
         self.max_frame_distance = cps.Integer(
-            'Maximum gap', 5, minval=1, doc = '''
-            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
+            'Maximum temporal gap, in frames', 5, minval=1, doc = '''
+            %(ONLY_IF_2ND_PHASE_LAP_TEXT)s<br>
             <b>Care must be taken to adjust this setting appropriate to the data.</b><br>
             This setting controls the maximum number of frames that can
-            be skipped when merging a gap caused by an unsegmented object.
+            be skipped when merging a temporal gap caused by an unsegmented object.
             These gaps occur when an image is mis-segmented and identification
             fails to find an object in one or more frames.
             <dl>
@@ -638,7 +715,8 @@ class TrackObjects(cpm.CPModule):
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
             as the results of a mis-segmentation. <br>
-            <p><i><b>Recommendations:</b></i>
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
             <li>This operation does not actually delete the filtered object, 
             but merely removes its label from the tracked object list; 
@@ -646,7 +724,8 @@ class TrackObjects(cpm.CPModule):
             <li>An object can be filtered only if it is tracked as an unique object.
             Splits continue the lifetime count from their parents, so the minimum
             lifetime value does not apply to them.</li>
-            </ul></p>'''%globals())
+            </ul></dd>
+            </dl>'''%globals())
         
         self.wants_minimum_lifetime = cps.Binary(
             'Filter using a minimum lifetime?', True, doc = '''

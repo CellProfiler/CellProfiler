@@ -22,7 +22,7 @@ For more details on batch processing, please see <i>Help > Other Features > Batc
 # See the accompanying file LICENSE for details.
 # 
 # Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2014 Broad Institute
+# Copyright (c) 2009-2015 Broad Institute
 # 
 # Please see the AUTHORS file for credits.
 # 

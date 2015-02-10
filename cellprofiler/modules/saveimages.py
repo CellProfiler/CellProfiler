@@ -20,7 +20,7 @@ See also <b>NamesAndTypes</b>, <b>ConserveMemory</b>.
 # See the accompanying file LICENSE for details.
 # 
 # Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2014 Broad Institute
+# Copyright (c) 2009-2015 Broad Institute
 # 
 # Please see the AUTHORS file for credits.
 # 
@@ -459,7 +459,6 @@ class SaveImages(cpm.CPModule):
     
     def prepare_group(self, workspace, grouping, image_numbers):
         d = self.get_dictionary(workspace.image_set_list)
-        d['FIRST_IMAGE'] = True
         if self.save_image_or_figure == IF_MOVIE:
             d['N_FRAMES'] = len(image_numbers)
             d['CURRENT_FRAME'] = 0
@@ -515,16 +514,16 @@ class SaveImages(cpm.CPModule):
         #
         if self.when_to_save == WS_FIRST_CYCLE:
             d = self.get_dictionary(workspace.image_set_list)
-            if not d["FIRST_IMAGE"]:
+            if workspace.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX] > 1:
                 workspace.display_data.wrote_image = False
                 self.save_filename_measurements(workspace)
-                return False
+                return
             d["FIRST_IMAGE"] = False
             
         elif self.when_to_save == WS_LAST_CYCLE:
             workspace.display_data.wrote_image = False
             self.save_filename_measurements( workspace)
-            return False
+            return
         self.save_image(workspace)
         return True
     
@@ -553,6 +552,22 @@ class SaveImages(cpm.CPModule):
                            t = current_frame, size_t = frames)
     
     def run_objects(self, workspace):
+        #
+        # First, check to see if we should save this image
+        #
+        if self.when_to_save == WS_FIRST_CYCLE:
+            if workspace.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX] > 1:
+                workspace.display_data.wrote_image = False
+                self.save_filename_measurements(workspace)
+                return
+            
+        elif self.when_to_save == WS_LAST_CYCLE:
+            workspace.display_data.wrote_image = False
+            self.save_filename_measurements( workspace)
+            return
+        self.save_objects(workspace)
+        
+    def save_objects(self, workspace):
         objects_name = self.objects_name.value
         objects = workspace.object_set.get_objects(objects_name)
         filename = self.get_filename(workspace)
@@ -598,7 +613,10 @@ class SaveImages(cpm.CPModule):
     def post_group(self, workspace, *args):
         if (self.when_to_save == WS_LAST_CYCLE and 
             self.save_image_or_figure != IF_MOVIE):
-            self.save_image(workspace)
+            if self.save_image_or_figure == IF_OBJECTS:
+                self.save_objects(workspace)
+            else:
+                self.save_image(workspace)
         
     def do_save_image(self, workspace, filename, pixels, pixel_type, 
                    c = 0, z = 0, t = 0,

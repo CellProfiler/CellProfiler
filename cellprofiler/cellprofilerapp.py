@@ -5,7 +5,7 @@ CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
+Copyright (c) 2009-2015 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -72,7 +72,10 @@ class CellProfilerApp(wx.App):
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")
         self.destroy_splash_screen()
-        self.frame.start(self.workspace_path, self.pipeline_path)
+        try:
+            self.frame.start(self.workspace_path, self.pipeline_path)
+        except:
+            return 0
         if self.abort_initialization:
             return 0
 

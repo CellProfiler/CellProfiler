@@ -153,7 +153,7 @@ See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics<
 # See the accompanying file LICENSE for details.
 # 
 # Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2014 Broad Institute
+# Copyright (c) 2009-2015 Broad Institute
 # 
 # Please see the AUTHORS file for credits.
 # 
@@ -560,7 +560,10 @@ class LoadData(cpm.CPModule):
             output = []
             for h in header:
                 if not h.startswith('file_'):
-                    output.append(h)
+                    if isinstance(h, unicode):
+                        output.append(h.encode("utf-8"))
+                    else:
+                        output.append(h)
             return output
 
         def data_for_one_wave(data):

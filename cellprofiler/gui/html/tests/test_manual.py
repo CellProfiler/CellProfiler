@@ -3,7 +3,7 @@ CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
+Copyright (c) 2009-2015 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -221,8 +221,8 @@ class TestManual(unittest.TestCase):
                 self.assertTrue(
                     state_transitions[top_state].has_key(token),
                     "Nesting error in %s near position %d (%s)" %
-                    (module_name, pos, data[max(0,pos - 30):
-                                            min(pos + 30, len(data))]))
+                    (module_name, pos, data[max(0,pos - 50):pos]+"^^^"+
+                     data[pos:min(pos + 50, len(data))]))
                 next_state = state_transitions[top_state][token]
                 if next_state == S_INIT:
                     state.pop()

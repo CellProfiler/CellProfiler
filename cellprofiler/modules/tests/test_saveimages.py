@@ -4,7 +4,7 @@ CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
+Copyright (c) 2009-2015 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -2166,7 +2166,35 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         objects = img[~mask]
         self.assertEqual(len(objects), 3)
         self.assertEqual((1, 2, 3), tuple(sorted(objects)))
-            
+        
+    def test_07_07_save_objects_last_cycle(self):
+        # Regression test of issue #1296
+        m = cpm.Measurements()
+        object_set = cpo.ObjectSet()
+        l = np.zeros((11,17), np.int32)
+        l[2:-2, 2:-2]  = 1
+        objects = cpo.Objects()
+        objects.segmented = l
+        object_set.add_objects(objects, OBJECTS_NAME)
+        module = cpm_si.SaveImages()
+        module.save_image_or_figure.value = cpm_si.IF_OBJECTS
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.single_file_name.value = FILE_NAME
+        module.file_format.value = cpm_si.FF_TIF
+        module.pathname.dir_choice = cpm_si.DEFAULT_INPUT_FOLDER_NAME
+        module.when_to_save.value = cpm_si.WS_LAST_CYCLE
+        module.objects_name.value = OBJECTS_NAME
+        module.module_num = 1
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline, module, m, object_set, m, None)
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        module.post_group(workspace)
+        pixel_data = load_image(filename, rescale=False)
+        np.testing.assert_array_equal(pixel_data, l)
         
 def make_array(encoded,shape,dtype=np.uint8):
     data = base64.b64decode(encoded)

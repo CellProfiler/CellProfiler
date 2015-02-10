@@ -4,7 +4,7 @@ CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
+Copyright (c) 2009-2015 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -584,6 +584,9 @@ class PipelineController:
                 self.__dirty_workspace = False
                 self.set_title()
                 self.display_pipeline_message_for_user()
+            except cpp.PipelineLoadCancelledException:
+                # In response to user interaction, so pass
+                self.__pipeline.clear()
             finally:
                 cpprefs.remove_progress_callback(progress_callback_fn)
     
@@ -919,7 +922,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 cpprefs.set_current_workspace_path(target_project_path)
                 self.set_title()
                 
-            
+        except cpp.PipelineLoadCancelledException:
+            self.__pipeline.clear()
         except Exception,instance:
             from cellprofiler.gui.errordialog import display_error_dialog
             display_error_dialog(self.__frame, instance, self.__pipeline,

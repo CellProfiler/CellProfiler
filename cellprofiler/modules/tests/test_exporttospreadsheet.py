@@ -4,7 +4,7 @@ CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
+Copyright (c) 2009-2015 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -2352,6 +2352,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
     
     def test_08_01_basic_gct_check(self):
     # LoadData with data
+        maybe_download_sbs()
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
         info = ('Image_FileName_Foo',
@@ -2402,7 +2403,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 print("Failed to clean up files")
             
     def test_08_02_make_gct_file_with_filename(self):
-            
+        maybe_download_sbs()
         # LoadData with data
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
@@ -2441,6 +2442,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             os.remove(output_csv_filename)
               
     def test_08_03_make_gct_file_with_metadata(self):
+        maybe_download_sbs()
             
         # LoadData with data
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")

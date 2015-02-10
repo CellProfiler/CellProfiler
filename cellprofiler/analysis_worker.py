@@ -21,7 +21,7 @@ CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2014 Broad Institute
+Copyright (c) 2009-2015 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 AW_LOG_LEVEL = "AW_LOG_LEVEL"
 
 work_announce_address = None
+knime_bridge_address = None
 def aw_parse_args():
     '''Parse the application arguments into setup parameters'''
     from cellprofiler.preferences import \
@@ -44,6 +45,7 @@ def aw_parse_args():
          set_plugin_directory, set_ij_plugin_directory
     import optparse
     global work_announce_address
+    global knime_bridge_address
     set_headless()
     set_awt_headless(False)
     parser = optparse.OptionParser()
@@ -69,6 +71,10 @@ def aw_parse_args():
                       help=("This is the amount of memory reserved for the "
                             "Java Virtual Machine (similar to the java -Xmx switch)."
                             "Example formats: 512000k, 512m, 1g"))
+    parser.add_option("--knime-bridge-address",
+                      dest = "knime_bridge_address",
+                      help = "Open up a port to handle the Knime bridge protocol",
+                      default = None)
 
     options, args = parser.parse_args()
     if options.jvm_heap_size is not None:
@@ -78,10 +84,11 @@ def aw_parse_args():
     if len(logging.root.handlers) == 0:
         logging.root.addHandler(logging.StreamHandler())
 
-    if not options.work_announce_address:
+    if not (options.work_announce_address or options.knime_bridge_address):
         parser.print_help()
         sys.exit(1)
     work_announce_address = options.work_announce_address
+    knime_bridge_address = options.knime_bridge_address
     #
     # Set up the headless plugins and ij plugins directories before doing
     # anything so loading will get them
@@ -196,14 +203,18 @@ def main():
                         name="exit_on_stdin_close")
     deadman_start_socket.recv()
     deadman_start_socket.close()
-        
+    
+    from cellprofiler.knime_bridge import KnimeBridgeServer
     with AnalysisWorker(work_announce_address) as worker:
         worker_thread = threading.Thread(target = worker.run, 
                                          name="WorkerThread")
         worker_thread.setDaemon(True)
         worker_thread.start()
-        enter_run_loop()
-        worker_thread.join()
+        with KnimeBridgeServer(the_zmq_context,
+                               knime_bridge_address,
+                               NOTIFY_ADDR, NOTIFY_STOP):
+            enter_run_loop()
+            worker_thread.join()
             
     #
     # Shutdown - need to handle some global cleanup here
@@ -237,6 +248,13 @@ class AnalysisWorker(object):
         set_omero_login_hook(self.omero_login_handler)
         
     def __enter__(self):
+        if self.work_announce_address is None:
+            # Give them a dummy object
+            class Dummy(object):
+                def run(self):
+                    pass
+            return Dummy()
+        
         # (analysis_id -> (pipeline, preferences dictionary))
         self.pipelines_and_preferences = {}
 

@@ -19,6 +19,7 @@ RUN yum install -y \
   cellprofiler-libtiff-3.9.4-1 \
   cellprofiler-matplotlib-1.0.1-2 \
   cellprofiler-mysqlpython-1.2.3-1 \
+  cellprofiler-nose-1.3.4-1 \
   cellprofiler-numpy-1.9.0-1 \
   cellprofiler-numpy-devel-1.9.0-1 \
   cellprofiler-pil-1.1.7-2 \

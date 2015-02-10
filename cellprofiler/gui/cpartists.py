@@ -498,6 +498,26 @@ class CPImageArtist(matplotlib.artist.Artist):
             return matplotlib.image.BILINEAR
         return matplotlib.image.NEAREST
 
+    def get_channel_values(self, x, y):
+        '''Return a map of channel name to intensity at the given location
+        
+        x, y - coordinate location
+        '''
+        if x < 0 or y < 0:
+            return {}
+        result = {}
+        for image in self.__images:
+            if image.mode != MODE_HIDE:
+                pixel_data = image.pixel_data
+                if y >= pixel_data.shape[0] or x >= pixel_data.shape[1]:
+                    continue
+                if pixel_data.ndim == 3:
+                    value = np.mean(pixel_data[y, x, :])
+                else:
+                    value = pixel_data[y, x]
+                result[image.name] = value
+        return result
+    
     def draw(self, renderer):
         magnification = renderer.get_image_magnification()
         shape = [0, 0]
@@ -649,7 +669,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         # which is from the bottom of the screen
         #
         if self.axes.viewLim.height < 0:
-            ty = (self.axes.viewLim.y1 - view_ymin) + .5
+            ty = (view_ymin - self.axes.viewLim.y1) + .5
         else:
             ty = view_ymin - self.axes.viewLim.y0 - .5
         im.apply_translation(tx, ty)

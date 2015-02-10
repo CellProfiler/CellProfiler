@@ -587,13 +587,9 @@ class CPFigureFrame(wx.Frame):
         xi = int(event.xdata+.5)
         yi = int(event.ydata+.5)
         im = None
-        if event.inaxes:
-            fields = ["X: %d"%xi, "Y: %d"%yi]
-            im = self.find_image_for_axes(event.inaxes)
-            if im is not None:
-                fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
+        fields = self.get_fields(event, yi, xi, x1)
                 
-        if self.mouse_down is not None and im is not None:
+        if self.mouse_down is not None:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
@@ -627,21 +623,32 @@ class CPFigureFrame(wx.Frame):
             self.figure.canvas.draw()
             self.Refresh()
         self.status_bar.SetFields(fields)
+
+    def get_fields(self, event, yi, xi, x1):
+        '''Get the standard fields at the cursor location'''
+        if event.inaxes:
+            fields = ["X: %d"%xi, "Y: %d"%yi]
+            im = self.find_image_for_axes(event.inaxes)
+            if im is not None:
+                fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
+            elif isinstance(event.inaxes, matplotlib.axes.Axes):
+                for artist in event.inaxes.artists:
+                    if isinstance(
+                        artist, cellprofiler.gui.cpartists.CPImageArtist):
+                        fields += ["%s: %.4f" % (k, v) for k, v in 
+                                   artist.get_channel_values(xi, yi).items()]
+        else:
+            fields = []
+        return fields
     
     def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
             return
         xi = int(event.xdata+.5)
         yi = int(event.ydata+.5)
-        if event.inaxes:
-            im = self.find_image_for_axes(event.inaxes)
-            if im is not None:
-                fields = ["X: %d"%xi, "Y: %d"%yi]
-                fields += self.get_pixel_data_fields_for_status_bar(im, xi, yi)
-                self.status_bar.SetFields(fields)
-                return
-            else:
-                self.status_bar.SetFields([event.inaxes.format_coord(event.xdata, event.ydata)])
+        fields = self.get_fields(event, yi, xi, x1)
+        if len(fields) > 0:
+            self.status_bar.SetFields(fields)
         
     def find_image_for_axes(self, axes):
         for i, sl in enumerate(self.subplots):

@@ -954,7 +954,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             (self.MI_OVERLAY, MODE_OVERLAY),
             (self.MI_INVERTED, MODE_INVERTED)):
             set_fn = lambda event, data=data, mode=target:\
-                self.__on_mask_mode(event, data, target)
+                self.__on_mask_mode(event, data,  mode)
             my_id = wx.NewId()
             item = sub_menu.AppendRadioItem(my_id, label)
             self.__on_update_mask_mode(item, data, target)

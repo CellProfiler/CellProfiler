@@ -633,11 +633,14 @@ class CPImageArtist(matplotlib.artist.Artist):
                     continue
                 ocolor, target_view = get_tile_and_target(
                     om.overlay[:, :, :3])
-                oalpha = om.overlay[:, :, 3]* om.alpha
-                oalpha = oalpha[:, :, np.newaxis]
+                oalpha = ocolor * om.alpha
             elif isinstance(om, MaskData) and \
                  om.mode in (MODE_OVERLAY, MODE_INVERTED):
                 mask = om.mask
+                if mask.shape[1] <= abs(view_xmin) or \
+                   mask.shape[0] <= abs(view_ymin):
+                    continue
+                mask, target_view = get_tile_and_target(mask)
                 if om.mode == MODE_INVERTED:
                     mask = ~mask
                 mask = mask[:, :, np.newaxis]

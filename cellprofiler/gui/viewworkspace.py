@@ -390,7 +390,7 @@ class ViewWorkspace(object):
         '''Set the axes limits appropriate to the images we have'''
         ax = self.image.axes
         if self.__axes_scale == None or \
-           (self.__axes_scale[0] == ax.get_ylim()[1] and
+           (self.__axes_scale[0] == ax.get_ylim()[0] or
             self.__axes_scale[1] == ax.get_xlim()[1]):
             max_x = max_y = 0
             for image_row in self.image_rows:

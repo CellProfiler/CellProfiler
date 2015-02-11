@@ -554,10 +554,6 @@ class CPImageArtist(matplotlib.artist.Artist):
             xmax = min(view_xmax, pixel_data.shape[1])
             ymax = min(view_ymax, pixel_data.shape[0])
             pixel_data = pixel_data[ymin:ymax, xmin:xmax]
-            if flip_ud:
-                pixel_data = np.flipud(pixel_data)
-            if flip_lr:
-                pixel_data = np.fliplr(pixel_data)
             target_view = target[:(ymax - view_ymin), :(xmax - view_xmin), :]
             return pixel_data, target_view
             
@@ -655,6 +651,8 @@ class CPImageArtist(matplotlib.artist.Artist):
        
         target = target[:, :, :3]
         np.clip(target, 0, 1, target)
+        if flip_lr:
+            target = np.fliplr(target)
         im = matplotlib.image.fromarray(target[:, :, :3], 0)
         im.is_grayscale = False
         im.set_interpolation(self.mp_interpolation)
@@ -672,7 +670,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         # which is from the bottom of the screen
         #
         if self.axes.viewLim.height < 0:
-            ty = (view_ymin - self.axes.viewLim.y1) + .5
+            ty = (view_ymin - self.axes.viewLim.y1) - .5
         else:
             ty = view_ymin - self.axes.viewLim.y0 - .5
         im.apply_translation(tx, ty)
@@ -688,6 +686,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         im.apply_scaling(sx, sy)
         im.resize(widthDisplay, heightDisplay,
                   norm=1, radius = self.filterrad)
+        if flip_ud:
+            im.flipud_out()
         bbox = self.axes.bbox.frozen()
         
         # Two ways to do this, try by version
@@ -1124,6 +1124,7 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
                 my_range = np.arange(1, len(unique))
             idx.shape = l.shape
             pts, offs, counts = get_outline_pts(idx, my_range)
+            pts += .5          # Target the centers of the pixels.
             pts = pts[:, ::-1] # matplotlib x, y reversed from i,j
             for off, count in zip(offs, counts):
                 lines.append(np.vstack((pts[off:off+count], pts[off:off+1])))

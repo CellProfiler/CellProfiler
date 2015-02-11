@@ -389,9 +389,7 @@ class ViewWorkspace(object):
     def scale_axes(self):
         '''Set the axes limits appropriate to the images we have'''
         ax = self.image.axes
-        if self.__axes_scale == None or \
-           (self.__axes_scale[0] == ax.get_ylim()[0] or
-            self.__axes_scale[1] == ax.get_xlim()[1]):
+        if self.frame.ToolBar.is_home():
             max_x = max_y = 0
             for image_row in self.image_rows:
                 if image_row.data.mode != MODE_HIDE:
@@ -405,6 +403,7 @@ class ViewWorkspace(object):
                 ax.set_ylim(-.5, max_y)
                 ax.invert_yaxis()
                 self.__axes_scale = (max_y, max_x)
+                self.frame.ToolBar.reset()
         
     def layout(self):
         self.panel.SetMinSize((self.panel.GetVirtualSize()[0], 

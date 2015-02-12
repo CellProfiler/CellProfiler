@@ -229,12 +229,6 @@ MENU_FILE_SAVE_TABLE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()
 MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
 MENU_CLOSE_ALL = wx.NewId()
-MENU_CONTRAST_RAW = wx.NewId()
-MENU_CONTRAST_NORMALIZED = wx.NewId()
-MENU_CONTRAST_LOG = wx.NewId()
-MENU_INTERPOLATION_NEAREST = wx.NewId()
-MENU_INTERPOLATION_BILINEAR = wx.NewId()
-MENU_INTERPOLATION_BICUBIC = wx.NewId()
 MENU_LABELS_OUTLINE = {}
 MENU_LABELS_OVERLAY = {}
 MENU_LABELS_LINES = {}
@@ -815,6 +809,13 @@ class CPFigureFrame(wx.Frame):
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         '''
+        MENU_CONTRAST_RAW = wx.NewId()
+        MENU_CONTRAST_NORMALIZED = wx.NewId()
+        MENU_CONTRAST_LOG = wx.NewId()
+        MENU_INTERPOLATION_NEAREST = wx.NewId()
+        MENU_INTERPOLATION_BILINEAR = wx.NewId()
+        MENU_INTERPOLATION_BICUBIC = wx.NewId()
+
         params = self.subplot_params[(x,y)]
             
         # If no popup has been built for this subplot yet, then create one 

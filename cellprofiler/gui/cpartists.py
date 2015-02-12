@@ -781,6 +781,10 @@ class CPImageArtist(matplotlib.artist.Artist):
                    menu_items[idx].IsSeparator():
                     sub_menu = wx.Menu()
                     my_id =  wx.NewId()
+                    if len(name) == 0:
+                        # otherwise bad things happen on Mac
+                        # Can't have blank name and non-stock ID
+                        name = " "
                     sub_menu_item = menu.InsertMenu(
                         idx, my_id, name, sub_menu)
                     if data.mode == MODE_HIDE:

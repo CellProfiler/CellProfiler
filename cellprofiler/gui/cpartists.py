@@ -1114,7 +1114,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             
     def __update_sub_menu(self, event, sub_menu, data):
         event.Enable(data.mode != MODE_HIDE)
-        event.Text = data.name
+        event.Text = data.name if len(data.name) > 0 else " "
 
 class CPOutlineArtist(matplotlib.collections.LineCollection):
     '''An artist that is a plot of the outline around an object

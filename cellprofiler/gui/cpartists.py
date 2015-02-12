@@ -79,7 +79,7 @@ class ColorMixin(object):
             color = matplotlib.rcParams.get('patch.facecolor', 'b')
         else:
             color = self._color
-        return matplotlib.colors.colorConverter.to_rgb(color)
+        return np.atleast_1d(matplotlib.colors.colorConverter.to_rgb(color))
     
     def _set_color(self, color):
         '''Set the color'''
@@ -93,6 +93,11 @@ class ColorMixin(object):
         ColorMixin._set_color(self, color)
         
     color = property(get_color, set_color)
+    
+    @property
+    def color3(self):
+        '''Return the color as a 3D array'''
+        return self.color[np.newaxis, np.newaxis, :]
     
     def _on_color_changed(self):
         '''Called when the color changed, default = do nothing'''
@@ -290,6 +295,7 @@ class ObjectsData(OutlinesMixin):
         self.mode = mode
         self.scramble = scramble
         self.__overlay = None
+        self.__mask = None
         
     def get_labels(self):
         return self.__labels
@@ -298,6 +304,7 @@ class ObjectsData(OutlinesMixin):
         self.__labels = labels
         self._flush_outlines()
         self.__overlay = None
+        self.__mask = None
     
     labels = property(get_labels, set_labels)
     
@@ -334,6 +341,15 @@ class ObjectsData(OutlinesMixin):
                 img[l!=0, :] = sm.to_rgba(l[l!=0])
         self.__overlay = img
         return img
+    
+    @property
+    def mask(self):
+        """Return a mask of the labeled portion of the field of view"""
+        if self.__mask is None:
+            self.__mask = self.labels[0] != 0
+            for l in self.labels[1:]:
+                self.__mask[l != 0] = True
+        return self.__mask
         
 class MaskData(OutlinesMixin):
     '''The data needed to display masks
@@ -543,20 +559,24 @@ class CPImageArtist(matplotlib.artist.Artist):
             return
         
         # First 3 color indices are intensities
-        # Second 3 are per-color alpha values
+        # Last is the alpha
         
         target = np.zeros(
-            (view_ymax - view_ymin, view_xmax - view_xmin, 6), np.float32)
+            (view_ymax - view_ymin, view_xmax - view_xmin, 4), np.float32)
         def get_tile_and_target(pixel_data):
             '''Return the visible tile of the image and a view of the target'''
             xmin = max(0, view_xmin)
             ymin = max(0, view_ymin)
             xmax = min(view_xmax, pixel_data.shape[1])
             ymax = min(view_ymax, pixel_data.shape[0])
-            pixel_data = pixel_data[ymin:ymax, xmin:xmax]
+            if pixel_data.ndim == 3:
+                pixel_data = pixel_data[ymin:ymax, xmin:xmax, :]
+            else:
+                pixel_data = pixel_data[ymin:ymax, xmin:xmax]
             target_view = target[:(ymax - view_ymin), :(xmax - view_xmin), :]
             return pixel_data, target_view
-            
+        
+        max_color_in = np.zeros(3)    
         for image in self.__images:
             assert isinstance(image, ImageData)
             if image.mode == MODE_HIDE:
@@ -565,7 +585,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                image.pixel_data.shape[0] <= abs(view_ymin):
                 continue
             pixel_data, target_view = get_tile_and_target(image.pixel_data)
-            tv_alpha = target_view[:, :, 3:]
+            tv_alpha = target_view[:, :, 3]
             tv_image = target_view[:, :, :3]
             if image.normalization in (NORMALIZE_LINEAR, NORMALIZE_LOG):
                 pd_max = np.max(pixel_data)
@@ -583,29 +603,32 @@ class CPImageArtist(matplotlib.artist.Artist):
                 log_one_plus_eps = np.log(257.0 / 256)
                 pixel_data = (np.log(pixel_data + 1.0/256) - log_eps) / \
                     (log_one_plus_eps - log_eps)
-                
             if image.mode == MODE_COLORIZE or image.mode == MODE_GRAYSCALE:
-                # The idea here is that the color is the alpha for each of
-                # the three channels.
-                if image.mode == MODE_COLORIZE:
-                    imalpha = np.array(image.color) * image.alpha / \
-                        np.sum(image.color)
-                else:
-                    imalpha = np.array([image.alpha] * 3)
-                pixel_data = pixel_data[:, :, np.newaxis]
-                imalpha = imalpha[np.newaxis, np.newaxis, :]    
-            else:
-                if image.mode == MODE_COLORMAP:
+                pixel_data = pixel_data[:, :, np.newaxis] * image.color3
+            elif image.mode == MODE_COLORMAP:
                     sm = matplotlib.cm.ScalarMappable(cmap = image.colormap)
                     if image.normalization == NORMALIZE_RAW:
                         sm.set_clim((image.vmin, image.vmax))
                     pixel_data = sm.to_rgba(pixel_data)[:, :, :3]
-                imalpha = image.alpha
+            max_color_in = np.maximum(max_color_in, np.max(
+                pixel_data.reshape(pixel_data.shape[0]*pixel_data.shape[1],
+                                   pixel_data.shape[2]), 0))
+            imalpha = image.alpha
             tv_image[:] = \
-                tv_image * tv_alpha * (1 - imalpha) + pixel_data * imalpha
+                tv_image * tv_alpha[:, :, np.newaxis] * (1 - imalpha) + \
+                pixel_data * imalpha
             tv_alpha[:] = \
                 tv_alpha + imalpha - tv_alpha * imalpha
-            tv_image[tv_alpha != 0] /= tv_alpha[tv_alpha != 0]
+            tv_image[tv_alpha != 0, :] /= tv_alpha[tv_alpha != 0][:, np.newaxis]
+        
+        #
+        # Normalize the image intensity
+        #
+        max_color_out = np.max(target[:, :, :3].reshape(
+            target.shape[0] * target.shape[1], 3), 0)
+        color_mask = (max_color_in != 0) & (max_color_out != 0)
+        multiplier = np.min(max_color_in[color_mask]/max_color_out[color_mask])
+        target[:, :, :3] *= multiplier
         
         for om in list(self.__objects) + list(self.__masks):
             assert isinstance(om, OutlinesMixin)
@@ -617,11 +640,8 @@ class CPImageArtist(matplotlib.artist.Artist):
                    oshape[0] <= abs(view_ymin):
                     continue
                 mask, target_view = get_tile_and_target(om.outlines)
-                tv_alpha = target_view[:, :, 3:]
-                tv_image = target_view[:, :, :3]
-                oalpha = (mask.astype(float) * om.alpha)[:, :, np.newaxis]
-                ocolor = \
-                    np.array(om.color)[np.newaxis, np.newaxis, :]
+                oalpha = (mask.astype(float) * om.alpha)
+                ocolor = om.color3
             elif isinstance(om, ObjectsData) and om.mode == MODE_OVERLAY:
                 oshape = om.outlines.shape
                 if oshape[1] <= abs(view_xmin) or \
@@ -629,7 +649,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                     continue
                 ocolor, target_view = get_tile_and_target(
                     om.overlay[:, :, :3])
-                oalpha = ocolor * om.alpha
+                mask, _ = get_tile_and_target(om.mask)
             elif isinstance(om, MaskData) and \
                  om.mode in (MODE_OVERLAY, MODE_INVERTED):
                 mask = om.mask
@@ -639,15 +659,18 @@ class CPImageArtist(matplotlib.artist.Artist):
                 mask, target_view = get_tile_and_target(mask)
                 if om.mode == MODE_INVERTED:
                     mask = ~mask
-                mask = mask[:, :, np.newaxis]
-                color = np.array(om.color, np.float32)[np.newaxis, np.newaxis, :]
-                ocolor = mask * color
-                oalpha = mask * om.alpha
+                ocolor = mask[:, :, np.newaxis] * om.color3
             else:
                 continue
-            tv_image[:] = tv_image * tv_alpha * (1 - oalpha) + ocolor * oalpha
+            tv_alpha = target_view[:, :, 3]
+            tv_image = target_view[:, :, :3]
+            tv_alpha3 = tv_alpha[:, :, np.newaxis]
+            oalpha = mask.astype(float) * om.alpha
+            oalpha3 = oalpha[:, :, np.newaxis]
+            tv_image[:] = \
+                tv_image * tv_alpha3 * (1 - oalpha3) + ocolor * oalpha3
             tv_alpha[:] = tv_alpha + oalpha - tv_alpha * oalpha
-            tv_image[tv_alpha != 0] /= tv_alpha[tv_alpha != 0]
+            tv_image[tv_alpha != 0, :] /= tv_alpha[tv_alpha != 0][:, np.newaxis]
        
         target = target[:, :, :3]
         np.clip(target, 0, 1, target)

@@ -145,12 +145,13 @@ class VWImageRow(VWRow):
             normalization = NORMALIZE_LINEAR
         else:
             normalization = NORMALIZE_RAW
+        alpha = 1.0 / (len(vw.image_rows) + 1.0)
         self.data = bind_data_class(ImageData, self.color_ctrl, vw.redraw)(
             name, None,
             mode = MODE_HIDE,
             color = self.color,
             colormap = cpprefs.get_default_colormap(),
-            alpha = .5,
+            alpha = alpha,
             normalization = normalization)
         vw.image.add(self.data)
         self.last_mode = MODE_COLORIZE
@@ -174,7 +175,7 @@ class VWObjectsRow(VWRow):
             name, None, 
             outline_color = self.color, 
             colormap = cpprefs.get_default_colormap(), 
-            alpha = 1, 
+            alpha = .5, 
             mode = MODE_HIDE)
         vw.image.add(self.data)
         self.last_mode = MODE_LINES
@@ -198,7 +199,7 @@ class VWMaskRow(VWRow):
         self.data = bind_data_class(MaskData, self.color_ctrl, vw.redraw)(
             name, None, 
             color = self.color, 
-            alpha = 1, 
+            alpha = .5, 
             mode = MODE_HIDE)
         vw.image.add(self.data)
         self.last_mode = MODE_LINES

@@ -22,6 +22,10 @@ from cellprofiler.preferences import \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.gui.help import \
      USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+     
+import cellh5
+import cellh5write 
+import numpy
 
 OFF_OBJECTS_COUNT = 0
 OFF_IMAGES_COUNT = 1
@@ -321,6 +325,9 @@ class ExportToCellH5(cpm.CPModule):
         # mgroup[path[-1]] = h5py.ExternalLink(subfile, "/"+ "/".join(path))
         #
         return subfile
+    
+    def _to_ch5_coord(self, plate, well, site):
+        return cellh5.CH5PositionCoordinate(plate, well, site)
         
     def run(self, workspace):
         m = workspace.measurements
@@ -330,28 +337,46 @@ class ExportToCellH5(cpm.CPModule):
         #
         path = self.get_site_path(workspace, m.image_set_number)
         subfile_name = self.get_subfile_name(workspace)
-        for object_group in self.objects_to_export:
+        
+        ### create CellH5 file
+        c5_file = cellh5write.CH5FileWriter(subfile_name)
+        ### add Postion (==plate, well, site) triple
+        c5_pos = c5_file.add_position(self._to_ch5_coord(*path))
+        
+        ### get shape of 5D cube        
+        shape5D = (len(self.objects_to_export), 1, 1,) + workspace.object_set.get_objects(self.objects_to_export[0].objects_name.value).shape
+        dtype5D = numpy.uint16 
+        
+        ### create lablel writer for incremental writing
+        c5_label_writer = c5_pos.add_label_image(shape=shape5D, dtype=dtype5D)
+        
+        for ch_idx, object_group in enumerate(self.objects_to_export):
             objects_name = object_group.objects_name.value
             objects = object_set.get_objects(objects_name)
-            if objects.count == 0:
-                continue
+            ### the object.counts check here is dangarous, since we do not now what h5py allocs / fills
+#             if objects.count == 0:
+#                 continue 
             labels = objects.segmented
-            #
-            # TODO: save the segmentation, "labels", with the name,
-            #       "objects_name" under the path to the current site = "path"
-            #
-            # "labels" is a 2-d array where the rasters go in the X direction
-            # and the rows go in the Y direction (in other words, labels[y, x])
-            #
-        for image_group in self.images_to_export:
+            c5_label_writer.write(labels, c=ch_idx, t=0, z=0)
+        
+        ### finalize the writer
+        c5_label_writer.finalize()
+        
+        ### get shape of 5D cube        
+        shape5D = (len(self.objects_to_export), 1, 1,) + workspace.image_set.get_image(self.images_to_export[0].image_name.value).pixel_data.shape
+        dtype5D = numpy.uint8
+        
+        ### create image writer for incremental writing
+        c5_image_writer = c5_pos.add_image(shape=shape5D, dtype=dtype5D)
+            
+        for ch_idx, image_group in enumerate(self.images_to_export):
             image_name = image_group.image_name.value
             image = m.get_image(image_name).pixel_data
-            #
-            # TODO: save the image, "image", with the name "image_name"
-            #
-            # "image" is either a 2-d array: image[y, x] or an interleaved
-            #         color image organized as image[y, x, c]
-            #
+            scale = m.get_image(image_name).get_scale()
+            
+            c5_image_writer.write((image*scale).astype(dtype5D), c=ch_idx, t=0, z=0)
+        c5_image_writer.finalize()
+            
         columns = workspace.pipeline.get_measurement_columns(self)
         if self.wants_to_choose_measurements:
             to_keep = set([
@@ -448,7 +473,7 @@ class ExportToCellH5(cpm.CPModule):
         if self.repack:
             measurements = workspace.measurements
             fd, temp_name = tempfile.mkstemp(
-                suffix = ".cellh5",
+                suffix = ".ch5",
                 dir = self.directory.get_absolute_path())
                 
             master_name = self.get_path_to_master_file(workspace.measurements)

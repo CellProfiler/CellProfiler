@@ -75,7 +75,9 @@ def main(args):
     args - command-line arguments, e.g. sys.argv
     '''
     import cellprofiler.preferences as cpprefs
-    if any([arg.startswith('--work-announce') for arg in args]):
+    switches = ('--work-announce', '--knime-bridge-address')
+    if any([any([arg.startswith(switch) for switch in switches])
+            for arg in args]):
         #
         # Go headless ASAP
         #

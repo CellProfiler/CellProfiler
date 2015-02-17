@@ -627,7 +627,11 @@ class CPImageArtist(matplotlib.artist.Artist):
         max_color_out = np.max(target[:, :, :3].reshape(
             target.shape[0] * target.shape[1], 3), 0)
         color_mask = (max_color_in != 0) & (max_color_out != 0)
-        multiplier = np.min(max_color_in[color_mask]/max_color_out[color_mask])
+        if np.any(color_mask):
+            multiplier = np.min(
+                max_color_in[color_mask]/max_color_out[color_mask])
+        else:
+            multiplier = 1
         target[:, :, :3] *= multiplier
         
         for om in list(self.__objects) + list(self.__masks):

@@ -20,12 +20,15 @@ from cellprofiler.analysis_worker import NOTIFY_STOP
 from cellprofiler.knime_bridge import KnimeBridgeServer, \
      CONNECT_REQ_1, CONNECT_REPLY_1, \
      PIPELINE_INFO_REQ_1, PIPELINE_INFO_REPLY_1, PIPELINE_EXCEPTION_1,\
-     RUN_REQ_1, RUN_GROUP_REQ_1, RUN_REPLY_1, CELLPROFILER_EXCEPTION_1
+     RUN_REQ_1, RUN_GROUP_REQ_1, RUN_REPLY_1, CELLPROFILER_EXCEPTION_1,\
+     CLEAN_PIPELINE_REQ_1, CLEAN_PIPELINE_REPLY_1
 import cellprofiler.pipeline as cpp
 import cellprofiler.measurements as cpmeas
-from cellprofiler.modules.loadimages import LoadImages
 from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
 from cellprofiler.modules.identify import TS_MANUAL
+from cellprofiler.modules.loadimages import LoadImages
+from cellprofiler.modules.measureobjectsizeshape import MeasureObjectSizeShape
+from cellprofiler.modules.saveimages import SaveImages
 
 class TestKnimeBridge(unittest.TestCase):
     def setUp(self):
@@ -115,6 +118,49 @@ class TestKnimeBridge(unittest.TestCase):
         self.assertEqual(message.pop(0), self.session_id)
         self.assertEqual(message.pop(0), "")
         self.assertEqual(message.pop(0), PIPELINE_EXCEPTION_1)
+        
+    def test_02_03_clean_pipeline(self):
+        pipeline = cpp.Pipeline()
+        load_images = LoadImages()
+        load_images.module_num = 1
+        load_images.add_imagecb()
+        load_images.images[0].channels[0].image_name.value = "Foo"
+        load_images.images[1].channels[0].image_name.value = "Bar"
+        pipeline.add_module(load_images)
+        identify = IdentifyPrimaryObjects()
+        identify.module_num = 2
+        identify.image_name.value = "Foo"
+        identify.object_name.value = "dizzy"
+        pipeline.add_module(identify)
+        saveimages = SaveImages()
+        saveimages.module_num = 3
+        saveimages.image_name.value = "Foo"
+        pipeline.add_module(saveimages)
+        measureobjectsizeshape = MeasureObjectSizeShape()
+        measureobjectsizeshape.module_num = 4
+        measureobjectsizeshape.object_groups[0].name.value = "dizzy"
+        pipeline.add_module(measureobjectsizeshape)
+        pipeline_txt = StringIO()
+        pipeline.savetxt(pipeline_txt)
+        module_names = json.dumps([SaveImages.module_name])
+        message = [
+            zmq.Frame(self.session_id),
+            zmq.Frame(),
+            zmq.Frame(CLEAN_PIPELINE_REQ_1),
+            zmq.Frame(pipeline_txt.getvalue()),
+            zmq.Frame(module_names)]
+        self.socket.send_multipart(message)
+        message = self.socket.recv_multipart()
+        self.assertEqual(message.pop(0), self.session_id)
+        self.assertEqual(message.pop(0), "")
+        self.assertEqual(message.pop(0), CLEAN_PIPELINE_REPLY_1)
+        pipeline_txt = message.pop(0)
+        pipeline = cpp.Pipeline()
+        pipeline.loadtxt(StringIO(pipeline_txt))
+        self.assertEqual(len(pipeline.modules()), 3)
+        self.assertIsInstance(pipeline.modules()[0], LoadImages)
+        self.assertIsInstance(pipeline.modules()[1], IdentifyPrimaryObjects)
+        self.assertIsInstance(pipeline.modules()[2], MeasureObjectSizeShape)
         
     def test_03_01_run_something(self):
         pipeline = cpp.Pipeline()

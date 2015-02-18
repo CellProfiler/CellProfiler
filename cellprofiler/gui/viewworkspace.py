@@ -216,6 +216,13 @@ class VWMaskRow(VWRow):
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
         self.data.mask = image.mask
+
+class VWFigureFrame(CPFigureFrame):
+    def on_close(self, event):
+        '''Hide instead of close'''
+        if isinstance(event, wx.CloseEvent):
+            event.Veto()
+        self.Hide()
         
 class ViewWorkspace(object):
     C_CHOOSER = 0
@@ -223,7 +230,7 @@ class ViewWorkspace(object):
     C_SHOW = 2
     C_REMOVE = 3
     def __init__(self, parent, workspace):
-        self.frame = CPFigureFrame(
+        self.frame = VWFigureFrame(
             parent,
             title = "CellProfiler Workspace",
             secret_panel_class=ScrolledPanel,

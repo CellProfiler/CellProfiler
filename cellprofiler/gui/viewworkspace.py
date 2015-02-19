@@ -479,10 +479,10 @@ class ViewWorkspace(object):
         rows.remove(vw_row)
         for ii in range(i, len(rows)):
             vw_row = rows[ii]
-            for j, control in enumerate(
+            for j, control in enumerate((
                 vw_row.chooser, vw_row.color_ctrl, vw_row.show_check,
-                vw_row.remove_button):
-                grid_sizer.SetItemPosition(control, (ii, j))
+                vw_row.remove_button)):
+                grid_sizer.SetItemPosition(control, (ii+1, j))
         self.update_menu(self.frame.menu_subplots)
         self.layout()
         self.redraw()

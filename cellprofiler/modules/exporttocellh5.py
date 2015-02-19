@@ -11,6 +11,7 @@ if you move them to a new folder.
 import h5py
 import os
 import tempfile
+import scipy.ndimage
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -75,13 +76,13 @@ class ExportToCellH5(cpm.CPModule):
             self.directory.join_parts(dir_choice, custom_path)
         
         self.file_name = cps.FilenameText(
-            "Output file name", "DefaultOut.cellh5",
+            "Output file name", "DefaultOut.ch5",
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,
             metadata = True,
             browse_msg = "Choose CellH5 file",
             mode = cps.FilenameText.MODE_APPEND,
-            exts = [("CellH5 file (*.cellh5)", "*.cellh5"),
+            exts = [("CellH5 file (*.cellh5)", "*.ch5"),
                     ("HDF5 file (*.h5)", "*.h5"),
                     ("All files (*.*", "*.*")],
             doc = """
@@ -268,11 +269,14 @@ class ExportToCellH5(cpm.CPModule):
         to the group for a particular field of view
         '''
         m = workspace.measurements
-        path = ["_".join((cpmeas.C_METADATA, setting.value)) for setting in
-                (self.plate_metadata, self.well_metadata, self.site_metadata)
-                if setting.value != self.IGNORE_METADATA]
-        return tuple([m[cpmeas.IMAGE, feature, image_number] 
-                      for feature in path])
+        path = []
+        for setting in self.plate_metadata, self.well_metadata, self.site_metadata:
+            if setting.value == self.IGNORE_METADATA:
+                path.append("NA")
+            else:
+                feature = "_".join((cpmeas.C_METADATA, setting.value))
+                path.append(m[cpmeas.IMAGE, feature, image_number])
+        return tuple(path)
     
     def get_subfile_name(self, workspace):
         '''Contact the UI to find the cellh5 file to use to store results
@@ -310,7 +314,7 @@ class ExportToCellH5(cpm.CPModule):
         master_dict = self.get_dictionary().setdefault(master_file, {})
         if pid not in master_dict:
             md_head, md_tail = os.path.splitext(master_file)
-            subfile = "%s_%s_%s_%s_%s%s" % (md_head, path[0], path[1], path[2], str(pid), md_tail)
+            subfile = "%s_%s%s" % (md_head, str(pid), md_tail)
             master_dict[pid] = subfile
         else:
             subfile = master_dict[pid]
@@ -338,21 +342,23 @@ class ExportToCellH5(cpm.CPModule):
         ### add Postion (==plate, well, site) triple
         c5_pos = c5_file.add_position(self._to_ch5_coord(*path))
         
-        ### get shape of 5D cube        
-        shape5D = (len(self.objects_to_export), 1, 1,) + workspace.object_set.get_objects(self.objects_to_export[0].objects_name.value).shape
-        dtype5D = numpy.uint16 
-        
-        ### create lablel writer for incremental writing
-        c5_label_writer = c5_pos.add_label_image(shape=shape5D, dtype=dtype5D)
-        c5_label_def = cellh5write.CH5ImageRegionDefinition()
-
         for ch_idx, object_group in enumerate(self.objects_to_export):
             objects_name = object_group.objects_name.value
             objects = object_set.get_objects(objects_name)
+            labels = objects.segmented
+            if ch_idx == 0:
+                ### get shape of 5D cube        
+                shape5D = (len(self.objects_to_export), 1, 1,
+                           labels.shape[0], labels.shape[1])
+                dtype5D = numpy.uint16 
+                
+                ### create lablel writer for incremental writing
+                c5_label_writer = c5_pos.add_label_image(shape=shape5D, dtype=dtype5D)
+                c5_label_def = cellh5write.CH5ImageRegionDefinition()
+                
             ### the object.counts check here is dangarous, since we do not now what h5py allocs / fills
 #             if objects.count == 0:
 #                 continue 
-            labels = objects.segmented
             c5_label_writer.write(labels, c=ch_idx, t=0, z=0)
             c5_label_def.add_row(region_name=objects_name, channel_idx=ch_idx)
         
@@ -409,6 +415,7 @@ class ExportToCellH5(cpm.CPModule):
         ### iterate over objects to export
         for ch_idx, object_group in enumerate(self.objects_to_export):
             objects_name = object_group.objects_name.value
+            objects = object_set.get_objects(objects_name)
             
             ### find features for that object
             feature_cols_per_object = filter(lambda xxx: xxx[0] == objects_name, feature_cols)
@@ -446,19 +453,32 @@ class ExportToCellH5(cpm.CPModule):
             ### iterate over Location  to create bounding_box and center
             c5_bbox = c5_pos.add_object_bounding_box(object_name=object_name)
             
-            location_x = m[object_name, "Location_Center_X"][:, numpy.newaxis]
-            location_y = m[object_name, "Location_Center_Y"][:, numpy.newaxis]
-            max_radiaus = m[object_name, "AreaShape_MaximumRadius"][:, numpy.newaxis]
-
-            bb = numpy.c_[location_x - max_radiaus, location_x + max_radiaus, 
-                          location_y - max_radiaus, location_y + max_radiaus]
+            if objects.count > 0:
+                ijv = objects.ijv
+                min_x = scipy.ndimage.minimum(
+                    ijv[:, 1], ijv[:, 2], objects.indices)
+                max_x = scipy.ndimage.maximum(
+                    ijv[:, 1], ijv[:, 2], objects.indices)
+                min_y = scipy.ndimage.minimum(
+                    ijv[:, 0], ijv[:, 2], objects.indices)
+                max_y = scipy.ndimage.maximum(
+                    ijv[:, 0], ijv[:, 2], objects.indices)
+                location_x = scipy.ndimage.mean(
+                    ijv[:, 1], ijv[:, 2], objects.indices)
+                location_y = scipy.ndimage.mean(
+                    ijv[:, 0], ijv[:, 2], objects.indices)
+                bb = numpy.c_[min_x, max_x, min_y, max_y]
+            else:
+                bb = numpy.zeros((0, 4))
+                location_x = numpy.zeros(0)
+                location_y = numpy.zeros(0)
                         
             c5_bbox.write(bb.astype(numpy.int32))
             c5_bbox.write_definition()
             c5_bbox.finalize()
             
             c5_center = c5_pos.add_object_center(object_name=object_name)
-        
+            
             cent = numpy.c_[location_y, location_y]
                         
             c5_center.write(cent.astype(numpy.int32))

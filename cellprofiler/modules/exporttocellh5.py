@@ -310,20 +310,15 @@ class ExportToCellH5(cpm.CPModule):
         master_dict = self.get_dictionary().setdefault(master_file, {})
         if pid not in master_dict:
             md_head, md_tail = os.path.splitext(master_file)
-            subfile = "%s_%s%s" % (md_head, str(pid), md_tail)
+            subfile = "%s_%s_%s_%s_%s%s" % (md_head, path[0], path[1], path[2], str(pid), md_tail)
             master_dict[pid] = subfile
         else:
             subfile = master_dict[pid]
-        # TODO: create a link from the master file to the subfile
-        #
-        # e.g.
-        #
-        # mf = h5py.File(master_file, "a")
-        # mgroup = mf
-        # for key in path[:-1]:
-        #    mgroup = mgroup.require_group(key)
-        # mgroup[path[-1]] = h5py.ExternalLink(subfile, "/"+ "/".join(path))
-        #
+
+        ch5_master = cellh5write.CH5MasterFile(master_file, "a")
+        ch5_master.add_link_to_coord(self._to_ch5_coord(*path), subfile)
+        ch5_master.close()
+        
         return subfile
     
     def _to_ch5_coord(self, plate, well, site):
@@ -525,8 +520,10 @@ class ExportToCellH5(cpm.CPModule):
                     pass
             
     def post_run(self, workspace):
-        print "asdf", self.get_subfile_name(workspace)
-        if False and self.repack:
+        if self.repack:
+            ### to be implemented with
+            ### ch5_master.repack()
+            return
             measurements = workspace.measurements
             fd, temp_name = tempfile.mkstemp(
                 suffix = ".ch5",

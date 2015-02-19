@@ -426,6 +426,7 @@ class ExportToCellH5(cpm.CPModule):
             object_labels = numpy.arange(len(values))+1
             
             c5_object_writer.write(t=0, object_labels=numpy.array(object_labels))
+            c5_object_writer.write_definition()
             c5_object_writer.finalize()
             
             ### iterate over all cellular feature to get feature matrix
@@ -454,12 +455,20 @@ class ExportToCellH5(cpm.CPModule):
             location_y = m[object_name, "Location_Center_Y"][:, numpy.newaxis]
             max_radiaus = m[object_name, "AreaShape_MaximumRadius"][:, numpy.newaxis]
 
-            bb = numpy.c_[location_y, location_y+max_radiaus, location_x, location_x + max_radiaus]
+            bb = numpy.c_[location_x - max_radiaus, location_x + max_radiaus, 
+                          location_y - max_radiaus, location_y + max_radiaus]
                         
             c5_bbox.write(bb.astype(numpy.int32))
             c5_bbox.write_definition()
             c5_bbox.finalize()
             
+            c5_center = c5_pos.add_object_center(object_name=object_name)
+        
+            cent = numpy.c_[location_y, location_y]
+                        
+            c5_center.write(cent.astype(numpy.int32))
+            c5_center.write_definition()
+            c5_center.finalize()
             
             
             
@@ -516,7 +525,8 @@ class ExportToCellH5(cpm.CPModule):
                     pass
             
     def post_run(self, workspace):
-        if self.repack:
+        print "asdf", self.get_subfile_name(workspace)
+        if False and self.repack:
             measurements = workspace.measurements
             fd, temp_name = tempfile.mkstemp(
                 suffix = ".ch5",

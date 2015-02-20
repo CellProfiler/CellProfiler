@@ -50,7 +50,7 @@ RUN_GROUP_REQ_1 = "run-group-request-1"
 RUN_REPLY_1 = "run-reply-1"
 CELLPROFILER_EXCEPTION_1 = "cellprofiler-exception-1"
 PIPELINE_EXCEPTION_1 = "pipeline-exception-1"
-CLEAN_PIPELINE_REQ_1 = "clean-pipeline-req-1"
+CLEAN_PIPELINE_REQ_1 = "clean-pipeline-request-1"
 CLEAN_PIPELINE_REPLY_1 = "clean-pipeline-reply-1"
 
 class KnimeBridgeServer(threading.Thread):

@@ -2094,10 +2094,12 @@ class CPNavigationToolbar(NavigationToolbar2WxAgg):
         '''Toggle the current mode to off'''
         if self.mode == NAV_MODE_ZOOM:
             self.zoom()
-            self.ToggleTool(self._NTB2_ZOOM, False)
+            if 'Zoom' in self.wx_ids:
+                self.ToggleTool(self.wx_ids['Zoom'], False)
         elif self.mode == NAV_MODE_PAN:
             self.pan()
-            self.ToggleTool(self._NTB2_PAN, False)
+            if 'Pan' in self.wx_ids:
+                self.ToggleTool(self.wx_ids['Pan'], False)
             
     def zoom(self, *args):
         NavigationToolbar2WxAgg.zoom(self, *args)

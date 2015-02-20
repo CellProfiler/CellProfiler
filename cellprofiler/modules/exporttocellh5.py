@@ -320,8 +320,10 @@ class ExportToCellH5(cpm.CPModule):
             subfile = master_dict[pid]
 
         ch5_master = cellh5write.CH5MasterFile(master_file, "a")
-        ch5_master.add_link_to_coord(self._to_ch5_coord(*path), subfile)
-        ch5_master.close()
+        try:
+            ch5_master.add_link_to_coord(self._to_ch5_coord(*path), subfile)
+        finally:
+            ch5_master.close()
         
         return subfile
     
@@ -338,206 +340,204 @@ class ExportToCellH5(cpm.CPModule):
         subfile_name = self.get_subfile_name(workspace)
         
         ### create CellH5 file
-        c5_file = cellh5write.CH5FileWriter(subfile_name)
-        ### add Postion (==plate, well, site) triple
-        c5_pos = c5_file.add_position(self._to_ch5_coord(*path))
-        
-        for ch_idx, object_group in enumerate(self.objects_to_export):
-            objects_name = object_group.objects_name.value
-            objects = object_set.get_objects(objects_name)
-            labels = objects.segmented
-            if ch_idx == 0:
-                ### get shape of 5D cube        
-                shape5D = (len(self.objects_to_export), 1, 1,
-                           labels.shape[0], labels.shape[1])
-                dtype5D = numpy.uint16 
-                
-                ### create lablel writer for incremental writing
-                c5_label_writer = c5_pos.add_label_image(shape=shape5D, dtype=dtype5D)
-                c5_label_def = cellh5write.CH5ImageRegionDefinition()
-                
-            ### the object.counts check here is dangarous, since we do not now what h5py allocs / fills
-#             if objects.count == 0:
-#                 continue 
-            c5_label_writer.write(labels, c=ch_idx, t=0, z=0)
-            c5_label_def.add_row(region_name=objects_name, channel_idx=ch_idx)
-        
-        ### finalize the writer
-        c5_label_writer.write_definition(c5_label_def)
-        c5_label_writer.finalize()
-        
-        ### get shape of 5D cube        
-        shape5D = (len(self.objects_to_export), 1, 1,) + workspace.image_set.get_image(self.images_to_export[0].image_name.value).pixel_data.shape
-        dtype5D = numpy.uint8
-        
-        ### create image writer for incremental writing
-        c5_image_writer = c5_pos.add_image(shape=shape5D, dtype=dtype5D)
-        c5_image_def = cellh5write.CH5ImageChannelDefinition()
-    
-        for ch_idx, image_group in enumerate(self.images_to_export):
-            image_name = image_group.image_name.value
-            image = m.get_image(image_name).pixel_data
-            scale = m.get_image(image_name).get_scale()
+        with cellh5write.CH5FileWriter(subfile_name, mode="a") as c5_file:
+            ### add Postion (==plate, well, site) triple
+            c5_pos = c5_file.add_position(self._to_ch5_coord(*path))
             
-            c5_image_writer.write((image*scale).astype(dtype5D), c=ch_idx, t=0, z=0)
-            c5_image_def.add_row(channel_name=image_name, description=image_name, is_physical=True, voxel_size=(1,1,1), color="#FF0000")
-        c5_image_writer.write_definition(c5_image_def)
-        c5_image_writer.finalize()
-            
-        columns = workspace.pipeline.get_measurement_columns(self)
-        if self.wants_to_choose_measurements:
-            to_keep = set([
-                (self.measurements.get_measurement_object(s),
-                 self.measurements.get_measurement_feature(s))
-                for s in self.measurements.selections])
-            def keep(column):
-                return (column[0], column[1]) in to_keep
-            columns = filter(keep, columns)
-        #
-        # I'm breaking the data up into the most granular form so that
-        # it's clearer how it's organized. I'm expecting that you would
-        # organize it differently when actually storing.
-        #
-        
-        ### 0) extract object information (i.e. object_label_no) 
-        ### 1) extract all single cell features and write it as feature matrix (for e.g. classification)
-        ### 2) extract Center
-        ### 3) create artifical Bounding box... usefull for displaying it in fiji lateron
-        ### 4) Don't see the point of features extracted on "Image" the only real and useful feature there is "Count" which can be deduced from single cell information
-        
-        ### 0) and 1) filter columns for cellular features
-        feature_cols = filter(lambda xxx: (xxx[0] not in (cpmeas.EXPERIMENT, cpmeas.IMAGE)) and 
-                                          m.has_feature(xxx[0], xxx[1]) and
-                                         (xxx[1].startswith("AreaShape") or
-                                          xxx[1].startswith("Intensity") or
-                                          xxx[1].startswith("Texture")), columns)
-        
-        ### iterate over objects to export
-        for ch_idx, object_group in enumerate(self.objects_to_export):
-            objects_name = object_group.objects_name.value
-            objects = object_set.get_objects(objects_name)
-            
-            ### find features for that object
-            feature_cols_per_object = filter(lambda xxx: xxx[0] == objects_name, feature_cols)
-            
-            ### use first feature to get the object labels
-            c5_object_writer = c5_pos.add_region_object(objects_name)
-            first_column = feature_cols_per_object[0]
-            object_name, feature_name = first_column[:2]
-            values = m[object_name, feature_name]
-            object_labels = numpy.arange(len(values))+1
-            
-            c5_object_writer.write(t=0, object_labels=numpy.array(object_labels))
-            c5_object_writer.write_definition()
-            c5_object_writer.finalize()
-            
-            ### iterate over all cellular feature to get feature matrix
-                
-            n_features = len(feature_cols_per_object)
-            feature_names = []
-            feature_matrix = []
-            for column in feature_cols_per_object:
-                object_name, feature_name = column[:2]
-                values = m[object_name, feature_name]
-                
-                feature_names.append(feature_name)
-                feature_matrix.append(values[:, numpy.newaxis])
-                
-            feature_matrix = numpy.concatenate(feature_matrix, axis=1)
-            
-            c5_feature_writer = c5_pos.add_object_feature_matrix(object_name=object_name, feature_name="object_features", n_features=n_features, dtype=numpy.float32)
-            c5_feature_writer.write(feature_matrix)
-            c5_feature_writer.write_definition(feature_names)
-            c5_feature_writer.finalize()
-            
-            ### iterate over Location  to create bounding_box and center
-            c5_bbox = c5_pos.add_object_bounding_box(object_name=object_name)
-            
-            if objects.count > 0:
-                ijv = objects.ijv
-                min_x = scipy.ndimage.minimum(
-                    ijv[:, 1], ijv[:, 2], objects.indices)
-                max_x = scipy.ndimage.maximum(
-                    ijv[:, 1], ijv[:, 2], objects.indices)
-                min_y = scipy.ndimage.minimum(
-                    ijv[:, 0], ijv[:, 2], objects.indices)
-                max_y = scipy.ndimage.maximum(
-                    ijv[:, 0], ijv[:, 2], objects.indices)
-                location_x = scipy.ndimage.mean(
-                    ijv[:, 1], ijv[:, 2], objects.indices)
-                location_y = scipy.ndimage.mean(
-                    ijv[:, 0], ijv[:, 2], objects.indices)
-                bb = numpy.c_[min_x, max_x, min_y, max_y]
-            else:
-                bb = numpy.zeros((0, 4))
-                location_x = numpy.zeros(0)
-                location_y = numpy.zeros(0)
-                        
-            c5_bbox.write(bb.astype(numpy.int32))
-            c5_bbox.write_definition()
-            c5_bbox.finalize()
-            
-            c5_center = c5_pos.add_object_center(object_name=object_name)
-            
-            cent = numpy.c_[location_y, location_y]
-                        
-            c5_center.write(cent.astype(numpy.int32))
-            c5_center.write_definition()
-            c5_center.finalize()
-            
-            
-            
-
+            for ch_idx, object_group in enumerate(self.objects_to_export):
+                objects_name = object_group.objects_name.value
+                objects = object_set.get_objects(objects_name)
+                labels = objects.segmented
+                if ch_idx == 0:
+                    ### get shape of 5D cube        
+                    shape5D = (len(self.objects_to_export), 1, 1,
+                               labels.shape[0], labels.shape[1])
+                    dtype5D = numpy.uint16 
                     
+                    ### create lablel writer for incremental writing
+                    c5_label_writer = c5_pos.add_label_image(shape=shape5D, dtype=dtype5D)
+                    c5_label_def = cellh5write.CH5ImageRegionDefinition()
+                    
+                c5_label_writer.write(labels, c=ch_idx, t=0, z=0)
+                c5_label_def.add_row(region_name=objects_name, channel_idx=ch_idx)
             
-        #
-        # The last part deals with relationships between segmentations.
-        # The most typical relationship is "Parent" which is explained below,
-        # but you can also have things like first nearest and second nearest
-        # neighbor or in tracking, the relationship between the segmentation
-        # of the previous and next frames.
-        # 
-        for key in m.get_relationship_groups():
-                relationships = m.get_relationships(
-                    key.module_number, key.relationship, 
-                    key.object_name1, key.object_name2,
-                    [m.image_set_number])
-                for image_number1, image_number2, \
-                    object_number1, object_number2 in relationships:
-                    if image_number1 == image_number2 and \
-                       key.relationship == R_PARENT:
+            if len(self.objects_to_export) > 0:
+                ### finalize the writer
+                c5_label_writer.write_definition(c5_label_def)
+                c5_label_writer.finalize()
+            
+            ### get shape of 5D cube        
+            shape5D = (len(self.objects_to_export), 1, 1,) + workspace.image_set.get_image(self.images_to_export[0].image_name.value).pixel_data.shape
+            dtype5D = numpy.uint8
+            
+            ### create image writer for incremental writing
+            c5_image_writer = c5_pos.add_image(shape=shape5D, dtype=dtype5D)
+            c5_image_def = cellh5write.CH5ImageChannelDefinition()
+        
+            for ch_idx, image_group in enumerate(self.images_to_export):
+                image_name = image_group.image_name.value
+                image = m.get_image(image_name).pixel_data
+                scale = m.get_image(image_name).get_scale()
+                
+                c5_image_writer.write((image*scale).astype(dtype5D), c=ch_idx, t=0, z=0)
+                c5_image_def.add_row(channel_name=image_name, description=image_name, is_physical=True, voxel_size=(1,1,1), color="#FF0000")
+            c5_image_writer.write_definition(c5_image_def)
+            c5_image_writer.finalize()
+                
+            columns = workspace.pipeline.get_measurement_columns(self)
+            if self.wants_to_choose_measurements:
+                to_keep = set([
+                    (self.measurements.get_measurement_object(s),
+                     self.measurements.get_measurement_feature(s))
+                    for s in self.measurements.selections])
+                def keep(column):
+                    return (column[0], column[1]) in to_keep
+                columns = filter(keep, columns)
+            #
+            # I'm breaking the data up into the most granular form so that
+            # it's clearer how it's organized. I'm expecting that you would
+            # organize it differently when actually storing.
+            #
+            
+            ### 0) extract object information (i.e. object_label_no) 
+            ### 1) extract all single cell features and write it as feature matrix (for e.g. classification)
+            ### 2) extract Center
+            ### 3) create artifical Bounding box... usefull for displaying it in fiji lateron
+            ### 4) Don't see the point of features extracted on "Image" the only real and useful feature there is "Count" which can be deduced from single cell information
+            
+            ### 0) and 1) filter columns for cellular features
+            feature_cols = filter(lambda xxx: (xxx[0] not in (cpmeas.EXPERIMENT, cpmeas.IMAGE)) and 
+                                              m.has_feature(xxx[0], xxx[1]) and
+                                             (xxx[1].startswith("AreaShape") or
+                                              xxx[1].startswith("Intensity") or
+                                              xxx[1].startswith("Texture")), columns)
+            
+            ### iterate over objects to export
+            for ch_idx, object_group in enumerate(self.objects_to_export):
+                objects_name = object_group.objects_name.value
+                objects = object_set.get_objects(objects_name)
+                
+                ### find features for that object
+                feature_cols_per_object = filter(lambda xxx: xxx[0] == objects_name, feature_cols)
+                
+                ### use first feature to get the object labels
+                c5_object_writer = c5_pos.add_region_object(objects_name)
+                first_column = feature_cols_per_object[0]
+                object_name, feature_name = first_column[:2]
+                values = m[object_name, feature_name]
+                object_labels = numpy.arange(len(values))+1
+                
+                c5_object_writer.write(t=0, object_labels=numpy.array(object_labels))
+                c5_object_writer.write_definition()
+                c5_object_writer.finalize()
+                
+                ### iterate over all cellular feature to get feature matrix
+                    
+                n_features = len(feature_cols_per_object)
+                feature_names = []
+                feature_matrix = []
+                for column in feature_cols_per_object:
+                    object_name, feature_name = column[:2]
+                    values = m[object_name, feature_name]
+                    
+                    feature_names.append(feature_name)
+                    feature_matrix.append(values[:, numpy.newaxis])
+                    
+                feature_matrix = numpy.concatenate(feature_matrix, axis=1)
+                
+                c5_feature_writer = c5_pos.add_object_feature_matrix(object_name=object_name, feature_name="object_features", n_features=n_features, dtype=numpy.float32)
+                c5_feature_writer.write(feature_matrix)
+                c5_feature_writer.write_definition(feature_names)
+                c5_feature_writer.finalize()
+                
+                ### iterate over Location  to create bounding_box and center
+                c5_bbox = c5_pos.add_object_bounding_box(object_name=object_name)
+                
+                if objects.count > 0:
+                    ijv = objects.ijv
+                    min_x = scipy.ndimage.minimum(
+                        ijv[:, 1], ijv[:, 2], objects.indices)
+                    max_x = scipy.ndimage.maximum(
+                        ijv[:, 1], ijv[:, 2], objects.indices)
+                    min_y = scipy.ndimage.minimum(
+                        ijv[:, 0], ijv[:, 2], objects.indices)
+                    max_y = scipy.ndimage.maximum(
+                        ijv[:, 0], ijv[:, 2], objects.indices)
+                    location_x = scipy.ndimage.mean(
+                        ijv[:, 1], ijv[:, 2], objects.indices)
+                    location_y = scipy.ndimage.mean(
+                        ijv[:, 0], ijv[:, 2], objects.indices)
+                    bb = numpy.c_[min_x, max_x, min_y, max_y]
+                else:
+                    bb = numpy.zeros((0, 4))
+                    location_x = numpy.zeros(0)
+                    location_y = numpy.zeros(0)
+                            
+                c5_bbox.write(bb.astype(numpy.int32))
+                c5_bbox.write_definition()
+                c5_bbox.finalize()
+                
+                c5_center = c5_pos.add_object_center(object_name=object_name)
+                
+                cent = numpy.c_[location_y, location_y]
+                            
+                c5_center.write(cent.astype(numpy.int32))
+                c5_center.write_definition()
+                c5_center.finalize()
+                
+                
+                
+    
+                        
+                
+            #
+            # The last part deals with relationships between segmentations.
+            # The most typical relationship is "Parent" which is explained below,
+            # but you can also have things like first nearest and second nearest
+            # neighbor or in tracking, the relationship between the segmentation
+            # of the previous and next frames.
+            # 
+            for key in m.get_relationship_groups():
+                    relationships = m.get_relationships(
+                        key.module_number, key.relationship, 
+                        key.object_name1, key.object_name2,
+                        [m.image_set_number])
+                    for image_number1, image_number2, \
+                        object_number1, object_number2 in relationships:
+                        if image_number1 == image_number2 and \
+                           key.relationship == R_PARENT:
+                            #
+                            # Object 1 is the parent to object 2 - this is the
+                            # most common relationship, so if you can only record
+                            # one, this is it. "Parent" usually means that
+                            # the child's segmentation was seeded by the parent
+                            # segmentation (e.g. Parent = nucleus, child = cell),
+                            # but can also be something like Parent = cell,
+                            # child = all organelles within the cell
+                            #
+                            # object_name1 is the name of the parent segmentation
+                            # object_name2 is the name of the child segmentation
+                            # object_number1 is the index used to label the
+                            #                parent in the parent segmentation
+                            # object_number2 is the index used to label the
+                            #                child in the child segmentation
+                            continue
+                        if image_number1 != m.image_set_number:
+                            path1 = self.get_site_path(workspace, image_number1)
+                        else:
+                            path1 = path
+                        if image_number2 != m.image_set_number:
+                            path2 = self.get_site_path(workspace, image_number2)
+                        else:
+                            path2 = path
                         #
-                        # Object 1 is the parent to object 2 - this is the
-                        # most common relationship, so if you can only record
-                        # one, this is it. "Parent" usually means that
-                        # the child's segmentation was seeded by the parent
-                        # segmentation (e.g. Parent = nucleus, child = cell),
-                        # but can also be something like Parent = cell,
-                        # child = all organelles within the cell
-                        #
-                        # object_name1 is the name of the parent segmentation
-                        # object_name2 is the name of the child segmentation
-                        # object_number1 is the index used to label the
-                        #                parent in the parent segmentation
-                        # object_number2 is the index used to label the
-                        #                child in the child segmentation
-                        continue
-                    if image_number1 != m.image_set_number:
-                        path1 = self.get_site_path(workspace, image_number1)
-                    else:
-                        path1 = path
-                    if image_number2 != m.image_set_number:
-                        path2 = self.get_site_path(workspace, image_number2)
-                    else:
-                        path2 = path
-                    #
-                    # TODO: this is sort of extra credit, but the relationships
-                    #       relate an object in one segmentation to another.
-                    #       For tracking, these can be in different image
-                    #       sets, (e.g. the cell at time T and at time T+1).
-                    #       So, given object 1 and object 2, path1 and path2
-                    #       tell you how the objects are related between planes.
-                    pass
+                        # TODO: this is sort of extra credit, but the relationships
+                        #       relate an object in one segmentation to another.
+                        #       For tracking, these can be in different image
+                        #       sets, (e.g. the cell at time T and at time T+1).
+                        #       So, given object 1 and object 2, path1 and path2
+                        #       tell you how the objects are related between planes.
+                        pass
             
     def post_run(self, workspace):
         if self.repack:

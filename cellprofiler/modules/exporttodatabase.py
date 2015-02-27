@@ -614,10 +614,12 @@ class ExportToDatabase(cpm.CPModule):
             If you are using the machine-learning tool in CellProfiler Analyst,
             you can create an additional table in your database  which contains
             the per-object phenotype labels. This table is produced after scoring
-            all the objects in your data set and will be named with the label given here.<p>
-            You can manually change this choice in the properties file by
+            all the objects in your data set and will be named with the label given here. 
+            Note that the actual class table will be named by prepending the table prefix 
+            (if any) to what you enter here.
+            <p>You can manually change this choice in the properties file by
             edting the <i>class_table</i> field. Leave this field blank if you are 
-            not using the classifier or do not need the table written to the database.""")
+            not using the classifier or do not need the table written to the database</p>.""")
         
         self.create_workspace_file = cps.Binary(
             "Create a CellProfiler Analyst workspace file?", False, doc = """
@@ -3468,7 +3470,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             plate_type = "" if self.properties_plate_type.value == NONE_CHOICE else self.properties_plate_type.value
             plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_plate_metadata.value)
             well_id = "" if self.properties_well_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_well_metadata.value)
-            class_table = self.properties_class_table_name.value
+            class_table = self.get_table_prefix() + self.properties_class_table_name.value
             
             contents = """#%(date)s
 # ==============================================

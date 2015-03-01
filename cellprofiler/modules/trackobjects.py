@@ -4,7 +4,8 @@ TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'
 TM_MEASUREMENTS = 'Measurements'
 TM_LAP = "LAP"
-TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS,TM_LAP]
+TM_FOLLOWNEIGHBORS = "Follow Neighbors"
+TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS, TM_LAP, TM_FOLLOWNEIGHBORS]
 
 LT_NONE = 0
 LT_PHASE_1 = 1
@@ -25,7 +26,7 @@ M_BOTH = "Both"
 RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
 RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
 ONLY_IF_2ND_PHASE_LAP_TEXT = '''<i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i>'''%globals()
-
+ONLY_IF_FOLLOWNEIGHBORS = "<i>(Used only if %(TM_FOLLOWNEIGHBORS)s tracking method is applied and the second phase is run)</i>"%globals()
 import cellprofiler.icons 
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 __doc__ = """
@@ -195,6 +196,7 @@ from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.cpmorphology import associate_by_distance
 from cellprofiler.cpmath.cpmorphology import all_connected_components
+from cellprofiler.cpmath.neighmovetrack import NeighbourMovementTracking
 from cellprofiler.cpmath.index import Indexes
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
@@ -291,7 +293,7 @@ class TrackObjects(cpm.CPModule):
 
     module_name = 'TrackObjects'
     category = "Object Processing"
-    variable_revision_number = 6
+    variable_revision_number = 7
 
     def create_settings(self):
         self.tracking_method = cps.Choice(
@@ -344,6 +346,8 @@ class TrackObjects(cpm.CPModule):
             the resulting partial trajectories into complete trajectories. Both steps are formulated 
             as global combinatorial optimization problems whose solution identifies the overall 
             most likely set of object trajectories throughout a movie.
+
+            <li><i>%(TM_FOLLOWNEIGHBORS)s:</i> TODO document
 
             <p>Tracks are constructed from an image sequence by detecting objects in each 
             frame and linking objects between consecutive frames as a first step. This step alone
@@ -709,6 +713,47 @@ class TrackObjects(cpm.CPModule):
             </ul></dd>
             </dl>'''%globals())
         
+        self.average_cell_diameter = cps.Float(
+            "Average cell diameter in pixels",
+            35.0, minval=5, doc ='''\
+            %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
+            The average cell diameter is used to scale many algorithm parameters. 
+            Please use e.g. ImageJ to measure the average cell size in pixels.
+            '''%globals()
+            )
+
+        self.advanced_parameters = cps.Binary(
+            'Use advanced configuration parameters', False, doc="""
+            %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
+            Do you want to use advanced parameters to configure plugin? They allow for more flexibility,
+            however you need to know what you are doing.
+            """%globals()
+            )
+        
+        self.drop_cost = cps.Float(
+            "Cost of cell to empty matching",
+            15, minval=1, maxval=50, doc='''\
+            %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
+            The cost of assigning cell as "lost" in transition from t to t+1. Increasing this value leads to more 
+            cells (from t) being matched with cells (from t+1) rather then classified as "lost".
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
+            <ul>
+            <li>Too high value might cause incorrect cells to match between the frames. </li>
+            <li>Too lower might make the algorithm not to match cells between the frames.</li>
+            </ul></dd>
+            </dl>
+            '''%globals()
+            )
+            
+        self.area_weight = cps.Float(
+            "Weight of area difference in matching cost",
+            25, minval=1, doc='''\
+            %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
+            Increasing this value will cause the algorithm to care more about area consistence between frames and less about distance between them.
+            '''%globals()
+            )
+
         self.wants_lifetime_filtering = cps.Binary(
             'Filter objects by lifetime?', False, doc = '''
             Select <i>%(YES)s</i> if you want objects to be filtered by their
@@ -783,7 +828,8 @@ class TrackObjects(cpm.CPModule):
                 self.max_merge_score, self.max_frame_distance,
                 self.wants_lifetime_filtering, self.wants_minimum_lifetime,
                 self.min_lifetime, self.wants_maximum_lifetime, 
-                self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance]
+                self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance,
+                self.average_cell_diameter, self.advanced_parameters,self.drop_cost, self.area_weight]
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected some limits when filtering'''
@@ -810,7 +856,10 @@ class TrackObjects(cpm.CPModule):
                     self.mitosis_max_distance]
         else:
             result += [self.pixel_radius]
-        
+        if self.tracking_method == TM_FOLLOWNEIGHBORS:
+            result += [ self.average_cell_diameter, self.advanced_parameters]
+            if self.advanced_parameters:
+                result += [self.drop_cost, self.area_weight]
         result += [ self.wants_lifetime_filtering]
         if self.wants_lifetime_filtering:
             result += [ self.wants_minimum_lifetime ]
@@ -961,6 +1010,8 @@ class TrackObjects(cpm.CPModule):
             self.run_measurements(workspace, objects)
         elif self.tracking_method == TM_LAP:
             self.run_lapdistance(workspace, objects)
+        elif self.tracking_method == TM_FOLLOWNEIGHBORS:
+            self.run_followneighbors(workspace, objects)
         else:
             raise NotImplementedError("Unimplemented tracking method: %s" %
                                       self.tracking_method.value)
@@ -1028,6 +1079,90 @@ class TrackObjects(cpm.CPModule):
                     continue
                 ax.annotate(str(n), xy=(x,y),color='white',
                             arrowprops=dict(visible=False))
+
+    def run_followneighbors(self, workspace, objects):
+        '''Track objects based on following neighbors'''
+        def run_localised_matching(self, workspace, objects):
+            '''Track based on localised matching costs'''
+            cellstar = NeighbourMovementTracking()
+            cellstar.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
+            multiplier = float(NeighbourMovementTracking.parameters_cost_iteration["default_empty_cost"]) / NeighbourMovementTracking.parameters_cost_initial["default_empty_cost"]
+            cellstar.parameters_cost_iteration["default_empty_cost"] = multiplier * self.drop_cost.value
+            cellstar.parameters_cost_initial["default_empty_cost"] = self.drop_cost.value
+            cellstar.parameters_tracking["iterations"] = self.iterations.value
+            multiplier = float(NeighbourMovementTracking.parameters_cost_iteration["area_weight"]) / NeighbourMovementTracking.parameters_cost_initial["area_weight"]
+            cellstar.parameters_cost_iteration["area_weight"] = multiplier * self.areaWeight.value
+            cellstar.parameters_cost_initial["area_weight"] = self.areaWeight.value
+            
+            old_labels = self.get_saved_labels(workspace)
+            if not old_labels is None:
+                old_i,old_j = (centers_of_labels(old_labels)+.5).astype(int)
+                old_count = len(old_i)
+                
+                i,j = (centers_of_labels(objects.segmented)+.5).astype(int)
+                count = len(i)
+                
+                new_labels = objects.segmented
+                # Matching is (expected to be) a injective function of old labels to new labels so we can inverse it.
+                matching = cellstar.run_tracking(old_labels,new_labels)
+                
+                new_object_numbers = np.zeros(count,int)
+                old_object_numbers = np.zeros(old_count,int)
+                for old, new in matching:
+                    new_object_numbers[new-1] = old
+                    old_object_numbers[old-1] = new
+                
+                self.map_objects(workspace, 
+                                 old_object_numbers, 
+                                 new_object_numbers,
+                                 i,j)
+            else:
+                i,j = (centers_of_labels(objects.segmented)+.5).astype(int)
+                count = len(i)
+                self.map_objects(workspace, np.zeros((0,),int), 
+                                 np.zeros(count,int), i,j)
+                                 
+                                 
+            self.set_saved_labels(workspace, objects.segmented)
+
+        #TODO to test only (next two lines)
+        self.run_distance( workspace, objects )
+        return
+
+        #import time
+        #start = time.clock()
+        objects = workspace.object_set.get_objects(self.object_name.value)
+        self.run_localised_matching(workspace, objects)
+
+        # Prepare output images
+        if self.wants_image.value:
+            import matplotlib.transforms
+            # [TODO OLD]
+            #from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
+            from cellprofiler.gui.cpfigure import figure_to_image, only_display_image
+            
+            figure = matplotlib.figure.Figure()
+            canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
+            ax = figure.add_subplot(1,1,1)
+            self.draw(objects.segmented, ax, 
+                      self.get_saved_object_numbers(workspace))
+            #
+            # This is the recipe for just showing the axis
+            #
+            only_display_image(figure, objects.segmented.shape)
+            
+            # [OPT] Filip!!: It is veeery slow (10 sec).
+        
+            image_pixels = figure_to_image(figure, dpi=figure.dpi)
+            image = cpi.Image(image_pixels)
+            workspace.image_set.add(self.image_name.value, image)
+            
+        #if workspace.frame is not None:
+            workspace.display_data.labels = objects.segmented
+            workspace.display_data.object_numbers = \
+                     self.get_saved_object_numbers(workspace)
+        #end = time.clock()
+        #print "tracking_plugin", end - start
 
     def run_distance(self, workspace, objects):
         '''Track objects based on distance'''
@@ -2924,7 +3059,16 @@ class TrackObjects(cpm.CPModule):
             # Added mitosis alternative score + mitosis_max_distance
             setting_values = setting_values + ["80", "40"]
             variable_revision_number = 6
-            
+        
+        # added after integration of FOLLOWNEIGHBORS
+        # TODO Lee: I am not sure if this (not from_matlab) needs to stay there
+        if (not from_matlab) and variable_revision_number == 6:
+            # addeing new settings for FOLLOWNEIGHBORS
+            setting_values = setting_values + [30., False, 15., 25.]
+            # order of params in settings
+            # self.average_cell_diameter, self.advanced_parameters,self.drop_cost, self.area_weight
+            variable_revision_number = 7
+
         return setting_values, variable_revision_number, from_matlab
 
 

@@ -103,6 +103,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'smooth' : 'Smooth',
                         'straightenworms' : 'StraightenWorms',
                         'trackobjects' : 'TrackObjects',
+                        'yeast_cell_tracking' : 'YeastCellTracking',
                         'tile' : 'Tile',
                         'calculateimageoverlap' : 'CalculateImageOverlap',
                         'unmixcolors': 'UnmixColors',
@@ -191,7 +192,8 @@ builtin_modules = ['align',
                    'trackobjects',
                    'tile',
                    'unmixcolors',
-                   'untangleworms'
+                   'untangleworms',
+                   'yeast_cell_tracking'
                    ]
 
 # CP-Matlab to CP-python module substitutions

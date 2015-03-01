@@ -44,10 +44,6 @@ class CellFeatures(object):
     def __repr__(self):
         return str(self.number) + ": " + "Center is " + str(self.center) + ", Area is " + str(self.area)
 
-    # wyczysc
-    def distance(self, to_cell):
-        return math.sqrt((self.center[0] - to_cell.center[0]) ** 2 + (self.center[1] - to_cell.center[1]) ** 2)
-
     @staticmethod
     def from_labels(labels):
         """

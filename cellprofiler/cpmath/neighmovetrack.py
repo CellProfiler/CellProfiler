@@ -6,7 +6,7 @@ Neighbourhood preserving tracking algorithm implementation
 version 1.0.0
 
 
-Coded by Filip Mroz and Adam Kaczmarek based on matlab code from original paper
+Coded by Filip Mroz and Adam Kaczmarek based on matlab code from original paper.
 2013-2015
 """
 import math
@@ -58,8 +58,8 @@ class CellFeatures(object):
         existing_labels = [i for (i, a) in enumerate(areas, 1) if a > 0]
         existing_areas = [a for a in areas if a > 0]
         existing_centers = measure.center_of_mass(labels != 0, labels, existing_labels)
-        zipped = (zip(existing_centers, existing_areas))
-        features = [CellFeatures(c, a, i, labels.shape) for i, (c, a) in enumerate(zipped, 1) if a != 0]
+        zipped = (zip(existing_labels, existing_centers, existing_areas))
+        features = [CellFeatures(c, a, i, labels.shape) for i, c, a in zipped if a != 0]
         return features
 
     def is_reliable(self, min_size=-1):

@@ -670,7 +670,12 @@ class EditObjectsDialog(wx.Dialog):
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(l[mask])
+<<<<<<<
         temp = cellprofiler.object.Objects()
+=======
+
+        temp = cellprofiler.objects.Objects()
+>>>>>>>
         temp.set_ijv(
                 numpy.column_stack([numpy.hstack(x) for x in (ii, jj, vv)]),
                 shape=self.shape)

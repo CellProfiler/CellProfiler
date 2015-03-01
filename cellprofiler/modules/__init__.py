@@ -89,15 +89,15 @@ pymodule_to_cpmodule = {'align': 'Align',
                         'rescaleintensity': 'RescaleIntensity',
                         'resize': 'Resize',
                         'run_imagej': 'RunImageJ',
-                        'saveimages': 'SaveImages',
-                        'sendemail': 'SendEmail',
-                        'smooth': 'Smooth',
-                        'straightenworms': 'StraightenWorms',
-                        'trackobjects': 'TrackObjects',
-                        'tile': 'Tile',
-                        'calculateimageoverlap': 'CalculateImageOverlap',
+                        'saveimages' : 'SaveImages',
+                        'sendemail' : 'SendEmail',
+                        'smooth' : 'Smooth',
+                        'straightenworms' : 'StraightenWorms',
+                        'trackobjects' : 'TrackObjects',
+                        'tile' : 'Tile',
                         'unmixcolors': 'UnmixColors',
-                        'untangleworms': 'UntangleWorms'
+                        'untangleworms': 'UntangleWorms',
+                        'yeast_cell_segmentation' : 'YeastCellSegmentation'
                         }
 
 # the builtin CP modules that will be loaded from the cellprofiler.modules directory
@@ -183,7 +183,8 @@ builtin_modules = ['align',
                    'trackobjects',
                    'tile',
                    'unmixcolors',
-                   'untangleworms'
+                   'untangleworms',
+                   'yeast_cell_segmentation'
                    ]
 
 # CP-Matlab to CP-python module substitutions

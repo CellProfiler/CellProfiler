@@ -17,19 +17,21 @@ from scipy.ndimage.filters import *
 
 from numpy import argwhere
 
-debug_image_path = r"D:\Fafa\Drozdze\Repozytorium\cell_star_plugins\image_debug"
-debug_image_path = r"C:\workspace\CellStar - Python\Yeast\trunk\cell_star_plugins\image_debug"
+debug_image_path = ""
 
 SILENCE = 1
 
+
 def convolve2d(img, kernel, mode='same'):
     return convolve(img, kernel)
+
 
 def extend_slices(my_slices, extension):
     def extend_slice(my_slice, extension):
         ind = (my_slice.indices(100000)[0] - extension, my_slice.indices(100000)[1] + extension)
         return slice(*ind)
     return (extend_slice(my_slices[0],extension), extend_slice(my_slices[1],extension))
+
 
 def get_bounding_box(image_mask):
     """
@@ -163,6 +165,7 @@ def fill_holes(mask, kernel_size, minimal_hole_size):
 
     return mask
 
+
 def draw_seeds_compare(seeds1, seeds2, background, name="1"):
     # PyPlot.figure(name)
     # PyPlot.imshow(background, cmap=PyPlot.cm.gray)
@@ -170,6 +173,7 @@ def draw_seeds_compare(seeds1, seeds2, background, name="1"):
     # PyPlot.plot([s[0] for s in seeds2], [s[1] for s in seeds2], 'rx')
     # PyPlot.show()
     pass
+
 
 def draw_seeds(seeds, background, title="some_source"):
     fig = plt.figure()
@@ -300,13 +304,9 @@ def image_show_and_save(image, title, save_image):
     @param image:
     @param title:
     """
-    path = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(path, os.pardir)
-    path = os.path.join(path, os.pardir)
-    path = os.path.join(path, "image_debug")
 
     if save_image:
-        sp.misc.imsave(os.path.join(path, title + '.png'), image)
+        sp.misc.imsave(os.path.join(debug_image_path, title + '.png'), image)
 
 
 def image_show(image, title):

@@ -38,7 +38,7 @@ def distance_norm(fitnesses):
 
 def grow_single_seed(seed, images, init_params, pf_param_vector):
     pfsnake = PFSnake(seed, images, init_params)
-    return pfsnake.grow(pf_parameters_decode(pf_param_vector, pfsnake.orig_size_weight_list, init_params["segmentation"]["stars"]["step"], init_params["segmentation"]["avgCellDiameter"]))
+    return pfsnake.grow(pf_parameters_decode(pf_param_vector, pfsnake.orig_size_weight_list, init_params["segmentation"]["stars"]["step"], init_params["segmentation"]["avgCellDiameter"], init_params["segmentation"]["stars"]["maxSize"]))
 
 
 def snakes_fitness(gt_snake_seed_pairs, images, parameters, pf_param_vector, debug=False):
@@ -46,7 +46,7 @@ def snakes_fitness(gt_snake_seed_pairs, images, parameters, pf_param_vector, deb
         gt_snakes, seeds = zip(*gt_snake_seed_pairs)
         merged_parameters = PFSnake.merge_parameters(
             parameters,
-            pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"])
+            pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"], parameters["segmentation"]["stars"]["maxSize"])
         )
         snakes = mp_snake_grow(images, merged_parameters, seeds)
         gt_snake_grown_seed_pairs = zip(gt_snakes, snakes)
@@ -54,7 +54,7 @@ def snakes_fitness(gt_snake_seed_pairs, images, parameters, pf_param_vector, deb
         gt_snake_grown_seed_pairs = [(gt_snake, grow_single_seed(seed, images, parameters, pf_param_vector)) for
                                      gt_snake, seed in gt_snake_seed_pairs]
 
-    print sorted(pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"]).iteritems())
+    print sorted(pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"], parameters["segmentation"]["stars"]["maxSize"]).iteritems())
     return np.array([pf_s.multi_fitness(gt_snake) for gt_snake, pf_s in gt_snake_grown_seed_pairs])
 
 
@@ -110,7 +110,7 @@ def test_trained_parameters(image, parameters, precision, avg_cell_diameter):
 #
 #
 
-def run(image, gt_snakes, precision=-1, avg_cell_diameter=-1, method='brute', initial_params=None):
+def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_params=None):
     """
     :param image: input image
     :param gt_snakes: gt snakes label image
@@ -129,7 +129,7 @@ def run(image, gt_snakes, precision=-1, avg_cell_diameter=-1, method='brute', in
     start = time.clock()
     optimized = optimize(method, gt_snakes, images, params, precision, avg_cell_diameter)
 
-    best_params = pf_parameters_decode(optimized[0], get_size_weight_list(params), params["segmentation"]["stars"]["step"], avg_cell_diameter)
+    best_params = pf_parameters_decode(optimized[0], get_size_weight_list(params), params["segmentation"]["stars"]["step"], avg_cell_diameter, params["segmentation"]["stars"]["maxSize"])
     best_score = optimized[1]
 
     stop = time.clock()
@@ -253,9 +253,17 @@ def multiproc_multitype_fitness(image, gt_snakes, precision, avg_cell_diameter):
 
     optimizers = \
         [
-            # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+
             # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "basin")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "brute")),
+            # # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "brute")),
             # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "diffevo"))
         ]
 
@@ -268,5 +276,5 @@ def multiproc_multitype_fitness(image, gt_snakes, precision, avg_cell_diameter):
     results = [result_queue.get() for o in optimizers]
 
     sorted_results = sorted(results, key=lambda x: x[2])
-
+    print sorted_results[0]
     return sorted_results[0][1], sorted_results[0][2]

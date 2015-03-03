@@ -712,7 +712,8 @@ class YeastCellSegmentation(cpmi.Identify):
             # Calculate the same parameters TODO: what about different background?
             cellstar = self.prepare_cell_star_object()
             current_parameters = cellstar.parameters
-            new_parameters, new_snake_score = run_pf(image, labels, current_parameters)
+            self.autoadapted_params.value = cellstar.encode_auto_params()
+            new_parameters, new_snake_score = run_pf(image, labels, current_parameters, precision=self.segmentation_precision.value, avg_cell_diameter=self.average_cell_diameter.value)
             if new_snake_score < best_snake_score:
                 cellstar.parameters = new_parameters
                 best_snake_score = new_snake_score

@@ -33,7 +33,8 @@ def load_from_testset(filepath):
 def try_load_image(image_path):
     return image_util.load_frame(corpus_path, image_path)
 
-def run_pf(input_image, gt_mask, parameters):
+
+def run_pf(input_image, gt_mask, parameters, precision, avg_cell_diameter):
     """
 
     :param input_image:
@@ -42,8 +43,9 @@ def run_pf(input_image, gt_mask, parameters):
     :return: Best complete parameters settings, best distance
     """
     gt_snakes = gt_mask_to_snakes(gt_mask)
-    best_complete_params, _, best_score = run(input_image, gt_snakes, initial_params=parameters)
+    best_complete_params, _, best_score = run(input_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='mp')
     return best_complete_params, best_score
+
 
 def test_pf(image_path, mask_path, precision, avg_cell_diameter, method):
     frame = try_load_image(image_path)

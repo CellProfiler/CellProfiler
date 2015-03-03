@@ -50,7 +50,7 @@ def pf_parameters_encode(parameters):
     return point
 
 
-def pf_parameters_decode(param_vector, org_size_weights_list, step, avg_cell_diameter):
+def pf_parameters_decode(param_vector, org_size_weights_list, step, avg_cell_diameter, max_size):
     """
     sizeWeight is one number (mean of the future list)
     @type param_vector: numpy.ndarray
@@ -63,9 +63,9 @@ def pf_parameters_decode(param_vector, org_size_weights_list, step, avg_cell_dia
         rescaled = val
         if name == "sizeWeight":
             rescaled = list(np.array(org_size_weights_list) * (rescaled/np.mean(org_size_weights_list)))
-        elif name == "borderThickness":\
-            # borderThickness < 100 * step
-            rescaled = min(max(0.001, val), 100 * max(step * avg_cell_diameter, 0.2))  # FIXME: fixed on magic constant
+        elif name == "borderThickness":
+            max_bt = max_size * avg_cell_diameter - 1
+            rescaled = min(max(0.001, val), max_bt)
         parameters[name] = rescaled
     return parameters
 

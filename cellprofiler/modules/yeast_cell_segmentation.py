@@ -615,7 +615,7 @@ class YeastCellSegmentation(cpmi.Identify):
             wx.Sleep(1)
             
             # here update params. in the GUI
-            keepGoing = dialog.Update(count)
+            keepGoing, skip = dialog.Update(count)
         dialog.Update(progressMax)
         #dialog.Close()
         #dialog.Destroy()

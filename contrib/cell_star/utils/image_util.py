@@ -1,0 +1,373 @@
+# -*- coding: utf-8 -*-
+__author__ = 'Adam Kaczmarek, Filip Mróz'
+
+# External imports
+import sys
+import numpy as np
+import scipy as sp
+import scipy.ndimage
+import scipy.misc
+import matplotlib
+# matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import os
+# import matplotlib.pyplot as PyPlot
+from scipy.ndimage.filters import *
+# from scipy.signal import convolve2d
+
+from numpy import argwhere
+
+debug_image_path = r"D:\Fafa\Drozdze\Repozytorium\cell_star_plugins\image_debug"
+debug_image_path = r"C:\workspace\CellStar - Python\Yeast\trunk\cell_star_plugins\image_debug"
+
+SILENCE = 1
+
+def convolve2d(img, kernel, mode='same'):
+    return convolve(img, kernel)
+
+def extend_slices(my_slices, extension):
+    def extend_slice(my_slice, extension):
+        ind = (my_slice.indices(100000)[0] - extension, my_slice.indices(100000)[1] + extension)
+        return slice(*ind)
+    return (extend_slice(my_slices[0],extension), extend_slice(my_slices[1],extension))
+
+def get_bounding_box(image_mask):
+    """
+    Calculates the minimal bounding box for non zero elements.
+    @returns [ystart,ystop), [xstart,xstop) or None, None
+    """
+    non_zero_points = argwhere(image_mask)
+    if len(non_zero_points) == 0:
+        return None
+    (ystart, xstart), (ystop, xstop) = non_zero_points.min(0), non_zero_points.max(0) + 1
+    return (ystart, ystop), (xstart, xstop)
+
+
+def get_circle_kernel(radius):
+    """
+    Creates radius x radius bool image of the circle.
+    @param radius: radius of the circle
+    """
+    epsilon = 0.00000001
+    y, x = np.ogrid[-radius:radius + epsilon, -radius:radius + epsilon]
+    return x ** 2 + y ** 2 <= radius ** 2
+
+
+def image_dilate(image, radius):
+    image = np.copy(image)
+    if radius <= 1:
+        return image
+
+    box = get_bounding_box(image)
+    if box is None:
+        return image
+    ys, xs = box
+    lp, hp = contain_pixel(image.shape, (ys[0] - radius, xs[0] - radius)), \
+        contain_pixel(image.shape, (ys[1] + radius, xs[1] + radius))
+    ys, xs = (lp[0], hp[0]), (lp[1], hp[1])
+    morphology_element = get_circle_kernel(radius)
+    dilated_part = sp.ndimage.morphology.binary_dilation(image[ys[0]:ys[1], xs[0]:xs[1]], morphology_element)
+    image[ys[0]:ys[1], xs[0]:xs[1]] = dilated_part
+    return image
+
+
+def image_dilate_with_element(image, n):
+    return sp.ndimage.morphology.grey_dilation(image, size=(n, n))
+
+
+def image_erode(image, radius):
+    #TODO: verify!!!
+    morphology_element = get_circle_kernel(radius)
+    return sp.ndimage.morphology.binary_erosion(image, morphology_element)
+
+
+def fill_foreground_holes(mask, kernel_size, minimal_hole_size, min_cluster_area_scaled, mask_min_radius_scaled):
+    filled_black_holes = fill_holes(mask, kernel_size, minimal_hole_size)
+
+    holes_remaining = np.logical_not(filled_black_holes)
+    filled_small_holes = mark_small_areas(holes_remaining, min_cluster_area_scaled, filled_black_holes)
+
+    morphology_enhanced = image_erode(filled_small_holes, mask_min_radius_scaled)
+    morphology_enhanced = image_dilate(morphology_enhanced, mask_min_radius_scaled)
+
+    dilated_mask = dilate_big_areas(morphology_enhanced, min_cluster_area_scaled, kernel_size)
+
+    return dilated_mask
+
+
+def mark_small_areas(mask, max_hole_size, result_mask):
+    components, num_components = sp.ndimage.label(mask, np.ones((3, 3)))
+    slices = sp.ndimage.find_objects(components)
+    for label, slice in zip(range(1, num_components + 1),slices):
+        components_slice = components[slice] == label
+        if np.count_nonzero(components_slice) < max_hole_size:
+            result_mask[slice][components_slice] = True
+    return result_mask
+
+
+def dilate_big_areas(mask, min_area_size, dilate_radius):
+    components, num_components = sp.ndimage.label(mask, np.ones((3, 3)))
+    component = np.zeros(mask.shape, dtype=bool)
+    for label in range(1, num_components + 1):
+        np.equal(components, label, component)
+        if np.count_nonzero(component) > min_area_size:
+            tmp_mask = image_dilate(component, dilate_radius)
+            mask = mask | tmp_mask
+
+    return mask
+
+
+def fill_holes(mask, kernel_size, minimal_hole_size):
+    """
+    Fills holes in a given mask using iterative close + dilate morphological operations and filtering small patches.
+    @param mask: mask which holes are to be filled
+    @param kernel_size: size of the morphological element used to dilate/erode mask
+    @param minimal_hole_size: holes with area smaller than param are to be removed
+    """
+
+    nr = 1
+    morphology_element = get_circle_kernel(kernel_size)
+    while True:
+        new_mask = mask
+        # find connected components
+        components, num_components = sp.ndimage.label(np.logical_not(new_mask), np.ones((3, 3)))
+        slices = sp.ndimage.find_objects(components)
+        for label, slice in zip(range(1, num_components + 1), slices):
+            slice = extend_slices(slice,kernel_size+10000) # TODO WHY OPT for some reason setting sensible slice changes results
+            components_slice = components[slice] == label
+            # filter small components
+            #ImageUtil.ImageShow(component, "compnent nr. "+str(label))
+            if np.count_nonzero(components_slice) < minimal_hole_size:
+                new_mask[slice] |= components_slice
+            else:
+                # shrink components and check if they fell apart
+                # close holes
+                components_slice = sp.ndimage.morphology.binary_closing(components_slice, morphology_element)
+
+                # erode holes
+                components_slice = sp.ndimage.morphology.binary_erosion(components_slice, morphology_element)
+
+                # don't invade masked pixels
+                components_slice &= np.logical_not(new_mask[slice])
+
+                # recount connected components and check sizes
+                mark_small_areas(components_slice, minimal_hole_size, new_mask[slice])
+
+        # check if it is the fix point
+        if (mask == new_mask).all():
+            break
+        else:
+            mask = new_mask
+
+        nr += 1
+
+    return mask
+
+def draw_seeds_compare(seeds1, seeds2, background, name="1"):
+    # PyPlot.figure(name)
+    # PyPlot.imshow(background, cmap=PyPlot.cm.gray)
+    # PyPlot.plot([s[0] for s in seeds1], [s[1] for s in seeds1], 'go')
+    # PyPlot.plot([s[0] for s in seeds2], [s[1] for s in seeds2], 'rx')
+    # PyPlot.show()
+    pass
+
+def draw_seeds(seeds, background, title="some_source"):
+    fig = plt.figure()
+    fig.frameon = False
+    plt.imshow(background, cmap=plt.cm.gray)
+    plt.plot([s.x for s in seeds], [s.y for s in seeds], 'bo', markersize=3)
+    plt.savefig(os.path.join(debug_image_path, "seeds_"+title+".png"), pad_inches=0.0)
+
+
+def contain_pixel(shape, pixel):
+    """
+    Trims pixel to given dimentions, converts pixel position to int
+    @param shape: size (height, width) exclusive
+    @param pixel: pixel to push inside shape
+    """
+    (py, px) = pixel
+    (py, px) = ((np.minimum(np.maximum(py + 0.5, 0), shape[0] - 1)).astype(int),
+                (np.minimum(np.maximum(px + 0.5, 0), shape[1] - 1)).astype(int))
+    return py, px
+
+
+def find_maxima(image):
+    """
+    Finds local maxima in given image
+    @param image: image from which maxima will be found
+    """
+    height = image.shape[0]
+    width = image.shape[1]
+
+    right = np.zeros(image.shape)
+    left = np.zeros(image.shape)
+    up = np.zeros(image.shape)
+    down = np.zeros(image.shape)
+
+    epsilon = 0.00  #0001
+
+    right[0:height, 0:width - 1] = np.array(image[:, 0:width - 1] - image[:, 1:width] > epsilon)
+    left[0:height, 1:width] = np.array(image[:, 1:width] - image[:, 0:width - 1] > epsilon)
+    up[0:height - 1, 0:width] = np.array(image[0:height - 1, :] - image[1:height, :] > epsilon)
+    down[1:height, 0:width] = np.array(image[1:height, :] - image[0:height - 1, :] > epsilon)
+
+    return right * left * up * down
+
+
+def exclude_segments(image, segments, val):
+    """
+    Sets exclusion value for given segments in given image
+    @param image: image from which segments will be excluded
+    @param segments: segments to be excluded from image
+    @param val: value to be set in segments as exclusion value
+    """
+    segment_mask = segments > 0
+    inverted_segment_mask = np.logical_not(segment_mask)
+    image_segments_zeroed = image * inverted_segment_mask
+    image_segments_valued = image_segments_zeroed + (segment_mask * val)
+
+    return image_segments_valued
+
+
+def image_blur(image, times):
+    #assert(times > 0 and type(times) == int)
+    """
+    Performs image blur with kernel: [[2, 3, 2], [3, 12, 3], [2, 3, 2]] / 32
+    @param image: image to be blurred (assumed as numpy.array of values from 0 to 1)
+    @param times: specifies how many times blurring will be performed
+    """
+    kernel = np.array([[2, 3, 2], [3, 12, 3], [2, 3, 2]]) / 32.0
+    # image = np.array(image, dtype=float)
+    # blurred1 = convolve(image, kernel)
+    blurred = convolve2d(image, kernel, 'same')
+
+    for _ in xrange(int(times) - 1):
+        # blurred1 = convolve(blurred1, kernel)
+        blurred = convolve2d(blurred, kernel, 'same')
+
+    return blurred
+
+
+def image_smooth(image, radius):
+    """
+    Performs image blur with circular kernel.
+    @param image: image to be blurred (assumed as numpy.array of values from 0 to 1)
+    @param radius: radius of the kernel
+    """
+    # TODO update padarray symmetric
+    kernel = get_circle_kernel(radius).astype(float)
+    kernel /= np.sum(kernel)
+    image = np.array(image, dtype=float)
+    return convolve2d(image, kernel, 'same')
+
+
+def image_normalize(image):
+    """
+    Performs image normalization (vide: matlab mat2gray)
+    @param image: image to be normalized (assumed as numpy.array of values from 0 to 1)
+    """
+    minimum = np.amin(image)
+    maximum = np.amax(image)
+
+    delta = 1 / (maximum - minimum)
+    shift = - minimum * delta
+
+    image_normalized = delta * image + shift
+
+    return np.minimum(np.maximum(image_normalized, 0), 1)
+
+
+def image_normalize_old(image):
+    """
+    Performs image normalization
+    @param image: image to be normalized (assumed as numpy.array of values from 0 to 1)
+    """
+    minimum = np.amin(image)
+    maximum = np.amax(image)
+
+    delta = 1 / (maximum - minimum)
+
+    value_range = maximum - minimum
+    image_normalized = image - minimum
+    if value_range > 0:
+        image_normalized = image_normalized / value_range
+    return image_normalized
+
+
+def image_show_and_save(image, title, save_image):
+    """
+    Displays image with title using matplotlib.pyplot
+    @param image:
+    @param title:
+    """
+    path = os.path.abspath(os.path.dirname(__file__))
+    path = os.path.join(path, os.pardir)
+    path = os.path.join(path, os.pardir)
+    path = os.path.join(path, "image_debug")
+
+    if save_image:
+        sp.misc.imsave(os.path.join(path, title + '.png'), image)
+
+
+def image_show(image, title):
+    """
+    Displays image with title using matplotlib.pyplot
+    @param image:
+    @param title:
+    """
+    # #image = ImageUtil.Tiff16ToFloat(image)
+    # #sp.misc.imsave(os.path.join("output", title + '.png'), image)
+    if not SILENCE:
+        print "imshow_call"
+        plt.figure(title)
+        plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
+        plt.show()
+        pass
+
+
+def draw_overlay(image, x, y):
+    plt.figure()
+    plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
+    plt.plot(x, y)
+    plt.show()
+
+
+def draw_snakes(image, snakes):
+    if not SILENCE:
+        plt.figure()
+        plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
+
+        snakes = snakes[:int(len(snakes) * .8)]
+
+        max_rank = snakes[-1].rank
+        min_rank = snakes[0].rank
+        rank_range = max_rank - min_rank
+        if rank_range == 0:  # for examplethere is one snake
+            rank_range = max_rank
+
+        rank_ci = lambda rank: 999 * ((rank - min_rank) / rank_range)
+        colors = plt.cm.jet(np.linspace(0, 1, 1000))
+        s_colors = [colors[rank_ci(s.rank)] for s in snakes]
+
+        for snake, color in zip(snakes, s_colors):
+            plt.plot(snake.xs, snake.ys, c=color, linewidth=4.0)
+        plt.show()
+
+
+def tiff16_to_float(image):
+    image = np.array(image, dtype=float)
+    return (image - image.min()) / image.max()
+
+
+def set_image_border(image, val):
+    """
+    Sets pixel values at image borders to given value
+    @param image: image that borders will be set to given value
+    @param val: value to be set
+    """
+    image[0, :] = val
+    image[:, 0] = val
+    image[image.shape[0] - 1, :] = val
+    image[:, image.shape[1] - 1] = val
+
+    return image

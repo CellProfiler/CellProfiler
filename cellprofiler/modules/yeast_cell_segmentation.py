@@ -1,8 +1,96 @@
 #!/usr/bin/env python
-"""<b>YeastSegmentation</b> identifies yeast (or other round) cells in an image.
+import cellprofiler.icons 
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+__doc__ = """<b>YeastSegmentation</b> identifies yeast (or other round) cells in an image.
 
-<p>It uses star approach developed by Versari et al., in prep.
+<p>This module was prepared by Filip Mroz, Adam Kaczmarek and Szymon Stoma. Please reach us at <a href="http://let-your-data-speak.com/">Scopem, ETH</a> for inquires. The method uses star approach developed by Versari et al., in prep. For more details related to yeast segmentation in CellProfiler, please refer to <a href="http://www.cellprofiler.org/yeasttoolbox/">Yeast Toolbox</a>.
 <hr>
+
+<h4>What do I need as input?</h4>
+To use this module, you will need to make sure that your input image has the following qualities:
+<ul>
+<li>The image should be grayscale.</li>
+<li>The foreground (i.e, regions of interest) are lighter than the background.</li>
+</ul>
+If this is not the case, other modules can be used to pre-process the images to ensure they are in 
+the proper form:
+<ul>
+<li>If the objects in your images are dark on a light background, you 
+should invert the images using the Invert operation in the <b>ImageMath</b> module.</li>
+<li>If you are working with color images, they must first be converted to
+grayscale using the <b>ColorToGray</b> module.</li>
+</ul>
+<p>If you have images in which the foreground and background cannot be distinguished by intensity alone
+(e.g, brightfield or DIC images), you can use the <a href="http://www.ilastik.org/">ilastik</a> package
+bundled with CellProfiler to perform pixel-based classification (Windows only). You first train a classifier 
+by identifying areas of images that fall into one of several classes, such as cell body, nucleus, 
+background, etc. Then, the <b>ClassifyPixels</b> module takes the classifier and applies it to each image 
+to identify areas that correspond to the trained classes. The result of <b>ClassifyPixels</b> is 
+an image in which the region that falls into the class of interest is light on a dark background. Since 
+this new image satisfies the constraints above, it can be used as input in <b>IdentifyPrimaryObjects</b>. 
+See the <b>ClassifyPixels</b> module for more information.</p>
+
+<h4>What do the settings mean?</h4>
+See below for help on the individual settings. The following icons are used to call attention to
+key items:
+<ul>
+<li><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Our recommendation or example use case
+for which a particular setting is best used.</li>
+<li><img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;Indicates a condition under which 
+a particular setting may not work well.</li>
+<li><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;Technical note. Provides more
+detailed information on the setting.</li>
+</ul>
+
+<h4>What do I get as output?</h4>
+A set of primary objects are produced by this module, which can be used in downstream modules
+for measurement purposes or other operations. 
+See the section <a href="#Available_measurements">"Available measurements"</a> below for 
+the measurements that are produced by this module.
+
+Once the module has finished processing, the module display window 
+will show the following panels:
+<ul>
+<li><i>Upper left:</i> The raw, original image.</li>
+<li><i>Upper right:</i> The identified objects shown as a color
+image where connected pixels that belong to the same object are assigned the same
+color (<i>label image</i>). It is important to note that assigned colors are 
+arbitrary; they are used simply to help you distingush the various objects. </li>
+<li><i>Lower left:</i> The raw image overlaid with the colored outlines of the 
+identified objects. Each object is assigned one of three (default) colors:
+<ul>
+<li>Green: Acceptable; passed all criteria</li>
+<li>Magenta: Discarded based on size</li>
+<li>Yellow: Discarded due to touching the border</li>
+</ul>
+If you need to change the color defaults, you can 
+make adjustments in <i>File > Preferences</i>.</li>
+<li><i>Lower right:</i> A table showing some of the settings selected by the user, as well as
+those calculated by the module in order to produce the objects shown.</li>
+</ul>
+
+<a name="Available_measurements">
+<h4>Available measurements</h4>
+<b>Image measurements:</b>
+<ul>
+<li><i>Count:</i> The number of primary objects identified.</li>
+<li><i>OriginalThreshold:</i> The global threshold for the image.</li>
+<li><i>FinalThreshold:</i> For the global threshold methods, this value is the
+same as <i>OriginalThreshold</i>. For the adaptive or per-object methods, this
+value is the mean of the local thresholds.</li>
+<li><i>WeightedVariance:</i> The sum of the log-transformed variances of the 
+foreground and background pixels, weighted by the number of pixels in 
+each distribution.</li>
+<li><i>SumOfEntropies:</i> The sum of entropies computed from the foreground and
+background distributions.</li>
+</ul>
+
+<b>Object measurements:</b>
+<ul>
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary 
+object centroids. The centroid is calculated as the center of mass of the binary 
+representation of the object.</li>
+</ul>
 
 <h3>Credits (coding)</h3>
 Filip Mroz, Adam Kaczmarek, Szymon Stoma.
@@ -23,12 +111,8 @@ Pascal Hersen.
 <p>
 
 <h3>Technical notes</h3>
+"""%globals()
 
-
-
-
-
-"""
 # Module documentation variables:
 __authors__="""Filip Mroz,
 Adam Kaczmarek,

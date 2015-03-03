@@ -41,8 +41,6 @@ class SnakeFilter(object):
             snakes_indices = [i[0] for i in sorted(enumerate(snakerank), key=lambda x:x[1])]
             snakes = sorted(snakes, key=lambda ss: ss.rank)
 
-            draw_snakes(original * 0.2, snakes)
-
             current_accepted_snake_index = 1
             for i in xrange(len(snakes)):
                 curr_snake = snakes[i]

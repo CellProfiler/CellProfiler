@@ -38,22 +38,23 @@ def distance_norm(fitnesses):
 
 def grow_single_seed(seed, images, init_params, pf_param_vector):
     pfsnake = PFSnake(seed, images, init_params)
-    return pfsnake.grow(pf_parameters_decode(pf_param_vector, pfsnake.orig_size_weight_list))
+    return pfsnake.grow(pf_parameters_decode(pf_param_vector, pfsnake.orig_size_weight_list, init_params["segmentation"]["stars"]["step"], init_params["segmentation"]["avgCellDiameter"]))
 
 
 def snakes_fitness(gt_snake_seed_pairs, images, parameters, pf_param_vector, debug=False):
     if snakes_multiprocessing:
         gt_snakes, seeds = zip(*gt_snake_seed_pairs)
-        merged_parameters = PFSnake.merge_parameters(parameters, pf_parameters_decode(pf_param_vector,
-                                                                                      parameters["segmentation"][
-                                                                                          "stars"]["sizeWeight"]))
+        merged_parameters = PFSnake.merge_parameters(
+            parameters,
+            pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"])
+        )
         snakes = mp_snake_grow(images, merged_parameters, seeds)
         gt_snake_grown_seed_pairs = zip(gt_snakes, snakes)
     else:
         gt_snake_grown_seed_pairs = [(gt_snake, grow_single_seed(seed, images, parameters, pf_param_vector)) for
                                      gt_snake, seed in gt_snake_seed_pairs]
 
-    print sorted(pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"]).iteritems())
+    print sorted(pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"]).iteritems())
     return np.array([pf_s.multi_fitness(gt_snake) for gt_snake, pf_s in gt_snake_grown_seed_pairs])
 
 
@@ -128,7 +129,7 @@ def run(image, gt_snakes, precision=-1, avg_cell_diameter=-1, method='brute', in
     start = time.clock()
     optimized = optimize(method, gt_snakes, images, params, precision, avg_cell_diameter)
 
-    best_params = pf_parameters_decode(optimized[0], get_size_weight_list(params))
+    best_params = pf_parameters_decode(optimized[0], get_size_weight_list(params), params["segmentation"]["stars"]["step"], avg_cell_diameter)
     best_score = optimized[1]
 
     stop = time.clock()

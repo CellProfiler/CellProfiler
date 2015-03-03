@@ -680,9 +680,10 @@ class EditObjectsDialog(wx.Dialog):
             jj.append(j[mask])
             vv.append(l[mask])
         temp = cpo.Objects()
-        temp.ijv = np.column_stack(
-            [np.hstack(x) for x in (ii, jj, vv)])
-        self.labels = [l for l,c in temp.get_labels(self.shape)]
+        temp.set_ijv(
+            np.column_stack([np.hstack(x) for x in (ii, jj, vv)]),
+            shape = self.shape)
+        self.labels = [l for l,c in temp.get_labels()]
         
     def add_label(self, mask):
         object_number = len(self.to_keep)
@@ -2068,20 +2069,18 @@ class EditObjectsDialog(wx.Dialog):
                 self.display()
                 
 if __name__== "__main__":
-    import libtiff
-    
-    f = libtiff.TIFFfile(sys.argv[1])
-    a = f.get_tiff_array(0)
-    labels = [np.array(a[i, :, :], int) for i in range(a.shape[0])]
-    f.close()
-    f = libtiff.TIFFfile(sys.argv[2])
-    a = f.get_tiff_array(0)
-    if a.shape[0] == 1:
-        img = np.array(a[0, :, :], float)
-    else:
-        img = np.array(a[:, :, :], float)
-    img = img / np.max(img)
-    f.close()
-    app = wx.PySimpleApp(True)
-    dlg = EditObjectsDialog(img, labels, True, "Hello, world")
-    dlg.ShowModal()
+    import javabridge
+    import bioformats
+    javabridge.start_vm(class_path=bioformats.JARS)
+    try:
+        if len(sys.argv) > 2 :
+            labels = [bioformats.load_image(sys.argv[1], rescale=False)]
+            img = bioformats.load_image(sys.argv[2])
+        else:
+            img = bioformats.load_image(sys.argv[1])
+            labels = [np.zeros(img.shape[:2], int)]
+        app = wx.PySimpleApp(True)
+        dlg = EditObjectsDialog(img, labels, True, "Hello, world")
+        dlg.ShowModal()
+    finally:
+        javabridge.kill_vm()

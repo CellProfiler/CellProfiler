@@ -64,9 +64,7 @@ def snakes_fitness(gt_snake_seed_pairs, images, parameters, pf_param_vector, deb
 #
 
 
-def get_gt_snake_seeds(gt_snake):
-    radius = 5
-    times = 3
+def get_gt_snake_seeds(gt_snake, times=3, radius=5):
     seed = [Seed(gt_snake.centroid_x, gt_snake.centroid_y, "optimize_star_parameters")]
     return seed + Seeder.rand_seeds(radius, times, seed)
 

@@ -63,22 +63,6 @@ class PFSnake(object):
 
         return self
 
-    def create_mutation(self, dilation, rand_range=[0, 0]):
-        mutant = copy.copy(self)
-        mutant.best_snake = copy.copy(self.best_snake)
-        # zero rank so it recalculates
-        mutant.best_snake.rank = None
-
-        boundary_change = np.array([dilation + random.randrange(rand_range[0], rand_range[1] + 1)
-                                    for _ in range(mutant.best_snake.polar_coordinate_boundary.size)])
-
-        mutant.best_snake.polar_coordinate_boundary = np.maximum(np.minimum(
-            mutant.best_snake.polar_coordinate_boundary + boundary_change,
-            len(self.polar_transform.R) - 1), 3)
-        # TODO need to update self.final_edgepoints to calculate properties (for now we ignore this property)
-        mutant.best_snake.calculate_properties_vec(self.polar_transform)
-        return mutant
-
     def extract_total_mask(self, tot_shape):
         return PFSnake.extract_total_mask_of_snake(self.best_snake, tot_shape)
 

@@ -12,10 +12,10 @@ parameters_range = {"brightnessWeight": (-0.4, 0.4),
 }
 
 rank_parameters_range = {"avgBorderBrightnessWeight": (0, 600),
-                         "avgInnerBrightnessWeight": (-30, 30),
-                         "avgInnerDarknessWeight": (-20, 20),
-                         "logAreaBonus": (4, 30),
-                         "maxInnerBrightnessWeight": (-10, 30),
+                         "avgInnerBrightnessWeight": (-50, 50),
+                         "avgInnerDarknessWeight": (-50, 50),
+                         "logAreaBonus": (5, 40),
+                         "maxInnerBrightnessWeight": (-10, 50),
                          # "maxRank": (5, 300),
                          # "stickingWeight": (0, 6)  # cannot calculate entropy for mutants
 }

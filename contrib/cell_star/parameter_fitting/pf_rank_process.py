@@ -73,8 +73,9 @@ def add_mutations(gt_and_grown):
     for (gt, grown) in gt_and_grown:
         mutants += [(gt, grown.create_mutation(20)), (gt, grown.create_mutation(-20)),
                     (gt, grown.create_mutation(10)), (gt, grown.create_mutation(-10)),
-                    (gt, grown.create_mutation(3, rand_range=(-5, 5))),
-                    (gt, grown.create_mutation(-3, rand_range=(-5, 5)))]
+                    #(gt, grown.create_mutation(3, rand_range=(-5, 5))),
+                    #(gt, grown.create_mutation(-3, rand_range=(-5, 5)))
+                    ]
     return gt_and_grown + mutants
 
 
@@ -91,32 +92,35 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method):
 
     # prepare seed and grow snakes
     encoded_star_params = pf_parameters_encode(params)
-    gt_snake_seed_pairs = [(gt_snake, seed) for gt_snake in gt_snakes for seed in get_gt_snake_seeds(gt_snake)]
+    gt_snake_seed_pairs = [(gt_snake, seed) for gt_snake in gt_snakes for seed in
+                           get_gt_snake_seeds(gt_snake, radius=8, times=8)]
     gt_snake_grown_seed_pairs = \
         [(gt_snake, grow_single_seed(seed, images, params, encoded_star_params)) for gt_snake, seed in
          gt_snake_seed_pairs]
 
-    gts_snakes_with_mutations = add_mutations(gt_snake_grown_seed_pairs)
-    ranked_snakes = reduce(op.add,
-                           [PFRankSnake.create_all(gt, grown, params) for (gt, grown) in gts_snakes_with_mutations])
+    gt_snake_grown_seed_pairs_all = reduce(op.add,
+                                           [PFRankSnake.create_all(gt, grown, params) for (gt, grown) in
+                                            gt_snake_grown_seed_pairs])
+
+    gts_snakes_with_mutations = add_mutations(gt_snake_grown_seed_pairs_all)
+    ranked_snakes = zip(*gts_snakes_with_mutations)[1]
 
     best_params_full = params
-    best_params = pf_rank_parameters_encode(params)
     for _ in range(1):
         calculations = 0
-        best_params = \
-            pf_rank_parameters_decode(
-                optimize(
-                    method,
-                    pf_rank_parameters_encode(best_params_full),
-                    pf_rank_get_ranking(ranked_snakes, best_params_full)
-                )
-            )
+
+        best_params_encoded = optimize(
+            method,
+            pf_rank_parameters_encode(best_params_full),
+            pf_rank_get_ranking(ranked_snakes, best_params_full)
+        )[0]
+        best_params = pf_rank_parameters_decode(best_params_encoded)
         best_params_full = PFSnake.merge_parameters(params, best_params)
         print "Snakes:", len(ranked_snakes), "Calculations:", calculations
 
     print "Best ranking: "
-    print "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())])
+    print "\n".join([k + ": " + str(v) for k, v in best_params.iteritems()])
+    print ",".join([str(v) for _,v in best_params.iteritems()])
 
 
 def optimize(method_name, encoded_params, distance_function):
@@ -127,10 +131,14 @@ def optimize(method_name, encoded_params, distance_function):
 
 
 def optimize_brute(params_to_optimize, distance_function):
+    import time
     lower_bound = [0] * len(params_to_optimize)
     upper_bound = [1] * len(params_to_optimize)
 
-    result = opt.brute(distance_function, zip(lower_bound, upper_bound), finish=None, Ns=8, disp=True, full_output=False)
-    print "Opt finished:", result
+    start = time.clock()
+    result = opt.brute(distance_function, zip(lower_bound, upper_bound), finish=None, Ns=8, disp=True, full_output=True)
+    elapsed = time.clock() - start
+
+    print "Opt finished:", result[:2], "Elapsed[s]:", elapsed
     # distance_function(result[0], debug=True)
     return result[0], result[1]

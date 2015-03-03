@@ -338,15 +338,15 @@ def draw_snakes(image, snakes, outliers=.1, it=0):
         plt.figure()
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
 
-        snakes = snakes[:int(len(snakes) * (1 - outliers))]
+        snakes_tc = snakes[:int(len(snakes) * (1 - outliers))]
 
-        max_rank = snakes[-1].rank
-        min_rank = snakes[0].rank
+        max_rank = snakes_tc[-1].rank
+        min_rank = snakes_tc[0].rank
         rank_range = max_rank - min_rank
         if rank_range == 0:  # for examplethere is one snake
             rank_range = max_rank
 
-        rank_ci = lambda rank: 999 * ((rank - min_rank) / rank_range)
+        rank_ci = lambda rank: 999 * ((rank - min_rank) / rank_range) if rank <= max_rank else 999
         colors = plt.cm.jet(np.linspace(0, 1, 1000))
         s_colors = [colors[rank_ci(s.rank)] for s in snakes]
 

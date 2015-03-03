@@ -250,10 +250,10 @@ def multiproc_multitype_fitness(image, gt_snakes, precision, avg_cell_diameter):
 
     optimizers = \
         [
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "basin")),
+            # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "basin")),
             Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "brute")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "diffevo"))
+            # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "diffevo"))
         ]
 
     for optimizer in optimizers:

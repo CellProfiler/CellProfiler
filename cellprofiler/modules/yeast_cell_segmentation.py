@@ -672,17 +672,21 @@ class YeastCellSegmentation(cpmi.Identify):
         title += " \n"
         title += 'Press "F" to being freehand drawing.\n'
         title += "Click Help for full instructions."
-        self.pixel_data = image #np.zeros((1000, 1000),np.float)
+        self.pixel_data = image  # np.zeros((1000, 1000),np.float)
         # TODO think what to do if the user chooses new image (and we load old cells)
-        #if not hasattr(self, 'labels'):
-        labels = [np.zeros(self.pixel_data.shape[:2], np.uint32)]  #[np.array(self.pixel_data[i,:], int) for i in range(self.pixel_data.shape[0])]
-
+        # if not hasattr(self, 'labels'):
+        labels = [np.zeros(self.pixel_data.shape[:2], int)]
+        labels[0][0, 0] = 1
+        labels[0][-2, -2] = 1
         with EditObjectsDialog(
-            self.pixel_data, labels, False, title) as dialog_box:
+                self.pixel_data, labels, False, title) as dialog_box:
             result = dialog_box.ShowModal()
             if result != OK:
                 return None
             labels = dialog_box.labels[0]
+
+        labels[0, 0] = 0
+        labels[-2, -2] = 0
 
         # check if the user provided GT
         # TODO check for con. comp. and e.g. let it go if more then 3 cells were added

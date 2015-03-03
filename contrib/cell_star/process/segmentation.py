@@ -96,22 +96,24 @@ class Segmentation(object):
         new_ranking = copy(self.parameters["segmentation"]["ranking"])
         try:
             exec "all_params=" + text
-
-            if len(all_params) != len(snake_auto_params) + len(rank_auto_params):
+            snake_params = all_params[0]
+            rank_params = all_params[1]
+            if len(snake_params) != len(snake_auto_params) or  len(rank_params) != len(rank_auto_params):
                 raise "text invalid: list size not compatible"
 
-            for name in snake_auto_params.keys():
-                val = all_params[0]
+
+            for name in sorted(snake_auto_params.keys()):
+                val = snake_params[0]
                 if name == "sizeWeight":  # value to list
                     original = self.parameters["segmentation"]["stars"]["sizeWeight"]
                     val = list(np.array(original) * (val/np.mean(original)))
 
                 new_stars[name] = val
-                all_params = all_params[1:]
+                snake_params = snake_params[1:]
 
-            for name in rank_auto_params.keys():
-                new_ranking[name] = all_params[0]
-                all_params = all_params[1:]
+            for name in sorted(rank_auto_params.keys()):
+                new_ranking[name] = rank_params[0]
+                rank_params = rank_params[1:]
         except:
             return
 
@@ -120,7 +122,7 @@ class Segmentation(object):
 
     def encode_auto_params(self):
         snake_auto_params_values = []
-        for name in snake_auto_params.keys():
+        for name in sorted(snake_auto_params.keys()):
             val = self.parameters["segmentation"]["stars"][name]
             if name == "sizeWeight":  # list to mean value
                 original = self.parameters["segmentation"]["stars"]["sizeWeight"]
@@ -128,8 +130,8 @@ class Segmentation(object):
             snake_auto_params_values.append(val)
 
         rank_auto_params_values = [self.parameters["segmentation"]["ranking"][name]
-                                   for name in rank_auto_params.keys()]
-        auto_values_list = snake_auto_params_values + rank_auto_params_values
+                                   for name in sorted(rank_auto_params.keys())]
+        auto_values_list = [snake_auto_params_values, rank_auto_params_values]
 
         return str(auto_values_list)
 

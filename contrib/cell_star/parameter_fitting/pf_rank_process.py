@@ -116,7 +116,7 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method):
         print "Snakes:", len(ranked_snakes), "Calculations:", calculations
 
     print "Best ranking: "
-    print "\n".join([k + ": " + str(v) for k, v in best_params.iteritems()])
+    print "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())])
 
 
 def optimize(method_name, encoded_params, distance_function):

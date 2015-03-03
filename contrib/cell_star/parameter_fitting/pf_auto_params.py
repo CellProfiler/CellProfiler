@@ -38,7 +38,7 @@ def pf_parameters_encode(parameters):
     """
     parameters = parameters["segmentation"]["stars"]
     point = []
-    for name, (vmin, vmax) in parameters_range.iteritems():
+    for name, (vmin, vmax) in sorted(parameters_range.iteritems()):
         val = parameters[name]
         if name == "sizeWeight":
             if not isinstance(val, float):
@@ -57,7 +57,7 @@ def pf_parameters_decode(param_vector, org_size_weights_list):
     @return:
     """
     parameters = {}
-    for (name, (vmin, vmax)), val in zip(parameters_range.iteritems(), param_vector):
+    for (name, (vmin, vmax)), val in zip(sorted(parameters_range.iteritems()), param_vector):
         # val = min(1, max(0, val))
         # rescaled = vmin + val * (vmax - vmin)
         rescaled = val
@@ -96,7 +96,7 @@ def pf_rank_parameters_encode(parameters):
     """
     parameters = parameters["segmentation"]["ranking"]
     point = []
-    for name, (vmin, vmax) in rank_parameters_range.iteritems():
+    for name, (vmin, vmax) in sorted(rank_parameters_range.iteritems()):
         val = parameters[name]
         trim_val = max(vmin, min(vmax, val))
         if vmax - vmin == 0:
@@ -112,7 +112,7 @@ def pf_rank_parameters_decode(param_vector):
     @return: only ranking parameters as a dict
     """
     parameters = {}
-    for (name, (vmin, vmax)), val in zip(rank_parameters_range.iteritems(), param_vector):
+    for (name, (vmin, vmax)), val in zip(sorted(rank_parameters_range.iteritems()), param_vector):
         val = min(1, max(0, val))
         rescaled = vmin + val * (vmax - vmin)
         parameters[name] = rescaled

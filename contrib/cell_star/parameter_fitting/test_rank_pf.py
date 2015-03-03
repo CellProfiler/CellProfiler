@@ -5,12 +5,12 @@ import os
 import os.path as path
 import numpy as np
 import scipy as sp
-from cell_star.core.seed import Seed
-from cell_star.test import test_utils
-from cell_star.parameter_fitting.pf_process import run
-from cell_star.parameter_fitting.pf_snake import GTSnake
-import cell_star.parameter_fitting.pf_rank_process as pf_rank
-from cell_star.parameter_fitting.test_pf import try_load_image, gt_mask_to_snakes
+from contrib.cell_star.core.seed import Seed
+from contrib.cell_star.test import test_utils
+from contrib.cell_star.parameter_fitting.pf_process import run
+from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
+import contrib.cell_star.parameter_fitting.pf_rank_process as pf_rank
+from contrib.cell_star.parameter_fitting.test_pf import try_load_image, gt_mask_to_snakes
 
 corpus_path = "yeast_corpus/data/"
 

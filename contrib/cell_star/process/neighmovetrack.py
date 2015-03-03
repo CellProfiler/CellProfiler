@@ -13,7 +13,7 @@ import math
 import numpy as np
 import scipy.ndimage.measurements as measure
 
-import cell_star.algorithms.lapjv as lapjv
+import contrib.cell_star.algorithms.lapjv as lapjv
 
 invalid_match = 1000000  # limiting the choices of the algorithms
 

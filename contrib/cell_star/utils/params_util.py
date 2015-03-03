@@ -3,7 +3,7 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 # External imports
 import numpy as np
-import cell_star.yaml as yaml
+import contrib.cell_star.yaml as yaml
 import sys
 # Internal imports
 from python_util import package_path

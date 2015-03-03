@@ -6,11 +6,11 @@ import ctypes
 import numpy as np
 from copy import copy
 from multiprocessing import Pool, Array, Manager
-from cell_star.core.image_repo import ImageRepo
-from cell_star.core.snake import Snake
-from cell_star.core.polar_transform import PolarTransform
-from cell_star.utils.image_util import image_show
-from cell_star.parameter_fitting.pf_snake import PFSnake
+from contrib.cell_star.core.image_repo import ImageRepo
+from contrib.cell_star.core.snake import Snake
+from contrib.cell_star.core.polar_transform import PolarTransform
+from contrib.cell_star.utils.image_util import image_show
+from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
 
 
 def conv_single_image(image):

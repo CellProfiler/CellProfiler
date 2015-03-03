@@ -8,9 +8,9 @@ from matplotlib import path
 import copy
 import math
 #internal imports
-from cell_star.utils import calc_util, image_util
-from cell_star.core.point import Point
-from cell_star.utils.index import Index
+from contrib.cell_star.utils import calc_util, image_util
+from contrib.cell_star.core.point import Point
+from contrib.cell_star.utils.index import Index
 
 
 class Snake(object):
@@ -105,8 +105,8 @@ class Snake(object):
 
         @param size_weight:
         @param polar_transform:
-        @type polar_transform: cell_star.core.vectorized.polar_transform.PolarTransform
-        @type seed: cell_star.core.seed.Seed
+        @type polar_transform: contrib.cell_star.core.vectorized.polar_transform.PolarTransform
+        @type seed: contrib.cell_star.core.seed.Seed
         @return:
         """
 

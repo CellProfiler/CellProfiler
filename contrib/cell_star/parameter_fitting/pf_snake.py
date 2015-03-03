@@ -7,9 +7,9 @@ random.seed(1)  # make it deterministic
 import numpy as np
 import scipy.ndimage.measurements as measure
 
-from cell_star.core.seed import Seed
-from cell_star.core.snake import Snake
-from cell_star.core.polar_transform import PolarTransform
+from contrib.cell_star.core.seed import Seed
+from contrib.cell_star.core.snake import Snake
+from contrib.cell_star.core.polar_transform import PolarTransform
 
 
 class PFSnake(object):
@@ -106,7 +106,7 @@ class PFSnake(object):
         this_total_mask = self.extract_total_mask(gt_total_mask.shape)
 
         if debug:
-            from cell_star.utils import image_util
+            from contrib.cell_star.utils import image_util
             image_util.image_show(np.logical_xor(this_total_mask, gt_total_mask), 1)
 
         self.fit = float(np.count_nonzero(np.logical_and(this_total_mask, gt_total_mask))) / \

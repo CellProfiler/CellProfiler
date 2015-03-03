@@ -5,19 +5,19 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 from copy import copy
 import sys
 # Internal imports
-from cell_star.utils.params_util import *
-from cell_star.core.image_repo import ImageRepo
-from cell_star.utils.params_util import default_parameters
-from cell_star.utils import image_util
-from cell_star.core.seeder import Seeder
-from cell_star.core.seed import Seed
-from cell_star.core.snake import Snake
-from cell_star.core.snake_filter import SnakeFilter
-from cell_star.core.polar_transform import PolarTransform
-from cell_star.parameter_fitting.pf_auto_params import rank_parameters_range as rank_auto_params
-from cell_star.parameter_fitting.pf_auto_params import parameters_range as snake_auto_params
+from contrib.cell_star.utils.params_util import *
+from contrib.cell_star.core.image_repo import ImageRepo
+from contrib.cell_star.utils.params_util import default_parameters
+from contrib.cell_star.utils import image_util
+from contrib.cell_star.core.seeder import Seeder
+from contrib.cell_star.core.seed import Seed
+from contrib.cell_star.core.snake import Snake
+from contrib.cell_star.core.snake_filter import SnakeFilter
+from contrib.cell_star.core.polar_transform import PolarTransform
+from contrib.cell_star.parameter_fitting.pf_auto_params import rank_parameters_range as rank_auto_params
+from contrib.cell_star.parameter_fitting.pf_auto_params import parameters_range as snake_auto_params
 
-import cell_star.formats.contour_list
+import contrib.cell_star.formats.contour_list
 
 
 class Segmentation(object):
@@ -32,7 +32,7 @@ class Segmentation(object):
         self.new_snakes = []
         self._seeder = None
         self._filter = None
-        self.format = cell_star.formats.contour_list.ContourListFormat
+        self.format = contrib.cell_star.formats.contour_list.ContourListFormat
         self.polar_transform = PolarTransform.instance(self.parameters["segmentation"]["avgCellDiameter"],
                                                        self.parameters["segmentation"]["stars"]["points"],
                                                        self.parameters["segmentation"]["stars"]["step"],

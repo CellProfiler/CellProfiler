@@ -4,17 +4,17 @@ __author__ = 'Adam Kaczmarek, Filip Mr�z'
 import copy
 import time
 import numpy as np
-from cell_star.utils.params_util import *
+from contrib.cell_star.utils.params_util import *
 from scipy.linalg import norm
 import scipy.optimize as opt
-from cell_star.core.seed import Seed
-from cell_star.core.image_repo import ImageRepo
-from cell_star.parameter_fitting.pf_snake import PFSnake
-from cell_star.core.seeder import Seeder
-from cell_star.process.segmentation import Segmentation
-from cell_star.utils.image_util import image_show
-from cell_star.core.parallel.snake_grow import mp_snake_grow
-from cell_star.parameter_fitting.pf_auto_params import parameters_range, pf_parameters_encode, pf_parameters_decode
+from contrib.cell_star.core.seed import Seed
+from contrib.cell_star.core.image_repo import ImageRepo
+from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
+from contrib.cell_star.core.seeder import Seeder
+from contrib.cell_star.process.segmentation import Segmentation
+from contrib.cell_star.utils.image_util import image_show
+from contrib.cell_star.core.parallel.snake_grow import mp_snake_grow
+from contrib.cell_star.parameter_fitting.pf_auto_params import parameters_range, pf_parameters_encode, pf_parameters_decode
 from multiprocessing import Process, Queue
 
 snakes_multiprocessing = False

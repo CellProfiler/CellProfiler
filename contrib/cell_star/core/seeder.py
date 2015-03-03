@@ -7,11 +7,11 @@ random.seed(1) # make it deterministic (still seem to be very fragile)
 from copy import copy
 # Internal imports
 # Objects
-from cell_star.core.seed import Seed
+from contrib.cell_star.core.seed import Seed
 # Utils
-from cell_star.utils.cluster_util import *
-from cell_star.utils.calc_util import *
-from cell_star.utils.image_util import *
+from contrib.cell_star.utils.cluster_util import *
+from contrib.cell_star.utils.calc_util import *
+from contrib.cell_star.utils.image_util import *
 
 
 class Seeder(object):
@@ -213,7 +213,7 @@ class Seeder(object):
     def _filter_seeds(self, seeds, all_seeds):
         """
         @param seeds:
-        @type seeds: [cell_star.core.seed.Seed]
+        @type seeds: [contrib.cell_star.core.seed.Seed]
         @return:
         """
         distance = self.parameters["segmentation"]["stars"]["step"] * self.parameters["segmentation"]["avgCellDiameter"]

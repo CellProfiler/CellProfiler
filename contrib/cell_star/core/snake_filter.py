@@ -6,8 +6,8 @@ import logging
 import numpy as np
 import math
 # Internal imports
-from cell_star.core.snake import Snake
-from cell_star.utils.image_util import image_show, draw_snakes
+from contrib.cell_star.core.snake import Snake
+from contrib.cell_star.utils.image_util import image_show, draw_snakes
 
 
 class SnakeFilter(object):

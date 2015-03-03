@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from cell_star.core.point import Point
+from contrib.cell_star.core.point import Point
 
 __author__ = 'Adam Kaczmarek, Filip Mróz'
 

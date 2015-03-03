@@ -4,7 +4,7 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 # External imports
 import math
 # Internal imports
-from cell_star.utils.image_util import *
+from contrib.cell_star.utils.image_util import *
 
 
 class ImageRepo(object):

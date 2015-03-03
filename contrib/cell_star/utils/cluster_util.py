@@ -5,7 +5,7 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 import numpy as np
 # Internal imports
 from calc_util import euclidean_norm
-from cell_star.core.seed import Seed
+from contrib.cell_star.core.seed import Seed
 
 
 def pdist(list_points, _):

@@ -5,10 +5,10 @@ import copy
 import numpy as np
 import scipy.ndimage.measurements as measure
 
-from cell_star.core.seed import Seed
-from cell_star.core.snake import Snake
-from cell_star.core.polar_transform import PolarTransform
-from cell_star.parameter_fitting.pf_snake import PFSnake
+from contrib.cell_star.core.seed import Seed
+from contrib.cell_star.core.snake import Snake
+from contrib.cell_star.core.polar_transform import PolarTransform
+from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
 
 
 class PFRankSnake(object):

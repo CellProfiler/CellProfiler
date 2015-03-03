@@ -3,17 +3,17 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 import numpy as np
 import operator as op
-from cell_star.utils.params_util import *
+from contrib.cell_star.utils.params_util import *
 from scipy.linalg import norm
 import scipy.optimize as opt
-from cell_star.core.seed import Seed
-from cell_star.core.image_repo import ImageRepo
-from cell_star.parameter_fitting.pf_snake import PFSnake
-from cell_star.core.seeder import Seeder
+from contrib.cell_star.core.seed import Seed
+from contrib.cell_star.core.image_repo import ImageRepo
+from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
+from contrib.cell_star.core.seeder import Seeder
 
-from cell_star.parameter_fitting.pf_process import distance_norm, get_gt_snake_seeds, grow_single_seed
-from cell_star.parameter_fitting.pf_rank_snake import PFRankSnake
-from cell_star.parameter_fitting.pf_auto_params import pf_parameters_encode, pf_parameters_decode, \
+from contrib.cell_star.parameter_fitting.pf_process import distance_norm, get_gt_snake_seeds, grow_single_seed
+from contrib.cell_star.parameter_fitting.pf_rank_snake import PFRankSnake
+from contrib.cell_star.parameter_fitting.pf_auto_params import pf_parameters_encode, pf_parameters_decode, \
     pf_rank_parameters_encode, pf_rank_parameters_decode
 
 #

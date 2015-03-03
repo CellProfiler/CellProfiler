@@ -70,7 +70,7 @@ try:
 #
 ##################################
 
-##ss    from cell_star.process.segmentation import Segmentation
+    from contrib.cell_star.process.segmentation import Segmentation
 
 except ImportError as e: 
     # in new version 2.12 all the errors are properly shown in console (Windows)

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Adam Kaczmarek, Filip Mróz'
 
-from cell_star.core.snake import Snake
-import cell_star.yaml as yaml
+from contrib.cell_star.core.snake import Snake
+import contrib.cell_star.yaml as yaml
 
 
 class ContourListFormat(object):

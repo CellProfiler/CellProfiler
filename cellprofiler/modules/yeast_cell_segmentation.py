@@ -232,7 +232,7 @@ class YeastCellSegmentation(cpmi.Identify):
             2. explain how to move it
             """)
 
-        self.autoadapted_params = cps.Text(text="Autoadapted parameters: ", value="[0., 0., 0., 0., 0., 0.]", doc="""
+        self.autoadapted_params = cps.Text(text="Autoadapted parameters: ", value="[0.0442, 304.45, 189.40819999999999, 15.482, 7.0, 10, 300, 60, 10, 18, 0]", doc="""
             Autoadapted parameters are pasted here from the procedure. These parameters are used to characterize cell borders. Edit them only if you know what you are doing.
             """)
 
@@ -410,9 +410,6 @@ class YeastCellSegmentation(cpmi.Identify):
         return result
     
     def run(self, workspace):
-        ##ss TODO remove next line to proceed with integration
-        return
-
         ##clock import time
         ##clock start = time.clock()
         input_image_name = self.input_image_name.value
@@ -445,7 +442,7 @@ class YeastCellSegmentation(cpmi.Identify):
         #
         # Segmentation
         #
-        objects, background_pixels = self.segmentation(normalized_image, background_pixels)
+        objects, objects_qualities, background_pixels = self.segmentation(normalized_image, background_pixels)
 
         if self.__get(F_BACKGROUND, workspace, None) is None and self.background_elimination_strategy == BKG_FIRST:
             self.__set(F_BACKGROUND, workspace, background_pixels)
@@ -505,18 +502,17 @@ class YeastCellSegmentation(cpmi.Identify):
 
     #
     # Segmentation of the image into yeast cells.
-    # Returns: yeast_cells, background
+    # Returns: yeast cells, yeast cells qualities, background
     #
     def segmentation(self, normalized_image, background_pixels):
-        ##ss TODO remove next line after integrating seg code.
-        return
-
         cellstar = Segmentation(self.segmentation_precision.value, self.average_cell_diameter.value)
         cellstar.parameters["segmentation"]["maxOverlap"] = self.maximal_cell_overlap.value
         if self.advanced_cell_filtering.value:
             areas_range = self.min_cell_area.value, self.max_cell_area.value
             cellstar.parameters["segmentation"]["minSize"] = areas_range[0]
             cellstar.parameters["segmentation"]["maxSize"] = areas_range[1]
+
+        cellstar.decode_auto_params(self.autoadapted_params.value)
 
         if self.input_image_file_name is not None:
             dedicated_image_folder = pj(pref.get_default_output_directory(), self.input_image_file_name)
@@ -545,7 +541,7 @@ class YeastCellSegmentation(cpmi.Identify):
         #if self.current_workspace.frame is not None:
         self.current_workspace.display_data.segmentation_pixels = objects.segmented
 
-        return objects, cellstar.images.background
+        return objects, [s.rank for s in snakes], cellstar.images.background
 
     def ground_truth_editor( self ):
         '''Display a UI for GT editing'''
@@ -576,35 +572,41 @@ class YeastCellSegmentation(cpmi.Identify):
         title += "Click Help for full instructions."
         self.pixel_data = image #np.zeros((1000, 1000),np.float)
         # TODO think what to do if the user chooses new image (and we load old cells)
-        if not hasattr(self, 'labels'):
-            self.labels = [np.zeros(self.pixel_data.shape[:2], np.uint32)]  #[np.array(self.pixel_data[i,:], int) for i in range(self.pixel_data.shape[0])]
+        #if not hasattr(self, 'labels'):
+        labels = [np.zeros(self.pixel_data.shape[:2], np.uint32)]  #[np.array(self.pixel_data[i,:], int) for i in range(self.pixel_data.shape[0])]
 
         with EditObjectsDialog(
-            self.pixel_data, self.labels, False, title) as dialog_box:
+            self.pixel_data, labels, False, title) as dialog_box:
             result = dialog_box.ShowModal()
             if result != OK:
                 return None
-            self.labels = dialog_box.labels[0]
-        
+            labels = dialog_box.labels[0]
+
         # check if the user provided GT
         # TODO check for con. comp. and e.g. let it go if more then 3 cells were added
-        if not dialog_box.labels[0].any():
-            # TODO show msg.?
+        if not labels.any():
+            dlg = wx.MessageDialog(None, "Please correctly select at least one cell. Otherwise, parameters can not be autoadapted!", "Warning!", wx.OK | wx.ICON_WARNING)
+            dlg.ShowModal()
+            dlg.Destroy()
             return
 
         ### fitting params 
         # reading GT from dialog_box.labels[0] and image from self.pixel
         progressMax = self.autoadaptation_steps.value
         dialog = wx.ProgressDialog("Fitting parameters..", "Iterations remaining", progressMax,
-        style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME)
+        style=wx.PD_CAN_ABORT | wx.PD_CAN_SKIP | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME )
         keepGoing = True
         count = 0
-        while keepGoing and count < progressMax:
+        while (keepGoing and count < progressMax):# and dialog.WasCancelled():
             count = count + 1
             # here put one it. of fitting instead
             wx.Sleep(1)
+            
             # here update params. in the GUI
             keepGoing = dialog.Update(count)
+        dialog.Update(progressMax)
+        #dialog.Close()
+        #dialog.Destroy()
     
     #
     # Postprocess objects found by CellStar

@@ -1082,17 +1082,18 @@ class TrackObjects(cpm.CPModule):
 
     def run_followneighbors(self, workspace, objects):
         '''Track objects based on following neighbors'''
-        def run_localised_matching(self, workspace, objects):
+        def run_localised_matching(workspace, objects):
             '''Track based on localised matching costs'''
             cellstar = NeighbourMovementTracking()
             cellstar.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
             multiplier = float(NeighbourMovementTracking.parameters_cost_iteration["default_empty_cost"]) / NeighbourMovementTracking.parameters_cost_initial["default_empty_cost"]
             cellstar.parameters_cost_iteration["default_empty_cost"] = multiplier * self.drop_cost.value
             cellstar.parameters_cost_initial["default_empty_cost"] = self.drop_cost.value
-            cellstar.parameters_tracking["iterations"] = self.iterations.value
+            # TODO make sure it. is correctly set in yaml - then remove next line
+            # cellstar.parameters_tracking["iterations"] = self.iterations.value
             multiplier = float(NeighbourMovementTracking.parameters_cost_iteration["area_weight"]) / NeighbourMovementTracking.parameters_cost_initial["area_weight"]
-            cellstar.parameters_cost_iteration["area_weight"] = multiplier * self.areaWeight.value
-            cellstar.parameters_cost_initial["area_weight"] = self.areaWeight.value
+            cellstar.parameters_cost_iteration["area_weight"] = multiplier * self.area_weight.value
+            cellstar.parameters_cost_initial["area_weight"] = self.area_weight.value
             
             old_labels = self.get_saved_labels(workspace)
             if not old_labels is None:
@@ -1125,20 +1126,14 @@ class TrackObjects(cpm.CPModule):
                                  
             self.set_saved_labels(workspace, objects.segmented)
 
-        #TODO to test only (next two lines)
-        self.run_distance( workspace, objects )
-        return
-
         #import time
         #start = time.clock()
         objects = workspace.object_set.get_objects(self.object_name.value)
-        self.run_localised_matching(workspace, objects)
+        run_localised_matching(workspace, objects)
 
         # Prepare output images
         if self.wants_image.value:
             import matplotlib.transforms
-            # [TODO OLD]
-            #from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
             from cellprofiler.gui.cpfigure import figure_to_image, only_display_image
             
             figure = matplotlib.figure.Figure()
@@ -1150,9 +1145,6 @@ class TrackObjects(cpm.CPModule):
             # This is the recipe for just showing the axis
             #
             only_display_image(figure, objects.segmented.shape)
-            
-            # [OPT] Filip!!: It is veeery slow (10 sec).
-        
             image_pixels = figure_to_image(figure, dpi=figure.dpi)
             image = cpi.Image(image_pixels)
             workspace.image_set.add(self.image_name.value, image)

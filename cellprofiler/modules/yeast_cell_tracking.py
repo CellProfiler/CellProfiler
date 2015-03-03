@@ -5,6 +5,18 @@
 
 '''
 
+# Module documentation variables:
+__authors__="""Filip Mroz,
+Adam Kaczmarek,
+Szymon Stoma    
+"""
+__contact__=""
+__license__="Cecill-C"
+__date__="<Timestamp>"
+__version__="0.1"
+__docformat__= "restructuredtext en"
+__revision__="$Id$"
+
 #################################
 #
 # Imports from useful Python libraries

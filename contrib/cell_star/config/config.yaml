@@ -1,0 +1,65 @@
+segmentation:
+  avgCellDiameter: 35
+  background:
+    blur: 0.3
+    blurSteps: 50
+    computeByBlurring: 0.5
+  cellBorder:
+    medianFilter: 0.1
+  cellContent:
+    MaskThreshold: 0.0
+    blur: 0.6
+    medianFilter: 0.17
+  foreground:
+    FillHolesWithAreaSmallerThan: 2.26
+    MaskDilation: 0.136
+    MaskMinRadius: 0.34
+    MaskThreshold: 0.03
+    MinCellClusterArea: 0.85
+    blur: 1
+    pickyDetection: false
+  maxArea: 2.83
+  maxFreeBorder: 0.4
+  maxOverlap: 0.3
+  minArea: 0.07
+  minAvgInnerDarkness: 0.1
+  ranking:
+    avgBorderBrightnessWeight: 300
+    avgInnerBrightnessWeight: 10
+    avgInnerDarknessWeight: 0
+    logAreaBonus: 18
+    maxInnerBrightnessWeight: 10
+    maxRank: 100
+    shift: 0.68
+    stickingWeight: 60
+  seeding:
+    BorderBlur: 2
+    ContentBlur: 2
+    from:
+      cellBorder: 1
+      cellBorderRandom: 0
+      cellBorderRemovingCurrSegments: 0
+      cellBorderRemovingCurrSegmentsRandom: 0
+      cellContent: 0
+      cellContentRandom: 0
+      cellContentRemovingCurrSegments: 1
+      cellContentRemovingCurrSegmentsRandom: 0
+      snakesCentroids: 0
+      snakesCentroidsRandom: 0
+    minDistance: 0.27
+    randomDiskRadius: 0.33
+  stars:
+    backgroundWeight: 0.0
+    borderThickness: 0.1
+    brightnessWeight: 0.0442
+    contentWeight: 0.0
+    cumBrightnessWeight: 304.45
+    gradientBlur: 0.0
+    gradientWeight: 15.482
+    maxSize: 1.67
+    points: 28
+    sizeWeight: 189.4082
+    smoothness: 7.0
+    step: 0.0335
+    unstick: 0.3
+  steps: 2

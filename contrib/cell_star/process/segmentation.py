@@ -237,6 +237,7 @@ class Segmentation(object):
             print "grow_snakes"
             self.grow_snakes()
             print "filter_snakes"
+            image_util.draw_snakes(self.images.image, self.snakes + self.new_snakes, it=step)
             self.filter_snakes()
             print "."
         end = time.clock()

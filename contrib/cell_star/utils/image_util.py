@@ -333,7 +333,8 @@ def draw_overlay(image, x, y):
 
 
 def draw_snakes(image, snakes, outliers=.1, it=0):
-    if not SILENCE:
+    if not SILENCE and len(snakes) > 1:
+        snakes = sorted(snakes, key=lambda ss: ss.rank)
         plt.figure()
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
 
@@ -352,7 +353,7 @@ def draw_snakes(image, snakes, outliers=.1, it=0):
         for snake, color in zip(snakes, s_colors):
             plt.plot(snake.xs, snake.ys, c=color, linewidth=4.0)
         plt.show()
-        # plt.savefig(os.path.join(debug_image_path, "snakes_rainbow_"+it+".png"))
+        plt.savefig(os.path.join(debug_image_path, "snakes_rainbow_"+str(it)+".png"))
 
 
 def tiff16_to_float(image):

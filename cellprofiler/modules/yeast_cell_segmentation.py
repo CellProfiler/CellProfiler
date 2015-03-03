@@ -4,8 +4,20 @@
 <p>It uses star approach developed by Versari et al., in prep.
 <hr>
 
-<h3>Credits</h3>
+<h3>Credits (coding)</h3>
 Filip Mroz, Adam Kaczmarek, Szymon Stoma.
+
+<h3>Credits (method)</h3>
+Filip Mroz, Adam Kaczmarek, Szymon Stoma,
+Artemis Llamosi,
+Kirill Batmanov,
+Cristian Versari,
+Cedric Lhoussaine,
+Gabor Csucs,
+Simon F. Noerrelykke,
+Gregory Batt,
+Pawel Rychlikowski,
+Pascal Hersen.
 
 <h3>Publications</h3>
 <p>

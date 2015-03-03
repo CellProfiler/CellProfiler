@@ -328,7 +328,7 @@ class YeastCellSegmentation(cpmi.Identify):
             2. explain how to move it
             """)
 
-        self.autoadapted_params = cps.Text(text="Autoadapted parameters: ", value="[0.0442, 304.45, 189.40819999999999, 15.482, 7.0, 10, 300, 60, 10, 18, 0]", doc="""
+        self.autoadapted_params = cps.Text(text="Autoadapted parameters: ", value="[[0.1, 0.0442, 304.45, 15.482, 189.40820000000002, 7.0], [300, 10, 0, 18, 10]]", doc="""
             Autoadapted parameters are pasted here from the procedure. These parameters are used to characterize cell borders. Edit them only if you know what you are doing.
             """)
 
@@ -699,7 +699,7 @@ class YeastCellSegmentation(cpmi.Identify):
             wx.Sleep(1)
             
             # here update params. in the GUI
-            keepGoing = dialog.Update(count)
+            keepGoing, skip = dialog.Update(count)
         dialog.Update(progressMax)
         #dialog.Close()
         #dialog.Destroy()

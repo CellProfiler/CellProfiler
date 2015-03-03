@@ -124,7 +124,7 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method):
     stop = time.clock()
 
     print "Best: "
-    print "\n".join([k + ": " + str(v) for k, v in best_params.iteritems()])
+    print "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())])
     print "Time: ", stop - start
 
     # test_trained_parameters(image, best_params, precision, avg_cell_diameter)

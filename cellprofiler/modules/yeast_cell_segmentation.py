@@ -167,6 +167,7 @@ try:
 ##################################
 
     from contrib.cell_star.process.segmentation import Segmentation
+    from contrib.cell_star.parameter_fitting.test_pf import run_pf
 
 except ImportError as e: 
     # in new version 2.12 all the errors are properly shown in console (Windows)
@@ -596,11 +597,7 @@ class YeastCellSegmentation(cpmi.Identify):
             
         return adam_normalization(input_pixels), background_pixels_normalized
 
-    #
-    # Segmentation of the image into yeast cells.
-    # Returns: yeast cells, yeast cells qualities, background
-    #
-    def segmentation(self, normalized_image, background_pixels):
+    def prepare_cell_star_object(self):
         cellstar = Segmentation(self.segmentation_precision.value, self.average_cell_diameter.value)
         cellstar.parameters["segmentation"]["maxOverlap"] = self.maximal_cell_overlap.value
         if self.advanced_cell_filtering.value:
@@ -609,6 +606,15 @@ class YeastCellSegmentation(cpmi.Identify):
             cellstar.parameters["segmentation"]["maxSize"] = areas_range[1]
 
         cellstar.decode_auto_params(self.autoadapted_params.value)
+
+        return cellstar
+
+    #
+    # Segmentation of the image into yeast cells.
+    # Returns: yeast cells, yeast cells qualities, background
+    #
+    def segmentation(self, normalized_image, background_pixels):
+        cellstar = self.prepare_cell_star_object()
 
         if self.input_image_file_name is not None:
             dedicated_image_folder = pj(pref.get_default_output_directory(), self.input_image_file_name)
@@ -620,7 +626,7 @@ class YeastCellSegmentation(cpmi.Identify):
         cellstar.set_frame(normalized_image)
         cellstar.set_background(background_pixels)
         segmented_image, snakes = cellstar.run_segmentation()
-            
+
         objects = cellprofiler.objects.Objects()
         objects.segmented = segmented_image
         #print "segmented", segmented_image.shape
@@ -696,8 +702,15 @@ class YeastCellSegmentation(cpmi.Identify):
         while (keepGoing and count < progressMax):# and dialog.WasCancelled():
             count = count + 1
             # here put one it. of fitting instead
-            wx.Sleep(1)
-            
+            wx.Sleep(0.1)
+
+            # Calculate the same parameters TODO: what about different background?
+            cellstar = self.prepare_cell_star_object()
+            current_parameters = cellstar.parameters
+            new_parameters = run_pf(image, labels, current_parameters)
+            cellstar.parameters = new_parameters
+            self.autoadapted_params.value = cellstar.encode_auto_params()
+
             # here update params. in the GUI
             keepGoing, skip = dialog.Update(count)
         dialog.Update(progressMax)

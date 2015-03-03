@@ -109,8 +109,20 @@ def test_trained_parameters(image, parameters, precision, avg_cell_diameter):
 #
 #
 
-def run(image, gt_snakes, precision, avg_cell_diameter, method):
-    params = default_parameters(segmentation_precision=precision, avg_cell_diameter=avg_cell_diameter)
+def run(image, gt_snakes, precision=-1, avg_cell_diameter=-1, method='brute', initial_params=None):
+    """
+    :param image: input image
+    :param gt_snakes: gt snakes label image
+    :param precision: if initial_params is None then it is used to calculate parameters
+    :param avg_cell_diameter: if initial_params is None then it is used to calculate parameters
+    :param method: optimization engine
+    :param initial_params: overrides precision and avg_cell_diameter
+    :return:
+    """
+    if initial_params is None:
+        params = default_parameters(segmentation_precision=precision, avg_cell_diameter=avg_cell_diameter)
+    else:
+        params = copy.deepcopy(initial_params)
     images = ImageRepo(image, params)
 
     start = time.clock()
@@ -174,7 +186,7 @@ def optimize_de(params_to_optimize, distance_function):
     upper_bound[params_to_optimize == 0] = 100 * search_range
 
     bounds = zip(lower_bound, upper_bound)
-    result = opt.differential_evolution(distance_function, bounds, maxiter=20, popsize=50, init='latinhypercube')
+    result = opt.differential_evolution(distance_function, bounds, maxiter=10, popsize=30, init='latinhypercube')
     print "Opt finished:", result
     # fitness(result.x, debug=True)
     return result.x, result.fun

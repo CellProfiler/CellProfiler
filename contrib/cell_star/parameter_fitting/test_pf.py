@@ -6,7 +6,7 @@ import os.path as path
 import numpy as np
 import scipy as sp
 from contrib.cell_star.core.seed import Seed
-from contrib.cell_star.test import test_utils
+#from contrib.cell_star.test import test_utils
 from contrib.cell_star.parameter_fitting.pf_process import run
 from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
 
@@ -27,15 +27,27 @@ def load_from_testset(filepath):
     @param filepath: TestSetX/frame/BF_frame001.tif
     @return: loaded image
     """
-    return test_utils.load_image(path.join(corpus_path, filepath))
+    #return test_utils.load_image(path.join(corpus_path, filepath))
+    return None
 
 def try_load_image(image_path):
     try:
-        image = test_utils.load_frame(image_path)
+        pass
+        #image = test_utils.load_frame(image_path)
     except:
         image = load_from_testset(image_path)
     return image
 
+def run_pf(input_image, gt_mask, parameters):
+    """
+
+    :param input_image:
+    :param gt_mask:
+    :param parameters:
+    :return: Best parameters settings.
+    """
+    gt_snakes = gt_mask_to_snakes(gt_mask)
+    return run(input_image, gt_snakes, initial_params=parameters)[0]
 
 def test_pf(image_path, mask_path, precision, avg_cell_diameter, method):
     frame = try_load_image(image_path)

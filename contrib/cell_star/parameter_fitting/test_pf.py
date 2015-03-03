@@ -6,11 +6,11 @@ import os.path as path
 import numpy as np
 import scipy as sp
 from contrib.cell_star.core.seed import Seed
-#from contrib.cell_star.test import test_utils
+from contrib.cell_star.utils import image_util
 from contrib.cell_star.parameter_fitting.pf_process import run
 from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
 
-corpus_path = "yeast_corpus/data/"
+corpus_path = "C:/workspace/CellStar - Python/Yeast/trunk/cell_star_plugins/yeast_corpus/data/"
 
 
 def single_mask_to_snake(bool_mask, seed=None):
@@ -27,16 +27,11 @@ def load_from_testset(filepath):
     @param filepath: TestSetX/frame/BF_frame001.tif
     @return: loaded image
     """
-    #return test_utils.load_image(path.join(corpus_path, filepath))
-    return None
+    return image_util.load_image(path.join(corpus_path, filepath))
+
 
 def try_load_image(image_path):
-    try:
-        pass
-        #image = test_utils.load_frame(image_path)
-    except:
-        image = load_from_testset(image_path)
-    return image
+    return image_util.load_frame(corpus_path, image_path)
 
 def run_pf(input_image, gt_mask, parameters):
     """

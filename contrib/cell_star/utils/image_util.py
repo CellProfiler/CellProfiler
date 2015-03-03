@@ -19,7 +19,7 @@ from numpy import argwhere
 
 debug_image_path = ""
 
-SILENCE = 1
+SILENCE = False
 
 
 def convolve2d(img, kernel, mode='same'):
@@ -332,12 +332,12 @@ def draw_overlay(image, x, y):
     plt.show()
 
 
-def draw_snakes(image, snakes):
+def draw_snakes(image, snakes, outliers=.1, it=0):
     if not SILENCE:
         plt.figure()
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
 
-        snakes = snakes[:int(len(snakes) * .8)]
+        snakes = snakes[:int(len(snakes) * (1 - outliers))]
 
         max_rank = snakes[-1].rank
         min_rank = snakes[0].rank
@@ -352,6 +352,7 @@ def draw_snakes(image, snakes):
         for snake, color in zip(snakes, s_colors):
             plt.plot(snake.xs, snake.ys, c=color, linewidth=4.0)
         plt.show()
+        # plt.savefig(os.path.join(debug_image_path, "snakes_rainbow_"+it+".png"))
 
 
 def tiff16_to_float(image):
@@ -371,3 +372,52 @@ def set_image_border(image, val):
     image[:, image.shape[1] - 1] = val
 
     return image
+
+
+def paths(test_path):
+    return os.path.join(test_path, 'test_reference'), os.path.join(test_path, 'frames'), os.path.join(test_path, 'background')
+
+
+def frame_exists(frames_path, frame):
+    return os.path.exists(frames_path + frame)
+
+
+def load_ref_image(test_reference_path, frame, name):
+    return load_image(test_reference_path + frame + "/" + name + ".tif")
+
+
+def load_frame(frames_path, filename):
+    return load_image(frames_path + filename)
+
+
+def load_frame_background(background_path, filename):
+    try:
+        image = load_image(background_path + filename)
+        if image is None:
+            return None
+
+        return image
+    except IOError:
+        return None
+
+
+def load_image(filename, scaling=True):
+    if filename == '':
+        return None
+    image = scipy.misc.imread(filename)
+    if image.max() > 1 and scaling:
+        image = np.array(image, dtype=float) / np.iinfo(image.dtype).max
+    if image.size == 1:
+        image = image.item()
+        width = image.size[0]
+        height = image.size[1]
+        image1d = np.array(list(image.getdata()))
+        image2d = np.zeros(image.size)
+
+        for y in xrange(height):
+            for x in xrange(width):
+                image2d[y,x] = image1d[y*width + x]
+    else:
+        image2d = image.astype(float)
+
+    return image2d

@@ -4,11 +4,11 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 import numpy as np
 
 parameters_range = {"brightnessWeight": (-0.4, 0.4),
+                    "borderThickness": (0.0, 1.0),
                     "cumBrightnessWeight": (0, 500),
                     "gradientWeight": (-30, 30),
                     "sizeWeight": (10, 300),
-                    "smoothness": (2, 15),
-                    "borderThickness": (0.0, 1.0)
+                    "smoothness": (2, 15)
 }
 
 rank_parameters_range = {"avgBorderBrightnessWeight": (0, 600),
@@ -17,7 +17,7 @@ rank_parameters_range = {"avgBorderBrightnessWeight": (0, 600),
                          "logAreaBonus": (5, 40),
                          "maxInnerBrightnessWeight": (-10, 50),
                          # "maxRank": (5, 300),
-                         # "stickingWeight": (0, 6)  # cannot calculate entropy for mutants
+                         # "stickingWeight": (0, 120)  # cannot calculate entropy for mutants -- this was 60 so may be important
 }
 
 #

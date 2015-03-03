@@ -703,6 +703,7 @@ class YeastCellSegmentation(cpmi.Identify):
         style=wx.PD_CAN_ABORT | wx.PD_CAN_SKIP | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME )
         keepGoing = True
         count = 0
+        best_snake_score = 10
         while (keepGoing and count < progressMax):# and dialog.WasCancelled():
             count = count + 1
             # here put one it. of fitting instead
@@ -711,9 +712,11 @@ class YeastCellSegmentation(cpmi.Identify):
             # Calculate the same parameters TODO: what about different background?
             cellstar = self.prepare_cell_star_object()
             current_parameters = cellstar.parameters
-            new_parameters = run_pf(image, labels, current_parameters)
-            cellstar.parameters = new_parameters
-            self.autoadapted_params.value = cellstar.encode_auto_params()
+            new_parameters, new_snake_score = run_pf(image, labels, current_parameters)
+            if new_snake_score < best_snake_score:
+                cellstar.parameters = new_parameters
+                best_snake_score = new_snake_score
+                self.autoadapted_params.value = cellstar.encode_auto_params()
 
             # here update params. in the GUI
             keepGoing, skip = dialog.Update(count)

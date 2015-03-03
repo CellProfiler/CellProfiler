@@ -44,10 +44,11 @@ def run_pf(input_image, gt_mask, parameters):
     :param input_image:
     :param gt_mask:
     :param parameters:
-    :return: Best parameters settings.
+    :return: Best complete parameters settings, best distance
     """
     gt_snakes = gt_mask_to_snakes(gt_mask)
-    return run(input_image, gt_snakes, initial_params=parameters)[0]
+    best_complete_params, _, best_score = run(input_image, gt_snakes, initial_params=parameters)
+    return best_complete_params, best_score
 
 def test_pf(image_path, mask_path, precision, avg_cell_diameter, method):
     frame = try_load_image(image_path)

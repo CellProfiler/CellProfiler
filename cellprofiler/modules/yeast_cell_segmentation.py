@@ -228,13 +228,13 @@ class YeastCellSegmentation(cpmi.Identify):
             image (same image will be used for every image in the workflow)?
             """)
 
+        # TODO add bkg. synthetized from first image
         self.background_elimination_strategy = cps.Choice(
             'Select the background calculation mode',
-            [BKG_CURRENT, BKG_FIRST, BKG_FILE],doc = """
+            [BKG_CURRENT, BKG_FILE],doc = """
             You can choose from the following options:
             <ul>
             <li><i>loaded from file</i>: TODO</li>
-            <li><i>computed from first image</i>: TODO</li>
             <li><i>computed from actual image</i>: TODO</li>
             </ul>""")
         
@@ -528,7 +528,7 @@ class YeastCellSegmentation(cpmi.Identify):
         # Load previously computed background.
         if self.background_elimination_strategy == BKG_FILE:
             background_pixels = image_set.get_image(self.background_image_name.value, must_be_grayscale=True).pixel_data
-        elif self.background_elimination_strategy == BKG_FIRST:
+        elif self.background_elimination_strategy == BKG_FIRST: #TODO make it happen
             background_pixels = self.__get(F_BACKGROUND, workspace, None)
         else:
             background_pixels = None
@@ -538,6 +538,8 @@ class YeastCellSegmentation(cpmi.Identify):
             input_pixels = 1 - input_pixels
             if self.background_elimination_strategy == BKG_FILE:
                 background_pixels = 1 - background_pixels
+
+        # TODO add support for fluorescent images
 
         #
         # Preprocessing (only normalization)
@@ -683,21 +685,49 @@ class YeastCellSegmentation(cpmi.Identify):
         title += " \n"
         title += 'Press "F" to being freehand drawing.\n'
         title += "Click Help for full instructions."
-        self.pixel_data = image  # np.zeros((1000, 1000),np.float)
+        self.pixel_data = image
+
+        ## now we need to do same operation we will do invisibely based on user resposnes
+        # Load previously computed background.
+        if self.background_elimination_strategy == BKG_FILE:
+            try:
+                background_pixels = image_set.get_image(self.background_image_name.value, must_be_grayscale=True).pixel_data
+            except Exception:
+                dlg = wx.MessageDialog(None, "Please load background file first (or switch to different method of background elimination)!", "Warning!", wx.OK | wx.ICON_WARNING)
+                dlg.ShowModal()
+                dlg.Destroy()
+                return
+
+        elif self.background_elimination_strategy == BKG_FIRST: #TODO make it happen
+            background_pixels = self.__get(F_BACKGROUND, workspace, None)
+        else:
+            background_pixels = None
+
+        # Invert images if required.
+        if not self.background_brighter_then_cell_inside:
+            self.pixel_data = 1 - self.pixel_data
+            if self.background_elimination_strategy == BKG_FILE:
+                background_pixels = 1 - background_pixels
+
+        if not background_pixels:
+            self.pixel_data = self.pixel_data - background_pixels
+        ## end of image adaptation
+
         # TODO think what to do if the user chooses new image (and we load old cells)
         # if not hasattr(self, 'labels'):
         labels = [np.zeros(self.pixel_data.shape[:2], int)]
-        labels[0][0, 0] = 1
-        labels[0][-2, -2] = 1
+        ## two next lines are hack from Lee
+        #labels[0][0, 0] = 1
+        #labels[0][-2, -2] = 1
         with EditObjectsDialog(
                 self.pixel_data, labels, False, title) as dialog_box:
             result = dialog_box.ShowModal()
             if result != OK:
                 return None
             labels = dialog_box.labels[0]
-
-        labels[0, 0] = 0
-        labels[-2, -2] = 0
+        ## two next lines are hack from Lee
+        #labels[0, 0] = 0
+        #labels[-2, -2] = 0
 
         # check if the user provided GT
         # TODO check for con. comp. and e.g. let it go if more then 3 cells were added
@@ -711,7 +741,7 @@ class YeastCellSegmentation(cpmi.Identify):
         # reading GT from dialog_box.labels[0] and image from self.pixel
         progressMax = self.autoadaptation_steps.value
         dialog = wx.ProgressDialog("Fitting parameters..", "Iterations remaining", progressMax,
-        style=wx.PD_CAN_ABORT | wx.PD_CAN_SKIP | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME )
+        style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME )
         keepGoing = True
 
         self.param_fit_progress = 0
@@ -737,18 +767,7 @@ class YeastCellSegmentation(cpmi.Identify):
             keepGoing = keepGoing and keepGoingUpdate
 
         dialog.Update(progressMax)
-        #dialog.Close()
-        #dialog.Destroy()
-
-    def update_params(self, new_parameters, new_snake_score):
-        cellstar = self.prepare_cell_star_object()
-        if new_snake_score < self.best_snake_score:
-            cellstar.parameters = new_parameters
-            self.best_snake_score = new_snake_score
-            self.autoadapted_params.value = cellstar.encode_auto_params()
-
-        self.param_fit_progress += 1
-
+    
     #
     # Postprocess objects found by CellStar
     #

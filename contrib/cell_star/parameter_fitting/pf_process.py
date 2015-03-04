@@ -146,7 +146,7 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_
 def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diameter):
     if method_name == "mp":
         fitted_params, score = multiproc_multitype_fitness(images.image, gt_snakes, precision, avg_cell_diameter)
-        test_trained_parameters(images.image, params, precision, avg_cell_diameter)
+        # test_trained_parameters(images.image, params, precision, avg_cell_diameter)
         return fitted_params, score
     else:
         encoded_params = pf_parameters_encode(params)

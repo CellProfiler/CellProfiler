@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import cellprofiler.icons 
+import threading
+import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 __doc__ = """<b>YeastSegmentation</b> identifies yeast (or other round) cells in an image.
 
@@ -209,6 +210,7 @@ class YeastCellSegmentation(cpmi.Identify):
     category = "Yeast Toolbox"
     variable_revision_number = 6
     current_workspace = ''
+    param_fit_progress = 0
     
     def create_settings(self):
         self.input_image_name = cps.ImageNameSubscriber(
@@ -718,44 +720,61 @@ class YeastCellSegmentation(cpmi.Identify):
         dialog = wx.ProgressDialog("Fitting parameters..", "Iterations remaining", progressMax,
         style=wx.PD_CAN_ABORT | wx.PD_CAN_SKIP | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME )
         keepGoing = True
-        count = 0
 
-        best_snake_score = 10
+        self.param_fit_progress = 0
+        self.best_snake_score = 10
         best_rank_score = 1000000000
-        while (keepGoing and count < progressMax):# and dialog.WasCancelled():
-            count = count + 1
+        aft = None
+        adaptation_stopped = False
+        while (keepGoing or not adaptation_stopped) and self.param_fit_progress < progressMax:
             # here put one it. of fitting instead
             wx.Sleep(0.1)
-
-            # Calculate the same parameters TODO: what about different background?
             cellstar = self.prepare_cell_star_object()
             current_parameters = cellstar.parameters
             self.autoadapted_params.value = cellstar.encode_auto_params()
-            new_parameters, new_snake_score = run_pf(image, labels, current_parameters,
-                                                     precision=self.segmentation_precision.value,
-                                                     avg_cell_diameter=self.average_cell_diameter.value)
-            if new_snake_score < best_snake_score:
-                cellstar.parameters = new_parameters
-                best_snake_score = new_snake_score
-                self.autoadapted_params.value = cellstar.encode_auto_params()
 
-            """
-            current_parameters = cellstar.parameters
-            new_parameters, new_rank_score = run_rank_pf(image, labels, current_parameters)
-            if new_rank_score < best_rank_score:
-                cellstar.parameters = new_parameters
-                best_rank_score = new_rank_score
-                self.autoadapted_params.value = cellstar.encode_auto_params()
-            """
+            adaptation_stopped = aft is None or not aft.is_alive()
+
+            if adaptation_stopped and keepGoing and self.param_fit_progress < progressMax:
+                aft = AutoFitterThread(run_pf, self.update_params, image, labels, current_parameters, self.segmentation_precision.value, self.average_cell_diameter.value)
+                aft.start()
+
             # here update params. in the GUI
-            keepGoing, skip = dialog.Update(count)
+            keepGoingUpdate, skip = dialog.Update(self.param_fit_progress)
+            keepGoing = keepGoing and keepGoingUpdate
+
         dialog.Update(progressMax)
         #dialog.Close()
         #dialog.Destroy()
-    
+
+    def update_params(self, new_parameters, new_snake_score):
+        cellstar = self.prepare_cell_star_object()
+        if new_snake_score < self.best_snake_score:
+            cellstar.parameters = new_parameters
+            self.best_snake_score = new_snake_score
+            self.autoadapted_params.value = cellstar.encode_auto_params()
+
+        self.param_fit_progress += 1
+
     #
     # Postprocess objects found by CellStar
     #
     def postprocessing(self, objects):
         pass
 
+
+class AutoFitterThread(threading.Thread):
+
+    def __init__(self, target, callback, *args):
+        self._target = target
+        self._args = args
+        self._callback = callback
+        super(AutoFitterThread, self).__init__()
+        pass
+
+    def run(self):
+        params, score = self._target(*self._args)
+        self._callback(params, score)
+
+    def kill(self):
+        pass

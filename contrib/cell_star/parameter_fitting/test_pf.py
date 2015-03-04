@@ -43,7 +43,7 @@ def run_pf(input_image, gt_mask, parameters, precision, avg_cell_diameter):
     :return: Best complete parameters settings, best distance
     """
     gt_snakes = gt_mask_to_snakes(gt_mask)
-    best_complete_params, _, best_score = run(input_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='mp')
+    best_complete_params, _, best_score = run(input_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='brute')
     return best_complete_params, best_score
 
 

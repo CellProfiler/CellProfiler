@@ -763,13 +763,8 @@ class YeastCellSegmentation(cpmi.Identify):
                 aft.start()
 
             # here update params. in the GUI
-<<<<<<< Updated upstream
-            keepGoingUpdate, skip = dialog.Update(self.param_fit_progress)
+            keepGoingUpdate, skip = dialog.Update(self.param_fit_progress)[0]
             keepGoing = keepGoing and keepGoingUpdate
-
-=======
-            keepGoing = dialog.Update(count)[ 0 ]
->>>>>>> Stashed changes
         dialog.Update(progressMax)
     
     #

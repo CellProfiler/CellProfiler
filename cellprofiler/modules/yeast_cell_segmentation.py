@@ -722,13 +722,14 @@ class YeastCellSegmentation(cpmi.Identify):
                 best_snake_score = new_snake_score
                 self.autoadapted_params.value = cellstar.encode_auto_params()
 
+            """
             current_parameters = cellstar.parameters
             new_parameters, new_rank_score = run_rank_pf(image, labels, current_parameters)
             if new_rank_score < best_rank_score:
                 cellstar.parameters = new_parameters
                 best_rank_score = new_rank_score
                 self.autoadapted_params.value = cellstar.encode_auto_params()
-
+            """
             # here update params. in the GUI
             keepGoing, skip = dialog.Update(count)
         dialog.Update(progressMax)

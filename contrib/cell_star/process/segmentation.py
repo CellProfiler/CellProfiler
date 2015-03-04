@@ -16,7 +16,8 @@ from contrib.cell_star.core.snake_filter import SnakeFilter
 from contrib.cell_star.core.polar_transform import PolarTransform
 from contrib.cell_star.parameter_fitting.pf_auto_params import rank_parameters_range as rank_auto_params
 from contrib.cell_star.parameter_fitting.pf_auto_params import parameters_range as snake_auto_params
-
+import logging
+logger = logging.getLogger(__name__)
 import contrib.cell_star.formats.contour_list
 
 
@@ -172,9 +173,7 @@ class Segmentation(object):
         new_snakes = []
 
         size_weights = self.parameters["segmentation"]["stars"]["sizeWeight"]
-        print len(self.new_snakes), "snakes seeds to grow with", len(size_weights), "weights options -> ", len(self.new_snakes) * len(size_weights), "snakes to calculate"
-        percent_step = len(self.new_snakes)/10
-        num = 0
+        logger.info("%d snakes seeds to grow with %d weights options -> %d snakes to calculate"%(len(self.new_snakes), len(size_weights), len(self.new_snakes) * len(size_weights)))
         for snake in self.new_snakes:
             best_snake = None
             for weight in size_weights:
@@ -190,11 +189,7 @@ class Segmentation(object):
                         best_snake = curr_snake
 
             new_snakes.append(best_snake)
-            num = num + 1
-            if percent_step != 0 and num % percent_step == 0:
-                sys.stdout.write('.')
 
-        print ""
         self.new_snakes = new_snakes
 
     def evaluate_snakes(self):
@@ -225,25 +220,21 @@ class Segmentation(object):
         image_util.draw_seeds(self.all_seeds, self.images.image, title=str(step))
 
     def run_segmentation(self):
-        import time
-        start = time.clock()
-        print "preproces..."
+        logger.info("preproces...")
         self.pre_process()
         self.debug_images()
         for step in range(self.parameters["segmentation"]["steps"]):
-            print "find_seeds"
+            logger.info("find_seeds")
             self.find_seeds(step > 0)
             self.debug_seeds(step)
-            print "snake_from_seeds"
+            logger.info("snake_from_seeds")
             self.snakes_from_seeds()
-            print "grow_snakes"
+            logger.info("grow_snakes")
             self.grow_snakes()
-            print "filter_snakes"
+            logger.info("filter_snakes")
             image_util.draw_snakes(self.images.image, self.snakes + self.new_snakes, it=step)
             self.filter_snakes()
-            print "."
-        end = time.clock()
-        print "segmentation_process", end-start
+            logger.info("done")
         image_util.image_show(self.images.image, 1)
         # image_util.image_show(self.images.image + (self.images.segmentation > 0), 1)
         return self.images.segmentation, self.snakes

@@ -130,9 +130,6 @@ class NeighbourMovementTracking(object):
         @returns: injective function from old objects to new objects (pairs of [old, new]). Number are compatible
             with labels.
         """
-        import time
-
-        start = time.clock()
         detections_1 = self.derive_detections(label_image_1)
         detections_2 = self.derive_detections(label_image_2)
 
@@ -141,15 +138,9 @@ class NeighbourMovementTracking(object):
 
         # Use neighbourhoods to improve tracking.
         for _ in range(int(self.parameters_tracking["iterations"])):
-            new_traces = self.improve_traces(detections_1, detections_2, traces)
-            if new_traces == traces:  # TODO stop there
-                break
-            else:
-                traces = new_traces
+            traces = self.improve_traces(detections_1, detections_2, traces)
 
         # Filter traces.
-        end = time.clock()
-        print "tracking_process", end - start
         return [(trace.previous_cell.number, trace.current_cell.number) for trace in traces]
 
     def is_cell_big(self, cell_detection):

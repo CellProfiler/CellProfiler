@@ -15,6 +15,8 @@ from contrib.cell_star.process.segmentation import Segmentation
 from contrib.cell_star.utils.image_util import image_show
 from contrib.cell_star.core.parallel.snake_grow import mp_snake_grow
 from contrib.cell_star.parameter_fitting.pf_auto_params import parameters_range, pf_parameters_encode, pf_parameters_decode
+import logging
+logger = logging.getLogger(__name__)
 from multiprocessing import Process, Queue
 
 snakes_multiprocessing = False
@@ -32,7 +34,7 @@ def distance_norm(fitnesses):
     # Mean-Squared Error
     distance = norm((np.ones(fitnesses.shape) - fitnesses)) / np.sqrt(fitnesses.size)
     best_so_far = min(best_so_far, distance)
-    print "Current distance:", distance, ", Best:", best_so_far
+    logger.debug("Current distance: %f, Best: %f"%(distance, best_so_far))
     return distance
 
 
@@ -54,7 +56,7 @@ def snakes_fitness(gt_snake_seed_pairs, images, parameters, pf_param_vector, deb
         gt_snake_grown_seed_pairs = [(gt_snake, grow_single_seed(seed, images, parameters, pf_param_vector)) for
                                      gt_snake, seed in gt_snake_seed_pairs]
 
-    print sorted(pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"], parameters["segmentation"]["stars"]["maxSize"]).iteritems())
+    #logger.debug(sorted(pf_parameters_decode(pf_param_vector, parameters["segmentation"]["stars"]["sizeWeight"], parameters["segmentation"]["stars"]["step"], parameters["segmentation"]["avgCellDiameter"], parameters["segmentation"]["stars"]["maxSize"]).iteritems())()
     return np.array([pf_s.multi_fitness(gt_snake) for gt_snake, pf_s in gt_snake_grown_seed_pairs])
 
 
@@ -120,6 +122,7 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_
     :param initial_params: overrides precision and avg_cell_diameter
     :return:
     """
+    logger.info("Parameter fitting started...")
     if initial_params is None:
         params = default_parameters(segmentation_precision=precision, avg_cell_diameter=avg_cell_diameter)
     else:
@@ -135,10 +138,9 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_
 
     stop = time.clock()
 
-    print "Best: "
-    print "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())])
-    print "Time: ", stop - start
-
+    logger.debug("Best: \n" + "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())]))
+    logger.debug("Time: ", stop - start)
+    logger.info("Parameter fitting finished with best score %f" % best_score)
     # test_trained_parameters(image, best_params, precision, avg_cell_diameter)
     return PFSnake.merge_parameters(params, best_params), best_arg, best_score
 
@@ -171,10 +173,9 @@ def optimize_brute(params_to_optimize, distance_function):
     upper_bound = params_to_optimize + np.maximum(np.abs(params_to_optimize), 0.1)
     #upper_bound[params_to_optimize == 0] = 100 * search_range
 
-    print "Search range:", zip(lower_bound,upper_bound)
+    logger.debug("Search range: " + str(zip(lower_bound,upper_bound)))
     result = opt.brute(distance_function, zip(lower_bound, upper_bound), Ns=3, disp=True, finish=None, full_output=True)
-    print "Opt finished:", result[:2]
-    print "Search range:", zip(lower_bound,upper_bound)
+    logger.debug("Opt finished:" + str(result[:2]))
     # distance_function(result[0], debug=True)
     return result[0], result[1]
 
@@ -191,7 +192,7 @@ def optimize_de(params_to_optimize, distance_function):
 
     bounds = zip(lower_bound, upper_bound)
     result = opt.differential_evolution(distance_function, bounds, maxiter=10, popsize=30, init='latinhypercube')
-    print "Opt finished:", result
+    logger.debug("Opt finished: " + str(result))
     # fitness(result.x, debug=True)
     return result.x, result.fun
 
@@ -199,7 +200,7 @@ def optimize_de(params_to_optimize, distance_function):
 def optimize_basinhopping(params_to_optimize, distance_function):
     minimizer_kwargs = {"method": "BFGS"}
     result = opt.basinhopping(distance_function, params_to_optimize, minimizer_kwargs=minimizer_kwargs, niter=20)
-    print "Opt finished:", result
+    logger.debug("Opt finished: " + str(result))
     return result.x, result.fun
 
 
@@ -220,7 +221,7 @@ def optimize_anneal(params_to_optimize, distance_function):
     # lower_bound = [0]*len(params_to_optimize)
     # upper_bound = [1]*len(params_to_optimize)
     result = opt.anneal(distance_function, params_to_optimize, full_output=True, lower=lower_bound, upper=upper_bound, maxiter=10, schedule='cauchy')
-    print "Opt finished:", result
+    logger.debug("Opt finished: " + str(result))
     # fitness_function(result[0], debug=True)
     return result[0], result[1]
 
@@ -277,5 +278,5 @@ def multiproc_multitype_fitness(image, gt_snakes, precision, avg_cell_diameter):
         optimizer.join()
 
     sorted_results = sorted(results, key=lambda x: x[2])
-    print sorted_results[0]
+    logger.debug(str(sorted_results[0]))
     return sorted_results[0][1], sorted_results[0][2]

@@ -609,8 +609,8 @@ class YeastCellSegmentation(cpmi.Identify):
             
         return adam_normalization(input_pixels), background_pixels_normalized
 
-    def prepare_cell_star_object(self):
-        cellstar = Segmentation(self.segmentation_precision.value, self.average_cell_diameter.value)
+    def prepare_cell_star_object(self, segmentation_precision):
+        cellstar = Segmentation(segmentation_precision, self.average_cell_diameter.value)
         cellstar.parameters["segmentation"]["maxOverlap"] = self.maximal_cell_overlap.value
         if self.advanced_cell_filtering.value:
             areas_range = self.min_cell_area.value, self.max_cell_area.value
@@ -627,7 +627,7 @@ class YeastCellSegmentation(cpmi.Identify):
     # Returns: yeast cells, yeast cells qualities, background
     #
     def segmentation(self, normalized_image, background_pixels):
-        cellstar = self.prepare_cell_star_object()
+        cellstar = self.prepare_cell_star_object(self.segmentation_precision.value)
 
         if self.input_image_file_name is not None:
             dedicated_image_folder = pj(pref.get_default_output_directory(), self.input_image_file_name)
@@ -717,8 +717,8 @@ class YeastCellSegmentation(cpmi.Identify):
         # if not hasattr(self, 'labels'):
         labels = [np.zeros(self.pixel_data.shape[:2], int)]
         ## two next lines are hack from Lee
-        #labels[0][0, 0] = 1
-        #labels[0][-2, -2] = 1
+        labels[0][0, 0] = 1
+        labels[0][-2, -2] = 1
         with EditObjectsDialog(
                 self.pixel_data, labels, False, title) as dialog_box:
             result = dialog_box.ShowModal()
@@ -726,8 +726,8 @@ class YeastCellSegmentation(cpmi.Identify):
                 return None
             labels = dialog_box.labels[0]
         ## two next lines are hack from Lee
-        #labels[0, 0] = 0
-        #labels[-2, -2] = 0
+        labels[0, 0] = 0
+        labels[-2, -2] = 0
 
         # check if the user provided GT
         # TODO check for con. comp. and e.g. let it go if more then 3 cells were added
@@ -752,7 +752,7 @@ class YeastCellSegmentation(cpmi.Identify):
         while (keepGoing or not adaptation_stopped) and self.param_fit_progress < progressMax:
             # here put one it. of fitting instead
             wx.Sleep(0.1)
-            cellstar = self.prepare_cell_star_object()
+            cellstar = self.prepare_cell_star_object(min(11, self.segmentation_precision.value))
             current_parameters = cellstar.parameters
             self.autoadapted_params.value = cellstar.encode_auto_params()
 
@@ -775,7 +775,7 @@ class YeastCellSegmentation(cpmi.Identify):
         pass
     
     def update_params(self, new_parameters, new_snake_score):
-        cellstar = self.prepare_cell_star_object()
+        cellstar = self.prepare_cell_star_object(min(11, self.segmentation_precision.value))
         if new_snake_score < self.best_snake_score:
             cellstar.parameters = new_parameters
             self.best_snake_score = new_snake_score

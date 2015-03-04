@@ -17,9 +17,12 @@ from contrib.cell_star.core.parallel.snake_grow import mp_snake_grow
 from contrib.cell_star.parameter_fitting.pf_auto_params import parameters_range, pf_parameters_encode, pf_parameters_decode
 import logging
 logger = logging.getLogger(__name__)
+import random
 from multiprocessing import Process, Queue
 
 snakes_multiprocessing = False
+min_number_of_chosen_seeds = 6
+max_number_of_chosen_snakes = 20
 
 #
 #
@@ -81,6 +84,10 @@ def get_size_weight_list(params):
 
 def pf_get_distance(gt_snakes, images, initial_parameters):
     gt_snake_seed_pairs = [(gt_snake, seed) for gt_snake in gt_snakes for seed in get_gt_snake_seeds(gt_snake)]
+    random.shuffle(gt_snake_seed_pairs)
+    pick_seed_pairs = max(min_number_of_chosen_seeds, max_number_of_chosen_snakes / len(
+        initial_parameters["segmentation"]["stars"]["sizeWeight"]))
+    gt_snake_seed_pairs = gt_snake_seed_pairs[:pick_seed_pairs]
 
     distance = lambda partial_parameters, debug=False: \
         distance_norm(

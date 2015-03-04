@@ -19,7 +19,7 @@ from numpy import argwhere
 
 debug_image_path = ""
 
-SILENCE = False
+SILENCE = True
 
 
 def convolve2d(img, kernel, mode='same'):
@@ -176,11 +176,12 @@ def draw_seeds_compare(seeds1, seeds2, background, name="1"):
 
 
 def draw_seeds(seeds, background, title="some_source"):
-    fig = plt.figure()
-    fig.frameon = False
-    plt.imshow(background, cmap=plt.cm.gray)
-    plt.plot([s.x for s in seeds], [s.y for s in seeds], 'bo', markersize=3)
-    plt.savefig(os.path.join(debug_image_path, "seeds_"+title+".png"), pad_inches=0.0)
+    if not SILENCE:
+        fig = plt.figure()
+        fig.frameon = False
+        plt.imshow(background, cmap=plt.cm.gray)
+        plt.plot([s.x for s in seeds], [s.y for s in seeds], 'bo', markersize=3)
+        plt.savefig(os.path.join(debug_image_path, "seeds_"+title+".png"), pad_inches=0.0)
 
 
 def contain_pixel(shape, pixel):
@@ -305,7 +306,7 @@ def image_show_and_save(image, title, save_image):
     @param title:
     """
 
-    if save_image:
+    if not SILENCE and save_image:
         sp.misc.imsave(os.path.join(debug_image_path, title + '.png'), image)
 
 
@@ -326,10 +327,11 @@ def image_show(image, title):
 
 
 def draw_overlay(image, x, y):
-    plt.figure()
-    plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
-    plt.plot(x, y)
-    plt.show()
+    if not SILENCE:
+        plt.figure()
+        plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
+        plt.plot(x, y)
+        plt.show()
 
 
 def draw_snakes(image, snakes, outliers=.1, it=0):

@@ -196,7 +196,7 @@ from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import centers_of_labels
 from cellprofiler.cpmath.cpmorphology import associate_by_distance
 from cellprofiler.cpmath.cpmorphology import all_connected_components
-from cellprofiler.cpmath.neighmovetrack import NeighbourMovementTracking
+from cellprofiler.cpmath.neighmovetrack import NeighbourMovementTracking, NeighbourMovementTrackingParameters
 from cellprofiler.cpmath.index import Indexes
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
@@ -1082,19 +1082,20 @@ class TrackObjects(cpm.CPModule):
 
     def run_followneighbors(self, workspace, objects):
         '''Track objects based on following neighbors'''
+
         def run_localised_matching(workspace, objects):
             '''Track based on localised matching costs'''
             cellstar = NeighbourMovementTracking()
             cellstar.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
-            multiplier = float(NeighbourMovementTracking.parameters_cost_iteration["default_empty_cost"]) / NeighbourMovementTracking.parameters_cost_initial["default_empty_cost"]
+            multiplier = float(NeighbourMovementTrackingParameters.parameters_cost_iteration["default_empty_cost"]) / \
+                         NeighbourMovementTrackingParameters.parameters_cost_initial["default_empty_cost"]
             cellstar.parameters_cost_iteration["default_empty_cost"] = multiplier * self.drop_cost.value
             cellstar.parameters_cost_initial["default_empty_cost"] = self.drop_cost.value
-            # TODO make sure it. is correctly set in yaml - then remove next line
-            # cellstar.parameters_tracking["iterations"] = self.iterations.value
-            multiplier = float(NeighbourMovementTracking.parameters_cost_iteration["area_weight"]) / NeighbourMovementTracking.parameters_cost_initial["area_weight"]
+            multiplier = float(NeighbourMovementTrackingParameters.parameters_cost_iteration["area_weight"]) / \
+                         NeighbourMovementTrackingParameters.parameters_cost_initial["area_weight"]
             cellstar.parameters_cost_iteration["area_weight"] = multiplier * self.area_weight.value
             cellstar.parameters_cost_initial["area_weight"] = self.area_weight.value
-            
+
             old_labels = self.get_saved_labels(workspace)
             if not old_labels is None:
                 old_i,old_j = (centers_of_labels(old_labels)+.5).astype(int)

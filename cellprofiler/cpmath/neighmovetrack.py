@@ -7,9 +7,10 @@ version 1.0.0
 
 
 Coded by Filip Mroz and Adam Kaczmarek based on matlab code from original paper.
-2013-2015
+2013-2015.
 """
 import math
+import copy
 import numpy as np
 import scipy.ndimage.measurements as measure
 
@@ -22,6 +23,16 @@ def euclidean_dist((x1, y1), (x2, y2)):
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
+class NeighbourMovementTrackingParameters(object):
+    parameters_nbrs = {"nbrs_number": 6, "nbrs_maxdist": 30}
+    parameters_tracking = {"avgCellDiameter": 35, "iterations": 20, "big_size": 200}
+    parameters_cost_initial = {"check_if_big": False, "default_empty_cost": 15, "default_empty_reliable_cost_mult": 2.5,
+                               "area_weight": 25}
+    parameters_cost_iteration = {"check_if_big": True, "default_empty_cost": 15, "default_empty_reliable_cost_mult": 2,
+                                 "area_weight": 30}
+    parameters_cell_features = {"reliable_area": 150, "reliable_distance": 30}
+
+
 class CellFeatures(object):
     """
     Represents cell features such as center and its area.
@@ -30,9 +41,9 @@ class CellFeatures(object):
     @ivar area: area of the cell in pixels
     @ivar image_size: size of the image that feature inhabits (rows,cols)
     """
-    parameters = {"ReliableArea": 150, "ReliableDistance": 30}
 
     def __init__(self, center, area, number, image_size):
+        self.parameters = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cell_features)
         self.center = center
         self.area = area
         self.number = number
@@ -68,11 +79,11 @@ class CellFeatures(object):
         @return: it is reliable?
         """
         if min_size == -1:
-            min_size = CellFeatures.parameters["ReliableArea"]
+            min_size = self.parameters["reliable_area"]
         return (self.area > min_size and
                 min(self.center[0], min(self.center[1], min(self.image_size[0] - self.center[0],
                                                             self.image_size[1] - self.center[1]))) >
-                CellFeatures.parameters["ReliableDistance"])
+                self.parameters["reliable_distance"])
 
 
 class Trace(object):
@@ -112,16 +123,14 @@ class Trace(object):
         return traces
 
 
-
 class NeighbourMovementTracking(object):
-    parameters_nbrs = {"nbrs_number": 6, "nbrs_maxdist": 30}
-    parameters_tracking = {"avgCellDiameter": 35, "iterations": 20, "big_size": 200}
-    parameters_cost_initial = {"check_if_big": False, "default_empty_cost": 15, "default_empty_reliable_cost_mult": 2.5,
-                               "area_weight": 25}
-    parameters_cost_iteration = {"check_if_big": True, "default_empty_cost": 15, "default_empty_reliable_cost_mult": 2,
-                                 "area_weight": 30}
-
     def __init__(self):
+        # Copy initial parameters.
+        self.parameters_nbrs = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_nbrs)
+        self.parameters_tracking = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_tracking)
+        self.parameters_cost_initial = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cost_initial)
+        self.parameters_cost_iteration = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cost_iteration)
+        self.parameters_cell_features = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cell_features)
         self.scale = self.parameters_tracking["avgCellDiameter"] / 35.0
 
     def run_tracking(self, label_image_1, label_image_2):
@@ -130,9 +139,6 @@ class NeighbourMovementTracking(object):
         @returns: injective function from old objects to new objects (pairs of [old, new]). Number are compatible
             with labels.
         """
-        import time
-
-        start = time.clock()
         detections_1 = self.derive_detections(label_image_1)
         detections_2 = self.derive_detections(label_image_2)
 
@@ -141,15 +147,9 @@ class NeighbourMovementTracking(object):
 
         # Use neighbourhoods to improve tracking.
         for _ in range(int(self.parameters_tracking["iterations"])):
-            new_traces = self.improve_traces(detections_1, detections_2, traces)
-            if new_traces == traces:  # TODO stop there
-                break
-            else:
-                traces = new_traces
+            traces = self.improve_traces(detections_1, detections_2, traces)
 
         # Filter traces.
-        end = time.clock()
-        print "tracking_process", end - start
         return [(trace.previous_cell.number, trace.current_cell.number) for trace in traces]
 
     def is_cell_big(self, cell_detection):

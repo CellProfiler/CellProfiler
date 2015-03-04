@@ -129,6 +129,7 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_
     start = time.clock()
     optimized = optimize(method, gt_snakes, images, params, precision, avg_cell_diameter)
 
+    best_arg = optimized[0]
     best_params = pf_parameters_decode(optimized[0], get_size_weight_list(params), params["segmentation"]["stars"]["step"], avg_cell_diameter, params["segmentation"]["stars"]["maxSize"])
     best_score = optimized[1]
 
@@ -139,7 +140,7 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_
     print "Time: ", stop - start
 
     # test_trained_parameters(image, best_params, precision, avg_cell_diameter)
-    return PFSnake.merge_parameters(params, best_params), best_params, best_score
+    return PFSnake.merge_parameters(params, best_params), best_arg, best_score
 
 
 def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diameter):
@@ -260,20 +261,20 @@ def multiproc_multitype_fitness(image, gt_snakes, precision, avg_cell_diameter):
             Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
             Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
             Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
+            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal"))
 
             # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "basin")),
-            # # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "brute")),
+            # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "brute")),
             # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "diffevo"))
         ]
 
     for optimizer in optimizers:
         optimizer.start()
 
+    results = [result_queue.get() for o in optimizers]
+
     for optimizer in optimizers:
         optimizer.join()
-
-    results = [result_queue.get() for o in optimizers]
 
     sorted_results = sorted(results, key=lambda x: x[2])
     print sorted_results[0]

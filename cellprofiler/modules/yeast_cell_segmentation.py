@@ -303,7 +303,7 @@ class YeastCellSegmentation(cpmi.Identify):
         
         self.autoadaptation_steps = cps.Integer(
             "Number of steps in the autoadaptation procedure",
-            9,minval=1,maxval=1000,doc = '''
+            1,minval=1,maxval=1000,doc = '''
             Describes how thouroughly we want to adapt the algorithm to current image sets. Higher values should 
             make it easier to correctly discover cells, however you will have to wait longer for the autoadaptation
             procedure to finish. Remember that you do it once for all images, and you can copy the values from other

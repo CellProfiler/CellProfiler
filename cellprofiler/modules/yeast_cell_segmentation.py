@@ -466,26 +466,19 @@ class YeastCellSegmentation(cpmi.Identify):
         return setting_values, variable_revision_number, from_matlab
 
     def display(self, workspace, figure=None):
-        
-        # Important images should be shown always (the same that in case of IdentifyPrimaryObjects),
-        # but if DEBUG is on then many more intermediate images can be presented for investigation.
-        
-        figure = workspace.create_or_find_figure(subplots=(2,1))
-        
-        figure.subplot_imshow_grayscale(
-            0, 0,
-            workspace.display_data.input_pixels,
-            title = self.input_image_name.value)
-        lead_subplot = figure.subplot(0,0)
+        if self.show_window:
+            figure.set_subplots((2, 1))
 
-        figure.subplot_imshow_grayscale(
-            1,0 , 
-            workspace.display_data.segmentation_pixels,
-            title = "Segmentation",
-            sharex = lead_subplot, sharey = lead_subplot)
-            
-        
-    # 
+            title = "Input image, cycle #%d" % (workspace.measurements.image_number,)
+            image = workspace.display_data.input_pixels
+            labeled_image = workspace.display_data.segmentation_pixels
+
+            ax = figure.subplot_imshow_grayscale(0, 0, image, title)
+            figure.subplot_imshow_labels(1, 0, labeled_image,
+                                         self.object_name.value,
+                                         sharexy=ax)
+
+    #
     # Measuremets:
     # - objects count
     # - objects location

@@ -765,6 +765,7 @@ class YeastCellSegmentation(cpmi.Identify):
             # here update params. in the GUI
             keepGoingUpdate = dialog.Update(self.param_fit_progress)[0]
             keepGoing = keepGoing and keepGoingUpdate
+
         dialog.Update(progressMax)
     
     #

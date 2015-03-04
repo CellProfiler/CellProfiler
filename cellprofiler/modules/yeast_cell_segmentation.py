@@ -709,7 +709,7 @@ class YeastCellSegmentation(cpmi.Identify):
             if self.background_elimination_strategy == BKG_FILE:
                 background_pixels = 1 - background_pixels
 
-        if not background_pixels:
+        if background_pixels:
             self.pixel_data = self.pixel_data - background_pixels
         ## end of image adaptation
 
@@ -763,7 +763,7 @@ class YeastCellSegmentation(cpmi.Identify):
                 aft.start()
 
             # here update params. in the GUI
-            keepGoingUpdate, skip = dialog.Update(self.param_fit_progress)[0]
+            keepGoingUpdate = dialog.Update(self.param_fit_progress)[0]
             keepGoing = keepGoing and keepGoingUpdate
         dialog.Update(progressMax)
     
@@ -772,6 +772,15 @@ class YeastCellSegmentation(cpmi.Identify):
     #
     def postprocessing(self, objects):
         pass
+    
+    def update_params(self, new_parameters, new_snake_score):
+        cellstar = self.prepare_cell_star_object()
+        if new_snake_score < self.best_snake_score:
+            cellstar.parameters = new_parameters
+            self.best_snake_score = new_snake_score
+            self.autoadapted_params.value = cellstar.encode_auto_params()
+
+        self.param_fit_progress += 1
 
 
 class AutoFitterThread(threading.Thread):

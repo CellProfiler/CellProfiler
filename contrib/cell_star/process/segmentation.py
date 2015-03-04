@@ -17,8 +17,6 @@ from contrib.cell_star.core.polar_transform import PolarTransform
 from contrib.cell_star.parameter_fitting.pf_auto_params import rank_parameters_range as rank_auto_params
 from contrib.cell_star.parameter_fitting.pf_auto_params import parameters_range as snake_auto_params
 
-import contrib.cell_star.formats.contour_list
-
 
 class Segmentation(object):
     def __init__(self, segmentation_precision=7, avg_cell_diameter=35, debug_level=0):
@@ -32,7 +30,6 @@ class Segmentation(object):
         self.new_snakes = []
         self._seeder = None
         self._filter = None
-        self.format = contrib.cell_star.formats.contour_list.ContourListFormat
         self.polar_transform = PolarTransform.instance(self.parameters["segmentation"]["avgCellDiameter"],
                                                        self.parameters["segmentation"]["stars"]["points"],
                                                        self.parameters["segmentation"]["stars"]["step"],

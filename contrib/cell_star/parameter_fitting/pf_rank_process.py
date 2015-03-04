@@ -2,13 +2,13 @@
 __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 import numpy as np
+import copy
 import operator as op
 from contrib.cell_star.utils.params_util import *
 from scipy.linalg import norm
 import scipy.optimize as opt
 from contrib.cell_star.core.seed import Seed
 from contrib.cell_star.core.image_repo import ImageRepo
-from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
 from contrib.cell_star.core.seeder import Seeder
 
 from contrib.cell_star.parameter_fitting.pf_process import distance_norm, get_gt_snake_seeds, grow_single_seed
@@ -45,7 +45,7 @@ def distance_norm_list(expected, result):
 def calc_ranking(rank_snakes, pf_param_vector):
     fitness_order = sorted(rank_snakes, key=lambda x: -x.fitness)
     ranking_order = sorted(rank_snakes, key=lambda x: x.calculate_ranking(pf_rank_parameters_decode(pf_param_vector)))
-    print pf_rank_parameters_decode(pf_param_vector)
+    print sorted(pf_rank_parameters_decode(pf_param_vector).iteritems())
     return distance_norm_list(fitness_order, ranking_order)
 
 
@@ -85,9 +85,22 @@ def add_mutations(gt_and_grown):
 #
 #
 
-def run(image, gt_snakes, precision, avg_cell_diameter, method):
+def run(image, gt_snakes, precision=-1, avg_cell_diameter=-1, method='brute', initial_params=None):
     global calculations
-    params = default_parameters(segmentation_precision=precision, avg_cell_diameter=avg_cell_diameter)
+    """
+    :param image: input image
+    :param gt_snakes: gt snakes label image
+    :param precision: if initial_params is None then it is used to calculate parameters
+    :param avg_cell_diameter: if initial_params is None then it is used to calculate parameters
+    :param method: optimization engine
+    :param initial_params: overrides precision and avg_cell_diameter
+    :return:
+    """
+    if initial_params is None:
+        params = default_parameters(segmentation_precision=precision, avg_cell_diameter=avg_cell_diameter)
+    else:
+        params = copy.deepcopy(initial_params)
+
     images = ImageRepo(image, params)
 
     # prepare seed and grow snakes
@@ -105,22 +118,22 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method):
     gts_snakes_with_mutations = add_mutations(gt_snake_grown_seed_pairs_all)
     ranked_snakes = zip(*gts_snakes_with_mutations)[1]
 
-    best_params_full = params
-    for _ in range(1):
-        calculations = 0
+    calculations = 0
 
-        best_params_encoded = optimize(
-            method,
-            pf_rank_parameters_encode(best_params_full),
-            pf_rank_get_ranking(ranked_snakes, best_params_full)
-        )[0]
-        best_params = pf_rank_parameters_decode(best_params_encoded)
-        best_params_full = PFSnake.merge_parameters(params, best_params)
-        print "Snakes:", len(ranked_snakes), "Calculations:", calculations
+    best_params_encoded, distance = optimize(
+        method,
+        pf_rank_parameters_encode(params),
+        pf_rank_get_ranking(ranked_snakes, params)
+    )
+    best_params = pf_rank_parameters_decode(best_params_encoded)
+    best_params_full = PFRankSnake.merge_rank_parameters(params, best_params)
+    print "Snakes:", len(ranked_snakes), "Calculations:", calculations
 
     print "Best ranking: "
-    print "\n".join([k + ": " + str(v) for k, v in best_params.iteritems()])
-    print ",".join([str(v) for _,v in best_params.iteritems()])
+    print "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())])
+    print ",".join([str(v) for _,v in sorted(best_params.iteritems())])
+
+    return best_params_full, best_params, distance
 
 
 def optimize(method_name, encoded_params, distance_function):
@@ -136,7 +149,7 @@ def optimize_brute(params_to_optimize, distance_function):
     upper_bound = [1] * len(params_to_optimize)
 
     start = time.clock()
-    result = opt.brute(distance_function, zip(lower_bound, upper_bound), finish=None, Ns=8, disp=True, full_output=True)
+    result = opt.brute(distance_function, zip(lower_bound, upper_bound), finish=None, Ns=4, disp=True, full_output=True)
     elapsed = time.clock() - start
 
     print "Opt finished:", result[:2], "Elapsed[s]:", elapsed

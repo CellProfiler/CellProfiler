@@ -46,12 +46,17 @@ class PFRankSnake(object):
 
         return PFRankSnake(self.gt_snake,mutant_snake,self.avg_cell_diameter,self.initial_parameters)
 
-    def merge_rank_parameters(self, new_params):
-        params = copy.deepcopy(self.initial_parameters)
+    @staticmethod
+    def merge_rank_parameters(initial_parameters, new_params):
+        params = copy.deepcopy(initial_parameters)
         for k, v in new_params.iteritems():
             params["segmentation"]["ranking"][k] = v
 
         return params
+
+    def merge_parameters_with_me(self, new_params):
+        return PFRankSnake.merge_rank_parameters(self.initial_parameters, new_params)
+
 
     def calculate_ranking(self, ranking_params):
         return self.grown_snake.star_rank(ranking_params, self.avg_cell_diameter)

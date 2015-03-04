@@ -1,18 +1,22 @@
 __author__ = 'Adam'
 
 import sys
-import os
-import os.path as path
 import numpy as np
-import scipy as sp
-from contrib.cell_star.core.seed import Seed
-from contrib.cell_star.test import test_utils
-from contrib.cell_star.parameter_fitting.pf_process import run
-from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
 import contrib.cell_star.parameter_fitting.pf_rank_process as pf_rank
 from contrib.cell_star.parameter_fitting.test_pf import try_load_image, gt_mask_to_snakes
 
 corpus_path = "yeast_corpus/data/"
+
+def run_rank_pf(input_image, gt_mask, parameters):
+    """
+    :param input_image:
+    :param gt_mask:
+    :param parameters:
+    :return: Best complete parameters settings, best distance
+    """
+    gt_snakes = gt_mask_to_snakes(gt_mask)
+    best_complete_params, _, best_score = pf_rank.run(input_image, gt_snakes, initial_params=parameters)
+    return best_complete_params, best_score
 
 def test_rank_pf(image_path, mask_path, precision, avg_cell_diameter, method):
     frame = try_load_image(image_path)

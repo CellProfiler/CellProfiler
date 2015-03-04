@@ -168,6 +168,7 @@ try:
 
     from contrib.cell_star.process.segmentation import Segmentation
     from contrib.cell_star.parameter_fitting.test_pf import run_pf
+    from contrib.cell_star.parameter_fitting.test_rank_pf import run_rank_pf
 
 except ImportError as e: 
     # in new version 2.12 all the errors are properly shown in console (Windows)
@@ -703,7 +704,9 @@ class YeastCellSegmentation(cpmi.Identify):
         style=wx.PD_CAN_ABORT | wx.PD_CAN_SKIP | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME )
         keepGoing = True
         count = 0
+
         best_snake_score = 10
+        best_rank_score = 1000000000
         while (keepGoing and count < progressMax):# and dialog.WasCancelled():
             count = count + 1
             # here put one it. of fitting instead
@@ -717,6 +720,13 @@ class YeastCellSegmentation(cpmi.Identify):
             if new_snake_score < best_snake_score:
                 cellstar.parameters = new_parameters
                 best_snake_score = new_snake_score
+                self.autoadapted_params.value = cellstar.encode_auto_params()
+
+            current_parameters = cellstar.parameters
+            new_parameters, new_rank_score = run_rank_pf(image, labels, current_parameters)
+            if new_rank_score < best_rank_score:
+                cellstar.parameters = new_parameters
+                best_rank_score = new_rank_score
                 self.autoadapted_params.value = cellstar.encode_auto_params()
 
             # here update params. in the GUI

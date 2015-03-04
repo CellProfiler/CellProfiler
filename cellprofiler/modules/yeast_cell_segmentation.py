@@ -191,6 +191,12 @@ BKG_CURRENT = 'Actual image'
 BKG_FIRST = 'First image'
 BKG_FILE = 'File'
 
+C_OBJECT_FEATURES = "Features"
+
+FTR_OBJECT_QUALITY = "Quality"
+'''The object quality - floating number lower the higher the better'''
+M_OBJECT_FEATURES_OBJECT_QUALITY= '%s_%s' % (C_OBJECT_FEATURES, FTR_OBJECT_QUALITY)
+
 ###################################
 #
 # The module class
@@ -481,19 +487,23 @@ class YeastCellSegmentation(cpmi.Identify):
     # Measuremets:
     # - objects count
     # - objects location
-    
+
     def get_measurement_columns(self, pipeline):
         '''Column definitions for measurements made by IdentifyPrimAutomatic'''
         columns = cpmi.get_object_measurement_columns(self.object_name.value)
+        columns += [(self.object_name.value, M_OBJECT_FEATURES_OBJECT_QUALITY, cpmeas.COLTYPE_FLOAT)]
+
         return columns
-    
-    def get_categories(self,pipeline, object_name):
+
+
+    def get_categories(self, pipeline, object_name):
         """Return the categories of measurements that this module produces
-        
+
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         result = self.get_object_categories(pipeline, object_name,
                                              {self.object_name.value: [] })
+        result += [C_OBJECT_FEATURES]
         return result
       
     def get_measurements(self, pipeline, object_name, category):
@@ -505,6 +515,8 @@ class YeastCellSegmentation(cpmi.Identify):
 
         result = self.get_object_measurements(pipeline, object_name, category,
                                                {self.object_name.value: [] })
+        if category == C_OBJECT_FEATURES:
+            result += [FTR_OBJECT_QUALITY]
         return result
     
     def run(self, workspace):
@@ -557,14 +569,16 @@ class YeastCellSegmentation(cpmi.Identify):
             out_img = cpi.Image(outline_image.astype(bool),
                                 parent_image = normalized_image)
             workspace.image_set.add(self.save_outlines.value, out_img)
-            
+
         # Save measurements
 
-                                           
-        cpmi.add_object_location_measurements(workspace.measurements, 
-                                      self.object_name.value,
-                                      objects.segmented)
-                                      
+        workspace.measurements.add_measurement(self.object_name.value, M_OBJECT_FEATURES_OBJECT_QUALITY,
+                                               objects_qualities)
+
+        cpmi.add_object_location_measurements(workspace.measurements,
+                                              self.object_name.value,
+                                              objects.segmented)
+
         cpmi.add_object_count_measurements(workspace.measurements,
                                            self.object_name.value, np.max(objects.segmented))
 
@@ -606,8 +620,9 @@ class YeastCellSegmentation(cpmi.Identify):
             cellstar.parameters["segmentation"]["minSize"] = areas_range[0]
             cellstar.parameters["segmentation"]["maxSize"] = areas_range[1]
 
-        cellstar.decode_auto_params(self.autoadapted_params.value)
-
+        success = cellstar.decode_auto_params(self.autoadapted_params.value)
+        if not success:  # if current value is invalid overwrite it with current settings
+            self.autoadapted_params.value = cellstar.encode_auto_params()
         return cellstar
 
     #
@@ -644,7 +659,7 @@ class YeastCellSegmentation(cpmi.Identify):
         #if self.current_workspace.frame is not None:
         self.current_workspace.display_data.segmentation_pixels = objects.segmented
 
-        return objects, [s.rank for s in snakes], cellstar.images.background
+        return objects, np.array([-s.rank for s in snakes]), cellstar.images.background
 
     def ground_truth_editor( self ):
         '''Display a UI for GT editing'''
@@ -716,7 +731,9 @@ class YeastCellSegmentation(cpmi.Identify):
             cellstar = self.prepare_cell_star_object()
             current_parameters = cellstar.parameters
             self.autoadapted_params.value = cellstar.encode_auto_params()
-            new_parameters, new_snake_score = run_pf(image, labels, current_parameters, precision=self.segmentation_precision.value, avg_cell_diameter=self.average_cell_diameter.value)
+            new_parameters, new_snake_score = run_pf(image, labels, current_parameters,
+                                                     precision=self.segmentation_precision.value,
+                                                     avg_cell_diameter=self.average_cell_diameter.value)
             if new_snake_score < best_snake_score:
                 cellstar.parameters = new_parameters
                 best_snake_score = new_snake_score

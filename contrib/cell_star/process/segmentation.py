@@ -91,6 +91,7 @@ class Segmentation(object):
         Decode automatic parameters from text and apply to self.
 
         @param text: parameters denoted as python list
+        @:return true if parsing was successful
         """
         new_stars = copy(self.parameters["segmentation"]["stars"])
         new_ranking = copy(self.parameters["segmentation"]["ranking"])
@@ -115,10 +116,11 @@ class Segmentation(object):
                 new_ranking[name] = rank_params[0]
                 rank_params = rank_params[1:]
         except:
-            return
+            return False
 
         self.parameters["segmentation"]["stars"] = new_stars
         self.parameters["segmentation"]["ranking"] = new_ranking
+        return True
 
     def encode_auto_params(self):
         snake_auto_params_values = []

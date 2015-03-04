@@ -319,7 +319,6 @@ def image_show(image, title):
     # #image = ImageUtil.Tiff16ToFloat(image)
     # #sp.misc.imsave(os.path.join("output", title + '.png'), image)
     if not SILENCE:
-        print "imshow_call"
         plt.figure(title)
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
         plt.show()

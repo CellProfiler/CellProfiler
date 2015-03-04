@@ -180,8 +180,15 @@ def optimize_brute(params_to_optimize, distance_function):
     upper_bound = params_to_optimize + np.maximum(np.abs(params_to_optimize), 0.1)
     #upper_bound[params_to_optimize == 0] = 100 * search_range
 
+    # introduce random shift (0,grid step) # max 20%
+    number_of_steps = 3
+    step = (upper_bound - lower_bound) / float(number_of_steps)
+    random_shift = np.array([random.random() * 2 / 10 for _ in range(len(lower_bound))])
+    lower_bound += random_shift * step
+    upper_bound += random_shift * step
+
     logger.debug("Search range: " + str(zip(lower_bound,upper_bound)))
-    result = opt.brute(distance_function, zip(lower_bound, upper_bound), Ns=3, disp=True, finish=None, full_output=True)
+    result = opt.brute(distance_function, zip(lower_bound, upper_bound), Ns=number_of_steps, disp=True, finish=None, full_output=True)
     logger.debug("Opt finished:" + str(result[:2]))
     # distance_function(result[0], debug=True)
     return result[0], result[1]

@@ -172,7 +172,18 @@ def get_gradient(im, index, border_thickness_steps):
         intersect_end = int(intersect_start + matrix_end)
 
         # Wylicz bieżącą wartość gradientu dla wyznaczonego wycinka obrazu
-        current_step_gradient = im[Index.to_numpy(ending_index)] - im[Index.to_numpy(starting_index)]
+        try:
+            current_step_gradient = im[Index.to_numpy(ending_index)] - im[Index.to_numpy(starting_index)]
+        except Exception:
+            print border_thickness_step
+            print radius_lengths
+            print matrix_start
+            print matrix_end
+            print ending_index
+            print starting_index
+
+            raise Exception
+
         current_step_gradient /= np.sqrt(border_thickness_step)
         # Zapisz gradient do wyznaczonego wycinka macierzy wyników
         gradients_for_steps[intersect_start:intersect_end, :, border_thickness_step-1] = current_step_gradient

@@ -3,15 +3,14 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 # External imports
 import numpy as np
-import contrib.cell_star.yaml as yaml
+from contrib.cell_star.config.config import default_config
 import sys
 # Internal imports
 from python_util import package_path
 
 
 def default_parameters(segmentation_precision=-1, avg_cell_diameter=-1, min_size=0, max_size=sys.maxint):
-    with open(package_path("config/config.yaml", 0)) as confFile:
-        parameters = yaml.load(confFile)
+    parameters = default_config()
     if avg_cell_diameter != -1:
         parameters["segmentation"]["avgCellDiameter"] = avg_cell_diameter
     else:
@@ -102,5 +101,4 @@ def parameters_from_segmentation_precision(parameters, segmentation_precision):
         parameters["tracking"] = {}
     parameters["tracking"]["iterations"] = max(1, segmentation_precision * 5 - 25)
 
-    #yaml.dump(parameters, open(r"D:\Fafa\Drozdze\Repozytorium\cell_star_plugins\cell_star\config\config_redumped.yaml", "w"), default_flow_style=False)
     return parameters

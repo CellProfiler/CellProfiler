@@ -232,9 +232,13 @@ class ExportToSpreadsheet(cpm.CPModule):
             measurement in the Image file.  For instance, if you are measuring 
             the area of the Nuclei objects and you check the box for this option, <b>ExportToSpreadsheet</b> will 
             create a column in the Image file called "Mean_Nuclei_AreaShape_Area". 
+            
             <p>You may not want to use <b>ExportToSpreadsheet</b> to calculate these 
             measurements if your pipeline generates a large number of per-object 
-            measurements; doing so might exceed Excel's limits on the number of columns (256). """%globals())
+            measurements; doing so might exceed Excel's limits on the number of columns (256).</p>
+            
+            <p>Keep in mind that if you chose to select the specific measurements to export, the aggregate
+            statistics will only be computed for the selected per-object measurements.</p>"""%globals())
         
         self.wants_aggregate_medians = cps.Binary("Calculate the per-image median values for object measurements?", False)
         

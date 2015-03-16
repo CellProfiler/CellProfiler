@@ -550,6 +550,7 @@ class YeastCellSegmentation(cpmi.Identify):
         # Segmentation
         #
         objects, objects_qualities, background_pixels = self.segmentation(normalized_image, background_pixels)
+        objects.parent_image = input_image
 
         if self.__get(F_BACKGROUND, workspace, None) is None and self.background_elimination_strategy == BKG_FIRST:
             self.__set(F_BACKGROUND, workspace, background_pixels)
@@ -645,7 +646,7 @@ class YeastCellSegmentation(cpmi.Identify):
         #print "segmented", segmented_image.shape
         objects.unedited_segmented = segmented_image
         objects.small_removed_segmented = np.zeros(normalized_image.shape)
-        objects.parent_image = normalized_image
+        # objects.parent_image = normalized_image has to be cellprofiler image
         
         #objects = cellprofiler.objects.Objects()
         #objects.segmented = labeled_image

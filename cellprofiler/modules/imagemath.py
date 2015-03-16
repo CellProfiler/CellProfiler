@@ -331,7 +331,7 @@ class ImageMath(cpm.CPModule):
         elif opval == O_LOG_TRANSFORM_LEGACY:
             output_pixel_data = np.log2(output_pixel_data)
         elif opval == O_NONE:
-            pass
+            output_pixel_data = output_pixel_data.copy()
         else:
             raise NotImplementedError("The operation %s has not been implemented"%opval)
 

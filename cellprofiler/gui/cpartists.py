@@ -330,6 +330,8 @@ class ObjectsData(OutlinesMixin):
         img = None
         lmin = 0
         for l in self.labels:
+            if np.all(l == 0):
+                continue
             if self.scramble:
                 lmin = np.min(l[l!=0])
             l[l!=0] = renumber_labels_for_display(l)[l!=0]+lmin

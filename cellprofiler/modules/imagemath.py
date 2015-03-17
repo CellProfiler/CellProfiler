@@ -368,7 +368,8 @@ class ImageMath(cpm.CPModule):
                                  mask = output_mask,
                                  crop_mask = crop_mask, 
                                  parent_image = images[0],
-                                 masking_objects = masking_objects)
+                                 masking_objects = masking_objects,
+                                 convert = False)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         #

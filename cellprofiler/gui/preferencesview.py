@@ -347,6 +347,9 @@ class PreferencesView:
                    and 1 is its end.
         message - the message to display to the user.
         '''
+        if progress is None:
+            self.set_message_text(message)
+            return
         def reset_progress(): 
             self.__progress_stack = []
             self.__progress_dictionary = {}

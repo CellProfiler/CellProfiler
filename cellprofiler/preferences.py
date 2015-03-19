@@ -198,7 +198,12 @@ def config_read(key):
     else:
         value = None
     if value is not None:
-        value = utf16decode(value)
+        try:
+            value = utf16decode(value)
+        except:
+            logger.warning(
+                "Failed to decode preference (%s=%s), assuming 2.0" %
+                (key, value))
     __cached_values[key] = value
     return value
 

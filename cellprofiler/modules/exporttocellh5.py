@@ -26,10 +26,14 @@ from cellprofiler.gui.help import \
      
 import cellh5
 import cellh5write 
-import numpy
+import numpy as np
 
 OFF_OBJECTS_COUNT = 0
 OFF_IMAGES_COUNT = 1
+
+COLORS = [("Red", "0xFF0000"),
+          ("Green", "0x00FF00"),
+          ("Blue", "0x0000FF")]
 
 class ExportToCellH5(cpm.CPModule):
     #
@@ -211,7 +215,7 @@ class ExportToCellH5(cpm.CPModule):
         ))
         group.append("remover",
         cps.RemoveSettingButton(
-            "Remove the objects above", "Remove", 
+            "Remove the image above", "Remove", 
             self.objects_to_export, group))
         
     def get_metadata_choices(self, pipeline):
@@ -290,7 +294,7 @@ class ExportToCellH5(cpm.CPModule):
             workspace,
             workspace.measurements.image_set_number) 
         return workspace.interaction_request(
-            self, master_file_name, os.getpid(), path)
+            self, master_file_name, os.getpid(), path, headless_ok=True)
         
     def handle_interaction(self, master_file, pid, path):
         '''Handle an analysis worker / UI interaction
@@ -352,7 +356,7 @@ class ExportToCellH5(cpm.CPModule):
                     ### get shape of 5D cube        
                     shape5D = (len(self.objects_to_export), 1, 1,
                                labels.shape[0], labels.shape[1])
-                    dtype5D = numpy.uint16 
+                    dtype5D = np.uint16 
                     
                     ### create lablel writer for incremental writing
                     c5_label_writer = c5_pos.add_label_image(shape=shape5D, dtype=dtype5D)
@@ -366,21 +370,66 @@ class ExportToCellH5(cpm.CPModule):
                 c5_label_writer.write_definition(c5_label_def)
                 c5_label_writer.finalize()
             
+            n_channels = 0
+            max_scale = 1
+            max_i = 1
+            max_j = 1
+            for image_group in self.images_to_export:
+                image = m.get_image(image_group.image_name.value)
+                pixel_data = image.pixel_data
+                if pixel_data.ndim == 3:
+                    n_channels += min(pixel_data.shape[2], 3)
+                else:
+                    n_channels += 1
+                max_scale = max(image.get_scale(), max_scale)
+                max_i = max(pixel_data.shape[0], max_i)
+                max_j = max(pixel_data.shape[1], max_j)
+                
             ### get shape of 5D cube        
-            shape5D = (len(self.objects_to_export), 1, 1,) + workspace.image_set.get_image(self.images_to_export[0].image_name.value).pixel_data.shape
-            dtype5D = numpy.uint8
+            shape5D = (n_channels, 1, 1, max_i, max_j)
+            for dtype in (np.uint8, np.uint16, np.uint32, np.uint64):
+                if max_scale <= np.iinfo(dtype).max:
+                    dtype5D = dtype
+                    break
             
             ### create image writer for incremental writing
             c5_image_writer = c5_pos.add_image(shape=shape5D, dtype=dtype5D)
             c5_image_def = cellh5write.CH5ImageChannelDefinition()
         
-            for ch_idx, image_group in enumerate(self.images_to_export):
+            ch_idx = 0
+            for image_group in self.images_to_export:
                 image_name = image_group.image_name.value
                 image = m.get_image(image_name).pixel_data
                 scale = m.get_image(image_name).get_scale()
-                
-                c5_image_writer.write((image*scale).astype(dtype5D), c=ch_idx, t=0, z=0)
-                c5_image_def.add_row(channel_name=image_name, description=image_name, is_physical=True, voxel_size=(1,1,1), color="#FF0000")
+                if not np.issubdtype(image.dtype, np.dtype(bool).type):
+                    if scale == 1:
+                        scale = max_scale
+                    image = image * scale
+                if image.ndim == 3:
+                    for c in range(min(image.shape[2], 3)):
+                        color_name, html_color = COLORS[c]
+                        c5_image_writer.write(
+                            image[:, :, c].astype(dtype5D), 
+                            c=ch_idx, t=0, z=0)
+                        c5_image_def.add_row(
+                            channel_name="_".join((image_name, color_name)),
+                            description="%s %s intensity" % 
+                            (image_name, color_name),
+                            is_physical=True, 
+                            voxel_size=(1,1,1), 
+                            color=html_color)
+                        ch_idx += 1
+                else:
+                    c5_image_writer.write(
+                        image.astype(dtype5D),
+                        c=ch_idx, t=0, z=0)
+                    c5_image_def.add_row(
+                        channel_name=image_name,
+                        description = image_name,
+                        is_physical=True,
+                        voxel_size=(1,1,1),
+                        color = "0xFFFFFF")
+                    ch_idx += 1
             c5_image_writer.write_definition(c5_image_def)
             c5_image_writer.finalize()
                 
@@ -406,11 +455,9 @@ class ExportToCellH5(cpm.CPModule):
             ### 4) Don't see the point of features extracted on "Image" the only real and useful feature there is "Count" which can be deduced from single cell information
             
             ### 0) and 1) filter columns for cellular features
-            feature_cols = filter(lambda xxx: (xxx[0] not in (cpmeas.EXPERIMENT, cpmeas.IMAGE)) and 
-                                              m.has_feature(xxx[0], xxx[1]) and
-                                             (xxx[1].startswith("AreaShape") or
-                                              xxx[1].startswith("Intensity") or
-                                              xxx[1].startswith("Texture")), columns)
+            feature_cols = filter(
+                lambda xxx: (xxx[0] not in (cpmeas.EXPERIMENT, cpmeas.IMAGE)) and
+                            m.has_feature(xxx[0], xxx[1]), columns)
             
             ### iterate over objects to export
             for ch_idx, object_group in enumerate(self.objects_to_export):
@@ -420,38 +467,39 @@ class ExportToCellH5(cpm.CPModule):
                 ### find features for that object
                 feature_cols_per_object = filter(lambda xxx: xxx[0] == objects_name, feature_cols)
                 
-                ### use first feature to get the object labels
                 c5_object_writer = c5_pos.add_region_object(objects_name)
-                first_column = feature_cols_per_object[0]
-                object_name, feature_name = first_column[:2]
-                values = m[object_name, feature_name]
-                object_labels = numpy.arange(len(values))+1
+                object_labels = objects.indices
                 
-                c5_object_writer.write(t=0, object_labels=numpy.array(object_labels))
+                c5_object_writer.write(t=0, object_labels=np.array(object_labels))
                 c5_object_writer.write_definition()
                 c5_object_writer.finalize()
                 
                 ### iterate over all cellular feature to get feature matrix
                     
                 n_features = len(feature_cols_per_object)
-                feature_names = []
-                feature_matrix = []
-                for column in feature_cols_per_object:
-                    object_name, feature_name = column[:2]
-                    values = m[object_name, feature_name]
+                if n_features > 0:
+                    feature_names = []
+                    feature_matrix = []
+                    for column in feature_cols_per_object:
+                        object_name, feature_name = column[:2]
+                        values = m[object_name, feature_name]
+                        
+                        feature_names.append(feature_name)
+                        feature_matrix.append(values[:, np.newaxis])
+                        
+                    feature_matrix = np.concatenate(feature_matrix, axis=1)
                     
-                    feature_names.append(feature_name)
-                    feature_matrix.append(values[:, numpy.newaxis])
-                    
-                feature_matrix = numpy.concatenate(feature_matrix, axis=1)
-                
-                c5_feature_writer = c5_pos.add_object_feature_matrix(object_name=object_name, feature_name="object_features", n_features=n_features, dtype=numpy.float32)
-                c5_feature_writer.write(feature_matrix)
-                c5_feature_writer.write_definition(feature_names)
-                c5_feature_writer.finalize()
+                    c5_feature_writer = c5_pos.add_object_feature_matrix(
+                        object_name=object_name, 
+                        feature_name="object_features", 
+                        n_features=n_features, dtype=np.float32)
+                    c5_feature_writer.write(feature_matrix)
+                    c5_feature_writer.write_definition(feature_names)
+                    c5_feature_writer.finalize()
                 
                 ### iterate over Location  to create bounding_box and center
-                c5_bbox = c5_pos.add_object_bounding_box(object_name=object_name)
+                c5_bbox = c5_pos.add_object_bounding_box(
+                    object_name=objects_name)
                 
                 if objects.count > 0:
                     ijv = objects.ijv
@@ -467,29 +515,24 @@ class ExportToCellH5(cpm.CPModule):
                         ijv[:, 1], ijv[:, 2], objects.indices)
                     location_y = scipy.ndimage.mean(
                         ijv[:, 0], ijv[:, 2], objects.indices)
-                    bb = numpy.c_[min_x, max_x, min_y, max_y]
+                    bb = np.c_[min_x, max_x, min_y, max_y]
                 else:
-                    bb = numpy.zeros((0, 4))
-                    location_x = numpy.zeros(0)
-                    location_y = numpy.zeros(0)
+                    bb = np.zeros((0, 4))
+                    location_x = np.zeros(0)
+                    location_y = np.zeros(0)
                             
-                c5_bbox.write(bb.astype(numpy.int32))
+                c5_bbox.write(bb.astype(np.int32))
                 c5_bbox.write_definition()
                 c5_bbox.finalize()
                 
-                c5_center = c5_pos.add_object_center(object_name=object_name)
-                
-                cent = numpy.c_[location_y, location_y]
+                c5_center = c5_pos.add_object_center(object_name=objects_name)
+                locations = {'x': location_x, 'y': location_y}
+                cent = np.column_stack(
+                    [locations[axis] for axis in c5_center.dtype.names])
                             
-                c5_center.write(cent.astype(numpy.int32))
+                c5_center.write(cent.astype(np.int32))
                 c5_center.write_definition()
                 c5_center.finalize()
-                
-                
-                
-    
-                        
-                
             #
             # The last part deals with relationships between segmentations.
             # The most typical relationship is "Parent" which is explained below,

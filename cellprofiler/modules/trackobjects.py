@@ -1087,6 +1087,7 @@ class TrackObjects(cpm.CPModule):
             '''Track based on localised matching costs'''
             cellstar = NeighbourMovementTracking()
             cellstar.parameters_tracking["avgCellDiameter"] = self.average_cell_diameter.value
+            cellstar.parameters_tracking["max_distance"] = self.pixel_radius.value
             multiplier = float(NeighbourMovementTrackingParameters.parameters_cost_iteration["default_empty_cost"]) / \
                          NeighbourMovementTrackingParameters.parameters_cost_initial["default_empty_cost"]
             cellstar.parameters_cost_iteration["default_empty_cost"] = multiplier * self.drop_cost.value

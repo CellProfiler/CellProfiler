@@ -25,7 +25,8 @@ def euclidean_dist((x1, y1), (x2, y2)):
 
 class NeighbourMovementTrackingParameters(object):
     parameters_nbrs = {"nbrs_number": 6, "nbrs_maxdist": 30}
-    parameters_tracking = {"avgCellDiameter": 35, "iterations": 20, "big_size": 200}
+    # max_distance is not scaled by avgCellDiameter as it solely depends on the image motion
+    parameters_tracking = {"avgCellDiameter": 35, "iterations": 20, "big_size": 200, "max_distance": 300}
     parameters_cost_initial = {"check_if_big": False, "default_empty_cost": 15, "default_empty_reliable_cost_mult": 2.5,
                                "area_weight": 25}
     parameters_cost_iteration = {"check_if_big": True, "default_empty_cost": 15, "default_empty_reliable_cost_mult": 2,
@@ -158,7 +159,7 @@ class NeighbourMovementTracking(object):
         @param CellFeature cell_detection: 
         @return:
         """
-        return cell_detection.area > self.parameters_tracking["big_size"] / self.scale / self.scale
+        return cell_detection.area > self.parameters_tracking["big_size"] * self.scale * self.scale
 
     @staticmethod
     def derive_detections(label_image):
@@ -179,12 +180,13 @@ class NeighbourMovementTracking(object):
         return traces
 
     @staticmethod
-    def find_closest_neighbours(cell, all_cells, k, max_dist=10000000):
+    def find_closest_neighbours(cell, all_cells, k, max_dist):
         """
         Find k closest neighbours of the given cell.
         :param CellFeatures cell: cell of interest
         :param all_cells: cell to consider as neighbours
         :param int k: number of neighbours to be returned
+        :param int max_dist: maximal distance in pixels to consider neighbours
         :return: k closest neighbours
         """
         all_cells = [c for c in all_cells if c != cell]
@@ -247,7 +249,13 @@ class NeighbourMovementTracking(object):
             cost_matrix[len(detections_1):size_sum, col] *= params["default_empty_reliable_cost_mult"]
 
         # calculate cost of matching cells
-        cost_matrix[0:len(detections_1), 0:len(detections_2)] = [[calculate_match_cost(d1, d2) for d2 in detections_2]
+        def cost_if_not_too_far(detection_1, detection_2):
+            if detection_1.distance(detection_2) <= self.parameters_tracking["max_distance"]:
+                return calculate_match_cost(detection_1, detection_2)
+            else:
+                return invalid_match
+
+        cost_matrix[0:len(detections_1), 0:len(detections_2)] = [[cost_if_not_too_far(d1, d2) for d2 in detections_2]
                                                                  for d1 in detections_1]
 
         return cost_matrix

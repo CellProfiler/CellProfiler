@@ -6,6 +6,7 @@ TM_MEASUREMENTS = 'Measurements'
 TM_LAP = "LAP"
 TM_FOLLOWNEIGHBORS = "Follow Neighbors"
 TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS, TM_LAP, TM_FOLLOWNEIGHBORS]
+DOC_YEASTTOOLBOX_WEB = "www.cellprofiler.org/yeasttoolbox/"
 
 LT_NONE = 0
 LT_PHASE_1 = 1
@@ -26,7 +27,7 @@ M_BOTH = "Both"
 RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
 RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
 ONLY_IF_2ND_PHASE_LAP_TEXT = '''<i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i>'''%globals()
-ONLY_IF_FOLLOWNEIGHBORS = "<i>(Used only if %(TM_FOLLOWNEIGHBORS)s tracking method is applied and the second phase is run)</i>"%globals()
+ONLY_IF_FOLLOWNEIGHBORS = "<i>(Used only if %(TM_FOLLOWNEIGHBORS)s tracking method is applied</i>"%globals()
 import cellprofiler.icons 
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 __doc__ = """
@@ -338,6 +339,18 @@ class TrackObjects(cpm.CPModule):
             specified <b>Measure</b> module previous to this module in the pipeline so
             that the measurement values can be used to track the objects.</li>
             
+            <li><i>%(TM_FOLLOWNEIGHBORS)s:</i> Uses the multiobject tracking approach described by
+            <i> Delgado-Gonzalo et al., 2010</i>. This approch is assuming that objects move in coordinated
+            way (contrary to LAP). An object movement direction is more likely to be in the agreement with 
+            the movement directions of its "neighbors". The problem is formulated as an optimization problem 
+            and solved using LAP algorithm (same as in LAP method).
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            Recommended for cases where the objects are moving in synchronized way. In this cases
+            it may work better then <i>%(TM_LAP)s</i>. This approach works
+            well for yeast colonies grown on agar. </dd>
+            </dl></li>
+
             <li><i>%(TM_LAP)s:</i> Uses the linear assignment problem (LAP) framework. The
             linear assignment problem (LAP) algorithm (<i>Jaqaman et al., 2008</i>) 
             addresses the challenges of high object density, motion heterogeneity, 
@@ -346,8 +359,6 @@ class TrackObjects(cpm.CPModule):
             the resulting partial trajectories into complete trajectories. Both steps are formulated 
             as global combinatorial optimization problems whose solution identifies the overall 
             most likely set of object trajectories throughout a movie.
-
-            <li><i>%(TM_FOLLOWNEIGHBORS)s:</i> TODO document
 
             <p>Tracks are constructed from an image sequence by detecting objects in each 
             frame and linking objects between consecutive frames as a first step. This step alone
@@ -386,7 +397,7 @@ class TrackObjects(cpm.CPModule):
             of standard deviations for the search radius and/or the radius limits (most likely 
             the maximum limit). See the help for these settings for details.</li>
             </ul></li>
-            <li><i>Use any visualization tools at your disposal:</i>Visualizing the data often allows for
+            <li><i>Use any visualization tools at your disposal:</i> Visualizing the data often allows for
             easier decision making as opposed to sorting through tabular data alone.
             <ul>
             <li>The <a href="http://cran.r-project.org/">R</a> open-source software package has
@@ -717,7 +728,7 @@ class TrackObjects(cpm.CPModule):
             "Average cell diameter in pixels",
             35.0, minval=5, doc ='''\
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
-            The average cell diameter is used to scale many algorithm parameters. 
+            The average cell diameter is used to scale many %(TM_FOLLOWNEIGHBORS)s algorithm parameters. 
             Please use e.g. ImageJ to measure the average cell size in pixels.
             '''%globals()
             )
@@ -726,7 +737,7 @@ class TrackObjects(cpm.CPModule):
             'Use advanced configuration parameters', False, doc="""
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
             Do you want to use advanced parameters to configure plugin? They allow for more flexibility,
-            however you need to know what you are doing.
+            however you need to know what you are doing. Please check <A href="http://www.cellprofiler.org/yeasttoolbox">YeastToolbox online documentation<\a> for more details. 
             """%globals()
             )
         
@@ -740,17 +751,18 @@ class TrackObjects(cpm.CPModule):
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp; Recommendations:        
             <ul>
             <li>Too high value might cause incorrect cells to match between the frames. </li>
-            <li>Too lower might make the algorithm not to match cells between the frames.</li>
+            <li>Too low value might make the algorithm not to match cells between the frames.</li>
             </ul></dd>
             </dl>
             '''%globals()
             )
             
         self.area_weight = cps.Float(
-            "Weight of area difference in matching cost",
+            "Weight of area difference in function matching cost",
             25, minval=1, doc='''\
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
-            Increasing this value will cause the algorithm to care more about area consistence between frames and less about distance between them.
+            Increasing this value will cause the algorithm to care more about the area consistency and less about distance differences while 
+            matching objects from different frames.
             '''%globals()
             )
 

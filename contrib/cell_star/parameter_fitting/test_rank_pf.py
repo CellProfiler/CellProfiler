@@ -5,6 +5,13 @@ import numpy as np
 import contrib.cell_star.parameter_fitting.pf_rank_process as pf_rank
 from contrib.cell_star.parameter_fitting.test_pf import try_load_image, gt_mask_to_snakes
 
+import logging
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+logger = logging.getLogger('contrib.cell_star.parameter_fitting')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(ch)
+
 corpus_path = "yeast_corpus/data/"
 
 def run_rank_pf(input_image, gt_mask, parameters):

@@ -810,6 +810,65 @@ class TestConvexHullImage(unittest.TestCase):
         output = morph.convex_hull_image(image2)
         self.assertTrue(np.all(output == image))
         
+class TestFillConvexHulls(unittest.TestCase):
+    def test_01_00_nothing(self):
+        ijv = morph.fill_convex_hulls(np.zeros((0, 3), int), np.zeros(1, int))
+        self.assertEqual(len(ijv), 0)
+        
+    def test_01_01_one_circle(self):
+        i, j = np.mgrid[-10:11, -10:11]
+        labels = (i*i + j*j <= 64).astype(int)
+        convex_hull, _, _ = morph.get_outline_pts(labels, [1])
+        pts = np.column_stack((np.ones(convex_hull.shape[0], int), convex_hull))
+        ijv = morph.fill_convex_hulls(pts, np.array([pts.shape[0]]))
+        self.assertTrue(np.sum(labels) == ijv.shape[0])
+        self.assertTrue(np.all(labels[ijv[:,0], ijv[:, 1]] == 1))
+        labels[ijv[:, 0], ijv[:, 1]] = 0
+        self.assertTrue(np.all(labels == 0))
+        
+    def test_01_02_one_point(self):
+        pts = np.array([[1, 5, 6]])
+        ijv = morph.fill_convex_hulls(pts, np.array([1]))
+        self.assertEqual(len(ijv), 1)
+        self.assertEqual(tuple(ijv[0].tolist()), (5, 6, 1))
+        
+    def test_01_03_two_circles(self):
+        i, j = np.mgrid[-10:16, -10:16]
+        labels1 = np.zeros(i.shape, int)
+        d = np.sqrt((i*i + j*j).astype(float))
+        labels1[(d <= 8)] = 1
+        pts1, counts1 = morph.convex_hull(labels1)
+        labels2 = np.zeros(i.shape, int)
+        i -= 5
+        j -= 6
+        d = np.sqrt((i*i + j*j).astype(float))
+        labels2[(d <= 7)] = 2
+        pts2, counts2 = morph.convex_hull(labels2)
+        ijv = morph.fill_convex_hulls(
+            np.vstack((pts1, pts2)),
+            np.vstack((counts1, counts2)))
+        for l, labels in ((1, labels1), (2, labels2)):
+            mask = np.zeros(labels.shape, bool)
+            mask[ijv[ijv[:, 2] == l, 0], ijv[ijv[:, 2] == l, 1]] = True
+            self.assertTrue(np.all(mask == (labels == l)))
+            
+    def test_01_04_two_squares(self):
+        ijv = morph.fill_convex_hulls(
+            np.array([[1, 10, 10],
+                      [1, 10, 20],
+                      [1, 20, 20],
+                      [1, 20, 10],
+                      [2, 15, 16],
+                      [2, 15, 22],
+                      [2, 21, 22],
+                      [2, 21, 16]]), np.array([4, 4]))
+        for l, i, j, d in ((1, 10, 10, 11), (2, 15, 16, 7)):
+            expected = np.zeros((30, 30), bool)
+            expected[i:(i+d), j:(j+d)] = True
+            actual = np.zeros((30, 30), bool)
+            actual[ijv[ijv[:, 2] == l, 0], ijv[ijv[:, 2] == l, 1]] = True
+            self.assertTrue(np.all(expected == actual))
+        
 class TestMinimumEnclosingCircle(unittest.TestCase):
     def test_00_00_zeros(self):
         """Make sure minimum_enclosing_circle can handle an empty array"""

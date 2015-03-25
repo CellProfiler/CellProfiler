@@ -72,10 +72,13 @@ UNIFY_PARENT = "Per-parent"
 CA_CENTROIDS = "Centroids"
 CA_CLOSEST_POINT = "Closest point"
 
+UM_DISCONNECTED = "Disconnected"
+UM_CONVEX_HULL = "Convex hull"
+
 class ReassignObjectNumbers(cpm.CPModule):
     module_name = "ReassignObjectNumbers"
     category = "Object Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
@@ -116,6 +119,22 @@ class ReassignObjectNumbers(cpm.CPModule):
             remain as individual objects. See <b>RelateObjects</b> for more details.</li>
             </ul>
             """%globals())
+        
+        self.unification_method = cps.Choice(
+            "Output object type", [UM_DISCONNECTED, UM_CONVEX_HULL],
+            doc = """
+            <i>(Used only with the %(UNIFY_PARENT)s unification method)</i>
+            <br>
+            <b>ReassignObjectNumbers</b> can either unify the child objects
+            and keep them disconnected or it can find the smallest convex 
+            polygon (the convex hull) that encloses all of a parent's child
+            objects. The convex hull will be truncated to include only those
+            pixels in the parent - in that case it may not truly be convex.
+            Choose %(UM_DISCONNECTED)s to leave the children as
+            disconnected pieces. Choose %(UM_CONVEX_HULL)s to create an
+            output object that is the convex hull around them all.
+            """ % globals()
+        )
         
         self.parent_object = cps.Choice(
             "Select the parent object", [cps.NONE], 
@@ -229,7 +248,8 @@ class ReassignObjectNumbers(cpm.CPModule):
                 self.minimum_intensity_fraction,
                 self.where_algorithm, 
                 self.wants_outlines, self.outlines_name,
-                self.unify_option, self.parent_object]
+                self.unify_option, self.parent_object,
+                self.unification_method]
     
     def visible_settings(self):
         result = [self.objects_name, self.output_objects_name,
@@ -242,7 +262,7 @@ class ReassignObjectNumbers(cpm.CPModule):
                     result += [self.image_name, self.minimum_intensity_fraction,
                                self.where_algorithm]
             elif self.unify_option == UNIFY_PARENT:
-                result += [self.parent_object]
+                result += [self.unification_method, self.parent_object]
         result += [self.wants_outlines]
         if self.wants_outlines:
             result += [self.outlines_name]
@@ -271,8 +291,15 @@ class ReassignObjectNumbers(cpm.CPModule):
                     output_labels = self.filter_using_image(workspace, mask)
             elif self.unify_option == UNIFY_PARENT:
                 parent_objects = workspace.object_set.get_objects(self.parent_object.value)
-                output_labels = parent_objects.segmented.copy()
+                parent_labels = parent_objects.segmented
+                output_labels = parent_labels.copy()
                 output_labels[labels == 0] = 0
+                if self.unification_method == UM_CONVEX_HULL:
+                    ch_pts, n_pts = morph.convex_hull(output_labels)
+                    ijv = morph.fill_convex_hulls(ch_pts, n_pts)
+                    include = parent_labels[ijv[:, 0], ijv[:, 1]] == ijv[:, 2]
+                    output_labels[ijv[include, 0], ijv[include, 1]] = \
+                        ijv[include, 2]
             
         output_objects = cpo.Objects()
         output_objects.segmented = output_labels
@@ -541,7 +568,11 @@ class ReassignObjectNumbers(cpm.CPModule):
             # Added per-parent unification
             setting_values += [UNIFY_DISTANCE, cps.NONE]
             variable_revision_number = 3
-                       
+
+        if (not from_matlab) and variable_revision_number == 3:
+            setting_values = setting_values + [UM_DISCONNECTED]
+            variable_revision_number = 4
+            
         return setting_values, variable_revision_number, from_matlab
     
     def get_image(self, workspace):

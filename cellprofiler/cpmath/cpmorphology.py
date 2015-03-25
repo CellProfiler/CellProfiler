@@ -921,6 +921,88 @@ def triangle_areas(p1,p2,p3):
     a[a<np.finfo(np.float32).eps] = 0
     return a
 
+def fill_convex_hulls(ch_pts, ch_counts):
+    '''Return the points within the convex hulls of objects
+    
+    ch_pts - a Nx3 array of columns of label #, i and j as output by convex_hull
+    ch_counts - the number of points per object
+    
+    returns the points in ijv format.
+    '''
+    if len(ch_pts) == 0:
+        return np.zeros((0,3), int)
+    #
+    # Connect the last line to the first
+    #
+    ch_counts = ch_counts[ch_counts != 0]
+    indexer_in = Indexes(ch_counts)
+    #
+    # Get line ends. This involves connecting the last
+    # point with the first.
+    #
+    idx_1 = np.arange(ch_pts.shape[0]) + 1
+    idx_1[indexer_in.fwd_idx+indexer_in.counts - 1] = indexer_in.fwd_idx
+    ch_pts1 = ch_pts[idx_1, 1:]
+    #
+    # Get J at each I (floating point) for each line
+    # Generate two points (min J, max J) for horizontal lines
+    #
+    n_i = np.abs(ch_pts[:, 1] - ch_pts1[:, 0]) + 1
+    horizontal = n_i == 1
+    if (np.any(horizontal)):
+        i_horiz = ch_pts[horizontal, 1]
+        l_horiz = ch_pts[horizontal, 0]
+        j_first_horiz = ch_pts[horizontal, 2]
+        j_last_horiz = ch_pts1[horizontal, 1]
+    else:
+        i_horiz = l_horiz = j_first_horiz = j_last_horiz = np.zeros(0, int)
+    
+    if (np.any(~ horizontal)):
+        ch_pts, ch_pts1, n_i = [x[~horizontal] for x in ch_pts, ch_pts1, n_i]
+        indexer = Indexes(n_i)
+        l = ch_pts[indexer.rev_idx, 0]
+        sign = np.sign(ch_pts1[:, 0] - ch_pts[:, 1])
+        i = ch_pts[indexer.rev_idx, 1] + sign[indexer.rev_idx] * indexer.idx[0]
+        j = ch_pts[indexer.rev_idx, 2] + \
+            indexer.idx[0] * (ch_pts1[indexer.rev_idx, 1] - 
+                              ch_pts[indexer.rev_idx, 2]).astype(float) / \
+            (n_i[indexer.rev_idx] - 1)
+    else:
+        i = l = np.zeros(0, int)
+        j = np.zeros(0)
+    line_labels = np.concatenate((l_horiz, l_horiz, l))
+    i = np.concatenate((i_horiz, i_horiz, i))
+    j = np.concatenate((j_first_horiz.astype(float),
+                        j_last_horiz.astype(float), j))
+    #
+    # Sort by label, then i, then j
+    #
+    order = np.lexsort((j, i, line_labels))
+    i, j, line_labels = i[order], j[order], line_labels[order]
+    #
+    # Find the min and max j for every i and label. Then we
+    # can make runs of them.
+    #
+    firsts = np.hstack(
+        [[0], 
+         np.argwhere((line_labels[:-1] != line_labels[1:]) | 
+                     (i[:-1] != i[1:])).flatten() + 1, 
+         [len(line_labels)]])
+    counts = firsts[1:] - firsts[:-1]
+    run_indexer = Indexes(counts)
+    #
+    # Find the first and last J for each i and create rasters of j
+    #
+    i = i[run_indexer.fwd_idx]
+    j0 = np.ceil(j[run_indexer.fwd_idx]).astype(int)
+    j1 = np.floor(j[run_indexer.fwd_idx + run_indexer.counts[0]-1]).astype(int)
+    l = line_labels[run_indexer.fwd_idx]
+    out_indexer = Indexes(j1-j0+1)
+    ijv = np.column_stack((
+        i[out_indexer.rev_idx], j0[out_indexer.rev_idx]+out_indexer.idx[0],
+        l[out_indexer.rev_idx]))
+    return ijv
+
 def draw_line(labels,pt0,pt1,value=1):
     """Draw a line between two points
     

@@ -183,13 +183,14 @@ class ExportToSpreadsheet(cpm.CPModule):
             """ %globals())
         
         self.wants_overwrite_without_warning = cps.Binary(
-            "Overwrite without warning?", False,
+            "Overwrite existing files without warning?", False,
             doc="""This setting either prevents or allows overwriting of
             old .CSV files by <b>ExportToSpreadsheet</b> without confirmation.
             Select <i>%(YES)s</i> to overwrite without warning any .CSV file 
             that already exists. Select <i>%(NO)s</i> to prompt before overwriting
             when running CellProfiler in the GUI and to fail when running
             headless.""" % globals())
+            
         self.add_metadata = cps.Binary(
             "Add image metadata columns to your object data file?", False, doc = """"
             Image_Metadata_" columns are normally exported in the Image data file, but if you 

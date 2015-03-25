@@ -99,7 +99,7 @@ def pf_rank_parameters_encode(parameters):
     point = []
     for name, (vmin, vmax) in sorted(rank_parameters_range.iteritems()):
         val = parameters[name]
-        trim_val = max(vmin, min(vmax, val))
+        trim_val = val #max(vmin, min(vmax, val))
         if vmax - vmin == 0:
             point.append(0)
         else:
@@ -114,7 +114,7 @@ def pf_rank_parameters_decode(param_vector):
     """
     parameters = {}
     for (name, (vmin, vmax)), val in zip(sorted(rank_parameters_range.iteritems()), param_vector):
-        val = min(1, max(0, val))
+        #val = min(1, max(0, val))
         rescaled = vmin + val * (vmax - vmin)
         parameters[name] = rescaled
     parameters["stickingWeight"] = 0

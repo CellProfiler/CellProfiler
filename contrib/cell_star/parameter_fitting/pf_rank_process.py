@@ -1,23 +1,26 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Adam Kaczmarek, Filip Mróz'
 
-import numpy as np
 import copy
+import time
+from multiprocessing import Process, Queue
 import operator as op
-from contrib.cell_star.utils.params_util import *
-from scipy.linalg import norm
 import scipy.optimize as opt
-from contrib.cell_star.core.seed import Seed
-from contrib.cell_star.core.image_repo import ImageRepo
-from contrib.cell_star.core.seeder import Seeder
 
-from contrib.cell_star.parameter_fitting.pf_process import distance_norm, get_gt_snake_seeds, grow_single_seed
-from contrib.cell_star.parameter_fitting.pf_rank_snake import PFRankSnake
-from contrib.cell_star.parameter_fitting.pf_auto_params import pf_parameters_encode, pf_parameters_decode, \
-    pf_rank_parameters_encode, pf_rank_parameters_decode
+import random
+random.seed(1)
 
 import logging
 logger = logging.getLogger(__name__)
+
+from contrib.cell_star.utils.params_util import *
+from contrib.cell_star.core.image_repo import ImageRepo
+from contrib.cell_star.parameter_fitting.pf_process import get_gt_snake_seeds, grow_single_seed
+from contrib.cell_star.parameter_fitting.pf_rank_snake import PFRankSnake
+from contrib.cell_star.parameter_fitting.pf_auto_params import pf_parameters_encode, pf_rank_parameters_encode, pf_rank_parameters_decode
+
+from cellprofiler.preferences import get_max_workers
+
 #
 #
 # COST FUNCTION AND FITNESS
@@ -40,7 +43,8 @@ def distance_norm_list(expected, result):
     distance = sum([abs(exp_position[obj] - i) ** 2 for (i, obj) in positions])
     best_so_far = min(best_so_far, distance)
     calculations += 1
-    logger.debug("Rank current: %f, Best: %f" % (distance, best_so_far))
+    if calculations % 100 == 0:
+        logger.debug("Rank current: %f, Best: %f, Calc %d" % (distance, best_so_far, calculations))
     return distance
 
 
@@ -96,6 +100,10 @@ def run(image, gt_snakes, precision=-1, avg_cell_diameter=-1, method='brute', in
     :param initial_params: overrides precision and avg_cell_diameter
     :return:
     """
+
+    if method == 'mp':
+        return multiproc_optimize_brute(image, gt_snakes, precision, avg_cell_diameter)
+
     if initial_params is None:
         params = default_parameters(segmentation_precision=precision, avg_cell_diameter=avg_cell_diameter)
     else:
@@ -132,23 +140,62 @@ def run(image, gt_snakes, precision=-1, avg_cell_diameter=-1, method='brute', in
     logger.debug("Best ranking: \n" + "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())]))
     return best_params_full, best_params, distance
 
+#
+#
+#   OPTIMISATION METHODS
+#
+#
 
 def optimize(method_name, encoded_params, distance_function):
     if method_name == 'brute':
         return optimize_brute(encoded_params, distance_function)
     else:
-        raise
+        raise # return multiproc_optimize_brute(encoded_params, distance_function)
 
 
 def optimize_brute(params_to_optimize, distance_function):
-    import time
-    lower_bound = [0] * len(params_to_optimize)
-    upper_bound = [1] * len(params_to_optimize)
+
+    lower_bound = np.zeros(len(params_to_optimize), dtype=float)
+    upper_bound = np.ones(len(params_to_optimize), dtype=float)
+
+    # introduce random shift (0,grid step) # max 10%
+    number_of_steps = 6
+    step = (upper_bound - lower_bound) / float(number_of_steps)
+    random_shift = np.array([random.random() * 1 / 10 for _ in range(len(lower_bound))], dtype=float)
+    lower_bound += random_shift * step
+    upper_bound += random_shift * step
+
+    print lower_bound, upper_bound
 
     start = time.clock()
-    result = opt.brute(distance_function, zip(lower_bound, upper_bound), finish=None, Ns=4, disp=True, full_output=True)
+    result = opt.brute(distance_function, zip(lower_bound, upper_bound), finish=None, Ns=number_of_steps, disp=True, full_output=True)
     elapsed = time.clock() - start
 
     logger.debug("Opt finished: " + str(result[:2]) + " Elapsed[s]: " + str(elapsed))
     # distance_function(result[0], debug=True)
     return result[0], result[1]
+
+
+def run_wrapper(queue, image, gt_snakes, precision, avg_cell_diameter, method):
+    random.seed()  # reseed with random
+    result = run(image, gt_snakes, precision, avg_cell_diameter, method)
+    queue.put(result)
+
+
+def multiproc_optimize_brute(image, gt_snakes, precision, avg_cell_diameter):
+    result_queue = Queue()
+    workers_num = max(1,get_max_workers())
+    optimizers = [
+        Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, 'brute')) for _ in range(workers_num)]
+
+    for optimizer in optimizers:
+        optimizer.start()
+
+    results = [result_queue.get() for _ in optimizers]
+
+    for optimizer in optimizers:
+        optimizer.join()
+
+    sorted_results = sorted(results, key=lambda x: x[2])
+    logger.debug(str(sorted_results[0]))
+    return sorted_results[0][1], sorted_results[0][2]

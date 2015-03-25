@@ -3,10 +3,17 @@ __author__ = 'Adam Kaczmarek, Filip Mr�z'
 
 import copy
 import time
-import numpy as np
-from contrib.cell_star.utils.params_util import *
+from multiprocessing import Process, Queue
 from scipy.linalg import norm
 import scipy.optimize as opt
+
+import random
+random.seed(1)
+
+import logging
+logger = logging.getLogger(__name__)
+
+from contrib.cell_star.utils.params_util import *
 from contrib.cell_star.core.seed import Seed
 from contrib.cell_star.core.image_repo import ImageRepo
 from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
@@ -15,10 +22,8 @@ from contrib.cell_star.process.segmentation import Segmentation
 from contrib.cell_star.utils.image_util import image_show
 from contrib.cell_star.core.parallel.snake_grow import mp_snake_grow
 from contrib.cell_star.parameter_fitting.pf_auto_params import parameters_range, pf_parameters_encode, pf_parameters_decode
-import logging
-logger = logging.getLogger(__name__)
-import random
-from multiprocessing import Process, Queue
+
+from cellprofiler.preferences import get_max_workers
 
 snakes_multiprocessing = False
 min_number_of_chosen_seeds = 6
@@ -260,28 +265,18 @@ def optimize_anneal(params_to_optimize, distance_function):
 
 
 def run_wrapper(queue, image, gt_snakes, precision, avg_cell_diameter, method):
+    random.seed()  # reseed with random
     result = run(image, gt_snakes, precision, avg_cell_diameter, method)
     queue.put(result)
 
 
 def multiproc_multitype_fitness(image, gt_snakes, precision, avg_cell_diameter):
     result_queue = Queue()
+    workers_num = get_max_workers()
 
-    optimizers = \
-        [
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal")),
-            Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal"))
-
-            # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "basin")),
-            # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "brute")),
-            # Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "diffevo"))
-        ]
+    optimizers = [
+        Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal"))
+        for _ in range(workers_num)]
 
     for optimizer in optimizers:
         optimizer.start()

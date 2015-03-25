@@ -410,7 +410,11 @@ class TrackObjects(cpm.CPModule):
             </ul></li>
             </ul>
             </p>
-            
+
+            <p>This Nearest Neighborhood method of this module was prepared by Filip Mroz, Adam Kaczmarek and Szymon Stoma. Please reach us at 
+            <a href="http://www.let-your-data-speak.com/">Scopem, ETH</a> for inquires. For more details related to Yeast segmentation in CellProfiler, 
+            please refer to <a href="http://www.cellprofiler.org/yeasttoolbox/">Yeast Toolbox</a>.
+
             <p><b>References</b>
             <ul>
             <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
@@ -737,7 +741,7 @@ class TrackObjects(cpm.CPModule):
             'Use advanced configuration parameters', False, doc="""
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
             Do you want to use advanced parameters to configure plugin? They allow for more flexibility,
-            however you need to know what you are doing. Please check <A href="http://www.cellprofiler.org/yeasttoolbox">YeastToolbox online documentation<\a> for more details. 
+            however you need to know what you are doing. Please check <A href="http://www.cellprofiler.org/yeasttoolbox">YeastToolbox online documentation</a> for more details. 
             """%globals()
             )
         

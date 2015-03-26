@@ -2943,6 +2943,7 @@ class TrackObjects(cpm.CPModule):
                    for feature, coltype in F_ALL_COLTYPE_ALL]
         result += [(cpmeas.IMAGE, self.image_measurement_name(feature), coltype)
                    for feature, coltype in F_IMAGE_COLTYPE_ALL]
+        attributes = { cpmeas.MCA_AVAILABLE_POST_GROUP: True }
         if self.tracking_method == TM_LAP:
             result += [( self.object_name.value,
                          self.measurement_name(name),
@@ -2966,8 +2967,15 @@ class TrackObjects(cpm.CPModule):
                         (F_SPLIT_SCORE, cpmeas.COLTYPE_FLOAT),
                         (F_MITOSIS_SCORE, cpmeas.COLTYPE_FLOAT))]
                 # Add the post-group attribute to all measurements
-                attributes = { cpmeas.MCA_AVAILABLE_POST_GROUP: True }
                 result = [ ( c[0], c[1], c[2], attributes) for c in result]
+            else:
+                pg_meas = [
+                    self.measurement_name(feature) 
+                    for feature in F_LINKING_DISTANCE, F_MOVEMENT_MODEL]
+                result = [
+                    c if c[1] not in pg_meas else (c[0], c[1], c[2], attributes)
+                    for c in result]
+            
         return result
     
     def get_object_relationships(self, pipeline):

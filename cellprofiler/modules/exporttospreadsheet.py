@@ -505,7 +505,10 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1,))
-        if workspace.pipeline.test_mode:
+        if workspace.display_data.columns is None:
+            figure.subplot_table(
+                0, 0, [["Data written to spreadsheet"]])
+        elif workspace.pipeline.test_mode:
             figure.subplot_table(
                 0, 0, [["Data not written to spreadsheets in test mode"]])        
         else:
@@ -534,6 +537,11 @@ class ExportToSpreadsheet(cpm.CPModule):
         #
         if workspace.pipeline.test_mode:
             return
+        #
+        # Signal "display" that we are post_run
+        #
+        workspace.display_data.columns = None
+        workspace.display_data.header = None
         #
         # Export all measurements if requested
         #

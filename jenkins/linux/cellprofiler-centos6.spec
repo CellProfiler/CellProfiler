@@ -18,8 +18,25 @@ URL:       http://www.cellprofiler.org/
 Packager:  Vebjorn Ljosa <ljosa@broad.mit.edu>
 BuildRoot: %{_tmppath}/%{pkgname}-buildroot
 Prefix:    %{pref}
-Requires:  cellprofiler-cython = %{cython_version} cellprofiler-python cellprofiler-ilastik cellprofiler-decorator cellprofiler-h5py cellprofiler-matplotlib cellprofiler-mysqlpython cellprofiler-scipy cellprofiler-scikit-learn cellprofiler-pysqlite cellprofiler-setuptools cellprofiler-wxpython cellprofiler-pyzmq cellprofiler-jdk cellprofiler-pil xorg-x11-fonts-Type1 liberation-fonts-common liberation-sans-fonts cellprofiler-javabridge = %{javabridge_version} cellprofiler-bioformats = %{bioformats_version} xorg-x11-server-Xvfb cellprofiler-nose
-BuildRequires: gcc gcc-c++ cellprofiler-numpy-devel   cellprofiler-cython cellprofiler-python cellprofiler-ilastik cellprofiler-decorator cellprofiler-h5py cellprofiler-matplotlib cellprofiler-mysqlpython cellprofiler-scipy cellprofiler-pysqlite cellprofiler-setuptools cellprofiler-wxpython cellprofiler-pyzmq cellprofiler-jdk cellprofiler-javabridge = %{javabridge_version} cellprofiler-nose cellprofiler-bioformats = %{bioformats_version}
+Requires:  cellprofiler-cython = %{cython_version} cellprofiler-python
+Requires:  cellprofiler-ilastik cellprofiler-decorator cellprofiler-h5py
+Requires:  cellprofiler-matplotlib cellprofiler-mysqlpython cellprofiler-scipy
+Requires:  cellprofiler-scikit-learn cellprofiler-pysqlite
+Requires:  cellprofiler-setuptools cellprofiler-wxpython cellprofiler-pyzmq
+Requires:  cellprofiler-jdk cellprofiler-pil xorg-x11-fonts-Type1
+Requires:  liberation-fonts-common liberation-sans-fonts 
+Requires:  cellprofiler-javabridge = %{javabridge_version} 
+Requires:  cellprofiler-bioformats = %{bioformats_version} 
+Requires:  xorg-x11-server-Xvfb cellprofiler-nose cellprofiler-cellh5
+BuildRequires: gcc gcc-c++ cellprofiler-numpy-devel   cellprofiler-cython
+BuildRequires: cellprofiler-python cellprofiler-ilastik cellprofiler-decorator
+BuildRequires: cellprofiler-h5py cellprofiler-matplotlib 
+BuildRequires: cellprofiler-mysqlpython cellprofiler-scipy 
+BuildRequires: cellprofiler-pysqlite cellprofiler-setuptools 
+BuildRequires: cellprofiler-wxpython cellprofiler-pyzmq cellprofiler-jdk
+BuildRequires: cellprofiler-javabridge = %{javabridge_version} 
+BuildRequires: cellprofiler-nose cellprofiler-bioformats = %{bioformats_version}
+BuildRequires: cellprofiler-cellh5
 
 %description
 Cell image analysis software

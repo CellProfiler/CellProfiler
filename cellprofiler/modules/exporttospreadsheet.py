@@ -1088,7 +1088,8 @@ Do you want to save it anyway?""" %
                             for column in columns]
                     if self.nan_representation == NANS_AS_NULLS:
                         row = [ 
-                            "" if np.isreal(field) and not np.isfinite(field)
+                            "" if (field is None) or 
+                            (np.isreal(field) and not np.isfinite(field))
                             else field for field in row]
                     writer.writerow(row)
         finally:

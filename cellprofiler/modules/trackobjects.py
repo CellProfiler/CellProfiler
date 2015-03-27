@@ -2254,7 +2254,7 @@ class TrackObjects(cpm.CPModule):
                 if (is_fixups is not None) and (feature in is_fixups):
                     object_numbers, fixup_values = [
                         np.array(_) for _ in is_fixups[feature]]
-                    values[object_numbers-1] = fixup_values
+                    values[object_numbers-1] = fixup_values.astype(data_type)
                 m[object_name, self.measurement_name(feature), image_number] =\
                     values
         #

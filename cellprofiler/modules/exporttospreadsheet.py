@@ -1026,19 +1026,19 @@ Do you want to save it anyway?""" %
         m = workspace.measurements
         file_name = self.make_objects_file_name(
             object_names[0], workspace, image_set_numbers[0], settings_group)
-        features = []
-        features += [(IMAGE, IMAGE_NUMBER),
-                     (object_names[0], OBJECT_NUMBER)]
+        features = [(IMAGE, IMAGE_NUMBER),
+                    (object_names[0], OBJECT_NUMBER)]
+        columns = map(
+            (lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
         if self.add_metadata.value:
-            mdfeatures = [(IMAGE, name) 
-                          for name in m.get_feature_names(IMAGE)
-                          if name.startswith("Metadata_")]
+            mdfeatures = [
+                (IMAGE, name) for object_name, name in columns
+                if name.startswith("Metadata_") and object_name == IMAGE]
             mdfeatures.sort()
             features += mdfeatures
         for object_name in object_names:
-            if not object_name in m.get_object_names():
-                continue
-            ofeatures = m.get_feature_names(object_name)
+            ofeatures = [feature for col_object, feature in columns
+                         if col_object == object_name]
             ofeatures = self.filter_columns(ofeatures, object_name)
             ofeatures = [(object_name, feature_name)
                          for feature_name in ofeatures]
@@ -1073,6 +1073,8 @@ Do you want to save it anyway?""" %
                            if feature_name == IMAGE_NUMBER
                            else np.arange(1,object_count+1) 
                            if feature_name == OBJECT_NUMBER
+                           else np.repeat(np.NAN, object_count)
+                           if not m.has_feature(object_name, feature_name)
                            else np.repeat(m.get_measurement(IMAGE, feature_name,
                                                             img_number), 
                                           object_count)

@@ -100,6 +100,7 @@ def run(image, gt_snakes, precision=-1, avg_cell_diameter=-1, method='brute', in
     :param initial_params: overrides precision and avg_cell_diameter
     :return:
     """
+    logger.info("Ranking parameter fitting started...")
 
     if method == 'mp':
         return multiproc_optimize_brute(image, gt_snakes, precision, avg_cell_diameter)
@@ -127,17 +128,20 @@ def run(image, gt_snakes, precision=-1, avg_cell_diameter=-1, method='brute', in
     ranked_snakes = zip(*gts_snakes_with_mutations)[1]
 
     calculations = 0
-
+    start = time.clock()
     best_params_encoded, distance = optimize(
         method,
         pf_rank_parameters_encode(params),
         pf_rank_get_ranking(ranked_snakes, params)
     )
+    stop = time.clock()
     best_params = pf_rank_parameters_decode(best_params_encoded)
     best_params_full = PFRankSnake.merge_rank_parameters(params, best_params)
     #print "Snakes:", len(ranked_snakes), "Calculations:", calculations
 
-    logger.debug("Best ranking: \n" + "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())]))
+    logger.debug("Best: \n" + "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())]))
+    logger.debug("Time: %d" % (stop - start))
+    logger.info("Ranking parameter fitting finished with best score %f" % distance)
     return best_params_full, best_params, distance
 
 #
@@ -150,7 +154,7 @@ def optimize(method_name, encoded_params, distance_function):
     if method_name == 'brute':
         return optimize_brute(encoded_params, distance_function)
     else:
-        raise # return multiproc_optimize_brute(encoded_params, distance_function)
+        raise
 
 
 def optimize_brute(params_to_optimize, distance_function):
@@ -164,8 +168,6 @@ def optimize_brute(params_to_optimize, distance_function):
     random_shift = np.array([random.random() * 1 / 10 for _ in range(len(lower_bound))], dtype=float)
     lower_bound += random_shift * step
     upper_bound += random_shift * step
-
-    print lower_bound, upper_bound
 
     start = time.clock()
     result = opt.brute(distance_function, zip(lower_bound, upper_bound), finish=None, Ns=number_of_steps, disp=True, full_output=True)

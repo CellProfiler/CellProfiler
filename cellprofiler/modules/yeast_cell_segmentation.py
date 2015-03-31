@@ -740,48 +740,90 @@ class YeastCellSegmentation(cpmi.Identify):
 
         ### fitting params 
         # reading GT from dialog_box.labels[0] and image from self.pixel
-        progressMax = self.autoadaptation_steps.value
+        progressMax = self.autoadaptation_steps.value * 2  # every step consists of: snake params and ranking params fitting
         dialog = wx.ProgressDialog("Fitting parameters..", "Iterations remaining", progressMax,
         style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME )
         keepGoing = True
 
         self.param_fit_progress = 0
         self.best_snake_score = 10
-        best_rank_score = 1000000000
-        aft = None
-        adaptation_stopped = False
-        while (keepGoing or not adaptation_stopped) and self.param_fit_progress < progressMax:
-            # here put one it. of fitting instead
-            wx.Sleep(0.1)
-            cellstar = self.prepare_cell_star_object(min(11, self.segmentation_precision.value))
-            current_parameters = cellstar.parameters
-            self.autoadapted_params.value = cellstar.encode_auto_params()
+        self.best_rank_score = 1000000000
+        aft_active = []
+        adaptations_stopped = False
+        cellstar = self.prepare_cell_star_object(min(11, self.segmentation_precision.value))
+        self.best_parameters = cellstar.parameters
+        self.autoadapted_params.value = cellstar.encode_auto_params()
 
-            adaptation_stopped = aft is None or not aft.is_alive()
+        try:
+            def get_scrolllock_state():  # TMP for ranking fitting testing
+                import os
 
-            if adaptation_stopped and keepGoing and self.param_fit_progress < progressMax:
-                aft = AutoFitterThread(run_pf, self.update_params, image, labels, current_parameters, self.segmentation_precision.value, self.average_cell_diameter.value)
-                aft.start()
+                if os.name == "nt":
+                    import ctypes
 
-            # here update params. in the GUI
-            keepGoingUpdate = dialog.Update(self.param_fit_progress)[0]
-            keepGoing = keepGoing and keepGoingUpdate
+                    hllDll = ctypes.WinDLL("User32.dll")
+                    VK_SCROLL = 0x91
+                    VK_CAPITAL = 0x14
+                    return hllDll.GetKeyState(VK_SCROLL) or hllDll.GetKeyState(VK_CAPITAL)
+                else:
+                    return False
 
-        dialog.Update(progressMax)
+            while (keepGoing or not adaptations_stopped) and self.param_fit_progress < progressMax:
+                # here put one it. of fitting instead
+                wx.Sleep(0.1)
+
+                # Thread ended with exception so optimisation have to be stopped.
+                if any(aft_active) and aft_active[0].exception is not None:
+                    break
+
+                # Clean aft_active from dead threads.
+                while any(aft_active) and (not aft_active[0].is_alive() and aft_active[0].started):
+                    aft_active = aft_active[1:]
+
+                # If thread in line start first of them.
+                if any(aft_active) and not aft_active[0].started:
+                    # update parameters which may already be changed
+                    aft_active[0].update_params(self.best_parameters)
+                    aft_active[0].start()
+
+                adaptations_stopped = aft_active == []
+
+                if adaptations_stopped and keepGoing and self.param_fit_progress < progressMax:
+                    if not get_scrolllock_state():
+                        aft_active.append(
+                            AutoFitterThread(run_pf, self.update_snake_params, image, labels, self.best_parameters,
+                                             self.segmentation_precision.value, self.average_cell_diameter.value))
+                    else:
+                        self.param_fit_progress += 1
+
+                    aft_active.append(
+                        AutoFitterThread(run_rank_pf, self.update_rank_params, image, labels, self.best_parameters))
+
+                # here update params. in the GUI
+                keepGoingUpdate = dialog.Update(self.param_fit_progress)[0]
+                keepGoing = keepGoing and keepGoingUpdate
+
+        finally:
+            dialog.Update(progressMax)
     
     #
     # Postprocess objects found by CellStar
     #
     def postprocessing(self, objects):
         pass
-    
-    def update_params(self, new_parameters, new_snake_score):
-        cellstar = self.prepare_cell_star_object(min(11, self.segmentation_precision.value))
-        if new_snake_score < self.best_snake_score:
-            cellstar.parameters = new_parameters
-            self.best_snake_score = new_snake_score
-            self.autoadapted_params.value = cellstar.encode_auto_params()
 
+    def update_snake_params(self, new_parameters, new_snake_score):
+        if new_snake_score < self.best_snake_score:
+            self.best_snake_score = new_snake_score
+            self.best_parameters = new_parameters
+            self.autoadapted_params.value = Segmentation.encode_auto_params_from_all_params(new_parameters)
+        self.param_fit_progress += 1
+
+    def update_rank_params(self, new_parameters, new_rank_score):
+        if new_rank_score < self.best_rank_score:
+            self.best_rank_score = new_rank_score
+            self.best_parameters = new_parameters
+            self.autoadapted_params.value = Segmentation.encode_auto_params_from_all_params(new_parameters)
         self.param_fit_progress += 1
 
 
@@ -789,14 +831,24 @@ class AutoFitterThread(threading.Thread):
 
     def __init__(self, target, callback, *args):
         self._target = target
-        self._args = args
+        self._args = list(args)
         self._callback = callback
+        self.started = False
+        self.exception = None
         super(AutoFitterThread, self).__init__()
         pass
 
+    def update_params(self, new_params):
+        self._args[2] = new_params
+
     def run(self):
-        params, score = self._target(*self._args)
-        self._callback(params, score)
+        try:
+            self.started = True
+            params, score = self._target(*self._args)
+            self._callback(params, score)
+        except:
+            self.exception = True
+            raise
 
     def kill(self):
         pass

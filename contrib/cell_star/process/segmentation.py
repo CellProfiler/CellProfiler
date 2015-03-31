@@ -121,20 +121,24 @@ class Segmentation(object):
         self.parameters["segmentation"]["ranking"] = new_ranking
         return True
 
-    def encode_auto_params(self):
+    @staticmethod
+    def encode_auto_params_from_all_params(parameters):
         snake_auto_params_values = []
         for name in sorted(snake_auto_params.keys()):
-            val = self.parameters["segmentation"]["stars"][name]
+            val = parameters["segmentation"]["stars"][name]
             if name == "sizeWeight":  # list to mean value
-                original = self.parameters["segmentation"]["stars"]["sizeWeight"]
+                original = parameters["segmentation"]["stars"]["sizeWeight"]
                 val = np.mean(original)
             snake_auto_params_values.append(val)
 
-        rank_auto_params_values = [self.parameters["segmentation"]["ranking"][name]
+        rank_auto_params_values = [parameters["segmentation"]["ranking"][name]
                                    for name in sorted(rank_auto_params.keys())]
         auto_values_list = [snake_auto_params_values, rank_auto_params_values]
 
         return str(auto_values_list)
+
+    def encode_auto_params(self):
+        return Segmentation.encode_auto_params_from_all_params(self.parameters)
 
     def pre_process(self):
         # Warunek zawsze fałszywy ze względu na konstrukcję propercji 'background', ale potrzebny :)

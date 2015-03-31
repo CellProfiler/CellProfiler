@@ -6,11 +6,6 @@ import contrib.cell_star.parameter_fitting.pf_rank_process as pf_rank
 from contrib.cell_star.parameter_fitting.test_pf import try_load_image, gt_mask_to_snakes
 
 import logging
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-logger = logging.getLogger('contrib.cell_star.parameter_fitting')
-logger.setLevel(logging.DEBUG)
-logger.addHandler(ch)
 
 corpus_path = "yeast_corpus/data/"
 
@@ -35,4 +30,10 @@ def test_rank_pf(image_path, mask_path, precision, avg_cell_diameter, method):
 
 
 if __name__ == "__main__":
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    logger = logging.getLogger('contrib.cell_star.parameter_fitting')
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(ch)
+
     test_rank_pf(sys.argv[1], sys.argv[2], int(sys.argv[3]), float(sys.argv[4]), sys.argv[5])

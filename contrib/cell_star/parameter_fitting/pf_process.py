@@ -151,7 +151,7 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_
     stop = time.clock()
 
     logger.debug("Best: \n" + "\n".join([k + ": " + str(v) for k, v in sorted(best_params.iteritems())]))
-    logger.debug("Time: ", stop - start)
+    logger.debug("Time: %d" % (stop - start))
     logger.info("Parameter fitting finished with best score %f" % best_score)
     # test_trained_parameters(image, best_params, precision, avg_cell_diameter)
     return PFSnake.merge_parameters(params, best_params), best_arg, best_score

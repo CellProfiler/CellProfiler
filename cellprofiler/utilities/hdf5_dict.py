@@ -766,11 +766,22 @@ class HDF5Dict(object):
         
             self.__cache_index(object_name, feature_name, idx)
             feature_group = self.top_group[object_name][feature_name]
-            feature_group.create_dataset(
-                'data', data = dataset, 
-                dtype = dtype, compression = 'gzip', shuffle=True,
-                chunks = (self.chunksize, ), 
-                maxshape = (None, ))
+            if dataset.dtype.kind.upper() == 'O':
+                dest = feature_group.create_dataset(
+                    'data',
+                    dtype = h5py.special_dtype(vlen=str),
+                    compression = 'gzip', shuffle=True,
+                    chunks = (self.chunksize,),
+                    shape = dataset.shape,
+                    maxshape = (None,))
+                for i, value in enumerate(dataset):
+                    dest[i] = value
+            else:
+                feature_group.create_dataset(
+                    'data', data = dataset, 
+                    dtype = dtype, compression = 'gzip', shuffle=True,
+                    chunks = (self.chunksize, ), 
+                    maxshape = (None, ))
             feature_group.create_dataset(
                 'index', data = idx, dtype=int,
                 compression = None, chunks = (self.chunksize, 3),

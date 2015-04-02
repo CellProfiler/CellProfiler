@@ -183,13 +183,14 @@ class ExportToSpreadsheet(cpm.CPModule):
             """ %globals())
         
         self.wants_overwrite_without_warning = cps.Binary(
-            "Overwrite without warning?", False,
+            "Overwrite existing files without warning?", False,
             doc="""This setting either prevents or allows overwriting of
             old .CSV files by <b>ExportToSpreadsheet</b> without confirmation.
             Select <i>%(YES)s</i> to overwrite without warning any .CSV file 
             that already exists. Select <i>%(NO)s</i> to prompt before overwriting
             when running CellProfiler in the GUI and to fail when running
             headless.""" % globals())
+            
         self.add_metadata = cps.Binary(
             "Add image metadata columns to your object data file?", False, doc = """"
             Image_Metadata_" columns are normally exported in the Image data file, but if you 
@@ -232,9 +233,13 @@ class ExportToSpreadsheet(cpm.CPModule):
             measurement in the Image file.  For instance, if you are measuring 
             the area of the Nuclei objects and you check the box for this option, <b>ExportToSpreadsheet</b> will 
             create a column in the Image file called "Mean_Nuclei_AreaShape_Area". 
+            
             <p>You may not want to use <b>ExportToSpreadsheet</b> to calculate these 
             measurements if your pipeline generates a large number of per-object 
-            measurements; doing so might exceed Excel's limits on the number of columns (256). """%globals())
+            measurements; doing so might exceed Excel's limits on the number of columns (256).</p>
+            
+            <p>Keep in mind that if you chose to select the specific measurements to export, the aggregate
+            statistics will only be computed for the selected per-object measurements.</p>"""%globals())
         
         self.wants_aggregate_medians = cps.Binary("Calculate the per-image median values for object measurements?", False)
         
@@ -500,7 +505,10 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1,))
-        if workspace.pipeline.test_mode:
+        if workspace.display_data.columns is None:
+            figure.subplot_table(
+                0, 0, [["Data written to spreadsheet"]])
+        elif workspace.pipeline.test_mode:
             figure.subplot_table(
                 0, 0, [["Data not written to spreadsheets in test mode"]])        
         else:
@@ -529,6 +537,11 @@ class ExportToSpreadsheet(cpm.CPModule):
         #
         if workspace.pipeline.test_mode:
             return
+        #
+        # Signal "display" that we are post_run
+        #
+        workspace.display_data.columns = None
+        workspace.display_data.header = None
         #
         # Export all measurements if requested
         #
@@ -1013,19 +1026,19 @@ Do you want to save it anyway?""" %
         m = workspace.measurements
         file_name = self.make_objects_file_name(
             object_names[0], workspace, image_set_numbers[0], settings_group)
-        features = []
-        features += [(IMAGE, IMAGE_NUMBER),
-                     (object_names[0], OBJECT_NUMBER)]
+        features = [(IMAGE, IMAGE_NUMBER),
+                    (object_names[0], OBJECT_NUMBER)]
+        columns = map(
+            (lambda c: c[:2]), workspace.pipeline.get_measurement_columns())
         if self.add_metadata.value:
-            mdfeatures = [(IMAGE, name) 
-                          for name in m.get_feature_names(IMAGE)
-                          if name.startswith("Metadata_")]
+            mdfeatures = [
+                (IMAGE, name) for object_name, name in columns
+                if name.startswith("Metadata_") and object_name == IMAGE]
             mdfeatures.sort()
             features += mdfeatures
         for object_name in object_names:
-            if not object_name in m.get_object_names():
-                continue
-            ofeatures = m.get_feature_names(object_name)
+            ofeatures = [feature for col_object, feature in columns
+                         if col_object == object_name]
             ofeatures = self.filter_columns(ofeatures, object_name)
             ofeatures = [(object_name, feature_name)
                          for feature_name in ofeatures]
@@ -1060,6 +1073,8 @@ Do you want to save it anyway?""" %
                            if feature_name == IMAGE_NUMBER
                            else np.arange(1,object_count+1) 
                            if feature_name == OBJECT_NUMBER
+                           else np.repeat(np.NAN, object_count)
+                           if not m.has_feature(object_name, feature_name)
                            else np.repeat(m.get_measurement(IMAGE, feature_name,
                                                             img_number), 
                                           object_count)
@@ -1075,7 +1090,8 @@ Do you want to save it anyway?""" %
                             for column in columns]
                     if self.nan_representation == NANS_AS_NULLS:
                         row = [ 
-                            "" if np.isreal(field) and not np.isfinite(field)
+                            "" if (field is None) or 
+                            (np.isreal(field) and not np.isfinite(field))
                             else field for field in row]
                     writer.writerow(row)
         finally:

@@ -37,6 +37,9 @@ IMAGE_NAME = 'image'
 OUTLINE_NAME = 'outlines'
 
 class TestReassignObjectNumbers(unittest.TestCase):
+    def test_01_00_implement_load_v5_please(self):
+        assert(R.ReassignObjectNumbers.variable_revision_number == 4)
+        
     def test_01_000_load_split(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -162,9 +165,78 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         self.assertEqual(module.where_algorithm, R.CA_CLOSEST_POINT)
         self.assertTrue(module.wants_image)
         self.assertEqual(module.image_name, "OrigRGB")
+        
+    def test_01_04_load_v4(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150319195827
+GitHash:d8289bf
+ModuleCount:2
+HasImagePlaneDetails:False
+
+ReassignObjectNumbers:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input objects:blobs
+    Name the new objects:RelabeledBlobs
+    Operation:Unify
+    Maximum distance within which to unify objects:2
+    Unify using a grayscale image?:No
+    Select the grayscale image to guide unification:Guide
+    Minimum intensity fraction:0.8
+    Method to find object intensity:Closest point
+    Retain outlines of the relabeled objects?:No
+    Name the outlines:RelabeledNucleiOutlines
+    Unification method:Per-parent
+    Select the parent object:Nuclei
+    Output object type:Convex hull
+
+ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input objects:blobs
+    Name the new objects:RelabeledNuclei
+    Operation:Split
+    Maximum distance within which to unify objects:1
+    Unify using a grayscale image?:Yes
+    Select the grayscale image to guide unification:Guide
+    Minimum intensity fraction:0.9
+    Method to find object intensity:Centroids
+    Retain outlines of the relabeled objects?:Yes
+    Name the outlines:RelabeledNucleiOutlines
+    Unification method:Distance
+    Select the parent object:Nuclei
+    Output object type:Disconnected
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.loadtxt(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, R.ReassignObjectNumbers))
+        self.assertEqual(module.objects_name, "blobs")
+        self.assertEqual(module.output_objects_name, "RelabeledBlobs")
+        self.assertEqual(module.relabel_option, R.OPTION_UNIFY)
+        self.assertEqual(module.distance_threshold, 2)
+        self.assertFalse(module.wants_image)
+        self.assertEqual(module.image_name, "Guide")
+        self.assertEqual(module.minimum_intensity_fraction, .8)
+        self.assertEqual(module.where_algorithm, R.CA_CLOSEST_POINT)
+        self.assertFalse(module.wants_outlines)
+        self.assertEqual(module.outlines_name, "RelabeledNucleiOutlines")
+        self.assertEqual(module.unify_option, R.UNIFY_PARENT)
+        self.assertEqual(module.parent_object, "Nuclei")
+        self.assertEqual(module.unification_method, R.UM_CONVEX_HULL)
+        
+        module = pipeline.modules()[1]
+        self.assertEqual(module.relabel_option, R.OPTION_SPLIT)
+        self.assertTrue(module.wants_image)
+        self.assertEqual(module.where_algorithm, R.CA_CENTROIDS)
+        self.assertTrue(module.wants_outlines)
+        self.assertEqual(module.unify_option, R.UNIFY_DISTANCE)
+        self.assertEqual(module.unification_method, R.UM_DISCONNECTED)
 
     def rruunn(self, input_labels, relabel_option, 
                unify_option = R.UNIFY_DISTANCE,
+               unify_method = R.UM_DISCONNECTED,
                distance_threshold = 5,
                minimum_intensity_fraction = .9,
                where_algorithm = R.CA_CLOSEST_POINT,
@@ -183,6 +255,7 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
         module.relabel_option.value = relabel_option
         module.unify_option.value = unify_option
+        module.unification_method.value = unify_method
         module.parent_object.value = parent_object
         module.distance_threshold.value = distance_threshold
         module.minimum_intensity_fraction.value = minimum_intensity_fraction
@@ -447,3 +520,19 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
                                             parent_object = "Parent_object",
                                             parent_labels = parent_labels)
         self.assertTrue(np.all(labels_out[labels != 0] == 1))
+        
+    def test_05_01_unify_convex_hull(self):
+        labels = np.zeros((10,20), int)
+        labels[2:5, 3:8] = 1
+        labels[2:5, 13:18] = 2
+        expected = np.zeros(labels.shape, int)
+        expected[2:5, 3:18] = 1
+        parent_labels = np.zeros(labels.shape,int)
+        parent_labels[1:6,2:19] = 1;
+    
+        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY, 
+                                            unify_option = R.UNIFY_PARENT,
+                                            unify_method = R.UM_CONVEX_HULL,
+                                            parent_object = "Parent_object",
+                                            parent_labels = parent_labels)
+        self.assertTrue(np.all(labels_out == expected))

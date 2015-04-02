@@ -50,6 +50,8 @@ RUN_GROUP_REQ_1 = "run-group-request-1"
 RUN_REPLY_1 = "run-reply-1"
 CELLPROFILER_EXCEPTION_1 = "cellprofiler-exception-1"
 PIPELINE_EXCEPTION_1 = "pipeline-exception-1"
+CLEAN_PIPELINE_REQ_1 = "clean-pipeline-request-1"
+CLEAN_PIPELINE_REPLY_1 = "clean-pipeline-reply-1"
 
 class KnimeBridgeServer(threading.Thread):
     '''The server maintains the port and hands off the requests to workers
@@ -78,6 +80,7 @@ class KnimeBridgeServer(threading.Thread):
         self.stop_msg = notify_stop
         self.dispatch = {
             CONNECT_REQ_1: self.connect,
+            CLEAN_PIPELINE_REQ_1: self.clean_pipeline,
             PIPELINE_INFO_REQ_1: self.pipeline_info,
             RUN_REQ_1: self.run_request,
             RUN_GROUP_REQ_1: self.run_group_request
@@ -184,6 +187,35 @@ class KnimeBridgeServer(threading.Thread):
             zmq.Frame(body)]
         self.socket.send_multipart(msg_out)
     
+    def clean_pipeline(self, session_id, message_type, message):
+        '''Handle the clean pipeline request message'''
+        logger.info("Handling clean pipeline request")
+        pipeline_txt = message.pop(0).bytes
+        module_names = json.loads(message.pop(0).bytes)
+        pipeline = cpp.Pipeline()
+        try:
+            pipeline.loadtxt(StringIO(pipeline_txt))
+        except Exception, e:
+            logger.warning(
+                "Failed to load pipeline: sending pipeline exception", 
+                exc_info=1)
+            self.raise_pipeline_exception(session_id, str(e))
+            return
+        to_remove = []
+        for module in pipeline.modules(exclude_disabled=False):
+            if module.module_name in module_names:
+                to_remove.insert(0, module)
+        for module in to_remove:
+            pipeline.remove_module(module.module_num)
+        pipeline_fd = StringIO()
+        pipeline.savetxt(pipeline_fd, save_image_plane_details=False)
+        msg_out = [
+            zmq.Frame(session_id),
+            zmq.Frame(),
+            zmq.Frame(CLEAN_PIPELINE_REPLY_1),
+            zmq.Frame(pipeline_fd.getvalue())]
+        self.socket.send_multipart(msg_out)
+        
     def run_request(self, session_id, message_type, message):
         '''Handle the run request message'''
         pipeline, m, object_set = self.prepare_run(message, session_id)

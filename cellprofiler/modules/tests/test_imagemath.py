@@ -807,3 +807,54 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                                     measurement = measurement)
         self.check_expected(output, expected, mask)
         
+    def test_11_01_add_and_do_nothing(self):
+        #
+        # Regression for issue #1333 - add one, do nothing, input image
+        # is changed
+        #
+        r = np.random.RandomState()
+        r.seed(1101)
+        m = cpmeas.Measurements()
+        pixel_data = r.uniform(size=(20, 20))
+        m.add("inputimage", cpi.Image(pixel_data))
+        module = I.ImageMath()
+        module.images[0].image_name.value = "inputimage"
+        module.output_image_name.value = "outputimage"
+        module.operation.value = I.O_NONE
+        module.addend.value = 0.5
+        module.module_num = 1
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+        module.run(workspace)
+        np.testing.assert_array_almost_equal(
+            pixel_data, m.get_image("inputimage").pixel_data)
+        
+    def test_11_02_invert_binary_invert(self):
+        #
+        # Regression for issue #1329
+        #
+        r = np.random.RandomState()
+        r.seed(1102)
+        m = cpmeas.Measurements()
+        pixel_data = r.uniform(size=(20, 20)) > .5
+        m.add("inputimage", cpi.Image(pixel_data))
+        module = I.ImageMath()
+        module.images[0].image_name.value = "inputimage"
+        module.output_image_name.value = "intermediateimage"
+        module.operation.value = I.O_INVERT
+        module.module_num = 1
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(module)
+        module = I.ImageMath()
+        module.images[0].image_name.value = "intermediateimage"
+        module.output_image_name.value = "outputimage"
+        module.operation.value = I.O_INVERT
+        module.module_num = 2
+        pipeline = cpp.Pipeline()
+        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+        for module in pipeline.modules():
+            module.run(workspace)
+        np.testing.assert_array_equal(
+            pixel_data, m.get_image("inputimage").pixel_data > .5)
+        

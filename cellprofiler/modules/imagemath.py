@@ -331,7 +331,7 @@ class ImageMath(cpm.CPModule):
         elif opval == O_LOG_TRANSFORM_LEGACY:
             output_pixel_data = np.log2(output_pixel_data)
         elif opval == O_NONE:
-            pass
+            output_pixel_data = output_pixel_data.copy()
         else:
             raise NotImplementedError("The operation %s has not been implemented"%opval)
 
@@ -368,7 +368,8 @@ class ImageMath(cpm.CPModule):
                                  mask = output_mask,
                                  crop_mask = crop_mask, 
                                  parent_image = images[0],
-                                 masking_objects = masking_objects)
+                                 masking_objects = masking_objects,
+                                 convert = False)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         #

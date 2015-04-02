@@ -1007,6 +1007,15 @@ def velocity_kalman_model():
                    [0,0,0,1]])
     return KalmanState(om, tm)
 
+def reverse_velocity_kalman_model():
+    '''Return a KalmanState set up to model going backwards in time'''
+    om = np.array([[1,0,0,0], [0, 1, 0, 0]])
+    tm = np.array([[1,0,-1,0],
+                   [0,1,0,-1],
+                   [0,0,1,0],
+                   [0,0,0,1]])
+    return KalmanState(om, tm)
+
 def static_kalman_model():
     '''Return a KalmanState set up to model objects whose motion is random
     

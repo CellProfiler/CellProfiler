@@ -223,7 +223,7 @@ LOAD_AS_CHOICE_HELP_TEXT = """
     <ul>
     <li><i>Non-overalapping</i> objects are stored as a label matrix. This matrix should be 
     saved as grayscale, rather than color.</li>
-    <li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of whichc consists of a 
+    <li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of which consists of a 
     grayscale label matrix. The frames are constructed so that objects that overlap are placed
     in different frames.</li> 
     </ul></li>

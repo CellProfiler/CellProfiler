@@ -206,6 +206,16 @@ class TestHDF5Dict(unittest.TestCase):
             result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, p[i]]
             np.testing.assert_array_equal(d, result)
             
+    def test_03_02_01_add_all_out_of_order_object(self):        
+        r = np.random.RandomState()
+        r.seed(302)
+        data = np.array(["World", "Hello"], object)
+        p = np.array([2, 1], int)
+        self.hdf5_dict.add_all(OBJECT_NAME, FEATURE_NAME, data, p)
+        for i, d in enumerate(data):
+            result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, p[i]]
+            self.assertEqual(result, d)
+            
     def test_03_03_add_all_with_dtype(self):
         r = np.random.RandomState()
         r.seed(303)
@@ -301,6 +311,7 @@ class TestHDF5Dict(unittest.TestCase):
             self.assertFalse(os.path.exists(temp_filename),
                              "If the file can't be removed, it's a bug. "
                              "Clean up your trash: %s" % temp_filename)
+            
             
     def test_09_01_delete_imageset(self):
         # Delete an image set's measurements from one image set

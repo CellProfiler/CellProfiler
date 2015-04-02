@@ -20,6 +20,7 @@ from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
 from wx.combo import BitmapComboBox
 
 import cellprofiler.measurements as cpmeas
+import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 from cellprofiler.modules.images import Images
 from cellprofiler.gui.cornerbuttonmixin import CornerButtonMixin
@@ -434,7 +435,8 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
 
     def on_update(self):
         self.Table.workspace.refresh_image_set()
-        if self.Table.workspace.measurements.image_set_count == 0:
+        n_imagesets = self.Table.workspace.measurements.image_set_count
+        if n_imagesets == 0:
             from help import CREATING_A_PROJECT_CAPTION
             wx.MessageBox(
                 "Sorry, your pipeline doesn't produce any valid image sets "
@@ -444,6 +446,10 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
                 caption = "No Image Sets Available",
                 style=wx.OK | wx.ICON_INFORMATION,
                 parent = self)
+        else:
+            cpprefs.report_progress(
+                "ImageSetCount", None, 
+                "Found %d image sets" % n_imagesets)
         self.recompute()
         
     def set_controller(self, controller):

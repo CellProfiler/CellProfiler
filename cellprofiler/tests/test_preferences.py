@@ -64,8 +64,13 @@ class TestPreferences(unittest.TestCase):
                          unicode_dir)
         self.assertEqual(cpprefs.get_default_image_directory(), unicode_dir)
         cpprefs.set_default_image_directory(old)
-
-
+        
+    def test_01_04_old_users_directory(self):
+        gotcha = "c:\\users\\default"
+        cpprefs.set_preferences_from_dict({}) # clear cache
+        cpprefs.get_config().Write("test_preferences", gotcha)
+        result = cpprefs.config_read("test_preferences")
+        self.assertEqual(result, gotcha)
 
 class TestPreferences_02(unittest.TestCase):
     def setUp(self):
@@ -77,6 +82,8 @@ class TestPreferences_02(unittest.TestCase):
                 return None
             def Write(self, arg, val):
                 pass
+            def GetEntryType(self, kwd):
+                return 1
         self.old_headless = cpprefs.__dict__['__is_headless']
         self.old_headless_config = cpprefs.__dict__['__headless_config']
         cpprefs.__dict__['__is_headless'] = True

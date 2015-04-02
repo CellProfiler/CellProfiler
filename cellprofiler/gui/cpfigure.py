@@ -229,12 +229,6 @@ MENU_FILE_SAVE_TABLE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()
 MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
 MENU_CLOSE_ALL = wx.NewId()
-MENU_CONTRAST_RAW = wx.NewId()
-MENU_CONTRAST_NORMALIZED = wx.NewId()
-MENU_CONTRAST_LOG = wx.NewId()
-MENU_INTERPOLATION_NEAREST = wx.NewId()
-MENU_INTERPOLATION_BILINEAR = wx.NewId()
-MENU_INTERPOLATION_BICUBIC = wx.NewId()
 MENU_LABELS_OUTLINE = {}
 MENU_LABELS_OVERLAY = {}
 MENU_LABELS_LINES = {}
@@ -261,7 +255,8 @@ class CPFigureFrame(wx.Frame):
                  pos=wx.DefaultPosition, size=wx.DefaultSize,
                  style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr, 
                  subplots=None, on_close = None,
-                 secret_panel_class = None):
+                 secret_panel_class = None,
+                 help_menu_items = FIGURE_HELP):
         """Initialize the frame:
         
         parent   - parent window to this one, typically CPFrame
@@ -274,6 +269,7 @@ class CPFigureFrame(wx.Frame):
         subplots - 2-tuple indicating the layout of subplots inside the window
         on_close - a function to run when the window closes
         secret_panel_class - class to use to construct the secret panel
+        help_menu_items - menu items to place in the help menu
         """
         global window_ids
         if pos == wx.DefaultPosition:
@@ -317,7 +313,7 @@ class CPFigureFrame(wx.Frame):
         self.Bind(wx.EVT_SIZE, self.on_size)
         if subplots:
             self.subplots = np.zeros(subplots,dtype=object)
-        self.create_menu()
+        self.create_menu(help_menu_items)
         self.create_toolbar()
         self.figure.canvas.mpl_connect('button_press_event', self.on_button_press)
         self.figure.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
@@ -354,7 +350,7 @@ class CPFigureFrame(wx.Frame):
                         wx.EVT_MENU(parent, window_id, on_menu_command)
                         self.remove_menu.append([menu, window_id])
     
-    def create_menu(self):
+    def create_menu(self, figure_help = FIGURE_HELP):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE,"&Save")
@@ -389,7 +385,7 @@ class CPFigureFrame(wx.Frame):
 
         self.SetAcceleratorTable(accelerators)
         wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
-        self.MenuBar.Append(make_help_menu(FIGURE_HELP, self), "&Help")
+        self.MenuBar.Append(make_help_menu(figure_help, self), "&Help")
     
     
     def create_toolbar(self):
@@ -587,13 +583,9 @@ class CPFigureFrame(wx.Frame):
         xi = int(event.xdata+.5)
         yi = int(event.ydata+.5)
         im = None
-        if event.inaxes:
-            fields = ["X: %d"%xi, "Y: %d"%yi]
-            im = self.find_image_for_axes(event.inaxes)
-            if im is not None:
-                fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
+        fields = self.get_fields(event, yi, xi, x1)
                 
-        if self.mouse_down is not None and im is not None:
+        if self.mouse_down is not None:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
@@ -627,21 +619,32 @@ class CPFigureFrame(wx.Frame):
             self.figure.canvas.draw()
             self.Refresh()
         self.status_bar.SetFields(fields)
+
+    def get_fields(self, event, yi, xi, x1):
+        '''Get the standard fields at the cursor location'''
+        if event.inaxes:
+            fields = ["X: %d"%xi, "Y: %d"%yi]
+            im = self.find_image_for_axes(event.inaxes)
+            if im is not None:
+                fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
+            elif isinstance(event.inaxes, matplotlib.axes.Axes):
+                for artist in event.inaxes.artists:
+                    if isinstance(
+                        artist, cellprofiler.gui.cpartists.CPImageArtist):
+                        fields += ["%s: %.4f" % (k, v) for k, v in 
+                                   artist.get_channel_values(xi, yi).items()]
+        else:
+            fields = []
+        return fields
     
     def on_mouse_move_show_pixel_data(self, event, x0, y0, x1, y1):
         if event.xdata is None or event.ydata is None:
             return
         xi = int(event.xdata+.5)
         yi = int(event.ydata+.5)
-        if event.inaxes:
-            im = self.find_image_for_axes(event.inaxes)
-            if im is not None:
-                fields = ["X: %d"%xi, "Y: %d"%yi]
-                fields += self.get_pixel_data_fields_for_status_bar(im, xi, yi)
-                self.status_bar.SetFields(fields)
-                return
-            else:
-                self.status_bar.SetFields([event.inaxes.format_coord(event.xdata, event.ydata)])
+        fields = self.get_fields(event, yi, xi, x1)
+        if len(fields) > 0:
+            self.status_bar.SetFields(fields)
         
     def find_image_for_axes(self, axes):
         for i, sl in enumerate(self.subplots):
@@ -806,6 +809,13 @@ class CPFigureFrame(wx.Frame):
         - Toggle channels on/off
         Note: Each item is bound to a handler.
         '''
+        MENU_CONTRAST_RAW = wx.NewId()
+        MENU_CONTRAST_NORMALIZED = wx.NewId()
+        MENU_CONTRAST_LOG = wx.NewId()
+        MENU_INTERPOLATION_NEAREST = wx.NewId()
+        MENU_INTERPOLATION_BILINEAR = wx.NewId()
+        MENU_INTERPOLATION_BICUBIC = wx.NewId()
+
         params = self.subplot_params[(x,y)]
             
         # If no popup has been built for this subplot yet, then create one 
@@ -1812,16 +1822,18 @@ class CPFigureFrame(wx.Frame):
         axes.set_title(title)
         axes.set_xticks(range(ncols))
         axes.set_yticks(range(nrows))
-        axes.set_xticklabels(range(1, ncols+1), minor=True)
-        axes.set_yticklabels(alphabet[:nrows], minor=True)
+        axes.set_xticklabels(range(1, ncols+1), minor=False)
+        axes.set_yticklabels(alphabet[:nrows], minor=False)
         axes.axis('image')
 
         if colorbar and not np.all(np.isnan(data)):
             if self.colorbar.has_key(axes):
                 cb = self.colorbar[axes]
                 cb.set_clim(np.min(clean_data), np.max(clean_data))
+                cb.update_normal(clean_data)
             else:
-                self.colorbar[axes] = self.figure.colorbar(plot)
+                self.colorbar[axes] = self.figure.colorbar(
+                    plot, ax=axes)
                 
         def format_coord(x, y):
             col = int(x + 0.5)
@@ -2070,6 +2082,7 @@ NAV_MODE_NONE = ''
 
 class CPNavigationToolbar(NavigationToolbar2WxAgg):
     '''Navigation toolbar for EditObjectsDialog'''
+    
     def set_cursor(self, cursor):
         '''Set the cursor based on the mode'''
         if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
@@ -2081,10 +2094,12 @@ class CPNavigationToolbar(NavigationToolbar2WxAgg):
         '''Toggle the current mode to off'''
         if self.mode == NAV_MODE_ZOOM:
             self.zoom()
-            self.ToggleTool(self._NTB2_ZOOM, False)
+            if 'Zoom' in self.wx_ids:
+                self.ToggleTool(self.wx_ids['Zoom'], False)
         elif self.mode == NAV_MODE_PAN:
             self.pan()
-            self.ToggleTool(self._NTB2_PAN, False)
+            if 'Pan' in self.wx_ids:
+                self.ToggleTool(self.wx_ids['Pan'], False)
             
     def zoom(self, *args):
         NavigationToolbar2WxAgg.zoom(self, *args)
@@ -2093,6 +2108,23 @@ class CPNavigationToolbar(NavigationToolbar2WxAgg):
     def pan(self, *args):
         NavigationToolbar2WxAgg.pan(self, *args)
         self.__send_mode_change_event()
+        
+    def is_home(self):
+        '''Return True if zoom/pan is at the home position'''
+        if self._views._pos <= 0:
+            return True
+        if self._views[0] == self._views[-1]:
+            return True
+        return False
+    
+    def reset(self):
+        '''Clear out the position stack'''
+        # We differ from the reference implementation because we clear
+        # the view stacks.
+        self._views.clear()
+        self._positions.clear()
+        self.home()
+        
         
     def save(self, event):
         #

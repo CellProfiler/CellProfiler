@@ -157,11 +157,15 @@ def convex_hull_ijv(in_labels_ijv,
                     if DEBUG:
                         print "PRUNE"
                     num_emitted -= 1
-                labels_ijv[outidx + num_emitted, 0] = upper[envelope_j]
-                labels_ijv[outidx + num_emitted, 1] = envelope_j
-                if DEBUG:
-                    print "ADD", (upper[envelope_j], envelope_j, cur_label)
-                num_emitted += 1
+                if labels_ijv.shape[0] > outidx+num_emitted:
+                    # The last point can get temporarily pushed on the list
+                    # twice only to be taken off below. So this is more than
+                    # just keeping a segfault from happening.
+                    labels_ijv[outidx + num_emitted, 0] = upper[envelope_j]
+                    labels_ijv[outidx + num_emitted, 1] = envelope_j
+                    if DEBUG:
+                        print "ADD", (upper[envelope_j], envelope_j, cur_label)
+                    num_emitted += 1
                 # END MACRO
                 upper[envelope_j] = -1
         # Even if we don't add the start point, we still might need to prune.

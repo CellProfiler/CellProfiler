@@ -182,7 +182,9 @@ class DisplayPlatemap(cpm.CPModule):
         if self.show_window:
             m = workspace.get_measurements()
             # Get plates
-            plates = m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value)
+            plates = map(
+                unicode, 
+                m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value))
             # Get wells
             if self.well_format == WF_NAME:
                 wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)

@@ -66,7 +66,7 @@ arch -i386 python CellProfiler.py --build-and-exit --do-not-fetch
 export CP_EXAMPLEIMAGES=/Users/build/ExampleImages
 export CP_TESTIMAGES=/Users/build/TestImages
 set +e
-arch -i386 python cpnose.py --with-javabridge --noguitests --with-xunit -m \(\?\:\^\)test_\(\?\!example\).\*
+arch -i386 python cpnose.py --with-javabridge --noguitests -v --with-xunit -m \(\?\:\^\)test_\(\?\!example\).\*
 set -e
 arch -i386 python setup.py py2app
 

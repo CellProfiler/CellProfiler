@@ -48,9 +48,12 @@ def is_workspace_file(path):
     if not h5py.is_hdf5(path):
         return False
     h5file = h5py.File(path, mode="r")
-    if not HDF5FileList.has_file_list(h5file):
-        return False
-    return HDF5Dict.has_hdf5_dict(h5file)
+    try:
+        if not HDF5FileList.has_file_list(h5file):
+            return False
+        return HDF5Dict.has_hdf5_dict(h5file)
+    finally:
+        h5file.close()
 
 class Workspace(object):
     """The workspace contains the processing information and state for

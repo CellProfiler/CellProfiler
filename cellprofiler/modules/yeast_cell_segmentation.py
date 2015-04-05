@@ -140,6 +140,8 @@ import random
 from os.path import expanduser, exists
 from os.path import join as pj
 from os import makedirs
+import logging
+logger = logging.getLogger(__name__)
 
 import numpy as np
 import scipy as sp
@@ -803,7 +805,7 @@ class YeastCellSegmentation(cpmi.Identify):
 
             while (keepGoing or not adaptations_stopped) and self.param_fit_progress < progressMax:
                 # here put one it. of fitting instead
-                wx.Sleep(0.1)
+                wx.Sleep(0.5)
 
                 # Thread ended with exception so optimisation have to be stopped.
                 if any(aft_active) and aft_active[0].exception is not None:
@@ -849,14 +851,18 @@ class YeastCellSegmentation(cpmi.Identify):
         if new_snake_score < self.best_snake_score:
             self.best_snake_score = new_snake_score
             self.best_parameters = new_parameters
-            self.autoadapted_params.value = Segmentation.encode_auto_params_from_all_params(new_parameters)
+            if self.autoadapted_params.value != Segmentation.encode_auto_params_from_all_params(new_parameters):
+                self.autoadapted_params.value = Segmentation.encode_auto_params_from_all_params(new_parameters)
+                logger.info("New auto parameters applied.")
         self.param_fit_progress += 1
 
     def update_rank_params(self, new_parameters, new_rank_score):
         if new_rank_score < self.best_rank_score:
             self.best_rank_score = new_rank_score
             self.best_parameters = new_parameters
-            self.autoadapted_params.value = Segmentation.encode_auto_params_from_all_params(new_parameters)
+            if self.autoadapted_params.value != Segmentation.encode_auto_params_from_all_params(new_parameters):
+                self.autoadapted_params.value = Segmentation.encode_auto_params_from_all_params(new_parameters)
+                logger.info("New auto ranking parameters applied.")
         self.param_fit_progress += 1
 
 

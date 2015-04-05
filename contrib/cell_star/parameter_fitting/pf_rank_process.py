@@ -177,11 +177,17 @@ def run_singleprocess(image, gt_snakes, precision=-1, avg_cell_diameter=-1, meth
 #
 
 def optimize(method_name, encoded_params, distance_function):
+    initial_distance = distance_function(encoded_params)
     if method_name == 'brute':
-        return optimize_brute(encoded_params, distance_function)
+        best_params_encoded, distance = optimize_brute(encoded_params, distance_function)
     else:
-        raise
+        raise Exception("No such optimization method.")
 
+    if initial_distance < distance:
+        logger.debug("Initial parameters better (%f) than the best found (%f).", initial_distance, distance)
+        return encoded_params, initial_distance
+    else:
+        return best_params_encoded, distance
 
 def optimize_brute(params_to_optimize, distance_function):
 

@@ -192,6 +192,8 @@ def optimize_brute(params_to_optimize, distance_function):
     lower_bound += random_shift * step
     upper_bound += random_shift * step
 
+    print lower_bound, upper_bound
+
     logger.debug("Search range: " + str(zip(lower_bound,upper_bound)))
     result = opt.brute(distance_function, zip(lower_bound, upper_bound), Ns=number_of_steps, disp=True, finish=None, full_output=True)
     logger.debug("Opt finished:" + str(result[:2]))
@@ -275,7 +277,7 @@ def multiproc_multitype_fitness(image, gt_snakes, precision, avg_cell_diameter):
     workers_num = get_max_workers()
 
     optimizers = [
-        Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "anneal"))
+        Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "brute"))
         for _ in range(workers_num)]
 
     for optimizer in optimizers:

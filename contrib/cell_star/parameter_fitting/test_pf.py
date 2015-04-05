@@ -10,8 +10,11 @@ from contrib.cell_star.utils import image_util
 from contrib.cell_star.parameter_fitting.pf_process import run
 from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
 
-corpus_path = "C:/workspace/CellStar - Python/Yeast/trunk/cell_star_plugins/yeast_corpus/data/"
-#corpus_path = "D:/Fafa/Drozdze/Repozytorium/cell_star_plugins/yeast_corpus/data/"
+import logging
+logger = logging.getLogger(__name__)
+
+#corpus_path = "C:/workspace/CellStar - Python/Yeast/trunk/cell_star_plugins/yeast_corpus/data/"
+corpus_path = "D:/Fafa/Drozdze/Repozytorium/cell_star_plugins/yeast_corpus/data/"
 
 
 def single_mask_to_snake(bool_mask, seed=None):
@@ -58,4 +61,9 @@ def test_pf(image_path, mask_path, precision, avg_cell_diameter, method):
 
 
 if __name__ == "__main__":
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    logger = logging.getLogger('contrib.cell_star.parameter_fitting')
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(ch)
     test_pf(sys.argv[1], sys.argv[2], int(sys.argv[3]), float(sys.argv[4]), sys.argv[5])

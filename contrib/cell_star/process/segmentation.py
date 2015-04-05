@@ -98,8 +98,8 @@ class Segmentation(object):
             exec "all_params=" + text
             snake_params = all_params[0]
             rank_params = all_params[1]
-            if len(snake_params) != len(snake_auto_params) or  len(rank_params) != len(rank_auto_params):
-                raise "text invalid: list size not compatible"
+            if len(snake_params) != len(snake_auto_params) or len(rank_params) != len(rank_auto_params):
+                raise Exception("text invalid: list size not compatible")
 
 
             for name in sorted(snake_auto_params.keys()):

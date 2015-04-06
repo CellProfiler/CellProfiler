@@ -132,7 +132,7 @@ class NeighbourMovementTracking(object):
         self.parameters_cost_initial = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cost_initial)
         self.parameters_cost_iteration = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cost_iteration)
         self.parameters_cell_features = copy.deepcopy(NeighbourMovementTrackingParameters.parameters_cell_features)
-        self.scale = self.parameters_tracking["avgCellDiameter"] / 35.0
+
 
     def run_tracking(self, label_image_1, label_image_2):
         """
@@ -140,6 +140,8 @@ class NeighbourMovementTracking(object):
         @returns: injective function from old objects to new objects (pairs of [old, new]). Number are compatible
             with labels.
         """
+        self.scale = self.parameters_tracking["avgCellDiameter"] / 35.0
+
         detections_1 = self.derive_detections(label_image_1)
         detections_2 = self.derive_detections(label_image_2)
 

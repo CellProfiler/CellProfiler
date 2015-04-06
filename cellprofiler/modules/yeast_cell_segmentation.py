@@ -854,6 +854,8 @@ class YeastCellSegmentation(cpmi.Identify):
             if self.autoadapted_params.value != Segmentation.encode_auto_params_from_all_params(new_parameters):
                 self.autoadapted_params.value = Segmentation.encode_auto_params_from_all_params(new_parameters)
                 logger.info("New auto parameters applied.")
+        else:
+            logger.info("New auto parameters (%f) are not better than current (%f)." % (new_snake_score,self.best_snake_score))
         self.param_fit_progress += 1
 
     def update_rank_params(self, new_parameters, new_rank_score):
@@ -863,6 +865,8 @@ class YeastCellSegmentation(cpmi.Identify):
             if self.autoadapted_params.value != Segmentation.encode_auto_params_from_all_params(new_parameters):
                 self.autoadapted_params.value = Segmentation.encode_auto_params_from_all_params(new_parameters)
                 logger.info("New auto ranking parameters applied.")
+        else:
+            logger.info("New auto ranking parameters (%f) are not better than current (%f)." % (new_rank_score,self.best_rank_score))
         self.param_fit_progress += 1
 
 

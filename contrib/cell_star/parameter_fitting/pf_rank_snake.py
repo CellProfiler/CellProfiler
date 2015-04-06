@@ -5,10 +5,7 @@ import copy
 import random
 random.seed(1)  # make it deterministic
 import numpy as np
-import scipy.ndimage.measurements as measure
 
-from contrib.cell_star.core.seed import Seed
-from contrib.cell_star.core.snake import Snake
 from contrib.cell_star.core.polar_transform import PolarTransform
 from contrib.cell_star.parameter_fitting.pf_snake import PFSnake
 

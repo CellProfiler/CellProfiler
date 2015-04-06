@@ -35,14 +35,16 @@ max_number_of_chosen_snakes = 20
 #
 #
 best_so_far = 1
-
+calculations = 0
 
 def distance_norm(fitnesses):
-    global best_so_far
+    global calculations, best_so_far
     # Mean-Squared Error
     distance = norm((np.ones(fitnesses.shape) - fitnesses)) / np.sqrt(fitnesses.size)
     best_so_far = min(best_so_far, distance)
-    logger.debug("Current distance: %f, Best: %f"%(distance, best_so_far))
+    calculations += 1
+    if calculations % 100 == 0:
+        logger.debug("Current distance: %f, Best: %f, Calc %d"%(distance, best_so_far,calculations))
     return distance
 
 
@@ -158,21 +160,28 @@ def run(image, gt_snakes, precision, avg_cell_diameter, method='brute', initial_
 
 
 def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diameter):
+    encoded_params = pf_parameters_encode(params)
+    distance_function = pf_get_distance(gt_snakes, images, params)
+    initial_distance = distance_function(encoded_params)
     if method_name == "mp":
-        fitted_params, score = multiproc_multitype_fitness(images.image, gt_snakes, precision, avg_cell_diameter)
+        best_params_encoded, distance = multiproc_multitype_fitness(images.image, gt_snakes, precision, avg_cell_diameter)
         # test_trained_parameters(images.image, params, precision, avg_cell_diameter)
-        return fitted_params, score
+        # return fitted_params, score
     else:
-        encoded_params = pf_parameters_encode(params)
-        distance_function = pf_get_distance(gt_snakes, images, params)
         if method_name == 'brute':
-            return optimize_brute(encoded_params, distance_function)
+            best_params_encoded, distance = optimize_brute(encoded_params, distance_function)
         elif method_name == 'anneal':
-            return optimize_anneal(encoded_params, distance_function)
+            best_params_encoded, distance = optimize_anneal(encoded_params, distance_function)
         elif method_name == 'diffevo':
-            return optimize_de(encoded_params, distance_function)
+            best_params_encoded, distance = optimize_de(encoded_params, distance_function)
         else:
-            return optimize_basinhopping(encoded_params, distance_function)
+            best_params_encoded, distance = optimize_basinhopping(encoded_params, distance_function)
+
+    if initial_distance <= distance:
+        logger.debug("Initial parameters (%f) are not worse than the best found (%f)."%(initial_distance, distance))
+        return encoded_params, initial_distance
+    else:
+        return best_params_encoded, distance
 
 
 def optimize_brute(params_to_optimize, distance_function):

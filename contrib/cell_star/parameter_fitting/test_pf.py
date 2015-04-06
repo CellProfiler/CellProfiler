@@ -5,7 +5,7 @@ import os
 import os.path as path
 import numpy as np
 import scipy as sp
-from contrib.cell_star.core.seed import Seed
+from cellprofiler.preferences import get_max_workers
 from contrib.cell_star.utils import image_util
 from contrib.cell_star.parameter_fitting.pf_process import run
 from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
@@ -40,14 +40,17 @@ def try_load_image(image_path):
 
 def run_pf(input_image, gt_mask, parameters, precision, avg_cell_diameter):
     """
-
     :param input_image:
     :param gt_mask:
     :param parameters:
     :return: Best complete parameters settings, best distance
     """
     gt_snakes = gt_mask_to_snakes(gt_mask)
-    best_complete_params, _, best_score = run(input_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='brute')
+    if get_max_workers() > 1:
+        best_complete_params, _, best_score = run(input_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='mp')
+    else:
+        best_complete_params, _, best_score = run(input_image, gt_snakes, precision=precision, avg_cell_diameter=avg_cell_diameter, initial_params=parameters, method='brute')
+
     return best_complete_params, best_score
 
 

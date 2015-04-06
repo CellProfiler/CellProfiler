@@ -183,8 +183,8 @@ def optimize(method_name, encoded_params, distance_function):
     else:
         raise Exception("No such optimization method.")
 
-    if initial_distance < distance:
-        logger.debug("Initial parameters better (%f) than the best found (%f).", initial_distance, distance)
+    if initial_distance <= distance:
+        logger.debug("Initial parameters (%f) are not worse than the best found (%f)." % (initial_distance, distance))
         return encoded_params, initial_distance
     else:
         return best_params_encoded, distance

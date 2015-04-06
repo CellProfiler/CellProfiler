@@ -18,12 +18,11 @@ def run_rank_pf(input_image, gt_mask, parameters):
     :return: Best complete parameters settings, best distance
     """
     gt_snakes = gt_mask_to_snakes(gt_mask)
-    results = [None]
     if get_max_workers() > 1:
-        results[0] = best_complete_params, _, best_score = pf_rank.run_multiprocess(input_image, gt_snakes, initial_params=parameters, method='brute')
+        best_complete_params, _, best_score = pf_rank.run_multiprocess(input_image, gt_snakes, initial_params=parameters, method='brute')
     else:
-        results[0] = best_complete_params, _, best_score = pf_rank.run_singleprocess(input_image, gt_snakes, initial_params=parameters, method='brute')
-    best_complete_params, _, best_score = results[0]
+        best_complete_params, _, best_score = pf_rank.run_singleprocess(input_image, gt_snakes, initial_params=parameters, method='brute')
+
     return best_complete_params, best_score
 
 def test_rank_pf(image_path, mask_path, precision, avg_cell_diameter, method):

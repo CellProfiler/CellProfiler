@@ -2866,6 +2866,8 @@ class TrackObjects(cpm.CPModule):
                     np.column_stack((ii, jj)),
                     np.zeros(n_objects), r))
             kalman_states = new_kalman_states
+        else:
+            this_slice = slice(idx.fwd_idx[-1], idx.fwd_idx[-1])
         #
         # Update the kalman states and take any new linkage distances
         # and movement models that are better

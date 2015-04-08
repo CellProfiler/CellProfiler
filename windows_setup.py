@@ -40,6 +40,7 @@ import subprocess
 import re
 import os
 import shutil
+import site
 import _winreg
 import matplotlib
 import pyreadline
@@ -69,7 +70,17 @@ if is_win64:
 else:
     cell_profiler_setup = "CellProfiler_%s_win32_r%s.exe" % (dotted_version, revision)
 cell_profiler_setup_path = os.path.join("Output", cell_profiler_setup)
-    
+
+###########
+#
+# The DLLs in pywin32_system32 may be needed and at least
+# one version of py2exe doesn't have workarounds to find them
+#
+###########
+for site_path in site.getsitepackages():
+    pywin32_path = os.path.join(site_path, "pywin32_system32")
+    if os.path.isdir(pywin32_path):
+        os.environ["PATH"] = os.environ["PATH"] + ";" + pywin32_path
 
 class CellProfilerMSI(distutils.core.Command):
     description = "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
@@ -262,7 +273,7 @@ data_files = []
 
 ilastik_dependencies = [
     "vigra", "vigra.impex", "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip",
-    "qimage2ndarray"]
+    "qimage2ndarray", "qimage2ndarray.*"]
 if CP_NO_ILASTIK not in os.environ:
     try:
         import vigra

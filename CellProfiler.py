@@ -21,8 +21,6 @@ import numpy as np
 import tempfile
 from cStringIO import StringIO
 
-import cpnose
-
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
 OMERO_CK_USER = "user"
@@ -92,6 +90,7 @@ def main(args):
         sys.exit(0)
         
     if any([arg.startswith('--xml-test-file=') for arg in sys.argv]):
+        import cpnose
         cpnose.main(*sys.argv)
         return
     options, args = parse_args(args)

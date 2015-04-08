@@ -330,6 +330,7 @@ try:
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
 except:
     pass
+opts['py2exe']['includes'] += ["scipy.special", "scipy.special.*"]
 
 ##############################################
 #
@@ -368,6 +369,17 @@ try:
     #
     if zmq.__version__ >= "2.2.0":
         opts['py2exe']['includes'] += ["zmq.core.pysocket"]
+    if zmq.__version__ >= "14.0.0":
+        # Backends are new in 14.x
+        opts['py2exe']['includes'] += [
+            "zmq.backend", "zmq.backend.cython", "zmq.backend.cython.*",
+            "zmq.backend.cffi", "zmq.backend.cffi.*"]
+        # libzmq.dll -> libzmq.pyd -> py2exe -> zmq.libzmq.pyd
+        # Must prevent.
+        import zmq.libzmq
+        opts['py2exe']['excludes'] += ['zmq.libzmq']
+        opts['py2exe']['dll_excludes'] += ['libzmq.pyd']
+        data_files += [('.', (zmq.libzmq.__file__,))]
 except:
     print "This installation will not include 0MQ"
 

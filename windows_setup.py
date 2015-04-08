@@ -261,7 +261,8 @@ data_files = []
 ####################################
 
 ilastik_dependencies = [
-    "vigra", "vigra.impex", "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip"]
+    "vigra", "vigra.impex", "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip",
+    "qimg2ndarray"]
 if CP_NO_ILASTIK not in os.environ:
     try:
         import vigra

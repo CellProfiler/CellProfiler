@@ -367,9 +367,10 @@ try:
     # 2.2 added this and distutils did not find it
     # Not present prior to 2.2
     #
-    if zmq.__version__ >= "2.2.0":
+    zmq_version = tuple([int(_) for _ in zmq.__version__.split(".")])
+    if zmq.__version__ >= (2, 2, 0):
         opts['py2exe']['includes'] += ["zmq.core.pysocket"]
-    if zmq.__version__ >= "14.0.0":
+    if zmq.__version__ >= (14, 0, 0):
         # Backends are new in 14.x
         opts['py2exe']['includes'] += [
             "zmq.backend", "zmq.backend.cython", "zmq.backend.cython.*",

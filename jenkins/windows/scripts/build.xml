@@ -126,7 +126,7 @@
       <isset property="ts-pattern"/>
     </not>
   </condition>
-  <target name="run-tests" depends="windows-build">
+  <target name="run-tests">
     <mkdir dir="${project-root}/target/test-results"/>
     <!--
         Collect tests
@@ -165,42 +165,42 @@
     </delete>
   </target>
 
-  <target name="test-modules">
+  <target name="test-modules" depends="windows-build">
     <antcall target="run-tests">
       <param name="ts-directory" value="cellprofiler/modules"/>
       <param name="ts-output-file" value = "cellprofiler_modules.xml"/>
     </antcall>
   </target>
 
-  <target name="test-cpmath">
+  <target name="test-cpmath" depends="windows-build">
     <antcall target="run-tests">
       <param name="ts-directory" value="cellprofiler/cpmath"/>
       <param name="ts-output-file" value = "cellprofiler_cpmath.xml"/>
     </antcall>
   </target>
 
-  <target name="test-cellprofiler" depends="compile">
+  <target name="test-cellprofiler" depends="windows-build">
     <antcall target="run-tests">
       <param name="ts-directory" value="cellprofiler/tests"/>
       <param name="ts-output-file" value = "cellprofiler.xml"/>
     </antcall>
   </target>
 
-  <target name="test-gui" depends="compile">
+  <target name="test-gui" depends="windows-build">
     <antcall target="run-tests">
       <param name="ts-directory" value="cellprofiler/gui/tests"/>
       <param name="ts-output-file" value = "cellprofiler_gui.xml"/>
     </antcall>
   </target>
 
-  <target name="test-utilities" depends="compile">
+  <target name="test-utilities" depends="windows-build">
     <antcall target="run-tests">
       <param name="ts-directory" value="cellprofiler/utilities/tests"/>
       <param name="ts-output-file" value = "cellprofiler_utilities.xml"/>
     </antcall>
   </target>
   
-  <target name="test-manual" depends="compile">
+  <target name="test-manual" depends="windows-build">
     <antcall target="run-tests">
       <param name="ts-directory" value="cellprofiler/gui/html/tests"/>
       <param name="ts-output-file" value = "cellprofiler_manual.xml"/>

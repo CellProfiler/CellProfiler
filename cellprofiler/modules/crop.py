@@ -266,7 +266,7 @@ class Crop(cpm.CPModule):
         self.remove_rows_and_columns = cps.Choice(
             "Remove empty rows and columns?",
             [RM_NO, RM_EDGES, RM_ALL],
-            RM_NO, doc = """
+            RM_ALL, doc = """
             Use this option to choose whether to remove rows and columns that lack objects:
             <ul>
             <li><i>%(RM_NO)s:</i> Leave the image the same size. The cropped areas will be set  

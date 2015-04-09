@@ -893,6 +893,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         module.object_name.value = OBJECT_NAME
         module.tracking_method.value = T.TM_LAP
         module.model.value = T.M_BOTH
+        second_phase = [T.F_LINKING_DISTANCE, T.F_MOVEMENT_MODEL]
         for wants in (True, False):
             module.wants_second_phase.value = wants
             columns = module.get_measurement_columns(None)
@@ -952,7 +953,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                     self.assertTrue(index != -1)
                     column = columns[index]
                     self.assertEqual(column[0], object_name)
-                    if wants:
+                    if wants or feature in second_phase:
                         self.assertEqual(len(column), 4)
                         self.assertTrue(column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP))
                         self.assertTrue(column[3][cpmeas.MCA_AVAILABLE_POST_GROUP])

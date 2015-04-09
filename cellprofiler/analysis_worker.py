@@ -203,6 +203,12 @@ def main():
                         name="exit_on_stdin_close")
     deadman_start_socket.recv()
     deadman_start_socket.close()
+    # Limit Ilastik to one job thread.
+    try:
+        from ilastik.core.jobMachine import GLOBAL_WM
+        GLOBAL_WM.set_thread_count(1)
+    except:
+        pass
     
     from cellprofiler.knime_bridge import KnimeBridgeServer
     with AnalysisWorker(work_announce_address) as worker:

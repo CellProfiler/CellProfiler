@@ -228,15 +228,6 @@ gif_8_2 = 'R0lGODdhIAAwAIcAAAAAAAEBAQICAgMDAwQEBAUFBQYGBgcHBwgICAkJCQoKCgsLCwwMD
 
 github_url = "https://github.com/CellProfiler/CellProfiler/raw/master"
 
-def teardown_package():
-    '''Shut down the Ilastik threads if they are up'''
-    try:
-        from ilastik.core.jobMachine import GLOBAL_WM
-        GLOBAL_WM.stopWorkers()
-        
-    except:
-        pass
-    
 if __name__ == "__main__":
     import nose
     

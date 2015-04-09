@@ -842,6 +842,14 @@ def build_extensions():
 
 def run_pipeline_headless(options, args):
     '''Run a CellProfiler pipeline in headless mode'''
+    #
+    # Start Ilastik's workers
+    #
+    try:
+        from ilastik.core.jobMachine import GLOBAL_WM
+        GLOBAL_WM.set_thread_count(1)
+    except:
+        logging.root.warn("Failed to stop Ilastik")
     
     if sys.platform == 'darwin':
         if options.start_awt:

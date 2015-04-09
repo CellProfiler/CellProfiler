@@ -72,6 +72,11 @@ class CPShutdownPlugin(nose.plugins.Plugin):
             self.temp_images = None
         else:
             self.temp_images = tempfile.mkdtemp(prefix="cptempimages")
+        try:
+            from ilastik.core.jobMachine import GLOBAL_WM
+            GLOBAL_WM.set_thread_count(1)
+        except:
+            pass
             
     def finalize(self, result):
         try:

@@ -31,33 +31,41 @@ def read_directory_url(url):
       on whether the filename is the name of a directory, file or
       is not known.
     '''
-    fd = urllib2.urlopen(url)
-    data = ""
-    discard = True
-    for line in fd:
-        if discard:
-            if line.lower().find("<ul>") != -1:
-                discard = False
-            else:
-                continue
-        elif line.lower().find("/ul") != -1:
+    #
+    # See http://httpd.apache.org/docs/trunk/mod/mod_autoindex.html
+    #     F=0 is simple list
+    #
+    for urll in (url, url+"?F=0"):
+        fd = urllib2.urlopen(urll)
+        data = ""
+        discard = True
+        for line in fd:
+            if discard:
+                if line.lower().find("<ul>") != -1:
+                    discard = False
+                else:
+                    continue
+            elif line.lower().find("/ul") != -1:
+                data += line
+                break
             data += line
-            break
-        data += line
-    doc = dom.parseString(data)
-    result = []
-    for a in doc.getElementsByTagName("a"):
-        href = a.getAttribute("href")
-        if len(href) > 0:
-            if href.startswith("/"):
-                continue # Global like "/foo/"
-            elif href in ("./", "../"):
-                continue
-            elif href.endswith("/"):
-                result.append((urllib.unquote(href[:-1]), IS_DIRECTORY))
-            else:
-                result.append((urllib.unquote(href), IS_FILE))
-    return result
+        else:
+            continue
+        doc = dom.parseString(data)
+        result = []
+        for a in doc.getElementsByTagName("a"):
+            href = a.getAttribute("href")
+            if len(href) > 0:
+                if href.startswith("/"):
+                    continue # Global like "/foo/"
+                elif href in ("./", "../"):
+                    continue
+                elif href.endswith("/"):
+                    result.append((urllib.unquote(href[:-1]), IS_DIRECTORY))
+                else:
+                    result.append((urllib.unquote(href), IS_FILE))
+        return result
+    raise RuntimeError("Unable to get directory listing from %s" % url)
 
 def walk_url(url, topdown = False):
     files = [f for f,d in read_directory_url(url) if d == IS_FILE]

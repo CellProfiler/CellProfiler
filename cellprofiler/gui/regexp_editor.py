@@ -189,6 +189,12 @@ class RegexpDialog(wx.Dialog):
             if m is not None:
                 self.regexp_display.Text = guess
                 break
+        else:
+            wx.MessageBox(
+                "None of the standard regular expressions matches the test text.",
+                caption = "No matching guesses",
+                style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
+                parent = self)
     
     def on_ok_button(self, event):
         self.EndModal(1)

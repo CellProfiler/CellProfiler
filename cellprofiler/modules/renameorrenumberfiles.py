@@ -246,6 +246,10 @@ class RenameOrRenumberFiles(cpm.CPModule):
         #
         # Perform the actual renaming
         #
+        
+        # Most likely, we have a handle on the file open in BioFormats
+        from bioformats.formatreader import clear_image_reader_cache
+        clear_image_reader_cache()
         os.rename(os.path.join(path, file_name),
                   os.path.join(path, new_file_name))
         

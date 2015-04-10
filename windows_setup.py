@@ -312,6 +312,12 @@ if CP_NO_ILASTIK not in os.environ:
             import OpenGL.platform.win32
             opts['py2exe']['includes'] += ['OpenGL.platform.win32', 
                                            'OpenGL.arrays.*']
+            try:
+                import OpenGL_accelerate
+                opts['py2exe']['includes'] += [
+                    'OpenGL_accelerate', 'OpenGL_accelerate.*']
+            except:
+                print "This installation does not have accelerated OpenGL support for Ilastik"
         except:
             print "This installation will not supply OpenGL support for Ilastik"
     except:

@@ -1835,6 +1835,26 @@ path and a .txt extension.</li>
 </ul>
 """
 
+FOLDER_RE_GUESS_HELP = """
+Specifies the file, if any, containing regular expression guesses for
+folder names. The file should have one guess per line. The regular expression
+editor will check each regular expression in the file against the example
+folder name and will choose the first one that matches.
+<br>You can use this to customize the regular expression editor's guesses
+or to distribute a standardized list of regular expressions within an
+organization.
+"""
+
+FILE_RE_GUESS_HELP = """
+Specifies the file, if any, containing regular expression guesses for
+file names. The file should have one guess per line. The regular expression
+editor will check each regular expression in the file against the example
+file name and will choose the first one that matches.
+<br>You can use this to customize the regular expression editor's guesses
+or to distribute a standardized list of regular expressions within an
+organization.
+"""
+
 EACH_PREFERENCE_HELP = (
     ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP ),
     ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP ),
@@ -1863,6 +1883,8 @@ EACH_PREFERENCE_HELP = (
     ( "Maximum number of workers", MAX_WORKERS_HELP),
     ( "Temporary folder", TEMP_DIR_HELP),
     ( "Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),
+    ( "Folder name regular expression guesses", FOLDER_RE_GUESS_HELP),
+    ( "File name regular expression guesses", FILE_RE_GUESS_HELP)
     )
 PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
 <ul>"""

@@ -1196,9 +1196,14 @@ class ModuleView:
                     pass
                 
                 if v.guess == cps.RegexpText.GUESS_FOLDER:
+                    guess_file = cpprefs.get_pathname_re_guess_file()
                     guesses = RE_FOLDER_GUESSES
                 else:
+                    guess_file = cpprefs.get_filename_re_guess_file()
                     guesses = RE_FILENAME_GUESSES
+                if guess_file is not None and os.path.exists(guess_file):
+                    with open(guess_file, "r") as fd:
+                        guesses = [x.strip() for x in fd.readlines()]
                 new_value = edit_regexp(panel, control.Value, filename, guesses)
                 if new_value:
                     control.Value = new_value

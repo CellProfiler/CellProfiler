@@ -348,6 +348,8 @@ ERROR_COLOR = "ErrorColor"
 INTERPOLATION_MODE = "InterpolationMode"
 INTENSITY_MODE = "IntensityMode"
 SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
+FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
+PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
 
 IM_NEAREST = "Nearest"
 IM_BILINEAR = "Bilinear"
@@ -1413,6 +1415,44 @@ def set_allow_schema_write(value):
     '''
     global __allow_schema_write
     __allow_schema_write = value
+    
+__filename_re_guess_file = None
+def get_filename_re_guess_file():
+    '''The path to the file that contains filename regular expression guesses
+
+    The file given by this preference is an optional file that contains
+    possible regular expression patterns to match against file names.
+    '''
+    global __filename_re_guess_file
+    if __filename_re_guess_file is None:
+        if config_exists(FILENAME_RE_GUESSES_FILE):
+            __filename_re_guess_file = config_read(FILENAME_RE_GUESSES_FILE)
+    return __filename_re_guess_file
+
+def set_filename_re_guess_file(value):
+    '''Set the path to the filename regular expression guess file'''
+    global __filename_re_guess_file
+    __filename_re_guess_file = value
+    config_write(FILENAME_RE_GUESSES_FILE, value)
+
+__pathname_re_guess_file = None
+def get_pathname_re_guess_file():
+    '''The path to the file that contains pathname regular expression guesses
+
+    The file given by this preference is an optional file that contains
+    possible regular expression patterns to match against path names.
+    '''
+    global __pathname_re_guess_file
+    if __pathname_re_guess_file is None:
+        if config_exists(PATHNAME_RE_GUESSES_FILE):
+            __pathname_re_guess_file = config_read(PATHNAME_RE_GUESSES_FILE)
+    return __pathname_re_guess_file
+
+def set_pathname_re_guess_file(value):
+    '''Set the path to the pathname regular expression guess file'''
+    global __pathname_re_guess_file
+    __pathname_re_guess_file = value
+    config_write(PATHNAME_RE_GUESSES_FILE, value)
 
 __image_set_filename = None
 def set_image_set_file(filename):

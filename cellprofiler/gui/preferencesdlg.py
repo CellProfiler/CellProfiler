@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 
 import wx
 import matplotlib.cm
+import os
 import sys
 
 import cellprofiler.preferences as cpprefs
@@ -122,7 +123,10 @@ class PreferencesDlg(wx.Dialog):
                     validator = ClassPathValidator()
                 else:
                     validator = wx.DefaultValidator
-                ctl = wx.TextCtrl(scrollpanel, -1, getter(), 
+                current = getter()
+                if current == None:
+                    current = ""
+                ctl = wx.TextCtrl(scrollpanel, -1, current, 
                                   validator = validator)
                 min_height = ctl.GetMinHeight()
                 min_width  = ctl.GetTextExtent("Make sure the window can display this")[0]
@@ -207,6 +211,8 @@ class PreferencesDlg(wx.Dialog):
                 zip(self.controls, p):
                 if ui_info == COLOR:
                     setter(control.BackgroundColour)
+                elif ui_info == FILEBROWSE and os.path.isfile(control.Value):
+                    setter(control.Value)
                 else:
                     setter(control.Value)
     
@@ -353,7 +359,17 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_save_pipeline_with_project,
                  cpprefs.set_save_pipeline_with_project,
                  cpprefs.SPP_ALL,
-                 cphelp.SAVE_PIPELINE_WITH_PROJECT_HELP]
+                 cphelp.SAVE_PIPELINE_WITH_PROJECT_HELP],
+                ['Folder name regular expression guesses',
+                 cpprefs.get_pathname_re_guess_file,
+                 cpprefs.set_pathname_re_guess_file,
+                 FILEBROWSE,
+                 cphelp.FOLDER_RE_GUESS_HELP],
+                ['File name regular expression guesses',
+                 cpprefs.get_filename_re_guess_file,
+                 cpprefs.set_filename_re_guess_file,
+                 FILEBROWSE,
+                 cphelp.FILE_RE_GUESS_HELP]
                 ]
     
     def get_title_font(self):

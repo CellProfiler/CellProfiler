@@ -164,7 +164,7 @@ def optimize(method_name, gt_snakes, images, params, precision, avg_cell_diamete
     distance_function = pf_get_distance(gt_snakes, images, params)
     initial_distance = distance_function(encoded_params)
     if method_name == "mp":
-        best_params_encoded, distance = multiproc_multitype_fitness(images.image, gt_snakes, precision, avg_cell_diameter)
+        best_params_encoded, distance = multiproc_multitype_fitness(images.image, gt_snakes, precision, avg_cell_diameter, params)
         # test_trained_parameters(images.image, params, precision, avg_cell_diameter)
         # return fitted_params, score
     else:
@@ -275,18 +275,18 @@ def optimize_anneal(params_to_optimize, distance_function):
 #
 
 
-def run_wrapper(queue, image, gt_snakes, precision, avg_cell_diameter, method):
+def run_wrapper(queue, image, gt_snakes, precision, avg_cell_diameter, method, init_params):
     random.seed()  # reseed with random
-    result = run(image, gt_snakes, precision, avg_cell_diameter, method)
+    result = run(image, gt_snakes, precision, avg_cell_diameter, method, init_params)
     queue.put(result)
 
 
-def multiproc_multitype_fitness(image, gt_snakes, precision, avg_cell_diameter):
+def multiproc_multitype_fitness(image, gt_snakes, precision, avg_cell_diameter, init_params=None):
     result_queue = Queue()
     workers_num = get_max_workers()
 
     optimizers = [
-        Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "brute"))
+        Process(target=run_wrapper, args=(result_queue, image, gt_snakes, precision, avg_cell_diameter, "brute", init_params))
         for _ in range(workers_num)]
 
     for optimizer in optimizers:

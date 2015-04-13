@@ -3,6 +3,12 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 import numpy as np
 
+# parameters_settings = {
+#     "brightnessWeight": [min, max, scale_down, scale_up]
+# }
+#
+#
+
 parameters_range = {"brightnessWeight": (-0.4, 0.4),
                     "borderThickness": (0.0, 1.0),
                     "cumBrightnessWeight": (0, 500),

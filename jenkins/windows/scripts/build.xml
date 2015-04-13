@@ -169,6 +169,7 @@
     <antcall target="run-tests">
       <param name="ts-directory" value="cellprofiler/modules"/>
       <param name="ts-output-file" value = "cellprofiler_modules.xml"/>
+      <param name="ts-pattern" value="(:?^)test(s|_.*)"/>
     </antcall>
   </target>
 

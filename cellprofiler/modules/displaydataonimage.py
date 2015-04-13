@@ -355,7 +355,8 @@ class DisplayDataOnImage(cpm.CPModule):
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
         ax = figure.subplot(0, 0)
-        title = "%s_%s" % (self.objects_name.value, self.measurement.value)
+        title = "%s_%s" % (self.objects_name.value if self.objects_or_image == OI_OBJECTS else cpmeas.IMAGE, 
+                           self.measurement.value)
         def imshow_fn(pixel_data):
             if pixel_data.ndim == 3:
                 figure.subplot_imshow_color(0, 0, pixel_data, title=title)

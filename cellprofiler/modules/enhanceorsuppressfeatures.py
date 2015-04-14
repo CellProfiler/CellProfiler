@@ -27,7 +27,7 @@ import cellprofiler.settings as cps
 from cellprofiler.cpmath.cpmorphology import opening, closing, white_tophat
 from cellprofiler.cpmath.filter import enhance_dark_holes, circular_hough
 from cellprofiler.cpmath.filter import variance_transform, line_integration
-from cellprofiler.cpmath.filter import hessian
+from cellprofiler.cpmath.filter import hessian, median_filter
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
 ENHANCE = 'Enhance'
@@ -40,6 +40,9 @@ E_CIRCLES = 'Circles'
 E_TEXTURE = 'Texture'
 E_DIC = 'DIC'
 
+S_FAST = "Fast / hexagonal"
+S_SLOW = "Slow / circular"
+
 N_GRADIENT = "Line structures"
 N_TUBENESS = "Tubeness"
 
@@ -47,7 +50,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
 
     module_name = 'EnhanceOrSuppressFeatures'
     category = "Image Processing"
-    variable_revision_number = 4
+    variable_revision_number = 5
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
@@ -211,11 +214,24 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             The effect is to enhance lines whose width is the "feature size".</li>
             </ul>"""%globals())
         
+        self.speckle_accuracy = cps.Choice(
+            "Speed and accuracy", 
+            choices = [S_FAST, S_SLOW],
+            doc = """
+            <i>(Used only for the %(E_SPECKLES)s method)</i><br>
+            <i>%(E_SPECKLES)s</i> can use a fast or slow algorithm to find
+            speckles. Choose <i>%(S_FAST)s</i> for speckles that have a large
+            radius (greater than 10 pixels) and need not be exactly circular.
+            Choose <i>%(S_SLOW)s</i> for speckles of small radius or to
+            maintain backwards compatibility with previous versions of
+            CellProfiler.
+            """ % globals())
+        
     def settings(self):
         return [ self.image_name, self.filtered_image_name,
                 self.method, self.object_size, self.enhance_method,
                 self.hole_size, self.smoothing, self.angle, self.decay,
-                self.neurite_choice]
+                self.neurite_choice, self.speckle_accuracy]
 
 
     def visible_settings(self):
@@ -235,6 +251,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                     result += [self.object_size]
                 else:
                     result += [self.smoothing]
+            elif self.enhance_method == E_SPECKLES:
+                result += [self.object_size, self.speckle_accuracy]
             else:
                 result += [self.object_size]
         else:
@@ -252,7 +270,18 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         pixel_data = image.pixel_data
         if self.method == ENHANCE:
             if self.enhance_method == E_SPECKLES:
-                result = white_tophat(pixel_data, radius, mask)
+                if self.speckle_accuracy == S_SLOW:
+                    result = white_tophat(pixel_data, radius, mask)
+                else:
+                    #
+                    # white_tophat = img - opening
+                    #              = img - dilate(erode)
+                    #              = img - median_filter(median_filter(0%) 100%)
+                    result = pixel_data - median_filter(
+                        median_filter(pixel_data, mask, radius, percent = 0), 
+                        mask, radius, percent = 100)
+                    if mask is not None:
+                        result[~mask] = pixel_data[~mask]
             elif self.enhance_method == E_NEURITES:
                 if self.neurite_choice == N_GRADIENT:
                     #
@@ -361,6 +390,9 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         if not from_matlab and variable_revision_number == 3:
             setting_values = setting_values + [N_GRADIENT]
             variable_revision_number = 4
+        if not from_matlab and variable_revision_number == 4:
+            setting_values = setting_values + [S_SLOW]
+            variable_revision_number = 5
         return setting_values, variable_revision_number, from_matlab
 
 EnhanceOrSuppressSpeckles = EnhanceOrSuppressFeatures

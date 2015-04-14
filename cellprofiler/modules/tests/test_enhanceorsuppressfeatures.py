@@ -72,7 +72,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
     def test_01_00_check_version(self):
         '''Make sure the test covers the latest revision number'''
         # Create a new test and update this one after changing settings
-        self.assertEqual(E.EnhanceOrSuppressFeatures.variable_revision_number, 4)
+        self.assertEqual(E.EnhanceOrSuppressFeatures.variable_revision_number, 5)
         
     def test_01_01_load_v1(self):
         data = ( 'eJztWNFO2zAUdUqBsUkr28v26Ee60aotQ4NqKu0oEtUIVLRiQohtpnXba'
@@ -220,12 +220,72 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_
         self.assertEqual(module.hole_size.max, 10)
         self.assertEqual(module.angle, 45)
         self.assertEqual(module.decay, .9)
+        self.assertEqual(module.speckle_accuracy, E.S_SLOW)
         
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
         self.assertEqual(module.enhance_method, E.E_DIC)
         
-    def test_01_04_load_v4(self):
+    def test_01_05_load_v5(self):
+        data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150414135713
+GitHash:3bad577
+ModuleCount:2
+HasImagePlaneDetails:False
+
+EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:Dendrite
+    Name the output image:EnhancedDendrite
+    Select the operation:Enhance
+    Feature size:10
+    Feature type:Neurites
+    Range of hole sizes:1,10
+    Smoothing scale:2.0
+    Shear angle:0
+    Decay:0.95
+    Enhancement method:Tubeness
+    Speed and accuracy:Slow / circular
+
+EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:Axon
+    Name the output image:EnhancedAxon
+    Select the operation:Enhance
+    Feature size:10
+    Feature type:Neurites
+    Range of hole sizes:1,10
+    Smoothing scale:2.0
+    Shear angle:0
+    Decay:0.95
+    Enhancement method:Line structures
+    Speed and accuracy:Fast / hexagonal
+'''
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()),2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+        self.assertEqual(module.image_name, "Dendrite")
+        self.assertEqual(module.filtered_image_name, "EnhancedDendrite")
+        self.assertEqual(module.method, E.ENHANCE)
+        self.assertEqual(module.enhance_method, E.E_NEURITES)
+        self.assertEqual(module.smoothing, 2.0)
+        self.assertEqual(module.object_size, 10)
+        self.assertEqual(module.hole_size.min, 1)
+        self.assertEqual(module.hole_size.max, 10)
+        self.assertEqual(module.angle, 0)
+        self.assertEqual(module.decay, .95)
+        self.assertEqual(module.neurite_choice, E.N_TUBENESS)
+        self.assertEqual(module.speckle_accuracy, E.S_SLOW)
+        
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+        self.assertEqual(module.speckle_accuracy, E.S_FAST)
+
+    def test_01_05_load_v5(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 DateRevision:20120516145742
@@ -331,25 +391,31 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         i,j = np.mgrid[-5:5,-5:5]
         image[5,5] = 1
         mask[np.logical_and(i**2+j**2<=16,image==0)] = False
-        #
-        # Prove that, without the mask, the image is zero
-        #
-        workspace, module = self.make_workspace(image, None)
-        module.method.value = E.ENHANCE
-        module.object_size.value = 7
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(result.pixel_data == image))
-        #
-        # rescue the point with the mask
-        #
-        workspace, module = self.make_workspace(image, mask)
-        module.method.value = E.ENHANCE
-        module.object_size.value = 7
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
-        self.assertTrue(np.all(result.pixel_data == 0))
+        for speckle_accuracy in E.S_SLOW, E.S_FAST:
+            #
+            # Prove that, without the mask, the image is zero
+            #
+            workspace, module = self.make_workspace(image, None)
+            assert isinstance(module, E.EnhanceOrSuppressFeatures)
+            module.method.value = E.ENHANCE
+            module.enhance_method.value = E.E_SPECKLES
+            module.speckle_accuracy.value = speckle_accuracy
+            module.object_size.value = 7
+            module.run(workspace)
+            result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            self.assertTrue(np.all(result.pixel_data == image))
+            #
+            # rescue the point with the mask
+            #
+            workspace, module = self.make_workspace(image, mask)
+            module.method.value = E.ENHANCE
+            module.enhance_method.value = E.E_SPECKLES
+            module.speckle_accuracy.value = speckle_accuracy
+            module.object_size.value = 7
+            module.run(workspace)
+            result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            self.assertFalse(result is None)
+            self.assertTrue(np.all(result.pixel_data == 0))
 
     def test_03_02_suppressmask(self):
         '''Suppress a speckles image, masking a portion'''

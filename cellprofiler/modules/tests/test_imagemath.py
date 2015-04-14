@@ -858,3 +858,111 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         np.testing.assert_array_equal(
             pixel_data, m.get_image("inputimage").pixel_data > .5)
         
+    def test_12_01_or_binary(self):
+        def fn(module):
+            module.operation.value = I.O_OR
+        np.random.seed(1201)
+        for n in range(2,5):
+            images = [
+                { 'pixel_data':np.random.uniform(size=(10,10)) > .5 }
+                for i in range(n)]
+            expected = reduce(np.logical_or, [x['pixel_data'] for x in images])
+            output = self.run_imagemath(images, fn)
+            self.check_expected(output, expected)
+            
+    def test_12_02_or_numeric(self):
+        def fn(module):
+            module.operation.value = I.O_OR
+        np.random.seed(1201)
+        images = []
+        for _ in range(2):
+            pixel_data = np.random.uniform(size=(10,10))
+            pixel_data[pixel_data < .5] = 0
+            images.append( {'pixel_data': pixel_data})
+        expected = reduce(np.logical_or, [x['pixel_data'] for x in images])
+        output = self.run_imagemath(images, fn)
+        self.check_expected(output, expected)
+        
+    def test_13_01_and_binary(self):
+        def fn(module):
+            module.operation.value = I.O_AND
+        np.random.seed(1301)
+        for n in range(2,5):
+            images = [
+                { 'pixel_data':np.random.uniform(size=(10,10)) > .5 }
+                for i in range(n)]
+            expected = reduce(np.logical_and, [x['pixel_data'] for x in images])
+            output = self.run_imagemath(images, fn)
+            self.check_expected(output, expected)
+            
+    def test_14_01_not(self):
+        def fn(module):
+            module.operation.value = I.O_NOT
+        np.random.seed(4201)
+        pixel_data = np.random.uniform(size=(10,10)) > .5
+        expected = ~ pixel_data
+        output = self.run_imagemath([{'pixel_data': pixel_data}], fn)
+        self.check_expected(output, expected)
+        
+    def test_15_01_equals_binary(self):
+        def fn(module):
+            module.operation.value = I.O_EQUALS
+        np.random.seed(1501)
+        
+        for n in range(2,5):
+            image0 = np.random.uniform(size=(20, 20)) > .5
+            images = [{'pixel_data': image0}]
+            expected = np.ones(image0.shape, bool)
+            for i in range(1, n):
+                image = np.random.uniform(size=(20, 20)) > .5
+                expected = expected & (image == image0)
+                images.append(dict(pixel_data = image))
+            output = self.run_imagemath(images, fn)
+            self.check_expected(output, expected)
+        
+    def test_15_02_equals_numeric(self):
+        def fn(module):
+            module.operation.value = I.O_EQUALS
+        np.random.seed(1502)
+        
+        image0 = np.random.uniform(size=(20, 20))
+        image1 = np.random.uniform(size=(20, 20))
+        expected = np.random.uniform(size=(20, 20)) > .5
+        image1[expected] = image0[expected]
+        images = [{'pixel_data': image0}, 
+                  {'pixel_data': image1}]
+        output = self.run_imagemath(images, fn)
+        self.check_expected(output, expected)
+        
+    def test_16_01_minimum(self):
+        def fn(module):
+            module.operation.value = I.O_MINIMUM
+        np.random.seed(1502)
+        
+        for n in range(2,5):
+            image0 = np.random.uniform(size=(20, 20))
+            images = [{'pixel_data': image0}]
+            expected = image0.copy()
+            for i in range(1, n):
+                image = np.random.uniform(size=(20, 20))
+                expected = np.minimum(expected, image)
+                images.append(dict(pixel_data = image))
+            output = self.run_imagemath(images, fn)
+            self.check_expected(output, expected)
+        
+    def test_17_01_maximum(self):
+        def fn(module):
+            module.operation.value = I.O_MAXIMUM
+        np.random.seed(1502)
+        
+        for n in range(2,5):
+            image0 = np.random.uniform(size=(20, 20))
+            images = [{'pixel_data': image0}]
+            expected = image0.copy()
+            for i in range(1, n):
+                image = np.random.uniform(size=(20, 20))
+                expected = np.maximum(expected, image)
+                images.append(dict(pixel_data = image))
+            output = self.run_imagemath(images, fn)
+            self.check_expected(output, expected)
+        

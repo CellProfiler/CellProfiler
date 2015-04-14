@@ -1804,6 +1804,7 @@ class ExportToDatabase(cpm.CPModule):
             connection.commit()
         except:
             connection.rollback()
+            raise
         finally:
             cursor.close()
             connection.close()
@@ -2161,12 +2162,20 @@ class ExportToDatabase(cpm.CPModule):
         #
         # Drop either the unified objects table or the view of it
         #
-        execute(cursor, 'DROP TABLE IF EXISTS %s' %
-                self.get_table_name(cpmeas.OBJECT), 
-                return_result = False)
-        execute(cursor, 'DROP VIEW IF EXISTS %s' %
-                self.get_table_name(cpmeas.OBJECT), 
-                return_result = False)
+        object_table_name = self.get_table_name(cpmeas.OBJECT)
+        try:
+            execute(cursor, 'DROP TABLE IF EXISTS %s' %
+                    self.get_table_name(cpmeas.OBJECT), 
+                    return_result = False)
+        except:
+            # MySQL is fine if the table is a view, but not SQLite
+            pass
+        try:
+            execute(cursor, 'DROP VIEW IF EXISTS %s' %
+                    self.get_table_name(cpmeas.OBJECT), 
+                    return_result = False)
+        except:
+            pass
         
         if self.objects_choice != O_NONE:
             # Object table/view
@@ -4195,7 +4204,7 @@ class ColumnNameMapping:
             reverse_dictionary.pop(orig_name)
             reverse_dictionary[name] = key
             self.__dictionary[key] = name
-
+        self.__mapped = True
 
 def random_number_generator(seed):
     '''This is a very repeatable pseudorandom number generator

@@ -1377,6 +1377,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             if event.is_image_set_modification:
                 self.on_image_set_modification()
             self.__workspace.save_pipeline_to_measurements()
+            if isinstance(
+                event, (cpp.ModuleAddedPipelineEvent, 
+                        cpp.ModuleMovedPipelineEvent,
+                        cpp.ModuleRemovedPipelineEvent,
+                        cpp.PipelineClearedEvent,
+                        cpp.PipelineLoadedEvent)):
+                self.populate_goto_menu()
             
     def on_image_set_modification(self):
         self.__workspace.invalidate_image_set()
@@ -1902,7 +1909,33 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                       id = menu_id)
                 sub_menu.Append(menu_id, module_name)
             menu.AppendSubMenu(sub_menu, category)
+    
+    def populate_goto_menu(self, menu = None):
+        '''Populate the menu items in the edit->goto menu'''
+        if menu is None:
+            menu = self.__frame.menu_edit_goto_module
+        assert isinstance(menu, wx.Menu)
+        ids = []
+        for item in menu.GetMenuItems():
+            assert isinstance(item, wx.MenuItem)
+            self.__frame.Unbind(wx.EVT_MENU, id = item.Id)
+            ids.append(item.Id)
+        for item_id in ids:
+            menu.Delete(item_id)
+        modules = self.__pipeline.modules(exclude_disabled=False)
+        if len(ids) < len(modules):
+            ids += [wx.NewId() for _ in range(len(ids), len(modules))]
+        for item_id, module in zip(ids, modules):
+            item = menu.Append(
+                item_id,
+                "#%02d %s" % (module.module_num, module.module_name))
+            def on_goto_module(event, module_num = module.module_num):
+                self.on_goto_module(event, module_num)
+            self.__frame.Bind(wx.EVT_MENU, on_goto_module, id=item_id)
             
+    def on_goto_module(self, event, module_num):
+        self.__module_view.set_selection(module_num)
+        
     def on_menu_add_module(self, event):
         from cellprofiler.modules import instantiate_module
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
@@ -2242,6 +2275,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                   num_workers)
             self.__frame.preferences_view.update_worker_count_info(num_workers)
             self.enable_module_controls_panel_buttons()
+            self.populate_goto_menu()
 
         except Exception, e:
             # Catastrophic failure

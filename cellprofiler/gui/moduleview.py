@@ -58,8 +58,6 @@ EDIT_TIMEOUT_SEC = 5
 PRI_VALIDATE_DISPLAY = 0
 PRI_VALIDATE_BACKGROUND = 1
 
-MODULE_SETTINGS_LABEL = "Module settings"
-
 class SettingEditedEvent:
     """Represents an attempt by the user to edit a setting
     
@@ -260,6 +258,7 @@ class ModuleView:
         '''
         pipeline = workspace.pipeline
         self.__workspace = workspace
+        self.__module = None
         self.refresh_pending = False
         self.notes_panel = notes_panel
         self.__frame = frame
@@ -283,7 +282,7 @@ class ModuleView:
         #############################################
         top_panel.Sizer = wx.BoxSizer()
         self.module_settings_box = wx.StaticBox(
-            top_panel, label = MODULE_SETTINGS_LABEL)
+            top_panel, label = self.get_module_settings_label())
         module_settings_box_sizer = wx.StaticBoxSizer(self.module_settings_box)
         top_panel.Sizer.Add(module_settings_box_sizer, 1, wx.EXPAND)
         self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(
@@ -302,7 +301,6 @@ class ModuleView:
         self.__as_datatool = as_datatool
         self.__listeners = []
         self.__value_listeners = []
-        self.__module = None
         self.__inside_notify = False
         self.__handle_change = True
         self.__notes_text = None
@@ -346,8 +344,14 @@ class ModuleView:
         self.__sizer.Reset(0,3)
         if self.notes_panel is not None:
             self.notes_panel.Hide()
-        self.module_settings_box.Label = MODULE_SETTINGS_LABEL
+        self.module_settings_box.Label = self.get_module_settings_label()
     
+    def get_module_settings_label(self):
+        if self.__module is None:
+            return "Module settings"
+        return "Module settings (%s #%02d)" % (
+            self.__module.module_name, self.__module.module_num)
+        
     def hide_settings(self):
         for child in self.__module_panel.Children:
             child.Hide()
@@ -382,7 +386,8 @@ class ModuleView:
             if not reselecting:
                 if self.__module is not None:
                     self.__module.on_deactivated()
-                self.module_settings_box.Label = MODULE_SETTINGS_LABEL
+                self.module_settings_box.Label = \
+                    self.get_module_settings_label()
                 self.clear_selection()
                 self.request_validation(new_module)
                 try:
@@ -2084,7 +2089,7 @@ class ModuleView:
         # Update the group box
         #
         if bad_setting is None:
-            self.module_settings_box.Label = MODULE_SETTINGS_LABEL
+            self.module_settings_box.Label = self.get_module_settings_label()
             self.module_settings_box.SetForegroundColour(
                 wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
             self.module_settings_box.SetToolTip(None)
@@ -2092,7 +2097,7 @@ class ModuleView:
             msg = "Hover over the %s below for more information" % (
                 "error" if level == logging.ERROR else "warning")
             self.module_settings_box.Label = "%s: %s" % (
-                MODULE_SETTINGS_LABEL, msg)
+                self.get_module_settings_label(), msg)
             self.module_settings_box.SetToolTipString(message)
             self.module_settings_box.SetForegroundColour(
                 cpprefs.get_error_color())

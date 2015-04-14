@@ -86,6 +86,7 @@ ID_EDIT_CLEAR_FILE_LIST = wx.NewId()
 ID_EDIT_REMOVE_FROM_FILE_LIST = wx.NewId()
 ID_EDIT_SHOW_FILE_LIST_IMAGE = wx.NewId()
 ID_EDIT_ENABLE_MODULE = wx.NewId()
+ID_EDIT_GO_TO_MODULE = wx.NewId()
 
 ID_OPTIONS_PREFERENCES = wx.ID_PREFERENCES
 ID_CHECK_NEW_VERSION = wx.NewId()
@@ -610,6 +611,9 @@ class CPFrame(wx.Frame):
             "Disable a module to skip it when running the pipeline")
         self.menu_edit_add_module = wx.Menu()
         self.menu_edit.AppendSubMenu(self.menu_edit_add_module, "&Add Module")
+        self.menu_edit_goto_module = wx.Menu()
+        self.menu_edit.AppendSubMenu(
+            self.menu_edit_goto_module, "&Go to Module")
 
         self.menu_edit.AppendSeparator()
         self.menu_edit.Append(ID_EDIT_SHOW_FILE_LIST_IMAGE,

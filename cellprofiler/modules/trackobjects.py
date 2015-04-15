@@ -747,7 +747,7 @@ class TrackObjects(cpm.CPModule):
         
         self.drop_cost = cps.Float(
             "Cost of cell to empty matching",
-            15, minval=1, maxval=50, doc='''\
+            15, minval=1, maxval=200, doc='''\
             %(ONLY_IF_FOLLOWNEIGHBORS)s<br>
             The cost of assigning cell as "lost" in transition from t to t+1. Increasing this value leads to more 
             cells (from t) being matched with cells (from t+1) rather then classified as "lost".

@@ -2048,41 +2048,31 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         self.assertEqual(m(T.F_LABEL), 2)
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)
 
-    def test_10_07_neighbour_track_crossroad(self):
-        '''Track two groups that pass each other'''
+    def test_10_07_neighbour_track_group_with_drop(self):
+        '''Track groups with one lost'''
         labels1 = np.zeros((20,20), int)
-        # group one top left
         labels1[2,2] = 1
         labels1[4,2] = 2
         labels1[2,4] = 3
         labels1[4,4] = 4
-        # group two bottom left
-        labels1[18,2] = 5
-        labels1[18,4] = 6
 
         labels2 = np.zeros((20,20), int)
-        # group one top left
         labels2[16,16] = 1
         labels2[18,16] = 2
-        labels2[16,18] = 3
+        # labels2[16,18] = 3 is no longer present
         labels2[18,18] = 4
-        # group two bottom left
-        labels2[2,16] = 5
-        labels2[2,18] = 6
         def fn(module, workspace, idx):
             if idx == 0:
-                module.drop_cost.value = 1000
+                module.drop_cost.value = 100 # make it always try to match
                 module.pixel_radius.value = 200
                 module.average_cell_diameter.value = 5
                 module.tracking_method.value = T.TM_FOLLOWNEIGHBORS
         measurements = self.runTrackObjects((labels1,labels2), fn)
-        def m(feature, id):
+        def m(feature):
             name = "_".join((T.F_PREFIX, feature, "20"))
             values = measurements.get_current_measurement(OBJECT_NAME, name)
             self.assertEqual(len(values), 1)
             return values[0]
 
-        self.check_relationships(measurements, [1,1,1,1,1,1],[1,2,3,4,5,6],[2,2,2,2,2,2],[1,2,3,4,5,6])
+        self.check_relationships(measurements, [1,1,1],[1,2,4],[2,2,2],[1,2,4])
 
-        self.assertEqual(m(T.F_LABEL), 2)
-        self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 2)

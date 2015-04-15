@@ -72,6 +72,13 @@ class CPShutdownPlugin(nose.plugins.Plugin):
             self.temp_images = None
         else:
             self.temp_images = tempfile.mkdtemp(prefix="cptempimages")
+        #
+        # Set up matplotlib for WXAgg if in frozen mode
+        # otherwise it looks for TK which isn't there
+        #
+        if hasattr(sys, 'frozen'):
+            import matplotlib
+            matplotlib.use("WXAgg")
         try:
             from ilastik.core.jobMachine import GLOBAL_WM
             GLOBAL_WM.set_thread_count(1)

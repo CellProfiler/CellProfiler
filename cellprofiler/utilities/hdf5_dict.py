@@ -1664,7 +1664,7 @@ class HDF5ObjectSet(object):
         if create:
             ds = segmentation_group.create_dataset(
                 self.SPARSE, data=data,
-                chunks=True,
+                chunks=(1024,),
                 maxshape = (None,))
         else:
             ds = segmentation_group[self.SPARSE]

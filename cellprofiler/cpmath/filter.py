@@ -92,7 +92,7 @@ def median_filter(data, mask, radius, percent=50):
       practice, it will be the lowest value in the valid area.
     '''
     if mask is None:
-        mask = np.ones_like(data, dtype=bool)
+        mask = np.ones(data.shape, dtype=bool)
     if np.all(~ mask):
         return data.copy()
     #

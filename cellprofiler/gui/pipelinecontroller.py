@@ -643,11 +643,12 @@ class PipelineController:
             if result == wx.CANCEL:
                 return
             elif result == wx.YES:
-                if cpprefs.get_current_workspace_path() is None:
+                path = cpprefs.get_current_workspace_path()
+                if path is None:
                     if not self.do_save_as_workspace():
                         return
                 else:
-                    self.do_save_workspace()
+                    self.do_save_workspace(path)
         self.do_create_workspace()
         
     def do_create_workspace(self):

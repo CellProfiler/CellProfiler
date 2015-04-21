@@ -113,7 +113,7 @@ class VWRow(object):
             if self.data.mode == MODE_HIDE:
                 self.data.mode = self.last_mode
         elif self.data.mode != MODE_HIDE:
-            self.last_mode = self.data.mode
+            self.last_mode = self.data.get_raw_mode()
             self.data.mode = MODE_HIDE
         self.update_chooser()
 

@@ -200,6 +200,10 @@ class ImageData(ColorMixin):
         else:
             return self.__mode
         
+    def get_raw_mode(self):
+        '''Get the mode as set by set_mode or in the constructor'''
+        return self.__mode
+        
     mode = property(get_mode, set_mode)
     
     def _using_color(self):

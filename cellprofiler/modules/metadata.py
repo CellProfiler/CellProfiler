@@ -770,7 +770,8 @@ class Metadata(cpm.CPModule):
                 J.call(extractor, method_name,
                        "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
                        J.make_instance(class_name, "()V"))
-                       
+        
+        has_well_extractor = False               
         for group in self.extraction_methods:
             if group == end_group:
                 break
@@ -807,24 +808,27 @@ class Metadata(cpm.CPModule):
                            "(Lorg/cellprofiler/imageset/MetadataExtractor;"
                            "Lorg/cellprofiler/imageset/filter/Filter;)V",
                            imported_extractor, fltr)
-        #
-        # Finally, we add the WellMetadataExtractor which has the inglorious
-        # job of making a well name from row and column, if present,
-        # but only if our existing metadata extractors have metadata that
-        # might require it.
-        #
-        metadata_keys = J.call(extractor,
-                               "getMetadataKeys",
-                               "()Ljava/util/List;")
-        if J.static_call("org/cellprofiler/imageset/WellMetadataExtractor",
-                         "maybeYouNeedThis", "(Ljava/util/List;)Z",
-                         metadata_keys):
-            J.call(extractor,
-                   "addImagePlaneDetailsExtractor",
-                   "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
-                   J.make_instance(
-                       "org/cellprofiler/imageset/WellMetadataExtractor",
-                       "()V"))
+            #
+            # Finally, we add the WellMetadataExtractor which has the inglorious
+            # job of making a well name from row and column, if present,
+            # but only if our existing metadata extractors have metadata that
+            # might require it.
+            #
+            if not has_well_extractor:
+                metadata_keys = J.call(
+                    extractor, "getMetadataKeys", "()Ljava/util/List;")
+                if J.static_call(
+                    "org/cellprofiler/imageset/WellMetadataExtractor",
+                    "maybeYouNeedThis", "(Ljava/util/List;)Z",
+                    metadata_keys):
+                    J.call(
+                        extractor,
+                        "addImagePlaneDetailsExtractor",
+                        "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
+                        J.make_instance(
+                            "org/cellprofiler/imageset/WellMetadataExtractor",
+                            "()V"))
+                    has_well_extractor = True
         
         return extractor
                     

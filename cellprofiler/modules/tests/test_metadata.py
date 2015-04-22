@@ -688,6 +688,48 @@ C10,BRD041618,bar
                 cpmeas.M_WELL, 
                 [c[1] for c in module.get_measurement_columns(pipeline)])
             
+    def test_03_02_well_row_column_before_import(self):
+        # Regression test for issue #1347
+        # WellRow and WellColumn must be united asap so they can
+        # be used downstream.
+        #
+        module = M.Metadata()
+        module.wants_metadata.value=True
+        em = module.extraction_methods[0]
+        em.filter_choice.value = M.F_ALL_IMAGES
+        em.extraction_method.value = M.X_MANUAL_EXTRACTION
+        em.source.value = M.XM_FILE_NAME
+        em.file_regexp.value = (
+            "^Channel(?P<Wavelength>[1-2])-"
+            "(?P<%s>[A-H])-"
+            "(?P<%s>[0-9]{2}).tif$") %(cpmeas.FTR_ROW, cpmeas.FTR_COLUMN)
+        em.filter_choice.value = M.F_ALL_IMAGES
+        module.add_extraction_method()
+        metadata_csv = """WellName,Treatment
+C05,DMSO
+"""
+        filenum, path = tempfile.mkstemp(suffix = ".csv")
+        fd = os.fdopen(filenum, "w")
+        fd.write(metadata_csv)
+        fd.close()
+        try:
+            em = module.extraction_methods[1]
+            em.extraction_method.value = M.X_IMPORTED_EXTRACTION
+            em.filter_choice.value = M.F_ALL_IMAGES
+            em.extraction_method.value = M.X_IMPORTED_EXTRACTION
+            em.csv_location.value = path
+            em.csv_joiner.value = '[{"%s":"WellName","%s":"Well"}]' % (
+                module.CSV_JOIN_NAME, module.IPD_JOIN_NAME)
+            url = "file:/imaging/analysis/Channel1-C-05.tif"
+            self.check(module, url,
+                       [{ "Wavelength":"1",
+                          cpmeas.FTR_ROW:"C",
+                          cpmeas.FTR_COLUMN:"05",
+                          "Treatment":"DMSO",
+                          cpmeas.FTR_WELL:"C05"}])
+        except:
+            os.remove(path)
+            
     def test_04_01_ome_metadata(self):
         # Test loading one URL with the humongous stack XML
         # (pat self on back if passes)

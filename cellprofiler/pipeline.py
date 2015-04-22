@@ -866,12 +866,11 @@ class Pipeline(object):
         if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
             return
+        header = fd.read(len(HDF5_HEADER))
         if needs_close:
             fd.close()
         else:
             fd.seek(0)
-        header = fd.read(len(HDF5_HEADER))
-        fd.seek(0)
         if header[:8] == HDF5_HEADER:
             if filename is None:
                 fid, filename = tempfile.mkstemp(".h5")

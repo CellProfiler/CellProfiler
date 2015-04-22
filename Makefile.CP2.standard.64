@@ -1187,7 +1187,7 @@ distclean:				clean
 #
 $(SRCDIR)/findlibjvm.class:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/findlibjvm.class" && \
+					wget $(WGETFLAGS) "https://github.com/CellProfiler/CellProfiler/raw/release_2.1.0/cellprofiler/utilities/findlibjvm.class" && \
 					touch "$@"
 
 $(SRCDIR)/$(NUMPYVERSION).tar.gz:

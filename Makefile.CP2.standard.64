@@ -65,7 +65,7 @@ PACKAGEHOST				= http://cellprofiler.org/linked_files/CPPackageHost/
 
 MAKE_FLAGS				?= -j4
 PREFIX					?= /usr/CellProfiler
-SRCDIR					?= /usr/CellProfiler/src/CellProfiler
+SRCDIR					?= ${PREFIX}/src/CellProfiler
 TMPDIR					?= $(PWD)/tmp
 
 # Set DISABLE_PRECHECKS to "YES" (case sensitive!) to explicitly

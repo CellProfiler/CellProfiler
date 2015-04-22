@@ -41,7 +41,7 @@ import cellprofiler.modules.loadimages as LI
 from cellprofiler.modules.injectimage import InjectImage
 
 from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_fly
+     example_images_directory, maybe_download_fly, maybe_download_sbs
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
 
 IMAGE_NAME = "myimage"
@@ -126,6 +126,27 @@ class TestPipeline(unittest.TestCase):
             module.notes[0],
             """Excluding "_E12f03d" since it has an incomplete set of channels (and is the only one as such).""")
 
+    def test_01_02_is_txt_fd_sorry_for_your_proofpoint(self):
+        # Regression test of issue #1318
+        sensible = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+    Version:3
+    DateRevision:20140723174500
+    GitHash:6c2d896
+    ModuleCount:17
+    HasImagePlaneDetails:False"""
+        proofpoint = r"""CellProfiler Pipeline: https://urldefense.proofpoint.com/v2/url?u=http-3A__www.cellprofiler.org&d=AwIGAg&c=4R1YgkJNMyVWjMjneTwN5tJRn8m8VqTSNCjYLg1wNX4&r=ZlgBKM1XjsDOEFy5b6o_Y9E076K1Jlt5FonpX_9mB-M&m=mjjreN4DEr49dWksH8OkXbV51OsYqIX18TSsFFmPurA&s=tQ-7XP8ph9RHRlzicZb6N-OxPxQNMXYLqkucuJS9Hys&e= 
+Version:3
+DateRevision:20140723174500
+GitHash:6c2d896
+ModuleCount:17
+HasImagePlaneDetails:False"""
+        not_txt = r"""not CellProfiler Pipeline: http://www.cellprofiler.org"""
+        for text, expected in ((sensible, True),
+                               (proofpoint, True),
+                               (not_txt, False)):
+            fd = cStringIO.StringIO(text)
+            self.assertEqual(cpp.Pipeline.is_pipeline_txt_fd(fd), expected)
+            
     def test_02_01_copy_nothing(self):
         # Regression test of issue #565
         #
@@ -770,6 +791,7 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     Channel number:1
     Rescale intensities?:Yes
 """
+        maybe_download_sbs()
         path = os.path.join(example_images_directory(), "ExampleSBSImages")
         pipeline = cpp.Pipeline()
         pipeline.load(cStringIO.StringIO(data))

@@ -177,6 +177,9 @@ H_MESSAGE_FOR_USER = "MessageForUser"
 '''The cookie that identifies a file as a CellProfiler pipeline'''
 COOKIE = "CellProfiler Pipeline: http://www.cellprofiler.org"
 
+'''Sad proofpoint cookie: see issue #1318'''
+SAD_PROOFPOINT_COOKIE = r"CellProfiler Pipeline: https?://\S+.proofpoint.com.+http-3A__www.cellprofiler\.org"
+
 '''HDF5 file header according to the specification
 
 see http://www.hdfgroup.org/HDF5/doc/H5.format.html#FileMetaData
@@ -812,8 +815,19 @@ class Pipeline(object):
         returns True if the file starts with the CellProfiler cookie.
         '''
         with open(filename, "rb") as fd:
-            header = fd.read(len(COOKIE))
-            return header == COOKIE
+            return self.is_pipeline_text_fd(fd)
+        
+    @staticmethod
+    def is_pipeline_txt_fd(fd):
+        header = fd.read(1024)
+        fd.seek(0)
+        if header.startswith(COOKIE):
+            return True
+        if re.search(SAD_PROOFPOINT_COOKIE, header):
+            logger.info(
+                "print_emoji(\":cat_crying_because_of_proofpoint:\")")
+            return True
+        return False
         
     def load(self, fd_or_filename):
         """Load the pipeline from a file
@@ -849,15 +863,15 @@ class Pipeline(object):
                 raise IOError("Could not find file, " + fd_or_filename)
             fd = urllib2.urlopen(fd_or_filename)
             return self.load(fd)
-        header = fd.read(len(COOKIE))
-        if header == COOKIE:
-            fd.seek(0)
+        if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
             return
         if needs_close:
             fd.close()
         else:
             fd.seek(0)
+        header = fd.read(len(HDF5_HEADER))
+        fd.seek(0)
         if header[:8] == HDF5_HEADER:
             if filename is None:
                 fid, filename = tempfile.mkstemp(".h5")
@@ -935,7 +949,7 @@ class Pipeline(object):
                 return None
         
         header = rl()
-        if header != COOKIE:
+        if not self.is_pipeline_txt_fd(StringIO.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"'%header)
         version = NATIVE_VERSION
         from_matlab = False

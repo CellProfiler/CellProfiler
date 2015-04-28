@@ -274,7 +274,9 @@ def image_normalize(image):
     minimum = np.amin(image)
     maximum = np.amax(image)
 
-    delta = 1 / (maximum - minimum)
+    delta = 1
+    if maximum != minimum:
+        delta = 1 / (maximum - minimum)
     shift = - minimum * delta
 
     image_normalized = delta * image + shift

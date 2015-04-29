@@ -416,7 +416,7 @@ class ClassifyObjects(cpm.CPModule):
         
         if can_delete:
             group.remove_settings_button = cps.RemoveSettingButton(
-                "", "Remove the above classification", 
+                "", "Remove this classification", 
                 self.single_measurements, group)
         self.single_measurements.append(group)
     

@@ -151,8 +151,7 @@ class FilterObjects(cpm.CPModule):
                                                  "Measurement count")
         self.add_measurement(False)
         self.add_measurement_button = cps.DoSomething(
-            "Add another measurement",
-            "Add", self.add_measurement)
+            "","Add another measurement", self.add_measurement)
         self.filter_choice = cps.Choice(
             "Select the filtering method", FI_ALL, FI_LIMITS, doc = """
             <i>(Used only if filtering using measurements)</i><br>
@@ -317,7 +316,7 @@ class FilterObjects(cpm.CPModule):
         self.measurements.append(group)
         if can_delete:
             group.append("remover", cps.RemoveSettingButton(
-                "Remove above measurement", "Remove",
+                "", "Remove this measurement",
                 self.measurements, group))
         
     def add_additional_object(self):

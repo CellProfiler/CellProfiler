@@ -206,7 +206,10 @@ def main():
     # Limit Ilastik to one job thread.
     try:
         from ilastik.core.jobMachine import GLOBAL_WM
-        GLOBAL_WM.set_thread_count(1)
+        try:
+            GLOBAL_WM.set_thread_count(1)
+        except:
+            GLOBAL_WM.setThreadCount(1)
     except:
         pass
     

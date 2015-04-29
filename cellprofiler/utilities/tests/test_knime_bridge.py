@@ -193,7 +193,7 @@ class TestKnimeBridge(unittest.TestCase):
             zmq.Frame(RUN_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(json.dumps(image_metadata)),
-            zmq.Frame(image.data)]
+            zmq.Frame(image)]
         self.socket.send_multipart(message)
         response = self.socket.recv_multipart()
         self.assertEqual(response.pop(0), self.session_id)
@@ -237,7 +237,7 @@ class TestKnimeBridge(unittest.TestCase):
             zmq.Frame(RUN_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(json.dumps(image_metadata)),
-            zmq.Frame(image.data)]
+            zmq.Frame(image)]
         self.socket.send_multipart(message)
         response = self.socket.recv_multipart()
         self.assertEqual(response.pop(0), self.session_id)
@@ -278,7 +278,7 @@ class TestKnimeBridge(unittest.TestCase):
             zmq.Frame(RUN_GROUP_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(json.dumps(image_metadata)),
-            zmq.Frame(image.data)]
+            zmq.Frame(image)]
         self.socket.send_multipart(message)
         response = self.socket.recv_multipart()
         self.assertEqual(response.pop(0), self.session_id)
@@ -325,7 +325,7 @@ class TestKnimeBridge(unittest.TestCase):
             zmq.Frame(RUN_GROUP_REQ_1),
             zmq.Frame(pipeline_txt.getvalue()),
             zmq.Frame(json.dumps(image_metadata)),
-            zmq.Frame(image.data)]
+            zmq.Frame(image)]
         self.socket.send_multipart(message)
         response = self.socket.recv_multipart()
         self.assertEqual(response.pop(0), self.session_id)

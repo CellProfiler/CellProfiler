@@ -292,16 +292,17 @@ class KnimeBridgeServer(threading.Thread):
                             s = s.encode("utf-8")
                         else:
                             s = str(s)
-                        string_data.append(np.array(s).data)
-        data = np.hstack([np.hstack(ditem).data for ditem in
-                          double_data, float_data, int_data, string_data
-                          if len(ditem) > 0])
+                        string_data.append(np.frombuffer(s, np.uint8))
+        data = np.hstack([
+            np.frombuffer(np.hstack(ditem).data, np.uint8)
+            for ditem in double_data, float_data, int_data, string_data
+            if len(ditem) > 0])
         self.socket.send_multipart(
             [zmq.Frame(session_id),
              zmq.Frame(),
              zmq.Frame(RUN_REPLY_1),
              zmq.Frame(json.dumps(metadata)),
-             zmq.Frame(data.data)])
+             zmq.Frame(bytes(data.data))])
         
     def run_group_request(self, session_id, message_type, message):
         '''Handle a run-group request message'''
@@ -459,16 +460,17 @@ class KnimeBridgeServer(threading.Thread):
                     intf.append((feature, len(data)))
                     if len(data) > 0:
                         int_data.append(data.astype('<i4'))
-        data = np.hstack([np.ascontiguousarray(np.hstack(ditem)).data
-                          for ditem in double_data, float_data, int_data
-                          if len(ditem) > 0])
+        data = np.hstack([
+            np.frombuffer(np.ascontiguousarray(np.hstack(ditem)).data, np.uint8)
+            for ditem in double_data, float_data, int_data
+            if len(ditem) > 0])
         data = np.ascontiguousarray(data)
         self.socket.send_multipart(
             [zmq.Frame(session_id),
              zmq.Frame(),
              zmq.Frame(RUN_REPLY_1),
              zmq.Frame(json.dumps(metadata)),
-             zmq.Frame(data.data)])
+             zmq.Frame(data)])
 
     def prepare_run(self, message, session_id, grouping_allowed=False):
         '''Prepare a pipeline and measurements to run

@@ -14,8 +14,6 @@ Website: http://www.cellprofiler.org
 import logging
 import logging.handlers
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-logger.addHandler(logging.handlers.DatagramHandler("localhost", logging.handlers.DEFAULT_UDP_LOGGING_PORT))
 import Queue
 import os
 import threading

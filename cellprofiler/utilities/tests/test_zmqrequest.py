@@ -11,8 +11,13 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-
+import logging
+import logging.handlers
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.handlers.DatagramHandler("localhost", logging.handlers.DEFAULT_UDP_LOGGING_PORT))
 import Queue
+import os
 import threading
 import tempfile
 import zmq
@@ -28,12 +33,17 @@ SERVER_MESSAGE = "Hello, client"
 class TestZMQRequest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        cls.old_hostname = os.environ.get("HOSTNAME")
+        if not cls.old_hostname is None:
+            del os.environ['HOSTNAME']
         cls.zmq_context = zmq.Context()
         
     @classmethod
     def tearDownClass(cls):
         Z.join_to_the_boundary()
         cls.zmq_context.term()
+        if cls.old_hostname is not None:
+            os.environ['HOSTNAME'] = cls.old_hostname
         
     class ZMQClient(threading.Thread):
         '''A mockup of a ZMQ client to the boundary
@@ -51,24 +61,27 @@ class TestZMQRequest(unittest.TestCase):
             self.start_signal = threading.Semaphore(0)
             self.keep_going = True
             self.analysis_id = analysis_id
+            logger.info("Starting client thread")
             self.start()
             self.start_signal.acquire()
-            self.send_notify_socket = TestZMQRequest.zmq_context.socket(zmq.PUB)
+            logger.info("Client thread started")
+            self.send_notify_socket = TestZMQRequest.zmq_context.socket(zmq.PAIR)
             self.send_notify_socket.connect(self.notify_addr)
                 
         def __enter__(self):
             return self
             
         def __exit__(self, type, value, traceback):
+            logger.info("Stopping client thread")
             self.stop()
             self.join()
+            logger.info("Client thread stopped")
             self.send_notify_socket.close()
             
         def run(self):
             self.work_socket = TestZMQRequest.zmq_context.socket(zmq.REQ)
             self.work_socket.connect(Z.the_boundary.request_address)
-            self.notify_socket = TestZMQRequest.zmq_context.socket(zmq.SUB)
-            self.notify_socket.setsockopt(zmq.SUBSCRIBE, '')
+            self.notify_socket = TestZMQRequest.zmq_context.socket(zmq.PAIR)
             self.notify_socket.bind(self.notify_addr)
             poller = zmq.Poller()
             poller.register(self.work_socket, zmq.POLLIN)
@@ -77,19 +90,27 @@ class TestZMQRequest(unittest.TestCase):
             try:
                 while self.keep_going:
                     for sock, state in poller.poll():
+                        logger.info("Client interrupt")
                         if sock == self.work_socket:
+                            logger.info("Receiving message on work socket")
                             rep = Z.Communicable.recv(self.work_socket)
+                            logger.info("Message received")
                             self.response_queue.put((None, rep))
                         elif sock == self.notify_socket:
+                            logger.info("Client receiving message on notify socket")
                             msg = self.notify_socket.recv()
+                            logger.info("Client message received")
                             if msg == self.MSG_STOP:
                                 return
                             elif msg == self.MSG_SEND:
+                                logger.info("Client sending message")
                                 req = self.queue.get_nowait()
                                 req.send_only(self.work_socket)
+                                logger.info("Client message sent")
             except Exception, e:
                 self.response_queue.put((e, None))
             finally:
+                logger.info("Client thread exiting")
                 self.work_socket.close()
                 self.notify_socket.close()
                 
@@ -112,8 +133,10 @@ class TestZMQRequest(unittest.TestCase):
         def __enter__(self):
             self.analysis_id = uuid.uuid4().hex
             self.upq = Queue.Queue()
+            logger.info("Server registering")
             self.boundary = Z.register_analysis(self.analysis_id,
                                                 self.upq)
+            logger.info("Server has registered")
             return self
             
         def recv(self, timeout):
@@ -137,11 +160,15 @@ class TestZMQRequest(unittest.TestCase):
             pass
         
     def test_01_02_send_and_receive(self):
+        logger.info("Executing test_01_02_send_and_receive")
         with self.ZMQServer() as server:
             with self.ZMQClient(server.analysis_id) as client:
+                logger.info("Sending client an analysis request message")
                 client.send(Z.AnalysisRequest(server.analysis_id,
                                               msg=CLIENT_MESSAGE))
+                logger.info("Message given to client")
                 req = server.recv(10.)
+                logger.info("Message received from server")
                 self.assertIsInstance(req, Z.AnalysisRequest)
                 self.assertEqual(req.msg, CLIENT_MESSAGE)
                 req.reply(Z.Reply(msg = SERVER_MESSAGE))

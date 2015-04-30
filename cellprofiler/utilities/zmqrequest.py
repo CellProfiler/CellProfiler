@@ -518,6 +518,8 @@ class Boundary(object):
         self.external_request_socket.setsockopt(zmq.LINGER, 0)
         try:
             fqdn = socket.getfqdn()
+            # make sure that this isn't just an entry in /etc/somethingorother
+            socket.gethostbyname(fqdn)
         except:
             try:
                 fqdn = socket.gethostbyname(socket.gethostname())

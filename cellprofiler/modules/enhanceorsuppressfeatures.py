@@ -220,11 +220,14 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             doc = """
             <i>(Used only for the %(E_SPECKLES)s method)</i><br>
             <i>%(E_SPECKLES)s</i> can use a fast or slow algorithm to find
-            speckles. Choose <i>%(S_FAST)s</i> for speckles that have a large
-            radius (greater than 10 pixels) and need not be exactly circular.
-            Choose <i>%(S_SLOW)s</i> for speckles of small radius or to
+            speckles. 
+            <ul>
+            <li>Choose <i>%(S_FAST)s</i> for speckles that have a large
+            radius (greater than 10 pixels) and need not be exactly circular.</li>
+            <li>Choose <i>%(S_SLOW)s</i> for speckles of small radius or to
             maintain backwards compatibility with previous versions of
-            CellProfiler.
+            CellProfiler.</li>
+            </ul>
             """ % globals())
         
     def settings(self):

@@ -22,7 +22,7 @@ curl -O http://cellprofiler.org/svnmirror/ExampleImages/ExampleHumanImages/AS_09
 for a in *.tif; do echo file:///input/$a; done > filelist.txt
 cd ..
 mkdir -m 777 output
-docker run --rm -v $(pwd)/input:/input -v $(pwd)/output:/output ljosa/cellprofiler:master -i /input -o /output -p /input/ExampleHuman.cppipe --file-list=/input/filelist.txt
+docker run --rm -v $(pwd)/input:/input -v $(pwd)/output:/output cellprofiler/cellprofiler:master -i /input -o /output -p /input/ExampleHuman.cppipe --file-list=/input/filelist.txt
 ```
 
 ## How to file new issues

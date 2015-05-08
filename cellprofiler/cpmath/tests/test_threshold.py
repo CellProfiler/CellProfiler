@@ -13,6 +13,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
+import hashlib
 import numpy as np
 from scipy.ndimage import convolve1d
 import scipy.stats
@@ -88,7 +89,15 @@ class TestThreshold(unittest.TestCase):
         gradient = convolve1d(adaptive_threshold, [-1, 0, 1], 1)
         self.assertTrue(np.all(gradient[20:30, 20:25] < 0))
         self.assertTrue(np.all(gradient[20:30, 25:30] > 0))
-        
+
+    def get_random_state(self,  *args):
+        h = hashlib.sha1()
+        h.update(np.array(args))
+        seed = np.frombuffer(h.digest(), np.uint32)[0]
+        r = np.random.RandomState()
+        r.seed(seed)
+        return r
+
     def make_mog_image(self, loc1, sigma1, loc2, sigma2, frac1, size):
         '''Make an image that is a mixture of gaussians
         
@@ -97,9 +106,8 @@ class TestThreshold(unittest.TestCase):
         frac1 - the fraction of pixels that are in distribution 1
         size - the shape of the image.
         '''
-        r = np.random.RandomState()
-        r.seed(np.frombuffer(np.array(
-            [loc1, sigma1, loc2, sigma2, frac1] + list(size)).data, np.int32))
+        r = self.get_random_state(
+            loc1, sigma1, loc2, sigma2, frac1, *tuple(size))
         n_pixels = np.prod(size)
         p = r.permutation(n_pixels).reshape(size)
         s1 = int(n_pixels * frac1)

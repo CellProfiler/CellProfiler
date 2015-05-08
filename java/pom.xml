@@ -11,7 +11,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <bio-formats.version>5.0.5</bio-formats.version>
+    <bio-formats.version>5.1.1</bio-formats.version>
+    <omero.version>5.1.1-ice35-b43</omero.version>
   </properties>
   <groupId>org.cellprofiler</groupId>
   <artifactId>cellprofiler-java</artifactId>
@@ -116,6 +117,38 @@
  	  <version>4.9</version>
  	  <scope>test</scope>
  	</dependency>
+ 	<dependency>
+	 	<groupId>omero</groupId>
+	 	<artifactId>blitz</artifactId>
+	 	<version>${omero.version}</version>
+	 	<exclusions>
+	 		<exclusion>
+	 			<groupId>omero</groupId>
+	 			<artifactId>server</artifactId>
+	 		</exclusion>
+	 	</exclusions>
+ 	</dependency>
+ 	<dependency>
+ 		<groupId>omero</groupId>
+ 		<artifactId>common</artifactId>
+	 	<version>${omero.version}</version>
+	 	<exclusions>
+	 		<exclusion>
+	 			<groupId>ome</groupId>
+	 			<artifactId>bio-formats</artifactId>
+	 		</exclusion>
+	 	</exclusions>
+ 	</dependency>
+ 	<!-- 
+ 		hsqldb 1.8.0.2 is needed by spring needed by model-psql needed by common.
+ 		The latest (only 7 years old) is 1.8.0.10 and it appears that 2 is just not there.
+ 	 -->
+	<dependency>
+		<groupId>hsqldb</groupId>
+		<artifactId>hsqldb</artifactId>
+		<version>1.8.0.10</version>
+	</dependency>
+ 	
     <dependency>
       <groupId>ome</groupId>
       <artifactId>formats-gpl</artifactId>
@@ -131,17 +164,6 @@
       <groupId>ome</groupId>
       <artifactId>formats-api</artifactId>
       <version>${bio-formats.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>ome</groupId>
-      <artifactId>ome-io</artifactId>
-      <version>5.0.0-rc2</version>
-      <exclusions>
-      	<exclusion>
-    	  <artifactId>omero-client</artifactId>
-	      <groupId>ome</groupId>
-      	</exclusion>
-      </exclusions>
     </dependency>
     <dependency>
         <groupId>net.imagej</groupId>
@@ -196,6 +218,32 @@
 	<repository>
 	  <id>ome.snapshots</id>
 	  <url>http://artifacts.openmicroscopy.org/artifactory/ome.snapshots</url>
+	</repository>
+	<repository>
+		<id>ome-web-prod.lifesci.dundee.ac.uk</id>
+		<url>http://artifacts.openmicroscopy.org/artifactory/springsource-release</url>
+	</repository>
+	<repository>
+    	<id>com.springsource.repository.bundles.release</id>
+    	<name>SpringSource Enterprise Bundle Repository - SpringSource Bundle Releases</name>
+    	<url>http://repository.springsource.com/maven/bundles/release</url>
+	</repository>
+
+	<repository>
+    	<id>com.springsource.repository.bundles.external</id>
+    	<name>SpringSource Enterprise Bundle Repository - External Bundle Releases</name>
+    	<url>http://repository.springsource.com/maven/bundles/external</url>
+	</repository>
+	<repository>
+    	<id>com.springsource.repository.libraries.release</id>
+    	<name>SpringSource Enterprise Bundle Repository - SpringSource Library Releases</name>
+    	<url>http://repository.springsource.com/maven/libraries/release</url>
+	</repository>
+
+	<repository>
+    	<id>com.springsource.repository.libraries.external</id>
+    	<name>SpringSource Enterprise Bundle Repository - External Library Releases</name>
+   	 <url>http://repository.springsource.com/maven/libraries/external</url>
 	</repository>
   </repositories>
   <build>

@@ -60,27 +60,6 @@ files = [
      '29cfd351206016b67dd0d556098513d2b259c69b',
      CELLPROFILER_DEPENDENCIES_URL + '/apache-maven-3.0.4-bin.zip',
      ACTION_MAVEN],
-    [['imagej', 'jars', 'blitz.jar'], 
-     '537bb9c05adc23cb07be21991bc4511aefe92dfd',
-     OMERO_CLIENTS_URL + '/blitz.jar', None],
-    [['imagej', 'jars', 'common.jar'], 
-     '8c6926ef5c77d1606dfb2483232ddff4716553f9',
-     OMERO_CLIENTS_URL + '/common.jar', None],
-    [['imagej', 'jars', 'model-psql.jar'], 
-     'aeaf122dbb2ffa2fe716194daf818c12bc764183',
-     OMERO_CLIENTS_URL + '/model-psql.jar', None],
-    [['imagej', 'jars', 'ice.jar'], 
-     'f11f38c0f643cafe933089827395c8e5d29162e7',
-     OMERO_CLIENTS_URL + '/ice.jar', None],
-    [['imagej', 'jars', 'ice-glacier2.jar'],
-     '90b6cbc3d05c3610f00e23efe7067a11a74b84b2',
-     OMERO_CLIENTS_URL + '/ice-glacier2.jar', None],
-    [['imagej', 'jars', 'ice-storm.jar'],
-     'b3ecbee2e7f25daf2adf5c890b65965ed518dcb9',
-     OMERO_CLIENTS_URL + '/ice-storm.jar', None],
-    [['imagej', 'jars', 'ice-grid.jar'],
-     '108cb942775d3d4763d7d2a9d1c646f6c5f21354',
-     OMERO_CLIENTS_URL + '/ice-grid.jar', None]
 ]
 
 pom_folders = ["java"]

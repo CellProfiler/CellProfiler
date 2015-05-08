@@ -52,7 +52,7 @@ import loci.formats.tiff.TiffCompression;
 import loci.formats.tiff.TiffParser;
 import loci.formats.tiff.TiffRational;
 import loci.formats.tiff.TiffSaver;
-
+import ome.units.quantity.Length;
 import ome.xml.model.primitives.PositiveFloat;
 
 /**
@@ -267,25 +267,25 @@ public class TiffWriter extends FormatWriter {
     ifd.put(new Integer(IFD.IMAGE_WIDTH), new Long(width));
     ifd.put(new Integer(IFD.IMAGE_LENGTH), new Long(height));
 
-    PositiveFloat px = retrieve.getPixelsPhysicalSizeX(series);
-    Double physicalSizeX = px == null ? null : px.getValue();
+    Length px = retrieve.getPixelsPhysicalSizeX(series);
+    Number physicalSizeX = px == null ? null : px.value();
     if (physicalSizeX == null || physicalSizeX.doubleValue() == 0) {
       physicalSizeX = 0d;
     }
-    else physicalSizeX = 1d / physicalSizeX;
+    else physicalSizeX = 1d / physicalSizeX.doubleValue();
 
-    PositiveFloat py = retrieve.getPixelsPhysicalSizeY(series);
-    Double physicalSizeY = py == null ? null : py.getValue();
+    Length py = retrieve.getPixelsPhysicalSizeY(series);
+    Number physicalSizeY = py == null ? null : py.value();
     if (physicalSizeY == null || physicalSizeY.doubleValue() == 0) {
       physicalSizeY = 0d;
     }
-    else physicalSizeY = 1d / physicalSizeY;
+    else physicalSizeY = 1d / physicalSizeY.doubleValue();
 
     ifd.put(IFD.RESOLUTION_UNIT, 3);
     ifd.put(IFD.X_RESOLUTION,
-      new TiffRational((long) (physicalSizeX * 1000 * 10000), 1000));
+      new TiffRational((long) (physicalSizeX.doubleValue() * 1000 * 10000), 1000));
     ifd.put(IFD.Y_RESOLUTION,
-      new TiffRational((long) (physicalSizeY * 1000 * 10000), 1000));
+      new TiffRational((long) (physicalSizeY.doubleValue() * 1000 * 10000), 1000));
 
     if (!isBigTiff) {
       isBigTiff = (out.length() + 2

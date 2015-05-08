@@ -137,6 +137,10 @@
 	 			<groupId>ome</groupId>
 	 			<artifactId>bio-formats</artifactId>
 	 		</exclusion>
+	 		<exclusion>
+				<groupId>hsqldb</groupId>
+				<artifactId>hsqldb</artifactId>
+	 		</exclusion>
 	 	</exclusions>
  	</dependency>
  	<!-- 

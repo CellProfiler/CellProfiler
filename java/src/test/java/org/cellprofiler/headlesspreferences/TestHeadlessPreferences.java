@@ -66,6 +66,8 @@ public class TestHeadlessPreferences {
 			new HeadlessPreferencesFactory().userRoot().sync();
 		} catch (BackingStoreException e) {
 			fail("Should not throw backing store exception");
+		} catch (IllegalStateException e) {
+			
 		}
 	}
 

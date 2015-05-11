@@ -232,7 +232,7 @@ class ImageMath(cpm.CPModule):
         for index in range(self.operand_count):
             image = self.images[index]
             if single_image:
-                result += [image.image_name, image.factor]
+                result += [image.image_name]
             else:
                 result += [image.image_or_measurement]
                 if image.image_or_measurement == IM_IMAGE:

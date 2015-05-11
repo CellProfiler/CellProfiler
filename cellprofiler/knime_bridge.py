@@ -591,7 +591,9 @@ class KnimeBridgeServer(threading.Thread):
             assert isinstance(module, cpm.CPModule)
             for column in module.get_measurement_columns(pipeline):
                 objects, name, dbtype = column[:3]
-                if objects == cpmeas.EXPERIMENT:
+                qualifiers = {} if len(column) < 4 else column[3]
+                if objects == cpmeas.EXPERIMENT and \
+                   qualifiers.get(cpmeas.MCA_AVAILABLE_POST_RUN, False) == True:
                     continue
                 if dbtype == cpmeas.COLTYPE_FLOAT:
                     jtype = "java.lang.Double"

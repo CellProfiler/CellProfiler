@@ -26,6 +26,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.measurements as cpmeas
 from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
 from cellprofiler.modules.identify import TS_MANUAL
+from cellprofiler.modules.flagimage import FlagImage, S_IMAGE
 from cellprofiler.modules.loadimages import LoadImages
 from cellprofiler.modules.measureobjectsizeshape import MeasureObjectSizeShape
 from cellprofiler.modules.saveimages import SaveImages
@@ -243,6 +244,70 @@ class TestKnimeBridge(unittest.TestCase):
         self.assertEqual(response.pop(0), self.session_id)
         self.assertEqual(response.pop(0), "")
         self.assertEqual(response.pop(0), CELLPROFILER_EXCEPTION_1)
+        
+    def test_03_03_run_missing_measurement(self):
+        # Regression test of knime-bridge issue #6
+        #
+        # Missing measurement causes exception
+        #
+        pipeline = cpp.Pipeline()
+        load_images = LoadImages()
+        load_images.module_num = 1
+        load_images.images[0].channels[0].image_name.value = "Foo"
+        pipeline.add_module(load_images)
+        identify = IdentifyPrimaryObjects()
+        identify.module_num = 2
+        identify.image_name.value = "Foo"
+        identify.object_name.value = "dizzy"
+        identify.threshold_scope.value = TS_MANUAL
+        identify.manual_threshold.value = .5
+        identify.exclude_size.value = False
+        pipeline.add_module(identify)
+        
+        flag_module = FlagImage()
+        flag_module.module_num = 3
+        flag = flag_module.flags[0]
+        flag.wants_skip.value = True
+        criterion = flag.measurement_settings[0]
+        criterion.source_choice.value = S_IMAGE
+        criterion.measurement.value = "Count_dizzy"
+        criterion.wants_minimum.value = True
+        criterion.minimum_value.value = 1000
+        pipeline.add_module(flag_module)
+        
+        measureobjectsizeshape = MeasureObjectSizeShape()
+        measureobjectsizeshape.module_num = 4
+        measureobjectsizeshape.object_groups[0].name.value = "dizzy"
+        pipeline.add_module(measureobjectsizeshape)
+        
+        pipeline_txt = StringIO()
+        pipeline.savetxt(pipeline_txt)
+        
+        image = np.zeros((11, 17))
+        image[2:-2, 2:-2] = 1
+        
+        image_metadata = [
+            ["Foo", 
+             [["Y", image.shape[0], image.strides[0]/8],
+              ["X", image.shape[1], image.strides[1]/8]]]]
+        message = [
+            zmq.Frame(self.session_id),
+            zmq.Frame(),
+            zmq.Frame(RUN_REQ_1),
+            zmq.Frame(pipeline_txt.getvalue()),
+            zmq.Frame(json.dumps(image_metadata)),
+            zmq.Frame(image)]
+        self.socket.send_multipart(message)
+        response = self.socket.recv_multipart()
+        self.assertEqual(response.pop(0), self.session_id)
+        self.assertEqual(response.pop(0), "")
+        self.assertEqual(response.pop(0), RUN_REPLY_1)
+        metadata = json.loads(response.pop(0))
+        data = response.pop(0)
+        measurements = self.decode_measurements(metadata, data)
+        self.assertEqual(measurements[cpmeas.IMAGE]["Count_dizzy"][0], 1)
+        self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
+        self.assertEqual(len(measurements["dizzy"]["AreaShape_Area"]), 0)
     
     def test_04_01_run_group(self):
         pipeline = cpp.Pipeline()

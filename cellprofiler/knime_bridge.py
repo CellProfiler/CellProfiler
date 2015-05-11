@@ -235,6 +235,9 @@ class KnimeBridgeServer(threading.Thread):
                     "Running module # %d: %s" % 
                     (module.module_num, module.module_name))
                 pipeline.run_module(module, workspace)
+                if workspace.disposition in \
+                   (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
+                    break
             except Exception, e:
                 msg = "Encountered error while running module, \"%s\": %s" % (
                     module.module_name, e.message)
@@ -386,12 +389,19 @@ class KnimeBridgeServer(threading.Thread):
                         "Running module # %d: %s" % 
                         (module.module_num, module.module_name))
                     pipeline.run_module(module, workspace)
+                    if workspace.disposition in \
+                       (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
+                        break
                 except Exception, e:
                     msg = "Encountered error while running module, \"%s\": %s" % (
                         module.module_name, e.message)
                     logger.warning(msg, exc_info=1)
                     self.raise_cellprofiler_exception(session_id, msg)
                     return
+            else:
+                continue
+            if workspace.disposition == cpw.DISPOSITION_CANCEL:
+                break
         for module in other_modules:
             module.post_group(
                 workspace,
@@ -581,6 +591,8 @@ class KnimeBridgeServer(threading.Thread):
             assert isinstance(module, cpm.CPModule)
             for column in module.get_measurement_columns(pipeline):
                 objects, name, dbtype = column[:3]
+                if objects == cpmeas.EXPERIMENT:
+                    continue
                 if dbtype == cpmeas.COLTYPE_FLOAT:
                     jtype = "java.lang.Double"
                 elif dbtype == cpmeas.COLTYPE_INTEGER:

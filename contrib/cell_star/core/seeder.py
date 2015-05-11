@@ -3,7 +3,6 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 # External imports
 import random
-random.seed(1) # make it deterministic (still seem to be very fragile)
 from copy import copy
 # Internal imports
 # Objects
@@ -18,6 +17,7 @@ class Seeder(object):
 
     def __init__(self, images, parameters):
         self.images = images
+        random.seed(abs(np.sum(images.image)))
         self.parameters = parameters
         self.cluster_min_distance = self.parameters["segmentation"]["seeding"]["minDistance"] \
             * self.parameters["segmentation"]["avgCellDiameter"]

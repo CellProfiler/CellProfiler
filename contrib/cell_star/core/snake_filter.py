@@ -53,14 +53,6 @@ class SnakeFilter(object):
                     in_polygon = curr_snake.in_polygon
                     xy = np.array([xy, np.array(xy) + in_polygon.shape]).flatten()
 
-                    area = np.count_nonzero(in_polygon)
-                    if self.parameters["segmentation"]["minSize"] > area:
-                        logger.debug(log_message.format(snakes_indices[i], 'too small', area))
-                        continue
-                    if self.parameters["segmentation"]["maxSize"] < area:
-                        logger.debug(log_message.format(snakes_indices[i], 'too big', area))
-                        continue
-
                     dilated_segments = segments[xy[0]:xy[2], xy[1]:xy[3]]
                     overlap_area = np.count_nonzero(dilated_segments[in_polygon])
                     overlap = float(overlap_area) / curr_snake.area

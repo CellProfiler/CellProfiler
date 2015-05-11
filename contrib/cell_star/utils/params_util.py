@@ -16,9 +16,6 @@ def default_parameters(segmentation_precision=-1, avg_cell_diameter=-1, min_size
     else:
         parameters["segmentation"]["avgCellDiameter"] = detect_avg_cell_size()
 
-    parameters["segmentation"]["minSize"] = min_size
-    parameters["segmentation"]["maxSize"] = max_size
-
     if segmentation_precision == -1:
         return parameters
     else:

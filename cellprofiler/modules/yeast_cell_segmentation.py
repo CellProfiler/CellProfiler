@@ -143,6 +143,7 @@ from os import makedirs
 import logging
 logger = logging.getLogger(__name__)
 
+import math
 import numpy as np
 import scipy as sp
 from scipy.ndimage.filters import *
@@ -649,9 +650,17 @@ class YeastCellSegmentation(cpmi.Identify):
         cellstar = Segmentation(segmentation_precision, self.average_cell_diameter.value)
         cellstar.parameters["segmentation"]["maxOverlap"] = self.maximal_cell_overlap.value
         if self.advanced_cell_filtering.value:
+            def calculate_area_multiplier(area):
+                return 4.0 * area / self.average_cell_diameter.value ** 2 / math.pi
+
+            def calculate_size_multiplier(area):
+                return calculate_area_multiplier(area) ** 0.5
+
             areas_range = self.min_cell_area.value, self.max_cell_area.value
-            cellstar.parameters["segmentation"]["minSize"] = areas_range[0]
-            cellstar.parameters["segmentation"]["maxSize"] = areas_range[1]
+            cellstar.parameters["segmentation"]["minArea"] = max(cellstar.parameters["segmentation"]["minArea"], calculate_area_multiplier(areas_range[0]))
+            cellstar.parameters["segmentation"]["maxArea"] = calculate_area_multiplier(areas_range[1])
+            # to some extent change length of rays
+            cellstar.parameters["segmentation"]["stars"]["maxSize"] = max(cellstar.parameters["segmentation"]["stars"]["maxSize"], min(3.5, calculate_size_multiplier(areas_range[1])))
 
         success = cellstar.decode_auto_params(self.autoadapted_params.value)
         if not success:  # if current value is invalid overwrite it with current settings

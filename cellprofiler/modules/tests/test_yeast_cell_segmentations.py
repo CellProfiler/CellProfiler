@@ -86,7 +86,7 @@ class test_YeastSegmentation(unittest.TestCase):
     def test_00_00_init(self):
         x = YS.YeastCellSegmentation()
         
-    def test_01_000_test_zero_objects(self):
+    def test_01_00_test_zero_objects(self):
         x = YS.YeastCellSegmentation()
         x.object_name.value = OBJECTS_NAME
         x.input_image_name.value = IMAGE_NAME
@@ -108,8 +108,8 @@ class test_YeastSegmentation(unittest.TestCase):
         self.assertTrue(np.all(segmented == 0))
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue(OBJECTS_NAME in measurements.get_object_names())
-        self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
-        count = measurements.get_current_measurement("Image","Count_my_object")
+        self.assertTrue("Count_" + OBJECTS_NAME in measurements.get_feature_names("Image"))
+        count = measurements.get_current_measurement("Image","Count_" + OBJECTS_NAME)
         self.assertEqual(count,0)
         self.assertTrue("Location_Center_X" in measurements.get_feature_names(OBJECTS_NAME))
         location_center_x = measurements.get_current_measurement(OBJECTS_NAME,"Location_Center_X")
@@ -125,8 +125,8 @@ class test_YeastSegmentation(unittest.TestCase):
         x.object_name.value = OBJECTS_NAME
         x.input_image_name.value = IMAGE_NAME
         x.background_brighter_then_cell_inside.value = False
-        x.average_cell_diameter.value = 5
-        img = one_cell_image()
+        x.average_cell_diameter.value = 7
+        img = one_bright_inside_cell_image()
         image = cpi.Image(img)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -139,8 +139,7 @@ class test_YeastSegmentation(unittest.TestCase):
         self.assertTrue(OBJECTS_NAME in object_set.object_names)
         objects = object_set.get_objects(OBJECTS_NAME)
         segmented = objects.segmented
-        self.assertTrue(np.all(segmented[img>0] == 1))
-        self.assertTrue(np.all(img[segmented==1] > 0))
+        self.assertTrue(is_segmentation_correct(segmented > 0, img))
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue(OBJECTS_NAME in measurements.get_object_names())
         self.assertTrue("Features_Quality" in measurements.get_feature_names(OBJECTS_NAME))
@@ -165,14 +164,14 @@ class test_YeastSegmentation(unittest.TestCase):
             self.assertEqual(len(ocolumns), len(features))
             self.assertTrue(all([column[1] in features for column in ocolumns]))
 
-    def test_01_02_test_two_dark_objects(self):
+    def test_01_02_test_two_bright_objects(self):
         x = YS.YeastCellSegmentation()
         x.object_name.value = OBJECTS_NAME
         x.input_image_name.value = IMAGE_NAME
         x.background_brighter_then_cell_inside.value = False
-        x.average_cell_diameter.value = 5
-        img = two_cell_image()
-        image = cpi.Image(img)
+        x.average_cell_diameter.value = 10
+        img = two_bright_inside_cell_image()
+        image = cpi.Image(img, file_name="test_01_02_test_two_bright_objects")
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider(IMAGE_NAME,image))
@@ -183,11 +182,12 @@ class test_YeastSegmentation(unittest.TestCase):
         self.assertEqual(len(object_set.object_names),1)
         self.assertTrue(OBJECTS_NAME in object_set.object_names)
         objects = object_set.get_objects(OBJECTS_NAME)
+        self.assertTrue(is_segmentation_correct(objects.segmented > 0, img))
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue(OBJECTS_NAME in measurements.get_object_names())
         self.assertTrue("Features_Quality" in measurements.get_feature_names(OBJECTS_NAME))
         quality = measurements.get_current_measurement(OBJECTS_NAME,"Features_Quality")
-        self.assertTrue(quality[0] > 0)
+        self.assertTrue(len(quality) == 2)
         self.assertTrue("Location_Center_Y" in measurements.get_feature_names(OBJECTS_NAME))
         location_center_y = measurements.get_current_measurement(OBJECTS_NAME,"Location_Center_Y")
         self.assertTrue(isinstance(location_center_y,np.ndarray))
@@ -205,14 +205,14 @@ class test_YeastSegmentation(unittest.TestCase):
         self.assertTrue(location_center_x[1]>13)
         self.assertTrue(location_center_x[1]<16)
 
-    def test_01_03_test_two_bright_objects(self):
+    def test_01_03_test_two_dark_objects(self):
         x = YS.YeastCellSegmentation()
         x.object_name.value = OBJECTS_NAME
         x.input_image_name.value = IMAGE_NAME
         x.background_brighter_then_cell_inside.value = True
-        x.average_cell_diameter.value = 5
-        img = 1 - two_cell_image()
-        image = cpi.Image(img)
+        x.average_cell_diameter.value = 10
+        img = two_dark_inside_cell_image()
+        image = cpi.Image(img, file_name="test_01_03_test_two_dark_objects")
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider(IMAGE_NAME,image))
@@ -223,11 +223,12 @@ class test_YeastSegmentation(unittest.TestCase):
         self.assertEqual(len(object_set.object_names),1)
         self.assertTrue(OBJECTS_NAME in object_set.object_names)
         objects = object_set.get_objects(OBJECTS_NAME)
+        self.assertTrue(is_segmentation_correct(objects.segmented > 0, img))
         self.assertTrue("Image" in measurements.get_object_names())
         self.assertTrue(OBJECTS_NAME in measurements.get_object_names())
         self.assertTrue("Features_Quality" in measurements.get_feature_names(OBJECTS_NAME))
         quality = measurements.get_current_measurement(OBJECTS_NAME,"Features_Quality")
-        self.assertTrue(quality[0] > 0)
+        self.assertTrue(len(quality) == 2)
         self.assertTrue("Location_Center_Y" in measurements.get_feature_names(OBJECTS_NAME))
         location_center_y = measurements.get_current_measurement(OBJECTS_NAME,"Location_Center_Y")
         self.assertTrue(isinstance(location_center_y,np.ndarray))
@@ -274,15 +275,15 @@ class test_YeastSegmentation(unittest.TestCase):
         x.object_name.value = OBJECTS_NAME
         x.input_image_name.value = IMAGE_NAME
         x.background_brighter_then_cell_inside.value = False
-        x.average_cell_diameter.value = 5
-        x.min_cell_area.value = 1
-        x.max_cell_area.value = 300
+        x.average_cell_diameter.value = 30
+        x.min_cell_area.value = 100
+        x.max_cell_area.value = 1000
         x.advanced_cell_filtering.value = True
 
-        img = np.zeros((200,200))
-        draw_circle(img,(100,100),25,.5)
-        draw_circle(img,(25,25),10,.5)
-        draw_circle(img,(150,50),15,.5)
+        img = np.ones((200,200)) * 0.5
+        draw_brightfield_cell(img,100,100,20,False)
+        draw_brightfield_cell(img,25,25,10,False)
+        draw_brightfield_cell(img,150,150,15,False)
         image = cpi.Image(img)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -292,27 +293,28 @@ class test_YeastSegmentation(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertEqual(objects.segmented[25,25],1,"The small object was not there")
-        self.assertEqual(objects.segmented[150,50],1,"The medium object was not there")
-        self.assertEqual(objects.segmented[100,100],0,"The large object was not filtered out")
+        self.assertEqual(objects.segmented[25,25]>0,1,"The small object was not there")
+        self.assertEqual(objects.segmented[150,150]>0,1,"The medium object was not there")
+        self.assertEqual(objects.segmented[100,100]>0,0,"The large object was not filtered out")
         location_center_x = measurements.get_current_measurement(OBJECTS_NAME,"Location_Center_X")
         self.assertTrue(isinstance(location_center_x,np.ndarray))
-        self.assertEqual(np.product(location_center_x.shape),1)
+        self.assertEqual(np.product(location_center_x.shape),2)
 
     def test_02_02_discard_small(self):
         x = YS.YeastCellSegmentation()
         x.object_name.value = OBJECTS_NAME
         x.input_image_name.value = IMAGE_NAME
         x.background_brighter_then_cell_inside.value = False
-        x.average_cell_diameter.value = 5
-        x.min_cell_area.value = 1
-        x.max_cell_area.value = 300
+        x.average_cell_diameter.value = 30
+        x.min_cell_area.value = 500
+        x.max_cell_area.value = 5000
         x.advanced_cell_filtering.value = True
 
-        img = np.zeros((200,200))
-        draw_circle(img,(100,100),25,.5)
-        draw_circle(img,(25,25),10,.5)
-        image = cpi.Image(img)
+        img = np.ones((200,200)) * 0.5
+        draw_brightfield_cell(img,100,100,20,False)
+        draw_brightfield_cell(img,25,25,10,False)
+        draw_brightfield_cell(img,150,150,15,False)
+        image = cpi.Image(img, file_name="test_02_02_discard_small")
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider(IMAGE_NAME,image))
@@ -321,10 +323,12 @@ class test_YeastSegmentation(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertEqual(objects.segmented[25,25],0,"The small object was not filtered out")
-        self.assertEqual(objects.segmented[150,50],1,"The medium object was not there")
-        self.assertEqual(objects.segmented[100,100],1,"The large object was not there")
-
+        self.assertEqual(objects.segmented[25,25]>0,0,"The small object was not filtered out")
+        self.assertEqual(objects.segmented[150,150]>0,1,"The medium object was not there")
+        self.assertEqual(objects.segmented[100,100]>0,1,"The large object was not there")
+        location_center_x = measurements.get_current_measurement(OBJECTS_NAME,"Location_Center_X")
+        self.assertTrue(isinstance(location_center_x,np.ndarray))
+        self.assertEqual(np.product(location_center_x.shape),2)
 
     def test_02_03_use_background_image(self):
         x = YS.YeastCellSegmentation()
@@ -333,17 +337,17 @@ class test_YeastSegmentation(unittest.TestCase):
         x.background_image_name.value = BACKGROUND_IMAGE_NAME
         x.background_elimination_strategy.value = YS.BKG_FILE
         x.background_brighter_then_cell_inside.value = False
-        x.average_cell_diameter.value = 5
+        x.average_cell_diameter.value = 30
 
-        img = np.zeros((200,200))
-        draw_circle(img,(100,100),25,.5)
-        draw_circle(img,(25,25),10,.5)
-        draw_circle(img,(150,150),15,.5) # background blob
+        img = np.ones((200,200)) * 0.5
+        draw_brightfield_cell(img,100,100,20,False)
+        draw_brightfield_cell(img,25,25,10,False)
+        draw_brightfield_cell(img,150,150,15,False) # background blob
 
-        bkg = np.zeros((200,200))
-        draw_circle(bkg,(150,150),15,.5)
+        bkg = np.ones((200,200)) * 0.5
+        draw_brightfield_cell(bkg,150,150,15,False) # background blob
 
-        image = cpi.Image(img)
+        image = cpi.Image(img, file_name="test_02_03_use_background_image")
         background = cpi.Image(bkg)
 
         image_set_list = cpi.ImageSetList()
@@ -355,9 +359,9 @@ class test_YeastSegmentation(unittest.TestCase):
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
         objects = object_set.get_objects(OBJECTS_NAME)
-        self.assertEqual(objects.segmented[25,25],1,"The small object was not there")
-        self.assertEqual(objects.segmented[100,100],1,"The large object was not there")
-        self.assertEqual(objects.segmented[150,150],0,"The background blob was not filtered out")
+        self.assertEqual(objects.segmented[25,25]>0,1,"The small object was not there")
+        self.assertEqual(objects.segmented[100,100]>0,1,"The large object was not there")
+        self.assertEqual(objects.segmented[150,150]>0,0,"The background blob was not filtered out")
 
 def add_noise(img, fraction):
     '''Add a fractional amount of noise to an image to make it look real'''
@@ -366,15 +370,38 @@ def add_noise(img, fraction):
                                  size=img.shape)
     return img * noise
 
-def one_cell_image():
-    img = np.zeros((25,25))
-    draw_circle(img,(10,15),5, .5)
+def is_segmentation_correct(segmented,img):
+    non_background_pixels = (np.abs((img-0.5)) > 0.05)
+    return 1.0 - ((segmented>0)&non_background_pixels).sum() / float(((segmented>0)|non_background_pixels).sum()) < 0.1
+
+def draw_brightfield_cell(img,x,y,radius,content_dark=True):
+    draw_circle(img,(x,y),radius, .8)
+    if(content_dark):
+        draw_circle(img,(x,y),radius-2, .3)
+    else:
+        draw_circle(img,(x,y),radius-2, .6)
+    return img
+
+def one_bright_inside_cell_image():
+    img = np.ones((30,30)) * 0.5
+    draw_brightfield_cell(img,10,15,10,False)
     return add_noise(img,.01)
 
-def two_cell_image():
-    img = np.zeros((50,50))
-    draw_circle(img,(10,35),5, .8)
-    draw_circle(img,(30,15),5, .6)
+def one_dark_inside_cell_image():
+    img = np.ones((30,30)) * 0.5
+    draw_brightfield_cell(img,10,15,10,True)
+    return add_noise(img,.01)
+
+def two_bright_inside_cell_image():
+    img = np.ones((50,50)) * 0.5
+    draw_brightfield_cell(img,10,35,5,False)
+    draw_brightfield_cell(img,30,15,5,False)
+    return add_noise(img,.01)
+
+def two_dark_inside_cell_image():
+    img = np.ones((50,50)) * 0.5
+    draw_brightfield_cell(img,10,35,5,True)
+    draw_brightfield_cell(img,30,15,5,True)
     return add_noise(img,.01)
 
 def draw_circle(img,center,radius,value):

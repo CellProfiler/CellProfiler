@@ -660,7 +660,7 @@ class YeastCellSegmentation(cpmi.Identify):
             cellstar.parameters["segmentation"]["minArea"] = max(cellstar.parameters["segmentation"]["minArea"], calculate_area_multiplier(areas_range[0]))
             cellstar.parameters["segmentation"]["maxArea"] = calculate_area_multiplier(areas_range[1])
             # to some extent change length of rays
-            cellstar.parameters["segmentation"]["stars"]["maxSize"] = max(cellstar.parameters["segmentation"]["stars"]["maxSize"], min(3.5, calculate_size_multiplier(areas_range[1])))
+            cellstar.parameters["segmentation"]["stars"]["maxSize"] = max(cellstar.parameters["segmentation"]["stars"]["maxSize"], min(2.5, calculate_size_multiplier(areas_range[1])))
 
         success = cellstar.decode_auto_params(self.autoadapted_params.value)
         if not success:  # if current value is invalid overwrite it with current settings

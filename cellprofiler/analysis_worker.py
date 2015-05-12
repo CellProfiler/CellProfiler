@@ -441,7 +441,7 @@ class AnalysisWorker(object):
                     gc.collect()
                     try:
                         self.pipeline_listener.image_set_number = image_set_number
-                        current_pipeline.run_image_set(
+                        last_workspace = current_pipeline.run_image_set(
                             current_measurements,
                             image_set_number,
                             self.interaction_handler,
@@ -461,8 +461,6 @@ class AnalysisWorker(object):
                         if send_dictionary:
                             # The jobserver would like a copy of our modules' 
                             # run_state dictionaries.
-                            ws = cpw.Workspace(current_pipeline, None, None, None,
-                                               current_measurements, None, None)
                             dicts = [m.get_dictionary_for_worker() 
                                      for m in current_pipeline.modules()]
                             req = ImageSetSuccessWithDictionary(
@@ -496,19 +494,18 @@ class AnalysisWorker(object):
                     return
         
                 if worker_runs_post_group:
-                    workspace = cpw.Workspace(current_pipeline, None, 
-                                              current_measurements, None,
-                                              current_measurements, None, None)
-                    workspace.interaction_handler = self.interaction_handler
-                    workspace.cancel_handler = self.cancel_handler
-                    workspace.post_group_display_handler = \
+                    last_workspace.interaction_handler =\
+                        self.interaction_handler
+                    last_workspace.cancel_handler = self.cancel_handler
+                    last_workspace.post_group_display_handler = \
                         self.post_group_display_handler
                     # There might be an exception in this call, but it will be
                     # handled elsewhere, and there's nothing we can do for it
                     # here.
                     current_pipeline.post_group(
-                        workspace, 
+                        last_workspace, 
                         current_measurements.get_grouping_keys())
+                    del last_workspace
         
             # send measurements back to server
             req = MeasurementsReport(self.current_analysis_id,

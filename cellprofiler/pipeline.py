@@ -1910,6 +1910,8 @@ class Pipeline(object):
              display_handler - callback for display requests
 
              self.prepare_run() and self.prepare_group() must have already been called.
+        
+        Returns a workspace suitable for use in self.post_group()
         """
         measurements.next_image_set(image_set_number)
         measurements.group_number = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER]
@@ -1978,7 +1980,9 @@ class Pipeline(object):
 
             measurements.flush()
             if workspace.disposition == cpw.DISPOSITION_SKIP:
-                return
+                break
+        return cpw.Workspace(self, None, measurements, object_set,
+                             measurements, None, outlines = outlines)
 
     def end_run(self):
         '''Tell everyone that a run is ending'''

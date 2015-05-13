@@ -31,6 +31,8 @@ class TestCPFigure(unittest.TestCase):
             self.app = wx.PySimpleApp(False)
         self.frame = wx.Frame(None, title="Hello, world")
         self.frame.Show()
+    def tearDown(self):
+        self.frame.Destroy()
 
     def test_01_01_imshow_raw(self):
         '''Make sure the image drawn by imshow matches the input image.'''

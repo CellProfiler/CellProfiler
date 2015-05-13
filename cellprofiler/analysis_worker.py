@@ -192,7 +192,7 @@ def main():
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
     
     # Start the JVM
-    from cellprofiler.utilities.cpjvm import cp_start_vm
+    from cellprofiler.utilities.cpjvm import cp_start_vm, cp_stop_vm
     cp_start_vm()
     
     deadman_start_socket = the_zmq_context.socket(zmq.PAIR)
@@ -234,15 +234,10 @@ def main():
     except:
         logger.warn("Failed to stop Ilastik")
     try:
-        from imagej.imagej2 import allow_quit
-        allow_quit()
+        cp_stop_vm()
     except:
-        logger.warn("Failed to signal ImageJ to stop")
-    try:
-        J.kill_vm()
-    except:
-        logger.warn("Failed to stop the Java VM")
-            
+        logger.warn("Failed to stop the JVM", exc_info=1)
+        
         
 class AnalysisWorker(object):
     '''An analysis worker processing work at a given address
@@ -308,7 +303,6 @@ class AnalysisWorker(object):
         from bioformats.formatreader import clear_image_reader_cache
         self.notify_socket.close()
         clear_image_reader_cache()
-        J.deactivate_awt()
         J.detach()
         if self.with_stop_run_loop:
             stop_run_loop()

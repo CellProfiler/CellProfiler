@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 from unittest.case import SkipTest
 from pkg_resources import load_entry_point
 import logging
+import logging.handlers
 logger = logging.getLogger(__name__)
 import javabridge
 import nose
@@ -52,7 +53,23 @@ class CPShutdownPlugin(nose.plugins.Plugin):
         # and prevents Java from exiting.
         #
         def patch_start_vm(*args, **kwargs):
-            result = start_vm(*args, **kwargs)
+            jvm_args = list(args[0]) +  [
+                "-Dloci.bioformats.loaded=true",
+                "-Djava.util.prefs.PreferencesFactory="+
+                "org.cellprofiler.headlesspreferences"+
+                ".HeadlessPreferencesFactory"]
+            #
+            # Find the ij1patcher
+            #
+            root = os.path.dirname(__file__)
+            jardir = os.path.join(root, "imagej", "jars")
+            patchers = sorted([
+                    x for x in os.listdir(jardir)
+                    if x.startswith("ij1-patcher") and x.endswith(".jar")])
+            if len(patchers) > 0:
+                jvm_args.append(
+                    "-javaagent:%s=init" % os.path.join(jardir, patchers[-1]))
+            result = start_vm(jvm_args, *args[1:], **kwargs)
             if javabridge.get_env() is not None:
                 try:
                     event_service_cls = javabridge.JClassWrapper(
@@ -95,23 +112,16 @@ class CPShutdownPlugin(nose.plugins.Plugin):
                 shutil.rmtree(self.temp_exampleimages)
         except:
             pass
+        from cellprofiler.utilities.cpjvm import cp_stop_vm
         try:
-            javabridge.deactivate_awt()
-            import imagej.imagej2
-            if imagej.imagej2.the_imagej_context is not None:
-                script = """
-                new java.lang.Runnable () {
-                  run: function() {
-                    ctx.getContext().dispose();
-                  }
-                }"""
-                runnable = javabridge.run_script(
-                    script, dict(ctx=imagej.imagej2.the_imagej_context))
-                javabridge.execute_runnable_in_main_thread(runnable, True)
-                imagej.imagej2.the_imagej_context = None
-                javabridge.static_call("java/lang/System", "gc", "()V")
+            import wx
+            app = wx.GetApp()
+            if app is not None:
+                app.ExitMainLoop()
+                app.MainLoop()
+            cp_stop_vm(kill=False)
         except:
-            pass
+            logging.root.warn("Failed to shut down AWT", exc_info=1)
         try:
             from ilastik.core.jobMachine import GLOBAL_WM
             GLOBAL_WM.stopWorkers()
@@ -122,7 +132,7 @@ class CPShutdownPlugin(nose.plugins.Plugin):
             join_to_the_boundary()
         except:
             logging.root.warn("Failed to stop zmq boundary")
-    
+
     def wantFile(self, filename):
         if filename.endswith("setup.py"):
             return False
@@ -227,17 +237,22 @@ def get_suite_from_dictionary(factory, d, parts = []):
 def main(*args):
     '''Run the CellProfiler nose tests'''
     args = list(args)
+    import cellprofiler.preferences as cpprefs
+    cpprefs.set_headless()
     if '--noguitests' in args:
         args.remove('--noguitests')
-        import cellprofiler.preferences as cpprefs
-        cpprefs.set_headless()
         sys.modules['wx'] = MockModule()
         sys.modules['wx.html'] = MockModule()
         import matplotlib
         matplotlib.use('agg')
+        cpprefs.set_awt_headless(True)
         with_guitests = False
+        wxapp = None
     else:
         with_guitests = True
+        cpprefs.set_awt_headless(False)
+        import wx
+        wxapp = wx.PySimpleApp(False)
 
     def mock_start_vm(*args, **kwargs):
         raise SkipTest
@@ -296,3 +311,5 @@ def main(*args):
         
 if __name__ == "__main__":
     main(*sys.argv)
+    print "At bottom of main"
+    os._exit(0)

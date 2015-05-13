@@ -195,7 +195,7 @@ def main(args):
     #
     # After the crucial preferences are established, we can start the VM
     #
-    from cellprofiler.utilities.cpjvm import cp_start_vm
+    from cellprofiler.utilities.cpjvm import cp_start_vm, cp_stop_vm
     cp_start_vm()
     #
     # Not so crucial preferences...
@@ -289,19 +289,11 @@ def main(args):
                 from cellprofiler.utilities.zmqrequest import join_to_the_boundary
                 join_to_the_boundary()
             except:
-                logging.root.warn("Failed to stop zmq boundary")
+                logging.root.warn("Failed to stop zmq boundary", exc_info=1)
             try:
-                from imagej.imagej2 import allow_quit, quit
-                allow_quit()
-                quit()
-                    
+                cp_stop_vm()
             except:
-                logging.root.warn("Failed to dispose of ImageJ")
-            try:
-                from javabridge import kill_vm
-                kill_vm()
-            except:
-                logging.root.warn("Failed to stop the JVM")
+                logging.root.warn("Failed to stop the JVM", exc_info=1)
             os._exit(0)
 
 def parse_args(args):

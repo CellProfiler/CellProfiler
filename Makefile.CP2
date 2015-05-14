@@ -65,7 +65,7 @@ PACKAGEHOST				?= http://cellprofiler.org/linux/SOURCES
 
 MAKE_FLAGS				?= -j4
 PREFIX					?= /usr/CellProfiler
-SRCDIR					?= $(PREFIX)/src/CellProfiler
+SRCDIR					?= $(PREFIX)/src
 TMPDIR					?= $(PWD)/tmp
 #
 # TGTDIR holds the target files touched when making multipart dependencies
@@ -1017,6 +1017,15 @@ cellprofiler: cython wxpython h5py scipy ilastik matplotlib decorator mysqlpytho
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
 	"$(PYTHON)" ./CellProfiler.py --build-and-exit && \
 	touch "$@"
+#
+# The test target needs an X11 $DISPLAY to run the full suite of tests
+# Consider running Xvfb to make a virtual display
+#
+test: cellprofiler
+	@if xlsclients;then export HEADLESS_MODE=--no-headless; fi && \
+	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	"$(PYTHON)" ./cpnose.py --with-javabridge $HEADLESS_MODE -m "(?:^)test_.*"
 
 #
 # The following are optional sources, in case gtk is

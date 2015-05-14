@@ -1022,10 +1022,9 @@ cellprofiler: cython wxpython h5py scipy ilastik matplotlib decorator mysqlpytho
 # Consider running Xvfb to make a virtual display
 #
 test: cellprofiler
-	@if xlsclients;then export HEADLESS_MODE=--no-headless; fi && \
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-	"$(PYTHON)" ./cpnose.py --with-javabridge $(HEADLESS_MODE) -m "(?:^)test_.*"
+	"$(PYTHON)" ./cpnose.py --with-javabridge --no-headless -m "(?:^)test_.*"
 
 #
 # The following are optional sources, in case gtk is

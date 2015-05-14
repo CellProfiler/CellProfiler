@@ -46,14 +46,14 @@ chown -R cpbuild:cpbuild $PREFIX
 chown -R cpbuild:cpbuild $TMPDIR
 chown -R cpbuild:cpbuild $SRCDIR
 
-JAVA_HOME=/usr/lib/jvm/java-1.7.0
-PATH="${PREFIX}"/bin:$PATH
-HOSTTYPE=amd64
-BLAS=/usr/lib64
-LAPACK=/usr/lib64
-LD_LIBRARY_PATH="${JAVA_HOME}"/jre/lib/"${HOSTTYPE}"/server:"${PREFIX}"/lib
+export JAVA_HOME=/usr/lib/jvm/java-1.7.0
+export PATH="${PREFIX}"/bin:$PATH
+export HOSTTYPE=amd64
+export BLAS=/usr/lib64
+export LAPACK=/usr/lib64
+export LD_LIBRARY_PATH="${JAVA_HOME}"/jre/lib/"${HOSTTYPE}"/server:"${PREFIX}"/lib
 
-su -c 'cd "${PREFIX}"/src && git clone "${GITURL}" && cd "${GITHOME}" && git checkout "${GITBRANCH}"' cpbuild
-su -c 'cd "${GITHOME}" && make -f Makefile.CP2 all test' cpbuild
+su -c 'cd '$PREFIX'/src && git clone '$GITURL' && cd '$GITHOME' && git checkout '$GITBRANCH cpbuild
+su -c 'cd '$GITHOME' && make -f Makefile.CP2 all test' cpbuild
 cd "/jenkins/CellProfiler"
 tar cvzf cellprofiler.tar.gz "${PREFIX}"

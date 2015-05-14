@@ -39,10 +39,10 @@ fi
 GITHOME="${PREFIX}/src/CellProfiler"
 GITBRANCH=`cd /jenkins/CellProfiler;git rev-parse --abbrev-ref HEAD`
 GITURL=`cd /jenkins/CellProfiler;git remote show origin | grep "Fetch URL" --|sed "s/\s*Fetch URL:\s*//"`
-mkdir -p $PREFIX
+mkdir -p $PREFIX/src
 mkdir -p $TMPDIR
 mkdir -p $SRCDIR
-chown -R cpbuild:cpbuild $PREFIX/src
+chown -R cpbuild:cpbuild $PREFIX
 chown -R cpbuild:cpbuild $TMPDIR
 chown -R cpbuild:cpbuild $SRCDIR
 

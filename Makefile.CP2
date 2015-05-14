@@ -1025,7 +1025,7 @@ test: cellprofiler
 	@if xlsclients;then export HEADLESS_MODE=--no-headless; fi && \
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-	"$(PYTHON)" ./cpnose.py --with-javabridge $HEADLESS_MODE -m "(?:^)test_.*"
+	"$(PYTHON)" ./cpnose.py --with-javabridge $(HEADLESS_MODE) -m "(?:^)test_.*"
 
 #
 # The following are optional sources, in case gtk is

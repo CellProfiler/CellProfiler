@@ -61,7 +61,10 @@ class CPShutdownPlugin(nose.plugins.Plugin):
             #
             # Find the ij1patcher
             #
-            root = os.path.dirname(__file__)
+            if hasattr(sys, 'frozen') and sys.platform == 'win32':
+                root = os.path.dirname(sys.argv[0])
+            else:
+                root = os.path.dirname(__file__)
             jardir = os.path.join(root, "imagej", "jars")
             patchers = sorted([
                     x for x in os.listdir(jardir)

@@ -42,7 +42,7 @@ GITURL=`cd /jenkins/CellProfiler;git remote show origin | grep "Fetch URL" --|se
 mkdir -p $PREFIX
 mkdir -p $TMPDIR
 mkdir -p $SRCDIR
-chown -R cpbuild:cpbuild $PREFIX
+chown -R cpbuild:cpbuild $PREFIX/src
 chown -R cpbuild:cpbuild $TMPDIR
 chown -R cpbuild:cpbuild $SRCDIR
 

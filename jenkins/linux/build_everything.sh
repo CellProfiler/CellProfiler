@@ -38,7 +38,7 @@ if [ -z "${SRCDIR}" ]; then
 fi
 GITHOME="${PREFIX}/src/CellProfiler"
 GITBRANCH=`cd /jenkins/CellProfiler;git rev-parse --abbrev-ref HEAD`
-GITURL=`cd /jenkins/CellProfiler;git ls-remote --get-url origin`
+GITURL=`cd /jenkins/CellProfiler;git remote show origin | grep "Fetch URL" --|sed "s/\s*Fetch URL:\s*//"`
 mkdir -p $PREFIX
 mkdir -p $TMPDIR
 mkdir -p $SRCDIR

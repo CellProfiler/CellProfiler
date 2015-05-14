@@ -55,5 +55,5 @@ LD_LIBRARY_PATH="${JAVA_HOME}"/jre/lib/"${HOSTTYPE}"/server:"${PREFIX}"/lib
 
 su -c 'git clone $GITURL "${GITHOME}" && cd "${GITHOME}" && git checkout "${GITBRANCH}"' cpbuild
 su -c 'cd "${GITHOME}" && make -f Makefile.CP2 all test' cpbuild
-cd "/jenkins"
+cd "/jenkins/CellProfiler"
 tar cvzf cellprofiler.tar.gz "${PREFIX}"

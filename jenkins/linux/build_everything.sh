@@ -37,8 +37,8 @@ if [ -z "${SRCDIR}" ]; then
     SRCDIR="${TMPDIR}"/src
 fi
 GITHOME="${PREFIX}/src/CellProfiler"
-GITBRANCH=`cd /jenkins/CellProfiler;git rev-parse --abbrev-ref HEAD`
-GITURL=`cd /jenkins/CellProfiler;git remote show origin | grep "Fetch URL" --|sed "s/\s*Fetch URL:\s*//"`
+GITCOMMIT=`cd /jenkins/CellProfiler && git log -n 1 --pretty=format:%h`
+GITURL=`cd /jenkins/CellProfiler && git remote show origin | grep "Fetch URL" --|sed "s/\s*Fetch URL:\s*//"`
 mkdir -p $PREFIX/src
 mkdir -p $TMPDIR
 mkdir -p $SRCDIR
@@ -53,7 +53,8 @@ export BLAS=/usr/lib64
 export LAPACK=/usr/lib64
 export LD_LIBRARY_PATH="${JAVA_HOME}"/jre/lib/"${HOSTTYPE}"/server:"${PREFIX}"/lib
 
-su -c 'cd '$PREFIX'/src && git clone '$GITURL' && cd '$GITHOME' && git checkout '$GITBRANCH cpbuild
+su -c 'cd '$PREFIX'/src && git clone '$GITURL cpbuild
+su -c 'cd '$GITHOME' && git checkout '$GITCOMMIT cpbuild
 su -c 'cd '$GITHOME' && make -f Makefile.CP2 all test' cpbuild
 cd "/jenkins/CellProfiler"
 tar cvzf cellprofiler.tar.gz "${PREFIX}"

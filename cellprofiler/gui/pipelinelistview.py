@@ -242,7 +242,7 @@ class PipelineListView(object):
         # display a tooltip over a transparent window in front of the disabled
         # window. 
         #
-        if sys.platform == 'linux2':
+        if sys.platform.startswith('linux'):
             self.transparent_window = None
             return # Doesn't work right.
         transparent_window = wx.Panel(self.__panel)

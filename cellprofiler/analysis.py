@@ -759,7 +759,7 @@ class AnalysisRunner(object):
                            "%s is not executable" % cp_executable
                     args = (["arch", "-x86_64", "-i386", cp_executable] + 
                             aw_args)
-                elif sys.platform == 'linux2':
+                elif sys.platform.startswith('linux'):
                     aw_path = os.path.join(os.path.dirname(__file__),
                                            "analysis_worker.py")
                     args = [sys.executable, aw_path] + aw_args

@@ -29,7 +29,7 @@ def import_all_but_wx(name,
         raise ImportError("Not allowed to import wx!")
     return default_import(name, globals, locals, fromlist, level)
 
-@unittest.skipIf(sys.platform == 'linux2', "Do not test under Linux")
+@unittest.skipIf(sys.platform.startswith('linux'), "Do not test under Linux")
 class TestNoWX(unittest.TestCase):
     def setUp(self):
         from cellprofiler.preferences import set_headless, set_temporary_directory

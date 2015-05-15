@@ -382,8 +382,7 @@ $(TGTDIR)/python: $(SRCDIR)/$(PYTHONVERSION).tar.bz2 sqlite zlib
 		--prefix="$(PYTHONPREFIX)" \
 		--enable-shared \
 				                --enable-unicode=ucs4 && \
-	make MACHDEP=linux2
-	make install
+	make install MACHDEP=linux2
 	touch $@
 
 $(TGTDIR)/cython: $(SRCDIR)/$(CYTHONVERSION).tar.gz pypi

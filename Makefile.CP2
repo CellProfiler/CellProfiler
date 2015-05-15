@@ -73,7 +73,9 @@ TMPDIR					?= $(PWD)/tmp
 # so it must be created in this backhanded fashion.
 #
 TGTDIR					?= $(TMPDIR)/targets
+export TGTDIR
 VPATH = $(shell mkdir -p $$TGTDIR && echo $$TGTDIR)
+unexport TGTDIR
 
 # Set DISABLE_PRECHECKS to "YES" (case sensitive!) to explicitly
 # disable prechecks. Disabling is not recommended. It may lead

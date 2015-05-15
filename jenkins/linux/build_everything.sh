@@ -20,7 +20,7 @@ yum -y update
 yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn \
     gcc-gfortran cmake mesa-libGL mesa-libGL-devel blas atlas lapack blas-devel \
     atlas-devel lapack-devel xorg-x11-xauth* xorg-x11-xkb-utils* \
-    xorg-x11-utils xorg-x11-server-Xvfb unzip \
+    xorg-x11-utils xorg-x11-server-Xvfb unzip tar\
     dejavu-lgc-sans-fonts qt-devel openssl openssl-devel xclock bzip2 \
     bzip2-devel bzip2-libs libXtst make patch readline-devel libxml2-devel \
     libxslt-devel java-1.7.0-openjdk java-1.7.0-openjdk-devel

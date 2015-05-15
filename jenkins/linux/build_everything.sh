@@ -28,13 +28,13 @@ yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn \
 adduser cpbuild
 cp=/jenkins/CellProfiler
 if [ -z "${PREFIX}" ]; then
-    PREFIX=/imaging/analysis/CPCluster/CellProfiler-2.0/builds/redhat_6
+    export PREFIX=/imaging/analysis/CPCluster/CellProfiler-2.0/builds/redhat_6
 fi
 if [ -z "${TMPDIR}" ]; then
-    TMPDIR=/imaging/analsysis/CPCluster/CellProfiler-2.0/tmp
+    export TMPDIR=/imaging/analsysis/CPCluster/CellProfiler-2.0/tmp
 fi
 if [ -z "${SRCDIR}" ]; then
-    SRCDIR="${TMPDIR}"/src
+    export SRCDIR="${TMPDIR}"/src
 fi
 GITHOME="${PREFIX}/src/CellProfiler"
 GITCOMMIT=`cd /jenkins/CellProfiler && git log -n 1 --pretty=format:%h`

@@ -167,6 +167,7 @@ try:
     import cellprofiler.objects
     from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
     import cellprofiler.preferences as pref
+    from cellprofiler.cpmath.filter import laplacian_of_gaussian
 
 #################################
 #
@@ -575,7 +576,19 @@ class YeastCellSegmentation(cpmi.Identify):
             if self.background_elimination_strategy == BKG_FILE:
                 background_pixels = 1 - background_pixels
 
-        # TODO add support for fluorescent images
+        # support for fluorescent images
+        # here it is design question: we assume that the user *should* say
+        # truth about background and inside of cells: insides are brighter
+        # than background (so the bkg and image for fluorescent will be 
+        # inverted at this stage)
+        if not self.bright_field_image:
+            sigma = 4 # TODO think if it is a big problem to hardcode it here
+            size = int(sigma * 4)+1
+            mask = np.ones(input_pixels.shape, bool)
+            edge_pixels = laplacian_of_gaussian(input_pixels, mask, size, sigma)
+            factor = 10 # TODO think if hardcoded is fine
+            input_pixels = np.subtract(input_pixels, factor*edge_pixels) 
+
 
         #
         # Preprocessing (only normalization)
@@ -753,6 +766,16 @@ class YeastCellSegmentation(cpmi.Identify):
             self.pixel_data = 1 - self.pixel_data
             if self.background_elimination_strategy == BKG_FILE:
                 background_pixels = 1 - background_pixels
+
+        # adapt the fluorescent image if req.
+        if not self.bright_field_image:
+            # TODO exception will be thrown if orig image is not 1 channel...
+            sigma = 4 # TODO think if it is a big problem to hardcode it here
+            size = int(sigma * 4)+1
+            mask = np.ones(self.pixel_data.shape, bool)
+            edge_pixels = laplacian_of_gaussian(self.pixel_data, mask, size, sigma)
+            factor = 10 # TODO think if hardcoded is fine
+            self.pixel_data = np.subtract(self.pixel_data, factor*edge_pixels) 
 
         if background_pixels:
             self.pixel_data = self.pixel_data - background_pixels

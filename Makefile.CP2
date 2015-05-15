@@ -69,9 +69,11 @@ SRCDIR					?= $(PREFIX)/src
 TMPDIR					?= $(PWD)/tmp
 #
 # TGTDIR holds the target files touched when making multipart dependencies
+# The target directory must be present before the dependencies are calculated
+# so it must be created in this backhanded fashion.
 #
 TGTDIR					?= $(TMPDIR)/targets
-VPATH = $(TGTDIR)
+VPATH = $(shell mkdir -p $$TGTDIR && echo $$TGTDIR)
 
 # Set DISABLE_PRECHECKS to "YES" (case sensitive!) to explicitly
 # disable prechecks. Disabling is not recommended. It may lead

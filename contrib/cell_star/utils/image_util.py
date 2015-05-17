@@ -126,7 +126,7 @@ def fill_holes(mask, kernel_size, minimal_hole_size):
     @param kernel_size: size of the morphological element used to dilate/erode mask
     @param minimal_hole_size: holes with area smaller than param are to be removed
     """
-
+    original = mask.copy()*1
     nr = 1
     morphology_element = get_circle_kernel(kernel_size)
     while True:
@@ -355,8 +355,9 @@ def draw_snakes(image, snakes, outliers=.1, it=0):
 
         for snake, color in zip(snakes, s_colors):
             plt.plot(snake.xs, snake.ys, c=color, linewidth=4.0)
+
+        plt.savefig(os.path.join(debug_image_path, "snakes_rainbow_"+str(it)+".png"), pad_inches=0.0)
         plt.show()
-        plt.savefig(os.path.join(debug_image_path, "snakes_rainbow_"+str(it)+".png"))
 
 
 def tiff16_to_float(image):

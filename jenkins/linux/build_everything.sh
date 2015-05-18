@@ -31,7 +31,7 @@ if [ -z "${PREFIX}" ]; then
     export PREFIX=/imaging/analysis/CPCluster/CellProfiler-2.0/builds/redhat_6
 fi
 if [ -z "${TMPDIR}" ]; then
-    export TMPDIR=/imaging/analsysis/CPCluster/CellProfiler-2.0/tmp
+    export TMPDIR=/imaging/analysis/CPCluster/CellProfiler-2.0/tmp
 fi
 if [ -z "${SRCDIR}" ]; then
     export SRCDIR="${TMPDIR}"/src

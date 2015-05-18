@@ -1668,7 +1668,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 self.Refresh(eraseBackground=False)
         else:
             tooltip_text = None
-            item = None if (index is None or index >= self.GetItemCount) \
+            item = None if (index is None or index >= self.GetItemCount()) \
                 else self.items[index]
             if hit_test & wx.LIST_HITTEST_ONITEM:
                 if column == EYE_COLUMN:

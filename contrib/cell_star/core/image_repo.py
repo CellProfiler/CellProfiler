@@ -229,8 +229,6 @@ class ImageRepo(object):
             self._blurred.append((image, blur_param, blurred))
             return blurred
 
-    # TODO: przegląd propercji + reorganizacja
-
     # Obrazy 256-kolorowe
     @property
     def background(self):

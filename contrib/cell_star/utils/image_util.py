@@ -2,25 +2,26 @@
 __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 # External imports
-import sys
+from os.path import  exists
+import os
+from os import makedirs
+
 import numpy as np
 import scipy as sp
 import scipy.ndimage
 import scipy.misc
-import matplotlib
-# matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import os
-# import matplotlib.pyplot as PyPlot
 from scipy.ndimage.filters import *
-# from scipy.signal import convolve2d
-
 from numpy import argwhere
 
 debug_image_path = ""
 
 SHOW = False
 SILENCE = True
+
+def prepare_debug_folder():
+    if not exists(debug_image_path):
+        makedirs(debug_image_path)
 
 def convolve2d(img, kernel, mode='same'):
     return convolve(img, kernel)
@@ -78,7 +79,6 @@ def image_dilate_with_element(image, n):
 
 
 def image_erode(image, radius):
-    #TODO: verify!!!
     morphology_element = get_circle_kernel(radius)
     return sp.ndimage.morphology.binary_erosion(image, morphology_element)
 
@@ -134,10 +134,9 @@ def fill_holes(mask, kernel_size, minimal_hole_size):
         components, num_components = sp.ndimage.label(np.logical_not(new_mask), np.ones((3, 3)))
         slices = sp.ndimage.find_objects(components)
         for label, slice in zip(range(1, num_components + 1), slices):
-            slice = extend_slices(slice,kernel_size+10000) # TODO WHY OPT for some reason setting sensible slice changes results
+            slice = extend_slices(slice,kernel_size+1000)
             components_slice = components[slice] == label
             # filter small components
-            #ImageUtil.ImageShow(component, "compnent nr. "+str(label))
             if np.count_nonzero(components_slice) < minimal_hole_size:
                 new_mask[slice] |= components_slice
             else:
@@ -165,17 +164,9 @@ def fill_holes(mask, kernel_size, minimal_hole_size):
     return mask
 
 
-def draw_seeds_compare(seeds1, seeds2, background, name="1"):
-    # PyPlot.figure(name)
-    # PyPlot.imshow(background, cmap=PyPlot.cm.gray)
-    # PyPlot.plot([s[0] for s in seeds1], [s[1] for s in seeds1], 'go')
-    # PyPlot.plot([s[0] for s in seeds2], [s[1] for s in seeds2], 'rx')
-    # PyPlot.show()
-    pass
-
-
 def draw_seeds(seeds, background, title="some_source"):
     if not SILENCE:
+        prepare_debug_folder()
         fig = plt.figure()
         fig.frameon = False
         plt.imshow(background, cmap=plt.cm.gray)
@@ -234,19 +225,15 @@ def exclude_segments(image, segments, val):
 
 
 def image_blur(image, times):
-    #assert(times > 0 and type(times) == int)
     """
     Performs image blur with kernel: [[2, 3, 2], [3, 12, 3], [2, 3, 2]] / 32
     @param image: image to be blurred (assumed as numpy.array of values from 0 to 1)
     @param times: specifies how many times blurring will be performed
     """
     kernel = np.array([[2, 3, 2], [3, 12, 3], [2, 3, 2]]) / 32.0
-    # image = np.array(image, dtype=float)
-    # blurred1 = convolve(image, kernel)
     blurred = convolve2d(image, kernel, 'same')
 
     for _ in xrange(int(times) - 1):
-        # blurred1 = convolve(blurred1, kernel)
         blurred = convolve2d(blurred, kernel, 'same')
 
     return blurred
@@ -283,23 +270,6 @@ def image_normalize(image):
     return np.minimum(np.maximum(image_normalized, 0), 1)
 
 
-def image_normalize_old(image):
-    """
-    Performs image normalization
-    @param image: image to be normalized (assumed as numpy.array of values from 0 to 1)
-    """
-    minimum = np.amin(image)
-    maximum = np.amax(image)
-
-    delta = 1 / (maximum - minimum)
-
-    value_range = maximum - minimum
-    image_normalized = image - minimum
-    if value_range > 0:
-        image_normalized = image_normalized / value_range
-    return image_normalized
-
-
 def image_show_and_save(image, title, save_image):
     """
     Displays image with title using matplotlib.pyplot
@@ -308,6 +278,7 @@ def image_show_and_save(image, title, save_image):
     """
 
     if not SILENCE and save_image:
+        prepare_debug_folder()
         sp.misc.imsave(os.path.join(debug_image_path, title + '.png'), image)
 
 
@@ -317,9 +288,8 @@ def image_show(image, title):
     @param image:
     @param title:
     """
-    # #image = ImageUtil.Tiff16ToFloat(image)
-    # #sp.misc.imsave(os.path.join("output", title + '.png'), image)
     if not SILENCE:
+        prepare_debug_folder()
         plt.figure(title)
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
         if SHOW:
@@ -329,6 +299,7 @@ def image_show(image, title):
 
 def draw_overlay(image, x, y):
     if not SILENCE:
+        prepare_debug_folder()
         plt.figure()
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
         plt.plot(x, y)
@@ -338,6 +309,7 @@ def draw_overlay(image, x, y):
 
 def draw_snakes(image, snakes, outliers=.1, it=0):
     if not SILENCE and len(snakes) > 1:
+        prepare_debug_folder()
         snakes = sorted(snakes, key=lambda ss: ss.rank)
         plt.figure()
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
@@ -347,7 +319,7 @@ def draw_snakes(image, snakes, outliers=.1, it=0):
         max_rank = snakes_tc[-1].rank
         min_rank = snakes_tc[0].rank
         rank_range = max_rank - min_rank
-        if rank_range == 0:  # for examplethere is one snake
+        if rank_range == 0:  # for example there is one snake
             rank_range = max_rank
 
         rank_ci = lambda rank: 999 * ((rank - min_rank) / rank_range) if rank <= max_rank else 999

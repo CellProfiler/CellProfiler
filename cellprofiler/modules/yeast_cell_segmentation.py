@@ -136,18 +136,13 @@ __revision__="$Id$"
 # Imports from useful Python libraries
 #
 #################################
-import random
 from os.path import expanduser, exists
 from os.path import join as pj
-from os import makedirs
 import logging
 logger = logging.getLogger(__name__)
 
 import math
 import numpy as np
-import scipy as sp
-from scipy.ndimage.filters import *
-import scipy.ndimage.measurements as spmeasure
 
 #################################
 #
@@ -552,8 +547,6 @@ class YeastCellSegmentation(cpmi.Identify):
         return result
     
     def run(self, workspace):
-        ##clock import time
-        ##clock start = time.clock()
         input_image_name = self.input_image_name.value
         self.current_workspace = workspace
         image_set = workspace.image_set
@@ -628,9 +621,6 @@ class YeastCellSegmentation(cpmi.Identify):
 
         cpmi.add_object_count_measurements(workspace.measurements,
                                            self.object_name.value, np.max(objects.segmented))
-
-        ##clock end = time.clock()
-        ##clock print "segmentation_plugin", end - start
         
     # 
     # Preprocessing of the input bright field image data.
@@ -689,8 +679,6 @@ class YeastCellSegmentation(cpmi.Identify):
 
         if self.input_image_file_name is not None:
             dedicated_image_folder = pj(pref.get_default_output_directory(), self.input_image_file_name)
-            if not exists(dedicated_image_folder):
-                makedirs(dedicated_image_folder)
             if dedicated_image_folder is not None:
                 cellstar.debug_output_image_path = dedicated_image_folder
 
@@ -700,16 +688,9 @@ class YeastCellSegmentation(cpmi.Identify):
 
         objects = cellprofiler.objects.Objects()
         objects.segmented = segmented_image
-        #print "segmented", segmented_image.shape
         objects.unedited_segmented = segmented_image
         objects.small_removed_segmented = np.zeros(normalized_image.shape)
         # objects.parent_image = normalized_image has to be cellprofiler image
-        
-        #objects = cellprofiler.objects.Objects()
-        #objects.segmented = labeled_image
-        #objects.unedited_segmented = unedited_labels
-        #objects.small_removed_segmented = small_removed_labels
-        #objects.parent_image = image
         
         #if self.current_workspace.frame is not None:
         self.current_workspace.display_data.segmentation_pixels = objects.segmented
@@ -731,8 +712,6 @@ class YeastCellSegmentation(cpmi.Identify):
                             wildcard = "Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
                             style = wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
-            from cellprofiler.modules.loadimages import LoadImagesImageProvider
-            from cellprofiler.gui.cpfigure import CPFigureFrame
             from bioformats import load_image
             image = load_image( dlg.Path) #lip.provide_image(None).pixel_data
         else:
@@ -822,19 +801,6 @@ class YeastCellSegmentation(cpmi.Identify):
         self.autoadapted_params.value = cellstar.encode_auto_params()
 
         try:
-            def get_scrolllock_state():  # TMP for ranking fitting testing
-                import os
-
-                if os.name == "nt":
-                    import ctypes
-
-                    hllDll = ctypes.WinDLL("User32.dll")
-                    VK_SCROLL = 0x91
-                    VK_CAPITAL = 0x14
-                    return hllDll.GetKeyState(VK_SCROLL) or hllDll.GetKeyState(VK_CAPITAL)
-                else:
-                    return False
-
             while (keepGoing or not adaptations_stopped) and self.param_fit_progress < progressMax:
                 # here put one it. of fitting instead
                 wx.Sleep(0.5)
@@ -856,12 +822,9 @@ class YeastCellSegmentation(cpmi.Identify):
                 adaptations_stopped = aft_active == []
 
                 if adaptations_stopped and keepGoing and self.param_fit_progress < progressMax:
-                    if not get_scrolllock_state():
-                        aft_active.append(
-                            AutoFitterThread(run_pf, self.update_snake_params, image, labels, self.best_parameters,
-                                             self.segmentation_precision.value, self.average_cell_diameter.value))
-                    else:
-                        self.param_fit_progress += 1
+                    aft_active.append(
+                        AutoFitterThread(run_pf, self.update_snake_params, image, labels, self.best_parameters,
+                                 self.segmentation_precision.value, self.average_cell_diameter.value))
 
                     aft_active.append(
                         AutoFitterThread(run_rank_pf, self.update_rank_params, image, labels, self.best_parameters))

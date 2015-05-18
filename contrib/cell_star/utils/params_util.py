@@ -5,26 +5,17 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 import numpy as np
 from contrib.cell_star.config.config import default_config
 import sys
-# Internal imports
-from python_util import package_path
 
 
 def default_parameters(segmentation_precision=-1, avg_cell_diameter=-1, min_size=0, max_size=sys.maxint):
     parameters = default_config()
     if avg_cell_diameter != -1:
         parameters["segmentation"]["avgCellDiameter"] = avg_cell_diameter
-    else:
-        parameters["segmentation"]["avgCellDiameter"] = detect_avg_cell_size()
 
     if segmentation_precision == -1:
         return parameters
     else:
         return parameters_from_segmentation_precision(parameters, segmentation_precision)
-
-
-def detect_avg_cell_size():
-    # @TODO: implement
-    return -1
 
 
 def parameters_from_segmentation_precision(parameters, segmentation_precision):
@@ -50,8 +41,6 @@ def parameters_from_segmentation_precision(parameters, segmentation_precision):
         parameters["segmentation"]["steps"] = min(10, segmentation_precision - 5)
 
     parameters["segmentation"]["stars"]["points"] = 8 + max(segmentation_precision - 2, 0) * 4
-    #parameters["segmentation"]["stars"]["parameterLearningRingResize"] = \
-    #    min(max(0, 1 - (segmentation_precision - 5) / 10.0), 1)
 
     parameters["segmentation"]["maxFreeBorder"] = \
         max(0.4, 0.7 * 16 / max(16, parameters["segmentation"]["stars"]["points"]))
@@ -71,9 +60,6 @@ def parameters_from_segmentation_precision(parameters, segmentation_precision):
     parameters["segmentation"]["seeding"]["from"]["snakesCentroidsRandom"] = min(4, sfrom(14))
 
     parameters["segmentation"]["stars"]["step"] = 0.0067 * max(1, (1 + (15 - segmentation_precision) / 2))
-
-    #parameters["segmentation"]["stars"]["sizeWeight"] = 70
-    #parameters["segmentation"]["stars"]["borderThickness"] = 0.1
 
     if segmentation_precision <= 9:
         size_weight_multiplier = np.array([1])

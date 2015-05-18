@@ -219,7 +219,6 @@ class Snake(object):
         self.final_edgepoints = \
             calc_util.unstick_contour(self.original_edgepoints, self.parameters["segmentation"]["stars"]["unstick"])
 
-        # TODO: rozważyć potencjalne prostsze(implementacyjnie) mechanizmy :)
         # Interpolacja konturu, na odrzucone punkty
         # Lista indeksów zatwierdzonych punktów konturu
         cumlengths = np.where(self.final_edgepoints)[0]

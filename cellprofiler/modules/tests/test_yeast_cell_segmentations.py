@@ -94,7 +94,7 @@ class test_YeastSegmentation(unittest.TestCase):
         x.background_brighter_then_cell_inside.value = False
         x.average_cell_diameter.value = 5
         img = np.zeros((25,25))
-        image = cpi.Image(img)
+        image = cpi.Image(img, file_name="test_01_00_test_zero_objects")
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider(IMAGE_NAME,image))
@@ -345,7 +345,7 @@ class test_YeastSegmentation(unittest.TestCase):
         draw_circle(img, (30,30), 7, .5)
         img[10,10] = 0
         img[30,30] = 0
-        image = cpi.Image(img)
+        image = cpi.Image(img, file_name="test_01_06_fill_holes")
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider(IMAGE_NAME,image))
@@ -372,7 +372,7 @@ class test_YeastSegmentation(unittest.TestCase):
         draw_brightfield_cell(img,100,100,20,False)
         draw_brightfield_cell(img,25,25,10,False)
         draw_brightfield_cell(img,150,150,15,False)
-        image = cpi.Image(img)
+        image = cpi.Image(img, file_name="test_02_01_discard_large")
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.providers.append(cpi.VanillaImageProvider(IMAGE_NAME,image))

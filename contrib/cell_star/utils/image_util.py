@@ -19,8 +19,8 @@ from numpy import argwhere
 
 debug_image_path = ""
 
+SHOW = False
 SILENCE = True
-
 
 def convolve2d(img, kernel, mode='same'):
     return convolve(img, kernel)
@@ -126,11 +126,10 @@ def fill_holes(mask, kernel_size, minimal_hole_size):
     @param kernel_size: size of the morphological element used to dilate/erode mask
     @param minimal_hole_size: holes with area smaller than param are to be removed
     """
-    original = mask.copy()*1
     nr = 1
     morphology_element = get_circle_kernel(kernel_size)
     while True:
-        new_mask = mask
+        new_mask = mask.copy()
         # find connected components
         components, num_components = sp.ndimage.label(np.logical_not(new_mask), np.ones((3, 3)))
         slices = sp.ndimage.find_objects(components)
@@ -323,7 +322,8 @@ def image_show(image, title):
     if not SILENCE:
         plt.figure(title)
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
-        plt.show()
+        if SHOW:
+            plt.show()
         pass
 
 
@@ -332,7 +332,8 @@ def draw_overlay(image, x, y):
         plt.figure()
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
         plt.plot(x, y)
-        plt.show()
+        if SHOW:
+            plt.show()
 
 
 def draw_snakes(image, snakes, outliers=.1, it=0):
@@ -357,7 +358,8 @@ def draw_snakes(image, snakes, outliers=.1, it=0):
             plt.plot(snake.xs, snake.ys, c=color, linewidth=4.0)
 
         plt.savefig(os.path.join(debug_image_path, "snakes_rainbow_"+str(it)+".png"), pad_inches=0.0)
-        plt.show()
+        if SHOW:
+            plt.show()
 
 
 def tiff16_to_float(image):

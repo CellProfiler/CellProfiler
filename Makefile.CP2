@@ -999,8 +999,8 @@ $(TGTDIR)/lxml: $(SRCDIR)/$(LXMLVERSION).tar.gz six
 	cd "$(LXMLVERSION)" && \
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-	CFLAGS="-lgcrypt -fPIC -lrt" $(PYTHON) setup.py build --static-deps && \
-	$(PYTHON) setup.py install
+	CFLAGS="-lgcrypt -fPIC -lrt" \
+	$(PYTHON) setup.py build --static-deps install
 	touch $@
 
 $(TGTDIR)/six: $(SRCDIR)/$(SIXVERSION).tar.gz python

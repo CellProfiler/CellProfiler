@@ -175,7 +175,7 @@ class Segmentation(object):
         new_snakes = []
 
         size_weights = self.parameters["segmentation"]["stars"]["sizeWeight"]
-        logger.info("%d snakes seeds to grow with %d weights options -> %d snakes to calculate"%(len(self.new_snakes), len(size_weights), len(self.new_snakes) * len(size_weights)))
+        logger.debug("%d snakes seeds to grow with %d weights options -> %d snakes to calculate"%(len(self.new_snakes), len(size_weights), len(self.new_snakes) * len(size_weights)))
         for snake in self.new_snakes:
             best_snake = None
             for weight in size_weights:
@@ -222,21 +222,21 @@ class Segmentation(object):
         image_util.draw_seeds(self.all_seeds, self.images.image, title=str(step))
 
     def run_segmentation(self):
-        logger.info("preproces...")
+        logger.debug("preproces...")
         self.pre_process()
         self.debug_images()
         for step in range(self.parameters["segmentation"]["steps"]):
-            logger.info("find_seeds")
+            logger.debug("find_seeds")
             self.find_seeds(step > 0)
             self.debug_seeds(step)
-            logger.info("snake_from_seeds")
+            logger.debug("snake_from_seeds")
             self.snakes_from_seeds()
-            logger.info("grow_snakes")
+            logger.debug("grow_snakes")
             self.grow_snakes()
-            logger.info("filter_snakes")
+            logger.debug("filter_snakes")
             image_util.draw_snakes(self.images.image, self.snakes + self.new_snakes, it=step)
             self.filter_snakes()
-            logger.info("done")
+            logger.debug("done")
         image_util.image_show(self.images.image, 1)
         # image_util.image_show(self.images.image + (self.images.segmentation > 0), 1)
         return self.images.segmentation, self.snakes

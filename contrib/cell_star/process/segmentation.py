@@ -26,7 +26,8 @@ class Segmentation(object):
         self.images = None
         self.all_seeds = []
         self.seeds = []
-        # Seedy, z których już wyrosły snake'i
+        # seeds from which we already have snakes
+        # PL: Seedy, z których już wyrosły snake'i
         self.grown_seeds = set()
         self.snakes = []
         self.new_snakes = []

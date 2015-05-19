@@ -34,11 +34,11 @@ rank_parameters_range = {"avgBorderBrightnessWeight": (0, 600),
 
 def pf_parameters_encode(parameters):
     """
-    brightnessWeight: 0.0442 - jak bardzo lubimy jasnosc na krancach komorki
-    cumBrightnessWeight: 304.45 - jak bardzo nie lubimy jasnego w �rodku komorki
-    gradientWeight: 15.482 - jak bardzo lubimy gradient na kra�cach komorki
-    sizeWeight: 189.4082 ! może być lista, wtedy mean - jak bardzo lubimy du�e kom�rki
-    smoothness: 7.0 - jaki jest max
+    brightnessWeight: 0.0442 +brightness on cell edges
+    cumBrightnessWeight: 304.45 -brightness in the cell center
+    gradientWeight: 15.482 +gradent on the cell edges
+    sizeWeight: 189.4082 (if list -> avg. will be comp.) +big cells
+    smoothness: 7.0 +smoothness fact.
 
     @param parameters: dictionary segmentation.stars
     """

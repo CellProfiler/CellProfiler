@@ -13,8 +13,7 @@ from contrib.cell_star.parameter_fitting.pf_snake import GTSnake
 import logging
 logger = logging.getLogger(__name__)
 
-#corpus_path = "C:/workspace/CellStar - Python/Yeast/trunk/cell_star_plugins/yeast_corpus/data/"
-corpus_path = "D:/Fafa/Drozdze/Repozytorium/cell_star_plugins/yeast_corpus/data/"
+corpus_path = "../cell_star_plugins/yeast_corpus/data/"
 
 
 def single_mask_to_snake(bool_mask, seed=None):

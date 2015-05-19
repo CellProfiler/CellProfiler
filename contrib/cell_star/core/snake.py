@@ -273,14 +273,14 @@ class Snake(object):
 
     def smooth_contour_vec(self, xmins, max_diff, points_number, f_tot):
         """
-        Wygładzenie konturu
-        @param xmins: długości promieni dla poszczególnych kątów
+        Smoothing contour
+        @param xmins: ray lengths for segments
         @type xmins: np.array
-        @param max_diff: maksymalna zmiana dopuszczalna dla danej długości promienia
+        @param max_diff: max change of ray length per iter.
         @type max_diff np.array
-        @param points_number: ilość punktów konturu
+        @param points_number: nbr. of points in contour
         @type points_number int
-        @param f_tot: wartość funkcji energii
+        @param f_tot: energy fun.
         @type f_tot: np.array
         @return:
         """

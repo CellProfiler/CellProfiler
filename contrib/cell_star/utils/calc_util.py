@@ -139,39 +139,46 @@ def index_decr(px, py):
 
 def get_gradient(im, index, border_thickness_steps):
     """
-    Funkcja obliczająca gradient radialny z uwzględnieniem grubości krawędzi komórki
-    @param im: obraz, dla którego liczony jest gradient
-    @param index: indeksy pikseli obrazka ułożone wg. współrzędnych polarnych (alpha, radius) tj. dla każdej
-    współrzędnej kąta(alpha) określającej pojedynczy promień podane są kolejne indeksy pikseli dla kolejnych(rosnących)
-    wartości promienia
-    @param border_thickness_steps: ilość kroków obliczania gradientu wynikająca z zadanej grubości krawędzi komórki
-    @return: macierz gradientu dla zadanego wycinka obrazu wokół zarodka komórki
+    Fun. calc. radial gradient including thickness of cell edges
+    @param im: image (for which grad. will be calc.)
+    @param index: indices of pixes sorted by polar coords. (alpha, radius) 
+    @param border_thickness_steps: number of steps to cop. grad. - depands on cell border thickness
+    @return: gradient matrix for cell
     """
-    # Indeks pomocniczy osi służący do wyznaczenia maksymalnego gradientu
+    # index of axis used to find max grad.
+    # PL: Indeks pomocniczy osi służący do wyznaczenia maksymalnego gradientu
     max_gradient_along_axis = 2
-    # Wymiary wycinka obrazu, dla którego będzie obliczany gradient
+    # preparing the image limits (called subimage) for which grad. will be computed
+    # PL: Wymiary wycinka obrazu, dla którego będzie obliczany gradient
     radius_lengths, angles = index.shape[0], index.shape[1]
-    # Inicjacja macierzy dla obliczania gradientów
-    # Dla każdego pojedynczego kroku dla zadanej grubości krawędzi komórki obliczany jest osobny gradient
-    # Następnie zwracane są maksymalne wartości gradientu w danym punkcie dla wszystkich kroków grubości krawędzi
+    # matrix init
+    # for each single step for each border thick. separated grad. is being computed
+    # at the end the max. grad values are returned (for all steps and thick.)
+    # PL: Inicjacja macierzy dla obliczania gradientów
+    # PL: Dla każdego pojedynczego kroku dla zadanej grubości krawędzi komórki obliczany jest osobny gradient
+    # PL: Następnie zwracane są maksymalne wartości gradientu w danym punkcie dla wszystkich kroków grubości krawędzi
     gradients_for_steps = np.zeros((radius_lengths, angles, border_thickness_steps), dtype=np.float64)
-    # Dla każdego kroku wynikającego z grubości krawędzi komórki:
-    # Najmniejszy krok ma rozmiar 1, największy ma rozmiar: ${border_thickness_steps}
+    # PL: Dla każdego kroku wynikającego z grubości krawędzi komórki:
+    # PL: Najmniejszy krok ma rozmiar 1, największy ma rozmiar: ${border_thickness_steps}
     for border_thickness_step in range(1, int(border_thickness_steps) + 1):
 
-        # Wyznacz początek i koniec wycinka macierzy, dla którego będzie wyliczany gradient
+        # find beg. and end indices of input matrix for which the gradient will be computed
+        # PL: Wyznacz początek i koniec wycinka macierzy, dla którego będzie wyliczany gradient
         matrix_end = radius_lengths - border_thickness_step
         matrix_start = border_thickness_step
 
-        # Wyznacz początek i koniec wycinka indeksu pikseli, dla którego będzie wyliczany gradient
+        # find beg. and end indices of pix. for which the gradient will be computed
+        # PL: Wyznacz początek i koniec wycinka indeksu pikseli, dla którego będzie wyliczany gradient
         starting_index = index[:matrix_end, :]
         ending_index = index[matrix_start:, :]
 
-        # Wyznacz początek i koniec wycinka macierzy wynikowej, do którego będzie zapisany obliczony gradient
+        # find the spot in matrix where comp. gradient will go
+        # PL: Wyznacz początek i koniec wycinka macierzy wynikowej, do którego będzie zapisany obliczony gradient
         intersect_start = int(math.ceil(border_thickness_step / 2.0))
         intersect_end = int(intersect_start + matrix_end)
 
-        # Wylicz bieżącą wartość gradientu dla wyznaczonego wycinka obrazu
+        # comp. current gradient for selected (sub)image 
+        # PL: Wylicz bieżącą wartość gradientu dla wyznaczonego wycinka obrazu
         try:
             current_step_gradient = im[Index.to_numpy(ending_index)] - im[Index.to_numpy(starting_index)]
         except Exception:
@@ -200,7 +207,8 @@ def index_from_polar_transform(polar_transform, centroid_x, centroid_y, image_sh
     py = np.maximum(py, 0)
     py = np.minimum(py, image_shape[0] - 1)
 
-    # indeks idzie kolejno dla każdego kąta wzdłuż promienia od najmniejszego do największego
+    # index goes for each angle, for each radius from min to max
+    # PL: indeks idzie kolejno dla każdego kąta wzdłuż promienia od najmniejszego do największego
     # for angle:
     #   for radius:
     zipped = np.array(zip(py.flat, px.flat), dtype=np.int64)

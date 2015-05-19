@@ -50,6 +50,10 @@
 #   export PYTHONPATH="${CP2DEST}/lib/python2.5/site-packages:${PYTHONPATH}"
 #   export JAVA_HOME="<your path to JDK or JRE>"
 #
+# and set your locale to use UTF-8 encoding, e.g.
+#
+#   export LC_ALL=en_US.UTF-8
+#
 # To run CellProfiler:
 #   cd ${CP2DEST}
 #   python CellProfiler.py -b
@@ -1066,7 +1070,8 @@ cellprofiler: cython wxpython h5py scipy ilastik matplotlib decorator mysqlpytho
 #
 test: cellprofiler
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
-	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}:$(PREFIX)/lib/mysql" && \
+	export LC_ALL=en_US.UTF-8 && \
 	"$(PYTHON)" ./cpnose.py --with-javabridge --no-headless -m "(?:^)test_.*"
 
 #

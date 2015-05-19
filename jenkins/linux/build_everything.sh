@@ -57,5 +57,6 @@ su -c 'cd '$PREFIX'/src && git clone '$GITURL cpbuild
 su -c 'cd '$GITHOME' && git checkout '$GITCOMMIT cpbuild
 su -c 'cd '$GITHOME' && make -f Makefile.CP2 lxml' cpbuild
 su -c 'cd '$GITHOME' && make -f Makefile.CP2 all test' cpbuild
+cp /imaging/analysis/CPCluster/CellProfiler-2.0/tmp/lxml-3.4.2/build/tmp/libiconv-1.14/*.log /jenkins/CellProfiler
 cd "/jenkins/CellProfiler"
 tar cvzf cellprofiler.tar.gz "${PREFIX}"

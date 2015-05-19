@@ -1019,7 +1019,7 @@ $(TGTDIR)/libxml2: $(SRCDIR)/$(LIBXML2VERSION).tar.gz libiconv
 	$(MAKE) -j1 install
 	touch $@
 
-$(TGTDIR)/libxslt: $(SRCDIR)/$(LIBXML2VERSION).tar.gz libxml2
+$(TGTDIR)/libxslt: $(SRCDIR)/$(LIBXSLTVERSION).tar.gz libxml2
 	cd "$(TMPDIR)" && \
 	rm -fr "$(LIBXSLTVERSION)" && \
 	tar -xzf "$(SRCDIR)/$(LIBXSLTVERSION).tar.gz" && \

@@ -1001,6 +1001,7 @@ $(TGTDIR)/lxml: $(SRCDIR)/$(LXMLVERSION).tar.gz six
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
 	CFLAGS="-lgcrypt -fPIC -lrt" \
 	$(PYTHON) setup.py build --static-deps install
+	$(PYTHON) -c "import lxml.objectify"
 	touch $@
 
 $(TGTDIR)/six: $(SRCDIR)/$(SIXVERSION).tar.gz python

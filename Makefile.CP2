@@ -1002,11 +1002,11 @@ $(TGTDIR)/libiconv: $(SRCDIR)/$(LIBICONVVERSION).tar.gz
 	cd "$(LIBICONVVERSION)" && \
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-	./configure --prefix=$(PREFIX) &&
-	$(MAKE) $(MAKE_FLAGS) &&
+	./configure --prefix=$(PREFIX) && \
+	$(MAKE) $(MAKE_FLAGS) && \
 	$(MAKE) -j1 install
 	touch $@
-	
+
 $(TGTDIR)/libxml2: $(SRCDIR)/$(LIBXML2VERSION).tar.gz libiconv
 	cd "$(TMPDIR)" && \
 	rm -fr "$(LIBXML2VERSION)" && \
@@ -1014,8 +1014,8 @@ $(TGTDIR)/libxml2: $(SRCDIR)/$(LIBXML2VERSION).tar.gz libiconv
 	cd "$(LIBXML2VERSION)" && \
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-	./configure --prefix=$(PREFIX) &&
-	$(MAKE) $(MAKE_FLAGS) &&
+	./configure --prefix=$(PREFIX) && \
+	$(MAKE) $(MAKE_FLAGS) && \
 	$(MAKE) -j1 install
 	touch $@
 
@@ -1026,8 +1026,8 @@ $(TGTDIR)/libxslt: $(SRCDIR)/$(LIBXML2VERSION).tar.gz libxml2
 	cd "$(LIBXSLTVERSION)" && \
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-	./configure --prefix=$(PREFIX) &&
-	$(MAKE) $(MAKE_FLAGS) &&
+	./configure --prefix=$(PREFIX) && \
+	$(MAKE) $(MAKE_FLAGS) && \
 	$(MAKE) -j1 install
 	touch $@
 

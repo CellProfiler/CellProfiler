@@ -141,6 +141,9 @@ LAPACKVERSION				= lapack-3.3.0
 LAPACKFLAGS				= -fPIC -m64
 LAPACKURL				= http://www.netlib.org/lapack/
 LXMLVERSION				= lxml-3.4.2
+LIBXML2VERSION				= libxml2-2.9.2
+LIBXSLTVERSION				= libxslt-1.1.28
+LIBICONVVERSION				= libiconv-1.9.2
 MATPLOTLIBVERSION			= matplotlib-1.0.1
 MATPLOTLIBURL				= $(PACKAGEHOST)
 MYSQLVERSION				= mysql-5.1.55
@@ -992,15 +995,50 @@ $(TGTDIR)/pytz: $(SRCDIR)/$(PYTZVERSION).tar.bz2 python
 	$(PYTHON) setup.py install
 	touch $@
 
-$(TGTDIR)/lxml: $(SRCDIR)/$(LXMLVERSION).tar.gz six
+$(TGTDIR)/libiconv: $(SRCDIR)/$(LIBICONVVERSION).tar.gz
+	cd "$(TMPDIR)" && \
+	rm -fr "$(LIBICONVVERSION)" && \
+	tar -xzf "$(SRCDIR)/$(LIBICONVVERSION).tar.gz" && \
+	cd "$(LIBICONVVERSION)" && \
+	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	./configure --prefix=$(PREFIX) &&
+	$(MAKE) $(MAKE_FLAGS) &&
+	$(MAKE) -j1 install
+	touch $@
+	
+$(TGTDIR)/libxml2: $(SRCDIR)/$(LIBXML2VERSION).tar.gz libiconv
+	cd "$(TMPDIR)" && \
+	rm -fr "$(LIBXML2VERSION)" && \
+	tar -xzf "$(SRCDIR)/$(LIBXML2VERSION).tar.gz" && \
+	cd "$(LIBXML2VERSION)" && \
+	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	./configure --prefix=$(PREFIX) &&
+	$(MAKE) $(MAKE_FLAGS) &&
+	$(MAKE) -j1 install
+	touch $@
+
+$(TGTDIR)/libxslt: $(SRCDIR)/$(LIBXML2VERSION).tar.gz libxml2
+	cd "$(TMPDIR)" && \
+	rm -fr "$(LIBXSLTVERSION)" && \
+	tar -xzf "$(SRCDIR)/$(LIBXSLTVERSION).tar.gz" && \
+	cd "$(LIBXSLTVERSION)" && \
+	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	./configure --prefix=$(PREFIX) &&
+	$(MAKE) $(MAKE_FLAGS) &&
+	$(MAKE) -j1 install
+	touch $@
+
+$(TGTDIR)/lxml: $(SRCDIR)/$(LXMLVERSION).tar.gz six libxml2 libxslt
 	cd "$(TMPDIR)" && \
 	rm -fr "$(LXMLVERSION)" && \
 	tar -xzf "$(SRCDIR)/$(LXMLVERSION).tar.gz" && \
 	cd "$(LXMLVERSION)" && \
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-	export CFLAGS="-lgcrypt -fPIC -lrt" && \
-	$(PYTHON) setup.py build --static-deps install
+	$(PYTHON) setup.py build install
 	$(PYTHON) -c "import lxml.objectify"
 	touch $@
 
@@ -1557,4 +1595,19 @@ $(SRCDIR)/$(LXMLVERSION).tar.gz:
 	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
 	touch "$@"
 
+$(SRCDIR)/$(LIBICONVVERSION).tar.gz:
+	cd "$(SRCDIR)" && \
+	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
+	touch "$@"
+	
+$(SRCDIR)/$(LIBXML2VERSION).tar.gz:
+	cd "$(SRCDIR)" && \
+	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
+	touch "$@"
+	
+$(SRCDIR)/$(LIBXSLTVERSION).tar.gz:
+	cd "$(SRCDIR)" && \
+	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
+	touch "$@"
+	
 download: $(TMPDIR)/create-dirs $(SRCDIR)/findlibjvm.class $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/$(SCIPYVERSION).tar.gz $(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(CAMDVERSION).tar.gz $(SRCDIR)/$(CCOLAMDVERSION).tar.gz $(SRCDIR)/$(COLAMDVERSION).tar.gz $(SRCDIR)/$(CHOLMODVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(SRCDIR)/$(PYOPENGLACCELVERSION).tar.gz $(SRCDIR)/$(SIPVERSION).tar.gz $(SRCDIR)/$(PYQTVERSION).tar.gz $(SRCDIR)/$(QTVERSION).tar.gz $(SRCDIR)/$(FFTWVERSION).tar.gz $(SRCDIR)/$(PYPIVERSION) $(SRCDIR)/$(DECORATORVERSION).tar.gz $(SRCDIR)/$(MYSQLPYTHONVERSION).tar.gz $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(SRCDIR)/$(PILVERSION).tar.gz $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz $(SRCDIR)/$(ZLIBVERSION).tar.bz2 $(SRCDIR)/$(PNGVERSION).tar.bz2 $(SRCDIR)/$(TIFFVERSION).tar.gz $(SRCDIR)/$(CYTHONVERSION).tar.gz $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz $(SRCDIR)/$(HDF5VERSION).tar.bz2 $(SRCDIR)/$(H5PYVERSION).tar.gz $(SRCDIR)/$(PCREVERSION).tar.bz2 $(SRCDIR)/$(SWIGVERSION).tar.gz $(SRCDIR)/$(ILASTIKVERSION).tar.gz $(SRCDIR)/$(GTKVERSION).tar.bz2 $(SRCDIR)/$(GLIBVERSION).tar.bz2 $(SRCDIR)/$(PANGOVERSION).tar.bz2 $(SRCDIR)/$(CAIROVERSION).tar.gz $(SRCDIR)/$(ATKVERSION).tar.bz2 $(SRCDIR)/$(PIXMANVERSION).tar.gz $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2 $(SRCDIR)/$(FONTCFGVERSION).tar.gz $(SRCDIR)/$(PYSQLITEVERSION).tar.gz $(SRCDIR)/$(SQLITEVERSION).tar.gz $(SRCDIR)/$(MYSQLVERSION).tar.gz $(SRCDIR)/$(NCURSESVERSION).tar.gz $(SRCDIR)/$(BOOSTVERSION).tar.bz2 $(SRCDIR)/$(GETTEXTVERSION).tar.gz $(SRCDIR)/(CELLH5VERSION).tar.gz $(SRCDIR)/(CELLH5VERSION).patch $(SRCDIR)/(SKLEARNVERSION).tar.gz $(SRCDIR)/(PANDASVERSION).tar.gz $(SRCDIR)/(PYTZVERSION).tar.bz2 $(SRCDIR)/(SIXVERSION).tar.gz $(SRCDIR)/$(LXMLVERSION).tar.gz $(SRCDIR)/$(DATEUTILVERSION).tar.gz

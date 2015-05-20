@@ -298,7 +298,7 @@ class NamesAndTypes(cpm.CPModule):
             For example, giving a different name to a GFP stain image and a 
             brightfield image of the same site allows each to be processed 
             independently.
-            <p>There are three choices:<br>
+            <p>The choices are:<br>
             <ul><li><i>%(ASSIGN_ALL)s</i>: Give every image the same name.
             This is the simplest choice and the appropriate one if you have
             only one kind of image (or only one image). CellProfiler will
@@ -415,6 +415,12 @@ class NamesAndTypes(cpm.CPModule):
             <tr><td>Site</td><td>(None)</td></tr>
             </table>
             </p>
+            <p>The order of metadata matching is determined by the metadata data type (which is set in the 
+            <b>Metadata</b> module). The default is <i>text</i>, which means that the metadata is matched 
+            in alphabetical order. However, this can pose a problem if you need an image with a metadata value 
+            of "2" to be processed before one with "10", since the latter is alphabetically first. To do
+            this, you can set the metadata type to <i>integer</i> rather than <i>text</i>; the images will 
+            then be matched in numerical order.</p>
             <p>There are two special cases in metadata handling worth mentioning:
             <ul>
             <li><i>Missing metadata:</i> For a particular metadata tag, one image from a given

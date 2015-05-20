@@ -69,7 +69,7 @@ def __heapify_markers(markers,image):
     ncoords= coords.shape[0]
     if ncoords > 0:
         pixels = image[markers != 0]
-        age    = numpy.array(range(ncoords))
+        age    = numpy.zeros(coords.shape[0], int)
         offset = numpy.zeros(coords.shape[0],int)
         for i in range(image.ndim):
             offset = offset + stride[i]*coords[:,i]
@@ -80,56 +80,7 @@ def __heapify_markers(markers,image):
         pq = numpy.zeros((0,markers.ndim+3),int)
     return (pq,ncoords)
     
-def watershed(image, markers, connectivity=8, mask=None):
-    """Return a matrix labeled using the watershed algorithm
-    
-    image - a two-dimensional matrix where the lowest value points are
-            labeled first.
-    markers - a two-dimensional matrix marking the basins with the values
-              to be assigned in the label matrix. Zero means not a marker.
-    connectivity - either 4 for four-connected or 8 (default) for eight-
-                   connected
-    mask    - don't label points in the mask
-    """
-    if connectivity not in (4,8):
-        raise ValueError("Connectivity was %d: it should be either four or eight"%(connectivity))
-    
-    image = numpy.array(image)
-    markers = numpy.array(markers)
-    labels = markers.copy()
-    max_x  = markers.shape[0]
-    max_y  = markers.shape[1]
-    if connectivity == 4:
-        connect_increments = ((1,0),(0,1),(-1,0),(0,-1))
-    else:
-        connect_increments = ((1,0),(1,1),(0,1),(-1,1),
-                              (-1,0),(-1,-1),(0,-1),(1,-1))
-    pq,age = __heapify_markers(markers,image)
-    #
-    # The second step pops a value off of the queue, then labels and pushes
-    # the neighbors
-    #
-    while len(pq):
-        pix_value, pix_age, ignore,pix_x,pix_y = heappop(pq)
-        pix_label = labels[pix_x,pix_y]
-        for xi,yi in connect_increments:
-            x = pix_x+xi
-            y = pix_y+yi
-            if x < 0 or y < 0 or x >= max_x or y >= max_y:
-                continue
-            if labels[x,y]:
-                continue
-            if mask != None and not mask[x,y]:
-                continue
-            # label the pixel
-            labels[x,y] = pix_label
-            # put the pixel onto the queue
-            heappush(pq, (image[x,y],age,0,x,y))
-            age += 1
-    return labels
-
-        
-def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
+def watershed(image, markers, connectivity=None, offset=None, mask=None):
     """Return a matrix labeled using the watershed algorithm
     
     image - an array where the lowest value points are
@@ -208,13 +159,14 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
     # and the second through last are the x,y...whatever offsets
     # (to do bounds checking).
     c = []
+    distances = []
     image_stride = __get_strides_for_shape(image.shape)
     for i in range(numpy.product(c_connectivity.shape)):
         multiplier = 1
         offs = []
         indexes = []
         ignore = True
-        for j in range(len(c_connectivity.shape)):
+        for j in range(c_connectivity.ndim):
             elems = c_image.shape[j]
             idx   = (i / multiplier) % c_connectivity.shape[j]
             off   = idx - offset[j]
@@ -225,11 +177,14 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
             multiplier *= c_connectivity.shape[j]
         if (not ignore) and c_connectivity.__getitem__(tuple(indexes)):
             stride = numpy.dot(image_stride, numpy.array(offs))
-            offs.insert(0,stride)
+            d = numpy.sum(numpy.abs(offs)) - 1
+            offs.insert(0, stride)
+            offs.insert(1, d)
             c.append(offs)
+            distances.append(d)
     c = numpy.array(c,numpy.int32)
 
-    pq,age = __heapify_markers(c_markers, c_image)
+    pq, age = __heapify_markers(c_markers, c_image)
     pq = numpy.ascontiguousarray(pq,dtype=numpy.int32)
     if numpy.product(pq.shape) > 0:
         # If nothing is labeled, the output is empty and we don't have to
@@ -240,7 +195,7 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
         else:
             c_mask = c_mask.astype(numpy.int8).flatten()
         _watershed.watershed(c_image.flatten(),
-                             pq, age, c, 
+                             pq, c, 
                              c_image.ndim, 
                              c_mask,
                              numpy.array(c_image.shape,numpy.int32),
@@ -250,3 +205,6 @@ def fast_watershed(image, markers, connectivity=None, offset=None, mask=None):
         return c_output.astype(markers.dtype)
     except:
         return c_output
+
+# backwards compatibility
+fast_watershed = watershed

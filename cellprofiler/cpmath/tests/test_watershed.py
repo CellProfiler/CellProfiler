@@ -392,3 +392,26 @@ class TestFastWatershed(unittest.TestCase):
         elapsed = time.clock()-before
         print "Scipy watershed ran a megapixel image in %f seconds"%(elapsed)
 
+    def test_watershed10(self):
+        # https://github.com/scikit-image/scikit-image/issues/803
+        #
+        # Make sure that no point in a level image is farther away
+        # from its seed than any other
+        #
+        image = numpy.zeros((21, 21))
+        markers = numpy.zeros((21, 21), int)
+        markers[5, 5] = 1
+        markers[5, 10] = 2
+        markers[10, 5] = 3
+        markers[10, 10] = 4
+
+        structure = numpy.array([[False, True, False],
+                              [True, True, True],
+                              [False, True, False]])
+        out = fast_watershed(image, markers, structure)
+        i, j = numpy.mgrid[0:21, 0:21]
+        d = numpy.dstack(
+            [numpy.sqrt((i.astype(float)-i0)**2, (j.astype(float)-j0)**2)
+             for i0, j0 in ((5, 5), (5, 10), (10, 5), (10, 10))])
+        dmin = numpy.min(d, 2)
+        self.assertTrue(numpy.all(d[i, j, out[i, j]-1] == dmin))

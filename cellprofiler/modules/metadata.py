@@ -227,7 +227,10 @@ class Metadata(cpm.CPModule):
             <li><i>Integer:</i> Save the metadata as an integer.</li>
             <li><i>Float:</i> Save the metadata as a decimal number.</li>
             <li><i>None:</i> Do not save the metadata as a measurement.</li>
-            </ul>"""%globals())
+            </ul>
+            If you are using the metadata to match images to create your image set, the choice
+            of metadata type here will determine the order of matching. See <b>NamesAndTypes</b>
+            for more details."""%globals())
         
         self.table = cps.Table(
             "",use_sash=True, 

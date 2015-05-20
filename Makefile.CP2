@@ -50,6 +50,10 @@
 #   export PYTHONPATH="${CP2DEST}/lib/python2.5/site-packages:${PYTHONPATH}"
 #   export JAVA_HOME="<your path to JDK or JRE>"
 #
+# and set your locale to use UTF-8 encoding, e.g.
+#
+#   export LC_ALL=en_US.UTF-8
+#
 # To run CellProfiler:
 #   cd ${CP2DEST}
 #   python CellProfiler.py -b
@@ -65,13 +69,17 @@ PACKAGEHOST				?= http://cellprofiler.org/linux/SOURCES
 
 MAKE_FLAGS				?= -j4
 PREFIX					?= /usr/CellProfiler
-SRCDIR					?= $(PREFIX)/src/CellProfiler
+SRCDIR					?= $(PREFIX)/src
 TMPDIR					?= $(PWD)/tmp
 #
 # TGTDIR holds the target files touched when making multipart dependencies
+# The target directory must be present before the dependencies are calculated
+# so it must be created in this backhanded fashion.
 #
 TGTDIR					?= $(TMPDIR)/targets
-VPATH = $(TGTDIR)
+export MAKETGTDIRCMD := "mkdir -p "$(TGTDIR)";echo "$(TGTDIR)
+VPATH = $(shell "$(MAKETGTDIRCMD)")
+unexport MAKETGTDIRCMD
 
 # Set DISABLE_PRECHECKS to "YES" (case sensitive!) to explicitly
 # disable prechecks. Disabling is not recommended. It may lead
@@ -137,6 +145,9 @@ LAPACKVERSION				= lapack-3.3.0
 LAPACKFLAGS				= -fPIC -m64
 LAPACKURL				= http://www.netlib.org/lapack/
 LXMLVERSION				= lxml-3.4.2
+LIBXML2VERSION				= libxml2-2.9.2
+LIBXSLTVERSION				= libxslt-1.1.28
+LIBICONVVERSION				= libiconv-1.9.2
 MATPLOTLIBVERSION			= matplotlib-1.0.1
 MATPLOTLIBURL				= $(PACKAGEHOST)
 MYSQLVERSION				= mysql-5.1.55
@@ -378,7 +389,7 @@ $(TGTDIR)/python: $(SRCDIR)/$(PYTHONVERSION).tar.bz2 sqlite zlib
 		--prefix="$(PYTHONPREFIX)" \
 		--enable-shared \
 				                --enable-unicode=ucs4 && \
-	make install
+	make install MACHDEP=linux2
 	touch $@
 
 $(TGTDIR)/cython: $(SRCDIR)/$(CYTHONVERSION).tar.gz pypi
@@ -988,15 +999,51 @@ $(TGTDIR)/pytz: $(SRCDIR)/$(PYTZVERSION).tar.bz2 python
 	$(PYTHON) setup.py install
 	touch $@
 
-$(TGTDIR)/lxml: $(SRCDIR)/$(LXMLVERSION).tar.gz six
+$(TGTDIR)/libiconv: $(SRCDIR)/$(LIBICONVVERSION).tar.gz
+	cd "$(TMPDIR)" && \
+	rm -fr "$(LIBICONVVERSION)" && \
+	tar -xzf "$(SRCDIR)/$(LIBICONVVERSION).tar.gz" && \
+	cd "$(LIBICONVVERSION)" && \
+	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	./configure --prefix=$(PREFIX) && \
+	$(MAKE) $(MAKE_FLAGS) && \
+	$(MAKE) -j1 install
+	touch $@
+
+$(TGTDIR)/libxml2: $(SRCDIR)/$(LIBXML2VERSION).tar.gz libiconv
+	cd "$(TMPDIR)" && \
+	rm -fr "$(LIBXML2VERSION)" && \
+	tar -xzf "$(SRCDIR)/$(LIBXML2VERSION).tar.gz" && \
+	cd "$(LIBXML2VERSION)" && \
+	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	./configure --prefix=$(PREFIX) --with-iconv=$(PREFIX) --without-python && \
+	$(MAKE) $(MAKE_FLAGS) && \
+	$(MAKE) -j1 install
+	touch $@
+
+$(TGTDIR)/libxslt: $(SRCDIR)/$(LIBXSLTVERSION).tar.gz libxml2
+	cd "$(TMPDIR)" && \
+	rm -fr "$(LIBXSLTVERSION)" && \
+	tar -xzf "$(SRCDIR)/$(LIBXSLTVERSION).tar.gz" && \
+	cd "$(LIBXSLTVERSION)" && \
+	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	./configure --prefix=$(PREFIX) --with-libxml-prefix=$(PREFIX) --without-python && \
+	$(MAKE) $(MAKE_FLAGS) && \
+	$(MAKE) -j1 install
+	touch $@
+
+$(TGTDIR)/lxml: $(SRCDIR)/$(LXMLVERSION).tar.gz six libxml2 libxslt
 	cd "$(TMPDIR)" && \
 	rm -fr "$(LXMLVERSION)" && \
 	tar -xzf "$(SRCDIR)/$(LXMLVERSION).tar.gz" && \
 	cd "$(LXMLVERSION)" && \
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-	CFLAGS="-fPIC -lrt" $(PYTHON) setup.py build --static-deps && \
-	$(PYTHON) setup.py install
+	$(PYTHON) setup.py build install
+	$(PYTHON) -c "import lxml.objectify"
 	touch $@
 
 $(TGTDIR)/six: $(SRCDIR)/$(SIXVERSION).tar.gz python
@@ -1017,6 +1064,15 @@ cellprofiler: cython wxpython h5py scipy ilastik matplotlib decorator mysqlpytho
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
 	"$(PYTHON)" ./CellProfiler.py --build-and-exit && \
 	touch "$@"
+#
+# The test target needs an X11 $DISPLAY to run the full suite of tests
+# Consider running Xvfb to make a virtual display
+#
+test: cellprofiler
+	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
+	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}:$(PREFIX)/lib/mysql" && \
+	export LC_ALL=en_US.UTF-8 && \
+	"$(PYTHON)" ./cpnose.py --with-javabridge --no-headless -m "(?:^)test_.*"
 
 #
 # The following are optional sources, in case gtk is
@@ -1544,4 +1600,19 @@ $(SRCDIR)/$(LXMLVERSION).tar.gz:
 	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
 	touch "$@"
 
+$(SRCDIR)/$(LIBICONVVERSION).tar.gz:
+	cd "$(SRCDIR)" && \
+	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
+	touch "$@"
+	
+$(SRCDIR)/$(LIBXML2VERSION).tar.gz:
+	cd "$(SRCDIR)" && \
+	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
+	touch "$@"
+	
+$(SRCDIR)/$(LIBXSLTVERSION).tar.gz:
+	cd "$(SRCDIR)" && \
+	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
+	touch "$@"
+	
 download: $(TMPDIR)/create-dirs $(SRCDIR)/findlibjvm.class $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/$(SCIPYVERSION).tar.gz $(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(CAMDVERSION).tar.gz $(SRCDIR)/$(CCOLAMDVERSION).tar.gz $(SRCDIR)/$(COLAMDVERSION).tar.gz $(SRCDIR)/$(CHOLMODVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(SRCDIR)/$(PYOPENGLACCELVERSION).tar.gz $(SRCDIR)/$(SIPVERSION).tar.gz $(SRCDIR)/$(PYQTVERSION).tar.gz $(SRCDIR)/$(QTVERSION).tar.gz $(SRCDIR)/$(FFTWVERSION).tar.gz $(SRCDIR)/$(PYPIVERSION) $(SRCDIR)/$(DECORATORVERSION).tar.gz $(SRCDIR)/$(MYSQLPYTHONVERSION).tar.gz $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(SRCDIR)/$(PILVERSION).tar.gz $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz $(SRCDIR)/$(ZLIBVERSION).tar.bz2 $(SRCDIR)/$(PNGVERSION).tar.bz2 $(SRCDIR)/$(TIFFVERSION).tar.gz $(SRCDIR)/$(CYTHONVERSION).tar.gz $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz $(SRCDIR)/$(HDF5VERSION).tar.bz2 $(SRCDIR)/$(H5PYVERSION).tar.gz $(SRCDIR)/$(PCREVERSION).tar.bz2 $(SRCDIR)/$(SWIGVERSION).tar.gz $(SRCDIR)/$(ILASTIKVERSION).tar.gz $(SRCDIR)/$(GTKVERSION).tar.bz2 $(SRCDIR)/$(GLIBVERSION).tar.bz2 $(SRCDIR)/$(PANGOVERSION).tar.bz2 $(SRCDIR)/$(CAIROVERSION).tar.gz $(SRCDIR)/$(ATKVERSION).tar.bz2 $(SRCDIR)/$(PIXMANVERSION).tar.gz $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2 $(SRCDIR)/$(FONTCFGVERSION).tar.gz $(SRCDIR)/$(PYSQLITEVERSION).tar.gz $(SRCDIR)/$(SQLITEVERSION).tar.gz $(SRCDIR)/$(MYSQLVERSION).tar.gz $(SRCDIR)/$(NCURSESVERSION).tar.gz $(SRCDIR)/$(BOOSTVERSION).tar.bz2 $(SRCDIR)/$(GETTEXTVERSION).tar.gz $(SRCDIR)/(CELLH5VERSION).tar.gz $(SRCDIR)/(CELLH5VERSION).patch $(SRCDIR)/(SKLEARNVERSION).tar.gz $(SRCDIR)/(PANDASVERSION).tar.gz $(SRCDIR)/(PYTZVERSION).tar.bz2 $(SRCDIR)/(SIXVERSION).tar.gz $(SRCDIR)/$(LXMLVERSION).tar.gz $(SRCDIR)/$(DATEUTILVERSION).tar.gz

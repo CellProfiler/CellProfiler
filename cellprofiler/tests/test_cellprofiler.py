@@ -28,6 +28,7 @@ if hasattr(sys, 'frozen'):
 else:
     ARGLIST_START = ["CellProfiler.py", "-b"]
 
+@unittest.skipIf(sys.platform != 'win32', "Skip tests on all but Windows")
 class TestCellProfiler(unittest.TestCase):
     def run_cellprofiler(self, *args):
         '''Run CellProfiler with the given arguments list

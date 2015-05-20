@@ -467,9 +467,11 @@ class TrackObjects(cpm.CPModule):
             RADIUS_STD_SETTING_TEXT, 3, minval=1,doc = """
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i>
             <br>
-            <b>TrackObjects</b> will estimate the standard deviation of the error
-            between the observed and predicted positions of an object for
-            each movement model. It will constrain the search for matching
+            <b>TrackObjects</b> derives a search radius from an error
+            estimation based on (a) the standard deviation of the movement and 
+            (b) the diameter of the object. The standard deviation is a measure of
+            the error between the observed and predicted positions of an object for
+            each movement model. The module will constrain the search for matching
             objects from one frame to the next to the standard deviation
             of the error times the number of standard
             deviations that you enter here.
@@ -486,23 +488,30 @@ class TrackObjects(cpm.CPModule):
         self.radius_limit = cps.FloatRange(
             RADIUS_LIMIT_SETTING_TEXT, (2, 10), minval = 0,doc = """
             <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
-            <b>TrackObjects</b> derives a search radius based on the error
-            estimation. Potentially, the module can make an erroneous assignment
+            <b>TrackObjects</b> derives a search radius from an error
+            estimation based on (a) the standard deviation of the movement and 
+            (b) the diameter of the object. Potentially, the module can make an erroneous assignment
             with a large error, leading to a large estimated error for
             the object in the next frame. Conversely, the module can arrive
             at a small estimated error by chance, leading to a maximum radius
             that does not track the object in a subsequent frame. The radius
-            limit constrains the maximum radius to reasonable values. 
+            limit constrains the search radius to reasonable values. 
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Recommendations:
             <ul>
             <li>Special care must be taken to adjust the upper limit appropriate 
             to the data.</li>
             <li>The lower limit should be set to a radius (in pixels) that is a
-            reasonable displacement for any object from one frame to the next. Hence, 
-            if you notice that a frame-to-frame linkage is not being made for a 
-            steadily-moving object, it may be that this value needs to be decreased  
+            reasonable displacement for any object from one frame to the next. 
+            <ul>
+            <li>If you notice that a frame-to-frame linkage is not being made for a 
+            steadily-moving object, it may be that this value needs to be <i>decreased</i>  
             such that the displacement falls above the lower limit.</li>
+            <li>Alternately, if you notice that a frame-to-frame linkage is not 
+            being made for a roughly stationary object, this value may need to be
+            <i>increased</i> so that the small displacement error is offset by the 
+            object diameter.</li>
+            </ul></li>
             <li>The upper limit should be set to the maximum reasonable 
             displacement (in pixels) under any circumstances. Hence, if you notice that
             a frame-to-frame linkage is not being made in the case of a unusually 

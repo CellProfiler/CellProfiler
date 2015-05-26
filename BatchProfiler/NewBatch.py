@@ -1,4 +1,4 @@
-#!/usr/bin/env ./python-2.6.sh
+#!imageweb.sh
 #
 # Start a batch operation from a web page
 #
@@ -33,8 +33,9 @@ import email.mime.text
 import socket
 from cStringIO import StringIO
 
+sys.path.append(os.environ['LAST_CHECKOUT'])
+
 SENDMAIL="/usr/sbin/sendmail"
-batch_url = "http://%s/batchprofiler/cgi-bin/FileUI/CellProfiler/BatchProfiler/ViewBatch.py"%(socket.gethostname())
 
 form_data = cgi.FieldStorage()
 myself = os.path.split(__file__)[1]
@@ -178,7 +179,7 @@ if (form_data.has_key('submit_batch') and
         "batch_size":    int(form_data["batch_size"].value),
         "memory_limit":  float(form_data["memory_limit"].value) if form_data.has_key("memory_limit") else 2000,
         "timeout":       float(form_data["timeout"].value),
-        "cpcluster":     "CellProfiler_2_0:/imaging/analysis/CPCluster/CellProfiler-2.0/%s"%form_data["revision"].value,
+        "cpcluster":     "CellProfiler_2_0:%s/%s"%form_data["revision"].value,
         "batch_file":    batch_file,
         "runs":          []
     }

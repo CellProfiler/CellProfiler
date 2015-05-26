@@ -1164,6 +1164,7 @@ class Pipeline(object):
             self.notify_listeners(URLsAddedEvent(
                 self.__file_list))
         self.__undo_stack = []
+        return version, git_hash
         
     def save(self, fd_or_filename, 
              format=FMT_NATIVE, 

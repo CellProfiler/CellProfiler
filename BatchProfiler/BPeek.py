@@ -1,4 +1,4 @@
-#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/python-2.6.sh
+#!imageweb.sh
 """
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.

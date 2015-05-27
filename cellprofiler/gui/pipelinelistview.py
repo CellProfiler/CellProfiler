@@ -242,7 +242,7 @@ class PipelineListView(object):
         # display a tooltip over a transparent window in front of the disabled
         # window. 
         #
-        if sys.platform == 'linux2':
+        if sys.platform.startswith('linux'):
             self.transparent_window = None
             return # Doesn't work right.
         transparent_window = wx.Panel(self.__panel)
@@ -1555,6 +1555,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             self.CaptureMouse()
             self.RefreshRect(self.get_slider_rect())
         elif hit_test & wx.LIST_HITTEST_ONITEMLABEL:
+            item_id = None if index >= len(self.items) \
+                else id(self.items[index])
             if (event.ShiftDown() and self.active_item is not None
                 and self.CanSelect()):
                 # Extend the selection
@@ -1564,12 +1566,21 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     self.Select(i, True)
                 toggle_selection = False
                 multiple_selection = True
+                activate_before_drag = True
             else:
+                activate_before_drag = not self.IsSelected(index)
                 toggle_selection = True
                 multiple_selection = event.ControlDown()
-            self.activate_item(index, toggle_selection, multiple_selection)
+            if activate_before_drag:
+                self.activate_item(index, toggle_selection, multiple_selection)
             plv_event = self.make_event(wx.EVT_LIST_BEGIN_DRAG, index)
             self.GetEventHandler().ProcessEvent(plv_event)
+            if not activate_before_drag:
+                new_item_id = None if index >= len(self.items) \
+                    else id(self.items[index])
+                if new_item_id == item_id:
+                    self.activate_item(
+                        index, toggle_selection, multiple_selection)
         elif hit_test & wx.LIST_HITTEST_ONITEMICON:
             if column != ERROR_COLUMN or self.CanSelect():
                 self.pressed_row = index
@@ -1668,7 +1679,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 self.Refresh(eraseBackground=False)
         else:
             tooltip_text = None
-            item = None if (index is None or index >= self.GetItemCount) \
+            item = None if (index is None or index >= self.GetItemCount()) \
                 else self.items[index]
             if hit_test & wx.LIST_HITTEST_ONITEM:
                 if column == EYE_COLUMN:

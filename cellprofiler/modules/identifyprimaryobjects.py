@@ -1031,7 +1031,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 # but pseudorandom manner.
                 #
                 r = np.random.RandomState()
-                r.seed(abs(np.sum(labeled_image)))
+                r.seed(abs(np.sum(labeled_image)) % (2 ** 16))
                 #
                 # Pick an arbitrary ordering of the label numbers
                 #

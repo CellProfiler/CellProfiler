@@ -319,7 +319,7 @@ def parse_args(args):
                       default=False)
     
     default_show_gui = True
-    if sys.platform == 'linux2':
+    if sys.platform.startswith('linux'):
         if not os.getenv('DISPLAY'):
             default_show_gui = False
 

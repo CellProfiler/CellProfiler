@@ -57,6 +57,8 @@ DATA_FILES = [('cellprofiler/icons',
 from javabridge import JARS
 imagej_path = os.path.abspath(os.path.join(".", "imagej", "jars"))
 jars = JARS + [os.path.join(imagej_path, jar) for jar in get_cellprofiler_jars()]
+jars.append(os.path.join(
+    imagej_path, "cellprofiler-java-dependencies-classpath.txt"))
 DATA_FILES.append(('imagej/jars', jars))
 OPTIONS = {'argv_emulation': True,
            'packages': ['cellprofiler', 'contrib', 'imagej', 'javabridge'],

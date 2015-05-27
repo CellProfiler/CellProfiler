@@ -1770,7 +1770,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 #
                 # Also happens on at least one Centos build.
                 #
-                if os.stat_float_times() and not sys.platform in ("darwin", "linux2"):
+                if os.stat_float_times() and not any([
+                    sys.platform.startswith(x) for x in ("darwin", "linux")]):
                     time.sleep(.1)
                 else:
                     time.sleep(1)

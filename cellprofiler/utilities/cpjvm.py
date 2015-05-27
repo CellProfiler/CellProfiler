@@ -82,8 +82,16 @@ def get_jars():
             jar_filename
             for jar_filename in os.listdir(imagej_path)
             if jar_filename.lower().endswith(".jar")]
+        sort_dict = { "cellprofiler-java.jar": -1}
+        jdcp = os.path.join(
+            imagej_path, "cellprofiler-java-dependencies-classpath.txt")
+        if os.path.isfile(jdcp):
+            with open(jdcp, "r") as fd:
+                jars = fd.readline().split(os.pathsep)
+                sort_dict.update(dict([
+                    (os.path.split(j)[-1], i) for i, j in enumerate(jars)]))
         def sort_fn(a, b):
-            aa,bb = [(0 if x.startswith("cellprofiler-java") else 1, x)
+            aa,bb = [(sort_dict.get(x, sys.maxint), x)
                      for x in a, b]
             return cmp(aa, bb)
         jar_files = sorted(jar_files, cmp = sort_fn)

@@ -412,7 +412,7 @@ class EditObjectsManually(I.Identify):
             npts = np.prod(mask.shape)
             if npts > subsample:
                 r = np.random.RandomState()
-                r.seed(np.sum(mask))
+                r.seed(np.sum(mask) % (2**16))
                 i, j = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
                 i0 = i[mask==1]
                 j0 = j[mask==1]

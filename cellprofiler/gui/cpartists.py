@@ -309,6 +309,9 @@ class ObjectsData(OutlinesMixin):
         self._flush_outlines()
         self.__overlay = None
         self.__mask = None
+        
+    def get_raw_mode(self):
+        return self.mode
     
     labels = property(get_labels, set_labels)
     
@@ -390,6 +393,9 @@ class MaskData(OutlinesMixin):
     
     def _using_color(self):
         return True
+
+    def get_raw_mode(self):
+        return self.mode
     
 class CPImageArtist(matplotlib.artist.Artist):
     '''An artist that displays multiple images and objects

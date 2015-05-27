@@ -373,7 +373,7 @@ opts['py2exe']['includes'] += [
 try:
     import zmq
     opts['py2exe']['includes'] += [
-        "zmq", "zmq.utils", "zmq.utils.jsonapi", "zmq.utils.strtypes"]
+        "zmq", "zmq.utils", "zmq.utils.*", "zmq.utils.strtypes"]
 
     zmq_loc = os.path.split(zmq.__file__)[0]
     os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc

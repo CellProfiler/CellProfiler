@@ -378,7 +378,7 @@ $(TMPDIR)/create-dirs:
 # top-to-bottom, so you may assume that later specified packages
 # depend on earlier specified packages.
 #
-$(TGTDIR)/python: $(SRCDIR)/$(PYTHONVERSION).tar.bz2 sqlite zlib
+$(TGTDIR)/python: $(SRCDIR)/$(PYTHONVERSION).tar.bz2 sqlite
 	cd "$(TMPDIR)" && \
 	rm -fr "$(PYTHONVERSION)" && \
 	tar -xjf "$(SRCDIR)/$(PYTHONVERSION).tar.bz2" && \
@@ -670,7 +670,7 @@ $(TGTDIR)/pyopenglaccel: $(SRCDIR)/$(PYOPENGLACCELVERSION).tar.gz $(PYTHON) pyop
 	$(PYTHON) setup.py install
 	touch $@
 
-$(TGTDIR)/qt: $(SRCDIR)/$(QTVERSION).tar.gz
+$(TGTDIR)/qt: $(SRCDIR)/$(QTVERSION).tar.gz zlib jpeg
 	cd "$(TMPDIR)" && \
 	rm -fr "$(QTVERSION)" && \
 	tar -zxf "$(SRCDIR)/$(QTVERSION).tar.gz" && \

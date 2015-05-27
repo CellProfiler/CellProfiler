@@ -680,6 +680,7 @@ $(TGTDIR)/qt: $(SRCDIR)/$(QTVERSION).tar.gz zlib jpeg
 	./configure \
 	    --prefix="$(PREFIX)" \
 	    -developer-build \
+	    -opengl \
 	    -opensource \
 	    -confirm-license \
 	    -no-xmlpatterns \

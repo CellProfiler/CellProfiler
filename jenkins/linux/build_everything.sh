@@ -26,8 +26,10 @@ yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn \
     dejavu-lgc-sans-fonts openssl openssl-devel xclock bzip2 \
     bzip2-devel bzip2-libs libXtst make patch readline-devel \
     java-1.7.0-openjdk java-1.7.0-openjdk-devel
-    
-adduser cpbuild
+
+if [ ! `id -u cpbuild`]; then    
+    adduser cpbuild
+fi
 cp=/jenkins/CellProfiler
 if [ -z "${PREFIX}" ]; then
     export PREFIX=/imaging/analysis/CPCluster/CellProfiler-2.0/builds/redhat_6

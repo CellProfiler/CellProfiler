@@ -193,7 +193,7 @@ QIMGTOARRVERSION			= qimage2ndarray-1.0
 QIMGTOARRPREFIX				?= $(PREFIX)
 QIMGTOARRURL				= $(PACKAGEHOST)
 QTVERSION				= qt-everywhere-opensource-src-4.7.1
-QTMAKE					= $(PREFIX)/bin/qtmake-qt4
+QTMAKE					= $(PREFIX)/bin/qmake
 SKLEARNVERSION				= scikit-learn-0.15.2
 SCIPYVERSION				= scipy-0.10.1
 SCIPYPREFIX				?= $(PREFIX)
@@ -484,7 +484,7 @@ $(TGTDIR)/numpy: $(SRCDIR)/$(NUMPYVERSION).tar.gz umfpack fftw pypi
 	cd "$(NUMPYVERSION)" && \
 	cp site.cfg.example site.cfg && \
 	perl -pi -e 's@#(\[DEFAULT\])@$$1@g' site.cfg && \
-	perl -pi -e 's@#(library_dirs.*)@$$1:$(PYTHONPREFIX)/lib@g' site.cfg && \
+	perl -pi -e 's@#(library_dirs.*)@$$1:/usr/lib64:$(PYTHONPREFIX)/lib@g' site.cfg && \
 	perl -pi -e 's@#(include_dirs.*)@$$1:$(PYTHONPREFIX)/include@g' site.cfg && \
 	perl -pi -e 's@#(\[lapack_opt\])@$$1@g' site.cfg && \
 	perl -pi -e 's@#(libraries = lapack, blas, atlas)@$$1, gfortran@g' site.cfg && \

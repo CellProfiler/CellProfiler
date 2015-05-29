@@ -477,7 +477,7 @@ $(FFTWPREFIX)/lib/libfftw3f.la:		$(SRCDIR)/$(FFTWVERSION).tar.gz $(FFTWPREFIX)/l
 	$(MAKE) $(MAKE_FLAGS) && \
 	$(MAKE) -j1 install
 
-$(TGTDIR)/numpy: $(SRCDIR)/$(NUMPYVERSION).tar.gz umfpack fftw pypi
+$(TGTDIR)/numpy: $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/mtrand.pyx.patch umfpack fftw pypi
 	cd "$(TMPDIR)" && \
 	rm -fr "$(NUMPYVERSION)" && \
 	tar -zxf "$(SRCDIR)/$(NUMPYVERSION).tar.gz" && \
@@ -495,9 +495,13 @@ $(TGTDIR)/numpy: $(SRCDIR)/$(NUMPYVERSION).tar.gz umfpack fftw pypi
 	perl -pi -e 's@#(\[fftw\])@$$1@g' site.cfg && \
 	perl -pi -e 's@#(libraries = fftw3)@$$1@g' site.cfg && \
 	perl -pi -e 's@#(\[djbfft\])@$$1@g' site.cfg && \
+	patch -p0 < $(SRCDIR)/mtrand.pyx.patch && \
 	export MKL="None" && \
 	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	cd numpy/random/mtrand && \
+	$(PYTHON) generate_mtrand_c.py && \
+	cd ../../.. && \
 	$(PYTHON) setup.py build --fcompiler=gfortran && \
 	$(PYTHON) setup.py install
 	touch $@
@@ -1637,5 +1641,10 @@ $(SRCDIR)/$(LIBXSLTVERSION).tar.gz:
 	cd "$(SRCDIR)" && \
 	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
 	touch "$@"
+
+$(SRCDIR)/mtrand.pyx.patch:
+	cd "$(SRCDIR)" && \
+	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
+	touch "$@"
 	
-download: $(TMPDIR)/create-dirs $(SRCDIR)/findlibjvm.class $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/$(SCIPYVERSION).tar.gz $(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(CAMDVERSION).tar.gz $(SRCDIR)/$(CCOLAMDVERSION).tar.gz $(SRCDIR)/$(COLAMDVERSION).tar.gz $(SRCDIR)/$(CHOLMODVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(SRCDIR)/$(PYOPENGLACCELVERSION).tar.gz $(SRCDIR)/$(SIPVERSION).tar.gz $(SRCDIR)/$(PYQTVERSION).tar.gz $(SRCDIR)/$(QTVERSION).tar.gz $(SRCDIR)/$(FFTWVERSION).tar.gz $(SRCDIR)/$(PYPIVERSION) $(SRCDIR)/$(DECORATORVERSION).tar.gz $(SRCDIR)/$(MYSQLPYTHONVERSION).tar.gz $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(SRCDIR)/$(PILVERSION).tar.gz $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz $(SRCDIR)/$(ZLIBVERSION).tar.bz2 $(SRCDIR)/$(PNGVERSION).tar.bz2 $(SRCDIR)/$(TIFFVERSION).tar.gz $(SRCDIR)/$(CYTHONVERSION).tar.gz $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz $(SRCDIR)/$(HDF5VERSION).tar.bz2 $(SRCDIR)/$(H5PYVERSION).tar.gz $(SRCDIR)/$(PCREVERSION).tar.bz2 $(SRCDIR)/$(SWIGVERSION).tar.gz $(SRCDIR)/$(ILASTIKVERSION).tar.gz $(SRCDIR)/$(GTKVERSION).tar.bz2 $(SRCDIR)/$(GLIBVERSION).tar.bz2 $(SRCDIR)/$(PANGOVERSION).tar.bz2 $(SRCDIR)/$(CAIROVERSION).tar.gz $(SRCDIR)/$(ATKVERSION).tar.bz2 $(SRCDIR)/$(PIXMANVERSION).tar.gz $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2 $(SRCDIR)/$(FONTCFGVERSION).tar.gz $(SRCDIR)/$(PYSQLITEVERSION).tar.gz $(SRCDIR)/$(SQLITEVERSION).tar.gz $(SRCDIR)/$(MYSQLVERSION).tar.gz $(SRCDIR)/$(NCURSESVERSION).tar.gz $(SRCDIR)/$(BOOSTVERSION).tar.bz2 $(SRCDIR)/$(GETTEXTVERSION).tar.gz $(SRCDIR)/(CELLH5VERSION).tar.gz $(SRCDIR)/(CELLH5VERSION).patch $(SRCDIR)/(SKLEARNVERSION).tar.gz $(SRCDIR)/(PANDASVERSION).tar.gz $(SRCDIR)/(PYTZVERSION).tar.bz2 $(SRCDIR)/(SIXVERSION).tar.gz $(SRCDIR)/$(LXMLVERSION).tar.gz $(SRCDIR)/$(DATEUTILVERSION).tar.gz
+download: $(TMPDIR)/create-dirs $(SRCDIR)/findlibjvm.class $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/$(SCIPYVERSION).tar.gz $(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(CAMDVERSION).tar.gz $(SRCDIR)/$(CCOLAMDVERSION).tar.gz $(SRCDIR)/$(COLAMDVERSION).tar.gz $(SRCDIR)/$(CHOLMODVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(SRCDIR)/$(PYOPENGLACCELVERSION).tar.gz $(SRCDIR)/$(SIPVERSION).tar.gz $(SRCDIR)/$(PYQTVERSION).tar.gz $(SRCDIR)/$(QTVERSION).tar.gz $(SRCDIR)/$(FFTWVERSION).tar.gz $(SRCDIR)/$(PYPIVERSION) $(SRCDIR)/$(DECORATORVERSION).tar.gz $(SRCDIR)/$(MYSQLPYTHONVERSION).tar.gz $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(SRCDIR)/$(PILVERSION).tar.gz $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz $(SRCDIR)/$(ZLIBVERSION).tar.bz2 $(SRCDIR)/$(PNGVERSION).tar.bz2 $(SRCDIR)/$(TIFFVERSION).tar.gz $(SRCDIR)/$(CYTHONVERSION).tar.gz $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz $(SRCDIR)/$(HDF5VERSION).tar.bz2 $(SRCDIR)/$(H5PYVERSION).tar.gz $(SRCDIR)/$(PCREVERSION).tar.bz2 $(SRCDIR)/$(SWIGVERSION).tar.gz $(SRCDIR)/$(ILASTIKVERSION).tar.gz $(SRCDIR)/$(GTKVERSION).tar.bz2 $(SRCDIR)/$(GLIBVERSION).tar.bz2 $(SRCDIR)/$(PANGOVERSION).tar.bz2 $(SRCDIR)/$(CAIROVERSION).tar.gz $(SRCDIR)/$(ATKVERSION).tar.bz2 $(SRCDIR)/$(PIXMANVERSION).tar.gz $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2 $(SRCDIR)/$(FONTCFGVERSION).tar.gz $(SRCDIR)/$(PYSQLITEVERSION).tar.gz $(SRCDIR)/$(SQLITEVERSION).tar.gz $(SRCDIR)/$(MYSQLVERSION).tar.gz $(SRCDIR)/$(NCURSESVERSION).tar.gz $(SRCDIR)/$(BOOSTVERSION).tar.bz2 $(SRCDIR)/$(GETTEXTVERSION).tar.gz $(SRCDIR)/(CELLH5VERSION).tar.gz $(SRCDIR)/(CELLH5VERSION).patch $(SRCDIR)/(SKLEARNVERSION).tar.gz $(SRCDIR)/(PANDASVERSION).tar.gz $(SRCDIR)/(PYTZVERSION).tar.bz2 $(SRCDIR)/(SIXVERSION).tar.gz $(SRCDIR)/$(LXMLVERSION).tar.gz $(SRCDIR)/$(DATEUTILVERSION).tar.gz $(SRCDIR)/mtrand.pyx.patch

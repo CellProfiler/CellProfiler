@@ -1207,24 +1207,9 @@ class CPFigureFrame(wx.Frame):
             tick_vmax = orig_vmax
         else:
             tick_vmax = image.max()
-        if colorbar and not is_color_image(image):
-            if not subplot in self.colorbar:
-                cax = matplotlib.colorbar.make_axes(subplot)[0]
-                self.colorbar[subplot] = (cax, matplotlib.colorbar.ColorbarBase(cax, cmap=colormap, ticks=[]))
-            cax, colorbar = self.colorbar[subplot]
-            colorbar.set_ticks(np.linspace(0, 1, 10))
-            if normalize == 'log':
-                if tick_vmin != tick_vmax and tick_vmin != 0:
-                    ticklabels = [
-                        '%0.1f' % v 
-                        for v in np.logspace(tick_vmin, tick_vmax, 10)]
-                else:
-                    ticklabels = [''] * 10
-            else:
-                ticklabels = [
-                    '%0.1f'%(v) for v in np.linspace(tick_vmin, tick_vmax, 10)]
-            colorbar.set_ticklabels(ticklabels)
-                                      
+
+        if isinstance(colormap, basestring):
+            colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
 
         # NOTE: We bind this event each time imshow is called to a new closure
         #    of on_release so that each function will be called when a
@@ -1243,6 +1228,9 @@ class CPFigureFrame(wx.Frame):
         self.event_bindings[(x, y)] = [
             self.figure.canvas.mpl_connect('button_release_event', on_release)]
 
+        if colorbar and not is_color_image(image):
+            colormap.set_array(self.images[(x, y)])
+            colormap.autoscale()
         if use_imshow or g_use_imshow:
             image = self.images[(x, y)]
             subplot.imshow(self.normalize_image(image, **kwargs))
@@ -1250,6 +1238,20 @@ class CPFigureFrame(wx.Frame):
             subplot.add_artist(CPImageArtist(self.images[(x,y)], self, kwargs))
         
         self.update_line_labels(subplot, kwargs)
+        #
+        # Colorbar support
+        #
+        if colorbar and not is_color_image(image):
+            
+            if not subplot in self.colorbar:
+                cax = matplotlib.colorbar.make_axes(subplot)[0]
+                bar = subplot.figure.colorbar(colormap, cax, subplot, use_gridspec=False)
+                self.colorbar[subplot] = (cax, bar)
+            else:
+                cax, bar = self.colorbar[subplot]
+                bar.set_array(self.images[(x, y)])
+                bar.update_normal(colormap)
+                bar.update_ticks()
         
         # Also add this menu to the main menu
         if (x,y) in self.subplot_menus:

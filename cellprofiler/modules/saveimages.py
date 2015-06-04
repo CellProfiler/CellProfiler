@@ -871,7 +871,12 @@ class SaveImages(cpm.CPModule):
             return
         
         if check_overwrite and os.path.isfile(result):
-            os.remove(result)
+            try:
+                os.remove(result)
+            except:
+                import bioformats
+                bioformats.clear_image_reader_cache()
+                os.remove(result)
         return result
     
     def get_file_format(self):

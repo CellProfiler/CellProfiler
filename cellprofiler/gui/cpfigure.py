@@ -557,18 +557,19 @@ class CPFigureFrame(wx.Frame):
     
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
         fields = []
+        x, y = [int(round(xy)) for xy in xi, yi]
         if not self.in_bounds(im, xi, yi):
             return fields
         if im.dtype.type == np.uint8:
             im = im.astype(np.float32) / 255.0
         if im.ndim == 2:
-            fields += ["Intensity: %.4f"%(im[yi,xi])]
+            fields += ["Intensity: %.4f"%(im[y, x])]
         elif im.ndim == 3 and im.shape[2] == 3:
-            fields += ["Red: %.4f"%(im[yi,xi,0]),
-                       "Green: %.4f"%(im[yi,xi,1]),
-                       "Blue: %.4f"%(im[yi,xi,2])]
+            fields += ["Red: %.4f"%(im[y, x, 0]),
+                       "Green: %.4f"%(im[y, x, 1]),
+                       "Blue: %.4f"%(im[y ,x , 2])]
         elif im.ndim == 3: 
-            fields += ["Channel %d: %.4f"%(idx + 1, im[yi, xi, idx]) for idx in range(im.shape[2])]
+            fields += ["Channel %d: %.4f"%(idx + 1, im[y, x, idx]) for idx in range(im.shape[2])]
         return fields
     
     @staticmethod

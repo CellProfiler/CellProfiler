@@ -1159,7 +1159,7 @@ class CPFigureFrame(wx.Frame):
         kwargs.update(self.subplot_user_params[(x,y)])
         self.subplot_params[(x,y)].update(kwargs)
         if kwargs["colormap"] is None:
-            kwargs["colormap"] = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+            kwargs["colormap"] = cpprefs.get_default_colormap()
 
         # and fetch back out
         title = kwargs['title']
@@ -1427,6 +1427,8 @@ class CPFigureFrame(wx.Frame):
         vmax = kwargs['vmax']
         rgb_mask = kwargs['rgb_mask']
         image = image.astype(np.float32)
+        if isinstance(colormap, matplotlib.cm.ScalarMappable):
+            colormap = colormap.cmap
         # Perform normalization
         if normalize == True:
             if is_color_image(image):

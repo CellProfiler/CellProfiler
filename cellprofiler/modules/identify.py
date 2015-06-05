@@ -1023,7 +1023,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                                         local_threshold, global_threshold)
         if hasattr(workspace.display_data, "statistics"):
             workspace.display_data.statistics.append(
-                ["Threshold","%0.3f"%(global_threshold)])
+                ["Threshold","%0.3g"%(global_threshold)])
             
         return local_threshold, global_threshold
     

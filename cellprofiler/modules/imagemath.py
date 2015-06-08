@@ -130,7 +130,7 @@ class ImageMath(cpm.CPModule):
             foreground if the corresponding pixels in the input images have
             the same value.</li>
             </ul>
-            <p>Note that <i>%(O_INVERT)s</i>, <i>%(O_LOG_TRANSFORM)s</i>, and <i>%(O_NONE)s</i> operate on only a single image.</p>
+            <p>Note that <i>%(O_INVERT)s</i>, <i>%(O_LOG_TRANSFORM)s</i>, <i>%(O_LOG_TRANSFORM_LEGACY)s</i> and <i>%(O_NONE)s</i> operate on only a single image.</p>
             """%globals())
         self.divider_top = cps.Divider(line=False)
         
@@ -221,7 +221,7 @@ class ImageMath(cpm.CPModule):
     @property
     def operand_count(self):
         '''# of operands, taking the operation into consideration'''
-        if self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_NONE, O_NOT):
+        if self.operation.value in (O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NONE, O_NOT):
             return 1
         return len(self.images)
     

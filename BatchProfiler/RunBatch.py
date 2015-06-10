@@ -17,395 +17,305 @@ import MySQLdb
 import subprocess
 import os
 import re
-import site
+import stat
 
-site.addsitedir("/home/unix/leek/.local/lib/python2.7/site-packages")
+import bputilities
+from bpformdata import BATCHPROFILER_MYSQL_HOST, \
+     BATCHPROFILER_MYSQL_PORT, \
+     BATCHPROFILER_MYSQL_USER, \
+     BATCHPROFILER_MYSQL_PASSWORD, \
+     BATCHPROFILER_MYSQL_DATABASE, \
+     BATCHPROFILER_DEFAULTS, URL, PREFIX
 
-batchprofiler_host = "imgdb02"
-batchprofiler_db = "batchprofiler"
-batchprofiler_user = "cpadmin"
-batchprofiler_password = "cPus3r"
-connection = MySQLdb.Connect(host = batchprofiler_host,
-                             db=batchprofiler_db,
-                             user=batchprofiler_user,
-                             passwd=batchprofiler_password)
+JS_SUBMITTED = "SUBMITTED"
+JS_RUNNING = "RUNNING"
+JS_ERROR = "ERROR"
+JS_DONE = "DONE"
+JS_ABORTED = "ABORTED"
 
-def SetEnvironment(my_batch):
-    orig_PATH = os.environ['PATH']
-    orig_LD_LIBRARY_PATH = os.environ['LD_LIBRARY_PATH']
-    os.environ['XAPPLRESDIR']='%(mcr_root)s/X11/app-defaults'%(locals())
-    os.environ['MCR_CACHE_ROOT']='%(cpcluster)s'%(my_batch)
-    return orig_PATH, orig_LD_LIBRARY_PATH
+connect_params = { "user": BATCHPROFILER_MYSQL_USER,
+                   "db": BATCHPROFILER_MYSQL_DATABASE }
+for k, v in (("host", BATCHPROFILER_MYSQL_HOST),
+             ("port", BATCHPROFILER_MYSQL_PORT),
+             ("passwd", BATCHPROFILER_MYSQL_PASSWORD)):
+    if v is not None:
+        connect_params[k] = v
+        
+connection = MySQLdb.Connect(**connect_params)
 
-def RestoreEnvironment(vals):
-    os.environ['PATH'] = vals[0]
-    os.environ['LD_LIBRARY_PATH'] = vals[1]
-
-def CreateBatchRun(my_batch):
-    """Create a batch ID in the database
+class bpcursor(object):
+    '''Wrapper for connection's cursor'''
+    def __init__(self):
+        self.cursor = connection.cursor()
+        
+    def __enter__(self):
+        return self.cursor
     
-    Create a batch ID in the database, store the details for the
-    run there.
-    Returns: batch_id created in database
-    """
-    batch_id = CreateBatchRecord(my_batch)
-    for run in my_batch["runs"]:
-        CreateRunRecord(batch_id,run)
+    def __exit__(self, exctype, value, traceback):
+        if exctype is None:
+            connection.commit()
+        else:
+            connection.rollback()
+        self.cursor.close()
+
+class BPBatch(object):
+    '''Data structure encapsulating overall batch parameters'''
+        
+    def create(self, email, data_dir, queue, batch_size, 
+               write_data, timeout, cpcluster, project, memory_limit,
+               priority, runs):
+        '''Create a batch in the database
+        
+        email - mail address of owner
+        data_dir - directory holding the Batch_data.h5 file
+        queue - submit to this queue
+        batch_size - # of image sets / batch
+        write_data - 1 to write the measurements file
+        timeout (obsolete)
+        cpcluster - root directory of CellProfiler
+        project - who to charge
+        memory_limit - # of mb reserved on cluster node
+        priority - priority of job
+        runs - a sequence of (start / last / group name) for the runs
+               for this batch.
+        '''
+        self.email = email
+        self.data_dir = data_dir
+        self.queue = queue
+        self.batch_size = batch_size
+        self.write_data = write_data
+        self.timeout = timeout
+        self.cpcluster = cpcluster
+        self.project = project
+        self.memory_limit = memory_limit
+        with bpcursor() as cursor:
+            cmd = """
+            insert into batch (batch_id, email, data_dir, queue, batch_size, 
+                               write_data, timeout, cpcluster, project, memory_limit,
+                               priority)
+            values (null,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+            bindings = [locals()[x] for x in (
+                'email', 'data_dir', 'queue','batch_size','write_data','timeout',
+                'cpcluster','project','memory_limit', 'priority')]
+            cursor.execute(cmd, bindings)
+            cursor.execute("select last_insert_id()")
+            self.batch_id = cursor.fetchone()[0]
+            cmd = """
+            insert into run (batch_id, bstart, bend, bgroup)
+            values (%d, %%d, %%d, %%s)
+            """ % self.batch_id
+            cursor.executemany(cmd, runs)
+        
+    def select(self, batch_id):
+        '''Select a batch from the database'''
+        self.batch_id = batch_id
+        with bpcursor() as cursor:
+            cmd = """
+            select email, data_dir, queue, batch_size, write_data, timeout,
+                   cpcluster, project, memory_limit, priority from batch
+                   where batch_id = %d
+            """ % self.batch_id
+            cursor.execute(cmd)
+            self.email, self.data_dir, self.queue, self.batch_size, \
+                self.write_data, self.timeout, self.cpcluster, self.project, \
+                self.memory_limit, self.priority = cursor.fetchone()
+        
+    def select_runs(self):
+        '''Select the associated runs from the database
+        
+        Returns a list of BPRun records
+        '''
+        with bpcursor() as cursor:
+            cmd = """
+            select run_id, bstart, bend, bgroup from run where batch_id = %d
+            """ % self.batch_id
+            result = []
+            for run_id, bstart, bend, bgroup in cursor:
+                result.append(BPRun(self.batch_id, run_id, bstart, bend, bgroup))
+        return result
     
-    return batch_id
-
-def CreateBatchRecord(my_batch):
-    """Create a record in batchprofiler.batch
+    def select_jobs(self, by_status=None, by_run=None):
+        '''Get jobs with one of the given statuses
+        
+        args - the statuses to fetch
+        
+        returns a sequence of run, job, status tuples
+        '''
+        cmd = """
+        select rjs.run_id, rjs.bstart, rjs.bend, rjs.bgroup, rjs.job_id, 
+               js.status
+        from (select r.run_id as run_id, r.bstart as bstart, r.bend as bend, 
+              r.bgroup as bgroup, js.job_id as job_id, max(js.created) as when
+              from run r join job_status js on r.run_id = js.run_id
+              where r.batch_id = %d
+              group by run_id, job_id) rjs 
+        join job_status js 
+        on rjs.run_id = js.run_id and rjs.job_id = js.job_id 
+                                  and rjs.created = js.created
+        """ % self.batch_id
+        clauses = []
+        if by_statuses is not None:
+            clauses.append("status in ( '%s' )" % ("','".join(args)))
+        if by_run is not None:
+            clauses.append("run_id = %d" % by_run)
+        if len(clauses) > 0:
+            cmd += "        where " + " and ".join(clauses)
+        with bpcursor() as cursor:
+            cursor.execute(cmd)
+            result = []
+            for run_id, bstart, bend, bgroup, job_id, status in cursor:
+                run = BPRun(self.batch_id, run_id, bstart, bend, bgroup)
+                job = BPJob(run_id, job_id)
+                result.append(run, job, status)
+        return result
+              
+        
+class BPRun(object):
+    def __init__(self, batch_id, run_id, bstart, bend, bgroup=None):
+        self.batch_id = batch_id
+        self.run_id = run_id
+        self.bstart = bstart
+        self.bend = bend
+        self.bgroup = bgroup
+        
+    def get_command_line_params(self):
+        '''Return the CP parameters that select the desired image set range'''
+        return ["-f", self.start, "-l", self.last, "-N", self.get_job_name()]
     
-    Uses global variables, recipient, data_dir, queue, batch_size, write_data, timeout and connection
-    Returns: batch_id
-    """
-    cursor = connection.cursor()
-    cmd = """
-    insert into batch (batch_id, email, data_dir, queue, batch_size, 
-                       write_data, timeout, cpcluster, project, memory_limit,
-                       priority)
-    values (null,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-    bindings = [my_batch[x] for x in (
-        'email', 'data_dir', 'queue','batch_size','write_data','timeout',
-        'cpcluster','project','memory_limit', 'priority')]
-    cursor.execute(cmd, bindings)
-    cursor = connection.cursor()
-    cursor.execute("select last_insert_id()")
-    my_batch["batch_id"]=cursor.fetchone()[0]
-    cursor.close()
-    return my_batch["batch_id"]
-
-def encode_group_string(x):
-    '''Escape the characters '=' and ',' in a group key or value'''
-    x = str(x)
-    return x.replace('\\','\\\\').replace('=','\\=').replace(',','\\,')
-
-def decode_group_string(x):
-    '''Decode an encoded string'''
-    return x.replace('\\,',',').replace('\\=','=').replace('\\\\','\\')
-
-def pack_group(run):
-    '''Convert the 'group' field into the database field'''
-    if not run.has_key("group"):
-        run["group_or_null"] = None
-        return
-    if run["group"] is None:
-        run["group_or_null"] = None
-        return
-    run["group_or_null"] = ','.join(['='.join([encode_group_string(x) 
-                                               for x in item])
-                                     for item in run["group"].items()])
-
-def unpack_group(run):
-    if run["group_or_null"] is None:
-        run["group"] = None
-    else:
-        kvs = re.split('(?<!\\\\),',run["group_or_null"])
-        kvpairs = [[decode_group_string(x) for x in re.split('(?<!\\\\)=',kv)]
-                   for kv in kvs]
-        run["group"] = dict(kvpairs)
-
-def CreateRunRecord(batch_id, run):
-    """Create a run record within the current batch
+    def get_job_name(self):
+        '''The name to give a job for this run
+        
+        e.g. "qsub -N <job-name>"
+        '''
+        return "CellProfiler.batch%d.%dto%d" % \
+               (self.batch_id, self.bstart, self.bend)
     
-    """
-    run["batch_id"]=batch_id
-    pack_group(run)
-    cursor = connection.cursor()
-    if run["group_or_null"] is None:
-        sql = ("insert into run "
-               "(run_id, batch_id, bstart, bend, bgroup, status_file_name) "
-               "values (null, %s, %s, %s, null, %s)")
-        binding_names = ('batch_id', 'start', 'end', 'status_file_name')
-    else:
-        sql= ("insert into run "
-              "(run_id, batch_id, bstart,bend,bgroup, status_file_name)"
-              "values (null,%s,%s,%s,%s,%s)")
-        binding_names =  ('batch_id','start','end','group_or_null',
-                          'status_file_name')
-    bindings = [run[x] for x in binding_names]
 
-    cursor.execute(sql, bindings)
-    cursor.close()
-    cursor = connection.cursor()
-    cursor.execute("select last_insert_id()")
-    run["run_id"] = cursor.fetchone()[0]
-    cursor.close()
-    return
-
-def CreateJobRecord(run_id, job_id):
-    """Create a job record in the batchprofiler database
+class BPJob(object):
+    '''A job dispatched on the cluster'''
+    def __init__(self, run_id, job_id):
+        self.run_id = run_id
+        self.job_id = job_id
+        
+    def create(self):
+        '''Write the job to the database'''
+        with bpcursor() as cursor:
+            cursor.execute("insert into job (job_id, run_id) values (%d, %d)",
+                           [self.job_id, self.run_id])
+            cursor.execute(
+                "insert into job_status (job_id, run_id, status) "
+                "values (%d, %d, %s)",
+                [self.job_id, self.run_id, JS_SUBMITTED])
     
-    Create a job record with the given run_id and job_id
-    """
-    cursor = connection.cursor()
-    sql="""
-    insert into job (job_id, run_id) values ('%s','%s')"""%(job_id,run_id)
-    cursor.execute(sql)
-    cursor.close()
+    def update_status(self, status):
+        '''Insert a new status into the database for this job'''
+        with bpcursor() as cursor:
+            cursor.execute(
+                "insert into job_status (job_id, status) values (%d, %s)",
+                [self.job_id, status])
 
-def LoadBatch(batch_id):
-    """Load a batch from the database
-    
-    Return the batch with the given batch ID and the associated runs
-    """
-    sql = ("select email, data_dir, queue, batch_size, write_data, timeout,"
-           "cpcluster, project, memory_limit, priority "
-           "from batch where batch_id=%d") % (batch_id)
-    cursor = connection.cursor()
-    cursor.execute(sql)
-    row = cursor.fetchone()
-    cursor.close()
-    my_batch= {
-        "batch_id":     batch_id,
-        "email":        row[0],
-        "data_dir":     row[1],
-        "queue":        row[2],
-        "batch_size":   int(row[3]),
-        "write_data":   int(row[4]),
-        "timeout":      float(row[5]),
-        "cpcluster":    row[6],
-        "project":      row[7],
-        "memory_limit": float(row[8]),
-        "priority": int(row[9])
-        }
-    cursor = connection.cursor()
-    cursor.execute("""
-select run_id,batch_id,bstart,bend,bgroup,status_file_name,
-       (select max(job_id) from job j where j.run_id = r.run_id)
-  from run r where batch_id=%d"""%(batch_id));
-    runs = []
-    my_batch["runs"] = runs
-    for row in cursor.fetchall():
-        run = {
-            "run_id":           int(row[0]),
-            "batch_id":         int(row[1]),
-            "start":            int(row[2]),
-            "end":              int(row[3]),
-            "group_or_null":    row[4],
-            "status_file_name": row[5],
-            "job_id":           (row[6] and int(row[6]))
-        }
-        unpack_group(run)
-        runs.append(run)
-    cursor.close()
-    return my_batch
-
-def LoadRun(run_id):
-    """Load a batch and a run from the database
-    
-    Return a batch dictionary and run dictionary with the associated run id
-    """
-    sql = "select batch_id from run where run_id=%d"%(run_id)
-    cursor = connection.cursor()
-    cursor.execute(sql)
-    row = cursor.fetchone()
-    cursor.close()
-    batch_id = int(row[0])
-    my_batch = LoadBatch(batch_id)
-    for run in my_batch["runs"]:
-        if run["run_id"] == run_id:
-            return (my_batch,run)
-
-
-def RunAll(batch_id):
+def run_all(batch_id):
     """Submit jobs for all imagesets in the batch
     
     Load the batch with the given batch_id from the database
     and run each using CPCluster and bsub
     """
-    my_batch = LoadBatch(batch_id)
-    txt_output = os.path.join(my_batch["data_dir"],"txt_output")
-    status = os.path.join(my_batch["data_dir"],"status")
+    my_batch = BPBatch()
+    my_batch.select(batch_id)
+    txt_output = os.path.join(my_batch.data_dir, "txt_output")
+    scripts = os.path.join(my_batch.data_dir, "scripts")
     if not os.path.exists(txt_output):
         os.mkdir(txt_output)
-    if not os.path.exists(status):
-        os.mkdir(status)
+    if not os.path.exists(scripts):
+        os.mkdir(scripts)
+        os.chmod(scripts, stat.S_IWUSR | stat.S_IREAD)
     response = []
-    for run in my_batch["runs"]:
-        run_response = RunOne(my_batch,run)
+    for run in my_batch.select_runs():
+        run_response = run_one(my_batch, run)
         response.append(run_response)
     return response
 
-def PythonDir(my_batch):
-    cpcluster = my_batch["cpcluster"]
-    if cpcluster.find(':') == -1:
-        return os.curdir
-    return cpcluster[cpcluster.find(':')+1:]
+def run_one(my_batch, run):
+    assert isinstance(my_batch, BPBatch)
+    assert isinstance(run, BPRun)
+    txt_output = os.path.join(my_batch.data_dir, "txt_output")
+    script = """"#!/bin/sh
+export RUN_ID=%d
+""" % run.run_id
+    #
+    # This is a REST PUT to JobStatus.py to create the job record
+    #
+    script += 'curl -v -H "Content-type: application/json" -X PUT '
+    script += '--data "{\\"action\\":\\"create\\",\\"job_id\\":$JOB_ID,'
+    script +='\\"run_id\\":%d}" ' % run.run_id
+    script += '%s/JobStatus.py\n' % BATCHPROFILER_DEFAULTS[URL]
+    #
+    # CD to the CellProfiler root directory
+    #
+    script += 'cd %s\n' % my_batch.cpcluster
+    #
+    # Source cpenv.sh to prepare to run Python
+    #
+    script += '. %s\n' % os.path.join(PREFIX, "cpenv.sh")
+    #
+    # Run CellProfiler
+    #
+    script += 'xvfb-run python CellProfiler.py -c -r -b --do-not-fetch '
+    script += '-p "%s" ' % os.path.join(my_batch.data_dir, "Batch_data.h5")
+    script += '-f %d -l %d ' % (run.bstart, run.bend)
+    script += '-o %s' % my_batch.data_dir
+    if my_batch.write_data:
+            script += os.path.join(my_batch.data_dir, 
+                                   "%d_to_%d.h5" % (run.bstart, run.bend))
+    script += "\n"
+    #
+    # Figure out the status from the error code
+    #
+    script += "if [ $? == 0 ]; then JOB_STATUS=%s;" % JS_GOOD
+    script += "else JOB_STATUS=%s; " % JS_ERROR
+    #
+    # Set the status based on the result from CellProfiler
+    # Use CURL again
+    #
+    script += 'curl -v -H "Content-type: application/json" -X PUT '
+    script += '--data "{\\"action\\":\\"update\\",\\"job_id\\":$JOB_ID,'
+    script +='\\"run_id\\":%d\\"status\\":\\"$JOB_STATUS\\"}" ' % run.run_id
+    script += '%s/JobStatus.py\n' % BATCHPROFILER_DEFAULTS[URL]
+    bputilities.run_on_tgt_os(
+        script, 
+        my_batch.project,
+        run.get_job_name(),
+        my_batch.queue,
+        os.path.join(txt_output, "%d_to_%d.txt" % run.bstart, run.bend))
 
-def RunOne(my_batch,run):
-    x=my_batch.copy()
-    x.update(run)
-    return RunOne_2_0(x, run)
+def kill_one(run):
+    batch = BPBatch()
+    batch.select(run.batch_id)
+    jobs = batch.select_jobs(by_status = [JS_RUNNING], by_run=run.run_id)
+    bputilities.kill_jobs([job.job_id for job in jobs])
 
-def RunOne_2_0(x, run):
-    '''Run one batch in pyCP'''
-    x["write_data_yes"]=(x["write_data"]!=0 and "yes") or "no"
-    x["memory_limit_gb"]=max(1,int(x["memory_limit"]/1000))
-    x["memory_limit_gb2"]=x["memory_limit_gb"]*2
-    x["done_file"] = RunDoneFilePath(x, run)
-    python_dir = PythonDir(x)
-    select = "select[ostype=CENT5.5]"
-    try:
-        version = int(os.path.split(python_dir)[1])
-        if version < 9970:
-            # Pre-centos: use PC6000
-            select="select[model=PC6000]"
-    except:
-        pass
-    os.environ["CELLPROFILER_USE_XVFB"] = "1"
-    os.environ["DISPLAY"] = "1"
-    cmd=["bsub",
-         "-q","%(queue)s"%(x),
-         "-sp","%(priority)d" % x,
-         "-M","%(memory_limit_gb2)d"%(x),
-         "-R",'"rusage[mem=%(memory_limit_gb)d]"'%(x),
-         "-R",'"%s"'%select,
-         "-P","%(project)s"%(x),
-         "-cwd",PythonDir(x),
-         "-g",batch_group(x['batch_id']),
-         "-J","/imaging/batch/%(batch_id)d/%(start)s_to_%(end)s"%(x),
-         "-o",'"%(data_dir)s/txt_output/%(start)s_to_%(end)s.txt"'%(x),
-         "./python-2.6.sh",
-         "CellProfiler.py",
-         "-p",'"%(data_dir)s/Batch_data.h5"'%(x),
-         "-c",
-         "-r","-b","--do-not-fetch",
-         "-o",'"%(data_dir)s"' % x,
-         "-f","%(start)d"%(x),
-         "-l","%(end)d"%(x),
-         "-d",'"%(done_file)s"'%(x)]
-    if x["group_or_null"] is not None:
-        cmd += ["-g",'"%s"'%(x["group_or_null"])]
-    if x["write_data"]:
-        cmd += ['"%(data_dir)s/%(start)s_to_%(end)s.mat"'%(x)]
-    cmd = ' '.join(cmd)
-    p=os.popen(". /broad/lsf/conf/profile.lsf;umask 2;"+cmd,'r')
-    output=p.read()
-    exit_code=p.close()
-    job=None
-    if output:
-        match = re.search(r'<([0-9]+)>',output)
-        if len(match.groups()) > 0:
-            job=int(match.groups()[0])
-            CreateJobRecord(run["run_id"],job)
-            run["job_id"]=job
-    result = {
-        "start":run["start"],
-        "end":run["end"],
-        "command":cmd,
-        "exit_code":exit_code,
-        "output":output,
-        "job":job
-        }
-        
-    return result
-    
-def batch_group(batch_id):
-    '''Return the group name for a batch
+def kill_batch(batch_id):
+    batch = BPBatch()
+    batch.select(batch_id)
+    jobs = batch.select_jobs(by_status = [JS_RUNNING])
+    bputilities.kill_jobs([job.job_id for job in jobs])
 
-    batch_id - the batch number
-
-    Group names have the form, "/imaging/batch/###"
-    '''
-    return "/imaging/batch/%d" % (batch_id)
-
-def KillOne(run):
-    p=os.popen(". /broad/lsf/conf/profile.lsf;bkill -b %(job_id)d"%(run),"r")
-
-def KillBatch(batch_id):
-    '''Issue a bkill to a whole group, killing all jobs associated w/batch'''
-    p=os.popen(". /broad/lsf/conf/profile.lsf;bkill -g %s 0" % 
-               batch_group(batch_id))
-
-def RunTextFile(run):
+def run_text_file(run):
     """Return the name of the text file created by bsub
     
     Return the name of the text file created by bsub
-    run - the dictionary for a run as created by LoadBatch
+    run - instance of BPRun
     """
-    return "%(start)d_to_%(end)d.txt"%(run)
+    assert isinstance(run, BPRun)
+    return "%d_to_%d.txt"%(run.bstart, run.bend)
 
-def RunTextFilePath(batch, run):
+def run_text_file_path(batch, run):
     """Return the path to the text file created by bsub
     
-    batch - the dictionary for a batch, as created by LoadBatch
-    run - the dictionary for a run as created by LoadBatch
+    batch - the BPBatch
+    run - the BPRun
     """
-    return "%(data_dir)s/txt_output/"%(batch)+RunTextFile(run)
-
-def RunDoneFile(run):
-    """Return the name of the DONE.mat file
-    
-    Return the name of the file generated by the batch script when the job
-    has finished.
-    run - a dictionary for a run as created by LoadBatch
-    """
-    return "Batch_%(start)d_to_%(end)d_DONE.mat"%(run)
-
-def RunDoneFilePath(batch,run):
-    """Return the path to the DONE.mat file
-    
-    Return the path to the file generated by the batch script when the job
-    has finished.
-    batch - the dictionary for a batch as created by LoadBatch
-    run - the dictionary for a run as created by LoadBatch
-    """
-    return "%(data_dir)s/status/"%(batch)+RunDoneFile(run)
-
-def RunOutFile(run):
-    """Return the name of the OUT.mat file
-    
-    Return the name of the data output file generated by running a batch.
-    
-    run - a dictionary for a run as created by LoadBatch
-    """
-    return "Batch_%(start)d_to_%(end)d_OUT.mat"%(run)
-
-def RunOutFilePath(batch,run):
-    """Return the path to the OUT.mat file
-    
-    Return the path to the data output file generated by running a batch.
-    
-    batch - the dictionary for a batch as created by LoadBatch
-    run - the dictionary for a run as created by LoadBatch
-    """
-    return "%(data_dir)s/status/"%(batch)+RunOutFile(run)
-
-def GetJobStatus(job_id):
-    '''Get the status of a single job or a sequence of jobs on imageweb'''
-    if isinstance(job_id, basestring) or getattr(job_id, '__iter__', False):
-        result = {}
-        for i in job_id:
-            result[i] = {}
-        p=os.popen(". /broad/lsf/conf/profile.lsf;bjobs -w -u imageweb")
-        fields = p.readline().strip()
-        if fields.startswith('No unfinished'):
-            return result
-        fields = fields.split()
-        for line in p.readlines():
-            line = line.strip()
-            values = line.split()
-            id = int(values[0])
-            for field,value in zip(fields,values):
-                if result.has_key(id):
-                    result[id][field] = value
-        return result
-    else:
-        p=os.popen(". /broad/lsf/conf/profile.lsf;bjobs %d"%(job_id),"r")
-        fields=p.readline()
-        if not re.match("Job <[0-9]+> is not found",fields):
-            fields = fields.split()
-        else:
-            p.close()
-            return
-        values=p.readline().split()
-        p.close()
-        result = {}
-        for i in range(len(fields)):
-            result[fields[i]]=values[i]
-        return result
+    return os.path.join(batch.data_dir, run_text_file(run))
 
 def GetCPUTime(batch, run):
     try:

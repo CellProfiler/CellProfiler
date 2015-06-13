@@ -31,17 +31,28 @@ combinations.
 mathematical operations on the co-occurrence matrix (the formulas can be found 
 <a href="http://murphylab.web.cmu.edu/publications/boland/boland_node26.html">here</a>):
 <ul>
-<li><i>AngularSecondMoment</i></li>
-<li><i>Contrast</i></li>
-<li><i>Correlation</i></li>
-<li><i>Variance</i></li>
-<li><i>InverseDifferenceMoment</i></li>
-<li><i>SumAverage</i></li>
-<li><i>SumVariance</i></li>
-<li><i>SumEntropy</i></li>
-<li><i>Entropy</i></li>
-<li><i>DifferenceVariance</i></li>
-<li><i>DifferenceEntropy</i></li>
+<li><i>AngularSecondMoment:</i> Measure of image homogeneity. A higher value of this 
+feature indicates that the intensity varies less in an image. Has a value of 1 for a 
+uniform image.</li>
+<li><i>Contrast:</i> Measure of local variation in an image. A high contrast value 
+indicates a high degree of local variation, and is 0 for a uniform image.</li>
+<li><i>Correlation:</i> Measure of linear dependency of intensity values in an image. 
+For an image with large areas of similar intensities, correlation is much higher than 
+for an image with noisier, uncorrelated intensities. Has a value of 1 or -1 for a 
+perfectly positively or negatively correlated image.</li>
+<li><i>Variance:</i> Measure of the variation of image intensity values. For an image 
+with uniform intensity, the texture variance would be zero.</li>
+<li><i>InverseDifferenceMoment:</i> Another feature to represent image contrast. Has a 
+low value for inhomogeneous images, and a relatively higher value for homogeneous images.</li>
+<li><i>SumAverage:</i> The average of the normalized grayscale image in the spatial 
+domain.</li>
+<li><i>SumVariance:</i> The variance of the normalized grayscale image in the spatial 
+domain.</li>
+<li><i>SumEntropy:</i> A measure of randomness within an image. </li>
+<li><i>Entropy:</i> An indication of the complexity within an image. A complex image 
+produces a high entropy value.</li>
+<li><i>DifferenceVariance:</i> The image variation in a normalized co-occurance matrix.</li>
+<li><i>DifferenceEntropy:</i> Another indication of the amount of randomness in an image.</li>
 <li><i>InfoMeas1</i></li>
 <li><i>InfoMeas2</i></li>
 </ul>

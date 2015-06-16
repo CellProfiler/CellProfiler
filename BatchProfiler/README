@@ -4,6 +4,8 @@ dependencies using the Makefile.CP2 in the root directory. It also uses
 GridEngine or compatible to dispatch jobs. You can tailor this by
 monkey-patching or replacing bputilities' job dispatching functions.
 
+SEE NOTES ABOUT APACHE CONFIGURATION BELOW!!!
+
 You also need a MySQL database. Configure using the environment variables:
 
 BATCHPROFILER_MYSQL_HOST=<DNS name of host>
@@ -22,6 +24,9 @@ PREFIX - the prefix variable used when building. Defaults to ../../../..
 JAVA_HOME - the location of your Java installation
 LC_ALL - your locale (but will use UTF-8 encoding)
 
+BATCHPROFILER_CPCHECKOUT - Versions of CellProfiler will be checked out into
+                           this root directory.
+
 The defaults for populating the fields in NewBatch.py:
 
 BATCHPROFILER_DATA_DIR - the initial directory for searching for Batch_data.h5 files
@@ -32,3 +37,18 @@ BATCHPROFILER_REVISION - the git hash or tag to use when checking out CP from GI
 BATCHPROFILER_BATCH_SIZE - default # of image sets / batch
 BATCHPROFILER_MEMORY_LIMIT - job memory limit in MB
 BATCHPROFILER_WRITE_DATA - defined if the default is to write the measurements files
+
+Apache configuration:
+
+You should set up a configuration file that points to the BatchProfiler
+directory using an alias. !!! You should deny access to .sh files so that
+someone can't run batchprofiler.sh !!!
+
+Example batchprofiler.conf:
+
+ScriptAlias /batchprofiler/cgi-bin/ <path-to>/CellProfiler/BatchProfiler/
+
+<Files ~ "\.sh$">
+    Order allow,deny
+    Deny from all
+</Files>

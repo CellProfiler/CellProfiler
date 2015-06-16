@@ -204,6 +204,12 @@ K_LOCAL_SEPARATOR = "LocalSeparator"
 '''Source of local url2pathname function for M_PATH_MAPPINGS'''
 K_URL2PATHNAME_PACKAGE_NAME = "Url2PathnamePackageName"
 
+'''Name of the batch data file'''
+F_BATCH_DATA = 'Batch_data.mat'
+
+'''Name of the .h5 batch data file'''
+F_BATCH_DATA_H5 = 'Batch_data.h5'
+
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)

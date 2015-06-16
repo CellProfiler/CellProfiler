@@ -1109,15 +1109,11 @@ $(PREFIX)/bin/cpenv.sh:
 	echo >> $@
 	echo "export PREFIX=$(PREFIX)" >> $@
 	echo "export PATH=$(PREFIX)/bin:$(DOLLAR)PATH" >> $@
-	echo "if test ! -z JAVA_HOME ; then " >> $@
-	echo "export JAVA_HOME=$(JAVA_HOME)" >> $@
-	echo "fi" >> $@
+	echo ": $(DOLLAR){JAVA_HOME=$(JAVA_HOME)}" >> $@
+	echo "export JAVA_HOME" >> $@
 	echo "export LD_LIBRARY_PATH=$(PREFIX)/lib:$(PREFIX)/lib/mysql:$(DOLLAR)LD_LIBRARY_PATH:$(DOLLAR)JAVA_HOME/jre/lib/$(HOSTTYPE)/server" >> $@
-	echo "if test ! -z LC_ALL ; then" >> $@
-	echo "export LC_ALL=en_US.UTF-8" >> $@
-	echo "else" >> $@
-	echo "export LC_ALL=\`echo $(DOLLAR)LC_ALL|cut -d'.' -f 1\`.UTF-8" >> $@
-	echo "fi" >> $@
+	echo ": $(DOLLAR){LC_ALL=en_US.UTF-8}" >> $@
+	echo "export LC_ALL">> $@
 	chmod a+x $@
 #
 # The test target needs an X11 $DISPLAY to run the full suite of tests

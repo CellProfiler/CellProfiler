@@ -4,12 +4,14 @@ fi
 #
 # If prefix is not defined, assume this script is in the directory
 # $PREFIX/src/CellProfiler/BatchProfiler
-if [ -z PREFIX ]; then
+if [ -z "$PREFIX" ]; then
     BPDIR =`dirname "$0"`
     CPSRCDIR =`dirname "$BPDIR"`
     SRCDIR =`dirname "$CPSRCDIR"`
     export PREFIX=`dirname "$SRCDIR"`
+else
+    CPSRCDIR="$PREFIX/src/CellProfiler"
 fi
 . "$PREFIX/bin/cpenv.sh"
 
-PYTHONPATH="$PWD" python -s "$@"
+PYTHONPATH="$PWD:$CPSRCDIR" python -s "$@"

@@ -25,7 +25,7 @@ import traceback
 import urllib
 import cellprofiler.preferences
 cellprofiler.preferences.set_headless()
-from cellprofiler.measurements import F_BATCH_DATA_H5
+from cellprofiler.modules.createbatchfiles import F_BATCH_DATA_H5
 from bputilities import *
 from bpformdata import *
 import RunBatch
@@ -35,23 +35,21 @@ import socket
 from cStringIO import StringIO
 import yattag
 
-sys.path.append(os.environ['LAST_CHECKOUT'])
-
 BUILD_CPCLUSTER_BUTTON = "build_cpclster"
-
-form_data = cgi.FieldStorage()
+HOW_TO_USE_BATCHPROFILER_URL = "http://dev.broadinstitute.org/imaging/privatewiki/index.php/How_To_Use_BatchProfiler"
 myself = os.path.split(__file__)[1]
 if len(myself) == 0:
     myself = __file__
 
 class NewBatchDoc(object):
-    def __init__(self, form_data):
+    def __init__(self):
         defaults = BATCHPROFILER_DEFAULTS
         self.doc, self.tag, self.text = yattag.Doc(defaults=defaults).tagtext()
         assert isinstance(self.doc, yattag.Doc)
         self.__has_image_sets = None
         self.__inputs_validated = None
         self.__cpcluster_needs_building = None
+        self.no_image_sets_reason = "???"
     
     def wants_batch_submission(self):
         if BATCHPROFILER_DEFAULTS.get(SUBMIT_BATCH, False) == "yes" and \
@@ -60,10 +58,6 @@ class NewBatchDoc(object):
         return False
     
     def build(self):
-        self.doc.asis(
-            '<!DOCTYPE html PUBLIC '
-            '"-//W3C//DTD XHTML 1.0 Transitional//EN"'
-            '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">')
         if self.wants_batch_submission():
             self.build_submit_batch()
         else:
@@ -101,7 +95,7 @@ function go_to_key(key, data_dir) {
 parent.location = url+"#input_"+key;
 }
                 """ % globals())
-                if self.has_image_sets:
+                if self.has_image_sets and self.inputs_validated:
                     self.doc.asis(("""
 function use_githash() {
     v = document.getElementById("input_%(REVISION)s");
@@ -110,6 +104,7 @@ function use_githash() {
                 self.doc.asis("""
 function build_cellprofiler() {
     var v = document.getElementById("input_%(REVISION)s");
+    var email = document.getElementById("input_%(EMAIL)s");
     var button = document.getElementById("%(BUILD_CPCLUSTER_BUTTON)s");
     var revision = v.value;
     button.innerText = "Building...";
@@ -117,8 +112,8 @@ function build_cellprofiler() {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange=function() {
         if (xmlhttp.readyState == 4) {
-            if (xmlhttp.status == 200) {
-                alert("Successfully built " +revision);
+            if ((xmlhttp.status >= 200)  && (xmlhttp.status < 300)) {
+                alert("Building " +revision);
             } else {
                 alert("Failed to build " + revision);
             }
@@ -127,35 +122,40 @@ function build_cellprofiler() {
         }
     }
     xmlhttp.open(
-        "GET",
-        "BuildCellProfiler.py?revision='+encodeURIComponent(revision), true);
-    xmlhttp.send();
+        "PUT",
+        "BuildCellProfiler.py?%(REVISION)s="+encodeURI(revision), true);
+    xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    xmlhttp.send(JSON.stringify({ %(EMAIL)s:email }));
 }
 """ % globals())
                 
     def build_body(self):
-        with tag("body"):
-            with tag("h1"):
+        with self.tag("body"):
+            with self.tag("h1"):
                 self.text("CellProfiler 2.1.1+ Batch Submission")
             self.build_introduction()
             self.build_form()
 
     def build_introduction(self):
-        with tag("div"):
-            with tag("p"):
+        with self.tag("div"):
+            with self.tag("p"):
                 self.text(
                     "This webpage will let you submit a Batch_data.h5 "
-                    "file produced by CellProfiler 2.1.1 or later to"
+                    "file produced by CellProfiler 2.1.1 or later to "
                     "the cluster.")
-            with tag("p"):
+            with self.tag("p"):
                 self.text("""
-For details on the settings below and for general help on submitting a CellProfiler job to the LSF, please see this
-<a href="http://dev.broadinstitute.org/imaging/privatewiki/index.php/How_To_Use_BatchProfiler">page</a>.</p>
+For details on the settings below and for general help on submitting a 
+CellProfiler job to the LSF, please see this """)
+                with self.tag("a", href=HOW_TO_USE_BATCHPROFILER_URL):
+                    self.text("page")
+                self.text(".")
+            with self.tag("p"):
+                self.text("""
 Submit a %(F_BATCH_DATA_H5)s file created by CellProfiler 2.0. You need to
-specify the default output folder, which should contain your
-Batch_data file for the pipeline. In
-addition, there are some parameters that tailor how the batch is run.
-""" % globals())
+specify the default output folder, which should contain your Batch_data file
+for the pipeline. In addition, there are some parameters that tailor how the
+batch is run.""" % globals())
                 
     def build_form(self):
         with self.tag("form", action=myself, method="POST"):
@@ -183,10 +183,12 @@ addition, there are some parameters that tailor how the batch is run.
                             else:
                                 fn(id=id, name=name)
             self.show_directory(DATA_DIR, "Batch data file")
-            if has_image_sets:
+            if self.has_image_sets:
                 with self.tag("div"):
-                    self.doc.input(type="submit", name="input_submit_batch",
-                                   value="Submit batch")
+                    self.doc.stag("input", 
+                                  type="submit", 
+                                  name="input_submit_batch",
+                                  value="Submit batch")
                 with self.tag("div"):
                     if self.has_groups:
                         with self.tag("h2"):
@@ -206,27 +208,31 @@ addition, there are some parameters that tailor how the batch is run.
                     else:
                         self.text("Batch_data.h5 has %d image sets" %
                                   len(self.image_numbers))
+            else:
+                with self.tag("div"):
+                    self.text(self.no_image_sets_reason)
                                 
     def build_queue_choices(self, id, name):
         with self.doc.select(id=id, name=name):
             for queue in get_queues():
                 with self.doc.option(value=queue):
-                    pass
+                    self.text(queue)
                 
     def build_write_data(self, id, name):
         kwds = {}
-        if BATCHPROFILER_DEFAULTS.has_key(WRITE_DATA):
+        if BATCHPROFILER_DEFAULTS.has_key(WRITE_DATA) and\
+           BATCHPROFILER_DEFAULTS[WRITE_DATA] == "yes":
             kwds["checked"] = "yes"
-        self.doc.input(type="checkbox", id=id, name=name, value="yes", **kwds)
+        self.doc.input(type="checkbox", id=id, name=name, **kwds)
         
     def build_revision(self, id, name):
         self.doc.input(type="text", id=id, name=name)
         if self.has_image_sets:
-            with tag("button",
+            with self.tag("button",
                      type="button",
                      onclick="use_githash()"):
                 self.text("Use %s / %s (from Batch_data.h5)" % 
-                          (self.git_hash, self.datetime_version))
+                          (self.git_hash[:8], self.datetime_version))
         with self.tag("button",
                       type="button",
                       id = BUILD_CPCLUSTER_BUTTON,
@@ -234,6 +240,10 @@ addition, there are some parameters that tailor how the batch is run.
             self.text("Build CellProfiler")
                     
     def render(self):
+        print '<!DOCTYPE html PUBLIC ' \
+              '"-//W3C//DTD XHTML 1.0 Transitional//EN"' \
+              '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
+        
         print yattag.indent(self.doc.getvalue())
         
     @property
@@ -242,11 +252,12 @@ addition, there are some parameters that tailor how the batch is run.
         if self.__has_image_sets is not None:
             return self.__has_image_sets
         self.__has_image_sets = False
-        if not os.path.isdir(DATA_DIR):
+        data_dir = BATCHPROFILER_DEFAULTS[DATA_DIR]
+        if not os.path.isdir(data_dir):
             self.no_image_sets_reason = \
-                "The %s directory is missing." % DATA_DIR
+                "The %s directory is missing." % data_dir
             return False
-        batch_file = os.path.join(DATA_DIR, F_BATCH_DATA_H5)
+        batch_file = os.path.join(data_dir, F_BATCH_DATA_H5)
         if not os.path.isfile(batch_file):
             self.no_image_sets_reason = \
                 "The batch data file, %s, does not exist." % batch_file
@@ -340,23 +351,19 @@ addition, there are some parameters that tailor how the batch is run.
         
     def recursive_show_directory(self, key, head, tail):
         '''Recursively show the directory tree'''
-        head_tail, tail_tail = os.path.split(tail)
-        if len(head_tail) == 0:
-            directory = tail_tail
-            do_listing =True
-        else:
-            directory = head_tail
-            do_listing = False
-        next_head = os.path.join(head, directory)
         with self.doc.tag("ul"):
             with self.doc.tag("li"):
-                self.output_directory_link(self, key, next_head)
-            if do_listing:
-                for filename in os.listdir(next_head):
-                    self.output_directory_link(
-                        key, os.path.join(next_head, filename))
+                self.output_directory_link(key, head)
+            if len(tail) == 0:
+                with self.doc.tag("ul"):
+                    for filename in sorted(os.listdir(head)):
+                        fn_path = os.path.join(head, filename)
+                        if os.path.isdir(fn_path):
+                            with self.doc.tag("li"):
+                                self.output_directory_link(key, fn_path)
             else:
-                self.recursive_show_directory(key, next_head, tail_tail)
+                next_head = os.path.join(head, tail[0])
+                self.recursive_show_directory(key, next_head, tail[1:])
                 
     def show_directory(self, key, title):
         '''Show the directory structure for the variable given by the key
@@ -367,24 +374,34 @@ addition, there are some parameters that tailor how the batch is run.
         returns the current value of the key
         '''
         path = BATCHPROFILER_DEFAULTS[key]
+        data_dir_js = "document.getElementById('input_%s').value" % key
+        go_to_key = "javascript:go_to_key('%s',%s) " % (key, data_dir_js)
 
         with self.tag("div", id="%s_div" % key):
             with self.tag("div"):
-                with self.tag("label", **{ "for":'input_%s' % key}):
-                    self.text("%s&nbsp;" % title) 
+                with self.tag("label", 
+                              **{ "for":'input_%s' % key}):
+                    self.text("%s" % title) 
                 self.doc.input(type='text',
                                size='40',
                                id='input_%s' % key,
                                name=key)
                 with self.tag("button",
                               type='button',
-                              onclick="javascript:go_to_key('%s','%s')" % 
-                              (key, path)):
+                              onclick=go_to_key):
                     self.doc.text("Browse...")
-            m = re.search("[^%s]" % os.path.sep, path)
-            if m is not None:
-                self.recursive_show_directory(
-                    key, path[:m.start()], path[m.start():])
+            parts = []
+            head = path
+            while True:
+                head, tail = os.path.split(head)
+                if len(head) == 0:
+                    head = tail
+                    break
+                elif len(tail) == 0:
+                    break
+                parts.insert(0, tail)
+            self.recursive_show_directory(
+                key, head, parts)
 
         return path
 
@@ -412,12 +429,14 @@ addition, there are some parameters that tailor how the batch is run.
         #
         # Put it in the database
         #
+        write_data = BATCHPROFILER_DEFAULTS.has_key(WRITE_DATA) and \
+            BATCHPROFILER_DEFAULTS[WRITE_DATA] == "yes"
         batch.create(
             email = BATCHPROFILER_DEFAULTS[EMAIL],
             data_dir = BATCHPROFILER_DEFAULTS[DATA_DIR],
             queue = BATCHPROFILER_DEFAULTS[QUEUE],
             batch_size = BATCHPROFILER_DEFAULTS[BATCH_SIZE],
-            write_data = BATCHPROFILER_DEFAULTS[WRITE_DATA],
+            write_data = write_data,
             timeout = 60,
             cpcluster = self.cpcluster,
             project = BATCHPROFILER_DEFAULTS[PROJECT],
@@ -497,6 +516,10 @@ td {
                          BATCHPROFILER_DEFAULTS[DATA_DIR])
         email_text = yattag.indent(doc.getvalue())
         send_html_mail(recipient=BATCHPROFILER_DEFAULTS[EMAIL],
-                       subject = "Batch %d submitted\n"%(batch.batch_id),
-                       body=email_text)
-    
+                       subject = "Batch %d submitted"%(batch.batch_id),
+                       html=email_text)
+
+with CellProfilerContext():    
+    doc = NewBatchDoc()
+    doc.build()
+doc.render()

@@ -102,7 +102,7 @@ class BPBatch(object):
             self.batch_id = cursor.fetchone()[0]
             cmd = """
             insert into run (batch_id, bstart, bend, bgroup)
-            values (%d, %%d, %%d, %%s)
+            values (%d, %%s, %%s, %%s)
             """ % self.batch_id
             cursor.executemany(cmd, runs)
         
@@ -129,6 +129,7 @@ class BPBatch(object):
             cmd = """
             select run_id, bstart, bend, bgroup from run where batch_id = %d
             """ % self.batch_id
+            cursor.execute(cmd)
             result = []
             for run_id, bstart, bend, bgroup in cursor:
                 result.append(BPRun(self.batch_id, run_id, bstart, bend, bgroup))
@@ -145,7 +146,7 @@ class BPBatch(object):
         select rjs.run_id, rjs.bstart, rjs.bend, rjs.bgroup, rjs.job_id, 
                js.status
         from (select r.run_id as run_id, r.bstart as bstart, r.bend as bend, 
-              r.bgroup as bgroup, js.job_id as job_id, max(js.created) as when
+              r.bgroup as bgroup, js.job_id as job_id, max(js.created) as created
               from run r join job_status js on r.run_id = js.run_id
               where r.batch_id = %d
               group by run_id, job_id) rjs 
@@ -154,7 +155,7 @@ class BPBatch(object):
                                   and rjs.created = js.created
         """ % self.batch_id
         clauses = []
-        if by_statuses is not None:
+        if by_status is not None:
             clauses.append("status in ( '%s' )" % ("','".join(args)))
         if by_run is not None:
             clauses.append("run_id = %d" % by_run)
@@ -178,6 +179,15 @@ class BPRun(object):
         self.bend = bend
         self.bgroup = bgroup
         
+    @staticmethod
+    def select(run_id):
+        cmd = ("select r.batch_id, r.bstart, r.bend, r.bgroup "
+               "from run r where run_id = %d" % run_id)
+        with bpcursor() as cursor:
+            cursor.execute(cmd)
+            batch_id, bstart, bend, bgroup = cursor.fetchone()
+            return BPRun(int(batch_id), run_id, int(bstart), int(bend), bgroup)
+            
     def get_command_line_params(self):
         '''Return the CP parameters that select the desired image set range'''
         return ["-f", self.start, "-l", self.last, "-N", self.get_job_name()]
@@ -190,6 +200,27 @@ class BPRun(object):
         return "CellProfiler.batch%d.%dto%d" % \
                (self.batch_id, self.bstart, self.bend)
     
+    def select_jobs(self, by_status = None):
+        cmd = """
+            select rjs.job_id, js.status
+            from (select js.job_id as job_id, max(js.created) as created
+                  from job_status js 
+                  where js.run_id = %d
+                  group by job_id) js1
+            join job_status js1 
+            on js1.run_id = js2.run_id and js1.job_id = js2.job_id
+            and js1.created = js2.created
+            """ % self.run_id
+        clauses = []
+        if by_status is not None:
+            cmd += " where status in ( '%s' )" % ("','".join(args))
+        with bpcursor() as cursor:
+            cursor.execute(cmd)
+            result = []
+            for job_id, status in cursor:
+                job = BPJob(run_id, job_id)
+                result.append(job, status)
+        return result
 
 class BPJob(object):
     '''A job dispatched on the cluster'''
@@ -238,8 +269,19 @@ def run_all(batch_id):
 def run_one(my_batch, run):
     assert isinstance(my_batch, BPBatch)
     assert isinstance(run, BPRun)
-    txt_output = os.path.join(my_batch.data_dir, "txt_output")
-    script = """"#!/bin/sh
+    txt_output = text_file_directory(my_batch)
+    if not os.path.exists(txt_output):
+        os.mkdir(txt_output)
+        os.chmod(txt_output, 
+                 stat.S_IWUSR | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH |
+                 stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    script_dir = script_file_directory(my_batch)
+    if not os.path.exists(script_dir):
+        os.mkdir(script_dir)
+        os.chmod(script_dir, 
+                 stat.S_IWUSR | stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH |
+                 stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    script = """#!/bin/sh
 export RUN_ID=%d
 """ % run.run_id
     #
@@ -265,28 +307,39 @@ export RUN_ID=%d
     script += '-f %d -l %d ' % (run.bstart, run.bend)
     script += '-o %s' % my_batch.data_dir
     if my_batch.write_data:
-            script += os.path.join(my_batch.data_dir, 
-                                   "%d_to_%d.h5" % (run.bstart, run.bend))
+            script += " " + run_out_file_path(my_batch, run)
     script += "\n"
     #
     # Figure out the status from the error code
     #
-    script += "if [ $? == 0 ]; then JOB_STATUS=%s;" % JS_GOOD
-    script += "else JOB_STATUS=%s; " % JS_ERROR
+    script += "if [ $? == 0 ]; then\n"
+    script += "JOB_STATUS=%s;\n" % JS_DONE
+    script += "else\n JOB_STATUS=%s\n; " % JS_ERROR
+    script += "fi\n"
     #
     # Set the status based on the result from CellProfiler
     # Use CURL again
     #
-    script += 'curl -v -H "Content-type: application/json" -X PUT '
-    script += '--data "{\\"action\\":\\"update\\",\\"job_id\\":$JOB_ID,'
-    script +='\\"run_id\\":%d\\"status\\":\\"$JOB_STATUS\\"}" ' % run.run_id
+    script += """curl -v -H "Content-type: application/json" -X PUT """
+    script += """--data "{'action':'update','job_id':$JOB_ID,"""
+    script += """'run_id':%d,'status':'JOB_STATUS'}" """ % run.run_id
     script += '%s/JobStatus.py\n' % BATCHPROFILER_DEFAULTS[URL]
-    bputilities.run_on_tgt_os(
-        script, 
-        my_batch.project,
-        run.get_job_name(),
-        my_batch.queue,
-        os.path.join(txt_output, "%d_to_%d.txt" % run.bstart, run.bend))
+    script_filename = script_file_path(my_batch, run)
+    with open(script_filename, "w") as fd:
+        fd.write(script)
+    os.chmod(script_filename,stat.S_IWUSR |
+             stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH |
+             stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+
+    job_id = bputilities.run_on_tgt_os(
+        script = script, 
+        group = my_batch.project,
+        job_name = run.get_job_name(),
+        queue_name = my_batch.queue,
+        output = run_text_file_path(my_batch, run),
+        err_output = run_err_file_path(my_batch, run))
+    job = BPJob(run.run_id, job_id)
+    job.create()
 
 def kill_one(run):
     batch = BPBatch()
@@ -309,13 +362,44 @@ def run_text_file(run):
     assert isinstance(run, BPRun)
     return "%d_to_%d.txt"%(run.bstart, run.bend)
 
+def run_err_file(run):
+    """Return the name of the stderr output created by bsub
+    
+    run - instance of BPRun
+    """
+    assert isinstance(run, BPRun)
+    return "%d_to_%d.err.txt"%(run.bstart, run.bend)
+
+def text_file_directory(batch):
+    return os.path.join(batch.data_dir, "txt_output")
+
+def script_file_directory(batch):
+    return os.path.join(batch.data_dir, "job_scripts")
+
+def script_file_path(batch, run):
+    return os.path.join(script_file_directory(batch), 
+                        "run_%d_to_%d.sh" % (run.bstart, run.bend))
+
 def run_text_file_path(batch, run):
     """Return the path to the text file created by bsub
     
     batch - the BPBatch
     run - the BPRun
     """
-    return os.path.join(batch.data_dir, run_text_file(run))
+    return os.path.join(text_file_directory(batch.data_dir), 
+                        run_text_file(run))
+
+def run_err_file_path(batch, run):
+    return os.path.join(text_file_directory(batch.data_dir), 
+                        run_err_file(run))
+
+def batch_data_file_path(batch):
+    '''Return the path to Batch_data.h5 for this batch'''
+    return os.path.join(batch.data_dir, "Batch_data.h5")
+
+def run_out_file_path(batch, run):
+    return os.path.join(batch.data_dir, 
+                        "%d_to_%d.h5" % (run.bstart, run.bend))
 
 def GetCPUTime(batch, run):
     try:

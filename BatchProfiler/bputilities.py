@@ -9,9 +9,12 @@ from cStringIO import StringIO
 import subprocess
 import tempfile
 import stat
-from bpformdata import PREFIX, LC_ALL
+from bpformdata import PREFIX, LC_ALL, BATCHPROFILER_CPCHECKOUT
+
+QSUB_WORKS = True
 
 SENDMAIL="/usr/sbin/sendmail"
+BUILD_TOUCHFILE = ".cellprofiler.built"
 
 ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
 DATEVERSION_PATTERN="(?P<year>20\\d{2})(?P<month>\\d{2})(?P<day>\\d{2})(?P<hour>\\d{2})(?P<minute>\\d{2})(?P<second>\\d{2})"
@@ -85,7 +88,11 @@ def get_version_and_githash(treeish):
     return get_version_from_timestr(time_str), git_hash
     
 def get_version_from_timestr(time_str):
-    '''convert ISO date to dateversion format'''
+    '''convert ISO date to dateversion format
+    
+    Returns the UTC time of the time string in the format
+    YYYYMMDDHHMMSS
+    '''
     t = dateutil.parser.parse(time_str).utctimetuple()
     return "%04d%02d%02d%02d%02d%02d" % \
            ( t.tm_year, t.tm_mon, t.tm_mday, 
@@ -113,7 +120,8 @@ def get_cellprofiler_location(
     
     if version is None or git_hash is None:
         version, git_hash = get_batch_data_version_and_githash(batch_filename)
-    path = os.path.join(os.environ["CPCLUSTER"], "%s_%s" % (version, git_hash))
+    path = os.path.join(BATCHPROFILER_CPCHECKOUT, 
+                        "%s_%s" % (version, git_hash))
     return path
 
 def get_queues():
@@ -135,6 +143,30 @@ def get_queues():
         return filter((lambda x: len(x) > 0), [x.strip() for x in stdout.split("\n")])
     finally:
         os.unlink(host_scriptfile)
+        
+def get_jobs():
+    '''Return a list of all jobs for the webserver user'''
+    script = """#!/bin/sh
+set -v
+. /broad/software/scripts/useuse
+use GridEngine8
+set +v
+qstat
+"""
+    scriptfile = make_temp_script(script)
+    try:
+        output = subprocess.check_output([scriptfile])
+        result = []
+        for line in output.split("\n"):
+            fields = [x.strip() for x in line.strip().split(" ")]
+            try:
+                if len(fields) > 0:
+                    result.append(int(fields[0]))
+            except:
+                pass
+    finally:
+        os.rmdir(scriptfile)
+    return result
     
 def make_temp_script(script):
     '''Write a script to a tempfile
@@ -192,22 +224,27 @@ def run_on_tgt_os(script,
         
     if err_output is None:
         err_output = output+".err"
-        
+    if queue_name is None:
+        queue_switch = ""
+    else:
+        queue_switch = "-q %s" % queue_name
     tgt_script = make_temp_script(script)
     host_script = make_temp_script("""#!/bin/sh
 . /broad/software/scripts/useuse
 reuse -q GridEngine8
 qsub -N %(job_name)s \\
-    -q %(queue_name)s \\
     -e %(err_output)s \\
-    -o %(output)s %(dep_cond)s %(email_switches)s %(cwd_switch)s \\
+    -o %(output)s \\
+    -terse %(dep_cond)s %(email_switches)s %(cwd_switch)s %(queue_switch)s\\
     %(tgt_script)s
 """ %locals())
     try:
         p = subprocess.Popen(
             host_script, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
         stdout, stderr = p.communicate(script)
-        return stdout, stderr
+        if p.returncode != 0:
+            raise RuntimeError("Failed to submit job: %s" % stderr)
+        return int(stdout.strip())
     finally:
         os.unlink(host_script)
         os.unlink(tgt_script)
@@ -221,7 +258,7 @@ def kill_job(job_id):
     try:
         p = subprocess.Popen(
             host_script, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
-        stdout, stderr = p.communicate(script)
+        stdout, stderr = p.communicate(host_script)
         return stdout, stderr
     finally:
         os.unlink(host_script)
@@ -240,19 +277,25 @@ def kill_jobs(job_ids):
     finally:
         os.unlink(host_script)
     
-def python_on_tgt_os(args, group_name, job_name, queue_name, output, 
+def python_on_tgt_os(args, group_name, job_name, queue_name, output,
+                     err_output=None,
                      cwd=None, deps = None,
                      mail_before = False,
                      mail_error = True,
                      mail_after = True,
-                     email_address = None ):
+                     email_address = None,
+                     with_xvfb = False):
     '''Run Python with the given arguments on a target machine'''
     if cwd is None:
         cd_command = ""
     else:
         cd_command = "cd %s" % cwd
         
-    argstr = " ".join(args)
+    if with_xvfb:
+        xvfb_run = "xvfb_run"
+    else:
+        xvfb_run = ""
+    argstr = '"%s"' % '" "'.join(args)
     script = ("""#!/bin/sh
 %%(cd_command)s
 . /broad/software/scripts/useuse
@@ -261,16 +304,23 @@ export PATH=%(PREFIX)s/bin:$PATH
 export LD_LIBRARY_PATH=%(PREFIX)s/lib:$LD_LIBRARY_PATH:%(PREFIX)s/lib/mysql:$JAVA_HOME/jre/lib/amd64/server
 export LC_ALL=%(LC_ALL)s
 export PYTHONNOUSERSITE=1
-python %%(argstr)s
+%(xvfb_run)s python %%(argstr)s
 """ % globals()) % locals()
-    return run_on_tgt_os(script, group_name, job_name, queue_name, output, cwd, 
+    return run_on_tgt_os(script, group_name, job_name, queue_name, output, 
+                         cwd = cwd, 
                          deps=deps,
+                         err_output=err_output,
                          mail_before=mail_before,
                          mail_error=mail_error,
                          mail_after=mail_after,
                          email_address=email_address)
     
-def build_cellprofiler(version = None, git_hash=None, group_name="imaging", email_address = None):
+def build_cellprofiler(
+    version = None, 
+    git_hash=None, 
+    queue_name=None,
+    group_name="imaging", 
+    email_address = None):
     '''Build/rebuild a version of CellProfiler
 
     version - numeric version # based on commit date
@@ -282,21 +332,22 @@ def build_cellprofiler(version = None, git_hash=None, group_name="imaging", emai
     '''
     path = get_cellprofiler_location(version = version, git_hash = git_hash)
     if os.path.isdir(os.path.join(path, ".git")):
-        subprocess.check_call(["git", "clean", "-d", "-f", "-x"], cwd=path)
+        subprocess.check_call(["git", "clean", "-d", "-f", "-x", "-q"], cwd=path)
     else:
         if not os.path.isdir(path):
             os.makedirs(path)
         subprocess.check_call([
             "git", "clone", "https://github.com/CellProfiler/CellProfiler", path])
-        subprocess.check_call(["git", "checkout", git_hash], cwd=path)
+        subprocess.check_call(["git", "checkout", "-q", git_hash], cwd=path)
     mvn_job = "CellProfiler-mvn-%s" % git_hash
     build_job = "CellProfiler-build-%s" % git_hash
+    touch_job = "CellProfiler-touch-%s" % git_hash
     if version > "20120607000000":
         python_on_tgt_os(
             ["external_dependencies.py", "-o"],
             group_name, 
             mvn_job,
-            "broad",
+            queue_name,
             os.path.join(path, mvn_job+".log"),
             cwd = path,
             mail_after = False,
@@ -305,20 +356,41 @@ def build_cellprofiler(version = None, git_hash=None, group_name="imaging", emai
             ["CellProfiler.py", "--build-and-exit", "--do-not-fetch"],
             group_name, 
             build_job,
-            "broad", 
+            queue_name, 
             os.path.join(path, build_job+".log"),
             cwd = path,
             deps=[mvn_job],
+            mail_after = False,
             email_address=email_address)
     else:
         python_on_tgt_os(
             ["CellProfiler.py", "--build-and-exit"],
             group_name, 
             build_job,
-            "broad", 
+            queue_name, 
             os.path.join(path, build_job+".log"),
             cwd = path,
-            email_address=email_address)
+            mail_after = False,
+            email_address=email_address,
+            with_xvfb=True)
+    
+    touchfile = os.path.join(path, BUILD_TOUCHFILE)
+    python_on_tgt_os(
+        args = ["-c", 
+          "import cellprofiler.pipeline;open('%s', 'w').close()" % touchfile],
+        group_name = group_name,
+        job_name = touch_job,
+        queue_name = queue_name,
+        output = "/dev/null",
+        err_output = touch_job+".err",
+        deps = [build_job],
+        cwd = path,
+        email_address = email_address,
+        mail_after = True)
+
+def is_built(version, git_hash):
+    path = get_cellprofiler_location(version=version, git_hash=git_hash)
+    return os.path.isfile(os.path.join(path, BUILD_TOUCHFILE))
         
 def send_mail(recipient, subject, content_type, body):
     '''Send mail to a single recipient
@@ -328,15 +400,16 @@ def send_mail(recipient, subject, content_type, body):
     content_type - mime type of the message body
     body - the payload of the mail message
     '''
-    pipe=os.popen("%s -t"%(SENDMAIL),"w")
-    pipe.write("To: %s\n"%(recipient))
-    pipe.write("Subject: %s\n" % subject)
-    pipe.write("Content-Type: %s\n" % content_type)
-    pipe.write("\n")
-    pipe.write(body)
-    pipe.write("\n")
-    pipe.close()
+    pipe= subprocess.Popen([SENDMAIL, "-t"], stdin=subprocess.PIPE)
+    doc = """To: %(recipient)s
+Subject: %(subject)s
+Content-Type: %(content_type)s; charset=UTF-8
 
+%(body)s
+
+""" % locals()
+    pipe.communicate(doc)
+    
 def send_html_mail(recipient, subject, html):
     '''Send mail that has HTML in the body
 
@@ -348,8 +421,44 @@ def send_html_mail(recipient, subject, html):
     send_mail(recipient=recipient,
               subject = subject,
               content_type="text/html",
-              body=body)
+              body=html)
 
+class CellProfilerContext(object):
+    '''Wrap CellProfiler operations in a handy context
+    
+    Redirect stderr and stdout to prevent log printing
+    On exit, shut things down
+    '''
+    def __enter__(self):
+        devnull = open("/dev/null", "w")
+        self.stdout = sys.stdout
+        self.stderr = sys.stderr
+        sys.stdout = devnull
+        sys.stderr = devnull
+        return self
+        
+    def __exit__(self, exc_1, exc_2, exc_3):
+        shutdown_cellprofiler()
+        sys.stdout = self.stdout
+        sys.stderr = self.stderr
+        
+    
+def shutdown_cellprofiler():
+    '''Oh sadness and so many threads that won't die...
+    
+    '''
+    try:
+        import javabridge
+        javabridge.kill_vm()
+    except:
+        pass
+    try:
+        from ilastik.core.jobMachine import GLOBAL_WM
+        GLOBAL_WM.stopWorkers()
+    except:
+        pass
+
+    
 if __name__ == "__main__":
     import site
     site.addsitedir("/imaging/analysis/CPCluster/CellProfiler-2.0/javabridge-bioformats-site-packages")

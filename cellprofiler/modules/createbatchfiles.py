@@ -47,16 +47,12 @@ from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 
+from cellprofiler.measurements import F_BATCH_DATA, F_BATCH_DATA_H5
+
 '''# of settings aside from the mappings'''
 S_FIXED_COUNT = 8
 '''# of settings per mapping'''
 S_PER_MAPPING = 2
-
-'''Name of the batch data file'''
-F_BATCH_DATA = 'Batch_data.mat'
-
-'''Name of the .h5 batch data file'''
-F_BATCH_DATA_H5 = 'Batch_data.h5'
 
 class CreateBatchFiles(cpm.CPModule):
     #

@@ -1,4 +1,4 @@
-#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/python-2.6.sh
+#!/usr/bin/env ./batchprofiler.sh
 #
 # Kill all jobs in a batch
 #
@@ -14,11 +14,12 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-print "Content-Type: text/html"
-print
+print "Content-Type: text/html\r"
+print "\r"
 import cgitb
 cgitb.enable()
 import RunBatch
+import bputilities
 import cgi
 import subprocess
 import sys
@@ -56,12 +57,13 @@ else:
     """
     p = subprocess.Popen(["bash"],stdin = subprocess.PIPE,
                          stdout=subprocess.PIPE)
-    listing = p.communicate(". /broad/lsf/conf/profile.lsf;bjobs\n")[0]
+    listing = p.communicate(
+        ". /broad/software/scripts/useuse;reuse GridEngine8;qjobs\n")[0]
     listing_lines = listing.split('\n')
     header = listing_lines[0]
     columns = [header.find(x) for x in header.split(' ') if len(x)]
     columns.append(1000)
-    body = listing_lines[1:]
+    body = listing_lines[2:]
     print """
     <h2>Jobs on imageweb</h2>
     <table>
@@ -75,9 +77,4 @@ else:
     </table>
     </body>
     """
-try:
-    import cellprofiler.utilities.jutil as jutil
-    jutil.kill_vm()
-except:
-    import traceback
-    traceback.print_exc()
+bputilities.shutdown_cellprofiler()

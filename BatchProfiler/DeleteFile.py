@@ -1,4 +1,4 @@
-#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/python-2.6.sh
+#!/usr/bin/env ./batchprofiler.sh
 """
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -16,41 +16,39 @@ Website: http://www.cellprofiler.org
 #
 import cgitb
 cgitb.enable()
+from bpformdata import *
 import RunBatch
 import StyleSheet
 import cgi
 import os
-import os.path
 
 def remove_if_exists(path):
     if os.path.exists(path):
         os.remove(path)
 
-form = cgi.FieldStorage()
-delete_action = form["delete_action"].value
-if form.has_key("run_id"):
-    run_id = int(form["run_id"].value)
-    my_batch,my_run = RunBatch.LoadRun(run_id)
-    if ((delete_action.upper() == "ALL") or (delete_action.upper() == "TEXT")):
-        remove_if_exists(RunBatch.RunTextFilePath(my_batch, my_run))
+def delete_run(my_batch, my_run):
+    if delete_action in (A_DELETE_ALL, A_DELETE_TEXT):
+        remove_if_exists(RunBatch.run_text_file_path(my_batch, my_run))
 
-    if (delete_action.upper() == "ALL") or (delete_action.upper() == "OUTPUT"):
+    if delete_action in (A_DELETE_ALL, A_DELETE_OUTPUT):
         remove_if_exists(RunBatch.RunOutFilePath(my_batch, my_run))
-
-    if (delete_action.upper() == "ALL") or (delete_action.upper() == "DONE"):
-        remove_if_exists(RunBatch.RunDoneFilePath(my_batch, my_run))
-elif form.has_key("batch_id"):
-    batch_id = int(form["batch_id"].value)
-    my_batch = RunBatch.LoadBatch(batch_id)
-    for my_run in my_batch["runs"]:
-        if ((delete_action.upper() == "ALL") or (delete_action.upper() == "TEXT")):
-            remove_if_exists(RunBatch.RunTextFilePath(my_batch, my_run))
-
-        if (delete_action.upper() == "ALL") or (delete_action.upper() == "OUTPUT"):
-            remove_if_exists(RunBatch.RunOutFilePath(my_batch, my_run))
-
-        if (delete_action.upper() == "ALL") or (delete_action.upper() == "DONE"):
-            remove_if_exists(RunBatch.RunDoneFilePath(my_batch, my_run))
+    
+form = cgi.FieldStorage()
+delete_action = BATCHPROFILER_DEFAULTS[K_DELETE_ACTION]
+if delete_action is not None:
+    delete_action = delete_action.upper()
+run_id = BATCHPROFILER_DEFAULTS[RUN_ID]
+batch_id = BATCHPROFILER_DEFAULTS[BATCH_ID]
+if run_id is not None and delete_action is not None:
+    my_run = RunBatch.BPRun.select(run_id)
+    my_batch = RunBatch.BPBatch()
+    batch.select(run.batch_id)
+    delete_run(my_batch, my_run)
+elif batch_id is not None:
+    my_batch = RunBatch.BPBatch()
+    my_batch.select(batch_id)
+    for my_run in my_batch.select_runs():
+        delete_run(my_batch, my_run)
     
     
 url = "ViewBatch.py?batch_id=%(batch_id)d"%(my_batch)
@@ -61,9 +59,3 @@ print "<meta http-equiv='refresh' content='0; URL=%(url)s' />"%(globals())
 print "</head>"
 print "<body>This page should be redirected to <a href='%(url)s'/>%(url)s</a></body>"%(globals())
 print "</html>"
-try:
-    import cellprofiler.utilities.jutil as jutil
-    jutil.kill_vm()
-except:
-    import traceback
-    traceback.print_exc()

@@ -20,25 +20,28 @@ import cgitb
 cgitb.enable()
 import RunBatch
 import bputilities
+from bpformdata import *
 import cgi
 import subprocess
 import sys
 
-form = cgi.FieldStorage()
-if form.has_key("job_id"):
-    import subprocess
-    job_id = int(form["job_id"].value)
-    run = {"job_id":job_id}
-    RunBatch.KillOne(run)
+job_id = BATCHPROFILER_VARIABLES[JOB_ID]
+batch_id = BATCHPROFILER_VARIABLES[BATCH_ID]
+if job_id is not None:
+    job = RunBatch.BPJob.select(job_id)
+    if job is not None:
+        run = RunBatch.BPRun.select(job.run_id)
+        RunBatch.kill_one(run)
+    else:
+        bputilities.kill_job(job_id)
     print"""
     <html><head><title>Job %(job_id)d killed</title></head>
     <body>Job %(job_id)d killed
     </body>
     </html>
 """%(globals())
-elif form.has_key("batch_id"):
-    batch_id = int(form["batch_id"].value)
-    RunBatch.KillBatch(batch_id)
+elif batch_id is not None:
+    RunBatch.kill_batch(batch_id)
     
     url = "ViewBatch.py?batch_id=%d"%(batch_id)
     print "<html><head>"
@@ -58,7 +61,7 @@ else:
     p = subprocess.Popen(["bash"],stdin = subprocess.PIPE,
                          stdout=subprocess.PIPE)
     listing = p.communicate(
-        ". /broad/software/scripts/useuse;reuse GridEngine8;qjobs\n")[0]
+        ". /broad/software/scripts/useuse;reuse GridEngine8;qstat\n")[0]
     listing_lines = listing.split('\n')
     header = listing_lines[0]
     columns = [header.find(x) for x in header.split(' ') if len(x)]

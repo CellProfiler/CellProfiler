@@ -32,6 +32,8 @@
 #
 # VARIABLES:
 # - set PREFIX to where you want to install your CellProfiler2 directory
+#   Ensure that JAVA_HOME points to your JDK
+#   Define HOSTTYPE to be the processor type if not "amd64"
 #
 # USAGE:
 # - always invoke 'make' with the name of this Makefile, i.e.:
@@ -71,6 +73,7 @@ MAKE_FLAGS				?= -j4
 PREFIX					?= /usr/CellProfiler
 SRCDIR					?= $(PREFIX)/src
 TMPDIR					?= $(PWD)/tmp
+HOSTTYPE				?=amd64
 #
 # TGTDIR holds the target files touched when making multipart dependencies
 # The target directory must be present before the dependencies are calculated
@@ -1108,9 +1111,9 @@ $(PREFIX)/bin/cpenv.sh:
 	echo "############################################################" >> $@
 	echo >> $@
 	echo "export PREFIX=$(PREFIX)" >> $@
-	echo "export PATH=$(PREFIX)/bin:$(DOLLAR)PATH" >> $@
 	echo ": $(DOLLAR){JAVA_HOME=$(JAVA_HOME)}" >> $@
 	echo "export JAVA_HOME" >> $@
+	echo "export PATH=$(PREFIX)/bin:$(DOLLAR)PATH:$(DOLLAR)JAVA_HOME/bin" >> $@
 	echo "export LD_LIBRARY_PATH=$(PREFIX)/lib:$(PREFIX)/lib/mysql:$(DOLLAR)LD_LIBRARY_PATH:$(DOLLAR)JAVA_HOME/jre/lib/$(HOSTTYPE)/server" >> $@
 	echo ": $(DOLLAR){LC_ALL=en_US.UTF-8}" >> $@
 	echo "export LC_ALL">> $@

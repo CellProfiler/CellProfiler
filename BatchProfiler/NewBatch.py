@@ -29,31 +29,33 @@ from cellprofiler.modules.createbatchfiles import F_BATCH_DATA_H5
 from bputilities import *
 from bpformdata import *
 import RunBatch
+from StyleSheet import BATCHPROFILER_DOCTYPE
 import email.message
 import email.mime.text
 import socket
 from cStringIO import StringIO
 import yattag
 
-BUILD_CPCLUSTER_BUTTON = "build_cpclster"
+BUILD_CPCLUSTER_BUTTON = "build_cpcluster"
 HOW_TO_USE_BATCHPROFILER_URL = "http://dev.broadinstitute.org/imaging/privatewiki/index.php/How_To_Use_BatchProfiler"
-myself = os.path.split(__file__)[1]
-if len(myself) == 0:
-    myself = __file__
-
+myself = os.path.split(
+    os.environ.get(SCRIPT_FILENAME_KEY,
+                   "/batchprofiler/cgi-bin/NewBatch.py"))[1]
 class NewBatchDoc(object):
     def __init__(self):
-        defaults = BATCHPROFILER_DEFAULTS
+        defaults = BATCHPROFILER_DEFAULTS.copy()
+        del defaults[SUBMIT_BATCH]
         self.doc, self.tag, self.text = yattag.Doc(defaults=defaults).tagtext()
         assert isinstance(self.doc, yattag.Doc)
         self.__has_image_sets = None
         self.__inputs_validated = None
         self.__cpcluster_needs_building = None
         self.no_image_sets_reason = "???"
+        self.__submit_batch_pressed = \
+            BATCHPROFILER_DEFAULTS.get(SUBMIT_BATCH, False) == "yes"
     
     def wants_batch_submission(self):
-        if BATCHPROFILER_DEFAULTS.get(SUBMIT_BATCH, False) == "yes" and \
-           self.has_image_sets:
+        if self.__submit_batch_pressed and self.has_image_sets:
             return self.inputs_validated
         return False
     
@@ -95,12 +97,12 @@ function go_to_key(key, data_dir) {
 parent.location = url+"#input_"+key;
 }
                 """ % globals())
-                if self.has_image_sets and self.inputs_validated:
+                if self.has_image_sets and self.batch_git_hash is not None:
                     self.doc.asis(("""
 function use_githash() {
     v = document.getElementById("input_%(REVISION)s");
     v.value = "%%s";
-}""" % globals()) % self.git_hash)
+}""" % globals()) % self.batch_git_hash)
                 self.doc.asis("""
 function build_cellprofiler() {
     var v = document.getElementById("input_%(REVISION)s");
@@ -113,7 +115,12 @@ function build_cellprofiler() {
     xmlhttp.onreadystatechange=function() {
         if (xmlhttp.readyState == 4) {
             if ((xmlhttp.status >= 200)  && (xmlhttp.status < 300)) {
-                alert("Building " +revision);
+                var result=JSON.parse(xmlhttp.responseText);
+                if (result['%(IS_BUILT)s']) {
+                    alert(revision + " is already built");
+                } else {
+                    alert("Building " +revision);
+                }
             } else {
                 alert("Failed to build " + revision);
             }
@@ -133,9 +140,42 @@ function build_cellprofiler() {
         with self.tag("body"):
             with self.tag("h1"):
                 self.text("CellProfiler 2.1.1+ Batch Submission")
+            if self.__submit_batch_pressed:
+                with self.tag("div"):
+                    self.text("Submit batch pressed")
             self.build_introduction()
             self.build_form()
+            #self.build_diagnostics()
 
+    def build_diagnostics(self):
+        try:
+            messages = (
+                "Has image sets " if self.has_image_sets else self.no_image_sets_reason,
+                "Inputs validated" if self.inputs_validated else self.invalid_reason,
+                "Has groups" if self.has_groups else "No groups")
+            for message in messages:
+                with self.tag("div"):
+                    self.text(message)
+        except:
+            with self.tag("div"):
+                self.text(traceback.format_exc())
+                
+        if self.has_image_sets:
+            with self.tag("div"):
+                if self.batch_git_hash is None:
+                    self.text(self.no_batch_version_reason)
+                else:
+                    self.text("Batch_data version: %s, git_hash: %s" %
+                              (self.batch_datetime_version,
+                               self.batch_git_hash))
+        
+        with self.tag("table"):
+            for k, v in BATCHPROFILER_DEFAULTS.iteritems():
+                with self.tag("tr"):
+                    for value in k, v:
+                        with self.tag("td"):
+                            self.text(str(value))
+                            
     def build_introduction(self):
         with self.tag("div"):
             with self.tag("p"):
@@ -189,6 +229,8 @@ batch is run.""" % globals())
                                   type="submit", 
                                   name="input_submit_batch",
                                   value="Submit batch")
+                    if self.__submit_batch_pressed and not self.inputs_validated:
+                        self.text("Invalid inputs: %s" % self.invalid_reason)
                 with self.tag("div"):
                     if self.has_groups:
                         with self.tag("h2"):
@@ -227,12 +269,13 @@ batch is run.""" % globals())
         
     def build_revision(self, id, name):
         self.doc.input(type="text", id=id, name=name)
-        if self.has_image_sets:
+        if self.has_image_sets and self.batch_git_hash is not None:
             with self.tag("button",
                      type="button",
                      onclick="use_githash()"):
-                self.text("Use %s / %s (from Batch_data.h5)" % 
-                          (self.git_hash[:8], self.datetime_version))
+                self.text(
+                    "Use %s / %s (from Batch_data.h5)" % 
+                    (self.batch_git_hash[:8], self.batch_datetime_version))
         with self.tag("button",
                       type="button",
                       id = BUILD_CPCLUSTER_BUTTON,
@@ -240,10 +283,7 @@ batch is run.""" % globals())
             self.text("Build CellProfiler")
                     
     def render(self):
-        print '<!DOCTYPE html PUBLIC ' \
-              '"-//W3C//DTD XHTML 1.0 Transitional//EN"' \
-              '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
-        
+        print BATCHPROFILER_DOCTYPE
         print yattag.indent(self.doc.getvalue())
         
     @property
@@ -270,7 +310,7 @@ batch is run.""" % globals())
             else:
                 self.has_groups = True
                 self.group_numbers, self.group_indexes = result
-                group_counts = np.bincount(group_numbers)
+                group_counts = np.bincount(self.group_numbers)
                 self.group_counts = [
                     (i, count) for i, count in enumerate(group_counts)
                     if count > 0]
@@ -279,6 +319,14 @@ batch is run.""" % globals())
                 "Failed to read batch file %s.\n" % batch_file
             self.no_image_sets_reason += traceback.format_exc()
             return False
+        try:
+            self.batch_datetime_version, self.batch_git_hash = \
+                get_batch_data_version_and_githash(batch_file)
+        except:
+            import bputilities
+            self.batch_datetime_version = self.batch_git_hash = None
+            self.no_batch_version_reason = traceback.format_exc()
+            
         self.__has_image_sets = True
         return True
     
@@ -425,12 +473,11 @@ batch is run.""" % globals())
             if len(last) < len(first):
                 last = np.hstack([last, self.image_numbers[-1]])
         batch = RunBatch.BPBatch()
-        runs = [(f, l, None) for f, l in zip(first, last)]
+        runs = [(f, l) for f, l in zip(first, last)]
         #
         # Put it in the database
         #
-        write_data = BATCHPROFILER_DEFAULTS.has_key(WRITE_DATA) and \
-            BATCHPROFILER_DEFAULTS[WRITE_DATA] == "yes"
+        write_data = 1 if BATCHPROFILER_VARIABLES[WRITE_DATA] is not None else 0
         batch.create(
             email = BATCHPROFILER_DEFAULTS[EMAIL],
             data_dir = BATCHPROFILER_DEFAULTS[DATA_DIR],
@@ -467,15 +514,15 @@ batch is run.""" % globals())
                 self.text("Results for batch #")
                 with self.tag("a", href=vb_url):
                     self.text(str(batch.batch_id))
-                with self.tag("table"):
-                    with self.tag("thead"):
-                        with self.tag("tr"):
-                            with self.tag("th"):
-                                self.text("First image set")
-                            with self.tag("th"):
-                                self.text("Last image set")
-                            with self.tag("th"):
-                                self.text("job #")
+            with self.tag("table"):
+                with self.tag("thead"):
+                    with self.tag("tr"):
+                        with self.tag("th"):
+                            self.text("First image set")
+                        with self.tag("th"):
+                            self.text("Last image set")
+                        with self.tag("th"):
+                            self.text("job #")
                 for run, job, status in job_list:
                     assert isinstance(run, RunBatch.BPRun)
                     assert isinstance(job, RunBatch.BPJob)

@@ -30,9 +30,9 @@ def maybe_chmod(path, mode, d):
     d - add the key/value of path:mode to the dictionary if the mode was changed
     '''
     if os.path.exists(path) and \
-       stat.S_IMODE(os.stat(directory).st_mode) != mode:
-        os.chmod(directory, mode)
-        what_i_did[directory] = mode
+       stat.S_IMODE(os.stat(path).st_mode) != mode:
+        os.chmod(path, mode)
+        d[path] = mode
     
 def handle_post():
     batch_id = BATCHPROFILER_DEFAULTS[BATCH_ID]
@@ -76,7 +76,7 @@ function fix_permissions(button) {
                 var count = Object.keys(result).length
                 alert("Changed permissions for "+count+" file(s) / folder(s)");
             } else {
-                alert("Failed to change permissions.\n" + xmlhttp.responseText);
+                alert("Failed to change permissions.\\n" + xmlhttp.responseText);
             }
             button.innerText = oldInnerText;
             button.disabled = false;
@@ -96,8 +96,7 @@ def handle_get():
     '''Display a form for fixing the permissions'''
     batch_id_id = "input_%s" % BATCH_ID
     button_id = "button_%s" % BATCH_ID
-    fix_permissions_action = \
-        "fix_permissions(document.getElementById('%s'));" % button_id
+    fix_permissions_action = "on_click_%s()" % button_id
     doc, tag, text = yattag.Doc().tagtext()
     assert isinstance(doc, yattag.Doc)
     with tag("html"):
@@ -106,10 +105,14 @@ def handle_get():
                 text(TITLE)
             with tag("script", language="JavaScript"):
                 doc.asis(FIX_PERMISSIONS_AJAX_JAVASCRIPT)
+                doc.asis("""
+function on_click_%s() {
+   fix_permissions(document.getElementById('%s')); 
+}""" % (button_id, button_id))
         with tag("body"):
             with tag("h1"):
                 text(TITLE)
-            with tag("div"):
+            with tag("div", style="width: 6in; margin-bottom: 24pt"):
                 text("""
 This webpage fixes permission problems for the files and folders in your batch
 that were created outside BatchProfiler's control. It will grant read
@@ -129,7 +132,9 @@ error output files and the measurements file.""")
           '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
     print yattag.indent(doc.getvalue())
     
-if __name__ == "__main__":
+script_filename = os.environ.get(SCRIPT_FILENAME_KEY, None)
+if script_filename is not None and \
+   script_filename.endswith("FixPermissions.py"):
     import cgitb
     cgitb.enable()
 

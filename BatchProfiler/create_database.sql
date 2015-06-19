@@ -47,21 +47,66 @@ CREATE TABLE IF NOT EXISTS `batch` (
 
 -------------------------------------------------------------
 --
--- run
+-- run_base
 --
--- Each row of the run table represents a group of image sets
--- to be executed by a job
+-- Represents a command to be run on a cluster node
 -------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS `run` (
+CREATE TABLE IF NOT EXISTS `run_base` (
   `run_id` int(11) NOT NULL AUTO_INCREMENT,
   `batch_id` int(11) NOT NULL,
-  `bstart` int(11) NOT NULL,
-  `bend` int(11) NOT NULL,
-  `bgroup` text,
+  `run_type` varchar(16) NOT NULL,
+  `command` text NOT NULL,
   PRIMARY KEY (`run_id`),
   KEY `run_batch_id_idx` (`batch_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+  
+-------------------------------------------------------------
+--
+-- run_cellprofiler
+--
+-- Represents the image sets to be run on CellProfiler
+-------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `run_cellprofiler` (
+  `run_id` int(11) NOT NULL,
+  `bstart` int(11) NOT NULL,
+  `bend` int(11) NOT NULL,
+  PRIMARY KEY (`run_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-------------------------------------------------------------
+--
+-- run_sql
+--
+-- Represents the SQL file to be run
+--
+-- The sql_filename does not include the path
+-- sql_path = os.path.join(batch.data_dir, sql_filename)
+------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `run_sql` (
+    `run_id` int(11) NOT NULL,
+    `sql_filename` varchar(256),
+    PRIMARY KEY (`run_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-------------------------------------------------------------
+--
+-- run
+--
+-- The legacy view of CellProfiler runs
+-------------------------------------------------------------
+DROP TABLE IF EXISTS run CASCADE;
+
+CREATE OR REPLACE VIEW `run` AS
+SELECT rb.batch_id as batch_id,
+       rb.run_id as run_id,
+       rc.bstart as bstart,
+       rc.bend as bend,
+       NULL as bgroup,
+       rb.command as command
+  FROM run_base rb JOIN run_cellprofiler rc
+    ON rb.run_id = rc.run_id
+ WHERE rb.run_type = 'CellProfiler';
+ 
 -------------------------------------------------------------
 --
 -- job
@@ -76,7 +121,8 @@ CREATE TABLE IF NOT EXISTS `job` (
   -- timestamp of job's creation
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY `job_run_id_fk` (`run_id`),
-  KEY `job_job_id_idx` (`job_id`)
+  KEY `job_job_id_idx` (`job_id`),
+  KEY `job_created_idx` (`created`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -------------------------------------------------------------
@@ -101,7 +147,8 @@ CREATE TABLE IF NOT EXISTS `job_status` (
   -- the job ID of the associated job
   `job_id` int(11) NOT NULL,
   `run_id` int(11) NOT NULL,
-  `status` text NOT NULL,
+  `status` varchar(16) NOT NULL,
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY `job_status_id_fk` (`run_id`, `job_id`)
+  KEY `job_status_id_fk` (`run_id`, `job_id`),
+  KEY `job_status_created_k` (`created`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

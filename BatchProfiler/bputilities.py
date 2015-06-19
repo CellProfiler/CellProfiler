@@ -9,14 +9,16 @@ from cStringIO import StringIO
 import subprocess
 import tempfile
 import stat
-from bpformdata import PREFIX, LC_ALL, BATCHPROFILER_CPCHECKOUT
+from bpformdata import PREFIX, LC_ALL, BATCHPROFILER_CPCHECKOUT, \
+     BATCHPROFILER_CELLPROFILER_REPO
 
 QSUB_WORKS = True
 
 SENDMAIL="/usr/sbin/sendmail"
 BUILD_TOUCHFILE = ".cellprofiler.built"
 
-ROOT_DIR = os.path.dirname(os.path.dirname(__file__))
+ROOT_DIR = BATCHPROFILER_CELLPROFILER_REPO
+
 DATEVERSION_PATTERN="(?P<year>20\\d{2})(?P<month>\\d{2})(?P<day>\\d{2})(?P<hour>\\d{2})(?P<minute>\\d{2})(?P<second>\\d{2})"
 def get_batch_data_version_and_githash(batch_filename):
     """Get the commit's GIT hash stored in the batch file's pipeline
@@ -34,14 +36,38 @@ def get_batch_data_version_and_githash(batch_filename):
         m[cpmeas.EXPERIMENT, cpp.M_PIPELINE, 0][0])
     if isinstance(pipeline_txt, unicode):
         pipeline_txt = pipeline_txt.encode("utf-8")
-    pipeline = cpp.Pipeline()
-    version, git_hash = pipeline.loadtxt(StringIO(pipeline_txt))
+    #
+    # TODO:
+    # It's not such a good idea to duplicate parsing of the pipeline
+    # text. Create a method to read the header info.
+    #
+    try:
+        git_hash = None
+        version = None
+        pipeline_version = None
+        lines = [_.strip() for _ in pipeline_txt.split("\n")]
+        if lines[0] != cpp.COOKIE:
+            raise ValueError("Failed to recognize cookie")
+        for line in lines[1:]:
+            if len(line) == 0:
+                break
+            k, v = line.split(":")
+            if k == cpp.H_DATE_REVISION:
+                version = v
+            elif k == cpp.H_GIT_HASH:
+                git_hash = v
+            elif k == cpp.H_VERSION:
+                pipeline_version = int(v)
+    except:
+        pipeline = cpp.Pipeline()
+        version, git_hash = pipeline.loadtxt(StringIO(pipeline_txt))
     if git_hash is None:
         for log_version, log_git_hash in get_versions_and_githashes():
             if int(log_version) == version:
                 git_hash = log_git_hash
                 break
-        
+    else:
+        version, git_hash = get_version_and_githash(git_hash)
     return version, git_hash
 
 def get_batch_image_numbers(batch_filename):
@@ -80,10 +106,17 @@ def get_version_and_githash(treeish):
     # Give me another reason to hate GIT:
     #     2.1.1 preferentially matches 2.1.1-docker
     #
-    line = subprocess.check_output(
-        ["git", "log", "-n", "1", "--tags=[0-9].[0-9].[0-9]", 
-         "--pretty=%ai_%H", treeish],
-        cwd=ROOT_DIR)
+    tag_pattern = "[0-9]+\\.[0-9]+\\.[0-9]+"
+    if re.match(tag_pattern, treeish) is not None:
+        line = subprocess.check_output(
+            ["git", "log", "-n", "1", "--tags=%s" % 
+             tag_pattern.replace("\\", "\\\\"), 
+             "--pretty=%ai_%H", treeish],
+            cwd=ROOT_DIR)
+    else:
+        line = subprocess.check_output(
+            ["git", "log", "-n", "1", "--pretty=%ai_%H", treeish],
+            cwd=ROOT_DIR)
     time_str, git_hash = [x.strip() for x in line.split("_")]
     return get_version_from_timestr(time_str), git_hash
     
@@ -183,6 +216,7 @@ def run_on_tgt_os(script,
                   queue_name, 
                   output,
                   err_output = None,
+                  priority = None,
                   cwd=None, 
                   deps=None,
                   mail_before = False,
@@ -198,6 +232,7 @@ def run_on_tgt_os(script,
     queue_name - run on this queue
     output - send stdout to this file
     err_output - send stderr to this file
+    priority - the priority # for the job
     cwd - change to this directory on remote machine to run script
     deps - a list of job IDs to wait for before starting this one
     mail_before - true to send email before job starts
@@ -228,6 +263,9 @@ def run_on_tgt_os(script,
         queue_switch = ""
     else:
         queue_switch = "-q %s" % queue_name
+    #
+    # TODO: memory and priority, possibly more
+    #
     tgt_script = make_temp_script(script)
     host_script = make_temp_script("""#!/bin/sh
 . /broad/software/scripts/useuse
@@ -268,11 +306,11 @@ def kill_jobs(job_ids):
     . /broad/software/scripts/useuse
     reuse -q GridEngine8
     qdel %s"
-    """ % " ".join(job_ids))
+    """ % " ".join(map(str, job_ids)))
     try:
         p = subprocess.Popen(
             host_script, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
-        stdout, stderr = p.communicate(script)
+        stdout, stderr = p.communicate(host_script)
         return stdout, stderr
     finally:
         os.unlink(host_script)
@@ -280,6 +318,7 @@ def kill_jobs(job_ids):
 def python_on_tgt_os(args, group_name, job_name, queue_name, output,
                      err_output=None,
                      cwd=None, deps = None,
+                     priority=None,
                      mail_before = False,
                      mail_error = True,
                      mail_after = True,
@@ -292,7 +331,7 @@ def python_on_tgt_os(args, group_name, job_name, queue_name, output,
         cd_command = "cd %s" % cwd
         
     if with_xvfb:
-        xvfb_run = "xvfb_run"
+        xvfb_run = "xvfb-run"
     else:
         xvfb_run = ""
     argstr = '"%s"' % '" "'.join(args)
@@ -304,7 +343,7 @@ export PATH=%(PREFIX)s/bin:$PATH
 export LD_LIBRARY_PATH=%(PREFIX)s/lib:$LD_LIBRARY_PATH:%(PREFIX)s/lib/mysql:$JAVA_HOME/jre/lib/amd64/server
 export LC_ALL=%(LC_ALL)s
 export PYTHONNOUSERSITE=1
-%(xvfb_run)s python %%(argstr)s
+%%(xvfb_run)s python %%(argstr)s
 """ % globals()) % locals()
     return run_on_tgt_os(script, group_name, job_name, queue_name, output, 
                          cwd = cwd, 
@@ -361,7 +400,8 @@ def build_cellprofiler(
             cwd = path,
             deps=[mvn_job],
             mail_after = False,
-            email_address=email_address)
+            email_address=email_address,
+            with_xvfb=True)
     else:
         python_on_tgt_os(
             ["CellProfiler.py", "--build-and-exit"],
@@ -377,7 +417,10 @@ def build_cellprofiler(
     touchfile = os.path.join(path, BUILD_TOUCHFILE)
     python_on_tgt_os(
         args = ["-c", 
-          "import cellprofiler.pipeline;open('%s', 'w').close()" % touchfile],
+                ("import cellprofiler.pipeline;"
+                 "open('%s', 'w').close();"
+                 "from BatchProfiler.bputilities import shutdown_cellprofiler;"
+                 "shutdown_cellprofiler()") % touchfile],
         group_name = group_name,
         job_name = touch_job,
         queue_name = queue_name,
@@ -386,7 +429,8 @@ def build_cellprofiler(
         deps = [build_job],
         cwd = path,
         email_address = email_address,
-        mail_after = True)
+        mail_after = True,
+        with_xvfb=True)
 
 def is_built(version, git_hash):
     path = get_cellprofiler_location(version=version, git_hash=git_hash)
@@ -460,25 +504,11 @@ def shutdown_cellprofiler():
 
     
 if __name__ == "__main__":
-    import site
-    site.addsitedir("/imaging/analysis/CPCluster/CellProfiler-2.0/javabridge-bioformats-site-packages")
-    sys.path.append(ROOT_DIR)
-    version, git_hash = get_batch_data_version_and_githash(sys.argv[1])
-    try:
-        print "From dateversion: " + str(get_version_and_githash(str(version)))
-    except:
-        print "Wonky dateversion: " + str(version)
-    print "From githash: " + str(get_version_and_githash(git_hash))
-    print "Release 2.1.1: " + str(get_version_and_githash("2.1.1"))
-    print "Image #s: " + str(get_batch_image_numbers(sys.argv[1]))
-    print "Groups: " + str(get_batch_groups(sys.argv[1]))
-    try:
-        import javabridge
-        javabridge.kill_vm()
-    except:
-        pass
-    try:
-        from ilastik.core.jobMachine import GLOBAL_WM
-        GLOBAL_WM.stopWorkers()
-    except:
-        logging.root.warn("Failed to stop Ilastik")
+    sys.path.append(os.path.dirname(__file__))
+    output = []
+    with CellProfilerContext():
+        for arg in sys.argv[1:]:
+            output.append(get_batch_data_version_and_githash(arg))
+    for line in output:
+        print line
+        

@@ -21,14 +21,17 @@ import json
 import os
 
 from bputilities import build_cellprofiler, get_version_and_githash, is_built
+from bputilities import CellProfilerContext
 from bpformdata import RM_GET, RM_PUT, REQUEST_METHOD, REVISION, GIT_HASH, \
-     DATETIME_VERSION, IS_BUILT, QUEUE, PROJECT, EMAIL, BATCHPROFILER_DEFAULTS
+     DATETIME_VERSION, IS_BUILT, QUEUE, PROJECT, EMAIL, \
+     BATCHPROFILER_DEFAULTS, BATCHPROFILER_VARIABLES
 
-query_revision = BATCHPROFILER_DEFAULTS[REVISION]
+query_revision = BATCHPROFILER_VARIABLES[REVISION]
 def do_get():
     if query_revision is not None:
-        datetime_version, git_hash = get_version_and_githash(query_revision)
-        buildstatus = is_built(version=datetime_version, git_hash=git_hash)
+        with CellProfilerContext():
+            datetime_version, git_hash = get_version_and_githash(query_revision)
+            buildstatus = is_built(version=datetime_version, git_hash=git_hash)
         print "Content-Type: application/json\r"
         print "\r"
         print json.dumps(
@@ -75,17 +78,19 @@ returns the same JSON-encoded dictionary as for GET
 def do_put():
     datetime_version, git_hash = get_version_and_githash(query_revision)
     buildstatus = is_built(version=datetime_version, git_hash=git_hash)
+    options = {}
     if not buildstatus:
         try:
-            options = json.load(data)
+            options = json.load(sys.stdin)
             assert isinstance(options, dict)
         except:
-            options = {}
-        build_cellprofiler(version = datetime_version,
-                           git_hash = git_hash,
-                           queue_name = options.get(QUEUE, None),
-                           group_name = options.get(PROJECT, None),
-                           email_address = options.get(EMAIL, None))
+            pass
+        with CellProfilerContext() : 
+            build_cellprofiler(version = datetime_version,
+                               git_hash = git_hash,
+                               queue_name = options.get(QUEUE, None),
+                               group_name = options.get(PROJECT, None),
+                               email_address = options.get(EMAIL, None))
     
     print "Content-Type: application/json\r"
     print "\r"

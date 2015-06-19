@@ -13,10 +13,11 @@ Website: http://www.cellprofiler.org
 # This module prints out the standardized stylesheet
 # for the batchprofiler web pages
 #
+BATCHPROFILER_DOCTYPE = '<!DOCTYPE html PUBLIC ' \
+              '"-//W3C//DTD XHTML 1.0 Transitional//EN"' \
+              '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
 
-def PrintStyleSheet():
-    print "<style type='text/css'>"
-    print """
+BATCHPROFILER_STYLE = """
 table.run_table {
     border-spacing: 0px;
     border-collapse: collapse;
@@ -36,4 +37,8 @@ table.run_table thead th {
     text-align: center;
 }
 """
+
+def PrintStyleSheet():
+    print "<style type='text/css'>"
+    print BATCHPROFILER_STYLE
     print "</style>"

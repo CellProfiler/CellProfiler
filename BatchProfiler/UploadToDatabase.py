@@ -30,14 +30,15 @@ batch_id = int(form["batch_id"].value)
 sql_script = form["sql_script"].value
 output_file = form["output_file"].value
 queue = (form.has_key("queue") and form["queue"].value) or None
-my_batch = RunBatch.LoadBatch(batch_id)
+my_batch = RunBatch.BPBatch()
+my_batch.select(batch_id)
 
 re_load_line = re.compile("'(.+?)[0-9]+_[0-9]+_(Image|Object).CSV'\sREPLACE\sINTO\sTABLE\s([A-Za-z0-9_]+)\s")
 re_ignore_line = re.compile("SHOW WARNINGS;")
 table_lines = []
 image_prefix = None
 object_prefix = None
-sql_script_file = open(my_batch["data_dir"]+os.sep+sql_script,"r")
+sql_script_file = open(my_batch.data_dir+os.sep+sql_script,"r")
 in_table_defs = True
 try:
     for line in sql_script_file:
@@ -58,7 +59,7 @@ finally:
 re_file_name = re.compile("^(.+?)[0-9]+_[0-9]+_(Image|Object).CSV$")
 image_files = []
 object_files = []
-for file_name in os.listdir(my_batch["data_dir"]):
+for file_name in os.listdir(my_batch.data_dir):
     match = re_file_name.search(file_name)
     if match:
         if (image_prefix and match.groups(1)[0] == image_prefix 
@@ -69,9 +70,9 @@ for file_name in os.listdir(my_batch["data_dir"]):
               match.groups(1)[1] == 'Object'):
             object_files.append(file_name)
 
-batch_script = my_batch["data_dir"]+os.sep+"batch_"+sql_script
-batch_script = os.path.abspath(batch_script)
-sql_script_file = open(batch_script,"w")
+batch_script = my_batch.batch_id+os.sep+"batch_"+sql_script
+batch_script_path = os.path.join(my_batch.data_dir, batch_script)
+sql_script_file = open(batch_script_path,"w")
 try:
     sql_script_file.writelines(table_lines)
     for file_name in image_files:
@@ -104,7 +105,7 @@ function toggleVerboseText()
 <body>
 <h1>Database script file</h1>
 """
-sql_script_file=open(batch_script,"r")
+sql_script_file=open(batch_script_path,"r")
 lines = sql_script_file.readlines()
 sql_script_file.close()
 line_count = len(lines)
@@ -119,12 +120,7 @@ for line, index in zip(lines,range(line_count)):
     if line_count > 10 and index == line_count-4:
         print "</div>"
 print "</tt>"
-if queue is None:
-    job_id = sql_jobs.run_sql_file(batch_id, batch_script, output_file,
-                                   project=my_batch["project"])
-else:
-    job_id = sql_jobs.run_sql_file(batch_id, batch_script, output_file, queue,
-                                   my_batch["project"])
+job_id = sql_jobs.run_sql_file(batch_id, batch_script)
     
 print "<h2>SQL script submitted to cluster as job # %s"%(job_id)
 print "</body>"

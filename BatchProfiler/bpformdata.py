@@ -34,10 +34,19 @@ BATCH_SIZE = "batch_size"
 MEMORY_LIMIT = "memory_limit"
 REVISION = "revision"
 SUBMIT_BATCH = "submit_batch"
+SUBMIT_RUN = "submit_run"
 URL = "url"
 BATCH_ID = "batch_id"
 RUN_ID = "run_id"
 JOB_ID = "job_id"
+SQL_SCRIPT = "sql_script"
+OUTPUT_FILE = "output_file"
+FILE_TYPE = "file_type"
+FT_TEXT_FILE = "text"
+FT_ERR_FILE = "err"
+FT_OUT_FILE = "out"
+PAGE_SIZE = "page_size"
+FIRST_ITEM = "first_item"
 #
 # keys for types of data
 #
@@ -45,24 +54,28 @@ GIT_HASH = "git_hash"
 DATETIME_VERSION = "datetime_version"
 '''True if the version of CellProfiler has been successfully built'''
 IS_BUILT = "is_built"
+
 #
 # Integer variables
 #
-BP_INTEGER_VARIABLES = (PRIORITY, BATCH_SIZE, BATCH_ID, RUN_ID, JOB_ID)
+BP_INTEGER_VARIABLES = (PRIORITY, BATCH_SIZE, BATCH_ID, RUN_ID, JOB_ID, 
+                        PAGE_SIZE, FIRST_ITEM)
 
 #
 # Actions for DeleteFile
 #
 K_DELETE_ACTION = "delete_action"
-A_DELETE_ALL = "ALL"
-A_DELETE_TEXT = "TEXT"
-A_DELETE_OUTPUT = "OUTPUT"
+A_DELETE_ALL = "All"
+A_DELETE_TEXT = "Text"
+A_DELETE_OUTPUT = "Output"
 
 # Environment variables
 #
 # From the webserver
 #
 SCRIPT_URI_KEY = "SCRIPT_URI"
+SCRIPT_NAME_KEY = "SCRIPT_NAME"
+SCRIPT_FILENAME_KEY = "SCRIPT_FILENAME"
 SERVER_NAME_KEY = "SERVER_NAME"
 #
 # These should be "export" defined by ~/.batchprofiler.sh
@@ -97,11 +110,18 @@ E_BATCHPROFILER_MIN_MEMORY_LIMIT = "BATCHPROFILER_MIN_MEMORY_LIMIT"
 MIN_MEMORY_LIMIT = float(os.environ.get(E_BATCHPROFILER_MIN_MEMORY_LIMIT, 
                                         1000))
 
+VARIABLE_NAMES = (
+    DATA_DIR, EMAIL, QUEUE, PROJECT, PRIORITY, WRITE_DATA, BATCH_SIZE,
+    MEMORY_LIMIT, REVISION, SUBMIT_BATCH, K_DELETE_ACTION, BATCH_ID,
+    RUN_ID, JOB_ID, SUBMIT_RUN, SQL_SCRIPT, OUTPUT_FILE, FILE_TYPE,
+    PAGE_SIZE, FIRST_ITEM) 
+
 try:
     '''The location of the CellProfiler build'''
     PREFIX = os.environ["PREFIX"]
 except:
-    raise ValueError("Environment variable, ""PREFIX"", is not defined. Please run scripts with variables defined in cpenv.sh")
+    raise ValueError("Environment variable, ""PREFIX"", is not defined. "
+                     "Please run scripts with variables defined in cpenv.sh")
 
 '''The checkout location for CellProfiler versions
 
@@ -115,6 +135,15 @@ YYYYMMDDHHMMSS
 E_BATCHPROFILER_CPCHECKOUT = "BATCHPROFILER_CPCHECKOUT"
 BATCHPROFILER_CPCHECKOUT = os.environ.get(
     E_BATCHPROFILER_CPCHECKOUT, os.path.join(PREFIX, "checkouts"))
+
+'''The location of the up-to-date clone of the CellProfiler GIT repository
+
+Defaults to $PREFIX/checkouts/master
+'''
+E_BATCHPROFILER_CELLPROFILER_REPO = "BATCHPROFILER_CELLPROFILER_REPO"
+BATCHPROFILER_CELLPROFILER_REPO = os.environ.get(
+    E_BATCHPROFILER_CELLPROFILER_REPO, 
+    os.path.join(BATCHPROFILER_CPCHECKOUT, "master"))
 
 RM_GET = "GET"
 RM_PUT = "PUT"
@@ -155,17 +184,31 @@ def __get_defaults():
         else:
             value = QUERY_DICT.get(key, [os.environ.get(ekey, None)])[0]
         if key in BP_INTEGER_VARIABLES and value is not None:
-            return int(value)
+            try:
+                return int(value)
+            except:
+                return None
         return value
     
-    kv += [(k, lookup_default(k)) for k in 
-           (DATA_DIR, EMAIL, QUEUE, PROJECT, PRIORITY, WRITE_DATA, BATCH_SIZE,
-            MEMORY_LIMIT, REVISION, SUBMIT_BATCH, K_DELETE_ACTION, BATCH_ID,
-            RUN_ID, JOB_ID) 
-           if lookup_default(k) is not None]
-    return dict(kv)
+    def lookup(key):
+        if REQUEST_METHOD == RM_POST:
+            value = field_storage.getvalue(key, None)
+        else:
+            value = QUERY_DICT.get(key, (None,))[0]
+        if key in BP_INTEGER_VARIABLES and value is not None:
+            try:
+                return int(value)
+            except:
+                return None
+        return value
+    
+    
+    kv += [(k, lookup_default(k)) for k in VARIABLE_NAMES]
+    variables = dict(
+        [(k, lookup(k)) for k in VARIABLE_NAMES])
+    return dict(kv), variables
             
-BATCHPROFILER_DEFAULTS = __get_defaults()
+BATCHPROFILER_DEFAULTS, BATCHPROFILER_VARIABLES = __get_defaults()
 
 __all__ = filter(
     (lambda k: k not in (cgi.__name__, os.__name__, BP_INTEGER_VARIABLES)), 

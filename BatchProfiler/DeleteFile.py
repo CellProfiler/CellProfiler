@@ -29,20 +29,18 @@ def remove_if_exists(path):
 def delete_run(my_batch, my_run):
     if delete_action in (A_DELETE_ALL, A_DELETE_TEXT):
         remove_if_exists(RunBatch.run_text_file_path(my_batch, my_run))
+        remove_if_exists(RunBatch.run_err_file_path(my_batch, my_run))
 
     if delete_action in (A_DELETE_ALL, A_DELETE_OUTPUT):
-        remove_if_exists(RunBatch.RunOutFilePath(my_batch, my_run))
+        remove_if_exists(RunBatch.run_out_file_path(my_batch, my_run))
     
-form = cgi.FieldStorage()
 delete_action = BATCHPROFILER_DEFAULTS[K_DELETE_ACTION]
-if delete_action is not None:
-    delete_action = delete_action.upper()
 run_id = BATCHPROFILER_DEFAULTS[RUN_ID]
 batch_id = BATCHPROFILER_DEFAULTS[BATCH_ID]
 if run_id is not None and delete_action is not None:
     my_run = RunBatch.BPRun.select(run_id)
     my_batch = RunBatch.BPBatch()
-    batch.select(run.batch_id)
+    my_batch.select(my_run.batch_id)
     delete_run(my_batch, my_run)
 elif batch_id is not None:
     my_batch = RunBatch.BPBatch()
@@ -51,7 +49,7 @@ elif batch_id is not None:
         delete_run(my_batch, my_run)
     
     
-url = "ViewBatch.py?batch_id=%(batch_id)d"%(my_batch)
+url = "ViewBatch.py?batch_id=%d"%(my_batch.batch_id)
 print "Content-Type: text/html"
 print
 print "<html><head>"

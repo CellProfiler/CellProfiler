@@ -24,7 +24,7 @@ cgitb.enable()
 import json
 import os
 import sys
-from RunBatch import BPJob
+from RunBatch import BPJob, JS_SUBMITTED
 from bpformdata import REQUEST_METHOD, RM_PUT
 
 K_ACTION = "action"
@@ -42,12 +42,18 @@ if REQUEST_METHOD == RM_PUT:
     action = data[K_ACTION]
     job_id = int(data[K_JOB_ID])
     run_id = int(data[K_RUN_ID])
+    status = data.get(K_STATUS, JS_SUBMITTED)
     job = BPJob(run_id, job_id)
     if action == A_CREATE:
-        job.create()
+        job.create(status)
+        print "Content-Type: text/plain"
+        print
+        print "OK"
     elif action == A_UPDATE:
-        status = data[K_STATUS]
         job.update_status(status)
+        print "Content-Type: text/plain"
+        print
+        print "OK"
     else:
         raise NotImplementedError("Unsupported action: %s" % action)
 else:

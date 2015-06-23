@@ -268,8 +268,6 @@ def run_on_tgt_os(script,
     #
     tgt_script = make_temp_script(script)
     host_script = make_temp_script("""#!/bin/sh
-. /broad/software/scripts/useuse
-reuse -q GridEngine8
 qsub -N %(job_name)s \\
     -e %(err_output)s \\
     -o %(output)s \\

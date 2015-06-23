@@ -11,6 +11,7 @@
 **/.DS_Store
 *\#
 build
+BatchProfiler/PrintEnv.py
 dist
 cellprofiler/cpmath/_cpmorphology2.c
 cellprofiler/cpmath/_filter.c

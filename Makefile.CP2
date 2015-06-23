@@ -636,6 +636,7 @@ $(TGTDIR)/mysql: $(SRCDIR)/$(MYSQLVERSION).tar.gz zlib ncurses
 		--prefix="$(MYSQLPREFIX)" \
 		--with-zlib-dir="$(ZLIBPREFIX)" \
 		--disable-community-features \
+		--enable-local-infile \
 		--without-server \
 		--without-docs && \
 	$(MAKE) $(MAKE_FLAGS) && \

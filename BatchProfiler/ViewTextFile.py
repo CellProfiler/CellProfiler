@@ -31,7 +31,7 @@ def main():
         show_help()
         
 def do_run_id(run_id):
-    my_run = RunBatch.BPRun.select(run_id)
+    my_run = RunBatch.BPRunBase.select(run_id)
     my_batch = RunBatch.BPBatch()
     my_batch.select(my_run.batch_id)
     file_type = BATCHPROFILER_VARIABLES[FILE_TYPE]

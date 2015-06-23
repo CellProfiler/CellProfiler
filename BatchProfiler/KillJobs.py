@@ -29,11 +29,10 @@ job_id = BATCHPROFILER_VARIABLES[JOB_ID]
 batch_id = BATCHPROFILER_VARIABLES[BATCH_ID]
 if job_id is not None:
     job = RunBatch.BPJob.select(job_id)
-    if job is not None:
-        run = RunBatch.BPRun.select(job.run_id)
-        RunBatch.kill_one(run)
-    else:
+    if job is None:
         bputilities.kill_job(job_id)
+    else:
+        RunBatch.kill_job(job)
     print"""
     <html><head><title>Job %(job_id)d killed</title></head>
     <body>Job %(job_id)d killed

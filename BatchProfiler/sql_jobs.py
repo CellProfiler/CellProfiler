@@ -34,14 +34,17 @@ def run_sql_file(batch_id, sql_filename):
     email       - who to email when done
     returns the RunBatch.BPJob
     """
+    cwd = os.path.dirname(__file__)
     batch = RunBatch.BPBatch()
     batch.select(batch_id)
     run = RunBatch.BPSQLRun.select_by_sql_filename(batch, sql_filename)
     if run is None:
-        sql_path = os.path.join(batch.data_dir, sql_filename)
-        cmd = "%s -b %d -i %s"%(__file__, batch_id, sql_path)
+        sql_path = os.path.join(RunBatch.batch_script_directory(batch),
+                                sql_filename)
+        cmd = "%s -b %d -i %s"%(os.path.join(cwd, "sql_jobs.py"),
+                                batch_id, sql_path)
         run = RunBatch.BPSQLRun.create(batch, sql_filename, cmd)
-    return RunBatch.run_one(batch, run, cwd=os.path.dirname(__file__))
+    return RunBatch.run_one(batch, run, cwd=cwd)
 
 def sql_file_job_and_status(batch_id, sql_file):
     """Return the latest job ID associated with the batch and sql path
@@ -53,7 +56,9 @@ def sql_file_job_and_status(batch_id, sql_file):
     """
     batch = RunBatch.BPBatch()
     batch.select(batch_id)
-    run = RunBatch.BPSQLRun.select_by_sql_filename(sql_file)
+    run = RunBatch.BPSQLRun.select_by_sql_filename(batch, sql_file)
+    if run is None:
+        return None, None, None
     result = run.select_jobs()
     if len(result) == 0:
         return None, None, None
@@ -87,13 +92,14 @@ if __name__ == "__main__":
     if BATCHPROFILER_MYSQL_USER is not None:
         cmd += ["-u", BATCHPROFILER_MYSQL_USER]
     if BATCHPROFILER_MYSQL_PASSWORD is not None:
-        cmd += ["-p", BATCHPROFILER_MYSQL_PASSWORD]
+        cmd += ["--password=" + BATCHPROFILER_MYSQL_PASSWORD]
     if BATCHPROFILER_MYSQL_HOST is not None:
         cmd += ["-h", BATCHPROFILER_MYSQL_HOST]
     if BATCHPROFILER_MYSQL_DATABASE is not None:
         cmd += ["-D", BATCHPROFILER_MYSQL_DATABASE]
     if BATCHPROFILER_MYSQL_PORT is not None:
         cmd += ["-P", BATCHPROFILER_MYSQL_PORT]
+    print "Executing command %s." % (" ".join(cmd))
     p = subprocess.Popen(cmd,
                          stdin=script_fd,
                          stdout=sys.stdout,

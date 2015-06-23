@@ -1,4 +1,4 @@
-#!/usr/bin/env /imaging/analysis/People/imageweb/batchprofiler/cgi-bin/python-2.6.sh
+#!/usr/bin/env ./batchprofiler.sh
 """
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -17,6 +17,7 @@ Website: http://www.cellprofiler.org
 import cgitb
 cgitb.enable()
 import RunBatch
+from bpformdata import *
 import cgi
 import re
 import os
@@ -25,11 +26,16 @@ import subprocess
 
 import sql_jobs
 
-form = cgi.FieldStorage()
-batch_id = int(form["batch_id"].value)
-sql_script = form["sql_script"].value
-output_file = form["output_file"].value
-queue = (form.has_key("queue") and form["queue"].value) or None
+#
+# TODO: Move the logic that collects the load statements into sql_jobs
+#
+# TODO: use yattag to build the HTML
+#
+
+batch_id = BATCHPROFILER_VARIABLES[BATCH_ID]
+sql_script = BATCHPROFILER_VARIABLES[SQL_SCRIPT]
+output_file = BATCHPROFILER_VARIABLES[OUTPUT_FILE]
+queue = BATCHPROFILER_VARIABLES[QUEUE]
 my_batch = RunBatch.BPBatch()
 my_batch.select(batch_id)
 
@@ -70,19 +76,24 @@ for file_name in os.listdir(my_batch.data_dir):
               match.groups(1)[1] == 'Object'):
             object_files.append(file_name)
 
-batch_script = my_batch.batch_id+os.sep+"batch_"+sql_script
-batch_script_path = os.path.join(my_batch.data_dir, batch_script)
-sql_script_file = open(batch_script_path,"w")
+batch_script_file = RunBatch.batch_script_file(sql_script)
+batch_script_dir = RunBatch.batch_script_directory(my_batch)
+if not os.path.isdir(batch_script_dir):
+    os.makedirs(batch_script_dir)
+batch_script_path = RunBatch.batch_script_path(my_batch, sql_script)
+sql_script_file = open(batch_script_path, "w")
 try:
     sql_script_file.writelines(table_lines)
     for file_name in image_files:
+        path_name = os.path.join(my_batch.data_dir, file_name)
         sql_script_file.write("""SELECT 'Loading %(file_name)s into %(image_table)s';"""%(globals()))
-        sql_script_file.write("""LOAD DATA LOCAL INFILE '%(file_name)s' REPLACE INTO TABLE %(image_table)s FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"';
+        sql_script_file.write("""LOAD DATA LOCAL INFILE '%(path_name)s' REPLACE INTO TABLE %(image_table)s FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"';
 SHOW WARNINGS;
 """%(globals()))
     for file_name in object_files:
+        path_name = os.path.join(my_batch.data_dir, file_name)
         sql_script_file.write("""SELECT 'Loading %(file_name)s into %(object_table)s';"""%(globals()))
-        sql_script_file.write("""LOAD DATA LOCAL INFILE '%(file_name)s' REPLACE INTO TABLE %(object_table)s FIELDS TERMINATED BY ',';
+        sql_script_file.write("""LOAD DATA LOCAL INFILE '%(path_name)s' REPLACE INTO TABLE %(object_table)s FIELDS TERMINATED BY ',';
 SHOW WARNINGS;
 """%(globals()))
 finally:
@@ -120,8 +131,8 @@ for line, index in zip(lines,range(line_count)):
     if line_count > 10 and index == line_count-4:
         print "</div>"
 print "</tt>"
-job_id = sql_jobs.run_sql_file(batch_id, batch_script)
+job = sql_jobs.run_sql_file(batch_id, batch_script_file)
     
-print "<h2>SQL script submitted to cluster as job # %s"%(job_id)
+print "<h2>SQL script submitted to cluster as job # %s"%(job.job_id)
 print "</body>"
 print "</html>"

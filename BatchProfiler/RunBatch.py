@@ -199,16 +199,30 @@ class BPBatch(object):
                 result.append(BPRun(self.batch_id, run_id, bstart, bend, command))
         return result
     
-    def select_jobs(self, by_status=None, by_run=None):
+    def select_job_count(self):
+        '''Return the # of jobs with links to the batch through the run tbl'''
+        cmd = """select count('x') from run r where r.batch_id = %d
+                    and exists (select 'x' from job_status js
+                                 where js.run_id = r.run_id)""" % self.batch_id
+        with bpcursor() as cursor:
+            cursor.execute(cmd)
+            return cursor.fetchone()[0]
+        
+    def select_jobs(self, by_status=None, by_run=None, page_size = None,
+                    first_item = None):
         '''Get jobs with one of the given statuses
         
-        args - the statuses to fetch
+        by_status - a sequence of status names to search for (default = all)
+        by_run - a run ID to search for (Default = all runs
+        page_size - return at most this many items (default all)
+        first_item - the one-based index of the first item on the page
+                     (default first)
         
         returns a sequence of run, job, status tuples
         '''
         cmd = """
         select rjs.run_id, rjs.bstart, rjs.bend, rjs.command, rjs.job_id, 
-               js.status
+               js.status, @rownum:=@rownum+1 as rank
         from (select r.run_id as run_id, r.bstart as bstart, r.bend as bend, 
               r.command as command, js.job_id as job_id, 
               max(js.created) as js_created, j.created as j_created
@@ -222,6 +236,7 @@ class BPBatch(object):
         join job_status js 
         on rjs.run_id = js.run_id and rjs.job_id = js.job_id 
                                   and rjs.js_created = js.created
+        join (select @rownum:=0) as ranktbl
         """ % self.batch_id
         clauses = []
         if by_status is not None:
@@ -230,10 +245,13 @@ class BPBatch(object):
             clauses.append("rjs.run_id = %d" % by_run)
         if len(clauses) > 0:
             cmd += "        where " + " and ".join(clauses)
+        if first_item is not None and page_size is not None:
+            cmd = "select * from (%s) cmd where cmd.rank between %d and %d" % (
+                cmd, first_item, first_item + page_size - 1)
         with bpcursor() as cursor:
             cursor.execute(cmd)
             result = []
-            for run_id, bstart, bend, command, job_id, status in cursor:
+            for run_id, bstart, bend, command, job_id, status, rank in cursor:
                 run = BPRun(self.batch_id, run_id, bstart, bend, command)
                 job = BPJob(run_id, job_id)
                 result.append((run, job, status))
@@ -263,26 +281,42 @@ class BPRunBase(object):
     def get_file_name(self):
         raise NotImplemented("Use BPRun or BPSQLRun")
     
+    @staticmethod
+    def select(run_id):
+        '''Select a BPRun or BPSQLRun given a run_id
+        
+        '''
+        with bpcursor() as cursor:
+            cmd = """select rb.run_type 
+            from run_base rb where run_id=%d""" % run_id
+            cursor.execute(cmd)
+            run_type = cursor.fetchone()[0]
+        if run_type == RT_SQL:
+            return BPSQLRun.select_by_run_id(run_id)
+        return BPRun.select(run_id)
+    
     def select_jobs(self, by_status = None):
         cmd = """
-            select rjs.job_id, js.status
-            from (select js.job_id as job_id, max(js.created) as created
-                  from job_status js 
-                  where js.run_id = %d
-                  group by job_id) js1
-            join job_status js1 
-            on js1.run_id = js2.run_id and js1.job_id = js2.job_id
-            and js1.created = js2.created
-            """ % self.run_id
+            select js.job_id, js.status
+            from job_status js
+            join job j on js.job_id = j.job_id and js.run_id = j.run_id
+            where js.created in
+                (select max(js2.created) from job_status js2
+                  where js2.run_id = %d
+               group by js2.job_id)
+              and j.created in 
+                (select max(j2.created) from job j2 where j2.run_id = %d)
+              and j.run_id = %d
+            """ % (self.run_id, self.run_id, self.run_id)
         clauses = []
         if by_status is not None:
-            cmd += " where status in ( '%s' )" % ("','".join(args))
+            cmd += " and status in ( '%s' )" % ("','".join(args))
         with bpcursor() as cursor:
             cursor.execute(cmd)
             result = []
             for job_id, status in cursor:
-                job = BPJob(run_id, job_id)
-                result.append(job, status)
+                job = BPJob(self.run_id, job_id)
+                result.append((job, status))
         return result
 
 class BPRun(BPRunBase):
@@ -343,6 +377,8 @@ class BPSQLRun(BPRunBase):
             where rs.sql_filename = %s 
               and rb.run_type = 'SQL'
               and rb.batch_id = %s""", [sql_filename, batch.batch_id])
+            if cursor.rowcount == 0:
+                return None
             run_id, command = cursor.fetchone()
             return BPSQLRun(batch.batch_id, int(run_id), sql_filename, command)
         
@@ -422,7 +458,7 @@ def run_one(my_batch, run, cwd = None):
     cwd - the working directory for the command. Defaults to my_batch.cpcluster
     '''
     assert isinstance(my_batch, BPBatch)
-    assert isinstance(run, BPRun)
+    assert isinstance(run, BPRunBase)
     txt_output = text_file_directory(my_batch)
     if not os.path.exists(txt_output):
         os.mkdir(txt_output)
@@ -438,6 +474,15 @@ def run_one(my_batch, run, cwd = None):
     script = """#!/bin/sh
 export RUN_ID=%d
 """ % run.run_id
+    #
+    # A work-around if HOME has been defined differently on the host
+    #
+    script += """
+if [ ! -z "$SGE_O_HOME" ]; then
+    export HOME="$SGE_O_HOME"
+    echo "Set home to $HOME"
+fi
+"""
     #
     # This is a REST PUT to JobStatus.py to create the job record
     #
@@ -456,9 +501,14 @@ export RUN_ID=%d
     if run.source_cpenv:
         script += '. %s\n' % os.path.join(PREFIX, "bin", "cpenv.sh")
     #
+    # set +e allows the command to error-out without ending this script.
+    #        This lets us capture the error status.
+    #
+    script += "set +e\n"
+    #
     # Run CellProfiler
     #
-    script += run.command
+    script += run.command +"\n"
     #
     # Figure out the status from the error code
     #
@@ -466,6 +516,10 @@ export RUN_ID=%d
     script += "JOB_STATUS=%s\n" % JS_DONE
     script += "else\n JOB_STATUS=%s\n " % JS_ERROR
     script += "fi\n"
+    #
+    # Go back to erroring-out
+    #
+    script += "set -e\n"
     #
     # Set the status based on the result from CellProfiler
     # Use CURL again
@@ -506,13 +560,20 @@ def cellprofiler_command(my_batch, bstart, bend):
 def kill_one(run):
     batch = BPBatch()
     batch.select(run.batch_id)
-    jobs = batch.select_jobs(by_status = [JS_RUNNING], by_run=run.run_id)
-    bputilities.kill_jobs([job.job_id for job in jobs])
+    jobs = batch.select_jobs(by_status = [JS_SUBMITTED, JS_RUNNING], 
+                             by_run=run.run_id)
+    bputilities.kill_jobs([job.job_id for run, job, status in jobs])
+    for job in jobs:
+        job.update_status(JS_ABORTED)
+        
+def kill_job(job):
+    bputilities.kill_jobs([job.job_id])
+    job.update_status(JS_ABORTED)
 
 def kill_batch(batch_id):
     batch = BPBatch()
     batch.select(batch_id)
-    jobs = batch.select_jobs(by_status = [JS_RUNNING])
+    jobs = batch.select_jobs(by_status = [JS_SUBMITTED, JS_RUNNING])
     bputilities.kill_jobs([job.job_id for run, job, status in jobs])
     for run, job, status in jobs:
         job.update_status(JS_ABORTED)
@@ -540,6 +601,29 @@ def text_file_directory(batch):
 
 def script_file_directory(batch):
     return os.path.join(batch.data_dir, "job_scripts")
+
+def batch_script_file(script_file):
+    '''The name of the SQL script file modded to pull in all of the .CSV files
+
+    script_file - the name of the original file
+    '''
+    return "batch_%s" % script_file
+
+def batch_script_directory(batch):
+    '''The directory housing the modded SQL files
+    
+    batch - batch in question
+    script_file - the name of the original file
+    
+    Note: this can't be in batch.data_dir because
+          it would be automagically scanned and
+          picked up by sql_jobs
+    '''
+    return os.path.join(batch.data_dir, "sql_scripts")
+    
+def batch_script_path(batch, script_file):
+    return os.path.join(batch_script_directory(batch),
+                        batch_script_file(script_file))
 
 def script_file_path(batch, run):
     return os.path.join(script_file_directory(batch), 
@@ -577,7 +661,7 @@ def GetCPUTime(batch, run):
     run - the job's last run
     '''
     assert isinstance(batch, BPBatch)
-    assert isinstance(run, BPRun)
+    assert isinstance(run, BPRunBase)
     with bpcursor() as cursor:
         cmd = """
 select unix_timestamp(js2.created)-unix_timestamp(js1.created) as cputime

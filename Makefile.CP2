@@ -710,7 +710,7 @@ $(TGTDIR)/pyqt: $(SRCDIR)/$(PYQTVERSION).tar.gz sip pyopenglaccel qt
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
 	$(PYTHON) configure.py --confirm-license -g -q $(QMAKE) \
 		--enable=QtCore --enable=QtGui --enable=QtDeclarative \
-		--enable=QtMultimedia --enable=QtNetwork --enable=QtOpenGL
+		--enable=QtMultimedia --enable=QtNetwork --enable=QtOpenGL \
 		--enable=QtTest --no-designer-plugin && \
 	$(MAKE) $(MAKE_FLAGS) && \
 	$(MAKE) -j1 install

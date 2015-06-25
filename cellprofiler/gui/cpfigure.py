@@ -558,7 +558,7 @@ class CPFigureFrame(wx.Frame):
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
         fields = []
         x, y = [int(round(xy)) for xy in xi, yi]
-        if not self.in_bounds(im, xi, yi):
+        if not self.in_bounds(im, x, y):
             return fields
         if im.dtype.type == np.uint8:
             im = im.astype(np.float32) / 255.0

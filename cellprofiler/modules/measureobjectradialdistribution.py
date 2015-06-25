@@ -459,8 +459,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     heatmap.image_name.get_image_name(),
                     heatmap.object_name.get_objects_name(),
                     heatmap.measurement.value)
-                x = idx % n_vert
-                y = int(idx / n_vert)
+                x = idx % n_horiz
+                y = int(idx / n_horiz)
                 colormap = heatmap.colormap.value
                 if colormap == cps.DEFAULT:
                     colormap = cpprefs.get_default_colormap()

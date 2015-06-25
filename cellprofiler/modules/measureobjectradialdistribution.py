@@ -48,6 +48,7 @@ import sys
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
+import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
@@ -98,29 +99,51 @@ SETTINGS_BIN_GROUP_COUNT_V1 = 1
 '''# of settings in bin group, v2'''
 SETTINGS_BIN_GROUP_COUNT_V2 = 3
 SETTINGS_BIN_GROUP_COUNT = 3
+'''# of settings in heatmap group, v4'''
+SETTINGS_HEATMAP_GROUP_COUNT_V4 = 7
+SETTINGS_HEATMAP_GROUP_COUNT = 7
 '''Offset of center choice in object group'''
 SETTINGS_CENTER_CHOICE_OFFSET = 1
+
+A_FRAC_AT_D = "Fraction at Distance"
+A_MEAN_FRAC = "Mean Fraction"
+A_RADIAL_CV = "Radial CV"
+MEASUREMENT_CHOICES = [A_FRAC_AT_D, A_MEAN_FRAC, A_RADIAL_CV]
+
+MEASUREMENT_ALIASES = {
+    A_FRAC_AT_D: MF_FRAC_AT_D,
+    A_MEAN_FRAC: MF_MEAN_FRAC,
+    A_RADIAL_CV: MF_RADIAL_CV }
 
 class MeasureObjectRadialDistribution(cpm.CPModule):
  
     module_name = "MeasureObjectRadialDistribution"
     category = "Measurement"
-    variable_revision_number = 3
+    variable_revision_number = 4
     
     def create_settings(self):
         self.images = []
         self.objects = []
         self.bin_counts = []
+        self.heatmaps = []
         self.image_count = cps.HiddenCount(self.images)
         self.object_count = cps.HiddenCount(self.objects)
         self.bin_counts_count = cps.HiddenCount(self.bin_counts)
+        self.heatmap_count = cps.HiddenCount(self.heatmaps)
         self.add_image_button = cps.DoSomething("", "Add another image", self.add_image)
         self.spacer_1 = cps.Divider()
         self.add_object_button = cps.DoSomething("", "Add another object",
                                                  self.add_object)
         self.spacer_2 = cps.Divider()
-        self.add_bin_count_button = cps.DoSomething("",
-                                                    "Add another set of bins", self.add_bin_count)
+        self.add_bin_count_button = cps.DoSomething(
+            "", "Add another set of bins", self.add_bin_count)
+        self.spacer_3 = cps.Divider()
+        self.add_heatmap_button = cps.DoSomething(
+            "", "Add another heatmap display", self.add_heatmap,
+            doc = """
+        Press this button to add a display of one of the radial distribution
+        measurements. Each radial band of the object is colored using a
+        heatmap according to the measurement value for that band.""")
         self.add_image(can_remove = False)
         self.add_object(can_remove = False)
         self.add_bin_count(can_remove = False)
@@ -216,6 +239,69 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this set of bins", self.bin_counts, group))
         self.bin_counts.append(group)
+        
+    def get_bin_count_choices(self, pipeline=None):
+        choices = []
+        for bin_count in self.bin_counts:
+            nbins = str(bin_count.bin_count.value)
+            if nbins != choices:
+                choices.append(nbins)
+        return choices
+    
+    def add_heatmap(self):
+        group = cps.SettingsGroup()
+        if len(self.heatmaps) > 0:
+            group.append("divider", cps.Divider(line=False))
+        group.append("image_name", MORDImageNameSubscriber(
+            "Image", doc="""
+            The heatmap will be displayed with measurements taken using this image.
+            The setting will let you choose from among the images you have
+            specified in "Select image to measure".
+            """))
+        group.image_name.set_module(self)
+        group.append("object_name", MORDObjectNameSubscriber(
+            "Objects to display", doc = """
+            The objects to display in the heatmap. You can select any of the
+            objects chosen in "Select objects to measure".
+            """))
+        group.object_name.set_module(self)
+        group.append("bin_count", cps.Choice(
+            "Number of bins", self.get_bin_count_choices(), 
+            choices_fn = self.get_bin_count_choices))
+        def get_number_of_bins(module = self, group=group):
+            if len(module.bin_counts) == 1:
+                return module.bin_counts[0].bin_count.value
+            else:
+                return int(group.bin_count.value)
+        group.get_number_of_bins = get_number_of_bins
+        
+        group.append("measurement", cps.Choice(
+            "Measurement", MEASUREMENT_CHOICES,
+            doc="""The measurement to display."""))
+        group.append("colormap", cps.Colormap(
+            "Color map", 
+            doc="""
+            The color map setting chooses the color palette that will be
+            used to render the different values for your measurement. If you
+            choose "gray", the image will label each of the bins with the
+            actual image measurement.
+            """))
+        group.append("wants_to_save_display", cps.Binary(
+            "Save display as image?", False,
+            doc = """This setting allows you to save the heatmap display as
+            an image that can be output using the <b>SaveImages</b> module.
+            Choose <i>yes</i> to save the display or <i>no</i> if the
+            display is not needed."""))
+        group.append("display_name", cps.ImageNameProvider(
+            "Output image name", "Heatmap",
+            doc = """
+            <i>(Only used if "Save display as image?" is "yes")</i><br>
+            This setting names the heatmap image so that the name you enter
+            here can be selected in a later <b>SaveImages</b> or other module.
+            """))
+        group.append("remover", cps.RemoveSettingButton(
+            "", "Remove this heatmap display", self.heatmaps, group))
+        self.heatmaps.append(group)
     
     def validate_module(self, pipeline):
         """Make sure chosen objects, images and bins are selected only once"""
@@ -244,8 +330,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             bins.add(group.bin_count.value)
             
     def settings(self):
-        result = [self.image_count, self.object_count, self.bin_counts_count]
-        for x in (self.images, self.objects, self.bin_counts):
+        result = [self.image_count, self.object_count, self.bin_counts_count,
+                  self.heatmap_count]
+        for x in (self.images, self.objects, self.bin_counts, self.heatmaps):
             for settings in x:
                 temp = settings.pipeline_settings() 
                 result += temp
@@ -271,18 +358,34 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 result += [settings.maximum_radius]
             if settings.can_remove:
                 result += [settings.remover]
-        result += [self.add_bin_count_button]
+        result += [self.add_bin_count_button, self.spacer_3]
         
+        for settings in self.heatmaps:
+            if hasattr(settings, "divider"):
+                result.append(settings.divider)
+            if settings.image_name.is_visible():
+                result.append(settings.image_name)
+            if settings.object_name.is_visible():
+                result.append(settings.object_name)
+            if len(self.bin_counts) > 1:
+                result.append(settings.bin_count)
+            result += [settings.measurement, settings.colormap,
+                       settings.wants_to_save_display]
+            if settings.wants_to_save_display:
+                result.append(settings.display_name)
+            result.append(settings.remover)
+        result += [self.add_heatmap_button]
         return result
     
     def prepare_settings(self, setting_values):
         '''Adjust the numbers of images, objects and bin counts'''
-        image_count, objects_count, bin_counts_count = \
-                   [int(x) for x in setting_values[:3]]
+        image_count, objects_count, bin_counts_count, heatmap_count = \
+                   [int(x) for x in setting_values[:4]]
         for sequence, add_fn, count in \
             ((self.images, self.add_image, image_count),
              (self.objects, self.add_object, objects_count),
-             (self.bin_counts, self.add_bin_count, bin_counts_count)):
+             (self.bin_counts, self.add_bin_count, bin_counts_count),
+             (self.heatmaps, self.add_heatmap, heatmap_count)):
             while len(sequence) > count:
                 del sequence[-1]
             while len(sequence) < count:
@@ -309,13 +412,79 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if self.show_window:
             workspace.display_data.header = header
             workspace.display_data.stats = stats
+            workspace.display_data.heatmaps = []
+        for heatmap in self.heatmaps:
+            heatmap_img = d.get(id(heatmap))
+            if heatmap_img is not None:
+                if self.show_window or heatmap.wants_to_save_display:
+                    labels = workspace.object_set.get_objects(
+                        heatmap.object_name.get_objects_name()).segmented
+                if self.show_window:
+                    workspace.display_data.heatmaps.append(
+                        (heatmap_img, labels != 0))
+                if heatmap.wants_to_save_display:
+                    colormap = heatmap.colormap.value
+                    if colormap == matplotlib.cm.gray.name:
+                        output_pixels = heatmap_img
+                    else:
+                        if colormap == cps.DEFAULT:
+                            colormap = cpprefs.get_default_colormap()
+                        cm = matplotlib.cm.ScalarMappable(
+                            cmap = colormap)
+                        output_pixels = cm.to_rgba(heatmap_img)[:, :, :3]
+                        output_pixels[labels == 0, :] = 0
+                    parent_image = workspace.image_set.get_image(
+                        heatmap.image_name.get_image_name())
+                    output_img = cpi.Image(
+                        output_pixels, 
+                        parent_image = parent_image)
+                    img_name = heatmap.display_name.value
+                    workspace.image_set.add(img_name, output_img)
 
     def display(self, workspace, figure):
         header = workspace.display_data.header
         stats = workspace.display_data.stats
-        figure.set_subplots((1,1))
+        n_plots = len(workspace.display_data.heatmaps) + 1
+        n_vert = int(np.sqrt(n_plots))
+        n_horiz = int(np.ceil(float(n_plots) / n_vert))
+        figure.set_subplots((n_horiz, n_vert))
         figure.subplot_table(0, 0, stats, col_labels=header)
-
+        idx = 1
+        sharexy = None
+        for heatmap, (heatmap_img, mask) in zip(
+            self.heatmaps, workspace.display_data.heatmaps):
+            heatmap_img = np.ma.array(heatmap_img, mask=~mask)
+            if heatmap_img is not None:
+                title = "%s %s %s" % (
+                    heatmap.image_name.get_image_name(),
+                    heatmap.object_name.get_objects_name(),
+                    heatmap.measurement.value)
+                x = idx % n_vert
+                y = int(idx / n_vert)
+                colormap = heatmap.colormap.value
+                if colormap == cps.DEFAULT:
+                    colormap = cpprefs.get_default_colormap()
+                if sharexy is None:
+                    sharexy = figure.subplot_imshow(
+                        x, y, heatmap_img,
+                        title = title,
+                        colormap = colormap,
+                        normalize = False,
+                        vmin = np.min(heatmap_img),
+                        vmax = np.max(heatmap_img),
+                        colorbar = True)
+                else:
+                    figure.subplot_imshow(
+                        x, y, heatmap_img,
+                        title = title,
+                        colormap = colormap,
+                        colorbar = True,
+                        normalize = False,
+                        vmin = np.min(heatmap_img),
+                        vmax = np.max(heatmap_img),
+                        sharexy = sharexy)
+                idx += 1
+                    
     def do_measurements(self, workspace, image_name, object_name, 
                         center_object_name, center_choice,
                         bin_count_settings, dd):
@@ -348,6 +517,14 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         nobjects = np.max(objects.segmented)
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
+        heatmaps = {}
+        for heatmap in self.heatmaps:
+            if heatmap.object_name.get_objects_name() == object_name and \
+               image_name == heatmap.image_name.get_image_name() and \
+               heatmap.get_number_of_bins() == bin_count:
+                dd[id(heatmap)] = \
+                heatmaps[MEASUREMENT_ALIASES[heatmap.measurement.value]] = \
+                np.zeros(labels.shape)
         if nobjects == 0:
             for bin in range(1, bin_count+1):
                 for feature in (F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV):
@@ -474,7 +651,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         good_labels = labels[good_mask]
         bin_indexes = (normalized_distance * bin_count).astype(int)
         bin_indexes[bin_indexes > bin_count] = bin_count
-        labels_and_bins = (good_labels-1,bin_indexes[good_mask])
+        labels_and_bins = (good_labels-1, bin_indexes[good_mask])
         histogram = coo_matrix((pixel_data[good_mask], labels_and_bins),
                                (nobjects, bin_count+1)).toarray()
         sum_by_object = np.sum(histogram, 1)
@@ -505,6 +682,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         radial_index = (imask.astype(int) + jmask.astype(int)*2 + 
                         absmask.astype(int)*4)
         statistics = []
+                
         for bin in range(bin_count + (0 if wants_scaled else 1)):
             bin_mask = (good_mask & (bin_indexes == bin))
             bin_pixels = np.sum(bin_mask)
@@ -532,6 +710,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 measurements.add_measurement(object_name,
                                              measurement_name,
                                              measurement)
+                if feature in heatmaps:
+                    heatmaps[feature][bin_mask] = measurement[bin_labels-1]
             radial_cv.mask = np.sum(~mask,1)==0
             bin_name = str(bin+1) if bin < bin_count else "Overflow"
             statistics += [(image_name, object_name, bin_name, str(bin_count),
@@ -627,6 +807,65 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 if setting_values[offset] == C_CENTERS_OF_OTHER_V2:
                     setting_values[offset] = C_CENTERS_OF_OTHER
             variable_revision_number = 3
+        if variable_revision_number == 3:
+            # added heatmaps
+            # Need a heatmap_count = 0
+            #
+            setting_values = setting_values[:3] + ["0"] + setting_values[3:]
+            variable_revision_number = 4
             
         return setting_values, variable_revision_number, from_matlab
     
+class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
+    '''An object name subscriber limited by the objects in the objects' group'''
+    def set_module(self, module):
+        assert isinstance(module, MeasureObjectRadialDistribution)
+        self.__module = module
+        
+    def __is_valid_choice(self, choice_tuple):
+        for object_group in self.__module.objects:
+            if choice_tuple[0] == object_group.object_name:
+                return True
+        return False
+    
+    def get_choices(self, pipeline):
+        super_choices = super(self.__class__, self).get_choices(pipeline)
+        return filter(self.__is_valid_choice, super_choices)
+    
+    def is_visible(self):
+        '''Return True if a choice should be displayed'''
+        return len(self.__module.objects) > 1
+    
+    def get_objects_name(self):
+        '''Return the name of the objects to use in the display'''
+        if len(self.__module.objects) == 1:
+            return self.__module.objects[0].object_name.value
+        else:
+            return self.value
+
+class MORDImageNameSubscriber(cps.ImageNameSubscriber):
+    '''An image name subscriber limited by the images in the image group'''
+    def set_module(self, module):
+        assert isinstance(module, MeasureObjectRadialDistribution)
+        self.__module = module
+
+    def __is_valid_choice(self, choice_tuple):
+        for image_group in self.__module.images:
+            if choice_tuple[0] == image_group.image_name:
+                return True
+        return False
+    
+    def get_choices(self, pipeline):
+        super_choices = super(self.__class__, self).get_choices(pipeline)
+        return filter(self.__is_valid_choice, super_choices)
+    
+    def is_visible(self):
+        '''Return True if a choice should be displayed'''
+        return len(self.__module.images) > 1
+    
+    def get_image_name(self):
+        '''Return the name of the image to use in the display'''
+        if len(self.__module.images) == 1:
+            return self.__module.images[0].image_name.value
+        else:
+            return self.value

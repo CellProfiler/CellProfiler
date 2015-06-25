@@ -557,18 +557,19 @@ class CPFigureFrame(wx.Frame):
     
     def get_pixel_data_fields_for_status_bar(self, im, xi, yi):
         fields = []
+        x, y = [int(round(xy)) for xy in xi, yi]
         if not self.in_bounds(im, xi, yi):
             return fields
         if im.dtype.type == np.uint8:
             im = im.astype(np.float32) / 255.0
         if im.ndim == 2:
-            fields += ["Intensity: %.4f"%(im[yi,xi])]
+            fields += ["Intensity: %.4f"%(im[y, x])]
         elif im.ndim == 3 and im.shape[2] == 3:
-            fields += ["Red: %.4f"%(im[yi,xi,0]),
-                       "Green: %.4f"%(im[yi,xi,1]),
-                       "Blue: %.4f"%(im[yi,xi,2])]
+            fields += ["Red: %.4f"%(im[y, x, 0]),
+                       "Green: %.4f"%(im[y, x, 1]),
+                       "Blue: %.4f"%(im[y ,x , 2])]
         elif im.ndim == 3: 
-            fields += ["Channel %d: %.4f"%(idx + 1, im[yi, xi, idx]) for idx in range(im.shape[2])]
+            fields += ["Channel %d: %.4f"%(idx + 1, im[y, x, idx]) for idx in range(im.shape[2])]
         return fields
     
     @staticmethod
@@ -1159,7 +1160,7 @@ class CPFigureFrame(wx.Frame):
         kwargs.update(self.subplot_user_params[(x,y)])
         self.subplot_params[(x,y)].update(kwargs)
         if kwargs["colormap"] is None:
-            kwargs["colormap"] = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+            kwargs["colormap"] = cpprefs.get_default_colormap()
 
         # and fetch back out
         title = kwargs['title']
@@ -1207,24 +1208,9 @@ class CPFigureFrame(wx.Frame):
             tick_vmax = orig_vmax
         else:
             tick_vmax = image.max()
-        if colorbar and not is_color_image(image):
-            if not subplot in self.colorbar:
-                cax = matplotlib.colorbar.make_axes(subplot)[0]
-                self.colorbar[subplot] = (cax, matplotlib.colorbar.ColorbarBase(cax, cmap=colormap, ticks=[]))
-            cax, colorbar = self.colorbar[subplot]
-            colorbar.set_ticks(np.linspace(0, 1, 10))
-            if normalize == 'log':
-                if tick_vmin != tick_vmax and tick_vmin != 0:
-                    ticklabels = [
-                        '%0.1f' % v 
-                        for v in np.logspace(tick_vmin, tick_vmax, 10)]
-                else:
-                    ticklabels = [''] * 10
-            else:
-                ticklabels = [
-                    '%0.1f'%(v) for v in np.linspace(tick_vmin, tick_vmax, 10)]
-            colorbar.set_ticklabels(ticklabels)
-                                      
+
+        if isinstance(colormap, basestring):
+            colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
 
         # NOTE: We bind this event each time imshow is called to a new closure
         #    of on_release so that each function will be called when a
@@ -1243,6 +1229,9 @@ class CPFigureFrame(wx.Frame):
         self.event_bindings[(x, y)] = [
             self.figure.canvas.mpl_connect('button_release_event', on_release)]
 
+        if colorbar and not is_color_image(image):
+            colormap.set_array(self.images[(x, y)])
+            colormap.autoscale()
         if use_imshow or g_use_imshow:
             image = self.images[(x, y)]
             subplot.imshow(self.normalize_image(image, **kwargs))
@@ -1250,6 +1239,20 @@ class CPFigureFrame(wx.Frame):
             subplot.add_artist(CPImageArtist(self.images[(x,y)], self, kwargs))
         
         self.update_line_labels(subplot, kwargs)
+        #
+        # Colorbar support
+        #
+        if colorbar and not is_color_image(image):
+            
+            if not subplot in self.colorbar:
+                cax = matplotlib.colorbar.make_axes(subplot)[0]
+                bar = subplot.figure.colorbar(colormap, cax, subplot, use_gridspec=False)
+                self.colorbar[subplot] = (cax, bar)
+            else:
+                cax, bar = self.colorbar[subplot]
+                bar.set_array(self.images[(x, y)])
+                bar.update_normal(colormap)
+                bar.update_ticks()
         
         # Also add this menu to the main menu
         if (x,y) in self.subplot_menus:
@@ -1425,6 +1428,8 @@ class CPFigureFrame(wx.Frame):
         vmax = kwargs['vmax']
         rgb_mask = kwargs['rgb_mask']
         image = image.astype(np.float32)
+        if isinstance(colormap, matplotlib.cm.ScalarMappable):
+            colormap = colormap.cmap
         # Perform normalization
         if normalize == True:
             if is_color_image(image):

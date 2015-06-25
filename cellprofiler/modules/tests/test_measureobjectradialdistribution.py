@@ -30,10 +30,12 @@ import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureobjectradialdistribution as M
+from cellprofiler.cpmath.mode import mode
 
 OBJECT_NAME = 'objectname'
 CENTER_NAME = 'centername'
 IMAGE_NAME = 'imagename'
+HEAT_MAP_NAME = 'heatmapname'
 
 def feature_frac_at_d(bin, bin_count, image_name = IMAGE_NAME):
     if bin == bin_count + 1:
@@ -51,7 +53,7 @@ def feature_radial_cv(bin, bin_count, image_name = IMAGE_NAME):
 class TestMeasureObjectRadialDistribution(unittest.TestCase):
     def test_01_00_please_implement_a_test_of_the_new_version(self):
         self.assertEqual(
-            M.MeasureObjectRadialDistribution.variable_revision_number, 3)
+            M.MeasureObjectRadialDistribution.variable_revision_number, 4)
         
     def test_01_01_load_matlab(self):
         data = ('eJwBhAR7+01BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
@@ -208,7 +210,7 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         self.assertEqual(module.bin_counts[1].maximum_radius, 50)
     
     def test_01_04_load_v3(self):
-        data = """CellProfiler Pipeline: http://www.cellprofiler.org
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
 DateRevision:20120126174947
 
@@ -260,6 +262,94 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         self.assertEqual(module.bin_counts[1].bin_count, 5)
         self.assertTrue(module.bin_counts[1].wants_scaled)
         self.assertEqual(module.bin_counts[1].maximum_radius, 50)
+        self.assertEqual(len(module.heatmaps), 0)
+        
+    def test_01_05_load_v4(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150603122126
+GitHash:200cfc0
+ModuleCount:1
+HasImagePlaneDetails:False
+
+MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Hidden:2
+    Hidden:2
+    Hidden:2
+    Hidden:3
+    Select an image to measure:CropGreen
+    Select an image to measure:CropRed
+    Select objects to measure:Nuclei
+    Object to use as center?:These objects
+    Select objects to use as centers:Ichthyosaurs
+    Select objects to measure:Cells
+    Object to use as center?:Edges of other objects
+    Select objects to use as centers:Nuclei
+    Scale the bins?:Yes
+    Number of bins:5
+    Maximum radius:100
+    Scale the bins?:No
+    Number of bins:4
+    Maximum radius:100
+    Image:CropRed
+    Objects to display:Cells
+    Number of bins:5
+    Measurement:Fraction at Distance
+    Color map:Default
+    Save display as image?:Yes
+    Output image name:Heat
+    Image:CropGreen
+    Objects to display:Nuclei
+    Number of bins:4
+    Measurement:Mean Fraction
+    Color map:Spectral
+    Save display as image?:No
+    Output image name:A
+    Image:CropRed
+    Objects to display:Nuclei
+    Number of bins:5
+    Measurement:Radial CV
+    Color map:Default
+    Save display as image?:No
+    Output image name:B
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, M.MeasureObjectRadialDistribution))
+        self.assertEqual(len(module.images), 2)
+        for group, image_name in zip(module.images, ("CropGreen", "CropRed")):
+            self.assertEqual(group.image_name.value, image_name)
+        self.assertEqual(len(module.objects), 2)
+        for group, (object_name, center_choice, center_object_name) in zip(
+            module.objects, (("Nuclei", M.C_SELF, "Ichthyosaurs"),
+                             ("Cells", M.C_EDGES_OF_OTHER, "Nuclei"))):
+            self.assertEqual(group.object_name.value, object_name)
+            self.assertEqual(group.center_choice.value, center_choice)
+            self.assertEqual(group.center_object_name, center_object_name)
+        self.assertEqual(len(module.bin_counts), 2)
+        for group, (bin_count, scale, max_radius) in zip(
+            module.bin_counts, ((5, True, 100), (4, False, 100))):
+            self.assertEqual(group.wants_scaled, scale)
+            self.assertEqual(group.bin_count, bin_count)
+            self.assertEqual(group.maximum_radius, max_radius)
+        for group, (image_name, object_name, bin_count, measurement,
+                    colormap, wants_to_save, output_image_name) in zip(
+            module.heatmaps, 
+            (("CropRed", "Cells", 5, M.A_FRAC_AT_D, cps.DEFAULT, True, "Heat"),
+             ("CropGreen", "Nuclei", 4, M.A_MEAN_FRAC, "Spectral", False, "A"),
+             ("CropRed", "Nuclei", 5, M.A_RADIAL_CV, cps.DEFAULT, False, "B"))):
+            self.assertEqual(group.image_name.value, image_name)
+            self.assertEqual(group.object_name.value, object_name)
+            self.assertEqual(int(group.bin_count.value), bin_count)
+            self.assertEqual(group.measurement, measurement)
+            self.assertEqual(group.colormap, colormap)
+            self.assertEqual(group.wants_to_save_display, wants_to_save)
+            self.assertEqual(group.display_name, output_image_name)
     
     def test_02_01_get_measurement_columns(self):
         module = M.MeasureObjectRadialDistribution()
@@ -350,11 +440,38 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
                                                 None, object_name,
                                                 M.M_CATEGORY, feature,
                                                 image_name))
+    def test_02_03_default_heatmap_values(self):
+        module = M.MeasureObjectRadialDistribution()
+        module.add_heatmap()
+        module.heatmaps[0].image_name.value = IMAGE_NAME
+        module.heatmaps[0].object_name.value = OBJECT_NAME
+        module.heatmaps[0].bin_count.value = 10
+        module.images[0].image_name.value = "Bar"
+        module.objects[0].object_name.value = "Foo"
+        module.bin_counts[0].bin_count.value = 2
+        self.assertEqual(module.heatmaps[0].image_name.get_image_name(), "Bar")
+        self.assertFalse(module.heatmaps[0].image_name.is_visible())
+        self.assertEqual(
+            module.heatmaps[0].object_name.get_objects_name(), "Foo")
+        self.assertFalse(module.heatmaps[0].object_name.is_visible())
+        self.assertEqual(module.heatmaps[0].get_number_of_bins(), 2)
+        module.add_image()
+        self.assertTrue(module.heatmaps[0].image_name.is_visible())
+        self.assertEqual(
+            module.heatmaps[0].image_name.get_image_name(), IMAGE_NAME)
+        module.add_object()
+        self.assertTrue(module.heatmaps[0].object_name.is_visible())
+        self.assertEqual(
+            module.heatmaps[0].object_name.get_objects_name(), OBJECT_NAME)
+        module.add_bin_count()
+        self.assertEqual(
+            module.heatmaps[0].get_number_of_bins(), 10)
 
     def run_module(self, image, labels, center_labels = None, 
                    center_choice = M.C_CENTERS_OF_OTHER,
                    bin_count = 4,
-                   maximum_radius = 100, wants_scaled = True):
+                   maximum_radius = 100, wants_scaled = True, 
+                   wants_workspace=False):
         '''Run the module, returning the measurements
         
         image - matrix representing the image to be analyzed
@@ -381,15 +498,32 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         module.bin_counts[0].bin_count.value = bin_count
         module.bin_counts[0].wants_scaled.value = wants_scaled
         module.bin_counts[0].maximum_radius.value = maximum_radius
+        module.add_heatmap()
+        module.add_heatmap()
+        module.add_heatmap()
+        for i, (a, f) in enumerate(
+            ((M.A_FRAC_AT_D, M.F_FRAC_AT_D),
+             (M.A_MEAN_FRAC, M.F_MEAN_FRAC),
+             (M.A_RADIAL_CV, M.F_RADIAL_CV))):
+            module.heatmaps[i].image_name.value = IMAGE_NAME
+            module.heatmaps[i].object_name.value = OBJECT_NAME
+            module.heatmaps[i].bin_count.value = str(bin_count)
+            module.heatmaps[i].wants_to_save_display.value = True
+            display_name = HEAT_MAP_NAME+f
+            module.heatmaps[i].display_name.value = display_name
+            module.heatmaps[i].colormap.value = "gray"
+            module.heatmaps[i].measurement.value = a
         pipeline = cpp.Pipeline()
         measurements = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
+        image_set = measurements
         img = cpi.Image(image)
         image_set.add(IMAGE_NAME, img)
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
                                   measurements, image_set_list)
         module.run(workspace)
+        if wants_workspace:
+            return measurements, workspace
         return measurements
         
     def test_03_01_zeros_self(self):
@@ -407,7 +541,10 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         '''Test the module on a uniform circle'''
         i,j = np.mgrid[-50:51,-50:51]
         labels = (np.sqrt(i*i+j*j) <= 40).astype(int)
-        m = self.run_module(np.ones(labels.shape), labels)
+        m, workspace = self.run_module(
+            np.ones(labels.shape), labels, wants_workspace=True)
+        assert isinstance(workspace, cpw.Workspace)
+        bins = labels * (1 + (np.sqrt(i*i+j*j) / 10).astype(int))
         for bin in range(1,5):
             data = m.get_current_measurement(OBJECT_NAME, 
                                              feature_frac_at_d(bin, 4))
@@ -415,14 +552,26 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
             area = (float(bin) * 2.0 - 1.0)/16.0
             self.assertTrue(data[0] > area - .1)
             self.assertTrue(data[0] < area + .1)
+            heatmap = workspace.image_set.get_image(
+                HEAT_MAP_NAME + M.F_FRAC_AT_D).pixel_data
+            data = data.astype(heatmap.dtype)
+            self.assertEqual(mode(heatmap[bins == bin])[0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_mean_frac(bin, 4))
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 1, 2)
+            heatmap = workspace.image_set.get_image(
+                HEAT_MAP_NAME + M.F_MEAN_FRAC).pixel_data
+            data = data.astype(heatmap.dtype)
+            self.assertEqual(mode(heatmap[bins == bin])[0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 0, 2)
+            heatmap = workspace.image_set.get_image(
+                HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
+            data = data.astype(heatmap.dtype)
+            self.assertEqual(mode(heatmap[bins == bin])[0], data[0])
   
     def test_03_03_half_circle(self):
         '''Test the module on a circle and an image that's 1/2 zeros
@@ -573,6 +722,54 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], frac_at_d[i-1])
             
+    def test_03_07_two_circles(self):
+        i,j = np.mgrid[-50:51,-50:51]
+        i, j = [np.hstack((x,x)) for x in i, j]
+        d = np.sqrt(i*i+j*j)
+        labels = (d <= 40).astype(int)
+        labels[:, (j.shape[1]/2):] *= 2
+        img = np.zeros(labels.shape)
+        img[labels == 1] = 1
+        img[labels == 2] = d[labels == 2] / 40
+        m, workspace = self.run_module(
+            img, labels, wants_workspace=True)
+        assert isinstance(workspace, cpw.Workspace)
+        bins = (labels != 0) * (1 + (np.sqrt(i*i+j*j) / 10).astype(int))
+        for bin in range(1,5):
+            data = m.get_current_measurement(OBJECT_NAME, 
+                                             feature_frac_at_d(bin, 4))
+            self.assertEqual(len(data), 2)
+            area = (float(bin) * 2.0 - 1.0)/16.0
+            bin_d = (float(bin) - .5) * 8 / 21
+            self.assertLess(np.abs(data[0] - area), .1)
+            self.assertLess(np.abs(data[1] - area * bin_d), .1)
+            heatmap = workspace.image_set.get_image(
+                HEAT_MAP_NAME + M.F_FRAC_AT_D).pixel_data
+            data = data.astype(heatmap.dtype)
+            for label in 1, 2:
+                mask = (bins == bin) & (labels == label)
+                self.assertEqual(mode(heatmap[mask]), data[label-1])
+            data = m.get_current_measurement(OBJECT_NAME,
+                                             feature_mean_frac(bin, 4))
+            self.assertEqual(len(data), 2)
+            self.assertAlmostEqual(data[0], 1, 2)
+            heatmap = workspace.image_set.get_image(
+                HEAT_MAP_NAME + M.F_MEAN_FRAC).pixel_data
+            data = data.astype(heatmap.dtype)
+            for label in 1, 2:
+                mask = (bins == bin) & (labels == label)
+                self.assertEqual(mode(heatmap[mask]), data[label-1])
+            data = m.get_current_measurement(OBJECT_NAME,
+                                             feature_radial_cv(bin, 4))
+            self.assertEqual(len(data), 2)
+            self.assertAlmostEqual(data[0], 0, 2)
+            heatmap = workspace.image_set.get_image(
+                HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
+            data = data.astype(heatmap.dtype)
+            for label in 1, 2:
+                mask = (bins == bin) & (labels == label)
+                self.assertEqual(mode(heatmap[mask]), data[label-1])
+
     def test_04_01_img_607(self):
         '''Regression test of bug IMG-607
         

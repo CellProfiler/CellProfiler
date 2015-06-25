@@ -315,12 +315,10 @@ class Align(cpm.CPModule):
         
         Returns the x,y (not i,j) offsets.
         '''
-        image1 = workspace.image_set.get_image(input1_name,
-                                               must_be_grayscale=True)
-        image1_pixels = image1.pixel_data
-        image2 = workspace.image_set.get_image(input2_name,
-                                               must_be_grayscale=True)
-        image2_pixels = image2.pixel_data
+        image1 = workspace.image_set.get_image(input1_name)
+        image1_pixels = image1.pixel_data.astype(float)
+        image2 = workspace.image_set.get_image(input2_name)
+        image2_pixels = image2.pixel_data.astype(float)
         if self.alignment_method == M_CROSS_CORRELATION:
             return self.align_cross_correlation(image1_pixels, image2_pixels)
         else:
@@ -340,6 +338,13 @@ class Align(cpm.CPModule):
         (http://www.idiom.com/~zilla/Papers/nvisionInterface/nip.html)
         which is frequently cited when addressing this problem.
         '''
+        #
+        # TODO: Possibly use all 3 dimensions for color some day
+        #
+        if pixels1.ndim == 3:
+            pixels1 = np.mean(pixels1, 2)
+        if pixels2.ndim == 3:
+            pixels2 = np.mean(pixels2, 2)
         #
         # We double the size of the image to get a field of zeros
         # for the parts of one image that don't overlap the displaced
@@ -460,6 +465,14 @@ class Align(cpm.CPModule):
         From there, it tries all offsets again and so on until it reaches
         a local maximum.
         '''
+        #
+        # TODO: Possibly use all 3 dimensions for color some day
+        #
+        if pixels1.ndim == 3:
+            pixels1 = np.mean(pixels1, 2)
+        if pixels2.ndim == 3:
+            pixels2 = np.mean(pixels2, 2)
+            
         def mutualinf(x, y, maskx, masky):
             x = x[maskx & masky]
             y = y[maskx & masky]
@@ -506,14 +519,23 @@ class Align(cpm.CPModule):
         shape - shape of the resultant image
         '''
         
-        image = workspace.image_set.get_image(input_image_name,
-                                              must_be_grayscale = True)
-        output_pixels = np.zeros(shape)
-        #
-        # Copy the input to the output
-        #
-        p1, p2 = offset_slice(image.pixel_data, output_pixels, off_y, off_x)
-        p2[:,:] = p1[:,:]
+        image = workspace.image_set.get_image(input_image_name)
+        pixel_data = image.pixel_data
+        if pixel_data.ndim == 2:
+            output_shape = (shape[0], shape[1], 1)
+            planes = [pixel_data]
+        else:
+            output_shape = (shape[0], shape[1], pixel_data.shape[2])
+            planes = [pixel_data[:, :, i] for i in range(pixel_data.shape[2])]
+        output_pixels = np.zeros(output_shape, pixel_data.dtype)
+        for i, plane in enumerate(planes):
+            #
+            # Copy the input to the output
+            #
+            p1, p2 = offset_slice(plane, output_pixels[:, :, i], off_y, off_x)
+            p2[:,:] = p1[:,:]
+        if pixel_data.ndim == 2:
+            output_pixels.shape = output_pixels.shape[:2]
         output_mask = np.zeros(shape, bool)
         p1, p2 = offset_slice(image.mask, output_mask, off_y, off_x)
         p2[:,:] = p1[:,:]

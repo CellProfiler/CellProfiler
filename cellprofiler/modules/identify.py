@@ -1009,7 +1009,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                         }.get(self.averaging_method.value, np.mean)
                     kwparams['variance_fn'] = {
                         RB_SD: np.std,
-                        RB_MAD: mad }.get(self.variance_method, np.std)
+                        RB_MAD: mad }.get(self.variance_method.value, np.std)
                     
                 local_threshold, global_threshold = get_threshold(
                     self.threshold_algorithm,
@@ -1023,7 +1023,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                                         local_threshold, global_threshold)
         if hasattr(workspace.display_data, "statistics"):
             workspace.display_data.statistics.append(
-                ["Threshold","%0.3f"%(global_threshold)])
+                ["Threshold","%0.3g"%(global_threshold)])
             
         return local_threshold, global_threshold
     

@@ -1009,7 +1009,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                         }.get(self.averaging_method.value, np.mean)
                     kwparams['variance_fn'] = {
                         RB_SD: np.std,
-                        RB_MAD: mad }.get(self.variance_method, np.std)
+                        RB_MAD: mad }.get(self.variance_method.value, np.std)
                     
                 local_threshold, global_threshold = get_threshold(
                     self.threshold_algorithm,

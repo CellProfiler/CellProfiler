@@ -8,7 +8,7 @@ particularly useful for loading an image like an illumination correction
 image for use by the <b>CorrectIlluminationApply</b> module, when that single
 image will be used to correct all images in the analysis run.</p>
 
-<p><i>Disclaimer:</i> Please note that the Input modues (i.e., <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
+<p><i>Disclaimer:</i> Please note that the Input modules (i.e., <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
 and <b>Groups</b>) largely supercedes this module. However, old pipelines loaded into 
 CellProfiler that contain this module will provide the option of preserving them; 
 these pipelines will operate exactly as before.</p>

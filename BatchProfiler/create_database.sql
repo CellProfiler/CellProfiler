@@ -152,3 +152,38 @@ CREATE TABLE IF NOT EXISTS `job_status` (
   KEY `job_status_id_fk` (`run_id`, `job_id`),
   KEY `job_status_created_k` (`created`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  
+-------------------------------------------------------------
+--
+-- run_job_status
+--
+-- This view shows the last job and its status for every
+-- run.
+--
+-------------------------------------------------------------
+
+CREATE VIEW run_job_status AS
+SELECT rb.batch_id, rb.run_id, js.job_id, js.status
+  FROM run_base rb
+  JOIN job_status js on rb.run_id = js.run_id
+ WHERE NOT EXISTS 
+ (SELECT 'x' FROM job_status js2 
+  WHERE js2.run_id = rb.run_id AND js2.created > js.created)
+
+-------------------------------------------------------------
+--
+-- job_host
+--
+-- This table keeps track of the host for a job and any
+-- resources (like XVFB server numbers) that might need
+-- to be reserved
+--
+-------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `job_host` (
+  `job_id` int(11) NOT NULL,
+  `run_id` int(11) NOT NULL,
+  `hostname` varchar(64) NOT NULL,
+  `xvfb_server` int(11),
+  KEY `job_host_id_fk` (`run_id`, `job_id`),
+  KEY `job_host_hostname_k` (`hostname`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -24,24 +24,20 @@ cgitb.enable()
 import json
 import os
 import sys
-from RunBatch import BPJob, JS_SUBMITTED
-from bpformdata import REQUEST_METHOD, RM_PUT
+from RunBatch import BPJob, JS_SUBMITTED, JS_RUNNING
+from bpformdata import REQUEST_METHOD, RM_PUT, K_ACTION, A_CREATE, A_READ, \
+     A_UPDATE, A_DELETE, JOB_ID, RUN_ID, K_STATUS, K_HOST_NAME, K_WANTS_XVFB
 
-K_ACTION = "action"
-A_CREATE = "create"
-A_READ = "read"
-A_UPDATE = "update"
-A_DELETE = "delete"
-
-K_JOB_ID = "job_id"
-K_RUN_ID = "run_id"
-K_STATUS = "status"
+K_JOB_ID = JOB_ID
+K_RUN_ID = RUN_ID
 
 if REQUEST_METHOD == RM_PUT:
     data = json.load(sys.stdin)
     action = data[K_ACTION]
     job_id = int(data[K_JOB_ID])
     run_id = int(data[K_RUN_ID])
+    host_name = data.get(K_HOST_NAME, None)
+    wants_xvfb = data.get(K_WANTS_XVFB, False)
     status = data.get(K_STATUS, JS_SUBMITTED)
     job = BPJob(run_id, job_id)
     if action == A_CREATE:
@@ -53,7 +49,11 @@ if REQUEST_METHOD == RM_PUT:
         job.update_status(status)
         print "Content-Type: text/plain"
         print
-        print "OK"
+        if status == JS_RUNNING and host_name is not None:
+            xvfb_server = job.create_job_host(host_name, wants_xvfb)
+            print xvfb_server
+        else:
+            print "OK"
     else:
         raise NotImplementedError("Unsupported action: %s" % action)
 else:

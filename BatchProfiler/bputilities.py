@@ -163,10 +163,10 @@ def get_queues():
         host_fd, host_scriptfile = tempfile.mkstemp(suffix=".sh") 
         os.fchmod(host_fd, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
         os.write(host_fd, "#!/bin/sh\n")
-        os.write(host_fd, "set -v\n")
-        os.write(host_fd, ". /broad/software/scripts/useuse\n")
-        os.write(host_fd, "use GridEngine8\n")
-        os.write(host_fd, "set +v\n")
+        os.write(host_fd, """if [ -e "$HOME/.batchprofiler.sh" ]; then
+. "$HOME/.batchprofiler.sh"
+fi
+""")
         os.write(host_fd, "qconf -sql\n")
         os.close(host_fd)
         process = subprocess.Popen(
@@ -181,8 +181,9 @@ def get_jobs():
     '''Return a list of all jobs for the webserver user'''
     script = """#!/bin/sh
 set -v
-. /broad/software/scripts/useuse
-use GridEngine8
+if [ -e "$HOME/.batchprofiler.sh" ]; then
+. "$HOME/.batchprofiler.sh"
+fi
 set +v
 qstat
 """
@@ -287,10 +288,11 @@ qsub -N %(job_name)s \\
    
 def kill_job(job_id):
     host_script = make_temp_script("""#!/bin/sh
-    . /broad/software/scripts/useuse
-    reuse -q GridEngine8
-    qdel %d"
-    """ % job_id)
+if [ -e "$HOME/.batchprofiler.sh" ]; then
+. "$HOME/.batchprofiler.sh"
+fi
+qdel %d
+""" % job_id)
     try:
         p = subprocess.Popen(
             host_script, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
@@ -301,10 +303,11 @@ def kill_job(job_id):
         
 def kill_jobs(job_ids):
     host_script = make_temp_script("""#!/bin/sh
-    . /broad/software/scripts/useuse
-    reuse -q GridEngine8
-    qdel %s"
-    """ % " ".join(map(str, job_ids)))
+if [ -e "$HOME/.batchprofiler.sh" ]; then
+. "$HOME/.batchprofiler.sh"
+fi
+qdel %s
+""" % " ".join(map(str, job_ids)))
     try:
         p = subprocess.Popen(
             host_script, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
@@ -335,11 +338,7 @@ def python_on_tgt_os(args, group_name, job_name, queue_name, output,
     argstr = '"%s"' % '" "'.join(args)
     script = ("""#!/bin/sh
 %%(cd_command)s
-. /broad/software/scripts/useuse
-reuse -q Java-1.6
-export PATH=%(PREFIX)s/bin:$PATH
-export LD_LIBRARY_PATH=%(PREFIX)s/lib:$LD_LIBRARY_PATH:%(PREFIX)s/lib/mysql:$JAVA_HOME/jre/lib/amd64/server
-export LC_ALL=%(LC_ALL)s
+. %(PREFIX)s/bin/cpenv.sh
 export PYTHONNOUSERSITE=1
 %%(xvfb_run)s python %%(argstr)s
 """ % globals()) % locals()

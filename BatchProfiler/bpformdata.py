@@ -68,6 +68,19 @@ K_DELETE_ACTION = "delete_action"
 A_DELETE_ALL = "All"
 A_DELETE_TEXT = "Text"
 A_DELETE_OUTPUT = "Output"
+#
+# Constants for JobStatus
+#
+
+K_ACTION = "action"
+A_CREATE = "create"
+A_READ = "read"
+A_UPDATE = "update"
+A_DELETE = "delete"
+K_STATUS = "status"
+K_HOST_NAME = "hostname"
+K_WANTS_XVFB = "wants_xvfb"
+
 
 # Environment variables
 #

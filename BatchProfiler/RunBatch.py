@@ -208,6 +208,29 @@ class BPBatch(object):
             cursor.execute(cmd)
             return cursor.fetchone()[0]
         
+    def select_job_count_group_by_state(self):
+        '''Return a dictionary of state and # jobs in that state'''
+        cmd = """
+        select count('x') as job_count, js.status
+        from (select r.run_id as run_id, r.bstart as bstart, r.bend as bend, 
+              r.command as command, js.job_id as job_id, 
+              max(js.created) as js_created, j.created as j_created
+              from run r join job_status js on r.run_id = js.run_id
+              join job j on j.run_id = js.run_id and j.job_id = js.job_id
+              where r.batch_id = %d
+              group by r.run_id, js.job_id) rjs
+        join (select r.run_id as run_id, max(j.created) as created
+                from run r join job j on r.run_id = j.run_id group by j.run_id) j
+        on j.run_id = rjs.run_id and j.created = rjs.j_created
+        join job_status js 
+        on rjs.run_id = js.run_id and rjs.job_id = js.job_id 
+                                  and rjs.js_created = js.created
+        group by js.status
+        """ % self.batch_id
+        with bpcursor() as cursor:
+            cursor.execute(cmd)
+            return dict([(status, count) for count, status in cursor])
+        
     def select_jobs(self, by_status=None, by_run=None, page_size = None,
                     first_item = None):
         '''Get jobs with one of the given statuses

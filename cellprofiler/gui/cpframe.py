@@ -922,8 +922,7 @@ class CPFrame(wx.Frame):
 
     def __on_preferences(self, event):
         dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
-        dlg.show_modal()
-        dlg.Destroy()
+        dlg.Show()
 
     def __on_check_new_version(self, event):
         wx.GetApp().new_version_check(force=True)

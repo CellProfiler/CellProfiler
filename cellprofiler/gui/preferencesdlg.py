@@ -388,10 +388,7 @@ class PreferencesDlg(wx.Dialog):
 if __name__=='__main__':
     class MyApp(wx.App):
         def OnInit(self):
-            wx.InitAllImageHandlers()
             dlg = PreferencesDlg()
             dlg.show_modal()
             return 1
     app = MyApp(0)
- 
-    

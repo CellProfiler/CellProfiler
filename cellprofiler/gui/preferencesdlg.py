@@ -87,8 +87,6 @@ class PreferencesDlg(wx.Dialog):
 
         sizer = wx.GridBagSizer(len(p),4)
         sizer.SetFlexibleDirection(wx.HORIZONTAL)
-        sizer.AddGrowableCol(1, 10)
-        sizer.AddGrowableCol(3, 1)
         top_sizer.Add(sizer,1, wx.EXPAND|wx.ALL, 5)
         index = 0
         controls = []
@@ -186,6 +184,10 @@ class PreferencesDlg(wx.Dialog):
             sizer.Add(button, (index, 3))
             self.Bind(wx.EVT_BUTTON, on_help, button)
             index += 1
+        
+        sizer.AddGrowableCol(1, 10)
+        sizer.AddGrowableCol(3, 1)
+        
         top_sizer.Add(wx.StaticLine(scrollpanel), 0, wx.EXPAND | wx.ALL, 2)
         btnsizer = wx.StdDialogButtonSizer()
         

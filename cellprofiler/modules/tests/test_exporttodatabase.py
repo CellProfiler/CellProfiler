@@ -4433,11 +4433,27 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_views(module, ["Per_Object"])
             
     def test_10_01_properties_file(self):
+        old_get_measurement_columns = E.ExportToDatabase.get_measurement_columns
+        def get_measurement_columns(
+            self, pipeline, old_get_measurement_columns = old_get_measurement_columns):
+            result = [(cpmeas.IMAGE, 
+                       E.C_FILE_NAME + "_" + IMAGE_NAME, 
+                       cpmeas.COLTYPE_VARCHAR),
+                      (cpmeas.IMAGE, 
+                       E.C_PATH_NAME + "_" + IMAGE_NAME, 
+                       cpmeas.COLTYPE_VARCHAR)] + \
+                old_get_measurement_columns(self, pipeline)
+            return result
+        
+        E.ExportToDatabase.get_measurement_columns = get_measurement_columns
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, alt_object = True)
         self.assertTrue(isinstance(module, E.ExportToDatabase))
         file_name = "%s_%s.properties" % (DB_NAME, module.get_table_prefix())
         path = os.path.join(output_dir, file_name)
+        #
+        # Do a monkey-patch of ExportToDatabase.get_measurement_columns
+        #
         try:
             m = workspace.measurements
             for image_number in m.get_image_numbers():
@@ -4496,6 +4512,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 self.assertTrue(dictionary.has_key(k))
                 self.assertEqual(dictionary[k], v)
         finally:
+            E.ExportToDatabase.get_measurement_columns = old_get_measurement_columns
             os.chdir(output_dir)
             if os.path.exists(path):
                 os.unlink(path)

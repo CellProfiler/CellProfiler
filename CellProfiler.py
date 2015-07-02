@@ -105,7 +105,7 @@ def main(args):
     #
     # Important to go headless ASAP
     #
-    if not options.show_gui:
+    if (not options.show_gui) or options.write_schema_and_exit:
         import cellprofiler.preferences as cpprefs
         cpprefs.set_headless()
         # What's there to do but run if you're running headless?
@@ -217,6 +217,9 @@ def main(args):
             return
         if not hasattr(sys, "frozen") and options.code_statistics:
             print_code_statistics()
+            return
+        if options.write_schema_and_exit:
+            write_schema(options.pipeline_filename)
             return
         #
         #------------------------------------------
@@ -494,6 +497,11 @@ def parse_args(args):
                       help = "Do not execute the schema definition and other "
                       "per-experiment SQL commands during initialization "
                       "when running a pipeline in batch mode.")
+    parser.add_option("--write-schema-and-exit",
+                      dest = 'write_schema_and_exit',
+                      default = False,
+                      action = 'store_true',
+                      help = "Create the experiment database schema and exit")
     parser.add_option("--omero-credentials",
                       dest="omero_credentials",
                       default= None,
@@ -761,6 +769,32 @@ def get_batch_commands(filename):
             ["%s=%s" % (k,v) for k, v in grouping[0].iteritems()])
         print "CellProfiler -c -r -b -p %s -g %s" % (
             filename, group_string)
+        
+def write_schema(pipeline_filename):
+    if pipeline_filename is None:
+        raise ValueError(
+            "The --write-schema-and-exit switch must be used in conjunction\n"
+            "with the -p or --pipeline switch to load a pipeline with an\n"
+            "ExportToDatabase module.")
+        
+    import cellprofiler.pipeline as cpp
+    import cellprofiler.measurements as cpmeas
+    import cellprofiler.objects as cpo
+    import cellprofiler.workspace as cpw
+    pipeline = cpp.Pipeline()
+    pipeline.load(pipeline_filename)
+    pipeline.turn_off_batch_mode()
+    for module in pipeline.modules():
+        if module.module_name == "ExportToDatabase":
+            break
+    else:
+        raise ValueError(
+        "The pipeline, \"%s\", does not have an ExportToDatabase module" %
+        pipeline_filename)
+    m = cpmeas.Measurements()
+    workspace = cpw.Workspace(
+        pipeline, module, m, cpo.ObjectSet, m, None)
+    module.prepare_run(workspace)
     
 def run_ilastik():
     #

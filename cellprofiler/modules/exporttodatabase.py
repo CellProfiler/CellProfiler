@@ -3302,7 +3302,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 
         default_image_names = []
         # Find all images that have FileName and PathName
-        for feature in workspace.measurements.get_feature_names(cpmeas.IMAGE):
+        image_features = [
+            c[1] for c in workspace.pipeline.get_measurement_columns()
+            if c[0] == cpmeas.IMAGE]
+        for feature in image_features:
             match = re.match('^%s_(.+)$'%C_FILE_NAME,feature)
             if match:
                 default_image_names.append(match.groups()[0])

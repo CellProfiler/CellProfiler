@@ -389,11 +389,12 @@ $(TGTDIR)/python: $(SRCDIR)/$(PYTHONVERSION).tar.bz2 sqlite readline
 	tar -xjf "$(SRCDIR)/$(PYTHONVERSION).tar.bz2" && \
 	cd "$(PYTHONVERSION)" && \
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	export LDFLAGS="-L$(PREFIX)/lib $${LDFLAGS}" && \
 	export C_INCLUDE_PATH="$(PYTHONPREFIX)/include:$(C_INCLUDE_PATH)" && \
 	./configure \
 		--prefix="$(PYTHONPREFIX)" \
 		--enable-shared \
-				                --enable-unicode=ucs4 && \
+		--enable-unicode=ucs4 && \
 	make install MACHDEP=linux2
 	touch $@
 
@@ -409,6 +410,7 @@ $(TGTDIR)/readline: $(SRCDIR)/$(READLINEVERSION).tar.gz
 		--enable-shared && \
 	$(MAKE) $(MAKE_FLAGS) && \
 	$(MAKE) -j1 install
+	touch $@
 
 $(TGTDIR)/cython: $(SRCDIR)/$(CYTHONVERSION).tar.gz pypi
 	cd "$(TMPDIR)" && \
@@ -613,13 +615,13 @@ $(TGTDIR)/ncurses: $(SRCDIR)/$(NCURSESVERSION).tar.gz
 	$(MAKE) -j1 install
 	touch $@
 
-$(TGTDIR)/sqlite: $(SRCDIR)/$(SQLITEVERSION).tar.gz zlib
+$(TGTDIR)/sqlite: $(SRCDIR)/$(SQLITEVERSION).tar.gz zlib readline
 	cd "$(TMPDIR)" && \
 	rm -fr "$(SQLITEVERSION)" && \
 	tar -zxf "$(SRCDIR)/$(SQLITEVERSION).tar.gz" && \
 	cd "$(SQLITEVERSION)" && \
 	export CPPFLAGS="-I$(ZLIBPREFIX)/include $${CPPFLAGS}" && \
-	export LDFLAGS="-L$(ZLIBPREFIX)/lib $${LDFLAGS}" && \
+	export LDFLAGS="-L$(ZLIBPREFIX)/lib -L$(PREFIX)/lib $${LDFLAGS}" && \
 	export LD_LIBRARY_PATH="$(ZLIBPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
 	./configure \
 		--prefix="$(SQLITEPREFIX)" && \

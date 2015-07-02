@@ -63,16 +63,13 @@ class ViewBatchDoc(object):
     def read_batch(self):
         self.my_batch = RunBatch.BPBatch()
         self.my_batch.select(self.batch_id)
-        self.jobs_by_state = {}
+        self.jobs_by_state = self.my_batch.select_job_count_group_by_state()
         self.jobs = []
         page_size = BATCHPROFILER_DEFAULTS[PAGE_SIZE] or 25
         first_item = BATCHPROFILER_DEFAULTS[FIRST_ITEM] or 1
         for run, job, status in self.my_batch.select_jobs(
             page_size = page_size,
             first_item = first_item):
-            if status not in self.jobs_by_state:
-                self.jobs_by_state[status] = []
-            self.jobs_by_state[status].append((run, job))
             self.jobs.append((run, job, status))
         def comparator(a, b):
             run_a = a[0]
@@ -253,7 +250,7 @@ function fix_permissions() {
                             with self.tag("td"):
                                 self.text(state)
                             with self.tag("td"):
-                                self.text(str(len(self.jobs_by_state[state])))
+                                self.text(str(self.jobs_by_state[state]))
                             with self.tag("td"):
                                 with self.tag("form", 
                                               action = "ViewBatch.py",

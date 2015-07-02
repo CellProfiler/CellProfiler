@@ -25,7 +25,8 @@ from bpformdata import BATCHPROFILER_MYSQL_HOST, \
      BATCHPROFILER_MYSQL_USER, \
      BATCHPROFILER_MYSQL_PASSWORD, \
      BATCHPROFILER_MYSQL_DATABASE, \
-     BATCHPROFILER_DEFAULTS, URL, PREFIX
+     BATCHPROFILER_DEFAULTS, URL, PREFIX, K_ACTION, K_HOST_NAME, K_STATUS, \
+     K_WANTS_XVFB, A_CREATE, A_UPDATE, JOB_ID, RUN_ID
 
 JS_SUBMITTED = "SUBMITTED"
 JS_RUNNING = "RUNNING"
@@ -208,6 +209,29 @@ class BPBatch(object):
             cursor.execute(cmd)
             return cursor.fetchone()[0]
         
+    def select_job_count_group_by_state(self):
+        '''Return a dictionary of state and # jobs in that state'''
+        cmd = """
+        select count('x') as job_count, js.status
+        from (select r.run_id as run_id, r.bstart as bstart, r.bend as bend, 
+              r.command as command, js.job_id as job_id, 
+              max(js.created) as js_created, j.created as j_created
+              from run r join job_status js on r.run_id = js.run_id
+              join job j on j.run_id = js.run_id and j.job_id = js.job_id
+              where r.batch_id = %d
+              group by r.run_id, js.job_id) rjs
+        join (select r.run_id as run_id, max(j.created) as created
+                from run r join job j on r.run_id = j.run_id group by j.run_id) j
+        on j.run_id = rjs.run_id and j.created = rjs.j_created
+        join job_status js 
+        on rjs.run_id = js.run_id and rjs.job_id = js.job_id 
+                                  and rjs.js_created = js.created
+        group by js.status
+        """ % self.batch_id
+        with bpcursor() as cursor:
+            cursor.execute(cmd)
+            return dict([(status, count) for count, status in cursor])
+        
     def select_jobs(self, by_status=None, by_run=None, page_size = None,
                     first_item = None):
         '''Get jobs with one of the given statuses
@@ -325,6 +349,7 @@ class BPRun(BPRunBase):
         self.bstart = bstart
         self.bend = bend
         self.source_cpenv = True
+        self.wants_xvfb = True
         
     @staticmethod
     def select(run_id):
@@ -343,6 +368,7 @@ class BPSQLRun(BPRunBase):
         super(self.__class__, self).__init__(batch_id, run_id, command)
         self.sql_filename = sql_filename
         self.source_cpenv = False
+        self.wants_xvfb = False
         
     @staticmethod
     def create(batch, sql_filename, command):
@@ -416,6 +442,35 @@ class BPJob(object):
                 "values (%s, %s, %s)",
                 [str(self.run_id), str(self.job_id), status])
             
+    def create_job_host(self, host_name, wants_xvfb):
+        if wants_xvfb:
+            cmd = """
+            insert into job_host (run_id, job_id, hostname, xvfb_server)
+            select %d, %d, '%s', ifnull(max(jh.xvfb_server)+1, 99)
+              from job_host jh
+              join job_status js 
+                on js.run_id = jh.run_id and js.job_id = jh.job_id
+             where jh.hostname = '%s'
+               and js.status = '%s'
+               and not exists
+                   (select 'x' from job_status js1
+                     where js1.created > js.created
+                       and js1.job_id = js.job_id
+                       and js1.run_id = js.run_id)
+            """ % (self.run_id, self.job_id, host_name, host_name, JS_RUNNING)
+        else:
+            cmd = """
+            insert into job_host (run_id, job_id, hostname)
+            values (%d, %d, %s)"""
+        with bpcursor() as cursor:
+            cursor.execute(cmd)
+            if wants_xvfb:
+                cursor.execute(
+                    """select xvfb_server from job_host
+                    where run_id = %s and job_id = %s""",
+                    (self.run_id, self.job_id))
+                return cursor.fetchone()[0]
+            
     @staticmethod
     def select(job_id):
         '''Find a job in the database'''
@@ -486,9 +541,15 @@ fi
     #
     # This is a REST PUT to JobStatus.py to create the job record
     #
-    script += """curl -v -H "Content-type: application/json" -X PUT \\
---data '{"action":"create","job_id":'$JOB_ID',"run_id":%d,"status":"RUNNING"}'\\
- %s/JobStatus.py\n""" % (run.run_id, BATCHPROFILER_DEFAULTS[URL])
+    data = "{"+ (",".join(['"%s":"%s"' % (k, v) for k, v in (
+        (K_ACTION, A_UPDATE), (K_STATUS, JS_RUNNING))])) 
+    data += ',"%s":true,"%s":\'$JOB_ID\',"%s":%d,"%s":"\'$HOST\'"}' % (
+        K_WANTS_XVFB, JOB_ID, RUN_ID, run.run_id, K_HOST_NAME)
+                        
+    script += """BATCHPROFILER_XVFB_SERVER=`curl -vs """
+    script += """-H "Content-type: application/json" -X PUT """
+    script += """--data '%s' %s/JobStatus.py`\n""" % (
+         data, BATCHPROFILER_DEFAULTS[URL])
     #
     # CD to the CellProfiler root directory
     #
@@ -524,7 +585,7 @@ fi
     # Set the status based on the result from CellProfiler
     # Use CURL again
     #
-    script += """curl -v -H "Content-type: application/json" -X PUT """
+    script += """curl -vs -H "Content-type: application/json" -X PUT """
     script += """--data '{"action":"update","job_id":'$JOB_ID',"""
     script += """"run_id":%d,"status":"'$JOB_STATUS'"}' """ % run.run_id
     script += '%s/JobStatus.py\n' % BATCHPROFILER_DEFAULTS[URL]
@@ -548,7 +609,8 @@ fi
     return job
 
 def cellprofiler_command(my_batch, bstart, bend):
-    script = 'xvfb-run python CellProfiler.py -c -r -b --do-not-fetch '
+    script = 'xvfb-run -n $BATCHPROFILER_XVFB_SERVER '
+    script += 'python CellProfiler.py -c -r -b --do-not-fetch '
     script += '-p "%s" ' % os.path.join(my_batch.data_dir, "Batch_data.h5")
     script += '-f %d -l %d ' % (bstart, bend)
     script += '-o "%s"' % my_batch.data_dir

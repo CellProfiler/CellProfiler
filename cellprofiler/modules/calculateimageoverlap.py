@@ -571,9 +571,9 @@ class CalculateImageOverlap(cpm.CPModule):
 
         if self.show_window:
             workspace.display_data.true_positives = TP_pixels
-            workspace.display_data.true_negatives = FN_pixels
+            workspace.display_data.true_negatives = TN_pixels
             workspace.display_data.false_positives = FP_pixels
-            workspace.display_data.false_negatives = TN_pixels
+            workspace.display_data.false_negatives = FN_pixels
             workspace.display_data.statistics = [
                 (FTR_F_FACTOR, F_factor),
                 (FTR_PRECISION, precision),

@@ -24,7 +24,7 @@ yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn \
     xorg-x11-xauth* xorg-x11-xkb-utils* xorg-x11-utils xorg-x11-server-Xvfb \
     unzip tar dos2unix \
     dejavu-lgc-sans-fonts openssl openssl-devel xclock bzip2 \
-    bzip2-devel bzip2-libs libXtst make patch \
+    bzip2-devel bzip2-libs libXtst make patch readline-devel \
     java-1.7.0-openjdk java-1.7.0-openjdk-devel
 
 if [ ! `id -u cpbuild`]; then    
@@ -59,7 +59,6 @@ export LD_LIBRARY_PATH="${JAVA_HOME}"/jre/lib/"${HOSTTYPE}"/server:"${PREFIX}"/l
 
 su -c 'cd '$PREFIX'/src && git clone '$GITURL cpbuild
 su -c 'cd '$GITHOME' && git checkout '$GITCOMMIT cpbuild
-su -c 'cd '$GITHOME' && make -f Makefile.CP2 readline' cpbuild
 su -c 'cd '$GITHOME' && make -f Makefile.CP2 all' cpbuild
 su -c 'cd '$GITHOME' && xvfb-run make -f Makefile.CP2 test' cpbuild
 cd "/jenkins/CellProfiler"

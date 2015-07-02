@@ -197,6 +197,7 @@ QIMGTOARRPREFIX				?= $(PREFIX)
 QIMGTOARRURL				= $(PACKAGEHOST)
 QTVERSION				= qt-everywhere-opensource-src-4.7.1
 QTMAKE					= $(PREFIX)/bin/qmake
+READLINEVERSION				= readline-6.3
 SKLEARNVERSION				= scikit-learn-0.15.2
 SCIPYVERSION				= scipy-0.10.1
 SCIPYPREFIX				?= $(PREFIX)
@@ -382,7 +383,7 @@ $(TMPDIR)/create-dirs:
 # top-to-bottom, so you may assume that later specified packages
 # depend on earlier specified packages.
 #
-$(TGTDIR)/python: $(SRCDIR)/$(PYTHONVERSION).tar.bz2 sqlite
+$(TGTDIR)/python: $(SRCDIR)/$(PYTHONVERSION).tar.bz2 sqlite readline
 	cd "$(TMPDIR)" && \
 	rm -fr "$(PYTHONVERSION)" && \
 	tar -xjf "$(SRCDIR)/$(PYTHONVERSION).tar.bz2" && \
@@ -395,6 +396,19 @@ $(TGTDIR)/python: $(SRCDIR)/$(PYTHONVERSION).tar.bz2 sqlite
 				                --enable-unicode=ucs4 && \
 	make install MACHDEP=linux2
 	touch $@
+
+$(TGTDIR)/readline: $(SRCDIR)/$(READLINEVERSION).tar.gz
+	cd "$(TMPDIR)" && \
+	rm -fr "$(READLINEVERSION)" && \
+	tar -zxvf "$(SRCDIR)/$(READLINEVERSION).tar.gz" && \
+	cd "$(READLINEVERSION)" && \
+	export LD_LIBRARY_PATH="$(PREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+	export C_INCLUDE_PATH="$(PREFIX)/include:$(C_INCLUDE_PATH)" && \
+	./configure \
+		--prefix="$(PYTHONPREFIX)" \
+		--enable-shared \
+	$(MAKE) $(MAKE_FLAGS) install && \
+	$(MAKE) -j1 install
 
 $(TGTDIR)/cython: $(SRCDIR)/$(CYTHONVERSION).tar.gz pypi
 	cd "$(TMPDIR)" && \

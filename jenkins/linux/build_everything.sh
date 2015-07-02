@@ -59,7 +59,7 @@ export LD_LIBRARY_PATH="${JAVA_HOME}"/jre/lib/"${HOSTTYPE}"/server:"${PREFIX}"/l
 
 su -c 'cd '$PREFIX'/src && git clone '$GITURL cpbuild
 su -c 'cd '$GITHOME' && git checkout '$GITCOMMIT cpbuild
-su -c 'cd '$GITHOME' && make -f Makefile.CP2 qt' cpbuild
+su -c 'cd '$GITHOME' && make -f Makefile.CP2 readline' cpbuild
 su -c 'cd '$GITHOME' && make -f Makefile.CP2 all' cpbuild
 su -c 'cd '$GITHOME' && xvfb-run make -f Makefile.CP2 test' cpbuild
 cd "/jenkins/CellProfiler"

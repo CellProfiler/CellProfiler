@@ -405,9 +405,9 @@ $(TGTDIR)/readline: $(SRCDIR)/$(READLINEVERSION).tar.gz
 	export LD_LIBRARY_PATH="$(PREFIX)/lib:$${LD_LIBRARY_PATH}" && \
 	export C_INCLUDE_PATH="$(PREFIX)/include:$(C_INCLUDE_PATH)" && \
 	./configure \
-		--prefix="$(PYTHONPREFIX)" \
-		--enable-shared \
-	$(MAKE) $(MAKE_FLAGS) install && \
+		--prefix="$(PREFIX)" \
+		--enable-shared && \
+	$(MAKE) $(MAKE_FLAGS) && \
 	$(MAKE) -j1 install
 
 $(TGTDIR)/cython: $(SRCDIR)/$(CYTHONVERSION).tar.gz pypi

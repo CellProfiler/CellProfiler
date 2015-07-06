@@ -1096,6 +1096,8 @@ class IntegerOrUnboundedRange(IntegerRange):
             raise ValidationError("Only two values allowed",self)
         if (not values[0].isdigit()) and values[0] != BEGIN:
             raise ValidationError("%s is not an integer"%(values[0]),self)
+        if len(values[1]) == 0:
+            raise ValidationError("The end value is blank", self)
         if not (values[1] == END or
                 values[1].isdigit() or
                 (values[1][0]=='-' and 

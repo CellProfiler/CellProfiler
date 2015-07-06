@@ -182,11 +182,11 @@ def maybe_download_sbs():
                 files.append("Channel%d-%02d-%s-%02d.tif" % (
                     channel, idx, row, col))
                 idx += 1
-    maybe_download_example_images(["ExampleSBSImages"], files)
+    return maybe_download_example_images(["ExampleSBSImages"], files)
     
 def maybe_download_fly():
     '''Download the fly example directory'''
-    maybe_download_example_images(
+    return maybe_download_example_images(
         ["ExampleFlyImages"],
         ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF", 
          "01_POS076_D.TIF", "01_POS076_F.TIF", "01_POS076_R.TIF",

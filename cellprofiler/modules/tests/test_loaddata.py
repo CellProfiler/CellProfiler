@@ -31,6 +31,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
+import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L
@@ -1010,7 +1011,36 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertEqual(m[cpmeas.IMAGE, 'FileName_DNA', 1], file_names[0])
         finally:
             os.remove(filename)
-        
+            
+    def test_13_06_load_default_input_folder(self):
+        # Regression test of issue #1365 - load a file from the default
+        # input folder and check that PathName_xxx is absolute
+        path = maybe_download_sbs()
+        root_dir, path_name = os.path.split(path)
+        file_name = 'Channel2-01-A-01.tif'
+        csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"\n"%s","%s"''' \
+            % (file_name, path_name)
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        try:
+            assert isinstance(module, L.LoadData)
+            module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+            module.image_directory.custom_path = root_dir
+            m = cpmeas.Measurements(mode="memory")
+            workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+                                      m, cpi.ImageSetList())
+            self.assertTrue(module.prepare_run(workspace))
+            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
+                             file_name)
+            path_out = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
+            self.assertEqual(path, path_out)
+            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
+                             L.pathname2url(os.path.join(path, file_name)))
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
+            self.assertEqual(tuple(img.pixel_data.shape), (640, 640))
+        finally:
+            os.remove(filename)
         
     
 class C0(cpm.CPModule):

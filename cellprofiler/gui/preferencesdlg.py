@@ -189,9 +189,8 @@ class PreferencesDlg(wx.Dialog):
         sizer.AddGrowableCol(3, 1)
 
         top_sizer.Add(wx.StaticLine(scrollpanel), 0, wx.EXPAND | wx.ALL, 2)
-        btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL | wx.APPLY)
+        btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
         self.Bind(wx.EVT_BUTTON, self.save_preferences, id=wx.ID_OK)
-        self.Bind(wx.EVT_BUTTON, self.save_preferences, id=wx.ID_APPLY)
 
         scrollpanel_sizer.Add(
             btnsizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)

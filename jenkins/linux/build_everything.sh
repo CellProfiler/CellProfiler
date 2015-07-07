@@ -16,7 +16,6 @@
 set -e
 set -x
 
-yum -y update
 yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn \
     gcc-gfortran cmake \
     mesa-libGL mesa-libGL-devel mesa-libGLU mesa-libGLU-devel \
@@ -26,6 +25,15 @@ yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn \
     dejavu-lgc-sans-fonts openssl openssl-devel xclock bzip2 \
     bzip2-devel bzip2-libs libXtst make patch readline-devel \
     java-1.7.0-openjdk java-1.7.0-openjdk-devel
+
+echo "---------------------------------------------------------------------"
+echo "-"
+echo "- Installed packages on build machine"
+echo "-"
+echo "---------------------------------------------------------------------"
+echo " "
+yum list installed
+echo " "
 
 if [ ! `id -u cpbuild`]; then    
     adduser cpbuild

@@ -405,6 +405,14 @@ class PipelineController:
         self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
         self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
         sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
+        
+        view_bitmap = wx.ArtProvider.GetBitmap(
+            wx.ART_FIND, wx.ART_BUTTON)
+        self.__tcp_view = BitmapLabelButton(
+            panel, label = "Viewer", bitmap = view_bitmap)
+        self.__tcp_view.SetToolTip(wx.ToolTip("Open the workspace viewer"))
+        self.__tcp_view.Bind(wx.EVT_BUTTON, self.on_debug_view_workspace)
+        sub_sizer.Add(self.__tcp_view)
 
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)

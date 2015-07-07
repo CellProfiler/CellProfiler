@@ -1149,10 +1149,8 @@ $(PREFIX)/bin/cpenv.sh:
 # Consider running Xvfb to make a virtual display
 #
 test: cellprofiler $(PREFIX)/bin/cpenv.sh
-	export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
-	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}:$(PREFIX)/lib/mysql" && \
-	export LC_ALL=en_US.UTF-8 && \
-	"$(PREFIX)/bin/cpenv.sh" "$(PYTHON)" ./cpnose.py --with-javabridge --no-headless -m "(?:^)test_.*"
+	. "$(PREFIX)/bin/cpenv.sh" &&
+	"$(PYTHON)" ./cpnose.py --with-javabridge --no-headless -m "(?:^)test_.*"
 
 #
 # The following are optional sources, in case gtk is

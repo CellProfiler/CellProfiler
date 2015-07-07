@@ -32,7 +32,7 @@ echo "- Installed packages on build machine"
 echo "-"
 echo "---------------------------------------------------------------------"
 echo " "
-yum list installed
+yum list installed | tee "$(PREFIX)/$HOSTNAME.packagelist.txt"
 echo " "
 
 if [ ! `id -u cpbuild`]; then    

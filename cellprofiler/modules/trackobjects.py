@@ -1090,7 +1090,7 @@ class TrackObjects(cpm.CPModule):
         #
         costBorn = costDie = self.radius_limit.max * 1.10
         kalman_states = self.get_kalman_states(workspace)
-        if kalman_states == None:
+        if kalman_states is None:
             if self.static_model:
                 kalman_states = [ cpfilter.static_kalman_model()]
             else:

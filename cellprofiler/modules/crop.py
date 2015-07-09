@@ -358,7 +358,7 @@ class Crop(cpm.CPModule):
                 cropped_pixel_data[~cropping,:]=0
             else:
                 cropped_pixel_data[np.logical_not(cropping)] = 0
-            if mask == None:
+            if mask is None:
                 mask = cropping
             if orig_image.has_mask:
                 image_mask = mask & orig_image.get_mask()
@@ -369,7 +369,7 @@ class Crop(cpm.CPModule):
             cropped_pixel_data = cpi.crop_image(orig_image.pixel_data,
                                                 cropping,
                                                 internal_cropping)
-            if mask == None:
+            if mask is None:
                 mask = cpi.crop_image(cropping, cropping, internal_cropping)
             if orig_image.has_mask:
                 image_mask = cpi.crop_image(

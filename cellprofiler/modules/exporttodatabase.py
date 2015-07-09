@@ -258,7 +258,7 @@ COL_OBJECT_NUMBER1 = "object_number1"
 COL_OBJECT_NUMBER2 = "object_number2"
 
 def execute(cursor, query, bindings = None, return_result=True):
-    if bindings == None:
+    if bindings is None:
         cursor.execute(query)
     else:
         cursor.execute(query, bindings)
@@ -2334,13 +2334,13 @@ CREATE TABLE %s (
         
         object_name - None = PerObject, otherwise a specific table
         '''
-        if object_name == None:
+        if object_name is None:
             object_table = self.get_table_name(cpmeas.OBJECT)
         else:
             object_table = self.get_table_name(object_name)
         statement = 'CREATE TABLE '+object_table+' (\n'
         statement += '%s INTEGER\n'%C_IMAGE_NUMBER
-        if object_name == None:
+        if object_name is None:
             statement += ',%s INTEGER'%C_OBJECT_NUMBER
             object_pk = C_OBJECT_NUMBER
         else:

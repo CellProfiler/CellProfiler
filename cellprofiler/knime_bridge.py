@@ -108,7 +108,7 @@ class KnimeBridgeServer(threading.Thread):
             logger.info("Binding Knime bridge server to %s" % self.address)
             poller = zmq.Poller()
             poller.register(self.socket, flags=zmq.POLLIN)
-            if self.notify_addr != None:
+            if self.notify_addr is not None:
                 self.notify_socket = self.context.socket(zmq.SUB)
                 self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
                 self.notify_socket.connect(self.notify_addr)
@@ -634,17 +634,17 @@ class KnimeBridgeServer(threading.Thread):
         grouping = False
         for axis_name, dim, stride in channel_metadata:
             if axis_name.lower() == "y":
-                if strides_out[0] != None:
+                if strides_out[0] is not None:
                     raise RuntimeError("Y dimension doubly specified")
                 strides_out[0] = stride * 8
                 dimensions_out[0] = dim
             elif axis_name.lower() == "x":
-                if strides_out[1] != None:
+                if strides_out[1] is not None:
                     raise RuntimeError("X dimension doubly specified")
                 strides_out[1] = stride * 8
                 dimensions_out[1] = dim
             elif axis_name.lower() == "channel":
-                if strides_out[2] != None:
+                if strides_out[2] is not None:
                     raise RuntimeError("Channel doubly specified")
                 strides_out[2] = stride * 8
                 dimensions_out[2] = dim

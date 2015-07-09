@@ -134,7 +134,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                     inj_module.run(workspace)
                                     module.run(workspace)
                                     image = image_set.get_image("OutputImage")
-                                    self.assertTrue(image != None)
+                                    self.assertTrue(image is not None)
                                     self.assertTrue(np.all(image.pixel_data == 0),
                                                     """Failure case:
                 intensity_choice = %(intensity_choice)s
@@ -194,7 +194,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                 inj_module.run(workspace)
                                 module.run(workspace)
                                 image = image_set.get_image("OutputImage")
-                                self.assertTrue(image != None)
+                                self.assertTrue(image is not None)
                                 self.assertTrue(np.all(np.std(image.pixel_data) < .00001),
                                                     """Failure case:
                 each_or_all            = %(ea)s
@@ -255,7 +255,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                             inj_module.run(workspace)
                             module.run(workspace)
                             image = image_set.get_image("OutputImage")
-                            self.assertTrue(image != None)
+                            self.assertTrue(image is not None)
                             self.assertTrue(np.all(abs(image.pixel_data[mask] - 1 < .00001)),
                                                 """Failure case:
                 each_or_all            = %(ea)s

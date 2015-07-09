@@ -1653,7 +1653,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         module.db_user.value = 'cpuser'
         module.db_passwd.value = 'cPus3r'
         module.db_name.value ='CPUnitTest'
-        module.wants_relationship_table_setting.value = (relationship_type != None)
+        module.wants_relationship_table_setting.value = (relationship_type is not None)
         pipeline.add_module(module)
         pipeline.write_experiment_measurements(m)
         workspace = cpw.Workspace(pipeline, module, image_set,

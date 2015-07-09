@@ -112,7 +112,7 @@ def main(args):
         # Might want to change later if there's some headless setup 
         options.run_pipeline = True
 
-    if options.jvm_heap_size != None:
+    if options.jvm_heap_size is not None:
         from cellprofiler.preferences import set_jvm_heap_mb
         set_jvm_heap_mb(options.jvm_heap_size, False)
     set_log_level(options)

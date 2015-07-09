@@ -2702,7 +2702,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     
     def is_in_debug_mode(self):
         """True if there's some sort of debugging in progress"""
-        return self.__debug_image_set_list != None
+        return self.__debug_image_set_list is not None
     
     def on_debug_toggle(self, event):
         if self.is_in_debug_mode():
@@ -2838,7 +2838,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             failure=1
         self.__frame.SetCursor(old_cursor)
         if ((module.module_name != 'Restart' or failure==-1) and
-            self.__debug_measurements != None):
+            self.__debug_measurements is not None):
             module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
             self.__debug_measurements.add_measurement('Image',
                                                       module_error_measurement,
@@ -3197,15 +3197,15 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         show_workspace_viewer(self.__frame, workspace)
         
     def on_sample_init(self, event):
-        if self.__module_view != None:
-            if self.__module_view.get_current_module() != None:
+        if self.__module_view is not None:
+            if self.__module_view.get_current_module() is not None:
                 self.show_parameter_sample_options(
                     self.__module_view.get_current_module().get_module_num(), event)
             else:
                 print "No current module"
 
     def show_parameter_sample_options(self, module_num, event):
-        if self.__parameter_sample_frame == None:
+        if self.__parameter_sample_frame is None:
             selected_module = self.__pipeline.module(module_num)
             selected_module.test_valid(self.__pipeline)
 

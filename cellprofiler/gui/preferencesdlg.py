@@ -124,7 +124,7 @@ class PreferencesDlg(wx.Dialog):
                 else:
                     validator = wx.DefaultValidator
                 current = getter()
-                if current == None:
+                if current is None:
                     current = ""
                 ctl = wx.TextCtrl(scrollpanel, -1, current, 
                                   validator = validator)

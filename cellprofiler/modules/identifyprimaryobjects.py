@@ -1204,7 +1204,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             # use the reverse of the image to get valleys at peaks
             watershed_image = 1-image
         elif self.watershed_method == WA_SHAPE:
-            if distance_transformed_image == None:
+            if distance_transformed_image is None:
                 distance_transformed_image =\
                     scipy.ndimage.distance_transform_edt(labeled_image>0)
             watershed_image = -distance_transformed_image

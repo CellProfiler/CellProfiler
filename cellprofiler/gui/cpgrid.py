@@ -41,7 +41,7 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         dc.DestroyClippingRegion()
         bitmap = self.get_bitmap(grid, attr, dc, row, col)
         state = self.get_state(grid, row, col)
-        if state != None:
+        if state is not None:
             bv     = ((state == BU_NORMAL and BV_UP) or
                       BV_DOWN)
             rect   = draw_bevel(dc, rect, self.__bevel_width, bv)
@@ -166,7 +166,7 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
                 event_handler.NextHandler.ProcessEvent(event)
             
     def on_mouse_move(event):
-        if (ui_dictionary["selected_row"] != None and 
+        if (ui_dictionary["selected_row"] is not None and 
             grid.GridWindow.HasCapture()):
             x = event.GetX()
             y = event.GetY()
@@ -181,7 +181,7 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
             event_handler.NextHandler.ProcessEvent(event)
 
     def on_capture_lost(event):
-        if ui_dictionary["selected_row"] != None:
+        if ui_dictionary["selected_row"] is not None:
             renderer.set_cell_state(grid, ui_dictionary["selected_row"],col,
                                     BU_NORMAL)
             ui_dictionary["selected_row"] = None
@@ -190,7 +190,7 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
                 event_handler.NextHandler.ProcessEvent(event)
     
     def on_left_up(event):
-        if (ui_dictionary["selected_row"] != None and 
+        if (ui_dictionary["selected_row"] is not None and 
             grid.GridWindow.HasCapture()):
             row = ui_dictionary["selected_row"]
             if renderer.get_state(grid, row, col) == BU_PRESSED:

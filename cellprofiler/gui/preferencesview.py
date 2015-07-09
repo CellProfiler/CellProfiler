@@ -362,7 +362,7 @@ class PreferencesView:
             self.set_message_text(WELCOME_MESSAGE)
             wx.SafeYield(None, True)
         
-        if operation_id == None:
+        if operation_id is None:
             reset_progress()
             return
         

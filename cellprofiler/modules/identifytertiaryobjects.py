@@ -204,7 +204,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
                     in zip(primary_labels.shape, secondary_labels.shape)]):
                 primary_labels = secondary_objects.crop_image_similarly(primary_labels)
                 tertiary_image = secondary_objects.parent_image
-            elif secondary_objects.parent_image != None:
+            elif secondary_objects.parent_image is not None:
                 tertiary_image = secondary_objects.parent_image
             else:
                 tertiary_image = primary_objects.parent_image
@@ -213,7 +213,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             # labels which are the most critical.
             #
             primary_labels, _ = cpo.size_similarly(secondary_labels, primary_labels)
-            if secondary_objects.parent_image != None:
+            if secondary_objects.parent_image is not None:
                 tertiary_image = secondary_objects.parent_image
             else:
                 tertiary_image = primary_objects.parent_image

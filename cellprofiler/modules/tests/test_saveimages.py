@@ -1670,7 +1670,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         Returns a list containing the movie frames
         '''
         image_set_list = cpi.ImageSetList()
-        if groupings == None:
+        if groupings is None:
             nframes = 5
             key_names = []
             group_list = (({}, np.arange(nframes) + 1),)

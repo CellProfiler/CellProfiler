@@ -50,7 +50,7 @@ def construct_zernike_polynomials(x,y,zernike_indexes,mask=None):
     """
     if x.shape != y.shape:
         raise ValueError("X and Y must have the same shape")
-    if mask == None:
+    if mask is None:
         mask = np.ones(x.shape,bool)
     elif mask.shape != x.shape:
         raise ValueError("The mask must have the same shape as X and Y")
@@ -88,7 +88,7 @@ def score_zernike(zf, radii, labels, indexes=None):
     outputs a N x K matrix of the scores of each of the Zernikes for
     each labeled object.
     """
-    if indexes == None:
+    if indexes is None:
         indexes = np.arange(1,np.max(labels)+1,dtype=np.int32)
     else:
         indexes = np.array(indexes, dtype=np.int32)
@@ -308,7 +308,7 @@ if __name__ == "__main__":
             self.odd_zernike_axes.clear()
             self.even_zernike_axes.clear()
             self.abs_zernike_axes.clear()
-            if n == None and m == None:
+            if n is None and m is None:
                 self.odd_zernike_axes.imshow(self.labels,matplotlib.cm.jet)
                 self.odd_zernike_axes.set_title("Original image")
                 self.even_zernike_axes.set_visible(False)

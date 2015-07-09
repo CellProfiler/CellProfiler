@@ -1090,7 +1090,7 @@ class Measurements(object):
         
         returns a string with the metadata tags replaced by the metadata
         """
-        if image_set_number == None:
+        if image_set_number is None:
             image_set_number = self.image_set_number
         result_pieces = []
         double_backquote = "\\\\"

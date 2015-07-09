@@ -1559,7 +1559,7 @@ def map_report_progress(fn_map, fn_report, sequence, freq=None):
     n_items = len(sequence)
     if n_items == 0:
         return []
-    if freq == None:
+    if freq is None:
         if n_items < 100:
             freq = 1
         else:

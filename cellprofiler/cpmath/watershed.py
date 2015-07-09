@@ -102,13 +102,13 @@ def watershed(image, markers, connectivity=None, offset=None, mask=None):
     as above.
     """
     
-    if connectivity == None:
+    if connectivity is None:
         c_connectivity = scipy.ndimage.generate_binary_structure(image.ndim, 1)
     else:
         c_connectivity = numpy.array(connectivity,bool)
         if c_connectivity.ndim != image.ndim:
             raise ValueError,"Connectivity dimension must be same as image"
-    if offset == None:
+    if offset is None:
         if any([x%2==0 for x in c_connectivity.shape]):
             raise ValueError,"Connectivity array must have an unambiguous center"
         #
@@ -139,7 +139,7 @@ def watershed(image, markers, connectivity=None, offset=None, mask=None):
             "as image (ndim=%d)"%(c_markers.ndim, c_image.ndim)
     if not all([x==y for x,y in zip(c_markers.shape, c_image.shape)]):
         raise ValueError("image and markers must have the same shape")
-    if mask!=None:
+    if mask is not None:
         c_mask = numpy.ascontiguousarray(mask,dtype=bool)
         if c_mask.ndim!=c_markers.ndim:
             raise ValueError, "mask must have same # of dimensions as image"
@@ -190,7 +190,7 @@ def watershed(image, markers, connectivity=None, offset=None, mask=None):
         # If nothing is labeled, the output is empty and we don't have to
         # do anything
         c_output = c_output.flatten()
-        if c_mask == None:
+        if c_mask is None:
             c_mask = numpy.ones(c_image.shape,numpy.int8).flatten()
         else:
             c_mask = c_mask.astype(numpy.int8).flatten()

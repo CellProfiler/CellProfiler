@@ -155,7 +155,7 @@ class EditObjectsDialog(wx.Dialog):
         self.split_artist = None
         self.delete_mode_artist = None
         self.delete_mode_rect_artist = None
-        self.wants_image_display = guide_image != None
+        self.wants_image_display = guide_image is not None
         self.pressed_keys = set()
         self.build_ui()
         self.init_labels()
@@ -824,7 +824,7 @@ class EditObjectsDialog(wx.Dialog):
             
     def on_paint(self, event):
         dc = wx.PaintDC(self.panel)
-        if self.background == None:
+        if self.background is None:
             self.panel.draw(dc)
         else:
             self.panel.gui_repaint(dc)

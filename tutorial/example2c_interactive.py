@@ -245,7 +245,7 @@ class Example2c(cpm.CPModule):
                     y = [coords[0, 0], coords[1, 0],
                          coords[1, 0], coords[0, 0],
                          coords[0, 0]]
-                    if d["rectangle"] == None:
+                    if d["rectangle"] is None:
                         #
                         # Create the rectangle if there is none
                         # 

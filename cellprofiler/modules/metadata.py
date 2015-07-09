@@ -675,7 +675,7 @@ class Metadata(cpm.CPModule):
     
     def example_file_fn(self):
         '''Get an example file name for the regexp editor'''
-        if self.pipeline != None:
+        if self.pipeline is not None:
             if self.pipeline.has_cached_filtered_file_list():
                 urls = self.pipeline.get_filtered_file_list(self.workspace)
                 if len(urls) == 0:
@@ -688,7 +688,7 @@ class Metadata(cpm.CPModule):
             
     def example_directory_fn(self):
         '''Get an example directory name for the regexp editor'''
-        if self.pipeline != None:
+        if self.pipeline is not None:
             if self.pipeline.has_cached_filtered_file_list():
                 urls = self.pipeline.get_filtered_file_list(self.workspace)
                 if len(urls) == 0:

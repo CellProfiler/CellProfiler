@@ -41,7 +41,7 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
     bins           - we bin the data into this many equally-spaced bins, then pick
                      the bin index that optimizes the metric
     """
-    assert min_threshold==None or max_threshold==None or min_threshold < max_threshold
+    assert min_threshold is None or max_threshold is None or min_threshold < max_threshold
     def constrain(threshold):
         if not min_threshold is None and threshold < min_threshold:
             threshold = min_threshold
@@ -150,7 +150,7 @@ def otsu3(data, min_threshold=None, max_threshold=None,bins=128):
     three pieces.
     Returns the lower and upper thresholds
     """
-    assert min_threshold==None or max_threshold==None or min_threshold < max_threshold
+    assert min_threshold is None or max_threshold is None or min_threshold < max_threshold
     
     #
     # Compute the running variance and reverse running variance.

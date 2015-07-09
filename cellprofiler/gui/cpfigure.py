@@ -1194,7 +1194,7 @@ class CPFigureFrame(wx.Frame):
         subplot.set_aspect('equal')
 
         # Set title
-        if title != None:
+        if title is not None:
             self.set_subplot_title(title, x, y)
         
         # Update colorbar

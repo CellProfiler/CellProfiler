@@ -381,7 +381,7 @@ class PlateViewer(object):
         
     def on_paint_plate(self, evt):
         assert isinstance(evt, wx.PaintEvent)
-        if self.plate_bitmap == None:
+        if self.plate_bitmap is None:
             dc = wx.PaintDC(self.plate_panel)
             return
         else:

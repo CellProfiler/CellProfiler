@@ -628,7 +628,7 @@ def convex_hull(labels, indexes=None, fast=True):
     counter-clockwise around the perimeter.
     The vector is a vector of #s of points in the convex hull per label
     """
-    if indexes == None:
+    if indexes is None:
         indexes = np.unique(labels)
         indexes.sort()
         indexes=indexes[indexes!=0]
@@ -1401,7 +1401,7 @@ def minimum_enclosing_circle(labels, indexes = None,
     the minimum circle enclosing n given points in a plane", Proceedings of
     the Edinburgh Mathematical Society, vol 3, 1884
     """
-    if indexes == None:
+    if indexes is None:
         if hull_and_point_count is not None:
             indexes = np.array(np.unique(hull_and_point_count[0][:,0]),dtype=np.int32)
         else:
@@ -2354,7 +2354,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     """
     if getattr(indexes,"__getitem__",False):
         indexes = np.array(indexes,dtype=np.int32)
-    elif indexes != None:
+    elif indexes is not None:
         indexes = np.array([indexes],dtype=np.int32)
     else:
         labels = labels !=0
@@ -2479,7 +2479,7 @@ def euler_number(labels, indexes=None):
     indexes - the indexes of the labels to measure or None to
               treat the labels matrix as a binary matrix
     """
-    if indexes == None:
+    if indexes is None:
         labels = labels != 0
         indexes = np.array([1],dtype=np.int32)
     elif getattr(indexes,'__getitem__',False):
@@ -2661,7 +2661,7 @@ def black_tophat(image, radius=None, mask=None, footprint=None):
 
 def grey_erosion(image, radius=None, mask=None, footprint=None):
     '''Perform a grey erosion with masking'''
-    if footprint == None:
+    if footprint is None:
         if radius is None:
             footprint = np.ones((3,3),bool)
             radius = 1
@@ -2686,7 +2686,7 @@ def grey_erosion(image, radius=None, mask=None, footprint=None):
 
 def grey_dilation(image, radius=None, mask=None, footprint=None):
     '''Perform a grey dilation with masking'''
-    if footprint == None:
+    if footprint is None:
         if radius is None:
             footprint = np.ones((3,3),bool)
             footprint_size = (3,3)
@@ -2733,7 +2733,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     else:
         footprint = footprint.copy()
         
-    if offset == None:
+    if offset is None:
         assert all([d % 2 == 1 for d in footprint.shape]),\
                "Footprint dimensions must all be odd"
         offset = np.array([d/2 for d in footprint.shape])
@@ -3363,7 +3363,7 @@ def spur(image, mask=None, iterations=1):
         masked_image[~mask] = False
     index_i, index_j, masked_image = prepare_for_index_lookup(masked_image, 
                                                               False)
-    if iterations == None:
+    if iterations is None:
         iterations = len(index_i)
     for i in range(iterations):
         for table in (spur_table_1, spur_table_2):
@@ -3887,7 +3887,7 @@ def regional_maximum(image, mask = None, structure=None, ties_are_ok=False):
             result[positions[:,0],positions[:,1]] = True
         return result
     result = np.ones(image.shape,bool)
-    if structure == None:
+    if structure is None:
         structure = scind.generate_binary_structure(image.ndim, image.ndim)
     #
     # The edges of the image are losers because they are touching undefined

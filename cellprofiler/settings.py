@@ -741,11 +741,11 @@ class Number(Text):
             value = self.str_to_value(self.value_text)
         except ValueError:
             raise ValidationError('Value not in decimal format', self)
-        if self.__minval != None and self.__minval > value:
+        if self.__minval is not None and self.__minval > value:
             raise ValidationError(
                 'Must be at least %s, was %s'%
                 (self.value_to_str(self.__minval), self.value_text), self)
-        if self.__maxval != None and self.__maxval < value:
+        if self.__maxval is not None and self.__maxval < value:
             raise ValidationError(
                 'Must be at most %s, was %s' % 
                 (self.value_to_str(self.__maxval), self.value_text), self)
@@ -1297,7 +1297,7 @@ class NameSubscriber(Setting):
     """
     def __init__(self, text, group, value=None,
                  can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
-        if value==None:
+        if value is None:
             value = (can_be_blank and blank_text) or "None"
         self.__required_attributes = { "group":group }
         if kwargs.has_key(REQUIRED_ATTRIBUTES):
@@ -3034,7 +3034,7 @@ class FileCollectionDisplay(Setting):
     
     def node_count(self, file_tree = None):
         '''Count the # of nodes (leaves + directories) in the tree'''
-        if file_tree == None:
+        if file_tree is None:
             file_tree = self.file_tree
         count = 0
         for key in file_tree.keys():

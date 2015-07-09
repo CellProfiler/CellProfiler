@@ -750,7 +750,7 @@ class ModuleView:
         '''Make a button that, when pressed, launches the tree editor'''
         if control is None:
             control = wx.Button(self.module_panel, -1,
-                                "Press to select measurements")
+                                "Press button to select measurements")
             def on_press(event):
                 d = {}
                 assert isinstance(v, cps.MeasurementMultiChoice)

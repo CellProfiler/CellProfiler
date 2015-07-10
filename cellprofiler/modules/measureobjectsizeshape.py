@@ -57,8 +57,10 @@ region.</li>
 <li><i>Orientation:</i> The angle (in degrees ranging from -90 to 90
 degrees) between the x-axis and the major axis of the ellipse that has the
 same second-moments as the region.</li>
-<li><i>Compactness:</i> The variance of the radial distance of the object's
-pixels from the centroid divided by the area.</li>
+<li><i>Compactness:</i> The mean squared distance of the object's
+pixels from the centroid divided by the area. A filled circle will have
+a compactness of 1, with irregular objects or objects with holes having 
+a value greater than 1.</li>
 <li><i>MaximumRadius:</i> The maximum distance of any pixel in the object
 to the closest pixel outside of the object. For skinny objects, this
 is 1/2 of the maximum width of the object.</li>

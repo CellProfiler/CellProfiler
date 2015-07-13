@@ -588,7 +588,7 @@ class CalculateImageOverlap(cpm.CPModule):
                     (FTR_EARTH_MOVERS_DISTANCE, emd))
 
     def compute_rand_index(self, test_labels, ground_truth_labels, mask):
-        """Caluclate the Rand Index
+        """Calculate the Rand Index
         
         http://en.wikipedia.org/wiki/Rand_index
         

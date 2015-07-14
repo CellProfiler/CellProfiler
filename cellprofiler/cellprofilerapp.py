@@ -40,8 +40,6 @@ class CellProfilerApp(wx.App):
         # The wx.StandardPaths aren't available until this is set.
         from cellprofiler.utilities.version import dotted_version
         self.SetAppName('CellProfiler%s' % dotted_version)
-        
-        wx.InitAllImageHandlers()
 
         if self.show_splashbox:
             # If the splash image has alpha, it shows up transparently on

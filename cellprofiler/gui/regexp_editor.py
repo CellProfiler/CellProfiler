@@ -627,9 +627,7 @@ if __name__== "__main__":
     import wx.lib.inspection
     class MyApp(wx.App):
         def OnInit(self):
-            wx.InitAllImageHandlers()
             return True
 
     app = MyApp(0)
     edit_regexp(None, "(?P<foo>foo)", "Where is the food?")
-

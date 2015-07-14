@@ -302,7 +302,6 @@ if __name__=='__main__':
     M_LOG_TRANSFORM = wx.NewId()
     class MyApp(wx.App):
         def OnInit(self):
-            wx.InitAllImageHandlers()
             self.frame = F.CPFigureFrame(title="Otsu",subplots=(2,1))
             file_menu = self.frame.MenuBar.Menus[0][0]
             file_menu.Append(FILE_OPEN,"&Open")

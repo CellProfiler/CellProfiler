@@ -39,6 +39,9 @@ import cellprofiler.modules.createbatchfiles as C
 import cellprofiler.modules.tests as T
 
 class TestCreateBatchFiles(unittest.TestCase):
+    def test_01_00_test_load_version_8_please(self):
+        self.assertEqual(C.CreateBatchFiles.variable_revision_number, 7)
+        
     def test_01_01_load_matlab(self):
         '''Load a matlab pipeline containing a single CreateBatchFiles module'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -356,6 +359,45 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertEqual(len(module.mappings), 1)
         self.assertEqual(module.mappings[0].local_directory.value, 'Z:')
         self.assertEqual(module.mappings[0].remote_directory.value, '/imaging/analysis')
+        
+    def test_01_07_load_v7(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20150713184605
+GitHash:2f7b3b9
+ModuleCount:1
+HasImagePlaneDetails:False
+
+CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number:7|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Store batch files in default output folder?:Yes
+    Output folder path:C\x3A\\\\foo\\\\bar
+    Are the cluster computers running Windows?:No
+    Hidden\x3A in batch mode:No
+    Hidden\x3A in distributed mode:No
+    Hidden\x3A default input folder at time of save:C\x3A\\\\bar\\\\baz
+    Hidden\x3A revision number:0
+    Hidden\x3A from old matlab:No
+    Launch BatchProfiler:Yes
+    Local root path:\\\\\\\\argon-cifs\\\\imaging_docs
+    Cluster root path:/imaging/docs
+"""
+        pipeline = cpp.Pipeline()
+        pipeline.loadtxt(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        assert isinstance(module, C.CreateBatchFiles)
+        self.assertTrue(module.wants_default_output_directory)
+        self.assertEqual(module.custom_output_directory, r"C:\foo\bar")
+        self.assertFalse(module.remote_host_is_windows)
+        self.assertFalse(module.distributed_mode)
+        self.assertEqual(module.default_image_directory, r"C:\bar\baz")
+        self.assertEqual(module.revision, 0)
+        self.assertFalse(module.from_old_matlab)
+        self.assertTrue(module.go_to_website)
+        self.assertEqual(len(module.mappings), 1)
+        mapping = module.mappings[0]
+        self.assertEqual(mapping.local_directory, r"\\argon-cifs\imaging_docs")
+        self.assertEqual(mapping.remote_directory, r"/imaging/docs")
 
     def test_02_01_module_must_be_last(self):
         '''Make sure that the pipeline is invalid if CreateBatchFiles is not last'''

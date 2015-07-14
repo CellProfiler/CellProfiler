@@ -50,7 +50,7 @@ import cellprofiler.workspace as cpw
 from cellprofiler.measurements import F_BATCH_DATA, F_BATCH_DATA_H5
 
 '''# of settings aside from the mappings'''
-S_FIXED_COUNT = 8
+S_FIXED_COUNT = 9
 '''# of settings per mapping'''
 S_PER_MAPPING = 2
 
@@ -72,7 +72,7 @@ class CreateBatchFiles(cpm.CPModule):
     #     directory.
     module_name = "CreateBatchFiles"
     category = 'File Processing'
-    variable_revision_number = 6
+    variable_revision_number = 7
     
     #
     def create_settings(self):
@@ -114,6 +114,13 @@ class CreateBatchFiles(cpm.CPModule):
             Use this option if another path must be mapped because there is a difference 
             between how the local computer sees a folder location vs. how the cluster 
             computer sees the folder location.""")
+        
+        self.go_to_website = cps.Binary(
+            "Launch BatchProfiler", True,
+            doc="""Launch BatchProfiler after creating the batch file. This
+            setting will launch a web browser to the BatchProfiler URL to
+            allow you to create batch jobs to run the analysis on a cluster.
+            """)
         
         self.check_path_button = cps.DoSomething(
             "Press this button to check pathnames on the remote server",
@@ -163,7 +170,8 @@ class CreateBatchFiles(cpm.CPModule):
         result = [self.wants_default_output_directory,
                   self.custom_output_directory, self.remote_host_is_windows,
                   self.batch_mode, self.distributed_mode,
-                  self.default_image_directory, self.revision, self.from_old_matlab]
+                  self.default_image_directory, self.revision, 
+                  self.from_old_matlab, self.go_to_website]
         for mapping in self.mappings:
             result += [mapping.local_directory, mapping.remote_directory]
         return result
@@ -187,7 +195,7 @@ class CreateBatchFiles(cpm.CPModule):
         result = [self.wants_default_output_directory]
         if not self.wants_default_output_directory.value:
             result += [self.custom_output_directory]
-        result += [self.remote_host_is_windows]
+        result += [self.remote_host_is_windows, self.go_to_website]
         for mapping in self.mappings:
             result += mapping.visible_settings()
         result += [self.add_mapping_button, self.check_path_button]
@@ -212,6 +220,18 @@ class CreateBatchFiles(cpm.CPModule):
                     "CreateBatchFiles saved pipeline to %s" % path,
                     caption = "CreateBatchFiles: Batch file saved",
                     style = wx.OK | wx.ICON_INFORMATION)
+            if self.go_to_website:
+                try:
+                    import webbrowser
+                    import urllib
+                    server_path = self.alter_path(os.path.dirname(path))
+                    query = urllib.urlencode(dict(data_dir=server_path))
+                    url = cpprefs.get_batchprofiler_url() + \
+                        "/NewBatch.py?" + query
+                    webbrowser.open_new(url)
+                except:
+                    import traceback
+                    traceback.print_exc()
             return False
     
     def run(self, workspace):
@@ -456,5 +476,9 @@ class CreateBatchFiles(cpm.CPModule):
             # added from_old_matlab
             setting_values = setting_values[:7] + [False] + setting_values[7:]
             variable_revision_number = 6
+        if (not from_matlab) and variable_revision_number == 6:
+            # added go_to_website
+            setting_values = setting_values[:8] + [False] + setting_values[8:]
+            variable_revision_number = 7
         return setting_values, variable_revision_number, from_matlab
     

@@ -363,7 +363,12 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_filename_re_guess_file,
                  cpprefs.set_filename_re_guess_file,
                  FILEBROWSE,
-                 cphelp.FILE_RE_GUESS_HELP]
+                 cphelp.FILE_RE_GUESS_HELP],
+                ['Batch Profiler URL',
+                 cpprefs.get_batchprofiler_url,
+                 cpprefs.set_batchprofiler_url,
+                 None,
+                 cphelp.BATCHPROFILER_URL_HELP]
                 ]
     
     def get_title_font(self):

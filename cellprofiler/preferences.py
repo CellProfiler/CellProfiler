@@ -350,6 +350,10 @@ INTENSITY_MODE = "IntensityMode"
 SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
 FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
 PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
+BATCHPROFILER_URL = "BatchProfilerURL"
+
+'''Default URL root for BatchProfiler'''
+BATCHPROFILER_URL_DEFAULT = "http://imageweb/batchprofiler"
 
 IM_NEAREST = "Nearest"
 IM_BILINEAR = "Bilinear"
@@ -1454,6 +1458,28 @@ def set_pathname_re_guess_file(value):
     __pathname_re_guess_file = value
     config_write(PATHNAME_RE_GUESSES_FILE, value)
 
+__batchprofiler_url = None
+
+def get_batchprofiler_url():
+    '''Get the URL base for BatchProfiler
+    
+    For example: "http://<dns-name>/BatchProfiler/cgi-bin"
+    
+    Append /NewBatch.py?data_dir=... to get the URL for the batch
+    '''
+    global __batchprofiler_url
+    if __batchprofiler_url is None:
+        if config_exists(BATCHPROFILER_URL):
+            __batchprofiler_url = config_read(BATCHPROFILER_URL)
+        else:
+            __batchprofiler_url = BATCHPROFILER_URL_DEFAULT
+    return __batchprofiler_url
+
+def set_batchprofiler_url(value):
+    global __batchprofiler_url
+    __batchprofiler_url = value
+    config_write(BATCHPROFILER_URL, value)
+    
 __image_set_filename = None
 def set_image_set_file(filename):
     '''Record the name of the image set that should be loaded upon startup'''

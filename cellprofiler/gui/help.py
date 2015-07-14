@@ -1865,6 +1865,12 @@ See the <b>Metadata</b> module for more details on regular expression usage
 in CellProfiler.
 """
 
+BATCHPROFILER_URL_HELP = """
+The base URL for BatchProfiler. BatchProfiler is a set of CGI scripts for
+running CellProfiler on a GridEngine cluster or compatible. If BatchProfiler
+is available, the CreateBatchFiles module can optionally launch a browser
+to display the appropriate batch configuration page."""
+
 EACH_PREFERENCE_HELP = (
     ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP ),
     ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP ),
@@ -1894,7 +1900,8 @@ EACH_PREFERENCE_HELP = (
     ( "Temporary folder", TEMP_DIR_HELP),
     ( "Save pipeline and/or file list in addition to project", SAVE_PIPELINE_WITH_PROJECT_HELP),
     ( "Folder name regular expression guesses", FOLDER_RE_GUESS_HELP),
-    ( "File name regular expression guesses", FILE_RE_GUESS_HELP)
+    ( "File name regular expression guesses", FILE_RE_GUESS_HELP),
+    ( "BatchProfiler URL", BATCHPROFILER_URL_HELP)
     )
 PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
 <ul>"""

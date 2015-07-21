@@ -553,3 +553,51 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
                                          R.FF_MINIMUM % PARENT_OBJECTS)
         self.assertEqual(v.shape[0], 12)
         self.assertTrue(np.all(np.abs(v - expected) < .0001))
+        
+    def test_04_03_means_of_distances(self):
+        #
+        # Regression test of issue #1409
+        #
+        # Make sure means of minimum and mean distances of children
+        # are recorded properly
+        #
+        i,j = np.mgrid[0:14,0:30]
+        #
+        # Make the objects different sizes to exercise more code
+        #
+        parent_labels = (i>=7) * 1 + (j>=15) * 2 + 1
+        child_labels = np.zeros(i.shape)
+        np.random.seed(0)
+        # Take 12 random points and label them
+        child_centers = np.random.permutation(np.prod(i.shape))[:12]
+        child_centers = np.vstack((i.flatten()[child_centers], 
+                                   j.flatten()[child_centers]))
+        child_labels[child_centers[0],child_centers[1]] = np.arange(1,13)
+        parent_centers = np.array([[3,7],[10,7],[3,22],[10,22]], float)
+        parent_indexes = parent_labels[child_centers[0],
+                                       child_centers[1]] -1
+        expected = np.sqrt(np.sum((parent_centers[parent_indexes,:] - 
+                                   child_centers.transpose())**2,1))
+    
+        workspace,module = self.make_workspace(parent_labels, child_labels)
+        self.assertTrue(isinstance(module, R.Relate))
+        module.find_parent_child_distances.value = R.D_CENTROID
+        module.wants_per_parent_means.value = True
+        m = workspace.measurements
+        m[CHILD_OBJECTS, R.M_LOCATION_CENTER_X, 1] = child_centers[1]
+        m[CHILD_OBJECTS, R.M_LOCATION_CENTER_Y, 1] = child_centers[0]
+        module.run(workspace)
+
+        v = m[
+            PARENT_OBJECTS, 
+            R.FF_MEAN % (CHILD_OBJECTS, R.FF_CENTROID % PARENT_OBJECTS), 1]
+
+        plabel = m[CHILD_OBJECTS, "_".join((R.C_PARENT, PARENT_OBJECTS)), 1]
+        
+        self.assertEqual(len(v), 4)
+        for idx in range(4):
+            if np.any(plabel == idx+1):
+                self.assertAlmostEqual(
+                    v[idx], np.mean(expected[plabel==idx+1]), 4)
+        
+        

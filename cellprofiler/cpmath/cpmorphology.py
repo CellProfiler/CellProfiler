@@ -4133,11 +4133,18 @@ def is_local_maximum(image, labels, footprint):
     big_strides = np.array(big_labels.strides) / big_labels.dtype.itemsize
     result_strides = np.array(result.strides) / result.dtype.itemsize
     footprint_offsets = np.mgrid[[slice(-fe,fe+1) for fe in footprint_extent]]
+    footprint_offsets = footprint_offsets[:, footprint]
+    #
+    # Order by distance, low to high and get rid of center pt.
+    #
+    d = np.sum(footprint_offsets **2, 0)
+    footprint_offsets, d = footprint_offsets[:, d > 0], d[d > 0]
+    footprint_offsets = footprint_offsets[:, np.lexsort([d])]
     
     fp_image_offsets = np.sum(image_strides[:, np.newaxis] *
-                              footprint_offsets[:, footprint], 0)
+                              footprint_offsets, 0)
     fp_big_offsets = np.sum(big_strides[:, np.newaxis] *
-                            footprint_offsets[:, footprint], 0)
+                            footprint_offsets, 0)
     #
     # Get the index of each labeled pixel in the image and big_labels arrays
     #
@@ -4162,7 +4169,12 @@ def is_local_maximum(image, labels, footprint):
                       big_labels_raveled[big_indexes])
         less_than = (image_raveled[image_indexes[same_label]] <
                      image_raveled[image_indexes[same_label]+ fp_image_offset])
-        result_raveled[result_indexes[same_label][less_than]] = False
+        mask = ~same_label
+        mask[same_label] = ~less_than
+        result_raveled[result_indexes[~mask]] = False
+        result_indexes = result_indexes[mask]
+        big_indexes = big_indexes[mask]
+        image_indexes = image_indexes[mask]
         
     return result
 

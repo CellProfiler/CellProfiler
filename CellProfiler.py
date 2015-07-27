@@ -482,8 +482,9 @@ def parse_args(args):
     parser.add_option("--data-file",
                       dest="data_file",
                       default = None,
-                      help = "Specify a data file for LoadData modules that "
-                      'use the "From command-line" option')
+                      help = "Specify the location of a .csv file for LoadData. "
+                      "If this switch is present, this file is used instead of "
+                      "the one specified in the LoadData module.")
     parser.add_option("--file-list",
                       dest = "image_set_file",
                       default = None,

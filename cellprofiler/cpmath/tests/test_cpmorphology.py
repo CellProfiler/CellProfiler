@@ -583,6 +583,29 @@ class TestConvexHull(unittest.TestCase):
         self.assertTrue(result[0,1] in (2,6))
         self.assertTrue(result[1,1] in (2,6))
         self.assertTrue(np.all(result[:,2]==5))
+        
+    def test_01_032_diagonal_line(self):
+        #
+        # Regression test for issue 1412 - diagonal line
+        #
+        labels = np.zeros((20, 20), int)
+        test_case = np.array([
+            [  8, 11, 1],
+            [  8, 12, 1],
+            [  9, 13, 1],
+            [ 16,  9, 2],
+            [ 17,  7, 2],
+            [ 17,  8, 2],
+            [ 17,  9, 2],
+            [ 17, 10, 2],
+            [ 18,  7, 2],
+            [ 18,  8, 2],
+            [ 18,  9, 2]])
+        labels[test_case[:, 0], test_case[:, 1]] = test_case[:, 2]
+        result, counts = morph.convex_hull(labels, [1, 2])
+        self.assertEqual(len(counts), 2)
+        self.assertEqual(counts[0], 3)
+        self.assertEqual(counts[1], 5)
     
     def test_01_04_square(self):
         """Make sure convex_hull can handle a square which is not degenerate"""

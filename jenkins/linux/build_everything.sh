@@ -25,7 +25,7 @@ yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn \
     unzip tar dos2unix \
     dejavu-lgc-sans-fonts openssl openssl-devel xclock bzip2 \
     bzip2-devel bzip2-libs libXtst make patch readline-devel \
-    "java-$(JAVA_VERSION)" "java-$(JAVA_VERSION)-devel"
+    "java-$JAVA_VERSION" "java-$JAVA_VERSION-devel"
 
 echo "---------------------------------------------------------------------"
 echo "-"

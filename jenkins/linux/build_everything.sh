@@ -12,7 +12,8 @@
 # TMPDIR: location for temporary files
 # SRCDIR: location for downloaded sources (defaults to $TMPDIR/src)
 
-export JAVA_VERSION=1.7.0-openjdk-1.7.0.79
+export JAVA_VERSION=1.7.0
+export JAVA_PATCH_VERSION=$JAVA_VERSION.79
 
 set -e
 set -x
@@ -25,7 +26,8 @@ yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn \
     unzip tar dos2unix \
     dejavu-lgc-sans-fonts openssl openssl-devel xclock bzip2 \
     bzip2-devel bzip2-libs libXtst make patch readline-devel \
-    "java-$JAVA_VERSION" "java-$JAVA_VERSION-devel"
+    "java-$JAVA_VERSION-openjdk-$JAVA_PATCH_VERSION"\
+    "java-$JAVA_VERSION-openjdk-devel-$JAVA_PATCH_VERSION"
 
 echo "---------------------------------------------------------------------"
 echo "-"
@@ -33,7 +35,7 @@ echo "- Installed packages on build machine"
 echo "-"
 echo "---------------------------------------------------------------------"
 echo " "
-yum list installed | tee "$(PREFIX)/$HOSTNAME.packagelist.txt"
+yum list installed | tee "$PREFIX/$HOSTNAME.packagelist.txt"
 echo " "
 
 if [ ! `id -u cpbuild`]; then    

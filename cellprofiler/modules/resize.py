@@ -206,8 +206,9 @@ class Resize(cpm.CPModule):
                                   self.specific_width.value])
             elif self.use_manual_or_image == C_IMAGE:
                 shape = np.array(workspace.image_set.get_image(
-                    self.specific_image.value).pixel_data.shape).astype(int)
-            factor = np.array(shape, float) /np.array(image_pixels.shape, float)
+                    self.specific_image.value).pixel_data.shape[:2]).astype(int)
+            factor = np.array(shape, float) / \
+                np.array(image_pixels.shape[:2], float)
         #
         # Little bit of wierdness here. The input pixels are numbered 0 to
         # shape-1 and so are the output pixels. Therefore the affine transform

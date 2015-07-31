@@ -539,9 +539,24 @@ class RelateObjects(cpm.CPModule):
         child_columns = [column
                          for column in child_columns
                          if column[0] == self.sub_object_name.value and
-                         self.should_aggregate_feature(column[1])]
+                         self.should_aggregate_feature(column[1])] + \
+            self.get_child_measurement_columns(pipeline)
         return child_columns
-        
+
+    def get_child_measurement_columns(self, pipeline):
+        columns = []
+        if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
+            for parent_name in self.get_parent_names():
+                columns += [(self.sub_object_name.value,
+                             FF_CENTROID % parent_name,
+                             cpmeas.COLTYPE_INTEGER)]
+        if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
+            for parent_name in self.get_parent_names():
+                columns += [(self.sub_object_name.value,
+                             FF_MINIMUM % parent_name,
+                             cpmeas.COLTYPE_INTEGER)]
+        return columns        
+    
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''
         columns = [(self.sub_object_name.value,
@@ -556,16 +571,7 @@ class RelateObjects(cpm.CPModule):
                          FF_MEAN%(self.sub_object_name.value, column[1]),
                          cpmeas.COLTYPE_FLOAT)
                         for column in child_columns]
-        if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
-            for parent_name in self.get_parent_names():
-                columns += [(self.sub_object_name.value,
-                             FF_CENTROID % parent_name,
-                             cpmeas.COLTYPE_INTEGER)]
-        if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
-            for parent_name in self.get_parent_names():
-                columns += [(self.sub_object_name.value,
-                             FF_MINIMUM % parent_name,
-                             cpmeas.COLTYPE_INTEGER)]
+        columns += self.get_child_measurement_columns(pipeline)
         return columns
     
     def get_object_relationships(self, pipeline):

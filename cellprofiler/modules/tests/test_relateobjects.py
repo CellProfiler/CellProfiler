@@ -583,14 +583,20 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.assertTrue(isinstance(module, R.Relate))
         module.find_parent_child_distances.value = R.D_CENTROID
         module.wants_per_parent_means.value = True
+        mnames = module.get_measurements(workspace.pipeline,
+                                         PARENT_OBJECTS,
+                                         "_".join((R.C_MEAN, CHILD_OBJECTS)))
+        self.assertTrue(R.FF_CENTROID % PARENT_OBJECTS in mnames)
+        feat_mean = R.FF_MEAN % (CHILD_OBJECTS, R.FF_CENTROID % PARENT_OBJECTS)
+        mcolumns = module.get_measurement_columns(workspace.pipeline)
+        self.assertTrue(any([c[0] == PARENT_OBJECTS and c[1] == feat_mean
+                             for c in mcolumns]))
         m = workspace.measurements
         m[CHILD_OBJECTS, R.M_LOCATION_CENTER_X, 1] = child_centers[1]
         m[CHILD_OBJECTS, R.M_LOCATION_CENTER_Y, 1] = child_centers[0]
         module.run(workspace)
 
-        v = m[
-            PARENT_OBJECTS, 
-            R.FF_MEAN % (CHILD_OBJECTS, R.FF_CENTROID % PARENT_OBJECTS), 1]
+        v = m[PARENT_OBJECTS, feat_mean, 1]
 
         plabel = m[CHILD_OBJECTS, "_".join((R.C_PARENT, PARENT_OBJECTS)), 1]
         

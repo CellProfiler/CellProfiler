@@ -14,7 +14,6 @@
 
 import cgi
 import os
-os.environ["BATCHPROFILER_MYSQL_DATABASE"] = "batchprofiler_debug"
 
 ######
 #

@@ -189,7 +189,7 @@ class MeasureNeurons(cpm.CPModule):
         '''The settings, in the order that they are saved in the pipeline'''
         return [self.seed_objects_name, self.image_name,
                 self.wants_branchpoint_image, self.branchpoint_image_name,
-                self.wants_branchpoint_image, self.maximum_hole_size,
+                self.wants_to_fill_holes, self.maximum_hole_size,
                 self.wants_neuron_graph, self.intensity_image_name,
                 self.directory, self.vertex_file_name, self.edge_file_name]
     

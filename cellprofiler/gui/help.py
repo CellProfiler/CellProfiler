@@ -2405,7 +2405,7 @@ You can also create regular expressions (an advanced syntax for pattern matching
 <p>To add another rule, click the plus  buttons to the right of each rule. Subtract an existing rule by clicking the 
 minus button.</p>
 <p>You can also link a set of rules by choosing the logical expression <i>All</i> or <i>Any</i>. If you use  
-<i>All</i> logical expression, all the rules be true for a file to be included in the File list. If
+<i>All</i> logical expression, all the rules must be true for a file to be included in the File list. If
 you use the <i>Any</i> option, only one of the conditions has to be met for a file to be included.</p>
 <p>If you want to create more complex rules (e.g, some criteria matching all rules and others matching any),
 you can create sets of rules, by clicking the ellipsis button (to the right of the plus button). 

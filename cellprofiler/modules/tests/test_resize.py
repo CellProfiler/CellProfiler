@@ -369,3 +369,46 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         self.assertEqual(tuple(result.crop_mask.shape), (60, 80))
         x = result.crop_image_similarly(np.zeros(result.crop_mask.shape))
         self.assertEqual(tuple(x.shape), (20, 40))
+
+    def test_05_03_resize_color(self):
+        # Regression test of issue #1416
+        image = np.zeros((20, 22, 3))
+        workspace, module = self.make_workspace(
+            image, R.R_BY_FACTOR, R.I_BILINEAR)
+        assert isinstance(module, R.Resize)
+        module.resizing_factor.value = .5
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertEqual(tuple(result.pixel_data.shape), (10, 11, 3))
+        
+    def test_05_04_resize_color_bw(self):
+        # Regression test of issue #1416
+        image = np.zeros((20, 22, 3))
+        tgt_image = np.zeros((5, 11))
+        workspace, module = self.make_workspace(
+            image, R.R_TO_SIZE, R.I_BILINEAR)
+        assert isinstance(module, R.Resize)
+        module.use_manual_or_image.value = R.C_IMAGE
+        module.specific_image.value = 'AnotherImage'
+        workspace.image_set.add(module.specific_image.value, 
+                                cpi.Image(tgt_image))
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertEqual(tuple(result.pixel_data.shape), (5, 11, 3))
+        
+    def test_05_05_resize_color_color(self):
+        # Regression test of issue #1416
+        image = np.zeros((20, 22, 3))
+        tgt_image = np.zeros((10, 11, 3))
+        workspace, module = self.make_workspace(
+            image, R.R_TO_SIZE, R.I_BILINEAR)
+        assert isinstance(module, R.Resize)
+        module.use_manual_or_image.value = R.C_IMAGE
+        module.specific_image.value = 'AnotherImage'
+        workspace.image_set.add(module.specific_image.value, 
+                                cpi.Image(tgt_image))
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        self.assertEqual(tuple(result.pixel_data.shape), (10, 11, 3))
+        
+        

@@ -48,7 +48,7 @@ class BitmapLabelButton(GenBitmapTextButton):
             dx = dy = self.labelDelta
         else:
             dx = dy = 0
-        hasMask = bmp.GetMask() != None
+        hasMask = bmp.GetMask() is not None
         bitmap_y = (height-bh)/2+dy
         dc.DrawBitmap(bmp, self.LEFT_MARGIN+dx, bitmap_y, hasMask)
         

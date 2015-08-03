@@ -229,9 +229,9 @@ If mask is given, only masked points are used for the regression.'''
 def splineimage(Z, points, mask=None, x=None, y=None):
     
     [r,c]=Z.shape
-    if x==None:
+    if x is None:
         x = np.arange(c)
-    if y==None:
+    if y is None:
         y = np.arange(r)
 
     #spline control points, let the outer ones be outside the image
@@ -279,7 +279,7 @@ more stable convergence. Returns background matrix.'''
     assert mode in [MODE_AUTO, MODE_BRIGHT, MODE_DARK, MODE_GRAY], mode + " is not a valid background mode"
     orig_shape = np.array(img.shape).copy()
     input_mask = mask
-    if mask == None:
+    if mask is None:
         mask = np.ones(orig_shape, dtype=bool) #start with mask = whole image
         clip_imin = clip_jmin = 0
         clip_imax = img.shape[0]

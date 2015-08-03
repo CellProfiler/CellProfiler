@@ -1365,7 +1365,7 @@ class Pipeline(object):
             
         current = np.ndarray(shape=[1,1],dtype=CURRENT_DTYPE)
         handles[CURRENT]=current
-        current[NUMBER_OF_IMAGE_SETS][0,0]     = [(image_set != None and image_set.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
+        current[NUMBER_OF_IMAGE_SETS][0,0]     = [(image_set is not None and image_set.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS) and image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]) or 1]
         current[SET_BEING_ANALYZED][0,0]       = [(measurements and measurements.image_set_number) or 1]
         current[NUMBER_OF_MODULES][0,0]        = [len(self.__modules)]
         current[SAVE_OUTPUT_HOW_OFTEN][0,0]    = [1]
@@ -1395,9 +1395,9 @@ class Pipeline(object):
         if image_set:
             for provider in image_set.providers:
                 image = image_set.get_image(provider.name)
-                if image.image != None:
+                if image.image is not None:
                     images[provider.name]=image.image
-                if image.mask != None:
+                if image.mask is not None:
                     images['CropMask'+provider.name]=image.mask
             for key,value in image_set.legacy_fields.iteritems():
                 if key != NUMBER_OF_IMAGE_SETS:
@@ -1418,7 +1418,7 @@ class Pipeline(object):
             for name,image in images.items():
                 pipeline[name][0,0] = images[name]
 
-        no_measurements = (measurements == None or len(measurements.get_object_names())==0)
+        no_measurements = (measurements is None or len(measurements.get_object_names())==0)
         if not no_measurements:
             measurements_dtype = make_cell_struct_dtype(measurements.get_object_names())
             npy_measurements = np.ndarray((1,1),dtype=measurements_dtype)
@@ -1432,7 +1432,7 @@ class Pipeline(object):
                     object_measurements[feature_name][0,0] = feature_measurements
                     data = measurements.get_current_measurement(object_name,feature_name)
                     feature_measurements.fill(np.ndarray((0,),dtype=np.float64))
-                    if data != None:
+                    if data is not None:
                         feature_measurements[0,measurements.image_set_number-1] = data
         return handles
     
@@ -2685,7 +2685,7 @@ class Pipeline(object):
     def has_cached_filtered_file_list(self):
         '''True if the filtered file list is currently cached'''
         images_settings = self.get_module_state("Images")
-        if images_settings == None:
+        if images_settings is None:
             return False
         return self.__filtered_file_list_images_settings == images_settings
     
@@ -2703,7 +2703,7 @@ class Pipeline(object):
         if not self.has_cached_filtered_file_list():
             return False
         metadata_settings = self.get_module_state("Metadata")
-        if metadata_settings == None:
+        if metadata_settings is None:
             return False
         return self.__image_plane_details_metadata_settings == metadata_settings
         
@@ -3279,7 +3279,7 @@ class Pipeline(object):
             self.__measurement_column_hash = hash
         
         terminating_module_num = (sys.maxint 
-                                  if terminating_module == None
+                                  if terminating_module is None
                                   else terminating_module.module_num)
         if self.__measurement_columns.has_key(terminating_module_num):
             return self.__measurement_columns[terminating_module_num]

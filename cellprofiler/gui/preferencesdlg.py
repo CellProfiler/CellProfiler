@@ -87,8 +87,6 @@ class PreferencesDlg(wx.Dialog):
 
         sizer = wx.GridBagSizer(len(p),4)
         sizer.SetFlexibleDirection(wx.HORIZONTAL)
-        sizer.AddGrowableCol(1, 10)
-        sizer.AddGrowableCol(3, 1)
         top_sizer.Add(sizer,1, wx.EXPAND|wx.ALL, 5)
         index = 0
         controls = []
@@ -124,7 +122,7 @@ class PreferencesDlg(wx.Dialog):
                 else:
                     validator = wx.DefaultValidator
                 current = getter()
-                if current == None:
+                if current is None:
                     current = ""
                 ctl = wx.TextCtrl(scrollpanel, -1, current, 
                                   validator = validator)
@@ -186,36 +184,32 @@ class PreferencesDlg(wx.Dialog):
             sizer.Add(button, (index, 3))
             self.Bind(wx.EVT_BUTTON, on_help, button)
             index += 1
+
+        sizer.AddGrowableCol(1, 10)
+        sizer.AddGrowableCol(3, 1)
+
         top_sizer.Add(wx.StaticLine(scrollpanel), 0, wx.EXPAND | wx.ALL, 2)
-        btnsizer = wx.StdDialogButtonSizer()
-        
-        btn = wx.Button(self, wx.ID_OK)
-        btn.SetDefault()
-        btnsizer.AddButton(btn)
+        btnsizer = self.CreateButtonSizer(wx.OK | wx.CANCEL)
+        self.Bind(wx.EVT_BUTTON, self.save_preferences, id=wx.ID_OK)
 
-        btn = wx.Button(self, wx.ID_CANCEL)
-        btnsizer.AddButton(btn)
-        btnsizer.Realize()
-
-        self.Sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
-        
-        scrollpanel.SetupScrolling(scrollToTop=False)        
+        scrollpanel_sizer.Add(
+            btnsizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+        scrollpanel.SetupScrolling(scrollToTop=False)
         self.Fit()
         self.controls = controls
-    
-    
-    def show_modal(self):
-        if self.ShowModal() == wx.ID_OK:
-            p = self.get_preferences()
-            for control, (text, getter, setter, ui_info, help_text) in \
-                zip(self.controls, p):
-                if ui_info == COLOR:
-                    setter(control.BackgroundColour)
-                elif ui_info == FILEBROWSE and os.path.isfile(control.Value):
-                    setter(control.Value)
-                else:
-                    setter(control.Value)
-    
+
+    def save_preferences(self, event):
+        event.Skip()
+        p = self.get_preferences()
+        for control, (text, getter, setter, ui_info, help_text) in \
+            zip(self.controls, p):
+            if ui_info == COLOR:
+                setter(control.BackgroundColour)
+            elif ui_info == FILEBROWSE and os.path.isfile(control.Value):
+                setter(control.Value)
+            else:
+                setter(control.Value)
+
     def get_preferences(self):
         '''Get the list of preferences.
         
@@ -369,7 +363,12 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_filename_re_guess_file,
                  cpprefs.set_filename_re_guess_file,
                  FILEBROWSE,
-                 cphelp.FILE_RE_GUESS_HELP]
+                 cphelp.FILE_RE_GUESS_HELP],
+                ['Batch Profiler URL',
+                 cpprefs.get_batchprofiler_url,
+                 cpprefs.set_batchprofiler_url,
+                 None,
+                 cphelp.BATCHPROFILER_URL_HELP]
                 ]
     
     def get_title_font(self):
@@ -393,10 +392,7 @@ class PreferencesDlg(wx.Dialog):
 if __name__=='__main__':
     class MyApp(wx.App):
         def OnInit(self):
-            wx.InitAllImageHandlers()
             dlg = PreferencesDlg()
             dlg.show_modal()
             return 1
     app = MyApp(0)
- 
-    

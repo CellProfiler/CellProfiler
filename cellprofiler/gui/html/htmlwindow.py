@@ -46,7 +46,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                 # "close" it (= hide it)
                 #
                 parent = self.Parent
-                while parent != None:
+                while parent is not None:
                     if parent.Name == WELCOME_SCREEN_FRAME:
                         parent.Close()
                         break

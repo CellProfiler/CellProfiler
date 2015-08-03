@@ -105,7 +105,7 @@ class ColorMixin(object):
     
     def _get_colormap(self):
         '''Override to get the colormap'''
-        if self._colormap == None:
+        if self._colormap is None:
             return matplotlib.rcParams.get('image.cmap', 'jet')
         return self._colormap
     
@@ -245,7 +245,7 @@ class OutlinesMixin(ColorMixin):
     @property
     def outlines(self):
         '''Get a mask of all the points on the border of objects'''
-        if self._outlines == None:
+        if self._outlines is None:
             for i, labels in enumerate(self.labels):
                 if i == 0:
                     self._outlines = outline(labels) != 0
@@ -263,7 +263,7 @@ class OutlinesMixin(ColorMixin):
     @property
     def points(self):
         '''Return an artist for drawing the points'''
-        if self._points == None:
+        if self._points is None:
             self._points = CPOutlineArtist(
                 self.name, self.labels, linewidth = self.line_width,
                 color = self.color)

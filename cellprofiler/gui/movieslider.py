@@ -207,7 +207,7 @@ class SliderCtl(wx.Panel):
             else:
                 self.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
         index = self.get_mark_from_y(y)
-        if self.value_names != None and len(self.value_names) > index:
+        if self.value_names is not None and len(self.value_names) > index:
             self.SetToolTipString(self.value_names[index])
         else:
             self.SetToolTipString("")
@@ -467,7 +467,6 @@ if __name__ == "__main__":
 
     class MyApp(wx.App):
         def OnInit(self):
-            wx.InitAllImageHandlers()
             self.frame = MyFrame()
             self.SetTopWindow(self.frame)
             self.frame.Show()

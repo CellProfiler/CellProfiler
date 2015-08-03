@@ -233,7 +233,7 @@ class Workspace(object):
     
     def get_display(self):
         """True to provide a gui display"""
-        return self.__frame != None
+        return self.__frame is not None
     display = property(get_display)
     
     def get_in_background(self):
@@ -286,10 +286,10 @@ class Workspace(object):
         # catch any background threads trying to call display functions.
         assert not self.__in_background 
 
-        if title==None:
+        if title is None:
             title=self.__module.module_name
             
-        if window_name == None:
+        if window_name is None:
             window_name = cpf.window_name(self.__module)
             
         if self.__create_new_window:

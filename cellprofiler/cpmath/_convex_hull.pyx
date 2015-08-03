@@ -50,7 +50,8 @@ def convex_hull_ijv(in_labels_ijv,
     assert np.all(indexes >= 0), "All indexes must be >= 0"
     # declaration of local variables
     cdef int num_indexes, max_i, max_j, max_label, pixidx, outidx, cur_req, cur_label
-    cdef int num_vertices, start_j, cur_pix_i, cur_pix_j, end_j, need_last_upper_point
+    cdef int start_j, cur_pix_i, cur_pix_j, end_j, start_idx, num_vertices
+    cdef int need_last_upper_point
     cdef int num_emitted
     # an indirect sorting array for indexes
     cdef np.ndarray[DTYPE_t, ndim=1] indexes_reorder = np.argsort(indexes).astype(np.int32)
@@ -62,9 +63,6 @@ def convex_hull_ijv(in_labels_ijv,
     cdef np.ndarray[DTYPE_t, ndim=1] lower = np.empty(max_j + 1, np.int32)
     cdef np.ndarray[DTYPE_t, ndim=1] vertex_counts = np.zeros(num_indexes, np.int32)
     cdef np.ndarray[DTYPE_t, ndim=1] hull_offsets = np.zeros(num_indexes, np.int32)
-    # initialize them to extreme values
-    upper[:] = -1
-    lower[:] = max_i + 1
     pixidx = 0  # the next input pixel we'll process
     outidx = 0  # the next row to be written in the output
     for cur_req in range(num_indexes):
@@ -73,23 +71,26 @@ def convex_hull_ijv(in_labels_ijv,
             pixidx += 1
             if pixidx == labels_ijv.shape[0]:
                 break
-        num_vertices = 0
         hull_offsets[cur_req] = outidx
         if (pixidx == labels_ijv.shape[0]) or (cur_label != labels_ijv[pixidx, 2]):
             # cur_label's hull will have 0 points
             continue
-        start_j = labels_ijv[pixidx, 1]
-        while cur_label == labels_ijv[pixidx, 2]:
+        start_idx = pixidx
+        while pixidx < labels_ijv.shape[0] and cur_label == labels_ijv[pixidx, 2]:
+            pixidx += 1
+        num_vertices = pixidx - start_idx
+        start_j = labels_ijv[start_idx, 1]
+        end_j = labels_ijv[pixidx - 1, 1]
+        upper[start_j:(end_j+1)] = -1
+        lower[start_j:(end_j+1)] = max_i + 1
+        for start_idx <= pixidx < (start_idx + num_vertices):
             cur_pix_i = labels_ijv[pixidx, 0]
             cur_pix_j = labels_ijv[pixidx, 1]
             if upper[cur_pix_j] < cur_pix_i:
                 upper[cur_pix_j] = cur_pix_i
             if lower[cur_pix_j] > cur_pix_i:
                 lower[cur_pix_j] = cur_pix_i
-            pixidx += 1
-            if pixidx == labels_ijv.shape[0]:
-                break
-        end_j = labels_ijv[pixidx - 1, 1]
+        pixidx = start_idx + num_vertices
         if DEBUG:
             print "STARTJ/END_J", start_j, end_j
             print "LOWER", lower[start_j:end_j + 1]
@@ -157,7 +158,7 @@ def convex_hull_ijv(in_labels_ijv,
                     if DEBUG:
                         print "PRUNE"
                     num_emitted -= 1
-                if labels_ijv.shape[0] > outidx+num_emitted:
+                if pixidx > outidx+num_emitted:
                     # The last point can get temporarily pushed on the list
                     # twice only to be taken off below. So this is more than
                     # just keeping a segfault from happening.

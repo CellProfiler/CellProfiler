@@ -230,26 +230,6 @@ class RelateObjects(cpm.CPModule):
         child_count, parents_of = parents.relate_children(children)
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        if self.wants_per_parent_means.value:
-            parent_indexes = np.arange(np.max(parents.segmented))+1
-            for feature_name in m.get_feature_names(self.sub_object_name.value):
-                if not self.should_aggregate_feature(feature_name):
-                    continue
-                data = m.get_current_measurement(self.sub_object_name.value,
-                                                 feature_name)
-                if data is not None and len(data) > 0:
-                    if len(parents_of) > 0:
-                        means = fix(scind.mean(data.astype(float), 
-                                               parents_of, parent_indexes))
-                    else:
-                        means = np.zeros((0,))
-                else:
-                    # No child measurements - all NaN
-                    means = np.ones(len(parents_of)) * np.nan
-                mean_feature_name = FF_MEAN%(self.sub_object_name.value,
-                                             feature_name)
-                m.add_measurement(self.parent_name.value, mean_feature_name,
-                                  means)
         m.add_measurement(self.sub_object_name.value,
                           FF_PARENT%(self.parent_name.value),
                           parents_of)
@@ -277,13 +257,33 @@ class RelateObjects(cpm.CPModule):
                                      image_numbers,
                                      good_parents)
         parent_names = self.get_parent_names()
-        
         for parent_name in parent_names:
             if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
                 self.calculate_centroid_distances(workspace, parent_name)
             if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
                 self.calculate_minimum_distances(workspace, parent_name)
 
+        if self.wants_per_parent_means.value:
+            parent_indexes = np.arange(np.max(parents.segmented))+1
+            for feature_name in m.get_feature_names(self.sub_object_name.value):
+                if not self.should_aggregate_feature(feature_name):
+                    continue
+                data = m.get_current_measurement(self.sub_object_name.value,
+                                                 feature_name)
+                if data is not None and len(data) > 0:
+                    if len(parents_of) > 0:
+                        means = fix(scind.mean(data.astype(float), 
+                                               parents_of, parent_indexes))
+                    else:
+                        means = np.zeros((0,))
+                else:
+                    # No child measurements - all NaN
+                    means = np.ones(len(parents_of)) * np.nan
+                mean_feature_name = FF_MEAN%(self.sub_object_name.value,
+                                             feature_name)
+                m.add_measurement(self.parent_name.value, mean_feature_name,
+                                  means)
+        
         if self.show_window:
             workspace.display_data.parent_labels = parents.segmented
             workspace.display_data.parent_count = parents.count
@@ -539,9 +539,24 @@ class RelateObjects(cpm.CPModule):
         child_columns = [column
                          for column in child_columns
                          if column[0] == self.sub_object_name.value and
-                         self.should_aggregate_feature(column[1])]
+                         self.should_aggregate_feature(column[1])] + \
+            self.get_child_measurement_columns(pipeline)
         return child_columns
-        
+
+    def get_child_measurement_columns(self, pipeline):
+        columns = []
+        if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
+            for parent_name in self.get_parent_names():
+                columns += [(self.sub_object_name.value,
+                             FF_CENTROID % parent_name,
+                             cpmeas.COLTYPE_INTEGER)]
+        if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
+            for parent_name in self.get_parent_names():
+                columns += [(self.sub_object_name.value,
+                             FF_MINIMUM % parent_name,
+                             cpmeas.COLTYPE_INTEGER)]
+        return columns        
+    
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''
         columns = [(self.sub_object_name.value,
@@ -556,16 +571,7 @@ class RelateObjects(cpm.CPModule):
                          FF_MEAN%(self.sub_object_name.value, column[1]),
                          cpmeas.COLTYPE_FLOAT)
                         for column in child_columns]
-        if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
-            for parent_name in self.get_parent_names():
-                columns += [(self.sub_object_name.value,
-                             FF_CENTROID % parent_name,
-                             cpmeas.COLTYPE_INTEGER)]
-        if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
-            for parent_name in self.get_parent_names():
-                columns += [(self.sub_object_name.value,
-                             FF_MINIMUM % parent_name,
-                             cpmeas.COLTYPE_INTEGER)]
+        columns += self.get_child_measurement_columns(pipeline)
         return columns
     
     def get_object_relationships(self, pipeline):

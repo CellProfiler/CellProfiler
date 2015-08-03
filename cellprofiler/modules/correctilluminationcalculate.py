@@ -1004,7 +1004,7 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         self.__dirty = True
         pimage = self.__module.preprocess_image_for_averaging(image)
         pixel_data = pimage.pixel_data
-        if self.__image_sum == None:
+        if self.__image_sum is None:
             self.__image_sum = np.zeros(pixel_data.shape, 
                                         pixel_data.dtype)
             self.__mask_count = np.zeros(pixel_data.shape[:2],

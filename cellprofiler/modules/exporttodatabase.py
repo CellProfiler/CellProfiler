@@ -258,7 +258,7 @@ COL_OBJECT_NUMBER1 = "object_number1"
 COL_OBJECT_NUMBER2 = "object_number2"
 
 def execute(cursor, query, bindings = None, return_result=True):
-    if bindings == None:
+    if bindings is None:
         cursor.execute(query)
     else:
         cursor.execute(query, bindings)
@@ -2334,13 +2334,13 @@ CREATE TABLE %s (
         
         object_name - None = PerObject, otherwise a specific table
         '''
-        if object_name == None:
+        if object_name is None:
             object_table = self.get_table_name(cpmeas.OBJECT)
         else:
             object_table = self.get_table_name(object_name)
         statement = 'CREATE TABLE '+object_table+' (\n'
         statement += '%s INTEGER\n'%C_IMAGE_NUMBER
-        if object_name == None:
+        if object_name is None:
             statement += ',%s INTEGER'%C_OBJECT_NUMBER
             object_pk = C_OBJECT_NUMBER
         else:
@@ -3302,7 +3302,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 
         default_image_names = []
         # Find all images that have FileName and PathName
-        for feature in workspace.measurements.get_feature_names(cpmeas.IMAGE):
+        image_features = [
+            c[1] for c in workspace.pipeline.get_measurement_columns()
+            if c[0] == cpmeas.IMAGE]
+        for feature in image_features:
             match = re.match('^%s_(.+)$'%C_FILE_NAME,feature)
             if match:
                 default_image_names.append(match.groups()[0])

@@ -66,9 +66,9 @@ def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
     returns the coordinates of the inside rectangle
     """
     import wx
-    if shadow_pen == None:
+    if shadow_pen is None:
         shadow_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
-    if highlight_pen == None:
+    if highlight_pen is None:
         highlight_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DHIGHLIGHT))
     top_left_pen = (state == BV_UP and highlight_pen) or shadow_pen
     bottom_right_pen = (state == BV_UP and shadow_pen) or highlight_pen

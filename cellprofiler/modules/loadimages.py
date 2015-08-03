@@ -382,7 +382,7 @@ class LoadImages(cpmodule.CPModule):
         group = cps.SettingsGroup()
         def example_file_fn(path=None):
             '''Get an example file for use in the file metadata regexp editor'''
-            if path == None:
+            if path is None:
                 path = self.image_directory()
                 default = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
             else:

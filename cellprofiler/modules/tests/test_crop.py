@@ -49,15 +49,15 @@ class TestCrop(unittest.TestCase):
         image_set.add(INPUT_IMAGE, cpi.Image(input_pixels))
         module.image_name.value = INPUT_IMAGE
         module.cropped_image_name.value = OUTPUT_IMAGE 
-        if crop_image != None:
+        if crop_image is not None:
             image_set.add(CROP_IMAGE, cpi.Image(crop_image))
             module.image_mask_source.value = CROP_IMAGE
-        if cropping != None:
+        if cropping is not None:
             image_set.add(CROPPING, cpi.Image(np.zeros(cropping.shape),
                                               crop_mask = cropping))
             module.cropping_mask_source.value = CROPPING
         object_set = cpo.ObjectSet()
-        if crop_objects != None:
+        if crop_objects is not None:
             objects = cpo.Objects()
             objects.segmented = crop_objects
             object_set.add_objects(objects, CROP_OBJECTS)

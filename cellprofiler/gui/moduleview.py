@@ -750,7 +750,7 @@ class ModuleView:
         '''Make a button that, when pressed, launches the tree editor'''
         if control is None:
             control = wx.Button(self.module_panel, -1,
-                                "Press to select measurements")
+                                "Press button to select measurements")
             def on_press(event):
                 d = {}
                 assert isinstance(v, cps.MeasurementMultiChoice)
@@ -1592,10 +1592,7 @@ class ModuleView:
                                    name=max_control_name(v))
             max_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(max_ctrl,0,wx.EXPAND)
-            if v.unbounded_max or v.max < 0:
-                value = FROM_EDGE
-            else:
-                value = ABSOLUTE 
+            value = ABSOLUTE if v.is_abs() else FROM_EDGE
             absrel_ctrl = wx.ComboBox(panel,-1,value,
                                       choices = [ABSOLUTE,FROM_EDGE],
                                       name = absrel_control_name(v),

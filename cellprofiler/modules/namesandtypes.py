@@ -808,7 +808,7 @@ class NamesAndTypes(cpm.CPModule):
             return True
         column_names = self.get_column_names()
         image_sets, channel_map = self.java_make_image_sets(workspace)
-        if image_sets == None:
+        if image_sets is None:
             return False
         if len(image_sets) == 0:
             return True
@@ -1027,7 +1027,7 @@ class NamesAndTypes(cpm.CPModule):
         else:
             image_sets, channels = \
                 self.java_make_image_sets_by_metadata(workspace, ipd_list)
-        if image_sets != None:
+        if image_sets is not None:
             image_sets = J.get_collection_wrapper(image_sets)
         return image_sets, channels
 
@@ -1115,13 +1115,13 @@ class NamesAndTypes(cpm.CPModule):
             if anchor_channel is None:
                 anchor_keys = []
                 for join in joins:
-                    if join.get(name) == None:
+                    if join.get(name) is None:
                         break
                     anchor_keys.append(join[name])
                 else:
                     anchor_channel = i
                     anchor_cf = self.make_channel_filter(group, name)
-        if anchor_cf == None:
+        if anchor_cf is None:
             raise ValueError(
                 "Please choose valid metadata keys for at least one channel in the metadata matcher")
         channels = dict([(c, 0 if i == anchor_channel 
@@ -1324,7 +1324,7 @@ class NamesAndTypes(cpm.CPModule):
         compression_dictionary = self.get_imageset_dictionary(workspace)
         m = workspace.measurements
         blob = m[cpmeas.IMAGE, M_IMAGE_SET]
-        if blob == None:
+        if blob is None:
             return None
         jblob = J.get_env().make_byte_array(blob)
         column_names = J.make_list(self.get_column_names())
@@ -1786,7 +1786,7 @@ class NamesAndTypes(cpm.CPModule):
             joins = self.join.parse()
             for name in self.get_column_names():
                 for join in joins:
-                    if join.get(name) == None:
+                    if join.get(name) is None:
                         break
                 else:
                     return

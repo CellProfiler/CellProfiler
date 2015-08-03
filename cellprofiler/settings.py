@@ -741,11 +741,11 @@ class Number(Text):
             value = self.str_to_value(self.value_text)
         except ValueError:
             raise ValidationError('Value not in decimal format', self)
-        if self.__minval != None and self.__minval > value:
+        if self.__minval is not None and self.__minval > value:
             raise ValidationError(
                 'Must be at least %s, was %s'%
                 (self.value_to_str(self.__minval), self.value_text), self)
-        if self.__maxval != None and self.__maxval < value:
+        if self.__maxval is not None and self.__maxval < value:
             raise ValidationError(
                 'Must be at most %s, was %s' % 
                 (self.value_to_str(self.__maxval), self.value_text), self)
@@ -1096,6 +1096,8 @@ class IntegerOrUnboundedRange(IntegerRange):
             raise ValidationError("Only two values allowed",self)
         if (not values[0].isdigit()) and values[0] != BEGIN:
             raise ValidationError("%s is not an integer"%(values[0]),self)
+        if len(values[1]) == 0:
+            raise ValidationError("The end value is blank", self)
         if not (values[1] == END or
                 values[1].isdigit() or
                 (values[1][0]=='-' and 
@@ -1295,7 +1297,7 @@ class NameSubscriber(Setting):
     """
     def __init__(self, text, group, value=None,
                  can_be_blank=False, blank_text=LEAVE_BLANK, *args, **kwargs):
-        if value==None:
+        if value is None:
             value = (can_be_blank and blank_text) or "None"
         self.__required_attributes = { "group":group }
         if kwargs.has_key(REQUIRED_ATTRIBUTES):
@@ -3032,7 +3034,7 @@ class FileCollectionDisplay(Setting):
     
     def node_count(self, file_tree = None):
         '''Count the # of nodes (leaves + directories) in the tree'''
-        if file_tree == None:
+        if file_tree is None:
             file_tree = self.file_tree
         count = 0
         for key in file_tree.keys():

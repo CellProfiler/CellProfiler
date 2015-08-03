@@ -221,7 +221,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             This is useful if you know exactly what measurements you want included in the final spreadheet(s). """%globals())
         
         self.columns = cps.MeasurementMultiChoice(
-            "Press button to select measurements to export",doc = """
+            "",doc = """
             <i>(Used only when selecting the columns of measurements to export)</i><br>
             This setting controls the columns to be exported. Press
             the button and check the measurements or categories to export.""")

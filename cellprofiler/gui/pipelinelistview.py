@@ -1705,7 +1705,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 self.SetToolTip(None)
 
     def cancel_capture(self):
-        if self.HasCapture() and self.pressed_column != None:
+        if self.HasCapture() and self.pressed_column is not None:
             self.ReleaseMouse()
             self.pressed_column = None
             self.button_is_active = False

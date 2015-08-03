@@ -87,9 +87,9 @@ class Image(object):
             self.__has_crop_mask = False
         self.__masking_objects = masking_objects
         self.__scale = scale
-        if image!=None:
+        if image is not None:
             self.set_image(image, convert)
-        if mask!=None:
+        if mask is not None:
             self.set_mask(mask)
         self.__file_name = file_name
         self.__path_name = path_name
@@ -172,7 +172,7 @@ class Image(object):
     
     def get_has_parent_image(self):
         """True if this image has a defined parent"""
-        return self.__parent_image != None
+        return self.__parent_image is not None
     has_parent_image = property(get_has_parent_image)
 
     def get_masking_objects(self):
@@ -190,7 +190,7 @@ class Image(object):
         If this is true, there will also be a valid labels matrix
         available through the labels property
         """
-        return self.__masking_objects != None
+        return self.__masking_objects is not None
     has_masking_objects = property(get_has_masking_objects)
     
     def get_labels(self):
@@ -207,7 +207,7 @@ class Image(object):
     def get_mask(self):
         """Return the mask (pixels to be considered) for the primary image
         """
-        if not self.__mask == None:
+        if not self.__mask is None:
             return self.__mask.get()
         
         if self.has_masking_objects:
@@ -250,7 +250,7 @@ class Image(object):
             return True
         if self.has_crop_mask:
             return True
-        if self.parent_image != None:
+        if self.parent_image is not None:
             return self.parent_image.has_mask
         return False
     
@@ -258,7 +258,7 @@ class Image(object):
     
     def get_crop_mask(self):
         """Return the mask used to crop this image"""
-        if not self.__crop_mask == None:
+        if not self.__crop_mask is None:
             return self.__crop_mask.get()
         
         if self.has_masking_objects:
@@ -516,10 +516,10 @@ class RGBImage(object):
     
 def check_consistency(image, mask):
     """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
-    assert (image==None) or (len(image.shape) in (2,3)),"Image must have 2 or 3 dimensions"
-    assert (mask==None) or (len(mask.shape)==2),"Mask must have 2 dimensions"
-    assert (image==None) or (mask==None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (mask==None) or (mask.dtype.type is np.bool_), "Mask must be boolean, was %s"%(repr(mask.dtype.type))
+    assert (image is None) or (len(image.shape) in (2,3)),"Image must have 2 or 3 dimensions"
+    assert (mask is None) or (len(mask.shape)==2),"Mask must have 2 dimensions"
+    assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
+    assert (mask is None) or (mask.dtype.type is np.bool_), "Mask must be boolean, was %s"%(repr(mask.dtype.type))
 
 class AbstractImageProvider(object):
     """Represents an image provider that returns images

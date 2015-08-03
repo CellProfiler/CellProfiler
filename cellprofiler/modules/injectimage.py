@@ -157,8 +157,8 @@ class InjectObjects(cellprofiler.cpmodule.CPModule):
     def run(self,workspace):
         my_objects = cellprofiler.objects.Objects()
         my_objects.segmented = self.__segmented
-        if self.__unedited_segmented != None:
+        if self.__unedited_segmented is not None:
             my_objects.unedited_segmented = self.__unedited_segmented
-        if self.__small_removed_segmented != None:
+        if self.__small_removed_segmented is not None:
             my_objects.small_removed_segmented = self.__small_removed_segmented
         workspace.object_set.add_objects(my_objects, self.object_name.value)

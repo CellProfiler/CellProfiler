@@ -146,7 +146,7 @@ class Objects(object):
     
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""
-        return self.__unedited_segmented != None
+        return self.__unedited_segmented is not None
     
     def get_unedited_segmented(self):
         """Get the segmentation of the image into objects, including junk that 
@@ -155,7 +155,7 @@ class Objects(object):
         The default, if no unedited matrix is available, is the
         segmented labeling.
         """
-        if self.__unedited_segmented != None:
+        if self.__unedited_segmented is not None:
             dense, indices = self.__unedited_segmented.get_dense()
             return dense[0, 0, 0, 0]
         return self.segmented
@@ -171,7 +171,7 @@ class Objects(object):
     
     def has_small_removed_segmented(self):
         """Return true if there is a junk object matrix."""
-        return self.__small_removed_segmented != None
+        return self.__small_removed_segmented is not None
     
     def get_small_removed_segmented(self):
         """Get the matrix of segmented objects with the small objects removed
@@ -180,7 +180,7 @@ class Objects(object):
         the small objects removed, but objects touching the sides of the image
         or the image mask still present.
         """
-        if self.__small_removed_segmented != None:
+        if self.__small_removed_segmented is not None:
             dense, indices = self.__small_removed_segmented.get_dense()
             return dense[0, 0, 0, 0]
         return self.unedited_segmented
@@ -231,14 +231,14 @@ class Objects(object):
         """True if the objects were derived from a parent image
         
         """
-        return self.__parent_image != None
+        return self.__parent_image is not None
     has_parent_image = property(get_has_parent_image)
     
     def crop_image_similarly(self, image):
         """Crop an image in the same way as the parent image was cropped."""
         if image.shape == self.segmented.shape:
             return image
-        if self.parent_image == None:
+        if self.parent_image is None:
             raise ValueError("Images are of different size and no parent image")
         return self.parent_image.crop_image_similarly(image)
 
@@ -844,14 +844,14 @@ class Segmentation(object):
 def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     """Check the three components of Objects to make sure they are consistent
     """
-    assert segmented == None or np.all(segmented >= 0)
-    assert unedited_segmented == None or np.all(unedited_segmented >= 0)
-    assert small_removed_segmented == None or np.all(small_removed_segmented >= 0)
-    assert segmented == None or segmented.ndim == 2, "Segmented label matrix must have two dimensions, has %d"%(segmented.ndim)
-    assert unedited_segmented == None or unedited_segmented.ndim == 2, "Unedited segmented label matrix must have two dimensions, has %d"%(unedited_segmented.ndim)
-    assert small_removed_segmented == None or small_removed_segmented.ndim == 2, "Small removed segmented label matrix must have two dimensions, has %d"%(small_removed_segmented.ndim)
-    assert segmented == None or unedited_segmented == None or segmented.shape == unedited_segmented.shape, "Segmented %s and unedited segmented %s shapes differ"%(repr(segmented.shape),repr(unedited_segmented.shape))
-    assert segmented == None or small_removed_segmented == None or segmented.shape == small_removed_segmented.shape, "Segmented %s and small removed segmented %s shapes differ"%(repr(segmented.shape),repr(small_removed_segmented.shape))
+    assert segmented is None or np.all(segmented >= 0)
+    assert unedited_segmented is None or np.all(unedited_segmented >= 0)
+    assert small_removed_segmented is None or np.all(small_removed_segmented >= 0)
+    assert segmented is None or segmented.ndim == 2, "Segmented label matrix must have two dimensions, has %d"%(segmented.ndim)
+    assert unedited_segmented is None or unedited_segmented.ndim == 2, "Unedited segmented label matrix must have two dimensions, has %d"%(unedited_segmented.ndim)
+    assert small_removed_segmented is None or small_removed_segmented.ndim == 2, "Small removed segmented label matrix must have two dimensions, has %d"%(small_removed_segmented.ndim)
+    assert segmented is None or unedited_segmented is None or segmented.shape == unedited_segmented.shape, "Segmented %s and unedited segmented %s shapes differ"%(repr(segmented.shape),repr(unedited_segmented.shape))
+    assert segmented is None or small_removed_segmented is None or segmented.shape == small_removed_segmented.shape, "Segmented %s and small removed segmented %s shapes differ"%(repr(segmented.shape),repr(small_removed_segmented.shape))
    
 
 class ObjectSet(object):

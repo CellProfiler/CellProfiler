@@ -874,9 +874,11 @@ class LoadData(cpm.CPModule):
                                 fullname = os.path.join(path_base,
                                                         row[file_name_column])
                             else:
-                                fullname = os.path.join(path_base,
-                                                        row[path_name_column],
-                                                        row[file_name_column])
+                                row_path_name = os.path.join(
+                                    path_base, row[path_name_column])
+                                fullname = os.path.join(
+                                    row_path_name, row[file_name_column])
+                                row[path_name_column] = row_path_name
                             url = pathname2url(fullname)
                             row.append(url)
                         if path_name_column is None:

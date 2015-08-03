@@ -636,7 +636,7 @@ class ParameterSampleFrame(wx.Frame):
             self.__pipeline.notify_listeners(event)
             failure = 1
         if ((module.module_name != 'Restart' or failure==-1) and
-             self.__measurements != None):
+             self.__measurements is not None):
             module_error_measurement = 'ModuleError_%02d%s'%(module.module_num,module.module_name)
             self.__measurements.add_measurement(
                 'Image', module_error_measurement, failure);
@@ -862,7 +862,7 @@ class ParameterSampleFrame(wx.Frame):
                         #print '\nStarting run ' + str(i+1) + '...'
                         
                         for j, value in enumerate(l):
-                            if value != None:
+                            if value is not None:
                                 setting_nr = self.__parameters_list[j][1]
                                 setting = self.__module.setting(setting_nr)
                                 setting.set_value(value)

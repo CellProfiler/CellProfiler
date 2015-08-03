@@ -223,7 +223,8 @@ def run_on_tgt_os(script,
                   mail_before = False,
                   mail_error = True,
                   mail_after = True,
-                  email_address = None):
+                  email_address = None,
+                  task_range=None):
     '''Run the given script on the target operating system
     
     script - the script to be run with shebang header line
@@ -240,6 +241,8 @@ def run_on_tgt_os(script,
     mail_error - true to send email on error
     mail_after - true to send email after job finishes
     email_address - address of email recipient
+    task_range - for array jobs, a slice giving start / stop / step for
+                 task numbering
     '''
     if deps is not None:
         dep_cond = "-hold_jid %s" % (",".join(deps))
@@ -264,6 +267,15 @@ def run_on_tgt_os(script,
         queue_switch = ""
     else:
         queue_switch = "-q %s" % queue_name
+    if task_range is None:
+        task_switch = ""
+    else:
+        step = task_range.step
+        if step is not None:
+            task_switch = "-t %d-%d:%d" % (
+                task_range.start, task_range.stop-1, task_range.step)
+        else:
+            task_switch = "-t %d-%d" % (task_range.start, task_range.stop-1)
     #
     # TODO: memory and priority, possibly more
     #
@@ -272,7 +284,7 @@ def run_on_tgt_os(script,
 qsub -N %(job_name)s \\
     -e %(err_output)s \\
     -o %(output)s \\
-    -terse %(dep_cond)s %(email_switches)s %(cwd_switch)s %(queue_switch)s\\
+    -terse %(dep_cond)s %(email_switches)s %(cwd_switch)s %(queue_switch)s %(task_switch)s\\
     %(tgt_script)s
 """ %locals())
     try:
@@ -281,6 +293,8 @@ qsub -N %(job_name)s \\
         stdout, stderr = p.communicate(script)
         if p.returncode != 0:
             raise RuntimeError("Failed to submit job: %s" % stderr)
+        if task_range is not None:
+            stdout = stdout.partition(".")[0]
         return int(stdout.strip())
     finally:
         os.unlink(host_script)
@@ -315,6 +329,22 @@ qdel %s
         return stdout, stderr
     finally:
         os.unlink(host_script)
+        
+def kill_tasks(job_id, task_ids):
+    host_script = make_temp_script("""#!/bin/sh
+if [ -e "$HOME/.batchprofiler.sh" ]; then
+. "$HOME/.batchprofiler.sh"
+fi
+qdel %d -t %s
+""" % (job_id, ",".join(map(str, task_ids))))
+    try:
+        p = subprocess.Popen(
+            host_script, stdout=subprocess.PIPE, stderr = subprocess.PIPE)
+        stdout, stderr = p.communicate(host_script)
+        return stdout, stderr
+    finally:
+        os.unlink(host_script)
+    
     
 def python_on_tgt_os(args, group_name, job_name, queue_name, output,
                      err_output=None,

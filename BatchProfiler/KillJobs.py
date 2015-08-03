@@ -22,17 +22,25 @@ import RunBatch
 import bputilities
 from bpformdata import *
 import cgi
+import os
 import subprocess
 import sys
 
 job_id = BATCHPROFILER_VARIABLES[JOB_ID]
+task_id = BATCHPROFILER_VARIABLES[TASK_ID]
 batch_id = BATCHPROFILER_VARIABLES[BATCH_ID]
 if job_id is not None:
-    job = RunBatch.BPJob.select(job_id)
+    job = RunBatch.BPJob.select_by_job_id(job_id)
     if job is None:
-        bputilities.kill_job(job_id)
-    else:
+        if task_id is None:
+            bputilities.kill_job(job_id)
+        else:
+            bputilities.kill_tasks(job_id, [task_id])
+    elif task_id is None:
         RunBatch.kill_job(job)
+    else:
+        task = RunBatch.BPJobTask.select_by_task_id(job, task_id)
+        RunBatch.kill_task(task)
     print"""
     <html><head><title>Job %(job_id)d killed</title></head>
     <body>Job %(job_id)d killed
@@ -57,26 +65,52 @@ else:
     <input type='submit' value='Kill'/>
     </form>
     """
-    p = subprocess.Popen(["bash"],stdin = subprocess.PIPE,
-                         stdout=subprocess.PIPE)
-    listing = p.communicate(
-        ". /broad/software/scripts/useuse;reuse GridEngine8;qstat\n")[0]
-    listing_lines = listing.split('\n')
-    header = listing_lines[0]
-    columns = [header.find(x) for x in header.split(' ') if len(x)]
-    columns.append(1000)
-    body = listing_lines[2:]
+    script = """#!/bin/sh
+set -v
+if [ -e "$HOME/.batchprofiler.sh" ]; then
+. "$HOME/.batchprofiler.sh"
+fi
+set +v
+qstat
+"""
+    scriptfile = bputilities.make_temp_script(script)
+    try:
+        output = subprocess.check_output([scriptfile])
+    finally:
+        os.remove(scriptfile)
+    result = []
+    lines = output.split("\n")
+    header = lines[0]
+    columns = [i for i in range(len(header))
+               if i == 0 or (header[i-1].isspace() and not header[i].isspace())]
+    columns.append(len(header))
+    rows = [[line[columns[i]:columns[i+1]].strip() 
+             for i in range(len(columns)-1)]
+            for line in lines]
+    header = rows[0]
+    body = rows[2:]
     print """
     <h2>Jobs on imageweb</h2>
     <table>
     """
-    print "<tr>%s</tr>"%("".join(['<th>%s</th>'%(header[columns[i]:columns[i+1]])
-                                  for i in range(len(columns)-1)]))
-    for line in body:
-        print "<tr>%s</tr>"%("".join(['<td>%s</td>'%(line[columns[i]:columns[i+1]])
-                                      for i in range(len(columns)-1)]))
+    print "<tr>%s</tr>"%("".join([
+        '<th>%s</th>'%field for field in header]))
+    for fields in body:
+        try:
+            job_id = int(fields[0])
+        except:
+            continue
+        fields[0] = """
+        <form action='KillJobs.py' method='POST'>
+        Job ID: %d 
+        <input type='hidden' name='job_id' value='%d'/>
+        <input type='submit' value='Kill'/>
+        </form>""" % (job_id, job_id)
+        
+        print "<tr><td>%s</td></tr>" % "</td><td>".join(fields)
     """
     </table>
     </body>
     """
+sys.stdout.close()
 bputilities.shutdown_cellprofiler()

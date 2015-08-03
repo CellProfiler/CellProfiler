@@ -35,8 +35,7 @@ def run_sql_file(batch_id, sql_filename):
     returns the RunBatch.BPJob
     """
     cwd = os.path.dirname(__file__)
-    batch = RunBatch.BPBatch()
-    batch.select(batch_id)
+    batch = RunBatch.select(batch_id)
     run = RunBatch.BPSQLRun.select_by_sql_filename(batch, sql_filename)
     if run is None:
         sql_path = os.path.join(RunBatch.batch_script_directory(batch),
@@ -44,7 +43,7 @@ def run_sql_file(batch_id, sql_filename):
         cmd = "%s -b %d -i %s"%(os.path.join(cwd, "sql_jobs.py"),
                                 batch_id, sql_path)
         run = RunBatch.BPSQLRun.create(batch, sql_filename, cmd)
-    return RunBatch.run_one(batch, run, cwd=cwd)
+    return RunBatch.run(batch, [run], cwd=cwd)
 
 def sql_file_job_and_status(batch_id, sql_file):
     """Return the latest job ID associated with the batch and sql path
@@ -54,15 +53,14 @@ def sql_file_job_and_status(batch_id, sql_file):
     
     returns latest job or None if not submitted
     """
-    batch = RunBatch.BPBatch()
-    batch.select(batch_id)
+    batch = RunBatch.select(batch_id)
     run = RunBatch.BPSQLRun.select_by_sql_filename(batch, sql_file)
     if run is None:
         return None, None, None
-    result = run.select_jobs()
+    result = RunBatch.BPJobTask.select_by_run(run)
     if len(result) == 0:
         return None, None, None
-    return run, result[0][0], result[0][1]
+    return run, result[0], RunBatch.BPJobTaskStatus.select_by_job_task(job_task)
     
 if __name__ == "__main__":
     import optparse

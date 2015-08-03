@@ -472,28 +472,34 @@ batch is run.""" % globals())
             last = self.image_numbers[(batch_size-1)::batch_size]
             if len(last) < len(first):
                 last = np.hstack([last, self.image_numbers[-1]])
-        batch = RunBatch.BPBatch()
         runs = [(f, l) for f, l in zip(first, last)]
         #
         # Put it in the database
         #
         write_data = 1 if BATCHPROFILER_VARIABLES[WRITE_DATA] is not None else 0
-        batch.create(
-            email = BATCHPROFILER_DEFAULTS[EMAIL],
-            data_dir = BATCHPROFILER_DEFAULTS[DATA_DIR],
-            queue = BATCHPROFILER_DEFAULTS[QUEUE],
-            batch_size = BATCHPROFILER_DEFAULTS[BATCH_SIZE],
-            write_data = write_data,
-            timeout = 60,
-            cpcluster = self.cpcluster,
-            project = BATCHPROFILER_DEFAULTS[PROJECT],
-            memory_limit = BATCHPROFILER_DEFAULTS[MEMORY_LIMIT],
-            priority = BATCHPROFILER_DEFAULTS[PRIORITY],
-            runs = runs)
-        RunBatch.run_all(batch.batch_id)
-        vb_url = "ViewBatch.py?batch_id=%d" % batch.batch_id
+        with RunBatch.bpcursor() as cursor:
+            batch = RunBatch.BPBatch.create(
+                cursor,
+                email = BATCHPROFILER_DEFAULTS[EMAIL],
+                data_dir = BATCHPROFILER_DEFAULTS[DATA_DIR],
+                queue = BATCHPROFILER_DEFAULTS[QUEUE],
+                batch_size = BATCHPROFILER_DEFAULTS[BATCH_SIZE],
+                write_data = write_data,
+                timeout = 60,
+                cpcluster = self.cpcluster,
+                project = BATCHPROFILER_DEFAULTS[PROJECT],
+                memory_limit = BATCHPROFILER_DEFAULTS[MEMORY_LIMIT],
+                priority = BATCHPROFILER_DEFAULTS[PRIORITY])
+            bpruns = []
+            for bstart, bend in runs:
+                cmd = RunBatch.cellprofiler_command(batch, bstart, bend)
+                run = RunBatch.BPRun.create(cursor, batch, bstart, bend, cmd)
+                bpruns.append(run)
+        RunBatch.run(batch, bpruns)
+        vb_url = BATCHPROFILER_DEFAULTS[URL] + \
+            "/ViewBatch.py?batch_id=%d" % batch.batch_id
         self.send_batch_submission_email(batch, vb_url)
-        job_list = batch.select_jobs()
+        task_list = batch.select_tasks()
         with self.tag("head"):
             with self.tag("title"):
                 self.text("Batch #%d" % batch.batch_id)
@@ -523,9 +529,18 @@ batch is run.""" % globals())
                             self.text("Last image set")
                         with self.tag("th"):
                             self.text("job #")
-                for run, job, status in job_list:
-                    assert isinstance(run, RunBatch.BPRun)
+                        with self.tag("th"):
+                            self.text("task #")
+                for task_status in task_list:
+                    assert isinstance(task_status, RunBatch.BPJobTaskStatus)
+                    task = task_status.job_task
+                    assert isinstance(task, RunBatch.BPJobTask)
+                    job = task.job
                     assert isinstance(job, RunBatch.BPJob)
+                    bat = task.batch_array_task
+                    assert isinstance(bat, RunBatch.BPBatchArrayTask)
+                    task_id = bat.task_id
+                    run = bat.run
                     with self.tag("tr"):
                         with self.tag("td"):
                             self.text(str(run.bstart))
@@ -533,6 +548,8 @@ batch is run.""" % globals())
                             self.text(str(run.bend))
                         with self.tag("td"):
                             self.text(str(job.job_id))
+                        with self.tag("td"):
+                            self.text(str(task_id))
 
     def send_batch_submission_email(self, batch, vb_url):
         doc, tag, text = yattag.Doc().tagtext()

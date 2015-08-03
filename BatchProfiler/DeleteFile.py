@@ -28,8 +28,9 @@ def remove_if_exists(path):
 
 def delete_run(my_batch, my_run):
     if delete_action in (A_DELETE_ALL, A_DELETE_TEXT):
-        remove_if_exists(RunBatch.run_text_file_path(my_batch, my_run))
-        remove_if_exists(RunBatch.run_err_file_path(my_batch, my_run))
+        for bat in RunBatch.BPBatchArrayTask.select_by_run(my_run):
+            remove_if_exists(RunBatch.batch_array_task_text_file_path(bat))
+            remove_if_exists(RunBatch.batch_array_task_err_file_path(bat))
 
     if delete_action in (A_DELETE_ALL, A_DELETE_OUTPUT):
         remove_if_exists(RunBatch.run_out_file_path(my_batch, my_run))
@@ -39,12 +40,10 @@ run_id = BATCHPROFILER_DEFAULTS[RUN_ID]
 batch_id = BATCHPROFILER_DEFAULTS[BATCH_ID]
 if run_id is not None and delete_action is not None:
     my_run = RunBatch.BPRun.select(run_id)
-    my_batch = RunBatch.BPBatch()
-    my_batch.select(my_run.batch_id)
+    my_batch = my_run.batch
     delete_run(my_batch, my_run)
 elif batch_id is not None:
-    my_batch = RunBatch.BPBatch()
-    my_batch.select(batch_id)
+    my_batch = RunBatch.BPBatch.select(batch_id)
     for my_run in my_batch.select_runs():
         delete_run(my_batch, my_run)
     

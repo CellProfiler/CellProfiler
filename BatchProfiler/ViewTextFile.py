@@ -23,22 +23,28 @@ import stat
 import sys
 
 def main():
-    run_id = BATCHPROFILER_VARIABLES[RUN_ID]
+    batch_array_id = BATCHPROFILER_VARIABLES[BATCH_ARRAY_ID]
+    task_id = BATCHPROFILER_VARIABLES[TASK_ID]
 
-    if run_id is not None:
-        do_run_id(run_id)
+    if batch_array_id is not None and task_id is not None:
+        do_it(batch_array_id, task_id)
     else:
         show_help()
         
-def do_run_id(run_id):
-    my_run = RunBatch.BPRunBase.select(run_id)
-    my_batch = RunBatch.BPBatch()
-    my_batch.select(my_run.batch_id)
+def do_it(batch_array_id, task_id):
+    batch_array = RunBatch.BPBatchArray.select(batch_array_id)
+    bat = RunBatch.BPBatchArrayTask.select_by_batch_array_and_task_id(
+        batch_array, task_id)
+    if bat is None:
+        show_help()
+        return
+    run = bat.run
+    my_batch = run.batch
     file_type = BATCHPROFILER_VARIABLES[FILE_TYPE]
     if file_type == FT_TEXT_FILE:
-        show_file(RunBatch.run_text_file_path(my_batch, my_run))
+        show_file(RunBatch.batch_array_task_text_file_path(bat))
     elif file_type == FT_ERR_FILE:
-        show_file(RunBatch.run_err_file_path(my_batch, my_run))
+        show_file(RunBatch.batch_array_task_err_file_path(bat))
     elif file_type == FT_OUT_FILE:
         download_attachment(
             RunBatch.run_out_file(my_batch, my_run),

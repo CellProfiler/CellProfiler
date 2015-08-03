@@ -222,11 +222,11 @@ class UntangleWorms(cpm.CPModule):
             regions in both worms or excluding the overlapping regions from
             both worms. 
             <ul>
-            <li>Choose <i>%(OO_WITH_OVERLAP)s</i> to save objects including
+            <li><i>%(OO_WITH_OVERLAP)s:</i> Save objects including
             overlapping regions.</li>
-            <li>Choose <i>%(OO_WITHOUT_OVERLAP)s</i> to save only
+            <li><i>%(OO_WITHOUT_OVERLAP)s:</i> Save only
             the portions of objects that do not overlap.</li>
-            <li>Choose <i>%(OO_BOTH)s</i> to save two versions: with and without overlap.</li>
+            <li><i>%(OO_BOTH)s:</i> Save two versions: with and without overlap.</li>
             </ul>""" %
             globals())
         

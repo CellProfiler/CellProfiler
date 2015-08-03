@@ -242,12 +242,16 @@ class StraightenWorms(cpm.CPModule):
             at the top of the image or at the bottom of the image. This
             can be used to align all worms similarly if some feature,
             such as the larynx, is stained and is always at the same end
-            of the worm. Choose <i>%(FLIP_TOP)s</i> if the brightest part of the
-            worm should be at the top of the image, <i>%(FLIP_BOTTOM)s</i> if the
-            brightest part of the worm should be at the bottom or
-            <i>%(FLIP_NONE)s</i> if the worm should not be aligned.
-            Choose <i>%(FLIP_MANUAL)s</i> to bring up an editor for every
-            cycle that allows you to choose the orientation of each worm."""%globals())
+            of the worm. 
+            <ul>
+            <li><i>%(FLIP_TOP)s:</i> The brightest part of the
+            worm should be at the top of the image.</li>
+            <li><i>%(FLIP_BOTTOM)s:</i> The
+            brightest part of the worm should be at the bottom.</li>
+            <li><i>%(FLIP_NONE)s:</i> The worm should not be aligned.</li>
+            <li><i>%(FLIP_MANUAL)s:</i> Bring up an editor for every
+            cycle that allows you to choose the orientation of each worm.</li>
+            </ul>"""%globals())
         
         def image_choices_fn(pipeline):
             '''Return the image choices for the alignment image'''

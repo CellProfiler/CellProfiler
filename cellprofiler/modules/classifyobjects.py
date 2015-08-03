@@ -268,15 +268,20 @@ class ClassifyObjects(cpm.CPModule):
         group.append("bin_choice", cps.Choice(
             "Select bin spacing",
             [BC_EVEN, BC_CUSTOM],doc="""
-            You can either specify bins of equal size, bounded by
-            upper and lower limits, or you can specify custom values that
-            define the edges of each bin with a threshold. 
-            
-            <i>Note:</i> If you would like two bins, choose <i>Custom-defined bins</i> and then provide a single threshold when asked. 
-            <i>Evenly spaced bins</i> creates the indicated number of bins
-            at evenly spaced intervals between the low and high threshold.
+            Select how you want to define the spacing of the bins. 
+            You have the following options:  
+            <ul>
+            <li><i>%(BC_EVEN)s:</i> Choose this if you want to specify 
+            bins of equal size, bounded by upper and lower limits. If you 
+            want two bins, choose thsi option and then provide a single 
+            threshold when asked.</li>
+            <li><i>%(BC_CUSTOM)s:</i> Choose this option to create the 
+            indicated number of bins  at evenly spaced intervals between the 
+            low and high threshold.
             You also have the option to create bins for objects that fall below
-            or above the low and high threhsold"""))
+            or above the low and high threshold.</li>
+            </ul>
+            """%globals()))
         
         group.append("bin_count", cps.Integer(
             "Number of bins", 3, minval= 1,doc="""
@@ -286,16 +291,18 @@ class ClassifyObjects(cpm.CPModule):
         
         group.append("low_threshold", cps.Float(
             "Lower threshold", 0,doc="""
-            <i>(Used only if Evenly spaced bins selected)</i><br>
+            <i>(Used only if "%(BC_EVEN)s" selected)</i><br>
             This is the threshold that separates the lowest bin from the
             others. The lower threshold, upper threshold, and number of bins
-            define the thresholds of bins between the lowest and highest."""))
+            define the thresholds of bins between the lowest and highest.
+            """%globals()))
         
         group.append("wants_low_bin",cps.Binary(
             "Use a bin for objects below the threshold?", False,doc="""
             Select <i>%(YES)s</i> if you want to create a bin for objects
             whose values fall below the low threshold. Select <i>%(NO)s</i>
-            if you do not want a bin for these objects."""%globals()))
+            if you do not want a bin for these objects.
+            """%globals()))
         
         def min_upper_threshold():
             return group.low_threshold.value + np.finfo(float).eps
@@ -303,10 +310,11 @@ class ClassifyObjects(cpm.CPModule):
         group.append("high_threshold", cps.Float(
             "Upper threshold", 1,
             minval = cps.NumberConnector(min_upper_threshold),doc="""
-            <i>(Used only if Evenly spaced bins selected)</i><br>
+            <i>(Used only if "%(BC_EVEN)s" selected)</i><br>
             This is the threshold that separates the last bin from
             the others.
-            <i>Note:</i> If you would like two bins, choose <i>Custom-defined bins</i>."""))
+            <i>Note:</i> If you would like two bins, you should select <i>%(BC_CUSTOM)s</i>.
+            """%globals()))
         
         group.append("wants_high_bin", cps.Binary(
             "Use a bin for objects above the threshold?", False,doc="""
@@ -317,11 +325,12 @@ class ClassifyObjects(cpm.CPModule):
         group.append("custom_thresholds", cps.Text(
             "Enter the custom thresholds separating the values between bins",
             "0,1",doc="""
-            <i>(Used only if Custom thresholds selected)</i><br>
+            <i>(Used only if "%(BC_CUSTOM)s" selected)</i><br>
             This setting establishes the threshold values for the
             bins. You should enter one threshold between each bin, separating
             thresholds with commas (for example, <i>0.3, 1.5, 2.1</i> for four bins).
-            The module will create one more bin than there are thresholds."""))
+            The module will create one more bin than there are thresholds.
+            """%globals()))
         
         group.append("wants_custom_names", cps.Binary(
             "Give each bin a name?", False,doc="""

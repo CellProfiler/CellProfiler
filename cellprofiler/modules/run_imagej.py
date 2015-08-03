@@ -202,11 +202,14 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             [CM_NOTHING, CM_COMMAND, CM_SCRIPT, CM_MACRO],doc="""
             You can run an ImageJ 2.0 script, an ImageJ 1.x macro or a command <i>before</i> each group of
             images. This can be useful in order to set up ImageJ before
-            processing a stack of images. Choose <i>%(CM_NOTHING)s</i> if
-            you do not want to run a command or macro, <i>%(CM_COMMAND)s</i>
-            to choose a command to run, <i>%(CM_SCRIPT)s</i> to run an
-            ImageJ 2.0 script or <i>%(CM_MACRO)s</i> to run an ImageJ 1.x
-            macro in ImageJ 1.x compatibility mode.
+            processing a stack of images. 
+            <ul>
+            <li><i>%(CM_NOTHING)s:</i> Choose this option if
+            you do not want to run a command or macro.</li>
+            <li><i>%(CM_COMMAND)s:</i> Choose a command to run.</li>
+            <li><i>%(CM_SCRIPT)s:</i> Run an ImageJ 2.0 script.</li>
+            <li><i>%(CM_MACRO)s</i> Run an ImageJ 1.x macro in ImageJ 1.x compatibility mode.</li>
+            </ul>
             """ % globals())
         
         logger.debug("Finding ImageJ commands")
@@ -232,11 +235,13 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             You can run an ImageJ 2.0 script, an ImageJ macro or a command <i>after</i> each group of
             images. This can be used to do some sort of operation on a whole
             stack of images that have been accumulated by the group operation.
-            Choose <i>%(CM_NOTHING)s</i> if
-            you do not want to run a command or macro, <i>%(CM_COMMAND)s</i>
-            to choose a command to run, <i>%(CM_SCRIPT)s</i> to run an
-            ImageJ 2.0 script or <i>%(CM_MACRO)s</i> to run an ImageJ 1.x
-            macro in ImageJ 1.x compatibility mode.
+            <ul>
+            <li><i>%(CM_NOTHING)s:</i> Choose this option if
+            you do not want to run a command or macro.</li>
+            <li><i>%(CM_COMMAND)s:</i> Choose a command to run.</li>
+            <li><i>%(CM_SCRIPT)s:</i> Run an ImageJ 2.0 script.</li>
+            <li><i>%(CM_MACRO)s</i> Run an ImageJ 1.x macro in ImageJ 1.x compatibility mode.</li>
+            </ul>
             """ % globals())
         
         self.post_group_command = self.make_command_choice(

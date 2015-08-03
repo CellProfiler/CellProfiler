@@ -164,10 +164,11 @@ class FlagImage(cpm.CPModule):
                         <li><i>%(S_ALL_OBJECTS)s:</i> All the 
                         object measurements in an image, without averaging. In other words, if <i>any</i> 
                         of the objects meet the criteria, the image will be flagged.</li>
-                        <li><i>%(S_RULES)s:</i>Use a text file of rules produced by CellProfiler Analyst. If you 
-                        choose <i>Rules</i>, you will have to ensure that this pipeline makes every measurement 
-                        in the rules file prior to this module.</li>
-                        </ul>'''%globals()))
+                        <li><i>%(S_RULES)s:</i> Use a text file of rules produced by CellProfiler Analyst. With this
+                        option, you will have to ensure that this pipeline produces every measurement 
+                        in the rules file upstream of this module.</li>
+                        </ul>
+                        '''%globals()))
         
         group.append("object_name",
                      cps.ObjectNameSubscriber(

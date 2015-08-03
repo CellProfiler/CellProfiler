@@ -290,15 +290,15 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             "Save display as image?", False,
             doc = """This setting allows you to save the heatmap display as
             an image that can be output using the <b>SaveImages</b> module.
-            Choose <i>yes</i> to save the display or <i>no</i> if the
-            display is not needed."""))
+            Choose <i>%(YES)s</i> to save the display or <i>%(NO)s</i> if the
+            display is not needed."""%globals()))
         group.append("display_name", cps.ImageNameProvider(
             "Output image name", "Heatmap",
             doc = """
-            <i>(Only used if "Save display as image?" is "yes")</i><br>
+            <i>(Only used if "Save display as image?" is "%(YES)s")</i><br>
             This setting names the heatmap image so that the name you enter
             here can be selected in a later <b>SaveImages</b> or other module.
-            """))
+            """%globals()))
         group.append("remover", cps.RemoveSettingButton(
             "", "Remove this heatmap display", self.heatmaps, group))
         self.heatmaps.append(group)

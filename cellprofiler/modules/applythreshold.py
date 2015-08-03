@@ -79,11 +79,14 @@ class ApplyThreshold(Identify):
             "Set pixels below or above the threshold to zero?",
             [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD], doc="""
             <i>(Used only when "%(GRAYSCALE)s" thresholding is selected)</i><br>
-            For grayscale output, the dim pixels below 
-            the threshold can be set to zero or the bright pixels above 
-            the threshold can be set to zero.
-            Choose <i>%(TH_BELOW_THRESHOLD)s</i> to threshold dim pixels and
-            <i>%(TH_ABOVE_THRESHOLD)s</i> to threshold bright pixels."""%globals())
+            This option adjusts how pixels above or below the threshold are handled:
+            <ul>
+            <li><i>%(TH_BELOW_THRESHOLD)s:</i> Set the dim pixels below 
+            the threshold to zero.</li>
+            <li><i>%(TH_ABOVE_THRESHOLD)s:</i> Set the bright pixels above the 
+            threshold to zero.</li>
+            </ul>
+            """%globals())
         
         # if not binary and below threshold
         

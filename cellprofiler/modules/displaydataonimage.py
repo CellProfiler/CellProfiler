@@ -169,11 +169,15 @@ class DisplayDataOnImage(cpm.CPModule):
             extremes of the colormap. This setting determines whether the
             extremes are the minimum and maximum values of the measurement
             from among the objects in the current image or manually-entered
-            extremes. Choose <i>%(CMS_USE_MEASUREMENT_RANGE)s</i> to use
+            extremes. 
+            <ul>
+            <li><i>%(CMS_USE_MEASUREMENT_RANGE)s:</i> Use
             the full range of colors to get the maximum contrast within the
-            image. Choose <i>%(CMS_MANUAL)s</i> to manually set the upper and
+            image. </li>
+            <li><i>%(CMS_MANUAL)s:</i> Manually set the upper and
             lower bounds so that images with different maxima and minima
-            can be compared by a uniform color mapping.
+            can be compared by a uniform color mapping.</li>
+            </ul>
             """ % globals())
         self.color_map_scale = cps.FloatRange(
             "Color map range", 

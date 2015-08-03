@@ -333,7 +333,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             </dl>
             <dl>
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
-            Our implementation of Otsu's method allows for assigning the threhsold value based on
+            Our implementation of Otsu's method allows for assigning the threshold value based on
             splitting the image into either two classes (foreground and background) or three classes 
             (foreground, mid-level, and background). See the help below for more details.</dd>
             </dl>
@@ -595,12 +595,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <i>(Used only with the %(TM_ROBUST_BACKGROUND)s method)</i><br>
             This setting determines whether the %(TM_ROBUST_BACKGROUND)s method
             uses its default parameters or lets the user customize them.
-            <br>
-            <ul><li>Choose <i>%(RB_DEFAULT)s</i> to use the default parameters,
+            <ul>
+            <li><i>%(RB_DEFAULT)s:</i> Use the default parameters,
             discarding the 5%% highest and lowest
             intensity pixels and calculating the threshold as the mean plus
             two standard deviations of the remaining pixels.</li>
-            <li>Choose <i>%(RB_CUSTOM)s</i> to fully customize the method.</li>
+            <li><i>%(RB_CUSTOM)s:</i> Choose this option to fully customize the method.</li>
             </ul>
             """ % globals())
 

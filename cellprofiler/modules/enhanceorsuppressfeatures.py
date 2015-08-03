@@ -222,9 +222,9 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             <i>%(E_SPECKLES)s</i> can use a fast or slow algorithm to find
             speckles. 
             <ul>
-            <li>Choose <i>%(S_FAST)s</i> for speckles that have a large
+            <li><i>%(S_FAST)s:</i> Select this option for speckles that have a large
             radius (greater than 10 pixels) and need not be exactly circular.</li>
-            <li>Choose <i>%(S_SLOW)s</i> for speckles of small radius or to
+            <li><i>%(S_SLOW)s:</i> Use for speckles of small radius or to
             maintain backwards compatibility with previous versions of
             CellProfiler.</li>
             </ul>

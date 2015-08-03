@@ -127,15 +127,18 @@ class OverlayOutlines(cpm.CPModule):
 
         group.append("outline_choice", cps.Choice(
             "Load outlines from an image or objects?",
-            [FROM_OBJECTS, FROM_IMAGES],
-            doc = """Prior versions of <b>OverlayOutlines</b> would only
-            display outline images which were optional outputs of the identify
-            modules. For legacy pipelines or to continue using the outline
-            images instead of objects, choose <i>%(FROM_IMAGES)s</i>. Choose
-            <i>%(FROM_OBJECTS)s</i> to create the image directly from the
+            [FROM_OBJECTS, FROM_IMAGES],doc = """
+            This setting selects what source the outlines come from:
+            <ul>
+            <li><i>%(FROM_OBJECTS)s:</i> Create the image directly from the
             objects. This option will improve the functionality of the
             contrast options for this module's interactive display and will
-            save memory.
+            save memory.</li>
+            <li><i>%(FROM_IMAGES)s:</i> Prior versions of <b>OverlayOutlines</b> would only
+            display outline images which were optional outputs of the identify
+            modules. For legacy pipelines or to continue using the outline
+            images instead of objects, choose this option.</li>
+            </ul>
             """ % globals()))
         
         group.append("objects_name", cps.ObjectNameSubscriber(

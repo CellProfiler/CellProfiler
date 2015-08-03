@@ -80,14 +80,15 @@ class ConvertObjectsToImage(cpm.CPModule):
             want to process the label matrix image using
             another program.</li>
             </ul>
-            You can choose <i>Color</i> with a <i>Gray</i> colormap to produce
+            You can choose <i>%(IM_COLOR)s</i> with a <i>Gray</i> colormap to produce
             jumbled gray objects."""%globals())
         
         self.colormap = cps.Colormap(
             "Select the colormap",doc="""
-            <i>(Used only if Color output image selected)</i><br>
+            <i>(Used only if "<i>%(IM_COLOR)s</i>" output image selected)</i><br>
             Choose the colormap to be used, which affects how the objects are colored. 
-            You can look up your default colormap under <i>File > Preferences</i>.""")
+            You can look up your default colormap under <i>File > Preferences</i>.
+            """%globals())
 
     def settings(self):
         return [self.object_name, self.image_name, self.image_mode, 

@@ -72,7 +72,7 @@ Research</i>, 23, 231-242 <a href="http://dx.doi.org/10.1207/s15327906mbr2302_6"
 # Website: http://www.cellprofiler.org
 
 import numpy as np
-from contrib.english import ordinal
+from cellprofiler.contrib.english import ordinal
 
 from scipy.ndimage import label, distance_transform_edt
 from scipy.sparse import coo_matrix

@@ -1,0 +1,15 @@
+sudo: false
+language: python
+python:
+  - 2.7
+addons:
+  apt:
+    packages:
+      - python-numpy
+      - python-scipy
+before_install: pip install --upgrade pip
+install: pip install -e .
+before_script: pip install tox
+script: tox
+virtualenv:
+  system_site_packages: true

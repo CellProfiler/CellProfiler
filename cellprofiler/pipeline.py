@@ -53,7 +53,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
-from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
+from cellprofiler.MATLAB import make_cell_struct_dtype, new_string_cell_array
 from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
 from bioformats.omexml import OMEXML
 import cellprofiler.utilities.version as cpversion
@@ -3830,19 +3830,19 @@ class MeasurementDependency(Dependency):
     def __init__(self, source_module, destination_module, object_name,
                  feature, source_setting = None, destination_setting = None):
         '''Initialize using source, destination and measurement
-        
+
         source_module - module producing the measurement
-        
+
         destination_module - module using the measurement
-        
+
         object_name - the measurement is made on the objects with this name
         (or Image for image measurements)
-        
+
         feature - the feature name for the measurement, for instance AreaShape_Area
-        
+
         source_setting - the module setting that controls production of this
         measurement (very typically = None for no such thing)
-        
+
         destination_setting - the module setting that chooses the measurement
         for the user of the data, for instance a MeasurementSetting
         '''

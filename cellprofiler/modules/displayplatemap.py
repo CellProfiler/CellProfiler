@@ -26,7 +26,7 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>,
 
 
 import numpy as np
-from contrib.english import ordinal
+from cellprofiler.contrib.english import ordinal
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm

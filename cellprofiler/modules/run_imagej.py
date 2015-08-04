@@ -46,12 +46,13 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
-import imagej.imagej2 as ij2
-from imagej.imagej2 import get_context
-import imagej.windowmanager as ijwm
-import imagej.imageprocessor as ijiproc
-import imagej.imageplus as ijip
-import imagej.macros as ijmacros
+
+import cellprofiler.imagej.imagej2 as ij2
+from cellprofiler.imagej.imagej2 import get_context
+import cellprofiler.imagej.windowmanager as ijwm
+import cellprofiler.imagej.imageprocessor as ijiproc
+import cellprofiler.imagej.imageplus as ijip
+import cellprofiler.imagej.macros as ijmacros
 import javabridge as J
 
 CM_COMMAND = "Command"

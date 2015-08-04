@@ -25,7 +25,7 @@ import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.run_imagej as R
-import imagej.imagej2 as ij2
+import cellprofiler.imagej.imagej2 as ij2
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"

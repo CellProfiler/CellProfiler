@@ -244,7 +244,7 @@ def cp_stop_vm(kill=True):
     whatever action is needed to stop AWT and the JVM.
     '''
     if not cpprefs.get_awt_headless():
-        from imagej.imagej2 import allow_quit, the_imagej_context
+        from cellprofiler.imagej.imagej2 import allow_quit, the_imagej_context
         ij1 = javabridge.JClassWrapper("ij.IJ").getInstance()
         if ij1 is not None and ij1.isVisible():
             #

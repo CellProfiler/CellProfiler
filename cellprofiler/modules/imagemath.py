@@ -25,7 +25,7 @@ See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationC
 
 
 import numpy as np
-from contrib.english import ordinal
+from cellprofiler.contrib.english import ordinal
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm

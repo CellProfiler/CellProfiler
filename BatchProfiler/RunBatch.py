@@ -159,18 +159,17 @@ class BPBatch(object):
             for batch_id, email, data_dir, queue, batch_size, write_data, \
                 timeout, cpcluster, project, memory_limit, priority in \
                 cursor.fetchall():
-                batch = BPBatch()
-                batch.batch_id = batch_id
-                batch.email = email
-                batch.data_dir = data_dir
-                batch.queue = queue
-                batch.batch_size = batch_size
-                batch.write_data = write_data,
-                batch.timeout = timeout
-                batch.cpcluster = cpcluster
-                batch.project = project
-                batch.memory_limit = memory_limit
-                batch.priority = priority
+                batch = BPBatch(batch_id,
+                                email = email,
+                                data_dir = data_dir,
+                                queue = queue,
+                                batch_size = batch_size,
+                                write_data = write_data,
+                                timeout = timeout,
+                                cpcluster = cpcluster,
+                                project = project,
+                                memory_limit = memory_limit,
+                                priority = priority)
                 batches.append(batch)
             return batches
                                                     

@@ -100,7 +100,7 @@ class CellProfilerApp(wx.App):
             self.splash = None
         
     def OnExit(self):
-        from imagej.imagej2 import allow_quit
+        from cellprofiler.imagej.imagej2 import allow_quit
         allow_quit()
         from javabridge import deactivate_awt
         deactivate_awt()

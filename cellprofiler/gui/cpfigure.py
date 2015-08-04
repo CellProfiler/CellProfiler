@@ -201,7 +201,7 @@ def close_all(parent):
         
     reset_cpfigure_position()
     try:
-        from imagej.windowmanager import close_all_windows
+        from cellprofiler.imagej.windowmanager import close_all_windows
         from javabridge import attach, detach
         attach()
         try:

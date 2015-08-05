@@ -403,7 +403,8 @@ def build_cellprofiler(
         if not os.path.isdir(path):
             os.makedirs(path)
         subprocess.check_call([
-            "git", "clone", "https://github.com/CellProfiler/CellProfiler", path])
+            "git", "clone", "-q",
+            "https://github.com/CellProfiler/CellProfiler", path])
         subprocess.check_call(["git", "checkout", "-q", git_hash], cwd=path)
     mvn_job = "CellProfiler-mvn-%s" % git_hash
     build_job = "CellProfiler-build-%s" % git_hash

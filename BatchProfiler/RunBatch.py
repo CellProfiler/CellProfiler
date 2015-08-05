@@ -40,6 +40,8 @@ JS_ABORTED = "ABORTED"
 JS_INCOMPLETE = "INCOMPLETE"
 '''As a variable, all statuses'''
 JS_ALL = "ALL"
+'''As a variable, one run'''
+JS_ONE = "ONE"
 INCOMPLETE_STATUSES = (JS_SUBMITTED, JS_RUNNING, JS_ERROR, JS_ABORTED)
 
 '''The run type for a CellProfiler run'''

@@ -161,9 +161,9 @@ class ViewBatchDoc(object):
                     kwds = {}
                     run_id = BATCHPROFILER_VARIABLES[RUN_ID]
                     submit_run = BATCHPROFILER_VARIABLES[SUBMIT_RUN]
-                    if submit_run == RESUBMIT or submit_run is None:
-                        runs = batch.select_runs()
-                    if run_id is not None:
+                    if submit_run == RunBatch.JS_ALL:
+                        runs = self.my_batch.select_runs()
+                    elif submit_run == RunBatch.JS_ONE:
                         runs = [RunBatch.BPRun.select(run_id)]
                     else:
                         if submit_run == RunBatch.JS_INCOMPLETE:
@@ -535,10 +535,14 @@ function fix_permissions() {
                                         type="hidden",
                                         name=RUN_ID,
                                         value=str(run.run_id))
+                                    self.doc.input(
+                                        type="hidden",
+                                        name=SUBMIT_RUN,
+                                        value=RunBatch.JS_ONE)
                                     self.doc.stag(
                                         "input",
                                         type='submit',
-                                        name=SUBMIT_RUN,
+                                        name="Resubmit_Button",
                                         value=RESUBMIT)
                     self.build_text_file_table_cell(task)
                     if self.my_batch.wants_measurements_file:

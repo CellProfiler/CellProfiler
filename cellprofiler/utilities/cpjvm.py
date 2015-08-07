@@ -39,7 +39,7 @@ def get_path_to_jars():
     for _ in range(split_count):
         root_path = os.path.split(root_path)[0]
         
-    imagej_path = os.path.join(root_path, 'imagej','jars')
+    imagej_path = os.path.join(root_path, 'build')
     return imagej_path
 
 def get_patcher_args(class_path):

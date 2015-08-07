@@ -164,7 +164,7 @@ HasImagePlaneDetails:False"""
         
     def test_06_02_memory(self):
         '''Run a pipeline and check for memory leaks'''
-        from contrib.objgraph import get_objs
+        from objgraph import get_objs
         
         np.random.seed(62)
         #

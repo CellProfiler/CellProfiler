@@ -1087,7 +1087,7 @@ Agreement for the Intel Software Development Products; and
 
     def __debug_numpy_references(self, event):
         try:
-            import contrib.objgraph as objgraph
+            import objgraph
             numpyobj = [(o, objgraph.numpy_size(o)) for o in objgraph.by_instanceof(objgraph.numpyarray)]
             numpyobj = [o for o, sz in numpyobj if (sz is None) or (sz > 1024)]
             objgraph.show_backrefs(numpyobj, max_depth=4,

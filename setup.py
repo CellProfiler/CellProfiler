@@ -62,7 +62,7 @@ jars.append(os.path.join(
 DATA_FILES.append(('imagej/jars', jars))
 OPTIONS = {'argv_emulation': True,
            'packages': ['cellprofiler', 'contrib', 'imagej', 'javabridge'],
-           'includes': ['numpy', 'scipy', 'sklearn', 'sklearn.utils.sparsetools.*',
+           'includes': ['objgraph', 'numpy', 'scipy', 'sklearn', 'sklearn.utils.sparsetools.*',
                         'wx', 'matplotlib','email.iterators', 'smtplib', 'zmq',
                         'javabridge', 'bioformats', 
                         'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name,

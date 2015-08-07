@@ -25,7 +25,7 @@ AppUpdatesURL=http://www.cellprofiler.org
 DefaultDirName={pf}\CellProfiler
 DefaultGroupName=CellProfiler
 OutputDir=.\output
-SetupIconFile=.\CellProfilerIcon.ico
+SetupIconFile=.\artwork\CellProfilerIcon.ico
 Compression=lzma
 SolidCompression=yes
 

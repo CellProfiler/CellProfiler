@@ -1,4 +1,0 @@
-mkdir CP-from-git
-cd CP-from-git
-git svn init --ignore-paths="(^|.*/)(.*\.jar|.*\.fig|2005_01_12_test3OUT.mat|CPAnalayst/src/build/.*|DeveloperDrop[Bb]ox.*|Outdated/.*|Promotional/.*|packages/.*|ffmpeg/.*|CellProfiler_?Manual.p.*|ExampleImages/.*|ImagesForManual/.*|Promotional/.*|Website_CellProfiler/.*|graphAnalysisToolbox-1.0/.*|windows/vcredist_....exe|ForMikeToCompile/.*|.*.mexmac|CellProfilerManual.tex.*)" https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler
-(while ! git svn fetch ; do echo RETRY; done ) > ../gitlog.txt   # SSL can fail fetching large commits.

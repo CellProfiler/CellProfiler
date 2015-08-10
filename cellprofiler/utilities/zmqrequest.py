@@ -25,11 +25,6 @@ import Queue
 import numpy as np
 import cellprofiler.cpgridinfo as cpg
 
-if sys.platform == "win32":
-    from cellprofiler.utilities.get_proper_case_filename \
-         import get_file_attributes, set_file_attributes, \
-         FILE_ATTRIBUTE_HIDDEN
-    
 NOTIFY_SOCKET_ADDR = 'inproc://BoundaryNotifications'
 SD_KEY_DICT = "__keydict__"
 def make_CP_encoder(buffers):
@@ -844,10 +839,6 @@ def lock_file(path, timeout=3):
         fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_RDWR)
         with os.fdopen(fd, "a") as f:
             f.write(the_boundary.external_request_address+"\n"+uid)
-        if sys.platform == "win32":
-            # Hide file in Windows.
-            attrs = get_file_attributes(lock_path)
-            set_file_attributes(lock_path, attrs | FILE_ATTRIBUTE_HIDDEN)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise

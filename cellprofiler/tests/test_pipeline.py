@@ -42,7 +42,6 @@ from cellprofiler.modules.injectimage import InjectImage
 
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_fly, maybe_download_sbs
-from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
 
 IMAGE_NAME = "myimage"
 ALT_IMAGE_NAME = "altimage"
@@ -90,7 +89,7 @@ class TestPipeline(unittest.TestCase):
     def setUp(self):
         # Change the default output directory to a temporary file
         cpprefs.set_headless()
-        self.new_output_directory = get_proper_case_filename(tempfile.mkdtemp())
+        self.new_output_directory = os.path.normcase(tempfile.mkdtemp())
         cpprefs.set_default_output_directory(self.new_output_directory)
 
     def tearDown(self):

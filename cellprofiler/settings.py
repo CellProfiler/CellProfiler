@@ -30,8 +30,6 @@ from cellprofiler.preferences import \
      standardize_default_folder_names
 import cellprofiler.measurements
 
-from cellprofiler.utilities.utf16encode import utf16encode
-
 '''Matlab CellProfiler uses this string for settings to be excluded'''
 DO_NOT_USE = 'Do not use'
 '''Matlab CellProfiler uses this string for automatically calculated settings'''
@@ -199,7 +197,7 @@ class Setting(object):
         NOTE: strings are deprecated, use unicode_value instead.
         '''
         if isinstance(self.__value, unicode):
-            return str(utf16encode(self.__value))
+            return str(self.__value.encode("utf-8"))
         if not isinstance(self.__value,str):
             raise ValidationError("%s was not a string"%(self.__value),self)
         return self.__value

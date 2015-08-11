@@ -341,7 +341,7 @@ class PreferencesDlg(wx.Dialog):
                  cphelp.MAX_WORKERS_HELP],
                 ['Temporary folder',
                  cpprefs.get_temporary_directory,
-                 cpprefs.set_temporary_directory,
+                 (lambda x:cpprefs.set_temporary_directory(x, globally=True)),
                  DIRBROWSE,
                  cphelp.TEMP_DIR_HELP],
                 ['Maximum memory for Java (MB)',

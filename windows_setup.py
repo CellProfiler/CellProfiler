@@ -50,7 +50,7 @@ import xml.dom.minidom
 CP_NO_ILASTIK = "CP_NO_ILASTIK"
 # make sure external dependencies match requirements
 import external_dependencies
-external_dependencies.fetch_external_dependencies('fail')
+external_dependencies.retrieve_prokaryote()
 
 from cellprofiler.utilities.version import version_number, dotted_version, version_string
 revision = str(version_number)

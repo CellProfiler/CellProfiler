@@ -1716,3 +1716,21 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             
         mnames = m.get_measurements(p, OBJECTS_NAME, C_LOCATION)
         self.assertTrue(all([x in mnames for x in FTR_CENTER_X, FTR_CENTER_Y]))
+        
+    def test_05_01_validate_single_channel(self):
+        # regression test for issue #1429
+        #
+        # Single column doesn't use MATCH_BY_METADATA
+        
+        pipeline = cpp.Pipeline()
+        pipeline.init_modules()
+        for module in pipeline.modules():
+            if isinstance(module, N.NamesAndTypes):
+                module.assignment_method.value = N.ASSIGN_RULES
+                module.matching_choice.value = N.MATCH_BY_METADATA
+                module.assignments[0].image_name.value = IMAGE_NAME
+                module.join.build([{IMAGE_NAME:None}])
+                module.validate_module(pipeline)
+                break
+        else:
+            self.fail()

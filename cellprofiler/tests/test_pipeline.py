@@ -1308,6 +1308,28 @@ class TestImagePlaneDetails(unittest.TestCase):
         self.assertEquals(ipd.metadata["foo"], "Bar")
         self.assertEquals(ipd.metadata["baz"], "Blech")
         
+    def test_08_01_save_pipeline_notes(self):
+        fd = cStringIO.StringIO()
+        pipeline = cpp.Pipeline()
+        module = ATestModule()
+        module.module_num = 1
+        module.notes.append("Hello")
+        module.notes.append("World")
+        pipeline.add_module(module)
+        module = ATestModule()
+        module.module_num = 2
+        module.enabled = False
+        pipeline.add_module(module)
+        expected = """[   1] [ATestModule]
+  Hello
+  World
+
+[   2] [ATestModule] (disabled)
+
+"""
+        pipeline.save_pipeline_notes(fd)
+        self.assertEqual(fd.getvalue(), expected)
+        
 def profile_pipeline(pipeline_filename,
                      output_filename=None,
                      always_run=True):

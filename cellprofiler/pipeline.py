@@ -1287,6 +1287,23 @@ class Pipeline(object):
             write_file_list(fd, self.__file_list)
         if needs_close:
             fd.close()
+    
+    def save_pipeline_notes(self, fd, indent = 2):
+        '''Save pipeline notes to a text file
+        
+        fd - file descriptor of the file.
+        
+        indent - indent of the notes relative to module header.
+        '''
+        for module in self.modules(exclude_disabled=False):
+            if module.enabled:
+                fmt = "[%4.d] [%s]\n"
+            else:
+                fmt = "[%4.d] [%s] (disabled)\n"
+            fd.write(fmt % (module.module_num, module.module_name))
+            for note in module.notes:
+                fd.write("%s%s\n" %("".join([" "] * indent), note))
+            fd.write("\n")
         
     def save_measurements(self, filename, measurements):
         """Save the measurements and the pipeline settings in a Matlab file

@@ -125,6 +125,8 @@ class PipelineController:
         wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_as_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_IMAGE_SETS,
                     self.__on_export_image_sets)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_PIPELINE_NOTES,
+                    self.__on_export_pipeline_notes)
         wx.EVT_MENU(frame, cpframe.ID_FILE_REVERT_TO_SAVED, 
                     self.__on_revert_workspace)
         wx.EVT_MENU(frame, cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
@@ -1117,6 +1119,27 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         frame.Fit()
         frame.Show()        
             
+    def __on_export_pipeline_notes(self, event):
+        default_filename = cpprefs.get_current_workspace_path()
+        if default_filename is None:
+            default_filename = "pipeline.txt"
+            default_path = None
+        else:
+            default_path, default_filename = os.path.split(default_filename)
+            default_filename = \
+                os.path.splitext(default_filename)[0] + ".txt"
+        
+        with wx.FileDialog(
+            self.__frame, "Export pipeline notes",
+            defaultFile = default_filename,
+            wildcard = "Text file (*.txt)|*.txt",
+            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if default_path is not None:
+                dlg.Directory = default_path
+            if dlg.ShowModal() == wx.ID_OK:
+                with open(dlg.Path, "w") as fd:
+                    self.__workspace.pipeline.save_pipeline_notes(fd)
+                                                                  
     def __on_plateviewer(self, event):
         import cellprofiler.gui.plateviewer as pv
         

@@ -1296,6 +1296,7 @@ def set_temporary_directory(tempdir, globally=False):
     if globally:
         config_write(TEMP_DIR, tempdir)
     __temp_dir = tempdir
+    tempfile.tempdir = tempdir
 
 __progress_data = threading.local()
 __progress_data.last_report = time.time()

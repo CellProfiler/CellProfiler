@@ -198,7 +198,8 @@ def cp_start_vm():
         #
         # Move any class to the back that thinks it can read garbage
         #
-        fd, path = tempfile.mkstemp(suffix=".garbage")
+        fd, path = tempfile.mkstemp(suffix=".garbage",
+                                    dir=cpprefs.get_temporary_directory())
         stream = None
         try:
             os.write(fd, "This is not an image file")

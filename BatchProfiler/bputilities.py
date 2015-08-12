@@ -224,7 +224,8 @@ def run_on_tgt_os(script,
                   mail_error = True,
                   mail_after = True,
                   email_address = None,
-                  task_range=None):
+                  task_range=None,
+                  memory=None):
     '''Run the given script on the target operating system
     
     script - the script to be run with shebang header line
@@ -276,15 +277,23 @@ def run_on_tgt_os(script,
                 task_range.start, task_range.stop-1, task_range.step)
         else:
             task_switch = "-t %d-%d" % (task_range.start, task_range.stop-1)
-    #
-    # TODO: memory and priority, possibly more
-    #
+    if memory is not None:
+        memory_switch = "-l m_mem_free=%dg" % memory
+    else:
+        memory_switch = ""
+    if priority is not None:
+        priority_switch = "-p %d" %priority
+    else:
+        priority_switch = ""
+    optional_switches = " ".join(filter(len, [
+        email_switches, cwd_switch, queue_switch, task_switch, memory_switch,
+        priority_switch]))
     tgt_script = make_temp_script(script)
     host_script = make_temp_script("""#!/bin/sh
 qsub -N %(job_name)s \\
     -e %(err_output)s \\
     -o %(output)s \\
-    -terse %(dep_cond)s %(email_switches)s %(cwd_switch)s %(queue_switch)s %(task_switch)s\\
+    -terse %(dep_cond)s %(optional_switches)s \\
     %(tgt_script)s
 """ %locals())
     try:

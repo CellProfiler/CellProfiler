@@ -29,7 +29,7 @@ from cellprofiler.modules.createbatchfiles import F_BATCH_DATA_H5
 from bputilities import *
 from bpformdata import *
 import RunBatch
-from StyleSheet import BATCHPROFILER_DOCTYPE
+from StyleSheet import BATCHPROFILER_DOCTYPE, BATCHPROFILER_STYLE
 import email.message
 import email.mime.text
 import socket
@@ -73,6 +73,8 @@ class NewBatchDoc(object):
         with self.tag("head"):
             with self.tag("title"):
                 self.text("CellProfiler 2.0 Batch Submission")
+            with self.tag("style"):
+                self.doc.asis(BATCHPROFILER_STYLE)
             with self.tag("script", language="JavaScript"):
                 self.doc.asis("""
 function go_to_key(key, data_dir) {
@@ -251,7 +253,7 @@ batch is run.""" % globals())
                         self.text("Batch_data.h5 has %d image sets" %
                                   len(self.image_numbers))
             else:
-                with self.tag("div"):
+                with self.tag("div", **{"class":"error_message"}):
                     self.text(self.no_image_sets_reason)
                                 
     def build_queue_choices(self, id, name):
@@ -426,7 +428,8 @@ batch is run.""" % globals())
         go_to_key = "javascript:go_to_key('%s',%s) " % (key, data_dir_js)
 
         with self.tag("div", id="%s_div" % key):
-            with self.tag("div"):
+            d = {} if os.path.isdir(path) else { "class":"error_message" }
+            with self.tag("div", **d):
                 with self.tag("label", 
                               **{ "for":'input_%s' % key}):
                     self.text("%s" % title) 
@@ -438,6 +441,8 @@ batch is run.""" % globals())
                               type='button',
                               onclick=go_to_key):
                     self.doc.text("Browse...")
+            if not os.path.isdir(path):
+                return
             parts = []
             head = path
             while True:

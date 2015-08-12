@@ -36,6 +36,10 @@ table.run_table td {
 table.run_table thead th {
     text-align: center;
 }
+div.error_message {
+    color: red;
+    font-style: italic;
+}
 """
 
 def PrintStyleSheet():

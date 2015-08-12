@@ -1295,15 +1295,17 @@ class Pipeline(object):
         
         indent - indent of the notes relative to module header.
         '''
+        lines = []
         for module in self.modules(exclude_disabled=False):
             if module.enabled:
-                fmt = "[%4.d] [%s]\n"
+                fmt = "[%4.d] [%s]"
             else:
-                fmt = "[%4.d] [%s] (disabled)\n"
-            fd.write(fmt % (module.module_num, module.module_name))
+                fmt = "[%4.d] [%s] (disabled)"
+            lines.append(fmt % (module.module_num, module.module_name))
             for note in module.notes:
-                fd.write("%s%s\n" %("".join([" "] * indent), note))
-            fd.write("\n")
+                lines.append("%s%s" %("".join([" "] * indent), note))
+            lines.append("")
+        fd.write("\n".join(lines))
         
     def save_measurements(self, filename, measurements):
         """Save the measurements and the pipeline settings in a Matlab file

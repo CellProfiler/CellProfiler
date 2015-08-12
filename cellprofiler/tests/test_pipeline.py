@@ -1320,13 +1320,14 @@ class TestImagePlaneDetails(unittest.TestCase):
         module.module_num = 2
         module.enabled = False
         pipeline.add_module(module)
-        expected = """[   1] [ATestModule]
-  Hello
-  World
+        expected = "\n".join([
+            "[   1] [ATestModule]",
+            "  Hello",
+            "  World",
+            "",
+            "[   2] [ATestModule] (disabled)",
+            ""])
 
-[   2] [ATestModule] (disabled)
-
-"""
         pipeline.save_pipeline_notes(fd)
         self.assertEqual(fd.getvalue(), expected)
         

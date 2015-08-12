@@ -62,6 +62,7 @@ ID_FILE_SAVE_AS = wx.ID_SAVEAS
 ID_FILE_REVERT_TO_SAVED = wx.NewId()
 ID_FILE_CLEAR_PIPELINE=wx.NewId()
 ID_FILE_EXPORT_IMAGE_SETS = wx.NewId()
+ID_FILE_EXPORT_PIPELINE_NOTES = wx.NewId()
 ID_FILE_IMPORT_FILE_LIST = wx.NewId()
 ID_FILE_ANALYZE_IMAGES=wx.NewId()
 ID_FILE_STOP_ANALYSIS=wx.NewId()
@@ -568,6 +569,10 @@ class CPFrame(wx.Frame):
             ID_FILE_EXPORT_IMAGE_SETS,
             "Image Set Listing...",
             "Export the project's image sets as a CSV file suitable for LoadData")
+        submenu.Append(
+            ID_FILE_EXPORT_PIPELINE_NOTES,
+            "Pipeline notes...",
+            "Save a text file outlining the pipeline's modules and module notes")
         self.__menu_file.AppendSubMenu(submenu, "Export")
         self.__menu_file.Append(
             ID_FILE_CLEAR_PIPELINE,

@@ -204,11 +204,19 @@ class PreferencesDlg(wx.Dialog):
         for control, (text, getter, setter, ui_info, help_text) in \
             zip(self.controls, p):
             if ui_info == COLOR:
-                setter(control.BackgroundColour)
-            elif ui_info == FILEBROWSE and os.path.isfile(control.Value):
-                setter(control.Value)
+                value = control.BackgroundColour
+            elif ui_info == FILEBROWSE:
+                value = control.Value
+                if not os.path.isfile(value):
+                    continue
+            elif ui_info == DIRBROWSE:
+                value = control.Value
+                if not os.path.isdir(value):
+                    continue
             else:
-                setter(control.Value)
+                value = control.Value
+            if value != getter():
+                setter(value)
 
     def get_preferences(self):
         '''Get the list of preferences.

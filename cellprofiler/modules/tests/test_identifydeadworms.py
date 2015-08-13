@@ -28,7 +28,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.identifydeadworms as ID
-from cellprofiler.cpmath.cpmorphology import get_line_pts
+from centrosome.cpmorphology import get_line_pts
 
 IMAGE_NAME = "myimage"
 OBJECTS_NAME = "myobjects"

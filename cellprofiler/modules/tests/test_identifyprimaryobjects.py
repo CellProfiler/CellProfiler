@@ -23,7 +23,7 @@ import zlib
 
 import cellprofiler.modules.identifyprimaryobjects as ID
 import cellprofiler.modules.identify as I
-import cellprofiler.cpmath.threshold as T
+import centrosome.threshold as T
 from cellprofiler.modules.injectimage import InjectImage
 import cellprofiler.settings
 import cellprofiler.cpimage as cpi

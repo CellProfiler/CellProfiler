@@ -123,7 +123,7 @@ class Example5a(cpm.CPModule):
             # concepts in just a few lines of code and the result, I hope,
             # is clear and readable.
             #
-            from cellprofiler.cpmath.cpmorphology import color_labels
+            from centrosome.cpmorphology import color_labels
             
             values = np.zeros(objects.count+1)
             for labels, indices in objects.get_labels():

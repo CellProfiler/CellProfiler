@@ -15,7 +15,7 @@ from cStringIO import StringIO
 import numpy as np
 import scipy
 import matplotlib
-from cellprofiler.cpmath.cpmorphology import distance_color_labels
+from centrosome.cpmorphology import distance_color_labels
 
 
 def figure_to_image(figure, *args, **kwargs):

@@ -24,10 +24,10 @@ from scipy.ndimage import gaussian_filter
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
-from cellprofiler.cpmath.cpmorphology import opening, closing, white_tophat
-from cellprofiler.cpmath.filter import enhance_dark_holes, circular_hough
-from cellprofiler.cpmath.filter import variance_transform, line_integration
-from cellprofiler.cpmath.filter import hessian, median_filter
+from centrosome.cpmorphology import opening, closing, white_tophat
+from centrosome.filter import enhance_dark_holes, circular_hough
+from centrosome.filter import variance_transform, line_integration
+from centrosome.filter import hessian, median_filter
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
 ENHANCE = 'Enhance'

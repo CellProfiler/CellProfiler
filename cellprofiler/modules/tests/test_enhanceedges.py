@@ -28,8 +28,8 @@ import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.enhanceedges as F
-import cellprofiler.cpmath.filter as FIL
-from cellprofiler.cpmath.otsu import otsu3
+import centrosome.filter as FIL
+from centrosome.otsu import otsu3
 
 INPUT_IMAGE_NAME = 'inputimage'
 OUTPUT_IMAGE_NAME = 'outputimage'

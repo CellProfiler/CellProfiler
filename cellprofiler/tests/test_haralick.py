@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" test_haralick -- tests for cellprofiler.cpmath.haralick
+""" test_haralick -- tests for centrosome.haralick
 
 CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
@@ -14,7 +14,7 @@ Website: http://www.cellprofiler.org
 """
 import unittest
 import numpy as np
-import cellprofiler.cpmath.haralick as haralick
+import centrosome.haralick as haralick
 
 gray4 = np.array([[0,0,1,1],[0,0,1,1],[0,2,2,2],[2,2,3,3]])
 gray = gray4 / (1.0 * gray4.max())

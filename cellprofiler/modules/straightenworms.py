@@ -92,8 +92,8 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.cpmath.cpmorphology as morph
-import cellprofiler.cpmath.index as INDEX
+import centrosome.cpmorphology as morph
+import centrosome.index as INDEX
 import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.utilities import product

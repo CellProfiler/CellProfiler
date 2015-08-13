@@ -45,8 +45,8 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import identify as I
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.outline import outline
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.outline import outline
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 

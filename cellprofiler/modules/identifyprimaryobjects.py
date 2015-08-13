@@ -190,18 +190,18 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpp
-from cellprofiler.cpmath.otsu import otsu
-from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, strel_disk
-from cellprofiler.cpmath.cpmorphology import binary_shrink, relabel
-from cellprofiler.cpmath.cpmorphology import is_local_maximum
-from cellprofiler.cpmath.filter import stretch, laplacian_of_gaussian
-from cellprofiler.cpmath.watershed import fast_watershed as watershed
-from cellprofiler.cpmath.propagate import propagate
-from cellprofiler.cpmath.smooth import smooth_with_noise
-import cellprofiler.cpmath.outline
+from centrosome.otsu import otsu
+from centrosome.cpmorphology import fill_labeled_holes, strel_disk
+from centrosome.cpmorphology import binary_shrink, relabel
+from centrosome.cpmorphology import is_local_maximum
+from centrosome.filter import stretch, laplacian_of_gaussian
+from centrosome.watershed import fast_watershed as watershed
+from centrosome.propagate import propagate
+from centrosome.smooth import smooth_with_noise
+import centrosome.outline
 import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
-import cellprofiler.cpmath.threshold as cpthresh
+import centrosome.threshold as cpthresh
 from identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
 from identify import draw_outline
 from identify import FI_IMAGE_SIZE
@@ -949,9 +949,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             labeled_image = new_labeled_image
         
         # Make an outline image
-        outline_image = cellprofiler.cpmath.outline.outline(labeled_image)
-        outline_size_excluded_image = cellprofiler.cpmath.outline.outline(size_excluded_labeled_image)
-        outline_border_excluded_image = cellprofiler.cpmath.outline.outline(border_excluded_labeled_image)
+        outline_image = centrosome.outline.outline(labeled_image)
+        outline_size_excluded_image = centrosome.outline.outline(size_excluded_labeled_image)
+        outline_border_excluded_image = centrosome.outline.outline(border_excluded_labeled_image)
         
         if self.show_window:
             statistics = workspace.display_data.statistics

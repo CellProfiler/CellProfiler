@@ -31,7 +31,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-from cellprofiler.cpmath.filter import permutations
+from centrosome.filter import permutations
 
 import cellprofiler.modules.trackobjects as T
 from cellprofiler.modules.identify import C_COUNT

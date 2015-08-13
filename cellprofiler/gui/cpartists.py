@@ -18,8 +18,8 @@ import matplotlib.collections
 import numpy as np
 from scipy.ndimage import distance_transform_edt, label
 
-from cellprofiler.cpmath.cpmorphology import get_outline_pts
-from cellprofiler.cpmath.outline import outline
+from centrosome.cpmorphology import get_outline_pts
+from centrosome.outline import outline
 from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
 
 '''Render the image in shades of gray'''
@@ -1187,7 +1187,7 @@ if __name__ == "__main__":
     from wx.lib.inspection import InspectionTool
     import matplotlib.pyplot
     from scipy.ndimage import label
-    from cellprofiler.cpmath.otsu import otsu
+    from centrosome.otsu import otsu
     
     javabridge.start_vm(class_path=bioformats.JARS)
     try:

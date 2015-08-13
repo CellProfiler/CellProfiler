@@ -10,7 +10,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.identify as I
 
 from cellprofiler.modules import instantiate_module
-from cellprofiler.cpmath.cpmorphology import skeletonize_labels
+from centrosome.cpmorphology import skeletonize_labels
 
 MODULE_NAME = "Example4b"
 INPUT_OBJECTS_NAME = "inputobjects"

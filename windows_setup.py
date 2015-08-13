@@ -440,8 +440,6 @@ except:
 #############################################
 
 opts['py2exe']['includes'] += ["cellprofiler.tests.*",
-                               "cellprofiler.cpmath.tests",
-                               "cellprofiler.cpmath.tests.*",
                                "cellprofiler.gui.tests",
                                "cellprofiler.gui.tests.*",
                                "cellprofiler.gui.html.tests.*",

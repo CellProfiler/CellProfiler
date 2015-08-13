@@ -59,8 +59,8 @@ import cellprofiler.objects as cpo
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.cpmath.outline import outline
-from cellprofiler.cpmath.cpmorphology import centers_of_labels, relabel
+from centrosome.outline import outline
+from centrosome.cpmorphology import centers_of_labels, relabel
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 

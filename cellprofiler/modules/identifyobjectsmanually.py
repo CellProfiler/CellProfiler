@@ -31,9 +31,9 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.preferences as cpprefs
 import identify as I
 import cellprofiler.settings as cps
-from cellprofiler.cpmath.outline import outline
-from cellprofiler.cpmath.cpmorphology import draw_line
-from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
+from centrosome.outline import outline
+from centrosome.cpmorphology import draw_line
+from centrosome.cpmorphology import fill_labeled_holes
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 TOOL_OUTLINE = "Outline"

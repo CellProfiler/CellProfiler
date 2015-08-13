@@ -30,8 +30,8 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.morph as morph
-import cellprofiler.cpmath.cpmorphology as cpmorph
-import cellprofiler.cpmath.filter as cpfilter
+import centrosome.cpmorphology as cpmorph
+import centrosome.filter as cpfilter
 
 class TestMorph(unittest.TestCase):
     def test_01_01_load_matlab(self):

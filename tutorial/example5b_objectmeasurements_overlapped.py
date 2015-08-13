@@ -61,7 +61,7 @@ class Example5b(cpm.CPModule):
         # concepts in just a few lines of code and the result, I hope,
         # is clear and readable.
         #
-        from cellprofiler.cpmath.cpmorphology import color_labels
+        from centrosome.cpmorphology import color_labels
         #
         # First, reserve a vector that we'll use within the loop to store
         # the measurement values. I cheat a little here in order to use

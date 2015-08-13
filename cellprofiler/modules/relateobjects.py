@@ -54,9 +54,9 @@ from cellprofiler.modules.identify import C_PARENT, C_CHILDREN, R_PARENT, R_CHIL
 from cellprofiler.modules.identify import FF_PARENT,FF_CHILDREN_COUNT
 from cellprofiler.modules.identify import \
      M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.cpmorphology import centers_of_labels
-from cellprofiler.cpmath.outline import outline
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import centers_of_labels
+from centrosome.outline import outline
 
 D_NONE = "None"
 D_CENTROID = "Centroid"

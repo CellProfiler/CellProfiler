@@ -46,7 +46,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"

@@ -26,7 +26,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.cpmath.outline
+import centrosome.outline
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"
@@ -371,7 +371,7 @@ class OverlayOutlines(cpm.CPModule):
             pixel_data = np.zeros(objects.shape, bool)
             for labels, indexes in objects.get_labels():
                 pixel_data = \
-                    pixel_data | cellprofiler.cpmath.outline.outline(labels)
+                    pixel_data | centrosome.outline.outline(labels)
         if self.wants_color == WANTS_GRAYSCALE:
             return pixel_data.astype(bool)
         color = np.array(outline.color.to_rgb(), float) / 255.0

@@ -27,7 +27,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmm
 import cellprofiler.objects as cpo
-from cellprofiler.cpmath.outline import outline
+from centrosome.outline import outline
 import cellprofiler.modules.measureimageareaoccupied as mia
 
 OBJECTS_NAME = "MyObjects"

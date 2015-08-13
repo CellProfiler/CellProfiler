@@ -77,7 +77,7 @@ from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.cpmath.outline
+import centrosome.outline
 import identify as I
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.preferences import \
@@ -2270,7 +2270,7 @@ class LoadImages(cpmodule.CPModule):
                     if channel.wants_outlines:
                         outlines = np.zeros(shape, bool)
                         for l, c in o.get_labels():
-                            outlines |= cellprofiler.cpmath.outline.outline(l)
+                            outlines |= centrosome.outline.outline(l)
                         outline_image = cpimage.Image(outlines, 
                                                       path_name = path,
                                                       file_name = filename)

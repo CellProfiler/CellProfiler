@@ -82,11 +82,11 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-import cellprofiler.cpmath.cpmorphology as morph
-from cellprofiler.cpmath.index import Indexes
-from cellprofiler.cpmath.fastemd import emd_hat_int32
-from cellprofiler.cpmath.propagate import propagate
-from cellprofiler.cpmath.filter import poisson_equation
+import centrosome.cpmorphology as morph
+from centrosome.index import Indexes
+from centrosome.fastemd import emd_hat_int32
+from centrosome.propagate import propagate
+from centrosome.filter import poisson_equation
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"

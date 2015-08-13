@@ -97,11 +97,11 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.cpmath.cpmorphology as morph
+import centrosome.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
 import identify as I
-from cellprofiler.cpmath.propagate import propagate
-from cellprofiler.cpmath.outline import outline
+from centrosome.propagate import propagate
+from centrosome.outline import outline
 
 
 from cellprofiler.preferences import standardize_default_folder_names, \

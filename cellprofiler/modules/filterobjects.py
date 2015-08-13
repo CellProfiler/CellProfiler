@@ -57,8 +57,8 @@ from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.utilities.rules as cprules
-from cellprofiler.cpmath.outline import outline
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.outline import outline
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns

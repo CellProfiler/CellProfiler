@@ -56,10 +56,10 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 
-from cellprofiler.cpmath.zernike import construct_zernike_polynomials
-from cellprofiler.cpmath.zernike import get_zernike_indexes
-from cellprofiler.cpmath.cpmorphology import minimum_enclosing_circle
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.zernike import construct_zernike_polynomials
+from centrosome.zernike import get_zernike_indexes
+from centrosome.cpmorphology import minimum_enclosing_circle
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 ##################################
 #

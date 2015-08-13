@@ -31,7 +31,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
-import cellprofiler.cpmath.threshold as cpthresh
+import centrosome.threshold as cpthresh
 
 MY_IMAGE = "my_image"
 MY_OBJECTS = "my_objects"

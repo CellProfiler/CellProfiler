@@ -52,7 +52,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-from cellprofiler.cpmath.cpmorphology import centers_of_labels
+from centrosome.cpmorphology import centers_of_labels
 
 NUM_TOP_LEFT = "Top left"
 NUM_BOTTOM_LEFT = "Bottom left"

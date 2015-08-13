@@ -402,8 +402,8 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmath.cpmorphology as morph
-from cellprofiler.cpmath.filter import poisson_equation
+import centrosome.cpmorphology as morph
+from centrosome.filter import poisson_equation
 
 F_BOTHAT = 'bothat'
 F_BRANCHPOINTS = 'branchpoints'

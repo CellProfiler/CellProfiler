@@ -32,8 +32,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
-import cellprofiler.cpmath.cpmorphology as morph
-from cellprofiler.cpmath.outline import outline
+import centrosome.cpmorphology as morph
+from centrosome.outline import outline
 
 import cellprofiler.modules.expandorshrinkobjects as E
 

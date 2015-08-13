@@ -1282,9 +1282,11 @@ def get_temporary_directory():
     if __temp_dir is not None:
         pass
     elif config_exists(TEMP_DIR):
-        __temp_dir = config_read(TEMP_DIR)
-    else:
-        __temp_dir = tempfile.gettempdir()
+        path = config_read(TEMP_DIR)
+        if os.path.isdir(path):
+            __temp_dir = path
+            return __temp_dir
+    __temp_dir = tempfile.gettempdir()
     return __temp_dir
 
 def set_temporary_directory(tempdir, globally=False):

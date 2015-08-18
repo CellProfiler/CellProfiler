@@ -26,7 +26,7 @@ import cellprofiler.utilities.version as version
 LOCATION_COVERPAGE = os.path.join('images','CPCoverPage.png')
 LOCATION_WHITEHEADLOGO = os.path.join('images','WhiteheadInstituteLogo.png')
 LOCATION_CSAILLOGO = os.path.join('images','CSAIL_Logo.png')
-LOCATION_IMAGINGPLATFORMBANNER  = os.path.join('images','BroadPlusImagingPlusBanner.png')    
+LOCATION_IMAGINGPLATFORMBANNER  = os.path.join('images','BroadPlusImagingPlusBanner.png')
 VERSION = version.version_string
 VERSION_NUMBER = version.version_number
 

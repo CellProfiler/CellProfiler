@@ -1878,7 +1878,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiement"))
+            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_016_write_mysql_db_dont_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
@@ -1957,7 +1957,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiement"))
+            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
     def test_02_02_mysql_direct(self):
         '''Write directly to the mysql DB, not to a file'''

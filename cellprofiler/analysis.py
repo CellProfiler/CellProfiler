@@ -324,7 +324,8 @@ class AnalysisRunner(object):
             initial_measurements = None
             if self.output_path is None:
                 # Caller wants a temporary measurements file.
-                fd, filename = tempfile.mkstemp(".h5")
+                fd, filename = tempfile.mkstemp(
+                    ".h5", dir=cpprefs.get_temporary_directory())
                 try:
                     fd = os.fdopen(fd, "wb")
                     fd.write(self.initial_measurements_buf)

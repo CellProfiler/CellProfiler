@@ -50,8 +50,8 @@ if sys.platform == "darwin":
 
 APPNAME = 'CellProfiler'
 APP = ['CellProfiler.py']
-icon_src_path = os.path.join('.', 'cellprofiler', 'icons')
-DATA_FILES = [('cellprofiler/icons', 
+icon_src_path = os.path.join('.', 'artwork')
+DATA_FILES = [('artwork',
                glob.glob(os.path.join(icon_src_path, '*.png'))+
                [os.path.join(icon_src_path, "icon_copyrights.txt")])]
 from javabridge import JARS
@@ -111,4 +111,4 @@ if sys.argv[-1] == 'py2app':
     # significantly soon, anyway.
     call('find dist/CellProfiler.app -name tests -type d | xargs rm -rf', shell=True)
     #call('lipo dist/CellProfiler.app/Contents/MacOS/CellProfiler -thin i386 -output dist/CellProfiler.app/Contents/MacOS/CellProfiler', shell=True)
-    call('rm dist/CellProfiler.app/Contents/Resources/lib/python2.7/cellprofiler/icons/*.png', shell=True)
+    call('rm dist/CellProfiler.app/Contents/Resources/lib/python2.7/cellprofiler/artwork/*.png', shell=True)

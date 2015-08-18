@@ -1782,7 +1782,8 @@ class NamesAndTypes(cpm.CPModule):
         specified channel.
         '''
         if self.assignment_method == ASSIGN_RULES \
-           and self.matching_choice == MATCH_BY_METADATA:
+           and self.matching_choice == MATCH_BY_METADATA \
+           and len(self.assignments) > 1:
             joins = self.join.parse()
             for name in self.get_column_names():
                 for join in joins:

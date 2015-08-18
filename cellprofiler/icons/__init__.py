@@ -20,7 +20,7 @@ import sys
 
 if hasattr(sys, 'frozen'):
     path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-    path = os.path.join(path, 'cellprofiler','icons')
+    path = os.path.join(path, 'artwork')
 else:
     path = __path__[0]
 

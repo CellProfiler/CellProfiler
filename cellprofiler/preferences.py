@@ -437,9 +437,6 @@ __default_image_directory = None
 def get_default_image_directory():
     global __default_image_directory
 
-    from cellprofiler.utilities.get_proper_case_filename\
-         import get_proper_case_filename
-
     if __default_image_directory is not None:
         return __default_image_directory
     # I'm not sure what it means for the preference not to exist.  No read-write preferences file?
@@ -449,7 +446,7 @@ def get_default_image_directory():
     default_image_directory = config_read(DEFAULT_IMAGE_DIRECTORY) or ''
     try:
         if os.path.isdir(default_image_directory):
-            __default_image_directory = get_proper_case_filename(default_image_directory)
+            __default_image_directory = os.path.normcase(default_image_directory)
             return __default_image_directory
     except:
         logger.error("Unknown failure when retrieving the default image directory", exc_info=True)
@@ -458,7 +455,7 @@ def get_default_image_directory():
     # Fail ungracefully.
     default_image_directory = os.path.abspath(os.path.expanduser('~'))
     set_default_image_directory(default_image_directory)
-    return str(get_proper_case_filename(default_image_directory))
+    return str(os.path.normcase(default_image_directory))
 
 def set_default_image_directory(path):
     global __default_image_directory
@@ -495,9 +492,6 @@ class PreferenceChangedEvent:
 __default_output_directory = None
 def get_default_output_directory():
     global __default_output_directory
-    
-    from cellprofiler.utilities.get_proper_case_filename\
-         import get_proper_case_filename
 
     if __default_output_directory is not None:
         return __default_output_directory
@@ -508,7 +502,7 @@ def get_default_output_directory():
     default_output_directory = config_read(DEFAULT_OUTPUT_DIRECTORY) or ''
     try:
         if os.path.isdir(default_output_directory):
-            __default_output_directory = get_proper_case_filename(default_output_directory)
+            __default_output_directory = os.path.normcase(default_output_directory)
             return __default_output_directory
     except:
         logger.error("Unknown failure when retrieving the default output directory", exc_info=True)
@@ -517,7 +511,7 @@ def get_default_output_directory():
     # Fail ungracefully.
     default_output_directory = os.path.abspath(os.path.expanduser('~'))
     set_default_output_directory(default_output_directory)
-    return str(get_proper_case_filename(default_output_directory))
+    return str(os.path.normcase(default_output_directory))
 
 def set_default_output_directory(path):
     global __default_output_directory
@@ -694,9 +688,7 @@ def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     If a "path" has no path component then make the path relative to
     the Default Output Folder.
     """
-    from cellprofiler.utilities.get_proper_case_filename\
-         import get_proper_case_filename
-    
+
     if abspath_mode == ABSPATH_OUTPUT:
         osep = '.'
         isep = '&'
@@ -718,7 +710,7 @@ def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     elif len(os.path.split(path)[0]) == 0:
         return os.path.join(get_default_output_directory(), path)
     else:
-        return str(get_proper_case_filename(os.path.abspath(path)))
+        return str(os.path.normpath(os.path.abspath(path)))
 
 def is_url_path(path):
     '''Return True if the path should be treated as a URL'''

@@ -42,7 +42,6 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 import cellprofiler.modules.createbatchfiles as cpm_c
 from cellprofiler.cpmath.filter import stretch
-from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
 from bioformats import load_image_url, load_image, get_omexml_metadata
 
 import cellprofiler.modules.tests as cpmt
@@ -57,11 +56,11 @@ class TestSaveImages(unittest.TestCase):
     def setUp(self):
         # Change the default image directory to a temporary file
         cpprefs.set_headless()
-        self.new_image_directory = get_proper_case_filename(tempfile.mkdtemp())
+        self.new_image_directory = os.path.normcase(tempfile.mkdtemp())
         cpprefs.set_default_image_directory(self.new_image_directory)
-        self.new_output_directory = get_proper_case_filename(tempfile.mkdtemp())
+        self.new_output_directory = os.path.normcase(tempfile.mkdtemp())
         cpprefs.set_default_output_directory(self.new_output_directory)
-        self.custom_directory = get_proper_case_filename(tempfile.mkdtemp())
+        self.custom_directory = os.path.normcase(tempfile.mkdtemp())
     
     def tearDown(self):
         for subdir in (self.new_image_directory, self.new_output_directory,

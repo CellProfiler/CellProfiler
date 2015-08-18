@@ -526,9 +526,9 @@ data_files += [('imagej\\jars', JARS)]
 try:
     dist = setup(
         console=[{'script':'CellProfiler.py',
-                  'icon_resources':[(1,'CellProfilerIcon.ico')]},
+                  'icon_resources':[(1,'artwork/CellProfilerIcon.ico')]},
                  {'script':'cellprofiler\\analysis_worker.py',
-                  'icon_resources':[(1,'CellProfilerIcon.ico')]}],
+                  'icon_resources':[(1,'artwork/CellProfilerIcon.ico')]}],
         name='Cell Profiler',
         data_files = data_files,
         cmdclass={'msi':CellProfilerMSI,

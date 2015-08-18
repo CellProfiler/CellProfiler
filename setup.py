@@ -69,8 +69,8 @@ OPTIONS = {'argv_emulation': True,
                         'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy', 'readline'],
            'excludes': ['pylab', 'Tkinter', 'Cython', 'scipy.weave',
                         'virtualenv'],
-           'resources': ['CellProfilerIcon.png'],
-           'iconfile' : 'CellProfilerIcon.icns',
+           'resources': ['artwork/CellProfilerIcon.png'],
+           'iconfile' : 'artwork/CellProfilerIcon.icns',
            'frameworks' : [tiff_dylib, jpeg_dylib],
            'plist': { 
                "LSArchitecturePriority": ["i386"],
@@ -80,12 +80,12 @@ OPTIONS = {'argv_emulation': True,
                "CFBundleShortVersionString": cellprofiler.utilities.version.dotted_version,
                "CFBundleDocumentTypes": [{
                    "CFBundleTypeExtensions":["cpproj"],
-                   "CFBundleTypeIconFile":"CellProfilerIcon.icns",
+                   "CFBundleTypeIconFile":"artwork/CellProfilerIcon.icns",
                    "CFBundleTypeName":"CellProfiler project",
                    "CFBundleTypeRole":"Editor"
                    }, {
                        "CFBundleTypeExtensions":["cppipe"],
-                       "CFBundleTypeIconFile":"CellProfilerIcon.icns",
+                       "CFBundleTypeIconFile":"artwork/CellProfilerIcon.icns",
                        "CFBundleTypeName":"CellProfiler pipeline",
                        "CFBundleTypeRole":"Editor"
                        }]

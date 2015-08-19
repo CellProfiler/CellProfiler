@@ -171,7 +171,7 @@ def main(args):
     
     if (not hasattr(sys, 'frozen')) and options.fetch_external_dependencies:
         import external_dependencies
-        external_dependencies.retrieve_prokaryote()
+        external_dependencies.fetch_external_dependencies(options.overwrite_external_dependencies)
     
     if (not hasattr(sys, 'frozen')) and options.build_extensions:
         build_extensions()

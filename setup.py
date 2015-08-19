@@ -20,6 +20,8 @@ from subprocess import call
 import ctypes.util
 
 sys.path.append('.')
+import cellprofiler.utilities.version
+from external_dependencies import get_cellprofiler_jars
 
 # fix from
 #  http://mail.python.org/pipermail/pythonmac-sig/2008-June/020111.html
@@ -36,9 +38,9 @@ from libtiff.libtiff_ctypes import tiff_h_name
 tiff_dylib = ctypes.util.find_library('tiff')
 jpeg_dylib = ctypes.util.find_library('jpeg')
 
+# make sure external dependencies match requirements
 import external_dependencies
-
-external_dependencies.retrieve_prokaryote()
+external_dependencies.fetch_external_dependencies('fail')
 
 if sys.platform == "darwin":
     import cellprofiler.utilities.version
@@ -54,9 +56,9 @@ DATA_FILES = [('artwork',
                [os.path.join(icon_src_path, "icon_copyrights.txt")])]
 from javabridge import JARS
 imagej_path = os.path.abspath(os.path.join(".", "imagej", "jars"))
-
-jars = JARS
-
+jars = JARS + [os.path.join(imagej_path, jar) for jar in get_cellprofiler_jars()]
+jars.append(os.path.join(
+    imagej_path, "cellprofiler-java-dependencies-classpath.txt"))
 DATA_FILES.append(('imagej/jars', jars))
 OPTIONS = {'argv_emulation': True,
            'packages': ['cellprofiler', 'contrib', 'imagej', 'javabridge'],

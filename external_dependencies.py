@@ -1,9 +1,11 @@
 import os
 import urllib2
+import gzip
+import StringIO
 
 
 def retrieve_prokaryote(version='1.0.0'):
-    url = 'https://github.com/CellProfiler/prokaryote/releases/download/{0}/prokaryote-{0}.jar'.format(version)
+    url = 'https://github.com/CellProfiler/prokaryote/releases/download/{0}/prokaryote-{0}.tar.gz'.format(version)
 
     path = './imagej/jars'
 
@@ -18,5 +20,5 @@ def retrieve_prokaryote(version='1.0.0'):
     if not os.path.isfile(filename):
         response = urllib2.urlopen(url)
 
-        with open(filename, 'w') as output:
-            output.write(response.read())
+        with open(filename, 'w') as outfile:
+            outfile.write(gzip.GzipFile(fileobj=(StringIO.StringIO(response.read()))).read())

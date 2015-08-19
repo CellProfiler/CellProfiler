@@ -20,6 +20,7 @@ import sys
 import tempfile
 
 import cellprofiler.preferences as cpprefs
+from external_dependencies import get_cellprofiler_jars
 
 logger = logging.getLogger(__name__)
 
@@ -76,13 +77,31 @@ def get_patcher_args(class_path):
 def get_jars():
     '''Get the final list of JAR files passed to javabridge'''
     imagej_path = get_path_to_jars()
-
-    jar_files = [os.path.join(imagej_path, 'prokaryote-1.0.0.jar')]
-
+    if hasattr(sys, 'frozen'):
+        jar_files = [
+            jar_filename
+            for jar_filename in os.listdir(imagej_path)
+            if jar_filename.lower().endswith(".jar")]
+        sort_dict = { "cellprofiler-java.jar": -1}
+        jdcp = os.path.join(
+            imagej_path, "cellprofiler-java-dependencies-classpath.txt")
+        if os.path.isfile(jdcp):
+            with open(jdcp, "r") as fd:
+                jars = fd.readline().split(os.pathsep)
+                sort_dict.update(dict([
+                    (os.path.split(j)[-1], i) for i, j in enumerate(jars)]))
+        def sort_fn(a, b):
+            aa,bb = [(sort_dict.get(x, sys.maxint), x)
+                     for x in a, b]
+            return cmp(aa, bb)
+        jar_files = sorted(jar_files, cmp = sort_fn)
+    else:
+        jar_files = get_cellprofiler_jars()
+    jar_files = [os.path.join(imagej_path, f)  for f in jar_files]
     class_path = javabridge.JARS + jar_files
     
     if os.environ.has_key("CLASSPATH"):
-        class_path = list(os.environ["CLASSPATH"].split(os.pathsep)) + class_path
+        class_path += os.environ["CLASSPATH"].split(os.pathsep)
         logging.debug(
             "Adding Java class path from environment variable, ""CLASSPATH""")
         logging.debug("    CLASSPATH="+os.environ["CLASSPATH"])

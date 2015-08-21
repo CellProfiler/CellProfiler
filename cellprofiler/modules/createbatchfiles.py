@@ -12,8 +12,9 @@ access files images by mounting the file system using a drive letter, like this:
 <tt>Z:\your_data\images</tt><br><br>
 and the cluster computers access the same file system like this:<br><br>
 <tt>/server_name/your_name/your_data/images</tt><br><br>
-In this case, the local root path is <tt>Z:\your_data\images</tt> and the cluster 
-root path is <tt>/server_name/your_name/your_data/images</tt>.
+In this case, since the <tt>your_data\images</tt> portion of the path is the same for
+both, the local root path is the portion prior, i.e., <tt>Z:\</tt> and similarly for
+the cluster root path, i.e., <tt>/server_name/your_name/</tt>.
 </p>
 
 For more details on batch processing, please see <i>Help > Other Features > Batch Processing</i>.
@@ -125,7 +126,7 @@ class CreateBatchFiles(cpm.CPModule):
         self.check_path_button = cps.DoSomething(
             "Press this button to check pathnames on the remote server",
             "Check paths", self.check_paths, doc = """
-            his button will start a routine that will ask the
+            This button will start a routine that will ask the
             webserver to check whether the default input and default output
             folders exist. It will also check whether all remote
             path mappings exist.""")
@@ -145,7 +146,7 @@ class CreateBatchFiles(cpm.CPModule):
                         <tt>Z:\your_data\images</tt> (on a Windows machine, for instance)<br><br>
                         and the cluster machine sees the same folder like this:<br><br>
                         <tt>/server_name/your_name/your_data/images</tt><br><br>
-                        you would enter <tt>Z:</tt> here and <t>/server_name/your_name/</tt> 
+                        you would enter <tt>Z:\</tt> here and <t>/server_name/your_name/</tt> 
                         for the cluster path in the next setting."""))
 
         group.append("remote_directory",
@@ -159,7 +160,7 @@ class CreateBatchFiles(cpm.CPModule):
                         <tt>Z:\your_data\images</tt> (on a Windows machine, for instance)<br><br>
                         and the cluster machine sees the same folder like this:<br><br>
                         <tt>/server_name/your_name/your_data/images</tt><br><br>
-                        you would enter <tt>Z:</tt> in the previous setting for the
+                        you would enter <tt>Z:\</tt> in the previous setting for the
                         local machine path and <t>/server_name/your_name/</tt> here. """))
         group.append("remover",
                      cps.RemoveSettingButton("", "Remove this path mapping", self.mappings, group))

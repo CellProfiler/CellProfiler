@@ -339,7 +339,6 @@ class TestAnalysisWorker(unittest.TestCase):
                        cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY),
                        cpprefs.DEFAULT_OUTPUT_DIRECTORY:
                        cpprefs.config_read(cpprefs.DEFAULT_OUTPUT_DIRECTORY)}
-        
         cpprefs.set_default_image_directory(example_images_directory())
         cpprefs.set_default_output_directory(example_images_directory())
         rep = cpanalysis.Reply(

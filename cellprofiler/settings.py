@@ -2526,7 +2526,16 @@ class Color(Setting):
         "white":(255,255,255),
         "whitesmoke":(245,245,245),
         "yellow":(255,255,0),
-        "yellowgreen":(154,205,50)}
+        "yellowgreen":(154,205,50),
+        #
+        # Colors defined in wxPython-src-2.8.12.1/src/common/gdicmn.cpp
+        # that are not in the spec.
+        #
+        "lightmagenta":(255, 0, 255),
+        "mediumgrey":(100, 100, 100),
+        "mediumforestgreen":(107, 142, 35),
+        "mediumgoldenrod":(234, 234, 173)
+    }
         
 class Filter(Setting):
     '''A filter that can be applied to an object

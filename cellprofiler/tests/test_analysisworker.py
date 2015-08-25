@@ -327,8 +327,10 @@ class TestAnalysisWorker(unittest.TestCase):
                                      "Channel1-01-A-01.tif")
         maybe_download_example_image(["ExampleHT29"],
                                      "AS_09125_050116030001_D03f00d0.tif")
-        input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
-        output_dir = os.path.join(example_images_directory(), "ExampleHT29")
+        input_dir = os.path.normcase(
+            os.path.join(example_images_directory(), "ExampleSBSImages"))
+        output_dir = os.path.normcase(
+            os.path.join(example_images_directory(), "ExampleHT29"))
         cpprefs.set_default_image_directory(input_dir)
         input_dir = cpprefs.get_default_image_directory()
         cpprefs.set_default_output_directory(output_dir)
@@ -337,7 +339,6 @@ class TestAnalysisWorker(unittest.TestCase):
                        cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY),
                        cpprefs.DEFAULT_OUTPUT_DIRECTORY:
                        cpprefs.config_read(cpprefs.DEFAULT_OUTPUT_DIRECTORY)}
-        
         cpprefs.set_default_image_directory(example_images_directory())
         cpprefs.set_default_output_directory(example_images_directory())
         rep = cpanalysis.Reply(

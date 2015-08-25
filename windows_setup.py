@@ -471,9 +471,9 @@ if do_modify:
 else:
     opts['py2exe']['dll_excludes'] += ["msvcr90.dll", "msvcm90.dll", "msvcp90.dll"]
 
-data_files += [('cellprofiler\\artwork',
-               ['cellprofiler\\artwork\\%s'%(x)
-                for x in os.listdir('cellprofiler\\artwork')
+data_files += [('artwork',
+               ['artwork\\%s'%(x)
+                for x in os.listdir('artwork')
                 if x.endswith(".png") 
                 or x.endswith(".psd") or x.endswith(".txt")]),
               ('imagej\\jars', 

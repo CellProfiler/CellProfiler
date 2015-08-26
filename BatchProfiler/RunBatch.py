@@ -862,13 +862,17 @@ fi
              stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH |
              stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
     priority = min(0, max(-1023, int(batch.priority * 1023 / 100 - 1023)))
+    try:
+        memory_limit = int(batch.memory_limit) / 1000
+    except:
+        memory_limit = 2
     job_id = bputilities.run_on_tgt_os(
         script = script, 
         group_name = batch.project,
         job_name = batch_array.get_job_name(),
         queue_name = batch.queue,
         priority = priority,
-        memory=batch.memory_limit / 1000,
+        memory=memory_limit,
         cwd = cwd,
         output = batch_array_text_file_path(batch_array),
         err_output = batch_array_err_file_path(batch_array),

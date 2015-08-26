@@ -30,6 +30,10 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 <i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.
 <a href="http://dx.doi.org/10.1038/nmeth.1984">(link)</a></li>
 </ul>
+
+<p>See also: Our <a href="http://www.cellprofiler.org/wormtoolbox/">Worm 
+Toolbox</a> page for sample images and pipelines, as well
+as video tutorials.</p>
 '''
 
 # CellProfiler is distributed under the GNU General Public License.

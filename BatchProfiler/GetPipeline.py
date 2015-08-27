@@ -30,8 +30,7 @@ EXPERIMENT = "Experiment"
 
 with bputilities.CellProfilerContext():
     batch_id = BATCHPROFILER_DEFAULTS[BATCH_ID]
-    my_batch = RunBatch.BPBatch()
-    my_batch.select(batch_id)
+    my_batch = RunBatch.BPBatch.select(batch_id)
     path = RunBatch.batch_data_file_path(my_batch)
     h = HDF5Dict(path, mode="r")
     if M_USER_PIPELINE in h.second_level_names(EXPERIMENT):

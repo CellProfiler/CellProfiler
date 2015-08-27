@@ -126,7 +126,7 @@ EXAMPLE_GFP_PIC = "gfp.png"
 # Module help specifics for repeated use
 #
 ####################################################
-BATCH_PROCESSING_HELP_REF = """Help > Other Features > Batch Processing"""
+BATCH_PROCESSING_HELP_REF = """Help > Batch Processing"""
 TEST_MODE_HELP_REF = """Help > Testing Your Pipeline"""
 IMAGE_TOOLS_HELP_REF = """Help > Using Module Display Windows > How To Use The Image Tools"""
 DATA_TOOL_HELP_REF = """Help > Data Tool Help"""
@@ -918,12 +918,12 @@ of images on different computers on the cluster.</li>
 to the directory where you have installed CellProfiler on the cluster. <br>
 A single batch can be submitted with the following command:<br>
 <code>
-./python-2.6.sh CellProfiler.py -p &lt;Default_Output_Folder_path&gt;/Batch_data.h5 -c -r -b -f &lt;first_image_set_number&gt; -l &lt;last_image_set_number&gt;
+./python CellProfiler.py -p &lt;Default_Output_Folder_path&gt;/Batch_data.h5 -c -r -b -f &lt;first_image_set_number&gt; -l &lt;last_image_set_number&gt;
 </code>
 This command submits the batch file to CellProfiler and specifies that CellProfiler run in a 
 batch mode without its user interface to process the pipeline. 
 This run can be modified by using additional options to CellProfiler that 
-specify the following (type "CellProfiler.py -h" to see a list of available options):
+specify the following:
 <ul>
 <li><code>-p &lt;Default_Output_Folder_path&gt;/Batch_data.h5</code>: The 
 location of the batch file, where &lt;Default_Output_Folder_path&gt; is the 
@@ -943,15 +943,16 @@ these pieces using the command line switches, <code>-f</code> and <code>-l</code
 specify the first and last image sets in each job. A full image set would then need
 a script that calls CellProfiler with these options with sequential image set numbers,
 e.g, 1-50, 51-100, etc to submit each as an individual job.<br>
->If you need help in producing the batch commands for submitting your jobs, use the
+
+<p>If you need help in producing the batch commands for submitting your jobs, use the
 <code>--get-batch-commands</code> along with the <code>-p</code> switch to specify the 
 Batch_data.h5 file output by the CreateBatchFiles module. When specified, CellProfiler 
 will output one line to the terminal per job to be run. This output should be further 
 processed to generate a script that can invoke the jobs in a cluster-computing context.<br>
 The above notes assume that you are running CellProfiler using our source code (see 
 "Developer's Guide" under Help for more details). If you are using the compiled version,
-you would replace <code>./python-2.6.sh CellProfiler.py</code> with the CellProfiler 
-executable file itself and run it from the installation folder.</li>
+you would replace <code>./python CellProfiler.py</code> with the CellProfiler 
+executable file itself and run it from the installation folder.</p></li>
 </ol>
 
 <p>Once all the jobs are submitted, the cluster will run each batch individually 
@@ -961,6 +962,9 @@ calling CellProfiler will also produce an output file containing the measurement
 for that batch of images in the output folder. Check the output from the batch 
 processes to make sure all batches complete. Batches that fail for transient reasons
 can be resubmitted.</p>
+
+<p>To see documentation for all available arguments to CellProfiler, type <code>CellProfiler.py 
+--help</code> to see a listing.</p>
 
 <p>For additional help on batch processing, refer to our 
 <a href = "http://goo.gl/HtTzD">wiki</a> if installing CellProfiler on a Unix system, 
@@ -2469,13 +2473,13 @@ MAIN_HELP = (
         ("Using Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
         ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),   
     ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
+    ("Batch Processing", BATCHPROCESSING_HELP),
     ("Legacy Modules and Features",(
         ("Load Modules", LEGACY_LOAD_MODULES_HELP),
         ("Setting the Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
         ("Setting the Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
         ("Setting the Output Filename", USING_THE_OUTPUT_FILE_HELP))), 
     ("Other Features",(
-        ("Batch Processing", BATCHPROCESSING_HELP),
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
         ("Configuring Logging", CONFIGURING_LOGGING_HELP),
         ("Accessing Images From OMERO", ACCESSING_OMERO_IMAGES),

@@ -1,4 +1,6 @@
-'''<b>Create Batch Files</b> produces files that allow individual batches of images to be processed
+from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
+__doc__ = '''
+<b>Create Batch Files</b> produces files that allow individual batches of images to be processed
 separately on a cluster of computers.
 <hr>
 This module creates files that can be submitted in parallel to a
@@ -17,8 +19,8 @@ both, the local root path is the portion prior, i.e., <tt>Z:\</tt> and similarly
 the cluster root path, i.e., <tt>/server_name/your_name/</tt>.
 </p>
 
-For more details on batch processing, please see <i>Help > Other Features > Batch Processing</i>.
-'''
+For more details on batch processing, please see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.
+'''%globals()
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 

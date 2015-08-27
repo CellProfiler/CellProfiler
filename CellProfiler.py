@@ -909,7 +909,9 @@ def run_pipeline_headless(options, args):
     if ((options.pipeline_filename is not None) and 
         (not options.pipeline_filename.lower().startswith('http'))):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
-    from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
+    from cellprofiler.pipeline import \
+         Pipeline, EXIT_STATUS, M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
+         M_DEFAULT_OUTPUT_FOLDER
     import cellprofiler.measurements as cpmeas
     import cellprofiler.preferences as cpprefs
     pipeline = Pipeline()
@@ -936,6 +938,22 @@ def run_pipeline_headless(options, args):
                 if HDF5FileList.has_file_list(src):
                     HDF5FileList.copy(
                         src, initial_measurements.hdf5_dict.hdf5_file)
+        #
+        # Set the default input and output directories if not specified
+        # on the command-line
+        #
+        if options.image_directory is None and \
+           initial_measurements.has_feature(
+               cpmeas.EXPERIMENT, M_DEFAULT_INPUT_FOLDER):
+            path = initial_measurements.get_experiment_measurement(
+                M_DEFAULT_INPUT_FOLDER)
+            cpprefs.set_default_image_directory(path)
+        if options.output_directory is None and \
+           initial_measurements.has_feature(
+               cpmeas.EXPERIMENT, M_DEFAULT_OUTPUT_FOLDER):
+            path = initial_measurements.get_experiment_measurement(
+                M_DEFAULT_OUTPUT_FOLDER)
+            cpprefs.set_default_output_directory(path)
     else:
         pipeline.load(options.pipeline_filename)
     if options.groups is not None:

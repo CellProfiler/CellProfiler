@@ -283,7 +283,7 @@ class ViewWorkspace(object):
             flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.add_image_row(can_delete = False)
         add_image_button = wx.Button(panel,
-                                     label = "Add image")
+                                     label = "Add Image")
         sub_sizer.Add(add_image_button, 0, wx.ALIGN_RIGHT)
         add_image_button.Bind(
             wx.EVT_BUTTON,
@@ -313,7 +313,7 @@ class ViewWorkspace(object):
             flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.add_objects_row(can_delete = False)
         add_object_button = wx.Button(panel,
-                                      label = "Add objects")
+                                      label = "Add Objects")
         sub_sizer.Add(add_object_button, 0, wx.ALIGN_RIGHT)
         add_object_button.Bind(
             wx.EVT_BUTTON,
@@ -343,7 +343,7 @@ class ViewWorkspace(object):
             flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM)
         self.add_mask_row(can_delete = False)
         add_mask_button = wx.Button(panel,
-                                    label = "Add mask")
+                                    label = "Add Mask")
         sub_sizer.Add(add_mask_button, 0, wx.ALIGN_RIGHT)
         add_mask_button.Bind(
             wx.EVT_BUTTON,

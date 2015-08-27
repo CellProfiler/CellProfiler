@@ -1510,23 +1510,96 @@ left and a panel of controls to the right.
 <h3>Key concepts</h3>
 <p>
 The workspace viewer lets you examine the CellProfiler workspace as you
-progress through your pipeline's execution. At the start of the pipeline,
+progress through your pipeline's execution. A pipeline's <i>workspace</i> 
+is the collection of images, objects and measurements that are produced
+by the modules. At the start of the pipeline,
 the only things that are available are the images and objects loaded by the
 input modules. New images, objects and measurements are added to the workspace
-as you step through modules and, if you modify a module's setting and re-execute
+as you step through modules. If you modify a module's setting and re-execute
 the module, the images, objects and measurements produced by that module
 will be overwritten.</p>
-<p>
-The viewer is persistent. You can set up the viewer to view the workspace at
-the end of a pipeline and then start a new pipeline cycle and CellProfiler
-will fill in the images, objects and measurements that you have chosen to
-display as they become available. You can also zoom in on a particular region
-and change settings and the viewer will remain focused on that region.</p>
-<p>
-All elements of the display are configurable, either through the context menu
-or through the subplots menu.</p>
 
-<h3>Workspace configuration parameters</h3>
+<p>The selected views are persistent across image cycles. That is, you can set up the viewer to view 
+the workspace at the end of a pipeline cycle, then start a new cycle and 
+CellProfiler will fill in the images, objects and measurements that you have chosen to
+display as they become available. You can also zoom in on a particular region
+and change settings and the viewer will remain focused on that region with
+the same settings across modules or image cycles.</p>
+
+<p>All elements of the display are configurable, either through the Subplots menu 
+on the viewer, or through the context menu available by right-clicking on the figure
+window.</p>
+
+<h3>Available displays</h3>
+
+<p>A number of displays are available on the right-side of the workspace viewer. You
+can add, remove and modify displays of <i>images</i>, <i>objects</i>, <i>masks</i> and
+<i>measurements</i>,
+
+<h4>Images</h4>
+
+<p>The workspace viewer can display any image that is available from the input
+modules or from modules previously executed. To display a single image, select
+it from the <i>Images</i> drop down and check the <i>Show</i> checkbox. Initially,
+the image will be displayed in color, using the color shown in the "Color" box.
+This color can be changed by clicking on the color box.
+<br>
+You can add images to the display by clicking the <i>Add Image</i> button. You
+can remove images other than the first by hitting the button in the
+<i>Remove</i> column. You can toggle the image display using the checkbox in the
+<i>Show</i> column. You can also set the interpolation mode by selecting 
+<i>Interpolation</i> from the <i>Subplots</i> menu. </p>
+
+<h4>Objects</h4>
+
+<p>You can display the objects that have been created or loaded by all modules
+that have been executed. To display a set of objects, select them from the
+<i>Objects</i> drop-down and check the <i>Show</i> checkbox. You can add
+additional objects by pressing the <i>Add Objects</i> button.</p>
+
+<h4>Masks</h4>
+
+<p>You can display the mask for any image produced by any of the modules that
+have been executed. Most images are not masked. In these cases, you can
+display the mask, but the display will show that the whole image is unmasked.
+You can mask an image with the <b>MaskImage</b> or <b>Crop</b> modules.</p>
+
+<p>To display the mask of an image, select it from the <i>Masks</i> dropdown and
+check the <i>Show</i> checkbox. You can add additional masks by pressing the 
+<i>Add Mask</i> button. The options for masks are the same as that for
+objects with the addition that you can invert and overlay the mask by choosing
+<i>Inverted</i> from the mask's menu; the masked portion will be displayed
+in color.</p>
+
+<h4>Measurements</h4>
+
+<p>You can display any measurement produced by any of the modules that have
+been executed. Image measurements will be displayed in the title bar above
+the image. Object measurements will be displayed centered over the measurement's
+object. To display a measurement, select it from the <i>Measurements</i>
+drop-down and check the <i>Show</i> checkbox next to the measurement. You can
+add a measurement by pressing the <i>Add Measurement</i> button or remove it
+by checking the button in the <i>Remove</i> column.</p>
+
+<p>You can configure the font used to display an object measurement, the color
+of the text, and the color, transparency and shape of the background behind
+the text. To configure the measurement's appearance, press the <i>Font</i>
+button to the right of the measurement. Press the <i>Font</i> button in the
+<i>Measurement appearance</i> dialog to choose the font and its size, press
+the <i>Text color</i> and <i>Background color</i> to change the color used
+to display the text and background. Use the <i>Alpha</i> slider to control the
+transparency of the background behind the measurement text. The <i>Box shape</i>
+drop-down controls the shape of the background box. The <i>Precision</i>
+control determines the number of digits displayed to the right of the
+decimal point.</p>
+
+<h3>Using the Subplot menu to configure the display</h3>
+
+<p>The following items modify how the display is rendered. You can configure 
+them through the Subplots menu on the viewer, or through the context menu 
+available by right-clicking on the figure window.</p>
+
+<h4>Interpolation</h4>
 
 The interpolation mode used to render images, objects and masks is a
 configuration option that applies to the entire workspace. Interpolation
@@ -1534,34 +1607,24 @@ controls how the intensities of pixels are blended together. You can set
 the interpolation mode by selecting <i>Interpolation</i> from the
 <i>Subplots</i> menu. The available modes are:
 %(INTERPOLATION_MODE_HELP_LIST)s
-<br>
-<h3>Images</h3>
-The workspace viewer can display any image that is available from the input
-modules or from modules previously executed. To display a single image, select
-it from the <i>Images</i> drop down and check the "Show" checkbox. Initially,
-the image will be displayed in color, using the color shown in the "Color" box.
-This color can be changed by clicking on the color box.
-<br>
-You can add images to the display by clicking the <i>Add image</i> button. You
-can remove images other than the first by hitting the button in the
-<i>Remove</i> column. You can toggle image display using the checkbox in the
-<i>Show</i> column.
-<br>
-You can change the way an image is scaled, you can change its display mode
+
+<h4>Images</h4>
+
+<p>You can change the way an image is scaled, you can change its display mode
 and you can change its color and transparency from the menus. To do this,
 select the image from the <i>Subplots</i> menu. The images that are shown
 will appear in the menu under the <i>--- Images ---</i> heading. Select the
 image you want to configure from the menu to display the options that are
 available for that image. There are three categories in the menu, one for
 intensity normalization, one for the display mode and one to adjust color
-and transparency.
-<br>
-The intensity normalization mode controls how the pixel's intensity value is
+and transparency.</p>
+
+<p>The intensity normalization mode controls how the pixel's intensity value is
 translated into the brightness of a pixel on the screen. The modes that are
 available are:
-%(INTENSITY_MODE_HELP_LIST)s
+%(INTENSITY_MODE_HELP_LIST)s</p>
 
-The <i>Mode</i> controls how pixel intensities are mapped to colors in the
+<p>The <i>Mode</i> controls how pixel intensities are mapped to colors in the
 image. You can display each image using the following modes:
 <ul>
 <li><i>Color:</i> Pixels will have a uniform color which can be selected
@@ -1577,23 +1640,18 @@ color maps from the drop-down. The display will change interactively as you
 change the selection, allowing you to see the image as rendered by your choice.
 Hit <i>OK</i> to accept the new color map or hit <i>Cancel</i> to use the
 color map that was originally selected.</li>
-</ul>
+</ul></p>
 
-The image's <i>Alpha</i> menu entry lets you control the image's transparency.
+<p>The image's <i>Alpha</i> menu entry lets you control the image's transparency.
 This will let you blend colors when the palettes overlap and choose which
 image's intensity has the highest priority. To change the transparency, select
 <i>Alpha</i> from the image's menu. Adjust the transparency interactively
 using the slider bar and hit <i>OK</i> to accept the new value or <i>Cancel</i>
-to restore the value that was originally selected.
+to restore the value that was originally selected.</p>
 
-<h3>Objects</h3>
+<h4>Objects</h4>
 
-You can display the objects that have been created or loaded by all modules
-that have been executed. To display a set of objects, select them from the
-<i>Objects</i> drop-down and check the <i>Show</i> checkbox. You can add
-additional objects by pressing the <i>Add objects</i> button.
-
-You can configure the appearance of objects using the context or <i>Subplots</i>
+<p>You can configure the appearance of objects using the context or <i>Subplots</i>
 menu. Choose the objects you wish to configure from the <i>--- Objects ---</i>
 list in the menu. You will see configuration menu items for the objects'
 display mode, color and alpha value. You can display objects using one of the
@@ -1615,42 +1673,8 @@ initially. You can choose the color map by
 selecting <i>Color</i> from the objects' menu and choosing one of the available
 color maps. You can change the transparency of the overlay by choosing
 <i>Alpha</i> from the objects' menu.</li>
-</ul>
+</ul></p>
 
-<h3>Masks</h3>
-
-You can display the mask for any image produced by any of the modules that
-have been executed. Most images are not masked. In these cases, you can
-display the mask, but the display will show that the whole image is unmasked.
-You can mask an image with the <b>MaskImage</b> or <b>Crop</b> modules.
-<br>
-To display the mask of an image, select it from the <i>Masks</i> dropdown and
-check the <i>Show</i> checkbox. The options for masks are the same as for
-objects with one addition. You can invert and overlay the mask by choosing
-<i>Inverted</i> from the mask's menu and the masked portion will be displayed
-in color.
-
-<h3>Measurements</h3>
-
-You can display any measurement produced by any of the modules that have
-been executed. Image measurements will be displayed in the title bar above
-the image. Object measurements will be displayed centered over the measurement's
-object. To display a measurement, select it from the <i>Measurements</i>
-drop-down and check the <i>Show</i> checkbox next to the measurement. You can
-add a measurement by pressing the <i>Add Measurement</i> button or remove it
-by checking the button in the <i>Remove</i> column.
-<br>
-You can configure the font used to display an object measurement, the color
-of the text, and the color, transparency and shape of the background behind
-the text. To configure the measurement's appearance, press the <i>Font</i>
-button to the right of the measurement. Press the <i>Font</i> button in the
-<i>Measurement appearance</i> dialog to choose the font and its size, press
-the <i>Text color</i> and <i>Background color</i> to change the color used
-to display the text and background. Use the <i>Alpha</i> slider to control the
-transparency of the background behind the measurement text. The <i>Box shape</i>
-drop-down controls the shape of the background box. The <i>Precision</i>
-control determines the number of digits displayed to the right of the
-decimal point.
 """ % globals()
 
 WV_FIGURE_HELP = tuple(list(FIGURE_HELP) + [(

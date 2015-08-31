@@ -403,6 +403,8 @@ class CalculateStatistics(cpm.CPModule):
             expt_measurements[name] = ec50_coeffs[:,2]
             if dose_group.wants_save_figure:
                 pathname = dose_group.pathname.get_absolute_path(measurements)
+                if not os.path.exists(pathname):
+                    os.makedirs(pathname)
                 write_figures(dose_group.figure_name, pathname, dose_feature,
                               dose_data, data, ec50_coeffs, feature_set,
                               dose_group.log_transform.value)

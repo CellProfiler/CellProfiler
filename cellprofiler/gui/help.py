@@ -632,7 +632,7 @@ save the measurements collected to that point while continuing the analysis run.
 </ul> 
 At the end of each cycle, CellProfiler saves the measurements in the output file.</p></li>
 
-<li><p><i>ode to preview results.</i><br>
+<li><p><i>Click <i>Start Test Mode</i> to preview results.</i><br>
 You can optimize your pipeline by selecting the <i>Test</i> option from 
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results, and adjust the module settings on the fly. See 
@@ -792,7 +792,7 @@ been inserted at that point.</li>
 <li><i>Run:</i> Execution of the pipeline will be started/resumed until
 the next module pause is reached. When all modules have been executed for a given image cycle,
 execution will stop.</li>
-<li><i>Step:</i> Execute the next module (as indicated by the slider location)</li>
+<li><i>Step:</i> Execute the next module (as indicated by the slider location).</li>
 <li><i>Next Image:</i> Skip ahead to the next image cycle as determined by the image 
 order in the Input modules. The slider will automatically return to the 
 first module in the pipeline.</li>

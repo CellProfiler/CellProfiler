@@ -1976,7 +1976,7 @@ At this point, you may start building your project by using the modules located 
 modules" panel on the upper-left. The modules are:
 <ul>
 <li><b>Images</b>: Assemble the relevant images for analysis (required).</li>
-<li><b>Metadata</b>: Asociate metadata with the images (optional).</li>
+<li><b>Metadata</b>: Associate metadata with the images (optional).</li>
 <li><b>NamesAndTypes</b>: Assign names to channels and define their relationship (required).</li>
 <li><b>Groups</b>: Define sub-divisions between groups of images for processing (optional).</li>
 </ul>

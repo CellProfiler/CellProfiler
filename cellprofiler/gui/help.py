@@ -170,7 +170,7 @@ them from any drop-down image list."""
 LEGACY_LOAD_MODULES_HELP = """
 <p>Historically, two modules served the same functionality as the current project structure: 
 <b>LoadImages</b> and <b>LoadData</b>.
-While the approach described above supercedes these modules in part, old pipelines
+While the approach described above supersedes these modules in part, old pipelines
 loaded into CellProfiler that contain these modules will provide the option of preserving them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these 
@@ -178,7 +178,7 @@ modules into the project equivalent as closely as possible. Both modules remain 
 via the "Add module" and <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;
 button at the bottom of the pipeline panel. The section details
 information relevant for users who would like to continue using these modules. Please note,
-however, that these modules are deprcated and may be removed in the future.</p>
+however, that these modules are deprecated and may be removed in the future.</p>
 
 <h3>Associating metadata with images</h3>
 <p>Metadata (i.e., additional data about image data) is sometimes available for input images.
@@ -276,7 +276,7 @@ use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
 
 <p>The <i>Default Input Folder</i> is enabled only if a legacy pipeline is loaded into
 CellProfiler and is accessible by pressing the "View output settings"
-button at the botton of the pipeline panel. The folder designated as the 
+button at the bottom of the pipeline panel. The folder designated as the 
 <i>Default Input Folder</i> contains the input image or data files
 that you want to analyze. Several File Processing modules (e.g., 
 <b>LoadImages</b> or <b>LoadData</b>) provide the option of retrieving images 
@@ -302,7 +302,7 @@ of files written by the various output modules will be set to an absolute path
 in future versions of CellProfiler.</p>
 
 <p>The <i>Default Output Folder</i> is accessible by pressing the "View output settings"
-button at the botton of the pipeline panel. The Default Output Folder is the folder that CellProfiler uses to
+button at the bottom of the pipeline panel. The Default Output Folder is the folder that CellProfiler uses to
 store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or 
 <b>ExportToSpreadsheet</b>) provide the option of saving analysis results to 
 this folder on a default basis unless you specify, within the module, an alternate, 
@@ -862,7 +862,7 @@ analysis, it is recommended to create a separate project folder for each run. </
 <li>Within this project folder, create the following folders (both of which must 
 be connected to the cluster computing network):
 <ul>
-<li>Create an input folder, then transfer all of our images to this folder
+<li>Create an input folder, then transfer all of your images to this folder
 as the input folder. The input folder must be readable by everyone (or at least your 
 cluster) because each of the separate cluster computers will read input files from 
 this folder.
@@ -2007,7 +2007,7 @@ entering Test mode, or when the user requests a refreshed view of the informatio
 
 <h4>Legacy modules: LoadImages and LoadData</h4>
 <p>Historically, two modules were used for project creation: <b>LoadImages</b> and <b>LoadData</b>.
-While the approach described above partly supercedes these modules, you have the option
+While the approach described above partly supersedes these modules, you have the option
 of preserving these modules if you load old pipelines into CellProfiler that contain them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these 

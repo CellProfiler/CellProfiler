@@ -29,6 +29,17 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpm
 import cellprofiler.modules.filterobjects as F
+from cellprofiler.modules.identify import \
+     FF_PARENT, FF_COUNT, FF_CHILDREN_COUNT, M_NUMBER_OBJECT_NUMBER, \
+     M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, C_CHILDREN, \
+     C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y, C_PARENT, \
+     C_NUMBER, FTR_OBJECT_NUMBER
+
+INPUT_IMAGE = "input_image"
+INPUT_OBJECTS = "input_objects"
+ENCLOSING_OBJECTS = "my_enclosing_objects"
+OUTPUT_OBJECTS = "output_objects"
+TEST_FTR = "my_measurement"
 
 class TestFilterObjects(unittest.TestCase):
     def make_workspace(self, object_dict= {}, image_dict = {}):
@@ -54,46 +65,46 @@ class TestFilterObjects(unittest.TestCase):
         
     def test_00_01_zeros_single(self):
         '''Test keep single object on an empty labels matrix'''
-        workspace, module = self.make_workspace({ "my_objects": np.zeros((10,10),int) })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: np.zeros((10,10),int) })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_MAXIMAL
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,np.zeros((0,)))
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==0))
     
     def test_00_02_zeros_per_object(self):
         '''Test keep per object filtering on an empty labels matrix'''
         workspace, module = self.make_workspace(  
-            {"my_objects": np.zeros((10,10),int),
-             "my_enclosing_objects": np.zeros((10,10),int)})
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.enclosing_object_name.value = "my_enclosing_objects"
-        module.measurements[0].measurement.value = "my_measurement"
+            {INPUT_OBJECTS: np.zeros((10,10),int),
+             ENCLOSING_OBJECTS: np.zeros((10,10),int)})
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.enclosing_object_name.value = ENCLOSING_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_MAXIMAL_PER_OBJECT
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,np.zeros((0,)))
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==0))
     
     def test_00_03_zeros_filter(self):
         '''Test object filtering on an empty labels matrix'''
-        workspace, module = self.make_workspace({ "my_objects": np.zeros((10,10),int) })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: np.zeros((10,10),int) })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].min_limit.value = 0
         module.measurements[0].max_limit.value = 1000
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,np.zeros((0,)))
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==0))
     
     def test_01_01_keep_single_min(self):
@@ -104,22 +115,24 @@ class TestFilterObjects(unittest.TestCase):
         expected = labels.copy()
         expected[labels == 1] = 0
         expected[labels == 2] = 1
-        workspace, module = self.make_workspace({ "my_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_MINIMAL
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.array([2,1]))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,np.array([2,1]))
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
-        parents = m.get_current_measurement("my_result","Parent_my_objects")
+        parents = m.get_current_measurement(
+            OUTPUT_OBJECTS, FF_PARENT % INPUT_OBJECTS)
         self.assertEqual(len(parents),1)
         self.assertEqual(parents[0],2)
-        self.assertEqual(m.get_current_image_measurement("Count_my_result"),1)
-        feature = F.FF_CHILDREN_COUNT % "my_result"
-        child_count = m.get_current_measurement("my_objects", feature)
+        self.assertEqual(m.get_current_image_measurement(
+            FF_COUNT % OUTPUT_OBJECTS),1)
+        feature = F.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
+        child_count = m.get_current_measurement(INPUT_OBJECTS, feature)
         self.assertEqual(len(child_count), 2)
         self.assertEqual(child_count[0], 0)
         self.assertEqual(child_count[1], 1)
@@ -132,15 +145,15 @@ class TestFilterObjects(unittest.TestCase):
         expected = labels.copy()
         expected[labels == 1] = 0
         expected[labels == 2] = 1
-        workspace, module = self.make_workspace({ "my_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_MAXIMAL
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.array([1,2]))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,np.array([1,2]))
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
         
     def test_02_01_keep_one_min(self):
@@ -153,17 +166,17 @@ class TestFilterObjects(unittest.TestCase):
         labels = np.zeros((20,20), int)
         labels[:,:10] = 1
         labels[:,10:] = 2
-        workspace, module = self.make_workspace({ "my_objects": sub_labels,
-                                                 "my_enclosing_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.enclosing_object_name.value = 'my_enclosing_objects'
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: sub_labels,
+                                                 ENCLOSING_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.enclosing_object_name.value = ENCLOSING_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_MINIMAL_PER_OBJECT
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.array([2,1,3,4]))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,np.array([2,1,3,4]))
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
     
     def test_02_02_keep_one_max(self):
@@ -176,17 +189,17 @@ class TestFilterObjects(unittest.TestCase):
         labels = np.zeros((20,20), int)
         labels[:,:10] = 1
         labels[:,10:] = 2
-        workspace, module = self.make_workspace({ "my_objects": sub_labels,
-                                                 "my_enclosing_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.enclosing_object_name.value = 'my_enclosing_objects'
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: sub_labels,
+                                                 ENCLOSING_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.enclosing_object_name.value = ENCLOSING_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_MAXIMAL_PER_OBJECT
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.array([1,2,4,3]))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,np.array([1,2,4,3]))
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
     
     def test_02_03_keep_maximal_most_overlap(self):
@@ -198,18 +211,18 @@ class TestFilterObjects(unittest.TestCase):
         sub_labels[4:6, 8:15] = 2
         sub_labels[8, 15] = 3
         expected = sub_labels * (sub_labels != 3)
-        workspace, module = self.make_workspace({ "my_objects": sub_labels,
-                                                 "my_enclosing_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.enclosing_object_name.value = 'my_enclosing_objects'
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: sub_labels,
+                                                 ENCLOSING_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.enclosing_object_name.value = ENCLOSING_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_MAXIMAL_PER_OBJECT
         module.per_object_assignment.value = F.PO_PARENT_WITH_MOST_OVERLAP
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.array([1,4,2]))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,np.array([1,4,2]))
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
     
     def test_02_04_keep_minimal_most_overlap(self):
@@ -221,18 +234,18 @@ class TestFilterObjects(unittest.TestCase):
         sub_labels[4:6, 8:15] = 2
         sub_labels[8, 15] = 3
         expected = sub_labels * (sub_labels != 3)
-        workspace, module = self.make_workspace({ "my_objects": sub_labels,
-                                                 "my_enclosing_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.enclosing_object_name.value = 'my_enclosing_objects'
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: sub_labels,
+                                                 ENCLOSING_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.enclosing_object_name.value = ENCLOSING_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_MINIMAL_PER_OBJECT
         module.per_object_assignment.value = F.PO_PARENT_WITH_MOST_OVERLAP
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.array([4,2,3]))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,np.array([4,2,3]))
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
     
     def test_03_01_filter(self):
@@ -251,19 +264,19 @@ class TestFilterObjects(unittest.TestCase):
             if value >= my_min and value <= my_max:
                 expected[labels == i+1] = idx
                 idx += 1 
-        workspace, module = self.make_workspace({ "my_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].wants_minimum.value = True
         module.measurements[0].min_limit.value = my_min
         module.measurements[0].wants_maximum.value = True
         module.measurements[0].max_limit.value = my_max
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",values)
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,values)
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
     
     def test_03_02_filter(self):
@@ -281,18 +294,18 @@ class TestFilterObjects(unittest.TestCase):
             if value >= my_min:
                 expected[labels == i+1] = idx
                 idx += 1 
-        workspace, module = self.make_workspace({ "my_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].min_limit.value = my_min
         module.measurements[0].max_limit.value = .7
         module.measurements[0].wants_maximum.value = False
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",values)
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,values)
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
 
     def test_03_03_filter(self):
@@ -310,18 +323,18 @@ class TestFilterObjects(unittest.TestCase):
             if value <= my_max:
                 expected[labels == i+1] = idx
                 idx += 1 
-        workspace, module = self.make_workspace({ "my_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].min_limit.value = .3
         module.measurements[0].wants_minimum.value = False
         module.measurements[0].max_limit.value = my_max
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",values)
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,values)
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
         
     def test_03_04_filter_two(self):
@@ -340,9 +353,9 @@ class TestFilterObjects(unittest.TestCase):
             if v1 <= my_max[0] and v2 <= my_max[1]:
                 expected[labels == i+1] = idx
                 idx += 1 
-        workspace, module = self.make_workspace({ "my_objects": labels })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
         module.add_measurement()
         m = workspace.measurements
         for i in range(2):
@@ -352,9 +365,9 @@ class TestFilterObjects(unittest.TestCase):
             module.measurements[i].min_limit.value = .3
             module.measurements[i].wants_minimum.value = False
             module.measurements[i].max_limit.value = my_max[i]
-            m.add_measurement("my_objects",measurement_name,values[:,i])
+            m.add_measurement(INPUT_OBJECTS,measurement_name,values[:,i])
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
     
     def test_04_01_renumber_other(self):
@@ -377,11 +390,11 @@ class TestFilterObjects(unittest.TestCase):
                 expected[labels == i+1] = idx
                 expected_alternates[alternates == i+1] = idx
                 idx += 1 
-        workspace, module = self.make_workspace({ "my_objects": labels,
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: labels,
                                                  "my_alternates": alternates })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.measurements[0].measurement.value = "my_measurement"
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].min_limit.value = my_min
         module.measurements[0].max_limit.value = my_max
@@ -389,9 +402,9 @@ class TestFilterObjects(unittest.TestCase):
         module.additional_objects[0].object_name.value="my_alternates"
         module.additional_objects[0].target_name.value = "my_additional_result"
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",values)
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR,values)
         module.run(workspace)
-        labels = workspace.object_set.get_objects("my_result")
+        labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         alternates = workspace.object_set.get_objects("my_additional_result")
         self.assertTrue(np.all(labels.segmented==expected))
         self.assertTrue(np.all(alternates.segmented==expected_alternates))
@@ -1421,17 +1434,17 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 
     def test_06_01_get_measurement_columns(self):
         '''Test the get_measurement_columns function'''
-        workspace, module = self.make_workspace({ "my_objects": np.zeros((10,10),int) })
-        module.object_name.value = "my_objects"
-        module.target_name.value = "my_result"
-        module.measurements[0].measurement.value = "my_measurement"
+        workspace, module = self.make_workspace({ INPUT_OBJECTS: np.zeros((10,10),int) })
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.measurements[0].measurement.value = TEST_FTR
         module.filter_choice.value = F.FI_MAXIMAL
         m = workspace.measurements
-        m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
+        m.add_measurement(INPUT_OBJECTS,TEST_FTR, np.zeros((0,)))
         module.run(workspace)
         image_features = m.get_feature_names(cpm.IMAGE)
-        result_features = m.get_feature_names("my_result")
-        object_features = m.get_feature_names("my_objects")
+        result_features = m.get_feature_names(OUTPUT_OBJECTS)
+        object_features = m.get_feature_names(INPUT_OBJECTS)
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for feature in image_features:
@@ -1439,39 +1452,43 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                                   column[1] == feature)
                                  for column in columns]))
         for feature in result_features:
-            self.assertTrue(any([(column[0] == "my_result" and
+            self.assertTrue(any([(column[0] == OUTPUT_OBJECTS and
                                   column[1] == feature)
                                  for column in columns]))
         for feature in object_features:
-            if feature != 'my_measurement':
-                self.assertTrue(any([(column[0] == "my_objects" and
+            if feature != TEST_FTR:
+                self.assertTrue(any([(column[0] == INPUT_OBJECTS and
                                       column[1] == feature)
                                      for column in columns]))
         
         for column in columns:
-            self.assertTrue(column[0] in (cpm.IMAGE, "my_result", "my_objects"))
+            self.assertTrue(column[0] in (cpm.IMAGE, OUTPUT_OBJECTS, INPUT_OBJECTS))
             if column[0] == cpm.IMAGE:
                 self.assertTrue(column[1] in image_features)
-            elif column[0] == "my_result":
+            elif column[0] == OUTPUT_OBJECTS:
                 self.assertTrue(column[1] in result_features)
         
-        for feature, coltype in (("Location_Center_X", cpm.COLTYPE_FLOAT),
-                                 ("Location_Center_Y", cpm.COLTYPE_FLOAT),
-                                 ("Number_Object_Number", cpm.COLTYPE_INTEGER),
-                                 ("Parent_my_objects", cpm.COLTYPE_INTEGER),
-                                 ("Children_my_result_Count", cpm.COLTYPE_INTEGER),
-                                 ("Count_my_result", cpm.COLTYPE_INTEGER)):
+        for feature, coltype in (
+            (M_LOCATION_CENTER_X, cpm.COLTYPE_FLOAT),
+            (M_LOCATION_CENTER_Y, cpm.COLTYPE_FLOAT),
+            (M_NUMBER_OBJECT_NUMBER, cpm.COLTYPE_INTEGER),
+            (FF_PARENT % INPUT_OBJECTS, cpm.COLTYPE_INTEGER),
+            (FF_CHILDREN_COUNT % OUTPUT_OBJECTS, cpm.COLTYPE_INTEGER),
+            (FF_COUNT % OUTPUT_OBJECTS, cpm.COLTYPE_INTEGER)):
             fcolumns = [x for x in columns if x[1] == feature]
-            self.assertEqual(len(fcolumns),1,"Missing or duplicate column: %s"%feature)
+            self.assertEqual(
+                len(fcolumns), 1, "Missing or duplicate column: %s"%feature)
             self.assertEqual(fcolumns[0][2], coltype)
             
-        for object_name, category in (("Image",dict(Count=["my_result"])),
-                                      ("my_objects",
-                                       dict(Children=["my_result_Count"])),
-                                      ("my_result",
-                                       dict(Location=["Center_X","Center_Y"],
-                                            Parent=["my_objects"],
-                                            Number=["Object_Number"]))):
+        m_output_objects_count = \
+            (FF_CHILDREN_COUNT % OUTPUT_OBJECTS).partition("_")[-1]
+        for object_name, category in (
+            (cpm.IMAGE, dict(Count=[OUTPUT_OBJECTS])),
+            (INPUT_OBJECTS, { C_CHILDREN:[m_output_objects_count]}),
+            (OUTPUT_OBJECTS, {
+                C_LOCATION:[FTR_CENTER_X, FTR_CENTER_Y],
+                C_PARENT:[INPUT_OBJECTS],
+                C_NUMBER:[FTR_OBJECT_NUMBER] })):
             categories = module.get_categories(None, object_name)
             for c in category.keys():
                 self.assertTrue(c in categories)
@@ -1557,12 +1574,12 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         expected = np.zeros((10,10), int)
         expected[4:8, 1:5] = 1
 
-        workspace, module = self.make_workspace({"input_objects" : labels})
-        module.object_name.value = "input_objects"
-        module.target_name.value = "output_objects"
+        workspace, module = self.make_workspace({INPUT_OBJECTS : labels})
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
         module.mode.value = F.MODE_BORDER
         module.run(workspace)
-        output_objects = workspace.object_set.get_objects("output_objects")
+        output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(expected == output_objects.segmented))
 
     def test_09_02_discard_mask_objects(self):
@@ -1577,18 +1594,78 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         
         workspace, module = self.make_workspace({})
         parent_image = cpi.Image(np.zeros((10, 10)), mask=mask)
-        workspace.image_set.add("input_image", parent_image)
+        workspace.image_set.add(INPUT_IMAGE, parent_image)
         
         input_objects = cpo.Objects()
         input_objects.segmented = labels
         input_objects.parent_image = parent_image
         
-        workspace.object_set.add_objects(input_objects, "input_objects")
+        workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
         
-        module.object_name.value = "input_objects"
-        module.target_name.value = "output_objects"
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
         module.mode.value = F.MODE_BORDER
         module.run(workspace)
-        output_objects = workspace.object_set.get_objects("output_objects")
+        output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(expected == output_objects.segmented))
         
+    def test_10_01_unedited_segmented(self):
+        # Test transferral of unedited segmented segmentation
+        # from source to target
+        
+        unedited = np.zeros((10, 10), dtype=int)
+        unedited[0:4, 0:4] = 1
+        unedited[6:8, 0:4] = 2
+        unedited[6:8, 6:8] = 3
+        segmented = np.zeros((10, 10), dtype=int)
+        segmented[6:8, 6:8] = 1
+        segmented[6:8, 0:4] = 2
+        
+        workspace, module = self.make_workspace({})
+        input_objects = cpo.Objects()
+        workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
+        input_objects.segmented = segmented
+        input_objects.unedited_segmented = unedited
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.mode.value = F.MODE_MEASUREMENTS
+        module.measurements[0].measurement.value = TEST_FTR
+        module.filter_choice.value = F.FI_MINIMAL
+        m = workspace.measurements
+        m[INPUT_OBJECTS, TEST_FTR] = np.array([2, 1])
+        module.run(workspace)
+        output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+        np.testing.assert_equal(output_objects.unedited_segmented, unedited)
+
+    def test_10_02_small_removed_segmented(self):
+        # Test output objects' small_removed_segmented
+        #
+        # It should be the small_removed_segmented of the
+        # source minus the filtered
+        
+        unedited = np.zeros((10, 10), dtype=int)
+        unedited[0:4, 0:4] = 1
+        unedited[6:8, 0:4] = 2
+        unedited[6:8, 6:8] = 3
+        segmented = np.zeros((10, 10), dtype=int)
+        segmented[6:8, 6:8] = 1
+        segmented[6:8, 0:4] = 2
+        
+        workspace, module = self.make_workspace({})
+        input_objects = cpo.Objects()
+        input_objects.segmented = segmented
+        input_objects.unedited_segmented = unedited
+        workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
+        module.object_name.value = INPUT_OBJECTS
+        module.target_name.value = OUTPUT_OBJECTS
+        module.mode.value = F.MODE_MEASUREMENTS
+        module.measurements[0].measurement.value = TEST_FTR
+        module.filter_choice.value = F.FI_MINIMAL
+        m = workspace.measurements
+        m[INPUT_OBJECTS, TEST_FTR] = np.array([2, 1])
+        module.run(workspace)
+        output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+        small_removed = output_objects.small_removed_segmented
+        mask = (unedited != 3) & (unedited != 0)
+        self.assertTrue(np.all(small_removed[mask] != 0))
+        self.assertTrue(np.all(small_removed[~mask] == 0))

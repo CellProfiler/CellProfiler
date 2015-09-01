@@ -503,6 +503,15 @@ class FilterObjects(cpm.CPModule):
             target_objects = cpo.Objects()
             target_objects.segmented = target_labels
             target_objects.unedited_segmented = src_objects.unedited_segmented
+            #
+            # Remove the filtered objects from the small_removed_segmented
+            # if present. "small_removed_segmented" should really be
+            # "filtered_removed_segmented".
+            #
+            small_removed = src_objects.small_removed_segmented.copy()
+            small_removed[(target_labels == 0) & 
+                          (src_objects.segmented != 0)] = 0
+            target_objects.small_removed_segmented = small_removed
             if src_objects.has_parent_image:
                 target_objects.parent_image = src_objects.parent_image
             workspace.object_set.add_objects(target_objects, target_name)

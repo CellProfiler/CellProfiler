@@ -3018,6 +3018,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         lb = wx.ListBox(dialog, choices=choices)
         if self.__grouping_index < len(choices):
             lb.Select(self.__grouping_index)
+            lb.EnsureVisible(self.__grouping_index)
         else:
             lb.Select(0)
         super_sizer.Add(lb, 1, wx.EXPAND|wx.ALL, 10)
@@ -3163,6 +3164,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         with ChooseImageSetDialog(self.__frame) as dialog:
             if self.__within_group_index < len(choices):
                 dialog.list_ctrl.Select(self.__within_group_index)
+                dialog.list_ctrl.EnsureVisible(self.__within_group_index)
             else:
                 dialog.list_ctrl.Select(0)
             if dialog.ShowModal() == wx.ID_OK:

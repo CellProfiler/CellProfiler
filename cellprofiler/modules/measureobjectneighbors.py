@@ -114,7 +114,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             boundary pixels to be neighbors. </li>
             <li><i>%(D_EXPAND)s:</i> The objects are expanded until all
             pixels on the object boundaries are touching another. Two objects are 
-            neighbors if their any of their boundary pixels are adjacent after 
+            neighbors if any of their boundary pixels are adjacent after 
             expansion.</li>
             <li><i>%(D_WITHIN)s:</i> Each object is expanded by 
             the number of pixels you specify. Two objects are  
@@ -124,7 +124,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             <p>For <i>%(D_ADJACENT)s</i> and <i>%(D_EXPAND)s</i>, the
             <i>%(M_PERCENT_TOUCHING)s</i> measurement is the percentage of pixels on the boundary 
             of an object that touch adjacent objects. For <i>%(D_WITHIN)s</i>, 
-            two objects are touching if their any of their boundary 
+            two objects are touching if any of their boundary 
             pixels are adjacent after expansion and <i>%(M_PERCENT_TOUCHING)s</i> measures the 
             percentage of boundary pixels of an <i>expanded</i> object that 
             touch adjacent objects.</p>"""%globals())

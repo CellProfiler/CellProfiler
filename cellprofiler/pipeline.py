@@ -815,7 +815,7 @@ class Pipeline(object):
         returns True if the file starts with the CellProfiler cookie.
         '''
         with open(filename, "rb") as fd:
-            return self.is_pipeline_text_fd(fd)
+            return Pipeline.is_pipeline_txt_fd(fd)
         
     @staticmethod
     def is_pipeline_txt_fd(fd):

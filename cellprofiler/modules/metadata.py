@@ -886,6 +886,8 @@ class Metadata(cpm.CPModule):
         
     def on_setting_changed(self, setting, pipeline):
         '''Update the imported extraction joiners on setting changes'''
+        if not self.wants_metadata:
+            return
         visible_settings = self.visible_settings()
         if setting == self.data_types or setting == self.data_type_choice:
             # The data types affect the joiner's matching

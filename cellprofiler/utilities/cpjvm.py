@@ -286,6 +286,8 @@ def cp_stop_vm(kill=True):
                 ij1.removeAll()
             except:
                 logger.info("Caught expected AWT exception", exc_info=1)
+        else:
+            ij1 = None
         if the_imagej_context is not None:
             #
             # Tell the app service that it's OK to quit without prompt

@@ -76,7 +76,7 @@ class ColorToGray(cpm.CPModule):
             <li><i>%(CH_HSV)s:</i>The HSV (hue, saturation, value) color space is based on more intuitive color characteristics as 
             tint, shade and tone. Choosing
             this option will split the image into any of the hue, saturation, and value component images.</li>
-            <li><i>%(CH_CHANNELS)s:</i>This is a more complex model for images which involve more than three chnnels.</li>
+            <li><i>%(CH_CHANNELS)s:</i>This is a more complex model for images which involve more than three channels.</li>
             </ul>""" % globals())
         
         # The following settings are used for the combine option

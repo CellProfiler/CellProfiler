@@ -555,7 +555,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME + M.F_FRAC_AT_D).pixel_data
             data = data.astype(heatmap.dtype)
-            self.assertEqual(mode(heatmap[bins == bin])[0], data[0])
+            self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_mean_frac(bin, 4))
             self.assertEqual(len(data), 1)
@@ -563,7 +563,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME + M.F_MEAN_FRAC).pixel_data
             data = data.astype(heatmap.dtype)
-            self.assertEqual(mode(heatmap[bins == bin])[0], data[0])
+            self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
@@ -571,7 +571,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
             data = data.astype(heatmap.dtype)
-            self.assertEqual(mode(heatmap[bins == bin])[0], data[0])
+            self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
   
     def test_03_03_half_circle(self):
         '''Test the module on a circle and an image that's 1/2 zeros
@@ -748,7 +748,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
-                self.assertEqual(mode(heatmap[mask]), data[label-1])
+                self.assertEqual(mode(heatmap[mask])[0][0], data[label-1])
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_mean_frac(bin, 4))
             self.assertEqual(len(data), 2)
@@ -758,7 +758,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
-                self.assertEqual(mode(heatmap[mask]), data[label-1])
+                self.assertEqual(mode(heatmap[mask])[0][0], data[label-1])
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 2)
@@ -768,7 +768,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
                 mask = (bins == bin) & (labels == label)
-                self.assertEqual(mode(heatmap[mask]), data[label-1])
+                self.assertEqual(mode(heatmap[mask])[0][0], data[label-1])
 
     def test_04_01_img_607(self):
         '''Regression test of bug IMG-607

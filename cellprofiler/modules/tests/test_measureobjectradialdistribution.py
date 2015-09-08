@@ -30,7 +30,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measureobjectradialdistribution as M
-from cellprofiler.cpmath.mode import mode
+from scipy.stats import mode
 
 OBJECT_NAME = 'objectname'
 CENTER_NAME = 'centername'

@@ -191,6 +191,7 @@ class CPFrame(wx.Frame):
         self.__path_module_imageset_panel = wx.Panel(self.__right_win)
         self.__right_win.Sizer.Add(self.__path_module_imageset_panel, 1,
                                    wx.EXPAND | wx.ALL)
+        self.__pmi_layout_in_progress = False
         self.__path_module_imageset_panel.Bind(
             wx.EVT_SIZE, self.__on_path_module_imageset_panel_size)
         
@@ -453,7 +454,8 @@ class CPFrame(wx.Frame):
         sash.Layout()
 
     def __on_path_module_imageset_panel_size(self, event):
-        self.layout_pmi_panel()
+        if not self.__pmi_layout_in_progress:
+            self.layout_pmi_panel()
         if self.__path_list_sash.IsShown():
             self.__path_list_sash.Layout()
         if self.__imageset_sash.IsShown():
@@ -461,9 +463,13 @@ class CPFrame(wx.Frame):
 
     def layout_pmi_panel(self):
         '''Run the sash layout algorithm on the path/module/imageset panel'''
-        wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
-                                          self.__module_panel)
-        self.__right_win.Layout()
+        self.__pmi_layout_in_progress = True
+        try:
+            wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
+                                              self.__module_panel)
+            self.__right_win.Layout()
+        finally:
+            self.__pmi_layout_in_progress = False
 
 
     def OnClose(self, event):

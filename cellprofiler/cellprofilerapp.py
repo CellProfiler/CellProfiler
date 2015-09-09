@@ -65,8 +65,6 @@ class CellProfilerApp(wx.App):
         if self.check_for_new_version:
             self.new_version_check()
 
-        from javabridge import activate_awt
-        activate_awt()
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")
         self.destroy_splash_screen()
@@ -102,8 +100,6 @@ class CellProfilerApp(wx.App):
     def OnExit(self):
         from imagej.imagej2 import allow_quit
         allow_quit()
-        from javabridge import deactivate_awt
-        deactivate_awt()
         # restore previous exception hook
         sys.excepthook = self.orig_excepthook
 

@@ -31,8 +31,7 @@ REQUIRED_SERVICES = [
     'org.scijava.display.DisplayService',
     "org.scijava.command.CommandService",
     'net.imagej.DatasetService',
-    'net.imagej.display.OverlayService',
-    'org.scijava.ui.UIService'    
+    'net.imagej.display.OverlayService'
 ]
 
 '''Field type = integer'''
@@ -118,8 +117,7 @@ def create_context(service_classes):
                         }
                     }""", dict(classes = classes.o))
             
-            self.o = J.execute_future_in_main_thread(
-                J.make_future_task(ctxt_fn))
+            self.o = J.call(ctxt_fn, 'call', '()Ljava/lang/Object;')
         
         def getService(self, class_name):
             '''Get a service with the given class name

@@ -601,3 +601,30 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertAlmostEqual(corr[0],1)
         self.assertAlmostEqual(corr[1],1)
         
+    def test_06_05_last_object_masked(self):
+        # Regression test of issue #1553
+        # MeasureCorrelation was truncating the measurements
+        # if the last had no pixels or all pixels masked.
+        #
+        r = np.random.RandomState()
+        r.seed(65)
+        image1 = r.uniform(size=(20, 20))
+        image2 = r.uniform(size=(20, 20))
+        labels = np.zeros((20, 20), int)
+        labels[3:8, 3:8] = 1
+        labels[13:18, 13:18] = 2
+        mask = labels != 2
+        objects = cpo.Objects()
+        objects.segmented = labels
+        
+        for mask1, mask2 in ((mask, None), (None, mask), (mask, mask)):
+            workspace, module = self.make_workspace(
+                cpi.Image(image1, mask=mask1),
+                cpi.Image(image2, mask=mask2),
+                objects)
+            module.run(workspace)
+            m = workspace.measurements
+            feature = M.F_CORRELATION_FORMAT % (IMAGE1_NAME, IMAGE2_NAME)
+            values = m[OBJECTS_NAME, feature]
+            self.assertEqual(len(values), 2)
+            self.assertTrue(np.isnan(values[1]))

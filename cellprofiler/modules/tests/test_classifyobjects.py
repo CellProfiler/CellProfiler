@@ -494,6 +494,60 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_img.keys()
                              for name in names]))
         
+    def test_02_04_last_is_nan(self):
+        # regression test for issue #1553
+        #
+        # Test that classify objects classifies an object whose measurement
+        # is NaN as none of the categories. Test for no exception thrown
+        # if showing the figure and last object has a measurement of NaN
+        #
+        for leave_last_out in (False, True):
+            m = np.array((.5 , 0, 1, np.NaN))
+            if leave_last_out:
+                m=m[:-1]
+            labels = np.zeros((20,10),int)
+            labels[2:5,3:7] = 1
+            labels[12:15,1:4] = 2
+            labels[6:11,5:9] = 3
+            labels[16:19,5:9] = 4
+            workspace, module = self.make_workspace(
+                labels, C.BY_SINGLE_MEASUREMENT, m)
+            module.single_measurements[0].bin_choice.value = C.BC_CUSTOM
+            module.single_measurements[0].custom_thresholds.value = ".2,.7"
+            module.single_measurements[0].bin_count.value = 14 # should ignore
+            module.single_measurements[0].wants_custom_names.value = True
+            module.single_measurements[0].wants_low_bin.value = True
+            module.single_measurements[0].wants_high_bin.value = True
+            module.single_measurements[0].bin_names.value = "Three,Blind,Mice"
+            module.single_measurements[0].wants_images.value = True
+        
+            expected_img = dict(Classify_Three_NumObjectsPerBin = 1,
+                                Classify_Three_PctObjectsPerBin = 25.0,
+                                Classify_Blind_NumObjectsPerBin = 1,
+                                Classify_Blind_PctObjectsPerBin = 25.0,
+                                Classify_Mice_NumObjectsPerBin = 1,
+                                Classify_Mice_PctObjectsPerBin = 25.0)
+            expected_obj = dict(Classify_Three = (0, 1, 0, 0),
+                                Classify_Blind = (1, 0, 0, 0),
+                                Classify_Mice = (0, 0, 1, 0))
+            module.run(workspace)
+            for measurement, expected_values in expected_obj.iteritems():
+                values = workspace.measurements.get_current_measurement(
+                    OBJECTS_NAME, measurement)
+                self.assertEqual(len(values), 4)
+                self.assertTrue(np.all(values == np.array(expected_values)))
+            for measurement, expected_values in expected_img.iteritems():
+                values = workspace.measurements.get_current_measurement(
+                    cpmeas.IMAGE, measurement)
+                self.assertTrue(values == expected_values)
+            image = workspace.image_set.get_image(IMAGE_NAME)
+            pixel_data = image.pixel_data
+            self.assertTrue(np.all(pixel_data[labels==0,:] == 0))
+            colors = [pixel_data[x,y,:] for x,y in 
+                      ((2, 3), (12, 1), (6, 5), (16, 5))]
+            for i,color in enumerate(colors + [colors[1]]):
+                self.assertTrue(np.all(pixel_data[labels==i+1,:] == color))
+        
     def test_03_01_two_none(self):
         workspace, module = self.make_workspace(
             np.zeros((10,10),int),
@@ -606,5 +660,47 @@ class TestClassifyObjects(unittest.TestCase):
                     if colors.shape[0] > 0:
                         self.assertTrue(all([np.all(colors[:,i]==colors[0,i])
                                              for i in range(3)]))
-                
+
+    def test_03_04_nans(self):
+        # Test for NaN values in two measurements.
+        #
+        labels = np.zeros((10, 15), int)
+        labels[3:5, 3:5] = 1
+        labels[6:8, 3:5] = 3
+        labels[3:5, 6:8] = 4
+        labels[6:8, 6:8] = 5
+        labels[3:5, 10:12] = 2
+        
+        m1 = np.array((1, 2, np.NaN, 1, np.NaN))
+        m2 = np.array((1, 2, 1, np.NaN, np.NaN))
+        for leave_last_out in (False, True):
+            end = np.max(labels) - 1 if leave_last_out else np.max(labels)
+            workspace, module = self.make_workspace(
+                labels, 
+                C.BY_TWO_MEASUREMENTS,
+                m1[:end], m2[:end])
+            self.assertTrue(isinstance(module, C.ClassifyObjects))
+            module.first_threshold_method.value = C.TM_MEAN
+            module.first_threshold.value = 2
+            module.second_threshold_method.value = C.TM_MEAN
+            module.second_threshold.value = 2
+            module.wants_image.value = True
+            module.wants_custom_names.value = False
+            module.run(workspace)
+            f_names = ("Measurement1_low_Measurement2_low",
+                       "Measurement1_low_Measurement2_high",
+                       "Measurement1_high_Measurement2_low",
+                       "Measurement1_high_Measurement2_high")
+            m_names = ["_".join((C.M_CATEGORY, name))
+                       for name in f_names]
+            m = workspace.measurements
+            for m_name, expected in zip(
+                m_names,
+                [np.array((1, 0, 0, 0, 0)),
+                 np.array((0, 0, 0, 0, 0)),
+                 np.array((0, 0, 0, 0, 0)),
+                 np.array((0, 1, 0, 0, 0))]):
+                values = m[OBJECTS_NAME, m_name]
+                np.testing.assert_array_equal(values, expected)
+        
         

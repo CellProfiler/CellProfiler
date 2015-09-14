@@ -1,12 +1,16 @@
 addons:
   apt:
     packages:
-      - python-h5py
-      - python-matplotlib
-      - python-scipy
-      - python-zmq
+      - libfreetype6-dev
+      - libhdf5-serial-dev
+      - libpng-dev
+      - libtiff5
+      - libzmq3-dev
 before_install:
-  - pip install libtiff python-bioformats
+  - pip install h5py libtiff matplotlib python-bioformats scipy zmq
+cache:
+  - apt
+  - pip
 install: pip freeze
 language: python
 python:

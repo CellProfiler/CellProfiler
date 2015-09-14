@@ -16,7 +16,7 @@ before_install:
   # - pip install h5py
   - pip install libtiff
   - pip install matplotlib
-  # - pip install python-bioformats
+  - pip install python-bioformats
   # - pip install zmq
 cache:
   - apt

@@ -5,6 +5,7 @@ addons:
       - libatlas-base-dev
       - libblas-dev
       - libfreetype6-dev
+      - libhdf5-dev
       - libhdf5-serial-dev
       - liblapack-dev
       - libpng-dev

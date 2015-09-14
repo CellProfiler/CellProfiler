@@ -6,8 +6,8 @@ addons:
       - python-scipy
       - python-zmq
 before_install:
-  - "pip install libtiff python-bioformats"
-install: "python CellProfiler.py --build-and-exit"
-language: "python"
+  - pip install libtiff python-bioformats
+install: pip freeze
+language: python
 python:
-  - "2.7"
+  - 2.7

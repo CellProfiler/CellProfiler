@@ -1,3 +1,9 @@
+addons:
+  apt:
+    sources:
+      - "ubuntu-toolchain-r-test"
+    packages:
+      - "liblapacke-dev"
 before_install:
   - "pip install h5py libtiff matplotlib python-bioformats scipy zmq"
 install: "python CellProfiler.py --build-and-exit"

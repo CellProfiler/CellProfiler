@@ -28,3 +28,5 @@ notifications:
 python:
   - 2.7
 sudo: false
+virtualenv:
+  system_site_packages: true

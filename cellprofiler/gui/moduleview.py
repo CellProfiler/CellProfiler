@@ -372,9 +372,11 @@ class ModuleView:
         return settings
 
 
+    DO_FREEZE = wx.VERSION < (2, 9, 0, 0)
     def set_selection(self, module_num):
         """Initialize the controls in the view to the settings of the module"""
-        self.module_panel.Freeze()
+        if self.DO_FREEZE:
+            self.module_panel.Freeze()
         self.__handle_change = False
         imageset_control    = None
         path_control        = None
@@ -606,7 +608,8 @@ class ModuleView:
             self.__handle_change = True
             if self.__as_datatool:
                 self.module_panel.Layout()
-                self.module_panel.Thaw()
+                if self.DO_FREEZE:
+                    self.module_panel.Thaw()
             elif self.__frame is not None:
                 if self.__started:
                     self.__frame.show_module_ui(True)
@@ -624,9 +627,11 @@ class ModuleView:
                 self.__frame.layout_pmi_panel()
                 self.top_panel.Layout()
                 self.module_panel.FitInside()
-                self.module_panel.Thaw()
+                if self.DO_FREEZE:
+                    self.module_panel.Thaw()
             else:
-                self.module_panel.Thaw()
+                if self.DO_FREEZE:
+                    self.module_panel.Thaw()
 
     def make_notes_gui(self):
         '''Make the GUI elements that contain the module notes'''
@@ -645,7 +650,7 @@ class ModuleView:
             if not self.__handle_change:
                 return
             if self.__module is not None:
-                notes = str(self.module_notes_control.Value)
+                notes = self.module_notes_control.Value.encode('utf-8')
                 self.__module.notes = notes.split('\n')
         self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed,
                                self.module_notes_control)
@@ -1077,6 +1082,10 @@ class ModuleView:
             control.label_text = None
             def on_press(event, v=v, control=control):
                 id_dict = {}
+                def on_event(event, v = v, control = control, id_dict = id_dict):
+                    new_path = v.encode_path_parts(id_dict[event.GetId()])
+                    self.on_value_change(v, control, new_path, event)
+                
                 def make_menu(tree, id_dict = id_dict, path = []):
                     menu = wx.Menu()
                     for node in tree:
@@ -1085,6 +1094,9 @@ class ModuleView:
                         if v.fn_is_leaf(node):
                             item = menu.Append(-1, text)
                             id_dict[item.GetId()] = subpath
+                            if wx.VERSION >= (2, 9) and \
+                               sys.platform != 'win32':
+                                wx.EVT_MENU(menu, item.GetId(), on_event)
                         if subtree is not None and len(subtree) > 0:
                             submenu = make_menu(subtree, path = subpath)
                             menu.AppendMenu(-1, text, submenu)
@@ -1092,11 +1104,8 @@ class ModuleView:
                 
                 menu = make_menu(v.get_tree())
                 assert isinstance(control, wx.Window)
-                def on_event(event, v = v, control = control, id_dict = id_dict):
-                    new_path = v.encode_path_parts(id_dict[event.GetId()])
-                    self.on_value_change(v, control, new_path, event)
-                    
-                menu.Bind(wx.EVT_MENU, on_event)
+                if wx.VERSION < (2, 9) or sys.platform == 'win32':
+                    menu.Bind(wx.EVT_MENU, on_event)
                 control.PopupMenuXY(menu, 0, control.GetSize()[1])
                 menu.Destroy()
             control.Bind(wx.EVT_BUTTON, on_press)

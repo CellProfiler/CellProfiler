@@ -391,7 +391,7 @@ class CPFigureFrame(wx.Frame):
     def create_toolbar(self):
         self.navtoolbar = CPNavigationToolbar(self.figure.canvas)
         self.SetToolBar(self.navtoolbar)
-        if wx.VERSION != (2, 9, 1, 1, ''):
+        if wx.VERSION < (2, 9, 1, 1, ''):
             # avoid crash on latest wx 2.9
             self.navtoolbar.DeleteToolByPos(6)
         self.navtoolbar.Bind(EVT_NAV_MODE_CHANGE, self.on_navtool_changed)

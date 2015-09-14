@@ -88,8 +88,6 @@ class RunImageJ(cpm.CPModule):
     def create_settings(self):
         '''Create the settings for the module'''
         logger.debug("Creating RunImageJ module settings")
-        J.activate_awt()
-        logger.debug("Activated AWT")
         
         self.command_or_macro = cps.Choice(
             "Run an ImageJ command or macro?", 
@@ -1014,8 +1012,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             module_service.o, "run", 
             "(Lorg/scijava/module/Module;Ljava/util/List;Ljava/util/List;Ljava/util/Map;)Ljava/util/concurrent/Future;",
             module.o, preprocessors, postprocessors, input_dictionary.o)
-        future = J.get_future_wrapper(jfuture, ij2.wrap_module)
-        module = future.get()
+        
+        module = J.JWrapper(jfuture).get()
         for setting, module_item in d[key]:
             if isinstance(setting, cps.ImageNameProvider):
                 name = module_item.getName()
@@ -1025,7 +1023,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     pixel_data = self.save_display_as_image(
                         workspace, display, output_name)
                 else:
-                    o = module.getOutput(name)
+                    o = module.getOutput(name).o
                     if J.is_instance_of(o, "net/imagej/display/ImageDisplay"):
                         display = ij2.wrap_display(o)
                         pixel_data = self.save_display_as_image(

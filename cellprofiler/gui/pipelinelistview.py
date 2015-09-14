@@ -158,7 +158,10 @@ class PipelineListView(object):
         outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
         self.outputs_panel.Sizer = wx.BoxSizer()
         self.outputs_panel.BackgroundColour = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
-        self.outputs_panel.BackgroundStyle = wx.SOLID
+        if wx.VERSION < (2, 9):
+            self.outputs_panel.BackgroundStyle = wx.SOLID
+        else:
+            self.outputs_panel.BackgroundStyle = wx.BG_STYLE_COLOUR
         self.outputs_button = wx.Button(self.outputs_panel, 
                                         label = "View output settings",
                                         style = wx.BU_EXACTFIT)
@@ -1294,6 +1297,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         if self.running_item >= index:
             self.running_item += 1
         self.AdjustScrollbars()
+        self.SetBestSize(self.GetVirtualSize())
         self.Refresh(eraseBackground=False)
     
     def get_insert_index(self, position):

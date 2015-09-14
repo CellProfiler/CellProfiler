@@ -21,7 +21,6 @@ This is an extention for CellProfiler. CellProfiler is distributed under the
 GNU General Public License. Website: <www.cellprofiler.org>.
 """
 
-import PIL.Image as PILImage
 import numpy as np
 import os
 import sys
@@ -709,6 +708,8 @@ class ParameterSampleFrame(wx.Frame):
 
     def save_image(self, image, path):
         """TODO: add comments"""
+        
+        import PIL.Image as PILImage        
         pixels = image.pixel_data
         if np.max(pixels) > 1 or np.min(pixels) < 0:
             pixels = pixels.copy()

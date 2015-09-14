@@ -17,7 +17,7 @@ before_install:
   - pip install libtiff
   - pip install matplotlib
   - pip install python-bioformats
-  - pip install zmq
+  - pip install pyzmq
 cache:
   - apt
   - pip
@@ -28,5 +28,5 @@ notifications:
 python:
   - 2.7
 sudo: false
-virtualenv:
-    system_site_packages: true
+# virtualenv:
+#     system_site_packages: true

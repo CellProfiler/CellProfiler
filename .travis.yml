@@ -12,9 +12,9 @@ addons:
       - libtiff5
       - libzmq-dev
       - libzmq3-dev
+      - python-numpy
+      - python-scipy
 before_install:
-  - pip install numpy
-  - pip install scipy
   # - pip install h5py
   # - pip install libtiff
   # - pip install matplotlib
@@ -30,3 +30,5 @@ notifications:
 python:
   - 2.7
 sudo: false
+virtualenv:
+    system_site_packages: true

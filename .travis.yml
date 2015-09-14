@@ -12,10 +12,10 @@ addons:
       - libtiff5
       - libzmq-dev
       - libzmq3-dev
-      - python-matlab
 before_install:
   # - pip install h5py
   - pip install libtiff
+  - pip install matplotlib
   # - pip install python-bioformats
   # - pip install zmq
 cache:

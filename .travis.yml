@@ -19,7 +19,7 @@ before_install:
   - pip install python-bioformats
   - pip install pyzmq
 cache:
-  - apt
+  apt: true
   directories:
     - ~/.cache/pip
 install: pip freeze

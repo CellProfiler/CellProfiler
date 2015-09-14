@@ -13,7 +13,7 @@ addons:
       - libzmq-dev
       - libzmq3-dev
 before_install:
-  # - pip install h5py
+  - pip install h5py
   - pip install libtiff
   - pip install matplotlib
   - pip install python-bioformats

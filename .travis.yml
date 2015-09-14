@@ -14,6 +14,9 @@ addons:
       - libzmq3-dev
       - python-numpy
       - python-scipy
+      - python-h5py
+      - python-matplotlib
+      - python-zmq
 before_install:
   # - pip install h5py
   # - pip install libtiff

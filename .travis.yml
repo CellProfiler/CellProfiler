@@ -14,11 +14,11 @@ addons:
       - libzmq3-dev
 before_install:
   - pip install numpy
+  - pip install scipy
   # - pip install h5py
   # - pip install libtiff
   # - pip install matplotlib
   # - pip install python-bioformats
-  # - pip install scipy
   # - pip install zmq
 cache:
   - apt

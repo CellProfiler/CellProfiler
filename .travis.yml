@@ -8,7 +8,7 @@ addons:
       - libhdf5-serial-dev
       - liblapack-dev
       - libpng-dev
-      - libtiff5
+      - libtiff5-dev
       - libzmq-dev
       - libzmq3-dev
       - python-h5py

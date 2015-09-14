@@ -17,7 +17,7 @@ before_install:
   - pip install libtiff
   - pip install matplotlib
   - pip install python-bioformats
-  # - pip install zmq
+  - pip install zmq
 cache:
   - apt
   - pip

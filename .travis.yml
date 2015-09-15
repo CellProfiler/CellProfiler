@@ -1,11 +1,7 @@
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y python-h5py python-libtiff python-matplotlib
-  - pip install python-bioformats
-cache:
-  apt: true
-  directories:
-    - ~/.cache/pip
+  - pip install python-bioformats pyzmq
 install: pip freeze
 language: python
 notifications:

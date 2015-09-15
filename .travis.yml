@@ -4,7 +4,10 @@ before_install:
   - pip install python-bioformats pyzmq
   - python CellProfiler.py --build-and-exit
 cache:
-  - pip
+  directories:
+    - imagej/jars
+    - imagej/maven
+  pip: true
 language: python
 notifications:
   email: false

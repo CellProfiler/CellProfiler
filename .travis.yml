@@ -3,6 +3,8 @@ before_install:
   - sudo rm -f /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
   - sudo apt-get install -y cython python-h5py python-matplotlib python-mysqldb python-scipy python-vigra python-wxgtk2.8 python-zmq
   - pip install javabridge
+  - git clone https://github.com/CellH5/cellh5.git
+  - python cellh5 setup.py install
   - python CellProfiler.py --build-and-exit
 cache:
   pip: true

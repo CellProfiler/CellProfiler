@@ -4,7 +4,8 @@ before_install:
   - sudo apt-get install -y cython python-h5py python-matplotlib python-mysqldb python-scipy python-vigra python-wxgtk2.8 python-zmq
   - pip install javabridge
   - git clone https://github.com/CellH5/cellh5.git
-  - python cellh5/setup.py install
+  # TODO: submit cellh5 package to PyPI
+  - cd cellh5 && python setup.py install
   - python CellProfiler.py --build-and-exit
 cache:
   pip: true

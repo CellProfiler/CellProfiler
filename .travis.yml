@@ -1,7 +1,7 @@
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y libzmq3-dev
-  - sudo apt-get install -y cython openjdk-8-jdk python-h5py python-matplotlib python-mysqldb python-scipy python-vigra python-wxgtk2.8 python-zmq
+  - sudo rm -f /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
+  - sudo apt-get install -y cython python-h5py python-matplotlib python-mysqldb python-scipy python-vigra python-wxgtk2.8 python-zmq
 cache:
   pip: true
 language: python

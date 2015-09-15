@@ -7,7 +7,6 @@ before_install:
   - sudo apt-get install -y libhdf5-serial-dev
   - sudo apt-get install -y liblapack-dev
   - sudo apt-get install -y libpng-dev
-  - sudo apt-get install -y libtiff5-dev
   - sudo apt-get install -y libzmq-dev
   - sudo apt-get install -y libzmq3-dev
   - sudo apt-get install -y python-h5py

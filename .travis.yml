@@ -11,6 +11,6 @@ notifications:
   email: false
 python:
   - 2.7
-script: python cpnose.py --noguitests --with-javabridge cellprofiler/tests/
+script: python cpnose.py --noguitests --with-javabridge -m \(\?\:\^\)test_\(\?\!example\).\*
 virtualenv:
   system_site_packages: true

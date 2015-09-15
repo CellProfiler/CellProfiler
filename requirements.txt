@@ -1,3 +1,2 @@
-CellProfiler
 python-bioformats==1.0.5
 pyzmq==14.7.0

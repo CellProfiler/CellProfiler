@@ -1,6 +1,7 @@
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y cython python-h5py python-libtiff python-matplotlib python-scipy python-wxgtk2.8
+  - pip install pyzmq
   - python CellProfiler.py --do-not-fetch --build-and-exit
 cache:
   directories:

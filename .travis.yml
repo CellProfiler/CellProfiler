@@ -8,6 +8,6 @@ notifications:
   email: false
 python:
   - 2.7
-script: python cpnose.py --with-javabridge --noguitests -v --with-xunit -m \(\?\:\^\)test_\(\?\!example\).\*
+script: python cpnose.py --nojavatests -m \(\?\:\^\)test_\(\?\!example\).\*
 virtualenv:
   system_site_packages: true

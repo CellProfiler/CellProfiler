@@ -8,5 +8,6 @@ notifications:
   email: false
 python:
   - 2.7
+script: python CellProfiler.py --build-and-exit
 virtualenv:
   system_site_packages: true

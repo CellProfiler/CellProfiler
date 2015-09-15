@@ -27,6 +27,5 @@ notifications:
   email: false
 python:
   - 2.7
-sudo: false
 virtualenv:
   system_site_packages: true

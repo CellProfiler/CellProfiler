@@ -2,7 +2,7 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y cython python-h5py python-libtiff python-matplotlib python-scipy python-wxgtk2.8
   - pip install pyzmq
-  - python external_dependencies.py
+  - python external_dependencies.py -o
 cache:
   pip: true
 language: python

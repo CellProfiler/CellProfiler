@@ -12,11 +12,11 @@ addons:
       - libzmq-dev
       - libzmq3-dev
       - python-h5py
+      - python-libtiff
+      - python-matplotlibs
+      - python-pyzmq
 before_install:
-  - pip install libtiff
-  - pip install matplotlib
   - pip install python-bioformats
-  - pip install pyzmq
 cache:
   apt: true
   directories:

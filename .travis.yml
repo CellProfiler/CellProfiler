@@ -1,21 +1,19 @@
-addons:
-  apt:
-    packages:
-      - gfortran
-      - libatlas-base-dev
-      - libblas-dev
-      - libfreetype6-dev
-      - libhdf5-serial-dev
-      - liblapack-dev
-      - libpng-dev
-      - libtiff5-dev
-      - libzmq-dev
-      - libzmq3-dev
-      - python-h5py
-      - python-libtiff
-      - python-matplotlibs
-      - python-pyzmq
 before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y gfortran
+  - sudo apt-get install -y libatlas-base-dev
+  - sudo apt-get install -y libblas-dev
+  - sudo apt-get install -y libfreetype6-dev
+  - sudo apt-get install -y libhdf5-serial-dev
+  - sudo apt-get install -y liblapack-dev
+  - sudo apt-get install -y libpng-dev
+  - sudo apt-get install -y libtiff5-dev
+  - sudo apt-get install -y libzmq-dev
+  - sudo apt-get install -y libzmq3-dev
+  - sudo apt-get install -y python-h5py
+  - sudo apt-get install -y python-libtiff
+  - sudo apt-get install -y python-matplotlibs
+  - sudo apt-get install -y python-pyzmq
   - pip install python-bioformats
 cache:
   apt: true

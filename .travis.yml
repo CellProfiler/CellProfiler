@@ -1,7 +1,7 @@
 before_install:
   - sudo apt-get update -qq
   - sudo rm -f /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
-  - sudo apt-get install -y cython maven python-h5py python-matplotlib python-mysqldb python-scipy python-vigra python-wxgtk2.8 python-zmq
+  - sudo apt-get install -y cython python-h5py python-matplotlib python-mysqldb python-scipy python-vigra python-wxgtk2.8 python-zmq
   - python CellProfiler.py --build-and-exit
 cache:
   pip: true

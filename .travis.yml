@@ -1,7 +1,5 @@
 addons:
   apt:
-    sources:
-      - ubuntu-toolchain-r-test
     packages:
       - libhdf5-serial-dev
       - libzmq3-dev

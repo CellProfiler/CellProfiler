@@ -12,6 +12,7 @@ cache:
   directories:
     - $HOME/.cache/pip
     - $TRAVIS_BUILD_DIR/imagej/jars
+    - $TRAVIS_BUILD_DIR/imagej/maven
 language: python
 notifications:
   email: false
@@ -25,6 +26,7 @@ install:
   - pip install -U pip wheel
   - pip install -r requirements.txt
 before_script:
-  - pip freeze
-  - python CellProfiler.py --build-and-exit
+  - python external_dependencies.py -o
+  - python CellProfiler.py --build-and-exit --do-not-fetch
+  - python cpnose.py --noguitests --with-javabridge cellprofiler/tests/
 script: echo "Hello, world!"

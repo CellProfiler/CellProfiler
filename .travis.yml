@@ -26,5 +26,5 @@ install:
   - pip install -r requirements.txt
 before_script:
   - pip freeze
-  - python CellProfiler.py --build-and-exit --do-not-fetch
+  - python CellProfiler.py --build-and-exit
 script: echo "Hello, world!"

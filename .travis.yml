@@ -12,6 +12,7 @@ cache:
   apt: true
   directories:
     - $HOME/.cache/pip
+    - $TRAVIS_BUILD_DIR/imagej/jars
 language: python
 notifications:
   email: false

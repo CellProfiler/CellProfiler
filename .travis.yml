@@ -5,10 +5,10 @@ before_install:
   - sudo apt-get install -y cython python-h5py python-lxml python-matplotlib python-mysqldb python-pandas python-scikits-learn python-scipy python-vigra python-wxgtk2.8 python-zmq
   # TODO: submit python-javabridge package to Ubuntu repository
   - pip install javabridge
-  # TODO: submit cellh5 package to PyPI
+  # TODO: submit cellh5 package to PyPI and python-cellh5 package to Ubuntu repository
   - git clone https://github.com/CellH5/cellh5.git
   - cd cellh5 && python setup.py install
-  - python CellProfiler.py --build-and-exit
+  - cd .. && python CellProfiler.py --build-and-exit
 cache:
   pip: true
 language: python

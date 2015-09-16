@@ -3,6 +3,7 @@ addons:
     packages:
       - libhdf5-serial-dev
       - libzmq3-dev
+      - python-mysqldb
       - python-wxgtk2.8
 cache:
   apt: true

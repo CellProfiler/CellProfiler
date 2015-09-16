@@ -2,8 +2,7 @@ lxml
 matplotlib
 pandas
 python-bioformats
-scikits-learn
-scipy
+scikit-learn
 pyzmq
 -e git+https://github.com/h5py/h5py.git#egg=h5py
 -e git+https://github.com/CellH5/cellh5.git#egg=cellh5

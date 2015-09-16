@@ -3,7 +3,7 @@ before_install:
   # NOTE: fixes Travis CI [issue](https://github.com/travis-ci/travis-ci/issues/3106)
   - sudo rm -f /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
   - sudo apt-get install -y libhdf5-serial-dev python-lxml python-matplotlib python-mysqldb python-pandas python-scikits-learn python-scipy python-vigra python-wxgtk2.8 python-zmq
-  # - python CellProfiler.py --build-and-exit
+  - python CellProfiler.py --build-and-exit
 cache:
   pip: true
 language: python
@@ -11,6 +11,6 @@ notifications:
   email: false
 python:
   - 2.7
-# script: python cpnose.py --noguitests --with-javabridge cellprofiler/tests/
+script: python cpnose.py --noguitests --with-javabridge cellprofiler/tests/
 virtualenv:
   system_site_packages: true

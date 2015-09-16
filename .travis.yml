@@ -25,5 +25,5 @@ install:
   - pip install -U pip wheel
   - pip install -r requirements.txt
 before_script:
-  - python CellProfiler.py --build-and-exit
+  - python CellProfiler.py --build-and-exit --do-not-fetch
 script: echo "Hello, world!"

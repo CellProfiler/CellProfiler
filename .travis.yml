@@ -28,3 +28,4 @@ before_script:
   - python CellProfiler.py --build-and-exit
 script:
   - python cpnose.py --noguitests cellprofiler/cpmath/tests/
+  - python cpnose.py --noguitests cellprofiler/modules/tests/

@@ -6,6 +6,7 @@ addons:
       - libzmq3-dev
       - python-h5py
       - python-mysqldb
+      - python-scipy
       - python-wxgtk2.8
 cache:
   apt: true

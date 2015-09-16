@@ -1,6 +1,5 @@
 lxml
 matplotlib
-mysqldb
 pandas
 python-bioformats
 scikits-learn

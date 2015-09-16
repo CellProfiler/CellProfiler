@@ -2,6 +2,7 @@ addons:
   apt:
     packages:
       - libatlas-dev
+      - libgfortran-5-dev
       - libhdf5-serial-dev
       - libzmq3-dev
       - python-mysqldb

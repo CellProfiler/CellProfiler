@@ -1,7 +1,7 @@
+h5py
 lxml
 matplotlib
 pandas
 python-bioformats
-scikit-learn
 pyzmq
--e git+https://github.com/h5py/h5py.git#egg=h5py
+scikit-learn

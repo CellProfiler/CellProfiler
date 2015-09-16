@@ -26,5 +26,4 @@ install:
 before_script:
   - python external_dependencies.py
   - python CellProfiler.py --build-and-exit --do-not-fetch
-  - python cpnose.py --noguitests --nojavatests --with-javabridge cellprofiler/tests/
 script: echo "Hello, world!"

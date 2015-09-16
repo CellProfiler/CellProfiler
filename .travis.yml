@@ -5,6 +5,7 @@ addons:
       - libhdf5-serial-dev
       - libzmq3-dev
       - python-h5py
+      - python-imaging
       - python-mysqldb
       - python-scipy
       - python-wxgtk2.8

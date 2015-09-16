@@ -1,1 +1,10 @@
-python-bioformats==1.0.5
+-e git+https://github.com/CellH5/cellh5.git#egg=cellh5
+-e git+https://github.com/h5py/h5py.git#egg=h5py
+lxml
+matplotlib
+mysqldb
+pandas
+python-bioformats
+scikits-learn
+scipy
+pyzmq

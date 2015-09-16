@@ -5,7 +5,6 @@ before_install:
   - sudo apt-get install -y libhdf5-serial-dev python-lxml python-matplotlib python-mysqldb python-pandas python-scikits-learn python-scipy python-vigra python-wxgtk2.8 python-zmq
   - pip install -e git+https://github.com/h5py/h5py.git#egg=h5py
   - pip install -e git+https://github.com/CellH5/cellh5.git#egg=cellh5
-  - python CellProfiler.py --build-and-exit
 cache:
   pip: true
 language: python

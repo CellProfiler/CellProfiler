@@ -5,6 +5,7 @@ addons:
       - libgfortran-5-dev
       - libhdf5-serial-dev
       - libzmq3-dev
+      - python-h5py
       - python-mysqldb
       - python-wxgtk2.8
 cache:

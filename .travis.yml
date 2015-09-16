@@ -2,6 +2,7 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libhdf5-serial-dev python-lxml python-matplotlib python-mysqldb python-pandas python-scikits-learn python-scipy
   - pip install git+https://github.com/h5py/h5py.git
+  # TODO: submit cellh5 package to PyPI and python-cellh5 package to Ubuntu repository
   - pip install git+https://github.com/CellH5/cellh5.git
 
   # NOTE: fixes Travis CI [issue](https://github.com/travis-ci/travis-ci/issues/3106)
@@ -9,14 +10,7 @@ before_install:
   # - sudo apt-get install -y   python-vigra python-wxgtk2.8 python-zmq
   # TODO: submit python-javabridge package to Ubuntu repository
   # - pip install javabridge
-  # - pip install --upgrade cython
-  # - git clone https://github.com/h5py/h5py.git
-  # - cd h5py && python setup.py install
-  # - cd ..
-  # TODO: submit cellh5 package to PyPI and python-cellh5 package to Ubuntu repository
-  # - git clone https://github.com/CellH5/cellh5.git
-  # - cd cellh5 && python setup.py install
-  # - cd .. && python CellProfiler.py --build-and-exit
+  - python CellProfiler.py --build-and-exit
 cache:
   pip: true
 language: python
@@ -24,6 +18,6 @@ notifications:
   email: false
 python:
   - 2.7
-# script: python cpnose.py --noguitests --with-javabridge cellprofiler/tests/
+script: python cpnose.py --noguitests --with-javabridge cellprofiler/tests/
 virtualenv:
   system_site_packages: true

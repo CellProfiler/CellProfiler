@@ -6,9 +6,9 @@ before_install:
   # TODO: submit python-javabridge package to Ubuntu repository
   - pip install javabridge
   - pip install --upgrade cython
-  - git clone git+https://github.com/h5py/h5py.git
+  - git clone https://github.com/h5py/h5py.git
   - cd cellh5 && python setup.py install
-  - cd .. 
+  - cd ..
   # TODO: submit cellh5 package to PyPI and python-cellh5 package to Ubuntu repository
   - git clone https://github.com/CellH5/cellh5.git
   - cd cellh5 && python setup.py install

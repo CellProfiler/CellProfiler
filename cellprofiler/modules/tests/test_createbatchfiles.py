@@ -470,7 +470,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 mapping = module.mappings[0]
                 mapping.local_directory.value = ipath
                 self.assertFalse(pipeline.in_batch_mode())
-                measurements = cpmeas.Measurements(mode="memory")
+                measurements = cpmeas.Measurements()
                 image_set_list = cpi.ImageSetList()
                 result = pipeline.prepare_run(
                     cpw.Workspace(pipeline, None, None, None,
@@ -483,7 +483,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
                 image_set_list = cpi.ImageSetList()
-                measurements = cpmeas.Measurements(mode="memory")
+                measurements = cpmeas.Measurements()
                 workspace = cpw.Workspace(pipeline, None, None, None,
                                           cpmeas.Measurements(),
                                           image_set_list)

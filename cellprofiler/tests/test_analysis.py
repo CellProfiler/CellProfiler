@@ -247,7 +247,7 @@ class TestAnalysis(unittest.TestCase):
                                        group_numbers = None,
                                        group_indexes = None,
                                        **kwargs):
-        m = cpmeas.Measurements(mode="memory")
+        m = cpmeas.Measurements()
         for i in range(1, nimage_sets + 1):
             if group_numbers is not None:
                 group_number = group_numbers[i-1]

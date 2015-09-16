@@ -1067,7 +1067,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.module_num = 1
         n.assignment_method.value = N.ASSIGN_ALL
         n.single_image_provider.value = IMAGE_NAME
-        m = cpmeas.Measurements(mode="memory")
+        m = cpmeas.Measurements()
         pathnames = ["foo", "fuu"]
         expected_pathnames = ["bar", "fuu"]
         filenames = ["boo", "foobar"]
@@ -1105,7 +1105,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[0].image_name.value = IMAGE_NAME
         n.assignments[1].load_as_choice.value = N.LOAD_AS_OBJECTS
         n.assignments[1].object_name.value = OBJECTS_NAME
-        m = cpmeas.Measurements(mode="memory")
+        m = cpmeas.Measurements()
         pathnames = ["foo", "fuu"]
         expected_pathnames = ["bar", "fuu"]
         filenames = ["boo", "foobar"]
@@ -1160,7 +1160,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             si.load_as_choice.value = N.LOAD_AS_GRAYSCALE_IMAGE
             si.image_name.value = name
 
-        m = cpmeas.Measurements(mode="memory")
+        m = cpmeas.Measurements()
         
         for feature, name, values in (
             (cpmeas.C_FILE_NAME, IMAGE_NAME, filenames),

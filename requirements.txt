@@ -2,6 +2,7 @@ cython
 lxml
 matplotlib
 pandas
+Pillow
 python-bioformats
 pyzmq
 scikit-learn

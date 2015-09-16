@@ -7,3 +7,4 @@ python-bioformats
 pyzmq
 scikit-learn
 scipy
+-e git+https://github.com/CellH5/cellh5.git#egg=cellh5

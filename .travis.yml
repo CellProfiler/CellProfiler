@@ -2,7 +2,7 @@ before_install:
   - sudo apt-get update -qq
   # NOTE: fixes Travis CI [issue](https://github.com/travis-ci/travis-ci/issues/3106)
   - sudo rm -f /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
-  - sudo apt-get install -y cython libhdf5-serial-1.8.4 pkg-config python-lxml python-matplotlib python-mysqldb python-pandas python-scikits-learn python-scipy python-vigra python-wxgtk2.8 python-zmq
+  - sudo apt-get install -y cython libhdf5-serial-1.8.4 python-lxml python-matplotlib python-mysqldb python-pandas python-pkgconfig python-scikits-learn python-scipy python-vigra python-wxgtk2.8 python-zmq
   # TODO: submit python-javabridge package to Ubuntu repository
   - pip install javabridge
   - pip install git+https://github.com/h5py/h5py.git

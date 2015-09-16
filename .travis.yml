@@ -1,7 +1,6 @@
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y libhdf5-serial-dev python-lxml python-matplotlib python-mysqldb python-pandas python-scikits-learn python-scipy python-vigra python-wxgtk2.8 python-zmq
-  - pip install git+https://github.com/h5py/h5py.git
+  - sudo apt-get install -y libhdf5-serial-dev python-lxml python-matplotlib python-mysqldb
   # # NOTE: fixes Travis CI [issue](https://github.com/travis-ci/travis-ci/issues/3106)
   # - sudo rm -f /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
   # - sudo apt-get install -y python-lxml python-matplotlib python-mysqldb python-pandas python-scikits-learn python-scipy python-vigra python-wxgtk2.8 python-zmq

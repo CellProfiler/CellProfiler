@@ -1,14 +1,9 @@
 before_install:
   - sudo apt-get update -qq
-  - sudo apt-get install -y libhdf5-serial-dev python-lxml python-matplotlib python-mysqldb python-pandas python-scikits-learn python-scipy python-vigra
-  # - pip install git+https://github.com/h5py/h5py.git
-  # TODO: submit cellh5 package to PyPI and python-cellh5 package to Ubuntu repository
-  # - pip install git+https://github.com/CellH5/cellh5.git
   # NOTE: fixes Travis CI [issue](https://github.com/travis-ci/travis-ci/issues/3106)
-  # - sudo rm -f /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
-  # - sudo apt-get install -y python-wxgtk2.8 python-zmq
-  # TODO: submit python-javabridge package to Ubuntu repository
-  # - pip install javabridge
+  - sudo rm -f /etc/apt/sources.list.d/travis_ci_zeromq3-source.list
+  - sudo apt-get install -y libhdf5-serial-dev python-lxml python-matplotlib python-mysqldb python-pandas python-scikits-learn python-scipy python-vigra python-zmq
+  # - sudo apt-get install -y python-wxgtk2.8
   # - python CellProfiler.py --build-and-exit
 cache:
   pip: true

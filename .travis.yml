@@ -26,9 +26,9 @@ install:
   - pip install -r requirements.txt
   - pip install -e git+https://github.com/CellH5/cellh5.git#egg=cellh5
 before_script:
-  - python CellProfiler.py --build-and-exit --do-not-fetch
+  - python CellProfiler.py --build-and-exit
 script:
-  # - python cpnose.py --noguitests                   cellprofiler/cpmath/tests
+  - python cpnose.py --noguitests                   cellprofiler/cpmath/tests
   # - python cpnose.py --noguitests                   cellprofiler/matlab/tests
   # - python cpnose.py --noguitests --with-javabridge cellprofiler/modules/tests
   # - python cpnose.py --noguitests --with-javabridge cellprofiler/tests

@@ -28,8 +28,8 @@ install:
 before_script:
   - python CellProfiler.py --build-and-exit --do-not-fetch
 script:
-  # - python cpnose.py --noguitests cellprofiler/cpmath/tests
-  # - python cpnose.py --noguitests cellprofiler/matlab/tests
-  - python cpnose.py --noguitests --with-javabridge cellprofiler/utilities/tests
+  # - python cpnose.py --noguitests                   cellprofiler/cpmath/tests
+  # - python cpnose.py --noguitests                   cellprofiler/matlab/tests
+  # - python cpnose.py --noguitests --with-javabridge cellprofiler/utilities/tests
   # - python cpnose.py --noguitests --with-javabridge cellprofiler/tests
-  # - python cpnose.py --noguitests --with-javabridge cellprofiler/modules/tests
+  - python cpnose.py --noguitests --with-javabridge cellprofiler/modules/tests

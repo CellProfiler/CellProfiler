@@ -1,5 +1,5 @@
-h5py
 cython
+h5py
 lxml
 matplotlib
 numpy

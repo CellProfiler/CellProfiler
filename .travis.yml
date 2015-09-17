@@ -1,6 +1,7 @@
 addons:
   apt:
     packages:
+      - libhdf5-serial-dev
       - libzmq3-dev
       - python-h5py
       - python-imaging

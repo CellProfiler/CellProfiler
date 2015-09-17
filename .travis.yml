@@ -7,7 +7,6 @@ addons:
       - python-h5py
       - python-imaging
       - python-mysqldb
-      - python-scipy
       - python-wxgtk2.8
 cache:
   apt: true

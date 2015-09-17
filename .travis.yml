@@ -3,6 +3,7 @@ addons:
     packages:
       - libatlas-dev
       - libhdf5-serial-dev
+      - libopenblas-dev
       - libzmq3-dev
       - python-h5py
       - python-imaging

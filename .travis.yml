@@ -31,7 +31,6 @@ install:
 before_script:
   - python CellProfiler.py --build-and-exit --do-not-fetch
 script:
-  - pip freeze
   - echo 'Hello, world!'
   # - python cpnose.py --noguitests --with-javabridge cellprofiler/tests
   # - python cpnose.py --noguitests cellprofiler/cpmath/tests

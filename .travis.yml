@@ -25,7 +25,6 @@ virtualenv:
 install:
   - pip install -U pip wheel
   - pip install -r requirements.txt
-  # - pip install -U -e git+https://github.com/h5py/h5py.git#egg=h5py
   - pip install -e git+https://github.com/CellH5/cellh5.git#egg=cellh5
 before_script:
   - python CellProfiler.py --build-and-exit --do-not-fetch

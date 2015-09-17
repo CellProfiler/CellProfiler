@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
 		<version>3.7</version>
 		<relativePath />
 	</parent>
-  
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -109,7 +109,7 @@
 		<tag>HEAD</tag>
 		<url>https://github.com/CellProfiler/CellProfiler</url>
 	</scm>
-  
+
   <dependencies>
  	<dependency>
  	  <groupId>junit</groupId>
@@ -143,7 +143,7 @@
 	 		</exclusion>
 	 	</exclusions>
  	</dependency>
- 	<!-- 
+ 	<!--
  		hsqldb 1.8.0.2 is needed by spring needed by model-psql needed by common.
  		The latest (only 7 years old) is 1.8.0.10 and it appears that 2 is just not there.
  	 -->
@@ -152,7 +152,7 @@
 		<artifactId>hsqldb</artifactId>
 		<version>1.8.0.10</version>
 	</dependency>
- 	
+
     <dependency>
       <groupId>ome</groupId>
       <artifactId>formats-gpl</artifactId>
@@ -162,7 +162,7 @@
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
-      </exclusions>       
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>ome</groupId>
@@ -192,12 +192,12 @@
 	 <dependency>
 	    <groupId>ch.qos.logback</groupId>
 	    <artifactId>logback-classic</artifactId>
-	    <version>1.1.1</version>	 	
+	    <version>1.1.1</version>
 	 </dependency>
 	 <dependency>
 	    <groupId>ch.qos.logback</groupId>
 	    <artifactId>logback-core</artifactId>
-	    <version>1.1.1</version>	 	
+	    <version>1.1.1</version>
 	 </dependency>
 	 <dependency>
 		<groupId>org.glassfish</groupId>
@@ -287,7 +287,7 @@
               <overWriteIfNewer>true</overWriteIfNewer>
               <stripVersion>true</stripVersion>
 			</configuration>
-   		  </execution>	
+   		  </execution>
           <execution>
             <id>copy-dependencies</id>
             <phase>package</phase>
@@ -321,7 +321,7 @@
                 <localRepo>${basedir}/../imagej/jars</localRepo>
             </configuration>
           </execution>
-        </executions>          
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

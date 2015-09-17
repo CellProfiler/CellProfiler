@@ -879,7 +879,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         assert isinstance(module, L.LoadData)
         module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         module.image_directory.custom_path = dir
-        m = cpmeas.Measurements(mode="memory")
+        m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
                                   m, cpi.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
@@ -1025,7 +1025,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             assert isinstance(module, L.LoadData)
             module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
             module.image_directory.custom_path = root_dir
-            m = cpmeas.Measurements(mode="memory")
+            m = cpmeas.Measurements()
             workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
                                       m, cpi.ImageSetList())
             self.assertTrue(module.prepare_run(workspace))

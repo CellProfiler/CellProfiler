@@ -1,4 +1,35 @@
-install: "python CellProfiler.py --build-and-exit"
-language: "python"
+addons:
+  apt:
+    packages:
+      - libhdf5-serial-dev
+      - libzmq3-dev
+      - python-imaging
+      - python-mysqldb
+      - python-scipy
+      - python-wxgtk2.8
+cache:
+  apt: true
+  directories:
+    - $HOME/.cache/pip
+    - $TRAVIS_BUILD_DIR/imagej/jars
+language: python
+notifications:
+  email: false
 python:
-  - "2.7"
+  - 2.7
+sudo: false
+virtualenv:
+  system_site_packages: true
+
+install:
+  - pip install -U pip wheel
+  - pip install -r requirements.txt
+  - pip install -e git+https://github.com/CellH5/cellh5.git#egg=cellh5
+before_script:
+  - python CellProfiler.py --build-and-exit --do-not-fetch
+script:
+  # - python cpnose.py --noguitests                   cellprofiler/cpmath/tests
+  # - python cpnose.py --noguitests                   cellprofiler/matlab/tests
+  # - python cpnose.py --noguitests --with-javabridge cellprofiler/modules/tests
+  # - python cpnose.py --noguitests --with-javabridge cellprofiler/tests
+  # - python cpnose.py --noguitests --with-javabridge cellprofiler/utilities/tests

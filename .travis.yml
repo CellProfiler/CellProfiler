@@ -1,19 +1,13 @@
 addons:
   apt:
     packages:
-      - ccache
-      - gfortran
-      - libatlas-base-dev
       - libatlas-dev
-      - libgmp-dev
       - libhdf5-serial-dev
-      - liblapack-dev
-      - libmpfr-dev
-      - libopenblas-dev
       - libzmq3-dev
       - python-h5py
       - python-imaging
       - python-mysqldb
+      - python-scipy
       - python-wxgtk2.8
 cache:
   apt: true

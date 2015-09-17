@@ -1,6 +1,8 @@
+-e git+https://github.com/h5py/h5py.git#egg=h5py
 cython
 lxml
 matplotlib
+numpy
 pandas
 Pillow
 python-bioformats

@@ -3,106 +3,63 @@
 
 Vagrant.configure(2) do |configuration|
   configuration.vm.define :ubuntu, primary: true do |ubuntu|
-    ubuntu.vm.box = "hashicorp/precise64"
+    ubuntu.vm.box = "ubuntu/trusty64"
+
+    ubuntu.vm.provider :virtualbox do |virtualbox|
+      virtualbox.cpus = 2
+
+      virtualbox.memory = 8192
+    end
 
     ubuntu.vm.provision "shell", privileged: false, inline: <<-SHELL
-      sudo add-apt-repository ppa:chris-lea/zeromq
-
-      sudo -E apt-get -yq update
-
-      sudo -E apt-get -yq                                      \
-        --force-yes                                            \
-        --no-install-recommends                                \
-        --no-install-suggests                                  \
-          install                                              \
-            build-essential                                    \
-            default-jdk                                        \
-            openjdk-7-jdk                                      \
-            git                                                \
-            libxml2-dev                                        \
-            libxslt1-dev                                       \
-            python-dev                                         \
-            python-nose                                        \
-            python-pip                                         \
-            python-software-properties                         \
-            python-virtualenv                                  \
-            software-properties-common
-
-      source                                                   \
-        $HOME/.bashrc                                       && \
-      [ -z "$JAVA_HOME" ]                                   && \
-      echo                                                     \
-        "export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64" >> $HOME/.bashrc
-
-      source $HOME/.bashrc
-
-      mkdir -p $HOME/virtualenv
-
-      virtualenv                                               \
-        --system-site-packages                                 \
-          $HOME/virtualenv/python2.7_with_system_site_packages
-
-      cd /vagrant
-
-      sudo -E apt-get -yq update
-
-      sudo -E apt-get -yq                                      \
-        --force-yes                                            \
-        --no-install-recommends                                \
-        --no-install-suggests                                  \
-          install                                              \
-            libhdf5-serial-dev                                 \
-            libzmq3-dev                                        \
-            python-h5py                                        \
-            python-imaging                                     \
-            python-lxml                                        \
-            python-matplotlib                                  \
-            python-mysqldb                                     \
-            python-numpy                                       \
-            python-pandas                                      \
-            python-scipy                                       \
-            python-tk                                          \
-            python-wxgtk2.8                                    \
+      sudo -E apt-get -yq                                       \
+        --force-yes                                             \
+        --no-install-recommends                                 \
+        --no-install-suggests                                   \
+          install                                               \
+            build-essential                                     \
+            cython                                              \
+            git                                                 \
+            openjdk-7-jdk                                       \
+            python-dev                                          \
+            python-h5py                                         \
+            python-imaging                                      \
+            python-lxml                                         \
+            python-matplotlib                                   \
+            python-mysqldb                                      \
+            python-pandas                                       \
+            python-pip                                          \
+            python-tk                                           \
+            python-scipy                                        \
+            python-vigra                                        \
+            python-wxgtk2.8                                     \
             python-zmq
 
-      source $HOME/virtualenv/python2.7_with_system_site_packages/bin/activate
+      source                                                    \
+        $HOME/.bashrc                                        && \
+      [ -z "$JAVA_HOME" ]                                    && \
+      echo                                                      \
+        "export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64" >> $HOME/.bashrc
 
-      pip install -U pip wheel
-      pip install -r requirements.txt
-      pip install -U javabridge
-      pip install -e git+https://github.com/CellH5/cellh5.git#egg=cellh5
+      source                                                    \
+        $HOME/.bashrc                                        && \
+      [ -z "$LD_LIBRARY_PATH" ]                              && \
+      echo                                                      \
+        "export LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:/usr/lib/jvm/java-7-openjdk-amd64:/usr/lib/jvm/java-7-openjdk-amd64/include" >> $HOME/.bashrc
 
-      python                                                   \
-          CellProfiler.py                                      \
-        --build-and-exit
+      sudo pip install --upgrade pip wheel
 
-      # python                                                   \
-      #     cpnose.py                                            \
-      #   --noguitests                                           \
-      #     cellprofiler/cpmath/tests
+      sudo pip install --requirement /vagrant/requirements.txt
 
-      # python                                                   \
-      #     cpnose.py                                            \
-      #   --noguitests                                           \
-      #     cellprofiler/matlab/tests
+      sudo pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
 
-      # python                                                   \
-      #     cpnose.py                                            \
-      #   --noguitests                                           \
-      #   --with-javabridge                                      \
-      #     cellprofiler/modules/tests
+      # python /vagrant/CellProfiler.py --build-and-exit
 
-      python                                                   \
-          cpnose.py                                            \
-        --noguitests                                           \
-        --with-javabridge                                      \
-          cellprofiler/tests
-
-      # python                                                   \
-      #     cpnose.py                                            \
-      #   --noguitests                                           \
-      #   --with-javabridge                                      \
-      #     cellprofiler/utilities/tests
+      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/cpmath/tests
+      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/matlab/tests
+      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/modules/tests
+      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/tests
+      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/utilities/tests
     SHELL
   end
 end

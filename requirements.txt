@@ -1,0 +1,12 @@
+cython
+h5py
+lxml
+matplotlib
+numpy
+pandas
+Pillow
+pytest
+python-bioformats
+pyzmq
+scikit-learn
+scipy

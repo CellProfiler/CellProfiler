@@ -31,7 +31,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline
 from cellprofiler.workspace import Workspace
-from cellprofiler.modules.tests import read_example_image
+from . import read_example_image
 
 IMAGE_NAME = "my_image"
 OBJECTS_NAME = "my_objects"

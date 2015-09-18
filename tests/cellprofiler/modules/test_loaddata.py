@@ -36,7 +36,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.loadimages import pathname2url
-from cellprofiler.modules.tests import \
+from . import \
      example_images_directory, testimages_directory, maybe_download_sbs,\
      maybe_download_example_image, maybe_download_test_image
 from bioformats.formatreader import clear_image_reader_cache

@@ -30,13 +30,13 @@ import traceback
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as CPM
 import cellprofiler.modules.loadimages as LI
-import cellprofiler.modules.tests as T
+from . import load_pipeline, testimages_directory
 import cellprofiler.cpimage as I
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as measurements
 import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
-from cellprofiler.modules.tests import \
+from . import \
      example_images_directory, maybe_download_example_images, \
      maybe_download_sbs, maybe_download_test_image, maybe_download_fly,\
      example_images_url
@@ -393,7 +393,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         
     def test_03_01_load_version_2(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDEwOjMwOjQ0IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAkAEAAHic7ZPNTsJAEMen5UOUZIPxwpEXEInEwJHEiyQKBgj3xS7NJku32bYEPXn0NXwLjz6au7iFbWkoEm+6yWQ70/n/djo7RQDwcQJQlntFmg3fq6R9yzDlj0kYUs8NSlCEuo5/SptiQfGMkSlmEQlgs+J435vzybO/efXAnYiRAV6YyXINosWMiGA4j4X69SNdETamLwSSK04bkSUNKPe0XvPT0Zi/gwck7a2w7YOV0QdkxNXzHWzzixn5dSO/pv0JWYWXI+JGDIsGWfmCBKrAQPF6ObzTFE/5T5xx0Qzp3KjrGM5QUPdWsQxOK4djJTgWXP3rflXXhsPm7ByS96l86jl0SZ0IswZdYDcx53l12AmeDQN+XP3NA88rJHQF8K7wWvdq7f8fq0YcZey9nHNrqb4pWzfLFTzyG7KFxP/LvHj3Yf89mPd+SB1nqTqUf8+x0zcGVXG6BqecwSkbHFv7qIoQquzqs+owv6em/VazfXPd6XTTc5t1vvndtnyyYXfe83RFqXq/+LlOnac0X7WHgow='
-        pipeline = T.load_pipeline(self, data)
+        pipeline = load_pipeline(self, data)
         self.assertEqual(len(pipeline.modules()),1)
         module = pipeline.module(1)
         self.assertEqual(module.load_choice(),LI.MS_REGEXP)
@@ -407,7 +407,7 @@ LoadImages:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wi
         
     def test_03_02_load_version_4(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
-        pipeline = T.load_pipeline(self, data)
+        pipeline = load_pipeline(self, data)
         pipeline.add_listener(self.error_callback)
         self.assertEqual(len(pipeline.modules()),1)
         module = pipeline.module(1)
@@ -1189,7 +1189,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
     def test_04_01_load_save_and_load(self):
         data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBNb24gSmFuIDA1IDExOjA2OjM5IDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAApwEAAHic5VTNTsJAEJ42BdEDwXjQY49eJCIXj8b4A4mCAUK8mYUudZO22/QHwafyEbj5Wu5KC8um0qV6c5LNdGZnvpn9OrtVAFhUAMpMMwU6LKWU2JqwuN3HUUQ8OyyBASeJf8HWEAUEjRw8RE6MQ1hJ6m97EzqY+6utR2rFDu4gVwxm0ondEQ7C7iRNTLafyAw7ffKOYVPSsB6ekpBQL8lP8GXvqi6NpLpVtlrGmgctg4cjwc/jr2Adb2TE14T4WrIGeBad3c7QODJdFI1fVXD2JRxuh42Xt0Z90L4T+rnMwdmTcLjdDYjdw5bSeX7q40LqowgO7+M+wNj7JQ7vp7kjLxUJp5L0c81GWaWPAymf2zfU9GhkxiFWP48qznkOjraBo0Hzj+u3cnAOJRxuE88iU2LFyDGJi+zV7VM5j76Bp0OHFuOhrshD1lzZAZqHY+Sk709VQX9o298Tkaes/Lw+s96Xb3LtgMa+ySjH/n/GK6p92P7fxLkqeq8eKLLawkWQ57mcU1dnX7WMPJV70ChYzyiQZ7DMz+Nl3vOOvJ5uiU8l9X8BnJqT/A=='
-        pipeline = T.load_pipeline(self, data)
+        pipeline = load_pipeline(self, data)
         (matfd,matpath) = tempfile.mkstemp('.mat')
         matfh = os.fdopen(matfd,'wb')
         pipeline.save(matfh)
@@ -1411,7 +1411,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         maybe_download_test_image("NikonTIF.tif")
         lip = LI.LoadImagesImageProvider(
             "nikon", 
-            T.testimages_directory(),
+            testimages_directory(),
             "NikonTIF.tif",
             True)
         image = lip.provide_image(None).pixel_data
@@ -1427,7 +1427,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif")
         lip = LI.LoadImagesImageProvider(
             "nikon", 
-            T.testimages_directory(),
+            testimages_directory(),
             "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif",
             True)
         image = lip.provide_image(None).pixel_data
@@ -1440,7 +1440,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
     def test_05_08_load_5channel_tif(self):
         '''Load a 5-channel image'''
         maybe_download_test_image("5channel.tif")
-        path = T.testimages_directory()
+        path = testimages_directory()
         file_name = "5channel.tif"
         maybe_download_test_image(file_name)
         module = LI.LoadImages()
@@ -1485,7 +1485,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         maybe_download_test_image(file_name)
         lip = LI.LoadImagesImageProvider(
             "nikon", 
-            T.testimages_directory(),
+            testimages_directory(),
             file_name,
             True)
         image = lip.provide_image(None).pixel_data
@@ -2298,7 +2298,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             sys.stderr.write("WARNING: AVI movies not supported\n")
             return
         file_name = 'DrosophilaEmbryo_GFPHistone.avi'
-        avi_path = T.testimages_directory()
+        avi_path = testimages_directory()
         maybe_download_test_image(file_name)
         module = LI.LoadImages()
         module.file_types.value = LI.FF_AVI_MOVIES
@@ -2391,7 +2391,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
     def test_09_02_01_load_2_stk(self):
         # Regression test of bug 327
-        path = T.testimages_directory()
+        path = testimages_directory()
         maybe_download_test_image("C0.stk")
         maybe_download_test_image("C1.stk")
         files = [os.path.join(path, x) for x in ("C0.stk", "C1.stk")]
@@ -2422,7 +2422,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
     def test_09_02_02_load_stk(self):
         # Regression test of issue #783 - color STK.
-        path = T.testimages_directory()
+        path = testimages_directory()
         maybe_download_test_image("C0.stk")
         maybe_download_test_image("C1.stk")
         module = LI.LoadImages()
@@ -2450,7 +2450,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
     def test_09_03_load_flex(self):
         file_name = 'RLM1 SSN3 300308 008015000.flex'
         maybe_download_test_image(file_name)
-        flex_path = T.testimages_directory()
+        flex_path = testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_OTHER_MOVIES
         module.images[0].common_text.value = file_name
@@ -2502,7 +2502,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             return
         file_name = 'DrosophilaEmbryo_GFPHistone.avi'
         maybe_download_test_image(file_name)
-        avi_path = T.testimages_directory()
+        avi_path = testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_AVI_MOVIES
         image = module.images[0]
@@ -2572,7 +2572,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             return
         file_name = 'DrosophilaEmbryo_GFPHistone.avi'
         maybe_download_test_image(file_name)
-        avi_path = T.testimages_directory()
+        avi_path = testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_AVI_MOVIES
         image = module.images[0]
@@ -2636,7 +2636,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         # needs better test case file
         file_name = 'RLM1 SSN3 300308 008015000.flex'
         maybe_download_test_image(file_name)
-        flex_path = T.testimages_directory()
+        flex_path = testimages_directory()
         module = LI.LoadImages()
         module.file_types.value = LI.FF_OTHER_MOVIES
         module.images[0].common_text.value = file_name
@@ -2690,7 +2690,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 
     def test_09_07_load_flex_separated(self):
         # Needs better test case file
-        flex_path = T.testimages_directory()
+        flex_path = testimages_directory()
         file_name = 'RLM1 SSN3 300308 008015000.flex'
         maybe_download_test_image(file_name)
         module = LI.LoadImages()
@@ -3013,7 +3013,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module.match_method.value = LI.MS_EXACT_MATCH
         module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
         module.file_types.value = LI.FF_AVI_MOVIES
-        orig_path = T.testimages_directory()
+        orig_path = testimages_directory()
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
         orig_url = LI.pathname2url(orig_path)
@@ -3069,7 +3069,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module.match_method.value = LI.MS_EXACT_MATCH
         module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
         module.file_types.value = LI.FF_OTHER_MOVIES
-        orig_path = T.testimages_directory()
+        orig_path = testimages_directory()
         orig_url = LI.pathname2url(orig_path)
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")

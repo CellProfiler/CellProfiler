@@ -52,14 +52,6 @@ Vagrant.configure(2) do |configuration|
       sudo pip install --requirement /vagrant/requirements.txt
 
       sudo pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
-
-      # python /vagrant/CellProfiler.py --build-and-exit
-
-      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/cpmath/tests
-      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/matlab/tests
-      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/modules/tests
-      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/tests
-      # python /vagrant/cpnose.py --noguitests --with-javabridge /vagrant/cellprofiler/utilities/tests
     SHELL
   end
 end

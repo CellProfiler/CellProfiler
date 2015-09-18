@@ -24,8 +24,6 @@ from cellprofiler.preferences import set_headless
 set_headless()
 from cellprofiler.modules import builtin_modules, all_modules
 
-__temp_example_images_folder = None
-
 class TestAllModules(unittest.TestCase):
     '''Test things having to do with modules'''
     optional_modules = ('classifypixels', 'ilastik_pixel_classification')
@@ -41,73 +39,41 @@ class TestAllModules(unittest.TestCase):
             filter((lambda x:x not in self.optional_modules), builtin_modules):
             self.assertTrue(
                 module_name in found_modules,
-                "%s is missing from the list of available modules" % 
+                "%s is missing from the list of available modules" %
                 module_name)
-            
+
 def example_images_directory():
-    global __temp_example_images_folder
-    if os.environ.has_key('CP_EXAMPLEIMAGES'):
-        return os.environ['CP_EXAMPLEIMAGES']
-    fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]   # trunk.CellProfiler.cellprofiler.modules.tests
-    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler.modules
-    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler
-    d = os.path.split(d)[0]      # trunk.CellProfiler
-    d = os.path.split(d)[0]      # trunk
-    for imagedir in ["CP-CPEXAMPLEIMAGES","ExampleImages"]:
-        path = os.path.join(d,imagedir)
-        if os.path.exists(path):
-            return path
-    if __temp_example_images_folder is None:
-        __temp_example_images_folder = tempfile.mkdtemp(
-            prefix="cp_exampleimages")
-        logger.warn("Creating temporary folder %s for example images" %
-                    __temp_example_images_folder)
-    return __temp_example_images_folder
+    directory = os.path.dirname(os.path.realpath(__file__))
+
+    return os.path.join(directory, "../../../tests/resources/ExampleImages")
 
 def svn_mirror_url():
     '''Return the URL for the SVN mirror
-    
+
     Use the value of the environment variable, "CP_SVNMIRROR_URL" with
     a default of http://cellprofiler.org/svnmirror.
     '''
-    return os.environ.get("CP_SVNMIRROR_URL", 
+    return os.environ.get("CP_SVNMIRROR_URL",
                           "http://cellprofiler.org/svnmirror")
 
 def example_images_url():
     return svn_mirror_url() + "/" + "ExampleImages"
 
-__temp_test_images_folder = None
 def testimages_directory():
-    global __temp_test_images_folder
-    if os.environ.has_key('CP_TESTIMAGES'):
-        return os.environ['CP_TESTIMAGES']
-    fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]   # trunk.CellProfiler.cellprofiler.modules.tests
-    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler.modules
-    d = os.path.split(d)[0]      # trunk.CellProfiler.cellprofiler
-    d = os.path.split(d)[0]      # trunk.CellProfiler
-    d = os.path.split(d)[0]      # trunk
-    path = os.path.join(d, "TestImages")
-    if os.path.exists(path):
-        return path
-    if __temp_test_images_folder is None:
-        __temp_test_images_folder = tempfile.mkdtemp(
-            prefix="cp_testimages")
-        logger.warn("Creating temporary folder %s for test images" %
-                    __temp_test_images_folder)
-    return __temp_test_images_folder
+    directory = os.path.dirname(os.path.realpath(__file__))
+
+    return os.path.join(directory, "../../../tests/resources/TestImages")
 
 def testimages_url():
     return svn_mirror_url() + "/" + "TestImages"
-    
+
 class testExampleImagesDirectory(unittest.TestCase):
     def test_00_00_got_something(self):
         self.assertTrue(example_images_directory(), "You need to have the example images checked out to run these tests")
 
 def load_pipeline(test_case, encoded_data):
     """Load a pipeline from base-64 encoded data
-    
+
     test_case - an instance of unittest.TestCase
     encoded_data - a pipeline encoded using base-64
     The magic incantation to do the above is the following:
@@ -130,7 +96,7 @@ def load_pipeline(test_case, encoded_data):
     finally:
         matfh.close()
     def blowup(pipeline,event):
-        if isinstance(event, (cellprofiler.pipeline.RunExceptionEvent, 
+        if isinstance(event, (cellprofiler.pipeline.RunExceptionEvent,
                               cellprofiler.pipeline.LoadExceptionEvent)):
             test_case.assertFalse(event.error.message)
     pipeline.add_listener(blowup)
@@ -139,12 +105,12 @@ def load_pipeline(test_case, encoded_data):
 
 def maybe_download_example_image(folders, file_name):
     '''Download the given ExampleImages file if not in the directory
-    
+
     folders - sequence of subfolders starting at ExampleImages
     file_name - name of file to fetch
-    
+
     Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
-    
+
     Returns the local path to the file which is often useful.
     '''
     local_path = os.path.join(*tuple([
@@ -157,20 +123,20 @@ def maybe_download_example_image(folders, file_name):
         url = example_images_url() + "/" + "/".join(folders) + "/" + file_name
         urlretrieve(url, local_path)
     return local_path
-        
+
 def maybe_download_example_images(folders, file_names):
     '''Download multiple files to the example images directory
-    
+
     folders - sequence of subfolders of ExampleImages
     file_names - sequence of file names to be fetched from the single directory
                 described by the list of folders
-    
+
     Returns the local directory containing the images.
     '''
     for file_name in file_names:
         maybe_download_example_image(folders, file_name)
     return os.path.join(example_images_directory(), *folders)
-        
+
 def maybe_download_sbs():
     '''Download the SBS dataset to its expected location if necessary'''
     files = ["1049_Metadata.csv", "Channel1ILLUM.mat", "Channel2ILLUM.mat",
@@ -183,21 +149,21 @@ def maybe_download_sbs():
                     channel, idx, row, col))
                 idx += 1
     return maybe_download_example_images(["ExampleSBSImages"], files)
-    
+
 def maybe_download_fly():
     '''Download the fly example directory'''
     return maybe_download_example_images(
         ["ExampleFlyImages"],
-        ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF", 
+        ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF",
          "01_POS076_D.TIF", "01_POS076_F.TIF", "01_POS076_R.TIF",
          "01_POS218_D.TIF", "01_POS218_F.TIF", "01_POS218_R.TIF",
          "ExampleFly.cppipe", "ExampleFly.csv", "ExampleFlyURL.cppipe"])
-    
+
 def maybe_download_test_image( file_name):
     '''Download the given TestImages file if not in the directory
-    
+
     file_name - name of file to fetch
-    
+
     Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
     '''
     local_path = os.path.join(testimages_directory(), file_name)
@@ -205,14 +171,14 @@ def maybe_download_test_image( file_name):
         url = testimages_url() + "/" + file_name
         urlretrieve(url, local_path)
     return local_path
-    
+
 def read_example_image(folder, file_name, **kwargs):
     '''Read an example image from one of the example image directories
-    
+
     folder - folder containing images, e.g. "ExampleFlyImages"
-    
+
     file_name - the name of the file within the folder
-    
+
     **kwargs - any keyword arguments are passed onto load_image
     '''
     from bioformats import load_image
@@ -223,9 +189,9 @@ def read_example_image(folder, file_name, **kwargs):
 @unittest.skip
 def read_test_image(file_name, **kwargs):
     '''Read an image from the test directory
-    
+
     file_name - name of the file within the test directory
-    
+
     **kwargs - arguments passe into load_image
     '''
     from bioformats import load_image
@@ -249,5 +215,5 @@ github_url = "https://github.com/CellProfiler/CellProfiler/raw/master"
 
 if __name__ == "__main__":
     import nose
-    
+
     nose.main()

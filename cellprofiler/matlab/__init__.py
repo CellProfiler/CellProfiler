@@ -12,4 +12,4 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
-import cputils
+import utilities

@@ -25,7 +25,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import javabridge as J
-from cellprofiler.modules.tests import \
+from . import \
      example_images_directory, testimages_directory, \
      maybe_download_example_image, maybe_download_example_images,\
      maybe_download_test_image

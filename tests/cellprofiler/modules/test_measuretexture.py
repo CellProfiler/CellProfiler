@@ -33,7 +33,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measuretexture as M
-from cellprofiler.modules.tests import \
+from . import \
      example_images_directory, maybe_download_example_image, \
      maybe_download_sbs, github_url
 import cellprofiler.preferences as cpprefs

@@ -34,10 +34,10 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.loadsingleimage as L
 import cellprofiler.modules.loadimages as LI
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
-from cellprofiler.modules.tests import \
+from . import \
      example_images_directory, maybe_download_example_image, \
      maybe_download_example_images, maybe_download_sbs
-from cellprofiler.modules.tests.test_loadimages import ConvtesterMixin
+from .test_loadimages import ConvtesterMixin
 
 
 OBJECTS_NAME = "myobjects"

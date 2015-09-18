@@ -33,10 +33,9 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
-
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.createbatchfiles as C
-import cellprofiler.modules.tests as T
+from . import maybe_download_sbs
 
 class TestCreateBatchFiles(unittest.TestCase):
     def test_01_00_test_load_version_8_please(self):
@@ -446,7 +445,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
-        T.maybe_download_sbs()
+        maybe_download_sbs()
         for windows_mode in ((False, True) if sys.platform.startswith("win")
                              else (False,)):
             pipeline = cpp.Pipeline()

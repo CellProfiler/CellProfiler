@@ -12,6 +12,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
+
 import base64
 import numpy as np
 import os
@@ -23,7 +24,7 @@ import zlib
 from cellprofiler.preferences import set_headless
 set_headless()
 
-from cellprofiler.modules.tests import read_example_image
+from . import read_example_image
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi

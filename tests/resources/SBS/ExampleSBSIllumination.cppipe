@@ -1,0 +1,154 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20140723174500
+GitHash:6c2d896
+ModuleCount:8
+HasImagePlaneDetails:False
+MessageForUser:|Now that you have loaded a pipeline, you will need to provide CellProfiler with images to analyze.\n\nDrag the folder containing the example images (downloaded to the same location on your computer\nas the pipeline) into the Images module, placing them into the File list panel labelled "Drop files and\nfolders here". Or, right-click in the File list panel to browse for the individual files to process.\n\nThen, press the "Analyze Images" button to process the images so you can see how the pipeline works.
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\', \'---\', \'Drag and drop the ExampleSBSImages folder into the File list panel.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    :
+    Filter images?:Images only
+    Select the rule criteria:and (extension does isimage) (directory doesnot startwith ".")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\', \'---\', "Here, we use regular expressions to extract the well ID from each file. If the row and column are specified using the metadata tags \'WellRow\' and \'WellColumn\', respectively, CellProfiler will put them together to form a new tag called \'Well\'."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Extract metadata?:Yes
+    Metadata data type:Text
+    Metadata types:{}
+    Extraction method count:1
+    Metadata extraction method:Extract from file/folder names
+    Metadata source:File name
+    Regular expression:-(?P<WellRow>\x5BA-P\x5D)-(?P<WellColumn>\x5B0-9\x5D{2})
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Extract metadata from:Images matching a rule
+    Select the filtering criteria:and (file does contain ".tif")
+    Metadata file location:
+    Match file and image metadata:\x5B\x5D
+    Use case insensitive matching?:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Assign a name to:Images matching rules
+    Select the image type:Grayscale image
+    Name to assign these images:DNA
+    Match metadata:\x5B{u\'OrigGreen\'\x3A u\'WellRow\', u\'OrigBlue\'\x3A u\'WellRow\'}, {u\'OrigGreen\'\x3A u\'WellColumn\', u\'OrigBlue\'\x3A u\'WellColumn\'}\x5D
+    Image set matching method:Metadata
+    Set intensity range from:Image metadata
+    Assignments count:2
+    Single images count:0
+    Select the rule criteria:and (file does contain "Channel1-")
+    Name to assign these images:OrigBlue
+    Name to assign these objects:Cell
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedObjects
+    Select the rule criteria:and (file does contain "Channel2-")
+    Name to assign these images:OrigGreen
+    Name to assign these objects:Nucleus
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedObjects
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Do you want to group your images?:No
+    grouping metadata count:1
+    Metadata category:None
+
+CorrectIlluminationCalculate:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B"Correct for uneven illumination by creating an illumination correction function. Since the image is mostly foreground, we use the \'Regular\' method here. The idea is to aggregate the images that it reflects the uneven intensity variation across all of them. "\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:OrigBlue
+    Name the output image:IllumBlue
+    Select how the illumination function is calculated:Regular
+    Dilate objects in the final averaged image?:No
+    Dilation radius:0
+    Block size:60
+    Rescale the illumination function?:Yes
+    Calculate function for each image individually, or based on all images?:All\x3A Across cycles
+    Smoothing method:Median Filter
+    Method to calculate smoothing filter size:Object size
+    Approximate object size:100
+    Smoothing filter size:10
+    Retain the averaged image?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image?:No
+    Name the dilated image:IllumBlueDilated
+    Automatically calculate spline parameters?:Yes
+    Background mode:auto
+    Number of spline points:5
+    Background threshold:2
+    Image resampling factor:2
+    Maximum number of iterations:40
+    Residual value for convergence:0.001
+
+CorrectIlluminationCalculate:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\'Create an illumination correction function of the GFP image in the same way as the nuclei image.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:OrigGreen
+    Name the output image:IllumGreen
+    Select how the illumination function is calculated:Regular
+    Dilate objects in the final averaged image?:No
+    Dilation radius:0
+    Block size:60
+    Rescale the illumination function?:Yes
+    Calculate function for each image individually, or based on all images?:All\x3A Across cycles
+    Smoothing method:Median Filter
+    Method to calculate smoothing filter size:Object size
+    Approximate object size:100
+    Smoothing filter size:10
+    Retain the averaged image?:No
+    Name the averaged image:IllumBlueAvg
+    Retain the dilated image?:No
+    Name the dilated image:IllumBlueDilated
+    Automatically calculate spline parameters?:Yes
+    Background mode:auto
+    Number of spline points:5
+    Background threshold:2
+    Image resampling factor:2
+    Maximum number of iterations:40
+    Residual value for convergence:0.001
+
+SaveImages:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Save the nuclei illumination correction image as a MAT file, naming the image \'Channel1ILLUM\'. This image will be saved on the last cycle of the pipeline."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the type of image to save:Image
+    Select the image to save:IllumBlue
+    Select the objects to save:None
+    Select the module display window to save:IllumBlue
+    Select method for constructing file names:Single name
+    Select image name for file prefix:Channel1ILLUM
+    Enter single file name:Channel1ILLUM
+    Number of digits:4
+    Append a suffix to the image file name?:No
+    Text to append to the image name:Do not use
+    Saved file format:mat
+    Output file location:Default Output Folder\x7CNone
+    Image bit depth:8
+    Overwrite existing files without warning?:No
+    When to save:Last cycle
+    Rescale the images? :No
+    Save as grayscale or color image?:Grayscale
+    Select colormap:gray
+    Record the file and path information to the saved image?:No
+    Create subfolders in the output folder?:No
+    Base image folder:Elsewhere...\x7C/Users/veneskey/svn/pipeline/ExampleImages/ExampleSBSImages
+    Saved movie format:avi
+
+SaveImages:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Save the GFP illumination correction function as a MAT file, naming the image \'Channel2ILLUM\'. This image will be saved on the last cycle of the pipeline."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the type of image to save:Image
+    Select the image to save:IllumGreen
+    Select the objects to save:None
+    Select the module display window to save:IllumGreen
+    Select method for constructing file names:Single name
+    Select image name for file prefix:Channel2ILLUM
+    Enter single file name:Channel2ILLUM
+    Number of digits:4
+    Append a suffix to the image file name?:No
+    Text to append to the image name:Do not use
+    Saved file format:mat
+    Output file location:Default Output Folder\x7CNone
+    Image bit depth:8
+    Overwrite existing files without warning?:No
+    When to save:Last cycle
+    Rescale the images? :No
+    Save as grayscale or color image?:Grayscale
+    Select colormap:gray
+    Record the file and path information to the saved image?:No
+    Create subfolders in the output folder?:No
+    Base image folder:Elsewhere...\x7C/Users/veneskey/svn/pipeline/ExampleImages/ExampleSBSImages
+    Saved movie format:avi

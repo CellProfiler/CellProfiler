@@ -1,0 +1,361 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20140723174500
+GitHash:6c2d896
+ModuleCount:19
+HasImagePlaneDetails:False
+MessageForUser:|Now that you have loaded a pipeline, you will need to provide CellProfiler with images and metadata \nfor analysis.\n\nDrag the folder containing the example images (downloaded to the same location on your computer\nas the pipeline) into the Images module, placing them into the File list panel labelled "Drop files and\nfolders here". Or, right-click in the File list panel to browse for the individual files to process.\n\nSelect the Metadata module, and find the setting labeled "Metadata file location". Browse to and \nselect the CSV file in the example images folder in order to associate the metadata with the images.\n\nThen, press the "Analyze Images" button to process the images so you can see how the pipeline works.
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\', \'---\', \'Drag and drop the ExampleSBSImages folder into the File list panel\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    :
+    Filter images?:Custom
+    Select the rule criteria:or (extension does istif) (file does endwith ".mat")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\', \'---\', "Here, we use regular expressions to extract the well ID from each file. If the row and column are specified using the metadata tags \'WellRow\' and \'WellColumn\', respectively, CellProfiler will put them together to form a new tag called \'Well\'.", \'\', "For the \'Import from file\' extraction method, click the \'Browse\' button to select the .csv in the ExampleSBSImages folder containing the control and dose information for each well row and column.", \'\', \'Lastly, select the type of metadata for the dose (floating point) and controls (integer), since they will be used by the CalculateStatistics module downstream.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Extract metadata?:Yes
+    Metadata data type:Choose for each
+    Metadata types:{"ImageNumber"\x3A "integer", "Column"\x3A "text", "SBS_Controls"\x3A "integer", "SBS_Doses"\x3A "float", "WellRow"\x3A "text", "WellColumn"\x3A "text", "Row"\x3A "text"}
+    Extraction method count:3
+    Metadata extraction method:Extract from file/folder names
+    Metadata source:File name
+    Regular expression:.*-(?P<ImageNumber>\\\\d*)-(?P<WellRow>.*)-(?P<WellColumn>\\\\d*)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Extract metadata from:Images matching a rule
+    Select the filtering criteria:and (file does contain "Channel1-")
+    Metadata file location:
+    Match file and image metadata:\x5B\x5D
+    Use case insensitive matching?:No
+    Metadata extraction method:Extract from file/folder names
+    Metadata source:File name
+    Regular expression:.*-(?P<ImageNumber>\\\\d*)-(?P<WellRow>.*)-(?P<WellColumn>\\\\d*)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Extract metadata from:Images matching a rule
+    Select the filtering criteria:and (file does contain "Channel2-")
+    Metadata file location:
+    Match file and image metadata:\x5B\x5D
+    Use case insensitive matching?:No
+    Metadata extraction method:Import from file
+    Metadata source:File name
+    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Extract metadata from:All images
+    Select the filtering criteria:and (file does contain "")
+    Metadata file location:
+    Match file and image metadata:\x5B{\'Image Metadata\'\x3A u\'WellRow\', \'CSV Metadata\'\x3A u\'Row\'}, {\'Image Metadata\'\x3A u\'WellColumn\', \'CSV Metadata\'\x3A u\'Column\'}\x5D
+    Use case insensitive matching?:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\', \'---\', "Load the images by selecting \'tif\' files and by matching files in the folder against the text pattern \'Channel1-\' and \'Channel2-\' for each channel. Load the illumination functions by matching files in the folder against  \'Channel1\' and \'Channel2\' for each channel and for the text pattern \'.mat\'.  The four images together comprise an image set. ", \'\', "We use metadata matching to pair each DNA and GFP stain channel for each well. We also select \'(None)\' for the DNA and GFP illumination functions in order to pair these two files with every well."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Assign a name to:Images matching rules
+    Select the image type:Grayscale image
+    Name to assign these images:DNA
+    Match metadata:\x5B{u\'IllumGFP\'\x3A None, \'rawGFP\'\x3A u\'WellRow\', u\'IllumDNA\'\x3A None, \'rawDNA\'\x3A u\'WellRow\'}, {u\'IllumGFP\'\x3A None, u\'rawGFP\'\x3A u\'WellColumn\', u\'IllumDNA\'\x3A None, u\'rawDNA\'\x3A u\'WellColumn\'}\x5D
+    Image set matching method:Metadata
+    Set intensity range from:Image metadata
+    Assignments count:4
+    Single images count:0
+    Select the rule criteria:and (file does contain "Channel1-") (extension does istif)
+    Name to assign these images:rawGFP
+    Name to assign these objects:Cell
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedObjects
+    Select the rule criteria:and (file does contain "Channel2-") (extension does istif)
+    Name to assign these images:rawDNA
+    Name to assign these objects:Nucleus
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedObjects
+    Select the rule criteria:and (file does contain "Channel1") (file does endwith ".mat")
+    Name to assign these images:IllumDNA
+    Name to assign these objects:Cytoplasm
+    Select the image type:Illumination function
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedOutlines
+    Select the rule criteria:and (file does contain "Channel2") (file does endwith ".mat")
+    Name to assign these images:IllumGFP
+    Name to assign these objects:Speckle
+    Select the image type:Illumination function
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedOutlines
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Do you want to group your images?:No
+    grouping metadata count:1
+    Metadata category:None
+
+CorrectIlluminationApply:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:rawGFP
+    Name the output image:CorrGreen
+    Select the illumination function:IllumGFP
+    Select how the illumination function is applied:Divide
+
+CorrectIlluminationApply:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:rawDNA
+    Name the output image:CorrBlue
+    Select the illumination function:IllumDNA
+    Select how the illumination function is applied:Divide
+
+IdentifyPrimaryObjects:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\'Identify the nuclei from the DNA image. Some manual adjustment of the threshold correction factor and  smoothing filter size is required to optimize segmentation.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input image:CorrBlue
+    Name the primary objects to be identified:Nuclei
+    Typical diameter of objects, in pixel units (Min,Max):8,28
+    Discard objects outside the diameter range?:Yes
+    Try to merge too small objects with nearby larger objects?:No
+    Discard objects touching the border of the image?:Yes
+    Method to distinguish clumped objects:Intensity
+    Method to draw dividing lines between clumped objects:Intensity
+    Size of smoothing filter:6
+    Suppress local maxima that are closer than this minimum allowed distance:5
+    Speed up by using lower-resolution image to find local maxima?:Yes
+    Name the outline image:None
+    Fill holes in identified objects?:After both thresholding and declumping
+    Automatically calculate size of smoothing filter for declumping?:No
+    Automatically calculate minimum allowed distance between local maxima?:Yes
+    Retain outlines of the identified objects?:No
+    Automatically calculate the threshold using the Otsu method?:Yes
+    Enter Laplacian of Gaussian threshold:.5
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
+    Enter LoG filter diameter:5
+    Handling of objects if excessive number of objects identified:Continue
+    Maximum number of objects:500
+    Threshold setting version:1
+    Threshold strategy:Global
+    Thresholding method:Otsu
+    Select the smoothing method for thresholding:Automatic
+    Threshold smoothing scale:1
+    Threshold correction factor:1
+    Lower and upper bounds on threshold:0.04,1
+    Approximate fraction of image covered by objects?:0.2
+    Manual threshold:0.0
+    Select the measurement to threshold with:None
+    Select binary image:MoG Global
+    Masking objects:From image
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Method to calculate adaptive window size:Image size
+    Size of adaptive window:10
+
+IdentifySecondaryObjects:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\'Identify the cells by using the nuclei as a "seed" region, then growing outwards until stopped by the image threshold or by a neighbor. The Propagation method is used to delineate the boundary between neighboring cells.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input objects:Nuclei
+    Name the objects to be identified:PropCells
+    Select the method to identify the secondary objects:Propagation
+    Select the input image:CorrGreen
+    Number of pixels by which to expand the primary objects:10
+    Regularization factor:0.05
+    Name the outline image:Do not use
+    Retain outlines of the identified secondary objects?:No
+    Discard secondary objects touching the border of the image?:No
+    Discard the associated primary objects?:No
+    Name the new primary objects:FilteredNuclei
+    Retain outlines of the new primary objects?:No
+    Name the new primary object outlines:FilteredNucleiOutlines
+    Fill holes in identified objects?:Yes
+    Threshold setting version:1
+    Threshold strategy:Global
+    Thresholding method:Otsu
+    Select the smoothing method for thresholding:No smoothing
+    Threshold smoothing scale:1
+    Threshold correction factor:1
+    Lower and upper bounds on threshold:0.02,1
+    Approximate fraction of image covered by objects?:10%
+    Manual threshold:0
+    Select the measurement to threshold with:None
+    Select binary image:Do not use
+    Masking objects:From image
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Method to calculate adaptive window size:Image size
+    Size of adaptive window:10
+
+IdentifySecondaryObjects:[module_num:9|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\'The Distance-N method is useful for situations in which there is no cell stain image, but the cell can still be adequately defined as a region N pixels out from the nucleus. In this case, N = 6 pixels.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the input objects:Nuclei
+    Name the objects to be identified:DistanceCells
+    Select the method to identify the secondary objects:Distance - N
+    Select the input image:CorrGreen
+    Number of pixels by which to expand the primary objects:6
+    Regularization factor:0.05
+    Name the outline image:Do not use
+    Retain outlines of the identified secondary objects?:No
+    Discard secondary objects touching the border of the image?:No
+    Discard the associated primary objects?:No
+    Name the new primary objects:FilteredNuclei
+    Retain outlines of the new primary objects?:No
+    Name the new primary object outlines:FilteredNucleiOutlines
+    Fill holes in identified objects?:No
+    Threshold setting version:1
+    Threshold strategy:Global
+    Thresholding method:Otsu
+    Select the smoothing method for thresholding:No smoothing
+    Threshold smoothing scale:1
+    Threshold correction factor:1
+    Lower and upper bounds on threshold:0,1
+    Approximate fraction of image covered by objects?:10%
+    Manual threshold:0
+    Select the measurement to threshold with:None
+    Select binary image:Do not use
+    Masking objects:From image
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Method to calculate adaptive window size:Image size
+    Size of adaptive window:10
+
+IdentifyTertiaryObjects:[module_num:10|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\'Identify the cytoplasm by "subtracting" the nuclei objects from the cell objects found using the Distance method.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the larger identified objects:DistanceCells
+    Select the smaller identified objects:Nuclei
+    Name the tertiary objects to be identified:DistCytoplasm
+    Name the outline image:Do not use
+    Retain outlines of the tertiary objects?:No
+    Shrink smaller object prior to subtraction?:Yes
+
+IdentifyTertiaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\'Identify the cytoplasm by "subtracting" the nuclei objects from the cell objects found using the Progagtion method.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the larger identified objects:PropCells
+    Select the smaller identified objects:Nuclei
+    Name the tertiary objects to be identified:PropCytoplasm
+    Name the outline image:Do not use
+    Retain outlines of the tertiary objects?:No
+    Shrink smaller object prior to subtraction?:Yes
+
+MeasureCorrelation:[module_num:12|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\'Measure corelation between DNA and GFP channels in the nuclei, cells and cytoplasm.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Hidden:2
+    Hidden:5
+    Select an image to measure:CorrGreen
+    Select an image to measure:CorrBlue
+    Select where to measure correlation:Within objects
+    Select an object to measure:Nuclei
+    Select an object to measure:PropCells
+    Select an object to measure:DistanceCells
+    Select an object to measure:PropCytoplasm
+    Select an object to measure:DistCytoplasm
+
+MeasureObjectIntensity:[module_num:13|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\'Measure intensity features from nuclei, cell and cytoplasm objects against the corrected DNA and GFP images.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Hidden:2
+    Select an image to measure:CorrBlue
+    Select an image to measure:CorrGreen
+    Select objects to measure:Nuclei
+    Select objects to measure:PropCells
+    Select objects to measure:DistanceCells
+    Select objects to measure:DistCytoplasm
+    Select objects to measure:PropCytoplasm
+
+MeasureObjectSizeShape:[module_num:14|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\'Measure morphological features from the cell, nuclei and cytoplasm objects.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select objects to measure:Nuclei
+    Select objects to measure:PropCells
+    Select objects to measure:DistanceCells
+    Select objects to measure:DistCytoplasm
+    Select objects to measure:PropCytoplasm
+    Calculate the Zernike features?:No
+
+MeasureTexture:[module_num:15|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\'Measure texture features from the cell, nuclei and cytoplasm objects.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Hidden:2
+    Hidden:5
+    Hidden:1
+    Select an image to measure:CorrBlue
+    Select an image to measure:CorrGreen
+    Select objects to measure:Nuclei
+    Select objects to measure:PropCells
+    Select objects to measure:DistanceCells
+    Select objects to measure:DistCytoplasm
+    Select objects to measure:PropCytoplasm
+    Texture scale to measure:1
+    Angles to measure:Horizontal
+    Measure Gabor features?:Yes
+    Number of angles to compute for Gabor:4
+
+CalculateMath:[module_num:16|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\'Calculate a per-cell ratio of the integrated green intensity in nuclei vs. cytoplasm.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Name the output measurement:Ratio1
+    Operation:Divide
+    Select the numerator measurement type:Object
+    Select the numerator objects:Nuclei
+    Select the numerator measurement:Intensity_IntegratedIntensity_CorrGreen
+    Multiply the above operand by:1
+    Raise the power of above operand by:1
+    Select the denominator measurement type:Object
+    Select the denominator objects:DistCytoplasm
+    Select the denominator measurement:Intensity_IntegratedIntensity_CorrGreen
+    Multiply the above operand by:1
+    Raise the power of above operand by:1
+    Take log10 of result?:No
+    Multiply the result by:1
+    Raise the power of result by:1
+    Add to the result:0
+    Constrain the result to a lower bound?:No
+    Enter the lower bound:0
+    Constrain the result to an upper bound?:No
+    Enter the upper bound:1
+
+CalculateMath:[module_num:17|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\'Calculate a per-cell ratio of the mean green intensity in cytoplasm vs. nuclei.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Name the output measurement:Ratio2
+    Operation:Divide
+    Select the numerator measurement type:Object
+    Select the numerator objects:DistCytoplasm
+    Select the numerator measurement:Intensity_MeanIntensity_CorrGreen
+    Multiply the above operand by:1
+    Raise the power of above operand by:1
+    Select the denominator measurement type:Object
+    Select the denominator objects:Nuclei
+    Select the denominator measurement:Intensity_MeanIntensity_CorrGreen
+    Multiply the above operand by:1
+    Raise the power of above operand by:1
+    Take log10 of result?:No
+    Multiply the result by:1
+    Raise the power of result by:1
+    Add to the result:0
+    Constrain the result to a lower bound?:No
+    Enter the lower bound:0
+    Constrain the result to an upper bound?:No
+    Enter the upper bound:1
+
+CalculateStatistics:[module_num:18|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\'Produce dose reponse curves, using the dosages and controls specfied in the metadata csv file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the image measurement describing the positive and negative control status:Metadata_SBS_Controls
+    Select the image measurement describing the treatment dose:Metadata_SBS_Doses
+    Log-transform the dose values?:No
+    Create dose/response plots?:Yes
+    Figure prefix:DoseResponsePlot
+    Output file location:Default Output Folder\x7CDo not use
+
+ExportToSpreadsheet:[module_num:19|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B\'Export any measurements to a comma-delimited file (.csv). The measurements made for the nuclei, cell and cytoplasm objects will be saved to separate .csv files, in addition to the per-image .csv.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select the column delimiter:Comma (",")
+    Add image metadata columns to your object data file?:No
+    Limit output to a size that is allowed in Excel?:No
+    Select the measurements to export:No
+    Calculate the per-image mean values for object measurements?:Yes
+    Calculate the per-image median values for object measurements?:No
+    Calculate the per-image standard deviation values for object measurements?:No
+    Output file location:Default Output Folder\x7C.
+    Create a GenePattern GCT file?:No
+    Select source of sample row name:Metadata
+    Select the image to use as the identifier:None
+    Select the metadata to use as the identifier:None
+    Export all measurement types?:No
+    Press button to select measurements to export:None\x7CNone
+    Representation of Nan/Inf:NaN
+    Add a prefix to file names?:No
+    Filename prefix\x3A:MyExpt_
+    Overwrite without warning?:Yes
+    Data to export:Image
+    Combine these object measurements with those of the previous object?:No
+    File name:Image.csv
+    Use the object name for the file name?:No
+    Data to export:Nuclei
+    Combine these object measurements with those of the previous object?:No
+    File name:Nuclei.csv
+    Use the object name for the file name?:No
+    Data to export:PropCells
+    Combine these object measurements with those of the previous object?:No
+    File name:PropCells.csv
+    Use the object name for the file name?:No
+    Data to export:DistanceCells
+    Combine these object measurements with those of the previous object?:No
+    File name:DistanceCells.csv
+    Use the object name for the file name?:No
+    Data to export:DistCytoplasm
+    Combine these object measurements with those of the previous object?:No
+    File name:DistCytoplasm.csv
+    Use the object name for the file name?:No

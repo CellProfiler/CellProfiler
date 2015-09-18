@@ -818,7 +818,7 @@ def build_extensions():
     #
     # Check for dependencies and compile if necessary
     #
-    compile_scripts = [(os.path.join('cellprofiler', 'cpmath', 'setup.py'),
+    compile_scripts = [(os.path.join('cellprofiler', 'algorithms', 'setup.py'),
                         cellprofiler.cpmath.setup),
                        (os.path.join('cellprofiler', 'utilities', 'setup.py'),
                         cellprofiler.utilities.setup)]

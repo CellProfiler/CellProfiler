@@ -424,7 +424,7 @@ class PreferencesView:
         self.__progress_watcher = ProgressWatcher(
             self.__progress_panel,
             self.update_progress,
-            multiprocessing=cpanalysis.use_analysis)
+            multiprocessing=True)
         self.show_progress_panel()
         
     def on_pipeline_progress(self, *args):

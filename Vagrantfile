@@ -12,28 +12,33 @@ Vagrant.configure(2) do |configuration|
     end
 
     ubuntu.vm.provision "shell", privileged: false, inline: <<-SHELL
+      sudo -E apt-get -yq update
+
       sudo -E apt-get -yq                                       \
         --force-yes                                             \
         --no-install-recommends                                 \
         --no-install-suggests                                   \
           install                                               \
             build-essential                                     \
-            cython                                              \
+            curl                                                \
             git                                                 \
+            libblas-dev                                         \
+            libbz2-dev                                          \
+            libfreetype6-dev                                    \
+            libhdf5-dev                                         \
+            liblapacke-dev                                      \
+            libncurses5-dev                                     \
+            libpng-dev                                          \
+            libreadline-dev                                     \
+            libsqlite3-dev                                      \
+            libssl-dev                                          \
+            libxml2-dev                                         \
+            libxslt1-dev                                        \
+            llvm                                                \
             openjdk-7-jdk                                       \
-            python-dev                                          \
-            python-h5py                                         \
-            python-imaging                                      \
-            python-lxml                                         \
-            python-matplotlib                                   \
-            python-mysqldb                                      \
-            python-pandas                                       \
-            python-pip                                          \
-            python-tk                                           \
-            python-scipy                                        \
-            python-vigra                                        \
-            python-wxgtk2.8                                     \
-            python-zmq
+            pkg-config                                          \
+            wget                                                \
+            zlib1g-dev
 
       source                                                    \
         $HOME/.bashrc                                        && \
@@ -47,11 +52,7 @@ Vagrant.configure(2) do |configuration|
       echo                                                      \
         "export LD_LIBRARY_PATH=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/server:/usr/lib/jvm/java-7-openjdk-amd64:/usr/lib/jvm/java-7-openjdk-amd64/include" >> $HOME/.bashrc
 
-      sudo pip install --upgrade pip wheel
-
-      sudo pip install --requirement /vagrant/requirements.txt
-
-      sudo pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
+      curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
     SHELL
   end
 end

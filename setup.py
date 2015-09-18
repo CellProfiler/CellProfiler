@@ -63,7 +63,8 @@ setuptools.setup(
     license="MIT",
     name="CellProfiler",
     tests_require=[
-        "pytest"
+        "pytest",
+        "tox",
     ],
     url="http://cellprofiler.org",
     version="2.1.1",

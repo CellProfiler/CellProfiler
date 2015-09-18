@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 if [ -e "$HOME/.batchprofiler.sh" ]; then
 . "$HOME/.batchprofiler.sh"
 fi

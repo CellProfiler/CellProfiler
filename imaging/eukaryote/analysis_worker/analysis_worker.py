@@ -6,6 +6,8 @@ logger = logging.getLogger(__name__)
 '''Set the log level through the environment by specifying AW_LOG_LEVEL'''
 AW_LOG_LEVEL = "AW_LOG_LEVEL"
 
+ANNOUNCE_DONE = "DONE"
+
 work_announce_address = None
 knime_bridge_address = None
 def aw_parse_args():

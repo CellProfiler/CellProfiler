@@ -472,21 +472,11 @@ def get_display_service(context):
             self.o = o
         def createDisplay(self, name, dataset):
             '''Create a display that contains the given dataset'''
-            #
-            # Must be run on the gui thread
-            #
-            jcallable = J.run_script(
-                """new java.util.concurrent.Callable() {
-                    call:function() {
-                        return displayService.createDisplay(name, dataset);
-                    }
-                };
-                """, dict(displayService=self.o,
-                          name = name,
-                          dataset = dataset.o))
-            future = J.make_future_task(jcallable,
-                                        fn_post_process = wrap_display)
-            return J.execute_future_in_main_thread(future)
+            return wrap_display(J.call(
+                o, "createDisplay", 
+                "(Ljava/lang/String;Ljava/lang/Object;)Lorg/scijava/display/Display;",
+                name, dataset))
+        
         def getActiveDisplay(self, klass=None):
             '''Get the first display, optionally of the given type from the list
             
@@ -509,15 +499,9 @@ def get_display_service(context):
                 "()Lorg/scijava/display/Display;",
                 J.class_for_name("net.imagej.display.ImageDisplay")))
         
-        def setActiveDisplay(self, display):
-            '''Make this the active display'''
-            # Note: has to be run in GUI thread on mac
-            r = J.run_script(
-                """new java.lang.Runnable() {
-                    run:function() { displayService.setActiveDisplay(display); }
-                }
-                """, dict(displayService=self.o, display=display.o))
-            J.execute_runnable_in_main_thread(r, True)
+        setActiveDisplay = J.make_method(
+            "setActiveDisplay",
+            "(Lorg/scijava/display/Display;)V")
         getDisplays = J.make_method(
             "getDisplays", 
             "()Ljava/util/List;",
@@ -569,17 +553,7 @@ def wrap_display(display):
                                     doc="Signal display change")
         getName = J.make_method("getName", "()Ljava/lang/String;")
         setName = J.make_method("setName", "(Ljava/lang/String;)V")
-        def close(self):
-            '''Close the display
-            
-            This is run in the UI thread with synchronization.
-            '''
-            r = J.run_script(
-                """new java.lang.Runnable() {
-                run: function() { display.close(); }
-                };
-                """, dict(display=self.o))
-            J.execute_runnable_in_main_thread(r, True)
+        close = J.make_method("close", "()V")
         #
         # ImageDisplay methods
         #
@@ -686,10 +660,7 @@ def select_overlay(display, overlay, select=True):
     '''
     for view in J.get_collection_wrapper(display, fn_wrapper = wrap_data_view):
         if J.call(overlay, "equals", "(Ljava/lang/Object;)Z", view.getData()):
-            J.execute_runnable_in_main_thread(J.run_script(
-                """new java.lang.Runnable() {
-                    run: function() { view.setSelected(select);}
-                   }""", dict(view = view.o, select=select)), synchronous=True)
+            view.setSelected(select)
             break
     else:
         logger.info("Failed to select overlay")
@@ -1150,6 +1121,13 @@ def make_invoke_method(method, returns_value=False, doc = None,
     
     returns_value - True if the method returns a value.
     '''
+    #
+    # TO-DO - replace instances of make_invoke_method with a more
+    #         straightforward call of the method.
+    #
+    # This is a legacy of running these methods on the UI thread by
+    # wrapping them in a future.
+    #
     if fn_post_process is None:
         fn_post_process = lambda x: x
     if returns_value:
@@ -1164,7 +1142,7 @@ def make_invoke_method(method, returns_value=False, doc = None,
             d = dict([("arg%d" % i, arg) for i, arg in enumerate(args)])
             d["o"] = self.o
             future = J.make_future_task(J.run_script(script, d))
-            J.execute_future_in_main_thread(future)
+            future.run()
             return fn_post_process(future.get())
     else:
         def fn(self, *args):
@@ -1178,7 +1156,7 @@ def make_invoke_method(method, returns_value=False, doc = None,
             d = dict([("arg%d" % i, arg) for i, arg in enumerate(args)])
             d["o"] = self.o
             future = J.make_future_task(J.run_script(script, d))
-            J.execute_future_in_main_thread(future)
+            future.run()
             return future.get()
     if doc is None:
         doc = "Run the %s method in the UI thread" % method

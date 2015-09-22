@@ -56,12 +56,8 @@ def execute_macro(macro_text):
     
     macro_text - the macro program to be run
     '''
-    interp = J.make_instance("ij/macro/Interpreter","()V");
-    J.execute_runnable_in_main_thread(J.run_script(
-        """new java.lang.Runnable() {
-        run: function() {
-            interp.run(macro_text);
-        }}""", dict(interp=interp, macro_text=macro_text)), synchronous=True)
+    interp = J.make_instance("ij/macro/Interpreter", "()V")
+    J.call(interp, "run", "(Ljava/lang/String;)V", macro_text)
     
 def run_batch_macro(macro_text, imp):
     '''Run a macro in batch mode
@@ -78,10 +74,8 @@ def run_batch_macro(macro_text, imp):
         }
     };
     """
-    interp = J.make_instance("ij/macro/Interpreter","()V");
-    future = J.make_future_task(J.run_script(
-        script, dict(interp=interp, macro_text=macro_text, imp=imp)))
-    return J.execute_future_in_main_thread(future)
+    interp = J.JClassWrapper("ij.macro.Interpreter")();
+    return interp.runBatchMacro(macro_text, imp).o
     
 def get_user_loader():
     '''The class loader used to load user plugins'''

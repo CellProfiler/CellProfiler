@@ -33,26 +33,8 @@ def get_current_image():
         }
     };
     """
-    gci = J.make_future_task(J.run_script(script))
-    imageplus_obj = J.execute_future_in_main_thread(gci)
-    return get_imageplus_wrapper(imageplus_obj)
-
-def get_id_list():
-    '''Get the list of IDs of open images'''
-    jid_list = J.get_env().get_int_array_elements(
-        J.static_call('ij/WindowManager', 'getIDList', '()[I'))
-    return jid_list
-
-def get_image_by_id(imagej_id):
-    '''Get an ImagePlus object by its ID'''
-    return get_imageplus_wrapper(J.static_call(
-        'ij/WindowManager', 'getImage', '(I)Lij/ImagePlus;', imagej_id))
-
-def get_image_by_name(title):
-    '''Get the ImagePlus object whose title (in the window) matches "title"'''
-    return get_imageplus_wrapper(J.static_call(
-        'ij/WindowManager', 'getImage', '(Ljava/lang/String;)Lij/ImagePlus;',
-        title))
+    wm_class = J.JClassWrapper("ij.WindowManager")
+    return get_imageplus_wrapper(wm_class.getCurrentImage().o)
 
 def get_temp_current_image():
     '''Get the temporary ImagePlus object for the current thread'''
@@ -63,9 +45,8 @@ def get_temp_current_image():
         }
     };
     """
-    gtci = J.make_future_task(J.run_script(script))
-    imageplus_obj = J.execute_future_in_main_thread(gtci)
-    return get_imageplus_wrapper(imageplus_obj)
+    wm_class = J.JClassWrapper("ij.WindowManager")
+    return get_imageplus_wrapper(wm_class.getTempCurrentImage().o)
 
 def make_unique_name(proposed_name):
     '''Create a unique title name for an imageplus object'''
@@ -75,33 +56,14 @@ def make_unique_name(proposed_name):
 
 def set_temp_current_image(imagej_obj):
     '''Set the temporary current image for the UI thread'''
-    script = """
-    new java.lang.Runnable() {
-        run: function() {
-            Packages.ij.WindowManager.setTempCurrentImage(ip);
-        }
-    };
-    """
-    J.execute_runnable_in_main_thread(
-        J.run_script(script, dict(ip = imagej_obj.o)), True)
+    J.JClassWrapper("ij.WindowManager").setTempCurrentImage(imagej_obj.o)
 
 def set_current_image(imagej_obj):
     '''Set the currently active window
     
     imagej_obj - an ImagePlus to become the current image
     '''
-    J.execute_runnable_in_main_thread(J.run_script(
-        """new java.lang.Runnable() {
-            run:function() {
-                var w = imp.getWindow();
-                if (w == null) {
-                    imp.show();
-                } else {
-                    Packages.ij.WindowManager.setCurrentWindow(w);
-                }
-            }
-        }
-        """, dict(imp=imagej_obj.o)), synchronous=True)
+    set_temp_current_image(imagej_obj)
 
 def close_all_windows():
     '''Close all ImageJ windows

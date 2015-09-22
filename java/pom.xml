@@ -4,14 +4,13 @@
   	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>3.7</version>
+		<version>7.1.0</version>
 		<relativePath />
 	</parent>
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <bio-formats.version>5.1.1</bio-formats.version>
     <omero.version>5.1.1-ice35-b43</omero.version>
   </properties>
   <groupId>org.cellprofiler</groupId>
@@ -141,6 +140,10 @@
 				<groupId>hsqldb</groupId>
 				<artifactId>hsqldb</artifactId>
 	 		</exclusion>
+	 		<exclusion>
+	 			<artifactId>javassist</artifactId>
+	 			<groupId>javassist</groupId>
+	 		</exclusion>
 	 	</exclusions>
  	</dependency>
  	<!-- 
@@ -172,7 +175,7 @@
     <dependency>
         <groupId>net.imagej</groupId>
 		<artifactId>imagej</artifactId>
-		<version>2.0.0-rc-16</version>
+		<version>2.0.0-rc-18</version>
 	</dependency>
   <dependency>
 	<groupId>net.sf.opencsv</groupId>
@@ -204,7 +207,7 @@
     	<artifactId>javax.json</artifactId>
     	<version>1.0.1</version>
      </dependency>
- </dependencies>
+  </dependencies>
   <repositories>
 	<repository>
 		<id>sonatype-nexus-releases</id>

@@ -33,10 +33,10 @@ OUTPUT_IMAGE_NAME = "outputimage"
 from cellprofiler.modules import instantiate_module
 
 try:
-   instantiate_module("RunImageJ")
-   skip_tests = False
+    instantiate_module("RunImageJ")
+    skip_tests = False
 except:
-   skip_tests = True
+    skip_tests = True
 
 
 @unittest.skipIf(skip_tests, "RunImageJ did not load (headless?)")
@@ -170,7 +170,6 @@ RunImageJ:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|show_
         self.assertEqual(module.current_input_image_name, "MyInputImage")
         self.assertEqual(module.current_output_image_name, "MyOutputImage")
         self.assertTrue(module.wants_to_get_current_image)
-        self.assertFalse(module.pause_before_proceeding)
         self.assertEqual(module.prepare_group_choice, R.CM_NOTHING)
         self.assertEqual(module.post_group_choice, R.CM_NOTHING)
         
@@ -285,7 +284,6 @@ RunImageJ:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_
         self.assertFalse(module.wants_to_get_current_image)
         self.assertEqual(module.current_input_image_name, "Axon")
         self.assertEqual(module.current_output_image_name, "AxonsTubeness")
-        self.assertFalse(module.pause_before_proceeding)
         self.assertEqual(module.prepare_group_choice, R.CM_MACRO)
         self.assertEqual(module.post_group_choice, R.CM_MACRO)
         self.assertEqual(module.prepare_group_macro, 'run("Straighten");')
@@ -392,7 +390,106 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertEqual(module.command_settings[0], "DNA")
         self.assertFalse(module.command_settings[1])
         self.assertEqual(module.command_settings[2], "InvertedDNA")
-        
+      
+    def test_01_05_load_v5(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20121213213625
+ModuleCount:5
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+         :{"ShowFiltered"\x3A true}
+         Filter based on rules:No
+         Filter:or (file does contain "")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+         Extract metadata?:No
+         Extraction method count:1
+         Extraction method:Automatic
+         Source:From file name
+         Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+         Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+         Filter images:All images
+         :or (file does contain "")
+         Metadata file location\x3A:
+         Match file and image metadata:\x5B\x5D
+         Case insensitive matching:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+         Assignment method:Assign all images
+         Load as:Grayscale image
+         Image name:DNA
+         :\x5B\x5D
+         Assign channels by:Order
+         Assignments count:1
+         Match this rule:or (file does contain "")
+         Image name:DNA
+         Objects name:Cell
+         Load as:Grayscale image
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+         Do you want to group your images?:No
+         grouping metadata count:1
+         Image name:DNA
+         Metadata category:None
+
+RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+         Run an ImageJ command or macro?:Command
+         Command:Edit\x7CInvert...
+         Macro:var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass(\'imagej.ui.UIService\');\\u000avar uiService=ImageJ.getService(svcClass);\\u000auiService.createUI();
+         Macro language:Beanshell
+         Input the currently active image in ImageJ?:No
+         Select the input image:GFP
+         Retrieve the currently active image from ImageJ?:No
+         Name the current output image:GFPOut
+         Run a command or macro before each group of images?:Script
+         Command:Image\x7cCrop
+         Macro:var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass(\'imagej.ui.UIService\');\\u000avar uiService=ImageJ.getService(svcClass);\\u000auiService.createUI();
+         Run a command or macro after each group of images?:Macro
+         Command:None
+         Macro:run("Smooth");
+         Retrieve the image output by the group operation?:No
+         Name the group output image:Projection
+         Command settings count:3
+         Prepare group command settings count:0
+         Post-group command settings count:0
+         (Input):DNA
+         Apply to all planes:No
+         (Output):InvertedDNA
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 5)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        self.assertEqual(module.command_or_macro, R.CM_COMMAND)
+        self.assertEqual(module.command, "Edit|Invert...")
+        self.assertEqual(module.macro, u"var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\u000avar uiService=ImageJ.getService(svcClass);\u000auiService.createUI();")
+        self.assertEqual(module.macro_language, "Beanshell")
+        self.assertFalse(module.wants_to_set_current_image)
+        self.assertEqual(module.current_input_image_name, "GFP")
+        self.assertFalse(module.wants_to_get_current_image)
+        self.assertEqual(module.current_output_image_name, "GFPOut")
+        self.assertEqual(module.prepare_group_choice, R.CM_SCRIPT)
+        self.assertEqual(module.prepare_group_command, "Image|Crop")
+        self.assertEqual(module.prepare_group_macro.value, "var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\nvar uiService=ImageJ.getService(svcClass);\nuiService.createUI();")
+        self.assertEqual(module.post_group_choice, R.CM_MACRO)
+        self.assertEqual(module.post_group_command, "None")
+        self.assertEqual(module.post_group_macro, 'run("Smooth");')
+        self.assertFalse(module.wants_post_group_image)
+        self.assertEqual(module.post_group_output_image, "Projection")
+        self.assertEqual(module.command_settings_count.value, 3)
+        self.assertEqual(module.pre_command_settings_count.value, 0)
+        self.assertEqual(module.post_command_settings_count.value, 0)
+        self.assertEqual(len(module.command_settings), 3)
+        self.assertEqual(module.command_settings[0], "DNA")
+        self.assertFalse(module.command_settings[1])
+        self.assertEqual(module.command_settings[2], "InvertedDNA")
+
     def make_workspace(self, input_image = None, wants_output_image = False):
         pipeline = cpp.Pipeline()
         def callback(caller, event):
@@ -442,72 +539,69 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
                              list(range(1,len(input_images)+1)));
         return workspaces, module
     
-    if sys.platform != 'darwin':
-        def test_02_01_run_null_command(self):
-            workspace, module = self.make_workspace()
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_COMMAND
-            module.command.value = "File|Close All"
-            module.wants_to_set_current_image.value = False
-            module.wants_to_get_current_image.value = False
-            module.run(workspace)
-            
-        def test_02_02_run_input_command(self):
-            image = np.zeros((20,10))
-            image[10:15,5:8] = 1
-            workspace, module = self.make_workspace(image)
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.wants_to_set_current_image.value = False
-            module.wants_to_get_current_image.value = False
-            module.command_or_macro.value = R.CM_COMMAND
-            module.command.value = "Edit|Invert..."
-            module.on_setting_changed(module.command, workspace.pipeline)
-            self.assertEqual(len(module.command_settings), 3)
-            subscriber, apply_to_all_planes, provider = module.command_settings
-            self.assertIsInstance(subscriber, cps.ImageNameSubscriber)
-            self.assertIsInstance(apply_to_all_planes, cps.Binary)
-            self.assertIsInstance(provider, cps.ImageNameProvider)
-            subscriber.value = INPUT_IMAGE_NAME
-            provider.value = OUTPUT_IMAGE_NAME
-            module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            output_pixel_data = output_image.pixel_data
-            np.testing.assert_array_almost_equal(1 - output_pixel_data, image)
-            
-        def test_02_03_set_and_get_image(self):
-            image = np.zeros((15, 17))
-            image[3:6, 10:13] = 1
-            workspace, module = self.make_workspace(image)
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_SCRIPT
-            module.macro_language.value = "ECMAScript"
-            script_svc = ij2.get_script_service(R.get_context())
-            factory = script_svc.getByName(module.macro_language.value)
-            output_statement = factory.getOutputStatement("Hello, world!")
-            module.macro.value = output_statement
-            module.wants_to_set_current_image.value = True
-            module.current_input_image_name.value = INPUT_IMAGE_NAME
-            module.wants_to_get_current_image.value = True
-            module.current_output_image_name.value = OUTPUT_IMAGE_NAME
-            module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            output_pixel_data = output_image.pixel_data
-            np.testing.assert_array_equal(output_pixel_data, image)
-            
+    def test_02_01_run_null_command(self):
+        workspace, module = self.make_workspace()
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_COMMAND
+        module.command.value = "File|Close All"
+        module.wants_to_set_current_image.value = False
+        module.wants_to_get_current_image.value = False
+        module.run(workspace)
         
-        def test_02_04_macro(self):
-            image = np.zeros((15, 17))
-            image[3:6, 10:13] = 1
-            workspace, module = self.make_workspace(image)
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_MACRO
-            module.macro.value = 'run("Invert");'
-            module.wants_to_set_current_image.value = True
-            module.current_input_image_name.value = INPUT_IMAGE_NAME
-            module.wants_to_get_current_image.value = True
-            module.current_output_image_name.value = OUTPUT_IMAGE_NAME
-            module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            output_pixel_data = output_image.pixel_data
-            np.testing.assert_array_almost_equal(1 - output_pixel_data, image)
+    def test_02_02_run_input_command(self):
+        image = np.zeros((20,10))
+        image[10:15,5:8] = 1
+        workspace, module = self.make_workspace(image)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.wants_to_set_current_image.value = False
+        module.wants_to_get_current_image.value = False
+        module.command_or_macro.value = R.CM_COMMAND
+        module.command.value = "Edit|Invert..."
+        module.on_setting_changed(module.command, workspace.pipeline)
+        self.assertEqual(len(module.command_settings), 3)
+        subscriber, apply_to_all_planes, provider = module.command_settings
+        self.assertIsInstance(subscriber, cps.ImageNameSubscriber)
+        self.assertIsInstance(apply_to_all_planes, cps.Binary)
+        self.assertIsInstance(provider, cps.ImageNameProvider)
+        subscriber.value = INPUT_IMAGE_NAME
+        provider.value = OUTPUT_IMAGE_NAME
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output_pixel_data = output_image.pixel_data
+        np.testing.assert_array_almost_equal(1 - output_pixel_data, image)
+        
+    def test_02_03_set_and_get_image(self):
+        image = np.zeros((15, 17))
+        image[3:6, 10:13] = 1
+        workspace, module = self.make_workspace(image)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_SCRIPT
+        module.macro_language.value = "ECMAScript"
+        output_statement = 'print("Hello, world!");'
+        module.macro.value = output_statement
+        module.wants_to_set_current_image.value = True
+        module.current_input_image_name.value = INPUT_IMAGE_NAME
+        module.wants_to_get_current_image.value = True
+        module.current_output_image_name.value = OUTPUT_IMAGE_NAME
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output_pixel_data = output_image.pixel_data
+        np.testing.assert_array_equal(output_pixel_data, image)
+        
+    
+    def test_02_04_macro(self):
+        image = np.zeros((15, 17))
+        image[3:6, 10:13] = 1
+        workspace, module = self.make_workspace(image)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_MACRO
+        module.macro.value = 'run("Invert");'
+        module.wants_to_set_current_image.value = True
+        module.current_input_image_name.value = INPUT_IMAGE_NAME
+        module.wants_to_get_current_image.value = True
+        module.current_output_image_name.value = OUTPUT_IMAGE_NAME
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output_pixel_data = output_image.pixel_data
+        np.testing.assert_array_almost_equal(1 - output_pixel_data, image)
             

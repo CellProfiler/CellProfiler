@@ -37,27 +37,6 @@ class TestWindowManager(unittest.TestCase):
         ip = I.load_imageplus(self.file_name)
         W.set_current_image(ip)
         
-    def test_01_02_get_id_list(self):
-        ip = I.load_imageplus(self.file_name)
-        W.set_current_image(ip)
-        id_list = W.get_id_list()
-        self.assertTrue(ip.getID() in id_list)
-        
-    def test_01_03_get_image_by_id(self):
-        ip = I.load_imageplus(self.file_name)
-        ip.show()
-        ip_other = W.get_image_by_id(ip.getID())
-        self.assertEqual(ip_other.getID(), ip.getID())
-        
-    def test_01_04_get_image_by_name(self):
-        ip = I.load_imageplus(self.file_name)
-        title = W.make_unique_name("Whatever")
-        ip.setTitle(title)
-        self.assertEqual(ip.getTitle(), title)
-        ip.show()
-        ip_other = W.get_image_by_name(title)
-        self.assertEqual(ip_other.getID(), ip.getID())
-    
     def test_01_05_set_temp_current_image(self):
         ip = I.load_imageplus(self.file_name)
         W.set_temp_current_image(ip)

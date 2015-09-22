@@ -242,20 +242,19 @@ def main(*args):
     args = list(args)
     import cellprofiler.preferences as cpprefs
     cpprefs.set_headless()
+    cpprefs.set_awt_headless(True)
     if '--noguitests' in args:
         args.remove('--noguitests')
         sys.modules['wx'] = MockModule()
         sys.modules['wx.html'] = MockModule()
         import matplotlib
         matplotlib.use('agg')
-        cpprefs.set_awt_headless(True)
         with_guitests = False
         wxapp = None
     else:
         with_guitests = True
-        cpprefs.set_awt_headless(False)
         import wx
-        wxapp = wx.PySimpleApp(False)
+        wxapp = wx.App(False)
 
     def mock_start_vm(*args, **kwargs):
         raise SkipTest
@@ -263,10 +262,6 @@ def main(*args):
     if '--nojavatests' in args:
         args.remove('--nojavatests')
         javabridge.start_vm = mock_start_vm
-    elif not with_guitests:
-        javabridge.activate_awt = mock_start_vm
-        javabridge.execute_future_in_main_thread = mock_start_vm
-        javabridge.execute_runnable_in_main_thread = mock_start_vm
 
     addplugins = [CPShutdownPlugin()]
 

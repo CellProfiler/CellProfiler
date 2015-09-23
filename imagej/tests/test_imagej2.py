@@ -540,7 +540,9 @@ class TestImagej2(unittest.TestCase):
         factory = svc.getByName("ECMAScript")
         engine = factory.getScriptEngine()
         result = engine.evalS("2+2")
-        self.assertEqual(J.call(result, "intValue", "()I"), 4)
+        if isinstance(result, J.JB_Object):
+            result = J.call(result, "intValue", "()I")
+        self.assertEqual(result, 4)
         
     def test_10_08_eval_with_bindings(self):
         svc = ij2.get_script_service(self.context)

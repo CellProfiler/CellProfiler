@@ -587,7 +587,14 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         output_pixel_data = output_image.pixel_data
         np.testing.assert_array_equal(output_pixel_data, image)
-        
+        #
+        # Check that subsequent modules can access the image left there
+        #
+        module.wants_to_set_current_image.value = False
+        module.run(workspace)
+        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output_pixel_data = output_image.pixel_data
+        np.testing.assert_array_equal(output_pixel_data, image)
     
     def test_02_04_macro(self):
         image = np.zeros((15, 17))

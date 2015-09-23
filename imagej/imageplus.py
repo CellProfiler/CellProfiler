@@ -15,6 +15,8 @@ import javabridge as J
 
 def get_imageplus_wrapper(imageplus_obj):
     '''Wrap the imageplus object as a Java class'''
+    if imageplus_obj is None:
+        return None
     class ImagePlus(object):
         def __init__(self):
             self.o = imageplus_obj

@@ -798,17 +798,19 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             if when is None and\
                (self.wants_to_set_current_image or
                 self.wants_to_get_current_image):
-                if input_image is None:
-                    input_image = np.zeros((16,16), np.float32)
-                ij_processor = ijiproc.make_image_processor(
-                    input_image.astype('float32'))
-                image_plus = ijip.make_imageplus_from_processor(
-                    self.current_input_image_name.value, ij_processor)
+                image_plus = ijmacros.get_current_image()
+                if image_plus is not None or input_image is not None:
+                    if input_image is None:
+                        input_image = np.zeros((16,16), np.float32)
+                    ij_processor = ijiproc.make_image_processor(
+                        input_image.astype('float32'))
+                    image_plus = ijip.make_imageplus_from_processor(
+                        self.current_input_image_name.value, ij_processor)
                 if self.wants_to_set_current_image:
-                    ijwm.set_current_image(image_plus)
+                    ijmacros.set_current_image(image_plus)
                 image_plus = ijip.get_imageplus_wrapper(
                     ijmacros.run_batch_macro(macro, image_plus.o))
-                ijwm.set_current_image(image_plus)
+                ijmacros.set_current_image(image_plus)
                 if self.wants_to_get_current_image:
                     ij_processor = image_plus.getProcessor()
                     pixels = ijiproc.get_image(ij_processor).\

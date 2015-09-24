@@ -1514,7 +1514,7 @@ class TrackObjects(cpm.CPModule):
         group_index_image_number = np.zeros(np.max(group_indices) + 1, int)
         group_index_image_number[group_indices] = image_numbers
         
-        if all([len(lll) == 0 for lll in label]):
+        if all([len(lll) == 0 for lll in label]).d:
             return # Nothing to do
 
         #sets up the arrays F, L, P, and Q
@@ -1556,7 +1556,7 @@ class TrackObjects(cpm.CPModule):
         # points of merges and splits respectively
 
         P1 = np.delete(P, idx[:-1], 0)
-        P2 = np.delete(P, idx[1:] - 1, 0)
+        P2 = np.delete(P, idx[idx > 0] - 1, 0)
         
         ##################################################
         #

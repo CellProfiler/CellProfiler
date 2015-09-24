@@ -1177,117 +1177,122 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                 
     def test_07_01_lap_none(self):
         '''Run the second part of LAP on one image of nothing'''
-        workspace, module = self.make_lap2_workspace(np.zeros((0,7)), 1)
-        self.assertTrue(isinstance(module, T.TrackObjects))
-        module.run_as_data_tool(workspace)
-        self.check_measurements(workspace, {
-            T.F_LABEL: [ np.zeros(0, int) ],
-            T.F_DISTANCE_TRAVELED: [ np.zeros(0) ],
-            T.F_DISPLACEMENT: [ np.zeros(0) ],
-            T.F_INTEGRATED_DISTANCE: [ np.zeros(0) ],
-            T.F_TRAJECTORY_X: [ np.zeros(0) ],
-            T.F_TRAJECTORY_Y: [ np.zeros(0) ],
-            T.F_NEW_OBJECT_COUNT: [ 0 ],
-            T.F_LOST_OBJECT_COUNT: [ 0 ],
-            T.F_MERGE_COUNT: [ 0 ],
-            T.F_SPLIT_COUNT: [ 0 ]
-        })
+        with self.MonkeyPatchedDelete(self):
+            workspace, module = self.make_lap2_workspace(np.zeros((0,7)), 1)
+            self.assertTrue(isinstance(module, T.TrackObjects))
+            module.run_as_data_tool(workspace)
+            self.check_measurements(workspace, {
+                T.F_LABEL: [ np.zeros(0, int) ],
+                T.F_DISTANCE_TRAVELED: [ np.zeros(0) ],
+                T.F_DISPLACEMENT: [ np.zeros(0) ],
+                T.F_INTEGRATED_DISTANCE: [ np.zeros(0) ],
+                T.F_TRAJECTORY_X: [ np.zeros(0) ],
+                T.F_TRAJECTORY_Y: [ np.zeros(0) ],
+                T.F_NEW_OBJECT_COUNT: [ 0 ],
+                T.F_LOST_OBJECT_COUNT: [ 0 ],
+                T.F_MERGE_COUNT: [ 0 ],
+                T.F_SPLIT_COUNT: [ 0 ]
+            })
         
     def test_07_02_lap_one(self):
         '''Run the second part of LAP on one image of one object'''
-        workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 0, 0, 100, 100, 25]]), 1)
-        self.assertTrue(isinstance(module, T.TrackObjects))
-        module.run_as_data_tool(workspace)
-        self.check_measurements(workspace, {
-            T.F_LABEL: [ np.array([1]) ],
-            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]) ],
-            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]) ],
-            T.F_DISPLACEMENT: [ np.zeros(1) ],
-            T.F_INTEGRATED_DISTANCE: [ np.zeros(1) ],
-            T.F_TRAJECTORY_X: [ np.zeros(1) ],
-            T.F_TRAJECTORY_Y: [ np.zeros(1) ],
-            T.F_NEW_OBJECT_COUNT: [ 1 ],
-            T.F_LOST_OBJECT_COUNT: [ 0 ],
-            T.F_MERGE_COUNT: [ 0 ],
-            T.F_SPLIT_COUNT: [ 0 ]
-        })
+        with self.MonkeyPatchedDelete(self):
+            workspace, module = self.make_lap2_workspace(
+                np.array([[0, 1, 0, 0, 100, 100, 25]]), 1)
+            self.assertTrue(isinstance(module, T.TrackObjects))
+            module.run_as_data_tool(workspace)
+            self.check_measurements(workspace, {
+                T.F_LABEL: [ np.array([1]) ],
+                T.F_PARENT_IMAGE_NUMBER: [ np.array([0]) ],
+                T.F_PARENT_OBJECT_NUMBER: [ np.array([0]) ],
+                T.F_DISPLACEMENT: [ np.zeros(1) ],
+                T.F_INTEGRATED_DISTANCE: [ np.zeros(1) ],
+                T.F_TRAJECTORY_X: [ np.zeros(1) ],
+                T.F_TRAJECTORY_Y: [ np.zeros(1) ],
+                T.F_NEW_OBJECT_COUNT: [ 1 ],
+                T.F_LOST_OBJECT_COUNT: [ 0 ],
+                T.F_MERGE_COUNT: [ 0 ],
+                T.F_SPLIT_COUNT: [ 0 ]
+            })
         
     def test_07_03_bridge_gap(self):
         '''Bridge a gap of zero frames between two objects'''
-        workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 0, 0, 1, 2, 25],
-                      [2, 2, 0, 0, 101, 102, 25]]), 3)
-        self.assertTrue(isinstance(module, T.TrackObjects))
-        #
-        # The cost of bridging the gap should be 141. We set the alternative
-        # score to 142 so that bridging wins.
-        #
-        module.gap_cost.value = 142
-        module.max_gap_score.value = 142
-        module.run_as_data_tool(workspace)
-        distance = np.array([np.sqrt(2 * 100 * 100)])
-        self.check_measurements(workspace, {
-            T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([1]) ],
-            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0, int), np.array([1]) ],
-            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0, int), np.array([1]) ],
-            T.F_DISTANCE_TRAVELED: [ np.zeros(1), np.zeros(0), distance],
-            T.F_INTEGRATED_DISTANCE: [ np.zeros(1),  np.zeros(0), distance],
-            T.F_TRAJECTORY_X: [ np.zeros(1), np.zeros(0), np.array([100]) ],
-            T.F_TRAJECTORY_Y: [ np.zeros(1), np.zeros(0), np.array([100]) ],
-            T.F_LINEARITY: [ np.array([np.nan]), np.zeros(0), np.array([1])],
-            T.F_LIFETIME: [ np.ones(1), np.zeros(0), np.array([2]) ],
-            T.F_FINAL_AGE: [ np.array([np.nan]), np.zeros(0), np.array([2])],
-            T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
-            T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
-            T.F_MERGE_COUNT: [ 0, 0, 0 ],
-            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
-        })
-        self.check_relationships(workspace.measurements,
-                                 [1], [1], [3], [1])
+        with self.MonkeyPatchedDelete(self):
+            workspace, module = self.make_lap2_workspace(
+                np.array([[0, 1, 0, 0, 1, 2, 25],
+                          [2, 2, 0, 0, 101, 102, 25]]), 3)
+            self.assertTrue(isinstance(module, T.TrackObjects))
+            #
+            # The cost of bridging the gap should be 141. We set the alternative
+            # score to 142 so that bridging wins.
+            #
+            module.gap_cost.value = 142
+            module.max_gap_score.value = 142
+            module.run_as_data_tool(workspace)
+            distance = np.array([np.sqrt(2 * 100 * 100)])
+            self.check_measurements(workspace, {
+                T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([1]) ],
+                T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0, int), np.array([1]) ],
+                T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0, int), np.array([1]) ],
+                T.F_DISTANCE_TRAVELED: [ np.zeros(1), np.zeros(0), distance],
+                T.F_INTEGRATED_DISTANCE: [ np.zeros(1),  np.zeros(0), distance],
+                T.F_TRAJECTORY_X: [ np.zeros(1), np.zeros(0), np.array([100]) ],
+                T.F_TRAJECTORY_Y: [ np.zeros(1), np.zeros(0), np.array([100]) ],
+                T.F_LINEARITY: [ np.array([np.nan]), np.zeros(0), np.array([1])],
+                T.F_LIFETIME: [ np.ones(1), np.zeros(0), np.array([2]) ],
+                T.F_FINAL_AGE: [ np.array([np.nan]), np.zeros(0), np.array([2])],
+                T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
+                T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
+                T.F_MERGE_COUNT: [ 0, 0, 0 ],
+                T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+            })
+            self.check_relationships(workspace.measurements,
+                                     [1], [1], [3], [1])
         
     def test_07_04_maintain_gap(self):
         '''Maintain object identity across a large gap'''
-        workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 0, 0,  1, 2, 25],
-                      [2, 2, 0, 0, 101, 102, 25]]), 3)
-        self.assertTrue(isinstance(module, T.TrackObjects))
-        #
-        # The cost of creating the gap should be 140 and the cost of
-        # bridging the gap should be 141.
-        #
-        module.gap_cost.value = 140
-        module.max_gap_score.value = 142
-        module.run_as_data_tool(workspace)
-        self.check_measurements(workspace, {
-            T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([2]) ],
-            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
-            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
-            T.F_NEW_OBJECT_COUNT: [ 1, 0, 1 ],
-            T.F_LOST_OBJECT_COUNT: [ 0, 1, 0 ],
-            T.F_MERGE_COUNT: [ 0, 0, 0 ],
-            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
-            })
+        with self.MonkeyPatchedDelete(self):
+            workspace, module = self.make_lap2_workspace(
+                np.array([[0, 1, 0, 0,  1, 2, 25],
+                          [2, 2, 0, 0, 101, 102, 25]]), 3)
+            self.assertTrue(isinstance(module, T.TrackObjects))
+            #
+            # The cost of creating the gap should be 140 and the cost of
+            # bridging the gap should be 141.
+            #
+            module.gap_cost.value = 140
+            module.max_gap_score.value = 142
+            module.run_as_data_tool(workspace)
+            self.check_measurements(workspace, {
+                T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([2]) ],
+                T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
+                T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
+                T.F_NEW_OBJECT_COUNT: [ 1, 0, 1 ],
+                T.F_LOST_OBJECT_COUNT: [ 0, 1, 0 ],
+                T.F_MERGE_COUNT: [ 0, 0, 0 ],
+                T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+                })
         
     def test_07_05_filter_gap(self):
         '''Filter a gap due to an unreasonable score'''
-        workspace, module = self.make_lap2_workspace(
-            np.array([[0, 1, 0, 0, 1, 2, 25],
-                      [2, 2, 0, 0, 101, 102, 25]]), 3)
-        self.assertTrue(isinstance(module, T.TrackObjects))
-        #
-        # The cost of creating the gap should be 142 and the cost of
-        # bridging the gap should be 141. However, the gap should be filtered
-        # by the max score
-        #
-        module.gap_cost.value = 142
-        module.max_gap_score.value = 140
-        module.run_as_data_tool(workspace)
-        self.check_measurements(workspace, {
-            T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([2]) ],
-            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
-            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ]
-            })
+        with self.MonkeyPatchedDelete(self):
+            workspace, module = self.make_lap2_workspace(
+                np.array([[0, 1, 0, 0, 1, 2, 25],
+                          [2, 2, 0, 0, 101, 102, 25]]), 3)
+            self.assertTrue(isinstance(module, T.TrackObjects))
+            #
+            # The cost of creating the gap should be 142 and the cost of
+            # bridging the gap should be 141. However, the gap should be filtered
+            # by the max score
+            #
+            module.gap_cost.value = 142
+            module.max_gap_score.value = 140
+            module.run_as_data_tool(workspace)
+            self.check_measurements(workspace, {
+                T.F_LABEL: [ np.array([1]), np.zeros(0), np.array([2]) ],
+                T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ],
+                T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.zeros(0), np.array([0]) ]
+                })
         
     def test_07_06_split(self):
         '''Track an object splitting'''
@@ -1765,6 +1770,32 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
             T.F_PARENT_IMAGE_NUMBER: [ np.array([0, 0]), np.array([1,1]), np.array([2,2]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0, 0]), np.array([1,1]), np.array([1,2]) ]
             })
+
+    class MonkeyPatchedDelete(object):
+        '''Monkey patch np.delete inside of a scope
+        
+        For regression test of issue #1571 - negative
+        indices in calls to numpy.delete
+        
+        Usage:
+            with MonkeyPatchedDelete(self):
+                ... do test ...
+        '''
+        
+        def __init__(self, test):
+            self.__test = test
+            
+        def __enter__(self):
+            self.old_delete = np.delete
+            np.delete = self.monkey_patched_delete
+        
+        def __exit__(self, type, value, traceback):
+            np.delete = self.old_delete
+
+        def monkey_patched_delete(self, array, indices, axis):
+            self.__test.assertTrue(np.all(indices >= 0))
+            return self.old_delete(array, indices, axis)
+            
         
     def test_08_01_save_image(self):
         module = T.TrackObjects()

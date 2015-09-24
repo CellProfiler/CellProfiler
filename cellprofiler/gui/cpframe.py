@@ -972,113 +972,119 @@ class CPFrame(wx.Frame):
     def __on_help_about(self, event):
         CellProfilerSplash = get_builtin_image('CellProfilerSplash')
         splashbitmap = wx.BitmapFromImage(CellProfilerSplash)
-
-        dlg = wx.Dialog(self)
-        dlg.Title = "About CellProfiler"
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        dlg.SetSizer(sizer)
-        sizer.Add(wx.StaticBitmap(dlg, -1, splashbitmap), 0, wx.EXPAND | wx.ALL, 5)
-        sizer.Add(wx.StaticText(
-            dlg, label="Version: %s" % version.dotted_version),
-                  0, wx.EXPAND | wx.ALL, 5)
-        sizer.Add(wx.StaticText(
-            dlg, label="GIT hash: %s" % version.git_hash),
-                  0, wx.EXPAND | wx.ALL, 5)
-        sizer.Add(wx.StaticText(
-            dlg, label="Revision author timestamp: %d" % version.version_number),
-                  0, wx.EXPAND | wx.ALL, 5)
-
-        cellprofiler_copyright = u"""
-CellProfiler (BI-2013-070) is cell image analysis software that was
-developed with funding from the U.S. National Institutes of Health and
-National Science Foundation and is made available through the
-generosity of the Broad Institute, Inc.
-Copyright © 2009-2015 Broad Institute, Inc.
-Copyright © 2008-2009 Massachusetts Institute of Technology
-All rights reserved."""
-        copyright_ctl = wx.StaticText(dlg, -1, cellprofiler_copyright)
-        sizer.Add(copyright_ctl, 0, wx.ALIGN_LEFT | wx.ALL, 5)
-
-        license_ctl = wx.StaticText(dlg, -1, cellprofiler_license)
-        sizer.Add(license_ctl, 0, wx.ALIGN_LEFT | wx.ALL, 5)
-        
-        button_list = [("GPL License", gpl_license),
-                       ("BSD License", bsd_license)]
-        
-        additional_copyrights = u""" (a) h5py © 2008 Andrew Collette, et al.; ilastik © 2012 C. Sommer,
-et al.,; ImageJ2 © 2009-2013 Board of Regents of the University of
-Wisconsin-Madison, Max Planck Institute of Molecular Cell Biology and
-Genetics; libhdf5 © 2006-2013 HDF Group; libtiff © 1988-1997 Sam
-Leffler and © 1991- 1997 Silicon Graphics, Inc.; NumPy © 2005-2013
-NumPy Developers; openGL © 2013 Khronos Group; Pillow © 1990-2013
-Python Software Foundation; progressbar © 2005 Nilton Volpato; SciPy ©
-2013 SciPy Developers; sklearn © 2007-2013 Scikit-Learn Developers;
-and zlib © 1995-2013 Jean-loup Gailly, Mark Adler under BSD licenses;
-(b) altgraph © 2004 Istvan Albert, Bob Ippolito and © 2010-2013 Ronald
-Oussoren; macholib © 2010-2013 Bob Ippolito, Ronald Oussoren;
-modulegraph © 2010-2013 Bob Ippolito, Ronald Oussoren; py2app ©
-2004-2006 Bob Ippolito, © 2010-2011 Ronald Oussoren; and vigra ©
-1998-2013 by Ullrich Koethe under MIT licenses; (c) libjpeg ©
-1991-1998 Thomas G. Lane under a license from the Independent JPEG
-Group found at https://github.com/aseprite/aseprite/blob/master/docs/
-licenses/libjpeg-LICENSE.txt; (d) matplotlib © 2003-2012 John Hunter,
-© 2012-2013 Michael Droettboom et al. under licenses found at
-http://matplotlib.org/users/license.html#copyright-policy; (e) Java
-Runtime Environment © 2013 Oracle, Inc. under the Oracle Binary Code
-License Agreement for the Java SE Platform Products and JavaFX found
-at http://www.oracle.com/technetwork/java/javase/terms/license/
-index.html; (f) Bioformats © 2000-2013 University of Dundee & Open
-Microscopy Environment; ice © 2013 ZeroC, Inc.; mySQLdb © 2013 Andy
-Dustman; omero © 2002-2013 Open Microscopy Environment; and ZeroMQ ©
-2007-2012 iMatix Corporation and Contributors; (g) wxWidgets ©
-1999-2005 Julian Smart, et al.; and wxPython © 1992-2006 Julian Smart,
-et al. and © 1996 Artificial Intelligence Applications Institute under
-the wxWindows license; (h) Intel Visual Fortran Compiler Run-time
-Library, Intel Fortran Portability Library, Intel OMP Runtime Library,
-Math Library for Intel Compilers, Short Vector Math Library for Intel
-Compilers under the Single User license provision for
-Resdistributables © 2013 Intel Corporation under the End User License
-Agreement for the Intel Software Development Products; and
-(i) FastEMD © Copyright (c) 2009-2012, Ofir Pele. under BSD licenses
-
-"""
-
-        icon_copyrights = get_icon_copyrights()
-        if additional_copyrights is not None:
-            additional_copyrights += icon_copyrights
-        button_list.append(("Additional licenses and attributions", 
-                            additional_copyrights))
-
-        for button_text, license_text in button_list:
-            sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
-            sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 5)
-            license_button = wx.Button(dlg, -1, button_text + " >>")
-            sub_sizer.Add(license_button, 0, wx.ALIGN_LEFT | wx.RIGHT, 3)
-            sub_sizer.Add(wx.StaticLine(dlg), 0, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
-
+        with wx.Dialog(self, size=(640, 800)) as dlg:
+            dlg.Title = "About CellProfiler"
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            dlg.SetSizer(sizer)
             panel = wx.lib.scrolledpanel.ScrolledPanel(dlg)
-            panel.Sizer = wx.BoxSizer(wx.VERTICAL)
-            license_ctl = wx.StaticText(panel, -1, license_text)
-            panel.SetMinSize((license_ctl.Size[0] + 20, 320))
-            panel.Sizer.Add(license_ctl, 1, 
-                            wx.EXPAND | wx.ALL, 2)
-            sizer.Add(panel, 0, wx.EXPAND | wx.ALL, 5)
+            panel.SetAutoLayout(1)
+            sizer.Add(panel, 1, wx.EXPAND)
+            sizer = wx.BoxSizer(wx.VERTICAL)
+            panel.SetSizer(sizer)
+            sizer.Add(
+                wx.StaticBitmap(panel, -1, splashbitmap), 0, wx.EXPAND | wx.ALL, 5)
+            tcstyle = wx.TE_READONLY | wx.BORDER_NONE
+            sizer.Add(wx.TextCtrl(
+                panel, 
+                value="Version: %s" % version.dotted_version,
+                style = tcstyle), 0, wx.EXPAND | wx.ALL, 5)
+            sizer.Add(wx.TextCtrl(
+                panel, value="GIT hash: %s" % version.git_hash, style=tcstyle),
+                      0, wx.EXPAND | wx.ALL, 5)
+            sizer.Add(wx.TextCtrl(
+                panel, 
+                value="Revision author timestamp: %d" % version.version_number,
+                style = tcstyle), 0, wx.EXPAND | wx.ALL, 5)
+    
+            cellprofiler_copyright = u"""
+    CellProfiler (BI-2013-070) is cell image analysis software that was
+    developed with funding from the U.S. National Institutes of Health and
+    National Science Foundation and is made available through the
+    generosity of the Broad Institute, Inc.
+    Copyright © 2009-2015 Broad Institute, Inc.
+    Copyright © 2008-2009 Massachusetts Institute of Technology
+    All rights reserved."""
+            copyright_ctl = wx.StaticText(panel, -1, cellprofiler_copyright)
+            sizer.Add(copyright_ctl, 0, wx.EXPAND | wx.ALL, 5)
+    
+            license_ctl = wx.StaticText(panel, -1, cellprofiler_license)
+            sizer.Add(license_ctl, 0, wx.EXPAND | wx.ALL, 5)
+            
+            button_list = [("GPL License", gpl_license),
+                           ("BSD License", bsd_license)]
+            
+            additional_copyrights = u""" (a) h5py © 2008 Andrew Collette, et al.; ilastik © 2012 C. Sommer,
+    et al.,; ImageJ2 © 2009-2013 Board of Regents of the University of
+    Wisconsin-Madison, Max Planck Institute of Molecular Cell Biology and
+    Genetics; libhdf5 © 2006-2013 HDF Group; libtiff © 1988-1997 Sam
+    Leffler and © 1991- 1997 Silicon Graphics, Inc.; NumPy © 2005-2013
+    NumPy Developers; openGL © 2013 Khronos Group; Pillow © 1990-2013
+    Python Software Foundation; progressbar © 2005 Nilton Volpato; SciPy ©
+    2013 SciPy Developers; sklearn © 2007-2013 Scikit-Learn Developers;
+    and zlib © 1995-2013 Jean-loup Gailly, Mark Adler under BSD licenses;
+    (b) altgraph © 2004 Istvan Albert, Bob Ippolito and © 2010-2013 Ronald
+    Oussoren; macholib © 2010-2013 Bob Ippolito, Ronald Oussoren;
+    modulegraph © 2010-2013 Bob Ippolito, Ronald Oussoren; py2app ©
+    2004-2006 Bob Ippolito, © 2010-2011 Ronald Oussoren; and vigra ©
+    1998-2013 by Ullrich Koethe under MIT licenses; (c) libjpeg ©
+    1991-1998 Thomas G. Lane under a license from the Independent JPEG
+    Group found at https://github.com/aseprite/aseprite/blob/master/docs/
+    licenses/libjpeg-LICENSE.txt; (d) matplotlib © 2003-2012 John Hunter,
+    © 2012-2013 Michael Droettboom et al. under licenses found at
+    http://matplotlib.org/users/license.html#copyright-policy; (e) Java
+    Runtime Environment © 2013 Oracle, Inc. under the Oracle Binary Code
+    License Agreement for the Java SE Platform Products and JavaFX found
+    at http://www.oracle.com/technetwork/java/javase/terms/license/
+    index.html; (f) Bioformats © 2000-2013 University of Dundee & Open
+    Microscopy Environment; ice © 2013 ZeroC, Inc.; mySQLdb © 2013 Andy
+    Dustman; omero © 2002-2013 Open Microscopy Environment; and ZeroMQ ©
+    2007-2012 iMatix Corporation and Contributors; (g) wxWidgets ©
+    1999-2005 Julian Smart, et al.; and wxPython © 1992-2006 Julian Smart,
+    et al. and © 1996 Artificial Intelligence Applications Institute under
+    the wxWindows license; (h) Intel Visual Fortran Compiler Run-time
+    Library, Intel Fortran Portability Library, Intel OMP Runtime Library,
+    Math Library for Intel Compilers, Short Vector Math Library for Intel
+    Compilers under the Single User license provision for
+    Resdistributables © 2013 Intel Corporation under the End User License
+    Agreement for the Intel Software Development Products; and
+    (i) FastEMD © Copyright (c) 2009-2012, Ofir Pele. under BSD licenses
+    
+    """
+    
+            icon_copyrights = get_icon_copyrights()
+            if additional_copyrights is not None:
+                additional_copyrights += icon_copyrights
+            button_list.append(("Additional licenses and attributions", 
+                                additional_copyrights))
+    
+            for button_text, license_text in button_list:
+                sub_sizer = wx.BoxSizer(wx.VERTICAL)
+                sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 5)
+                license_button = wx.Button(panel, -1, button_text + " >>")
+                sub_sizer.Add(license_button, 0, wx.ALIGN_LEFT | wx.RIGHT, 3)
+    
+                license_ctl = wx.StaticText(panel, -1, license_text)
+                sub_sizer.Add(license_ctl, 0, 
+                          wx.EXPAND | wx.ALL, 2)
+                license_ctl.Hide()
+    
+                def on_license(event, license_ctl = license_ctl):
+                    if license_ctl.IsShown():
+                        license_ctl.Hide()
+                    else:
+                        license_ctl.Show()
+                    panel.Layout()
+                    panel.SetupScrolling(scrollToTop = False)
+                    panel.ScrollChildIntoView(license_ctl)
+                    panel.Refresh()
+                license_button.Bind(wx.EVT_BUTTON, on_license)
+    
+            sizer.Add(dlg.CreateStdDialogButtonSizer(wx.OK), 0, 
+                      wx.ALIGN_RIGHT | wx.ALL, 5)
+            panel.Layout()
             panel.SetupScrolling()
-            panel.Hide()
-
-            def on_license(event, panel=panel):
-                if panel.IsShown():
-                    panel.Hide()
-                else:
-                    panel.Show()
-                dlg.Fit()
-                dlg.Refresh()
-            license_button.Bind(wx.EVT_BUTTON, on_license)
-
-        sizer.Add(dlg.CreateStdDialogButtonSizer(wx.OK), 0, 
-                  wx.ALIGN_RIGHT | wx.ALL, 5)
-        dlg.Fit()
-        dlg.ShowModal()
+            dlg.Layout()
+            dlg.ShowModal()
 
     def __on_help_welcome(self, event):
         self.show_welcome_screen(True)

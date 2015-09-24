@@ -1133,31 +1133,20 @@ def make_invoke_method(method, returns_value=False, doc = None,
     if returns_value:
         def fn(self, *args):
             script = """
-            new java.util.concurrent.Callable() {
-                call: function() {
-                    return o.%s(%s);
-                }
-            };
+                o.%s(%s);
             """ % (method, ",".join(["arg%d" % i for i in range(len(args))]))
             d = dict([("arg%d" % i, arg) for i, arg in enumerate(args)])
             d["o"] = self.o
-            future = J.make_future_task(J.run_script(script, d))
-            future.run()
-            return fn_post_process(future.get())
+            return fn_post_process(J.run_script(script, d))
     else:
         def fn(self, *args):
             script = """
-            new java.lang.Runnable() {
-                run: function() {
-                    o.%s(%s);
-                }
-            };
+                o.%s(%s);
             """ % (method, ",".join(["arg%d" % i for i in range(len(args))]))
             d = dict([("arg%d" % i, arg) for i, arg in enumerate(args)])
             d["o"] = self.o
-            future = J.make_future_task(J.run_script(script, d))
-            future.run()
-            return future.get()
+            J.run_script(script, d)
+            
     if doc is None:
         doc = "Run the %s method in the UI thread" % method
     fn.__doc__ = doc

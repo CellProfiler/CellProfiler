@@ -1514,7 +1514,7 @@ class TrackObjects(cpm.CPModule):
         group_index_image_number = np.zeros(np.max(group_indices) + 1, int)
         group_index_image_number[group_indices] = image_numbers
         
-        if all([len(lll) == 0 for lll in label]).d:
+        if all([len(lll) == 0 for lll in label]):
             return # Nothing to do
 
         #sets up the arrays F, L, P, and Q

@@ -554,11 +554,10 @@ class PipelineListView(object):
             subitem == MODULE_NAME_COLUMN):
             module = list_ctrl.items[item].module
             name = window_name(module)
-            figure = self.__panel.TopLevelParent.FindWindowByName(name)
-            if figure is not None:
-                figure.Show(0)
-                figure.Show(1)
-                figure.SetFocus()
+            for w in wx.GetTopLevelWindows():
+                if w.GetName() == name:
+                    w.Raise()
+                    w.SetFocus()
     
     def __on_pause_column_clicked(self, event):
         module = self.get_event_module(event)

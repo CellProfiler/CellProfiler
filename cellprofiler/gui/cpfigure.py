@@ -334,7 +334,7 @@ class CPFigureFrame(wx.Frame):
             if (parent_menu_bar is not None and 
                 isinstance(parent_menu_bar, wx.MenuBar)):
                 for menu, label in parent_menu_bar.GetMenus():
-                    if label == "Window":
+                    if label == "&Window":
                         menu_ids = [menu_item.Id 
                                     for menu_item in menu.MenuItems]
                         for window_id in window_ids+[None]:

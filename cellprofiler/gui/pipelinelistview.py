@@ -553,13 +553,17 @@ class PipelineListView(object):
             (hit_code & wx.LIST_HITTEST_ONITEM) and 
             subitem == MODULE_NAME_COLUMN):
             module = list_ctrl.items[item].module
-            name = window_name(module)
-            figure = self.__panel.TopLevelParent.FindWindowByName(name)
-            if figure is not None:
-                figure.Show(0)
-                figure.Show(1)
-                figure.SetFocus()
+            w = self.find_module_figure_window(module)
+            if w is not None:
+                w.Raise()
+                w.SetFocus()
     
+    def find_module_figure_window(self, module):
+        name = window_name(module)
+        for w in wx.GetTopLevelWindows():
+            if w.GetName() == name:
+                return w
+            
     def __on_pause_column_clicked(self, event):
         module = self.get_event_module(event)
         module.wants_pause = not module.wants_pause
@@ -572,8 +576,7 @@ class PipelineListView(object):
     def __on_show_window(self, event):
         '''Handle a ModuleShowWindow pipeline event'''
         self.list_ctrl.Refresh(eraseBackground=False)
-        name = window_name(event.module)
-        figure = self.__panel.TopLevelParent.FindWindowByName(name)
+        figure = self.find_module_figure_window(event.module)
         if figure is not None:
             figure.Close()
             

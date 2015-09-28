@@ -15,6 +15,8 @@ import javabridge as J
 
 def get_imageplus_wrapper(imageplus_obj):
     '''Wrap the imageplus object as a Java class'''
+    if imageplus_obj is None:
+        return None
     class ImagePlus(object):
         def __init__(self):
             self.o = imageplus_obj
@@ -63,14 +65,6 @@ def get_imageplus_wrapper(imageplus_obj):
         setSlice = J.make_method('setSlice', '(I)V')
         setTitle = J.make_method('setTitle', '(Ljava/lang/String;)V')
         
-        def show(self):
-            J.execute_runnable_in_main_thread(J.run_script("""
-            new java.lang.Runnable() {
-            run: function() { o.show(); }}""", dict(o=self.o)), synchronous=True)
-        def hide(self):
-            J.execute_runnable_in_main_thread(J.run_script("""
-            new java.lang.Runnable() {
-            run: function() { o.hide(); }}""", dict(o=self.o)), synchronous=True)
         getWindow = J.make_method('getWindow', '()Lij/gui/ImageWindow;',
                                   'Get the ImageWindow associated with this image. getWindow() will return null unless you have previously called show()')
     return ImagePlus()

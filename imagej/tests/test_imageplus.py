@@ -136,11 +136,3 @@ class TestImagePlus(unittest.TestCase):
         p = ip.getProcessor()
         self.assertTrue(J.to_string(p).startswith("ip"))  
         
-    def test_02_01_show_get_and_hide(self):
-        file_name = os.path.join(
-            self.root_dir, "ExampleSBSImages", "Channel1-01-A-01.tif")
-        ip = I.load_imageplus(file_name)
-        ip.show()
-        window = ip.getWindow()
-        self.assertTrue(J.to_string(window).startswith("Channel1-01-A-01.tif"))
-        ip.hide()

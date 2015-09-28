@@ -17,6 +17,7 @@ import bioformats
 import javabridge as J
 
 from cellprofiler.preferences import get_headless
+from imagej.imageplus import get_imageplus_wrapper
 
 def get_commands():
     '''Return a list of the available command strings'''
@@ -51,17 +52,47 @@ def execute_command(command, options = None):
                       "(Ljava/lang/String;Ljava/lang/String;)V",
                       command, options)
     
+def set_current_image(image_plus):
+    '''Put the given image on the top of the batch mode image stack
+    
+    image_plus - a wrapped imagePlus
+    '''
+    #
+    # Make sure we are in batch mode prior to adding the image.
+    # If not, the image just goes into the garbage.
+    #
+    J.static_call("ij/macro/Interpreter",
+                  "setBatchMode",
+                  "(Z)V", True)
+    #
+    # Remove the image, if it exists, from its current position
+    # on the stack
+    #
+    J.static_call("ij/macro/Interpreter",
+                  "removeBatchModeImage",
+                  "(Lij/ImagePlus;)V", image_plus.o)
+    J.static_call("ij/macro/Interpreter",
+                  "addBatchModeImage",
+                  "(Lij/ImagePlus;)V", image_plus.o)
+    
+def get_current_image():
+    '''Get the image from the top of the batch mode image stack
+    
+    returns None or a wrapped imagePlus
+    '''
+    image_plus = J.static_call("ij/macro/Interpreter",
+                               "getLastBatchModeImage",
+                               "()Lij/ImagePlus;")
+    if image_plus is not None:
+        return get_imageplus_wrapper(image_plus)
+    
 def execute_macro(macro_text):
     '''Execute a macro in ImageJ
     
     macro_text - the macro program to be run
     '''
-    interp = J.make_instance("ij/macro/Interpreter","()V");
-    J.execute_runnable_in_main_thread(J.run_script(
-        """new java.lang.Runnable() {
-        run: function() {
-            interp.run(macro_text);
-        }}""", dict(interp=interp, macro_text=macro_text)), synchronous=True)
+    interp = J.make_instance("ij/macro/Interpreter", "()V")
+    J.call(interp, "run", "(Ljava/lang/String;)V", macro_text)
     
 def run_batch_macro(macro_text, imp):
     '''Run a macro in batch mode
@@ -78,10 +109,8 @@ def run_batch_macro(macro_text, imp):
         }
     };
     """
-    interp = J.make_instance("ij/macro/Interpreter","()V");
-    future = J.make_future_task(J.run_script(
-        script, dict(interp=interp, macro_text=macro_text, imp=imp)))
-    return J.execute_future_in_main_thread(future)
+    interp = J.JClassWrapper("ij.macro.Interpreter")();
+    return interp.runBatchMacro(macro_text, imp).o
     
 def get_user_loader():
     '''The class loader used to load user plugins'''
@@ -97,19 +126,3 @@ def get_plugin(classname):
     constructor = J.get_constructor_wrapper(cls.getConstructor(None))
     return constructor.newInstance(None)
 
-if __name__=="__main__":
-    import sys
-    J.attach()
-    try:
-        commands = get_commands()
-        print "Commands: "
-        for command in commands:
-            print "\t" + command
-        if len(sys.argv) == 2:
-            execute_command(sys.argv[1])
-        elif len(sys.argv) > 2:
-            execute_command(sys.argv[1], sys.argv[2])
-        
-    finally:
-        J.detach()
-        J.kill_vm()

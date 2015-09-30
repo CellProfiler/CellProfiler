@@ -74,6 +74,7 @@ def main(args):
     '''
     import cellprofiler.preferences as cpprefs
     cpprefs.set_awt_headless(True)
+    exit_code = 0
     switches = ('--work-announce', '--knime-bridge-address')
     if any([any([arg.startswith(switch) for switch in switches])
             for arg in args]):
@@ -88,7 +89,7 @@ def main(args):
         import cellprofiler.analysis_worker
         cellprofiler.analysis_worker.aw_parse_args()
         cellprofiler.analysis_worker.main()
-        sys.exit(0)
+        sys.exit(exit_code)
         
     if any([arg.startswith('--xml-test-file=') for arg in sys.argv]):
         import cpnose
@@ -102,7 +103,7 @@ def main(args):
         print "Git %s" % git_hash
         print "Version %s" % version_number
         print "Built %s" % version_string.split(" ")[0]
-        sys.exit(0)
+        sys.exit(exit_code)
     #
     # Important to go headless ASAP
     #
@@ -277,10 +278,10 @@ def main(args):
             return
         
         elif options.run_pipeline:
-            run_pipeline_headless(options, args)
+            exit_code = run_pipeline_headless(options, args)
     except Exception, e:
         logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
-        raise
+        exit_code = -1
     
     finally:
         if __name__ == "__main__":
@@ -298,7 +299,7 @@ def main(args):
                 cp_stop_vm()
             except:
                 logging.root.warn("Failed to stop the JVM", exc_info=1)
-            os._exit(0)
+    os._exit(exit_code)
 
 def parse_args(args):
     '''Parse the CellProfiler command-line arguments'''
@@ -971,18 +972,21 @@ def run_pipeline_headless(options, args):
         initial_measurements = initial_measurements)
     if len(args) > 0 and not use_hdf5:
         pipeline.save_measurements(args[0], measurements)
+    if (measurements is not None and 
+        measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
+        done_text = measurements.get_experiment_measurement(EXIT_STATUS)
+        exit_code = (0 if done_text == "Complete" else -1)
+    else:
+        done_text = "Failure"
+        exit_code = -1
     if options.done_file is not None:
-        if (measurements is not None and 
-            measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
-            done_text = measurements.get_experiment_measurement(EXIT_STATUS)
-        else:
-            done_text = "Failure"
         fd = open(options.done_file, "wt")
         fd.write("%s\n"%done_text)
         fd.close()
     if measurements is not None:
         measurements.close()
-    
+    return exit_code
+
 if __name__ == "__main__":
     main(sys.argv)
     os._exit(0)

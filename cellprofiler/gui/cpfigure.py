@@ -170,14 +170,9 @@ def window_name(module):
 
 def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
     """Find a figure frame window. Returns the window or None"""
-    if parent:
-        window = parent.FindWindowByName(name)
-        if window:
-            if len(title) and title != window.Title:
-                window.Title = title
-            if subplots is not None:
-                window.set_subplots(subplots)
-        return window
+    for w in wx.GetTopLevelWindows():
+        if w.GetName() == name:
+            return w
 
 def create_or_find(parent=None, id=-1, title="", 
                    pos=wx.DefaultPosition, size=wx.DefaultSize,

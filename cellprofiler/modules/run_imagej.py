@@ -48,7 +48,6 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
 import imagej.imagej2 as ij2
 from imagej.imagej2 import get_context
-import imagej.windowmanager as ijwm
 import imagej.imageprocessor as ijiproc
 import imagej.imageplus as ijip
 import imagej.macros as ijmacros
@@ -729,8 +728,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             if (self.post_group_choice != CM_NOTHING and
                 self.wants_post_group_image):
                 output_image_name = self.post_group_output_image.value
-                if not ij1_mode:
-                    image_plus = ijwm.get_current_image()
+                if ij1_mode:
+                    image_plus = ijmacros.get_current_image()
                     ij_processor = image_plus.getProcessor()
                     pixels = ijiproc.get_image(ij_processor).\
                         astype('float32') / IMAGEJ_SCALE

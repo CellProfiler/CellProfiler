@@ -1,10 +1,5 @@
-h5py==2.5.0
+cython==0.23.3
 libtiff==0.4.0
-lxml==3.4.4
-matplotlib==1.4.3
-MySQL-python==1.2.5
-pandas==0.16.2
 python-bioformats==1.0.5
 pyzmq==14.7.0
 scikit-learn==0.16.1
-scipy==0.16.0

@@ -560,9 +560,7 @@ class PipelineListView(object):
     
     def find_module_figure_window(self, module):
         name = window_name(module)
-        for w in wx.GetTopLevelWindows():
-            if w.GetName() == name:
-                return w
+        return find_fig(name = name)
             
     def __on_pause_column_clicked(self, event):
         module = self.get_event_module(event)

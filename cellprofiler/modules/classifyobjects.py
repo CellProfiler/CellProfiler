@@ -530,6 +530,8 @@ class ClassifyObjects(cpm.CPModule):
         measurements = workspace.measurements
         in_high_class = []
         saved_values = []
+        objects = workspace.object_set.get_objects(self.object_name.value)
+        has_nan_measurement = np.zeros(objects.count, bool)
         for feature, threshold_method, threshold in (
             (self.first_measurement, self.first_threshold_method, 
              self.first_threshold),
@@ -537,7 +539,11 @@ class ClassifyObjects(cpm.CPModule):
              self.second_threshold)):
             values = measurements.get_current_measurement(
                 self.object_name.value, feature.value)
+            if len(values) < objects.count:
+                values = np.hstack((
+                    values, [np.NaN] * (objects.count - len(values))))
             saved_values.append(values)
+            has_nan_measurement = has_nan_measurement | np.isnan(values)
             if threshold_method == TM_CUSTOM:
                 t = threshold.value
             elif len(values) == 0:
@@ -555,7 +561,8 @@ class ClassifyObjects(cpm.CPModule):
         for i in range(2):
             for j in range(2):
                 in_class = ((in_high_class[0].astype(int) == i) &
-                            (in_high_class[1].astype(int) == j))
+                            (in_high_class[1].astype(int) == j) &
+                            (~ has_nan_measurement))
                 measurements.add_measurement(self.object_name.value,
                                              "_".join((M_CATEGORY, feature_names[i,j])),
                                              in_class.astype(int))
@@ -567,7 +574,6 @@ class ClassifyObjects(cpm.CPModule):
                 measurements.add_measurement(cpmeas.IMAGE, measurement_name,
                                          100.0*float(num_hits)/num_values if num_values > 0 else 0)
 
-        objects = workspace.object_set.get_objects(self.object_name.value)
         if self.wants_image:
             class_1, class_2 = in_high_class
             object_codes = class_1.astype(int)+class_2.astype(int)*2 + 1
@@ -645,6 +651,12 @@ class ClassifyObjects(cpm.CPModule):
         objects = workspace.object_set.get_objects(object_name)
         measurements = workspace.measurements
         values = measurements.get_current_measurement(object_name, feature)
+        #
+        # Pad values if too few (defensive programming).
+        #
+        if len(values) < objects.count:
+            values = np.hstack(
+                (values, [np.NaN] * (objects.count - len(values))))
         if group.bin_choice == BC_EVEN:
             low_threshold = group.low_threshold.value
             high_threshold = group.high_threshold.value
@@ -684,7 +696,7 @@ class ClassifyObjects(cpm.CPModule):
             colors = self.get_colors(bin_hits.shape[1])
             object_bins = np.sum(bin_hits * th_idx,1)+1
             object_color = np.hstack(([0],object_bins))
-            object_color[np.hstack((False,np.isnan(values)))] = 0
+            object_color[np.hstack((False, np.isnan(values)))] = 0
             labels = object_color[objects.segmented]
             if group.wants_images:
                 image = colors[labels,:3]

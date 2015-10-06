@@ -290,10 +290,7 @@ class MeasureCorrelation(cpm.CPModule):
         first_pixels = first_pixels[mask]
         second_pixels = second_pixels[mask]
         labels = labels[mask]
-        if len(labels)==0:
-            n_objects = 0
-        else:
-            n_objects = np.max(labels)
+        n_objects = objects.count
         if n_objects == 0:
             corr = np.zeros((0,))
         else:
@@ -316,7 +313,8 @@ class MeasureCorrelation(cpm.CPModule):
             y = second_pixels - mean2[labels-1] # y - mean(y)
             corr = fix(scind.sum(x * y / (std1[labels-1] * std2[labels-1]),
                                  labels, lrange))
-            corr[~ np.isfinite(corr)] = 0
+            # Explicitly set the correlation to NaN for masked objects
+            corr[scind.sum(1, labels, lrange) == 0] = np.NaN
         measurement = ("Correlation_Correlation_%s_%s" %
                        (first_image_name, second_image_name))
         workspace.measurements.add_measurement(object_name, measurement, corr)

@@ -39,6 +39,7 @@ import cellprofiler.preferences as cpprefs
 from cpfigure_tools import figure_to_image, only_display_image, renumber_labels_for_display
 import cellprofiler.cpmath.outline
 from cellprofiler.cpmath.cpmorphology import get_outline_pts
+import cellprofiler.gui.cpartists
 
 #
 # Monkey-patch the backend canvas to only report the truly supported filetypes

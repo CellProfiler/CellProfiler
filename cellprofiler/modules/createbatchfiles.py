@@ -80,6 +80,9 @@ class CreateBatchFiles(cpm.CPModule):
     #
     def create_settings(self):
         '''Create the module settings and name the module'''
+        #
+        # Saving the default input / output directory is now deprecated.
+        #
         self.wants_default_output_directory = cps.Binary(
             "Store batch files in default output folder?", True,doc="""
             Select <i>%(YES)s</i> to store batch files in the Default Output folder. <br>
@@ -300,14 +303,26 @@ class CreateBatchFiles(cpm.CPModule):
             pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
             bizarro_self = pipeline.module(self.module_num)
             bizarro_self.revision.value = version_number
+            bizarro_default_image_directory = \
+                self.alter_path(cpprefs.get_default_image_directory())
+            bizarro_default_output_directory = \
+                self.alter_path(cpprefs.get_default_output_directory())
             if self.wants_default_output_directory:
                 bizarro_self.custom_output_directory.value = \
-                            self.alter_path(cpprefs.get_default_output_directory())
+                    bizarro_default_output_directory
             bizarro_self.default_image_directory.value = \
-                        self.alter_path(cpprefs.get_default_image_directory())
+                bizarro_default_image_directory
+                        
             bizarro_self.batch_mode.value = True
             pipeline.write_pipeline_measurement(m)
             orig_pipeline.write_pipeline_measurement(m, user_pipeline=True)
+            #
+            # Write the altered default input and output folders
+            #
+            m.add_experiment_measurement(cpp.M_DEFAULT_INPUT_FOLDER,
+                                         bizarro_default_image_directory)
+            m.add_experiment_measurement(cpp.M_DEFAULT_OUTPUT_FOLDER,
+                                         bizarro_default_output_directory)
             #
             # Write the path mappings to the batch measurements
             #
@@ -326,24 +341,32 @@ class CreateBatchFiles(cpm.CPModule):
         return self.batch_mode.value
     
     def enter_batch_mode(self, workspace):
-        '''Restore the image set list from its setting as we go into batch mode'''
+        '''Restore batch state using settings'''
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
         assert not self.distributed_mode, "Distributed mode no longer supported"
+        #
+        # Support for legacy image and output directory loading
+        #
+        m = workspace.measurements
         default_output_directory = self.custom_output_directory.value
         default_image_directory = self.default_image_directory.value
-        if os.path.isdir(default_output_directory):
-            cpprefs.set_default_output_directory(default_output_directory)
-        else:
-            logger.info(
-                "Batch file default output directory, \"%s\", does not exist" %
-                default_output_directory)
-        if os.path.isdir(default_image_directory):
-            cpprefs.set_default_image_directory(default_image_directory)
-        else:
-            logger.info(
-                "Batch file default input directory \"%s\", does not exist" %
-                default_image_directory)
+        if not m.has_feature(cpmeas.EXPERIMENT,
+                             cpp.M_DEFAULT_OUTPUT_FOLDER):
+            if os.path.isdir(default_output_directory):
+                cpprefs.set_default_output_directory(default_output_directory)
+            else:
+                logger.info(
+                    "Batch file default output directory, \"%s\", does not exist" %
+                    default_output_directory)
+        if not m.has_feature(cpmeas.EXPERIMENT,
+                             cpp.M_DEFAULT_INPUT_FOLDER):
+            if os.path.isdir(default_image_directory):
+                cpprefs.set_default_image_directory(default_image_directory)
+            else:
+                logger.info(
+                    "Batch file default input directory \"%s\", does not exist" %
+                    default_image_directory)
     
     def turn_off_batch_mode(self):
         '''Remove any indications that we are in batch mode

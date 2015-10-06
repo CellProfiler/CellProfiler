@@ -2853,6 +2853,28 @@ def closing(image, radius=None, mask=None, footprint = None):
     dilated_image = grey_dilation(image, radius, mask, footprint)
     return grey_erosion(dilated_image, radius, mask, footprint)
 
+def openlines(image, linelength=10, dAngle=10, mask=None):
+    '''Do a morphological opening along lines of different angles.
+    Return difference between max and min response to different angles for each pixel.
+    This effectively removes dots and only keeps lines.
+    
+    image - pixel image to operate on
+    length - length of the structural element
+    angluar_resolution - angle step for the rotating lines
+    mask - if present, only use unmasked pixels for operations
+    '''
+	
+    nAngles = 180/dAngle
+    openingstack = np.zeros((nAngles,image.shape[0],image.shape[1]),image.dtype)
+    
+    for iAngle in range(nAngles):
+      angle = dAngle * iAngle
+      se = strel_line(linelength,angle)
+      openingstack[iAngle,:,:] = opening(image, mask=mask, footprint=se)
+      
+    imLines = np.max(openingstack,axis=0) - np.min(openingstack,axis=0)
+    return imLines
+
 def table_lookup(image, table, border_value, iterations = None):
     '''Perform a morphological transform on an image, directed by its neighbors
     

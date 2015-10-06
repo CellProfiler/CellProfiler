@@ -264,6 +264,11 @@ break bridges between objects and remove single pixels.</td>
 <td>Binary, grayscale</td>
 </tr>
 <tr>
+<td><i>OpenLines</i></td><td>Performs an erosion followed by a dilation using rotating linear structural elements. 
+The effect is to return parts of the image that have a linear intensity distribution and suppress dots of the same size.</td>
+<td>Binary, grayscale</td>
+</tr>
+<tr>
 <td><i>Remove</i></td>
 <td>Removes pixels that are otherwise surrounded by others (4 connected). 
 The effect is to leave the perimeter of a solid object:<br>
@@ -423,6 +428,7 @@ F_INVERT = 'invert'
 F_LIFE   = 'life'
 F_MAJORITY = 'majority'
 F_OPEN   = 'open'
+F_OPENLINES = 'openlines'
 F_REMOVE = 'remove'
 F_SHRINK = 'shrink'
 F_SKEL   = 'skel'
@@ -434,7 +440,7 @@ F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
 F_ALL = [F_BOTHAT, F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_CONVEX_HULL,
          F_DIAG, F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE, F_FILL, 
-         F_FILL_SMALL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_REMOVE, 
+         F_FILL_SMALL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_OPENLINES, F_REMOVE, 
          F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
 R_ONCE = 'Once'
@@ -671,6 +677,11 @@ class Morph(cpm.CPModule):
                 function.custom_repeats.doc = """Fill in all holes that have
                 this many pixels or fewer."""
                 result.append(function.custom_repeats)
+            elif function.function == F_OPENLINES:
+                function.custom_repeats.text = "Line length"
+                function.custom_repeats.doc = """Only keep lines that have
+                this many pixels or more."""
+                result.append(function.custom_repeats)
             elif function.repeats_choice != R_CUSTOM:
                 result.append(function.repeats_choice)
             else:
@@ -787,7 +798,7 @@ class Morph(cpm.CPModule):
                               F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_REMOVE,
                               F_SHRINK,
                               F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, 
-                              F_VBREAK) or
+                              F_VBREAK, F_OPENLINES) or
             (is_binary and
              function_name in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN))):
             # All of these have an iterations argument or it makes no
@@ -866,6 +877,8 @@ class Morph(cpm.CPModule):
                                                  strel,
                                                  iterations = count) |
                             (pixel_data & ~ mask))
+            elif function_name == F_OPENLINES:
+                return morph.openlines(pixel_data, linelength = custom_repeats, mask = mask)      
             elif function_name == F_REMOVE:
                 return morph.remove(pixel_data, mask, count)
             elif function_name == F_SHRINK:

@@ -141,6 +141,37 @@ def get_jars():
             logger.warning("Failed to find tools.jar")
     return class_path
     
+def find_logback_xml():
+    '''Find the location of the logback.xml file for Java logging config
+    
+    Paths to search are the current directory, the utilities directory
+    and ../../java/src/main/resources
+    '''
+    paths = [os.curdir,
+             os.path.dirname(__file__),
+             os.path.join(
+                 os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                 "java", "src", "main", "resources")]
+    for path in paths:
+        target = os.path.join(path, "logback.xml")
+        if os.path.isfile(target):
+            return target
+        
+def add_logback_xml_arg(args):
+    '''Add the logback.xml configuration arg if appropriate
+    
+    args: the args to send to the JVM.
+    '''
+    logback_path = find_logback_xml()
+    if logback_path is not None:
+        if sys.platform.startswith("win"):
+            logback_path = logback_path.replace("\\", "/")
+            if logback_path[1] == ':':
+                # \\localhost\x$ is same as x:
+                logback_path = "//localhost/" + logback_path[0] + "$" + \
+                    logback_path[2:]
+        args.append("-Dlogback.configurationFile=%s" % logback_path)
+                          
 def cp_start_vm():
     '''Start CellProfiler's JVM via Javabridge
     
@@ -151,12 +182,10 @@ def cp_start_vm():
     cpprefs.get_awt_headless() - controls java.awt.headless to prevent
         awt from being invoked
     '''
-    
     args = ["-Dloci.bioformats.loaded=true",
-            "-Dlogback.configurationFile=logback.xml",
             "-Djava.util.prefs.PreferencesFactory="+
             "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
-
+    add_logback_xml_arg(args)
     class_path = get_jars()
     args += get_patcher_args(class_path)
     awt_headless = cpprefs.get_awt_headless()

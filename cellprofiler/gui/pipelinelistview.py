@@ -596,18 +596,21 @@ class PipelineListView(object):
         if event.EventObject is not self.list_ctrl:
             return
         
-        if self.list_ctrl.active_item is None:
-            self.__frame.PopupMenu(self.__frame.menu_edit_add_module)
-        else:
-            menu = wx.Menu()
-            sub_menu = wx.Menu()
-            self.__controller.populate_edit_menu(sub_menu)
-            menu.AppendSubMenu(sub_menu, "&Add")
-            menu.Append(ID_EDIT_DELETE, "&Delete")
-            menu.Append(ID_EDIT_DUPLICATE, "Duplicate")
-            menu.Append(ID_EDIT_ENABLE_MODULE, "Enable")
-            menu.Append(ID_HELP_MODULE, "&Help")
+        
+        menu = wx.Menu()
+        try:
+            if self.list_ctrl.active_item is not None:
+                sub_menu = wx.Menu()
+                self.__controller.populate_edit_menu(sub_menu)
+                menu.AppendSubMenu(sub_menu, "&Add")
+                menu.Append(ID_EDIT_DELETE, "&Delete")
+                menu.Append(ID_EDIT_DUPLICATE, "Duplicate")
+                menu.Append(ID_EDIT_ENABLE_MODULE, "Enable")
+                menu.Append(ID_HELP_MODULE, "&Help")
+            else:
+                self.__controller.populate_edit_menu(menu)
             self.__frame.PopupMenu(menu)
+        finally:
             menu.Destroy()
 
     def start_drag_operation(self, event):

@@ -1121,7 +1121,9 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         # Gap before and after text
         self.text_gap = 3
         # The height of one row in the display
-        self.line_height = 16 + self.border + self.gap
+        self.line_height = max(
+            16 + self.border + self.gap,
+            self.GetTextExtent("M")[1])
         # The width of a icon column
         self.column_width = self.line_height
         # The row # of the currently pressed icon button
@@ -1418,7 +1420,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         x0 = self.slider_width + self.column_width * 3  + self.text_gap
         return wx.Rect(x0 + self.gap,
                        index * self.line_height,
-                       self.GetSizeTuple()[0] - x0 - self.gap, 18)
+                       self.GetSizeTuple()[0] - x0 - self.gap,
+                       self.line_height)
     
     def get_slider_rect(self):
         '''Return the rectangle encompassing the slider bitmap
@@ -1530,7 +1533,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                         not item.selected):
                         flags |= wx.CONTROL_SELECTED
                 draw_item_selection_rect(self, dc, r, flags)
-                if flags & wx.CONTROL_SELECTED:
+                if (flags & wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED) == \
+                   wx.CONTROL_SELECTED+wx.CONTROL_FOCUSED:
                     text_clr = clr_selected
                 else:
                     text_clr = clr_text
@@ -1540,7 +1544,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             dc.SetTextForeground(text_clr)
             dc.DrawText(item.module_name, 
                         r.left + self.text_gap, 
-                        r.top + self.border)
+                        r.top)
         if self.drop_insert_point is not None:
             y = self.line_height * self.drop_insert_point
             dc.SetPen(wx.BLACK_PEN)

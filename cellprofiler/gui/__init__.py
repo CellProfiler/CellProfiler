@@ -105,11 +105,21 @@ def draw_item_selection_rect(window, dc, rect, flags):
     # might work in Cocoa
     #
     import wx
-    if (sys.platform != 'darwin' or
-        sys.maxsize > 0x7fffffff or
-        (flags & wx.CONTROL_SELECTED) == wx.CONTROL_SELECTED):
+    if sys.platform != 'darwin':
         wx.RendererNative.Get().DrawItemSelectionRect(
             window, dc, rect, flags)
+    elif flags & wx.CONTROL_SELECTED:
+        if flags & wx.CONTROL_FOCUSED:
+            color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
+        else:
+            color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_INACTIVECAPTION)
+        old_brush = dc.Brush
+        new_brush = wx.Brush(color)
+        dc.Brush = new_brush
+        dc.Pen = wx.TRANSPARENT_PEN
+        dc.DrawRectangleRect(rect)
+        dc.Brush = old_brush
+        new_brush.Destroy()
     elif flags & wx.CONTROL_CURRENT:
         #
         # On the Mac, draw a rectangle with the highlight pen and a null
@@ -124,4 +134,3 @@ def draw_item_selection_rect(window, dc, rect, flags):
         old_pen = dc.Pen
         dc.Pen = wx.Pen(pen_color, width=2)
         dc.DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height)
-    

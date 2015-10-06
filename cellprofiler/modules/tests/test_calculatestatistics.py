@@ -37,6 +37,9 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.tests import github_url
 
 import cellprofiler.modules.calculatestatistics as C
+INPUT_OBJECTS = "my_object"
+TEST_FTR = "my_measurement"
+FIGURE_NAME = "figname"
 
 class TestCalculateStatistics(unittest.TestCase):
     def test_01_01_load_matlab(self):
@@ -534,10 +537,10 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
             cpmeas.IMAGE: {
                 "Metadata_Controls": [ 1,0,-1],
                 "Metadata_Doses": [ 0, .5, 1 ] },
-            "my_object": {
-                "my_measurement": [ np.array([1.0, np.NaN, 2.3, 3.4, 2.9]),
-                                    np.array([5.3, 2.4, np.NaN, 3.2]),
-                                    np.array([np.NaN, 3.1, 4.3, 2.2, 1.1, 0.1])]
+            INPUT_OBJECTS: {
+                TEST_FTR: [ np.array([1.0, np.NaN, 2.3, 3.4, 2.9]),
+                            np.array([5.3, 2.4, np.NaN, 3.2]),
+                            np.array([np.NaN, 3.1, 4.3, 2.2, 1.1, 0.1])]
                 }}
         workspace, module = self.make_workspace(mdict,
                                                 "Metadata_Controls",
@@ -546,6 +549,43 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for category in ("Zfactor", "OneTailedZfactor", "Vfactor"):
-            feature = '_'.join((category, "my_object", "my_measurement"))
+            feature = '_'.join((category, INPUT_OBJECTS, TEST_FTR))
             value = m.get_experiment_measurement(feature)
             self.assertFalse(np.isnan(value))
+            
+    def test_02_03_make_path(self):
+        # regression test of issue #1478
+        # If the figure directory doesn't exist, it should be created
+        #
+        mdict = { 
+            cpmeas.IMAGE: {
+                "Metadata_Controls": [ 1,0,-1],
+                "Metadata_Doses": [ 0, .5, 1 ] },
+            INPUT_OBJECTS: {
+                TEST_FTR: [ np.array([1.0, 2.3, 3.4, 2.9]),
+                            np.array([5.3, 2.4, 3.2]),
+                            np.array([3.1, 4.3, 2.2, 1.1, 0.1])]
+                }}
+        workspace, module = self.make_workspace(mdict,
+                                                "Metadata_Controls",
+                                                [ "Metadata_Doses"])
+        assert isinstance(module, C.CalculateStatistics)
+        my_dir = tempfile.mkdtemp()
+        my_subdir = os.path.join(my_dir, "foo")
+        fnfilename = FIGURE_NAME + INPUT_OBJECTS + "_" + TEST_FTR + ".pdf"
+        fnpath = os.path.join(my_subdir, fnfilename)
+        try:
+            dose_group = module.dose_values[0]
+            dose_group.wants_save_figure.value = True
+            dose_group.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+            dose_group.pathname.custom_path = my_subdir
+            dose_group.figure_name.value = FIGURE_NAME
+            module.post_run(workspace)
+            self.assertTrue(os.path.isfile(fnpath))
+        finally:
+            if os.path.exists(fnpath):
+                os.remove(fnpath)
+            if os.path.exists(my_subdir):
+                os.rmdir(my_subdir)
+            os.rmdir(my_dir)
+            

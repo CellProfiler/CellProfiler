@@ -29,7 +29,7 @@ from nose.util import resolve_name
 from nose.plugins.manager import PluginManager
 
 from cellprofiler.utilities.cpjvm import \
-     get_path_to_jars, get_jars, get_patcher_args
+     get_path_to_jars, get_jars, get_patcher_args, add_logback_xml_arg
 
 import numpy as np
 np.seterr(all='ignore')
@@ -58,6 +58,7 @@ class CPShutdownPlugin(nose.plugins.Plugin):
                 "-Djava.util.prefs.PreferencesFactory="+
                 "org.cellprofiler.headlesspreferences"+
                 ".HeadlessPreferencesFactory"]
+            add_logback_xml_arg(jvm_args)
             #
             # Find the ij1patcher
             #
@@ -87,6 +88,7 @@ class CPShutdownPlugin(nose.plugins.Plugin):
             self.temp_exampleimages = None
         else:
             self.temp_exampleimages = tempfile.mkdtemp(prefix="cpexampleimages")
+            os.environ["CP_EXAMPLEIMAGES"] = self.temp_exampleimages
 
         if "CP_TEMPIMAGES" in os.environ:
             self.temp_images = None

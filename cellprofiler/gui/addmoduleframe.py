@@ -194,6 +194,15 @@ class AddModuleFrame(wx.Frame):
                 wx.MessageBox(help)
                 
     def __on_search_help(self, event):
+        if len(self.search_text.Value) == 0:
+            wx.MessageBox(
+                "Please enter the search text to be found.",
+                caption = "No text to search",
+                parent = self,
+                style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION)
+            self.search_text.SetFocus()
+            return
+            
         html = search_module_help(self.search_text.Value)
         if html is None:
             wx.MessageBox('No references found for "%s".' % self.search_text.Value,

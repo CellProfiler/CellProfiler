@@ -655,7 +655,7 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
         pipeline = cpp.Pipeline()
         image_folder_text = pipeline.encode_txt(
             "%s|%s" % (cpprefs.ABSOLUTE_FOLDER_NAME, 
-                       cpp.utf16encode(cpmt.example_images_directory())))
+                       cpmt.example_images_directory().encode("utf-8")))
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140128180905
@@ -721,7 +721,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:10|sho
         pipeline = cpp.Pipeline()
         image_folder_text = pipeline.encode_txt(
             "%s|%s" % (cpprefs.ABSOLUTE_FOLDER_NAME, 
-                       cpp.utf16encode(cpmt.example_images_directory())))
+                       cpmt.example_images_directory().encode("utf-8")))
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20140128180905

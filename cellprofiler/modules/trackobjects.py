@@ -1556,7 +1556,7 @@ class TrackObjects(cpm.CPModule):
         # points of merges and splits respectively
 
         P1 = np.delete(P, idx[:-1], 0)
-        P2 = np.delete(P, idx[1:] - 1, 0)
+        P2 = np.delete(P, idx[idx > 0] - 1, 0)
         
         ##################################################
         #

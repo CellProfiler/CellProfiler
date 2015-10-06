@@ -449,29 +449,13 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         T.maybe_download_sbs()
         for windows_mode in ((False, True) if sys.platform.startswith("win")
                              else (False,)):
-            same_platform = (windows_mode == sys.platform.startswith("win"))
             pipeline = cpp.Pipeline()
             pipeline.add_listener(callback)
             pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-            ipath = T.maybe_download_sbs()
+            ipath = os.path.join(T.example_images_directory(),'ExampleSBSImages')
             bpath = tempfile.mkdtemp()
             bfile = os.path.join(bpath,C.F_BATCH_DATA)
             hfile = os.path.join(bpath, C.F_BATCH_DATA_H5)
-            local_dif = os.path.dirname(
-                T.maybe_download_example_image(
-                    ["ExampleGrayToColor"], 
-                    "AS_09125_050116030001_D03f00d0.tif"))
-            cpprefs.set_default_image_directory(local_dif)
-            local_dof = T.maybe_download_fly()
-            cpprefs.set_default_output_directory(local_dof)
-            if same_platform:
-                remote_dif = os.path.join(bpath, "foo")
-                os.mkdir(remote_dif)
-                remote_dof = os.path.join(bpath, "bar")
-                os.mkdir(remote_dof)
-            else:
-                remote_dif = "/foo"
-                remote_dof = "/bar"
             try:
                 li = pipeline.modules()[0]
                 self.assertTrue(isinstance(li, LI.LoadImages))
@@ -483,28 +467,9 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 module.custom_output_directory.value = bpath
                 module.remote_host_is_windows.value = windows_mode
                 self.assertEqual(len(module.mappings), 1)
-                #
-                # Add paths for the default input and output folders
-                #
                 mapping = module.mappings[0]
-                mapping.local_directory.value = local_dif
-                mapping.remote_directory.value = remote_dif
-                self.assertFalse(pipeline.in_batch_mode())
-                module.add_mapping()
-                mapping = module.mappings[1]
-                mapping.local_directory.value = local_dof
-                mapping.remote_directory.value = remote_dof
-                module.add_mapping()
-                #
-                # Add path to SBS dataset
-                #
-                mapping = module.mappings[2]
                 mapping.local_directory.value = ipath
-                if windows_mode:
-                    mapping.remote_directory.value = "\\imaging\\analysis"
-                else:
-                    mapping.remote_directory.value = "/imaging/analysis"
-                
+                self.assertFalse(pipeline.in_batch_mode())
                 measurements = cpmeas.Measurements(mode="memory")
                 image_set_list = cpi.ImageSetList()
                 result = pipeline.prepare_run(
@@ -513,7 +478,8 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 self.assertFalse(pipeline.in_batch_mode())
                 self.assertFalse(result)
                 self.assertFalse(module.batch_mode.value)
-                
+                self.assertTrue(measurements.has_feature(
+                    cpmeas.EXPERIMENT, cpp.M_PIPELINE))
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
                 image_set_list = cpi.ImageSetList()
@@ -524,34 +490,6 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                 workspace.load(hfile, True)
                 measurements = workspace.measurements
                 self.assertTrue(pipeline.in_batch_mode())
-                
-                #
-                # Check measurements in batch file
-                #
-                self.assertTrue(measurements.has_feature(
-                    cpmeas.EXPERIMENT, cpp.M_PIPELINE))
-                self.assertTrue(measurements.has_feature(
-                    cpmeas.EXPERIMENT, cpp.M_USER_PIPELINE))
-                self.assertTrue(measurements.has_feature(
-                    cpmeas.EXPERIMENT, cpp.M_DEFAULT_INPUT_FOLDER))
-                self.assertEquals(
-                    measurements.get_experiment_measurement(
-                        cpp.M_DEFAULT_INPUT_FOLDER), remote_dif)
-                self.assertTrue(measurements.has_feature(
-                    cpmeas.EXPERIMENT, cpp.M_DEFAULT_OUTPUT_FOLDER))
-                self.assertEquals(
-                    measurements.get_experiment_measurement(
-                        cpp.M_DEFAULT_OUTPUT_FOLDER), remote_dof)
-                if same_platform:
-                    self.assertEquals(cpprefs.get_default_image_directory(),
-                                      remote_dif)
-                    self.assertEquals(cpprefs.get_default_output_directory(),
-                                      remote_dof)
-                    cpprefs.set_default_image_directory(local_dif)
-                    cpprefs.set_default_output_directory(local_dif)
-                #
-                # Check reconstitution of image sets
-                #
                 module = pipeline.modules()[1]
                 self.assertTrue(isinstance(module, C.CreateBatchFiles))
                 self.assertTrue(module.batch_mode.value)
@@ -567,37 +505,12 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                         self.assertEqual(pathname, 
                                          '\\imaging\\analysis' if windows_mode
                                          else '/imaging/analysis')
-                #
-                # Check that default input and output files were not set
-                #
-                if same_platform:
-                    self.assertTrue(
-                        cpprefs.get_default_image_directory(), local_dif)
-                    self.assertTrue(
-                        cpprefs.get_default_output_directory(), local_dof)
-                    #
-                    # Check legacy - remove default folder measurements and
-                    #    see that prepare_run does set the default dirs
-                    #
-                    for ftr in \
-                        cpp.M_DEFAULT_INPUT_FOLDER, cpp.M_DEFAULT_OUTPUT_FOLDER:
-                        del measurements.hdf5_dict[cpmeas.EXPERIMENT, ftr]
-                    module.prepare_run(workspace)
-                    self.assertTrue(
-                        cpprefs.get_default_image_directory(), remote_dif)
-                    self.assertTrue(
-                        cpprefs.get_default_output_directory(), remote_dof)
-                    
                 measurements.close()
             finally:
+                if os.path.exists(bfile):
+                    os.unlink(bfile)
                 if os.path.exists(hfile):
                     os.unlink(hfile)
-                for filename in os.listdir(bpath):
-                    path = os.path.join(bpath, filename)
-                    if os.path.isfile(path):
-                        os.unlink(path)
-                    elif os.path.isdir(path):
-                        os.rmdir(path)
                 os.rmdir(bpath)
     
     def test_04_01_alter_path(self):

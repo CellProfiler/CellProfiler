@@ -245,7 +245,7 @@ class CellProfilerCodesign(distutils.core.Command):
               cell_profiler_setup_path], ), "Signing %s" % cell_profiler_setup)
         
 opts = {
-    'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
+    'py2exe': { "includes" : ["objgraph", "numpy", "scipy","PIL","wx",
                               "matplotlib", 
                               "nose", "nose.*", "nose.plugins.*",
                               "h5py", "h5py.*", "pdb", "readline",

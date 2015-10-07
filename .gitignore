@@ -40,3 +40,4 @@ killjavabridge.egg-info
 output
 plugins
 windows/**
+.idea/**

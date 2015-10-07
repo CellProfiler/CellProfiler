@@ -12,6 +12,7 @@
 #
 #Website: http://www.cellprofiler.org
 
+import hashlib
 import numpy as np
 import os
 from cStringIO import StringIO
@@ -19,6 +20,7 @@ import tempfile
 import unittest
 import urllib
 
+from bioformats import load_image
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.namesandtypes as N
 import cellprofiler.measurements as cpmeas
@@ -28,7 +30,7 @@ import javabridge as J
 from cellprofiler.modules.tests import \
      example_images_directory, testimages_directory, \
      maybe_download_example_image, maybe_download_example_images,\
-     maybe_download_test_image
+     maybe_download_test_image, make_12_bit_image
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.loadimages import \
      C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
@@ -1202,7 +1204,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         folders = ["ExampleAllModulesPipeline", "Images"]
         aoi = "all_ones_image.tif"
         ooi = "one_object_00_A.tif"
-        maybe_download_example_images(folders, [aoi, ooi])
+        path = maybe_download_example_images(folders, [aoi, ooi])
+        aoi_path = os.path.join(path, aoi)
+        ooi_path = os.path.join(path, ooi)
         m = cpmeas.Measurements()
         pipeline = cpp.Pipeline()
         pipeline.init_modules()
@@ -1247,6 +1251,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             cbf_module.custom_output_directory.value = tempdir
             cbf_module.mappings[0].local_directory.value = current_path
             cbf_module.mappings[0].remote_directory.value = target_path
+            cbf_module.go_to_website.value = False
             pipeline.prepare_run(workspace)
             self.assertTrue(os.path.exists(batch_data_filename))
             #
@@ -1258,9 +1263,13 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             workspace.set_module(module)
             module.run(workspace)
             img = workspace.image_set.get_image(IMAGE_NAME)
-            self.assertEquals(tuple(img.pixel_data.shape), (20, 21))
+            target = load_image(aoi_path)
+            self.assertEquals(tuple(img.pixel_data.shape), 
+                              tuple(target.shape))
             objs = workspace.object_set.get_objects(OBJECTS_NAME)
-            self.assertEquals(objs.count, 1)
+            target = load_image(ooi_path, rescale = False)
+            n_objects = np.max(target)
+            self.assertEquals(objs.count, n_objects)
         finally:
             import gc
             gc.collect()
@@ -1418,27 +1427,32 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         return workspace
         
     def test_03_01_load_color(self):
+        shape = (21, 31, 3)
         path = maybe_download_example_image(
-            ["ExampleColorToGray"], "AS_09125_050116030001_D03f00_color.tif")
+            ["ExampleColorToGray"], "nt_03_01_color.tif", shape)
+        with open(path, "rb") as fd:
+            md5 = hashlib.md5(fd.read()).hexdigest()
         workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, (512, 512, 3))
+        self.assertSequenceEqual(pixel_data.shape, shape)
         self.assertTrue(np.all(pixel_data >= 0))
         self.assertTrue(np.all(pixel_data <= 1))
         m = workspace.measurements
-        self.assertEqual(m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + IMAGE_NAME],
-                         "16729de931dc40f5ca19621598a3e7d6")
-        self.assertEqual(m[cpmeas.IMAGE, C_HEIGHT + "_" + IMAGE_NAME], 512)
-        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + IMAGE_NAME], 512)
+        self.assertEqual(
+            m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + IMAGE_NAME], md5)
+        self.assertEqual(m[cpmeas.IMAGE, C_HEIGHT + "_" + IMAGE_NAME], 21)
+        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + IMAGE_NAME], 31)
         
         
     def test_03_02_load_monochrome_as_color(self):
         path = self.get_monochrome_image_path()
+        target = load_image(path)
+        target_shape = (target.shape[0], target.shape[1], 3)
         workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, (512, 512, 3))
+        self.assertSequenceEqual(pixel_data.shape, target_shape)
         self.assertTrue(np.all(pixel_data >= 0))
         self.assertTrue(np.all(pixel_data <= 1))
         np.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 1])
@@ -1463,20 +1477,22 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     
     def test_03_04_load_monochrome(self):
         path = self.get_monochrome_image_path()
+        target = load_image(path)
         workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, (512, 512))
+        self.assertSequenceEqual(pixel_data.shape, target.shape)
         self.assertTrue(np.all(pixel_data >= 0))
         self.assertTrue(np.all(pixel_data <= 1))
 
     def test_03_05_load_color_as_monochrome(self):
+        shape = (21, 31, 3)
         path = maybe_download_example_image(
-            ["ExampleGrayToColor"], "AS_09125_050116030001_D03f00d0.tif")
+            ["ExampleColorToGray"], "nt_03_05_color.tif", shape)
         workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, (512, 512))
+        self.assertSequenceEqual(pixel_data.shape, shape[:2])
         self.assertTrue(np.all(pixel_data >= 0))
         self.assertTrue(np.all(pixel_data <= 1))
         
@@ -1497,37 +1513,44 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     def test_03_07_load_raw(self):
         folder = "ExampleSpecklesImages"
         file_name = "1-162hrh2ax2.tif"
-        path = maybe_download_example_image([folder], file_name)
+        path = make_12_bit_image(folder, file_name, (34, 19))
         workspace = self.run_workspace(path, N.LOAD_AS_ILLUMINATION_FUNCTION)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, (1000, 1200))
+        self.assertSequenceEqual(pixel_data.shape, (34, 19))
         self.assertTrue(np.all(pixel_data >= 0))
         self.assertTrue(np.all(pixel_data <= 1. / 16.))
         
     def test_03_08_load_mask(self):
         path = maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif")
+        target = load_image(path)
         workspace = self.run_workspace(path, N.LOAD_AS_MASK)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, (640, 640))
-        self.assertEqual(np.sum(~pixel_data), 627)
+        self.assertSequenceEqual(pixel_data.shape, target.shape)
+        self.assertEqual(np.sum(~pixel_data), 
+                         np.sum(target == 0))
         
     def test_03_09_load_objects(self):
         path = maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif")
+        target = load_image(path, rescale=False)
+        with open(path, "rb") as fd:
+            md5 = hashlib.md5(fd.read()).hexdigest()
         workspace = self.run_workspace(path, N.LOAD_AS_OBJECTS)
         o = workspace.object_set.get_objects(OBJECTS_NAME)
         assert isinstance(o, N.cpo.Objects)
         areas = o.areas
-        self.assertEqual(areas[0], 9)
-        self.assertEqual(areas[1], 321)
-        self.assertEqual(areas[2], 2655)
+        counts = np.bincount(target.flatten())
+        self.assertEqual(areas[0], counts[1])
+        self.assertEqual(areas[1], counts[2])
+        self.assertEqual(areas[2], counts[3])
         m = workspace.measurements
-        self.assertEqual(m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + OBJECTS_NAME],
-                         "67880f6269fbf438d4b9c92256aa1d8f")
-        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + OBJECTS_NAME], 640)
+        self.assertEqual(
+            m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + OBJECTS_NAME], md5)
+        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + OBJECTS_NAME], 
+                         target.shape[1])
         outlines = workspace.image_set.get_image(OUTLINES_NAME)
         self.assertEqual(o.shape, outlines.pixel_data.shape)
         
@@ -1564,9 +1587,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         # Test all color/monochrome rescaled paths
         folder = "ExampleSpecklesImages"
         file_name = "1-162hrh2ax2.tif"
-        path = maybe_download_example_image([folder], file_name)
-        path = os.path.join(
-            example_images_directory(), folder, file_name)
+        path = make_12_bit_image(folder, file_name, (34, 19))
         for single in (True, False):
             for rescaled in (N.INTENSITY_RESCALING_BY_METADATA, 
                              N.INTENSITY_RESCALING_BY_DATATYPE,
@@ -1591,6 +1612,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             ["ExampleSBSImages"], "Channel1-01-A-01.tif")
         lsi_path = maybe_download_example_image(
             ["ExampleGrayToColor"], "AS_09125_050116030001_D03f00d0.tif")
+        target = load_image(lsi_path)
         workspace = self.run_workspace(
             path, N.LOAD_AS_COLOR_IMAGE, lsi= [{
                 "path":lsi_path,
@@ -1598,13 +1620,16 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                 "name":"lsi"}])
         image = workspace.image_set.get_image("lsi")
         pixel_data = image.pixel_data
-        self.assertSequenceEqual(pixel_data.shape, (512, 512))
+        self.assertSequenceEqual(pixel_data.shape, target.shape)
         
     def test_03_13_load_single_object(self):
         path = maybe_download_example_image(
             ["ExampleSBSImages"], "Channel1-01-A-01.tif")
         lsi_path = maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif")
+        target = load_image(lsi_path, rescale=False)
+        with open(lsi_path, "rb") as fd:
+            md5 = hashlib.md5(fd.read()).hexdigest()
         workspace = self.run_workspace(
             path, N.LOAD_AS_GRAYSCALE_IMAGE, lsi= [{
                 "path":lsi_path,
@@ -1614,14 +1639,15 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             }])
         o = workspace.object_set.get_objects("lsi")
         assert isinstance(o, N.cpo.Objects)
+        counts = np.bincount(target.flatten())
         areas = o.areas
-        self.assertEqual(areas[0], 9)
-        self.assertEqual(areas[1], 321)
-        self.assertEqual(areas[2], 2655)
+        self.assertEqual(areas[0], counts[1])
+        self.assertEqual(areas[1], counts[2])
+        self.assertEqual(areas[2], counts[3])
         m = workspace.measurements
-        self.assertEqual(m[cpmeas.IMAGE, C_MD5_DIGEST + "_lsi"],
-                         "67880f6269fbf438d4b9c92256aa1d8f")
-        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_lsi"], 640)
+        self.assertEqual(
+            m[cpmeas.IMAGE, C_MD5_DIGEST + "_lsi"], md5)
+        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_lsi"], target.shape[1])
         outlines = workspace.image_set.get_image("lsi_outlines")
         self.assertEqual(o.shape, outlines.pixel_data.shape)
                

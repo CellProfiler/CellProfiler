@@ -402,11 +402,10 @@ class LoadSingleImage(cpm.CPModule):
                 image_name, pathname, filename, rescale)
             image = provider.provide_image(image_set)
             pixel_data = image.pixel_data
-            digest = hashlib.md5()
             if wants_images:
-                digest.update(np.ascontiguousarray(pixel_data).data)
+                md5 = provider.get_md5_hash(m)
                 m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)), 
-                                        digest.hexdigest())
+                                        md5)
                 m.add_image_measurement("_".join((C_SCALING, image_name)),
                                          image.scale)
                 m.add_image_measurement("_".join((C_HEIGHT, image_name)),

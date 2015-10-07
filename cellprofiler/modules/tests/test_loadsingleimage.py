@@ -36,7 +36,7 @@ import cellprofiler.modules.loadimages as LI
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_example_image, \
-     maybe_download_example_images, maybe_download_sbs
+     maybe_download_example_images, maybe_download_sbs, make_12_bit_image
 from cellprofiler.modules.tests.test_loadimages import ConvtesterMixin
 
 
@@ -44,6 +44,17 @@ OBJECTS_NAME = "myobjects"
 OUTLINES_NAME = "myoutlines"
 
 class TestLoadSingleImage(unittest.TestCase, ConvtesterMixin):
+    @classmethod
+    def setUpClass(cls):
+        maybe_download_sbs()
+        cls.test_filename = "1-162hrh2ax2.tif"
+        cls.test_folder = "loadsingleimage"
+        cls.test_shape = (27, 18)
+        path = make_12_bit_image(cls.test_folder, cls.test_filename, (27, 18))
+        cls.test_path = os.path.dirname(path)
+        with open(path, "rb") as fd:
+            cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
+
         
     def test_01_00_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -338,11 +349,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         return workspace, module
     
     def test_02_01_load_one(self):
-        folder = "ExampleSpecklesImages"
-        file_name = "1-162hrh2ax2.tif"
-        path = os.path.dirname(
-            maybe_download_example_image([folder], file_name))
-        cpprefs.set_default_image_directory(path)
+        folder = self.test_folder
+        file_name = self.test_filename
+        cpprefs.set_default_image_directory(self.test_path)
         workspace, module = self.make_workspace([file_name])
         assert isinstance(module, L.LoadSingleImage)
         module.prepare_run(workspace)
@@ -350,31 +359,31 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         self.assertEqual(m.image_set_count, 1)
-        f = m.get_all_measurements(cpmeas.IMAGE, 
-                                   "_".join((L.C_FILE_NAME, self.get_image_name(0))))
+        f = m.get_all_measurements(
+            cpmeas.IMAGE, 
+            "_".join((L.C_FILE_NAME, self.get_image_name(0))))
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0], file_name)
-        p = m.get_all_measurements(cpmeas.IMAGE, 
-                                   "_".join((L.C_PATH_NAME, self.get_image_name(0))))
+        p = m.get_all_measurements(
+            cpmeas.IMAGE, 
+            "_".join((L.C_PATH_NAME, self.get_image_name(0))))
         self.assertEqual(len(p), 1)
-        self.assertEqual(p[0], path)
-        s = m.get_all_measurements(cpmeas.IMAGE,
-                                   "_".join((L.C_SCALING, self.get_image_name(0))))
+        self.assertEqual(p[0], self.test_path)
+        s = m.get_all_measurements(
+            cpmeas.IMAGE,
+            "_".join((L.C_SCALING, self.get_image_name(0))))
         self.assertEqual(len(s), 1)
         self.assertEqual(s[0], 4095)
-        md = m.get_all_measurements(cpmeas.IMAGE,
-                                   "_".join((L.C_MD5_DIGEST, self.get_image_name(0))))
+        md = m.get_all_measurements(
+            cpmeas.IMAGE,
+            "_".join((L.C_MD5_DIGEST, self.get_image_name(0))))
         self.assertEqual(len(md), 1)
-        md5 = hashlib.md5()
-        image = workspace.image_set.get_image(self.get_image_name(0))
-        md5.update(np.ascontiguousarray(image.pixel_data).data)
-        self.assertEqual(md5.hexdigest(), md[0])
+        self.assertEqual(self.test_md5, md[0])
         
     def test_02_02_scale(self):
         '''Load an image twice, as scaled and unscaled'''
-        folder = "ExampleSpecklesImages"
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
-        path = maybe_download_example_images([folder], file_names)
+        path = self.test_path
         cpprefs.set_default_image_directory(path)
         workspace, module = self.make_workspace(file_names)
         self.assertTrue(isinstance(module, L.LoadSingleImage))
@@ -431,7 +440,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         # Can we retrieve the image?
         #
         pixel_data = m.get_image(self.get_image_name(0)).pixel_data
-        self.assertEqual(tuple(pixel_data.shape), (640, 640))
+        self.assertFalse(np.isscalar(pixel_data))
         
     def test_03_01_measurement_columns(self):
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]

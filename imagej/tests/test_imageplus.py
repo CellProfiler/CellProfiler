@@ -16,6 +16,7 @@ __version__ = "$Revision$"
 import os
 import unittest
 
+from bioformats import load_image
 import javabridge as J
 import imagej.imageplus as I
 
@@ -84,13 +85,15 @@ class TestImagePlus(unittest.TestCase):
         file_name = os.path.join(
             self.root_dir, "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
-        self.assertEqual(ip.getWidth(), 640)
+        target = load_image(file_name)
+        self.assertEqual(ip.getWidth(), target.shape[1])
         
     def test_01_08_get_height(self):
         file_name = os.path.join(
             self.root_dir, "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
-        self.assertEqual(ip.getHeight(), 640)
+        target = load_image(file_name)
+        self.assertEqual(ip.getHeight(), target.shape[0])
         
     def test_01_09_get_nframes(self):
         file_name = os.path.join(

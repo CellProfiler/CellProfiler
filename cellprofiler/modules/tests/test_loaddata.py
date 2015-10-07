@@ -12,6 +12,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
+from bioformats import load_image
 import base64
 import numpy as np
 import os
@@ -38,7 +39,7 @@ import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.tests import \
      example_images_directory, testimages_directory, maybe_download_sbs,\
-     maybe_download_example_image, maybe_download_test_image
+     maybe_download_example_image, maybe_download_test_image, make_12_bit_image
 from bioformats.formatreader import clear_image_reader_cache
 
 OBJECTS_NAME = "objects"
@@ -47,6 +48,16 @@ class TestLoadData(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         maybe_download_sbs()
+        cls.test_folder = "loaddata"
+        cls.test_path = os.path.join(
+            example_images_directory(), cls.test_folder)
+        cls.test_filename = "image.tif"
+        cls.test_shape = (13, 15)
+        path = maybe_download_example_image([cls.test_folder], 
+                                            cls.test_filename,
+                                            shape=cls.test_shape)
+        with open(path, "rb") as fd:
+            cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
         
     def make_pipeline(self, csv_text, name = None):
         if name is None:
@@ -378,18 +389,16 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             self.assertEqual(value, expected)
 
     def test_04_01_load_file(self):
-        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
-        file_name = 'Channel2-01-A-01.tif'
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
-'''%(file_name, dir)
+'''%(self.test_filename, self.test_path)
         pipeline, module, filename = self.make_pipeline(csv_text)
         c0_ran = [False]
         def callback(workspace):
             imgset = workspace.image_set
             image = imgset.get_image("DNA")
             pixels = image.pixel_data
-            self.assertEqual(pixels.shape[0],640)
+            self.assertEqual(pixels.shape[0], self.test_shape[0])
             c0_ran[0] = True
             
         c0 = C0()
@@ -402,21 +411,20 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             self.assertTrue(c0_ran[0])
             hexdigest = m.get_current_image_measurement('MD5Digest_DNA')
-            self.assertEqual(hexdigest, "67880f6269fbf438d4b9c92256aa1d8f")
+            self.assertEqual(hexdigest, self.test_md5)
             self.assertTrue('PathName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DNA'),
-                             dir)
+                             self.test_path)
             self.assertTrue('FileName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('FileName_DNA'),
-                             file_name)
+                             self.test_filename)
         finally:
             os.remove(filename)
     
     def test_04_02_dont_load_file(self):
-        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
-"Channel2-01-A-01.tif","%s"
-'''%(dir)
+"%s","%s"
+'''%(self.test_filename, self.test_path)
         pipeline, module, filename = self.make_pipeline(csv_text)
         c0_ran = [False]
         def callback(workspace):
@@ -684,8 +692,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                 self.assertEqual(row, match.group("ROW"))
                 
     def test_09_01_load_bcb_file(self):
-        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
-        file_name = 'Channel2-01-A-01.tif'
+
         csv_text = '''ELN_RUN_ID,CBIP_RUN_ID,ASSAY_PLATE_BARCODE,\
 MX_PLATE_ID,ASSAY_WELL_POSITION,ASSAY_WELL_ROLE,SITE_X,SITE_Y,\
 MICROSCOPE,SOURCE_DESCRIPTION,DATE_CREATED,FILE_PATH,FILE_NAME,\
@@ -696,14 +703,14 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 "%s","C-4012-00-D80-001_Rev3","N01",\
 "BRD-K71194192-001-01-6","2.132352941","ChemBridge","",\
 "Oc1ccnc(SCC(=O)Nc2ccc(Oc3ccccc3)cc2)n1"
-'''%(dir,file_name)
+'''%(self.test_path, self.test_filename)
         pipeline, module, filename = self.make_pipeline(csv_text)
         c0_ran = [False]
         def callback(workspace):
             imgset = workspace.image_set
             image = imgset.get_image("DAPI")
             pixels = image.pixel_data
-            self.assertEqual(pixels.shape[0],640)
+            self.assertEqual(pixels.shape[0], self.test_shape[0])
             c0_ran[0] = True    
         c0 = C0()
         c0.callback = callback
@@ -715,21 +722,21 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             self.assertTrue(c0_ran[0])
             hexdigest = m.get_current_image_measurement('MD5Digest_DAPI')
-            self.assertEqual(hexdigest, "67880f6269fbf438d4b9c92256aa1d8f")
+            self.assertEqual(hexdigest, self.test_md5)
             self.assertTrue('PathName_DAPI' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DAPI'),
-                             dir)
+                             self.test_path)
             self.assertTrue('FileName_DAPI' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('FileName_DAPI'),
-                             file_name)
+                             self.test_filename)
         finally:
             os.remove(filename)
             
     def test_10_01_scaling(self):
         '''Test loading an image scaled and unscaled'''
-        folder = "ExampleSpecklesImages"
+        folder = "loaddata"
         file_name = "1-162hrh2ax2.tif"
-        path = maybe_download_example_image([folder], file_name)
+        path = make_12_bit_image(folder, file_name, (22, 18))
         csv_text = ("Image_PathName_MyFile,Image_FileName_MyFile\n"
                     "%s,%s\n" % os.path.split(path))
         c0_image = []
@@ -870,29 +877,28 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         #
         # Load a file, only specifying the FileName in the CSV
         #
-        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
-        file_name = 'Channel2-01-A-01.tif'
         csv_text = '''"Image_FileName_DNA"
 "%s"
-'''% file_name
+'''% self.test_filename
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
         module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
-        module.image_directory.custom_path = dir
-        m = cpmeas.Measurements(mode="memory")
+        module.image_directory.custom_path = self.test_path
+        m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
                                   m, cpi.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
-                         file_name)
+                         self.test_filename)
         path = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
-        self.assertEqual(path, dir)
-        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
-                         L.pathname2url(os.path.join(dir, file_name)))
+        self.assertEqual(path, self.test_path)
+        self.assertEqual(
+            m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
+            L.pathname2url(os.path.join(self.test_path, self.test_filename)))
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
-        self.assertEqual(tuple(img.pixel_data.shape), (640, 640))
+        self.assertEqual(tuple(img.pixel_data.shape), self.test_shape)
         
     def test_13_02_load_url(self):
         #
@@ -1015,30 +1021,28 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
     def test_13_06_load_default_input_folder(self):
         # Regression test of issue #1365 - load a file from the default
         # input folder and check that PathName_xxx is absolute
-        path = maybe_download_sbs()
-        root_dir, path_name = os.path.split(path)
-        file_name = 'Channel2-01-A-01.tif'
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"\n"%s","%s"''' \
-            % (file_name, path_name)
+            % (self.test_filename, self.test_path)
         pipeline, module, filename = self.make_pipeline(csv_text)
         try:
             assert isinstance(module, L.LoadData)
             module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
-            module.image_directory.custom_path = root_dir
-            m = cpmeas.Measurements(mode="memory")
+            module.image_directory.custom_path = self.test_path
+            m = cpmeas.Measurements()
             workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
                                       m, cpi.ImageSetList())
             self.assertTrue(module.prepare_run(workspace))
             self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
-                             file_name)
+                             self.test_filename)
             path_out = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
-            self.assertEqual(path, path_out)
-            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
-                             L.pathname2url(os.path.join(path, file_name)))
+            self.assertEqual(self.test_path, path_out)
+            self.assertEqual(
+                m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
+                L.pathname2url(os.path.join(self.test_path, self.test_filename)))
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
-            self.assertEqual(tuple(img.pixel_data.shape), (640, 640))
+            self.assertEqual(tuple(img.pixel_data.shape), self.test_shape)
         finally:
             os.remove(filename)
         

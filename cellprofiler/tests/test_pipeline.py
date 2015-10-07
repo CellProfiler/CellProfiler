@@ -27,6 +27,7 @@ import pstats
 import os
 import sys
 import traceback
+from urllib2 import urlopen
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo
@@ -915,7 +916,14 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         #Might be better to write these paths into the pipeline
         old_image_dir = cpprefs.get_default_image_directory()
         cpprefs.set_default_image_directory(pipeline_dir)
-        profile_pipeline(pipeline_filename)
+        fd = urlopen(
+            "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe")
+        build_dir = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            "build")
+        if not os.path.isdir(build_dir):
+            os.makedirs(build_dir)
+        profile_pipeline(fd, output_filename=os.path.join(build_dir, "profile.txt"))
         cpprefs.set_default_image_directory(old_image_dir)
 
     def test_16_00_get_provider_dictionary_nothing(self):

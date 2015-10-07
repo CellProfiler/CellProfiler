@@ -869,7 +869,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         x = pipeline.modules()[0]
         self.assertTrue(isinstance(x, ID.IdentifyPrimaryObjects))
         
-        img = fly_image()[300:600,300:600]
+        img = fly_image()
         image = cpi.Image(img)
         #
         # Make sure it runs both regular and with reduced image
@@ -2299,18 +2299,13 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.object_fraction.value = '0.10'
         local_threshold,threshold = x.get_threshold(
             cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.036)
-        self.assertTrue(threshold < 0.040)
-        x.object_fraction.value = '0.20'
-        local_threshold,threshold = x.get_threshold(
-            cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.0084)
-        self.assertTrue(threshold < 0.0088)
+        self.assertTrue(threshold > 0.040)
+        self.assertTrue(threshold < 0.050)
         x.object_fraction.value = '0.50'
         local_threshold,threshold = x.get_threshold(
             cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.0082)
-        self.assertTrue(threshold < 0.0086)
+        self.assertTrue(threshold > 0.0085)
+        self.assertTrue(threshold < 0.0090)
     
     def test_10_02_test_background_fly(self):
         image = fly_image()
@@ -2319,8 +2314,8 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold_scope.value = I.TS_GLOBAL
         local_threshold,threshold = x.get_threshold(
             cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.030)
-        self.assertTrue(threshold < 0.032)
+        self.assertTrue(threshold > 0.020)
+        self.assertTrue(threshold < 0.025)
         
     def test_10_03_test_background_mog(self):
         '''Test the background method with a mixture of gaussian distributions'''
@@ -2348,8 +2343,8 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold_method.value = T.TM_ROBUST_BACKGROUND
         local_threshold,threshold = x.get_threshold(
             cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.054)
-        self.assertTrue(threshold < 0.056)
+        self.assertTrue(threshold > 0.09)
+        self.assertTrue(threshold < 0.095)
         
     def test_12_01_test_ridler_calvard_background_fly(self):
         image = fly_image()
@@ -2358,8 +2353,8 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         x.threshold_method.value = T.TM_RIDLER_CALVARD
         local_threshold,threshold = x.get_threshold(
             cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.017)
-        self.assertTrue(threshold < 0.019)
+        self.assertTrue(threshold > 0.015)
+        self.assertTrue(threshold < 0.020)
         
         
     def test_13_01_test_kapur_background_fly(self):
@@ -2868,7 +2863,9 @@ def two_cell_image():
     return add_noise(img,.01)
 
 def fly_image():
-    return read_example_image('ExampleFlyImages','01_POS002_D.TIF')
+    from bioformats import load_image
+    path = os.path.join(os.path.dirname(__file__), '01_POS002_D.TIF')
+    return load_image(path)
     
 def draw_circle(img,center,radius,value):
     x,y=np.mgrid[0:img.shape[0],0:img.shape[1]]

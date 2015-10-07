@@ -100,7 +100,6 @@ ID_DEBUG_CHOOSE_GROUP = wx.NewId()
 ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
 ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewId()
 ID_DEBUG_RELOAD = wx.NewId()
-ID_DEBUG_NUMPY = wx.NewId()
 ID_DEBUG_PDB = wx.NewId()
 ID_DEBUG_VIEW_WORKSPACE = wx.NewId()
 
@@ -654,7 +653,6 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Append(ID_DEBUG_VIEW_WORKSPACE, "View Workspace","Show the workspace viewer")
         if not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
-            self.__menu_debug.Append(ID_DEBUG_NUMPY, "Numpy Memory Usage...")
             self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")
             #
             # Lee wants the wx debugger
@@ -748,7 +746,6 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
-        wx.EVT_MENU(self, ID_DEBUG_NUMPY, self.__debug_numpy_references)
         wx.EVT_MENU(self, ID_DEBUG_PDB, self.__debug_pdb)
         accelerator_table = wx.AcceleratorTable(
             [(wx.ACCEL_CMD, ord('N'), ID_FILE_ANALYZE_IMAGES),
@@ -1101,19 +1098,6 @@ class CPFrame(wx.Frame):
             wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED, 
                           "No module selected",
                           style=wx.OK|wx.ICON_INFORMATION)
-
-    def __debug_numpy_references(self, event):
-        try:
-            import contrib.objgraph as objgraph
-            numpyobj = [(o, objgraph.numpy_size(o)) for o in objgraph.by_instanceof(objgraph.numpyarray)]
-            numpyobj = [o for o, sz in numpyobj if (sz is None) or (sz > 1024)]
-            objgraph.show_backrefs(numpyobj, max_depth=4,
-                                   filename=os.path.join(cpprefs.get_default_output_directory(),
-                                                         'cellprofiler_numpy.dot'))
-        except Exception, e:
-            print "Couldn't generate objgraph: %s"%(e)
-            import pdb
-            pdb.post_mortem(sys.exc_traceback)
 
     def __debug_pdb(self, event):
         pdb.set_trace()

@@ -11,9 +11,11 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
+import os
 import sys
 import tempfile
 import traceback
+from urllib2 import urlopen
 import unittest
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_sbs, maybe_download_fly
@@ -67,68 +69,46 @@ class TestNoWX(unittest.TestCase):
                 print "Module %s probably imports wx" % name
                 traceback.print_exc()
                 
+    fly_url = "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
+    
     def test_01_05_load_pipeline(self):
         import cellprofiler.pipeline as cpp
         import os
-        maybe_download_sbs()
-        pipeline_file = os.path.join(self.example_dir(), 
-                                     "ExampleSBSImages", "ExampleSBS.cppipe")
-        self.assertTrue(os.path.isfile(pipeline_file), "No ExampleSBS.cppipe file")
-        pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
-        pipeline.load(pipeline_file)
+        fd = urlopen(self.fly_url)
+        pipeline.load(fd)
+        fd.close()
         
     def test_01_06_run_pipeline(self):
         import cellprofiler.pipeline as cpp
         import cellprofiler.cpmodule as cpm
-        import os
         from cellprofiler.preferences import \
              set_default_image_directory, set_default_output_directory
-        maybe_download_fly()
-        example_fly_dir = os.path.join(self.example_dir(), 
-                                       "ExampleFlyImages")
-        set_default_image_directory(example_fly_dir)
-        output_dir = tempfile.mkdtemp()
-        set_default_output_directory(output_dir)
-        try:
-            pipeline_file = os.path.join(example_fly_dir, "ExampleFlyURL.cppipe")
-            if not os.path.exists(pipeline_file):
-                pipeline_file = os.path.join(example_fly_dir, "ExampleFly.cp")
-            pipeline = cpp.Pipeline()
-            def callback(caller, event):
-                self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
-                                                    cpp.RunExceptionEvent)))
-            pipeline.add_listener(callback)
-            pipeline.load(pipeline_file)
-            while True:
-                removed_something = False
-                for module in reversed(pipeline.modules()):
-                    self.assertTrue(isinstance(module, cpm.CPModule))
-                    if module.module_name in ("SaveImages", 
-                                              "CalculateStatistics",
-                                              "ExportToSpreadsheet",
-                                              "ExportToDatabase"):
-                        pipeline.remove_module(module.module_num)
-                        removed_something = True
-                        break
-                if not removed_something:
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, (cpp.LoadExceptionEvent,
+                                                cpp.RunExceptionEvent)))
+        pipeline = cpp.Pipeline()
+        pipeline.add_listener(callback)
+        fd = urlopen(self.fly_url)
+        pipeline.load(fd)
+        fd.close()
+        while True:
+            removed_something = False
+            for module in reversed(pipeline.modules()):
+                self.assertTrue(isinstance(module, cpm.CPModule))
+                if module.module_name in ("SaveImages", 
+                                          "CalculateStatistics",
+                                          "ExportToSpreadsheet",
+                                          "ExportToDatabase"):
+                    pipeline.remove_module(module.module_num)
+                    removed_something = True
                     break
-            for module in pipeline.modules():
-                module.show_window = False
-            m = pipeline.run(image_set_end = 1)
-            del m
-        finally:
-            for file_name in os.listdir(output_dir):
-                try:
-                    os.remove(os.path.join(output_dir, file_name))
-                except Exception, e:
-                    print "Failed to remove %s" % os.path.join(output_dir, file_name), e
-                    traceback.print_exc()
-            try:
-                os.rmdir(output_dir)
-            except:
-                print "Failed to remove %s" % output_dir
-                traceback.print_exc()
+            if not removed_something:
+                break
+        for module in pipeline.modules():
+            module.show_window = False
+        m = pipeline.run(image_set_end = 1)
         

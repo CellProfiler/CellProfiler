@@ -549,7 +549,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertItemsEqual(d.keys(), 
                               ['vmax', 'output_image_pixel_data', 
                                'image_pixel_data', 'vmin'])
-        self.assertSequenceEqual(d['output_image_pixel_data'].shape, (640, 640))
+        self.assertIsInstance(d['output_image_pixel_data'], np.ndarray)
         req.reply(cpanalysis.Ack())
         #
         # The worker sends ImageSetSuccessWithDictionary.
@@ -900,7 +900,7 @@ FlagImage:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
     Flag images based on low values?:No
     Minimum value:0.0
     Flag images based on high values?:Yes
-    Maximum value:100.0
+    Maximum value:1.0
     Rules file location:Elsewhere...\x7C
     Rules file name:rules.txt
     Class number:

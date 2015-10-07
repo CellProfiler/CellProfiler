@@ -39,7 +39,7 @@ import cellprofiler.workspace as W
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_example_images, \
      maybe_download_sbs, maybe_download_test_image, maybe_download_fly,\
-     example_images_url
+     example_images_url, make_12_bit_image
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 import cellprofiler.preferences as cpprefs
 from bioformats.omexml import PT_UINT8
@@ -72,11 +72,11 @@ class ConvtesterMixin:
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(callback)
         m = [m for m in pipeline.modules() if isinstance(m, LI.LoadImages)][0]
-        m1 = measurements.Measurements(mode="memory")
+        m1 = measurements.Measurements()
         w1 = W.Workspace(pipeline, m, m1, None, m1, None)
         pipeline.prepare_run(w1)
         
-        m2 = measurements.Measurements(mode="memory")
+        m2 = measurements.Measurements()
         w2 = W.Workspace(pipeline, m, m2, None, m2, None)
         urls = [LI.pathname2url(os.path.join(directory, filename))
                  for filename in os.listdir(directory)
@@ -2747,6 +2747,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 
     def test_10_01_load_unscaled(self):
         '''Load a image with and without rescaling'''
+        make_12_bit_image('ExampleSpecklesImages', '1-162hrh2ax2.tif', (21,31))
         path = os.path.join(example_images_directory(), 
                             "ExampleSpecklesImages")
         module = LI.LoadImages()
@@ -2793,39 +2794,6 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         np.testing.assert_almost_equal(pixel_data * 65535.0 / 4095.0 , 
                                        image.pixel_data)
         
-    def test_11_01_load_many(self):
-        '''Load an image many times to ensure that memory is freed each time'''
-        path = os.path.join(example_images_directory(), "ExampleSBSImages")
-        for i in range(3):
-            module = LI.LoadImages()
-            module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-            module.images[0].common_text.value = 'Channel1-'
-            module.images[0].channels[0].image_name.value = 'MyImage'
-            module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-            module.location.custom_path = path
-            module.module_num = 1
-            pipeline = P.Pipeline()
-            pipeline.add_module(module)
-            pipeline.add_listener(self.error_callback)
-            image_set_list = I.ImageSetList()
-            m = measurements.Measurements(True)
-            workspace = W.Workspace(pipeline, module, None, None, m,
-                                    image_set_list)
-            module.prepare_run(workspace)
-            module.prepare_group(workspace, (), np.arange(96))
-            for j in range(96):
-                image_set = image_set_list.get_image_set(j)
-                workspace = W.Workspace(pipeline, module, image_set,
-                                        cpo.ObjectSet(), m,
-                                        image_set_list)
-                module.run(workspace)
-                self.assertTrue('MyImage' in image_set.get_names())
-                image = image_set.get_image('MyImage')
-                self.assertEqual(image.pixel_data.shape[0], 640)
-                self.assertEqual(image.pixel_data.shape[1], 640)
-                image_set_list.purge_image_set(j)
-                gc.collect()
-    
     def make_objects_workspace(self, image, mode = "L", filename="myfile.tif"):
         directory = tempfile.mkdtemp()
         self.directory = directory

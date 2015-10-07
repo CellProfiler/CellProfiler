@@ -102,21 +102,17 @@ class TestCellProfiler(unittest.TestCase):
             #
             # Run with a .cp file
             #
-            input_directory = maybe_download_example_images(
-                ["ExampleHT29"],
-                ['AS_09125_050116030001_D03f00d0.tif', 
-                 'AS_09125_050116030001_D03f00d1.tif', 
-                 'AS_09125_050116030001_D03f00d2.tif', 
-                 'ExampleHT29.cp', 'k27IllumCorrControlv1.mat'])
-            pipeline_file = os.path.join(input_directory, "ExampleHT29.cp")
+            fly_pipe = \
+                "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
             self.run_cellprofiler("-c", "-r", 
-                                  "-i", input_directory,
                                   "-o", output_directory,
-                                  "-p", pipeline_file,
+                                  "-p", fly_pipe,
                                   "-d", done_file,
                                   "-t", temp_directory,
+                                  "-f", "1",
+                                  "-l", "1",
                                   measurements_file)
             import cellprofiler.preferences as cpprefs
             self.assertTrue(os.path.exists(measurements_file))
@@ -126,8 +122,9 @@ class TestCellProfiler(unittest.TestCase):
             #
             m2_file = os.path.join(output_directory, "M2.h5")
             self.run_cellprofiler("-c", "-r", 
-                                  "-i", input_directory,
                                   "-o", output_directory,
+                                  "-f", "1",
+                                  "-l", "1",
                                   "-p", measurements_file,
                                   m2_file)
             self.assertTrue(os.path.exists(m2_file))

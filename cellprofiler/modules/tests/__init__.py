@@ -14,6 +14,13 @@ Website: http://www.cellprofiler.org
 import logging
 logger = logging.getLogger(__name__)
 import base64
+from bioformats.formatwriter import write_image, convert_pixels_to_buffer
+from bioformats import PT_UINT8, PT_UINT16
+from bioformats import OMEXML
+from bioformats.omexml import DO_XYCZT, OM_SAMPLES_PER_PIXEL, OM_BITS_PER_SAMPLE
+import hashlib
+import javabridge
+import numpy as np
 import os
 import unittest
 from urllib import urlretrieve
@@ -137,7 +144,7 @@ def load_pipeline(test_case, encoded_data):
     pipeline.create_from_handles(handles)
     return pipeline
 
-def maybe_download_example_image(folders, file_name):
+def maybe_download_example_image(folders, file_name, shape=None):
     '''Download the given ExampleImages file if not in the directory
     
     folders - sequence of subfolders starting at ExampleImages
@@ -147,6 +154,8 @@ def maybe_download_example_image(folders, file_name):
     
     Returns the local path to the file which is often useful.
     '''
+    if shape is None:
+        shape = (20, 30)
     local_path = os.path.join(*tuple([
         example_images_directory()] + folders + [file_name]))
     if not os.path.exists(local_path):
@@ -154,10 +163,78 @@ def maybe_download_example_image(folders, file_name):
             example_images_directory()] + folders))
         if not os.path.isdir(directory):
             os.makedirs(directory)
-        url = example_images_url() + "/" + "/".join(folders) + "/" + file_name
-        urlretrieve(url, local_path)
+        r = np.random.RandomState()
+        r.seed(np.frombuffer(
+            hashlib.sha1("/".join(folders) + file_name).digest(),
+            np.uint8))
+        img = (r.uniform(size=shape) * 255).astype(np.uint8)
+        write_image(local_path, img, PT_UINT8)
     return local_path
+
+def make_12_bit_image(folder, filename, shape):
+    '''Create a 12-bit image of the desired shape
+    
+    folder - subfolder of example images directory
+    filename - filename for image file
+    shape - 2-tuple or 3-tuple of the dimensions of the image. The axis order
+            is i, j, c or y, x, c
+    '''
+    r = np.random.RandomState()
+    r.seed(np.frombuffer(
+        hashlib.sha1("/".join([folder, filename])).digest(),
+        np.uint8))
+    img = (r.uniform(size=shape) * 4095).astype(np.uint16)
+    path = os.path.join(example_images_directory(), folder, filename)
+    if not os.path.isdir(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+    
+    write_image(path, img, PT_UINT16)
+    #
+    # Now go through the file and find the TIF bits per sample IFD (#258) and
+    # change it from 16 to 12.
+    #
+    with open(path, "rb") as fd:
+        data = np.frombuffer(fd.read(), np.uint8).copy()
+    offset = np.frombuffer(data[4:8].data, np.uint32)[0]
+    nentries = np.frombuffer(data[offset:offset+2], np.uint16)[0]
+    ifds = []
+    # Get the IFDs we don't modify
+    for idx in range(nentries):
+        ifd = data[offset+2+idx*12:offset+14+idx*12]
+        code = ifd[0] + 256 * ifd[1]
+        if code not in (258, 281):
+            ifds.append(ifd)
+    ifds += [
+        # 12 bits/sample
+        np.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], np.uint8 ), 
+        # max value = 4095
+        np.array([25, 1, 3, 0, 1, 0, 0, 0, 255, 15, 0, 0], np.uint8)]
+    ifds = sorted(ifds, cmp = (lambda a, b: cmp(a.tolist(), b.tolist())))
+    old_end = offset + 2 + nentries * 12
+    new_end = offset + 2 + len(ifds) *12
+    diff = new_end-old_end
+    #
+    # Fix up the IFD offsets if greater than "offset"
+    #
+    for ifd in ifds:
+        count = np.frombuffer(ifd[4:8].data, np.uint32)[0]
+        if count > 4:
+            ifd_off = np.array(
+                [np.frombuffer(ifd[8:12].data, np.uint32)[0]]) + diff
+            if ifd_off > offset:
+                ifd[8:12] = np.frombuffer(ifd_off.data, np.uint8)
+    new_data = np.zeros(len(data)+diff, np.uint8)
+    new_data[:offset] = data[:offset]
+    new_data[offset] = len(ifds) % 256
+    new_data[offset+1] = int(len(ifds) / 256)
+    for idx, ifd in enumerate(ifds):
+        new_data[offset+2+idx*12:offset+14+idx*12] = ifd
+    new_data[new_end:] = data[old_end:]
         
+    with open(path, "wb") as fd:
+        fd.write(new_data.data)
+    return path
+
 def maybe_download_example_images(folders, file_names):
     '''Download multiple files to the example images directory
     
@@ -173,8 +250,7 @@ def maybe_download_example_images(folders, file_names):
         
 def maybe_download_sbs():
     '''Download the SBS dataset to its expected location if necessary'''
-    files = ["1049_Metadata.csv", "Channel1ILLUM.mat", "Channel2ILLUM.mat",
-             "ExampleSBS.cppipe", "ExampleSBSIllumination.cppipe"]
+    files = []
     for channel in 1,2:
         idx = 1
         for row in "ABCDEFGH":
@@ -182,7 +258,17 @@ def maybe_download_sbs():
                 files.append("Channel%d-%02d-%s-%02d.tif" % (
                     channel, idx, row, col))
                 idx += 1
-    return maybe_download_example_images(["ExampleSBSImages"], files)
+    
+    path = maybe_download_example_images(["ExampleSBSImages"], files)
+    #
+    # Create the matlab files
+    #
+    import scipy.io.matlab.mio
+    for filename in ["Channel1ILLUM.mat", "Channel2ILLUM.mat"]:
+        pixels = np.ones((20, 30))
+        scipy.io.matlab.mio.savemat(
+            os.path.join(path, filename), {"Image":pixels}, format='5')
+    return path
     
 def maybe_download_fly():
     '''Download the fly example directory'''
@@ -190,9 +276,9 @@ def maybe_download_fly():
         ["ExampleFlyImages"],
         ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF", 
          "01_POS076_D.TIF", "01_POS076_F.TIF", "01_POS076_R.TIF",
-         "01_POS218_D.TIF", "01_POS218_F.TIF", "01_POS218_R.TIF",
-         "ExampleFly.cppipe", "ExampleFly.csv", "ExampleFlyURL.cppipe"])
-    
+         "01_POS218_D.TIF", "01_POS218_F.TIF", "01_POS218_R.TIF"])
+
+@unittest.skip("Function has \"test\" in its name")
 def maybe_download_test_image( file_name):
     '''Download the given TestImages file if not in the directory
     
@@ -220,7 +306,7 @@ def read_example_image(folder, file_name, **kwargs):
     maybe_download_example_image([folder], file_name)
     return load_image(path, **kwargs)
 
-@unittest.skip
+@unittest.skip("Function has \"test\" in its name")
 def read_test_image(file_name, **kwargs):
     '''Read an image from the test directory
     

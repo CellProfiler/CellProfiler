@@ -40,7 +40,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
-from cellprofiler.cpmath.filter import stretch
+from centrosome.filter import stretch
 
 M_MUTUAL_INFORMATION = 'Mutual Information'
 M_CROSS_CORRELATION = 'Normalized Cross Correlation'

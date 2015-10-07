@@ -23,7 +23,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.straightenworms as S
 import cellprofiler.modules.identify as I
-import cellprofiler.cpmath.cpmorphology as morph
+import centrosome.cpmorphology as morph
 
 OBJECTS_NAME = "worms"
 STRAIGHTENED_OBJECTS_NAME = "straightenedworms"

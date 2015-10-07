@@ -73,18 +73,18 @@ import logging
 logger = logging.getLogger(__name__)
 import scipy.ndimage as scind
 from scipy.linalg.basic import lstsq
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.cpmath.threshold as cpthresh
-from cellprofiler.cpmath.haralick import Haralick
+import centrosome.threshold as cpthresh
+from centrosome.haralick import Haralick
 from cellprofiler.utilities import product
-import cellprofiler.cpmath.radial_power_spectrum as rps
+import centrosome.radial_power_spectrum as rps
 from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
 from identify import O_FOREGROUND, O_BACKGROUND
-from cellprofiler.cpmath.threshold import TM_MOG, TM_OTSU
+from centrosome.threshold import TM_MOG, TM_OTSU
 from loadimages import C_FILE_NAME, C_SCALING
 import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import \

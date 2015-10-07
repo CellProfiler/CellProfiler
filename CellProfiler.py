@@ -812,16 +812,12 @@ def run_ilastik():
 def build_extensions():
     '''Compile C and Cython files as needed'''
     import subprocess
-    import cellprofiler.cpmath.setup
     import cellprofiler.utilities.setup
     from distutils.dep_util import newer_group
     #
     # Check for dependencies and compile if necessary
     #
-    compile_scripts = [(os.path.join('cellprofiler', 'cpmath', 'setup.py'),
-                        cellprofiler.cpmath.setup),
-                       (os.path.join('cellprofiler', 'utilities', 'setup.py'),
-                        cellprofiler.utilities.setup)]
+    compile_scripts = [(os.path.join('cellprofiler', 'utilities', 'setup.py'), cellprofiler.utilities.setup)]
     env = os.environ.copy()
     old_pythonpath = os.getenv('PYTHONPATH', None)
 

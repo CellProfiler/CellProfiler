@@ -26,10 +26,10 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.cpimage as cpi
-from cellprofiler.cpmath.filter import laplacian_of_gaussian
-from cellprofiler.cpmath.filter import roberts, canny, sobel, hsobel, vsobel
-from cellprofiler.cpmath.filter import prewitt, hprewitt, vprewitt, stretch
-from cellprofiler.cpmath.otsu import otsu3
+from centrosome.filter import laplacian_of_gaussian
+from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
+from centrosome.filter import prewitt, hprewitt, vprewitt, stretch
+from centrosome.otsu import otsu3
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"

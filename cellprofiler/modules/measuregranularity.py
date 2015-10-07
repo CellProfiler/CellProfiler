@@ -49,8 +49,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmath.cpmorphology as morph
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+import centrosome.cpmorphology as morph
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 'Granularity category'
 C_GRANULARITY = "Granularity_%s_%s"

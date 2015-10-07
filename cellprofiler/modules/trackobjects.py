@@ -189,13 +189,13 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
-from cellprofiler.cpmath.lapjv import lapjv
-import cellprofiler.cpmath.filter as cpfilter
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.cpmorphology import centers_of_labels
-from cellprofiler.cpmath.cpmorphology import associate_by_distance
-from cellprofiler.cpmath.cpmorphology import all_connected_components
-from cellprofiler.cpmath.index import Indexes
+from centrosome.lapjv import lapjv
+import centrosome.filter as cpfilter
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import centers_of_labels
+from centrosome.cpmorphology import associate_by_distance
+from centrosome.cpmorphology import all_connected_components
+from centrosome.index import Indexes
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 

@@ -77,7 +77,7 @@ from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 
-import cellprofiler.cpmath.outline
+import centrosome.outline
 
 DIR_CUSTOM_FOLDER = "Custom folder"
 DIR_CUSTOM_WITH_METADATA = "Custom with metadata"
@@ -429,7 +429,7 @@ class LoadSingleImage(cpm.CPModule):
                 # Add outlines if appropriate
                 #
                 if file_setting.wants_outlines:
-                    outlines = cellprofiler.cpmath.outline.outline(labels)
+                    outlines = centrosome.outline.outline(labels)
                     outline_image = cpi.Image(outlines.astype(bool))
                     workspace.image_set.add(file_setting.outlines_name.value,
                                             outline_image)

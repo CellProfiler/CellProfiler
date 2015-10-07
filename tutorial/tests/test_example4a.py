@@ -8,7 +8,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
 from cellprofiler.modules import instantiate_module
-from cellprofiler.cpmath.cpmorphology import skeletonize_labels
+from centrosome.cpmorphology import skeletonize_labels
 
 MODULE_NAME = "Example4a"
 INPUT_OBJECTS_NAME = "inputobjects"

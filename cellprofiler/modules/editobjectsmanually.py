@@ -58,8 +58,8 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.workspace as cpw
-from cellprofiler.cpmath.outline import outline
-from cellprofiler.cpmath.cpmorphology import triangle_areas
+from centrosome.outline import outline
+from centrosome.cpmorphology import triangle_areas
 
 from cellprofiler.modules.loadimages import pathname2url
 import identify as I

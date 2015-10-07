@@ -16,9 +16,9 @@ import decorator
 import numpy as np
 from scipy.sparse import coo_matrix
 
-from cellprofiler.cpmath.cpmorphology import all_connected_components
-from cellprofiler.cpmath.outline import outline
-from cellprofiler.cpmath.index import Indexes, all_pairs
+from centrosome.cpmorphology import all_connected_components
+from centrosome.outline import outline
+from centrosome.index import Indexes, all_pairs
 
 OBJECT_TYPE_NAME = "objects"
 

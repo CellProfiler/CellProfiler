@@ -29,8 +29,8 @@ import cellprofiler.objects as cpo
 import cellprofiler.modules.smooth as S
 import cellprofiler.pipeline as cpp
 import cellprofiler.measurements as cpmeas
-from cellprofiler.cpmath.smooth import fit_polynomial, smooth_with_function_and_mask
-from cellprofiler.cpmath.filter import median_filter, bilateral_filter
+from centrosome.smooth import fit_polynomial, smooth_with_function_and_mask
+from centrosome.filter import median_filter, bilateral_filter
 
 INPUT_IMAGE_NAME = 'myimage'
 OUTPUT_IMAGE_NAME = 'myfilteredimage'

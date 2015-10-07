@@ -56,9 +56,9 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.cpmath.cpmorphology as morph
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-import cellprofiler.cpmath.propagate as propagate
+import centrosome.cpmorphology as morph
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+import centrosome.propagate as propagate
 import cellprofiler.preferences as cpprefs
 
 '''The measurement category'''

@@ -28,7 +28,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.cpmath.outline import outline
+from centrosome.outline import outline
 
 import cellprofiler.modules.untangleworms as U
 U.CAROLINAS_HACK = False

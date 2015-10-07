@@ -50,9 +50,9 @@ import numpy as np
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
-from cellprofiler.cpmath.cpmorphology import all_connected_components
-from cellprofiler.cpmath.cpmorphology import get_line_pts
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import all_connected_components
+from centrosome.cpmorphology import get_line_pts
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps

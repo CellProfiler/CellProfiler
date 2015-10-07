@@ -41,7 +41,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 import cellprofiler.modules.createbatchfiles as cpm_c
-from cellprofiler.cpmath.filter import stretch
+from centrosome.filter import stretch
 from bioformats import load_image_url, load_image, get_omexml_metadata
 
 import cellprofiler.modules.tests as cpmt

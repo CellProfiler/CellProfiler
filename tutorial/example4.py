@@ -7,14 +7,14 @@ import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 
 #
-# cellprofiler.cpmath.cpmorphology has many useful image processing algorithms.
+# centrosome.cpmorphology has many useful image processing algorithms.
 # 
 # skeletonize_labels performs the skeletonization (medial axis transform) for
 # each labeled object in a labels matrix. It can skeletonize thousands of
 # objects in an image almost as rapidly as skeletonizing a single object
 # of the same complexity.
 #
-from cellprofiler.cpmath.cpmorphology import skeletonize_labels
+from centrosome.cpmorphology import skeletonize_labels
 
 class Example4(cpm.CPModule):
     module_name = "Example4"

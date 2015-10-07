@@ -29,7 +29,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.measuregranularity as M
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 import sys
 print sys.path

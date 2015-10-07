@@ -29,9 +29,9 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.applythreshold as A
 import cellprofiler.modules.identify as I
-import cellprofiler.cpmath.threshold as T
-from cellprofiler.cpmath.filter import stretch
-from cellprofiler.cpmath.otsu import otsu, otsu3, entropy, entropy3
+import centrosome.threshold as T
+from centrosome.filter import stretch
+from centrosome.otsu import otsu, otsu3, entropy, entropy3
 
 INPUT_IMAGE_NAME = 'inputimage'
 OUTPUT_IMAGE_NAME = 'outputimage'

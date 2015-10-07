@@ -31,7 +31,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.identifyobjectsingrid as I
 import cellprofiler.modules.definegrid as D
-from cellprofiler.cpmath.outline import outline
+from centrosome.outline import outline
 
 OUTPUT_OBJECTS_NAME = 'outputobjects'
 GRID_NAME = 'mygrid'

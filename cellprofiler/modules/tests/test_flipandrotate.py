@@ -28,7 +28,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.flipandrotate as F
-from cellprofiler.cpmath.cpmorphology import draw_line
+from centrosome.cpmorphology import draw_line
 
 IMAGE_NAME = 'my_image'
 OUTPUT_IMAGE = 'my_output_image'

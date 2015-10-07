@@ -45,7 +45,7 @@ from cellprofiler.settings import YES, NO
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
-from cellprofiler.cpmath.filter import stretch
+from centrosome.filter import stretch
 
 logger = logging.getLogger(__name__)
 

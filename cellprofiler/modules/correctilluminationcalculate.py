@@ -38,15 +38,15 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.cpmath.cpmorphology as cpmm
-from cellprofiler.cpmath.smooth import smooth_with_function_and_mask
-from cellprofiler.cpmath.smooth import circular_gaussian_kernel
-from cellprofiler.cpmath.smooth import fit_polynomial
-from cellprofiler.cpmath.filter import median_filter, convex_hull_transform
-from cellprofiler.cpmath.cpmorphology import grey_erosion, grey_dilation
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
-from cellprofiler.cpmath.bg_compensate import MODE_DARK, MODE_GRAY
+import centrosome.cpmorphology as cpmm
+from centrosome.smooth import smooth_with_function_and_mask
+from centrosome.smooth import circular_gaussian_kernel
+from centrosome.smooth import fit_polynomial
+from centrosome.filter import median_filter, convex_hull_transform
+from centrosome.cpmorphology import grey_erosion, grey_dilation
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
+from centrosome.bg_compensate import MODE_DARK, MODE_GRAY
 
 IC_REGULAR         = "Regular"
 IC_BACKGROUND      = "Background"

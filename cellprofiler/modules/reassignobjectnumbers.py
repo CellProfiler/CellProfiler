@@ -58,9 +58,9 @@ from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import C_PARENT, C_CHILDREN
 from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
-import cellprofiler.cpmath.cpmorphology as morph
-from cellprofiler.cpmath.filter import stretch
-import cellprofiler.cpmath.outline
+import centrosome.cpmorphology as morph
+from centrosome.filter import stretch
+import centrosome.outline
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 OPTION_UNIFY = "Unify"
@@ -334,7 +334,7 @@ class ReassignObjectNumbers(cpm.CPModule):
                                      FF_PARENT%self.objects_name.value,
                                      parents_of_children)
         if self.wants_outlines:
-            outlines = cellprofiler.cpmath.outline.outline(output_labels)
+            outlines = centrosome.outline.outline(output_labels)
             outline_image = cpi.Image(outlines.astype(bool))
             workspace.image_set.add(self.outlines_name.value,
                                     outline_image)

@@ -3,7 +3,7 @@ import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
 
 from scipy.ndimage import gaussian_filter
-from cellprofiler.cpmath.filter import sobel
+from centrosome.filter import sobel
 
 S_GAUSSIAN = "Gassian"
 S_SOBEL = "Sobel"

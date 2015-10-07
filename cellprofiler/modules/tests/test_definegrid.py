@@ -30,7 +30,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.definegrid as D
-from cellprofiler.cpmath.filter import enhance_dark_holes
+from centrosome.filter import enhance_dark_holes
 
 GRID_NAME = "grid"
 INPUT_IMAGE_NAME = "inputimage"

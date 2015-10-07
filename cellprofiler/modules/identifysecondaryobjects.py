@@ -148,14 +148,14 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import identify as cpmi
 from identify import FI_IMAGE_SIZE
-import cellprofiler.cpmath.threshold as cpthresh
-import cellprofiler.cpmath.otsu
-from cellprofiler.cpmath.propagate import propagate
-from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.watershed import fast_watershed as watershed
-from cellprofiler.cpmath.filter import stretch
-from cellprofiler.cpmath.outline import outline
+import centrosome.threshold as cpthresh
+import centrosome.otsu
+from centrosome.propagate import propagate
+from centrosome.cpmorphology import fill_labeled_holes
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.watershed import fast_watershed as watershed
+from centrosome.filter import stretch
+from centrosome.outline import outline
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 M_PROPAGATION = "Propagation"

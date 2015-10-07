@@ -25,10 +25,10 @@ from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
 from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
 from identify import FI_IMAGE_SIZE, TSM_NONE
 from cellprofiler.modules.identify import get_threshold_measurement_columns
-from cellprofiler.cpmath.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
-from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINARY_IMAGE
+from centrosome.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
+from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINARY_IMAGE
 
-from cellprofiler.cpmath.cpmorphology import strel_disk
+from centrosome.cpmorphology import strel_disk
 from scipy.ndimage.morphology import binary_dilation
 
 RETAIN = "Retain"

@@ -20,7 +20,7 @@ import base64
 
 import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
-from cellprofiler.cpmath.outline import outline
+from centrosome.outline import outline
 from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
 
 class TestObjects(unittest.TestCase):

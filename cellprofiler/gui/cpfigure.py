@@ -37,9 +37,9 @@ from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
 from cpfigure_tools import figure_to_image, only_display_image, renumber_labels_for_display
-import cellprofiler.cpmath.outline
-from cellprofiler.cpmath.cpmorphology import get_outline_pts
 import cellprofiler.gui.cpartists
+import centrosome.outline
+from centrosome.cpmorphology import get_outline_pts
 
 #
 # Monkey-patch the backend canvas to only report the truly supported filetypes
@@ -1466,7 +1466,7 @@ class CPFigureFrame(wx.Frame):
             for labels in cplabel[CPLD_LABELS]:
                 if cplabel[CPLD_MODE] == CPLDM_OUTLINES:
                     oc = np.array(cplabel[CPLD_OUTLINE_COLOR], float)[:3]/255
-                    lm = cellprofiler.cpmath.outline.outline(labels) != 0
+                    lm = centrosome.outline.outline(labels) != 0
                     lo = lm.astype(float)
                     lw = float(cplabel[CPLD_LINE_WIDTH])
                     if lw > 1:

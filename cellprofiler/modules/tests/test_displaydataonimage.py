@@ -30,7 +30,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.displaydataonimage as D
-from cellprofiler.cpmath.cpmorphology import centers_of_labels
+from centrosome.cpmorphology import centers_of_labels
 
 INPUT_IMAGE_NAME = 'inputimage'
 OUTPUT_IMAGE_NAME = 'outputimage'

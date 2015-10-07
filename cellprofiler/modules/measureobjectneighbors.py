@@ -61,9 +61,9 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.cpmorphology import strel_disk, centers_of_labels
-from cellprofiler.cpmath.outline import outline
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import strel_disk, centers_of_labels
+from centrosome.outline import outline
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND   = 'Expand until adjacent'

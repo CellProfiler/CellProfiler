@@ -27,7 +27,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.enhanceorsuppressfeatures as E
-from cellprofiler.cpmath.filter import enhance_dark_holes
+from centrosome.filter import enhance_dark_holes
 
 INPUT_IMAGE_NAME = 'myimage'
 OUTPUT_IMAGE_NAME = 'myfilteredimage'

@@ -29,7 +29,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.cpimage as cpi
 import cellprofiler.workspace as cpw
-import cellprofiler.cpmath.outline as cpmo
+import centrosome.outline as cpmo
 #
 # This is a pipeline consisting of Matlab modules for LoadImages,
 # IdentifyPrimAutomatic and MeasureObjectIntensity

@@ -74,9 +74,9 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-import cellprofiler.cpmath.outline as cpmo
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.filter import stretch
+import centrosome.outline as cpmo
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.filter import stretch
 from identify import C_LOCATION
 
 INTENSITY = 'Intensity'

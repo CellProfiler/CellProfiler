@@ -37,7 +37,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-from cellprofiler.cpmath.outline import outline
+from centrosome.outline import outline
 
 C_AREA_OCCUPIED = "AreaOccupied"
 

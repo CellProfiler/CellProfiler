@@ -55,12 +55,12 @@ import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.workspace as cpw
 
-from cellprofiler.cpmath.cpmorphology import distance_to_edge
-from cellprofiler.cpmath.cpmorphology import centers_of_labels
-from cellprofiler.cpmath.cpmorphology import maximum_position_of_labels
-from cellprofiler.cpmath.cpmorphology import color_labels
-from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
-from cellprofiler.cpmath.propagate import propagate
+from centrosome.cpmorphology import distance_to_edge
+from centrosome.cpmorphology import centers_of_labels
+from centrosome.cpmorphology import maximum_position_of_labels
+from centrosome.cpmorphology import color_labels
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.propagate import propagate
 
 C_SELF = 'These objects'
 C_CENTERS_OF_OTHER_V2 = 'Other objects'

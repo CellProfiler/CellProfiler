@@ -76,7 +76,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
-from cellprofiler.cpmath.outline import outline
+from centrosome.outline import outline
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 '''The parent object relationship points to the secondary / larger objects'''

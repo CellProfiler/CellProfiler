@@ -103,7 +103,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
-import cellprofiler.cpmath.outline
+import centrosome.outline
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
@@ -1615,7 +1615,7 @@ class NamesAndTypes(cpm.CPModule):
         if should_save_outlines:
             outline_image = np.zeros(image.pixel_data.shape[:2], bool)
             for labeled_image, indices in o.get_labels():
-                plane = cellprofiler.cpmath.outline.outline(labeled_image)
+                plane = centrosome.outline.outline(labeled_image)
                 outline_image |= plane
             out_img = cpi.Image(outline_image)
             workspace.image_set.add(outlines_name, out_img)

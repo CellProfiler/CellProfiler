@@ -1511,7 +1511,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                 self.assertTrue(np.any(pixel_data != plane_0))
                 
     def test_03_07_load_raw(self):
-        folder = "ExampleSpecklesImages"
+        folder = "namesandtypes_03_07"
         file_name = "1-162hrh2ax2.tif"
         path = make_12_bit_image(folder, file_name, (34, 19))
         workspace = self.run_workspace(path, N.LOAD_AS_ILLUMINATION_FUNCTION)
@@ -1585,7 +1585,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         
     def test_03_11_load_rescaled(self):
         # Test all color/monochrome rescaled paths
-        folder = "ExampleSpecklesImages"
+        folder = "namesandtypes_03_11"
         file_name = "1-162hrh2ax2.tif"
         path = make_12_bit_image(folder, file_name, (34, 19))
         for single in (True, False):

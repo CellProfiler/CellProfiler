@@ -40,7 +40,6 @@ a = Analysis(
     datas=None,
     excludes=None,
     hiddenimports=[
-        'cellh5',
         'cellprofiler.utilities.rules',
         'centrosome.bg_compensate',
         'centrosome.fastemd',
@@ -58,12 +57,6 @@ a = Analysis(
         'scipy.fftpack',
         'scipy.linalg.cython_blas',
         'scipy.linalg.cython_lapack',
-        'sklearn.utils.sparsetools._graph_validation',
-        'sklearn.utils.sparsetools._graph_tools',
-        'sklearn.utils.lgamma',
-        'sklearn.utils.weight_vector',
-        'sklearn.tree._utils',
-        'typedefs',
     ],
     hookspath=None,
     pathex=[
@@ -111,6 +104,6 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     bundle_identifier="org.cellprofiler.CellProfiler",
-    icon="./artwork/CellProfilerIcon.png",
+    icon="./artwork/CellProfilerIcon.icns",
     name='CellProfiler.app',
 )

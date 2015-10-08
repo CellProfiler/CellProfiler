@@ -2270,7 +2270,8 @@ class LoadImages(cpmodule.CPModule):
                     if channel.wants_outlines:
                         outlines = np.zeros(shape, bool)
                         for l, c in o.get_labels():
-                            outlines |= centrosome.outline.outline(l)
+                            outlines |= centrosome.outline.outline(l).astype(
+                                outlines.dtype)
                         outline_image = cpimage.Image(outlines, 
                                                       path_name = path,
                                                       file_name = filename)

@@ -1616,7 +1616,7 @@ class NamesAndTypes(cpm.CPModule):
             outline_image = np.zeros(image.pixel_data.shape[:2], bool)
             for labeled_image, indices in o.get_labels():
                 plane = centrosome.outline.outline(labeled_image)
-                outline_image |= plane
+                outline_image |= plane.astype(outline_image.dtype)
             out_img = cpi.Image(outline_image)
             workspace.image_set.add(outlines_name, out_img)
                      

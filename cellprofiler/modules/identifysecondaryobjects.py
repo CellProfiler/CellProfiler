@@ -153,7 +153,7 @@ import centrosome.otsu
 from centrosome.propagate import propagate
 from centrosome.cpmorphology import fill_labeled_holes
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.watershed import fast_watershed as watershed
+from centrosome.watershed import watershed
 from centrosome.filter import stretch
 from centrosome.outline import outline
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP

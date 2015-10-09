@@ -30,7 +30,7 @@ import javabridge as J
 from cellprofiler.modules.tests import \
      example_images_directory, testimages_directory, \
      maybe_download_example_image, maybe_download_example_images,\
-     maybe_download_test_image, make_12_bit_image
+     maybe_download_tesst_image, make_12_bit_image
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.loadimages import \
      C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
@@ -1459,7 +1459,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         np.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 2])
         
     def test_03_03_load_color_frame(self):
-        path = maybe_download_test_image("DrosophilaEmbryo_GFPHistone.avi")
+        path = maybe_download_tesst_image("DrosophilaEmbryo_GFPHistone.avi")
         workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE,
                                        index = 3)
         image = workspace.image_set.get_image(IMAGE_NAME)
@@ -1497,7 +1497,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(np.all(pixel_data <= 1))
         
     def test_03_06_load_monochrome_plane(self):
-        path = maybe_download_test_image("5channel.tif")
+        path = maybe_download_tesst_image("5channel.tif")
         
         for i in range(5):
             workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE,

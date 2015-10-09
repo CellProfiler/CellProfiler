@@ -195,7 +195,7 @@ from centrosome.cpmorphology import fill_labeled_holes, strel_disk
 from centrosome.cpmorphology import binary_shrink, relabel
 from centrosome.cpmorphology import is_local_maximum
 from centrosome.filter import stretch, laplacian_of_gaussian
-from centrosome.watershed import fast_watershed as watershed
+from centrosome.watershed import watershed
 from centrosome.propagate import propagate
 from centrosome.smooth import smooth_with_noise
 import centrosome.outline

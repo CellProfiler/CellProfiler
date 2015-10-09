@@ -702,5 +702,37 @@ class TestClassifyObjects(unittest.TestCase):
                  np.array((0, 1, 0, 0, 0))]):
                 values = m[OBJECTS_NAME, m_name]
                 np.testing.assert_array_equal(values, expected)
+  
+    def test_03_05_nan_offset_by_1(self):
+        # Regression test of 1636
+        labels = np.zeros((10, 15), int)
+        labels[3:5, 3:5] = 1
+        labels[6:8, 3:5] = 2
+        
+        m1 = np.array((4, np.NaN))
+        m2 = np.array((4, 4))
+        workspace, module = self.make_workspace(
+            labels, 
+            C.BY_TWO_MEASUREMENTS,
+            m1, m2)
+        self.assertTrue(isinstance(module, C.ClassifyObjects))
+        module.first_threshold_method.value = C.TM_MEAN
+        module.first_threshold.value = 2
+        module.second_threshold_method.value = C.TM_MEAN
+        module.second_threshold.value = 2
+        module.wants_image.value = True
+        module.wants_custom_names.value = False
+        module.run(workspace)
+        image = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+        colors = module.get_colors(4)
+        reverse = np.zeros(image.shape[:2], int)
+        for idx, color in enumerate(colors):
+            reverse[
+                np.all(image == color[np.newaxis, np.newaxis, :3], 2)] = idx
+        self.assertTrue(np.all(reverse[labels == 1] == 4))
+                    
+                
+            
+            
         
         

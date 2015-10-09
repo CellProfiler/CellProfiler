@@ -582,8 +582,6 @@ class ClassifyObjects(cpm.CPModule):
             nobjects = len(class_1)
             mapping = np.zeros(nobjects+1, int)
             mapping[1:] = np.arange(1, nobjects+1)
-            for i in range(2): 
-                mapping[np.isnan(saved_values[i])] = 0  
             labels = object_codes[mapping[objects.segmented]]
             colors = self.get_colors(4)
             image = colors[labels,:3]

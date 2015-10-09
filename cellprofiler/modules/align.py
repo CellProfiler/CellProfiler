@@ -286,8 +286,12 @@ class Align(cpm.CPModule):
                 in enumerate(image_info[1:]):
             unaligned_title = ("Unaligned images: %s and %s" %
                                (first_input_name, input_name))
-            first_pixels = first_input_pixels
-            other_pixels = input_pixels
+            #
+            # Make them grayscale if needed
+            #
+            first_pixels, other_pixels = [
+                img if img.ndim == 2 else np.mean(img, 2)
+                for img in first_input_pixels, input_pixels]
             max_shape = np.maximum(first_pixels.shape, other_pixels.shape)
             img = np.zeros((max_shape[0], max_shape[1], 3))
             img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
@@ -298,8 +302,9 @@ class Align(cpm.CPModule):
             aligned_title = ("Aligned images: %s and %s\nX offset: %d, Y offset: %d" %
                              (first_output_name, output_name,
                               -off_x, -off_y))
-            first_pixels = first_output_pixels
-            other_pixels = output_pixels
+            first_pixels, other_pixels = [
+                img if img.ndim == 2 else np.mean(img, 2)
+                for img in first_output_pixels, output_pixels]
             max_shape = np.maximum(first_pixels.shape, other_pixels.shape)
             img = np.zeros((max_shape[0], max_shape[1], 3))
             img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels

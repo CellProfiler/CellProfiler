@@ -447,7 +447,8 @@ class ImageProvider(cpi.AbstractImageProvider):
             cached_image[mask] = self.__power_image[mask]
             cached_image[mask] -= (self.__vsum[mask] * self.__power_mask[mask] /
                                    image_count[mask])
-            cached_image = (cached_image * np.conj(cached_image)).astype(np.float32)
+            cached_image = \
+                (cached_image * np.conj(cached_image)).real.astype(np.float32)
         elif self.__how_to_accumulate == P_BRIGHTFIELD:
             cached_image = np.zeros(image_count.shape, np.float32)
             cached_image[mask] = self.__bright_max[mask] - self.__bright_min[mask]

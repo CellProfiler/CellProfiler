@@ -353,7 +353,7 @@ class SaveImages(cpm.CPModule):
         
         self.update_file_names = cps.Binary(
             "Record the file and path information to the saved image?",False,doc="""
-            Select <i>%(YES)s</i>to store filename and pathname data for each of the new files created 
+            Select <i>%(YES)s</i> to store filename and pathname data for each of the new files created 
             via this module as a per-image measurement. 
             <p>Instances in which this information may be useful include:
             <ul>

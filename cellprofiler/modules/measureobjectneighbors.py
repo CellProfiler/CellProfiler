@@ -217,7 +217,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
         has_pixels = objects.areas > 0
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
-        neighbor_objects = workspace.object_set.get_objects(self.neighbors_name.value)
+        neighbor_objects = workspace.object_set.get_objects(
+            self.neighbors_name.value)
         assert isinstance(neighbor_objects, cpo.Objects)
         neighbor_labels = neighbor_objects.small_removed_segmented
         #
@@ -243,6 +244,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
             neighbor_labels = neighbor_labels.copy().astype(np.int32)
             neighbor_labels[touching_border_mask] = touching_border_object_number[
                 unedited_segmented[touching_border_mask]]
+        
+        neighbor_has_pixels = np.bincount(neighbor_labels.ravel())[1:] > 0
         
         _, object_numbers = objects.relate_labels(labels, kept_labels)
         if self.neighbors_are_objects:
@@ -434,7 +437,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                       ncenters[neighbor_indexes[np.newaxis, :], 1])
                 distance_matrix = np.sqrt(di*di + dj*dj)
                 distance_matrix[~ has_pixels, :] = np.inf
-                distance_matrix[:, ~has_pixels] = np.inf
+                distance_matrix[:, ~neighbor_has_pixels] = np.inf
                 #
                 # order[:,0] should be arange(nobjects)
                 # order[:,1] should be the nearest neighbor

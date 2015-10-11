@@ -785,3 +785,25 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
               module.get_measurement_name(M.M_NUMBER_OF_NEIGHBORS), 1]
         self.assertEqual(len(v), 1)
         self.assertEqual(v[0], 2)
+        
+    def test_08_03_object_is_missing(self):
+        # regression test of #1639
+        #
+        # Object # 2 should match neighbor # 1, but because of
+        # an error in masking distances, neighbor #1 is masked out
+        #
+        olabels = np.zeros((20,10), int)
+        olabels[2, 2] = 2
+        nlabels = np.zeros((20,10), int)
+        nlabels[2, 3] = 1
+        nlabels[5, 2] = 2
+        workspace, module = self.make_workspace(
+            olabels, M.D_EXPAND, distance = 20, neighbors_labels = nlabels)
+        self.assertTrue(isinstance(module, M.MeasureObjectNeighbors))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        ftr = module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER)
+        values = m[OBJECTS_NAME, ftr]
+        self.assertEqual(values[1], 1)
+        

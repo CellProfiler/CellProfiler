@@ -20,7 +20,6 @@ import sys
 import tempfile
 
 import cellprofiler.preferences as cpprefs
-from external_dependencies import get_cellprofiler_jars
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +95,10 @@ def get_jars():
             return cmp(aa, bb)
         jar_files = sorted(jar_files, cmp = sort_fn)
     else:
-        jar_files = get_cellprofiler_jars()
+        import glob
+        # jar_files = get_cellprofiler_jars()
+        jar_files = glob.glob(os.path.abspath('imagej/jars/{}'.format('*.jar')))
+
     jar_files = [os.path.join(imagej_path, f)  for f in jar_files]
     class_path = javabridge.JARS + jar_files
     

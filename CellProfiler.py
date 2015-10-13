@@ -170,10 +170,6 @@ def main(args):
     from matplotlib import use as mpluse
     mpluse('WXAgg')
     
-    if (not hasattr(sys, 'frozen')) and options.fetch_external_dependencies:
-        import external_dependencies
-        external_dependencies.fetch_external_dependencies(options.overwrite_external_dependencies)
-    
     if (not hasattr(sys, 'frozen')) and options.build_extensions:
         build_extensions()
         if options.build_and_exit:
@@ -419,19 +415,6 @@ def parse_args(args):
                           default=False,
                           action="store_true",
                           help="Build extensions, then exit CellProfiler")
-        parser.add_option("--do-not-fetch",
-                          dest="fetch_external_dependencies",
-                          default=True,
-                          action="store_false",
-                          help= ("Do not fetch external binary dependencies. Use this "
-                                 "flag if you don't want to update components, e.g. in "
-                                 "a cluster environment where you don't have write "
-                                 "access to the installation folder."))
-        parser.add_option("--fetch-and-overwrite",
-                          dest="overwrite_external_dependencies",
-                          default=False,
-                          action="store_true",
-                          help="Overwrite external binary depencies if hash does not match")
     
     parser.add_option("--no-splash-screen",
                       dest="show_splashbox",

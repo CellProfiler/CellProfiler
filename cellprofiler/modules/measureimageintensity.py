@@ -15,7 +15,7 @@ you are reporting either the mean or the integrated intensity, so specify
 
 <p>Keep in mind that the default behavior in CellProfiler is to rescale the 
 image intensity from 0 to 1 by dividing all pixels in the image by the 
-maximum possible intensity value. This "maxmimum possible" value
+maximum possible intensity value. This "maximum possible" value
 is defined by the "Set intensity range from" setting in <b>NamesAndTypes</b>;
 see the help for that setting for more details.</p>
 

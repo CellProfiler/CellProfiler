@@ -375,7 +375,7 @@ class TrackObjects(cpm.CPModule):
             <ul>
             <li>You can disable 2nd phase calculation by selecting <i>%(NO)s</i> for "Run the second 
             phase of the LAP algorithm?"</li>
-            <li>By maximizing the the number of correct frame-to-frame links in the first phase, the 
+            <li>By maximizing the number of correct frame-to-frame links in the first phase, the 
             2nd phase will have less candidates to consider for linking and have a better chance of
             closing gaps correctly. </li>
             <li>If tracks are not being linked in the first phase, you may need to adjust the number 

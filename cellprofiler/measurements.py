@@ -438,7 +438,7 @@ class Measurements(object):
     def image_set_count(self):
         '''The number of complete image sets measured'''
         # XXX - question for Lee: should this return the minimum number
-        # of non-null values across columns in the the Image table?
+        # of non-null values across columns in the Image table?
         try:
             return len(self.hdf5_dict.get_indices('Image', 'ImageNumber'))
         except KeyError:

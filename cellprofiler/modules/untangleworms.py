@@ -1727,7 +1727,7 @@ class UntangleWorms(cpm.CPModule):
         beginning that unfinished path.
 
          To ensure that paths are only returned in one of the two possible
-         directions, only 1-length paths and paths where the the index of the
+         directions, only 1-length paths and paths where the index of the
          first edge is less than that of the last edge are returned.
 
          To faciliate the processing in get_all_paths_recur, the function

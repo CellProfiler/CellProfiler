@@ -95,7 +95,7 @@ class CorrectIlluminationApply(cpm.CPModule):
             relative to the real signal coming from the cells.  If you created the illumination 
             correction function using <i>%(IC_BACKGROUND)s</i>,
             then you will want to choose <i>%(DOS_SUBTRACT)s</i> here.</li>
-            <li><i>%(DOS_DIVIDE)s:</i> Choose this option if the the signal to background ratio 
+            <li><i>%(DOS_DIVIDE)s:</i> Choose this option if the signal to background ratio 
             is high (the cells are stained very strongly). If you created the illumination correction 
             function using <i>%(IC_REGULAR)s</i>,
             then you will want to choose <i>%(DOS_DIVIDE)s</i> here.</li>

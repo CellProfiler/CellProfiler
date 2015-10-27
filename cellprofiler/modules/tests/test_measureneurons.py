@@ -159,14 +159,17 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         columns = module.get_measurement_columns(None)
         features = [c[1] for c in columns]
         features.sort()
-        expected = [M.F_NUMBER_NON_TRUNK_BRANCHES, M.F_NUMBER_TRUNKS, 
-                    M.F_NUMBER_BRANCH_ENDS]
+        expected = M.F_ALL
         expected.sort()
+        coltypes = {}
         for feature, expected in zip(features, expected):
             expected_feature = "_".join((M.C_NEURON, expected, IMAGE_NAME))
             self.assertEqual(feature, expected_feature)
+            coltypes[expected_feature] = \
+                cpmeas.COLTYPE_FLOAT if expected == M.F_TOTAL_NEURITE_LENGTH \
+                else cpmeas.COLTYPE_INTEGER
         self.assertTrue(all([c[0] == OBJECT_NAME for c in columns]))
-        self.assertTrue(all([c[2] == cpmeas.COLTYPE_INTEGER for c in columns]))
+        self.assertTrue(all([c[2] == coltypes[c[1]] for c in columns]))
         
         categories = module.get_categories(None, OBJECT_NAME)
         self.assertEqual(len(categories), 1)
@@ -174,16 +177,14 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         self.assertEqual(len(module.get_categories(None, "Foo")), 0)
         
         measurements = module.get_measurements(None, OBJECT_NAME, M.C_NEURON)
-        self.assertEqual(len(measurements), 3)
+        self.assertEqual(len(measurements), len(M.F_ALL))
         self.assertNotEqual(measurements[0], measurements[1])
-        self.assertTrue(all([m in (M.F_NUMBER_NON_TRUNK_BRANCHES, 
-                                   M.F_NUMBER_TRUNKS, M.F_NUMBER_BRANCH_ENDS)
-                             for m in measurements]))
+        self.assertTrue(all([m in M.F_ALL for m in measurements]))
         
         self.assertEqual(len(module.get_measurements(None,"Foo", M.C_NEURON)), 0)
         self.assertEqual(len(module.get_measurements(None,OBJECT_NAME, "Foo")), 0)
         
-        for feature in (M.F_NUMBER_NON_TRUNK_BRANCHES, M.F_NUMBER_TRUNKS):
+        for feature in M.F_ALL:
             images = module.get_measurement_images(None, OBJECT_NAME, 
                                                    M.C_NEURON, feature)
             self.assertEqual(len(images), 1)
@@ -193,8 +194,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        for feature in (M.F_NUMBER_NON_TRUNK_BRANCHES, M.F_NUMBER_TRUNKS,
-                        M.F_NUMBER_BRANCH_ENDS):
+        for feature in M.F_ALL:
             mname = "_".join((M.C_NEURON, expected, IMAGE_NAME))
             data = m.get_current_measurement(OBJECT_NAME, mname)
             self.assertEqual(len(data), 0)
@@ -331,7 +331,23 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
             self.assertEqual(len(data), 2)
             for i in range(2):
                 self.assertEqual(data[i], expected[i])
-        
+                
+    def test_02_08_skeleton_length(self):
+        #
+        # Soma ends at x=8, neurite ends at x=15. Length should be 7
+        #
+        image = np.zeros((20,20), bool)
+        image[9,5:15] = True
+        labels = np.zeros((20,20), int)
+        labels[6:12,2:8] = 1
+        workspace, module = self.make_workspace(labels, image)
+        module.run(workspace)
+        m = workspace.measurements
+        ftr = "_".join((M.C_NEURON, M.F_TOTAL_NEURITE_LENGTH, IMAGE_NAME))
+        result = m[OBJECT_NAME, ftr]
+        self.assertEqual(len(result), 1)
+        self.assertAlmostEqual(result[0], 5, 
+                               delta=np.sqrt(np.finfo(np.float32).eps))
     
     def read_graph_file(self, file_name):
         type_dict = dict(image_number="i4", v1="i4", v2="i4", length="i4",

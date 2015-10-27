@@ -33,7 +33,7 @@ install:
   - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py       --upgrade
   - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5 --upgrade
   - python external_dependencies.py
-  - python CellProfiler.py --build-and-exit --do-not-fetch
+  - python CellProfiler.py --build-and-exit
 script:
   - python cpnose.py --with-javabridge --noguitests cellprofiler/matlab/tests  2>&1 | egrep -v "(^\[INFO\]|\[Thread-0\]|\[Thread-1\]|\[AWT\-AppKit\]|Exception\sKeyError|\s*self\.id\.close\(\)|.*\sRuntimeWarning\:\sFound\smurdered\sidentifier|Warning\:\sorg\.apache\.xerces\.parsers\.SAXParser\:)"
   - python cpnose.py --with-javabridge --noguitests cellprofiler/modules/tests 2>&1 | egrep -v "(^\[INFO\]|\[Thread-0\]|\[Thread-1\]|\[AWT\-AppKit\]|Exception\sKeyError|\s*self\.id\.close\(\)|.*\sRuntimeWarning\:\sFound\smurdered\sidentifier|Warning\:\sorg\.apache\.xerces\.parsers\.SAXParser\:)"

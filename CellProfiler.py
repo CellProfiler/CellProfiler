@@ -304,6 +304,11 @@ def parse_args(args):
                measurements when running headless. 
          The flags -p, -r and -c are required for a headless run."""
     
+    if "--do-not-fetch" in args:
+        args = list(args)
+        args.remove("--do-not-fetch")
+        # Would be nice to log here, but logging is not yet set up.
+        
     parser = optparse.OptionParser(usage=usage)
     parser.add_option("-p", "--pipeline", "--project",
                       dest="pipeline_filename",

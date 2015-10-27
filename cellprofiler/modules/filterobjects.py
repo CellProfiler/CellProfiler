@@ -262,7 +262,6 @@ class FilterObjects(cpm.CPModule):
         
         self.outlines_name = cps.OutlineNameProvider(
             'Name the outline image','FilteredObjects', doc = """
-            <i>(Used only if the outline image is to be retained for later use in the pipeline)</i> <br>
             %(NAMING_OUTLINES_HELP)s"""%globals()) 
         
         self.additional_objects = []

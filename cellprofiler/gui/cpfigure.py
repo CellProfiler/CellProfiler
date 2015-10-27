@@ -319,7 +319,11 @@ class CPFigureFrame(wx.Frame):
             self.SetIcon(get_cp_icon())
         except:
             pass
-        self.Fit()
+        if size == wx.DefaultSize:
+            self.panel.SetInitialSize(wx.Size(640, 480))
+            self.Fit()
+        else:
+            self.Layout()
         self.Show()
         if sys.platform.lower().startswith("win"):
             try:

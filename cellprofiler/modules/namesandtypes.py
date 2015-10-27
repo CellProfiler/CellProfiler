@@ -988,7 +988,7 @@ class NamesAndTypes(cpm.CPModule):
     
     @property
     def matching_method(self):
-        '''Get the method used to match the the files in different channels together
+        '''Get the method used to match the files in different channels together
         
         returns either MATCH_BY_ORDER or MATCH_BY_METADATA
         '''

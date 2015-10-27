@@ -488,7 +488,7 @@ class ExportToDatabase(cpm.CPModule):
             doc = """
             <i>(Used only if creating a properties file)</i><br>
             The image paths written to the database will be the absolute
-            path the the image files on your computer. If you plan to make these 
+            path the image files on your computer. If you plan to make these 
             files accessible via the web, you can have CellProfiler Analyst prepend
             a URL to your file name. 
             Eg: If an image is loaded from the path "/cellprofiler/images/" and you use
@@ -512,7 +512,7 @@ class ExportToDatabase(cpm.CPModule):
             default_prepend, doc = """
             <i>(Used only if accessing CellProfiler Analyst images via URL)</i><br>
             The image paths written to the database will be the absolute
-            path the the image files on your computer. If you plan to make these 
+            path the image files on your computer. If you plan to make these 
             files accessible via the web, you can enter a url prefix here. Eg: 
             If an image is loaded from the path "/cellprofiler/images/" and you use
             a url prepend of "http://mysite.com/", CellProfiler Analyst will look

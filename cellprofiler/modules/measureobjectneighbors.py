@@ -153,7 +153,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             <i>(Used only if the image of objects colored by numbers of neighbors 
             is to be retained for later use in the pipeline)</i> <br> 
             Specify a name 
-            that will allow the the image of objects colored by numbers of neighbors 
+            that will allow the image of objects colored by numbers of neighbors 
             to be selected later in the pipeline.""")
         
         self.count_colormap = cps.Colormap(
@@ -176,7 +176,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             'PercentTouching', doc = """
             <i>(Used only if the image of objects colored by percent touching 
             is to be retained for later use in the pipeline)</i> <br> 
-            Specify a name that will allow the the image of objects colored by percent of touching 
+            Specify a name that will allow the image of objects colored by percent of touching 
             pixels to be selected later in the pipeline.""")
         
         self.touching_colormap = cps.Colormap(

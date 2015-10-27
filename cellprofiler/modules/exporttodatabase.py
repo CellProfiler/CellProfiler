@@ -2253,6 +2253,8 @@ INSERT INTO %s (name) values ('%s')""" % (
         properties = self.get_property_file_text(workspace)
         for p in properties:
             for k, v in p.properties.iteritems():
+                if isinstance(v, unicode):
+                    v = v.encode('utf-8')
                 statement = """
 INSERT INTO %s (experiment_id, object_name, field, value)
 SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (

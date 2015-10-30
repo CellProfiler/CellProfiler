@@ -30,8 +30,8 @@ install:
   - pip install --upgrade wheel
   - pip install --upgrade cython
   - pip install -r requirements.txt
-  - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py       --upgrade
-  - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5 --upgrade
+  - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
+  - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
   - python external_dependencies.py
   - python CellProfiler.py --build-and-exit
 script:

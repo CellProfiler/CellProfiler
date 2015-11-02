@@ -807,3 +807,26 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         values = m[OBJECTS_NAME, ftr]
         self.assertEqual(values[1], 1)
         
+    def test_08_04_small_removed_same(self):
+        # Regression test of issue #1672
+        #
+        # Objects with small removed failed.
+        #
+        objects = np.zeros((11, 13), int)
+        objects[5:7, 1:3] = 1
+        objects[6:8, 5:7] = 2
+        objects_unedited = objects.copy()
+        objects_unedited[0:2, 0:2] = 3
+        
+        workspace, module = self.make_workspace(
+            objects, M.D_EXPAND, distance = 1)
+        no = workspace.object_set.get_objects(OBJECTS_NAME)
+        no.unedited_segmented = objects_unedited
+        no.small_removed_segmented = objects
+        module.run(workspace)
+        m = workspace.measurements
+        v = m[OBJECTS_NAME, 
+              module.get_measurement_name(M.M_NUMBER_OF_NEIGHBORS), 1]
+        self.assertEqual(len(v), 2)
+        self.assertEqual(v[0], 1)
+        

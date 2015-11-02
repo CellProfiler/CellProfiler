@@ -245,14 +245,15 @@ class MeasureObjectNeighbors(cpm.CPModule):
             neighbor_labels[touching_border_mask] = touching_border_object_number[
                 unedited_segmented[touching_border_mask]]
         
-        neighbor_has_pixels = np.bincount(neighbor_labels.ravel())[1:] > 0
         
         _, object_numbers = objects.relate_labels(labels, kept_labels)
         if self.neighbors_are_objects:
             neighbor_numbers = object_numbers
+            neighbor_has_pixels = has_pixels
         else:
             _, neighbor_numbers = neighbor_objects.relate_labels(
                 neighbor_labels, neighbor_objects.segmented)
+            neighbor_has_pixels = np.bincount(neighbor_labels.ravel())[1:] > 0
         neighbor_count = np.zeros((nobjects,))
         pixel_count = np.zeros((nobjects,))
         first_object_number = np.zeros((nobjects,),int)

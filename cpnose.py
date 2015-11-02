@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 
 from unittest.case import SkipTest
 from pkg_resources import load_entry_point
+import exceptions
 import logging
 import logging.handlers
 logger = logging.getLogger(__name__)
@@ -27,12 +28,17 @@ from nose.suite import ContextSuiteFactory
 from nose.config import Config
 from nose.util import resolve_name
 from nose.plugins.manager import PluginManager
+import warnings
 
 from cellprofiler.utilities.cpjvm import \
      get_path_to_jars, get_jars, get_patcher_args, add_logback_xml_arg
 
 import numpy as np
+
 np.seterr(all='ignore')
+if np.version.version >= "1.9":
+    # np.rank deprecated messages litter the log and not our fault
+    np.rank = np.ndim
 
 class CPShutdownPlugin(nose.plugins.Plugin):
     '''CellProfiler shutdown plugin
@@ -138,6 +144,14 @@ class CPShutdownPlugin(nose.plugins.Plugin):
         except:
             logging.root.warn("Failed to stop zmq boundary")
 
+    def beforeTest(self, test):
+        self.old_filters = warnings.filters
+        warnings.filters = list(warnings.filters)
+        warnings.simplefilter('once', exceptions.DeprecationWarning)
+        
+    def afterTest(self, test):
+        warnings.filters = self.old_filters
+    
     def wantFile(self, filename):
         if filename.endswith("setup.py"):
             return False

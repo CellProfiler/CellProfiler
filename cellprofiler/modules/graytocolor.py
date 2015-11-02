@@ -188,10 +188,26 @@ class GrayToColor(cpm.CPModule):
         default_color = DEFAULT_COLORS[
             len(self.stack_channels) % len(DEFAULT_COLORS)]
         group.append("image_name", cps.ImageNameSubscriber(
-            "Select the input image to add to the stacked image", cps.NONE))
+            "Image name", cps.NONE,
+            doc = 
+            """
+            <i>Used only if %(SCHEME_STACK)s or %(SCHEME_COMPOSITE)s is
+            chosen</i><br>
+            Select the input image to add to the stacked image""" % globals()))
         group.append("color", cps.Color(
             "Color", default_color,
-            doc = "The color to be assigned to the above image."))
+            doc = """
+            <i>Used only if %(SCHEME_COMPOSITE)s is chosen</i>
+            <br>The color to be assigned to the above image.
+            """ % globals()))
+        group.append("weight", cps.Float(
+            "Weight", 1.0, minval=.5 / 255,
+            doc = """
+            <i>Used only if %(SCHEME_COMPOSITE)s is chosen</i>
+            <br>The weighting of the above image relative to the others. The
+            image's pixel values are multiplied by this weight before assigning
+            the color.
+            """ % globals()))
         
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.stack_channels, group))
@@ -230,7 +246,8 @@ class GrayToColor(cpm.CPModule):
                  self.yellow_adjustment_factor, self.gray_adjustment_factor,
                  self.stack_channel_count]
         for stack_channel in self.stack_channels:
-            result += [stack_channel.image_name, stack_channel.color]
+            result += [stack_channel.image_name, stack_channel.color,
+                       stack_channel.weight]
         return result
     
     def prepare_settings(self, setting_values):
@@ -255,6 +272,7 @@ class GrayToColor(cpm.CPModule):
                 result.append(sc_group.image_name)
                 if self.scheme_choice == SCHEME_COMPOSITE:
                     result.append(sc_group.color)
+                    result.append(sc_group.weight)
                 if hasattr(sc_group, "remover"):
                     result.append(sc_group.remover)
             result += [self.add_stack_channel]
@@ -319,10 +337,12 @@ class GrayToColor(cpm.CPModule):
             if self.scheme_choice == SCHEME_STACK:
                 rgb_pixel_data = np.dstack(source_channels)
             else:
-                colors = [ca[np.newaxis, np.newaxis, :] for ca in
-                    [np.array(c).astype(parent_image.pixel_data.dtype) / 255
-                     for c in
-                     [sc.color.to_rgb() for sc in self.stack_channels]]]
+                colors = []
+                for sc in self.stack_channels:
+                    color_tuple = sc.color.to_rgb()
+                    color = sc.weight.value * np.array(color_tuple).astype(
+                        parent_image.pixel_data.dtype) / 255
+                    colors.append(color[np.newaxis, np.newaxis, :])
                 rgb_pixel_data = \
                     parent_image.pixel_data[:, :, np.newaxis] * colors[0]
                 for image, color in zip(source_channels[1:], colors[1:]):
@@ -432,7 +452,7 @@ class GrayToColor(cpm.CPModule):
             for i, image_name in enumerate(
                 setting_values[OFF_STACK_CHANNELS_V2:]):
                 new_setting_values += \
-                    [image_name, DEFAULT_COLORS[i % len(DEFAULT_COLORS)]]
+                    [image_name, DEFAULT_COLORS[i % len(DEFAULT_COLORS)], "1.0"]
             setting_values = new_setting_values
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab

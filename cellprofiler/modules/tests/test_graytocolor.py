@@ -34,7 +34,8 @@ import cellprofiler.modules.graytocolor as G
 
 OUTPUT_IMAGE_NAME = 'outputimage'
 class TestGrayToColor(unittest.TestCase):
-    def make_workspace(self, scheme, images, adjustments_or_colors):
+    def make_workspace(self, scheme, images, adjustments=None,
+                       colors=None, weights=None):
         module = G.GrayToColor()
         module.scheme_choice.value = scheme
         if scheme not in (G.SCHEME_COMPOSITE, G.SCHEME_STACK):
@@ -51,18 +52,25 @@ class TestGrayToColor(unittest.TestCase):
                         module.blue_adjustment_factor, module.cyan_adjustment_factor,
                         module.magenta_adjustment_factor, module.yellow_adjustment_factor,
                         module.gray_adjustment_factor),
-                       adjustments_or_colors):
+                       adjustments):
                 image_name_setting.value = image_name
                 adjustment_setting.value = adjustment
         else:
             while len(module.stack_channels) < len(images):
                 module.add_stack_channel_cb()
             image_names = []
-            for i, (image, color) in enumerate(zip(images, adjustments_or_colors)):
+            if weights is None:
+                weights = [ 1.0 ] * len(images)
+            if colors is None:
+                colors = [G.DEFAULT_COLORS[i % len(G.DEFAULT_COLORS)]
+                          for i in range(len(images))]
+            for i, (image, color, weight) in enumerate(
+                zip(images, colors, weights)):
                 image_name = 'image%d' % (i+1)
                 image_names.append(image_name)
                 module.stack_channels[i].image_name.value = image_name
                 module.stack_channels[i].color.value = color
+                module.stack_channels[i].weight.value = weight
                 
         module.rgb_image_name.value = OUTPUT_IMAGE_NAME
         module.module_num = 1
@@ -182,8 +190,10 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
     Hidden:2
     Select the input image to add to the stacked image:DNA
     Color:#7F00FF
+    Weight:2.0
     Select the input image to add to the stacked image:GFP
     Color:#7FFF00
+    Weight:3.0
 """
         pipeline = cpp.Pipeline()
         def callback(caller,event):
@@ -273,8 +283,7 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         r = np.random.RandomState()
         r.seed(41)
         images = [r.uniform(size=(11, 13)) for _ in range(5)]
-        workspace, module = self.make_workspace(
-            G.SCHEME_STACK, images, ["#000000"] * len(images))
+        workspace, module = self.make_workspace(G.SCHEME_STACK, images)
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertSequenceEqual(output.shape[:2], images[0].shape)
@@ -287,16 +296,17 @@ GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|sho
         r.seed(41)
         images = [r.uniform(size=(11, 13)) for _ in range(5)]
         colors = [r.randint(0, 255, size=3) for _ in range(5)]
+        weights = r.uniform(low = 1.0/255, high=1.5, size=5).tolist()
         color_names = \
             ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
         workspace, module = self.make_workspace(
-            G.SCHEME_COMPOSITE, images, color_names)
+            G.SCHEME_COMPOSITE, images, colors = color_names, weights=weights)
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertSequenceEqual(output.shape[:2], images[0].shape)
         self.assertEqual(output.shape[2], 3)
         for i in range(3):
             channel = sum(
-                [image*float(color[i])/255 
-                 for image, color in zip(images, colors)])
+                [image * weight * float(color[i])/255 
+                 for image, color, weight in zip(images, colors, weights)])
             np.testing.assert_array_almost_equal(output[:, :, i], channel)

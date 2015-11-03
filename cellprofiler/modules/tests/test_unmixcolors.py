@@ -84,8 +84,8 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
     Red absorbance\x3A:0.5
     Green absorbance\x3A:0.5
     Blue absorbance\x3A:0.5
-    Image name\x3A:AlicanBlue
-    Stain:Alican blue
+    Image name\x3A:AlcianBlue
+    Stain:Alcian blue
     Red absorbance\x3A:0.5
     Green absorbance\x3A:0.5
     Blue absorbance\x3A:0.5
@@ -121,7 +121,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
             U.CHOICE_HEMATOXYLIN, U.CHOICE_EOSIN, U.CHOICE_DAB,
             U.CHOICE_FAST_RED, U.CHOICE_FAST_BLUE, U.CHOICE_METHYL_GREEN,
             U.CHOICE_AEC, U.CHOICE_ANILINE_BLUE, U.CHOICE_AZOCARMINE,
-            U.CHOICE_ALICAN_BLUE, U.CHOICE_PAS)):
+            U.CHOICE_ALCIAN_BLUE, U.CHOICE_PAS)):
             self.assertEqual(module.outputs[i].stain_choice, stain)
         self.assertAlmostEqual(module.outputs[-1].red_absorbance.value, .1)
         self.assertAlmostEqual(module.outputs[-1].green_absorbance.value, .2)

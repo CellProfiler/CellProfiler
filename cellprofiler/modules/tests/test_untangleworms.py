@@ -11,6 +11,7 @@
 
 
 import base64
+import bioformats
 import gc
 import numpy as np
 from scipy.ndimage import binary_dilation
@@ -19,8 +20,6 @@ import StringIO
 import tempfile
 import unittest
 import zlib
-import PIL.Image
-from matplotlib.image import pil_to_array
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
@@ -165,10 +164,6 @@ A02_binary = ('eJztmHdQU+u2wL+EICWKFJOg0rsiAeGoiFKMICK9t4ChIwgEFKQlJGo4IE0Q'
               'jgt3u52I90AaIOGYiVnXaUFX4CLKZGn0FKoGwCb+Ycja//toeYuv5W0eSUNo'
               'hQdAh4mRheEDHOHyfwASV/wk')
 
-A02_image = pil_to_array(PIL.Image.open(
-        StringIO.StringIO(zlib.decompress(base64.b64decode(A02_binary)))))[:,:,0] > 0
-        
-
 PARAMS = ('eJyVVnVQFI62lu5ucWFhkUW6EVhAWroFkV1AWkpqaRBYkBAWkE7pFCRlJRbp'
           'ku5Uurvz/l7Mm9+8e++beWfOzDl/nfjON98cDVl9dVk5oAgvP1BDVp/H2s7B'
           'ihuo7WDubu3s6igB1JY3VNHkBsq7Wpm7W1kCnZ0kgIZ/RS0Ld6AgP1BATEKA'
@@ -274,6 +269,15 @@ PARAMS = ('eJyVVnVQFI62lu5ucWFhkUW6EVhAWroFkV1AWkpqaRBYkBAWkE7pFCRlJRbp'
 
 
 class TestUntangleWorms(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        handle, path = tempfile.mkstemp(suffix=".png")
+        fd = os.fdopen(handle, "wb")
+        fd.write(zlib.decompress(base64.b64decode(A02_binary)))
+        fd.close()
+        
+        cls.A02_image = bioformats.load_image(path, rescale=False)[:,:,0] > 0
+
     def setUp(self):
         self.filename = tempfile.mktemp(".mat")
     
@@ -2628,7 +2632,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         
     def test_10_01_A02(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(A02_image, params)
+        workspace, module = self.make_workspace(self.A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
@@ -2654,7 +2658,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 
     def test_10_02_nonoverlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(A02_image, params)
+        workspace, module = self.make_workspace(self.A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
@@ -2672,7 +2676,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 
     def test_10_03_overlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(A02_image, params)
+        workspace, module = self.make_workspace(self.A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False

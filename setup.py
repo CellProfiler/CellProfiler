@@ -4,7 +4,6 @@ import os
 import requests
 import setuptools
 import setuptools.command.build_ext
-import setuptools.command.test
 import sys
 
 
@@ -20,7 +19,7 @@ class Prokaryote(setuptools.Command):
         pass
 
     def run(self):
-        VERSION = "1.0.2"
+        VERSION = "1.0.3"
 
         directory = os.path.join("imagej", "jars")
 
@@ -37,7 +36,10 @@ class Prokaryote(setuptools.Command):
             with open(prokaryote, "wb") as f:
                 total_length = int(request.headers.get("content-length"))
 
-                for chunk in clint.textui.progress.bar(request.iter_content(chunk_size=1024), expected_size=(total_length / 1024) + 1):
+                for chunk in clint.textui.progress.bar(
+                    request.iter_content(chunk_size=32768), 
+                    expected_size=(total_length / 32768) + 1,
+                    hide=not self.verbose):
                     if chunk:
                         f.write(chunk)
 
@@ -53,27 +55,44 @@ class Prokaryote(setuptools.Command):
             file.close()
 
 
-class Test(setuptools.command.test.test):
+class Test(setuptools.Command):
     user_options = [
         ("pytest-args=", "a", "arguments to pass to py.test")
     ]
 
     def initialize_options(self):
-        setuptools.command.test.test.initialize_options(self)
-
         self.pytest_args = []
 
     def finalize_options(self):
-        setuptools.command.test.test.finalize_options(self)
+        pass
 
-        self.test_args = []
-
-        self.test_suite = True
-
-    def run_tests(self):
+    def run(self):
         import pytest
+        import unittest
+        from cellprofiler.utilities.cpjvm import cp_start_vm
+        from cellprofiler.main import stop_cellprofiler
+        #
+        # Monkey-patch pytest.Function
+        # See https://github.com/pytest-dev/pytest/issues/1169
+        #
+        try:
+            from _pytest.unittest import TestCaseFunction
+            def runtest(self):
+                setattr(self._testcase, "__name__", self.name)
+                self._testcase(result=self)
+            TestCaseFunction.runtest = runtest
+        except:
+            pass
 
+        # Tell Ilastik to run on only a single thread during testing
+        try:
+            from ilastik.core.jobMachine import GLOBAL_WM
+            GLOBAL_WM.set_thread_count(1)
+        except:
+            pass
+        cp_start_vm()
         errno = pytest.main(self.pytest_args)
+        stop_cellprofiler()
 
         sys.exit(errno)
 
@@ -112,7 +131,7 @@ setuptools.setup(
     description="",
     entry_points={
         'console_scripts': [
-
+            "cellprofiler=cellprofiler.main:main"
         ],
         'gui_scripts': [
 
@@ -133,15 +152,15 @@ setuptools.setup(
     long_description="",
     name="cellprofiler",
     packages=[
-        "cellprofiler"
+        "cellprofiler", "cellprofiler.modules", "cellprofiler.modules.plugins",
+        "cellprofiler.utilities", "cellprofiler.cpmath",
+        "cellprofiler.gui", "cellprofiler.gui.html", 
+        "cellprofiler.icons", "cellprofiler.matlab", "contrib", "imagej"
     ],
     setup_requires=[
         "clint",
         "requests",
-        "pytest"
-    ],
-    tests_require=[
-        "pytest"
+        "pytest>=2.8"
     ],
     url="https://github.com/CellProfiler/CellProfiler",
     version="2.2.0"

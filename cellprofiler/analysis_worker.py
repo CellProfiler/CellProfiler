@@ -696,6 +696,7 @@ class AnalysisWorker(object):
                             report_socket)
                     print  "HASH", reply.verification_hash
                     try:
+                        from cellprofiler.utilities.rpdb import Rpdb
                         rpdb = Rpdb(verification_hash=reply.verification_hash, 
                                     port_callback=pc)
                     except:

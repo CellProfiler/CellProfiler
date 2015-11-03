@@ -12,7 +12,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
-from bioformats import load_image
+from bioformats import load_image, write_image, PT_UINT8
 import base64
 import numpy as np
 import os
@@ -21,7 +21,6 @@ from StringIO import StringIO
 import tempfile
 import unittest
 import zlib
-import PIL.Image
 import hashlib
 
 from cellprofiler.preferences import set_headless
@@ -764,10 +763,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         r.seed(1101)
         labels = r.randint(0,10, size=(30,20)).astype(np.uint8)
         handle, name = tempfile.mkstemp(".png")
-        fd = os.fdopen(handle, "wb")
-        img = PIL.Image.fromarray(labels, "L")
-        img.save(fd, "PNG")
-        fd.close()
+        write_image(name, labels, PT_UINT8)
+        os.close(handle)
         png_path, png_file = os.path.split(name)
         sbs_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         csv_text = """%s_%s,%s_%s,%s_DNA,%s_DNA
@@ -823,8 +820,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             r = np.random.RandomState()
             r.seed(1101)
             labels = r.randint(0,10, size=(30,20)).astype(np.uint8)
-            img = PIL.Image.fromarray(labels, "L")
-            img.save(path, "PNG")
+            write_image(path, labels, PT_UINT8)
             csv_text = ("Image_FileName_MyFile,Image_PathName_MyFile,Metadata_Unicode\n"
                         "%s,%s,%s\n" % 
                         (filename.encode('utf8'), base_path.encode('utf8'),

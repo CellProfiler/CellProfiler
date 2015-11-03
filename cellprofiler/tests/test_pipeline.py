@@ -1352,6 +1352,10 @@ class ATestModule(cpm.CPModule):
             
     
 class MyClassForTest0801(cpm.CPModule):
+    module_name = "Test0801"
+    category = "Test"
+    variable_revision_number = 1
+    
     def create_settings(self):
         self.my_variable = cps.Text('','')
     def settings(self):

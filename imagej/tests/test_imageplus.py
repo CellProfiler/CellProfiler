@@ -39,7 +39,7 @@ class TestImagePlus(unittest.TestCase):
         file_name = os.path.join(
             self.root_dir, "ExampleSBSImages", "Channel1-01-A-01.tif")
         ip = I.load_imageplus(file_name)
-        self.assertTrue(J.to_string(ip.o).startswith("imp"))
+        self.assertTrue(ip.getHeight() > 0)
         
     def test_01_02_get_id(self):
         file_name = os.path.join(

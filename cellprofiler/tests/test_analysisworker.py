@@ -40,8 +40,12 @@ from cellprofiler.modules.tests import\
      example_images_directory, maybe_download_example_image, maybe_download_sbs
 from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 
-cpprefs.set_headless()
-
+def has_rpdb():
+    try:
+        from cellprofiler.utilities.rpdb import Rpdb
+        return True
+    except:
+        return False
 
 class TestAnalysisWorker(unittest.TestCase):
     @classmethod
@@ -655,7 +659,8 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cpanalysis.Ack())
         self.awthread.ecute()
-        
+    
+    @unittest.skipIf(not has_rpdb(), "rpdb functionality is disabled")
     def test_03_07_a_sad_ending(self):
         #
         # Run using the bad pipeline and lead the analysis worker

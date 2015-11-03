@@ -9,9 +9,12 @@ addons:
       - python-mysqldb
       - python-numpy
       - python-pandas
+      - python-pip
       - python-scipy
       - python-tk
       - python-wxgtk2.8
+env:
+  - LC_ALL="en_US.UTF-8"
 before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
@@ -32,25 +35,18 @@ virtualenv:
 install:
   - pip install --upgrade pip
   - pip install --upgrade wheel
-  - pip install --upgrade cython
+  - pip install --upgrade pytest>=2.8
+  - pip install cython
+#
+# Explicitly install Javabridge here - if you let it get installed implicitly
+# by parsing requirements.txt, it is somehow linked to the wrong version
+# of numpy
+#
+  - pip install --no-deps javabridge
   - pip install -r requirements.txt
   - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
   - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
-  - python setup.py prokaryote
-  - python CellProfiler.py --build-and-exit
+  - pip freeze
 script:
-  - py.test cellprofiler/matlab/tests/
-  - py.test cellprofiler/tests/test_analysis.py
-  - py.test cellprofiler/tests/test_analysisworker.py
-  - py.test cellprofiler/tests/test_cellprofiler.py
-  - py.test cellprofiler/tests/test_haralick.py
-  - py.test cellprofiler/tests/test_image.py
-  - py.test cellprofiler/tests/test_measurements.py
-  - py.test cellprofiler/tests/test_nowx.py
-  - py.test cellprofiler/tests/test_objects.py
-  - py.test cellprofiler/tests/test_pipeline.py
-  - py.test cellprofiler/tests/test_preferences.py
-  - py.test cellprofiler/tests/test_settings.py
-  - py.test cellprofiler/tests/test_variable.py
-  - py.test cellprofiler/tests/test_workspace.py
-#  - python cpnose.py --with-javabridge --noguitests cellprofiler/modules/tests 2>&1 | egrep -v "(^\[INFO\]|\[Thread-0\]|\[Thread-1\]|\[AWT\-AppKit\]|Exception\sKeyError|\s*self\.id\.close\(\)|.*\sRuntimeWarning\:\sFound\smurdered\sidentifier|Warning\:\sorg\.apache\.xerces\.parsers\.SAXParser\:)"
+  - python setup.py -q prokaryote
+  - python setup.py develop --no-deps install test

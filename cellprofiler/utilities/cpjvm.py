@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 
 import javabridge
 import bioformats
+import glob
 import logging
 import os
 import sys
@@ -25,15 +26,10 @@ logger = logging.getLogger(__name__)
 
 def get_path_to_jars():
     '''Return the path to CellProfiler's jars directory'''
-    if hasattr(sys, 'frozen') and sys.platform != 'darwin':
-        # Starting path is base/CellProfiler - split off CellProfiler
-        start_path = sys.argv[0]
-        split_count = 1
-    else:
-        # Starting path is base/cellprofiler/utilities/cpjvm.py
-        # Split 3 times.
-        start_path = __file__
-        split_count = 3
+    # Starting path is base/cellprofiler/utilities/cpjvm.py
+    # Split 3 times.
+    start_path = __file__
+    split_count = 3
     root_path = os.path.abspath(start_path)
     for _ in range(split_count):
         root_path = os.path.split(root_path)[0]
@@ -66,40 +62,21 @@ def get_patcher_args(class_path):
     returns a sequence of arguments to add to the JVM args
     '''
     
-    patchers = filter((lambda x:x.find("ij1-patcher") >=0), class_path)
-    if len(patchers) > 0:
+    patchers = filter(
+        (lambda x:os.path.split(x)[1].startswith("prokaryote")), class_path)
+    if len(patchers) > 0 and False:
         patcher = patchers[0]
         return ["-javaagent:%s=init" % patcher]
-    logger.warn("Did not find ij1-patcher.jar")
+    logger.warn("Did not find prokaryote in %s" % repr(class_path))
     return []
 
 def get_jars():
     '''Get the final list of JAR files passed to javabridge'''
     imagej_path = get_path_to_jars()
-    if hasattr(sys, 'frozen'):
-        jar_files = [
-            jar_filename
-            for jar_filename in os.listdir(imagej_path)
-            if jar_filename.lower().endswith(".jar")]
-        sort_dict = { "cellprofiler-java.jar": -1}
-        jdcp = os.path.join(
-            imagej_path, "cellprofiler-java-dependencies-classpath.txt")
-        if os.path.isfile(jdcp):
-            with open(jdcp, "r") as fd:
-                jars = fd.readline().split(os.pathsep)
-                sort_dict.update(dict([
-                    (os.path.split(j)[-1], i) for i, j in enumerate(jars)]))
-        def sort_fn(a, b):
-            aa,bb = [(sort_dict.get(x, sys.maxint), x)
-                     for x in a, b]
-            return cmp(aa, bb)
-        jar_files = sorted(jar_files, cmp = sort_fn)
-    else:
-        import glob
-        # jar_files = get_cellprofiler_jars()
-        jar_files = glob.glob(os.path.abspath('imagej/jars/{}'.format('*.jar')))
 
-    jar_files = [os.path.join(imagej_path, f)  for f in jar_files]
+    jar_files = [os.path.join(imagej_path, f)  
+                 for f in os.listdir(imagej_path)
+                 if f.lower().endswith(".jar")]
     class_path = javabridge.JARS + jar_files
     
     if os.environ.has_key("CLASSPATH"):

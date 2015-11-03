@@ -12,6 +12,10 @@ addons:
       - python-scipy
       - python-tk
       - python-wxgtk2.8
+before_script:
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - sleep 3
 cache:
   apt: true
   directories:
@@ -35,6 +39,18 @@ install:
   - python setup.py prokaryote
   - python CellProfiler.py --build-and-exit
 script:
-  - python cpnose.py --with-javabridge --noguitests cellprofiler/matlab/tests  2>&1 | egrep -v "(^\[INFO\]|\[Thread-0\]|\[Thread-1\]|\[AWT\-AppKit\]|Exception\sKeyError|\s*self\.id\.close\(\)|.*\sRuntimeWarning\:\sFound\smurdered\sidentifier|Warning\:\sorg\.apache\.xerces\.parsers\.SAXParser\:)"
-  - python cpnose.py --with-javabridge --noguitests cellprofiler/modules/tests 2>&1 | egrep -v "(^\[INFO\]|\[Thread-0\]|\[Thread-1\]|\[AWT\-AppKit\]|Exception\sKeyError|\s*self\.id\.close\(\)|.*\sRuntimeWarning\:\sFound\smurdered\sidentifier|Warning\:\sorg\.apache\.xerces\.parsers\.SAXParser\:)"
-  - python cpnose.py --with-javabridge --noguitests cellprofiler/tests         2>&1 | egrep -v "(^\[INFO\]|\[Thread-0\]|\[Thread-1\]|\[AWT\-AppKit\]|Exception\sKeyError|\s*self\.id\.close\(\)|.*\sRuntimeWarning\:\sFound\smurdered\sidentifier|Warning\:\sorg\.apache\.xerces\.parsers\.SAXParser\:)"
+  - py.test cellprofiler/matlab/tests/
+  - py.test cellprofiler/tests/test_analysis.py
+  - py.test cellprofiler/tests/test_analysisworker.py
+  - py.test cellprofiler/tests/test_cellprofiler.py
+  - py.test cellprofiler/tests/test_haralick.py
+  - py.test cellprofiler/tests/test_image.py
+  - py.test cellprofiler/tests/test_measurements.py
+  - py.test cellprofiler/tests/test_nowx.py
+  - py.test cellprofiler/tests/test_objects.py
+  - py.test cellprofiler/tests/test_pipeline.py
+  - py.test cellprofiler/tests/test_preferences.py
+  - py.test cellprofiler/tests/test_settings.py
+  - py.test cellprofiler/tests/test_variable.py
+  - py.test cellprofiler/tests/test_workspace.py
+#  - python cpnose.py --with-javabridge --noguitests cellprofiler/modules/tests 2>&1 | egrep -v "(^\[INFO\]|\[Thread-0\]|\[Thread-1\]|\[AWT\-AppKit\]|Exception\sKeyError|\s*self\.id\.close\(\)|.*\sRuntimeWarning\:\sFound\smurdered\sidentifier|Warning\:\sorg\.apache\.xerces\.parsers\.SAXParser\:)"

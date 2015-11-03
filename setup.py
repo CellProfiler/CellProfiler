@@ -37,7 +37,7 @@ class Prokaryote(setuptools.Command):
             with open(prokaryote, "wb") as f:
                 total_length = int(request.headers.get("content-length"))
 
-                for chunk in clint.textui.progress.bar(request.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
+                for chunk in clint.textui.progress.bar(request.iter_content(chunk_size=1024), expected_size=(total_length / 1024) + 1):
                     if chunk:
                         f.write(chunk)
 

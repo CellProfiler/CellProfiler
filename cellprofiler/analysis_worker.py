@@ -146,7 +146,6 @@ from cellprofiler.analysis import \
      SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE,  \
      OmeroLoginRequest, OmeroLoginReply
 import javabridge as J
-from cellprofiler.utilities.rpdb import Rpdb
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 #
 # CellProfiler expects NaN as a result during calculation

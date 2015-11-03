@@ -9,10 +9,13 @@
 *.so
 *\#
 *~
+/cellprofiler/console/click_example_complex.egg-info
+.cache
 .eggs/
 .idea/
 BatchProfiler/PrintEnv.py
 build
+cellprofiler.egg-info/
 CellProfiler.egg-info/
 cellprofiler/cpmath/_convex_hull.c
 cellprofiler/cpmath/_cpmorphology2.c

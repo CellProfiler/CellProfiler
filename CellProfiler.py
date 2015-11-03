@@ -67,7 +67,7 @@ if os.path.exists(site_packages) and os.path.isdir(site_packages):
     import site
     site.addsitedir(site_packages)
     
-def main(args=[]):
+def main(args = None):
     '''Run CellProfiler
 
     args - command-line arguments, e.g. sys.argv
@@ -89,11 +89,7 @@ def main(args=[]):
         cellprofiler.analysis_worker.aw_parse_args()
         cellprofiler.analysis_worker.main()
         sys.exit(0)
-        
-    if any([arg.startswith('--xml-test-file=') for arg in sys.argv]):
-        import cpnose
-        cpnose.main(*sys.argv)
-        return
+
     options, args = parse_args(args)
     if options.print_version:
         from cellprofiler.utilities.version import \
@@ -519,15 +515,6 @@ def parse_args(args):
                               ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL")) +
                               ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
                               " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
-    
-    parser.add_option(
-        "--xml-test-file",
-        dest = "tests",
-        default = None,
-        metavar = "XML-FILE",
-        help = ("Run unit tests. Tests can be collected by nose using a "
-                "command line such as \"python cpnose.py --collect-only "
-                "--with-xunit --xunit-file=XML-FILE"))
     
     parser.add_option("--code-statistics", 
                           dest = "code_statistics",

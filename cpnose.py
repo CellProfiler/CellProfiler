@@ -153,7 +153,7 @@ class CPShutdownPlugin(nose.plugins.Plugin):
         warnings.filters = self.old_filters
     
     def wantFile(self, filename):
-        if filename.endswith("setup.py"):
+        if filename.endswith("mac_setup.py"):
             return False
         
     def wantDirectory(self, dirname):

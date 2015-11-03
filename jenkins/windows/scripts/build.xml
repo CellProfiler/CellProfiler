@@ -39,7 +39,7 @@
           depends="compile-cpmath, compile-utilities, external-dependencies"/>
 
   <target name="compile-setup-dot-py-amd64">
-    <!-- Compiles setup.py in the directory, setup.py.dir -->
+    <!-- Compiles mac_setup.py in the directory, mac_setup.py.dir -->
     <exec executable="python" failonerror="true"
           dir="${setup.py.dir}">
       <env key="DISTUTILS_USE_SDK" value="1" />

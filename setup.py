@@ -1,114 +1,148 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
-from setuptools import setup
-import sys
-import os
-import os.path
+import clint.textui
 import glob
-from subprocess import call
-import ctypes.util
+import os
+import requests
+import setuptools
+import setuptools.command.build_ext
+import setuptools.command.test
+import sys
 
-sys.path.append('.')
-import cellprofiler.utilities.version
-from external_dependencies import get_cellprofiler_jars
 
-# fix from
-#  http://mail.python.org/pipermail/pythonmac-sig/2008-June/020111.html
-import pytz
-pytz.zoneinfo = pytz.tzinfo
-pytz.zoneinfo.UTC = pytz.UTC
-#
-# It's necessary to install libtiff and libjpeg explicitly
-# so that libtiff can find itself and so that libjpeg
-# is the one that we want and not the one that WX thinks
-# it wants.
-#
-from libtiff.libtiff_ctypes import tiff_h_name
-tiff_dylib = ctypes.util.find_library('tiff')
-jpeg_dylib = ctypes.util.find_library('jpeg')
+class Prokaryote(setuptools.Command):
+    user_options = [
+        ("version=", "v", "version to fetch")
+    ]
 
-# make sure external dependencies match requirements
-import external_dependencies
-external_dependencies.fetch_external_dependencies('fail')
+    def initialize_options(self):
+        pass
 
-if sys.platform == "darwin":
-    import cellprofiler.utilities.version
-    f = open("cellprofiler/frozen_version.py", "w")
-    f.write("# MACHINE_GENERATED\nversion_string = '%s'" % cellprofiler.utilities.version.version_string)
-    f.close()
+    def finalize_options(self):
+        pass
 
-APPNAME = 'CellProfiler'
-APP = ['CellProfiler.py']
-icon_src_path = os.path.join('.', 'artwork')
-DATA_FILES = [('artwork',
-               glob.glob(os.path.join(icon_src_path, '*.png'))+
-               [os.path.join(icon_src_path, "icon_copyrights.txt")])]
-from javabridge import JARS
-imagej_path = os.path.abspath(os.path.join(".", "imagej", "jars"))
-jars = JARS + [os.path.join(imagej_path, jar) for jar in get_cellprofiler_jars()]
-jars.append(os.path.join(
-    imagej_path, "cellprofiler-java-dependencies-classpath.txt"))
-DATA_FILES.append(('imagej/jars', jars))
-OPTIONS = {'argv_emulation': True,
-           'packages': ['cellprofiler', 'contrib', 'imagej', 'javabridge'],
-           'includes': ['numpy', 'scipy', 'sklearn', 'sklearn.utils.sparsetools.*',
-                        'wx', 'matplotlib','email.iterators', 'smtplib', 'zmq',
-                        'javabridge', 'bioformats', 
-                        'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name,
-                        'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy', 'readline'],
-           'excludes': ['pylab', 'Tkinter', 'Cython', 'scipy.weave',
-                        'virtualenv'],
-           'resources': ['artwork/CellProfilerIcon.png'],
-           'iconfile' : 'artwork/CellProfilerIcon.icns',
-           'frameworks' : [tiff_dylib, jpeg_dylib],
-           'plist': { 
-               "LSArchitecturePriority": ["i386"],
-               "LSMinimumSystemVersion": "10.6.8", # See #871
-               "CFBundleName": "CellProfiler",
-               "CFBundleIdentifier": "org.cellprofiler.CellProfiler",
-               "CFBundleShortVersionString": cellprofiler.utilities.version.dotted_version,
-               "CFBundleDocumentTypes": [{
-                   "CFBundleTypeExtensions":["cpproj"],
-                   "CFBundleTypeIconFile":"artwork/CellProfilerIcon.icns",
-                   "CFBundleTypeName":"CellProfiler project",
-                   "CFBundleTypeRole":"Editor"
-                   }, {
-                       "CFBundleTypeExtensions":["cppipe"],
-                       "CFBundleTypeIconFile":"artwork/CellProfilerIcon.icns",
-                       "CFBundleTypeName":"CellProfiler pipeline",
-                       "CFBundleTypeRole":"Editor"
-                       }]
-           }
-           }
+    def run(self):
+        VERSION = "1.0.2"
 
-if sys.argv[-1] == 'py2app':
-    assert not os.path.exists("build"), "Remove the build and dist directories before building app!"
-    assert not os.path.exists("dist"), "Remove the build and dist directories before building app!"
+        directory = os.path.join("imagej", "jars")
 
-setup(
-    app=APP,
-    package_data={'javabridge':['jars/*.jar']},
-    data_files=DATA_FILES,
-    options={'py2app': OPTIONS},
-    setup_requires=['py2app'],
-    name="CellProfiler"
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        prokaryote = "{}/prokaryote-{}.jar".format(os.path.abspath(directory), VERSION)
+
+        resource = "https://github.com/CellProfiler/prokaryote/" + "releases/download/{tag}/prokaryote-{tag}.jar".format(tag=VERSION)
+
+        request = requests.get(resource, stream=True)
+
+        if not os.path.isfile(prokaryote):
+            with open(prokaryote, "wb") as f:
+                total_length = int(request.headers.get("content-length"))
+
+                for chunk in clint.textui.progress.bar(request.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
+                    if chunk:
+                        f.write(chunk)
+
+                        f.flush()
+
+        dependencies = os.path.abspath("imagej/jars/cellprofiler-java-dependencies-classpath.txt")
+
+        if not os.path.isfile(dependencies):
+            file = open(dependencies, "w")
+
+            file.write(prokaryote)
+
+            file.close()
+
+
+class Test(setuptools.command.test.test):
+    user_options = [
+        ("pytest-args=", "a", "arguments to pass to py.test")
+    ]
+
+    def initialize_options(self):
+        setuptools.command.test.test.initialize_options(self)
+
+        self.pytest_args = []
+
+    def finalize_options(self):
+        setuptools.command.test.test.finalize_options(self)
+
+        self.test_args = []
+
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+
+        errno = pytest.main(self.pytest_args)
+
+        sys.exit(errno)
+
+
+setuptools.setup(
+    author="Allen Goodman",
+    author_email="allen.goodman@icloud.com",
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+        "Programming Language :: C",
+        "Programming Language :: C++",
+        "Programming Language :: Cython",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 2",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Topic :: Scientific/Engineering",
+    ],
+    cmdclass={
+        "prokaryote": Prokaryote,
+        "test": Test
+    },
+    data_files=[
+        (
+            os.path.join("artwork"),
+            glob.glob(os.path.join("artwork", '*'))
+        ),
+        (
+            os.path.join("imagej", "jars"),
+            glob.glob(os.path.join("imagej", "jars", "*.jar"))
+        )
+    ],
+    description="",
+    entry_points={
+        'console_scripts': [
+
+        ],
+        'gui_scripts': [
+
+        ]
+    },
+    install_requires=[
+        'h5py',
+        'pyzmq',
+        'matplotlib',
+        'python-bioformats',
+        'centrosome',
+        'MySQL-python',
+        'libtiff',
+        'scikit-learn',
+    ],
+    keywords="",
+    license="BSD",
+    long_description="",
+    name="cellprofiler",
+    packages=[
+        "cellprofiler"
+    ],
+    setup_requires=[
+        "clint",
+        "requests",
+        "pytest"
+    ],
+    tests_require=[
+        "pytest"
+    ],
+    url="https://github.com/CellProfiler/CellProfiler",
+    version="2.2.0"
 )
-
-if sys.argv[-1] == 'py2app':
-    # there should be some way to do this within setup's framework, but I don't
-    # want to figure it out right now, and our setup is going to be changing
-    # significantly soon, anyway.
-    call('find dist/CellProfiler.app -name tests -type d | xargs rm -rf', shell=True)
-    #call('lipo dist/CellProfiler.app/Contents/MacOS/CellProfiler -thin i386 -output dist/CellProfiler.app/Contents/MacOS/CellProfiler', shell=True)
-    call('rm dist/CellProfiler.app/Contents/Resources/lib/python2.7/cellprofiler/artwork/*.png', shell=True)

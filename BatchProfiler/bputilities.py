@@ -420,7 +420,7 @@ def build_cellprofiler(
     touch_job = "CellProfiler-touch-%s" % git_hash
     if version > "20120607000000":
         python_on_tgt_os(
-            ["external_dependencies.py", "-o"],
+            ["setup.py", "prokaryote"],
             group_name, 
             mvn_job,
             queue_name,

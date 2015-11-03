@@ -67,7 +67,7 @@ if os.path.exists(site_packages) and os.path.isdir(site_packages):
     import site
     site.addsitedir(site_packages)
     
-def main(args):
+def main(args=[]):
     '''Run CellProfiler
 
     args - command-line arguments, e.g. sys.argv
@@ -805,7 +805,7 @@ def build_extensions():
     #
     # Check for dependencies and compile if necessary
     #
-    compile_scripts = [(os.path.join('cellprofiler', 'utilities', 'setup.py'), cellprofiler.utilities.setup)]
+    compile_scripts = [(os.path.join('cellprofiler', 'utilities', 'mac_setup.py'), cellprofiler.utilities.setup)]
     env = os.environ.copy()
     old_pythonpath = os.getenv('PYTHONPATH', None)
 

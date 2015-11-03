@@ -26,6 +26,11 @@ from cellprofiler.modules.identify import R_PARENT
 from cellprofiler.preferences import \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.settings import YES, NO
+from cellprofiler.gui.help import \
+     USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+import cellh5
+import cellh5.cellh5write
+import numpy as np
 
 OFF_OBJECTS_COUNT = 0
 OFF_IMAGES_COUNT = 1
@@ -322,7 +327,7 @@ class ExportToCellH5(cpm.CPModule):
         else:
             subfile = master_dict[pid]
 
-        ch5_master = cellh5write.CH5MasterFile(master_file, "a")
+        ch5_master = cellh5.cellh5write.CH5MasterFile(master_file, "a")
         try:
             ch5_master.add_link_to_coord(self._to_ch5_coord(*path), subfile)
         finally:
@@ -343,7 +348,7 @@ class ExportToCellH5(cpm.CPModule):
         subfile_name = self.get_subfile_name(workspace)
         
         ### create CellH5 file
-        with cellh5write.CH5FileWriter(subfile_name, mode="a") as c5_file:
+        with cellh5.cellh5write.CH5FileWriter(subfile_name, mode="a") as c5_file:
             ### add Postion (==plate, well, site) triple
             c5_pos = c5_file.add_position(self._to_ch5_coord(*path))
             
@@ -359,7 +364,7 @@ class ExportToCellH5(cpm.CPModule):
                     
                     ### create lablel writer for incremental writing
                     c5_label_writer = c5_pos.add_label_image(shape=shape5D, dtype=dtype5D)
-                    c5_label_def = cellh5write.CH5ImageRegionDefinition()
+                    c5_label_def = cellh5.cellh5write.CH5ImageRegionDefinition()
                     
                 c5_label_writer.write(labels, c=ch_idx, t=0, z=0)
                 c5_label_def.add_row(region_name=objects_name, channel_idx=ch_idx)
@@ -393,7 +398,7 @@ class ExportToCellH5(cpm.CPModule):
             
             ### create image writer for incremental writing
             c5_image_writer = c5_pos.add_image(shape=shape5D, dtype=dtype5D)
-            c5_image_def = cellh5write.CH5ImageChannelDefinition()
+            c5_image_def = cellh5.cellh5write.CH5ImageChannelDefinition()
         
             ch_idx = 0
             for image_group in self.images_to_export:

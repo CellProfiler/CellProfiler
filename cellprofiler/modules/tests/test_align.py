@@ -751,7 +751,7 @@ Name the second output image:AlignedImage2
         
     def test_05_01_align_self(self):
         '''Align an image from the fly screen against itself.
-        
+
         This is a regression test for the bug, IMG-284
         '''
         image = read_example_image("ExampleFlyImages",

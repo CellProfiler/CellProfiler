@@ -559,7 +559,7 @@ class PlateViewer(object):
                 if image.shape[1] + offs[1] > megapicture.shape[1]:
                     image = image[:, :(megapicture.shape[1] - offs[1]), :]
                 megapicture[offs[0]:(offs[0]+image.shape[0]),
-                            offs[1]:(offs[1]+image.shape[1]), :] += image
+                            offs[1]:(offs[1]+image.shape[1]), :] += image.astype(megapicture.dtype)
         self.axes.cla()
         self.axes.imshow(megapicture)
         self.canvas.draw()

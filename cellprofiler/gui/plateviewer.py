@@ -151,7 +151,7 @@ class PlateData(object):
             a[row, col] = wd
         self.plate_layout = (n_rows, n_cols)
         return a
-                
+
 class PlateViewer(object):
     '''The PlateViewer class lets the user view the files associated with plates
     
@@ -167,8 +167,14 @@ class PlateViewer(object):
         self.plate_bitmap = None
         self.frame.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.splitter = wx.SplitterWindow(self.frame)
+        try:
+            self.splitter.Bind(wx.EVT_SPLITTER_DOUBLECLICKED, 
+                               self.on_splitter_dclick)
+        except:
+            pass
         self.frame.Sizer.Add(self.splitter, 1, wx.EXPAND)
         self.sr_panel = wx.Panel(self.splitter)
+        self.sr_panel.SetInitialSize((120, -1))
         self.sr_panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.plate_choice = wx.Choice(self.sr_panel)
         self.sr_panel.Sizer.Add(self.plate_choice, 0, wx.LEFT | wx.ALL, 4)
@@ -177,7 +183,7 @@ class PlateViewer(object):
         rows, cols = data.plate_layout
         w, h = self.plate_panel.GetTextExtent("".join(["00"] * cols))
         h *= rows
-        self.plate_panel.SetMinSize((w, h))
+        self.plate_panel.SetInitialSize((w, h))
         self.canvas_panel = wx.Panel(self.splitter)
         self.canvas_panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         control_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -237,6 +243,10 @@ class PlateViewer(object):
         self.subcanvaspanel.Bind(wx.EVT_SIZE, self.on_subcanvaspanel_size)
         self.on_update()
         self.frame.Layout()
+
+    def on_splitter_dclick(self, event):
+        assert isinstance(event, wx.SplitterEvent)
+        event.Veto()
         
     def get_border_height(self):
         '''The border along the top of the plate'''

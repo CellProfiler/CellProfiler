@@ -273,7 +273,7 @@ class ClassifyObjects(cpm.CPModule):
             <ul>
             <li><i>%(BC_EVEN)s:</i> Choose this if you want to specify 
             bins of equal size, bounded by upper and lower limits. If you 
-            want two bins, choose thsi option and then provide a single 
+            want two bins, choose this option and then provide a single 
             threshold when asked.</li>
             <li><i>%(BC_CUSTOM)s:</i> Choose this option to create the 
             indicated number of bins  at evenly spaced intervals between the 

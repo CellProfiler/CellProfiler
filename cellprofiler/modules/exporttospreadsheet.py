@@ -175,7 +175,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             """ % globals())
         
         self.prefix = cps.Text(
-            "Filename prefix:", "MyExpt_",
+            "Filename prefix", "MyExpt_",
             doc="""(<i>Used only if "Add a prefix to file names?" is %(YES)s</i>)
             
             The text you enter here is prepended to the names of each file

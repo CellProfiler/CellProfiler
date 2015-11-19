@@ -3,17 +3,6 @@
    TO-DO - load the default preferences from somewhere.
            Create a function to save the preferences.
            Create a function to populate a handles structure with preferences.
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
 import logging

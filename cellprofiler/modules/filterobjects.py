@@ -28,16 +28,6 @@ mass of the remaining objects.</li>
 See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>,
 <b>MeasureCorrelation</b>, and <b>CalculateRatios</b>.
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
 
 import logging
 logger = logging.getLogger(__name__)

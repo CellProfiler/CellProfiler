@@ -21,15 +21,7 @@ the cluster root path, i.e., <tt>/server_name/your_name/</tt>.
 
 For more details on batch processing, please see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.
 '''%globals()
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
+
 
 import logging
 logger = logging.getLogger(__name__)

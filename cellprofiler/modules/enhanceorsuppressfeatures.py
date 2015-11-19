@@ -7,17 +7,6 @@ to the rest of the image, by applying image processing filters to the image. It
 produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
 '''
 
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
-
 import numpy as np
 from scipy.ndimage import gaussian_filter
 

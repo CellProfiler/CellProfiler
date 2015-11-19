@@ -1,20 +1,6 @@
 '''bitmaplabelbutton.py - a button that displays a bitmap to the left of a label
 
 '''
-#CellProfiler is distributed under the GNU General Public License.
-#See the accompanying file LICENSE for details.
-
-#Copyright (c) 2003-2009 Massachusetts Institute of Technology
-#Copyright (c) 2009-2015 Broad Institute
-#All rights reserved.
-#
-# Some code below adapted from buttons.py
-# Copyright:   (c) 1999 by Total Control Software
-# Licence:     wxWindows license
-#
-#Please see the AUTHORS file for credits.
-#
-#Website: http://www.cellprofiler.org
 
 import wx
 from wx.lib.buttons import GenBitmapTextButton

@@ -1,17 +1,4 @@
 '''test_hdf5_dict - test the hdf5_dict module
-
-CellProfiler is distributed under the GNU General Public License,
-but this file is licensed under the more permissive BSD license.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-Copyright (c) 2011 Institut Curie
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
 import h5py

@@ -1,17 +1,5 @@
 """ an htmldialog with an ok button
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
-
 
 long_text = """\
 This is a very important parameter which tells the module what you are

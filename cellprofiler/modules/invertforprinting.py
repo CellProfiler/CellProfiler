@@ -12,15 +12,6 @@ images or one color image as output.
 
 If you want to invert the grayscale intensities of an image, use <b>ImageMath</b>.
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
 
 import numpy as np
 

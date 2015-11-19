@@ -24,15 +24,6 @@ where <code>JVM_HEAP_SIZE</code> is the amount of memory to be reserved for the 
 for <code>JVM_HEAP_SIZE</code> include <i>512000k</i>, <i>512m</i>, <i>1g</i>, etc. For example,
 to increase the JVM heap memory to 2GB, use <code>--jvm-heap-size=2g</code></p>
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
 
 import logging
 logger = logging.getLogger(__name__)

@@ -27,15 +27,7 @@ In the above example the pipeline "mypipeline" will be run with "1" as omero obj
 <li>University of Dundee</li>
 </ul>
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
+
 
 
 # module author: Bram Gerritsen

@@ -1,16 +1,5 @@
 /* get_proper_case_filename.c - retrieve a filename in its correct case
  *
- * CellProfiler is distributed under the GNU General Public License,
- * but this file is licensed under the more permissive BSD license.
- * See the accompanying file LICENSE for details.
- *
- * Copyright (c) 2003-2009 Massachusetts Institute of Technology
- * Copyright (c) 2009-2015 Broad Institute
- *
- * Please see the AUTHORS file for credits.
- *
- * Website: http://www.cellprofiler.org
- *
  * Windows file names are case-insensitive, but Unix file names are not.
  * If a user uses the wrong case in Windows, it may not have any effect
  * locally, but will fail on the cluster.

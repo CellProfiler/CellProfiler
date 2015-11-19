@@ -5,15 +5,7 @@ This module creates an html file that displays the specified
 images, and optionally a link to a compressed ZIP file of all of the images shown.
 '''
 
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
+
 
 
 import os

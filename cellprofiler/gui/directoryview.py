@@ -1,17 +1,7 @@
 """DirectoryView.py - a directory viewer geared to image directories
 
-    TODO - long-term, this should Matlab imformats or CPimread to get the list of images
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
+    TODO - long-term, this should Matlab imformats or CPimread to get the list of images"""
 
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
 import logging
 import os
 import sys

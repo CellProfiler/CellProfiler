@@ -66,16 +66,6 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
 
 import logging
 import numpy as np
@@ -88,9 +78,7 @@ from scipy.io import loadmat
 import sys
 import xml.dom.minidom as DOM
 import urllib2
-
 logger = logging.getLogger(__name__)
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
@@ -102,8 +90,6 @@ import cellprofiler.preferences as cpprefs
 import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
-
-
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT

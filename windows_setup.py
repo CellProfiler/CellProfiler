@@ -1,16 +1,3 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
 """Windows setup file
 To invoke, from the command-line type:
 python windows_setup.py py2exe msi
@@ -20,15 +7,6 @@ build: contains the collection of files needed during packaging
 dist:  the contents that need to be given to the user to run WormProfiler.
 output: contains the .msi if you did the msi commmand
 """
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
 
 from distutils.core import setup
 import distutils.core

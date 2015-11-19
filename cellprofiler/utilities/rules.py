@@ -62,7 +62,7 @@ class Rules(object):
             score = np.zeros((len(values),self.weights.shape[1]),float)
             if len(values) == 0:
                 return score
-            mask = ~np.isnan(values)
+            mask = ~(np.isnan(values) | np.isinf(values))
             if self.comparitor == "<":
                 hits = values[mask] < self.threshold
             elif self.comparitor == "<=":
@@ -74,7 +74,7 @@ class Rules(object):
             else:
                 raise NotImplementedError('Unknown comparitor, "%s".'%self.comparitor)
             score[mask,:] = self.weights[1-hits.astype(int),:]
-            score[~mask,:] = np.NaN
+            score[~mask,:] = self.weights[np.newaxis, 1]
             return score
             
     def __init__(self):

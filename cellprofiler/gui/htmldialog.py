@@ -36,11 +36,3 @@ class HTMLDialog(wx.Dialog):
         sizer.Add(self.CreateStdDialogButtonSizer(wx.OK), flag=wx.CENTER)
         self.SetSizer(sizer)
         html.SetFocus()
-        # self.Layout()
-
-
-if __name__ == "__main__":
-    app = wx.PySimpleApp()
-    dialog = HTMLDialog(None, "Title", long_text)
-    choice = dialog.Show()
-    app.MainLoop()

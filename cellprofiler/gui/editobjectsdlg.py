@@ -2167,22 +2167,3 @@ class EditObjectsDialog(wx.Dialog):
                 del self.artists[artist]
             if display:
                 self.display()
-
-
-if __name__ == "__main__":
-    import javabridge
-    import bioformats
-
-    javabridge.start_vm(class_path=bioformats.JARS)
-    try:
-        if len(sys.argv) > 2:
-            labels = [bioformats.load_image(sys.argv[1], rescale=False)]
-            img = bioformats.load_image(sys.argv[2])
-        else:
-            img = bioformats.load_image(sys.argv[1])
-            labels = [np.zeros(img.shape[:2], int)]
-        app = wx.PySimpleApp(True)
-        dlg = EditObjectsDialog(img, labels, True, "Hello, world")
-        dlg.ShowModal()
-    finally:
-        javabridge.kill_vm()

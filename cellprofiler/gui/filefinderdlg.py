@@ -191,17 +191,3 @@ class FileFinderDialog(wx.Dialog):
             except:
                 pass
             item = self.tree_ctrl.GetNextVisible(item)
-
-
-if __name__ == "__main__":
-    class MyApp(wx.App):
-        def OnInit(self):
-            dlg = FileFinderDialog(None, ['/Users/tjones/CellProfilerMine.git',
-                                          '/Volumes/plateformes/incell/Screening Externe_BFX Projects Calls/E-003_CILS_BENMERAH/Crible_E003'],
-                                   size=(640, 480),
-                                   style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
-            dlg.ShowModal()
-
-
-    my_app = MyApp(False)
-    my_app.MainLoop()

@@ -68,22 +68,3 @@ class NewVersionDialog(wx.Dialog):
         if not wx.LaunchDefaultBrowser(self.url):
             wx.MessageBox("Could not open default browser (%s)" % self.url,
                           "Can't open browser", wx.ICON_EXCLAMATION)
-
-
-if __name__ == "__main__":
-    def cb(new_pref):
-        print "Pref changed to", new_pref
-
-
-    def sk():
-        print "skip this version"
-
-
-    app = wx.PySimpleApp()
-    dialog = NewVersionDialog(None, "New version available",
-                              "<h1>NEW REVISION: TEH AWESOME</h1>awesome new features!<br>get it now!",
-                              "http://cellprofiler.org/",
-                              True, cb, sk)
-    dialog.ShowModal()
-    dialog.Destroy()
-    app.MainLoop()

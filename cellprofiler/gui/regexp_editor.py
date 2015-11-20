@@ -328,9 +328,9 @@ TOK_REPEAT = 4
 TOK_SPECIAL = 5
 TOK_DEFINITION = 6
 
-HARDCODE_ESCAPES = set([r"\\", r"\a", r"\b", r"\d", r"\f", r"\n", r"\r",
-                        r"\s", r"\t", r"\v", r"\w",
-                        r"\A", r"\B", r"\D", r"\S", r"\W", r"\Z"])
+HARDCODE_ESCAPES = {r"\\", r"\a", r"\b", r"\d", r"\f", r"\n", r"\r", r"\s",
+                    r"\t", r"\v", r"\w", r"\A", r"\B", r"\D", r"\S", r"\W",
+                    r"\Z"}
 OCTAL_DIGITS = set("01234567")
 DECIMAL_DIGITS = set("0123456789")
 HEXIDECIMAL_DIGITS = set("0123456789ABCDEFabcdef")

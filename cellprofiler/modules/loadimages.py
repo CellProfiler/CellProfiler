@@ -125,13 +125,15 @@ IO_ALL = (IO_IMAGES, IO_OBJECTS)
 IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
 
 # The following is a list of extensions supported by PIL 1.1.7
-SUPPORTED_IMAGE_EXTENSIONS = set([
-    '.ppm', '.grib', '.im', '.rgba', '.rgb', '.pcd', '.h5', '.jpe', '.jfif',
-    '.jpg', '.fli', '.sgi', '.gbr', '.pcx', '.mpeg', '.jpeg', '.ps', '.flc',
-    '.tif', '.hdf', '.icns', '.gif', '.palm', '.mpg', '.fits', '.pgm', '.mic',
-    '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib',
-    '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr',
-    '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'])
+SUPPORTED_IMAGE_EXTENSIONS = {'.ppm', '.grib', '.im', '.rgba', '.rgb', '.pcd',
+                              '.h5', '.jpe', '.jfif', '.jpg', '.fli', '.sgi',
+                              '.gbr', '.pcx', '.mpeg', '.jpeg', '.ps', '.flc',
+                              '.tif', '.hdf', '.icns', '.gif', '.palm', '.mpg',
+                              '.fits', '.pgm', '.mic', '.fit', '.xbm', '.eps',
+                              '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib',
+                              '.ras', '.cur', '.fpx', '.png', '.msp', '.iim',
+                              '.wmf', '.tga', '.bufr', '.ico', '.psd', '.xpm',
+                              '.arg', '.pdf', '.tiff'}
 SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 # The following is a list of the extensions as gathered from Bio-formats
 # Missing are .cfg, .csv, .html, .htm, .log, .txt, .xml and .zip which are likely
@@ -161,9 +163,8 @@ SUPPORTED_IMAGE_EXTENSIONS.update(
      ".v", ".vms", ".vsi", ".vws", ".wat", ".wav", ".wlz", ".xdce",
      ".xlog", ".xqd", ".xqf", ".xv", ".xys", ".zfp", ".zfr",
      ".zpo", ".zvi"])
-SUPPORTED_MOVIE_EXTENSIONS = set(
-    ['.avi', '.mpeg', '.stk', '.flex', '.mov', '.tif',
-     '.tiff', '.zvi'])
+SUPPORTED_MOVIE_EXTENSIONS = {'.avi', '.mpeg', '.stk', '.flex', '.mov', '.tif',
+                              '.tiff', '.zvi'}
 
 FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 SUPPORTED_IMAGE_EXTENSIONS.update([

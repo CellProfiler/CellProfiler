@@ -810,7 +810,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
         files_to_check = []
         if self.wants_everything:
-            object_names = set((IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS))
+            object_names = {IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS}
             object_providers = workspace.pipeline.get_provider_dictionary(
                 cps.OBJECT_GROUP, self)
             object_names.update(object_providers.keys())

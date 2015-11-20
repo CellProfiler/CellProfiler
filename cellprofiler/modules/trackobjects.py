@@ -2436,7 +2436,7 @@ class TrackObjects(cpm.CPModule):
             if x[i] < start_end_end:
                 a[i + 1] = x[i] + 1
                 d[a[i + 1]] = i + 1
-            elif x[i] >= merge_off and x[i] < merge_end:
+            elif merge_off <= x[i] < merge_end:
                 # -------------------
                 #
                 #    MERGE

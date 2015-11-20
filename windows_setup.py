@@ -381,7 +381,7 @@ try:
     # Not present prior to 2.2
     #
     zmq_version = tuple([int(_) for _ in zmq.__version__.split(".")])
-    if zmq_version >= (2, 2, 0) and zmq_version < (14, 0, 0):
+    if (2, 2, 0) <= zmq_version < (14, 0, 0):
         opts['py2exe']['includes'] += ["zmq.core.pysocket"]
     if zmq_version >= (14, 0, 0):
         # Backends are new in 14.x

@@ -172,8 +172,8 @@ class CalculateMath(cpm.CPModule):
                 self.operand_measurement.text = self.operand_measurement_text()
                 result = [self.operand_choice]
                 result += (
-                [self.operand_objects] if self.operand_choice == MC_OBJECT \
-                    else [])
+                [self.operand_objects] if self.operand_choice == MC_OBJECT
+                else [])
                 result += [self.operand_measurement, self.multiplicand,
                            self.exponent]
                 return (result)

@@ -2519,7 +2519,7 @@ CREATE TABLE %s (
         object_table_pairs = [x for x in object_table_pairs if
                               x[0] != selected_object]
         for (current_object, current_table) in object_table_pairs:
-            statement = " ".join((statement, "INNER JOIN %s ON" % current_table, \
+            statement = " ".join((statement, "INNER JOIN %s ON" % current_table,
                                   " AND ".join(("%s.%s = %s.%s" % (
                                   all_objects[selected_object], C_IMAGE_NUMBER,
                                   current_table, C_IMAGE_NUMBER),

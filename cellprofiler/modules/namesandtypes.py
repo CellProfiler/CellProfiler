@@ -1502,7 +1502,7 @@ class NamesAndTypes(cpm.CPModule):
         elif load_choice == LOAD_AS_MASK:
             provider = MaskImageProvider(name, url, series, index, channel)
         workspace.image_set.providers.append(provider)
-        self.add_provider_measurements(provider, workspace.measurements, \
+        self.add_provider_measurements(provider, workspace.measurements,
                                        cpmeas.IMAGE)
 
     @staticmethod

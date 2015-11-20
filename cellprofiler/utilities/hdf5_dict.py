@@ -29,8 +29,8 @@ orig_hdf5_getitem = h5py.Dataset.__getitem__
 
 
 def new_getitem(self, args):
-    if (isinstance(args, slice) and \
-                    args.start is not None and args.start == args.stop):
+    if (isinstance(args, slice) and
+                args.start is not None and args.start == args.stop):
         return np.array([], self.dtype)
     return orig_hdf5_getitem(self, args)
 

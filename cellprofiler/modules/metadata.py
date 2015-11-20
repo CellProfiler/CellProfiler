@@ -1103,8 +1103,8 @@ class Metadata(cpm.CPModule):
                         (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * (
                         i + 1))]
                 group[0] = X_AUTOMATIC_EXTRACTION if group[0] == "Automatic" \
-                    else (X_MANUAL_EXTRACTION if group[0] == "Manual" \
-                              else X_IMPORTED_EXTRACTION)
+                    else (X_MANUAL_EXTRACTION if group[0] == "Manual"
+                          else X_IMPORTED_EXTRACTION)
                 group[1] = XM_FILE_NAME if group[1] == "From file name" \
                     else XM_FOLDER_NAME
                 group[4] = F_FILTERED_IMAGES if group[

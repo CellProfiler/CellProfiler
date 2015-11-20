@@ -2,17 +2,17 @@
 #
 # Code below is adapted from matplotlib:
 #
-# This LICENSE AGREEMENT is between John D. Hunter (�JDH�), and the Individual
-# or Organization (�Licensee�) accessing and otherwise using matplotlib software
+# This LICENSE AGREEMENT is between John D. Hunter ("JDH"), and the Individual
+# or Organization ("Licensee") accessing and otherwise using matplotlib software
 # in source or binary form and its associated documentation.
 #
 # Subject to the terms and conditions of this License Agreement, 
 # JDH hereby grants Licensee a nonexclusive, royalty-free, world-wide license to
 # reproduce, analyze, test, perform and/or display publicly, prepare derivative 
 # works, distribute, and otherwise use matplotlib 1.2.0 alone or in any 
-# derivative version, provided, however, that JDH�s License Agreement and 
-# JDH�s notice of copyright, i.e., �Copyright (c) 2002-2009 John D. Hunter; All 
-# Rights Reserved� are retained in matplotlib 1.2.0 alone or in any derivative 
+# derivative version, provided, however, that JDH's License Agreement and
+# JDH's notice of copyright, i.e., Copyright (c) 2002-2009 John D. Hunter; All
+# Rights Reserved. are retained in matplotlib 1.2.0 alone or in any derivative
 # version prepared by Licensee.
 #
 # In the event Licensee prepares a derivative work that is based on or 
@@ -21,7 +21,7 @@
 # agrees to include in any such work a brief summary of the changes made to 
 # matplotlib 1.2.0.
 #
-# JDH is making matplotlib 1.2.0 available to Licensee on an �AS IS� basis. 
+# JDH is making matplotlib 1.2.0 available to Licensee on an "AS IS" basis.
 # JDH MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED. BY WAY OF 
 # EXAMPLE, BUT NOT LIMITATION, JDH MAKES NO AND DISCLAIMS ANY REPRESENTATION 
 # OR WARRANTY OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT 

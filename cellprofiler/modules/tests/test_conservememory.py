@@ -1,5 +1,5 @@
-'''test_conservememory - Test the ConserveMemory module
-'''
+"""test_conservememory - Test the ConserveMemory module
+"""
 
 import base64
 from matplotlib.image import pil_to_array
@@ -10,8 +10,8 @@ import scipy.ndimage
 from StringIO import StringIO
 import unittest
 import zlib
-
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp
@@ -20,12 +20,12 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-
 import cellprofiler.modules.conservememory as S
+
 
 class TestConserveMemory(unittest.TestCase):
     def test_01_01_load_matlab(self):
-        '''Load a Matlab pipeline with a SpeedUpCellProfiler module'''
+        """Load a Matlab pipeline with a SpeedUpCellProfiler module"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggH0sGpBQrGBgqGplbGBlbGhgpGBgaWCiQDBkZPX34GBoaXjAwM'
                 'FXPehlv7HzYQ2LeMV4snsLGVcUmPzlNFMbcjzouEpnQxCS3OvJNwsnOxzapp'
@@ -41,8 +41,10 @@ class TestConserveMemory(unittest.TestCase):
                 'Xe4vatmTH1+zPDjlW4yZishuw/l3xKcZfQr4sXnZ1NfnL/4/vehjyFaLdQfn'
                 'X1/73LexujHp9Rbb4/aTNv17P8tDYD8AIz4bHQ==')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -51,7 +53,7 @@ class TestConserveMemory(unittest.TestCase):
         self.assertEqual(module.how_to_remove, S.C_REMOVE)
         self.assertEqual(len(module.image_names), 1)
         self.assertEqual(module.image_names[0].image_name, "OrigBlue")
-        
+
     def test_01_02_load_v1(self):
         data = ('eJztWdtO20AQXYeAuEgVfWrVp30kLYlMKBJECJKSVo1K0oikIIRou8QbspLt'
                 'tXyB0Aqpj/2cfk4/o5/QXbCxvTVxLlzkyo4sM7Nz5syMZzfLpl5p71bewLWC'
@@ -72,8 +74,10 @@ class TestConserveMemory(unittest.TestCase):
                 'fZ5NDa6/WHf/ffzZHocvK/3LtxCDy7oV5LifYLT3vTTA3sttEvtR85eY8Beb'
                 '5Tby')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -83,7 +87,7 @@ class TestConserveMemory(unittest.TestCase):
         self.assertEqual(len(module.image_names), 2)
         self.assertEqual(module.image_names[0].image_name, "DNA")
         self.assertEqual(module.image_names[1].image_name, "Actin")
-        
+
     def test_02_01_erase_remove(self):
         module = S.SpeedUpCellProfiler()
         module.how_to_remove.value = S.C_REMOVE
@@ -91,22 +95,24 @@ class TestConserveMemory(unittest.TestCase):
         module.module_num = 1
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.add("Image1", cpi.Image(np.zeros((10,10))))
-        image_set.add("Image2", cpi.Image(np.zeros((10,10))))
+        image_set.add("Image1", cpi.Image(np.zeros((10, 10))))
+        image_set.add("Image2", cpi.Image(np.zeros((10, 10))))
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), cpmeas.Measurements(), 
+                                  cpo.ObjectSet(), cpmeas.Measurements(),
                                   image_set_list)
         module.run(workspace)
         image = image_set.get_image("Image1")
         self.assertFalse(isinstance(image, cpi.Image))
         image = image_set.get_image("Image2")
         self.assertTrue(isinstance(image, cpi.Image))
-        
+
     def test_02_02_erase_keep(self):
         module = S.SpeedUpCellProfiler()
         module.how_to_remove.value = S.C_KEEP
@@ -114,11 +120,13 @@ class TestConserveMemory(unittest.TestCase):
         module.module_num = 1
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.add("Image1", cpi.Image(np.zeros((10,10))))
-        image_set.add("Image2", cpi.Image(np.zeros((10,10))))
+        image_set.add("Image1", cpi.Image(np.zeros((10, 10))))
+        image_set.add("Image2", cpi.Image(np.zeros((10, 10))))
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),

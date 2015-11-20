@@ -2,17 +2,17 @@
 #
 # Code below is adapted from matplotlib:
 #
-# This LICENSE AGREEMENT is between John D. Hunter (“JDH”), and the Individual
-# or Organization (“Licensee”) accessing and otherwise using matplotlib software
+# This LICENSE AGREEMENT is between John D. Hunter ("JDH"), and the Individual
+# or Organization ("Licensee") accessing and otherwise using matplotlib software
 # in source or binary form and its associated documentation.
 #
 # Subject to the terms and conditions of this License Agreement, 
 # JDH hereby grants Licensee a nonexclusive, royalty-free, world-wide license to
 # reproduce, analyze, test, perform and/or display publicly, prepare derivative 
 # works, distribute, and otherwise use matplotlib 1.2.0 alone or in any 
-# derivative version, provided, however, that JDH’s License Agreement and 
-# JDH’s notice of copyright, i.e., “Copyright (c) 2002-2009 John D. Hunter; All 
-# Rights Reserved” are retained in matplotlib 1.2.0 alone or in any derivative 
+# derivative version, provided, however, that JDH's License Agreement and
+# JDH's notice of copyright, i.e., Copyright (c) 2002-2009 John D. Hunter; All
+# Rights Reserved. are retained in matplotlib 1.2.0 alone or in any derivative
 # version prepared by Licensee.
 #
 # In the event Licensee prepares a derivative work that is based on or 
@@ -21,7 +21,7 @@
 # agrees to include in any such work a brief summary of the changes made to 
 # matplotlib 1.2.0.
 #
-# JDH is making matplotlib 1.2.0 available to Licensee on an “AS IS” basis. 
+# JDH is making matplotlib 1.2.0 available to Licensee on an "AS IS" basis.
 # JDH MAKES NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED. BY WAY OF 
 # EXAMPLE, BUT NOT LIMITATION, JDH MAKES NO AND DISCLAIMS ANY REPRESENTATION 
 # OR WARRANTY OF MERCHANTABILITY OR FITNESS FOR ANY PARTICULAR PURPOSE OR THAT 
@@ -47,9 +47,12 @@
 import math
 import warnings
 
+
 def set_adjustable(self, adjustable):
     """
     ACCEPTS: [ 'box' | 'datalim' | 'box-forced']
+    :param adjustable:
+    :param self:
     """
     if adjustable in ('box', 'datalim', 'box-forced'):
         if self in self._shared_x_axes or self in self._shared_y_axes:
@@ -60,14 +63,17 @@ def set_adjustable(self, adjustable):
     else:
         raise ValueError('argument must be "box", or "datalim"')
 
+
 def apply_aspect(self, position=None):
-    '''
+    """
     Use :meth:`_aspect` and :meth:`_adjustable` to modify the
     axes box or the view limits.
-    '''
+    :param position:
+    :param self:
+    """
+    global aspect_scale_mode, aspect_scale_mode
     if position is None:
         position = self.get_position(original=True)
-
 
     aspect = self.get_aspect()
 
@@ -77,17 +83,17 @@ def apply_aspect(self, position=None):
     elif xscale == "log" and yscale == "log":
         aspect_scale_mode = "log"
     elif (xscale == "linear" and yscale == "log") or \
-             (xscale == "log" and yscale == "linear"):
+            (xscale == "log" and yscale == "linear"):
         if aspect is not "auto":
             warnings.warn(
                 'aspect is not supported for Axes with xscale=%s, yscale=%s' \
                 % (xscale, yscale))
             aspect = "auto"
-    else: # some custom projections have their own scales.
+    else:  # some custom projections have their own scales.
         pass
 
     if aspect == 'auto':
-        self.set_position( position , which='active')
+        self.set_position(position, which='active')
         return
 
     if aspect == 'equal':
@@ -95,7 +101,7 @@ def apply_aspect(self, position=None):
     else:
         A = aspect
 
-    #Ensure at drawing time that any Axes involved in axis-sharing
+    # Ensure at drawing time that any Axes involved in axis-sharing
     # does not have its position changed.
     if self in self._shared_x_axes or self in self._shared_y_axes:
         if self._adjustable == 'box':
@@ -103,8 +109,8 @@ def apply_aspect(self, position=None):
             warnings.warn(
                 'shared axes: "adjustable" is being changed to "datalim"')
 
-    figW,figH = self.get_figure().get_size_inches()
-    fig_aspect = figH/figW
+    figW, figH = self.get_figure().get_size_inches()
+    fig_aspect = figH / figW
     if self._adjustable in ['box', 'box-forced']:
         if aspect_scale_mode == "log":
             box_aspect = A * self.get_data_ratio_log()
@@ -119,23 +125,21 @@ def apply_aspect(self, position=None):
     # by prior use of 'box'
     self.set_position(position, which='active')
 
-
-    xmin,xmax = self.get_xbound()
-    ymin,ymax = self.get_ybound()
+    xmin, xmax = self.get_xbound()
+    ymin, ymax = self.get_ybound()
 
     if aspect_scale_mode == "log":
         xmin, xmax = math.log10(xmin), math.log10(xmax)
         ymin, ymax = math.log10(ymin), math.log10(ymax)
 
-    xsize = max(math.fabs(xmax-xmin), 1e-30)
-    ysize = max(math.fabs(ymax-ymin), 1e-30)
+    xsize = max(math.fabs(xmax - xmin), 1e-30)
+    ysize = max(math.fabs(ymax - ymin), 1e-30)
 
-
-    l,b,w,h = position.bounds
-    box_aspect = fig_aspect * (h/w)
+    l, b, w, h = position.bounds
+    box_aspect = fig_aspect * (h / w)
     data_ratio = box_aspect / A
 
-    y_expander = (data_ratio*xsize/ysize - 1.0)
+    y_expander = (data_ratio * xsize / ysize - 1.0)
     # If y_expander > 0, the dy/dx viewLim ratio needs to increase
     if abs(y_expander) < 0.005:
         return
@@ -172,25 +176,25 @@ def apply_aspect(self, position=None):
         adjust_y = False
     else:
         if xmarg > xm and ymarg > ym:
-            adjy = ((Ymarg > 0 and y_expander < 0)
-                    or (Xmarg < 0 and y_expander > 0))
+            adjy = ((Ymarg > 0 > y_expander)
+                    or (Xmarg < 0 < y_expander))
         else:
             adjy = y_expander > 0
-        adjust_y = changey or adjy  #(Ymarg > xmarg)
+        adjust_y = changey or adjy  # (Ymarg > xmarg)
     if adjust_y:
-        yc = 0.5*(ymin+ymax)
-        y0 = yc - Ysize/2.0
-        y1 = yc + Ysize/2.0
+        yc = 0.5 * (ymin + ymax)
+        y0 = yc - Ysize / 2.0
+        y1 = yc + Ysize / 2.0
         if aspect_scale_mode == "log":
-            self.set_ybound((10.**y0, 10.**y1))
+            self.set_ybound((10. ** y0, 10. ** y1))
         else:
             self.set_ybound((y0, y1))
     else:
-        xc = 0.5*(xmin+xmax)
-        x0 = xc - Xsize/2.0
-        x1 = xc + Xsize/2.0
+        xc = 0.5 * (xmin + xmax)
+        x0 = xc - Xsize / 2.0
+        x1 = xc + Xsize / 2.0
         if aspect_scale_mode == "log":
-            self.set_xbound((10.**x0, 10.**x1))
+            self.set_xbound((10. ** x0, 10. ** x1))
         else:
             self.set_xbound((x0, x1))
 
@@ -200,7 +204,9 @@ Monkey patch these methods in matplotlib.Axes with the same methods from
 matplotlib revision 8079.
 '''
 import matplotlib
+
 if matplotlib.__version__ < "0.99.1.3.rc1":
     import matplotlib.axes
+
     matplotlib.axes.Axes.set_adjustable = set_adjustable
     matplotlib.axes.Axes.apply_aspect = apply_aspect

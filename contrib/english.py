@@ -1,6 +1,6 @@
 # english - generic english tools
 
-'''
+"""
 
 Some generic English word-munging routines.
 
@@ -30,108 +30,115 @@ AUTHOR
     Copying in whole or in part, with author attribution, is expressly allowed.
     http://http://halley.cc/code/?python/english.py
 
-'''
+"""
 
-__all__ = [ 'cardinal', 'ordinal',
-            'conjugate', 'enumerate' ]
+__all__ = ['cardinal', 'ordinal',
+           'conjugate', 'enumerate']
 
-#----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 
 def enumerate(stuff, separator=',', conjunction='and'):
-    '''Returns a phrase that recites a list of noun phrases naturally.'''
+    """Returns a phrase that recites a list of noun phrases naturally.
+    :param stuff:
+    :param separator:
+    :param conjunction:
+    """
     text = ''
     n = len(stuff)
     for i in range(len(stuff)):
         text += str(stuff[i])
-        if (i < n-2): text += separator
-        if (i == n-2): text += ' ' + conjunction
-        if (i < n-1): text += ' '
+        if i < n - 2: text += separator
+        if i == n - 2: text += ' ' + conjunction
+        if i < n - 1: text += ' '
     return text
 
-#----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 
 # The subject verbs.
 __irregular_present = {
-      'do' : 'does',
-      'go' : 'goes',
-      'forego' : 'foregoes' }
+    'do': 'does',
+    'go': 'goes',
+    'forego': 'foregoes'}
 
 # The subject is verbing.
 __irregular_progressive = {
-      'quit' : 'quitting', 'quip' : 'quipping', 'quiz' : 'quizzing' }
+    'quit': 'quitting', 'quip': 'quipping', 'quiz': 'quizzing'}
 
 # The subject verbed.
 __irregular_past = {
-      'arise' : 'arose', 'beat' : 'beat', 'become' : 'became', 'begin'
-      : 'began', 'behold' : 'beheld', 'bend' : 'bent', 'beset' :
-      'beset', 'bet' : 'bet', 'bind' : 'bound', 'bite' : 'bit',
-      'bleed' : 'bled', 'blow' : 'blew', 'break' : 'broke', 'breed' :
-      'bred', 'bring' : 'brought', 'broadcast' : 'broadcast', 'build'
-      : 'built', 'burn' : 'burnt', 'burst' : 'burst', 'buy' :
-      'bought', 'cast' : 'cast', 'catch' : 'caught', 'choose' :
-      'chose', 'cling' : 'clung', 'come' : 'came', 'cost' : 'cost',
-      'creep' : 'crept', 'cut' : 'cut', 'deal' : 'delt', 'dig' :
-      'dug', 'do' : 'did', 'draw' : 'drew', 'dream' : 'dreamt',
-      'drink' : 'drank', 'drive' : 'drove', 'dwell' : 'dwelt', 'eat'
-      : 'ate', 'fall' : 'fell', 'feed' : 'fed', 'feel' : 'felt',
-      'fight' : 'fought', 'find' : 'found', 'flee' : 'fled', 'fling'
-      : 'flung', 'fly' : 'flew', 'forbid' : 'forbade', 'foretell' :
-      'foretold', 'forget' : 'forgot', 'forsake' : 'forsook', 'freeze'
-      : 'froze', 'get' : 'got', 'give' : 'gave', 'go' : 'went',
-      'grind' : 'ground', 'grow' : 'grew', 'hang' : 'hung', 'have' :
-      'had', 'hear' : 'heard', 'hit' : 'hit', 'hold' : 'held', 'hurt'
-      : 'hurt', 'keep' : 'kept', 'kneel' : 'knelt', 'knit' : 'knit',
-      'know' : 'knew', 'lay' : 'laid', 'lead' : 'led', 'lean' :
-      'leant', 'leap' : 'lept', 'learn' : 'learnt', 'leave' : 'left',
-      'lend' : 'lent', 'let' : 'let', 'lie' : 'lay', 'light' : 'lit',
-      'lose' : 'lost', 'make' : 'made', 'mean' : 'meant', 'meet' :
-      'met', 'pay' : 'paid', 'put' : 'put', 'read' : 'read', 'rend' :
-      'rent', 'ride' : 'rode', 'ring' : 'rang', 'rise' : 'rose', 'run'
-      : 'ran', 'say' : 'said', 'seek' : 'sought', 'sell' : 'sold',
-      'send' : 'sent', 'set' : 'set', 'shake' : 'shook', 'shed' :
-      'shed', 'shine' : 'shone', 'shoot' : 'shot', 'show' : 'showed',
-      'shrink' : 'shrank', 'shut' : 'shut', 'sing' : 'sang', 'sink' :
-      'sank', 'sit' : 'sat', 'slay' : 'slew', 'sleep' : 'slept',
-      'slide' : 'slid', 'sling' : 'slung', 'slink' : 'slunk', 'smell'
-      : 'smelt', 'smite' : 'smote', 'sow' : 'sowed', 'speak' :
-      'spoke', 'spell' : 'spelt', 'spend' : 'spent', 'spill' :
-      'spilt', 'spin' : 'spun', 'spit' : 'spat', 'split' : 'split',
-      'spoil' : 'spoilt', 'spread' : 'spread', 'spring' : 'sprang',
-      'stand' : 'stood', 'steal' : 'stole', 'stick' : 'stuck', 'sting'
-      : 'stung', 'stink' : 'stank', 'stride' : 'strode', 'strike' :
-      'struck', 'strive' : 'strove', 'swear' : 'swore', 'sweep' :
-      'swept', 'swim' : 'swam', 'swing' : 'swang', 'take' : 'took',
-      'teach' : 'taught', 'tear' : 'tore', 'think' : 'thought',
-      'throw' : 'threw', 'thrust' : 'thrust', 'tread' : 'trod',
-      'understand' : 'understood', 'upset' : 'upset', 'wake' : 'woke',
-      'wear' : 'wore', 'weep' : 'wept', 'wind' : 'wound', 'win' :
-      'won', 'write' : 'wrote' }
+    'arise': 'arose', 'beat': 'beat', 'become': 'became', 'begin'
+    : 'began', 'behold': 'beheld', 'bend': 'bent', 'beset':
+        'beset', 'bet': 'bet', 'bind': 'bound', 'bite': 'bit',
+    'bleed': 'bled', 'blow': 'blew', 'break': 'broke', 'breed':
+        'bred', 'bring': 'brought', 'broadcast': 'broadcast', 'build'
+    : 'built', 'burn': 'burnt', 'burst': 'burst', 'buy':
+        'bought', 'cast': 'cast', 'catch': 'caught', 'choose':
+        'chose', 'cling': 'clung', 'come': 'came', 'cost': 'cost',
+    'creep': 'crept', 'cut': 'cut', 'deal': 'delt', 'dig':
+        'dug', 'do': 'did', 'draw': 'drew', 'dream': 'dreamt',
+    'drink': 'drank', 'drive': 'drove', 'dwell': 'dwelt', 'eat'
+    : 'ate', 'fall': 'fell', 'feed': 'fed', 'feel': 'felt',
+    'fight': 'fought', 'find': 'found', 'flee': 'fled', 'fling'
+    : 'flung', 'fly': 'flew', 'forbid': 'forbade', 'foretell':
+        'foretold', 'forget': 'forgot', 'forsake': 'forsook', 'freeze'
+    : 'froze', 'get': 'got', 'give': 'gave', 'go': 'went',
+    'grind': 'ground', 'grow': 'grew', 'hang': 'hung', 'have':
+        'had', 'hear': 'heard', 'hit': 'hit', 'hold': 'held', 'hurt'
+    : 'hurt', 'keep': 'kept', 'kneel': 'knelt', 'knit': 'knit',
+    'know': 'knew', 'lay': 'laid', 'lead': 'led', 'lean':
+        'leant', 'leap': 'lept', 'learn': 'learnt', 'leave': 'left',
+    'lend': 'lent', 'let': 'let', 'lie': 'lay', 'light': 'lit',
+    'lose': 'lost', 'make': 'made', 'mean': 'meant', 'meet':
+        'met', 'pay': 'paid', 'put': 'put', 'read': 'read', 'rend':
+        'rent', 'ride': 'rode', 'ring': 'rang', 'rise': 'rose', 'run'
+    : 'ran', 'say': 'said', 'seek': 'sought', 'sell': 'sold',
+    'send': 'sent', 'set': 'set', 'shake': 'shook', 'shed':
+        'shed', 'shine': 'shone', 'shoot': 'shot', 'show': 'showed',
+    'shrink': 'shrank', 'shut': 'shut', 'sing': 'sang', 'sink':
+        'sank', 'sit': 'sat', 'slay': 'slew', 'sleep': 'slept',
+    'slide': 'slid', 'sling': 'slung', 'slink': 'slunk', 'smell'
+    : 'smelt', 'smite': 'smote', 'sow': 'sowed', 'speak':
+        'spoke', 'spell': 'spelt', 'spend': 'spent', 'spill':
+        'spilt', 'spin': 'spun', 'spit': 'spat', 'split': 'split',
+    'spoil': 'spoilt', 'spread': 'spread', 'spring': 'sprang',
+    'stand': 'stood', 'steal': 'stole', 'stick': 'stuck', 'sting'
+    : 'stung', 'stink': 'stank', 'stride': 'strode', 'strike':
+        'struck', 'strive': 'strove', 'swear': 'swore', 'sweep':
+        'swept', 'swim': 'swam', 'swing': 'swang', 'take': 'took',
+    'teach': 'taught', 'tear': 'tore', 'think': 'thought',
+    'throw': 'threw', 'thrust': 'thrust', 'tread': 'trod',
+    'understand': 'understood', 'upset': 'upset', 'wake': 'woke',
+    'wear': 'wore', 'weep': 'wept', 'wind': 'wound', 'win':
+        'won', 'write': 'wrote'}
 
 # The subject had verbed.
 __irregular_participle = {
-      'arise' : 'arisen', 'beat' : 'beaten', 'become' : 'become',
-      'begin' : 'begun', 'bite' : 'bitten', 'blow' : 'blown', 'break'
-      : 'broken', 'choose' : 'chosen', 'come' : 'come', 'do' :
-      'done', 'draw' : 'drawn', 'drink' : 'drunk', 'drive' : 'driven',
-      'eat' : 'eaten', 'fall' : 'fallen', 'fly' : 'flown', 'forbid' :
-      'forbidden', 'foretell' : 'fortold', 'forget' : 'forgotten',
-      'forsake' : 'forsaken', 'freeze' : 'frozen', 'give' : 'given',
-      'go' : 'gone', 'grow' : 'grown', 'know' : 'known', 'lie' :
-      'lain', 'ride' : 'ridden', 'ring' : 'rung', 'rise' : 'risen',
-      'run' : 'run', 'shake' : 'shaken', 'show' : 'shown', 'shrink' :
-      'shrunk', 'sing' : 'sung', 'sink' : 'sunk', 'slay' : 'slain',
-      'smite' : 'smitten', 'sow' : 'sown', 'speak' : 'spoken',
-      'spring' : 'sprung', 'steal' : 'stolen', 'stink' : 'stunk',
-      'stride' : 'stridden', 'strive' : 'striven', 'swear' : 'sworn',
-      'swim' : 'swum', 'swing' : 'swung', 'take' : 'taken', 'tear' :
-      'torn', 'throw' : 'thrown', 'tread' : 'trodden', 'wake' :
-      'woken', 'wear' : 'worn', 'write' : 'written' }
+    'arise': 'arisen', 'beat': 'beaten', 'become': 'become',
+    'begin': 'begun', 'bite': 'bitten', 'blow': 'blown', 'break'
+    : 'broken', 'choose': 'chosen', 'come': 'come', 'do':
+        'done', 'draw': 'drawn', 'drink': 'drunk', 'drive': 'driven',
+    'eat': 'eaten', 'fall': 'fallen', 'fly': 'flown', 'forbid':
+        'forbidden', 'foretell': 'fortold', 'forget': 'forgotten',
+    'forsake': 'forsaken', 'freeze': 'frozen', 'give': 'given',
+    'go': 'gone', 'grow': 'grown', 'know': 'known', 'lie':
+        'lain', 'ride': 'ridden', 'ring': 'rung', 'rise': 'risen',
+    'run': 'run', 'shake': 'shaken', 'show': 'shown', 'shrink':
+        'shrunk', 'sing': 'sung', 'sink': 'sunk', 'slay': 'slain',
+    'smite': 'smitten', 'sow': 'sown', 'speak': 'spoken',
+    'spring': 'sprung', 'steal': 'stolen', 'stink': 'stunk',
+    'stride': 'stridden', 'strive': 'striven', 'swear': 'sworn',
+    'swim': 'swum', 'swing': 'swung', 'take': 'taken', 'tear':
+        'torn', 'throw': 'thrown', 'tread': 'trodden', 'wake':
+        'woken', 'wear': 'worn', 'write': 'written'}
 
-import re ; from re import sub, match
+import re
+from re import sub, match
+
 
 def conjugate(word, tense='present'):
-
-    '''Conjugates an English word (a verb) for a specific tense.
+    """Conjugates an English word (a verb) for a specific tense.
     Tenses known include:
         'present participle'
         'past participle'
@@ -140,7 +147,9 @@ def conjugate(word, tense='present'):
         'present'
     This routine does not add companion words such as "has" or "will"
     to the verb phrase.  It only conjugates the word itself.
-    '''
+    :param word:
+    :param tense:
+    """
 
     if 'participle' in tense:
         if word in __irregular_participle:
@@ -176,42 +185,46 @@ def conjugate(word, tense='present'):
 
     return word
 
-#----------------------------------------------------------------------------
 
-__score = [ 'zero', 'one', 'two', 'three', 'four', 'five', 'six',
-            'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
-            'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen',
-            'eighteen', 'nineteen' ]
+# ----------------------------------------------------------------------------
 
-__decade = [ 'zero', 'ten', 'twenty', 'thirty', 'forty', 'fifty',
-             'sixty', 'seventy', 'eighty', 'ninety', 'hundred' ]
+__score = ['zero', 'one', 'two', 'three', 'four', 'five', 'six',
+           'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+           'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen',
+           'eighteen', 'nineteen']
 
-__groups = [ 'zero', 'thousand', 'million', 'billion',
-             # 'trillion',
-             # 'quadrillion', 'quintillion', 'sextillion', 'septillion',
-             # 'octillion', 'nonillion'
-             ]
+__decade = ['zero', 'ten', 'twenty', 'thirty', 'forty', 'fifty',
+            'sixty', 'seventy', 'eighty', 'ninety', 'hundred']
 
-__groupvalues = [ 0, 1000, 1000000, 1000000000,
-                  # 1000000000000,
-                  # 1000000000000000,
-                  # 1000000000000000000,
-                  # 1000000000000000000000,
-                  # ...
-                  ]
+__groups = ['zero', 'thousand', 'million', 'billion',
+            # 'trillion',
+            # 'quadrillion', 'quintillion', 'sextillion', 'septillion',
+            # 'octillion', 'nonillion'
+            ]
+
+__groupvalues = [0, 1000, 1000000, 1000000000,
+                 # 1000000000000,
+                 # 1000000000000000,
+                 # 1000000000000000000,
+                 # 1000000000000000000000,
+                 # ...
+                 ]
+
 
 def cardinal(number, style=None):
-    '''Returns a phrase that spells out the cardinal form of a number.
+    """Returns a phrase that spells out the cardinal form of a number.
     This routine does not currently try to understand "big integer"
     numbers using words like 'septillion'.
-    '''
+    :param number:
+    :param style:
+    """
     if not number:
         return __score[0]
     text = ''
     if number < 0:
         text = 'negative '
         number = -number
-    for group in reversed( range( len(__groups) ) ):
+    for group in reversed(range(len(__groups))):
         if not group: continue
         if number >= __groupvalues[group]:
             multiple = int(number / __groupvalues[group])
@@ -225,7 +238,7 @@ def cardinal(number, style=None):
         if number:
             text += ' '
     if number >= 20:
-        text += __decade[int(number/10)]
+        text += __decade[int(number / 10)]
         number %= 10
         if number:
             text += '-'
@@ -233,18 +246,23 @@ def cardinal(number, style=None):
         text += __score[number]
     return text
 
-__scoreth = [ 'zeroth', 'first', 'second', 'third', 'fourth', 'fifth',
-              'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
-              'eleventh', 'twelfth', 'thirteenth', 'fourteenth',
-              'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth',
-              'nineteenth' ]
 
-__decadeth = [ 'zeroth', 'tenth', 'twentieth', 'thirtieth', 'fortieth',
-               'fiftieth', 'sixtieth', 'seventieth', 'eightieth',
-               'ninetieth', 'hundredth' ]
+__scoreth = ['zeroth', 'first', 'second', 'third', 'fourth', 'fifth',
+             'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
+             'eleventh', 'twelfth', 'thirteenth', 'fourteenth',
+             'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth',
+             'nineteenth']
+
+__decadeth = ['zeroth', 'tenth', 'twentieth', 'thirtieth', 'fortieth',
+              'fiftieth', 'sixtieth', 'seventieth', 'eightieth',
+              'ninetieth', 'hundredth']
+
 
 def ordinal(number, style=None):
-    '''Returns a phrase that spells out the ordinal form of a number.'''
+    """Returns a phrase that spells out the ordinal form of a number.
+    :param number:
+    :param style:
+    """
     if not number:
         return __scoreth[0]
     text = ''
@@ -263,59 +281,61 @@ def ordinal(number, style=None):
     if number >= 20:
         spare = number % 10
         if not spare:
-            text += __decadeth[int(number/10)]
+            text += __decadeth[int(number / 10)]
         else:
-            text += __decade[int(number/10)] + '-'
+            text += __decade[int(number / 10)] + '-'
         number = spare
     if number > 0:
         text += __scoreth[number]
     return text
 
-#----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 
 def span(time, brevity=0):
     # turns a number of seconds into a phrase like
     # "six days, four hours and two minutes"
     pass
 
-#----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 
 def __test__():
     print 'Testing english module...'
     from testing import __ok__
 
-    __ok__(enumerate( [] ), '')
-    __ok__(enumerate( ['a'] ), 'a')
-    __ok__(enumerate( ['a','b'] ), 'a and b')
-    __ok__(enumerate( ['a','b','c'] ), 'a, b and c')
-    __ok__(enumerate( ['a','b','c','d'] ), 'a, b, c and d')
-    __ok__(enumerate( [1,2,3,4] ), '1, 2, 3 and 4')
+    __ok__(enumerate([]), '')
+    __ok__(enumerate(['a']), 'a')
+    __ok__(enumerate(['a', 'b']), 'a and b')
+    __ok__(enumerate(['a', 'b', 'c']), 'a, b and c')
+    __ok__(enumerate(['a', 'b', 'c', 'd']), 'a, b, c and d')
+    __ok__(enumerate([1, 2, 3, 4]), '1, 2, 3 and 4')
 
-    __ok__(cardinal( -1234 ),
+    __ok__(cardinal(-1234),
            'negative one thousand, two hundred thirty-four')
-    __ok__(cardinal( -1 ), 'negative one')
-    __ok__(cardinal( 0 ), 'zero')
-    __ok__(cardinal( 1 ), 'one')
-    __ok__(cardinal( 8 ), 'eight')
-    __ok__(cardinal( 18 ), 'eighteen')
-    __ok__(cardinal( 28 ), 'twenty-eight')
-    __ok__(cardinal( 280 ), 'two hundred eighty')
-    __ok__(cardinal( 2800 ), 'two thousand, eight hundred')
-    __ok__(cardinal( 280028 ), 'two hundred eighty thousand, twenty-eight')
-    __ok__(cardinal( 2800000 ), 'two million, eight hundred thousand')
+    __ok__(cardinal(-1), 'negative one')
+    __ok__(cardinal(0), 'zero')
+    __ok__(cardinal(1), 'one')
+    __ok__(cardinal(8), 'eight')
+    __ok__(cardinal(18), 'eighteen')
+    __ok__(cardinal(28), 'twenty-eight')
+    __ok__(cardinal(280), 'two hundred eighty')
+    __ok__(cardinal(2800), 'two thousand, eight hundred')
+    __ok__(cardinal(280028), 'two hundred eighty thousand, twenty-eight')
+    __ok__(cardinal(2800000), 'two million, eight hundred thousand')
 
-    __ok__(ordinal( -1234 ),
+    __ok__(ordinal(-1234),
            'negative one thousand, two hundred thirty-fourth')
-    __ok__(ordinal( -1 ), 'negative first')
-    __ok__(ordinal( 0 ), 'zeroth')
-    __ok__(ordinal( 1 ), 'first')
-    __ok__(ordinal( 8 ), 'eighth')
-    __ok__(ordinal( 18 ), 'eighteenth')
-    __ok__(ordinal( 28 ), 'twenty-eighth')
-    __ok__(ordinal( 280 ), 'two hundred eightieth')
-    __ok__(ordinal( 2800 ), 'two thousand, eight hundredth')
-    __ok__(ordinal( 280028 ), 'two hundred eighty thousand, twenty-eighth')
-    __ok__(ordinal( 2800000 ), 'two million, eight hundred thousandth')
+    __ok__(ordinal(-1), 'negative first')
+    __ok__(ordinal(0), 'zeroth')
+    __ok__(ordinal(1), 'first')
+    __ok__(ordinal(8), 'eighth')
+    __ok__(ordinal(18), 'eighteenth')
+    __ok__(ordinal(28), 'twenty-eighth')
+    __ok__(ordinal(280), 'two hundred eightieth')
+    __ok__(ordinal(2800), 'two thousand, eight hundredth')
+    __ok__(ordinal(280028), 'two hundred eighty thousand, twenty-eighth')
+    __ok__(ordinal(2800000), 'two million, eight hundred thousandth')
 
     __ok__(conjugate('sleep', 'present'), 'sleeps')
     __ok__(conjugate('sleep', 'past'), 'slept')
@@ -332,9 +352,9 @@ def __test__():
     __ok__(conjugate('meet', 'past'), 'met')
     __ok__(conjugate('meet', 'progressive'), 'meeting')
 
-#----------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------
 
 if __name__ == '__main__':
     raise Exception, \
         'This module is not a stand-alone script.  Import it in a program.'
-

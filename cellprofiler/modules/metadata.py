@@ -1,5 +1,8 @@
-import cellprofiler.icons 
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED, MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
+import cellprofiler.icons
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, \
+    TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED, \
+    MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
+
 __doc__ = """
 The <b>Metadata</b> module connects information about the images (i.e., metadata)
 to your list of images for processing in CellProfiler. 
@@ -91,10 +94,11 @@ module for more details.</p>
 <ul> 
 <li><i>Metadata:</i> The prefix of each metadata tag in the per-image table.</li>
 </ul>
-"""%globals()
+""" % globals()
 
 import numpy as np
 import logging
+
 logger = logging.getLogger(__name__)
 import csv
 import re
@@ -102,7 +106,6 @@ import os
 import time
 import urllib
 import urlparse
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
@@ -114,7 +117,7 @@ from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import \
-     well_metadata_tokens, urlfilename, urlpathname
+    well_metadata_tokens, urlfilename, urlpathname
 from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
@@ -150,11 +153,12 @@ IDX_EXTRACTION_METHOD_V3 = 2
 LEN_EXTRACTION_METHOD_V1 = 8
 LEN_EXTRACTION_METHOD = 9
 
+
 class Metadata(cpm.CPModule):
     variable_revision_number = 4
     module_name = "Metadata"
     category = "File Processing"
-    
+
     CSV_JOIN_NAME = "CSV Metadata"
     IPD_JOIN_NAME = "Image Metadata"
 
@@ -162,29 +166,29 @@ class Metadata(cpm.CPModule):
         self.pipeline = None
         self.ipds = []
         module_explanation = [
-            "The %s module optionally allows you to extract information" %self.module_name,
+            "The %s module optionally allows you to extract information" % self.module_name,
             "describing your images (i.e, metadata) which will be stored along",
             "with your measurements. This information can be contained in the",
             "file name and/or location, or in an external file."]
         self.set_notes([" ".join(module_explanation)])
-        
+
         self.wants_metadata = cps.Binary(
-            "Extract metadata?", False,doc = """
+            "Extract metadata?", False, doc="""
             Select <i>%(YES)s</i> if your file or path names or file headers contain information 
             (i.e., metadata) you would like to extract and store along with your 
             measurements. See the main module
-            help for more details."""%globals())
-        
+            help for more details.""" % globals())
+
         self.extraction_methods = []
         self.add_extraction_method(False)
-        
+
         self.extraction_method_count = cps.HiddenCount(
             self.extraction_methods, "Extraction method count")
-        
+
         self.add_extraction_method_button = cps.DoSomething(
             "",
             "Add another extraction method", self.add_extraction_method)
-        
+
         self.dtc_divider = cps.Divider()
         self.data_type_choice = cps.Choice(
             "Metadata data type", DTC_ALL,
@@ -205,10 +209,10 @@ class Metadata(cpm.CPModule):
             storing the metadata values as "Text" would be more appropriate.</li>
             </ul>
             """ % globals())
-        
+
         self.data_types = cps.DataTypes(
             "Metadata types",
-            name_fn = self.get_metadata_keys, doc = """
+            name_fn=self.get_metadata_keys, doc="""
             <i>(Used only when %(DTC_CHOOSE)s is selected for the metadata data type)</i><br>
             This setting determines the data type of each metadata field
             when stored as a measurement. 
@@ -220,22 +224,23 @@ class Metadata(cpm.CPModule):
             </ul>
             If you are using the metadata to match images to create your image set, the choice
             of metadata type here will determine the order of matching. See <b>NamesAndTypes</b>
-            for more details."""%globals())
-        
+            for more details.""" % globals())
+
         self.table = cps.Table(
-            "",use_sash=True, 
-            corner_button = dict(fn_clicked = self.update_table,
-                                 label = "Update",
-                                 tooltip = "Update the metadata table"))
-        
-    def add_extraction_method(self, can_remove = True):
+            "", use_sash=True,
+            corner_button=dict(fn_clicked=self.update_table,
+                               label="Update",
+                               tooltip="Update the metadata table"))
+
+    def add_extraction_method(self, can_remove=True):
         group = cps.SettingsGroup()
         self.extraction_methods.append(group)
         if can_remove:
             group.append("divider", cps.Divider())
-            
+
         group.append("extraction_method", cps.Choice(
-            "Metadata extraction method", X_ALL_EXTRACTION_METHODS, X_MANUAL_EXTRACTION, doc="""
+            "Metadata extraction method", X_ALL_EXTRACTION_METHODS,
+            X_MANUAL_EXTRACTION, doc="""
             <p>Metadata can be stored in either or both of two ways:
             <ul>
             <li><i>Internally:</i> This method is often through the file naming, directory structuring, 
@@ -296,18 +301,18 @@ class Metadata(cpm.CPModule):
             </dl></li>
             </ul>
             Specifics on the metadata extraction options are described below. Any or all of these options 
-            may be used at time; press the "Add another extraction method" button to add more.</p>"""%globals()))
-        
+            may be used at time; press the "Add another extraction method" button to add more.</p>""" % globals()))
+
         group.append("source", cps.Choice(
-            "Metadata source", [XM_FILE_NAME, XM_FOLDER_NAME],doc = """
+            "Metadata source", [XM_FILE_NAME, XM_FOLDER_NAME], doc="""
             You can extract the metadata from the image's file
             name or from its folder name."""))
-        
+
         group.append("file_regexp", cps.RegexpText(
-            "Regular expression", 
+            "Regular expression",
             '^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])',
-            get_example_fn = self.example_file_fn,
-            doc = """
+            get_example_fn=self.example_file_fn,
+            doc="""
             <a name='regular_expression'><i>(Used only if you want to extract 
             metadata from the file name)</i><br>
             The regular expression to extract the metadata from the file name 
@@ -363,12 +368,12 @@ class Metadata(cpm.CPModule):
             <i>&lt;Well&gt;</i> will be "A01". This is useful if your well row and column names are
             separated from each other in the filename, but you want to retain the standard 
             well nomenclature.</p>"""))
-   
+
         group.append("folder_regexp", cps.RegexpText(
             "Regular expression",
             '(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$',
-            get_example_fn = self.example_directory_fn,
-            guess = cps.RegexpText.GUESS_FOLDER,
+            get_example_fn=self.example_directory_fn,
+            guess=cps.RegexpText.GUESS_FOLDER,
             doc="""
             <i>(Used only if you want to extract metadata from the path)</i><br>
             Enter the regular expression for extracting the metadata from the 
@@ -400,10 +405,10 @@ class Metadata(cpm.CPModule):
             last folder on the path. This also means that the Date field contains the parent
             folder of the Date folder.</td></tr>
             </table></p>"""))
- 
+
         group.append("filter_choice", cps.Choice(
             "Extract metadata from",
-            [F_ALL_IMAGES, F_FILTERED_IMAGES],doc = """
+            [F_ALL_IMAGES, F_FILTERED_IMAGES], doc="""
             Select whether you want to extract metadata from all of the images
             chosen by the <b>Images</b> module or a subset of the images.
             <p>This setting controls how different image types (e.g., an image
@@ -418,19 +423,19 @@ class Metadata(cpm.CPModule):
             attributes. This is the appropriate choice if more than one image was taken of each 
             imaging site. You can specify distinctive criteria for each image subset with 
             matching metadata.</li>
-            </ul></p>"""%globals()))
-        
+            </ul></p>""" % globals()))
+
         group.append("filter", cps.Filter(
             "Select the filtering criteria", [FilePredicate(),
-                 DirectoryPredicate(),
-                 ExtensionPredicate()],
-            'and (file does contain "")',doc = """
+                                              DirectoryPredicate(),
+                                              ExtensionPredicate()],
+            'and (file does contain "")', doc="""
             Select <i>%(YES)s</i> to display and use rules to select files for metadata extraction.
-            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
-        
+            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>""" % globals()))
+
         group.append("csv_location", cps.PathnameOrURL(
             "Metadata file location",
-            wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*",doc="""
+            wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*", doc="""
             The file containing the metadata must be a comma-delimited file (CSV). You can create or edit 
             such a file using a spreadsheet program such as Microsoft Excel. 
             <p>The CSV file needs to conform to the following format:
@@ -445,9 +450,9 @@ class Metadata(cpm.CPModule):
             The file must be saved as plain text, i.e., without hidden file encoding information. 
             If using Excel on a Mac to edit the file, choose to save the file as "Windows CSV" or "Windows 
             Comma Separated".</p>"""))
-        
+
         group.append("csv_joiner", cps.Joiner(
-            "Match file and image metadata", allow_none = False,doc="""
+            "Match file and image metadata", allow_none=False, doc="""
             Match columns in your .csv file to image metadata items.
             If you are using a CSV in conjunction with the filename/path metadata matching, you might want 
             to capture the metadata in common with both sources. For example, you might be extracting the 
@@ -460,10 +465,10 @@ class Metadata(cpm.CPModule):
             different images. Set the drop-downs to pair the metadata tags of the images and the 
             CSV, such that each row contains the corresponding tags. This can be done for as many 
             metadata correspondences as you may have for each source; press 
-            <img src="memory:%(MODULE_ADD_BUTTON)s"> to add more rows.</p>"""%globals()))
-        
+            <img src="memory:%(MODULE_ADD_BUTTON)s"> to add more rows.</p>""" % globals()))
+
         group.append("wants_case_insensitive", cps.Binary(
-            "Use case insensitive matching?", False, doc = """
+            "Use case insensitive matching?", False, doc="""
             This setting controls whether row matching takes the metadata case 
             into account when matching. 
             <dl>
@@ -476,14 +481,14 @@ class Metadata(cpm.CPModule):
             (for instance, "A01" and "a01") will not match.</li>
             <li>Select <i>%(YES)s</i> to match metadata entries that only differ 
             by case.</li>
-            </ul>"""%globals()))
-        
+            </ul>""" % globals()))
+
         group.append("update_metadata", cps.DoSomething(
             "", "Update metadata",
-            lambda : self.do_update_metadata(group),doc = """
+            lambda: self.do_update_metadata(group), doc="""
             Press this button to automatically extract metadata from
             your image files."""))
-                 
+
         group.imported_metadata_header_timestamp = 0
         group.imported_metadata_header_path = None
         group.imported_metadata_header_line = None
@@ -492,9 +497,11 @@ class Metadata(cpm.CPModule):
             group.append("remover", cps.RemoveSettingButton(
                 '', 'Remove this extraction method',
                 self.extraction_methods, group))
-    
+
     def get_group_header(self, group):
-        '''Get the header line from the imported extraction group's csv file'''
+        """Get the header line from the imported extraction group's csv file
+        :param group:
+        """
         csv_path = group.csv_location.value
         if csv_path == group.imported_metadata_header_path:
             if group.csv_location.is_url():
@@ -514,18 +521,21 @@ class Metadata(cpm.CPModule):
         except:
             return None
         return group.imported_metadata_header_line
-    
+
     def build_imported_metadata_extractor(self, group, extractor,
                                           for_metadata_only):
-        '''Build an extractor of imported metadata for this group
-        
+        """Build an extractor of imported metadata for this group
+
         group - a settings group to extract imported metadata
-        
+
         extractor - the extractor as built up to the current point
-        
+
         for_metadata_only - if true, only give the header to the
                  imported metadata extractor.
-        '''
+                 :param for_metadata_only:
+                 :param extractor:
+                 :param group:
+        """
         key_pairs = []
         dt_numeric = (cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER)
         kp_cls = 'org/cellprofiler/imageset/MetadataKeyPair'
@@ -534,7 +544,7 @@ class Metadata(cpm.CPModule):
             csv_key = join_idx[self.CSV_JOIN_NAME]
             ipd_key = join_idx[self.IPD_JOIN_NAME]
             if self.get_data_type(csv_key) in dt_numeric and \
-               self.get_data_type(ipd_key) in dt_numeric:
+                            self.get_data_type(ipd_key) in dt_numeric:
                 kp_method = "makeNumericKeyPair"
             elif group.wants_case_insensitive:
                 kp_method = "makeCaseInsensitiveKeyPair"
@@ -544,9 +554,9 @@ class Metadata(cpm.CPModule):
                 kp_cls, kp_method, kp_sig, csv_key, ipd_key)
             key_pairs.append(key_pair)
         key_pairs = J.get_nice_arg(
-            key_pairs, 
+            key_pairs,
             "[L%s;" % kp_cls)
-        
+
         if for_metadata_only:
             header = self.get_group_header(group)
             if header is None:
@@ -580,10 +590,16 @@ class Metadata(cpm.CPModule):
             "org/cellprofiler/imageset/ImportedMetadataExtractor",
             "(Ljava/io/Reader;[Lorg/cellprofiler/imageset/MetadataKeyPair;)V",
             rdr, key_pairs)
-        
-            
+
     def refresh_group_joiner(self, group):
-        '''Refresh the metadata entries for a group's joiner'''
+        """Refresh the metadata entries for a group's joiner
+        :param group:
+        :param group:
+        :param group:
+        :param group:
+        :param group:
+        :param group:
+        """
         if group.extraction_method != X_IMPORTED_EXTRACTION:
             return
         #
@@ -611,7 +627,7 @@ class Metadata(cpm.CPModule):
                     "(Ljava/lang/String;)Ljava/util/List;",
                     header), J.to_string)
         joiner.entities[self.CSV_JOIN_NAME] = list(header_keys)
-        
+
     def settings(self):
         result = [self.wants_metadata, self.data_type_choice, self.data_types,
                   self.extraction_method_count]
@@ -619,10 +635,10 @@ class Metadata(cpm.CPModule):
             result += [
                 group.extraction_method, group.source, group.file_regexp,
                 group.folder_regexp, group.filter_choice, group.filter,
-                group.csv_location, group.csv_joiner, 
+                group.csv_location, group.csv_joiner,
                 group.wants_case_insensitive]
         return result
-    
+
     def visible_settings(self):
         result = [self.wants_metadata]
         if self.wants_metadata:
@@ -662,9 +678,9 @@ class Metadata(cpm.CPModule):
                     result.append(self.data_types)
             result += [self.table]
         return result
-    
+
     def example_file_fn(self):
-        '''Get an example file name for the regexp editor'''
+        """Get an example file name for the regexp editor"""
         if self.pipeline is not None:
             if self.pipeline.has_cached_filtered_file_list():
                 urls = self.pipeline.get_filtered_file_list(self.workspace)
@@ -675,9 +691,9 @@ class Metadata(cpm.CPModule):
             if len(urls) > 0:
                 return urlfilename(urls[0])
         return "PLATE_A01_s1_w11C78E18A-356E-48EC-B204-3F4379DC43AB.tif"
-            
+
     def example_directory_fn(self):
-        '''Get an example directory name for the regexp editor'''
+        """Get an example directory name for the regexp editor"""
         if self.pipeline is not None:
             if self.pipeline.has_cached_filtered_file_list():
                 urls = self.pipeline.get_filtered_file_list(self.workspace)
@@ -688,23 +704,36 @@ class Metadata(cpm.CPModule):
             if len(urls) > 0:
                 return urlpathname(urls[0])
         return "/images/2012_01_12"
-    
+
     def change_causes_prepare_run(self, setting):
-        '''Return True if changing the setting passed changes the image sets
-        
+        """Return True if changing the setting passed changes the image sets
+
         setting - the setting that was changed
-        '''
+        :param setting:
+        :param setting:
+        :param setting:
+        :param setting:
+        :param setting:
+        :param setting:
+        """
         return setting in self.settings()
-    
+
     @classmethod
-    def is_input_module(self):
+    def is_input_module(cls):
         return True
-            
+
     def prepare_run(self, workspace):
-        '''Initialize the pipeline's metadata'''
+        """Initialize the pipeline's metadata
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         if workspace.pipeline.in_batch_mode():
             return True
-        
+
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
         filtered_file_list = pipeline.get_filtered_file_list(workspace)
@@ -729,22 +758,35 @@ class Metadata(cpm.CPModule):
             "([Ljava/lang/String;[Ljava/lang/String;Ljava/util/Set;)"
             "[Lorg/cellprofiler/imageset/ImagePlaneDetails;",
             url_array, metadata_array, key_set)
-        ipds = [ cpp.ImagePlaneDetails(jipd)
-                 for jipd in env.get_object_array_elements(jipds)]
+        ipds = [cpp.ImagePlaneDetails(jipd)
+                for jipd in env.get_object_array_elements(jipds)]
         keys = sorted(J.iterate_collection(key_set, J.to_string))
         pipeline.set_image_plane_details(ipds, keys, self)
         return True
-    
+
     def build_extractor(self, end_group=None, for_metadata_only=False):
-        '''Build a Java metadata extractor using the module settings
+        """Build a Java metadata extractor using the module settings
 
         end_group - stop building the extractor when you reach this group.
                     default is build all.
         for_metadata_only - only build an extractor to capture the header info
-        '''
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
+        """
         #
         # Build a metadata extractor
         #
+        global method
         extractor = J.make_instance(
             "org/cellprofiler/imageset/ImagePlaneMetadataExtractor",
             "()V")
@@ -756,22 +798,22 @@ class Metadata(cpm.CPModule):
         if any([group.extraction_method == X_AUTOMATIC_EXTRACTION
                 for group in self.extraction_methods]):
             for method_name, class_name in (
-                ("addImageFileExtractor", "OMEFileMetadataExtractor"),
-                ("addImageSeriesExtractor", "OMESeriesMetadataExtractor"),
-                ("addImagePlaneExtractor", "OMEPlaneMetadataExtractor")):
-                class_name = "org/cellprofiler/imageset/"+class_name
+                    ("addImageFileExtractor", "OMEFileMetadataExtractor"),
+                    ("addImageSeriesExtractor", "OMESeriesMetadataExtractor"),
+                    ("addImagePlaneExtractor", "OMEPlaneMetadataExtractor")):
+                class_name = "org/cellprofiler/imageset/" + class_name
                 J.call(extractor, method_name,
                        "(Lorg/cellprofiler/imageset/MetadataExtractor;)V",
                        J.make_instance(class_name, "()V"))
-        
-        has_well_extractor = False               
+
+        has_well_extractor = False
         for group in self.extraction_methods:
             if group == end_group:
                 break
             if group.filter_choice == F_FILTERED_IMAGES:
                 fltr = J.make_instance(
                     "org/cellprofiler/imageset/filter/Filter",
-                    "(Ljava/lang/String;Ljava/lang/Class;)V", 
+                    "(Ljava/lang/String;Ljava/lang/Class;)V",
                     group.filter.value_text,
                     J.class_for_name("org.cellprofiler.imageset.ImageFile"))
             else:
@@ -811,9 +853,9 @@ class Metadata(cpm.CPModule):
                 metadata_keys = J.call(
                     extractor, "getMetadataKeys", "()Ljava/util/List;")
                 if J.static_call(
-                    "org/cellprofiler/imageset/WellMetadataExtractor",
-                    "maybeYouNeedThis", "(Ljava/util/List;)Z",
-                    metadata_keys):
+                        "org/cellprofiler/imageset/WellMetadataExtractor",
+                        "maybeYouNeedThis", "(Ljava/util/List;)Z",
+                        metadata_keys):
                     J.call(
                         extractor,
                         "addImagePlaneDetailsExtractor",
@@ -822,31 +864,32 @@ class Metadata(cpm.CPModule):
                             "org/cellprofiler/imageset/WellMetadataExtractor",
                             "()V"))
                     has_well_extractor = True
-        
+
         return extractor
-                    
-        
+
     def run(self, workspace):
         pass
-    
+
     def do_update_metadata(self, group):
         filelist = self.workspace.file_list
         urls = set(self.pipeline.get_filtered_file_list(self.workspace))
         if len(urls) == 0:
             return
+
         def msg(url):
             return "Processing %s" % url
+
         import wx
         from bioformats.formatreader import get_omexml_metadata
         from bioformats.omexml import OMEXML
         from cellprofiler.modules.loadimages import url2pathname
-        with wx.ProgressDialog("Updating metadata", 
+        with wx.ProgressDialog("Updating metadata",
                                msg(list(urls)[0]),
                                len(urls),
-                               style = wx.PD_CAN_ABORT
-                               | wx.PD_APP_MODAL
-                               | wx.PD_ELAPSED_TIME
-                               | wx.PD_REMAINING_TIME) as dlg:
+                               style=wx.PD_CAN_ABORT
+                                       | wx.PD_APP_MODAL
+                                       | wx.PD_ELAPSED_TIME
+                                       | wx.PD_REMAINING_TIME) as dlg:
             for i, url in enumerate(urls):
                 if i > 0:
                     keep_going, _ = dlg.Update(i, msg(url))
@@ -854,15 +897,15 @@ class Metadata(cpm.CPModule):
                         break
                 if group.filter_choice == F_FILTERED_IMAGES:
                     match = group.filter.evaluate(
-                    (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, 
-                     Images.url_to_modpath(url), self))
+                        (cps.FileCollectionDisplay.NODE_IMAGE_PLANE,
+                         Images.url_to_modpath(url), self))
                     if not match:
                         continue
                 metadata = filelist.get_metadata(url)
                 if metadata is None:
-                    metadata = get_omexml_metadata(url = url)
+                    metadata = get_omexml_metadata(url=url)
                     filelist.add_metadata(url, metadata)
-                
+
     def on_activated(self, workspace):
         self.workspace = workspace
         self.pipeline = workspace.pipeline
@@ -873,9 +916,22 @@ class Metadata(cpm.CPModule):
         self.table.clear_columns()
         if workspace.pipeline.has_cached_image_plane_details():
             self.update_table()
-        
+
     def on_setting_changed(self, setting, pipeline):
-        '''Update the imported extraction joiners on setting changes'''
+        """Update the imported extraction joiners on setting changes
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        """
         if not self.wants_metadata:
             return
         visible_settings = self.visible_settings()
@@ -889,18 +945,18 @@ class Metadata(cpm.CPModule):
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 idx = max(*map(visible_settings.index,
-                               [group.csv_joiner, group.csv_location, 
+                               [group.csv_joiner, group.csv_location,
                                 group.wants_case_insensitive]))
                 if idx < setting_idx:
                     continue
                 self.refresh_group_joiner(group)
-       
+
     def update_table(self):
         columns = set(self.get_metadata_keys())
         columns.discard(COL_SERIES)
         columns.discard(COL_INDEX)
         columns = [COL_PATH, COL_SERIES, COL_INDEX] + \
-            sorted(list(columns))
+                  sorted(list(columns))
         self.table.clear_columns()
         self.table.clear_rows()
         data = []
@@ -924,23 +980,85 @@ class Metadata(cpm.CPModule):
         columns = [c for c, h in zip(columns, has_data) if h]
         for i in range(len(data)):
             data[i] = [f for f, h in zip(data[i], has_data) if h]
-            
+
         for i, column in enumerate(columns):
             self.table.insert_column(i, column)
-                
+
         self.table.add_rows(columns, data)
-        
+
     def on_deactivated(self):
         self.pipeline = None
-        
+
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Alter internal paths for batch creation'''
+        """Alter internal paths for batch creation
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        """
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 group.csv_location.alter_for_create_batch(fn_alter_path)
-                
+
     def prepare_settings(self, setting_values):
-        '''Prepare the module to receive the settings'''
+        """Prepare the module to receive the settings
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        """
         #
         # Set the number of extraction methods based on the extraction method
         # count.
@@ -948,18 +1066,38 @@ class Metadata(cpm.CPModule):
         n_extraction_methods = int(setting_values[IDX_EXTRACTION_METHOD_COUNT])
         if len(self.extraction_methods) > n_extraction_methods:
             del self.extraction_methods[n_extraction_methods:]
-            
+
         while len(self.extraction_methods) < n_extraction_methods:
             self.add_extraction_method()
 
     def validate_module(self, pipeline):
-        '''Validate the module settings
-        
+        """Validate the module settings
+
         pipeline - current pipeline
-        
+
         Metadata throws an exception if any of the metadata tags collide with
         tags that can be automatically extracted.
-        '''
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         for group in self.extraction_methods:
             if group.extraction_method == X_MANUAL_EXTRACTION:
                 re_setting = (group.file_regexp if group.source == XM_FILE_NAME
@@ -969,33 +1107,55 @@ class Metadata(cpm.CPModule):
                         raise cps.ValidationError(
                             'The metadata tag, "%s", is reserved for use by CellProfiler. Please use some other tag name.' %
                             token, re_setting)
-                    
+
     def get_metadata_keys(self):
-        '''Return a collection of metadata keys to be associated with files'''
+        """Return a collection of metadata keys to be associated with files"""
         if not self.wants_metadata:
             return []
         extractor = self.build_extractor(for_metadata_only=True)
         keys = J.get_collection_wrapper(
-            J.call(extractor, 
-                   "getMetadataKeys", 
+            J.call(extractor,
+                   "getMetadataKeys",
                    "()Ljava/util/List;"), J.to_string)
         return keys
-    
+
     def get_dt_metadata_keys(self):
-        '''Get the metadata keys which can have flexible datatyping
-        
-        '''
+        """Get the metadata keys which can have flexible datatyping
+
+        """
         return filter((lambda k: k not in self.NUMERIC_DATA_TYPES),
                       self.get_metadata_keys())
-    
+
     NUMERIC_DATA_TYPES = (
         cpp.ImagePlaneDetails.MD_T, cpp.ImagePlaneDetails.MD_Z,
         cpp.ImagePlaneDetails.MD_SIZE_C, cpp.ImagePlaneDetails.MD_SIZE_T,
         cpp.ImagePlaneDetails.MD_SIZE_Z, cpp.ImagePlaneDetails.MD_SIZE_X,
         cpp.ImagePlaneDetails.MD_SIZE_Y, cpmeas.C_SERIES, cpmeas.C_FRAME)
-    
+
     def get_data_type(self, key):
-        '''Get the data type for a particular metadata key'''
+        """Get the data type for a particular metadata key
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        """
+        global data_types
         if isinstance(key, basestring):
             return self.get_data_type([key]).get(key, cpmeas.COLTYPE_VARCHAR)
         result = {}
@@ -1015,32 +1175,73 @@ class Metadata(cpm.CPModule):
                     result[k] = cpmeas.COLTYPE_FLOAT
             else:
                 result[k] = cpmeas.COLTYPE_VARCHAR
-                
+
         return result
-    
+
     def wants_case_insensitive_matching(self, key):
-        '''Return True if the key should be matched using case-insensitive matching
-        
+        """Return True if the key should be matched using case-insensitive matching
+
         key - key to check.
-        
+
         Currently, there is a case-insensitive matching flag in the
         imported metadata matcher. Perhaps this should be migrated into
         the data types control, but for now, we look for the key to be
         present in the joiner for any imported metadata matcher.
-        '''
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        """
         if not self.wants_metadata:
             return False
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION and \
-               group.wants_case_insensitive:
+                    group.wants_case_insensitive:
                 joins = group.csv_joiner.parse()
                 for join in joins:
                     if key in join.values():
                         return True
         return False
-    
+
     def get_measurement_columns(self, pipeline):
-        '''Get the metadata measurements collected by this module'''
+        """Get the metadata measurements collected by this module
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         key_types = pipeline.get_available_metadata_keys()
         result = []
         for key, coltype in key_types.iteritems():
@@ -1057,21 +1258,62 @@ class Metadata(cpm.CPModule):
             else:
                 data_type = cpmeas.COLTYPE_VARCHAR_FILE_NAME
             result.append((
-                cpmeas.IMAGE,  '_'.join((cpmeas.C_METADATA, key)), data_type))
+                cpmeas.IMAGE, '_'.join((cpmeas.C_METADATA, key)), data_type))
         return result
-    
+
     def get_categories(self, pipeline, object_name):
-        '''Return the measurement categories for a particular object'''
+        """Return the measurement categories for a particular object
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        """
         if object_name == cpmeas.IMAGE and len(self.get_metadata_keys()) > 0:
             return [cpmeas.C_METADATA]
         return []
-            
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == cpmeas.C_METADATA:
             keys = self.get_metadata_keys()
             return keys
         return []
-    
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1:
@@ -1079,36 +1321,41 @@ class Metadata(cpm.CPModule):
             new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V1]
             for i in range(n_groups):
                 new_setting_values += setting_values[
-                    (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * i):
-                    (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * (i+1))]
+                                      (
+                                      IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * i):
+                                      (
+                                      IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * (
+                                      i + 1))]
                 new_setting_values.append(cps.NO)
             setting_values = new_setting_values
             variable_revision_number = 2
-            
+
         if variable_revision_number == 2:
             # Changed naming of extraction methods, metadata sources and filtering choices
             n_groups = int(setting_values[IDX_EXTRACTION_METHOD_COUNT_V2])
             new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V2]
             for i in range(n_groups):
                 group = setting_values[
-                    (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * i):
-                    (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * (i+1))]
+                        (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * i):
+                        (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * (
+                        i + 1))]
                 group[0] = X_AUTOMATIC_EXTRACTION if group[0] == "Automatic" \
-                    else (X_MANUAL_EXTRACTION if group[0] == "Manual" \
+                    else (X_MANUAL_EXTRACTION if group[0] == "Manual"
                           else X_IMPORTED_EXTRACTION)
                 group[1] = XM_FILE_NAME if group[1] == "From file name" \
-                    else XM_FOLDER_NAME 
-                group[4] = F_FILTERED_IMAGES if group[4] == "Images selected using a filter" \
+                    else XM_FOLDER_NAME
+                group[4] = F_FILTERED_IMAGES if group[
+                                                    4] == "Images selected using a filter" \
                     else F_ALL_IMAGES
                 new_setting_values += group
             setting_values = new_setting_values
             variable_revision_number = 3
-            
+
         if variable_revision_number == 3:
             # Added data types
             setting_values = setting_values[:IDX_EXTRACTION_METHOD_COUNT_V3] + \
-                [DTC_TEXT, "{}"] + setting_values[IDX_EXTRACTION_METHOD_COUNT_V3:]
+                             [DTC_TEXT, "{}"] + setting_values[
+                                                IDX_EXTRACTION_METHOD_COUNT_V3:]
             variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab
-    

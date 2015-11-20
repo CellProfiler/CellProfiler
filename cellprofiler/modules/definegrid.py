@@ -1,13 +1,13 @@
-'''<b>Define Grid</b> produces a grid of desired specifications either manually, or
+"""<b>Define Grid</b> produces a grid of desired specifications either manually, or
 automatically based on previously identified objects.
 <hr>
 This module defines the location of a grid that can be used by modules
-downstream. You can use it in combination with <b>IdentifyObjectsInGrid</b> to measure the 
+downstream. You can use it in combination with <b>IdentifyObjectsInGrid</b> to measure the
 size, shape, intensity and texture of each
 object or location in a grid. The grid is defined by the location of marker spots
-(control spots), which are either indicated manually or 
+(control spots), which are either indicated manually or
 found automatically using previous modules in the pipeline. You can then
-use the grid to make measurements (using <b>IdentifyObjectsInGrid</b>). Text annotation of a 
+use the grid to make measurements (using <b>IdentifyObjectsInGrid</b>). Text annotation of a
 grid can be shown on top of an image using the <b>DisplayGridInfo</b> module (coming soon).
 
 If you are using images of plastic plates, it may be useful to precede
@@ -18,8 +18,8 @@ plate only. If the plates are not centered in exactly the same position
 from one image to the next, this allows the plates to be identified
 automatically and then cropped so that the interior of the plates, upon
 which the grids will be defined, are always in precise alignment with
-each other. 
-                
+each other.
+
 <h4>Available measurements</h4>
 <ul>
 <li><i>Rows, Columns</i>: The number of rows and columns in the grid</li>
@@ -29,9 +29,7 @@ each other.
 </ul>
 
 See also <b>IdentifyObjectsInGrid</b>.
-'''
-
-
+"""
 
 import logging
 import numpy as np
@@ -84,12 +82,12 @@ F_ROWS = "Rows"
 '''Feature name of # of columns in grid'''
 F_COLUMNS = "Columns"
 
+
 class DefineGrid(cpm.CPModule):
-    
     module_name = "DefineGrid"
     variable_revision_number = 1
     category = "Other"
-    
+
     def create_settings(self):
         """Create your settings by subclassing this function
         
@@ -99,23 +97,23 @@ class DefineGrid(cpm.CPModule):
             "Name the grid", doc="""
             This is the name of the grid. You can use this name to
             retrieve the grid in subsequent modules.""")
-        
-        self.grid_rows = cps.Integer("Number of rows",8,1)
-        
-        self.grid_columns = cps.Integer("Number of columns",12,1)
-        
+
+        self.grid_rows = cps.Integer("Number of rows", 8, 1)
+
+        self.grid_columns = cps.Integer("Number of columns", 12, 1)
+
         self.origin = cps.Choice(
             "Location of the first spot",
             [NUM_TOP_LEFT, NUM_BOTTOM_LEFT,
-            NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT], doc="""
+             NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT], doc="""
             Grid cells are numbered consecutively; this option identifies the
             origin for the numbering system and the direction for numbering.
             For instance, if you choose <i>%(NUM_TOP_LEFT)s</i>, the top left cell is
             cell #1 and cells to the right and bottom are indexed with
-            larger numbers."""%globals())
-        
+            larger numbers.""" % globals())
+
         self.ordering = cps.Choice(
-            "Order of the spots", 
+            "Order of the spots",
             [NUM_BY_ROWS, NUM_BY_COLUMNS], doc="""
             Grid cells can either be numbered by rows, then columns or by
             columns, then rows. For instance, you might ask to start numbering
@@ -128,8 +126,8 @@ class DefineGrid(cpm.CPModule):
             <li><i>%(NUM_BY_COLUMNS)s:</i> With this option, the well A02 will be assigned
             2, well A12 will be assigned 12 and well B01 will be assigned
             13.</li>
-            </ul>"""%globals())
-        
+            </ul>""" % globals())
+
         self.each_or_once = cps.Choice(
             "Define a grid for which cycle?",
             [EO_EACH, EO_ONCE], doc=""" 
@@ -143,8 +141,8 @@ class DefineGrid(cpm.CPModule):
             <li><i>%(EO_EACH)s:</i> If the location of the grid will vary from one image cycle 
             to the next then you should define the location of the marker spots 
             for each cycle independently.</li>
-            </ul>"""%globals())
-        
+            </ul>""" % globals())
+
         self.auto_or_manual = cps.Choice(
             "Select the method to define the grid",
             [AM_AUTOMATIC, AM_MANUAL], doc="""
@@ -173,15 +171,15 @@ class DefineGrid(cpm.CPModule):
             slightly out of alignment with each other from one image cycle to 
             the next, this allows the identification to be a bit flexible and 
             adapt to the real location of the spots.</li>
-            </ul>"""%globals())
-        
+            </ul>""" % globals())
+
         self.object_name = cps.ObjectNameSubscriber(
-            "Select the previously identified objects", cps.NONE,doc="""
+            "Select the previously identified objects", cps.NONE, doc="""
             <i>(Used only if you selected %(AM_AUTOMATIC)s to define the grid)</i><br>
             Select the previously identified objects you want to use to 
             define the grid. Use this setting to specify the name of the objects that will
-            be used to define the grid."""%globals())
-        
+            be used to define the grid.""" % globals())
+
         self.manual_choice = cps.Choice(
             "Select the method to define the grid manually",
             [MAN_MOUSE, MAN_COORDINATES], doc="""
@@ -198,27 +196,27 @@ class DefineGrid(cpm.CPModule):
             of your grid to find the locations of the centers of the cells,
             then enter the X and Y position and cell coordinates for each
             of two cells.</li>
-            </ul>"""%globals())
-        
+            </ul>""" % globals())
+
         self.manual_image = cps.ImageNameSubscriber(
             "Select the image to display",
             cps.NONE, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_MOUSE)s to define the grid)</i><br>
             Specify the image you want to display when defining the grid.
             This setting lets you choose the image to display 
-            in the grid definition user interface."""%globals())
-        
+            in the grid definition user interface.""" % globals())
+
         self.first_spot_coordinates = cps.Coordinates(
             "Coordinates of the first cell",
-            (0,0),doc="""
+            (0, 0), doc="""
             <i>(Used only if you selected %(AM_MANUAL)s  + %(MAN_COORDINATES)s to define the grid)</i><br>
             Enter the coordinates of the first cell on your grid.
             This setting defines the location of the first of
             two cells in your grid. You should enter the coordinates of
             the center of the cell. You can display an image of your grid
             and use the pixel coordinate display to determine the
-            coordinates of the center of your cell."""%globals())
-        
+            coordinates of the center of your cell.""" % globals())
+
         self.first_spot_row = cps.Integer(
             "Row number of the first cell", 1, minval=1, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_COORDINATES)s to define the grid)</i><br>
@@ -226,27 +224,27 @@ class DefineGrid(cpm.CPModule):
             numbered starting at the origin. For instance, if you chose
             <i>%(NUM_TOP_LEFT)s</i> as your origin, well A01 will be row number 1
             and H01 will be row number 8. If you chose <i>%(NUM_BOTTOM_LEFT)s</i>,
-            A01 will be row number 8 and H01 will be row number 12."""%globals())
-        
+            A01 will be row number 8 and H01 will be row number 12.""" % globals())
+
         self.first_spot_col = cps.Integer(
-            "Column number of the first cell",1, minval=1,doc="""
+            "Column number of the first cell", 1, minval=1, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_COORDINATES)s to define the grid)</i><br>
             Enter the column index for the first cell here. Columns
             are numbered starting at the origin. For instance, if you chose
             <i>%(NUM_TOP_LEFT)s</i> as your origin, well A01 will be column number <i>1</i>
             and A12 will be column number <i>12</i>. If you chose <i>%(NUM_TOP_RIGHT)s</i>,
-            A01 and A12 will be <i>12</i> and <i>1</i>, respectively."""%globals())
-        
+            A01 and A12 will be <i>12</i> and <i>1</i>, respectively.""" % globals())
+
         self.second_spot_coordinates = cps.Coordinates(
             "Coordinates of the second cell",
-            (0,0),doc="""
+            (0, 0), doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_COORDINATES)s to define the grid)</i><br>
             This setting defines the location of the second of
             two cells in your grid. You should enter the coordinates of
             the center of the cell. You can display an image of your grid
             and use use the pixel coordinate display to determine the 
-            coordinates of the center of your cell."""%globals())
-        
+            coordinates of the center of your cell.""" % globals())
+
         self.second_spot_row = cps.Integer(
             "Row number of the second cell", 1, minval=1, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_COORDINATES)s to define the grid)</i><br>
@@ -254,40 +252,40 @@ class DefineGrid(cpm.CPModule):
             numbered starting at the origin. For instance, if you chose
             <i>%(NUM_TOP_LEFT)s</i> as your origin, well A01 will be row number 1
             and H01 will be row number 8. If you chose <i>%(NUM_BOTTOM_LEFT)s</i>,
-            A01 will be row number 8 and H01 will be row number 12."""%globals())
-        
+            A01 will be row number 8 and H01 will be row number 12.""" % globals())
+
         self.second_spot_col = cps.Integer(
-            "Column number of the second cell",1, minval=1, doc="""
+            "Column number of the second cell", 1, minval=1, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s  + %(MAN_COORDINATES)s to define the grid)</i><br>
             Enter the column index for the second cell here. Columns
             are numbered starting at the origin. For instance, if you chose
             <i>%(NUM_TOP_LEFT)s</i> as your origin, well A01 will be column number 1
             and A12 will be column number 12. If you chose <i>%(NUM_TOP_RIGHT)s</i>,
-            A01 and A12 will be 12 and 1, respectively."""%globals())
-        
+            A01 and A12 will be 12 and 1, respectively.""" % globals())
+
         self.wants_image = cps.Binary(
-            "Retain an image of the grid?", 
-            False, doc = """
+            "Retain an image of the grid?",
+            False, doc="""
             Select <i>%(YES)s</i> to retain an image of the grid for use later in the pipeline.
             This module can create an annotated image of the grid
-            that can be saved using the <b>SaveImages</b> module. """%globals())
-        
+            that can be saved using the <b>SaveImages</b> module. """ % globals())
+
         self.display_image_name = cps.ImageNameSubscriber(
-            "Select the image on which to display the grid", 
-            cps.LEAVE_BLANK, can_be_blank = True, doc = """
+            "Select the image on which to display the grid",
+            cps.LEAVE_BLANK, can_be_blank=True, doc="""
             <i>(Used only if saving an image of the grid)</i><br>
             Enter the name of the image that should be used as
             the background for annotations (grid lines and grid indexes).
             This image will be used for the figure and for the saved image.""")
-        
+
         self.save_image_name = cps.ImageNameProvider(
-            "Name the output image", "Grid", doc = """
+            "Name the output image", "Grid", doc="""
             <i>(Used only if retaining an image of the grid for use later in the pipeline)</i><br>
             Enter the name you want to use for the output image. You can
             save this image using the <b>SaveImages</b> module.""")
-        
+
         self.failed_grid_choice = cps.Choice(
-            "Use a previous grid if gridding fails?", 
+            "Use a previous grid if gridding fails?",
             [FAIL_NO, FAIL_ANY_PREVIOUS, FAIL_FIRST], doc="""
             If the gridding fails, this setting allows you to control how the module responds
             to the error:            
@@ -297,7 +295,7 @@ class DefineGrid(cpm.CPModule):
             the most recent successful gridding.</li>
             <li><i>%(FAIL_FIRST)s:</i> The module will use the first gridding.</li>
             </ul>
-            Note that the pipeline will stop in all cases if gridding fails on the first image."""%globals())
+            Note that the pipeline will stop in all cases if gridding fails on the first image.""" % globals())
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
@@ -308,15 +306,15 @@ class DefineGrid(cpm.CPModule):
         order so they can be matched to the strings in the pipeline.
         """
         return [self.grid_image, self.grid_rows, self.grid_columns,
-                self.origin, self.ordering, self.each_or_once, 
+                self.origin, self.ordering, self.each_or_once,
                 self.auto_or_manual, self.object_name, self.manual_choice,
                 self.manual_image, self.first_spot_coordinates,
                 self.first_spot_row, self.first_spot_col,
                 self.second_spot_coordinates, self.second_spot_row,
-                self.second_spot_col, self.wants_image, 
+                self.second_spot_col, self.wants_image,
                 self.save_image_name,
                 self.display_image_name, self.failed_grid_choice]
-    
+
     def visible_settings(self):
         """The settings that are visible in the UI
         """
@@ -335,17 +333,17 @@ class DefineGrid(cpm.CPModule):
                            self.second_spot_coordinates,
                            self.second_spot_row, self.second_spot_col]
             else:
-                raise NotImplementedError("Unknown manual choice: %s"%
+                raise NotImplementedError("Unknown manual choice: %s" %
                                           self.manual_choice.value)
         else:
             raise NotImplementedError("Unknown automatic / manual choice: %s" %
                                       self.auto_or_manual.value)
         result += [self.wants_image]
         if self.wants_image:
-            result+= [self.save_image_name]
+            result += [self.save_image_name]
         result += [self.display_image_name]
         return result
-    
+
     def run(self, workspace):
         """Run the module 
         
@@ -355,11 +353,13 @@ class DefineGrid(cpm.CPModule):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. None means don't draw.
+            :param workspace:
         """
+        global gridding
         background_image = self.get_background_image(workspace, None)
 
-        if (self.each_or_once == EO_ONCE and 
-            self.get_good_gridding(workspace) is not None):
+        if (self.each_or_once == EO_ONCE and
+                    self.get_good_gridding(workspace) is not None):
             gridding = self.get_good_gridding(workspace)
         if self.auto_or_manual == AM_AUTOMATIC:
             gridding = self.run_automatic(workspace)
@@ -373,7 +373,7 @@ class DefineGrid(cpm.CPModule):
         #
         # Save measurements
         #
-        self.add_measurement(workspace, F_X_LOCATION_OF_LOWEST_X_SPOT, 
+        self.add_measurement(workspace, F_X_LOCATION_OF_LOWEST_X_SPOT,
                              gridding.x_location_of_lowest_x_spot)
         self.add_measurement(workspace, F_Y_LOCATION_OF_LOWEST_Y_SPOT,
                              gridding.y_location_of_lowest_y_spot)
@@ -417,7 +417,7 @@ class DefineGrid(cpm.CPModule):
             transform = matplotlib.transforms.Affine2D(
                 np.array([[dpi, 0, 0],
                           [0, dpi, 0],
-                          [0,   0, 1]]))
+                          [0, 0, 1]]))
             figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
             image_pixels = figure_to_image(figure, dpi=dpi)
             image = cpi.Image(image_pixels)
@@ -430,21 +430,23 @@ class DefineGrid(cpm.CPModule):
                 return None
             image = np.zeros((gridding.total_height +
                               (gridding.y_location_of_lowest_y_spot -
-                              gridding.y_spacing / 2) * 2 + 2,
+                               gridding.y_spacing / 2) * 2 + 2,
                               gridding.total_width +
                               (gridding.x_location_of_lowest_x_spot -
-                              gridding.x_spacing / 2) * 2 + 2, 3))
+                               gridding.x_spacing / 2) * 2 + 2, 3))
         else:
-            image = workspace.image_set.get_image(self.display_image_name.value).pixel_data
+            image = workspace.image_set.get_image(
+                self.display_image_name.value).pixel_data
             if image.ndim == 2:
                 image = np.dstack((image, image, image))
         return image
 
     def run_automatic(self, workspace):
-        '''Automatically define a grid based on objects
+        """Automatically define a grid based on objects
 
         Returns a CPGridInfo object
-        '''
+        :param workspace:
+        """
         objects = workspace.object_set.get_objects(self.object_name.value)
         centroids = centers_of_labels(objects.segmented)
         try:
@@ -452,39 +454,41 @@ class DefineGrid(cpm.CPModule):
                 #
                 # Failed if too few objects
                 #
-                raise RuntimeError("%s has too few grid cells"%
+                raise RuntimeError("%s has too few grid cells" %
                                    self.object_name.value)
             #
             # Artificially swap these to match the user's orientation
             #
-            first_row, second_row = (1,self.grid_rows.value)
+            first_row, second_row = (1, self.grid_rows.value)
             if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
                 first_row, second_row = (second_row, first_row)
             first_column, second_column = (1, self.grid_columns.value)
             if self.origin in (NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT):
                 first_column, second_column = (second_column, first_column)
-            first_x = np.min(centroids[1,:])
-            first_y = np.min(centroids[0,:])
-            second_x = np.max(centroids[1,:])
-            second_y = np.max(centroids[0,:])
-            result = self.build_grid_info(first_x, first_y, first_row, 
-                                          first_column, second_x, second_y, 
+            first_x = np.min(centroids[1, :])
+            first_y = np.min(centroids[0, :])
+            second_x = np.max(centroids[1, :])
+            second_y = np.max(centroids[0, :])
+            result = self.build_grid_info(first_x, first_y, first_row,
+                                          first_column, second_x, second_y,
                                           second_row, second_column,
                                           objects.segmented.shape)
         except Exception:
             if self.failed_grid_choice != FAIL_NO:
                 result = self.get_good_gridding(workspace)
                 if result is None:
-                    raise RuntimeError("%s has too few grid cells and there is no previous successful grid"%
-                                       self.object_name.value)
+                    raise RuntimeError(
+                        "%s has too few grid cells and there is no previous successful grid" %
+                        self.object_name.value)
             raise
         return result
-    
+
     def run_coordinates(self, workspace):
-        '''Define a grid based on the coordinates of two points
-        
+        """Define a grid based on the coordinates of two points
+
         Returns a CPGridInfo object
-        '''
+        :param workspace:
+        """
         if self.display_image_name.value in workspace.image_set.names:
             image = workspace.image_set.get_image(self.display_image_name.value)
             shape = image.pixel_data.shape[:2]
@@ -499,15 +503,17 @@ class DefineGrid(cpm.CPModule):
                                     self.second_spot_row.value,
                                     self.second_spot_col.value,
                                     shape)
-    
+
     def handle_interaction(self, background_image, image_set_number):
         return self.run_mouse(background_image, image_set_number)
 
     def run_mouse(self, background_image, image_set_number):
-        '''Define a grid by running the UI
-        
+        """Define a grid by running the UI
+
         Returns a CPGridInfo object
-        '''
+        :param image_set_number:
+        :param background_image:
+        """
         import matplotlib
         import matplotlib.backends.backend_wxagg as backend
         import wx
@@ -537,72 +543,72 @@ class DefineGrid(cpm.CPModule):
         frame = wx.Dialog(wx.GetApp().TopWindow, title="Select grid cells")
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         frame.SetSizer(top_sizer)
-        canvas = backend.FigureCanvasWxAgg(frame,-1,figure)
+        canvas = backend.FigureCanvasWxAgg(frame, -1, figure)
         top_sizer.Add(canvas, 1, wx.EXPAND)
         top_sizer.Add(wx.StaticText(frame, -1,
-            "Select the center of a grid cell with the left mouse button.\n"),
-                      0, wx.EXPAND|wx.ALL, 5)
+                                    "Select the center of a grid cell with the left mouse button.\n"),
+                      0, wx.EXPAND | wx.ALL, 5)
         control_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        top_sizer.Add(control_sizer,0,wx.EXPAND|wx.ALL, 5)
+        top_sizer.Add(control_sizer, 0, wx.EXPAND | wx.ALL, 5)
         FIRST_CELL = "First cell"
         SECOND_CELL = "Second cell"
         cell_choice = wx.RadioBox(frame, label="Choose current cell",
-                                  choices = [FIRST_CELL, SECOND_CELL],
+                                  choices=[FIRST_CELL, SECOND_CELL],
                                   style=wx.RA_VERTICAL)
         control_sizer.Add(cell_choice)
         #
         # Text boxes for the first cell's row and column
         #
-        first_sizer = wx.GridBagSizer(2,2)
-        control_sizer.Add(first_sizer, 1, wx.EXPAND|wx.ALL, 5)
+        first_sizer = wx.GridBagSizer(2, 2)
+        control_sizer.Add(first_sizer, 1, wx.EXPAND | wx.ALL, 5)
         first_sizer.Add(wx.StaticText(frame, -1, "First cell column:"),
-                        wx.GBPosition(0,0), flag=wx.EXPAND)
+                        wx.GBPosition(0, 0), flag=wx.EXPAND)
         first_column = IntCtrl(frame, -1, 1, min=1, max=self.grid_columns.value)
-        first_sizer.Add(first_column, wx.GBPosition(0,1),flag=wx.EXPAND)
+        first_sizer.Add(first_column, wx.GBPosition(0, 1), flag=wx.EXPAND)
         first_sizer.Add(wx.StaticText(frame, -1, "First cell row:"),
-                        wx.GBPosition(1,0),flag = wx.EXPAND)
+                        wx.GBPosition(1, 0), flag=wx.EXPAND)
         first_row = IntCtrl(frame, -1, 1, min=1, max=self.grid_rows.value)
-        first_sizer.Add(first_row, wx.GBPosition(1,1), flag=wx.EXPAND)
-        first_sizer.Add(wx.StaticText(frame,-1,"X:"), wx.GBPosition(0,2))
+        first_sizer.Add(first_row, wx.GBPosition(1, 1), flag=wx.EXPAND)
+        first_sizer.Add(wx.StaticText(frame, -1, "X:"), wx.GBPosition(0, 2))
         first_x = IntCtrl(frame, -1, 100, min=1)
-        first_sizer.Add(first_x, wx.GBPosition(0,3))
-        first_sizer.Add(wx.StaticText(frame,-1,"Y:"), wx.GBPosition(1,2))
+        first_sizer.Add(first_x, wx.GBPosition(0, 3))
+        first_sizer.Add(wx.StaticText(frame, -1, "Y:"), wx.GBPosition(1, 2))
         first_y = IntCtrl(frame, -1, 100, min=1)
-        first_sizer.Add(first_y, wx.GBPosition(1,3))
+        first_sizer.Add(first_y, wx.GBPosition(1, 3))
         #
         # Text boxes for the second cell's row and column
         #
-        second_sizer = wx.GridBagSizer(2,2)
-        control_sizer.Add(second_sizer, 1, wx.EXPAND|wx.ALL, 5)
+        second_sizer = wx.GridBagSizer(2, 2)
+        control_sizer.Add(second_sizer, 1, wx.EXPAND | wx.ALL, 5)
         second_sizer.Add(wx.StaticText(frame, -1, "Second cell column:"),
-                        wx.GBPosition(0,0), flag=wx.EXPAND)
+                         wx.GBPosition(0, 0), flag=wx.EXPAND)
         second_column = IntCtrl(frame, -1, self.grid_columns.value,
                                 min=1, max=self.grid_columns.value)
-        second_sizer.Add(second_column, wx.GBPosition(0,1),flag=wx.EXPAND)
+        second_sizer.Add(second_column, wx.GBPosition(0, 1), flag=wx.EXPAND)
         second_sizer.Add(wx.StaticText(frame, -1, "Second cell row:"),
-                        wx.GBPosition(1,0),flag = wx.EXPAND)
-        second_row = IntCtrl(frame, -1, self.grid_rows.value, 
+                         wx.GBPosition(1, 0), flag=wx.EXPAND)
+        second_row = IntCtrl(frame, -1, self.grid_rows.value,
                              min=1, max=self.grid_rows.value)
-        second_sizer.Add(second_row, wx.GBPosition(1,1), flag=wx.EXPAND)
-        second_sizer.Add(wx.StaticText(frame,-1,"X:"), wx.GBPosition(0,2))
+        second_sizer.Add(second_row, wx.GBPosition(1, 1), flag=wx.EXPAND)
+        second_sizer.Add(wx.StaticText(frame, -1, "X:"), wx.GBPosition(0, 2))
         second_x = IntCtrl(frame, -1, 200, min=1)
-        second_sizer.Add(second_x, wx.GBPosition(0,3))
-        second_sizer.Add(wx.StaticText(frame,-1,"Y:"), wx.GBPosition(1,2))
+        second_sizer.Add(second_x, wx.GBPosition(0, 3))
+        second_sizer.Add(wx.StaticText(frame, -1, "Y:"), wx.GBPosition(1, 2))
         second_y = IntCtrl(frame, -1, 200, min=1)
-        second_sizer.Add(second_y, wx.GBPosition(1,3))
+        second_sizer.Add(second_y, wx.GBPosition(1, 3))
         #
         # Buttons
         #
         button_sizer = wx.BoxSizer(wx.VERTICAL)
-        control_sizer.Add(button_sizer, 0, wx.EXPAND |wx.ALL, 5)
+        control_sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 5)
         redisplay_button = wx.Button(frame, -1, "Redisplay")
         button_sizer.Add(redisplay_button)
-        button_sizer.Add(wx.Button(frame,wx.OK, "OK"))
-        button_sizer.Add(wx.Button(frame,wx.CANCEL, "Cancel"))
+        button_sizer.Add(wx.Button(frame, wx.OK, "OK"))
+        button_sizer.Add(wx.Button(frame, wx.CANCEL, "Cancel"))
         #
         # Status bar
         #
-        status_bar = wx.StatusBar(frame, style = 0)
+        status_bar = wx.StatusBar(frame, style=0)
         top_sizer.Add(status_bar, 0, wx.EXPAND)
         status_bar.SetFieldsCount(1)
         SELECT_FIRST_CELL = "Select the center of the first cell"
@@ -617,23 +623,25 @@ class DefineGrid(cpm.CPModule):
 
         def redisplay(event):
             figure.clf()
-            axes = figure.add_subplot(1,1,1)
-            
+            axes = figure.add_subplot(1, 1, 1)
+
             if (event is not None) or (gridding[0] is None):
                 do_gridding(first_x.Value, first_y.Value,
                             second_x.Value, second_y.Value)
             self.display_grid(background_image, gridding[0],
                               image_set_number, axes)
             canvas.draw()
+
         def cancel(event):
             status[0] = wx.CANCEL
             frame.SetReturnCode(wx.CANCEL)
             frame.Close(True)
+
         def ok(event):
             status[0] = wx.OK
             frame.SetReturnCode(wx.OK)
             frame.Close(True)
-            
+
         def on_cell_selection(event):
             if cell_choice.Selection == 0:
                 status_bar.SetStatusText(SELECT_FIRST_CELL)
@@ -656,7 +664,7 @@ class DefineGrid(cpm.CPModule):
                 status_bar.SetStatusText(e.message)
                 return False
             return True
-            
+
         def button_release(event):
             if event.inaxes == figure.axes[0]:
                 if cell_choice.Selection == 0:
@@ -678,6 +686,7 @@ class DefineGrid(cpm.CPModule):
                         cell_choice.Selection = 0
                         status_bar.SetStatusText(SELECT_FIRST_CELL)
                 redisplay(None)
+
         redisplay(None)
         frame.Fit()
         frame.Bind(wx.EVT_BUTTON, redisplay, redisplay_button)
@@ -692,31 +701,104 @@ class DefineGrid(cpm.CPModule):
         if status[0] != wx.OK:
             raise RuntimeError("Pipeline aborted during grid editing")
         return gridding[0]
-    
+
     def get_feature_name(self, feature):
         return '_'.join((M_CATEGORY, self.grid_image.value, feature))
-    
+
     def add_measurement(self, workspace, feature, value):
-        '''Add an image measurement using our category and grid
-        
+        """Add an image measurement using our category and grid
+
         feature - the feature name of the measurement to add
         value - the value for the measurement
-        '''
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
+        """
         feature_name = self.get_feature_name(feature)
         workspace.measurements.add_image_measurement(feature_name, value)
-        
+
     def build_grid_info(self, first_x, first_y, first_row, first_col,
                         second_x, second_y, second_row, second_col,
-                        image_shape = None):
-        '''Populate and return a CPGridInfo based on two cell locations'''
-        first_row, first_col =\
-                  self.canonical_row_and_column(first_row, first_col)
-        second_row, second_col =\
-                  self.canonical_row_and_column(second_row, second_col)
+                        image_shape=None):
+        """Populate and return a CPGridInfo based on two cell locations
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        """
+        first_row, first_col = \
+            self.canonical_row_and_column(first_row, first_col)
+        second_row, second_col = \
+            self.canonical_row_and_column(second_row, second_col)
         gridding = cpg.CPGridInfo()
-        gridding.x_spacing = (float(first_x-second_x) / 
+        gridding.x_spacing = (float(first_x - second_x) /
                               float(first_col - second_col))
-        gridding.y_spacing = (float(first_y-second_y) / 
+        gridding.y_spacing = (float(first_y - second_y) /
                               float(first_row - second_row))
         gridding.x_location_of_lowest_x_spot = int(first_x - first_col *
                                                    gridding.x_spacing)
@@ -724,47 +806,48 @@ class DefineGrid(cpm.CPModule):
                                                    gridding.y_spacing)
         gridding.rows = self.grid_rows.value
         gridding.columns = self.grid_columns.value
-        gridding.left_to_right = (self.origin in (NUM_TOP_LEFT, NUM_BOTTOM_LEFT))
+        gridding.left_to_right = (
+        self.origin in (NUM_TOP_LEFT, NUM_BOTTOM_LEFT))
         gridding.top_to_bottom = (self.origin in (NUM_TOP_LEFT, NUM_TOP_RIGHT))
         gridding.total_width = int(gridding.x_spacing * gridding.columns)
         gridding.total_height = int(gridding.y_spacing * gridding.rows)
-        
-        line_left_x = int(gridding.x_location_of_lowest_x_spot - 
-                          gridding.x_spacing/2)
-        line_top_y = int(gridding.y_location_of_lowest_y_spot - 
-                         gridding.y_spacing/2)
+
+        line_left_x = int(gridding.x_location_of_lowest_x_spot -
+                          gridding.x_spacing / 2)
+        line_top_y = int(gridding.y_location_of_lowest_y_spot -
+                         gridding.y_spacing / 2)
         #
         # Make a 2 x columns array of x-coordinates of vertical lines (x0=x1)
         #
         gridding.vert_lines_x = np.tile((np.arange(gridding.columns + 1) *
                                          gridding.x_spacing + line_left_x),
-                                        (2,1)).astype(int)
+                                        (2, 1)).astype(int)
         #
         # Make a 2 x rows array of y-coordinates of horizontal lines (y0=y1)
         #
         gridding.horiz_lines_y = np.tile((np.arange(gridding.rows + 1) *
                                           gridding.y_spacing + line_top_y),
-                                         (2,1)).astype(int)
+                                         (2, 1)).astype(int)
         #
         # Make a 2x columns array of y-coordinates of vertical lines
         # all of which are from line_top_y to the bottom
         #
         gridding.vert_lines_y = np.transpose(np.tile(
             (line_top_y, line_top_y + gridding.total_height),
-            (gridding.columns+1, 1))).astype(int)
+            (gridding.columns + 1, 1))).astype(int)
         gridding.horiz_lines_x = np.transpose(np.tile(
             (line_left_x, line_left_x + gridding.total_width),
-            (gridding.rows+1, 1))).astype(int)
+            (gridding.rows + 1, 1))).astype(int)
         gridding.x_locations = (gridding.x_location_of_lowest_x_spot +
-                                np.arange(gridding.columns) * 
+                                np.arange(gridding.columns) *
                                 gridding.x_spacing).astype(int)
         gridding.y_locations = (gridding.y_location_of_lowest_y_spot +
-                                np.arange(gridding.rows) * 
+                                np.arange(gridding.rows) *
                                 gridding.y_spacing).astype(int)
         #
         # The spot table has the numbering for each spot in the grid
         #
-        gridding.spot_table = np.arange(gridding.rows * gridding.columns)+1
+        gridding.spot_table = np.arange(gridding.rows * gridding.columns) + 1
         if self.ordering == NUM_BY_COLUMNS:
             gridding.spot_table.shape = (gridding.rows, gridding.columns)
         else:
@@ -772,42 +855,54 @@ class DefineGrid(cpm.CPModule):
             gridding.spot_table = np.transpose(gridding.spot_table)
         if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
             # Flip top and bottom
-            gridding.spot_table = gridding.spot_table[::-1,:]
+            gridding.spot_table = gridding.spot_table[::-1, :]
         if self.origin in (NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT):
             # Flip left and right
-            gridding.spot_table = gridding.spot_table[:,::-1]
+            gridding.spot_table = gridding.spot_table[:, ::-1]
         if image_shape is not None:
             gridding.image_height = image_shape[0]
             gridding.image_width = image_shape[1]
         else:
             # guess the image shape by adding the same border to the right
             # and bottom that we have on the left and top
-            top_edge = int(gridding.y_location_of_lowest_y_spot - 
+            top_edge = int(gridding.y_location_of_lowest_y_spot -
                            gridding.y_spacing / 2)
-            right_edge = int(gridding.x_location_of_lowest_x_spot - 
-                             gridding.x_spacing/2)
+            right_edge = int(gridding.x_location_of_lowest_x_spot -
+                             gridding.x_spacing / 2)
             gridding.image_height = \
                 top_edge * 2 + gridding.y_spacing * gridding.rows
             gridding.image_width = \
                 right_edge * 2 + gridding.x_spacing * gridding.columns
         return gridding
-        
+
     def canonical_row_and_column(self, row, column):
-        '''Convert a row and column as entered by the user to canonical form
-        
+        """Convert a row and column as entered by the user to canonical form
+
         The user might select something other than the bottom left as the
         origin of their coordinate space. This method returns a row and
         column using a numbering where the top left corner is 0,0
-        '''
+        :param column:
+        :param row:
+        :param column:
+        :param row:
+        :param column:
+        :param row:
+        :param column:
+        :param row:
+        :param column:
+        :param row:
+        :param column:
+        :param row:
+        """
         if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
             row = self.grid_rows.value - row
         else:
-            row -=1
+            row -= 1
         if self.origin in (NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT):
             column = self.grid_columns.value - column
         else:
             column -= 1
-        return (row, column)
+        return row, column
 
     def display(self, workspace, figure):
         if self.show_window:
@@ -822,9 +917,34 @@ class DefineGrid(cpm.CPModule):
                               ax)
 
     def display_grid(self, background_image, gridding, image_set_number, axes):
-        '''Display the grid in a figure'''
+        """Display the grid in a figure
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        """
         import matplotlib
-        
+
         axes.cla()
         assert isinstance(axes, matplotlib.axes.Axes)
         assert isinstance(gridding, cpg.CPGridInfo)
@@ -840,7 +960,7 @@ class DefineGrid(cpm.CPModule):
         for xc, yc in ((gridding.horiz_lines_x, gridding.horiz_lines_y),
                        (gridding.vert_lines_x, gridding.vert_lines_y)):
             for i in range(xc.shape[1]):
-                line = matplotlib.lines.Line2D(xc[:,i],yc[:,i],
+                line = matplotlib.lines.Line2D(xc[:, i], yc[:, i],
                                                color="red")
                 axes.add_line(line)
         #
@@ -848,53 +968,80 @@ class DefineGrid(cpm.CPModule):
         #
         for row in (0, gridding.rows - 1):
             for column in (0, gridding.columns - 1):
-                label = str(gridding.spot_table[row,column])
+                label = str(gridding.spot_table[row, column])
                 x = gridding.x_locations[column]
                 y = gridding.y_locations[row]
-                text = matplotlib.text.Text(x,y,label,
+                text = matplotlib.text.Text(x, y, label,
                                             horizontalalignment='center',
                                             verticalalignment='center',
                                             size='smaller',
                                             color="black",
-                                            bbox= dict(facecolor = "white",
-                                                       alpha = .5,
-                                                       edgecolor = "black"))
+                                            bbox=dict(facecolor="white",
+                                                      alpha=.5,
+                                                      edgecolor="black"))
                 axes.add_artist(text)
         axes.axis('image')
-    
+
     def get_good_gridding(self, workspace):
-        '''Get either the first gridding or the most recent successful gridding'''
+        """Get either the first gridding or the most recent successful gridding
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         d = self.get_dictionary()
         if not GOOD_GRIDDING in d:
             return None
         return d[GOOD_GRIDDING]
-    
+
     def set_good_gridding(self, workspace, gridding):
-        '''Set the gridding to use upon failure'''
+        """Set the gridding to use upon failure
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        """
         d = self.get_dictionary()
         if (self.failed_grid_choice == FAIL_ANY_PREVIOUS or
-            not d.has_key(GOOD_GRIDDING)):
+                not d.has_key(GOOD_GRIDDING)):
             d[GOOD_GRIDDING] = gridding
-            
+
     def validate_module(self, pipeline):
-        '''Make sure that the row and column are different'''
-        if (self.auto_or_manual == AM_MANUAL and 
-            self.manual_choice == MAN_COORDINATES):
+        """Make sure that the row and column are different
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
+        if (self.auto_or_manual == AM_MANUAL and
+                    self.manual_choice == MAN_COORDINATES):
             if self.first_spot_row.value == self.second_spot_row.value:
                 raise cps.ValidationError(
                     "The first and second row numbers must be different in "
                     "order to calculate the distance between rows.",
                     self.second_spot_row)
-            if self.first_spot_col.value ==  self.second_spot_col.value:
+            if self.first_spot_col.value == self.second_spot_col.value:
                 raise cps.ValidationError(
                     "The first and second column numbers must be different "
                     "in order to calculate the distance between columns.",
                     self.second_spot_col)
-    
-    def upgrade_settings(self,setting_values,variable_revision_number,
-                         module_name,from_matlab):
-        '''Adjust setting values if they came from a previous revision
-        
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
+        """Adjust setting values if they came from a previous revision
+
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
         variable_revision_number - the variable revision number of the
@@ -906,40 +1053,66 @@ class DefineGrid(cpm.CPModule):
                       that module was merged into the current module
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
-        
+
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        """
         if from_matlab and variable_revision_number == 3:
-            grid_name, rows_cols, left_or_right, top_or_bottom,\
-            rows_or_columns, each_or_once, auto_or_manual, object_name,\
-            control_spot_mode, image_name, horz_vert_offset,\
-            distance_units, horz_vert_spacing, control_spot,\
+            grid_name, rows_cols, left_or_right, top_or_bottom, \
+            rows_or_columns, each_or_once, auto_or_manual, object_name, \
+            control_spot_mode, image_name, horz_vert_offset, \
+            distance_units, horz_vert_spacing, control_spot, \
             rgb_name, failed_grid_choice = setting_values
             try:
                 rows, cols = [int(x.strip()) for x in rows_cols.split(',')]
             except:
-                rows, cols = (8,12)
+                rows, cols = (8, 12)
             try:
-                x_spacing, y_spacing = [int(x.strip()) 
+                x_spacing, y_spacing = [int(x.strip())
                                         for x in horz_vert_spacing.split(',')]
             except:
-                x_spacing, y_spacing = (10,10)
+                x_spacing, y_spacing = (10, 10)
             try:
-                off_x, off_y = [int(x.strip()) for x in horz_vert_offset.split(',')]
-                first_x, first_y = [int(x.strip()) for x in control_spot.split(',')]
+                off_x, off_y = [int(x.strip()) for x in
+                                horz_vert_offset.split(',')]
+                first_x, first_y = [int(x.strip()) for x in
+                                    control_spot.split(',')]
                 first_x += off_x
                 first_y += off_y
             except:
-                first_x, first_y = (0,0)
+                first_x, first_y = (0, 0)
             second_x = first_x + (cols - 1) * x_spacing
-            second_y = first_y + (rows - 1)* y_spacing
+            second_y = first_y + (rows - 1) * y_spacing
 
             origin = top_or_bottom + " " + left_or_right.lower()
             setting_values = [
-                grid_name, 
+                grid_name,
                 str(rows),
                 str(cols),
                 origin,
@@ -949,56 +1122,124 @@ class DefineGrid(cpm.CPModule):
                 object_name,
                 control_spot_mode,
                 image_name,
-                "%d,%d"%(first_x, first_y),
-                "1","1",
-                "%d,%d"%(second_x, second_y),
-                str(rows),str(cols),
+                "%d,%d" % (first_x, first_y),
+                "1", "1",
+                "%d,%d" % (second_x, second_y),
+                str(rows), str(cols),
                 cps.NO if rgb_name == cps.DO_NOT_USE else cps.YES,
                 rgb_name,
                 image_name, failed_grid_choice]
             from_matlab = False
             variable_revision_number = 1
-            
+
         if variable_revision_number == 1 and not from_matlab:
             #
             # Some of the wording changed for the failed grid choice
             #
             if setting_values[-1] == "Any Previous":
-                setting_values = setting_values[:-1]+[FAIL_ANY_PREVIOUS]
+                setting_values = setting_values[:-1] + [FAIL_ANY_PREVIOUS]
             elif setting_values[-1] == "The First":
-                setting_values = setting_values[:-1]+[FAIL_FIRST]
+                setting_values = setting_values[:-1] + [FAIL_FIRST]
         return setting_values, variable_revision_number, from_matlab
-    
+
     def get_measurement_columns(self, pipeline):
-        '''Return a sequence describing the measurement columns needed by this module
-        
+        """Return a sequence describing the measurement columns needed by this module
+
         This call should return one element per image or object measurement
         made by the module during image set analysis. The element itself
         is a 3-tuple:
         first entry: either one of the predefined measurement categories,
                      {"Image", "Experiment" or "Neighbors" or the name of one
                      of the objects.}
-        second entry: the measurement name (as would be used in a call 
+        second entry: the measurement name (as would be used in a call
                       to add_measurement)
         third entry: the column data type (for instance, "varchar(255)" or
                      "float")
-        '''
-        return [(cpmeas.IMAGE, self.get_feature_name(F_ROWS), cpmeas.COLTYPE_INTEGER),
-                (cpmeas.IMAGE, self.get_feature_name(F_COLUMNS), cpmeas.COLTYPE_INTEGER),
-                (cpmeas.IMAGE, self.get_feature_name(F_X_SPACING), cpmeas.COLTYPE_FLOAT),
-                (cpmeas.IMAGE, self.get_feature_name(F_Y_SPACING), cpmeas.COLTYPE_FLOAT),
-                (cpmeas.IMAGE, self.get_feature_name(F_X_LOCATION_OF_LOWEST_X_SPOT), cpmeas.COLTYPE_FLOAT),
-                (cpmeas.IMAGE, self.get_feature_name(F_Y_LOCATION_OF_LOWEST_Y_SPOT), cpmeas.COLTYPE_FLOAT)]
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+        """
+        return [(cpmeas.IMAGE, self.get_feature_name(F_ROWS),
+                 cpmeas.COLTYPE_INTEGER),
+                (cpmeas.IMAGE, self.get_feature_name(F_COLUMNS),
+                 cpmeas.COLTYPE_INTEGER),
+                (cpmeas.IMAGE, self.get_feature_name(F_X_SPACING),
+                 cpmeas.COLTYPE_FLOAT),
+                (cpmeas.IMAGE, self.get_feature_name(F_Y_SPACING),
+                 cpmeas.COLTYPE_FLOAT),
+                (cpmeas.IMAGE,
+                 self.get_feature_name(F_X_LOCATION_OF_LOWEST_X_SPOT),
+                 cpmeas.COLTYPE_FLOAT),
+                (cpmeas.IMAGE,
+                 self.get_feature_name(F_Y_LOCATION_OF_LOWEST_Y_SPOT),
+                 cpmeas.COLTYPE_FLOAT)]
 
-    def get_categories(self, pipeline,object_name):
+    def get_categories(self, pipeline, object_name):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
         """
         if object_name == cpmeas.IMAGE:
             return [M_CATEGORY]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == M_CATEGORY:
             return ['_'.join((self.grid_image.value, feature))
@@ -1006,4 +1247,3 @@ class DefineGrid(cpm.CPModule):
                                     F_Y_SPACING, F_X_LOCATION_OF_LOWEST_X_SPOT,
                                     F_Y_LOCATION_OF_LOWEST_Y_SPOT)]
         return []
-        

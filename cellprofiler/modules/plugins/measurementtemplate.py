@@ -1,4 +1,4 @@
-'''<b>MeasurementTemplate</b> - an example measurement module
+"""<b>MeasurementTemplate</b> - an example measurement module
 <hr>
 This is an example of a module that measures a property of an image both
 for the image as a whole and for every object in the image. It demonstrates
@@ -16,9 +16,9 @@ corresponding features for positive M, multiplying the imaginary parts
 by the corresponding features for negative M and adding real and imaginary
 parts.
 
-Features names are in the format, 
+Features names are in the format,
 "MT_Intensity_<i>Image name</i>_N<i>(radial degree)</i>M<i>(Azimuthal degree)</i>
-'''
+"""
 #################################
 #
 # Imports from useful Python libraries
@@ -27,7 +27,6 @@ Features names are in the format,
 
 import numpy as np
 import scipy.ndimage as scind
-
 #################################
 #
 # Imports from CellProfiler
@@ -42,7 +41,6 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-
 from centrosome.zernike import construct_zernike_polynomials
 from centrosome.zernike import get_zernike_indexes
 from centrosome.cpmorphology import minimum_enclosing_circle
@@ -58,6 +56,7 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 '''This is the measurement template category'''
 C_MEASUREMENT_TEMPLATE = "MT"
+
 
 ###################################
 #
@@ -82,7 +81,7 @@ class MeasurementTemplate(cpm.CPModule):
     module_name = "MeasurementTemplate"
     category = "Measurement"
     variable_revision_number = 1
-    
+
     ###############################################
     #
     # create_settings is where you declare the user interface elements
@@ -92,7 +91,7 @@ class MeasurementTemplate(cpm.CPModule):
     # settings you can use.
     #
     ################################################
-    
+
     def create_settings(self):
         #
         # The ImageNameSubscriber "subscribes" to all ImageNameProviders in 
@@ -105,12 +104,12 @@ class MeasurementTemplate(cpm.CPModule):
             "Input image name:",
             # HTML help that gets displayed when the user presses the
             # help button to the right of the edit box
-            doc = """This is the image that the module operates on. You can
+            doc="""This is the image that the module operates on. You can
             choose any image that is made available by a prior module.
             <br>
             <b>ImageTemplate</b> will do something to this image.
             """)
-        
+
         #
         # The ObjectNameSubscriber is similar - it will ask the user
         # which object to pick from the list of objects provided by
@@ -118,7 +117,7 @@ class MeasurementTemplate(cpm.CPModule):
         #
         self.input_object_name = cps.ObjectNameSubscriber(
             "Input object name",
-            doc = """These are the objects that the module operates on.""")
+            doc="""These are the objects that the module operates on.""")
         #
         # The radial degree is the "N" parameter in the Zernike - how many
         # inflection points there are, radiating out from the center. Higher
@@ -129,12 +128,12 @@ class MeasurementTemplate(cpm.CPModule):
         #
         self.radial_degree = cps.Integer(
             "Radial degree", 10, minval=1, maxval=50,
-            doc = """Calculate all Zernike features up to the given radial
+            doc="""Calculate all Zernike features up to the given radial
             degree. The Zernike function is parameterized by a radial
             and azimuthal degree. The module will calculate all Zernike
             features for all azimuthal degrees up to and including the
             radial degree you enter here.""")
-        
+
     #
     # The "settings" method tells CellProfiler about the settings you
     # have in your module. CellProfiler uses the list for saving
@@ -147,9 +146,9 @@ class MeasurementTemplate(cpm.CPModule):
     # a template for visible_settings that you can cut and paste here.
     #
     def settings(self):
-        return [self.input_image_name, self.input_object_name, 
+        return [self.input_image_name, self.input_object_name,
                 self.radial_degree]
-    
+
     #
     # CellProfiler calls "run" on each image set in your pipeline.
     # This is where you do the real work.
@@ -166,7 +165,7 @@ class MeasurementTemplate(cpm.CPModule):
         # We format them so that Matplotlib can display them in a table.
         # The first row is a header that tells what the fields are.
         #
-        statistics = [ [ "Feature", "Mean", "Median", "SD"] ]
+        statistics = [["Feature", "Mean", "Median", "SD"]]
         #
         # Put the statistics in the workspace display data so we
         # can get at them when we display
@@ -192,7 +191,7 @@ class MeasurementTemplate(cpm.CPModule):
         # and warn the user.
         #
         input_image = image_set.get_image(input_image_name,
-                                          must_be_grayscale = True)
+                                          must_be_grayscale=True)
         #
         # Get the pixels - these are a 2-d Numpy array.
         #
@@ -277,27 +276,29 @@ class MeasurementTemplate(cpm.CPModule):
             zmean = np.mean(zr)
             zmedian = np.median(zr)
             zsd = np.std(zr)
-            statistics.append( [ feature, zmean, zmedian, zsd ] )
+            statistics.append([feature, zmean, zmedian, zsd])
+
     ################################
     # 
     # DISPLAY
     #
-    def display(self, workspace, figure = None):
+    def display(self, workspace, figure=None):
         statistics = workspace.display_data.statistics
         if figure is None:
-            figure = workspace.create_or_find_figure(subplots=(1,1,))
+            figure = workspace.create_or_find_figure(subplots=(1, 1,))
         else:
-            figure.set_subplots((1,1))
-        figure.subplot_table(0,0, statistics)
-    
-    def get_zernike_indexes(self, wants_negative = False):
-        '''Get an N x 2 numpy array containing the M and N Zernike degrees
-        
+            figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0, statistics)
+
+    def get_zernike_indexes(self, wants_negative=False):
+        """Get an N x 2 numpy array containing the M and N Zernike degrees
+
         Use the radial_degree setting to determine which Zernikes to do.
-        
+
         wants_negative - if True, return both positive and negative M, if false
                          return only positive
-        '''
+                         :param wants_negative:
+        """
         zi = get_zernike_indexes(self.radial_degree.value + 1)
         if wants_negative:
             #
@@ -305,7 +306,7 @@ class MeasurementTemplate(cpm.CPModule):
             # The multiplication by [1, -1] negates every m, but preserves n.
             # zi[zi[:, 1] != 0] picks out only elements with m not equal to zero. 
             #
-            zi = np.vstack([zi, zi[zi[:, 1] != 0]*np.array([1, -1])])
+            zi = np.vstack([zi, zi[zi[:, 1] != 0] * np.array([1, -1])])
             #
             # Sort by azimuth degree and radial degree so they are ordered
             # reasonably
@@ -313,8 +314,7 @@ class MeasurementTemplate(cpm.CPModule):
             order = np.lexsort((zi[:, 1], zi[:, 0]))
             zi = zi[order, :]
         return zi
-            
-    
+
     ################################
     #
     # measure_zernike makes one Zernike measurement on each object
@@ -323,18 +323,25 @@ class MeasurementTemplate(cpm.CPModule):
         # I'll put some documentation in here to explain what it does.
         # If someone ever wants to call it, their editor might display
         # the documentation.
-        '''Measure the intensity of the image with Zernike (N, M)
-        
+        """Measure the intensity of the image with Zernike (N, M)
+
         pixels - the intensity image to be measured
         labels - the labels matrix that labels each object with an integer
         indexes - the label #s in the image
         centers - the centers of the minimum enclosing circle for each object
         radius - the radius of the minimum enclosing circle for each object
         n, m - the Zernike coefficients.
-        
+
         See http://en.wikipedia.org/wiki/Zernike_polynomials for an
         explanation of the Zernike polynomials
-        '''
+        :param m:
+        :param n:
+        :param radius:
+        :param centers:
+        :param indexes:
+        :param labels:
+        :param pixels:
+        """
         #
         # The strategy here is to operate on the whole array instead
         # of operating on one object at a time. The most important thing
@@ -390,18 +397,18 @@ class MeasurementTemplate(cpm.CPModule):
         # runs a little faster.
         #
         zernike_polynomial = construct_zernike_polynomials(
-            x, y, np.array([ [ n, m ]]), labels > 0)
+            x, y, np.array([[n, m]]), labels > 0)
         #
         # For historical reasons, CellProfiler didn't multiply by the per/zernike
         # normalizing factor: 2*n + 2 / E / pi where E is 2 if m is zero and 1
         # if m is one. We do it here to aid with the reconstruction
         #
-        zernike_polynomial *= (2*n + 2) / (2 if m == 0 else 1) / np.pi
+        zernike_polynomial *= (2 * n + 2) / (2 if m == 0 else 1) / np.pi
         #
         # Multiply the Zernike polynomial by the image to dissect
         # the image by the Zernike basis set.
         #
-        output_pixels = pixels * zernike_polynomial[:,:,0]
+        output_pixels = pixels * zernike_polynomial[:, :, 0]
         #
         # Finally, we use Scipy to sum the intensities. Scipy has different
         # versions with different quirks. The "fix" function takes all
@@ -417,7 +424,7 @@ class MeasurementTemplate(cpm.CPModule):
         # And we're done! Did you like it? Did you get it?
         #
         return zr, zi
-    
+
     #######################################
     #
     # Here, we go about naming the measurements.
@@ -431,7 +438,10 @@ class MeasurementTemplate(cpm.CPModule):
     # use the same functions in different places.
     #
     def get_feature_name(self, n, m):
-        '''Return a measurement feature name for the given Zernike'''
+        """Return a measurement feature name for the given Zernike
+        :param m:
+        :param n:
+        """
         #
         # Something nice and simple for a name... Intensity_DNA_N4M2 for instance
         #
@@ -439,12 +449,16 @@ class MeasurementTemplate(cpm.CPModule):
             return "Intensity_%s_N%dM%d" % (self.input_image_name.value, n, m)
         else:
             return "Intensity_%s_N%dMM%d" % (self.input_image_name.value, n, -m)
-    
+
     def get_measurement_name(self, n, m):
-        '''Return the whole measurement name'''
+        """Return the whole measurement name
+        :param m:
+        :param n:
+        """
         input_image_name = self.input_image_name.value
-        return '_'.join([C_MEASUREMENT_TEMPLATE, 
-                         self.get_feature_name(n,m)])
+        return '_'.join([C_MEASUREMENT_TEMPLATE,
+                         self.get_feature_name(n, m)])
+
     #
     # We have to tell CellProfiler about the measurements we produce.
     # There are two parts: one that is for database-type modules and one
@@ -472,11 +486,11 @@ class MeasurementTemplate(cpm.CPModule):
         # in measurements.py for what you can use
         #
         input_object_name = self.input_object_name.value
-        return [ (input_object_name,
-                  self.get_measurement_name(n, m),
-                  cpmeas.COLTYPE_FLOAT)
-                 for n, m in self.get_zernike_indexes(True)]
-    
+        return [(input_object_name,
+                 self.get_measurement_name(n, m),
+                 cpmeas.COLTYPE_FLOAT)
+                for n, m in self.get_zernike_indexes(True)]
+
     #
     # get_categories returns a list of the measurement categories produced
     # by this module. It takes an object name - only return categories
@@ -484,7 +498,7 @@ class MeasurementTemplate(cpm.CPModule):
     #
     def get_categories(self, pipeline, object_name):
         if object_name == self.input_object_name:
-            return [ C_MEASUREMENT_TEMPLATE ]
+            return [C_MEASUREMENT_TEMPLATE]
         else:
             # Don't forget to return SOMETHING! I do this all the time
             # and CP mysteriously bombs when you use ImageMath
@@ -495,62 +509,72 @@ class MeasurementTemplate(cpm.CPModule):
     #
     def get_measurements(self, pipeline, object_name, category):
         if (object_name == self.input_object_name and
-            category == C_MEASUREMENT_TEMPLATE):
+                    category == C_MEASUREMENT_TEMPLATE):
             return ["Intensity"]
         else:
             return []
-        
+
     #
     # This module makes per-image measurements. That means we need
     # get_measurement_images to distinguish measurements made on two
     # different images by this module
     #
-    def get_measurement_images(self, pipeline, object_name, category, measurement):
+    def get_measurement_images(self, pipeline, object_name, category,
+                               measurement):
         #
         # This might seem wasteful, but UI code can be slow. Just see
         # if the measurement is in the list returned by get_measurements
         #
         if measurement in self.get_measurements(
-            pipeline, object_name, category):
-            return [ self.input_image_name.value]
+                pipeline, object_name, category):
+            return [self.input_image_name.value]
         else:
             return []
-        
-    def get_measurement_scales(self, pipeline, object_name, category, 
+
+    def get_measurement_scales(self, pipeline, object_name, category,
                                measurement, image_name):
-        '''Get the scales for a measurement
-        
+        """Get the scales for a measurement
+
         For the Zernikes, the scales are of the form, N2M2 or N2MM2 for
         negative azimuthal degree
-        '''
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        """
         if image_name in self.get_measurement_images(
-            pipeline, object_name, category, measurement):
+                pipeline, object_name, category, measurement):
             return [("N%dM%d" % (n, m)) if m >= 0 else
-                    ("N%dMM%d" % (n, -m)) for n, m in 
+                    ("N%dMM%d" % (n, -m)) for n, m in
                     self.get_zernike_indexes(True)]
         return []
-    
+
     @staticmethod
     def get_image_from_features(radius, feature_dictionary):
-        '''Reconstruct the intensity image from the zernike features
-        
+        """Reconstruct the intensity image from the zernike features
+
         radius - the radius of the minimum enclosing circle
-        
+
         feature_dictionary - keys are (n, m) tuples and values are the
         magnitudes.
-        
+
         returns a greyscale image based on the feature dictionary.
-        '''
-        i, j = np.mgrid[-radius:(radius+1), -radius:(radius+1)].astype(float) / radius
-        mask = (i*i + j*j) <= 1
-        
+        :param feature_dictionary:
+        :param radius:
+        """
+        i, j = np.mgrid[-radius:(radius + 1), -radius:(radius + 1)].astype(
+            float) / radius
+        mask = (i * i + j * j) <= 1
+
         zernike_indexes = np.array(feature_dictionary.keys())
         zernike_features = np.array(feature_dictionary.values())
-        
+
         z = construct_zernike_polynomials(
             j, i, np.abs(zernike_indexes), mask=mask)
-        zn = (2*zernike_indexes[:, 0] + 2) / ((zernike_indexes[:, 1] == 0) + 1) / np.pi
-        z = z * zn[np.newaxis, np.newaxis, :]
-        z = z.real * (zernike_indexes[:, 1] >= 0)[np.newaxis, np.newaxis, :] +\
+        zn = (2 * zernike_indexes[:, 0] + 2) / (
+        (zernike_indexes[:, 1] == 0) + 1) / np.pi
+        z *= zn[np.newaxis, np.newaxis, :]
+        z = z.real * (zernike_indexes[:, 1] >= 0)[np.newaxis, np.newaxis, :] + \
             z.imag * (zernike_indexes[:, 1] <= 0)[np.newaxis, np.newaxis, :]
         return np.sum(z * zernike_features[np.newaxis, np.newaxis, :], 2)

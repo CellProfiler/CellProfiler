@@ -6,10 +6,11 @@ of the cell profiler program
 
 import os
 import sys
-import cellprofiler.preferences
+
 from cellprofiler.icons import get_builtin_image, get_builtin_images_path
 
 cp_image = None
+
 
 def get_cp_image():
     """The CellProfiler icon as a wx.Image"""
@@ -18,16 +19,22 @@ def get_cp_image():
         cp_image = get_builtin_image('CellProfilerIcon')
     return cp_image
 
+
 def get_cp_bitmap(size=None):
-    """The CellProfiler icon as a wx.Bitmap"""
+    """The CellProfiler icon as a wx.Bitmap
+    :param size:
+    """
     import wx
     img = get_cp_image()
     if size is not None:
         img.Rescale(size, size, wx.IMAGE_QUALITY_HIGH)
     return wx.BitmapFromImage(img)
-    
+
+
 def get_cp_icon(size=None):
-    """The CellProfiler icon as a wx.Icon"""
+    """The CellProfiler icon as a wx.Icon
+    :param size:
+    """
     import wx
     if sys.platform.startswith('win'):
         path = os.path.join(get_builtin_images_path(), "CellProfilerIcon.ico")
@@ -38,9 +45,12 @@ def get_cp_icon(size=None):
     icon.CopyFromBitmap(get_cp_bitmap(size))
     return icon
 
+
 BV_DOWN = "down"
-BV_UP   = "up"
-def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
+BV_UP = "up"
+
+
+def draw_bevel(dc, rect, width, state, shadow_pen=None, highlight_pen=None):
     """Draw a bevel within the rectangle so the inside looks raised or lowered
     
     dc - device context for drawing
@@ -52,39 +62,52 @@ def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
     highlight_pen - pen to use for drawing the light portion of the bevel
     
     returns the coordinates of the inside rectangle
+    :param highlight_pen:
+    :param shadow_pen:
+    :param state:
+    :param width:
+    :param rect:
+    :param dc:
     """
     import wx
     if shadow_pen is None:
         shadow_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
     if highlight_pen is None:
-        highlight_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DHIGHLIGHT))
+        highlight_pen = wx.Pen(
+            wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DHIGHLIGHT))
     top_left_pen = (state == BV_UP and highlight_pen) or shadow_pen
     bottom_right_pen = (state == BV_UP and shadow_pen) or highlight_pen
     for i in range(width):
         dc.Pen = top_left_pen
-        dc.DrawLine(rect.Left,rect.Top,rect.Left,rect.Bottom)
-        dc.DrawLine(rect.Left,rect.Top,rect.Right,rect.Top)
+        dc.DrawLine(rect.Left, rect.Top, rect.Left, rect.Bottom)
+        dc.DrawLine(rect.Left, rect.Top, rect.Right, rect.Top)
         dc.Pen = bottom_right_pen
-        dc.DrawLine(rect.Right,rect.Bottom, rect.Left, rect.Bottom)
-        dc.DrawLine(rect.Right,rect.Bottom, rect.Right, rect.Top)
-        rect = wx.Rect(rect.Left+1, rect.Top+1, rect.width-2, rect.height-2)
+        dc.DrawLine(rect.Right, rect.Bottom, rect.Left, rect.Bottom)
+        dc.DrawLine(rect.Right, rect.Bottom, rect.Right, rect.Top)
+        rect = wx.Rect(rect.Left + 1, rect.Top + 1, rect.width - 2,
+                       rect.height - 2)
     return rect
 
+
 def draw_item_selection_rect(window, dc, rect, flags):
-    '''Replacement for RendererNative.DrawItemSelectionRect
-    
+    """Replacement for RendererNative.DrawItemSelectionRect
+
     window - draw in this window
-    
+
     dc - device context to use for drawing
-    
+
     rect - draw selection UI inside this rectangle
-    
+
     flags - a combination of wx.CONTROL_SELECTED, wx.CONTROL_CURRENT and
             wx.CONTROL_FOCUSED
-            
+
     This function fixes a bug in the Carbon implementation for drawing
     with wx.CONTROL_CURRENT and not wx.CONTROL_SELECTED.
-    '''
+    :param flags:
+    :param rect:
+    :param dc:
+    :param window:
+    """
     # Bug in carbon DrawItemSelectionRect uses
     # uninitialized color for the rectangle
     # if it's not selected.

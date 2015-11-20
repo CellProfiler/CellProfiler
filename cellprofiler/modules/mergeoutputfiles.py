@@ -1,4 +1,4 @@
-'''<b>MergeOutputFiles</b> merges several output .mat files into one.
+"""<b>MergeOutputFiles</b> merges several output .mat files into one.
 <hr>
 This data tool lets you collect the output .mat files from several runs, for instance,
 as might be created by running CellProfiler in batch mode.
@@ -9,7 +9,7 @@ choose it from the <i>Data Tools</i> menu to bring up the <b>MergeOutputFiles</b
 
 <p>The dialog has the following parts:
 <ul>
-<li><i>Destination file:</i> This is the name of the file that will be 
+<li><i>Destination file:</i> This is the name of the file that will be
 created. The file will contain all merged input data files in MATLAB format.</li>
 <li><i>File list:</i> The file list is the box with the columns, "Folder" and
 "File". It will be empty until you add files using the "Add..." button.
@@ -33,16 +33,16 @@ performing any operation.</li>
 </ul>
 </p>
 
-<p>Once merged, this output file will be compatible with other data tools. 
+<p>Once merged, this output file will be compatible with other data tools.
 Output files can be quite large, so prior to merging,
 be sure that the total size of the merged output file is of a reasonable
 size to be opened on your computer (based on the amount of memory
 available on your computer). It may be preferable instead to import data
-from individual output files directly into a database using <b>ExportDatabase</b> 
+from individual output files directly into a database using <b>ExportDatabase</b>
 as a data tool.</p>
 
 <p>See also <b>CreateBatchFiles</b>, <b>ExportToDatabase</b>.</p>
-'''
+"""
 
 import h5py
 import numpy as np
@@ -53,12 +53,14 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 from cellprofiler.preferences import get_headless
 
+
 class MergeOutputFiles(cpm.CPModule):
     module_name = "MergeOutputFiles"
     category = "Data Tools"
     do_not_check = True
+
     def run_as_data_tool(self):
-        '''Run the module as a data tool'''
+        """Run the module as a data tool"""
         import wx
         from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
         from cellprofiler.gui import get_cp_icon
@@ -67,16 +69,17 @@ class MergeOutputFiles(cpm.CPModule):
         # which is part of the wx source distribution
         #
         class AWListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin):
-            '''A list control with autosizing of the last column'''
+            """A list control with autosizing of the last column"""
+
             def __init__(self, parent, ID=wx.ID_ANY, pos=wx.DefaultPosition,
-                 size=wx.DefaultSize, style=0):
+                         size=wx.DefaultSize, style=0):
                 wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
                 ListCtrlAutoWidthMixin.__init__(self)
 
-        dlg = wx.Dialog(None, title = "Merge output files",
-                        size=(640,480),
-                        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | 
-                        wx.THICK_FRAME)
+        dlg = wx.Dialog(None, title="Merge output files",
+                        size=(640, 480),
+                        style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER |
+                              wx.THICK_FRAME)
         dlg.SetIcon(get_cp_icon())
         #
         # Layout:
@@ -95,7 +98,7 @@ class MergeOutputFiles(cpm.CPModule):
         dlg.Sizer = sizer = wx.BoxSizer(wx.VERTICAL)
         subsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(subsizer, 0, wx.EXPAND | wx.ALL, 5)
-        subsizer.Add(wx.StaticText(dlg, -1, "Destination file:"), 0, 
+        subsizer.Add(wx.StaticText(dlg, -1, "Destination file:"), 0,
                      wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 3)
         dest_file_ctrl = wx.TextCtrl(dlg)
         subsizer.Add(dest_file_ctrl, 1, wx.EXPAND | wx.LEFT, 3)
@@ -106,8 +109,10 @@ class MergeOutputFiles(cpm.CPModule):
             list_control.InsertColumn(0, "Folder", width=200)
             list_control.InsertColumn(1, "File", width=-1)
         else:
-            list_control.InsertColumn(0, "Folder", format=wx.LC_ALIGN_LEFT, width=200)
-            list_control.InsertColumn(1, "File", format=wx.LC_ALIGN_LEFT, width=-1)
+            list_control.InsertColumn(0, "Folder", format=wx.LC_ALIGN_LEFT,
+                                      width=200)
+            list_control.InsertColumn(1, "File", format=wx.LC_ALIGN_LEFT,
+                                      width=-1)
         sizer.Add(list_control, 1, wx.EXPAND | wx.ALL, 5)
         sizer.Add(wx.StaticLine(dlg), 0, wx.EXPAND)
         subsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -120,24 +125,24 @@ class MergeOutputFiles(cpm.CPModule):
         subsizer.Add(up_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
         down_button = wx.Button(dlg, wx.ID_DOWN, "Down")
         subsizer.Add(down_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
-        
+
         button_sizer = wx.StdDialogButtonSizer()
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
         button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
         help_button = wx.Button(dlg, wx.ID_HELP)
         button_sizer.AddButton(help_button)
         button_sizer.Realize()
-        subsizer.Add(button_sizer, 0, wx.ALIGN_RIGHT )
+        subsizer.Add(button_sizer, 0, wx.ALIGN_RIGHT)
         dlg.Layout()
         #
         # Order is a map of item ID to its position in the list control
         #
         order = {}
-        
-        add_button.Bind(wx.EVT_BUTTON, 
+
+        add_button.Bind(wx.EVT_BUTTON,
                         lambda event: self.on_add(event, list_control, order))
         remove_button.Bind(wx.EVT_BUTTON,
-                           lambda event: self.on_remove(event, list_control, 
+                           lambda event: self.on_remove(event, list_control,
                                                         order))
         browse_button.Bind(wx.EVT_BUTTON,
                            lambda event: self.on_browse(event, dest_file_ctrl))
@@ -145,9 +150,9 @@ class MergeOutputFiles(cpm.CPModule):
                        lambda event: self.on_up(event, list_control, order))
         down_button.Bind(wx.EVT_BUTTON,
                          lambda event: self.on_down(event, list_control, order))
-        help_button.Bind(wx.EVT_BUTTON, 
-                        lambda event: self.on_help(event, list_control))
-        
+        help_button.Bind(wx.EVT_BUTTON,
+                         lambda event: self.on_help(event, list_control))
+
         if dlg.ShowModal() == wx.ID_OK:
             sources = []
             for i in range(list_control.ItemCount):
@@ -157,23 +162,28 @@ class MergeOutputFiles(cpm.CPModule):
                 sources.append(os.path.join(path, filename))
             self.merge_files(dest_file_ctrl.Value, sources)
         dlg.Destroy()
-        
+
     @staticmethod
     def on_help(event, list_control):
-        import cellprofiler.modules        
+        import cellprofiler.modules
         from cellprofiler.gui.htmldialog import HTMLDialog
         dlg = HTMLDialog(
-            list_control, 'Help on module,"%s"'%MergeOutputFiles.module_name, __doc__)
+            list_control, 'Help on module,"%s"' % MergeOutputFiles.module_name,
+            __doc__)
         dlg.Show()
-            
+
     @staticmethod
     def on_add(event, list_control, order):
-        '''Handle the add button being pressed'''
+        """Handle the add button being pressed
+        :param order:
+        :param list_control:
+        :param event:
+        """
         import wx
         assert isinstance(list_control, wx.ListCtrl)
-        dlg = wx.FileDialog(list_control.Parent, 
-                            message = "Select data files to merge",
-                            style = wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST)
+        dlg = wx.FileDialog(list_control.Parent,
+                            message="Select data files to merge",
+                            style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST)
         dlg.Wildcard = (
             "CellProfiler data (*.h5,*.mat)|*.h5;*.mat|"
             "All files (*.*)|*.*")
@@ -184,18 +194,24 @@ class MergeOutputFiles(cpm.CPModule):
                 list_control.SetItemData(item_id, item_id)
                 order[item_id] = list_control.ItemCount - 1
         dlg.Destroy()
-        
+
     @staticmethod
     def on_remove(event, list_control, order):
-        '''Remove the selected items for the list control'''
+        """Remove the selected items for the list control
+        :param order:
+        :param list_control:
+        :param event:
+        """
         import wx
         assert isinstance(list_control, wx.ListCtrl)
+
         def selections():
             current_selection = list_control.GetFirstSelected()
-            while(current_selection != -1):
+            while current_selection != -1:
                 yield current_selection
-                current_selection = list_control.GetNextSelected(current_selection)
-                
+                current_selection = list_control.GetNextSelected(
+                    current_selection)
+
         for selection in reversed(list(selections())):
             list_control.DeleteItem(selection)
             del order[selection]
@@ -205,21 +221,24 @@ class MergeOutputFiles(cpm.CPModule):
         anti_order = MergeOutputFiles.get_anti_order(order)
         for i, key in enumerate(sorted(anti_order.keys())):
             order[anti_order[key]] = i
+
     @staticmethod
     def get_anti_order(order):
-        '''Return a dictionary whose values are the keys of the input and vice versa'''
+        """Return a dictionary whose values are the keys of the input and vice versa
+        :param order:
+        """
         anti_order = {}
         for key in order.keys():
             anti_order[order[key]] = key
         return anti_order
-        
+
     @staticmethod
     def on_browse(event, ctrl):
         import wx
         assert isinstance(ctrl, wx.TextCtrl)
         dlg = wx.FileDialog(ctrl.Parent,
-                            message = "Merged output file name",
-                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+                            message="Merged output file name",
+                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
         dlg.Wildcard = (
             "HDF5 CellProfiler data (*.h5)|*.h5|"
             "Matlab CellProfiler data (*.mat)|*.mat")
@@ -227,7 +246,7 @@ class MergeOutputFiles(cpm.CPModule):
             dlg.Path = ctrl.Value
         if dlg.ShowModal() == wx.ID_OK:
             ctrl.Value = dlg.Path
-            
+
     @staticmethod
     def on_up(event, list_ctrl, order):
         import wx
@@ -249,7 +268,7 @@ class MergeOutputFiles(cpm.CPModule):
             else:
                 last = current_id
         MergeOutputFiles.sort(list_ctrl, order)
-    
+
     @staticmethod
     def on_down(event, list_ctrl, order):
         import wx
@@ -270,23 +289,28 @@ class MergeOutputFiles(cpm.CPModule):
             else:
                 last = current_id
         MergeOutputFiles.sort(list_ctrl, order)
-        
+
     @staticmethod
     def sort(list_ctrl, order):
-        '''Sort the items in the list control according to the order
-        
+        """Sort the items in the list control according to the order
+
         list_ctrl - list control with items indicated by order's keys
-        
+
         order - a dictionary where the keys are the item ids
                 and the values are the relative order of those ids
                 with respect to each other
-        '''
+                :param order:
+                :param list_ctrl:
+        """
+
         def sortfn(item1, item2):
             return cmp(order[item1], order[item2])
+
         list_ctrl.SortItems(sortfn)
-        
+
     @staticmethod
     def merge_files(destination, sources, force_headless=False):
+        global wx, progress
         is_headless = force_headless or get_headless()
         if not is_headless:
             import wx
@@ -295,22 +319,23 @@ class MergeOutputFiles(cpm.CPModule):
         if not is_headless:
             progress = wx.ProgressDialog("Writing " + destination,
                                          "Loading " + sources[0],
-                                         maximum = len(sources) * 4 + 1,
-                                         style = wx.PD_CAN_ABORT | 
-                                         wx.PD_APP_MODAL |
-                                         wx.PD_ELAPSED_TIME |
-                                         wx.PD_REMAINING_TIME)
+                                         maximum=len(sources) * 4 + 1,
+                                         style=wx.PD_CAN_ABORT |
+                                               wx.PD_APP_MODAL |
+                                               wx.PD_ELAPSED_TIME |
+                                               wx.PD_REMAINING_TIME)
         count = 0
         try:
             pipeline = cpp.Pipeline()
             has_error = [False]
+
             def callback(caller, event):
                 if isinstance(event, cpp.LoadExceptionEvent):
                     has_error = True
                     wx.MessageBox(
-                        message = "Could not load %s: %s" % (
+                        message="Could not load %s: %s" % (
                             sources[0], event.error),
-                        caption = "Failed to load %s" % sources[0])
+                        caption="Failed to load %s" % sources[0])
                     has_error[0] = True
 
             pipeline.add_listener(callback)
@@ -328,20 +353,21 @@ class MergeOutputFiles(cpm.CPModule):
             for source in sources:
                 if not is_headless:
                     count += 1
-                    keep_going, skip = progress.Update(count, "Loading " + source)
+                    keep_going, skip = progress.Update(count,
+                                                       "Loading " + source)
                     if not keep_going:
                         return
                 if h5py.is_hdf5(source):
-                    msource = cpmeas.Measurements(filename=source, 
+                    msource = cpmeas.Measurements(filename=source,
                                                   mode="r",
                                                   multithread=False)
                 else:
                     msource = cpmeas.load_measurements(source)
                 dest_image_numbers = mdest.get_image_numbers()
                 source_image_numbers = msource.get_image_numbers()
-                if (len(dest_image_numbers) == 0 or 
-                    len(source_image_numbers) == 0):
-                    offset_source_image_numbers =  source_image_numbers
+                if (len(dest_image_numbers) == 0 or
+                            len(source_image_numbers) == 0):
+                    offset_source_image_numbers = source_image_numbers
                 else:
                     offset_source_image_numbers = (
                         np.max(dest_image_numbers) -
@@ -362,13 +388,14 @@ class MergeOutputFiles(cpm.CPModule):
                         src_values = msource.get_measurement(
                             object_name,
                             feature,
-                            image_set_number = source_image_numbers)
-                        mdest[object_name, 
-                              feature, 
+                            image_set_number=source_image_numbers)
+                        mdest[object_name,
+                              feature,
                               offset_source_image_numbers] = src_values
                     destset = set(destfeatures)
             if not is_headless:
-                keep_going, skip = progress.Update(count+1, "Saving to "+destination)
+                keep_going, skip = progress.Update(count + 1,
+                                                   "Saving to " + destination)
                 if not keep_going:
                     return
             if not h5_dest:
@@ -376,11 +403,12 @@ class MergeOutputFiles(cpm.CPModule):
         finally:
             if not is_headless:
                 progress.Destroy()
-        
+
+
 if __name__ == "__main__":
     import cellprofiler.modules
     import wx
+
     app = wx.PySimpleApp(False)
     mof = MergeOutputFiles()
     mof.run_as_data_tool()
-    

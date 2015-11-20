@@ -1,12 +1,9 @@
-'''<b>Create Web Page</b> creates the html file for a webpage to display images 
+"""<b>Create Web Page</b> creates the html file for a webpage to display images
 (or their thumbnails, if desired).
 <hr>
 This module creates an html file that displays the specified
 images, and optionally a link to a compressed ZIP file of all of the images shown.
-'''
-
-
-
+"""
 
 import os
 from cStringIO import StringIO
@@ -15,18 +12,18 @@ import uuid
 from urllib2 import urlopen
 import shutil
 import zipfile
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO, ABSOLUTE_FOLDER_NAME
 from cellprofiler.settings import \
-     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
-     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
+    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
+    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import pathname2url
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+from cellprofiler.gui.help import USING_METADATA_TAGS_REF, \
+    USING_METADATA_HELP_REF
 
 IDX_DIRECTORY_CHOICE_V1 = 4
 
@@ -47,7 +44,7 @@ TRANSLATION_DICTIONARY = {
     "Once only": OPEN_ONCE,
     "For each image": OPEN_EACH,
     "No": OPEN_NO
-    }
+}
 
 #
 # os.path.relpath is only available from Python 2.6 +
@@ -56,7 +53,7 @@ TRANSLATION_DICTIONARY = {
 if hasattr(os.path, "relpath"):
     relpath = os.path.relpath
 else:
-    def relpath(path, start = os.curdir):
+    def relpath(path, start=os.curdir):
         start = os.path.abspath(start)
         path = os.path.abspath(path)
         if sys.platform.startswith("win"):
@@ -85,19 +82,19 @@ else:
             return os.curdir
         return '/'.join(rel_list)
 
+
 class CreateWebPage(cpm.CPModule):
-    
     module_name = "CreateWebPage"
     category = "Other"
     variable_revision_number = 2
-    
+
     def create_settings(self):
         self.orig_image_name = cps.ImageNameSubscriber(
             "Select the input images", cps.NONE, doc="""
             Select the images to display on the web page.""")
-        
+
         self.wants_thumbnails = cps.Binary(
-            "Use thumbnail images?", False,doc="""
+            "Use thumbnail images?", False, doc="""
             Select <i>%(YES)s</i> to display thumbnail images (small versions of the 
             images) on the web page that link to the full images. <br>
             Select <i>%(NO)s</i> to display the full image directly on the web page.
@@ -106,16 +103,16 @@ class CreateWebPage(cpm.CPModule):
             pipeline prior to this one to create thumbnails from your originals  
             using the <b>Resize</b> and <b>SaveImages</b> modules. For some high-content
             screening systems, thumbnail files are automatically created and have
-            the text "thumb" in the name.</p>"""%globals())
-        
+            the text "thumb" in the name.</p>""" % globals())
+
         self.thumbnail_image_name = cps.ImageNameSubscriber(
-            "Select the thumbnail images", cps.NONE,doc="""
+            "Select the thumbnail images", cps.NONE, doc="""
             <i>(Used only if using thumbnails)</i><br>
             Select the name of the images to use for thumbnails.""")
-        
+
         self.web_page_file_name = cps.Text(
             "Webpage file name", "images1",
-            metadata= True,doc="""
+            metadata=True, doc="""
             Enter the desired file name for the web page. <b>CreateWebPage</b>
             will add the .html extension if no extension is specified.
             If you have metadata associated with your images, you can name the 
@@ -123,11 +120,11 @@ class CreateWebPage(cpm.CPModule):
             For instance, if you have metadata tags named "Plate" and 
             "Well", you can create separate per-plate, per-well web pages based on
             your metadata by inserting the tags "Plate_Well" to specify the 
-            name. %(USING_METADATA_HELP_REF)s."""%globals())
-        
+            name. %(USING_METADATA_HELP_REF)s.""" % globals())
+
         self.directory_choice = CWPDirectoryPath(
             "Select the folder for the .html file",
-            dir_choices = [ 
+            dir_choices=[
                 DIR_SAME, DIR_ABOVE, ABSOLUTE_FOLDER_NAME,
                 DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,
                 DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME],
@@ -153,49 +150,49 @@ class CreateWebPage(cpm.CPModule):
             in a subfolder of the default input folder. You will be prompted
             for the subfolder name after making this choice</li>
             </ul>""" % globals())
-        
+
         self.title = cps.Text(
-            "Webpage title", "Image", metadata = True,doc = """
+            "Webpage title", "Image", metadata=True, doc="""
             This is the title that appears at the top of the browser
             window. If you have metadata associated with your images, you can name the 
             file using metadata tags. %(USING_METADATA_TAGS_REF)sFor instance, if you 
             have a metadata tag named "Plate", you can type "Plate: " and then insert 
             the metadata tag "Plate" to display the plate metadata item. %(USING_METADATA_HELP_REF)s."""
-            %globals())
-        
+                                                         % globals())
+
         self.background_color = cps.Color(
-            "Webpage background color", "White",doc = """
+            "Webpage background color", "White", doc="""
             This setting controls the background color for the web page.""")
-        
+
         self.columns = cps.Integer(
-            "Number of columns", 1, minval = 1,doc = """
+            "Number of columns", 1, minval=1, doc="""
             This setting determines how many images are displayed
             in each row.""")
-        
+
         self.table_border_width = cps.Integer(
-            "Table border width", 1, minval = 0,doc = """
+            "Table border width", 1, minval=0, doc="""
             The table border width determines the width of the border
             around the entire grid of displayed images (i.e., the "table" of images) 
             and is measured in pixels. This value can be 
             set to zero, in which case you will not see the table border.""")
-        
+
         self.table_border_color = cps.Color(
             "Table border color", "White")
 
         self.image_spacing = cps.Integer(
-            "Image spacing", 1, minval = 0,doc = """
+            "Image spacing", 1, minval=0, doc="""
             The spacing between images ("table cells"), in pixels.""")
-        
+
         self.image_border_width = cps.Integer(
-            "Image border width", 1, minval = 0, doc = """
+            "Image border width", 1, minval=0, doc="""
             The image border width determines the width of
             the border around each image and is measured in pixels.
             This value can be set to zero, in which case you will not see the 
             image border.""")
-        
+
         self.create_new_window = cps.Choice(
             "Open new window when viewing full image?",
-            [OPEN_ONCE, OPEN_EACH, OPEN_NO],doc = """
+            [OPEN_ONCE, OPEN_EACH, OPEN_NO], doc="""
             This controls the behavior of the thumbnail links. 
             <ul>
             <li><i>%(OPEN_ONCE)s:</i> Your browser will open a new window
@@ -205,33 +202,33 @@ class CreateWebPage(cpm.CPModule):
             you click on a link.</li>
             <li><i>%(OPEN_NO)s:</i> The browser will reuse the current window
             to display the image</li>
-            </ul>"""% globals())
-        
+            </ul>""" % globals())
+
         self.wants_zip_file = cps.Binary(
-            "Make a ZIP file containing the full-size images?", False,doc="""
+            "Make a ZIP file containing the full-size images?", False, doc="""
             ZIP files are a common archive and data compression file format, making 
             it convenient to download all of the images represented on the web page with a single click.
             Select <i>%(YES)s</i> to create a ZIP file that contains all your images, 
-            compressed to reduce file size."""%globals())
-        
+            compressed to reduce file size.""" % globals())
+
         self.zipfile_name = cps.Text(
             "Enter the ZIP file name", "Images.zip",
-            metadata = True, doc="""
+            metadata=True, doc="""
             <i>(Used only if creating a ZIP file)</i><br>
             Specify the name for the ZIP file.""")
-        
+
     def settings(self):
-        '''The settings as saved in the pipeline'''
-        return [self.orig_image_name, self.wants_thumbnails, 
+        """The settings as saved in the pipeline"""
+        return [self.orig_image_name, self.wants_thumbnails,
                 self.thumbnail_image_name, self.web_page_file_name,
                 self.directory_choice, self.title, self.background_color,
                 self.columns, self.table_border_width, self.table_border_color,
                 self.image_spacing,
-                self.image_border_width, self.create_new_window, 
+                self.image_border_width, self.create_new_window,
                 self.wants_zip_file, self.zipfile_name]
-    
+
     def visible_settings(self):
-        '''the settings as displayed in the gui'''
+        """the settings as displayed in the gui"""
         result = [self.orig_image_name, self.wants_thumbnails]
         if self.wants_thumbnails:
             result += [self.thumbnail_image_name]
@@ -245,43 +242,50 @@ class CreateWebPage(cpm.CPModule):
         if self.wants_zip_file:
             result += [self.zipfile_name]
         return result
-    
+
     def validate_module(self, pipeline):
-        '''Make sure metadata tags exist'''
-        for cntrl in (self.web_page_file_name, self.title): 
+        """Make sure metadata tags exist
+        :param pipeline:
+        """
+        for cntrl in (self.web_page_file_name, self.title):
             undefined_tags = pipeline.get_undefined_metadata_tags(cntrl.value)
             if len(undefined_tags) > 0:
-                raise cps.ValidationError("%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
-                                 undefined_tags[0], 
-                                 cntrl)
-                
+                raise cps.ValidationError(
+                    "%s is not a defined metadata tag. Check the metadata specifications in your load modules" %
+                    undefined_tags[0],
+                    cntrl)
+
     def run(self, workspace):
         # All of the work is done in post_run()
         pass
-    
+
     def display_post_run(self, workspace, figure):
         if self.show_window:
             figure.set_subplots((1, 1))
             msg = ("Wrote %s" if workspace.display_data.wrote_html
-                       else "Did not write %s")
-            outcomes = [[msg %(workspace.display_data.webpage_filename)]]
+                   else "Did not write %s")
+            outcomes = [[msg % workspace.display_data.webpage_filename]]
             if self.wants_zip_file:
                 msg = ("Wrote %s" if workspace.display_data.wrote_zip
-                                                   else "Did not write %s")
-                outcomes.append([msg % (workspace.display_data.zipfile_filename)])
-            figure.subplot_table(0, 0, outcomes)               
-                
+                       else "Did not write %s")
+                outcomes.append(
+                    [msg % workspace.display_data.zipfile_filename])
+            figure.subplot_table(0, 0, outcomes)
+
     def post_run(self, workspace):
-        '''Make all the webpages after the run'''
+        """Make all the webpages after the run
+        :param workspace:
+        """
+        global zip_file_name
         d = {}
         zipfiles = {}
         m = workspace.measurements
         image_name = self.orig_image_name.value
-        workspace.display_data.wrote_html = False    
-        workspace.display_data.wrote_zip = False        
-            
+        workspace.display_data.wrote_html = False
+        workspace.display_data.wrote_zip = False
+
         for image_number in m.get_image_numbers():
-            image_path_name, image_file_name, image_url =\
+            image_path_name, image_file_name, image_url = \
                 self.get_image_location(workspace, image_name, image_number)
             abs_image_path_name = os.path.abspath(
                 os.path.join(image_path_name, image_file_name))
@@ -295,10 +299,10 @@ class CreateWebPage(cpm.CPModule):
                 path_name = self.directory_choice.get_absolute_path(
                     workspace.measurements, image_number)
                 image_path_name = image_url
-            
+
             if self.wants_thumbnails:
                 thumbnail_image_name = self.thumbnail_image_name.value
-                thumbnail_path_name, thumbnail_file_name, thumbnail_url =\
+                thumbnail_path_name, thumbnail_file_name, thumbnail_url = \
                     self.get_image_location(
                         workspace, thumbnail_image_name, image_number)
                 if self.use_relative_image_urls():
@@ -311,26 +315,26 @@ class CreateWebPage(cpm.CPModule):
                     if os.path.sep != '/':
                         thumbnail_path_name = thumbnail_path_name.replace(
                             os.path.sep, '/')
-                    thumbnail_path_name = '/'.join((thumbnail_path_name, 
-                                                   thumbnail_file_name))
+                    thumbnail_path_name = '/'.join((thumbnail_path_name,
+                                                    thumbnail_file_name))
                 else:
                     thumbnail_path_name = thumbnail_url
-                
+
             file_name = self.web_page_file_name.value
             file_name = m.apply_metadata(file_name, image_number)
             if file_name.find('.') == -1:
                 file_name += ".html"
             file_path = os.path.join(path_name, file_name)
             workspace.display_data.webpage_filename = file_path
-                           
+
             if self.wants_zip_file:
                 zip_file_name = self.zipfile_name.value
                 zip_file_name = m.apply_metadata(zip_file_name, image_number)
                 if zip_file_name.find('.') == -1:
                     zip_file_name += ".zip"
                 zip_file_path = os.path.join(path_name, zip_file_name)
-                workspace.display_data.zipfile_filename = zip_file_path    
-                        
+                workspace.display_data.zipfile_filename = zip_file_path
+
                 if not zip_file_path in zipfiles:
                     zipfiles[zip_file_path] = []
                 zipfiles[zip_file_path].append((abs_image_path_name,
@@ -340,18 +344,20 @@ class CreateWebPage(cpm.CPModule):
                 #
                 # Here, we make a new file, including HTML header
                 #
-                d[file_path] = dict(column = 0, fd = StringIO())
+                d[file_path] = dict(column=0, fd=StringIO())
                 fd = d[file_path]["fd"]
                 title = m.apply_metadata(self.title.value)
                 bgcolor = self.background_color.value.replace(' ', '')
                 table_border_width = self.table_border_width.value
-                table_border_color = self.table_border_color.value.replace(' ','')
+                table_border_color = self.table_border_color.value.replace(' ',
+                                                                           '')
                 cell_spacing = self.image_spacing.value
                 fd.write("""<html>
     <head><title>%(title)s</title></head>
     <body bgcolor='%(bgcolor)s'>\n""" % locals())
                 if self.wants_thumbnails:
-                    fd.write("""<div>Click an image to see a higher-resolution version.</div>\n""")
+                    fd.write(
+                        """<div>Click an image to see a higher-resolution version.</div>\n""")
                 if self.wants_zip_file:
                     fd.write("""<center><a href='%s'>Download all high-resolution 
         images as a zipped file.</a></center><p>\n""" % zip_file_name)
@@ -406,11 +412,11 @@ class CreateWebPage(cpm.CPModule):
             fd.write("</table></center>\n</body>\n</html>\n")
             with open(key, "w") as real_file:
                 real_file.write(fd.getvalue())
-        workspace.display_data.wrote_html = True         
+        workspace.display_data.wrote_html = True
 
         for zip_file_path, filenames in zipfiles.iteritems():
             with zipfile.ZipFile(zip_file_path, "w") as z:
-                for abs_path_name, url, filename  in filenames:
+                for abs_path_name, url, filename in filenames:
                     if url is not None and not url.lower().startswith("file"):
                         fd_src = urlopen(url)
                         fd_dest = StringIO()
@@ -419,41 +425,46 @@ class CreateWebPage(cpm.CPModule):
                         z.writestr(filename, fd_dest.getvalue())
                     else:
                         z.write(abs_path_name, arcname=filename)
-        workspace.display_data.wrote_zip = True                    
-        
+        workspace.display_data.wrote_zip = True
+
     def use_relative_image_urls(self):
-        '''Return True if using relative URL paths for images'''
+        """Return True if using relative URL paths for images"""
         return self.directory_choice.dir_choice in (DIR_ABOVE, DIR_SAME)
-    
+
     def get_image_location(self, workspace, image_name, image_number):
-        '''Get the path and file name for an image
-        
+        """Get the path and file name for an image
+
         workspace - workspace for current image set
         image_name - image whose path should be fetched
-        '''
+        :param image_number:
+        :param image_name:
+        :param workspace:
+        """
         file_name_feature = '_'.join((C_FILE_NAME, image_name))
         path_name_feature = '_'.join((C_PATH_NAME, image_name))
         url_feature = '_'.join((C_URL, image_name))
         m = workspace.measurements
         image_file_name = m[cpmeas.IMAGE, file_name_feature, image_number]
         image_path_name = m[cpmeas.IMAGE, path_name_feature, image_number]
-        if (not self.use_relative_image_urls()) and\
-           m.has_feature(cpmeas.IMAGE, url_feature):
+        if (not self.use_relative_image_urls()) and \
+                m.has_feature(cpmeas.IMAGE, url_feature):
             image_url = m[cpmeas.IMAGE, url_feature, image_number]
         else:
             image_url = None
         return image_path_name, image_file_name, image_url
-        
+
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode
+        :param pipeline:
+        """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "CreateWebPage will not produce output in Test Mode",
                 self.orig_image_name)
-        
+
     def prepare_to_create_batch(self, fn_alter_path):
         self.directory_choice.alter_for_create_batch_files(fn_alter_path)
-        
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1 and from_matlab:
@@ -463,8 +474,8 @@ class CreateWebPage(cpm.CPModule):
             create_new_window, zip_file_name = setting_values
             wants_thumbnails = thumb_image != cps.DO_NOT_USE
             wants_zip_file = zip_file_name != cps.DO_NOT_USE
-            
-            setting_values = [ 
+
+            setting_values = [
                 orig_image, wants_thumbnails, thumb_image, file_name,
                 directory_option, page_title, bg_color, thumb_cols,
                 table_border_width, table_border_color, thumb_spacing,
@@ -475,41 +486,45 @@ class CreateWebPage(cpm.CPModule):
         if variable_revision_number == 1 and not from_matlab:
             setting_values = list(setting_values)
             for index in (4, 12):
-                setting_values[index] = TRANSLATION_DICTIONARY[setting_values[index]]
+                setting_values[index] = TRANSLATION_DICTIONARY[
+                    setting_values[index]]
             #
             # Changed directory_choice to a bastardized DirectoryPath
             #
             directory_choice = CWPDirectoryPath.static_join_string(
                 setting_values[IDX_DIRECTORY_CHOICE_V1], "")
             setting_values = setting_values[:IDX_DIRECTORY_CHOICE_V1] + \
-                [directory_choice] + \
-                setting_values[(IDX_DIRECTORY_CHOICE_V1+1):]
+                             [directory_choice] + \
+                             setting_values[(IDX_DIRECTORY_CHOICE_V1 + 1):]
             variable_revision_number = 2
-            
+
         return setting_values, variable_revision_number, from_matlab
 
+
 class CWPDirectoryPath(cps.DirectoryPath):
-    '''The CreateWebPage DirectoryPath setting
-    
+    """The CreateWebPage DirectoryPath setting
+
     This setting has the additional options of DIR_SAME to place the HTML
     file in the same directory as the images or DIR_ABOVE to place the HTML
     one level above the images.
-    '''
+    """
     USE_DIR_SAME = object()
     USE_DIR_ABOVE = object()
-    
+
     def get_absolute_path(self, measurements, image_set_number=None):
-        '''Get the absolute directory path... with some exceptions
-        
+        """Get the absolute directory path... with some exceptions
+
         measurements - the measurements may be used to reconcile metadata tags
-        
+
         image_set_number - the current image set number
-        
+
         See cps.DirectoryPath.get_absolute_path()
-        
+
         If the directory choice is DIR_SAME or DIR_ABOVE, we return one of
         the special tokens, USE_DIR_SAME or USE_DIR_ABOVE
-        '''
+        :param image_set_number:
+        :param measurements:
+        """
         if self.dir_choice == DIR_SAME:
             return self.USE_DIR_SAME
         elif self.dir_choice == DIR_ABOVE:
@@ -517,7 +532,7 @@ class CWPDirectoryPath(cps.DirectoryPath):
         else:
             return super(CWPDirectoryPath, self).get_absolute_path(
                 measurements, image_set_number)
-        
+
     def alter_for_create_batch_files(self, fn_alter_path):
         if self.dir_choice not in [DIR_SAME, DIR_ABOVE]:
             super(CWPDirectoryPath, self).alter_for_create_batch_files(

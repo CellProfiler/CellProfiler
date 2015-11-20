@@ -7,10 +7,10 @@
 # Python module, "cellprofiler.cpmodule".
 
 import cellprofiler.cpmodule as cpm
-
 # This is where all settings are defined. See below for explanation.
 
 import cellprofiler.settings as cps
+
 
 #
 # This is the module class definition. Each module is a Python class
@@ -54,7 +54,7 @@ class Example1(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example1"
     category = "Other"
-    
+
     #
     # The next thing that every module must have is a create_settings method.
     # A setting is a variable that influences the behavior of your module.
@@ -65,9 +65,9 @@ class Example1(cpm.CPModule):
     #
     # This module has none, so this is the "do-nothing" version, so far.
     #
-    def create_settings(self): # "self" refers to the module's class attributes
-        pass # You need at least one statement, so this is a do-nothing statement
-    
+    def create_settings(self):  # "self" refers to the module's class attributes
+        pass  # You need at least one statement, so this is a do-nothing statement
+
     #
     # You need to be able to tell CellProfiler about the settings in your
     # module. The "settings" method returns the settings in the order that
@@ -81,6 +81,7 @@ class Example1(cpm.CPModule):
         # if you have any, for instance "[self.foo, self.bar]" if those were
         # your settings.
         return []
+
     #
     # Finally, you need a run method. This is executed when your pipeline
     # is run by CellProfiler.
@@ -90,5 +91,3 @@ class Example1(cpm.CPModule):
     #
     def run(self, workspace):
         pass
-    
-    

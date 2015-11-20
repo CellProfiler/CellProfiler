@@ -11,18 +11,23 @@ import json
 import stat
 import yattag
 
+
 def maybe_chmod(path, mode, d):
-    '''Change the mode of a file if it exists and needs changing
-    
+    """Change the mode of a file if it exists and needs changing
+
     path - path to file or directory
     mode - the new mode
     d - add the key/value of path:mode to the dictionary if the mode was changed
-    '''
+    :param path:
+    :param mode:
+    :param d:
+    """
     if os.path.exists(path) and \
-       stat.S_IMODE(os.stat(path).st_mode) != mode:
+                    stat.S_IMODE(os.stat(path).st_mode) != mode:
         os.chmod(path, mode)
         d[path] = mode
-    
+
+
 def handle_post():
     batch_id = BATCHPROFILER_DEFAULTS[BATCH_ID]
     my_batch = RunBatch.BPBatch()
@@ -32,16 +37,17 @@ def handle_post():
     what_i_did = {}
     maybe_chmod(txt_output_dir, 0777, what_i_did)
     maybe_chmod(job_script_dir, 0777, what_i_did)
-        
+
     for run in my_batch.select_runs():
         for path in [RunBatch.run_text_file_path(my_batch, run),
                      RunBatch.run_out_file_path(my_batch, run),
                      RunBatch.run_err_file_path(my_batch, run)]:
             maybe_chmod(path, 0644, what_i_did)
-    
+
     print "Content-Type: application/json"
     print
     print json.dumps(what_i_did)
+
 
 '''Javascript for fixPermissions function
 
@@ -81,8 +87,10 @@ function fix_permissions(button) {
 ''' % globals()
 
 TITLE = "BatchProfiler: fix file permissions"
+
+
 def handle_get():
-    '''Display a form for fixing the permissions'''
+    """Display a form for fixing the permissions"""
     batch_id_id = "input_%s" % BATCH_ID
     button_id = "button_%s" % BATCH_ID
     fix_permissions_action = "on_click_%s()" % button_id
@@ -108,7 +116,7 @@ that were created outside BatchProfiler's control. It will grant read
 permission for the job script folder, the text output folder, the text and 
 error output files and the measurements file.""")
             with tag("div"):
-                with tag("label", **{ "for":batch_id_id }):
+                with tag("label", **{"for": batch_id_id}):
                     text("Batch ID")
                 doc.input(name=BATCH_ID, id=batch_id_id, type="text")
                 with tag("button", id=button_id,
@@ -120,11 +128,13 @@ error output files and the measurements file.""")
           '"-//W3C//DTD XHTML 1.0 Transitional//EN"' \
           '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
     print yattag.indent(doc.getvalue())
-    
+
+
 script_filename = os.environ.get(SCRIPT_FILENAME_KEY, None)
 if script_filename is not None and \
-   script_filename.endswith("FixPermissions.py"):
+        script_filename.endswith("FixPermissions.py"):
     import cgitb
+
     cgitb.enable()
 
     if REQUEST_METHOD == RM_GET:
@@ -133,6 +143,3 @@ if script_filename is not None and \
         handle_post()
     else:
         raise ValueError("Unhandled request method: %s" % REQUEST_METHOD)
-        
-    
-            

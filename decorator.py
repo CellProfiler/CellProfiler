@@ -1,5 +1,5 @@
 ##########################     LICENCE     ###############################
-      
+
 ##   Redistributions of source code must retain the above copyright 
 ##   notice, this list of conditions and the following disclaimer.
 ##   Redistributions in bytecode form must reproduce the above copyright
@@ -31,6 +31,7 @@ import os, sys, re, inspect, warnings
 
 DEF = re.compile('\s*def\s*([_\w][_\w\d]*)\s*\(')
 
+
 # basic functionality
 class FunctionMaker(object):
     """
@@ -38,13 +39,14 @@ class FunctionMaker(object):
     It has attributes name, doc, module, signature, defaults, dict and
     methods update and make.
     """
+
     def __init__(self, func=None, name=None, signature=None,
                  defaults=None, doc=None, module=None, funcdict=None):
         if func:
             # func can also be a class or a callable, but not an instance method
             self.name = func.__name__
-            if self.name == '<lambda>': # small hack for lambda functions
-                self.name = '_lambda_' 
+            if self.name == '<lambda>':  # small hack for lambda functions
+                self.name = '_lambda_'
             self.doc = func.__doc__
             self.module = func.__module__
             if inspect.isfunction(func):
@@ -70,7 +72,10 @@ class FunctionMaker(object):
             raise TypeError('You are decorating a non function: %s' % func)
 
     def update(self, func, **kw):
-        "Update the signature of func with the data in self"
+        """Update the signature of func with the data in self
+        :param kw:
+        :param func:
+        """
         func.__name__ = self.name
         func.__doc__ = getattr(self, 'doc', None)
         func.__dict__ = getattr(self, 'dict', {})
@@ -78,21 +83,26 @@ class FunctionMaker(object):
         callermodule = sys._getframe(3).f_globals.get('__name__', '?')
         func.__module__ = getattr(self, 'module', callermodule)
         func.__dict__.update(kw)
- 
+
     def make(self, src_templ, evaldict=None, addsource=False, **attrs):
-        "Make a new function from a given template and update the signature"
-        src = src_templ % vars(self) # expand name and signature
+        """Make a new function from a given template and update the signature
+        :param src_templ:
+        :param evaldict:
+        :param addsource:
+        :param attrs:
+        """
+        src = src_templ % vars(self)  # expand name and signature
         evaldict = evaldict or {}
         mo = DEF.match(src)
         if mo is None:
             raise SyntaxError('not a valid function template\n%s' % src)
-        name = mo.group(1) # extract the function name
+        name = mo.group(1)  # extract the function name
         reserved_names = set([name] + [
             arg.strip(' *') for arg in self.signature.split(',')])
         for n, v in evaldict.iteritems():
             if n in reserved_names:
                 raise NameError('%s is overridden in\n%s' % (n, src))
-        if not src.endswith('\n'): # add a newline just for safety
+        if not src.endswith('\n'):  # add a newline just for safety
             src += '\n'
         try:
             code = compile(src, '<string>', 'single')
@@ -107,34 +117,49 @@ class FunctionMaker(object):
         self.update(func, **attrs)
         return func
 
+
 def decorator(caller, func=None):
     """
     decorator(caller) converts a caller function into a decorator;
     decorator(caller, func) decorates a function using a caller.
+    :param caller:
+    :param caller:
+    :param caller:
+    :param func:
+    :param func:
     """
-    if func is None: # returns a decorator
+    if func is None:  # returns a decorator
         fun = FunctionMaker(caller)
         first_arg = inspect.getargspec(caller)[0][0]
         src = 'def %s(%s): return _call_(caller, %s)' % (
             caller.__name__, first_arg, first_arg)
         return fun.make(src, dict(caller=caller, _call_=decorator),
                         undecorated=caller)
-    else: # returns a decorated function
+    else:  # returns a decorated function
         fun = FunctionMaker(func)
         src = """def %(name)s(%(signature)s):
     return _call_(_func_, %(signature)s)"""
         return fun.make(src, dict(_func_=func, _call_=caller), undecorated=func)
 
+
 ###################### deprecated functionality #########################
 
 @decorator
 def deprecated(func, *args, **kw):
-    "A decorator for deprecated functions"
+    """A decorator for deprecated functions
+    :param func:
+    :param args:
+    :param kw:
+    :param func:
+    :param args:
+    :param kw:
+    """
     warnings.warn(
         ('Calling the deprecated function %r\n'
          'Downgrade to decorator 2.3 if you want to use this functionality')
         % func.__name__, DeprecationWarning, stacklevel=3)
     return func(*args, **kw)
+
 
 @deprecated
 def getinfo(func):
@@ -162,6 +187,8 @@ def getinfo(func):
 
     >>> info["signature"]
     'self, x, y, *args, **kw'
+    :param func:
+    :param func:
     """
     assert inspect.ismethod(func) or inspect.isfunction(func)
     regargs, varargs, varkwargs, defaults = inspect.getargspec(func)
@@ -173,13 +200,21 @@ def getinfo(func):
     signature = inspect.formatargspec(regargs, varargs, varkwargs, defaults,
                                       formatvalue=lambda value: "")[1:-1]
     return dict(name=func.__name__, argnames=argnames, signature=signature,
-                defaults = func.func_defaults, doc=func.__doc__,
+                defaults=func.func_defaults, doc=func.__doc__,
                 module=func.__module__, dict=func.__dict__,
                 globals=func.func_globals, closure=func.func_closure)
 
+
 @deprecated
 def update_wrapper(wrapper, model, infodict=None):
-    "A replacement for functools.update_wrapper"
+    """A replacement for functools.update_wrapper
+    :param wrapper:
+    :param model:
+    :param infodict:
+    :param wrapper:
+    :param model:
+    :param infodict:
+    """
     infodict = infodict or getinfo(model)
     wrapper.__name__ = infodict['name']
     wrapper.__doc__ = infodict['doc']
@@ -189,6 +224,7 @@ def update_wrapper(wrapper, model, infodict=None):
     wrapper.undecorated = model
     return wrapper
 
+
 @deprecated
 def new_wrapper(wrapper, model):
     """
@@ -197,10 +233,14 @@ def new_wrapper(wrapper, model):
     right signature and by updating the copy, not the original.
     Moreovoer, 'model' can be a dictionary with keys 'name', 'doc', 'module',
     'dict', 'defaults'.
+    :param wrapper:
+    :param model:
+    :param wrapper:
+    :param model:
     """
     if isinstance(model, dict):
         infodict = model
-    else: # assume model is a function
+    else:  # assume model is a function
         infodict = getinfo(model)
     assert not '_wrapper_' in infodict["argnames"], (
         '"_wrapper_" is a reserved argument name!')

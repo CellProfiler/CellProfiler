@@ -1,10 +1,9 @@
-'''<b>Example 5</b> Object measurements
+"""<b>Example 5</b> Object measurements
 <hr>
-'''
+"""
 
 import numpy as np
 import scipy.ndimage
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -20,20 +19,21 @@ SUPPORT_OVERLAPPING = "Overlapping"
 '''Run Example5a using an algorithm that supports overlapping and touching'''
 SUPPORT_TOUCHING = "Overlapping and touching"
 
+
 class Example5a(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example5a"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber("Objects name", "Nuclei")
         self.method = cps.Choice("Algorithm method",
-                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING, 
+                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING,
                                   SUPPORT_TOUCHING], SUPPORT_TOUCHING)
-        
+
     def settings(self):
         return [self.objects_name, self.method]
-    
+
     def run(self, workspace):
         #
         # Get some things we need from the workspace
@@ -91,7 +91,7 @@ class Example5a(cpm.CPModule):
             # zero, so for "values", I'm going to cheat and waste values[0].
             # Later, I'll only use values[1:]
             #
-            values = np.zeros(objects.count+1)
+            values = np.zeros(objects.count + 1)
             #
             # Now for the loop
             #
@@ -124,8 +124,8 @@ class Example5a(cpm.CPModule):
             # is clear and readable.
             #
             from centrosome.cpmorphology import color_labels
-            
-            values = np.zeros(objects.count+1)
+
+            values = np.zeros(objects.count + 1)
             for labels, indices in objects.get_labels():
                 clabels = color_labels(labels)
                 #
@@ -156,15 +156,16 @@ class Example5a(cpm.CPModule):
             measurements.add_measurement(objects_name,
                                          M_MEAN_DISTANCE,
                                          values[1:])
-            
+
     def get_measurement_columns(self, pipeline):
-        return [(self.objects_name.value, M_MEAN_DISTANCE, cpmeas.COLTYPE_FLOAT)]
+        return [
+            (self.objects_name.value, M_MEAN_DISTANCE, cpmeas.COLTYPE_FLOAT)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.objects_name:
             return [C_EXAMPLE5]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.objects_name and category == C_EXAMPLE5:
             return [FTR_MEAN_DISTANCE]

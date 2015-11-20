@@ -1,19 +1,19 @@
-'''<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
+"""<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
 <hr>
 The module expands or shrinks objects by adding or removing border
 pixels. You can specify a certain number of border pixels to be
 added or removed, expand objects until they are almost touching or shrink
-objects down to a point. Objects are never lost using this module (shrinking 
+objects down to a point. Objects are never lost using this module (shrinking
 stops when an object becomes a single pixel). The module can separate touching
 objects without otherwise shrinking
 the objects.
 
-<p><b>ExpandOrShrinkObjects</b> can perform some specialized morphological operations that 
+<p><b>ExpandOrShrinkObjects</b> can perform some specialized morphological operations that
 remove pixels without completely removing an object. See the Settings help (below)
 for more detail.</p>
 
 <p><i>Special note on saving images:</i> You can use the settings in this module to pass object
-outlines along to the module <b>OverlayOutlines</b> and then save them 
+outlines along to the module <b>OverlayOutlines</b> and then save them
 with the <b>SaveImages</b> module. You can also pass the identified objects themselves along to the
 object processing module <b>ConvertToImage</b> and then save them with the
 <b>SaveImages</b> module.</p>
@@ -25,15 +25,14 @@ object processing module <b>ConvertToImage</b> and then save them with the
 </ul>
 <b>Object measurements:</b>
 <ul>
-<li><i>Location_X, Location_Y:</i> Pixel (<i>X,Y</i>) coordinates of the center of mass of 
+<li><i>Location_X, Location_Y:</i> Pixel (<i>X,Y</i>) coordinates of the center of mass of
 the expanded/shrunken objects.</li>
 </ul>
 
-<p>See also <b>Identify</b> modules.</p>'''
+<p>See also <b>Identify</b> modules.</p>"""
 
 import numpy as np
 from scipy.ndimage import distance_transform_edt
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -59,25 +58,26 @@ O_SPUR = 'Remove spurs'
 O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND,
          O_SKELETONIZE, O_SPUR]
 
-class ExpandOrShrinkObjects(cpm.CPModule):
 
+class ExpandOrShrinkObjects(cpm.CPModule):
     module_name = 'ExpandOrShrinkObjects'
     category = 'Object Processing'
     variable_revision_number = 1
+
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
             "Select the input objects",
-            cps.NONE, doc = '''
+            cps.NONE, doc='''
             Select the objects that you want to expand or shrink.''')
-        
+
         self.output_object_name = cps.ObjectNameProvider(
-            "Name the output objects", 
-            "ShrunkenNuclei", doc = '''
+            "Name the output objects",
+            "ShrunkenNuclei", doc='''
             Enter a name for the resulting objects.''')
-        
+
         self.operation = cps.Choice(
             "Select the operation",
-            O_ALL,  doc = '''
+            O_ALL, doc='''
             Select the operation that you want to perform:
             <ul>
             <li><i>%(O_SHRINK_INF)s:</i> Remove all pixels but one from filled objects. Thin objects
@@ -100,13 +100,14 @@ class ExpandOrShrinkObjects(cpm.CPModule):
             <li><i>%(O_SPUR)s:</i> Remove or reduce the length of spurs in a skeletonized image.
             The algorithm reduces spur size by the number of pixels indicated in the
             setting <i>Number of pixels by which to expand or shrink</i>.</li> 
-            </ul>'''%globals())
-        
+            </ul>''' % globals())
+
         self.iterations = cps.Integer(
             "Number of pixels by which to expand or shrink", 1, minval=1)
-        
+
         self.wants_fill_holes = cps.Binary(
-            "Fill holes in objects so that all objects shrink to a single point?",False, doc="""
+            "Fill holes in objects so that all objects shrink to a single point?",
+            False, doc="""
             <i>(Used only if one of the "shrink" options selected)</i><br>
             Select <i>%(YES)s</i> to ensure that each object will shrink
             to a single point, by filling the holes in each object.
@@ -115,17 +116,17 @@ class ExpandOrShrinkObjects(cpm.CPModule):
             which means that it will erode an object with a hole to a ring in order to
             keep the hole. An object with two holes will be shrunk to two rings
             connected by a line in order to keep from breaking up the object or breaking
-            the hole.</p>"""%globals())
-        
+            the hole.</p>""" % globals())
+
         self.wants_outlines = cps.Binary(
             "Retain the outlines of the identified objects?",
             False, doc="""
-            %(RETAINING_OUTLINES_HELP)s"""%globals())
-        
+            %(RETAINING_OUTLINES_HELP)s""" % globals())
+
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outline image",
-            "ShrunkenNucleiOutlines", doc = """
-            %(NAMING_OUTLINES_HELP)s"""%globals())
+            "ShrunkenNucleiOutlines", doc="""
+            %(NAMING_OUTLINES_HELP)s""" % globals())
 
     def settings(self):
         return [self.object_name, self.output_object_name, self.operation,
@@ -147,17 +148,17 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         input_objects = workspace.object_set.get_objects(self.object_name.value)
         output_objects = cpo.Objects()
         output_objects.segmented = self.do_labels(input_objects.segmented)
-        if (input_objects.has_small_removed_segmented and 
-            self.operation not in (O_EXPAND, O_EXPAND_INF, O_DIVIDE)):
+        if (input_objects.has_small_removed_segmented and
+                    self.operation not in (O_EXPAND, O_EXPAND_INF, O_DIVIDE)):
             output_objects.small_removed_segmented = \
                 self.do_labels(input_objects.small_removed_segmented)
         if (input_objects.has_unedited_segmented and
-            self.operation not in (O_EXPAND, O_EXPAND_INF, O_DIVIDE)):
+                    self.operation not in (O_EXPAND, O_EXPAND_INF, O_DIVIDE)):
             output_objects.unedited_segmented = \
                 self.do_labels(input_objects.unedited_segmented)
         workspace.object_set.add_objects(output_objects,
                                          self.output_object_name.value)
-        add_object_count_measurements(workspace.measurements, 
+        add_object_count_measurements(workspace.measurements,
                                       self.output_object_name.value,
                                       np.max(output_objects.segmented))
         add_object_location_measurements(workspace.measurements,
@@ -165,7 +166,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
                                          output_objects.segmented)
         if self.wants_outlines.value:
             outline_image = cpi.Image(outline(output_objects.segmented) > 0,
-                                      parent_image = input_objects.parent_image)
+                                      parent_image=input_objects.parent_image)
             workspace.image_set.add(self.outlines_name.value, outline_image)
 
         if self.show_window:
@@ -180,29 +181,31 @@ class ExpandOrShrinkObjects(cpm.CPModule):
                                      self.object_name.value)
         figure.subplot_imshow_labels(1, 0, output_objects_segmented,
                                      self.output_object_name.value,
-                                     sharexy = figure.subplot(0, 0))
+                                     sharexy=figure.subplot(0, 0))
 
     def do_labels(self, labels):
-        '''Run whatever transformation on the given labels matrix'''
-        if (self.operation in (O_SHRINK, O_SHRINK_INF) and 
-            self.wants_fill_holes.value):
-            labels = fill_labeled_holes(labels) 
-            
+        """Run whatever transformation on the given labels matrix
+        :param labels:
+        """
+        if (self.operation in (O_SHRINK, O_SHRINK_INF) and
+                self.wants_fill_holes.value):
+            labels = fill_labeled_holes(labels)
+
         if self.operation == O_SHRINK_INF:
             return binary_shrink(labels)
         elif self.operation == O_SHRINK:
-            return binary_shrink(labels, iterations = self.iterations.value)
+            return binary_shrink(labels, iterations=self.iterations.value)
         elif self.operation in (O_EXPAND, O_EXPAND_INF):
             if self.operation == O_EXPAND_INF:
                 distance = np.max(labels.shape)
             else:
                 distance = self.iterations.value
             background = labels == 0
-            distances, (i,j) = distance_transform_edt(background, 
-                                                      return_indices = True)
+            distances, (i, j) = distance_transform_edt(background,
+                                                       return_indices=True)
             out_labels = labels.copy()
             mask = (background & (distances <= distance))
-            out_labels[mask] = labels[i[mask],j[mask]]
+            out_labels[mask] = labels[i[mask], j[mask]]
             return out_labels
         elif self.operation == O_DIVIDE:
             #
@@ -221,63 +224,70 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         else:
             raise NotImplementedError("Unsupported operation: %s" %
                                       self.operation.value)
-            
 
-    
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
+        global operation
         if from_matlab and variable_revision_number == 2:
             inf = setting_values[4] == "Inf"
             if setting_values[3] == "Expand":
                 operation = O_EXPAND_INF if inf else O_EXPAND
             elif setting_values[3] == "Shrink":
                 operation = (O_SHRINK_INF if inf
-                             else O_DIVIDE if setting_values[4] == "0" 
-                             else O_SHRINK)
+                             else O_DIVIDE if setting_values[4] == "0"
+                else O_SHRINK)
             iterations = "1" if inf else setting_values[4]
             wants_outlines = setting_values[5] != cps.DO_NOT_USE
-            setting_values = (setting_values[:2] + 
+            setting_values = (setting_values[:2] +
                               [operation, iterations, cps.NO,
                                cps.YES if wants_outlines else cps.NO,
-                               setting_values[5] ])
+                               setting_values[5]])
             from_matlab = False
             variable_revision_number = 1
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module
+        :param pipeline:
+        """
         columns = get_object_measurement_columns(self.output_object_name.value)
         return columns
-    
+
     def get_categories(self, pipeline, object_name):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
         """
         categories = []
         if object_name == cpmeas.IMAGE:
             categories += ["Count"]
-        if (object_name == self.output_object_name):
-            categories += ("Location","Number")
+        if object_name == self.output_object_name:
+            categories += ("Location", "Number")
         return categories
-      
+
     def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         result = []
-        
+
         if object_name == cpmeas.IMAGE:
             if category == "Count":
                 result += [self.output_object_name.value]
         if object_name == self.output_object_name:
             if category == "Location":
-                result += [ "Center_X","Center_Y"]
+                result += ["Center_X", "Center_Y"]
             elif category == "Number":
                 result += ["Object_Number"]
         return result
+
 
 #
 # backwards compatability

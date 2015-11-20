@@ -1,21 +1,24 @@
-'''utf16encode.py - encode unicode strings as escaped utf16
-'''
+"""utf16encode.py - encode unicode strings as escaped utf16
+"""
+
 
 def utf16encode(x):
-    '''Encode a unicode string in 7-bit US ascii
-    
+    """Encode a unicode string in 7-bit US ascii
+
     x - unicode string to be encoded
-    
+
     returns utf8-escape-encoded string
-    
+
     The escapes:
 
     \ (backslash) -> \\
-    
+
     0x20 <= c < 0xff -> c
-    
+
     all others -> \u####
-    '''
+    :param x:
+    :param x:
+    """
     y = ''
     for z in x:
         t = ord(z)
@@ -27,9 +30,12 @@ def utf16encode(x):
             y += str(z)
     return y
 
+
 def utf16decode(x):
-    '''Decode an escaped utf8-encoded string
-    '''
+    """Decode an escaped utf8-encoded string
+    :param x:
+    """
+    global acc
     y = u""
     state = -1
     for z in x:
@@ -50,5 +56,5 @@ def utf16decode(x):
             acc += z
         else:
             state = -1
-            y += unichr(int(acc+z, 16))
+            y += unichr(int(acc + z, 16))
     return y

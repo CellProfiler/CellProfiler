@@ -4,6 +4,7 @@
 # View a batch from the database, with some options to re-execute it
 #
 import cgitb
+
 cgitb.enable()
 import RunBatch
 from bpformdata import *
@@ -16,13 +17,14 @@ import os
 import os.path
 import yattag
 
-RESUBMIT="Resubmit"
+RESUBMIT = "Resubmit"
 
 resubmit_action = \
     'return confirm("Do you really want to resubmit %s batches?")'
 
 print "Content-Type: text/html"
 print
+
 
 class ViewBatchDoc(object):
     def __init__(self):
@@ -45,8 +47,8 @@ class ViewBatchDoc(object):
         self.run_id = BATCHPROFILER_VARIABLES[RUN_ID]
         self.submit_run = BATCHPROFILER_VARIABLES[SUBMIT_RUN]
         self.status = BATCHPROFILER_VARIABLES[K_STATUS]
-        
-    def build(self):        
+
+    def build(self):
         if self.batch_id is None:
             self.build_batch_list()
             return
@@ -55,7 +57,7 @@ class ViewBatchDoc(object):
             self.build_submit_run()
         else:
             self.build_batch()
-    
+
     def read_batch(self):
         self.my_batch = RunBatch.BPBatch.select(self.batch_id)
         self.jobs_by_state = self.my_batch.select_task_count_group_by_state(
@@ -63,13 +65,15 @@ class ViewBatchDoc(object):
         page_size = BATCHPROFILER_DEFAULTS[PAGE_SIZE] or 25
         first_item = BATCHPROFILER_DEFAULTS[FIRST_ITEM] or 1
         self.tasks = self.my_batch.select_tasks(
-            page_size = page_size,
-            first_item = first_item,
-            state = self.status)
+            page_size=page_size,
+            first_item=first_item,
+            state=self.status)
+
         def comparator(a, b):
             run_a = a.job_task.batch_array_task.run
             run_b = b.job_task.batch_array_task.run
             return cmp(run_a.bstart, run_b.bstart)
+
         self.tasks.sort(cmp=comparator)
 
     def build_batch_list(self):
@@ -94,18 +98,19 @@ class ViewBatchDoc(object):
                     with self.tag("table", klass="run_table"):
                         with self.tag("tr"):
                             for caption in (
-                                "Batch ID", "Data directory", "Project", "Email"):
+                                    "Batch ID", "Data directory", "Project",
+                                    "Email"):
                                 with self.tag("th"):
                                     self.text(caption)
                         for batch in batches:
                             with self.tag("tr"):
                                 with self.tag("td"):
                                     url = "ViewBatch.py?%s=%d" % \
-                                        (BATCH_ID, batch.batch_id)
+                                          (BATCH_ID, batch.batch_id)
                                     with self.tag("a", href=url):
                                         self.text(str(batch.batch_id))
-                                for field in batch.data_dir, batch.project,\
-                                    batch.email:
+                                for field in batch.data_dir, batch.project, \
+                                             batch.email:
                                     with self.tag("td"):
                                         self.text(field)
                 with self.tag("div"):
@@ -113,7 +118,7 @@ class ViewBatchDoc(object):
                     if first_item > page_size:
                         page_starts.append((first_item - page_size, "Prev"))
                     page_starts += \
-                        [(i, str(i)) for i in range(1, count+1, page_size)]
+                        [(i, str(i)) for i in range(1, count + 1, page_size)]
                     if first_item + page_size < count:
                         page_starts += [(first_item + page_size, "Next")]
                     for item, label in page_starts:
@@ -122,9 +127,9 @@ class ViewBatchDoc(object):
                         style = "padding-left: 1em;padding-right: 1em"
                         with self.tag("a", href=url, style=style):
                             self.text(label)
-                            
+
     def build_submit_run(self):
-        title = "Batch # %d resubmitted"%(self.my_batch.batch_id)
+        title = "Batch # %d resubmitted" % self.my_batch.batch_id
         with self.tag("html"):
             with self.tag("head"):
                 with self.tag("title"):
@@ -175,6 +180,7 @@ class ViewBatchDoc(object):
                                 self.text(str(task.job.job_id))
                             with self.tag("td"):
                                 self.text(str(task.batch_array_task.task_id))
+
     def build_batch(self):
         title = "View batch # %d" % self.batch_id
         with self.tag("html"):
@@ -194,8 +200,7 @@ class ViewBatchDoc(object):
                 self.build_job_table()
             with self.tag("div", style='clear:both; padding-top:10px'):
                 self.build_footer()
-                
-                
+
     def build_scripts(self):
         fix_permissions = """
 function fix_permissions() {
@@ -226,9 +231,9 @@ function fix_permissions() {
 }""" % (BATCH_ID, self.batch_id)
         with self.tag("script", language="javascript"):
             self.doc.asis(fix_permissions)
-                
+
     def build_summary_table(self):
-        confirm_action =\
+        confirm_action = \
             'return confirm("Do you really want to resubmit all %s batches?")'
         with self.tag("div", style='position:relative;float:left'):
             with self.tag("table", klass='run_table'):
@@ -247,15 +252,15 @@ function fix_permissions() {
                             with self.tag("td"):
                                 vburl = "ViewBatch.py?%s=%d&%s=%s" % (
                                     BATCH_ID, self.batch_id, K_STATUS, state)
-                                with self.tag("a", href = vburl):
+                                with self.tag("a", href=vburl):
                                     self.text(state)
                             with self.tag("td"):
                                 self.text(str(self.jobs_by_state[state]))
                             with self.tag("td"):
-                                with self.tag("form", 
-                                              action = "ViewBatch.py",
-                                              method = "POST",
-                                              target = "ResubmitWindow"):
+                                with self.tag("form",
+                                              action="ViewBatch.py",
+                                              method="POST",
+                                              target="ResubmitWindow"):
                                     self.doc.input(type='hidden',
                                                    name=BATCH_ID)
                                     self.doc.input(type='hidden',
@@ -264,8 +269,8 @@ function fix_permissions() {
                                     self.doc.stag(
                                         "input",
                                         type='submit',
-                                        value='Resubmit %s' %visible_state,
-                                        onclick = confirm_action % visible_state)
+                                        value='Resubmit %s' % visible_state,
+                                        onclick=confirm_action % visible_state)
                     #
                     # The "All" summary row is a place to put things that
                     # affect all runs.
@@ -273,15 +278,15 @@ function fix_permissions() {
                     with self.tag("tr"):
                         with self.tag("td"):
                             with self.tag("a", href="ViewBatch.py?%s=%d" %
-                                          (BATCH_ID, self.batch_id)):
+                                    (BATCH_ID, self.batch_id)):
                                 self.text("All")
                         with self.tag("td"):
                             self.text(str(sum(self.jobs_by_state.values())))
                         with self.tag("td"):
-                            with self.tag("form", 
-                                          action = "ViewBatch.py",
-                                          method = "Post",
-                                          target = "ResubmitWindow"):
+                            with self.tag("form",
+                                          action="ViewBatch.py",
+                                          method="Post",
+                                          target="ResubmitWindow"):
                                 self.doc.input(
                                     type='hidden', name=BATCH_ID)
                                 self.doc.input(type='hidden',
@@ -293,10 +298,11 @@ function fix_permissions() {
                                     name="Resubmit_button",
                                     value="Resubmit all",
                                     onclick=resubmit_action % "all")
-                            
+
     def build_summary_buttons(self):
         kill_action = 'return confirm("Do you really want to kill all jobs?")'
-        with self.tag("div", style='position:relative; float:left; padding:2px'):
+        with self.tag("div",
+                      style='position:relative; float:left; padding:2px'):
             with self.tag("div", style='position:relative; float:top'):
                 with self.tag("table"):
                     with self.tag("tr"):
@@ -308,15 +314,16 @@ function fix_permissions() {
                                     type='submit',
                                     name='kill_jobs_button',
                                     value='Kill all incomplete jobs',
-                                    onclick = kill_action)
+                                    onclick=kill_action)
                             for status, label, text in (
-                                (RunBatch.JS_INCOMPLETE, "Resubmit incomplete",
-                                 "all incomplete"),):
+                                    (RunBatch.JS_INCOMPLETE,
+                                     "Resubmit incomplete",
+                                     "all incomplete"),):
                                 with self.tag("td"):
-                                    with self.tag("form", 
-                                                  action = "ViewBatch.py",
-                                                  method = "Post",
-                                                  target = "ResubmitWindow"):
+                                    with self.tag("form",
+                                                  action="ViewBatch.py",
+                                                  method="Post",
+                                                  target="ResubmitWindow"):
                                         self.doc.input(
                                             type='hidden', name=BATCH_ID)
                                         self.doc.input(type='hidden',
@@ -338,7 +345,8 @@ function fix_permissions() {
                             with self.tag("form", action='GetPipeline.py'):
                                 self.doc.input(type="hidden", name=BATCH_ID)
                                 self.doc.stag("input", type="submit",
-                                               value="Download pipeline")
+                                              value="Download pipeline")
+
     def build_database_scripts(self):
         sql_files = []
         kill_db_action = 'confirm("Are you sure you want to kill the database upload?")'
@@ -348,13 +356,13 @@ function fix_permissions() {
                 sql_files.append(filename)
         if len(sql_files) == 0:
             return
-            
+
         with self.tag("div", style='clear:both; padding-top:10px'):
             with self.tag("h2"):
                 self.text("Database scripts")
             with self.tag("table", klass="run_table"):
                 with self.tag("tr"):
-                    for caption in ("Script file", "Action", "Last job id", 
+                    for caption in ("Script file", "Action", "Last job id",
                                     "Status", "Output"):
                         with self.tag("th"):
                             self.text(caption)
@@ -362,7 +370,7 @@ function fix_permissions() {
                     if filename.startswith('batch_'):
                         continue
                     run, task, task_status = sql_jobs.sql_file_job_and_status(
-                        self.my_batch.batch_id, 
+                        self.my_batch.batch_id,
                         RunBatch.batch_script_file(filename))
                     status = None if task_status is None else task_status.status
                     with self.tag("tr"):
@@ -370,19 +378,19 @@ function fix_permissions() {
                             self.text(filename)
                         with self.tag("td", style="text-align:left"):
                             run_button = True
-                            output_file = filename[:-3]+'out'
+                            output_file = filename[:-3] + 'out'
                             output_path = os.path.join(
                                 self.my_batch.data_dir, output_file)
                             if task is not None and task_status.status in (
-                                RunBatch.JS_RUNNING, RunBatch.JS_SUBMITTED):
+                                    RunBatch.JS_RUNNING, RunBatch.JS_SUBMITTED):
                                 #
                                 # A kill button for jobs that are killable
                                 with self.tag("div"):
-                                    with self.tag("form", 
-                                              action="KillJobs.py",
-                                              method="POST",
-                                              target="KillJob"):
-                                        self.doc.input(type='hidden', 
+                                    with self.tag("form",
+                                                  action="KillJobs.py",
+                                                  method="POST",
+                                                  target="KillJob"):
+                                        self.doc.input(type='hidden',
                                                        name=JOB_ID,
                                                        value=str(job.job_id))
                                         self.doc.stag(
@@ -392,19 +400,19 @@ function fix_permissions() {
                                             onclick=kill_db_action)
                             with self.tag("div"):
                                 with self.tag("form",
-                                              action = "UploadToDatabase.py",
-                                              method = "POST"):
+                                              action="UploadToDatabase.py",
+                                              method="POST"):
                                     self.doc.input(
                                         type='hidden',
                                         name=SQL_SCRIPT,
                                         value=filename)
-                                    self.doc.input(type='hidden', 
+                                    self.doc.input(type='hidden',
                                                    name=OUTPUT_FILE,
-                                                   value = output_path)
+                                                   value=output_path)
                                     self.doc.input(type='hidden',
                                                    name=BATCH_ID)
                                     with self.tag(
-                                        "span", style='white-space:nowrap'):
+                                            "span", style='white-space:nowrap'):
                                         self.doc.stag(
                                             "input",
                                             type="submit",
@@ -412,10 +420,10 @@ function fix_permissions() {
                                             onclick=upload_action % filename)
                                         self.doc.asis("&nbsp;Queue:")
                                         with self.doc.select(name=QUEUE):
-                                            for queue_name in\
-                                                bputilities.get_queues():
+                                            for queue_name in \
+                                                    bputilities.get_queues():
                                                 with self.doc.option(
-                                                    value=queue_name):
+                                                        value=queue_name):
                                                     self.text(queue_name)
                         if task is None:
                             with self.tag("td", colspan="4"):
@@ -429,21 +437,21 @@ function fix_permissions() {
                                 else:
                                     run_time = \
                                         task_status.created - task.job.created
-                                    self.text("Complete(%.2f sec)" % 
+                                    self.text("Complete(%.2f sec)" %
                                               run_time.total_seconds())
                             self.build_text_file_table_cell(task)
-                            
+
     def build_job_table(self):
         with self.tag("div"):
             with self.tag("table", klass="run_table"):
                 self.build_job_table_head()
                 self.build_job_table_body()
-    
+
     def build_job_table_head(self):
         with self.tag("thead"):
             with self.tag("tr"):
                 for caption in "Start", "End", "Job #", "Task #", "Status", \
-                    "Text output file":
+                               "Text output file":
                     with self.tag("th"):
                         self.text(caption)
                 if self.my_batch.wants_measurements_file:
@@ -452,11 +460,12 @@ function fix_permissions() {
                 with self.tag("th"):
                     with self.tag("div"):
                         with self.tag(
-                            "div", style='position:relative; float=top'):
+                                "div", style='position:relative; float=top'):
                             self.text("Delete files")
                             with self.tag(
-                                "div", style='position:relative; float=top'):
-                                with self.tag("form", 
+                                    "div",
+                                    style='position:relative; float=top'):
+                                with self.tag("form",
                                               action="DeleteFile.py",
                                               method="POST"):
                                     self.doc.input(type="hidden",
@@ -482,6 +491,7 @@ function fix_permissions() {
                                         value=A_DELETE_ALL,
                                         title='Delete all files for this batch',
                                         onclick='return confirm("Do you really want to delete all files for this batch?")')
+
     def build_job_table_body(self):
         with self.tag("tbody"):
             for task_status in self.tasks:
@@ -538,39 +548,43 @@ function fix_permissions() {
                         with self.tag("td"):
                             if os.path.isfile(out_path):
                                 with self.tag(
-                                    "a", 
-                                    href='ViewTextFile.py?run_id=%d&%s=%s' % 
-                                    (run.run_id, FILE_TYPE, FT_OUT_FILE),
-                                    title=out_path):
+                                        "a",
+                                        href='ViewTextFile.py?run_id=%d&%s=%s' %
+                                                (run.run_id, FILE_TYPE,
+                                                 FT_OUT_FILE),
+                                        title=out_path):
                                     self.text(out_file)
                             else:
-                                with self.tag("span", 
-                                         title='Output file not available'):
+                                with self.tag("span",
+                                              title='Output file not available'):
                                     self.text(out_file)
                     #
                     # This cell contains the form that deletes things
                     #
                     with self.tag("td"):
-                        with self.tag("form", action='DeleteFile.py', method='POST'):
+                        with self.tag("form", action='DeleteFile.py',
+                                      method='POST'):
                             self.doc.input(
                                 type="hidden", name=RUN_ID,
-                                value = str(run.run_id))
+                                value=str(run.run_id))
                             text_file = os.path.basename(
                                 RunBatch.batch_array_task_text_file_path(
                                     task.batch_array_task))
                             for action, filename in (
-                                (A_DELETE_TEXT, text_file),
-                                (A_DELETE_OUTPUT, RunBatch.run_out_file(self.my_batch, run)),
-                                (A_DELETE_ALL, "all files for this run")):
+                                    (A_DELETE_TEXT, text_file),
+                                    (A_DELETE_OUTPUT,
+                                     RunBatch.run_out_file(self.my_batch, run)),
+                                    (A_DELETE_ALL, "all files for this run")):
                                 self.doc.stag(
                                     "input",
                                     type="submit", name=K_DELETE_ACTION,
                                     value=action,
-                                    title='Delete file %s' % filename, 
+                                    title='Delete file %s' % filename,
                                     onclick='return confirm("Do you really want'
-                                    'to delete %s?")' % filename)
+                                            'to delete %s?")' % filename)
+
     def build_footer(self):
-        '''Build the footer for scrolling through the pages'''
+        """Build the footer for scrolling through the pages"""
         page_size = BATCHPROFILER_DEFAULTS[PAGE_SIZE] or 25
         first_item = BATCHPROFILER_VARIABLES[FIRST_ITEM] or 1
         if self.status is None:
@@ -584,15 +598,16 @@ function fix_permissions() {
                     with self.tag("form", action="ViewBatch.py"):
                         self.doc.input(type="hidden", name=BATCH_ID)
                         self.doc.text("Jobs / page:")
-                        self.doc.input(type="text", 
-                                       name=PAGE_SIZE, 
+                        self.doc.input(type="text",
+                                       name=PAGE_SIZE,
                                        id="input_%s" % PAGE_SIZE)
                         self.doc.stag("input", type="submit", value="Set")
                 if count > page_size:
                     links = []
                     if first_item > page_size:
                         links.append((first_item, "Previous"))
-                    links += [(i, str(i)) for i in range(1, count+1, page_size)]
+                    links += [(i, str(i)) for i in
+                              range(1, count + 1, page_size)]
                     if first_item + page_size <= count:
                         links += [(first_item + page_size, "Next")]
                     for item, label in links:
@@ -602,20 +617,23 @@ function fix_permissions() {
                         if self.status is not None:
                             query.append((K_STATUS, self.status))
                         url = "ViewBatch.py?" + "&".join([
-                            "%s=%s" % (k, v) for k, v in query])
+                                                             "%s=%s" % (k, v)
+                                                             for k, v in query])
                         with self.tag("td", style="padding-left: 2pt"):
                             if item == first_item and label == str(item):
                                 self.text(str(item))
                             else:
                                 with self.tag(
-                                    "a", 
-                                    href=url,
-                                    style="text-align: center;"
-                                    "text-decoration: none;display: block;"): 
+                                        "a",
+                                        href=url,
+                                        style="text-align: center;"
+                                              "text-decoration: none;display: block;"):
                                     self.text(label)
 
     def build_text_file_table_cell(self, task):
-        '''Build a table cell containing links to the stdout/err output'''
+        """Build a table cell containing links to the stdout/err output
+        :param task:
+        """
         bat = task.batch_array_task
         text_path = RunBatch.batch_array_task_text_file_path(bat)
         text_file = os.path.basename(text_path)
@@ -623,28 +641,30 @@ function fix_permissions() {
         err_file = os.path.basename(err_path)
         with self.tag("td", style="text-align: left"):
             for ft, path, filename in (
-                (FT_TEXT_FILE, text_path, text_file),
-                (FT_ERR_FILE, err_path, err_file)):
+                    (FT_TEXT_FILE, text_path, text_file),
+                    (FT_ERR_FILE, err_path, err_file)):
                 with self.tag("div"):
                     if os.path.isfile(path):
                         with self.tag(
-                            "a", style="text-align: left",
-                            href='ViewTextFile.py?%s=%d&%s=%d&%s=%s' % 
-                            (BATCH_ARRAY_ID, bat.batch_array.batch_array_id,
-                             TASK_ID, bat.task_id, FILE_TYPE, ft),
-                            title=path):
+                                "a", style="text-align: left",
+                                href='ViewTextFile.py?%s=%d&%s=%d&%s=%s' %
+                                        (BATCH_ARRAY_ID,
+                                         bat.batch_array.batch_array_id,
+                                         TASK_ID, bat.task_id, FILE_TYPE, ft),
+                                title=path):
                             self.text(filename)
                     else:
                         with self.tag(
-                            "span", 
-                            style="text-align: left",
-                            title='Text file not available'):
+                                "span",
+                                style="text-align: left",
+                                title='Text file not available'):
                             self.text(filename)
 
     def render(self):
         print StyleSheet.BATCHPROFILER_DOCTYPE
         print yattag.indent(self.doc.getvalue())
-        
+
+
 with bputilities.CellProfilerContext():
     doc = ViewBatchDoc()
     doc.build()

@@ -1,20 +1,21 @@
-'''<b>Example1e</b> demonstrates SettingsGroup
+"""<b>Example1e</b> demonstrates SettingsGroup
 <hr>
 There are many circumstances where it would be useful to let a user specify
 an arbitrary number of a group of settings. For instance, you might want to
 sum an arbitrary number of images together in your module or perform the
 same operation on every listed image or object. This is done using
 cps.SettingsGroup and by overriding the prepare_settings method.
-'''
+"""
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+
 
 class Example1e(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example1e"
     category = "Other"
-    
+
     def create_settings(self):
         self.groups = []
         #
@@ -31,19 +32,20 @@ class Example1e(cpm.CPModule):
         #
         self.add_group_button = cps.DoSomething(
             "Add another group", "Add", self.add_group,
-            doc = "Press this button to add another group")
+            doc="Press this button to add another group")
         #
         # We call "add_group()" with a False argument. This tells add_group
         # to make sure and not add a button that would allow the user to
         # remove the first group
         #
         self.add_group(False)
-        
-    def add_group(self, can_delete = True):
-        '''Add a group to the list of groups
-        
+
+    def add_group(self, can_delete=True):
+        """Add a group to the list of groups
+
         can_delete - if true, add a button that removes the entry
-        '''
+        :param can_delete:
+        """
         #
         # Make a new settings group to hold the settings
         #
@@ -75,7 +77,7 @@ class Example1e(cpm.CPModule):
         # Add the new group to the list.
         #
         self.groups.append(group)
-        
+
     def settings(self):
         result = [self.group_count]
         #
@@ -90,7 +92,7 @@ class Example1e(cpm.CPModule):
             #
             result += group.pipeline_settings()
         return result
-    
+
     def visible_settings(self):
         #
         # Don't put in the hidden count...doh it's HIDDEN!
@@ -106,6 +108,7 @@ class Example1e(cpm.CPModule):
         #
         result.append(self.add_group_button)
         return result
+
     #
     # by convention, "run" goes next.
     # Let's add up the values and print to the console
@@ -125,8 +128,8 @@ class Example1e(cpm.CPModule):
         # or possibly on a different machine.
         #
         workspace.display_data.accumulator = accumulator
-        
-    def display(self, workspace, figure = None):
+
+    def display(self, workspace, figure=None):
         #
         # We added the figure argument for the FileUI version. This is
         # a recipe for a display method that works with both.
@@ -137,7 +140,7 @@ class Example1e(cpm.CPModule):
             # or to find the old one.
             # subplots tells you how many subplots in the x and y directions
             #
-            figure = workspace.create_or_find_figure(subplots = (1, 1))
+            figure = workspace.create_or_find_figure(subplots=(1, 1))
         else:
             #
             # In the new UI, the figure is created for you and you set the
@@ -162,14 +165,15 @@ class Example1e(cpm.CPModule):
         #
         # We use a list into the table to organize it in columns. A header
         # and then the values.
-        axes.table(cellText = [["Property", "Value"],
-                               ["accumulator", str(accumulator)]], 
+        axes.table(cellText=[["Property", "Value"],
+                             ["accumulator", str(accumulator)]],
                    loc='center')
         #
         # You have to do this in order to get rid of the plot display
         #
         axes.set_frame_on(False)
         axes.set_axis_off()
+
     #
     # Prior to the current release, a module had to tell CellProfiler whether
     # it interacted with the user interface inside the "run" method and by
@@ -187,8 +191,9 @@ class Example1e(cpm.CPModule):
     # We'll cover the new UI interaction mechanism in example2c.
     #
     def is_interactive(self):
-        return False        
-    #
+        return False
+        #
+
     # Finally, there's prepare_settings. setting_values are stored as unicode
     # strings (after a fashion) in your pipeline. Your module gets to have
     # as many as it returns from its settings() method. If you have settings
@@ -213,4 +218,3 @@ class Example1e(cpm.CPModule):
         #
         for _ in range(1, count):
             self.add_group()
-            

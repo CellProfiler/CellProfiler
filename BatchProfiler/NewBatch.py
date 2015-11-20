@@ -3,6 +3,7 @@
 # Start a batch operation from a web page
 
 import cgitb
+
 cgitb.enable()
 print "Content-Type: text/html\r"
 print "\r"
@@ -13,6 +14,7 @@ import numpy as np
 import traceback
 import urllib
 import cellprofiler.preferences
+
 cellprofiler.preferences.set_headless()
 from cellprofiler.modules.createbatchfiles import F_BATCH_DATA_H5
 from bputilities import *
@@ -30,6 +32,8 @@ HOW_TO_USE_BATCHPROFILER_URL = "http://dev.broadinstitute.org/imaging/privatewik
 myself = os.path.split(
     os.environ.get(SCRIPT_FILENAME_KEY,
                    "/batchprofiler/cgi-bin/NewBatch.py"))[1]
+
+
 class NewBatchDoc(object):
     def __init__(self):
         defaults = BATCHPROFILER_DEFAULTS.copy()
@@ -42,22 +46,22 @@ class NewBatchDoc(object):
         self.no_image_sets_reason = "???"
         self.__submit_batch_pressed = \
             BATCHPROFILER_DEFAULTS.get(SUBMIT_BATCH, False) == "yes"
-    
+
     def wants_batch_submission(self):
         if self.__submit_batch_pressed and self.has_image_sets:
             return self.inputs_validated
         return False
-    
+
     def build(self):
         if self.wants_batch_submission():
             self.build_submit_batch()
         else:
             self.build_normal()
-            
+
     def build_normal(self):
         self.build_head()
         self.build_body()
-        
+
     def build_head(self):
         with self.tag("head"):
             with self.tag("title"):
@@ -126,7 +130,7 @@ function build_cellprofiler() {
     xmlhttp.send(JSON.stringify({ %(EMAIL)s:email }));
 }
 """ % globals())
-                
+
     def build_body(self):
         with self.tag("body"):
             with self.tag("h1"):
@@ -136,7 +140,7 @@ function build_cellprofiler() {
                     self.text("Submit batch pressed")
             self.build_introduction()
             self.build_form()
-            #self.build_diagnostics()
+            # self.build_diagnostics()
 
     def build_diagnostics(self):
         try:
@@ -150,7 +154,7 @@ function build_cellprofiler() {
         except:
             with self.tag("div"):
                 self.text(traceback.format_exc())
-                
+
         if self.has_image_sets:
             with self.tag("div"):
                 if self.batch_git_hash is None:
@@ -159,14 +163,14 @@ function build_cellprofiler() {
                     self.text("Batch_data version: %s, git_hash: %s" %
                               (self.batch_datetime_version,
                                self.batch_git_hash))
-        
+
         with self.tag("table"):
             for k, v in BATCHPROFILER_DEFAULTS.iteritems():
                 with self.tag("tr"):
                     for value in k, v:
                         with self.tag("td"):
                             self.text(str(value))
-                            
+
     def build_introduction(self):
         with self.tag("div"):
             with self.tag("p"):
@@ -187,20 +191,20 @@ Submit a %(F_BATCH_DATA_H5)s file created by CellProfiler 2.0. You need to
 specify the default output folder, which should contain your Batch_data file
 for the pipeline. In addition, there are some parameters that tailor how the
 batch is run.""" % globals())
-                
+
     def build_form(self):
         with self.tag("form", action=myself, method="POST"):
             self.doc.input(type="hidden", name=SUBMIT_BATCH, value="yes")
             with self.tag("table", style='white-space=nowrap'):
                 for label, name, kwds, fn in (
-                    ("E-mail", EMAIL, dict(size="40"), None),
-                    ("Queue", QUEUE, None, self.build_queue_choices),
-                    ("Priority", PRIORITY, {}, None),
-                    ("Project", PROJECT, {}, None),
-                    ("Batch size", BATCH_SIZE, {}, None),
-                    ("Memory limit", MEMORY_LIMIT, {}, None),
-                    ("Write data", WRITE_DATA, {}, self.build_write_data), 
-                    ("Revision", REVISION, {}, self.build_revision)):
+                        ("E-mail", EMAIL, dict(size="40"), None),
+                        ("Queue", QUEUE, None, self.build_queue_choices),
+                        ("Priority", PRIORITY, {}, None),
+                        ("Project", PROJECT, {}, None),
+                        ("Batch size", BATCH_SIZE, {}, None),
+                        ("Memory limit", MEMORY_LIMIT, {}, None),
+                        ("Write data", WRITE_DATA, {}, self.build_write_data),
+                        ("Revision", REVISION, {}, self.build_revision)):
                     id = "input_%s" % name
                     with self.tag("tr"):
                         with self.tag("th"):
@@ -216,8 +220,8 @@ batch is run.""" % globals())
             self.show_directory(DATA_DIR, "Batch data file")
             if self.has_image_sets:
                 with self.tag("div"):
-                    self.doc.stag("input", 
-                                  type="submit", 
+                    self.doc.stag("input",
+                                  type="submit",
                                   name="input_submit_batch",
                                   value="Submit batch")
                     if self.__submit_batch_pressed and not self.inputs_validated:
@@ -242,44 +246,44 @@ batch is run.""" % globals())
                         self.text("Batch_data.h5 has %d image sets" %
                                   len(self.image_numbers))
             else:
-                with self.tag("div", **{"class":"error_message"}):
+                with self.tag("div", **{"class": "error_message"}):
                     self.text(self.no_image_sets_reason)
-                                
-    def build_queue_choices(self, id, name):
-        with self.doc.select(id=id, name=name):
+
+    def build_queue_choices(self, identifier, name):
+        with self.doc.select(id=identifier, name=name):
             for queue in get_queues():
                 with self.doc.option(value=queue):
                     self.text(queue)
-                
-    def build_write_data(self, id, name):
+
+    def build_write_data(self, identifier, name):
         kwds = {}
-        if BATCHPROFILER_DEFAULTS.has_key(WRITE_DATA) and\
-           BATCHPROFILER_DEFAULTS[WRITE_DATA] == "yes":
+        if BATCHPROFILER_DEFAULTS.has_key(WRITE_DATA) and \
+                        BATCHPROFILER_DEFAULTS[WRITE_DATA] == "yes":
             kwds["checked"] = "yes"
-        self.doc.input(type="checkbox", id=id, name=name, **kwds)
-        
-    def build_revision(self, id, name):
-        self.doc.input(type="text", id=id, name=name)
+        self.doc.input(type="checkbox", id=identifier, name=name, **kwds)
+
+    def build_revision(self, identifier, name):
+        self.doc.input(type="text", id=identifier, name=name)
         if self.has_image_sets and self.batch_git_hash is not None:
             with self.tag("button",
-                     type="button",
-                     onclick="use_githash()"):
+                          type="button",
+                          onclick="use_githash()"):
                 self.text(
-                    "Use %s / %s (from Batch_data.h5)" % 
+                    "Use %s / %s (from Batch_data.h5)" %
                     (self.batch_git_hash[:8], self.batch_datetime_version))
         with self.tag("button",
                       type="button",
-                      id = BUILD_CPCLUSTER_BUTTON,
+                      id=BUILD_CPCLUSTER_BUTTON,
                       onclick="build_cellprofiler()"):
             self.text("Build CellProfiler")
-                    
+
     def render(self):
         print BATCHPROFILER_DOCTYPE
         print yattag.indent(self.doc.getvalue())
-        
+
     @property
     def has_image_sets(self):
-        '''True if the data directory has a good batch data file'''
+        """True if the data directory has a good batch data file"""
         if self.__has_image_sets is not None:
             return self.__has_image_sets
         self.__has_image_sets = False
@@ -317,13 +321,13 @@ batch is run.""" % globals())
             import bputilities
             self.batch_datetime_version = self.batch_git_hash = None
             self.no_batch_version_reason = traceback.format_exc()
-            
+
         self.__has_image_sets = True
         return True
-    
+
     @property
     def inputs_validated(self):
-        '''True if the inputs for job submission are OK'''
+        """True if the inputs for job submission are OK"""
         if self.__inputs_validated is not None:
             return self.__inputs_validated
         self.__inputs_validated = False
@@ -338,8 +342,8 @@ batch is run.""" % globals())
             self.invalid_reason = "Batch size must be a number"
         try:
             memory_limit = float(BATCHPROFILER_DEFAULTS[MEMORY_LIMIT])
-            if memory_limit < MIN_MEMORY_LIMIT or\
-               memory_limit > MAX_MEMORY_LIMIT:
+            if memory_limit < MIN_MEMORY_LIMIT or \
+                            memory_limit > MAX_MEMORY_LIMIT:
                 self.offending_input = MEMORY_LIMIT
                 self.invalid_reason = \
                     "The memory limit must be between %f and %f GB" % \
@@ -348,7 +352,7 @@ batch is run.""" % globals())
         except:
             self.offending_input = MEMORY_LIMIT
             self.invalid_reason = \
-                "The memory limit must be a number between %f and %f GB." %\
+                "The memory limit must be a number between %f and %f GB." % \
                 (MIN_MEMORY_LIMIT, MAX_MEMORY_LIMIT)
             return False
         revision = BATCHPROFILER_DEFAULTS[REVISION]
@@ -356,7 +360,7 @@ batch is run.""" % globals())
             self.datetime_version, self.git_hash = \
                 get_version_and_githash(revision)
             self.cpcluster = get_cellprofiler_location(
-                git_hash = self.git_hash, version = self.datetime_version)
+                git_hash=self.git_hash, version=self.datetime_version)
             if not os.path.isdir(os.path.join(self.cpcluster, ".git")):
                 self.__cpcluster_needs_building = True
                 self.offending_input = BUILD_CPCLUSTER_BUTTON
@@ -373,23 +377,27 @@ batch is run.""" % globals())
         # TO DO more validation
         self.__inputs_validated = True
         return True
-    
+
     @property
     def cpcluster_needs_building(self):
         self.inputs_validated
         return self.__cpcluster_needs_building
-    
+
     def output_directory_link(self, key, path):
         directory = os.path.split(path)[1]
         if len(directory) == 0:
             directory = path
         with self.doc.tag(
-            "a", 
-            href='javascript:go_to_key("%s","%s")' % (key, path)):
+                "a",
+                href='javascript:go_to_key("%s","%s")' % (key, path)):
             self.text(directory)
-        
+
     def recursive_show_directory(self, key, head, tail):
-        '''Recursively show the directory tree'''
+        """Recursively show the directory tree
+        :param key:
+        :param head:
+        :param tail:
+        """
         with self.doc.tag("ul"):
             with self.doc.tag("li"):
                 self.output_directory_link(key, head)
@@ -403,25 +411,27 @@ batch is run.""" % globals())
             else:
                 next_head = os.path.join(head, tail[0])
                 self.recursive_show_directory(key, next_head, tail[1:])
-                
+
     def show_directory(self, key, title):
-        '''Show the directory structure for the variable given by the key
-    
+        """Show the directory structure for the variable given by the key
+
         key - key into form_data
         title - the user-visible title of the field
-    
+
         returns the current value of the key
-        '''
+        :param key:
+        :param title:
+        """
         path = BATCHPROFILER_DEFAULTS[key]
         data_dir_js = "document.getElementById('input_%s').value" % key
         go_to_key = "javascript:go_to_key('%s',%s) " % (key, data_dir_js)
 
         with self.tag("div", id="%s_div" % key):
-            d = {} if os.path.isdir(path) else { "class":"error_message" }
+            d = {} if os.path.isdir(path) else {"class": "error_message"}
             with self.tag("div", **d):
-                with self.tag("label", 
-                              **{ "for":'input_%s' % key}):
-                    self.text("%s" % title) 
+                with self.tag("label",
+                              **{"for": 'input_%s' % key}):
+                    self.text("%s" % title)
                 self.doc.input(type='text',
                                size='40',
                                id='input_%s' % key,
@@ -448,22 +458,22 @@ batch is run.""" % globals())
         return path
 
     def build_submit_batch(self):
-        '''Build the webpage for handling a submitted batch
-        
+        """Build the webpage for handling a submitted batch
+
         Also do the batch submission
-        '''
+        """
         batch_size = int(BATCHPROFILER_DEFAULTS[BATCH_SIZE])
         if self.has_groups:
             first_last = np.hstack(
-                [[True], 
-                self.group_numbers[1:] != self.group_numbers[:-1], 
-                [True]])
+                [[True],
+                 self.group_numbers[1:] != self.group_numbers[:-1],
+                 [True]])
             gn = self.group_numbers[first_last[:-1]]
             first = self.image_numbers[first_last[:-1]]
             last = self.image_numbers[first_last[1:]]
         else:
             first = self.image_numbers[::batch_size]
-            last = self.image_numbers[(batch_size-1)::batch_size]
+            last = self.image_numbers[(batch_size - 1)::batch_size]
             if len(last) < len(first):
                 last = np.hstack([last, self.image_numbers[-1]])
         runs = [(f, l) for f, l in zip(first, last)]
@@ -474,16 +484,16 @@ batch is run.""" % globals())
         with RunBatch.bpcursor() as cursor:
             batch = RunBatch.BPBatch.create(
                 cursor,
-                email = BATCHPROFILER_DEFAULTS[EMAIL],
-                data_dir = BATCHPROFILER_DEFAULTS[DATA_DIR],
-                queue = BATCHPROFILER_DEFAULTS[QUEUE],
-                batch_size = BATCHPROFILER_DEFAULTS[BATCH_SIZE],
-                write_data = write_data,
-                timeout = 60,
-                cpcluster = self.cpcluster,
-                project = BATCHPROFILER_DEFAULTS[PROJECT],
-                memory_limit = BATCHPROFILER_DEFAULTS[MEMORY_LIMIT],
-                priority = BATCHPROFILER_DEFAULTS[PRIORITY])
+                email=BATCHPROFILER_DEFAULTS[EMAIL],
+                data_dir=BATCHPROFILER_DEFAULTS[DATA_DIR],
+                queue=BATCHPROFILER_DEFAULTS[QUEUE],
+                batch_size=BATCHPROFILER_DEFAULTS[BATCH_SIZE],
+                write_data=write_data,
+                timeout=60,
+                cpcluster=self.cpcluster,
+                project=BATCHPROFILER_DEFAULTS[PROJECT],
+                memory_limit=BATCHPROFILER_DEFAULTS[MEMORY_LIMIT],
+                priority=BATCHPROFILER_DEFAULTS[PRIORITY])
             bpruns = []
             for bstart, bend in runs:
                 cmd = RunBatch.cellprofiler_command(batch, bstart, bend)
@@ -491,7 +501,7 @@ batch is run.""" % globals())
                 bpruns.append(run)
         RunBatch.run(batch, bpruns)
         vb_url = BATCHPROFILER_DEFAULTS[URL] + \
-            "/ViewBatch.py?batch_id=%d" % batch.batch_id
+                 "/ViewBatch.py?batch_id=%d" % batch.batch_id
         self.send_batch_submission_email(batch, vb_url)
         task_list = batch.select_tasks()
         with self.tag("head"):
@@ -567,17 +577,18 @@ td {
             with tag("body"):
                 with tag("h1"):
                     text("Results for batch # ")
-                    with tag("a", href = vb_url):
+                    with tag("a", href=vb_url):
                         text(str(batch.batch_id))
                 with tag("div"):
-                    text("Data Directory: %s" % 
+                    text("Data Directory: %s" %
                          BATCHPROFILER_DEFAULTS[DATA_DIR])
         email_text = yattag.indent(doc.getvalue())
         send_html_mail(recipient=BATCHPROFILER_DEFAULTS[EMAIL],
-                       subject = "Batch %d submitted"%(batch.batch_id),
+                       subject="Batch %d submitted" % batch.batch_id,
                        html=email_text)
 
-with CellProfilerContext():    
+
+with CellProfilerContext():
     doc = NewBatchDoc()
     doc.build()
 doc.render()

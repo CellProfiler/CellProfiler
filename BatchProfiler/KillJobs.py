@@ -6,6 +6,7 @@
 print "Content-Type: text/html\r"
 print "\r"
 import cgitb
+
 cgitb.enable()
 import RunBatch
 import bputilities
@@ -35,15 +36,16 @@ if job_id is not None:
     <body>Job %(job_id)d killed
     </body>
     </html>
-"""%(globals())
+""" % (globals())
 elif batch_id is not None:
     RunBatch.kill_batch(batch_id)
-    
-    url = "ViewBatch.py?batch_id=%d"%(batch_id)
+
+    url = "ViewBatch.py?batch_id=%d" % batch_id
     print "<html><head>"
-    print "<meta http-equiv='refresh' content='0; URL=%(url)s' />"%(globals())
+    print "<meta http-equiv='refresh' content='0; URL=%(url)s' />" % (globals())
     print "</head>"
-    print "<body>This page should be redirected to <a href='%(url)s'/>%(url)s</a></body>"%(globals())
+    print "<body>This page should be redirected to <a href='%(url)s'/>%(url)s</a></body>" % (
+    globals())
     print "</html>"
 else:
     print """<html><head><title>Kill jobs</title></head>
@@ -71,10 +73,11 @@ qstat
     lines = output.split("\n")
     header = lines[0]
     columns = [i for i in range(len(header))
-               if i == 0 or (header[i-1].isspace() and not header[i].isspace())]
+               if
+               i == 0 or (header[i - 1].isspace() and not header[i].isspace())]
     columns.append(len(header))
-    rows = [[line[columns[i]:columns[i+1]].strip() 
-             for i in range(len(columns)-1)]
+    rows = [[line[columns[i]:columns[i + 1]].strip()
+             for i in range(len(columns) - 1)]
             for line in lines]
     header = rows[0]
     body = rows[2:]
@@ -82,8 +85,9 @@ qstat
     <h2>Jobs on imageweb</h2>
     <table>
     """
-    print "<tr>%s</tr>"%("".join([
-        '<th>%s</th>'%field for field in header]))
+    print "<tr>%s</tr>" % ("".join([
+                                       '<th>%s</th>' % field for field in
+                                       header]))
     for fields in body:
         try:
             job_id = int(fields[0])
@@ -95,7 +99,7 @@ qstat
         <input type='hidden' name='job_id' value='%d'/>
         <input type='submit' value='Kill'/>
         </form>""" % (job_id, job_id)
-        
+
         print "<tr><td>%s</td></tr>" % "</td><td>".join(fields)
     """
     </table>

@@ -10,4 +10,3 @@ if __name__ == "__main__":
     import sys
 
     nose.main()
-    

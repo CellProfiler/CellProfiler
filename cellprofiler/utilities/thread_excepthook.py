@@ -8,7 +8,7 @@ import threading
 
 
 def install_thread_sys_excepthook():
-    "Workaround for threading module ignoring sys.excepthook()."
+    """Workaround for threading module ignoring sys.excepthook()."""
 
     if hasattr(threading, '__sys_excepthook_reinstalled__'):
         return
@@ -27,6 +27,7 @@ def install_thread_sys_excepthook():
                 raise
             except:
                 sys.excepthook(*sys.exc_info())
+
         self.run = run_with_except_hook
 
     threading.Thread.__init__ = init

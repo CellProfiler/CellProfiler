@@ -3,19 +3,21 @@
 # REST service to build CellProfiler
 
 import cgitb
+
 cgitb.enable()
 import sys
 import cgi
 import json
 import os
-
 from bputilities import build_cellprofiler, get_version_and_githash, is_built
 from bputilities import CellProfilerContext
 from bpformdata import RM_GET, RM_PUT, REQUEST_METHOD, REVISION, GIT_HASH, \
-     DATETIME_VERSION, IS_BUILT, QUEUE, PROJECT, EMAIL, \
-     BATCHPROFILER_DEFAULTS, BATCHPROFILER_VARIABLES
+    DATETIME_VERSION, IS_BUILT, QUEUE, PROJECT, EMAIL, \
+    BATCHPROFILER_DEFAULTS, BATCHPROFILER_VARIABLES
 
 query_revision = BATCHPROFILER_VARIABLES[REVISION]
+
+
 def do_get():
     if query_revision is not None:
         with CellProfilerContext():
@@ -24,10 +26,10 @@ def do_get():
         print "Content-Type: application/json\r"
         print "\r"
         print json.dumps(
-            { GIT_HASH: git_hash, 
-              DATETIME_VERSION: datetime_version,
-              IS_BUILT: buildstatus
-              })
+            {GIT_HASH: git_hash,
+             DATETIME_VERSION: datetime_version,
+             IS_BUILT: buildstatus
+             })
         return
     else:
         print "Content-Type: text/plain\r"
@@ -63,7 +65,8 @@ PUT /?revision=<revision> HTTP/1.1
 
 returns the same JSON-encoded dictionary as for GET
 """ % globals()
-        
+
+
 def do_put():
     datetime_version, git_hash = get_version_and_githash(query_revision)
     buildstatus = is_built(version=datetime_version, git_hash=git_hash)
@@ -74,20 +77,21 @@ def do_put():
             assert isinstance(options, dict)
         except:
             pass
-        with CellProfilerContext() : 
-            build_cellprofiler(version = datetime_version,
-                               git_hash = git_hash,
-                               queue_name = options.get(QUEUE, None),
-                               group_name = options.get(PROJECT, None),
-                               email_address = options.get(EMAIL, None))
-    
+        with CellProfilerContext():
+            build_cellprofiler(version=datetime_version,
+                               git_hash=git_hash,
+                               queue_name=options.get(QUEUE, None),
+                               group_name=options.get(PROJECT, None),
+                               email_address=options.get(EMAIL, None))
+
     print "Content-Type: application/json\r"
     print "\r"
     print json.dumps(
-        { GIT_HASH: git_hash, 
-          DATETIME_VERSION: datetime_version,
-          IS_BUILT: buildstatus
-          })
+        {GIT_HASH: git_hash,
+         DATETIME_VERSION: datetime_version,
+         IS_BUILT: buildstatus
+         })
+
 
 if REQUEST_METHOD == RM_GET:
     do_get()
@@ -96,4 +100,3 @@ elif REQUEST_METHOD == RM_PUT:
 else:
     raise NotImplementedError(
         "Request method %s not implemented" % REQUEST_METHOD)
-

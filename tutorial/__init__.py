@@ -1,1 +1,1 @@
-'''CellProfiler tutorial package'''
+"""CellProfiler tutorial package"""

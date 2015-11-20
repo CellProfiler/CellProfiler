@@ -14,11 +14,9 @@ import os
 import sys
 import time
 import traceback
-
 from RunBatch import BPJob, BPJobTask, BPTaskHost, BPJobTaskStatus, \
-     BPBatchArray, \
-     JS_SUBMITTED, JS_RUNNING, bpcursor
-
+    BPBatchArray, \
+    JS_SUBMITTED, JS_RUNNING, bpcursor
 
 '''Wait a maximum of 60 seconds for the job to be placed in the database'''
 JOB_QUERY_TIMEOUT = 60
@@ -26,7 +24,9 @@ JOB_QUERY_TIMEOUT = 60
 '''# of seconds to pause between attempts'''
 JOB_QUERY_PAUSE = .25
 
+
 def update_status(batch_array_id, job_id, task_id, status, host_name):
+    global job
     batch_array = BPBatchArray.select(batch_array_id)
     timeout = time.time() + JOB_QUERY_TIMEOUT
     while time.time() < timeout:
@@ -58,13 +58,15 @@ def update_status(batch_array_id, job_id, task_id, status, host_name):
     else:
         raise
 
+
 if __name__ == "__main__":
     import cgitb
+
     cgitb.enable()
     import json
     from bpformdata import REQUEST_METHOD, RM_PUT, K_ACTION, A_CREATE, A_READ, \
-         A_UPDATE, A_DELETE, JOB_ID, RUN_ID, BATCH_ARRAY_ID, TASK_ID, \
-         K_STATUS, K_HOST_NAME, K_WANTS_XVFB    
+        A_UPDATE, A_DELETE, JOB_ID, RUN_ID, BATCH_ARRAY_ID, TASK_ID, \
+        K_STATUS, K_HOST_NAME, K_WANTS_XVFB
 
     if REQUEST_METHOD == RM_PUT:
         data = json.load(sys.stdin)
@@ -76,7 +78,7 @@ if __name__ == "__main__":
         host_name = data.get(K_HOST_NAME, None)
         wants_xvfb = data.get(K_WANTS_XVFB, False)
         status = data.get(K_STATUS, JS_SUBMITTED)
-            
+
         if action == A_CREATE:
             batch_array = BPBatchArray.select(batch_array_id)
             with bpcursor() as cursor:
@@ -85,13 +87,14 @@ if __name__ == "__main__":
             print
             print "OK"
         elif action == A_UPDATE:
-            cmd = update_status(batch_array_id, job_id, task_id, status, host_name)
+            cmd = update_status(batch_array_id, job_id, task_id, status,
+                                host_name)
             print "Content-Type: text/plain"
             print
             print cmd
-            
+
         else:
             raise NotImplementedError("Unsupported action: %s" % action)
     else:
-        raise NotImplementedError("Unsupported http method: %s" % REQUEST_METHOD)
-
+        raise NotImplementedError(
+            "Unsupported http method: %s" % REQUEST_METHOD)

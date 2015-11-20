@@ -1,20 +1,19 @@
 from scipy.ndimage import label, distance_transform_edt
 import numpy as np
 import unittest
-
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.identify as I
-
 from cellprofiler.modules import instantiate_module
 from centrosome.cpmorphology import skeletonize_labels
 
 MODULE_NAME = "Example4b"
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
+
 
 class TestExample4b(unittest.TestCase):
     def test_01_01_instantiate(self):
@@ -23,7 +22,7 @@ class TestExample4b(unittest.TestCase):
         except:
             self.fail("CellProfiler could not create your module. "
                       "Is it named, " + MODULE_NAME + "?")
-    
+
     def test_01_02_run(self):
         module = instantiate_module(MODULE_NAME)
         module.input_objects_name.value = INPUT_OBJECTS_NAME
@@ -31,7 +30,7 @@ class TestExample4b(unittest.TestCase):
         module.module_num = 1
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        
+
         object_set = cpo.ObjectSet()
         #
         # Pick a bunch of random points, dilate them using the distance
@@ -40,7 +39,7 @@ class TestExample4b(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(12)
         bimg = np.ones((100, 100), bool)
-        bimg[r.randint(0,100, 50), r.randint(0, 100, 50)] = False
+        bimg[r.randint(0, 100, 50), r.randint(0, 100, 50)] = False
         labels, count = label(distance_transform_edt(bimg) <= 5)
         #
         # Make the input objects
@@ -95,7 +94,7 @@ class TestExample4b(unittest.TestCase):
                 OUTPUT_OBJECTS_NAME, ftr))
             location = measurements.get_measurement(OUTPUT_OBJECTS_NAME, ftr)
             np.testing.assert_almost_equal(location, expected)
-            
+
     def test_02_01_maybe_you_implemented_get_categories(self):
         module = instantiate_module(MODULE_NAME)
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
@@ -105,7 +104,7 @@ class TestExample4b(unittest.TestCase):
             c_objects = module.get_categories(None, OUTPUT_OBJECTS_NAME)
             self.assertTrue(I.C_LOCATION in c_objects)
             print "+3 for you!"
-    
+
     def test_02_02_maybe_you_implemented_get_measurements(self):
         module = instantiate_module(MODULE_NAME)
         module.output_objects_name.value = OUTPUT_OBJECTS_NAME
@@ -117,5 +116,3 @@ class TestExample4b(unittest.TestCase):
             self.assertTrue(I.FTR_CENTER_X in ftr_objects)
             self.assertTrue(I.FTR_CENTER_Y in ftr_objects)
             print "+3 for you!"
-        
-        

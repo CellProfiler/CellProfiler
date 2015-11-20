@@ -1,7 +1,6 @@
 from cStringIO import StringIO
 import numpy as np
 import unittest
-
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
@@ -13,13 +12,14 @@ from cellprofiler.modules import instantiate_module
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 
+
 class TestExample2a(unittest.TestCase):
     def make_instance(self):
         return instantiate_module("Example2a")
-    
+
     def test_00_00_can_load(self):
         self.assertFalse(self.make_instance() is None)
-        
+
     def test_01_01_can_get_settings(self):
         module = self.make_instance()
         self.assertTrue(hasattr(module, "input_image_name"),
@@ -32,11 +32,13 @@ class TestExample2a(unittest.TestCase):
         self.assertTrue(
             isinstance(module.output_image_name, cps.ImageNameProvider),
             "Your module's output_image_name should be an ImageNameProvider")
-        
+
     def test_01_02_can_load_and_save(self):
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         module = self.make_instance()
         module.module_num = 1
@@ -60,7 +62,7 @@ class TestExample2a(unittest.TestCase):
         module = pipeline.modules()[-1]
         self.assertEqual(module.input_image_name.value, INPUT_IMAGE_NAME)
         self.assertEqual(module.output_image_name.value, OUTPUT_IMAGE_NAME)
-        
+
     def test_02_01_run_it(self):
         # Get the same pseudo-random number generator each time
         r = np.random.RandomState()

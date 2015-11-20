@@ -7,12 +7,13 @@ import cStringIO
 import cellprofiler.preferences as cpp
 from cellprofiler.gui.errordialog import display_error_dialog
 import sys
-
 # Make sure sys.excepthook is called for any uncaught exceptions, even in threads.
 import cellprofiler.utilities.thread_excepthook
+
 cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
 
 CellProfilerSplash = get_builtin_image('CellProfilerSplash')
+
 
 class CellProfilerApp(wx.App):
     def __init__(self, *args, **kwargs):
@@ -33,20 +34,20 @@ class CellProfilerApp(wx.App):
             # If the splash image has alpha, it shows up transparently on
             # windows, so we blend it into a white background.
             splashbitmap = wx.EmptyBitmapRGBA(
-                CellProfilerSplash.GetWidth(), 
+                CellProfilerSplash.GetWidth(),
                 CellProfilerSplash.GetHeight(), 255, 255, 255, 255)
             dc = wx.MemoryDC()
             dc.SelectObject(splashbitmap)
             dc.DrawBitmap(wx.BitmapFromImage(CellProfilerSplash), 0, 0)
             dc.SelectObject(wx.NullBitmap)
-            dc.Destroy() # necessary to avoid a crash in splashscreen
+            dc.Destroy()  # necessary to avoid a crash in splashscreen
             self.splash = wx.SplashScreen(
-                splashbitmap, 
-                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 
+                splashbitmap,
+                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT,
                 2000, None, -1)
             self.splash_timer = wx.Timer()
             self.splash_timer.Bind(wx.EVT_TIMER, self.destroy_splash_screen)
-            self.splash_timer.Start(milliseconds = 2000, oneShot=True)
+            self.splash_timer.Start(milliseconds=2000, oneShot=True)
         else:
             self.splash = None
 
@@ -67,10 +68,13 @@ class CellProfilerApp(wx.App):
         def show_errordialog(type, exc, tb):
             def doit():
                 cpp.cancel_progress()
-                display_error_dialog(self.frame, exc, None, tb=tb, continue_only=True,
+                display_error_dialog(self.frame, exc, None, tb=tb,
+                                     continue_only=True,
                                      message="Exception in CellProfiler core processing")
                 # continue is really the only choice
+
             wx.CallAfter(doit)
+
         # replace default hook with error dialog
         self.orig_excepthook = sys.excepthook
         sys.excepthook = show_errordialog
@@ -80,11 +84,11 @@ class CellProfilerApp(wx.App):
             self.frame.startup_blurb_frame.Raise()
         return 1
 
-    def destroy_splash_screen(self, event = None):
+    def destroy_splash_screen(self, event=None):
         if self.splash is not None:
             self.splash.Destroy()
             self.splash = None
-        
+
     def OnExit(self):
         from imagej.imagej2 import allow_quit
         allow_quit()
@@ -102,9 +106,11 @@ class CellProfilerApp(wx.App):
             version_number = cellprofiler.utilities.version.version_number
             self.version = version_number
             cfu.check_for_updates('http://cellprofiler.org/CPupdate.html',
-                                  0 if force else max(version_number, cpp.get_skip_version()),
+                                  0 if force else max(version_number,
+                                                      cpp.get_skip_version()),
                                   self.new_version_cb,
-                                  user_agent='CellProfiler/%s %s' % (dotted_version, version_string))
+                                  user_agent='CellProfiler/%s %s' % (
+                                  dotted_version, version_string))
 
     def new_version_cb(self, new_version, new_version_info):
         # called from a child thread, so use CallAfter to bump it to the gui thread
@@ -119,17 +125,23 @@ class CellProfilerApp(wx.App):
 
             if new_version <= self.version:
                 # special case: force must have been set in new_version_check, so give feedback to the user.
-                wx.MessageBox('Your copy of CellProfiler is up to date.', '', wx.ICON_INFORMATION)
+                wx.MessageBox('Your copy of CellProfiler is up to date.', '',
+                              wx.ICON_INFORMATION)
                 return
 
             import cellprofiler.gui.newversiondialog as nvd
-            dlg = nvd.NewVersionDialog(None, "CellProfiler update available (version %d)"%(new_version),
-                                       new_version_info, 'http://cellprofiler.org/download.htm',
-                                       cpp.get_check_new_versions(), set_check_pref, skip_this_version)
+            dlg = nvd.NewVersionDialog(None,
+                                       "CellProfiler update available (version %d)" % (
+                                       new_version),
+                                       new_version_info,
+                                       'http://cellprofiler.org/download.htm',
+                                       cpp.get_check_new_versions(),
+                                       set_check_pref, skip_this_version)
             dlg.ShowModal()
             dlg.Destroy()
 
         wx.CallAfter(cb2)
+
 
 # end of class CellProfilerApp
 

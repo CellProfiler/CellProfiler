@@ -1,5 +1,5 @@
-'''test_loadsingleimage - Test the LoadSingleImage module
-'''
+"""test_loadsingleimage - Test the LoadSingleImage module
+"""
 
 import base64
 import numpy as np
@@ -10,7 +10,6 @@ import PIL.Image
 import tempfile
 import unittest
 import zlib
-
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -19,18 +18,18 @@ import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-
 import cellprofiler.modules.loadsingleimage as L
 import cellprofiler.modules.loadimages as LI
-from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
+from cellprofiler.modules.identify import M_LOCATION_CENTER_X, \
+    M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_example_image, \
-     maybe_download_example_images, maybe_download_sbs, make_12_bit_image
+    example_images_directory, maybe_download_example_image, \
+    maybe_download_example_images, maybe_download_sbs, make_12_bit_image
 from cellprofiler.modules.tests.test_loadimages import ConvtesterMixin
-
 
 OBJECTS_NAME = "myobjects"
 OUTLINES_NAME = "myoutlines"
+
 
 class TestLoadSingleImage(unittest.TestCase, ConvtesterMixin):
     @classmethod
@@ -44,7 +43,6 @@ class TestLoadSingleImage(unittest.TestCase, ConvtesterMixin):
         with open(path, "rb") as fd:
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
 
-        
     def test_01_00_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggpTVXwTSxSMDRTMDSxMjW3MrJQMDIwNFAgGTAwevryMzAwrGZk'
@@ -60,15 +58,18 @@ class TestLoadSingleImage(unittest.TestCase, ConvtesterMixin):
                 'vv8c32mtb/OvObxbf5Cz5rnoy3SJp5Vs1se+FtZu+t9c9P15hmOt1Olr9YzH'
                 'iy8IAQDsQ/za')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
-        
+
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, L.LoadSingleImage))
-        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_INPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice,
+                         cps.DEFAULT_INPUT_SUBFOLDER_NAME)
         self.assertEqual(module.directory.custom_path, "./foo")
         self.assertEqual(len(module.file_settings), 2)
         fs = module.file_settings[0]
@@ -77,16 +78,17 @@ class TestLoadSingleImage(unittest.TestCase, ConvtesterMixin):
         fs = module.file_settings[1]
         self.assertEqual(fs.file_name, "cytoplasm_image.tif")
         self.assertEqual(fs.image_name, "Cytoplasm")
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, L.LoadSingleImage))
-        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME)
+        self.assertEqual(module.directory.dir_choice,
+                         cps.DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(module.directory.custom_path, "./bar")
         self.assertEqual(len(module.file_settings), 1)
         fs = module.file_settings[0]
         self.assertEqual(fs.file_name, "DNAIllum.tif")
         self.assertEqual(fs.image_name, "DNAIllum")
-        
+
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -119,20 +121,22 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1
     Name the image that will be loaded:GFP
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 4)
-        
-        dir_choice = [ 
+
+        dir_choice = [
             cps.DEFAULT_INPUT_FOLDER_NAME, cps.DEFAULT_OUTPUT_FOLDER_NAME,
             cps.ABSOLUTE_FOLDER_NAME, cps.ABSOLUTE_FOLDER_NAME]
         for i, module in enumerate(pipeline.modules()):
             self.assertTrue(isinstance(module, L.LoadSingleImage))
             self.assertEqual(module.directory.dir_choice, dir_choice[i])
             self.assertEqual(module.directory.custom_path,
-                             "path%d" % (i+1))
+                             "path%d" % (i + 1))
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         self.assertEqual(len(module.file_settings), 2)
@@ -142,7 +146,7 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:1
         fs = module.file_settings[1]
         self.assertEqual(fs.file_name, "bar.tif")
         self.assertEqual(fs.image_name, "Cytoplasm")
-        
+
     def test_01_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -171,8 +175,10 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2
     Name the image that will be loaded:DNA1
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 4)
@@ -189,11 +195,11 @@ LoadSingleImage:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2
         module = pipeline.modules()[3]
         fs = module.file_settings[0]
         self.assertEqual(
-            fs.file_name, 
+            fs.file_name,
             "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/"
             "ExampleSBSImages/Channel1-01-A-01.tif")
-        
-        dir_choice = [ 
+
+        dir_choice = [
             cps.DEFAULT_INPUT_FOLDER_NAME, cps.DEFAULT_OUTPUT_FOLDER_NAME,
             cps.ABSOLUTE_FOLDER_NAME, cps.URL_FOLDER_NAME]
         for i, module in enumerate(pipeline.modules()):
@@ -213,8 +219,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
     Name the image that will be loaded:Cytoplasm
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -245,8 +253,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4
     Rescale image?:Yes
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -287,8 +297,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
     Rescale image?:Yes
 """
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -312,10 +324,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         self.assertFalse(fs.wants_outlines)
         self.assertEqual(fs.outlines_name, "MyOutlines")
         self.assertTrue(fs.rescale)
-        
+
     def get_image_name(self, idx):
         return "MyImage%d" % idx
-    
+
     def make_workspace(self, file_names):
         module = L.LoadSingleImage()
         module.module_num = 1
@@ -326,17 +338,19 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             module.file_settings[i].image_name.value = self.get_image_name(i)
             module.file_settings[i].file_name.value = file_name
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
-        workspace = cpw.Workspace(pipeline, module, 
+        workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   cpo.ObjectSet(), cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
-    
+
     def test_02_01_load_one(self):
         folder = self.test_folder
         file_name = self.test_filename
@@ -349,12 +363,12 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         self.assertEqual(m.image_set_count, 1)
         f = m.get_all_measurements(
-            cpmeas.IMAGE, 
+            cpmeas.IMAGE,
             "_".join((L.C_FILE_NAME, self.get_image_name(0))))
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0], file_name)
         p = m.get_all_measurements(
-            cpmeas.IMAGE, 
+            cpmeas.IMAGE,
             "_".join((L.C_PATH_NAME, self.get_image_name(0))))
         self.assertEqual(len(p), 1)
         self.assertEqual(p[0], self.test_path)
@@ -368,9 +382,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             "_".join((L.C_MD5_DIGEST, self.get_image_name(0))))
         self.assertEqual(len(md), 1)
         self.assertEqual(self.test_md5, md[0])
-        
+
     def test_02_02_scale(self):
-        '''Load an image twice, as scaled and unscaled'''
+        """Load an image twice, as scaled and unscaled"""
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         path = self.test_path
         cpprefs.set_default_image_directory(path)
@@ -380,10 +394,11 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         module.file_settings[1].rescale.value = True
         module.prepare_run(workspace)
         module.run(workspace)
-        unscaled, scaled = [workspace.image_set.get_image(self.get_image_name(i)).pixel_data
-                            for i in range(2)]
+        unscaled, scaled = [
+            workspace.image_set.get_image(self.get_image_name(i)).pixel_data
+            for i in range(2)]
         np.testing.assert_almost_equal(unscaled * 65535. / 4095., scaled)
-        
+
     def test_02_03_prepare_run(self):
         # regression test for issue #673 and #1161
         #
@@ -424,13 +439,13 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         # Are the measurements populated?
         #
         m_file = "_".join((cpmeas.C_FILE_NAME, self.get_image_name(0)))
-        self.assertEqual(m[cpmeas.IMAGE, m_file,2], filename)
+        self.assertEqual(m[cpmeas.IMAGE, m_file, 2], filename)
         #
         # Can we retrieve the image?
         #
         pixel_data = m.get_image(self.get_image_name(0)).pixel_data
         self.assertFalse(np.isscalar(pixel_data))
-        
+
     def test_03_01_measurement_columns(self):
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         workspace, module = self.make_workspace(file_names)
@@ -443,7 +458,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                             L.C_SCALING, L.C_HEIGHT, L.C_WIDTH):
                 measurement = "_".join((feature, image_name))
                 self.assertTrue(measurement in [c[1] for c in columns])
-                
+
     def test_03_02_categories(self):
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         workspace, module = self.make_workspace(file_names)
@@ -453,83 +468,85 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
         self.assertEqual(len(categories), 6)
         for category in (L.C_FILE_NAME, L.C_MD5_DIGEST, L.C_PATH_NAME,
-                            L.C_SCALING, L.C_HEIGHT, L.C_WIDTH):
+                         L.C_SCALING, L.C_HEIGHT, L.C_WIDTH):
             self.assertTrue(category in categories)
-            
+
     def test_03_03_measurements(self):
         file_names = ["1-162hrh2ax2.tif", "1-162hrh2ax2.tif"]
         workspace, module = self.make_workspace(file_names)
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         measurements = module.get_measurements(workspace.pipeline, "foo", "bar")
         self.assertEqual(len(measurements), 0)
-        measurements = module.get_measurements(workspace.pipeline, cpmeas.IMAGE, "bar")
+        measurements = module.get_measurements(workspace.pipeline, cpmeas.IMAGE,
+                                               "bar")
         self.assertEqual(len(measurements), 0)
-        measurements = module.get_measurements(workspace.pipeline, "foo", L.C_PATH_NAME)
+        measurements = module.get_measurements(workspace.pipeline, "foo",
+                                               L.C_PATH_NAME)
         self.assertEqual(len(measurements), 0)
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
         self.assertEqual(len(categories), 6)
-        for category in (categories):
+        for category in categories:
             measurements = module.get_measurements(workspace.pipeline,
                                                    cpmeas.IMAGE, category)
             for i in range(2):
                 self.assertTrue(self.get_image_name(i) in measurements)
-                
+
     def test_03_04_object_measurement_columns(self):
         module = L.LoadSingleImage()
         module.file_settings[0].image_objects_choice.value = L.IO_OBJECTS
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         columns = module.get_measurement_columns(None)
         expected_columns = (
-            ( cpmeas.IMAGE, L.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
-            ( cpmeas.IMAGE, L.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
-            ( cpmeas.IMAGE, L.C_COUNT + "_" + OBJECTS_NAME),
-            ( OBJECTS_NAME, L.C_LOCATION + "_" + L.FTR_CENTER_X),
-            ( OBJECTS_NAME, L.C_LOCATION + "_" + L.FTR_CENTER_Y),
-            ( OBJECTS_NAME, L.C_NUMBER + "_" + L.FTR_OBJECT_NUMBER))
+            (cpmeas.IMAGE, L.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
+            (cpmeas.IMAGE, L.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
+            (cpmeas.IMAGE, L.C_COUNT + "_" + OBJECTS_NAME),
+            (OBJECTS_NAME, L.C_LOCATION + "_" + L.FTR_CENTER_X),
+            (OBJECTS_NAME, L.C_LOCATION + "_" + L.FTR_CENTER_Y),
+            (OBJECTS_NAME, L.C_NUMBER + "_" + L.FTR_OBJECT_NUMBER))
         for expected_column in expected_columns:
             self.assertTrue(any([column[0] == expected_column[0] and
                                  column[1] == expected_column[1]
                                  for column in columns]))
-    
+
         for column in columns:
             self.assertTrue(any([column[0] == expected_column[0] and
                                  column[1] == expected_column[1]
                                  for expected_column in expected_columns]))
-
 
     def test_03_05_object_categories(self):
         module = L.LoadSingleImage()
         module.file_settings[0].image_objects_choice.value = L.IO_OBJECTS
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         for object_name, expected_categories in (
-            (cpmeas.IMAGE, (L.C_COUNT, L.C_OBJECTS_FILE_NAME, L.C_OBJECTS_PATH_NAME)),
-            (OBJECTS_NAME, (L.C_NUMBER, L.C_LOCATION))):
+                (cpmeas.IMAGE,
+                 (L.C_COUNT, L.C_OBJECTS_FILE_NAME, L.C_OBJECTS_PATH_NAME)),
+                (OBJECTS_NAME, (L.C_NUMBER, L.C_LOCATION))):
             categories = module.get_categories(None, object_name)
             self.assertTrue(all([category in expected_categories
                                  for category in categories]))
             self.assertTrue(all([expected_category in categories
                                  for expected_category in expected_categories]))
-            
+
     def test_03_06_object_measurements(self):
         module = L.LoadSingleImage()
         module.file_settings[0].image_objects_choice.value = L.IO_OBJECTS
         module.file_settings[0].objects_name.value = OBJECTS_NAME
         for object_name, category, expected_features in (
-            (cpmeas.IMAGE, L.C_COUNT, (OBJECTS_NAME,)),
-            (cpmeas.IMAGE, L.C_OBJECTS_FILE_NAME, (OBJECTS_NAME,)),
-            (cpmeas.IMAGE, L.C_OBJECTS_PATH_NAME, (OBJECTS_NAME,)),
-            (OBJECTS_NAME, L.C_NUMBER, (L.FTR_OBJECT_NUMBER, )),
-            (OBJECTS_NAME, L.C_LOCATION, (L.FTR_CENTER_X, L.FTR_CENTER_Y))):
+                (cpmeas.IMAGE, L.C_COUNT, (OBJECTS_NAME,)),
+                (cpmeas.IMAGE, L.C_OBJECTS_FILE_NAME, (OBJECTS_NAME,)),
+                (cpmeas.IMAGE, L.C_OBJECTS_PATH_NAME, (OBJECTS_NAME,)),
+                (OBJECTS_NAME, L.C_NUMBER, (L.FTR_OBJECT_NUMBER,)),
+                (OBJECTS_NAME, L.C_LOCATION, (L.FTR_CENTER_X, L.FTR_CENTER_Y))):
             features = module.get_measurements(None, object_name, category)
             self.assertTrue(all([feature in expected_features
                                  for feature in features]))
             self.assertTrue(all([expected_feature in features
-                                 for expected_feature in  expected_features]))
-        
+                                 for expected_feature in expected_features]))
+
     def test_04_01_load_objects(self):
         r = np.random.RandomState()
         r.seed(41)
-        labels = np.random.randint(0,10, size=(30,40))
+        labels = np.random.randint(0, 10, size=(30, 40))
         filename = "myobjects.png"
         directory = tempfile.mkdtemp()
         cpprefs.set_default_image_directory(directory)
@@ -545,8 +562,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             fs.image_objects_choice.value = L.IO_OBJECTS
             fs.objects_name.value = OBJECTS_NAME
             pipeline = cpp.Pipeline()
+
             def callback(caller, event):
                 self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
             pipeline.add_listener(callback)
             pipeline.add_module(module)
             m = cpmeas.Measurements()
@@ -557,7 +576,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 pipeline, module, image_set, object_set, m, image_set_list)
             module.prepare_run(workspace)
             module.run(workspace)
-            
+
             o = object_set.get_objects(OBJECTS_NAME)
             np.testing.assert_equal(labels, o.segmented)
             self.assertEqual(m.get_current_image_measurement(
@@ -566,8 +585,9 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 "_".join((L.C_OBJECTS_FILE_NAME, OBJECTS_NAME))), filename)
             self.assertEqual(m.get_current_image_measurement(
                 "_".join((L.C_OBJECTS_PATH_NAME, OBJECTS_NAME))), directory)
-            for feature in (M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER):
-                values = m.get_current_measurement( OBJECTS_NAME, feature)
+            for feature in (
+            M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER):
+                values = m.get_current_measurement(OBJECTS_NAME, feature)
                 self.assertEqual(len(values), 9)
         finally:
             try:
@@ -575,12 +595,12 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 os.rmdir(directory)
             except:
                 print "Failed to delete directory " + directory
-                
+
     def test_04_02_object_outlines(self):
-        labels = np.zeros((30,40), int)
+        labels = np.zeros((30, 40), int)
         labels[10:15, 20:30] = 1
         expected_outlines = labels != 0
-        expected_outlines[11:14,21:29] = False
+        expected_outlines[11:14, 21:29] = False
         filename = "myobjects.png"
         directory = tempfile.mkdtemp()
         cpprefs.set_default_image_directory(directory)
@@ -598,8 +618,10 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             fs.wants_outlines.value = True
             fs.outlines_name.value = OUTLINES_NAME
             pipeline = cpp.Pipeline()
+
             def callback(caller, event):
                 self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
             pipeline.add_listener(callback)
             pipeline.add_module(module)
             m = cpmeas.Measurements()
@@ -610,7 +632,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 pipeline, module, image_set, object_set, m, image_set_list)
             module.prepare_run(workspace)
             module.run(workspace)
-            
+
             outlines = image_set.get_image(OUTLINES_NAME)
             np.testing.assert_equal(outlines.pixel_data, expected_outlines)
         finally:
@@ -619,7 +641,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 os.rmdir(directory)
             except:
                 print "Failed to delete directory " + directory
-                
+
     def test_05_01_convert_single_image(self):
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -687,7 +709,7 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
         directory = os.path.join(example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
-        
+
     def test_05_02_convert_two_images(self):
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -828,7 +850,7 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
         directory = os.path.join(example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
-        
+
     def test_05_04_convert_objects(self):
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -896,4 +918,3 @@ LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5
         directory = os.path.join(example_images_directory(),
                                  "ExampleSBSImages")
         self.convtester(pipeline_text, directory)
-        

@@ -1,11 +1,10 @@
-'''<b>Example1d</b> CellProfiler display
+"""<b>Example1d</b> CellProfiler display
 <hr>
 This module demonstrates some things you can do with CellProfiler
 and its displays.
-'''
+"""
 
 import numpy as np
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
@@ -13,18 +12,20 @@ D_COLOR_IMAGE = "Color image"
 D_GRAYSCALE_IMAGE = "Grayscale image"
 D_TYPES_OF_PLOTS = "Plots"
 
+
 class Example1d(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example1d"
     category = "Other"
-    
+
     def create_settings(self):
         self.display_choice = cps.Choice("Display type",
-            [D_COLOR_IMAGE, D_GRAYSCALE_IMAGE, D_TYPES_OF_PLOTS])
-        
+                                         [D_COLOR_IMAGE, D_GRAYSCALE_IMAGE,
+                                          D_TYPES_OF_PLOTS])
+
     def settings(self):
         return [self.display_choice]
-    
+
     def run(self, workspace):
         #
         # The key to successful display in CellProfiler is to save all of
@@ -63,12 +64,12 @@ class Example1d(cpm.CPModule):
             # Now let's make an array whose value is the inverse of the
             # distance from the center + a constant to avoid divide-by zero
             #
-            pixel_data = 1 / (1+ np.sqrt(i*i + j*j))
+            pixel_data = 1 / (1 + np.sqrt(i * i + j * j))
             #
             # Let's restrict the circle to a radius of 50. The following says
             # For pixel_data elements whose distance is > 50, make them zero.
             #
-            pixel_data[np.sqrt(i*i + j*j) > 50] = 0
+            pixel_data[np.sqrt(i * i + j * j) > 50] = 0
             #
             # Store the numpy array in the workspace
             #
@@ -88,7 +89,7 @@ class Example1d(cpm.CPModule):
             # Let's pick 3 random centers + a radius for each
             #
             # 3 values between 0 and the length of i which is 300
-            i_center = np.random.randint(0, len(i), len(k)) 
+            i_center = np.random.randint(0, len(i), len(k))
             # 3 values between 0 and the length of j which is 500
             j_center = np.random.randint(0, len(j), len(k))
             # 3 values between 25 and 50
@@ -99,11 +100,12 @@ class Example1d(cpm.CPModule):
             #      whenever a point is less than the radius from its center.
             #      All done at one go for 3 circles, neat, eh?
             #
-            mask = (i - i_center[k])** 2 + (j - j_center[k])** 2 < radius[k]**2
+            mask = (i - i_center[k]) ** 2 + (j - j_center[k]) ** 2 < radius[
+                                                                         k] ** 2
             #
             # Make some random data and mask it to get circles
             #
-            pixel_data = np.random.uniform(size = i.shape)
+            pixel_data = np.random.uniform(size=i.shape)
             # The following means
             # for every element of pixel data for which the mask is false,
             # make it zero
@@ -112,10 +114,10 @@ class Example1d(cpm.CPModule):
             workspace.display_data.subplots = (2, 2)
         elif self.display_choice == D_TYPES_OF_PLOTS:
             workspace.display_data.A = np.random.uniform(
-                low = -2, high = 2, size=100)
+                low=-2, high=2, size=100)
             workspace.display_data.B = np.random.normal(size=100)
             workspace.display_data.subplots = (4, 1)
-    
+
     #
     # The signature for display will change in the next release of CellProfiler
     # 
@@ -139,7 +141,7 @@ class Example1d(cpm.CPModule):
             # for discussion of subplots
             #
             figure = workspace.create_or_find_figure(
-                subplots = workspace.display_data.subplots)
+                subplots=workspace.display_data.subplots)
             next_release = False
         if self.display_choice == D_GRAYSCALE_IMAGE:
             #
@@ -150,9 +152,9 @@ class Example1d(cpm.CPModule):
             # Here, I use subplot_imshow_grayscale to display a grayscale image
             #
             figure.subplot_imshow_grayscale(
-                0, 0,                             # the subplot coordinates
-                workspace.display_data.grayscale, # the image
-                title = "Grayscale")              # the subplot title
+                0, 0,  # the subplot coordinates
+                workspace.display_data.grayscale,  # the image
+                title="Grayscale")  # the subplot title
         elif self.display_choice == D_COLOR_IMAGE:
             #
             # If the image is in color, it has 3 color planes and the pixel
@@ -172,17 +174,17 @@ class Example1d(cpm.CPModule):
             #
             pixel_data = workspace.display_data.color
             ax11 = figure.subplot_imshow_color(1, 1, pixel_data,
-                                               title = "Color")
+                                               title="Color")
             colors = ("Red", "Green", "Blue")
             for k in range(pixel_data.shape[2]):
                 figure.subplot_imshow_grayscale(
-                    int(k / 2), k % 2, 
+                    int(k / 2), k % 2,
                     pixel_data[:, :, k],
-                    title = colors[k],
-                    sharex = ax11, # share(x,y) tell Matplotlib to make all
-                    sharey = ax11) # axes share the same extents so zooming
-                                   # and panning of one will make them all
-                                   # zoom and pan.
+                    title=colors[k],
+                    sharex=ax11,  # share(x,y) tell Matplotlib to make all
+                    sharey=ax11)  # axes share the same extents so zooming
+                # and panning of one will make them all
+                # zoom and pan.
         elif self.display_choice == D_TYPES_OF_PLOTS:
             a = workspace.display_data.A
             b = workspace.display_data.B
@@ -193,9 +195,9 @@ class Example1d(cpm.CPModule):
             # Scatterplot:
             #
             ax00 = figure.subplot(0, 0)
-            ax00.plot(a, b, 
-                      'go',              # means "green circles"
-                      linestyle=" ") # means "invisible lines between points"
+            ax00.plot(a, b,
+                      'go',  # means "green circles"
+                      linestyle=" ")  # means "invisible lines between points"
             ax00.set_xlabel("A")
             ax00.set_ylabel("B")
             #
@@ -210,31 +212,31 @@ class Example1d(cpm.CPModule):
             # Two overlayed histograms
             #
             ax10 = figure.subplot(2, 0)
-            ax10.hist(a, label = "A")
-            ax10.hist(b, label = "B")
+            ax10.hist(a, label="A")
+            ax10.hist(b, label="B")
             ax10.legend()
             #
             # A table - Ugly in latest released, improved in next release.
             #
             if next_release:
                 figure.subplot_table(
-                    3, 0, 
+                    3, 0,
                     [(str(a.mean()), str(b.mean())),
                      (str(a.min()), str(b.min())),
                      (str(a.max()), str(b.max())),
                      (str(np.std(a)), str(np.std(b)))],
-                    col_labels = ("A", "B"),
-                    row_labels = ("mean", "min", "max", "st dev"))
+                    col_labels=("A", "B"),
+                    row_labels=("mean", "min", "max", "st dev"))
             else:
                 figure.subplot_table(
-                    3, 0, 
-                    [("","A", "B"),
+                    3, 0,
+                    [("", "A", "B"),
                      ("mean", str(a.mean()), str(b.mean())),
                      ("min", str(a.min()), str(b.min())),
                      ("max", str(a.max()), str(b.max())),
                      ("st dev", str(np.std(a)), str(np.std(b)))],
-                    ratio = (.2, .4, .4))
-                                      
+                    ratio=(.2, .4, .4))
+
     #
     # Prior to the current release, a module had to tell CellProfiler whether
     # it interacted with the user interface inside the "run" method and by

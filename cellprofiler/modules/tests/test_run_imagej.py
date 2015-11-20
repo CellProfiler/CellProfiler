@@ -1,4 +1,4 @@
-'''test_run_imagej.py - test the run_imagej module'''
+"""test_run_imagej.py - test the run_imagej module"""
 
 import numpy as np
 from StringIO import StringIO
@@ -6,14 +6,12 @@ import os
 from scipy.ndimage import grey_erosion
 import sys
 import unittest
-
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-
 import cellprofiler.modules.run_imagej as R
 import imagej.imagej2 as ij2
 
@@ -31,7 +29,6 @@ except:
 
 @unittest.skipIf(skip_tests, "RunImageJ did not load (headless?)")
 class TestRunImageJ(unittest.TestCase):
-    
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -58,8 +55,10 @@ RunImageJ:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_
     Final image\x3A:OutputImage
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -71,13 +70,13 @@ RunImageJ:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_
         self.assertTrue(module.wants_to_get_current_image)
         self.assertEqual(module.current_input_image_name, "DNA")
         self.assertEqual(module.current_output_image_name, "OutputImage")
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, R.RunImageJ))
         self.assertEqual(module.command_or_macro, R.CM_MACRO)
         self.assertFalse(module.wants_to_set_current_image)
         self.assertFalse(module.wants_to_get_current_image)
-        
+
     def test_01_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -147,8 +146,10 @@ RunImageJ:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|show_
     Image name\x3A:FinalImage
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -162,7 +163,7 @@ RunImageJ:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|show_
         self.assertTrue(module.wants_to_get_current_image)
         self.assertEqual(module.prepare_group_choice, R.CM_NOTHING)
         self.assertEqual(module.post_group_choice, R.CM_NOTHING)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, R.RunImageJ))
         self.assertEqual(module.command_or_macro, R.CM_MACRO)
@@ -183,7 +184,7 @@ RunImageJ:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|show_
         self.assertEqual(module.post_group_macro, 'run("Revert");')
         self.assertTrue(module.wants_post_group_image)
         self.assertEqual(module.post_group_output_image, "FinalImage")
-    
+
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -260,8 +261,10 @@ RunImageJ:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_
     Post-group command settings count:0
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
@@ -280,7 +283,7 @@ RunImageJ:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_
         self.assertEqual(module.post_group_macro, 'run("Twist");')
         self.assertFalse(module.wants_post_group_image)
         self.assertEqual(module.post_group_output_image, 'AggregateImage')
-        
+
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -350,8 +353,10 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
      (Output):InvertedDNA
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 5)
@@ -359,7 +364,8 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertTrue(isinstance(module, R.RunImageJ))
         self.assertEqual(module.command_or_macro, R.CM_COMMAND)
         self.assertEqual(module.command, "Edit|Invert...")
-        self.assertEqual(module.macro, u"var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\u000avar uiService=ImageJ.getService(svcClass);\u000auiService.createUI();")
+        self.assertEqual(module.macro,
+                         u"var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\u000avar uiService=ImageJ.getService(svcClass);\u000auiService.createUI();")
         self.assertEqual(module.macro_language, "Beanshell")
         self.assertFalse(module.wants_to_set_current_image)
         self.assertEqual(module.current_input_image_name, "GFP")
@@ -367,7 +373,8 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertEqual(module.current_output_image_name, "GFPOut")
         self.assertEqual(module.prepare_group_choice, R.CM_SCRIPT)
         self.assertEqual(module.prepare_group_command, "Image|Crop")
-        self.assertEqual(module.prepare_group_macro.value, "var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\nvar uiService=ImageJ.getService(svcClass);\nuiService.createUI();")
+        self.assertEqual(module.prepare_group_macro.value,
+                         "var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\nvar uiService=ImageJ.getService(svcClass);\nuiService.createUI();")
         self.assertEqual(module.post_group_choice, R.CM_MACRO)
         self.assertEqual(module.post_group_command, "None")
         self.assertEqual(module.post_group_macro, 'run("Smooth");')
@@ -380,7 +387,7 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertEqual(module.command_settings[0], "DNA")
         self.assertFalse(module.command_settings[1])
         self.assertEqual(module.command_settings[2], "InvertedDNA")
-      
+
     def test_01_05_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -449,8 +456,10 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
          (Output):InvertedDNA
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 5)
@@ -458,7 +467,8 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         self.assertTrue(isinstance(module, R.RunImageJ))
         self.assertEqual(module.command_or_macro, R.CM_COMMAND)
         self.assertEqual(module.command, "Edit|Invert...")
-        self.assertEqual(module.macro, u"var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\u000avar uiService=ImageJ.getService(svcClass);\u000auiService.createUI();")
+        self.assertEqual(module.macro,
+                         u"var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\u000avar uiService=ImageJ.getService(svcClass);\u000auiService.createUI();")
         self.assertEqual(module.macro_language, "Beanshell")
         self.assertFalse(module.wants_to_set_current_image)
         self.assertEqual(module.current_input_image_name, "GFP")
@@ -466,7 +476,8 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         self.assertEqual(module.current_output_image_name, "GFPOut")
         self.assertEqual(module.prepare_group_choice, R.CM_SCRIPT)
         self.assertEqual(module.prepare_group_command, "Image|Crop")
-        self.assertEqual(module.prepare_group_macro.value, "var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\nvar uiService=ImageJ.getService(svcClass);\nuiService.createUI();")
+        self.assertEqual(module.prepare_group_macro.value,
+                         "var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\nvar uiService=ImageJ.getService(svcClass);\nuiService.createUI();")
         self.assertEqual(module.post_group_choice, R.CM_MACRO)
         self.assertEqual(module.post_group_command, "None")
         self.assertEqual(module.post_group_macro, 'run("Smooth");')
@@ -480,10 +491,12 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         self.assertFalse(module.command_settings[1])
         self.assertEqual(module.command_settings[2], "InvertedDNA")
 
-    def make_workspace(self, input_image = None, wants_output_image = False):
+    def make_workspace(self, input_image=None, wants_output_image=False):
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         module = R.RunImageJ()
         module.module_num = 1
@@ -499,16 +512,18 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         module.wants_to_get_current_image.value = wants_output_image
         if wants_output_image:
             module.current_output_image_name.value = OUTPUT_IMAGE_NAME
-        workspace = cpw.Workspace(pipeline, module, image_set, 
+        workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(), cpm.Measurements(),
                                   image_set_list)
-        module.prepare_group(workspace, {}, [1]);
+        module.prepare_group(workspace, {}, [1])
         return workspace, module
-    
+
     def make_workspaces(self, input_images):
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         module = R.RunImageJ()
         module.module_num = 1
@@ -521,14 +536,14 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         for i, input_image in enumerate(input_images):
             image_set = image_set_list.get_image_set(i)
             image_set.add(INPUT_IMAGE_NAME, cpi.Image(input_image))
-            workspace = cpw.Workspace(pipeline, module, image_set, 
+            workspace = cpw.Workspace(pipeline, module, image_set,
                                       cpo.ObjectSet(), cpm.Measurements(),
                                       image_set_list)
             workspaces.append(workspace)
-        module.prepare_group(workspaces[0], {}, 
-                             list(range(1,len(input_images)+1)));
+        module.prepare_group(workspaces[0], {},
+                             list(range(1, len(input_images) + 1)))
         return workspaces, module
-    
+
     def test_02_01_run_null_command(self):
         workspace, module = self.make_workspace()
         self.assertTrue(isinstance(module, R.RunImageJ))
@@ -537,10 +552,10 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         module.wants_to_set_current_image.value = False
         module.wants_to_get_current_image.value = False
         module.run(workspace)
-        
+
     def test_02_02_run_input_command(self):
-        image = np.zeros((20,10))
-        image[10:15,5:8] = 1
+        image = np.zeros((20, 10))
+        image[10:15, 5:8] = 1
         workspace, module = self.make_workspace(image)
         self.assertTrue(isinstance(module, R.RunImageJ))
         module.wants_to_set_current_image.value = False
@@ -559,7 +574,7 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         output_pixel_data = output_image.pixel_data
         np.testing.assert_array_almost_equal(1 - output_pixel_data, image)
-        
+
     def test_02_03_set_and_get_image(self):
         image = np.zeros((15, 17))
         image[3:6, 10:13] = 1
@@ -585,7 +600,7 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         output_pixel_data = output_image.pixel_data
         np.testing.assert_array_equal(output_pixel_data, image)
-    
+
     def test_02_04_macro(self):
         image = np.zeros((15, 17))
         image[3:6, 10:13] = 1
@@ -601,4 +616,3 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         output_pixel_data = output_image.pixel_data
         np.testing.assert_array_almost_equal(1 - output_pixel_data, image)
-            

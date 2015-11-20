@@ -8,8 +8,10 @@ import stat
 import traceback
 import errno
 
+
 class TimeOutException(Exception):
     pass
+
 
 class TimeOutFunction(object):
     def __init__(self, func):
@@ -22,6 +24,7 @@ class TimeOutFunction(object):
                 temp['value'] = self.func(*args)
             except Exception, e:
                 temp['exception'] = e
+
         retval = {}
         t = threading.Thread(target=do_call, args=(retval,))
         t.daemon = True
@@ -31,15 +34,19 @@ class TimeOutFunction(object):
             return retval['value']
         if 'exception' in retval:
             raise retval['exception']
-        raise TimeOutException('timeout in %s, %s secs' % (self.func.__name__, timeout))
+        raise TimeOutException(
+            'timeout in %s, %s secs' % (self.func.__name__, timeout))
+
 
 timeout_listdir = TimeOutFunction(os.listdir)
 timeout_stat = TimeOutFunction(os.stat)
 
+
 # Helper class for Locator.
 # Note that these all live within a lock-protected dictionary within the Locator class.
 class Info(object):
-    def __init__(self, key, path, isdir, status, depth, parent=None, num_failures=0, num_timeouts=0):
+    def __init__(self, key, path, isdir, status, depth, parent=None,
+                 num_failures=0, num_timeouts=0):
         self.key = key
         self.path = path
         self.isdir = isdir
@@ -55,14 +62,16 @@ class Info(object):
         self.data = None
         self.high_priority = False
 
+
 # status values
 FOUND, STAT, LISTING, METADATA, REMOVED, ERROR, FINISHED = [0, 1, 2, 3, 4, 5, 6]
 
 # priority levels
 PRI_IMMEDIATE, PRI_DIRECTORY, PRI_STAT, PRI_METADATA = [0, 1, 2, 3]
 
+
 class Locator(object):
-    '''A queue-and-callback driven file finder, using multiple threads to
+    """A queue-and-callback driven file finder, using multiple threads to
     search for files and extract metadata from them.
 
     creation:
@@ -108,9 +117,10 @@ class Locator(object):
     loc.block(key)  # prevents (and interrupts) searching key's directory and all of its children
     loc.unblock(key)  # reallows searching a key's directory and children
 
-    '''
+    """
 
-    def __init__(self, callback, metadata_function, descend=True, num_threads=20, max_fallbacks=4, listdir_time=30, stat_time=1):
+    def __init__(self, callback, metadata_function, descend=True,
+                 num_threads=20, max_fallbacks=4, listdir_time=30, stat_time=1):
         self.callback = callback
         self.metadata_function = metadata_function
         self.descend = descend
@@ -153,7 +163,8 @@ class Locator(object):
         with self._info_lock:
             if parent:
                 # make sure parent hasn't been removed
-                if (parent not in self._info) or (self._info[parent].status == REMOVED):
+                if (parent not in self._info) or (
+                    self._info[parent].status == REMOVED):
                     return
                 self._info[parent].children.append(key)
             self._info[key] = f_info
@@ -171,7 +182,8 @@ class Locator(object):
         with self._info_lock:
             f_info = self._info[key]
             if f_info.parent:
-                if (f_info.parent not in self._info) or (self._info[f_info.parent].status == REMOVED):
+                if (f_info.parent not in self._info) or (
+                    self._info[f_info.parent].status == REMOVED):
                     return
         self._queue.put((priority, depth, key))
         with self._active_cv:
@@ -202,7 +214,8 @@ class Locator(object):
             if parent:
                 if parent not in self._info:
                     return
-                self._enqueue(path, PRI_STAT, self._info[parent].depth + 1, parent, key)
+                self._enqueue(path, PRI_STAT, self._info[parent].depth + 1,
+                              parent, key)
             else:
                 self._enqueue(path, PRI_STAT, 0, None, key)
 
@@ -284,7 +297,8 @@ class Locator(object):
                     with self._info_lock:
                         for c in children:
                             # what should child priority be?
-                            self._enqueue(os.path.join(path, c), PRI_STAT, depth + 1, key)
+                            self._enqueue(os.path.join(path, c), PRI_STAT,
+                                          depth + 1, key)
                         f_info.data = children
                         f_info.status = FINISHED
                 elif status == METADATA:
@@ -309,7 +323,7 @@ class Locator(object):
                     f_info.error = True
                     f_info.data = e
                     f_info.num_failures += 1
-                # XXX - if the exception was in the metadata callback, we should probably get the traceback.
+                    # XXX - if the exception was in the metadata callback, we should probably get the traceback.
             self._check_for_pause()
             with self._info_lock:
                 if f_info.status == REMOVED:
@@ -318,8 +332,11 @@ class Locator(object):
                 else:
                     if f_info.error or (f_info.status == FINISHED):
                         self._make_callback(key)
-                    if (f_info.error or (f_info.status != FINISHED)) and not unreadable:
-                        self._requeue(PRI_IMMEDIATE if f_info.high_priority else priority, depth, key)
+                    if (f_info.error or (
+                        f_info.status != FINISHED)) and not unreadable:
+                        self._requeue(
+                            PRI_IMMEDIATE if f_info.high_priority else priority,
+                            depth, key)
                     if unreadable:
                         # give up on these files
                         # XXX - should signal with an UNREADABLE state?
@@ -333,27 +350,39 @@ class Locator(object):
             while self.paused:
                 self._active_cv.wait()
 
+
 if __name__ == '__main__':
     import sys
+
     counts = {}
+
+
     def cb(path, isdir, key, parent, status, data):
         if status == ERROR:
             if isinstance(data, TimeOutException):
                 status = FINISHED + 1
         counts[status] = counts.get(status, 0) + 1
+
+
     def metadata_cb(path):
         return None
+
+
     loc = Locator(cb, metadata_cb)
     loc.queue(sys.argv[1])
     print '%010s' % 'THREADS',
-    for idx, n in enumerate('FOUND, STAT, LISTING, METADATA, REMOVED, ERROR, FINISHED, TIMEOUT'.split(', ')):
+    for idx, n in enumerate(
+            'FOUND, STAT, LISTING, METADATA, REMOVED, ERROR, FINISHED, TIMEOUT'.split(
+                    ', ')):
         print '%010s' % n,
     print
     st = time.time()
     while True:
         time.sleep(3)
         print '%010s' % threading.active_count(),
-        for idx, n in enumerate('FOUND, STAT, LISTING, METADATA, REMOVED, ERROR, FINISHED, TIMEOUT'.split(', ')):
+        for idx, n in enumerate(
+                'FOUND, STAT, LISTING, METADATA, REMOVED, ERROR, FINISHED, TIMEOUT'.split(
+                        ', ')):
             print '%010s' % counts.get(idx, 0),
         print time.time() - st, "secs", loc.hipri_count
         if counts.get(FOUND, 0) == counts.get(FINISHED, -1):

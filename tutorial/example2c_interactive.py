@@ -1,4 +1,4 @@
-'''<b>Example2c</b> User interaction with an image.
+"""<b>Example2c</b> User interaction with an image.
 
 Sometimes, it's useful to have a semi-automated or completely manual step
 in your pipeline. CellProfiler <i>can</i> do this, but is designed to
@@ -22,19 +22,18 @@ returns the edited image to the "run" method after the user closes the
 dialog.
 
 <b>Note</b> This will only work with the new multiprocessing code.
-'''
+"""
 
 import numpy as np
 # We get the CPModule class from here. "cpm" is the standard alias for the
 # Python module, "cellprofiler.cpmodule".
 
 import cellprofiler.cpmodule as cpm
-
 # This is where all settings are defined. See below for explanation.
 
 import cellprofiler.settings as cps
-
 import cellprofiler.cpimage as cpi
+
 
 #
 # This is the module class definition. Each module is a Python class
@@ -50,10 +49,10 @@ class Example2c(cpm.CPModule):
     def create_settings(self):
         self.input_image_name = cps.ImageNameSubscriber("Input image", "DNA")
         self.output_image_name = cps.ImageNameProvider("Output image", "Output")
-        
+
     def settings(self):
         return [self.input_image_name, self.output_image_name]
-    
+
     def run(self, workspace):
         #
         # Get the image pixels from the image set
@@ -71,7 +70,7 @@ class Example2c(cpm.CPModule):
             workspace.display_data.output = result
         output_image = cpi.Image(result)
         image_set.add(self.output_image_name.value, output_image)
-        
+
     def handle_interaction(self, pixel_data):
         #
         # This gets called in the UI thread and we're allowed to import
@@ -129,8 +128,8 @@ class Example2c(cpm.CPModule):
         # |  ----------------------------  |
         # ----------------------------------
         #
-        with wx.Dialog(None, 
-                       title="Edit image", 
+        with wx.Dialog(None,
+                       title="Edit image",
                        size=(640, 720)) as dlg:
             #
             # A wx.Sizer lets you automatically adjust the size
@@ -167,6 +166,7 @@ class Example2c(cpm.CPModule):
             ok_button = wx.Button(dlg, wx.ID_OK)
             button_sizer.AddButton(ok_button)
             button_sizer.Realize()
+
             #
             # "on_button" gets called when the button is pressed.
             #
@@ -178,6 +178,7 @@ class Example2c(cpm.CPModule):
             #
             def on_button(event):
                 dlg.EndModal(1)
+
             ok_button.Bind(wx.EVT_BUTTON, on_button)
             #
             # This is a rudimentary Matplotlib event handler that:
@@ -195,6 +196,7 @@ class Example2c(cpm.CPModule):
             # d["start"] has the coordinates of the start pixel of the rectangle
             #
             d = dict(start=None, end=None, rectangle=None)
+
             #
             # When the user presses a mouse button, record the start coordinate
             #
@@ -210,7 +212,7 @@ class Example2c(cpm.CPModule):
                     # called.
                     #
                     canvas.CaptureMouse()
-             
+
             #
             # Keep track of mouse movement when drawing using a rectangle
             #
@@ -280,7 +282,7 @@ class Example2c(cpm.CPModule):
                     # "Refresh" tells WX to redisplay the canvas.
                     #
                     canvas.Refresh()
-            
+
             #
             # When the user lifts the mouse, record the rectangle
             #
@@ -291,8 +293,8 @@ class Example2c(cpm.CPModule):
                     #
                     min_i = int(min(d["start"][0], d["end"][0]))
                     min_j = int(min(d["start"][1], d["end"][1]))
-                    max_i = int(max(d["start"][0], d["end"][0]))+1
-                    max_j = int(max(d["start"][1], d["end"][1]))+1
+                    max_i = int(max(d["start"][0], d["end"][0])) + 1
+                    max_j = int(max(d["start"][1], d["end"][1])) + 1
                     #
                     # Set the region between the minimum (inclusive) and the
                     # maximum (exclusive) to 1
@@ -322,6 +324,7 @@ class Example2c(cpm.CPModule):
                 #
                 if canvas.HasCapture():
                     canvas.ReleaseMouse()
+
             #
             # Matplotlib uses mpl_connect to connect window events to
             # event handling functions.
@@ -340,8 +343,7 @@ class Example2c(cpm.CPModule):
             # Return the image
             #
             return pixel_data
-        
+
     def display(self, workspace, figure):
-        figure.set_subplots((1,1))
+        figure.set_subplots((1, 1))
         figure.subplot_imshow_grayscale(0, 0, workspace.display_data.output)
-                    

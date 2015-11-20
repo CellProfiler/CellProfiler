@@ -12,9 +12,6 @@ from StringIO import StringIO
 import unittest
 import zlib
 
-from cellprofiler.preferences import set_headless
-set_headless()
-
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -25,25 +22,44 @@ import cellprofiler.modules.graytocolor as G
 
 OUTPUT_IMAGE_NAME = 'outputimage'
 class TestGrayToColor(unittest.TestCase):
-    def make_workspace(self, scheme, images, adjustments):
+    def make_workspace(self, scheme, images, adjustments=None,
+                       colors=None, weights=None):
         module = G.GrayToColor()
         module.scheme_choice.value = scheme
-        image_names = ["image%d"%i if images[i] is not None
-                       else G.LEAVE_THIS_BLACK
-                       for i in range(7)]
-        for image_name_setting, image_name, adjustment_setting, adjustment\
-            in zip((module.red_image_name, module.green_image_name, 
-                    module.blue_image_name,
-                    module.cyan_image_name, module.magenta_image_name,
-                    module.yellow_image_name, module.gray_image_name),
-                   image_names,
-                   (module.red_adjustment_factor, module.green_adjustment_factor,
-                    module.blue_adjustment_factor, module.cyan_adjustment_factor,
-                    module.magenta_adjustment_factor, module.yellow_adjustment_factor,
-                    module.gray_adjustment_factor),
-                   adjustments):
-            image_name_setting.value = image_name
-            adjustment_setting.value = adjustment
+        if scheme not in (G.SCHEME_COMPOSITE, G.SCHEME_STACK):
+            image_names = ["image%d"%i if images[i] is not None
+                           else G.LEAVE_THIS_BLACK
+                           for i in range(7)]
+            for image_name_setting, image_name, adjustment_setting, adjustment\
+                in zip((module.red_image_name, module.green_image_name, 
+                        module.blue_image_name,
+                        module.cyan_image_name, module.magenta_image_name,
+                        module.yellow_image_name, module.gray_image_name),
+                       image_names,
+                       (module.red_adjustment_factor, module.green_adjustment_factor,
+                        module.blue_adjustment_factor, module.cyan_adjustment_factor,
+                        module.magenta_adjustment_factor, module.yellow_adjustment_factor,
+                        module.gray_adjustment_factor),
+                       adjustments):
+                image_name_setting.value = image_name
+                adjustment_setting.value = adjustment
+        else:
+            while len(module.stack_channels) < len(images):
+                module.add_stack_channel_cb()
+            image_names = []
+            if weights is None:
+                weights = [ 1.0 ] * len(images)
+            if colors is None:
+                colors = [G.DEFAULT_COLORS[i % len(G.DEFAULT_COLORS)]
+                          for i in range(len(images))]
+            for i, (image, color, weight) in enumerate(
+                zip(images, colors, weights)):
+                image_name = 'image%d' % (i+1)
+                image_names.append(image_name)
+                module.stack_channels[i].image_name.value = image_name
+                module.stack_channels[i].color.value = color
+                module.stack_channels[i].weight.value = weight
+                
         module.rgb_image_name.value = OUTPUT_IMAGE_NAME
         module.module_num = 1
         pipeline = cpp.Pipeline()
@@ -133,7 +149,75 @@ class TestGrayToColor(unittest.TestCase):
                                   module.green_adjustment_factor,
                                   module.blue_adjustment_factor):
             self.assertEqual(adjustment_factor.value, 1)
+   
+    def test_01_03_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20151029194828
+GitHash:8379488
+ModuleCount:5
+HasImagePlaneDetails:False
+
+GrayToColor:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Select a color scheme:Composite
+    Select the image to be colored red:1
+    Select the image to be colored green:2
+    Select the image to be colored blue:3
+    Name the output image:myimage
+    Relative weight for the red image:2.1
+    Relative weight for the green image:2.2
+    Relative weight for the blue image:2.3
+    Select the image to be colored cyan:4
+    Select the image to be colored magenta:5
+    Select the image to be colored yellow:6
+    Select the image that determines brightness:7
+    Relative weight for the cyan image:1.1
+    Relative weight for the magenta image:1.2
+    Relative weight for the yellow image:1.3
+    Relative weight for the brightness image:1.4
+    Hidden:2
+    Select the input image to add to the stacked image:DNA
+    Color:#7F00FF
+    Weight:2.0
+    Select the input image to add to the stacked image:GFP
+    Color:#7FFF00
+    Weight:3.0
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, G.GrayToColor))
+        self.assertEqual(module.scheme_choice, G.SCHEME_COMPOSITE)
+        self.assertEqual(module.rgb_image_name, "myimage")
+        self.assertEqual(module.red_image_name, "1")
+        self.assertEqual(module.green_image_name, "2")
+        self.assertEqual(module.blue_image_name, "3")
+        self.assertEqual(module.cyan_image_name, "4")
+        self.assertEqual(module.magenta_image_name, "5")
+        self.assertEqual(module.yellow_image_name, "6")
+        self.assertEqual(module.gray_image_name, "7")
+        self.assertAlmostEqual(module.red_adjustment_factor, 2.1)
+        self.assertAlmostEqual(module.green_adjustment_factor, 2.2)
+        self.assertAlmostEqual(module.blue_adjustment_factor, 2.3)
+        self.assertAlmostEqual(module.cyan_adjustment_factor, 1.1)
+        self.assertAlmostEqual(module.magenta_adjustment_factor, 1.2)
+        self.assertAlmostEqual(module.yellow_adjustment_factor, 1.3)
+        self.assertAlmostEqual(module.gray_adjustment_factor, 1.4)
+        self.assertEqual(len(module.stack_channels), 2)
+        self.assertEqual(module.stack_channels[0].image_name, "DNA")
+        self.assertEqual(module.stack_channels[1].image_name, "GFP")
+        self.assertSequenceEqual(
+            module.stack_channels[0].color.to_rgb(), 
+            (127, 0, 255))
+        self.assertSequenceEqual(
+            module.stack_channels[1].color.to_rgb(), 
+            (127, 255, 0))
         
+
     def test_02_01_rgb(self):
         np.random.seed(0)
         for combination in ((True, True, True), (True, True, False),
@@ -182,4 +266,35 @@ class TestGrayToColor(unittest.TestCase):
                                   (images[6],(1,1,1), adjustments[6]))])
             expected = np.sum(expected, 0)
             self.assertTrue(np.all(np.abs(expected - pixel_data) <= .00001))
-        
+            
+    def test_04_01_stack(self):
+        r = np.random.RandomState()
+        r.seed(41)
+        images = [r.uniform(size=(11, 13)) for _ in range(5)]
+        workspace, module = self.make_workspace(G.SCHEME_STACK, images)
+        module.run(workspace)
+        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        self.assertSequenceEqual(output.shape[:2], images[0].shape)
+        self.assertEqual(output.shape[2], len(images))
+        for i, image in enumerate(images):
+            np.testing.assert_array_almost_equal(output[:, :, i], image)
+
+    def test_05_01_composite(self):
+        r = np.random.RandomState()
+        r.seed(41)
+        images = [r.uniform(size=(11, 13)) for _ in range(5)]
+        colors = [r.randint(0, 255, size=3) for _ in range(5)]
+        weights = r.uniform(low = 1.0/255, high=1.5, size=5).tolist()
+        color_names = \
+            ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
+        workspace, module = self.make_workspace(
+            G.SCHEME_COMPOSITE, images, colors = color_names, weights=weights)
+        module.run(workspace)
+        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        self.assertSequenceEqual(output.shape[:2], images[0].shape)
+        self.assertEqual(output.shape[2], 3)
+        for i in range(3):
+            channel = sum(
+                [image * weight * float(color[i])/255 
+                 for image, color, weight in zip(images, colors, weights)])
+            np.testing.assert_array_almost_equal(output[:, :, i], channel)

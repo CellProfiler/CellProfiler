@@ -642,7 +642,7 @@ class CPFigureFrame(wx.Frame):
         '''Get the standard fields at the cursor location'''
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
-            im = self.find_image_for_axes(event.inaxes)
+            self.find_image_for_axes(event.inaxes)
             if im is not None:
                 fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
             elif isinstance(event.inaxes, matplotlib.axes.Axes):

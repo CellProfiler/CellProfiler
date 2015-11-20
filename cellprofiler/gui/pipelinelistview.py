@@ -767,7 +767,7 @@ class PipelineListView(object):
                 module.module_num = i + index + n_input_modules + 1
                 self.__pipeline.add_module(module)
             for i in range(len(pipeline.modules(False))):
-                item = self.list_ctrl.SetItemState(
+                self.list_ctrl.SetItemState(
                     i + index, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
         finally:
             wx.EndBusyCursor()

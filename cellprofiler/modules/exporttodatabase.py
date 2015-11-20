@@ -1670,7 +1670,7 @@ class ExportToDatabase(cpm.CPModule):
                                                              self.db_name.value)
                 needs_close = True
                 if self.wants_well_tables:
-                    per_well = self.write_mysql_table_per_well(pipeline,
+                    self.write_mysql_table_per_well(pipeline,
                                                                image_set_list)
             elif self.db_type == DB_SQLITE:
                 db_file = self.make_full_filename(self.sqlite_file.value)

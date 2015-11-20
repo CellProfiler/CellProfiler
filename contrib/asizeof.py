@@ -2553,7 +2553,8 @@ if __name__ == '__main__':
 
 
     class E(D):
-        def __init__(self, a1=1, a2=2):  # PYCHOK OK
+        def __init__(self, a1=1, a2=2, **kwargs):  # PYCHOK OK
+            super(E, self).__init__(**kwargs)
             self._attr1 = a1  # PYCHOK OK
             self._attr2 = a2  # PYCHOK OK
 

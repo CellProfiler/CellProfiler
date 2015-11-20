@@ -496,6 +496,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     def run(self, workspace):
         # all of the work is done in post_run()
+        global filename
         if self.show_window:
             image_set_number = workspace.measurements.image_set_number
             header = ["Objects", "Filename"]
@@ -556,6 +557,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         #
         # Don't export in test mode
         #
+        global first_group
         if workspace.pipeline.test_mode:
             return
         #
@@ -1017,6 +1019,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         :param workspace:
         :param image_set_numbers:
         """
+        global name_feature
         from loaddata import is_path_name_feature, is_file_name_feature
         from loadimages import C_PATH_NAME, C_FILE_NAME, C_URL
         from loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH

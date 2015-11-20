@@ -984,6 +984,7 @@ class HDF5FileList(object):
         :param dest:
         :param src:
         """
+        global src_g
         assert isinstance(src, h5py.File)
         assert isinstance(dest, h5py.File)
         if not cls.has_file_list(src):

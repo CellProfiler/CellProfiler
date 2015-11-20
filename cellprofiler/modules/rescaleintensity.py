@@ -318,6 +318,7 @@ class RescaleIntensity(cpm.CPModule):
                 (self.wants_automatic_low == LOW_ALL_IMAGES))
 
     def run(self, workspace):
+        global output_image, output_image
         input_image = workspace.image_set.get_image(self.image_name.value)
         output_mask = None
         if self.rescale_method == M_STRETCH:
@@ -416,6 +417,7 @@ class RescaleIntensity(cpm.CPModule):
         :param input_image:
         """
 
+        global rescaled_image
         if input_image.has_mask:
             src_min = np.min(input_image.pixel_data[input_image.mask])
         else:
@@ -429,6 +431,7 @@ class RescaleIntensity(cpm.CPModule):
         :param input_image:
         """
 
+        global rescaled_image
         if input_image.has_mask:
             src_max = np.max(input_image.pixel_data[input_image.mask])
         else:
@@ -487,6 +490,7 @@ class RescaleIntensity(cpm.CPModule):
         :param workspace:
         :param input_image:
         """
+        global input_pixels
         if (self.wants_automatic_high == CUSTOM_VALUE and
                     self.wants_automatic_low == CUSTOM_VALUE):
             return self.source_scale.min, self.source_scale.max

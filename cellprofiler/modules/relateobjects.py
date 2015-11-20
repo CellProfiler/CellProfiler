@@ -451,6 +451,7 @@ class RelateObjects(cpm.CPModule):
         :param parent_name:
         :param workspace:
         """
+        global parents_of
         meas = workspace.measurements
         assert isinstance(meas, cpmeas.Measurements)
         parent_feature = FF_PARENT % parent_name

@@ -231,6 +231,7 @@ class MaskObjects(I.Identify):
         :param workspace:
         """
 
+        global unique_labels
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
         original_objects = workspace.object_set.get_objects(object_name)

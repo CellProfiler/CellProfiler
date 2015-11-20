@@ -227,6 +227,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
+        global operation
         if from_matlab and variable_revision_number == 2:
             inf = setting_values[4] == "Inf"
             if setting_values[3] == "Expand":

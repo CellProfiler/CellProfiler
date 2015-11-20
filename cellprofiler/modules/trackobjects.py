@@ -1346,6 +1346,7 @@ class TrackObjects(cpm.CPModule):
         :param objects:
         :param workspace:
         """
+        global noise_sd
         m = workspace.measurements
 
         old_i, old_j = self.get_saved_coordinates(workspace)
@@ -2786,6 +2787,7 @@ class TrackObjects(cpm.CPModule):
         :param workspace:
         :param image_numbers:
         """
+        global minimum_lifetime, maximum_lifetime
         m = workspace.measurements
         object_name = self.object_name.value
 

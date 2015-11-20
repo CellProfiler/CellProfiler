@@ -71,6 +71,7 @@ def apply_aspect(self, position=None):
     :param position:
     :param self:
     """
+    global aspect_scale_mode, aspect_scale_mode
     if position is None:
         position = self.get_position(original=True)
 

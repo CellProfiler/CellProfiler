@@ -2531,6 +2531,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
     :param plate_dict:
     :param plate_type:
     """
+    global plate_shape
     if plate_type == '96':
         plate_shape = (8, 12)
     elif plate_type == '384':

@@ -927,6 +927,7 @@ class MeasureImageQuality(cpm.CPModule):
         :param image_group:
         """
 
+        global scale
         result = []
         for image_name in self.images_to_process(image_group, workspace):
 
@@ -1480,6 +1481,7 @@ class MeasureImageQuality(cpm.CPModule):
         :param workspace:
         :param image_group:
         """
+        global feature_description, val
         m = workspace.measurements
         statistics = []
         all_threshold_groups = self.get_all_threshold_groups(image_group)

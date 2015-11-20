@@ -505,6 +505,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         return True
 
     def run(self, workspace):
+        global avg_image, dilated_image, output_image
         if self.each_or_all != EA_EACH:
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
             output_image_provider = CorrectIlluminationImageProvider.deserialize(
@@ -886,6 +887,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             return image
 
         def scaling_fn_2d(pixel_data):
+            global robust_minimum
             if image.has_mask:
                 sorted_pixel_data = pixel_data[(pixel_data > 0) & image.mask]
             else:

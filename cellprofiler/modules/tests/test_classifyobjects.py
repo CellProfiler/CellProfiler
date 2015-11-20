@@ -584,6 +584,7 @@ class TestClassifyObjects(unittest.TestCase):
                 self.assertEqual(len(m), 0)
 
     def test_03_02_two(self):
+        global m
         np.random.seed(0)
         labels = np.zeros((10, 20), int)
         index = 1

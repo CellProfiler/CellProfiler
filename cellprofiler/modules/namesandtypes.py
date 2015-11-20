@@ -823,6 +823,7 @@ class NamesAndTypes(cpm.CPModule):
         :param workspace:
         :param workspace:
         """
+        global load_choices
         if workspace.pipeline.in_batch_mode():
             return True
         column_names = self.get_column_names()
@@ -1285,6 +1286,7 @@ class NamesAndTypes(cpm.CPModule):
         :param ipd_list:
         :param workspace:
         """
+        global anchor_keys
         metadata_types = workspace.pipeline.get_available_metadata_keys()
         #
         # Find the anchor channel - it's the first one which has metadata
@@ -1709,6 +1711,7 @@ class NamesAndTypes(cpm.CPModule):
         """Get the Java ImageSet for the current image number
         :param workspace:
         """
+        global load_choices
         compression_dictionary = self.get_imageset_dictionary(workspace)
         m = workspace.measurements
         blob = m[cpmeas.IMAGE, M_IMAGE_SET]
@@ -1889,6 +1892,7 @@ class NamesAndTypes(cpm.CPModule):
 
     def add_simple_image(self, workspace, name, load_choice, rescale, url,
                          series, index, channel):
+        global provider
         m = workspace.measurements
         url = m.alter_url_post_create_batch(url)
         if load_choice == LOAD_AS_COLOR_IMAGE:
@@ -1958,6 +1962,7 @@ class NamesAndTypes(cpm.CPModule):
         :param outlines_name:
         :param stack:
         """
+        global shape
         from cellprofiler.modules.identify import add_object_count_measurements
         from cellprofiler.modules.identify import \
             add_object_location_measurements

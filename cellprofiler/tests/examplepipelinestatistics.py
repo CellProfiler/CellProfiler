@@ -255,6 +255,7 @@ def test_matching_columns(test_measurements, reference_measurements):
     :param reference_measurements:
     :param test_measurements:
     """
+    global message, message
     assert isinstance(test_measurements, dict)
     assert isinstance(reference_measurements, dict)
     missing_in_test = []

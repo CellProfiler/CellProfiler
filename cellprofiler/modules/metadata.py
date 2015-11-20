@@ -786,6 +786,7 @@ class Metadata(cpm.CPModule):
         #
         # Build a metadata extractor
         #
+        global method
         extractor = J.make_instance(
             "org/cellprofiler/imageset/ImagePlaneMetadataExtractor",
             "()V")
@@ -1154,6 +1155,7 @@ class Metadata(cpm.CPModule):
         :param key:
         :param key:
         """
+        global data_types
         if isinstance(key, basestring):
             return self.get_data_type([key]).get(key, cpmeas.COLTYPE_VARCHAR)
         result = {}

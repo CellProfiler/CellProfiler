@@ -816,6 +816,7 @@ class LoadData(cpm.CPModule):
         return True
 
     def prepare_run(self, workspace):
+        global i
         pipeline = workspace.pipeline
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -1186,6 +1187,7 @@ class LoadData(cpm.CPModule):
         :param workspace:
         :param workspace:
         """
+        global first_filename
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_set = workspace.image_set

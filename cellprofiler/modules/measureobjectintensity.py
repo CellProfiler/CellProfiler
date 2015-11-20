@@ -332,6 +332,7 @@ class MeasureObjectIntensity(cpm.CPModule):
         return []
 
     def run(self, workspace):
+        global statistics
         if self.show_window:
             workspace.display_data.col_labels = (
                 "Image", "Object", "Feature", "Mean", "Median", "STD")

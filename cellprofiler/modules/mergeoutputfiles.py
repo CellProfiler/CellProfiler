@@ -310,6 +310,7 @@ class MergeOutputFiles(cpm.CPModule):
 
     @staticmethod
     def merge_files(destination, sources, force_headless=False):
+        global wx, progress
         is_headless = force_headless or get_headless()
         if not is_headless:
             import wx

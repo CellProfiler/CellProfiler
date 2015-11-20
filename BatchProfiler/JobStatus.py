@@ -26,6 +26,7 @@ JOB_QUERY_PAUSE = .25
 
 
 def update_status(batch_array_id, job_id, task_id, status, host_name):
+    global job
     batch_array = BPBatchArray.select(batch_array_id)
     timeout = time.time() + JOB_QUERY_TIMEOUT
     while time.time() < timeout:

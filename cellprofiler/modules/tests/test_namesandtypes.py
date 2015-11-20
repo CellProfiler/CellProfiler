@@ -773,6 +773,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                      to create errors. Format is same as a single channel of
                      channels.
         """
+        global metadata
         ipds = []
         urls = set()
         channels = dict(channels)
@@ -1573,6 +1574,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(np.all(pixel_data <= 1))
 
     def test_03_06_load_monochrome_plane(self):
+        global plane_0
         path = maybe_download_tesst_image("5channel.tif")
 
         for i in range(5):

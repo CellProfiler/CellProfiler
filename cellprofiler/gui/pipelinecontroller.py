@@ -1861,6 +1861,7 @@ class PipelineController:
         self.add_paths_to_pathlist(filenames)
 
     def add_paths_to_pathlist(self, filenames):
+        global keep_going
         t0 = datetime.datetime.now()
         with wx.ProgressDialog("Processing files",
                                "Initializing\n\n",
@@ -2660,6 +2661,7 @@ class PipelineController:
         """
         :param evt:
         """
+        global module
         assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
 
         module_num = evt.module_num
@@ -2696,6 +2698,7 @@ class PipelineController:
             evt.reply(cpanalysis.Ack())
 
     def module_display_post_run_request(self, evt):
+        global module
         assert wx.Thread_IsMain(), "PipelineController.module_post_run_display_request() must be called from main thread!"
         module_num = evt.module_num
         # use our shared workspace
@@ -2718,6 +2721,7 @@ class PipelineController:
                                          % (module.module_name, module_num))
 
     def module_display_post_group_request(self, evt):
+        global module
         assert wx.Thread_IsMain(), "PipelineController.module_post_group_display_request() must be called from main thread!"
         module_num = evt.module_num
         # use our shared workspace
@@ -2746,6 +2750,7 @@ class PipelineController:
         our own pipeline's instance of the module, and reply with the result.
         :param evt:
         """
+        global module
         module_num = evt.module_num
         # extract args and kwargs from the request.
         # see main().interaction_handler() in analysis_worker.py
@@ -3644,6 +3649,7 @@ class PipelineController:
             dlg.Destroy()
 
     def get_output_file_path(self):
+        global alternate_name
         path = os.path.join(cpprefs.get_default_output_directory(),
                             cpprefs.get_output_file_name())
         if os.path.exists(

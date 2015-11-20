@@ -260,6 +260,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         return result
 
     def run(self, workspace):
+        global output_labels
         objects = workspace.object_set.get_objects(self.objects_name.value)
         assert isinstance(objects, cpo.Objects)
         labels = objects.segmented
@@ -348,6 +349,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         :param figure:
         :param workspace:
         """
+        global image, cplabels, cplabels
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         import matplotlib.cm as cm
 

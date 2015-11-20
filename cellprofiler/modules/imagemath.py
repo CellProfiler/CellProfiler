@@ -269,6 +269,7 @@ class ImageMath(cpm.CPModule):
             self.add_image()
 
     def run(self, workspace):
+        global op
         image_names = [image.image_name.value for image in self.images
                        if image.image_or_measurement == IM_IMAGE]
         image_factors = [image.factor.value for image in self.images]
@@ -447,6 +448,7 @@ class ImageMath(cpm.CPModule):
         """Guarantee that at least one operand is an image
         :param pipeline:
         """
+        global op
         for i in range(self.operand_count):
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:

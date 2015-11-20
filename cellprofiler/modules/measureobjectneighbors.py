@@ -201,6 +201,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         return self.object_name.value == self.neighbors_name.value
 
     def run(self, workspace):
+        global percent_touching_image
         objects = workspace.object_set.get_objects(self.object_name.value)
         assert isinstance(objects, cpo.Objects)
         has_pixels = objects.areas > 0
@@ -557,6 +558,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             workspace.display_data.object_mask = object_mask
 
     def display(self, workspace, figure):
+        global percent_touching_image, percent_touching_cm, percent_touching_image, percent_touching_cm
         figure.set_subplots((2, 2))
         figure.subplot_imshow_labels(0, 0, workspace.display_data.orig_labels,
                                      "Original: %s" % self.object_name.value)
@@ -626,6 +628,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             return filter(lambda x: x != M_PERCENT_TOUCHING, M_ALL)
 
     def get_measurement_name(self, feature):
+        global scale, scale
         if self.distance_method == D_EXPAND:
             scale = S_EXPANDED
         elif self.distance_method == D_WITHIN:

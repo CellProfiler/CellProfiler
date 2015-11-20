@@ -530,6 +530,7 @@ class ClassifyObjects(cpm.CPModule):
                  for a1 in ("low", "high")])
 
     def run_two_measurements(self, workspace):
+        global values
         measurements = workspace.measurements
         in_high_class = []
         saved_values = []

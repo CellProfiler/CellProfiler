@@ -995,6 +995,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, True)
 
     def __on_widget_inspector(self, evt):
+        global wx
         try:
             import wx.lib.inspection
             wx.lib.inspection.InspectionTool().Show()

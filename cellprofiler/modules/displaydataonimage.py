@@ -220,6 +220,7 @@ class DisplayDataOnImage(cpm.CPModule):
                self.color_or_text == CT_COLOR and not self.use_as_data_tool
 
     def run(self, workspace):
+        global objects, objects
         import matplotlib
         import matplotlib.cm
         import matplotlib.backends.backend_agg

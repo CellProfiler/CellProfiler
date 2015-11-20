@@ -184,6 +184,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
     def __compile_command(self):
         """Return the command to use to compile an .iss file
         """
+        global key, key
         try:
             key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
                                   "InnoSetupScriptFile\\shell\\Compile\\command")
@@ -207,6 +208,7 @@ class CellProfilerCodesign(distutils.core.Command):
         pass
 
     def run(self):
+        global key
         required_files = [cell_profiler_setup_path]
         try:
             key = _winreg.OpenKey(

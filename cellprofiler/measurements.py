@@ -254,6 +254,7 @@ class Measurements(object):
                multithreading context, False to disable locking.
         """
         # XXX - allow saving of partial results
+        global fd
         if mode == "memory" and sys.platform == "darwin":
             # Core driver doesn't work on Mac
             # http://code.google.com/p/h5py/issues/detail?id=215
@@ -676,6 +677,7 @@ class Measurements(object):
         :param relationship:
         :param module_number:
         """
+        global current_size
         if len(image_numbers1) == 0:
             return
         with self.hdf5_dict.lock:

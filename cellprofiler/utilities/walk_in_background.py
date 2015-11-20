@@ -171,6 +171,7 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed=None):
             fn_completed()
 
     def fn():
+        global wx
         try:
             for path in pathnames:
                 checkpoint.wait()

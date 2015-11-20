@@ -1737,6 +1737,7 @@ class Asizer(object):
     def _sizer(self, obj, deep, sized):
         """Size an object, recursively.
         """
+        global rs
         s, f, i = 0, 0, id(obj)
         # skip obj if seen before
         # or if ref of a given obj

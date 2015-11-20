@@ -227,6 +227,7 @@ class TestAnalysisWorker(unittest.TestCase):
                 continue
 
     def test_01_01_get_announcement(self):
+        global exception, result
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.awthread.ex(self.awthread.aw.get_announcement)

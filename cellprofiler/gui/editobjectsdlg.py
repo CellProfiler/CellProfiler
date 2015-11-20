@@ -733,6 +733,7 @@ class EditObjectsDialog(wx.Dialog):
     ##########################################
 
     def display(self):
+        global cimage, x0, x1, y0, y1
         orig_objects_name = self.title
         if len(self.orig_axes.images) > 0:
             # Save zoom and scale if coming through here a second time
@@ -974,6 +975,7 @@ class EditObjectsDialog(wx.Dialog):
         :param event:
         :param event:
         """
+        global lnum
         x = int(event.xdata + .5)
         y = int(event.ydata + .5)
         if (x < 0 or x >= self.shape[1] or
@@ -2057,6 +2059,7 @@ class EditObjectsDialog(wx.Dialog):
         # We need to make outlines of both objects and holes.
         # Objects are 8-connected and holes are 4-connected
         #
+        global border_object
         for polarity, structure in (
                 (True, np.ones((3, 3), bool)),
                 (False, np.array([[0, 1, 0],

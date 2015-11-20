@@ -711,6 +711,7 @@ class SaveImages(cpm.CPModule):
                     channel_names=channel_names)
 
     def save_image(self, workspace):
+        global pixels, pixels, pixels, pixel_type
         if self.show_window:
             workspace.display_data.wrote_image = False
         image = workspace.image_set.get_image(self.image_name.value)

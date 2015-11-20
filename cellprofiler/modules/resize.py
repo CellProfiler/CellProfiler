@@ -196,6 +196,7 @@ class Resize(cpm.CPModule):
                               additional.output_image_name.value)
 
     def apply_resize(self, workspace, input_image_name, output_image_name):
+        global shape, factor
         image = workspace.image_set.get_image(input_image_name)
         image_pixels = image.pixel_data
         if self.size_method == R_BY_FACTOR:

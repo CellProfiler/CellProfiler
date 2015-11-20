@@ -1283,6 +1283,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         :param labeled_image:
         :param workspace:
         """
+        global watershed_image
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
             return labeled_image, object_count, 7, 0.5, 5
 

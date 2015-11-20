@@ -355,6 +355,7 @@ class DefineGrid(cpm.CPModule):
             frame        - the parent frame to whatever frame is created. None means don't draw.
             :param workspace:
         """
+        global gridding
         background_image = self.get_background_image(workspace, None)
 
         if (self.each_or_once == EO_ONCE and

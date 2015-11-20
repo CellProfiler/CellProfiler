@@ -513,6 +513,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):
+        global thresholded_image, thresholded_image, thresholded_image, thresholded_image, segmented_out, segmented_out, small_removed_segmented_out, new_objects
         assert isinstance(workspace, cpw.Workspace)
         image_name = self.image_name.value
         image = workspace.image_set.get_image(image_name,

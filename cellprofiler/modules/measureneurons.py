@@ -247,6 +247,7 @@ class MeasureNeurons(cpm.CPModule):
         """Initialize graph files
         :param workspace:
         """
+        global edge_path, vertex_path
         if not self.wants_neuron_graph:
             return True
         edge_files = set()

@@ -83,6 +83,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None,
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
     """
 
+    global exc_name
     import wx
     assert wx.Thread_IsMain(), "Can only display errors from WX thread."
 
@@ -409,6 +410,7 @@ def display_error_message(parent, message, title, buttons=None,
     :param message:
     :param parent:
     """
+    global button_ctl
     import wx
     if buttons is None:
         buttons = [wx.ID_OK]

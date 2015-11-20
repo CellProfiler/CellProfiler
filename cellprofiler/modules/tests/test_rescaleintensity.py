@@ -673,6 +673,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_04_05_manual_input_range_truncate(self):
+        global low_value, high_value
         np.random.seed(0)
         expected = np.random.uniform(size=(10, 10)).astype(np.float32)
         expected_low_mask = np.zeros(expected.shape, bool)

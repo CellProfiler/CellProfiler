@@ -325,6 +325,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
     def test_05_01_overlapping(self):
         """Test object measurement with two overlapping objects in ijv format"""
 
+        global module
         i, j = np.mgrid[0:10, 0:20]
         m = (i > 1) & (i < 9) & (j > 1) & (j < 19)
         m1 = m & (i < j)

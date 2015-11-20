@@ -1067,6 +1067,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         group_numbers - group numbers for each image set, defaults to all 1
         group_indexes - group indexes for each image set, defaults to range
         """
+        global image_set
         module = T.TrackObjects()
         module.module_num = 1
         module.object_name.value = OBJECT_NAME

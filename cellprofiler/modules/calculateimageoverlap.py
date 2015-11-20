@@ -253,6 +253,7 @@ class CalculateImageOverlap(cpm.CPModule):
         :param workspace:
         """
 
+        global emd
         image_set = workspace.image_set
         ground_truth_image = image_set.get_image(self.ground_truth.value,
                                                  must_be_binary=True)
@@ -382,6 +383,7 @@ class CalculateImageOverlap(cpm.CPModule):
                     (FTR_EARTH_MOVERS_DISTANCE, emd))
 
     def measure_objects(self, workspace):
+        global emd
         image_set = workspace.image_set
         object_name_GT = self.object_name_GT.value
         objects_GT = workspace.get_objects(object_name_GT)
@@ -1199,6 +1201,7 @@ class CalculateImageOverlap(cpm.CPModule):
                              n_rows=2)
 
     def measurement_name(self, feature):
+        global name
         if self.obj_or_img == O_IMG:
             name = '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
         if self.obj_or_img == O_OBJ:

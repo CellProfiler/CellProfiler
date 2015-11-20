@@ -380,6 +380,7 @@ class LoadImages(cpmodule.CPModule):
             """Get an example file for use in the file metadata regexp editor
             :param path:
             """
+            global i
             if path is None:
                 path = self.image_directory()
                 default = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
@@ -1814,6 +1815,7 @@ class LoadImages(cpmodule.CPModule):
         :param files:
 
         """
+        global md_dict
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
@@ -2052,6 +2054,7 @@ class LoadImages(cpmodule.CPModule):
         :param conflicts:
         :param frame:
         """
+        global index
         import wx
         import wx.html
         my_frame = wx.Frame(frame, title="Load images: Error report",
@@ -2149,6 +2152,7 @@ class LoadImages(cpmodule.CPModule):
         """Set up image providers for flex files
         :param workspace:
         """
+        global strideC, strideT, strideZ
         import bioformats.omexml
         from bioformats.formatreader import get_omexml_metadata
 
@@ -2746,6 +2750,7 @@ class LoadImages(cpmodule.CPModule):
                   :param frame:
                   :param channel_name:
         """
+        global d
         if measurements is not None:
             assert isinstance(measurements, cpmeas.Measurements)
 
@@ -2931,7 +2936,7 @@ class LoadImages(cpmodule.CPModule):
         index within the image settings (e.g. ImageNameVars).
         :param workspace:
         """
-        global cached_file_lists
+        global cached_file_lists, files, files, files
         can_cache = workspace.pipeline.test_mode
         frame = workspace.frame
         root = self.image_directory()

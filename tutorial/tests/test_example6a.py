@@ -94,6 +94,7 @@ class TestExample6a(unittest.TestCase):
         #
         # Run through an entire group
         #
+        global image_set
         measurements = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
         r = np.random.RandomState()

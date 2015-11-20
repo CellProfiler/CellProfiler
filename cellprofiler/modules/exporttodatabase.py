@@ -1514,6 +1514,7 @@ class ExportToDatabase(cpm.CPModule):
         """Warn user re: Test mode
         :param pipeline:
         """
+        global selected_objs
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "ExportToDatabase does not produce output in Test Mode",
@@ -1613,6 +1614,7 @@ class ExportToDatabase(cpm.CPModule):
 
     def test_connection(self):
         """Check to make sure the MySQL server is remotely accessible"""
+        global msg
         import wx
 
         error = None
@@ -2959,6 +2961,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         workspace - contains the measurements
         :param workspace:
         """
+        global disp_columns, disp_header
         if self.show_window:
             disp_header = ['Table', 'Filename']
             disp_columns = []
@@ -3125,6 +3128,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         :param post_group:
         :param image_number:
         """
+        global my_rows, row_stmt, disp_header
         if self.show_window:
             disp_header = ["Table", "Statement"]
             disp_columns = []

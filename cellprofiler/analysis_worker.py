@@ -338,6 +338,7 @@ class AnalysisWorker(object):
         job - WorkRequest
         :param job:
         """
+        global last_workspace
         import cellprofiler.pipeline as cpp
         job_measurements = []
         try:

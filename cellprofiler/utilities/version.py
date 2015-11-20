@@ -19,6 +19,7 @@ def get_version():
     (relative to whatever SVN repository is in the source), and otherwise, just
     the current time and "unkown"."""
 
+    global last_timestamp, output
     if not hasattr(sys, 'frozen'):
         import cellprofiler
         cellprofiler_basedir = os.path.abspath(

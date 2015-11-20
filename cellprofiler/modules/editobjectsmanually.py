@@ -383,6 +383,7 @@ class EditObjectsManually(I.Identify):
                                     t=i, size_t=len(labels))
 
     def save_into_ilp(self, project_name, labels, guidename):
+        global data_item
         import h5py
         with h5py.File(project_name) as f:
             g = f["DataSets"]

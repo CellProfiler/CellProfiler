@@ -4819,6 +4819,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module)
 
     def test_12_03_write_sqlite_no_relationships(self):
+        global cursor, cursor, connection, connection
         if not self.__at_broad:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
@@ -4897,6 +4898,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module)
 
     def test_12_06_write_sqlite_relationships(self):
+        global cursor, connection
         for with_interaction_handler in (False, True):
             workspace, module, output_dir, finally_fn = self.make_workspace(
                 True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
@@ -4933,6 +4935,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 finally_fn()
 
     def test_12_07_write_sqlite_duplicates(self):
+        global cursor, cursor, connection, connection
         if not self.__at_broad:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 

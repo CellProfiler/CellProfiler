@@ -825,6 +825,7 @@ class Pipeline(object):
         """Create a numpy array representing this pipeline
         
         """
+        global variable_count
         settings = np.ndarray(shape=[1, 1], dtype=SETTINGS_DTYPE)
         handles = {SETTINGS: settings}
         setting = settings[0, 0]
@@ -1043,6 +1044,7 @@ class Pipeline(object):
         :param raise_on_error:
         :param fd_or_filename:
         """
+        global module_name, module
         from cellprofiler.utilities.version import \
             version_number as cp_version_number
         self.__modules = []
@@ -2001,6 +2003,7 @@ class Pipeline(object):
         :param initial_measurements:
         """
 
+        global module_error_measurement, execution_time_measurement
         can_display = not cpprefs.get_headless()
 
         def group(workspace):
@@ -2605,6 +2608,7 @@ class Pipeline(object):
         frame - the topmost frame window or None if no GUI
         :param args:
         """
+        global module
         from cellprofiler.cpmodule import CPModule
         if len(args) == 3:
             measurements, image_set_list, frame = args
@@ -3046,6 +3050,7 @@ class Pipeline(object):
         :param workspace:
 
         """
+        global urls
         file_list = workspace.file_list
         if self.__file_list_generation == file_list.generation:
             return
@@ -3073,6 +3078,7 @@ class Pipeline(object):
         :param path_or_fd:
         :param add_undo:
         """
+        global fd
         if isinstance(path_or_fd, basestring):
             from cellprofiler.modules.loadimages import \
                 url2pathname, FILE_SCHEME, PASSTHROUGH_SCHEMES
@@ -3571,6 +3577,7 @@ class Pipeline(object):
         self.add_image_metadata("file:" + urllib.pathname2url(path), metadata)
 
     def add_image_metadata(self, url, metadata, ipd=None):
+        global c_idx, z_idx, t_idx
         if metadata.image_count == 1:
             m = {}
             pixels = metadata.image(0).Pixels

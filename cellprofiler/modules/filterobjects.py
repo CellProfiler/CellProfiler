@@ -461,6 +461,7 @@ class FilterObjects(cpm.CPModule):
         """Filter objects for this image set, display results
         :param workspace:
         """
+        global indexes, src_name, target_objects
         src_objects = workspace.get_objects(self.object_name.value)
         if self.mode == MODE_RULES:
             indexes = self.keep_by_rules(workspace, src_objects)

@@ -77,6 +77,7 @@ class ParameterSampleFrame(wx.Frame):
         # Flag to check during event handling: widgets generate events as they
         # are created leading to referencing errors before all data structs
         # have been initialized.
+        global cur_value
         self.__initialized = False
 
         # Init frame
@@ -409,6 +410,7 @@ class ParameterSampleFrame(wx.Frame):
         violations as well as the error message received back from CellProfiler.
         """
         # First, test whether selected parameters are valid
+        global lower_value, upper_value
         message = ''
         for i, checkbox in enumerate(self.__check_box_list):
             if checkbox.IsChecked():

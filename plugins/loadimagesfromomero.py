@@ -233,6 +233,7 @@ class OmeroLoadImages(cpm.CPModule):
 
     def load_channels(self):
         """Add and set channels based on an image from omero """
+        global omero_image
         try:
             self.create_omero_gateway()
             id = int(self.omero_object_id.value)
@@ -375,6 +376,7 @@ class OmeroLoadImages(cpm.CPModule):
         """Set up omero image providers inside the image_set_list
         :param workspace:
         """
+        global omero_image_list
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         if pipeline.in_batch_mode():

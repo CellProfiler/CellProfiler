@@ -65,6 +65,7 @@ def main(args):
     args - command-line arguments, e.g. sys.argv
     :param args:
     """
+    global App, m, cpmeas
     import cellprofiler.preferences as cpprefs
     cpprefs.set_awt_headless(True)
     switches = ('--work-announce', '--knime-bridge-address')
@@ -590,6 +591,7 @@ def set_omero_credentials_from_string(credentials_string):
                         session-id - the session ID used for authentication
                         :param credentials_string:
     """
+    global credentials
     import cellprofiler.preferences as cpprefs
     from bioformats.formatreader import use_omero_credentials
     from bioformats.formatreader import \

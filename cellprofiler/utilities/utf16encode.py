@@ -35,6 +35,7 @@ def utf16decode(x):
     """Decode an escaped utf8-encoded string
     :param x:
     """
+    global acc
     y = u""
     state = -1
     for z in x:

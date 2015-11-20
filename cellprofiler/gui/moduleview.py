@@ -1194,6 +1194,7 @@ class ModuleView:
         :param control_name:
         :param v:
         """
+        global cmap_name
         try:
             if v.value == cps.DEFAULT:
                 cmap_name = cpprefs.get_default_colormap()
@@ -2805,6 +2806,7 @@ class FilterPanelController(object):
         return ctrl
 
     def get_sizer_index(self, sizer, item):
+        global indexes
         if isinstance(item, wx.Sizer):
             indexes = [i for i, s in enumerate(sizer.GetChildren())
                        if s.IsSizer() and s.GetSizer() is item]
@@ -3587,6 +3589,7 @@ class FileCollectionDisplayController(object):
         return self.modpath_to_item.get(tuple(modpath))
 
     def request_update(self, hint=None, modpath=None):
+        global file_tree, file_tree, file_tree
         if hint == cps.FileCollectionDisplay.BKGND_RESUME:
             self.on_start_received()
             return
@@ -3684,6 +3687,7 @@ class FileCollectionDisplayController(object):
         Make sure that the tree is auto-expanded if appropriate and that
         the root nodes are expanded.
         """
+        global thing
         if not self.user_collapsed_a_node:
             #
             # Expand all until we reach a node that has more than
@@ -3715,6 +3719,7 @@ class FileCollectionDisplayController(object):
 
     def update_subtree(self, file_tree, parent_item,
                        is_filtered, modpath, operation_id, count, total):
+        global node_is_filtered, item_id
         existing_items = {}
         show_filtered = self.v.show_filtered
         needs_sort = False

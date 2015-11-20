@@ -11,6 +11,7 @@ def _relpath(target, base=os.curdir):
     Base can be a directory specified either as absolute or relative to current dir.
     """
 
+    global i
     if not os.path.exists(target):
         raise OSError, 'Target does not exist: ' + target
 

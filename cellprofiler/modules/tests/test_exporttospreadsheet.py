@@ -825,6 +825,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_01_01_experiment_measurement(self):
         """Test writing one experiment measurement"""
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1003,6 +1004,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_02_02_three_by_two_image_measurements(self):
         """Test writing three image measurements over two image sets"""
+        global i
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1048,6 +1050,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_03_01_object_measurement(self):
         """Test getting a single object measurement"""
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1089,6 +1092,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_03_02_three_by_two_object_measurements(self):
         """Test getting three measurements from two objects"""
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1137,6 +1141,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_03_03_get_measurements_from_two_objects(self):
         """Get three measurements from four cells and two objects"""
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1203,6 +1208,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_03_04_nan_measurements(self):
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1248,6 +1254,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             fd.close()
 
     def test_03_05_null_measurements(self):
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1490,6 +1497,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         """Test writing objects with 2 pairs of 2 image sets w same metadata"""
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
+        global image_set
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
@@ -1551,6 +1559,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         #
         # +++backslash+++ here because Windows and join don't do well
         # if you have the raw backslash
+        global image_set
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
@@ -1606,6 +1615,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_04_02_image_with_metadata(self):
         """Test writing image data with 2 pairs of 2 image sets w same metadata"""
+        global image_set
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
@@ -1662,6 +1672,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_04_03_image_with_path_metadata(self):
         """Test writing image data with 2 pairs of 2 image sets w same metadata"""
+        global image_set
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
         path = path.replace("\\", "\\\\")
         path = path.replace("+++backslash+++", "\\")
@@ -1720,6 +1731,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_04_04_image_measurement_custom_directory(self):
         """Test writing an image measurement"""
+        global fd
         path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
         cpprefs.set_headless()
         cpprefs.set_default_output_directory(self.output_dir)
@@ -1760,6 +1772,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_04_05_unicode_image_metadata(self):
         """Write image measurements containing unicode characters"""
+        global fd
         path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
         cpprefs.set_headless()
         cpprefs.set_default_output_directory(self.output_dir)
@@ -1919,6 +1932,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_05_02_no_aggregate_image_columns(self):
         """Test output of aggregate object data for images"""
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -1968,6 +1982,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         aggregate object measurements if measurements were filtered by
         pick_columns.
         """
+        global fd
         image_path = os.path.join(self.output_dir, "my_image_file.csv")
         object_path = os.path.join(self.output_dir, "my_object_file.csv")
         module = E.ExportToSpreadsheet()
@@ -2067,6 +2082,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # Regression test of issue #1139
         # Always output the ImageNumber column in Image.csv
 
+        global fd
         image_path = os.path.join(self.output_dir, "my_image_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2115,6 +2131,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_06_01_image_index_columns(self):
         """Test presence of index column"""
+        global image_set, fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2159,6 +2176,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_06_02_object_index_columns(self):
         """Test presence of image and object index columns"""
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2210,6 +2228,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 
     def test_06_03_object_metadata_columns(self):
         """Test addition of image metadata columns to an object metadata file"""
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2273,6 +2292,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         Take measurements for 3 image sets, some measurements missing
         from the middle one.
         """
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2335,6 +2355,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         # ExportToSpreadsheet should put a column of all NaNs, even if
         # no image set makes the measurement
         #
+        global fd
         path = os.path.join(self.output_dir, "my_file.csv")
         pipeline = cpp.Pipeline()
         module = identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -2630,6 +2651,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertFalse(module.prepare_run(workspace))
 
     def test_09_01_relationships_file(self):
+        global image_set
         r = np.random.RandomState()
         r.seed(91)
         path = os.path.join(self.output_dir, "my_file.csv")

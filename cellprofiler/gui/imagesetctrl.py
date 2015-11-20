@@ -1142,6 +1142,7 @@ class ColLabelRenderer(GridLabelRenderer):
         assert isinstance(self.renderer, wx.RendererNative)
 
     def Draw(self, grid, dc, rect, col):
+        global channel_descriptor, mdc
         assert isinstance(grid, ImageSetCtrl)
         assert isinstance(dc, wx.DC)
         window = grid.GetGridColLabelWindow()

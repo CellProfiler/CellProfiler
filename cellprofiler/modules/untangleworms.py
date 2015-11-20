@@ -659,6 +659,7 @@ class UntangleWorms(cpm.CPModule):
         :param workspace:
         """
 
+        global dworms
         image_name = self.image_name.value
         image_set = workspace.image_set
         image = image_set.get_image(image_name,
@@ -1472,6 +1473,7 @@ class UntangleWorms(cpm.CPModule):
         # Break long skeletons into pieces whose maximum length
         # is max_skel_length.
         #
+        global loop_endpoints
         segments_labeled, num_segments = scind.label(
             segments_binary, structure=morph.eight_connect)
         if num_segments == 0:
@@ -2976,6 +2978,8 @@ def read_params(training_set_directory, training_set_file_name, d):
     #     method: string = "default"
     #     radii_from_training: vector ?of length num_control_points?
     #
+    global url
+
     class X(object):
         """This "class" is used as a vehicle for arbitrary dot notation
 

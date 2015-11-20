@@ -107,7 +107,7 @@ def get_awt_headless():
 
 
 def get_config():
-    global __is_headless, __headless_config
+    global __is_headless, __headless_config, preferences_version_number
     if __is_headless:
         return __headless_config
     import wx

@@ -310,6 +310,7 @@ class AnalysisRunner(object):
         :param image_set_start:
         :param start_signal:
         """
+        global group_status
         from javabridge import attach, detach
         posted_analysis_started = False
         acknowledged_thread_start = False

@@ -290,7 +290,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         The menu items are augmented with a third tuple entry which is
         the ModuleInfo for the command.
         """
-        global cached_choice_tree
+        global cached_choice_tree, current_node
         global cached_commands
         if cached_choice_tree is not None:
             return cached_choice_tree
@@ -715,6 +715,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         :param workspace:
         :param workspace:
         """
+        global input_image_name
         image_set = workspace.image_set
         d = self.get_dictionary(workspace.image_set_list)
         if self.wants_to_set_current_image:
@@ -927,6 +928,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         :param command:
         :param workspace:
         """
+        global input_images, output_images
         context = get_context()
         self.get_command_settings(command, d)
         wants_display = self.show_window

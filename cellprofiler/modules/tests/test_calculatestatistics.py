@@ -498,6 +498,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                 for the measurement M1 with values for 3 image sets
         controls_measurement - the name of the controls measurement
         """
+        global image_set
         if not dose_measurements:
             dose_measurements = []
         module = C.CalculateStatistics()

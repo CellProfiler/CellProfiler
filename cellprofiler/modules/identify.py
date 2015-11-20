@@ -1036,6 +1036,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     :param mask:
                     :param image:
         """
+        global block_size
         if self.threshold_scope == TM_MANUAL:
             local_threshold = global_threshold = self.manual_threshold.value
         else:

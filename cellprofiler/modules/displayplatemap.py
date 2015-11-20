@@ -169,6 +169,7 @@ class DisplayPlatemap(cpm.CPModule):
         return result
 
     def run(self, workspace):
+        global wells
         if self.show_window:
             m = workspace.get_measurements()
             # Get plates

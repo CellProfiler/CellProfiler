@@ -290,6 +290,7 @@ class TestHDF5Dict(unittest.TestCase):
             os.unlink(filename)
 
     def test_08_01_copy(self):
+        global h5copy
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
         temp_fd, temp_filename = tempfile.mkstemp(".h5")
         try:

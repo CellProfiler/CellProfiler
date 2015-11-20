@@ -276,6 +276,7 @@ class CreateWebPage(cpm.CPModule):
         """Make all the webpages after the run
         :param workspace:
         """
+        global zip_file_name
         d = {}
         zipfiles = {}
         m = workspace.measurements

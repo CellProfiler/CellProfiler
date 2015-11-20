@@ -307,6 +307,7 @@ class SendEmail(cpm.CPModule):
         :param workspace:
         """
 
+        global server
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
 

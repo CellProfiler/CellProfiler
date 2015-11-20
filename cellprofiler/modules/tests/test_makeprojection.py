@@ -168,6 +168,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def run_image_set(self, projection_type, images_and_masks,
                       frequency=9, run_last=True):
+        global w
         image_set_list = cpi.ImageSetList()
         image_count = len(images_and_masks)
         for i in range(image_count):

@@ -173,6 +173,7 @@ def get_cellprofiler_location(
 
 def get_queues():
     """Return a list of queues"""
+    global host_scriptfile
     try:
         host_fd, host_scriptfile = tempfile.mkstemp(suffix=".sh")
         os.fchmod(host_fd, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)

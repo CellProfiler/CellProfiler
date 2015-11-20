@@ -403,6 +403,7 @@ class PipelineListView(object):
 
         returns the module or None if we are at the end
         """
+        global module
         index = self.list_ctrl.running_item
         while True:
             index += 1

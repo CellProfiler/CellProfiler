@@ -338,6 +338,7 @@ class ExportToCellH5(cpm.CPModule):
         return cellh5.CH5PositionCoordinate(plate, well, site)
 
     def run(self, workspace):
+        global c5_label_writer, c5_label_def, dtype5D, object_name
         m = workspace.measurements
         object_set = workspace.object_set
         #

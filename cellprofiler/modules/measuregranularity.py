@@ -211,6 +211,7 @@ class MeasureGranularity(cpm.CPModule):
         figure.subplot_table(0, 0, statistics, col_labels=col_labels)
 
     def run_on_image_setting(self, workspace, image):
+        global back_shape
         assert isinstance(workspace, cpw.Workspace)
         image_set = workspace.image_set
         measurements = workspace.measurements

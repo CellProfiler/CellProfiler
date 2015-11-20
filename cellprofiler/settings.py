@@ -2134,6 +2134,7 @@ class MeasurementMultiChoice(MultiChoice):
         #
         # Find our module
         #
+        global module
         for module in pipeline.modules():
             for setting in module.visible_settings():
                 if id(setting) == id(self):
@@ -2743,6 +2744,7 @@ class Measurement(Setting):
         return None
 
     def test_valid(self, pipeline):
+        global module
         obname = self.__object_fn()
         category = self.get_category(pipeline, obname)
         if category is None:

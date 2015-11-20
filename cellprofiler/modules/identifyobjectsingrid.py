@@ -201,6 +201,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             frame        - the parent frame to whatever frame is created. None means don't draw.
             :param workspace:
         """
+        global labels
         gridding = workspace.get_grid(self.grid_name.value)
         if self.shape_choice == SHAPE_RECTANGLE:
             labels = self.run_rectangle(workspace, gridding)

@@ -210,6 +210,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                                                wx.LIST_AUTOSIZE)
 
     def on_pipeline_list_down(self, event):
+        global subitem
         if sys.platform.startswith("win"):
             item, hit_code, subitem = self.pipeline_list_view.HitTestSubItem(
                 event.Position)

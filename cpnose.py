@@ -241,12 +241,14 @@ def get_tests_from_xml_files(paths, config):
     return get_suite_from_dictionary(factory, hierarchy)
 
 
-def get_suite_from_dictionary(factory, d, parts=[]):
+def get_suite_from_dictionary(factory, d, parts=None):
     """Recursively combine the values in a dictionary into a suite
     :param factory:
     :param d:
     :param parts:
     """
+    if not parts:
+        parts = []
     tests = []
     for key in sorted(d.keys()):
         test = d[key]

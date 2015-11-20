@@ -1932,7 +1932,7 @@ class Asizer(object):
                 _printf('%+*d %r object%s', w, z, 'zero', _plural(z),
                         **print3opts)
 
-    def print_stats(self, objs=(), opts={}, sized=(), sizes=(), stats=3.0,
+    def print_stats(self, objs=(), opts=None, sized=(), sizes=(), stats=3.0,
                     **print3opts):
         """Print the statistics.
 
@@ -1950,6 +1950,8 @@ class Asizer(object):
                :param stats:
                :param print3opts:
         """
+        if not opts:
+            opts = {}
         s = min(opts.get('stats', stats) or 0, self._stats_)
         if s > 0:  # print stats
             t = self._total + self._missed + _sum(_values(self._seen))

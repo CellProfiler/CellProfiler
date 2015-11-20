@@ -576,7 +576,7 @@ class MetadataControl(wx.PyControl):
                 if isinstance(token, self.MetadataToken):
                     current_state = "metadata"
                 elif (self.selection is not None and
-                              i >= selection[0] and i < selection[1]):
+                                  selection[0] <= i < selection[1]):
                     current_state = "selection"
                 else:
                     current_state = "boring"

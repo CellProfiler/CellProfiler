@@ -573,7 +573,7 @@ class PipelineListView(object):
         list_ctrl = event.GetEventObject()
         item, hit_code, subitem = list_ctrl.HitTestSubItem(event.Position)
 
-        if (item >= 0 and item < list_ctrl.ItemCount and
+        if (0 <= item < list_ctrl.ItemCount and
                 (hit_code & wx.LIST_HITTEST_ONITEM) and
                     subitem == MODULE_NAME_COLUMN):
             module = list_ctrl.items[item].module

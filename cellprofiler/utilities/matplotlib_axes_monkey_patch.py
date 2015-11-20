@@ -175,8 +175,8 @@ def apply_aspect(self, position=None):
         adjust_y = False
     else:
         if xmarg > xm and ymarg > ym:
-            adjy = ((Ymarg > 0 and y_expander < 0)
-                    or (Xmarg < 0 and y_expander > 0))
+            adjy = ((Ymarg > 0 > y_expander)
+                    or (Xmarg < 0 < y_expander))
         else:
             adjy = y_expander > 0
         adjust_y = changey or adjy  # (Ymarg > xmarg)

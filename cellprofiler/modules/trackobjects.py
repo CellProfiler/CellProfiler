@@ -2235,7 +2235,7 @@ class TrackObjects(cpm.CPModule):
             # have been assigned to a mitosis, skip
             #
             if x[pidx] == midx + mitosis_off and not \
-                    any([y[idx] >= mitosis_off and y[idx] < mitosis_end
+                    any([mitosis_off <= y[idx] < mitosis_end
                          for idx in lidx, ridx]):
                 alt_score = sum(
                     [score_matrix[y[idx], idx] for idx in lidx, ridx])
@@ -2391,7 +2391,7 @@ class TrackObjects(cpm.CPModule):
                               image_numbers[my_image_index],
                               object_numbers[my_image_index][my_object_index],
                               score_matrix[yi, i]))
-            elif yi >= split_off and yi < split_end:
+            elif split_off <= yi < split_end:
                 # ------------------------------------
                 #
                 #     SPLIT

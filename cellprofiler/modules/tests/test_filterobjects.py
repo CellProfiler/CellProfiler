@@ -259,7 +259,7 @@ class TestFilterObjects(unittest.TestCase):
         my_max = .7
         expected = np.zeros(labels.shape, int)
         for i, value in zip(range(n), values):
-            if value >= my_min and value <= my_max:
+            if my_min <= value <= my_max:
                 expected[labels == i + 1] = idx
                 idx += 1
         workspace, module = self.make_workspace({INPUT_OBJECTS: labels})
@@ -384,7 +384,7 @@ class TestFilterObjects(unittest.TestCase):
         expected = np.zeros(labels.shape, int)
         expected_alternates = np.zeros(alternates.shape, int)
         for i, value in zip(range(n), values):
-            if value >= my_min and value <= my_max:
+            if my_min <= value <= my_max:
                 expected[labels == i + 1] = idx
                 expected_alternates[alternates == i + 1] = idx
                 idx += 1

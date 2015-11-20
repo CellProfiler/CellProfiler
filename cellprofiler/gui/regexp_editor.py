@@ -238,8 +238,7 @@ class RegexpDialog(wx.Dialog):
         pos = self.regexp_display.CurrentPos
         if state.open_expression_start is not None:
             self.regexp_display.BraceBadLight(state.open_expression_start)
-        elif (pos > 0 and
-                      pos < len(state.matching_braces) and
+        elif (0 < pos < len(state.matching_braces) and
                       state.matching_braces[pos - 1] is not None):
             self.regexp_display.BraceHighlight(state.matching_braces[pos - 1],
                                                pos - 1)

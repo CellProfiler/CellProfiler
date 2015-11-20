@@ -443,8 +443,7 @@ class OmeroLoadImages(cpm.CPModule):
         """
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
-        p.map = {}
-        p.map["oid"] = rlong(long(dataset_id))
+        p.map = {"oid": rlong(long(dataset_id))}
         if limit is not None:
             f = omero.sys.Filter()
             f.limit = rint(int(limit))
@@ -465,8 +464,7 @@ class OmeroLoadImages(cpm.CPModule):
         """
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
-        p.map = {}
-        p.map["oid"] = rlong(long(plate_id))
+        p.map = {"oid": rlong(long(plate_id))}
         if limit is not None:
             f = omero.sys.Filter()
             f.limit = rint(int(limit))

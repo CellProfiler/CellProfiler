@@ -802,7 +802,7 @@ class ModuleView:
                     d[None] = leaf_state
                     return leaf_state
                 get_state(d)
-                dlg = TreeCheckboxDialog(self.module_panel, d, size=(320,480))
+                dlg = TreeCheckboxDialog(self.module_panel, d, size=(480,480))
                 dlg.Title = "Select measurements"
                 if dlg.ShowModal() == wx.ID_OK:
                     def collect_state(object_name, prefix, d):

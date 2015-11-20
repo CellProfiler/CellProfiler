@@ -53,7 +53,6 @@ class TreeCheckboxDialog(wx.Dialog):
         self.tree_ctrl.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
         self.tree_ctrl.Expand(root_id)
         table_sizer = wx.GridBagSizer()
-        table_sizer.AddGrowableCol(2)
         sizer.Add(table_sizer, 0, wx.EXPAND)
         table_sizer.Add(wx.StaticText(self, label='Key:'), (0, 0), flag=wx.LEFT | wx.RIGHT, border=3)
         for i, (bitmap, description) in enumerate((
@@ -64,6 +63,7 @@ class TreeCheckboxDialog(wx.Dialog):
             bitmap_ctrl.SetBitmap(bitmap)
             table_sizer.Add(bitmap_ctrl, (i, 1), flag=wx.RIGHT, border=5)
             table_sizer.Add(wx.StaticText(self, label=description), (i, 2))
+        table_sizer.AddGrowableCol(2)
         sizer.Add(self.CreateStdDialogButtonSizer(wx.CANCEL | wx.OK), 
                   flag=wx.CENTER)
         self.Layout()

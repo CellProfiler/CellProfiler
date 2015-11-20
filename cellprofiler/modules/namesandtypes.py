@@ -1780,7 +1780,7 @@ class NamesAndTypes(cpm.CPModule):
                 name, iz_image, fn_alter_path)
 
     @classmethod
-    def is_input_module(self):
+    def is_input_module(cls):
         return True
 
     def run(self, workspace):

@@ -719,7 +719,7 @@ class Metadata(cpm.CPModule):
         return setting in self.settings()
 
     @classmethod
-    def is_input_module(self):
+    def is_input_module(cls):
         return True
 
     def prepare_run(self, workspace):

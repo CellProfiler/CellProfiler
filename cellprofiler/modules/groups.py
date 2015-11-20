@@ -463,7 +463,7 @@ class Groups(cpm.CPModule):
         return self.wants_groups.value
 
     @classmethod
-    def is_input_module(self):
+    def is_input_module(cls):
         return True
 
     def prepare_run(self, workspace):

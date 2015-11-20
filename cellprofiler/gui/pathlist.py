@@ -1,6 +1,7 @@
 """PathList - the PathListCtrl displays folders and paths in a scalable way
 """
 import logging
+
 logger = logging.getLogger(__name__)
 import bisect
 import numpy as np
@@ -11,12 +12,13 @@ import sys
 import urllib
 import urllib2
 import uuid
-
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect
+
 OMERO_SCHEME = "omero:"
 
 EVT_PLC_SELECTION_CHANGED = wx.PyEventBinder(wx.NewEventType())
+
 
 class PathListCtrl(wx.PyScrolledWindow):
     #
@@ -29,6 +31,7 @@ class PathListCtrl(wx.PyScrolledWindow):
     # Gap between tree item and text
     #
     TREEITEM_GAP = 2
+
     class FolderItem(object):
         def __init__(self, ctrl, folder_name):
             self.folder_name = folder_name
@@ -43,14 +46,13 @@ class PathListCtrl(wx.PyScrolledWindow):
             self.enabled = []
             self.enabled_idxs = None
             self.opened = True
-            
+
         def get_full_path(self, idx):
             '''Get the full pathname for the indexed file'''
             if self.folder_name.lower() == OMERO_SCHEME:
                 return self.folder_name + self.filenames[idx]
             return self.folder_name + "/" + self.filenames[idx]
 
-            
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         self.Font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
@@ -108,21 +110,21 @@ class PathListCtrl(wx.PyScrolledWindow):
         tmp = self.Font
         try:
             self.Font = self.DROP_FILES_AND_FOLDERS_FONT
-            self.drop_files_and_folders_text_extent =\
-            self.GetTextExtent(self.DROP_FILES_AND_FOLDERS_HERE)
+            self.drop_files_and_folders_text_extent = \
+                self.GetTextExtent(self.DROP_FILES_AND_FOLDERS_HERE)
         except:
             logger.warn("Failed to get text extend for \"%s\" message" %
                         self.DROP_FILES_AND_FOLDERS_HERE, exc_info=True)
             self.drop_files_and_folders_text_extent = (200, 30)
         finally:
             self.Font = tmp
-        
+
     def AcceptsFocus(self):
         '''Tell the scrollpanel that we can accept the focus'''
         return True
-    
-    def set_context_menu_fn(self, 
-                            fn_context_menu, 
+
+    def set_context_menu_fn(self,
+                            fn_context_menu,
                             fn_folder_menu,
                             fn_empty_menu,
                             fn_do_menu_command,
@@ -158,14 +160,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.fn_do_folder_menu_command = fn_do_folder_menu_command
         self.fn_empty_context_menu = fn_empty_menu
         self.fn_do_empty_context_menu_command = fn_do_empty_command
-        
+
     def set_delete_fn(self, fn_delete):
         '''Set the function to call to delete items
         
         fn_delete - a function whose signature is fn_delete(paths)
         '''
         self.fn_delete = fn_delete
-        
+
     def set_show_disabled(self, show):
         '''Show or hide disabled files
         
@@ -179,7 +181,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.focus_item = None
         self.notify_selection_changed()
         self.Refresh(eraseBackground=False)
-        
+
     def get_show_disabled(self):
         '''Return the state of the show / hide disabled flag
         
@@ -192,18 +194,18 @@ class PathListCtrl(wx.PyScrolledWindow):
         if self.schmutzy:
             self.recalc()
         return np.sum(self.folder_counts)
-    
+
     def get_folder_count(self):
         '''# of folders shown in UI'''
         if self.schmutzy:
             self.recalc()
             self.schmutzy = False
         return len(self.folder_counts)
-    
+
     def __len__(self):
         '''# of lines shown in UI'''
         return self.get_path_count() + self.get_folder_count()
-        
+
     def __getitem__(self, idx):
         '''Return the folder and path at the index
         
@@ -212,14 +214,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         if self.schmutzy:
             self.recalc()
             self.schmutzy = False
-        folder_idx = bisect.bisect_right(self.folder_idxs, idx)-1
+        folder_idx = bisect.bisect_right(self.folder_idxs, idx) - 1
         if idx == self.folder_idxs[folder_idx]:
             return self.folder_items[folder_idx], None
         item = self.folder_items[folder_idx]
         idx = idx - self.folder_idxs[folder_idx] - 1
         if idx >= self.folder_counts[folder_idx]:
             return None, None
-        
+
         if self.show_disabled:
             return (item, idx)
         else:
@@ -234,8 +236,8 @@ class PathListCtrl(wx.PyScrolledWindow):
                 return [path[:len(OMERO_SCHEME)], path[len(OMERO_SCHEME):]]
             return "", path
         else:
-            return path[:slash], path[(slash+1):]
-        
+            return path[:slash], path[(slash + 1):]
+
     def add_paths(self, paths):
         '''Add the given URLs to the control
         
@@ -244,15 +246,16 @@ class PathListCtrl(wx.PyScrolledWindow):
         uid = uuid.uuid4()
         npaths = len(paths)
         for i, path in enumerate(paths):
-            if i%100 == 0:
+            if i % 100 == 0:
                 cpprefs.report_progress(
                     uid, float(i) / npaths,
-                    "Loading %s into UI" % path)
+                         "Loading %s into UI" % path)
             folder, filename = self.splitpath(path)
             display_name = urllib2.url2pathname(filename)
             width, _ = self.GetTextExtent(display_name)
             idx = bisect.bisect_left(self.folder_names, folder)
-            if idx >= len(self.folder_names) or self.folder_names[idx] != folder:
+            if idx >= len(self.folder_names) or self.folder_names[
+                idx] != folder:
                 folder_item = self.FolderItem(self, folder)
                 self.folder_names.insert(idx, folder)
                 self.folder_items.insert(idx, folder_item)
@@ -269,7 +272,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             cpprefs.report_progress(uid, 1, "Done")
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
-        
+
     def enable_paths(self, paths, enabled):
         '''Mark a sequence of URLs as enabled or disabled
         
@@ -282,17 +285,18 @@ class PathListCtrl(wx.PyScrolledWindow):
         for path in paths:
             folder, filename = self.splitpath(path)
             idx = bisect.bisect_left(self.folder_names, folder)
-            if idx >= len(self.folder_names) or self.folder_names[idx] != folder:
+            if idx >= len(self.folder_names) or self.folder_names[
+                idx] != folder:
                 continue
             folder_item = self.folder_items[idx]
             pidx = bisect.bisect_left(folder_item.filenames, filename)
-            if (pidx >= len(folder_item.filenames) or 
-                folder_item.filenames[pidx] != filename):
+            if (pidx >= len(folder_item.filenames) or
+                        folder_item.filenames[pidx] != filename):
                 continue
             folder_item.enabled[pidx] = enabled
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
-        
+
     def enable_all_paths(self):
         '''Mark all paths as enabled
         
@@ -303,21 +307,21 @@ class PathListCtrl(wx.PyScrolledWindow):
             folder_item.enabled = [True] * len(folder_item.filenames)
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
-        
-    def expand_all(self, event = None):
+
+    def expand_all(self, event=None):
         '''Expand all folders'''
         for folder_item in self.folder_items:
             folder_item.opened = True
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
-    
-    def collapse_all(self, event = None):
+
+    def collapse_all(self, event=None):
         '''Collapse all folders'''
         for folder_item in self.folder_items:
             folder_item.opened = False
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
-        
+
     @staticmethod
     def get_folder_display_name(folder):
         '''Return a path name for a URL
@@ -327,7 +331,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         if folder.startswith("file:"):
             return urllib.url2pathname(folder[5:]).decode("utf8")
         return folder
-    
+
     def recalc(self):
         '''Recalculate cached internals
         
@@ -348,11 +352,13 @@ class PathListCtrl(wx.PyScrolledWindow):
             else:
                 for item in self.folder_items:
                     enabled_mask = np.array(item.enabled, bool)
-                    item.enabled_idxs = np.arange(len(item.enabled))[enabled_mask]
+                    item.enabled_idxs = np.arange(len(item.enabled))[
+                        enabled_mask]
                 self.folder_counts = np.array(
-                    [np.sum(x.enabled) if x.opened else 0 
+                    [np.sum(x.enabled) if x.opened else 0
                      for x in self.folder_items])
-            self.folder_idxs = np.hstack(([0], np.cumsum(self.folder_counts+1)))
+            self.folder_idxs = np.hstack(
+                ([0], np.cumsum(self.folder_counts + 1)))
             max_width = reduce(max, [max(reduce(max, x.widths), x.display_width)
                                      for x in self.folder_items])
             total_height = self.line_height * self.folder_idxs[-1]
@@ -361,13 +367,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.total_height = total_height
         self.schmutzy = False
         self.SetVirtualSize((max_width, total_height))
-        
+
     def remove_paths(self, paths):
         '''Remove a sequence of URLs from the UI'''
         for path in paths:
             folder, filename = self.splitpath(path)
             idx = bisect.bisect_left(self.folder_names, folder)
-            if idx < len(self.folder_names) and self.folder_names[idx] == folder:
+            if idx < len(self.folder_names) and self.folder_names[
+                idx] == folder:
                 item = self.folder_items[idx]
                 assert isinstance(item, self.FolderItem)
                 fp = item.filenames
@@ -380,19 +387,19 @@ class PathListCtrl(wx.PyScrolledWindow):
                     if len(fp) == 0:
                         del self.folder_names[idx]
                         del self.folder_items[idx]
-        self.selections = set() # indexes are all wrong now
+        self.selections = set()  # indexes are all wrong now
         self.focus_item = None
         self.schmutzy = True
         self.notify_selection_changed()
         self.Refresh(eraseBackground=False)
-        
+
     FLAG_ENABLED_ONLY = 1
     FLAG_SELECTED_ONLY = 2
     FLAG_FOLDERS = 4
     FLAG_RECURSE = 8
     FLAG_FOCUS_ITEM_ONLY = 16
-    
-    def get_paths(self, flags = 0):
+
+    def get_paths(self, flags=0):
         '''Return paths
         
         flags - PathListCtrl.FLAG_ENABLED_ONLY to only return paths marked
@@ -424,24 +431,24 @@ class PathListCtrl(wx.PyScrolledWindow):
                     continue
             paths.append(item.get_full_path(idx))
         return paths
-    
+
     def has_selections(self):
         '''Return True if there are any selected items'''
         return len(self.selections) > 0
-    
+
     def clear_selections(self):
         self.selections = set()
         self.schmutzy = True
         self.notify_selection_changed()
         self.Refresh(eraseBackground=False)
-        
+
     def SelectAll(self):
         '''Select all items in the control'''
-        self.selections =  set(range(len(self)))
+        self.selections = set(range(len(self)))
         self.schmutzy = True
         self.notify_selection_changed()
         self.Refresh(eraseBackground=False)
-        
+
     def select_path(self, url):
         '''Select the given URL if it is present in the list
         
@@ -462,18 +469,18 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.selections.add(self.folder_idxs[idx] + pidx + 1)
         self.notify_selection_changed()
         return True
-    
+
     def notify_selection_changed(self):
         '''Publish a WX event that tells the world that the selection changed'''
         event = wx.NotifyEvent(EVT_PLC_SELECTION_CHANGED.evtType[0])
         event.EventObject = self
         self.GetEventHandler().ProcessEvent(event)
-        
+
     def has_focus_item(self):
         '''Return True if an item is focused'''
         return self.focus_item is not None
-    
-    def get_folder(self, path, flags = 0):
+
+    def get_folder(self, path, flags=0):
         '''Return the files or folders in the current folder.
         
         path - path to the folder
@@ -486,7 +493,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         recurse = (flags & self.FLAG_RECURSE) != 0
         wants_folders = (flags & self.FLAG_FOLDERS) != 0
         enabled_only = (flags & self.FLAG_ENABLED_ONLY) != 0
-        has_path = (idx >=0 and idx < len(self.folder_names) and 
+        has_path = (idx >= 0 and idx < len(self.folder_names) and
                     path == self.folder_names[idx])
         if has_path:
             if not wants_folders:
@@ -510,13 +517,13 @@ class PathListCtrl(wx.PyScrolledWindow):
             for item in folders:
                 if enabled_only:
                     result += [
-                        item.folder_name + "/" + item.filenames[e] 
+                        item.folder_name + "/" + item.filenames[e]
                         for e in item.enabled_idxs]
                 else:
                     result += [item.folder_name + "/" + f
                                for f in item.filenames]
             return result
-            
+
     def on_scroll_changed(self, event):
         #
         # WX is buggy in the way it honors ScrolledWindow.EnableScrolling.
@@ -525,29 +532,29 @@ class PathListCtrl(wx.PyScrolledWindow):
         assert isinstance(event, wx.ScrollWinEvent)
         if event.GetOrientation() == wx.VERTICAL:
             width, _ = self.GetSizeTuple()
-            r = wx.Rect(0, 0, width, (self.line_height + self.leading)*2)
-            self.Refresh(eraseBackground=False, rect = r)
+            r = wx.Rect(0, 0, width, (self.line_height + self.leading) * 2)
+            self.Refresh(eraseBackground=False, rect=r)
         event.Skip(True)
-        
+
     def on_set_focus(self, event):
         self.Refresh(eraseBackground=False)
         event.Skip(True)
-        
+
     def on_kill_focus(self, event):
         self.Refresh(eraseBackground=False)
         event.Skip(True)
-            
+
     DROP_FILES_AND_FOLDERS_HERE = "Drop files and folders here"
     __DROP_FILES_AND_FOLDERS_FONT = None
-    
+
     @property
     def DROP_FILES_AND_FOLDERS_FONT(self):
         if self.__DROP_FILES_AND_FOLDERS_FONT is None:
             self.__DROP_FILES_AND_FOLDERS_FONT = wx.Font(
-                36, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, 
+                36, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL,
                 wx.FONTWEIGHT_BOLD)
-        return self.__DROP_FILES_AND_FOLDERS_FONT 
-    
+        return self.__DROP_FILES_AND_FOLDERS_FONT
+
     def show_idx_as_selected(self, idx):
         '''Return True if the indexed line should be shown selected'''
         if idx in self.selections:
@@ -557,7 +564,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         sel_start = min(self.mouse_down_idx, self.mouse_idx)
         sel_end = max(self.mouse_down_idx, self.mouse_idx) + 1
         return idx >= sel_start and idx < sel_end
-        
+
     def on_paint(self, event):
         '''Handle the paint event'''
         assert isinstance(event, wx.PaintEvent)
@@ -578,20 +585,21 @@ class PathListCtrl(wx.PyScrolledWindow):
             dir_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HOTLIGHT)
         else:
             dir_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
-            
+
         enabled_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
         disabled_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
         if len(self) == 0:
             text = self.DROP_FILES_AND_FOLDERS_HERE
             font = self.DROP_FILES_AND_FOLDERS_FONT
-            paint_dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+            paint_dc.SetTextForeground(
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
             paint_dc.SetFont(font)
             text_width, text_height = paint_dc.GetTextExtent(text)
             paint_dc.DrawText(text,
-                        (width - text_width) / 2, 
-                        (height - text_height) / 2)
+                              (width - text_width) / 2,
+                              (height - text_height) / 2)
             paint_dc.SetFont(self.Font)
-            
+
         selected_text = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
         try:
             x = self.GetScrollPos(wx.SB_HORIZONTAL)
@@ -604,7 +612,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             #
             # Precompute the width of the selection rectangle
             #
-            for idx in range(yline+1, yline_max):
+            for idx in range(yline + 1, yline_max):
                 item, pidx = self[idx]
                 if item is None:
                     break
@@ -614,7 +622,7 @@ class PathListCtrl(wx.PyScrolledWindow):
                     item_width = paint_dc.GetTextExtent(
                         item.file_display_names[pidx])[0]
                     sel_width = max(sel_width, item_width)
-                        
+
             #
             # Paint the strings
             #
@@ -643,18 +651,18 @@ class PathListCtrl(wx.PyScrolledWindow):
                     if idx == self.focus_item:
                         flags += wx.CONTROL_CURRENT
                     draw_item_selection_rect(
-                        self, paint_dc, 
-                        wx.Rect(self.TREEITEM_WIDTH - x, yy, 
+                        self, paint_dc,
+                        wx.Rect(self.TREEITEM_WIDTH - x, yy,
                                 sel_width + 2 * self.TREEITEM_GAP, line_height),
                         flags)
                     if selected:
                         paint_dc.SetTextForeground(selected_text)
                     else:
                         paint_dc.SetTextForeground(
-                            enabled_color if item.enabled[pidx] 
+                            enabled_color if item.enabled[pidx]
                             else disabled_color)
                     paint_dc.DrawText(
-                        item.file_display_names[pidx], 
+                        item.file_display_names[pidx],
                         self.TREEITEM_WIDTH + self.TREEITEM_GAP - x, yy)
         finally:
             paint_dc.SetBrush(wx.NullBrush)
@@ -672,8 +680,8 @@ class PathListCtrl(wx.PyScrolledWindow):
         y = (idx - self.GetScrollPos(wx.SB_VERTICAL)) * total_height
         width, _ = self.GetSizeTuple()
         self.Refresh(eraseBackground=False,
-                     rect = wx.Rect(0, y, width, total_height))
-        
+                     rect=wx.Rect(0, y, width, total_height))
+
     def get_mouse_idx(self, event):
         '''Return the line index at the event's mouse coordinate'''
         if len(self.folder_items) == 0:
@@ -681,11 +689,11 @@ class PathListCtrl(wx.PyScrolledWindow):
         x, y = event.GetPositionTuple()
         line_height = self.line_height + self.leading
         idx = int(y / line_height) + self.GetScrollPos(wx.SB_VERTICAL)
-        idx = max(0, min(len(self)-1, idx))
+        idx = max(0, min(len(self) - 1, idx))
         if y < line_height:
             # It's the slightly bogus directory at the top
             self.recalc()
-            folder_idx = bisect.bisect_right(self.folder_idxs, idx)-1
+            folder_idx = bisect.bisect_right(self.folder_idxs, idx) - 1
             if folder_idx == -1:
                 return -1
             idx = self.folder_idxs[folder_idx]
@@ -704,7 +712,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             # (which means Mac)
             return 16
         return treeitem_x
-    
+
     def on_mouse_down(self, event):
         '''Handle left mouse button down'''
         assert isinstance(event, wx.MouseEvent)
@@ -716,9 +724,9 @@ class PathListCtrl(wx.PyScrolledWindow):
         if item is None:
             item = self.folder_items[-1]
             path_idx = len(item.filenames)
-            
+
         treeitem_x = self.get_treeitem_x()
-        
+
         if path_idx is None and event.GetX() < treeitem_x:
             needs_selchange_evt = len(self.selections) > 0
             self.selections = set()
@@ -728,7 +736,7 @@ class PathListCtrl(wx.PyScrolledWindow):
                 self.notify_selection_changed()
             self.Refresh(eraseBackground=False)
             return
-            
+
         if event.ShiftDown() and len(self.selections) == 1:
             self.mouse_down_idx = self.selections.pop()
         else:
@@ -739,7 +747,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.focus_item = idx
         self.CaptureMouse()
         self.Refresh(eraseBackground=False)
-        
+
     def on_double_click(self, event):
         '''Handle double click event'''
         idx = self.get_mouse_idx(event)
@@ -764,7 +772,7 @@ class PathListCtrl(wx.PyScrolledWindow):
             return
         if self.fn_do_menu_command is not None:
             self.fn_do_menu_command([item.get_full_path(path_idx)], None)
-        
+
     def on_right_mouse_down(self, event):
         '''Handle right mouse button down'''
         assert isinstance(event, wx.MouseEvent)
@@ -773,14 +781,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         if idx == -1 or len(self.folder_items) == 0:
             event.Skip(True)
             return
-        
+
         self.focus_item = idx
         if self[idx][1] is not None:
             self.selections.add(idx)
             self.notify_selection_changed()
         self.refresh_item(idx)
         event.Skip(True)
-        
+
     def on_mouse_moved(self, event):
         '''Handle mouse movement during capture'''
         if self.mouse_down_idx is None:
@@ -789,7 +797,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.focus_item = self.mouse_idx
         self.scroll_into_view()
         self.Refresh(eraseBackground=False)
-        
+
     def scroll_into_view(self):
         '''Scroll the focus item into view'''
         idx_min = self.GetScrollPos(wx.SB_VERTICAL)
@@ -798,12 +806,12 @@ class PathListCtrl(wx.PyScrolledWindow):
         height = int(height / (self.line_height + self.leading))
         idx_max = idx_min + height
         if self.focus_item <= idx_min:
-            self.Scroll(current_x, self.focus_item-1)
+            self.Scroll(current_x, self.focus_item - 1)
             self.refresh_item(self.focus_item)
-            self.refresh_item(self.focus_item-1)
+            self.refresh_item(self.focus_item - 1)
         elif self.focus_item >= idx_max:
-            self.Scroll(current_x, self.focus_item - height+1)
-        
+            self.Scroll(current_x, self.focus_item - height + 1)
+
     def on_mouse_up(self, event):
         '''Handle left mouse button up event'''
         if self.mouse_down_idx is None:
@@ -822,11 +830,11 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.mouse_down_idx = None
         self.notify_selection_changed()
         self.ReleaseMouse()
-        
+
     def on_mouse_capture_lost(self, event):
         '''Handle loss of mouse capture'''
         self.mouse_down_idx = None
-        
+
     def on_up_down(self, event, direction):
         '''Handle the up and down arrow keys
         
@@ -837,14 +845,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         '''
         needs_selchange_event = False
         if (self.focus_item in self.selections and
-            not event.ShiftDown()):
+                not event.ShiftDown()):
             if len(self.selections) > 1:
                 self.Refresh(eraseBackground=False)
             self.selections = set()
             needs_selchange_event = True
         self.refresh_item(self.focus_item)
         if (direction + self.focus_item < 0 or
-            direction + self.focus_item >= len(self)):
+                        direction + self.focus_item >= len(self)):
             if needs_selchange_event:
                 self.notify_selection_changed()
             return
@@ -858,7 +866,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.selections.add(self.focus_item)
         self.notify_selection_changed()
         self.refresh_item(self.focus_item)
-        
+
     def on_key_down(self, event):
         '''Handle a key press'''
         assert isinstance(event, wx.KeyEvent)
@@ -875,8 +883,9 @@ class PathListCtrl(wx.PyScrolledWindow):
             self.on_up_down(event, 1)
             return
         event.Skip(True)
-    
+
     context_menu_ids = []
+
     def on_context_menu(self, event):
         '''Handle a context menu request'''
         if self.focus_item is None:
@@ -893,7 +902,7 @@ class PathListCtrl(wx.PyScrolledWindow):
                 fn_context_menu = self.fn_context_menu
                 fn_do_menu_command = self.fn_do_menu_command
                 arg = self.get_paths(self.FLAG_SELECTED_ONLY)
-            
+
         if fn_context_menu is None or fn_do_menu_command is None:
             return
         pos = event.GetPosition()
@@ -906,28 +915,29 @@ class PathListCtrl(wx.PyScrolledWindow):
         menu = wx.Menu()
         for idx, (key, display_name) in enumerate(item_list):
             menu.Append(self.context_menu_ids[idx], display_name)
+
         def on_menu(event):
             idx = self.context_menu_ids.index(event.Id)
             fn_do_menu_command(arg, item_list[idx][0])
+
         self.Bind(wx.EVT_MENU, on_menu)
         try:
             self.PopupMenu(menu, pos)
         finally:
             self.Unbind(wx.EVT_MENU, handler=on_menu)
             menu.Destroy()
-        
-        
-            
+
+
 if __name__ == "__main__":
     import sys
     import os
-    
+
     app = wx.PySimpleApp(True)
     frame = wx.Frame(None, size=(600, 800))
     ctrl = PathListCtrl(frame)
     frame.Sizer = wx.BoxSizer()
     frame.Sizer.Add(ctrl, 1, wx.EXPAND)
-    
+
     disabled = []
     for root, directories, filenames in os.walk(sys.argv[1]):
         urls = ["file:" + urllib.pathname2url(os.path.join(root, f))
@@ -935,10 +945,13 @@ if __name__ == "__main__":
         disabled += filter((lambda x: not x.lower().endswith(".tif")), urls)
         ctrl.add_paths(urls)
     ctrl.enable_paths(disabled, False)
-    d = { 0: "Delete me", 1: "Hello", 2: "Goodbye", 3: "Show / hide disabled" }
+    d = {0: "Delete me", 1: "Hello", 2: "Goodbye", 3: "Show / hide disabled"}
+
+
     def fn_context(paths):
         return d.items()
-    
+
+
     def fn_cmd(paths, cmd):
         if cmd == 0:
             ctrl.remove_paths(paths)
@@ -950,11 +963,13 @@ if __name__ == "__main__":
             ctrl.set_show_disabled(not ctrl.get_show_disabled())
         elif cmd is None:
             wx.MessageBox("You double-clicked on %s" % paths[0])
-            
+
+
     def fn_folder_context(path):
-        return ((0, "Delete me"), (1, "List me"), (2, "List folders"), 
-                (3, "List recursive") )
-    
+        return ((0, "Delete me"), (1, "List me"), (2, "List folders"),
+                (3, "List recursive"))
+
+
     def fn_folder_command(path, cmd):
         if cmd == 0:
             paths = ctrl.get_folder(path)
@@ -968,9 +983,10 @@ if __name__ == "__main__":
         elif cmd == 3:
             paths = ctrl.get_folder(path, ctrl.FLAG_RECURSE)
             wx.MessageBox("\n".join(paths))
-            
-    ctrl.set_context_menu_fn(fn_context, fn_folder_context, fn_cmd, fn_folder_command)
+
+
+    ctrl.set_context_menu_fn(fn_context, fn_folder_context, fn_cmd,
+                             fn_folder_command)
     frame.Layout()
     frame.Show()
     app.MainLoop()
-    

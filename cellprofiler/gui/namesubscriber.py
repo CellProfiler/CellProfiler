@@ -1,8 +1,10 @@
 """namesubscriber.py - implements a combobox with extra information
 """
-import  wx
+import wx
 
-def align_twosided_items(parent, items, min_spacing=8, left_texts=[], right_texts=[]):
+
+def align_twosided_items(parent, items, min_spacing=8, left_texts=[],
+                         right_texts=[]):
     '''Find spacing for a list of pairs of text such that the left texts are
     left justified and the right texts (roughly) right justified.
     '''
@@ -13,14 +15,18 @@ def align_twosided_items(parent, items, min_spacing=8, left_texts=[], right_text
                 item.SetItemLabel("%s\t%s" % (left, right))
         else:
             # Mac and linux use spaces to align.
-            widths = [parent.GetTextExtent("%s%s%s" % (left, " " * min_spacing, right))[0]
+            widths = [parent.GetTextExtent(
+                "%s%s%s" % (left, " " * min_spacing, right))[0]
                       for left, right in zip(left_texts, right_texts)]
             maxwidth = max(widths)
-            spacewidth = parent.GetTextExtent("  ")[0] - parent.GetTextExtent(" ")[0]
+            spacewidth = parent.GetTextExtent("  ")[0] - \
+                         parent.GetTextExtent(" ")[0]
             for item, left, right, initial_width in \
                     zip(items, left_texts, right_texts, widths):
-                numspaces = int(min_spacing + (maxwidth - initial_width) / spacewidth)
+                numspaces = int(
+                    min_spacing + (maxwidth - initial_width) / spacewidth)
                 item.SetItemLabel("%s%s%s" % (left, ' ' * numspaces, right))
+
 
 class NameSubscriberComboBox(wx.Panel):
     '''A read-only combobox with extra annotation, and a context menu.
@@ -28,6 +34,7 @@ class NameSubscriberComboBox(wx.Panel):
     Mostly the same interface as wx.ComboBox, but choices is a list of (Name,
     Parent, modulenum).
     '''
+
     def __init__(self, annotation, choices=[], value='', name=''):
         wx.Panel.__init__(self, annotation, name=name)
         self.orig_choices = choices
@@ -36,14 +43,16 @@ class NameSubscriberComboBox(wx.Panel):
         self.combo_dlg = wx.ComboBox(
             self, choices=[choice[0] for choice in choices],
             value=value, style=wx.CB_READONLY)
-        self.annotation_dlg = wx.StaticText(self, label='', style=wx.ST_NO_AUTORESIZE)
+        self.annotation_dlg = wx.StaticText(self, label='',
+                                            style=wx.ST_NO_AUTORESIZE)
         self.annotation_dlg.MinSize = (
             max([self.annotation_dlg.GetTextExtent(choice[1] + " (from #00)")[0]
                  for choice in self.orig_choices]), -1)
         self.update_annotation()
 
         sizer.AddStretchSpacer()
-        sizer.Add(self.combo_dlg, flag=wx.ALL | wx.EXPAND | wx.ALIGN_CENTER, border=3)
+        sizer.Add(self.combo_dlg, flag=wx.ALL | wx.EXPAND | wx.ALIGN_CENTER,
+                  border=3)
         sizer.Add((5, 5))
         sizer.Add(self.annotation_dlg, flag=wx.ALIGN_CENTER)
         sizer.AddStretchSpacer()
@@ -75,7 +84,7 @@ class NameSubscriberComboBox(wx.Panel):
                 return "(from %s)" % module_name
             return "(from %s #%02d)" % (module_name, module_num)
         return ""
-    
+
     def update_annotation(self):
         self.annotation_dlg.Label = ''
         if self.orig_choices:
@@ -88,12 +97,12 @@ class NameSubscriberComboBox(wx.Panel):
 
         unsorted_choices = [
             (name, annotation, num, is_input_module, id)
-             for (name, annotation, num, is_input_module), id in
-             zip(self.orig_choices, self.IDs)]
+            for (name, annotation, num, is_input_module), id in
+            zip(self.orig_choices, self.IDs)]
         fn_key = lambda x: (x[2], x)
-        choices_sorted_by_num = sorted(unsorted_choices, key = fn_key)
-        for name, annotation, num, is_input_module, choiceid in\
-            choices_sorted_by_num:
+        choices_sorted_by_num = sorted(unsorted_choices, key=fn_key)
+        for name, annotation, num, is_input_module, choiceid in \
+                choices_sorted_by_num:
             all_menu.Append(choiceid, "filler")
 
         align_twosided_items(
@@ -105,7 +114,7 @@ class NameSubscriberComboBox(wx.Panel):
 
         submenus = {}
         for name, annotation, num, is_input_module, choiceid \
-            in choices_sorted_by_num:
+                in choices_sorted_by_num:
             if not annotation:
                 continue
             key = (num, annotation, is_input_module)
@@ -119,9 +128,9 @@ class NameSubscriberComboBox(wx.Panel):
         align_twosided_items(
             self.combo_dlg,
             menu.MenuItems,
-            left_texts = ['All'] + [k[1] for k, v in sorted_submenus],
+            left_texts=['All'] + [k[1] for k, v in sorted_submenus],
             right_texts=[''] + [
-                "  "if is_input_module else "#%02d" % num
+                "  " if is_input_module else "#%02d" % num
                 for (num, annotation, is_input_module), v
                 in sorted_submenus])
         self.PopupMenu(menu)

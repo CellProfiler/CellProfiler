@@ -8,8 +8,10 @@ import re
 import os.path
 import logging
 
+
 def datetime_from_isoformat(dt_str):
     return datetime.datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S")
+
 
 def get_version():
     '''Get a version as "timestamp version", where timestamp is when the last
@@ -19,7 +21,8 @@ def get_version():
 
     if not hasattr(sys, 'frozen'):
         import cellprofiler
-        cellprofiler_basedir = os.path.abspath(os.path.join(os.path.dirname(cellprofiler.__file__), '..'))
+        cellprofiler_basedir = os.path.abspath(
+            os.path.join(os.path.dirname(cellprofiler.__file__), '..'))
         # Evil GIT without GIT. Look for what we want in the log files.
         try:
             while True:
@@ -53,18 +56,23 @@ def get_version():
                             last_hash = match.groupdict()["newhash"]
                             last_timestamp = match.groupdict()["timestamp"]
                 if last_hash is not None:
-                    t = datetime.datetime.utcfromtimestamp(float(last_timestamp))
-                    return "%s %s" %(t.isoformat("T"), last_hash[:7])
+                    t = datetime.datetime.utcfromtimestamp(
+                        float(last_timestamp))
+                    return "%s %s" % (t.isoformat("T"), last_hash[:7])
         except:
             pass
 
         # GIT
         try:
-            timestamp, hash = subprocess.Popen(['git', 'log', '--format=%ct %h', '-n', '1'],
-                                               stdout=subprocess.PIPE,
-                                               stderr=subprocess.STDOUT,
-                                               cwd=cellprofiler_basedir).communicate()[0].strip().split(' ')
-            return '%s %s' % (datetime.datetime.utcfromtimestamp(float(timestamp)).isoformat('T'), hash)
+            timestamp, hash = \
+            subprocess.Popen(['git', 'log', '--format=%ct %h', '-n', '1'],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.STDOUT,
+                             cwd=cellprofiler_basedir).communicate()[
+                0].strip().split(' ')
+            return '%s %s' % (
+            datetime.datetime.utcfromtimestamp(float(timestamp)).isoformat('T'),
+            hash)
         except (OSError, subprocess.CalledProcessError, ValueError), e:
             pass
 
@@ -75,25 +83,33 @@ def get_version():
                 output = subprocess.Popen(['svn', 'info', '--xml'],
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT,
-                                          cwd=cellprofiler_basedir).communicate()[0]
-                date = re.search('<date>([^.]*)(\\.[0-9]*Z)</date>', output).group(1)
+                                          cwd=cellprofiler_basedir).communicate()[
+                    0]
+                date = re.search('<date>([^.]*)(\\.[0-9]*Z)</date>',
+                                 output).group(1)
                 version = re.search('revision="(.*)">', output).group(1)
-                return '%s SVN:%s' % (datetime_from_isoformat(date).isoformat('T'), version)
+                return '%s SVN:%s' % (
+                datetime_from_isoformat(date).isoformat('T'), version)
         except (OSError, subprocess.CalledProcessError), e:
             pass
         except (AttributeError,), e:
             import logging
-            logging.root.error("Could not parse SVN XML output while finding version.\n" + output)
+            logging.root.error(
+                "Could not parse SVN XML output while finding version.\n" + output)
 
         # Give up
-        return '%s Unknown rev.' % (datetime.datetime.utcnow().isoformat('T').split('.')[0])
+        return '%s Unknown rev.' % (
+        datetime.datetime.utcnow().isoformat('T').split('.')[0])
     else:
         import cellprofiler.frozen_version
         return cellprofiler.frozen_version.version_string
 
+
 '''Code version'''
 version_string = get_version()
-version_number = int(datetime_from_isoformat(version_string.split(' ')[0]).strftime('%Y%m%d%H%M%S'))
+version_number = int(
+    datetime_from_isoformat(version_string.split(' ')[0]).strftime(
+        '%Y%m%d%H%M%S'))
 dotted_version = '2.1.2'
 git_hash = version_string.split(' ', 1)[1]
 title_string = '%s (rev %s)' % (dotted_version, git_hash)

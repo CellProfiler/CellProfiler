@@ -24,6 +24,7 @@ class Rpdb(pdb.Pdb):
            first message to the port, or None for no verification.  Default =
            None.
     '''
+
     def __init__(self, port=0, verification_hash=None, port_callback=None):
         self.old_stds = (sys.stdin, sys.stdout)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -37,7 +38,8 @@ class Rpdb(pdb.Pdb):
         self.verified = False
         (self.clientsocket, self.address) = self.socket.accept()
         self.handle = self.clientsocket.makefile('rw')
-        pdb.Pdb.__init__(self, completekey='tab', stdin=self.handle, stdout=self.handle)
+        pdb.Pdb.__init__(self, completekey='tab', stdin=self.handle,
+                         stdout=self.handle)
         sys.stdout = sys.stdin = self.handle
 
     def verify(self):
@@ -46,8 +48,11 @@ class Rpdb(pdb.Pdb):
             self.handle.flush()
             verification = self.handle.readline().rstrip()
             if hashlib.sha1(verification).hexdigest() != self.verification_hash:
-                sys.stderr.write('Verification hash from %s does not match in Rpdb.verify()!  Closing.\n' % str(self.address))
-                sys.stderr.write('Got: %s, expected: %s\n' % (hashlib.sha1(verification).hexdigest(), self.verification_hash))
+                sys.stderr.write(
+                    'Verification hash from %s does not match in Rpdb.verify()!  Closing.\n' % str(
+                        self.address))
+                sys.stderr.write('Got: %s, expected: %s\n' % (
+                hashlib.sha1(verification).hexdigest(), self.verification_hash))
                 sys.stdin, sys.stdout = self.old_stds
                 self.clientsocket.close()
                 self.socket.close()
@@ -87,7 +92,10 @@ if __name__ == '__main__':
     except:
         def pc(x):
             print x
-        rpdb = Rpdb(verification_hash=hashlib.sha1("testing").hexdigest(), port_callback=pc)
+
+
+        rpdb = Rpdb(verification_hash=hashlib.sha1("testing").hexdigest(),
+                    port_callback=pc)
         print "debugger listing on port", rpdb.port
         rpdb.verify()
         rpdb.post_mortem()

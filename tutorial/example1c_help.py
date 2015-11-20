@@ -19,10 +19,10 @@ HTML support is limited by what's available currently in WX but
 # Python module, "cellprofiler.cpmodule".
 
 import cellprofiler.cpmodule as cpm
-
 # This is where all settings are defined. See below for explanation.
 
 import cellprofiler.settings as cps
+
 
 #
 # This is the module class definition. Each module is a Python class
@@ -66,7 +66,7 @@ class Example1c(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example1c"
     category = "Other"
-    
+
     #
     # The next thing that every module must have is a create_settings method.
     # A setting is a variable that influences the behavior of your module.
@@ -77,26 +77,27 @@ class Example1c(cpm.CPModule):
     #
     # This module has none, so this is the "do-nothing" version, so far.
     #
-    def create_settings(self): # "self" refers to the module's class attributes
+    def create_settings(self):  # "self" refers to the module's class attributes
         self.text_setting = cps.Text(
             "Text setting", "suggested value",
-        ##    doc = "This is the help for the text setting"
+            ##    doc = "This is the help for the text setting"
         )
         self.choice_setting = cps.Choice(
             "Choice setting", ["Choice 1", "Choice 2", "Choice 3"],
-        ##    doc = "This is the help for the choice setting"
+            ##    doc = "This is the help for the choice setting"
         )
         self.binary_setting = cps.Binary(
             "Binary setting", False,
-        ##    doc = "This is the help for the binary setting"
+            ##    doc = "This is the help for the binary setting"
         )
         self.integer_setting = cps.Integer(
             "Integer setting", 15,
-        ##    doc = "This is the help for the integer setting"
+            ##    doc = "This is the help for the integer setting"
         )
         self.float_setting = cps.Float(
             "Float setting", 1.5,
-            doc = "This is the help for the float setting")
+            doc="This is the help for the float setting")
+
     #
     # You need to be able to tell CellProfiler about the settings in your
     # module. The "settings" method returns the settings in the order that
@@ -112,7 +113,7 @@ class Example1c(cpm.CPModule):
                 self.binary_setting,
                 self.integer_setting,
                 self.float_setting]
-    
+
     #
     # visible_settings returns what the user should see. You can use this
     #                  to only show relevant settings, for instance when
@@ -125,6 +126,7 @@ class Example1c(cpm.CPModule):
         if self.binary_setting:
             result += [self.integer_setting, self.float_setting]
         return result
+
     #
     # By default, help_settings returns what's returned by settings(), but
     # if you want a different order, you can override.
@@ -145,7 +147,7 @@ class Example1c(cpm.CPModule):
         print "%d + %f = %f" % (integer_value,
                                 float_value,
                                 integer_value + float_value)
-    
+
     #
     # We'll cover the display in Example # 1e, but here's a quick display
     # to give you something to look at when you execute the module.
@@ -164,20 +166,22 @@ class Example1c(cpm.CPModule):
             # Use the *new* version of subplot table to make a table that's
             # much prettier than the old one.
             #
-            frame.set_subplots((1,1))
+            frame.set_subplots((1, 1))
             frame.subplot_table(
                 0, 0,
-                [[setting.text, setting.value_text] for setting in self.settings()],
+                [[setting.text, setting.value_text] for setting in
+                 self.settings()],
                 col_labels=["Setting", "Value"])
         else:
             #
             # The old version
             #
-            frame = workspace.create_or_find_figure(subplots=(1,1))
+            frame = workspace.create_or_find_figure(subplots=(1, 1))
             frame.subplot_table(
                 0, 0,
-                [[setting.text, setting.value_text] for setting in self.settings()])
-                
+                [[setting.text, setting.value_text] for setting in
+                 self.settings()])
+
     #
     # Prior to the current release, a module had to tell CellProfiler whether
     # it interacted with the user interface inside the "run" method and by
@@ -195,4 +199,4 @@ class Example1c(cpm.CPModule):
     # We'll cover the new UI interaction mechanism in example2c.
     #
     def is_interactive(self):
-        return False        
+        return False

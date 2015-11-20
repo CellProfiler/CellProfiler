@@ -24,7 +24,6 @@ See also the <b>Metadata</b> module.
 '''
 
 import numpy as np
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -32,26 +31,27 @@ import cellprofiler.settings as cps
 O_ROW = "Row"
 O_COLUMN = "Column"
 
+
 class LabelImages(cpm.CPModule):
     module_name = "LabelImages"
     category = "Other"
     variable_revision_number = 1
-    
+
     def create_settings(self):
         self.site_count = cps.Integer(
-            "Number of image sites per well", 1, minval=1,doc = """
+            "Number of image sites per well", 1, minval=1, doc="""
             This setting controls the number of image sets for each well""")
-        
+
         self.column_count = cps.Integer(
-            "Number of columns per plate", 12, minval=1,doc = """
+            "Number of columns per plate", 12, minval=1, doc="""
             Enter the number of columns per plate""")
-        
+
         self.row_count = cps.Integer(
-            "Number of rows per plate", 8, minval=1,doc = """
+            "Number of rows per plate", 8, minval=1, doc="""
             The number of rows per plate""")
-        
+
         self.order = cps.Choice(
-            "Order of image data", [O_ROW, O_COLUMN],doc = """
+            "Order of image data", [O_ROW, O_COLUMN], doc="""
             This setting specifies how the input data is ordered (assuming
             that sites within a well are ordered consecutively):
             <ul>
@@ -73,44 +73,46 @@ class LabelImages(cpm.CPModule):
             ...<br>
             You would use "%(O_ROW)s" to label these because the ordering
             is by row and then by column.</p>""" % globals())
-        
+
     def settings(self):
         '''The settings as they appear in the pipeline'''
         return [self.site_count, self.column_count, self.row_count,
                 self.order]
-    
+
     def run(self, workspace):
         '''Run one image set'''
         m = workspace.measurements
-        well_count, site_index = divmod(m.image_set_number - 1, self.site_count.value)
+        well_count, site_index = divmod(m.image_set_number - 1,
+                                        self.site_count.value)
         if self.order == O_ROW:
-            row_count, column_index = divmod(well_count, self.column_count.value)
+            row_count, column_index = divmod(well_count,
+                                             self.column_count.value)
             plate_index, row_index = divmod(row_count, self.row_count.value)
         else:
             column_count, row_index = divmod(well_count, self.row_count.value)
-            plate_index, column_index = divmod(column_count, 
+            plate_index, column_index = divmod(column_count,
                                                self.column_count.value)
-        
-        row_text_indexes = [ 
+
+        row_text_indexes = [
             x % 26 for x in reversed(
                 [int(row_index / (26 ** i)) for i in range(self.row_digits)])]
-                             
+
         row_text = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[x] for x in row_text_indexes]
-        row_text = reduce(lambda x,y: x+y, row_text)
+        row_text = reduce(lambda x, y: x + y, row_text)
         well_template = "%s%0" + str(self.column_digits) + "d"
-        well = well_template % (row_text, column_index+1)
-        
+        well = well_template % (row_text, column_index + 1)
+
         statistics = [(cpmeas.M_SITE, site_index + 1),
-                       (cpmeas.M_ROW, row_text),
-                       (cpmeas.M_COLUMN, column_index + 1),
-                       (cpmeas.M_WELL, well),
-                       (cpmeas.M_PLATE, plate_index + 1)]
+                      (cpmeas.M_ROW, row_text),
+                      (cpmeas.M_COLUMN, column_index + 1),
+                      (cpmeas.M_WELL, well),
+                      (cpmeas.M_PLATE, plate_index + 1)]
         for feature, value in statistics:
             m.add_image_measurement(feature, value)
         workspace.display_data.col_labels = ("Metadata", "Value")
         workspace.display_data.statistics = [
             (feature, str(value)) for feature, value in statistics]
-    
+
     @property
     def row_digits(self):
         '''The number of letters it takes to represent a row.
@@ -119,13 +121,13 @@ class LabelImages(cpm.CPModule):
         is sufficiently general.
         '''
         return int(1 + np.log(self.row_count.value) / np.log(26))
-        
+
     @property
     def column_digits(self):
         '''The number of digits it takes to represent a column.'''
-        
+
         return int(1 + np.log10(self.column_count.value))
-    
+
     def get_measurement_columns(self, pipeline):
         row_coltype = cpmeas.COLTYPE_VARCHAR_FORMAT % self.row_digits
         well_coltype = cpmeas.COLTYPE_VARCHAR_FORMAT % (
@@ -136,26 +138,26 @@ class LabelImages(cpm.CPModule):
             (cpmeas.IMAGE, cpmeas.M_COLUMN, cpmeas.COLTYPE_INTEGER),
             (cpmeas.IMAGE, cpmeas.M_WELL, well_coltype),
             (cpmeas.IMAGE, cpmeas.M_PLATE, cpmeas.COLTYPE_INTEGER)]
-    
+
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [ cpmeas.C_METADATA ]
+            return [cpmeas.C_METADATA]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == cpmeas.C_METADATA:
             return [cpmeas.FTR_SITE, cpmeas.FTR_ROW, cpmeas.FTR_COLUMN,
                     cpmeas.FTR_WELL, cpmeas.FTR_PLATE]
         return []
-    
+
     def display(self, workspace, figure):
         '''Display the plate / well information in a figure table'''
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, 
+        figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
-                             col_labels = workspace.display_data.col_labels)
-        
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+                             col_labels=workspace.display_data.col_labels)
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Upgrade the pipeline settings to the current revision of the module
         
@@ -166,14 +168,14 @@ class LabelImages(cpm.CPModule):
         '''
         if from_matlab and variable_revision_number == 1:
             label_name, rows_cols, row_or_column, image_cycles_per_well = \
-                      setting_values
+                setting_values
             row_count, column_count = rows_cols.split(',')
             if rows_cols == 'A02':
                 order = O_ROW
             else:
                 order = O_COLUMN
-            setting_values = [ image_cycles_per_well, column_count, row_count,
-                               order]
+            setting_values = [image_cycles_per_well, column_count, row_count,
+                              order]
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab

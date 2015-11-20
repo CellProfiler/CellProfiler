@@ -1,5 +1,6 @@
-import cellprofiler.icons 
+import cellprofiler.icons
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON
+
 __doc__ = '''
 <b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
 <hr>
@@ -62,13 +63,10 @@ Research</i>, 23, 231-242 <a href="http://dx.doi.org/10.1207/s15327906mbr2302_6"
 </ul>
 '''
 
-
 import numpy as np
 from contrib.english import ordinal
-
 from scipy.ndimage import label, distance_transform_edt
 from scipy.sparse import coo_matrix
-
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
@@ -107,8 +105,8 @@ L_CP = "From this CP pipeline"
 DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
+
 class CalculateImageOverlap(cpm.CPModule):
-    
     category = "Measurement"
     variable_revision_number = 4
     module_name = "CalculateImageOverlap"
@@ -116,31 +114,31 @@ class CalculateImageOverlap(cpm.CPModule):
     def create_settings(self):
         self.obj_or_img = cps.Choice(
             "Compare segmented objects, or foreground/background?", O_ALL)
-        
+
         self.ground_truth = cps.ImageNameSubscriber(
-            "Select the image to be used as the ground truth basis for calculating the amount of overlap", 
-            cps.NONE, doc = """
+            "Select the image to be used as the ground truth basis for calculating the amount of overlap",
+            cps.NONE, doc="""
             <i>(Used only when comparing foreground/background)</i> <br>
             This binary (black and white) image is known as the "ground truth" image.  It can be the product of segmentation performed by hand, or
             the result of another segmentation algorithm whose results you would like to compare.""")
-        
+
         self.test_img = cps.ImageNameSubscriber(
-            "Select the image to be used to test for overlap", 
-            cps.NONE, doc = """
+            "Select the image to be used to test for overlap",
+            cps.NONE, doc="""
             <i>(Used only when comparing foreground/background)</i> <br>
             This binary (black and white) image is what you will compare with the ground truth image. It is known as the "test image".""")
-        
+
         self.object_name_GT = cps.ObjectNameSubscriber(
-            "Select the objects to be used as the ground truth basis for calculating the amount of overlap", 
-            cps.NONE, doc ="""
+            "Select the objects to be used as the ground truth basis for calculating the amount of overlap",
+            cps.NONE, doc="""
             <i>(Used only when comparing segmented objects)</i> <br>
             Choose which set of objects will used as the "ground truth" objects. It can be the product of segmentation performed by hand, or
             the result of another segmentation algorithm whose results you would like to compare. See the <b>Load</b> modules for more details
             on loading objects.""")
-        
+
         self.object_name_ID = cps.ObjectNameSubscriber(
-            "Select the objects to be tested for overlap against the ground truth", 
-            cps.NONE, doc ="""
+            "Select the objects to be tested for overlap against the ground truth",
+            cps.NONE, doc="""
             <i>(Used only when comparing segmented objects)</i> <br>
             This set of objects is what you will compare with the ground truth objects. It is known as the "test object." """)
         self.wants_emd = cps.Binary(
@@ -161,8 +159,8 @@ class CalculateImageOverlap(cpm.CPModule):
             """)
         self.max_points = cps.Integer(
             "Maximum # of points", value=250,
-            minval = 100,
-            doc = """
+            minval=100,
+            doc="""
             <i>(Used only when computing the earth mover's distance)</i> <br>
             This is the number of representative points that will be taken
             from the foreground of the test image and from the foreground of 
@@ -170,8 +168,8 @@ class CalculateImageOverlap(cpm.CPModule):
             """)
         self.decimation_method = cps.Choice(
             "Point selection method",
-            choices = [DM_KMEANS, DM_SKEL],
-            doc = """
+            choices=[DM_KMEANS, DM_SKEL],
+            doc="""
             <i>(Used only when computing the earth mover's distance)</i> <br>
             The point selection setting determines how the
             representative points are chosen. 
@@ -193,7 +191,7 @@ class CalculateImageOverlap(cpm.CPModule):
             """ % globals())
         self.max_distance = cps.Integer(
             "Maximum distance", value=250, minval=1,
-            doc = """
+            doc="""
             <i>(Used only when computing the earth mover's distance)</i> <br>
             This setting sets an upper bound to the distance penalty
             assessed during the movement calculation. As an example, the score
@@ -207,7 +205,7 @@ class CalculateImageOverlap(cpm.CPModule):
             """)
         self.penalize_missing = cps.Binary(
             "Penalize missing pixels", value=False,
-            doc = """
+            doc="""
             <i>(Used only when computing the earth mover's distance)</i> <br>
             If one image has more foreground pixels than the other, the
             earth mover's distance is not well-defined because there is
@@ -226,7 +224,7 @@ class CalculateImageOverlap(cpm.CPModule):
             """)
 
     def settings(self):
-        result = [self.obj_or_img, self.ground_truth, self.test_img, 
+        result = [self.obj_or_img, self.ground_truth, self.test_img,
                   self.object_name_GT, self.object_name_ID,
                   self.wants_emd, self.max_points, self.decimation_method,
                   self.max_distance, self.penalize_missing]
@@ -244,7 +242,7 @@ class CalculateImageOverlap(cpm.CPModule):
                        self.max_distance, self.penalize_missing]
         return result
 
-    def run(self,workspace):
+    def run(self, workspace):
         if self.obj_or_img == O_IMG:
             self.measure_image(workspace)
         elif self.obj_or_img == O_OBJ:
@@ -252,38 +250,39 @@ class CalculateImageOverlap(cpm.CPModule):
 
     def measure_image(self, workspace):
         '''Add the image overlap measurements'''
-        
+
         image_set = workspace.image_set
         ground_truth_image = image_set.get_image(self.ground_truth.value,
-                                                 must_be_binary = True)
+                                                 must_be_binary=True)
         test_image = image_set.get_image(self.test_img.value,
-                                         must_be_binary = True)
+                                         must_be_binary=True)
         ground_truth_pixels = ground_truth_image.pixel_data
-        ground_truth_pixels = test_image.crop_image_similarly(ground_truth_pixels)
+        ground_truth_pixels = test_image.crop_image_similarly(
+            ground_truth_pixels)
         mask = ground_truth_image.mask
         mask = test_image.crop_image_similarly(mask)
         if test_image.has_mask:
             mask = mask & test_image.mask
         test_pixels = test_image.pixel_data
-        
+
         false_positives = test_pixels & ~ ground_truth_pixels
         false_positives[~ mask] = False
         false_negatives = (~ test_pixels) & ground_truth_pixels
         false_negatives[~ mask] = False
         true_positives = test_pixels & ground_truth_pixels
-        true_positives[ ~ mask] = False
+        true_positives[~ mask] = False
         true_negatives = (~ test_pixels) & (~ ground_truth_pixels)
         true_negatives[~ mask] = False
-        
+
         false_positive_count = np.sum(false_positives)
         true_positive_count = np.sum(true_positives)
-        
+
         false_negative_count = np.sum(false_negatives)
         true_negative_count = np.sum(true_negatives)
-        
+
         labeled_pixel_count = true_positive_count + false_positive_count
         true_count = true_positive_count + false_negative_count
-        
+
         ##################################
         #
         # Calculate the F-Factor
@@ -296,7 +295,7 @@ class CalculateImageOverlap(cpm.CPModule):
         # recall = true positives / true count
         #
         ###################################
-        
+
         if labeled_pixel_count == 0:
             precision = 1.0
         else:
@@ -306,7 +305,7 @@ class CalculateImageOverlap(cpm.CPModule):
         else:
             recall = float(true_positive_count) / float(true_count)
         if (precision + recall) == 0:
-            f_factor = 0.0 # From http://en.wikipedia.org/wiki/F1_score
+            f_factor = 0.0  # From http://en.wikipedia.org/wiki/F1_score
         else:
             f_factor = 2.0 * precision * recall / (precision + recall)
         negative_count = false_positive_count + true_negative_count
@@ -314,7 +313,7 @@ class CalculateImageOverlap(cpm.CPModule):
             false_positive_rate = 0.0
             true_negative_rate = 1.0
         else:
-            false_positive_rate = (float(false_positive_count) / 
+            false_positive_rate = (float(false_positive_count) /
                                    float(negative_count))
             true_negative_rate = (float(true_negative_count) /
                                   float(negative_count))
@@ -322,7 +321,7 @@ class CalculateImageOverlap(cpm.CPModule):
             false_negative_rate = 0.0
             true_positive_rate = 1.0
         else:
-            false_negative_rate = (float(false_negative_count) / 
+            false_negative_rate = (float(false_negative_count) /
                                    float(true_count))
             true_positive_rate = (float(true_positive_count) /
                                   float(true_count))
@@ -332,7 +331,7 @@ class CalculateImageOverlap(cpm.CPModule):
             test_pixels & mask, np.ones((3, 3), bool))
         rand_index, adjusted_rand_index = self.compute_rand_index(
             test_labels, ground_truth_labels, mask)
-            
+
         m = workspace.measurements
         m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), f_factor)
         m.add_image_measurement(self.measurement_name(FTR_PRECISION),
@@ -350,7 +349,7 @@ class CalculateImageOverlap(cpm.CPModule):
                                 rand_index)
         m.add_image_measurement(self.measurement_name(FTR_ADJUSTED_RAND_INDEX),
                                 adjusted_rand_index)
-        
+
         if self.wants_emd:
             test_objects = cpo.Objects()
             test_objects.segmented = test_labels
@@ -359,7 +358,7 @@ class CalculateImageOverlap(cpm.CPModule):
             emd = self.compute_emd(test_objects, ground_truth_objects)
             m.add_image_measurement(
                 self.measurement_name(FTR_EARTH_MOVERS_DISTANCE), emd)
-        
+
         if self.show_window:
             workspace.display_data.true_positives = true_positives
             workspace.display_data.true_negatives = true_negatives
@@ -379,23 +378,23 @@ class CalculateImageOverlap(cpm.CPModule):
             if self.wants_emd:
                 workspace.display_data.statistics.append(
                     (FTR_EARTH_MOVERS_DISTANCE, emd))
-            
+
     def measure_objects(self, workspace):
         image_set = workspace.image_set
         object_name_GT = self.object_name_GT.value
         objects_GT = workspace.get_objects(object_name_GT)
-        iGT,jGT,lGT = objects_GT.ijv.transpose() 
+        iGT, jGT, lGT = objects_GT.ijv.transpose()
         object_name_ID = self.object_name_ID.value
         objects_ID = workspace.get_objects(object_name_ID)
         iID, jID, lID = objects_ID.ijv.transpose()
         ID_obj = 0 if len(lID) == 0 else max(lID)
-        GT_obj  = 0 if len(lGT) == 0 else max(lGT)
+        GT_obj = 0 if len(lGT) == 0 else max(lGT)
 
         xGT, yGT = objects_GT.shape
         xID, yID = objects_ID.shape
         GT_pixels = np.zeros((xGT, yGT))
         ID_pixels = np.zeros((xID, yID))
-        total_pixels = xGT*yGT
+        total_pixels = xGT * yGT
 
         GT_pixels[iGT, jGT] = 1
         ID_pixels[iID, jID] = 1
@@ -419,8 +418,8 @@ class CalculateImageOverlap(cpm.CPModule):
             all_ijv = all_ijv[order, :]
             # Mark the first at each i, j != previous i, j
             first = np.where(np.hstack(
-                ([True], 
-                 ~ np.all(all_ijv[:-1, :2] == all_ijv[1:, :2], 1), 
+                ([True],
+                 ~ np.all(all_ijv[:-1, :2] == all_ijv[1:, :2], 1),
                  [True])))[0]
             # Count # at each i, j
             count = first[1:] - first[:-1]
@@ -437,22 +436,22 @@ class CalculateImageOverlap(cpm.CPModule):
             #
             cross_map = Indexes([id_count, gt_count])
             off_gt = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[0]
-            off_id = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[1]+\
-                id_count[cross_map.rev_idx]
+            off_id = all_ijv_map.fwd_idx[cross_map.rev_idx] + cross_map.idx[1] + \
+                     id_count[cross_map.rev_idx]
             intersect_matrix = coo_matrix(
-                (np.ones(len(off_gt)), 
+                (np.ones(len(off_gt)),
                  (all_ijv[off_id, 2], all_ijv[off_gt, 2])),
-                shape = (ID_obj+1, GT_obj+1)).toarray()[1:, 1:]
-        
+                shape=(ID_obj + 1, GT_obj + 1)).toarray()[1:, 1:]
+
         gt_areas = objects_GT.areas
         id_areas = objects_ID.areas
         FN_area = gt_areas[np.newaxis, :] - intersect_matrix
         all_intersecting_area = np.sum(intersect_matrix)
-        
+
         dom_ID = []
 
         for i in range(0, ID_obj):
-            indices_jj = np.nonzero(lID==i)
+            indices_jj = np.nonzero(lID == i)
             indices_jj = indices_jj[0]
             id_i = iID[indices_jj]
             id_j = jID[indices_jj]
@@ -462,33 +461,37 @@ class CalculateImageOverlap(cpm.CPModule):
             if len(i) == 0 or max(i) == 0:
                 id = -1  # we missed the object; arbitrarily assign -1 index                                                          
             else:
-                id = np.where(i == max(i))[0][0] # what is the ID of the max pixels?                                                            
-            dom_ID += [id]  # for ea GT object, which is the dominating ID?                                                                    
+                id = np.where(i == max(i))[0][
+                    0]  # what is the ID of the max pixels?
+            dom_ID += [
+                id]  # for ea GT object, which is the dominating ID?
 
         dom_ID = np.array(dom_ID)
-        
+
         for i in range(0, len(intersect_matrix.T)):
             if len(np.where(dom_ID == i)[0]) > 1:
-                final_id = np.where(intersect_matrix.T[i] == max(intersect_matrix.T[i]))
+                final_id = np.where(
+                    intersect_matrix.T[i] == max(intersect_matrix.T[i]))
                 final_id = final_id[0][0]
                 all_id = np.where(dom_ID == i)[0]
                 nonfinal = [x for x in all_id if x != final_id]
                 for n in nonfinal:  # these others cannot be candidates for the corr ID now                                                      
                     intersect_matrix.T[i][n] = 0
-            else :
+            else:
                 continue
 
         TP = 0
         FN = 0
         FP = 0
-        for i in range(0,len(dom_ID)):
+        for i in range(0, len(dom_ID)):
             d = dom_ID[i]
             if d == -1:
                 tp = 0
                 fn = id_areas[i]
                 fp = 0
             else:
-                fp = np.sum(intersect_matrix[i][0:d])+np.sum(intersect_matrix[i][(d+1)::])
+                fp = np.sum(intersect_matrix[i][0:d]) + np.sum(
+                    intersect_matrix[i][(d + 1)::])
                 tp = intersect_matrix[i][d]
                 fn = FN_area[i][d]
             TP += tp
@@ -501,17 +504,18 @@ class CalculateImageOverlap(cpm.CPModule):
             if denominator == 0:
                 return np.nan
             return float(numerator) / float(denominator)
+
         accuracy = nan_divide(TP, all_intersecting_area)
-        recall  = nan_divide(TP, GT_tot_area)
-        precision = nan_divide(TP, (TP+FP))
-        F_factor = nan_divide(2*(precision*recall), (precision+recall))
-        true_positive_rate = nan_divide(TP, (FN+TP))
-        false_positive_rate = nan_divide(FP, (FP+TN))
-        false_negative_rate = nan_divide(FN, (FN+TP))
-        true_negative_rate = nan_divide(TN , (FP+TN))
+        recall = nan_divide(TP, GT_tot_area)
+        precision = nan_divide(TP, (TP + FP))
+        F_factor = nan_divide(2 * (precision * recall), (precision + recall))
+        true_positive_rate = nan_divide(TP, (FN + TP))
+        false_positive_rate = nan_divide(FP, (FP + TN))
+        false_negative_rate = nan_divide(FN, (FN + TP))
+        true_negative_rate = nan_divide(TN, (FP + TN))
         shape = np.maximum(np.maximum(
             np.array(objects_GT.shape), np.array(objects_ID.shape)),
-                           np.ones(2, int))
+            np.ones(2, int))
         rand_index, adjusted_rand_index = self.compute_rand_index_ijv(
             objects_GT.ijv, objects_ID.ijv, shape)
         m = workspace.measurements
@@ -531,23 +535,24 @@ class CalculateImageOverlap(cpm.CPModule):
                                 rand_index)
         m.add_image_measurement(self.measurement_name(FTR_ADJUSTED_RAND_INDEX),
                                 adjusted_rand_index)
+
         def subscripts(condition1, condition2):
-            x1,y1 = np.where(GT_pixels == condition1)
-            x2,y2 = np.where(ID_pixels == condition2)
-            mask = set(zip(x1,y1)) & set(zip(x2,y2))
+            x1, y1 = np.where(GT_pixels == condition1)
+            x2, y2 = np.where(ID_pixels == condition2)
+            mask = set(zip(x1, y1)) & set(zip(x2, y2))
             return list(mask)
 
-        TP_mask = subscripts(1,1)
-        FN_mask = subscripts(1,0)
-        FP_mask = subscripts(0,1)
-        TN_mask = subscripts(0,0)
+        TP_mask = subscripts(1, 1)
+        FN_mask = subscripts(1, 0)
+        FP_mask = subscripts(0, 1)
+        TN_mask = subscripts(0, 0)
 
-        TP_pixels = np.zeros((xGT,yGT))
-        FN_pixels = np.zeros((xGT,yGT))
-        FP_pixels = np.zeros((xGT,yGT))
-        TN_pixels = np.zeros((xGT,yGT))
+        TP_pixels = np.zeros((xGT, yGT))
+        FN_pixels = np.zeros((xGT, yGT))
+        FP_pixels = np.zeros((xGT, yGT))
+        TN_pixels = np.zeros((xGT, yGT))
 
-        def maskimg(mask,img):
+        def maskimg(mask, img):
             for ea in mask:
                 img[ea] = 1
             return img
@@ -630,11 +635,13 @@ class CalculateImageOverlap(cpm.CPModule):
             # labeled with label I in the ground truth and label J in the 
             # test set.
             #
-            N_ij = coo_matrix((np.ones(len(test_labels)), 
+            N_ij = coo_matrix((np.ones(len(test_labels)),
                                (ground_truth_labels, test_labels))).toarray()
+
             def choose2(x):
                 '''Compute # of pairs of x things = x * (x-1) / 2'''
                 return x * (x - 1) / 2
+
             #
             # Each cell in the matrix is a count of a grouping of pixels whose
             # pixel pairs are in the same set in both groups. The number of 
@@ -667,13 +674,14 @@ class CalculateImageOverlap(cpm.CPModule):
             # Compute adjusted Rand Index
             #
             expected_index = np.sum(choose2(N_i)) * np.sum(choose2(N_j))
-            max_index = (np.sum(choose2(N_i)) + np.sum(choose2(N_j))) * total / 2
-            
+            max_index = (
+                        np.sum(choose2(N_i)) + np.sum(choose2(N_j))) * total / 2
+
             adjusted_rand_index = \
                 (A * total - expected_index) / (max_index - expected_index)
         else:
             rand_index = adjusted_rand_index = np.nan
-        return rand_index, adjusted_rand_index 
+        return rand_index, adjusted_rand_index
 
     def compute_rand_index_ijv(self, gt_ijv, test_ijv, shape):
         '''Compute the Rand Index for an IJV matrix
@@ -700,12 +708,12 @@ class CalculateImageOverlap(cpm.CPModule):
         test_bkgd = np.ones(shape, bool)
         test_bkgd[test_ijv[:, 0], test_ijv[:, 1]] = False
         gt_ijv = np.vstack([
-            gt_ijv, 
-            np.column_stack([np.argwhere(gt_bkgd), 
+            gt_ijv,
+            np.column_stack([np.argwhere(gt_bkgd),
                              np.zeros(np.sum(gt_bkgd), gt_bkgd.dtype)])])
         test_ijv = np.vstack([
-            test_ijv, 
-            np.column_stack([np.argwhere(test_bkgd), 
+            test_ijv,
+            np.column_stack([np.argwhere(test_bkgd),
                              np.zeros(np.sum(test_bkgd), test_bkgd.dtype)])])
         #
         # Create a unified structure for the pixels where a fourth column
@@ -713,7 +721,8 @@ class CalculateImageOverlap(cpm.CPModule):
         #
         u = np.vstack([
             np.column_stack([gt_ijv, np.zeros(gt_ijv.shape[0], gt_ijv.dtype)]),
-            np.column_stack([test_ijv, np.ones(test_ijv.shape[0], test_ijv.dtype)])])
+            np.column_stack(
+                [test_ijv, np.ones(test_ijv.shape[0], test_ijv.dtype)])])
         #
         # Sort by coordinates, then by identity
         #
@@ -729,7 +738,7 @@ class CalculateImageOverlap(cpm.CPModule):
         #
         first_coord_idxs = np.hstack([
             [0],
-            np.argwhere((u[:-1, 0] != u[1:, 0]) | 
+            np.argwhere((u[:-1, 0] != u[1:, 0]) |
                         (u[:-1, 1] != u[1:, 1])).flatten() + 1,
             [u.shape[0]]])
         first_coord_counts = first_coord_idxs[1:] - first_coord_idxs[:-1]
@@ -745,9 +754,9 @@ class CalculateImageOverlap(cpm.CPModule):
         # and record the count and labels for that group.
         #
         labels = []
-        for i in range(1, np.max(count_test)+1):
-            for j in range(1, np.max(count_gt)+1):
-                match = ((count_test[indexes.rev_idx] == i) & 
+        for i in range(1, np.max(count_test) + 1):
+            for j in range(1, np.max(count_gt) + 1):
+                match = ((count_test[indexes.rev_idx] == i) &
                          (count_gt[indexes.rev_idx] == j))
                 if not np.any(match):
                     continue
@@ -755,7 +764,7 @@ class CalculateImageOverlap(cpm.CPModule):
                 # Arrange into an array where the rows are coordinates
                 # and the columns are the labels for that coordinate
                 #
-                lm = u[match, 2].reshape(np.sum(match) / (i+j), i+j)
+                lm = u[match, 2].reshape(np.sum(match) / (i + j), i + j)
                 #
                 # Sort by label.
                 #
@@ -765,12 +774,13 @@ class CalculateImageOverlap(cpm.CPModule):
                 # Find indices of unique and # of each
                 #
                 lm_first = np.hstack([
-                    [0], 
-                    np.argwhere(np.any(lm[:-1, :] != lm[1:, :], 1)).flatten()+1,
+                    [0],
+                    np.argwhere(
+                        np.any(lm[:-1, :] != lm[1:, :], 1)).flatten() + 1,
                     [lm.shape[0]]])
                 lm_count = lm_first[1:] - lm_first[:-1]
                 for idx, count in zip(lm_first[:-1], lm_count):
-                    labels.append((count, 
+                    labels.append((count,
                                    lm[idx, :j],
                                    lm[idx, j:]))
         #
@@ -787,36 +797,36 @@ class CalculateImageOverlap(cpm.CPModule):
         tbl = np.zeros(((max_t_labels + 1), (max_g_labels + 1)))
         for i, (c1, tobject_numbers1, gobject_numbers1) in enumerate(labels):
             for j, (c2, tobject_numbers2, gobject_numbers2) in \
-                enumerate(labels[i:]):
+                    enumerate(labels[i:]):
                 nhits_test = np.sum(
-                    tobject_numbers1[:, np.newaxis] == 
+                    tobject_numbers1[:, np.newaxis] ==
                     tobject_numbers2[np.newaxis, :])
                 nhits_gt = np.sum(
-                    gobject_numbers1[:, np.newaxis] == 
+                    gobject_numbers1[:, np.newaxis] ==
                     gobject_numbers2[np.newaxis, :])
                 if j == 0:
                     N = c1 * (c1 - 1) / 2
                 else:
                     N = c1 * c2
                 tbl[nhits_test, nhits_gt] += N
-                
+
         N = np.sum(tbl)
         #
         # Equation 13 from the paper
         #
-        min_JK = min(max_t_labels, max_g_labels)+1
+        min_JK = min(max_t_labels, max_g_labels) + 1
         rand_index = np.sum(tbl[:min_JK, :min_JK] * np.identity(min_JK)) / N
         #
         # Equation 15 from the paper, the expected index
         #
-        e_omega = np.sum(np.sum(tbl[:min_JK,:min_JK], 0) *
-                         np.sum(tbl[:min_JK,:min_JK], 1)) / N **2
+        e_omega = np.sum(np.sum(tbl[:min_JK, :min_JK], 0) *
+                         np.sum(tbl[:min_JK, :min_JK], 1)) / N ** 2
         #
         # Equation 16 is the adjusted index
         #
         adjusted_rand_index = (rand_index - e_omega) / (1 - e_omega)
         return rand_index, adjusted_rand_index
-        
+
     def compute_emd(self, src_objects, dest_objects):
         '''Compute the earthmovers distance between two sets of objects
         
@@ -848,22 +858,22 @@ class CalculateImageOverlap(cpm.CPModule):
                                   (idest, jdest, dest_objects))]
         ioff, joff = [src[:, np.newaxis] - dest[np.newaxis, :]
                       for src, dest in ((isrc, idest), (jsrc, jdest))]
-        c = np.sqrt(ioff*ioff + joff*joff).astype(np.int32)
-        c[c>self.max_distance.value] = self.max_distance.value
+        c = np.sqrt(ioff * ioff + joff * joff).astype(np.int32)
+        c[c > self.max_distance.value] = self.max_distance.value
         extra_mass_penalty = \
             self.max_distance.value if self.penalize_missing else 0
         return emd_hat_int32(
             src_weights.astype(np.int32),
             dest_weights.astype(np.int32),
-            c, 
-            extra_mass_penalty = extra_mass_penalty)
-        
+            c,
+            extra_mass_penalty=extra_mass_penalty)
+
     def get_labels_mask(self, obj):
         labels_mask = np.zeros(obj.shape, bool)
         for labels, indexes in obj.get_labels():
             labels_mask = labels_mask | labels > 0
         return labels_mask
-    
+
     def get_skeleton_points(self, obj):
         '''Get points by skeletonizing the objects and decimating'''
         ii = []
@@ -874,9 +884,9 @@ class CalculateImageOverlap(cpm.CPModule):
             for color in range(1, np.max(colors) + 1):
                 labels_mask = colors == color
                 skel = morph.skeletonize(
-                    labels_mask, 
-                    ordering = distance_transform_edt(labels_mask) *
-                    poisson_equation(labels_mask))
+                    labels_mask,
+                    ordering=distance_transform_edt(labels_mask) *
+                             poisson_equation(labels_mask))
                 total_skel = total_skel | skel
         n_pts = np.sum(total_skel)
         if n_pts == 0:
@@ -890,24 +900,25 @@ class CalculateImageOverlap(cpm.CPModule):
             markers = np.zeros(total_skel.shape, np.int32)
             branchpoints = \
                 morph.branchpoints(total_skel) | morph.endpoints(total_skel)
-            markers[branchpoints] = np.arange(np.sum(branchpoints))+1
+            markers[branchpoints] = np.arange(np.sum(branchpoints)) + 1
             #
             # We compute the propagation distance to that point, then impose
             # a slightly arbitarary order to get an unambiguous ordering
             # which should number the pixels in a skeleton branch monotonically
             #
             ts_labels, distances = propagate(np.zeros(markers.shape),
-                                     markers, total_skel, 1)
+                                             markers, total_skel, 1)
             order = np.lexsort((j, i, distances[i, j], ts_labels[i, j]))
             #
             # Get a linear space of self.max_points elements with bounds at
             # 0 and len(order)-1 and use that to select the points.
             #
             order = order[
-                np.linspace(0, len(order)-1, self.max_points.value).astype(int)]
+                np.linspace(0, len(order) - 1, self.max_points.value).astype(
+                    int)]
             return i[order], j[order]
         return i, j
-    
+
     def get_kmeans_points(self, src_obj, dest_obj):
         '''Get representative points in the objects using K means
         
@@ -919,18 +930,18 @@ class CalculateImageOverlap(cpm.CPModule):
                 of j coordinates
         '''
         from sklearn.cluster import KMeans
-        
+
         ijv = np.vstack((src_obj.ijv, dest_obj.ijv))
         if len(ijv) <= self.max_points.value:
             return ijv[:, 0], ijv[:, 1]
         random_state = np.random.RandomState()
         random_state.seed(ijv.astype(int).flatten())
-        kmeans = KMeans(n_clusters = self.max_points.value, tol=2,
+        kmeans = KMeans(n_clusters=self.max_points.value, tol=2,
                         random_state=random_state)
         kmeans.fit(ijv[:, :2])
-        return kmeans.cluster_centers_[:, 0].astype(np.uint32),\
+        return kmeans.cluster_centers_[:, 0].astype(np.uint32), \
                kmeans.cluster_centers_[:, 1].astype(np.uint32)
-    
+
     def get_weights(self, i, j, labels_mask):
         '''Return the weights to assign each i,j point
         
@@ -941,19 +952,19 @@ class CalculateImageOverlap(cpm.CPModule):
         # Create a mapping of chosen points to their index in the i,j array
         #
         total_skel = np.zeros(labels_mask.shape, int)
-        total_skel[i, j] = np.arange(1, len(i)+1)
+        total_skel[i, j] = np.arange(1, len(i) + 1)
         #
         # Compute the distance from each chosen point to all others in image,
         # return the nearest point.
         #
         ii, jj = distance_transform_edt(
-            total_skel==0,
+            total_skel == 0,
             return_indices=True,
             return_distances=False)
         #
         # Filter out all unmasked points
         #
-        ii, jj = [x[labels_mask] for x in ii,jj]
+        ii, jj = [x[labels_mask] for x in ii, jj]
         if len(ii) == 0:
             return np.zeros(0, np.int32)
         #
@@ -964,56 +975,57 @@ class CalculateImageOverlap(cpm.CPModule):
         bc = np.bincount(total_skel[ii, jj])[1:]
         result[:len(bc)] = bc
         return result
-        
+
     def display(self, workspace, figure):
         '''Display the image confusion matrix & statistics'''
         figure.set_subplots((3, 2))
         for x, y, image, label in (
-            (0, 0, workspace.display_data.true_positives, "True positives"),
-            (0, 1, workspace.display_data.false_positives, "False positives"),
-            (1, 0, workspace.display_data.false_negatives, "False negatives"),
-            (1, 1, workspace.display_data.true_negatives, "True negatives")):
+                (0, 0, workspace.display_data.true_positives, "True positives"),
+                (0, 1, workspace.display_data.false_positives,
+                 "False positives"),
+                (1, 0, workspace.display_data.false_negatives,
+                 "False negatives"),
+                (
+                1, 1, workspace.display_data.true_negatives, "True negatives")):
             figure.subplot_imshow_bw(x, y, image, title=label,
-                                     sharexy = figure.subplot(0,0))
-            
-        figure.subplot_table(2, 0, 
+                                     sharexy=figure.subplot(0, 0))
+
+        figure.subplot_table(2, 0,
                              workspace.display_data.statistics,
-                             col_labels = ("Measurement", "Value"),
-                             n_rows = 2)
+                             col_labels=("Measurement", "Value"),
+                             n_rows=2)
 
     def measurement_name(self, feature):
         if self.obj_or_img == O_IMG:
             name = '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
         if self.obj_or_img == O_OBJ:
-            name = '_'.join((C_IMAGE_OVERLAP, feature, 
-                             self.object_name_GT.value, 
+            name = '_'.join((C_IMAGE_OVERLAP, feature,
+                             self.object_name_GT.value,
                              self.object_name_ID.value))
-        return name 
+        return name
 
-
-    
     def get_categories(self, pipeline, object_name):
         '''Return the measurement categories for an object'''
         if object_name == cpmeas.IMAGE:
-            return [ C_IMAGE_OVERLAP ]
+            return [C_IMAGE_OVERLAP]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         '''Return the measurements made for a category'''
         if object_name == cpmeas.IMAGE and category == C_IMAGE_OVERLAP:
             return self.all_features()
         return []
-    
-    def get_measurement_images(self, pipeline, object_name, category, 
+
+    def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
         '''Return the images that were used when making the measurement'''
-        if measurement in self.get_measurements(pipeline, object_name, category)\
-           and self.obj_or_img == O_IMG:
+        if measurement in self.get_measurements(pipeline, object_name, category) \
+                and self.obj_or_img == O_IMG:
             return [self.test_img.value]
         return []
-    
+
     def get_measurement_scales(
-        self, pipeline, object_name, category, measurement, image_name):
+            self, pipeline, object_name, category, measurement, image_name):
         '''Return a "scale" that captures the measurement parameters
         
         pipeline - the module's pipeline
@@ -1030,26 +1042,26 @@ class CalculateImageOverlap(cpm.CPModule):
         test objects.
         '''
         if (object_name == cpmeas.IMAGE and category == C_IMAGE_OVERLAP and
-            measurement in FTR_ALL and self.obj_or_img == O_OBJ):
-            return ["_".join((self.object_name_GT.value, 
+                    measurement in FTR_ALL and self.obj_or_img == O_OBJ):
+            return ["_".join((self.object_name_GT.value,
                               self.object_name_ID.value))]
         return []
-    
+
     def all_features(self):
         '''Return a list of all the features measured by this module'''
         all_features = list(FTR_ALL)
         if self.wants_emd:
             all_features.append(FTR_EARTH_MOVERS_DISTANCE)
         return all_features
-        
+
     def get_measurement_columns(self, pipeline):
         '''Return database column information for each measurement'''
-        return [ (cpmeas.IMAGE,
-                  self.measurement_name(feature),
-                  cpmeas.COLTYPE_FLOAT)
-                 for feature in self.all_features()]
+        return [(cpmeas.IMAGE,
+                 self.measurement_name(feature),
+                 cpmeas.COLTYPE_FLOAT)
+                for feature in self.all_features()]
 
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab:
             # Variable revision # wasn't in Matlab file
@@ -1057,7 +1069,7 @@ class CalculateImageOverlap(cpm.CPModule):
             from_matlab = False
             variable_revision_number = 1
         if variable_revision_number == 1:
-            #no object choice before rev 2
+            # no object choice before rev 2
             old_setting_values = setting_values
             setting_values = [
                 O_IMG, old_setting_values[0], old_setting_values[1],
@@ -1069,18 +1081,18 @@ class CalculateImageOverlap(cpm.CPModule):
             #
             setting_values = setting_values[:4] + setting_values[5:6]
             variable_revision_number = 3
-            
+
         if variable_revision_number == 3:
             #
             # Added earth mover's distance
             # 
             setting_values = setting_values + [
-                cps.NO,       # wants_emd
-                250,          # max points
-                DM_KMEANS,    # decimation method
-                250,          # max distance
-                cps.NO        # penalize missing
-                ]
+                cps.NO,  # wants_emd
+                250,  # max points
+                DM_KMEANS,  # decimation method
+                250,  # max distance
+                cps.NO  # penalize missing
+            ]
             variable_revision_number = 4
-            
+
         return setting_values, variable_revision_number, from_matlab

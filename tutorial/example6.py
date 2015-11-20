@@ -4,26 +4,27 @@
 
 import numpy as np
 import scipy.ndimage
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
+
 
 class Example6(cpm.CPModule):
     module_name = "Example6"
     variable_revision_number = 1
     category = "Image Processing"
-    
+
     def create_settings(self):
         self.input_image_name = cps.ImageNameSubscriber("Input image", "None")
-        self.output_image_name = cps.ImageNameProvider("Output image", "Projection")
+        self.output_image_name = cps.ImageNameProvider("Output image",
+                                                       "Projection")
         self.scale = cps.Float(
             "Scale", .125, .0001, 1,
-            doc = """Scale the image dimensions by this fraction""")
-        
+            doc="""Scale the image dimensions by this fraction""")
+
     def settings(self):
         return [self.input_image_name, self.output_image_name, self.scale]
-    
+
     def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to execute a group's cycles
         
@@ -40,7 +41,7 @@ class Example6(cpm.CPModule):
         #
         # Initialize the state here using e6_state_init
         #
-        
+
     def run(self, workspace):
         image_number = workspace.measurements.image_number
         d = self.get_dictionary(workspace.image_set_list)
@@ -64,7 +65,7 @@ class Example6(cpm.CPModule):
         #
         # If it's the last image in the group, call e6_state_median to get it
         #
-    
+
     def is_aggregation_module(self):
         #
         # Defining "is_aggregation_module" tells the new multiprocessing code
@@ -73,7 +74,8 @@ class Example6(cpm.CPModule):
         #
         # This lets each worker accumulate state.
         return True
-    
+
+
 ###
 #
 # Module state can only be stored in the module dictionary and the objects
@@ -98,6 +100,7 @@ K_ARRAY = "Array"
 '''This is the original image shape'''
 K_SHAPE = "Shape"
 
+
 def e6_state_init(d, image_numbers):
     '''Initialize the module dictionary 
     
@@ -106,7 +109,8 @@ def e6_state_init(d, image_numbers):
     d.clear()
     d[K_IMAGE_NUMBERS] = list(image_numbers)
     d[K_CYCLE_COUNT] = len(image_numbers)
-    
+
+
 def e6_state_append(d, image, image_number, scale):
     '''Add an image to the module state
     
@@ -128,13 +132,13 @@ def e6_state_append(d, image, image_number, scale):
     #            [2, 3, 4, 5]])
     width = int(image.shape[0] * scale)
     height = int(image.shape[1] * scale)
-    sample_i = np.linspace(0, image.shape[0]-1, width)
-    sample_j = np.linspace(0, image.shape[1]-1, height)
+    sample_i = np.linspace(0, image.shape[0] - 1, width)
+    sample_j = np.linspace(0, image.shape[1] - 1, height)
     k = np.identity(2)
     mapping = \
-        sample_i[np.newaxis, :, np.newaxis] * k[0, :, np.newaxis, np.newaxis] +\
+        sample_i[np.newaxis, :, np.newaxis] * k[0, :, np.newaxis, np.newaxis] + \
         sample_j[np.newaxis, np.newaxis, :] * k[1, :, np.newaxis, np.newaxis]
-    
+
     if not d.has_key(K_ARRAY):
         d[K_ARRAY] = np.zeros((width, height, d[K_CYCLE_COUNT]))
         d[K_SHAPE] = tuple(image.shape)
@@ -142,7 +146,8 @@ def e6_state_append(d, image, image_number, scale):
     idx = d[K_IMAGE_NUMBERS].index(image_number)
     mini_image = scipy.ndimage.map_coordinates(image, mapping, mode='reflect')
     a[:, :, idx] = mini_image
-    
+
+
 def e6_state_median(d):
     '''Return a median projection scaled up to the original shape.'''
     a = d[K_ARRAY]
@@ -150,13 +155,12 @@ def e6_state_median(d):
     # Take the median along the stack axis
     #
     mini_image = np.median(a, 2)
-    
+
     width, height = d[K_SHAPE]
-    sample_i = np.linspace(0, a.shape[0]-1, width)
-    sample_j = np.linspace(0, a.shape[1]-1, height)
+    sample_i = np.linspace(0, a.shape[0] - 1, width)
+    sample_j = np.linspace(0, a.shape[1] - 1, height)
     k = np.identity(2)
     mapping = \
-        sample_i[np.newaxis, :, np.newaxis] * k[0, :, np.newaxis, np.newaxis] +\
+        sample_i[np.newaxis, :, np.newaxis] * k[0, :, np.newaxis, np.newaxis] + \
         sample_j[np.newaxis, np.newaxis, :] * k[1, :, np.newaxis, np.newaxis]
     return scipy.ndimage.map_coordinates(mini_image, mapping, mode='reflect')
-    

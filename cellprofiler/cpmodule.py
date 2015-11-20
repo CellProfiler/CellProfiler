@@ -7,14 +7,13 @@ import re
 import os
 import sys
 import uuid
-
 import numpy as np
-
 import cellprofiler.settings as cps
 import cellprofiler.cpimage
 import cellprofiler.objects
 import cellprofiler.measurements
 import pipeline as cpp
+
 
 class CPModule(object):
     """ Derive from the abstract module class to create your own module in Python
@@ -56,7 +55,7 @@ class CPModule(object):
     information in the module shared_state dictionary (fetched by
     get_dictionary()).
     """
-    
+
     def __init__(self):
         if self.__doc__ is None:
             self.__doc__ = sys.modules[self.__module__].__doc__
@@ -71,7 +70,7 @@ class CPModule(object):
         self.__as_data_tool = False
         self.shared_state = {}  # used for maintaining state between modules, see get_dictionary()
         self.id = uuid.uuid4()
-        self.batch_state = np.zeros((0,),np.uint8)
+        self.batch_state = np.zeros((0,), np.uint8)
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
         # attribute in the class definition or by assigning to it in
@@ -83,10 +82,11 @@ class CPModule(object):
     def __setattr__(self, slot, value):
         if hasattr(self, slot) and isinstance(getattr(self, slot), cps.Setting):
             assert isinstance(value, cps.Setting), \
-                ("Overwriting %s's %s existing Setting with value of type %s.\nUse __dict__['%s'] = ... to override." %
-                 (self.module_name, slot, type(value), slot))
+                (
+                "Overwriting %s's %s existing Setting with value of type %s.\nUse __dict__['%s'] = ... to override." %
+                (self.module_name, slot, type(value), slot))
         object.__setattr__(self, slot, value)
-        
+
     def create_settings(self):
         """Create your settings by subclassing this function
         
@@ -101,21 +101,21 @@ class CPModule(object):
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
         pass
-    
-    def create_from_handles(self,handles,module_num):
+
+    def create_from_handles(self, handles, module_num):
         """Fill a module with the information stored in the handles structure for module # ModuleNum 
         
         Returns a module with the settings decanted from the handles.
         If the revision is old, a different and compatible module can be returned.
         """
         self.__module_num = module_num
-        idx = module_num-1
-        settings = handles[cpp.SETTINGS][0,0]
+        idx = module_num - 1
+        settings = handles[cpp.SETTINGS][0, 0]
         setting_values = []
         self.__notes = []
         if (settings.dtype.fields.has_key(cpp.MODULE_NOTES) and
-            settings[cpp.MODULE_NOTES].shape[1] > idx):
-            n=settings[cpp.MODULE_NOTES][0,idx].flatten()
+                    settings[cpp.MODULE_NOTES].shape[1] > idx):
+            n = settings[cpp.MODULE_NOTES][0, idx].flatten()
             for x in n:
                 if isinstance(x, np.ndarray):
                     if len(x) == 0:
@@ -124,27 +124,29 @@ class CPModule(object):
                         x = x[0]
                 self.__notes.append(x)
         if settings.dtype.fields.has_key(cpp.SHOW_WINDOW):
-            self.__show_window = settings[cpp.SHOW_WINDOW][0,idx] != 0
+            self.__show_window = settings[cpp.SHOW_WINDOW][0, idx] != 0
         if settings.dtype.fields.has_key(cpp.BATCH_STATE):
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
-            self.batch_state = np.array(settings[cpp.BATCH_STATE][0,idx].tostring())
-        setting_count=settings[cpp.NUMBERS_OF_VARIABLES][0,idx]
-        variable_revision_number = settings[cpp.VARIABLE_REVISION_NUMBERS][0,idx]
-        module_name = settings[cpp.MODULE_NAMES][0,idx][0]
-        for i in range(0,setting_count):
-            value_cell = settings[cpp.VARIABLE_VALUES][idx,i]
-            if isinstance(value_cell,np.ndarray):
+            self.batch_state = np.array(
+                settings[cpp.BATCH_STATE][0, idx].tostring())
+        setting_count = settings[cpp.NUMBERS_OF_VARIABLES][0, idx]
+        variable_revision_number = settings[cpp.VARIABLE_REVISION_NUMBERS][
+            0, idx]
+        module_name = settings[cpp.MODULE_NAMES][0, idx][0]
+        for i in range(0, setting_count):
+            value_cell = settings[cpp.VARIABLE_VALUES][idx, i]
+            if isinstance(value_cell, np.ndarray):
                 if np.product(value_cell.shape) == 0:
                     setting_values.append('')
                 else:
                     setting_values.append(str(value_cell[0]))
             else:
                 setting_values.append(value_cell)
-        self.set_settings_from_values(setting_values, variable_revision_number, 
-                                 module_name)
-    
-    def prepare_settings(self,setting_values):
+        self.set_settings_from_values(setting_values, variable_revision_number,
+                                      module_name)
+
+    def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
         
         setting_values - the values for the settings just prior to mapping
@@ -157,9 +159,9 @@ class CPModule(object):
         See cellprofiler.modules.measureobjectareashape for an example.
         """
         pass
-    
-    def set_settings_from_values(self, setting_values, variable_revision_number, 
-                                 module_name, from_matlab = None):
+
+    def set_settings_from_values(self, setting_values, variable_revision_number,
+                                 module_name, from_matlab=None):
         """Set the settings in a module, given a list of values
         
         The default implementation gets all the settings and then
@@ -170,19 +172,20 @@ class CPModule(object):
         """
         if from_matlab is None:
             from_matlab = not '.' in module_name
-        setting_values, variable_revision_number, from_matlab =\
+        setting_values, variable_revision_number, from_matlab = \
             self.upgrade_settings(setting_values,
                                   variable_revision_number,
                                   module_name,
                                   from_matlab)
         # we can't handle matlab settings anymore
-        assert not from_matlab, "Module %s's upgrade_settings returned from_matlab==True"%(module_name)
+        assert not from_matlab, "Module %s's upgrade_settings returned from_matlab==True" % (
+        module_name)
         self.prepare_settings(setting_values)
-        for v,value in zip(self.settings(),setting_values):
+        for v, value in zip(self.settings(), setting_values):
             v.value = value
-    
-    def upgrade_settings(self,setting_values,variable_revision_number,
-                         module_name,from_matlab):
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         '''Adjust setting values if they came from a previous revision
         
         setting_values - a sequence of strings representing the settings
@@ -203,7 +206,7 @@ class CPModule(object):
         an error.
         '''
         return setting_values, variable_revision_number, from_matlab
-    
+
     def post_pipeline_load(self, pipeline):
         """This is a convenient place to do things to your module after the 
            settings have been loaded or initialized"""
@@ -219,8 +222,8 @@ class CPModule(object):
             doc = "<i>No help available for module</i>\n"
         else:
             doc = self.__doc__
-        doc = doc.replace("\r","").replace("\n\n","<p>")
-        doc = doc.replace("\n"," ")
+        doc = doc.replace("\r", "").replace("\n\n", "<p>")
+        doc = doc.replace("\n", " ")
         result = "<html style=""font-family:arial""><head><title>%s</title></head>" % self.module_name
         result += "<body><h1>%s</h1><div>" % self.module_name + doc
         first_setting_doc = True
@@ -238,35 +241,41 @@ class CPModule(object):
         result += "</div>"
         result += "</body></html>"
         return result
-            
-    def save_to_handles(self,handles):
-        module_idx = self.module_num-1
-        setting = handles[cpp.SETTINGS][0,0]
-        setting[cpp.MODULE_NAMES][0,module_idx] = unicode(self.module_class())
-        setting[cpp.MODULE_NOTES][0,module_idx] = np.ndarray(shape=(len(self.notes),1),dtype='object')
-        for i in range(0,len(self.notes)):
-            setting[cpp.MODULE_NOTES][0,module_idx][i,0]=self.notes[i]
-        setting[cpp.NUMBERS_OF_VARIABLES][0,module_idx] = len(self.settings())
-        for i in range(0,len(self.settings())):
+
+    def save_to_handles(self, handles):
+        module_idx = self.module_num - 1
+        setting = handles[cpp.SETTINGS][0, 0]
+        setting[cpp.MODULE_NAMES][0, module_idx] = unicode(self.module_class())
+        setting[cpp.MODULE_NOTES][0, module_idx] = np.ndarray(
+            shape=(len(self.notes), 1), dtype='object')
+        for i in range(0, len(self.notes)):
+            setting[cpp.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
+        setting[cpp.NUMBERS_OF_VARIABLES][0, module_idx] = len(self.settings())
+        for i in range(0, len(self.settings())):
             variable = self.settings()[i]
             if len(str(variable)) > 0:
-                setting[cpp.VARIABLE_VALUES][module_idx,i] = variable.get_unicode_value()
-            if isinstance(variable,cps.NameProvider):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode("%s indep"%(variable.group))
-            elif isinstance(variable,cps.NameSubscriber):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode(variable.group)
-        setting[cpp.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
-        setting[cpp.MODULE_REVISION_NUMBERS][0,module_idx] = 0
-        setting[cpp.SHOW_WINDOW][0,module_idx] = 1 if self.show_window else 0
+                setting[cpp.VARIABLE_VALUES][
+                    module_idx, i] = variable.get_unicode_value()
+            if isinstance(variable, cps.NameProvider):
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode(
+                    "%s indep" % (variable.group))
+            elif isinstance(variable, cps.NameSubscriber):
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode(
+                    variable.group)
+        setting[cpp.VARIABLE_REVISION_NUMBERS][
+            0, module_idx] = self.variable_revision_number
+        setting[cpp.MODULE_REVISION_NUMBERS][0, module_idx] = 0
+        setting[cpp.SHOW_WINDOW][0, module_idx] = 1 if self.show_window else 0
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[cpp.BATCH_STATE][0,module_idx] = np.fromstring(self.batch_state.tostring(), np.uint8)
-    
+        setting[cpp.BATCH_STATE][0, module_idx] = np.fromstring(
+            self.batch_state.tostring(), np.uint8)
+
     def in_batch_mode(self):
         '''Return True if the module knows that the pipeline is in batch mode'''
         return None
-    
+
     def change_causes_prepare_run(self, setting):
         '''Check to see if changing the given setting means you have to restart
         
@@ -277,7 +286,7 @@ class CPModule(object):
         that you'll have to call "prepare_run".
         '''
         return False
-    
+
     def turn_off_batch_mode(self):
         '''Reset the module to an editable state if batch mode is on
         
@@ -289,7 +298,7 @@ class CPModule(object):
         for running a batch file
         '''
         pass
-    
+
     def test_valid(self, pipeline):
         """Test to see if the module is in a valid state to run
         
@@ -302,9 +311,9 @@ class CPModule(object):
         except cps.ValidationError, instance:
             raise instance
         except Exception, e:
-            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e, 
+            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
-        
+
     def test_module_warnings(self, pipeline):
         """Test to see if there are any troublesome setting values in the module
         
@@ -319,10 +328,10 @@ class CPModule(object):
         except cps.ValidationError, instance:
             raise instance
         except Exception, e:
-            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e, 
+            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
-    
-    def validate_module(self,pipeline):
+
+    def validate_module(self, pipeline):
         '''Implement this to validate module settings
         
         Module implementers should implement validate_module to
@@ -334,7 +343,7 @@ class CPModule(object):
         setting to indicate failure.
         '''
         pass
-    
+
     def validate_module_warnings(self, pipeline):
         '''Implement this to flag potentially dangerous settings
         
@@ -344,7 +353,7 @@ class CPModule(object):
         most egregiously offending setting to indicate failure.
         '''
         pass
-    
+
     def other_providers(self, group):
         '''Return a list of hidden name/object/etc. providers supplied by the module for this group
         
@@ -354,7 +363,7 @@ class CPModule(object):
         are listed by the module's visible_settings.
         '''
         return []
-    
+
     def get_module_num(self):
         """Get the module's index number
         
@@ -364,34 +373,34 @@ class CPModule(object):
         those modules create) previous to a given module.
         """
         if self.__module_num == -1:
-            raise(Exception('Module has not been created'))
+            raise (Exception('Module has not been created'))
         return self.__module_num
-    
-    def set_module_num(self,module_num):
+
+    def set_module_num(self, module_num):
         """Change the module's one-based index number in the pipeline
         
         """
         self.__module_num = module_num
-    
+
     module_num = property(get_module_num, set_module_num)
-    
+
     def module_class(self):
         """The class to instantiate, except for the special case of matlab modules.
         
         """
-        return self.__module__+'.'+self.module_name
-    
+        return self.__module__ + '.' + self.module_name
+
     def get_enabled(self):
         """True if the module should be executed, False if it should be ignored.
         
         """
         return self.__enabled
-    
+
     def set_enabled(self, enable):
         self.__enabled = enable
-        
+
     enabled = property(get_enabled, set_enabled)
-    
+
     def get_use_as_data_tool(self):
         '''True if the module is being used as a data tool
 
@@ -402,15 +411,15 @@ class CPModule(object):
         because you're running as a data tool.
         '''
         return self.__as_data_tool
-    
+
     def set_use_as_data_tool(self, as_data_tool):
         '''Mark the module as being used as a data tool
         
         '''
         self.__as_data_tool = as_data_tool
-    
+
     use_as_data_tool = property(get_use_as_data_tool, set_use_as_data_tool)
-    
+
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
         
@@ -420,28 +429,28 @@ class CPModule(object):
         order so they can be matched to the strings in the pipeline.
         """
         return self.__settings
-    
+
     def help_settings(self):
         '''Override this if you want the settings for help to be in a different order'''
         return self.settings()
 
-    def setting(self,setting_num):
+    def setting(self, setting_num):
         """Reference a setting by its one-based setting number
         """
-        return self.settings()[setting_num-1]
-    
-    def set_settings(self,settings):
+        return self.settings()[setting_num - 1]
+
+    def set_settings(self, settings):
         self.__settings = settings
-        
+
     def visible_settings(self):
         """The settings that are visible in the UI
         """
         return self.settings()
-    
+
     def get_show_window(self):
         '''True if the user wants to see the figure for this module'''
         return self.__show_window
-    
+
     def set_show_window(self, show_window):
         self.__show_window = show_window
 
@@ -456,39 +465,38 @@ class CPModule(object):
 
     wants_pause = property(get_wants_pause, set_wants_pause)
 
-
     def get_notes(self):
         """The user-entered notes for a module
         """
         return self.__notes
-    
+
     def set_notes(self, notes):
         """Give the module new user-entered notes
         
         """
         self.__notes = notes
-    
+
     notes = property(get_notes, set_notes)
-    
+
     def get_svn_version(self):
         return self.__svn_version
-    
+
     def set_svn_version(self, version):
         self.__svn_version = version
-        
+
     svn_version = property(get_svn_version, set_svn_version)
-    
-    def write_to_handles(self,handles):
+
+    def write_to_handles(self, handles):
         """Write out the module's state to the handles
         
         """
         pass
-    
-    def write_to_text(self,file):
+
+    def write_to_text(self, file):
         """Write the module's state, informally, to a text file
         """
         pass
-    
+
     def prepare_run(self, workspace):
         """Prepare the image set list for a run (& whatever else you want to do)
         
@@ -509,11 +517,11 @@ class CPModule(object):
         return True if operation completed, False if aborted 
         """
         return True
-    
+
     def is_load_module(self):
         """If true, the module will load files and make image sets"""
         return False
-    
+
     @classmethod
     def is_input_module(cls):
         """If true, the module is one of the input modules
@@ -521,7 +529,7 @@ class CPModule(object):
         The input modules are "Images", "Metadata", "NamesAndTypes" and "Groups"
         """
         return False
-    
+
     def is_create_batch_module(self):
         '''If true, the module will pickle the pipeline into a batch file and exit
         
@@ -530,7 +538,7 @@ class CPModule(object):
         run in parallel)
         '''
         return False
-    
+
     def is_aggregation_module(self):
         """If true, the module uses data from other imagesets in a group
         
@@ -540,7 +548,7 @@ class CPModule(object):
         TrackObjects, MakeProjection and CorrectIllumination_Calculate.
         """
         return False
-    
+
     def needs_conversion(self):
         '''Return True if the module needs to be converted from legacy
         
@@ -548,7 +556,7 @@ class CPModule(object):
         instance, LoadData.
         '''
         return False
-    
+
     def convert(self, pipeline, metadata, namesandtypes, groups):
         '''Convert the input processing of this module from the legacy format
         
@@ -569,8 +577,8 @@ class CPModule(object):
     def is_object_identification_module(self):
         """If true, the module will identify primary, secondary or tertiary objects"""
         return False
-    
-    def run(self,workspace):
+
+    def run(self, workspace):
         """Run the module (abstract method)
         
         workspace    - The workspace contains
@@ -588,7 +596,7 @@ class CPModule(object):
         to display() via the workspace.
         """
         pass
-    
+
     def post_run(self, workspace):
         """Do post-processing after the run completes
         
@@ -606,8 +614,8 @@ class CPModule(object):
         display in the third argument.
         """
         figure.Close()  # modules that don't override display() shouldn't
-                        # display anything
-                        
+        # display anything
+
     def display_post_group(self, workspace, figure):
         """Display the results of work done post-group
         
@@ -621,7 +629,7 @@ class CPModule(object):
         figure - the figure to use for the display.
         """
         pass
-    
+
     def display_post_run(self, workspace, figure):
         """Display results after post_run completes
         
@@ -655,7 +663,7 @@ class CPModule(object):
         Returns True if it succeeds.
         '''
         return True
-    
+
     def get_groupings(self, workspace):
         '''Return the image groupings of the image sets in an image set list
         
@@ -680,7 +688,7 @@ class CPModule(object):
         groupings.
         '''
         return None
-    
+
     def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to start processing a new grouping
         
@@ -697,8 +705,7 @@ class CPModule(object):
         groups.
         '''
         pass
-    
-    
+
     def post_group(self, workspace, grouping):
         '''Do post-processing after a group completes
         
@@ -706,7 +713,7 @@ class CPModule(object):
         grouping - the group that's being run
         '''
         pass
-    
+
     def get_measurement_columns(self, pipeline):
         '''Return a sequence describing the measurement columns needed by this module
         
@@ -722,7 +729,7 @@ class CPModule(object):
                      "float")
         '''
         return []
-    
+
     def get_object_relationships(self, pipeline):
         '''Return a sequence describing the relationships recorded in measurements
         
@@ -749,7 +756,7 @@ class CPModule(object):
         '''Get the dictionary for this module
         '''
         return self.shared_state
-    
+
     def get_dictionary_for_worker(self):
         '''Get the dictionary that should be shared between analysis workers
         
@@ -763,7 +770,7 @@ class CPModule(object):
         reconstruct the result of JSON deserialization in set_dictionary_in_worker.
         '''
         return self.get_dictionary()
-    
+
     def set_dictionary_for_worker(self, d):
         '''Initialize this worker's dictionary using results from first worker
         
@@ -772,13 +779,13 @@ class CPModule(object):
         self.get_dictionary().clear()
         self.get_dictionary().update(d)
 
-    def get_categories(self,pipeline, object_name):
+    def get_categories(self, pipeline, object_name):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         return []
-      
+
     def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
         
@@ -786,13 +793,14 @@ class CPModule(object):
         category - return measurements made in this category
         """
         return []
-    
-    def get_measurement_images(self,pipeline,object_name,category,measurement):
+
+    def get_measurement_images(self, pipeline, object_name, category,
+                               measurement):
         """Return a list of image names used as a basis for a particular measure
         """
         return []
-    
-    def get_measurement_objects(self, pipeline, object_name, category, 
+
+    def get_measurement_objects(self, pipeline, object_name, category,
                                 measurement):
         """Return a list of secondary object names used as a basis for a particular measure
         
@@ -809,23 +817,23 @@ class CPModule(object):
         In addition, some modules may make use of two segmentations, for instance
         when measuring the total value of secondary objects related to primary
         ones. This mechanism can be used to identify the secondary objects used.
-        """ 
+        """
         return []
-    
-    def get_measurement_scales(self,pipeline,object_name,category,measurement,image_name):
+
+    def get_measurement_scales(self, pipeline, object_name, category,
+                               measurement, image_name):
         """Return a list of scales (eg for texture) at which a measurement was taken
         """
         return []
-    
 
     def is_image_from_file(self, image_name):
         """Return True if this module loads this image name from a file."""
         for setting in self.settings():
             if (isinstance(setting, cps.FileImageNameProvider) and
-                setting.value == image_name):
+                        setting.value == image_name):
                 return True
         return False
-    
+
     def should_stop_writing_measurements(self):
         '''Returns True if measurements should not be taken after this module
         
@@ -837,7 +845,7 @@ class CPModule(object):
         not write any.
         '''
         return False
-    
+
     def needs_default_image_folder(self, pipeline):
         '''Returns True if the module needs the default image folder
         
@@ -850,7 +858,7 @@ class CPModule(object):
             if isinstance(setting, cps.DirectoryPath):
                 return True
         return False
-    
+
     def obfuscate(self):
         '''Erase any sensitive information in a module's settings
         
@@ -859,7 +867,7 @@ class CPModule(object):
         for error reporting without revealing that information.
         '''
         pass
-    
+
     def on_activated(self, workspace):
         '''Called when the module is activated in the GUI
         
@@ -871,7 +879,7 @@ class CPModule(object):
         in the UI thread until on_deactivated is called.
         '''
         pass
-    
+
     def on_deactivated(self):
         '''Called when the module is deactivated in the GUI
         
@@ -879,8 +887,7 @@ class CPModule(object):
         GUI and can't be used to edit the pipeline
         '''
         pass
-    
+
     def on_setting_changed(self, setting, pipeline):
         '''Called when a setting has been changed in the GUI'''
         pass
-    

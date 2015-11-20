@@ -5,7 +5,6 @@
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-
 #
 # centrosome.cpmorphology has many useful image processing algorithms.
 # 
@@ -16,11 +15,12 @@ import cellprofiler.settings as cps
 #
 from centrosome.cpmorphology import skeletonize_labels
 
+
 class Example4(cpm.CPModule):
     module_name = "Example4"
     variable_revision_number = 1
     category = "Object Processing"
-    
+
     def create_settings(self):
         #
         # The ObjectNameSubscriber is aware of all objects published by
@@ -35,10 +35,10 @@ class Example4(cpm.CPModule):
         #
         self.output_objects_name = cps.ObjectNameProvider(
             "Output objects", "Skeletons")
-        
+
     def settings(self):
         return [self.input_objects_name, self.output_objects_name]
-    
+
     def run(self, workspace):
         #
         # The object_set keeps track of the objects produced during a cycle
@@ -60,5 +60,3 @@ class Example4(cpm.CPModule):
         # absolutely necessary. See subsequent exercises for how to be nice.
         #     
         object_set = workspace.object_set
-        
-        

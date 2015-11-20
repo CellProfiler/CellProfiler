@@ -17,7 +17,8 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
         # setup the font
         self.font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.NORMAL, wx.NORMAL)
         if not self.font.IsFixedWidth():
-            self.font = wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL)
+            self.font = wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.NORMAL,
+                                wx.NORMAL)
         assert self.font.IsFixedWidth()
 
         self.text = text
@@ -31,7 +32,8 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
 
     def set_longest_line(self):
         if len(self.text) > 0:
-            self.longest_line = max([sum([len(s) for c, s in l]) for l in self.text])
+            self.longest_line = max(
+                [sum([len(s) for c, s in l]) for l in self.text])
         else:
             self.longest_line = 1
 
@@ -50,9 +52,9 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
     def resize(self, evt):
         DC = wx.ClientDC(self)
         DC.SetFont(self.font)
-        
+
         # find line width and  height
-        extent = DC.GetFullTextExtent('X'*self.longest_line)
+        extent = DC.GetFullTextExtent('X' * self.longest_line)
         lineheight = extent[1]
         maxwidth = extent[0]
 
@@ -64,7 +66,7 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
     def redraw(self, evt):
         DC = wx.PaintDC(self)
         self.PrepareDC(DC)
-        extent = DC.GetFullTextExtent('x'*self.longest_line)
+        extent = DC.GetFullTextExtent('x' * self.longest_line)
         lineheight = extent[1]
         vs = self.GetViewStart()
         ppu = self.GetScrollPixelsPerUnit()
@@ -83,15 +85,16 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
         self.draw_lines(DC, mmin, mmax, lineheight)
 
 
-
 if __name__ == '__main__':
     class MainFrame(wx.Frame):
         def __init__(self, parent):
             wx.Frame.__init__(self, parent, -1)
-            t = [[('black', l[:len(l)/2]), ('red', l[len(l)/2:])] for l in open('scrollable_text.py')]
+            t = [[('black', l[:len(l) / 2]), ('red', l[len(l) / 2:])] for l in
+                 open('scrollable_text.py')]
             self.scrollable = ScrollableText(self, -1, t)
 
-    app = wx.PySimpleApp(None,-1)
+
+    app = wx.PySimpleApp(None, -1)
     frame = MainFrame(parent=None)
     frame.Show()
     app.MainLoop()

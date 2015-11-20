@@ -11,12 +11,14 @@ from cellprofiler.icons import get_builtin_image, get_builtin_images_path
 
 cp_image = None
 
+
 def get_cp_image():
     """The CellProfiler icon as a wx.Image"""
     global cp_image
     if cp_image is None:
         cp_image = get_builtin_image('CellProfilerIcon')
     return cp_image
+
 
 def get_cp_bitmap(size=None):
     """The CellProfiler icon as a wx.Bitmap"""
@@ -25,7 +27,8 @@ def get_cp_bitmap(size=None):
     if size is not None:
         img.Rescale(size, size, wx.IMAGE_QUALITY_HIGH)
     return wx.BitmapFromImage(img)
-    
+
+
 def get_cp_icon(size=None):
     """The CellProfiler icon as a wx.Icon"""
     import wx
@@ -38,9 +41,12 @@ def get_cp_icon(size=None):
     icon.CopyFromBitmap(get_cp_bitmap(size))
     return icon
 
+
 BV_DOWN = "down"
-BV_UP   = "up"
-def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
+BV_UP = "up"
+
+
+def draw_bevel(dc, rect, width, state, shadow_pen=None, highlight_pen=None):
     """Draw a bevel within the rectangle so the inside looks raised or lowered
     
     dc - device context for drawing
@@ -57,18 +63,21 @@ def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
     if shadow_pen is None:
         shadow_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
     if highlight_pen is None:
-        highlight_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DHIGHLIGHT))
+        highlight_pen = wx.Pen(
+            wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DHIGHLIGHT))
     top_left_pen = (state == BV_UP and highlight_pen) or shadow_pen
     bottom_right_pen = (state == BV_UP and shadow_pen) or highlight_pen
     for i in range(width):
         dc.Pen = top_left_pen
-        dc.DrawLine(rect.Left,rect.Top,rect.Left,rect.Bottom)
-        dc.DrawLine(rect.Left,rect.Top,rect.Right,rect.Top)
+        dc.DrawLine(rect.Left, rect.Top, rect.Left, rect.Bottom)
+        dc.DrawLine(rect.Left, rect.Top, rect.Right, rect.Top)
         dc.Pen = bottom_right_pen
-        dc.DrawLine(rect.Right,rect.Bottom, rect.Left, rect.Bottom)
-        dc.DrawLine(rect.Right,rect.Bottom, rect.Right, rect.Top)
-        rect = wx.Rect(rect.Left+1, rect.Top+1, rect.width-2, rect.height-2)
+        dc.DrawLine(rect.Right, rect.Bottom, rect.Left, rect.Bottom)
+        dc.DrawLine(rect.Right, rect.Bottom, rect.Right, rect.Top)
+        rect = wx.Rect(rect.Left + 1, rect.Top + 1, rect.width - 2,
+                       rect.height - 2)
     return rect
+
 
 def draw_item_selection_rect(window, dc, rect, flags):
     '''Replacement for RendererNative.DrawItemSelectionRect

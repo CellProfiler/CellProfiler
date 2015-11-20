@@ -14,6 +14,7 @@ import subprocess
 import sys
 import RunBatch
 
+
 def run_sql_file(batch_id, sql_filename):
     """Use the mysql command line to run the given SQL script
     
@@ -29,10 +30,11 @@ def run_sql_file(batch_id, sql_filename):
     if run is None:
         sql_path = os.path.join(RunBatch.batch_script_directory(batch),
                                 sql_filename)
-        cmd = "%s -b %d -i %s"%(os.path.join(cwd, "sql_jobs.py"),
-                                batch_id, sql_path)
+        cmd = "%s -b %d -i %s" % (os.path.join(cwd, "sql_jobs.py"),
+                                  batch_id, sql_path)
         run = RunBatch.BPSQLRun.create(batch, sql_filename, cmd)
     return RunBatch.run(batch, [run], cwd=cwd)
+
 
 def sql_file_job_and_status(batch_id, sql_file):
     """Return the latest job ID associated with the batch and sql path
@@ -50,27 +52,29 @@ def sql_file_job_and_status(batch_id, sql_file):
     if len(result) == 0:
         return None, None, None
     return run, result[0], RunBatch.BPJobTaskStatus.select_by_job_task(job_task)
-    
+
+
 if __name__ == "__main__":
     import optparse
+
     sys.path.append(os.path.dirname(__file__))
     from bpformdata import \
-         BATCHPROFILER_MYSQL_DATABASE, BATCHPROFILER_MYSQL_HOST, \
-         BATCHPROFILER_MYSQL_PASSWORD, BATCHPROFILER_MYSQL_PORT, \
-         BATCHPROFILER_MYSQL_USER
+        BATCHPROFILER_MYSQL_DATABASE, BATCHPROFILER_MYSQL_HOST, \
+        BATCHPROFILER_MYSQL_PASSWORD, BATCHPROFILER_MYSQL_PORT, \
+        BATCHPROFILER_MYSQL_USER
 
     parser = optparse.OptionParser()
-    parser.add_option("-i","--input-sql-script",
+    parser.add_option("-i", "--input-sql-script",
                       dest="sql_script",
                       help="The SQL script to run on the server")
-    parser.add_option("-b","--batch-id",
+    parser.add_option("-b", "--batch-id",
                       dest="batch_id",
                       help="The batch ID of the batch being run")
-    options,args = parser.parse_args()
+    options, args = parser.parse_args()
     path, filename = os.path.split(options.sql_script)
     if len(path):
         os.chdir(path)
-    script_fd = open(filename,"r")
+    script_fd = open(filename, "r")
     cmd = ["mysql",
            "-A",
            "-B",
@@ -91,6 +95,6 @@ if __name__ == "__main__":
                          stdin=script_fd,
                          stdout=sys.stdout,
                          stderr=sys.stderr,
-                         cwd = path if len(path) == 0 else None)
+                         cwd=path if len(path) == 0 else None)
     p.communicate()
     script_fd.close()

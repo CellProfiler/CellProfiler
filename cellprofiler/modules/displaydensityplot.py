@@ -18,59 +18,58 @@ See also <b>DisplayScatterPlot</b>, <b>DisplayHistogram</b>.
 '''
 
 import numpy as np
-
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import matplotlib.cm
 
+
 class DisplayDensityPlot(cpm.CPModule):
-    
     module_name = "DisplayDensityPlot"
     category = "Data Tools"
     variable_revision_number = 1
-    
+
     def get_x_object(self):
         return self.x_object.value
 
     def get_y_object(self):
         return self.y_object.value
-    
+
     def create_settings(self):
         self.x_object = cps.ObjectNameSubscriber(
             'Select the object to display on the X-axis',
-            cps.NONE,doc='''
+            cps.NONE, doc='''
             Choose the name of objects identified by some previous 
             module (such as <b>IdentifyPrimaryObjects</b> or 
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the X-axis.''')
-        
+
         self.x_axis = cps.Measurement(
-            'Select the object measurement to plot on the X-axis', 
-            self.get_x_object, cps.NONE,doc='''
+            'Select the object measurement to plot on the X-axis',
+            self.get_x_object, cps.NONE, doc='''
             Choose the object measurement made by a previous 
             module to display on the X-axis.''')
-        
+
         self.y_object = cps.ObjectNameSubscriber(
             'Select the object to display on the Y-axis',
-            cps.NONE,doc=''' 
+            cps.NONE, doc='''
             Choose the name of objects identified by some previous 
             module (such as <b>IdentifyPrimaryObjects</b> or 
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the Y-axis.''')
-        
+
         self.y_axis = cps.Measurement(
-            'Select the object measurement to plot on the Y-axis', 
+            'Select the object measurement to plot on the Y-axis',
             self.get_y_object, cps.NONE, doc='''
             Choose the object measurement made by a previous 
             module to display on the Y-axis.''')
-        
+
         self.gridsize = cps.Integer(
-            'Select the grid size', 100, 1, 1000,doc='''
+            'Select the grid size', 100, 1, 1000, doc='''
             Enter the number of grid regions you want used on each
             axis. Increasing the number of grid regions increases the
             resolution of the plot.''')
-        
+
         self.xscale = cps.Choice(
-            'How should the X-axis be scaled?', ['linear', 'log'], None,doc='''
+            'How should the X-axis be scaled?', ['linear', 'log'], None, doc='''
             The X-axis can be scaled either with a <i>linear</i> 
             scale or with a <i>log</i> (base 10) scaling. 
             <p>Using a log scaling is useful when one of the 
@@ -78,9 +77,9 @@ class DisplayDensityPlot(cpm.CPModule):
             values; a log scale can bring out features in the 
             measurements that would not easily be seen if the 
             measurement is plotted linearly.</p>''')
-        
+
         self.yscale = cps.Choice(
-            'How should the Y-axis be scaled?', ['linear', 'log'], None,doc='''
+            'How should the Y-axis be scaled?', ['linear', 'log'], None, doc='''
             The Y-axis can be scaled either with a <i>linear</i> 
             scale or with a <i>log</i> (base 10) scaling. 
             <p>Using a log scaling is useful when one of the 
@@ -88,7 +87,7 @@ class DisplayDensityPlot(cpm.CPModule):
             values; a log scale can bring out features in the 
             measurements that would not easily be seen if the 
             measurement is plotted linearly.</p>''')
-        
+
         self.bins = cps.Choice(
             'How should the colorbar be scaled?', ['linear', 'log'], None, doc='''
             The colorbar can be scaled either with a <i>linear</i> 
@@ -98,26 +97,26 @@ class DisplayDensityPlot(cpm.CPModule):
             values; a log scale can bring out features in the 
             measurements that would not easily be seen if the 
             measurement is plotted linearly.''')
-        
+
         maps = [m for m in matplotlib.cm.datad.keys() if not m.endswith('_r')]
         maps.sort()
-        
+
         self.colormap = cps.Choice(
-            'Select the color map', maps, 'jet',doc='''
+            'Select the color map', maps, 'jet', doc='''
             Select the color map for the density plot. See  
             <a href="http://www.astro.princeton.edu/~msshin/science/code/matplotlib_cm/">
             this page</a> for pictures of the available colormaps.''')
-        
+
         self.title = cps.Text(
-            'Enter a title for the plot, if desired', '',doc = '''
+            'Enter a title for the plot, if desired', '', doc='''
             Enter a title for the plot. If you leave this blank,
             the title will default 
             to <i>(cycle N)</i> where <i>N</i> is the current image 
             cycle being executed.''')
-        
+
     def settings(self):
         return [self.x_object, self.x_axis, self.y_object, self.y_axis,
-                self.gridsize, self.xscale, self.yscale, self.bins, 
+                self.gridsize, self.xscale, self.yscale, self.bins,
                 self.colormap, self.title]
 
     def visible_settings(self):
@@ -127,11 +126,11 @@ class DisplayDensityPlot(cpm.CPModule):
         m = workspace.get_measurements()
         x = m.get_current_measurement(self.get_x_object(), self.x_axis.value)
         y = m.get_current_measurement(self.get_y_object(), self.y_axis.value)
-        
+
         data = []
-        for xx, yy in zip(x,y):
-            data += [[xx,yy]]
-        
+        for xx, yy in zip(x, y):
+            data += [[xx, yy]]
+
         bins = None
         if self.bins.value != 'linear':
             bins = self.bins.value
@@ -152,11 +151,12 @@ class DisplayDensityPlot(cpm.CPModule):
                                yscale=self.yscale.value,
                                bins=bins,
                                cmap=self.colormap.value,
-                               title='%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number))
+                               title='%s (cycle %s)' % (self.title.value,
+                                                        workspace.measurements.image_set_number))
 
     def run_as_data_tool(self, workspace):
         self.run(workspace)
-        
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+
+    def backwards_compatibilize(self, setting_values, variable_revision_number,
                                 module_name, from_matlab):
         return setting_values, variable_revision_number, from_matlab

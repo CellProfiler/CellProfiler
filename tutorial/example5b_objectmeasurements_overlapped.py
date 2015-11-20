@@ -4,7 +4,6 @@
 
 import numpy as np
 import scipy.ndimage
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -20,20 +19,21 @@ SUPPORT_OVERLAPPING = "Overlapping"
 '''Run Example5a using an algorithm that supports overlapping and touching'''
 SUPPORT_TOUCHING = "Overlapping and touching"
 
+
 class Example5b(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example5bOverlapped"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber("Objects name", "Nuclei")
         self.method = cps.Choice("Algorithm method",
-                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING, 
+                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING,
                                   SUPPORT_TOUCHING], SUPPORT_TOUCHING)
-        
+
     def settings(self):
         return [self.objects_name]
-    
+
     def run(self, workspace):
         #
         # Get some things we need from the workspace
@@ -77,67 +77,68 @@ class Example5b(cpm.CPModule):
         # there will only be one iteration.
         # 
         ##for labels, indices in objects.get_labels():
-            #
-            # Now we use color_labels to magically produce an array in which
-            # all the background pixels have the value, "0", and the pixels
-            # of touching objects have different numbers
-            #
-            ##clabels = color_labels(labels)
-            #
-            # np.unique returns the unique #s in an array.
-            #
-            ##colors = np.unique(clabels)
-            ##for color in colors:
-                # 0 = background, so ignore it.
-                ##if color == 0:
-                ##    continue
-                #
-                # Ok, here's a trick. clabels == color gets converted
-                # to either 1 (is the current color) or 0 (is not) and
-                # we can use that to mask only the labels for the current
-                # color by multiplying (0 * anything = 0)
-                #
-                ##foreground = clabels == color
-                ##mini_labels = labels * foreground
-                ##distance = scipy.ndimage.distance_transform_edt(foreground)
-                #
-                # And here's another trick - scipy.ndimage.mean returns
-                # NaN for any index that doesn't appear because the
-                # mean isn't computable. How lucky!
-                #
-                ##v1 = scipy.ndimage.mean(distance, mini_labels, indices)
-                ##good_v1 = ~ np.isnan(v1)
-                ##values[indices[good_v1]] = v1[good_v1]
+        #
+        # Now we use color_labels to magically produce an array in which
+        # all the background pixels have the value, "0", and the pixels
+        # of touching objects have different numbers
+        #
+        ##clabels = color_labels(labels)
+        #
+        # np.unique returns the unique #s in an array.
+        #
+        ##colors = np.unique(clabels)
+        ##for color in colors:
+        # 0 = background, so ignore it.
+        ##if color == 0:
+        ##    continue
+        #
+        # Ok, here's a trick. clabels == color gets converted
+        # to either 1 (is the current color) or 0 (is not) and
+        # we can use that to mask only the labels for the current
+        # color by multiplying (0 * anything = 0)
+        #
+        ##foreground = clabels == color
+        ##mini_labels = labels * foreground
+        ##distance = scipy.ndimage.distance_transform_edt(foreground)
+        #
+        # And here's another trick - scipy.ndimage.mean returns
+        # NaN for any index that doesn't appear because the
+        # mean isn't computable. How lucky!
+        #
+        ##v1 = scipy.ndimage.mean(distance, mini_labels, indices)
+        ##good_v1 = ~ np.isnan(v1)
+        ##values[indices[good_v1]] = v1[good_v1]
         measurements.add_measurement(objects_name,
                                      M_MEAN_DISTANCE,
                                      values[1:])
         if workspace.show_frame:
             workspace.display_data.ijv = objects.ijv.copy()
             workspace.display_data.values = values[1:]
-            
+
     def display(self, workspace, frame):
-        frame.set_subplots((1,1))
+        frame.set_subplots((1, 1))
         ax = frame.subplot_imshow_ijv(0, 0, workspace.display_data.ijv,
                                       title=self.objects_name.value)
         indices = np.unique(workspace.display_data.ijv[:, 2])
         x = scipy.ndimage.mean(workspace.display_data.ijv[:, 1],
                                workspace.display_data.ijv[:, 2],
-                               indices)  
+                               indices)
         y = scipy.ndimage.minimum(workspace.display_data.ijv[:, 0],
                                   workspace.display_data.ijv[:, 2],
                                   indices)
-    
+
         for xi, yi, v in zip(x, y, workspace.display_data.values):
             ax.text(xi, yi, "%0.1f" % v, color="red", ha="center", va="bottom")
-            
+
     def get_measurement_columns(self, pipeline):
-        return [(self.objects_name.value, M_MEAN_DISTANCE, cpmeas.COLTYPE_FLOAT)]
+        return [
+            (self.objects_name.value, M_MEAN_DISTANCE, cpmeas.COLTYPE_FLOAT)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.objects_name:
             return [C_EXAMPLE5]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.objects_name and category == C_EXAMPLE5:
             return [FTR_MEAN_DISTANCE]

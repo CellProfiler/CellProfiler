@@ -9,15 +9,12 @@ This module corrects each image in the pipeline using the function specified.
 
 See also <b>CorrectIlluminationCalculate</b>.'''
 
-
-
-
 import numpy as np
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.cpimage  as cpi
-from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
+from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, \
+    IC_REGULAR
 
 ######################################
 #
@@ -44,6 +41,7 @@ RE_MATCH = "Match maximums"
 
 SETTINGS_PER_IMAGE = 4
 
+
 class CorrectIlluminationApply(cpm.CPModule):
     category = "Image Processing"
     variable_revision_number = 3
@@ -52,25 +50,25 @@ class CorrectIlluminationApply(cpm.CPModule):
     def create_settings(self):
         """Make settings here (and set the module name)"""
         self.images = []
-        self.add_image(can_delete = False)
+        self.add_image(can_delete=False)
         self.add_image_button = cps.DoSomething("", "Add another image",
                                                 self.add_image)
 
-    def add_image(self, can_delete = True):
+    def add_image(self, can_delete=True):
         '''Add an image and its settings to the list of images'''
         image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE, doc = '''
+            cps.NONE, doc='''
             Select the image to be corrected.''')
 
         corrected_image_name = cps.ImageNameProvider(
             "Name the output image",
-            "CorrBlue", doc = '''
+            "CorrBlue", doc='''
             Enter a name for the corrected image.''')
 
         illum_correct_function_image_name = cps.ImageNameSubscriber(
             "Select the illumination function",
-            cps.NONE, doc = '''
+            cps.NONE, doc='''
             Select the illumination correction function image that will be used to 
             carry out the correction. This image is usually produced by another module 
             or loaded as a .mat format image using the <b>Images</b> module or 
@@ -78,7 +76,7 @@ class CorrectIlluminationApply(cpm.CPModule):
 
         divide_or_subtract = cps.Choice(
             "Select how the illumination function is applied",
-            [DOS_DIVIDE, DOS_SUBTRACT], doc = '''
+            [DOS_DIVIDE, DOS_SUBTRACT], doc='''
             This choice depends on how the illumination function was calculated
             and on your physical model of the way illumination variation affects the 
             background of images relative to the objects in images; it is also somewhat empirical. 
@@ -91,22 +89,23 @@ class CorrectIlluminationApply(cpm.CPModule):
             is high (the cells are stained very strongly). If you created the illumination correction 
             function using <i>%(IC_REGULAR)s</i>,
             then you will want to choose <i>%(DOS_DIVIDE)s</i> here.</li>
-            </ul>'''%globals())
+            </ul>''' % globals())
 
         image_settings = cps.SettingsGroup()
         image_settings.append("image_name", image_name)
         image_settings.append("corrected_image_name", corrected_image_name)
-        image_settings.append("illum_correct_function_image_name", 
+        image_settings.append("illum_correct_function_image_name",
                               illum_correct_function_image_name)
         image_settings.append("divide_or_subtract", divide_or_subtract)
-        image_settings.append("rescale_option",RE_NONE)
-        
+        image_settings.append("rescale_option", RE_NONE)
+
         if can_delete:
             image_settings.append("remover",
-                                  cps.RemoveSettingButton("","Remove this image",
+                                  cps.RemoveSettingButton("",
+                                                          "Remove this image",
                                                           self.images,
                                                           image_settings))
-        image_settings.append("divider",cps.Divider())
+        image_settings.append("divider", cps.Divider())
         self.images.append(image_settings)
 
     def settings(self):
@@ -120,7 +119,7 @@ class CorrectIlluminationApply(cpm.CPModule):
         result = []
         for image in self.images:
             result += [image.image_name, image.corrected_image_name,
-                       image.illum_correct_function_image_name, 
+                       image.illum_correct_function_image_name,
                        image.divide_or_subtract]
         return result
 
@@ -130,7 +129,7 @@ class CorrectIlluminationApply(cpm.CPModule):
         result = []
         for image in self.images:
             result += [image.image_name, image.corrected_image_name,
-                       image.illum_correct_function_image_name, 
+                       image.illum_correct_function_image_name,
                        image.divide_or_subtract]
             #
             # Get the "remover" button if there is one
@@ -195,7 +194,8 @@ class CorrectIlluminationApply(cpm.CPModule):
                 illum_correct_name, must_be_grayscale=True)
         else:
             if illum_function_pixel_data.ndim == 2:
-                illum_function_pixel_data = illum_function_pixel_data[:,:,np.newaxis]
+                illum_function_pixel_data = illum_function_pixel_data[:, :,
+                                            np.newaxis]
         #
         # Either divide or subtract the illumination image from the original
         #
@@ -205,13 +205,13 @@ class CorrectIlluminationApply(cpm.CPModule):
             output_pixels = orig_image.pixel_data - illum_function_pixel_data
             output_pixels[output_pixels < 0] = 0
         else:
-            raise ValueError("Unhandled option for divide or subtract: %s"%
+            raise ValueError("Unhandled option for divide or subtract: %s" %
                              image.divide_or_subtract.value)
         #
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.
         #
-        output_image = cpi.Image(output_pixels, parent_image = orig_image) 
+        output_image = cpi.Image(output_pixels, parent_image=orig_image)
         workspace.image_set.add(corrected_image_name, output_image)
         #
         # Save images for display
@@ -221,7 +221,8 @@ class CorrectIlluminationApply(cpm.CPModule):
                 workspace.display_data.images = {}
             workspace.display_data.images[image_name] = orig_image.pixel_data
             workspace.display_data.images[corrected_image_name] = output_pixels
-            workspace.display_data.images[illum_correct_name] = illum_function.pixel_data
+            workspace.display_data.images[
+                illum_correct_name] = illum_function.pixel_data
 
     def display(self, workspace, figure):
         ''' Display one row of orig / illum / output per image setting group'''
@@ -232,8 +233,11 @@ class CorrectIlluminationApply(cpm.CPModule):
                 image.illum_correct_function_image_name.value
             corrected_image_name = image.corrected_image_name.value
             orig_image = workspace.display_data.images[image_name]
-            illum_image = workspace.display_data.images[illum_correct_function_image_name]
-            corrected_image = workspace.display_data.images[corrected_image_name]
+            illum_image = workspace.display_data.images[
+                illum_correct_function_image_name]
+            corrected_image = workspace.display_data.images[
+                corrected_image_name]
+
             def imshow(x, y, image, *args, **kwargs):
                 if image.ndim == 2:
                     f = figure.subplot_imshow_grayscale
@@ -243,30 +247,32 @@ class CorrectIlluminationApply(cpm.CPModule):
 
             imshow(0, j, orig_image,
                    "Original image: %s" % image_name,
-                   sharexy = figure.subplot(0,0))
+                   sharexy=figure.subplot(0, 0))
             title = ("Illumination function: %s\nmin=%f, max=%f" %
                      (illum_correct_function_image_name,
                       round(illum_image.min(), 4),
                       round(illum_image.max(), 4)))
 
             imshow(1, j, illum_image, title,
-                   sharexy = figure.subplot(0,0))
+                   sharexy=figure.subplot(0, 0))
             imshow(2, j, corrected_image,
                    "Final image: %s" %
                    corrected_image_name,
-                   sharexy = figure.subplot(0,0))
+                   sharexy=figure.subplot(0, 0))
 
     def validate_module_warnings(self, pipeline):
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
         for j, image in enumerate(self.images):
             if image.rescale_option != RE_NONE:
-                raise cps.ValidationError(("Your original pipeline used '%s' to rescale the final image, "
+                raise cps.ValidationError((
+                                          "Your original pipeline used '%s' to rescale the final image, "
                                           "but the rescaling option has been removed. Please use "
                                           "RescaleIntensity to rescale your output image. Save your "
-                                          "pipeline to get rid of this warning.")%(image.rescale_option),
+                                          "pipeline to get rid of this warning.") % (
+                                          image.rescale_option),
                                           image.divide_or_subtract)
 
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         """Adjust settings based on revision # of save file
 
@@ -294,17 +300,16 @@ class CorrectIlluminationApply(cpm.CPModule):
             # Keep the prior selection around for the validation warning.
             SLOT_RESCALE_OPTION = 4
             SETTINGS_PER_IMAGE_V2 = 5
-            rescale_option = setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
-            for i,image in enumerate(self.images):
-                image.rescale_option = rescale_option[i] 
+            rescale_option = setting_values[
+                             SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
+            for i, image in enumerate(self.images):
+                image.rescale_option = rescale_option[i]
             del setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
-            
+
             variable_revision_number = 3
         else:
             # If revision >= 2, initalize rescaling option for validation warning 
-            for i,image in enumerate(self.images):
+            for i, image in enumerate(self.images):
                 image.rescale_option = RE_NONE
-        
+
         return setting_values, variable_revision_number, from_matlab
-
-

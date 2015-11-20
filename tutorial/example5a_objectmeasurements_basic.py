@@ -5,7 +5,6 @@ This version does not support overlapping objects.
 
 import numpy as np
 import scipy.ndimage
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -21,23 +20,24 @@ SUPPORT_OVERLAPPING = "Overlapping"
 '''Run Example5a using an algorithm that supports overlapping and touching'''
 SUPPORT_TOUCHING = "Overlapping and touching"
 
+
 class Example5aSimple(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example5aSimple"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber("Objects name", "Nuclei")
         self.method = cps.Choice("Algorithm method",
-                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING, 
+                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING,
                                   SUPPORT_TOUCHING], SUPPORT_TOUCHING)
-        
+
     def settings(self):
         return [self.objects_name, self.method]
-    
+
     def visible_settings(self):
         return [self.objects_name]
-    
+
     def run(self, workspace):
         #
         # Get some things we need from the workspace
@@ -96,7 +96,7 @@ class Example5aSimple(cpm.CPModule):
                 scipy.ndimage.mean(j.astype(float), labels, indices)
             workspace.display_data.center_y = \
                 scipy.ndimage.mean(i.astype(float), labels, indices)
-            
+
     def display(self, workspace, frame):
         frame.set_subplots((1, 1))
         ax = frame.subplot_imshow_grayscale(
@@ -105,15 +105,16 @@ class Example5aSimple(cpm.CPModule):
                            workspace.display_data.center_y,
                            workspace.display_data.values):
             ax.text(x, y, "%0.1f" % v, color="red", ha="center", va="center")
-            
+
     def get_measurement_columns(self, pipeline):
-        return [(self.objects_name.value, M_MEAN_DISTANCE, cpmeas.COLTYPE_FLOAT)]
+        return [
+            (self.objects_name.value, M_MEAN_DISTANCE, cpmeas.COLTYPE_FLOAT)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.objects_name:
             return [C_EXAMPLE5]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.objects_name and category == C_EXAMPLE5:
             return [FTR_MEAN_DISTANCE]

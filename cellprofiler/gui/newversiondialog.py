@@ -5,23 +5,27 @@ turning off new version checking.
 import wx
 import wx.html
 
+
 class NewVersionDialog(wx.Dialog):
-    def __init__(self, parent, title, contents, url, check_pref, check_pref_callback, skip_callback):
-        super(NewVersionDialog, self).__init__(parent, -1, title, 
-                                               style=(wx.DEFAULT_DIALOG_STYLE | 
+    def __init__(self, parent, title, contents, url, check_pref,
+                 check_pref_callback, skip_callback):
+        super(NewVersionDialog, self).__init__(parent, -1, title,
+                                               style=(wx.DEFAULT_DIALOG_STYLE |
                                                       wx.RESIZE_BORDER))
         html = wx.html.HtmlWindow(parent=self)
         html.SetPage(contents)
-        
+
         self.url = url
         self.check_pref_callback = check_pref_callback
         self.check_pref = check_pref
         self.skip_callback = skip_callback
 
-        check_pref_later = self.check_pref_later = wx.CheckBox(self, -1, 'Check for updates on startup?  ')
+        check_pref_later = self.check_pref_later = wx.CheckBox(self, -1,
+                                                               'Check for updates on startup?  ')
         check_pref_later.SetValue(check_pref)
 
-        buttons_sizer = self.CreateStdDialogButtonSizer(wx.YES | wx.NO | wx.CANCEL)
+        buttons_sizer = self.CreateStdDialogButtonSizer(
+            wx.YES | wx.NO | wx.CANCEL)
         go_button = buttons_sizer.GetAffirmativeButton()
         go_button.SetLabel('Download new version')
         skip_button = buttons_sizer.GetNegativeButton()
@@ -34,7 +38,7 @@ class NewVersionDialog(wx.Dialog):
         sizer.Add(html, 1, wx.EXPAND | wx.ALL, 5)
         sizer.Add(check_pref_later, 0, wx.ALIGN_RIGHT)
         sizer.AddSpacer(5)
-        sizer.Add(buttons_sizer, flag=wx.ALIGN_RIGHT|wx.EXPAND)
+        sizer.Add(buttons_sizer, flag=wx.ALIGN_RIGHT | wx.EXPAND)
 
         border = wx.BoxSizer()
         border.Add(sizer, 1, wx.EXPAND | wx.ALL, 5)
@@ -62,23 +66,24 @@ class NewVersionDialog(wx.Dialog):
 
     def go_to_url(self, evt):
         if not wx.LaunchDefaultBrowser(self.url):
-            wx.MessageBox("Could not open default browser (%s)"%(self.url), "Can't open browser", wx.ICON_EXCLAMATION)
-            
+            wx.MessageBox("Could not open default browser (%s)" % (self.url),
+                          "Can't open browser", wx.ICON_EXCLAMATION)
+
 
 if __name__ == "__main__":
     def cb(new_pref):
         print "Pref changed to", new_pref
-        
+
+
     def sk():
         print "skip this version"
 
+
     app = wx.PySimpleApp()
-    dialog = NewVersionDialog(None, "New version available", 
-                              "<h1>NEW REVISION: TEH AWESOME</h1>awesome new features!<br>get it now!", 
-                              "http://cellprofiler.org/", 
+    dialog = NewVersionDialog(None, "New version available",
+                              "<h1>NEW REVISION: TEH AWESOME</h1>awesome new features!<br>get it now!",
+                              "http://cellprofiler.org/",
                               True, cb, sk)
     dialog.ShowModal()
     dialog.Destroy()
     app.MainLoop()
-
-    

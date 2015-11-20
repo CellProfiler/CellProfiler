@@ -28,9 +28,12 @@ import xml.dom.minidom
 CP_NO_ILASTIK = "CP_NO_ILASTIK"
 # make sure external dependencies match requirements
 import external_dependencies
+
 external_dependencies.fetch_external_dependencies('fail')
 
-from cellprofiler.utilities.version import version_number, dotted_version, version_string
+from cellprofiler.utilities.version import version_number, dotted_version, \
+    version_string
+
 revision = str(version_number)
 f = open("cellprofiler/frozen_version.py", "w")
 f.write("# MACHINE_GENERATED\nversion_string = '%s'" % version_string)
@@ -44,9 +47,11 @@ vcredist = os.path.join("windows",
 do_modify = is_2_6 and not os.path.exists(vcredist)
 
 if is_win64:
-    cell_profiler_setup = "CellProfiler_%s_win64_r%s.exe" % (dotted_version, revision)
+    cell_profiler_setup = "CellProfiler_%s_win64_r%s.exe" % (
+    dotted_version, revision)
 else:
-    cell_profiler_setup = "CellProfiler_%s_win32_r%s.exe" % (dotted_version, revision)
+    cell_profiler_setup = "CellProfiler_%s_win32_r%s.exe" % (
+    dotted_version, revision)
 cell_profiler_setup_path = os.path.join("Output", cell_profiler_setup)
 
 ###########
@@ -60,16 +65,17 @@ for site_path in site.getsitepackages():
     if os.path.isdir(pywin32_path):
         os.environ["PATH"] = os.environ["PATH"] + ";" + pywin32_path
 
+
 class CellProfilerMSI(distutils.core.Command):
     description = "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
     user_options = []
-    
+
     def initialize_options(self):
         pass
-    
+
     def finalize_options(self):
         pass
-    
+
     def run(self):
         if is_2_6 and do_modify:
             self.modify_manifest("analysis_worker.exe")
@@ -89,7 +95,8 @@ class CellProfilerMSI(distutils.core.Command):
         fd.write("""
 AppVerName=CellProfiler %s r%s
 OutputBaseFilename=CellProfiler_%s_win%d_r%s
-""" % (dotted_version, revision, dotted_version, (64 if is_win64 else 32), revision))
+""" % (dotted_version, revision, dotted_version, (64 if is_win64 else 32),
+       revision))
         fd.close()
         fd = open("ilastik.iss", "w")
         if CP_NO_ILASTIK not in os.environ:
@@ -102,15 +109,15 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
             cell_profiler_iss = "CellProfiler64.iss"
         else:
             cell_profiler_iss = "CellProfiler.iss"
-        required_files = ["dist\\CellProfiler.exe",cell_profiler_iss]
+        required_files = ["dist\\CellProfiler.exe", cell_profiler_iss]
         compile_command = self.__compile_command()
-        compile_command = compile_command.replace("%1",cell_profiler_iss)
-        self.make_file(required_files, cell_profiler_setup_path, 
-                       subprocess.check_call,([compile_command]),
+        compile_command = compile_command.replace("%1", cell_profiler_iss)
+        self.make_file(required_files, cell_profiler_setup_path,
+                       subprocess.check_call, ([compile_command]),
                        "Compiling %s" % cell_profiler_iss)
         os.remove("version.iss")
         os.remove("ilastik.iss")
-        
+
     def modify_manifest(self, resource_name):
         '''Change the manifest of a resource to match the CRT
         
@@ -126,7 +133,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
             key_path = r"SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.0"
             key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, key_path)
             path = _winreg.QueryValueEx(key, "InstallationFolder")[0]
-            mt = os.path.join(path,"bin", "mt.exe")
+            mt = os.path.join(path, "bin", "mt.exe")
             key.Close()
         except:
             print "Using MT from path"
@@ -135,9 +142,10 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         msvcrt = xml.dom.minidom.parse(os.path.join(
             directory, "Microsoft.VC90.CRT.manifest"))
         msvcrt_assembly = msvcrt.getElementsByTagName("assembly")[0]
-        msvcrt_assembly_identity = msvcrt.getElementsByTagName("assemblyIdentity")[0]
+        msvcrt_assembly_identity = \
+        msvcrt.getElementsByTagName("assemblyIdentity")[0]
         msvcrt_version = msvcrt_assembly_identity.getAttribute("version")
-        
+
         manifest_file_name = tempfile.mktemp()
         pipe = subprocess.Popen(
             (mt,
@@ -146,20 +154,24 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         pipe.communicate()
         if not os.path.exists(manifest_file_name):
             return
-        
+
         manifest = xml.dom.minidom.parse(manifest_file_name)
         manifest_assembly = manifest.getElementsByTagName("assembly")[0]
-        manifest_dependencies = manifest_assembly.getElementsByTagName("dependency")
+        manifest_dependencies = manifest_assembly.getElementsByTagName(
+            "dependency")
         for dependency in manifest_dependencies:
-            dependent_assemblies = dependency.getElementsByTagName("dependentAssembly")
+            dependent_assemblies = dependency.getElementsByTagName(
+                "dependentAssembly")
             for dependent_assembly in dependent_assemblies:
-                assembly_identity = dependent_assembly.getElementsByTagName("assemblyIdentity")[0]
-                if assembly_identity.getAttribute("name") == "Microsoft.VC90.CRT":
+                assembly_identity = \
+                dependent_assembly.getElementsByTagName("assemblyIdentity")[0]
+                if assembly_identity.getAttribute(
+                        "name") == "Microsoft.VC90.CRT":
                     assembly_identity.setAttribute("version", msvcrt_version)
         fd = open(manifest_file_name, "wt")
         fd.write(manifest.toprettyxml())
         fd.close()
-        
+
         pipe = subprocess.Popen(
             (mt,
              "-outputresource:%s" % os.path.join(directory, resource_name),
@@ -167,14 +179,14 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
              manifest_file_name))
         pipe.communicate()
         os.remove(manifest_file_name)
-    
+
     def __compile_command(self):
         """Return the command to use to compile an .iss file
         """
         try:
-            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, 
-                                   "InnoSetupScriptFile\\shell\\Compile\\command")
-            result = _winreg.QueryValueEx(key,None)[0]
+            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
+                                  "InnoSetupScriptFile\\shell\\Compile\\command")
+            result = _winreg.QueryValueEx(key, None)[0]
             key.Close()
             return result
         except WindowsError:
@@ -182,16 +194,17 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
                 key.Close()
             raise distutils.errors.DistutilsFileError, "Inno Setup does not seem to be installed properly. Specifically, there is no entry in the HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\Compile\\command"
 
+
 class CellProfilerCodesign(distutils.core.Command):
     description = "Sign the .msi package"
     user_options = []
-    
+
     def initialize_options(self):
         pass
-    
+
     def finalize_options(self):
         pass
-    
+
     def run(self):
         required_files = [cell_profiler_setup_path]
         try:
@@ -212,32 +225,33 @@ class CellProfilerCodesign(distutils.core.Command):
                     pass
             else:
                 raise distutils.errors.DistutilsExecError, \
-                      "The Microsoft Windows SDK does not seem to be properly installed"
+                    "The Microsoft Windows SDK does not seem to be properly installed"
         finally:
             key.Close()
-        
+
         self.execute(
             subprocess.check_call,
-            ([signtool, "sign", "/a", "/du", "http://www.cellprofiler.org/", 
-              "/t", "http://timestamp.comodoca.com/authenticode", 
-              cell_profiler_setup_path], ), "Signing %s" % cell_profiler_setup)
-        
+            ([signtool, "sign", "/a", "/du", "http://www.cellprofiler.org/",
+              "/t", "http://timestamp.comodoca.com/authenticode",
+              cell_profiler_setup_path],), "Signing %s" % cell_profiler_setup)
+
+
 opts = {
-    'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
-                              "matplotlib", 
-                              "nose", "nose.*", "nose.plugins.*",
-                              "h5py", "h5py.*", "pdb", "readline",
-                              "pyreadline", "pyreadline.console",
-                              "pyreadline.console.console",
-                              "email.iterators",
-                              "cellprofiler.modules.*"],
-                'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
-                'dll_excludes': ["jvm.dll", "iphlpapi.dll", "nsi.dll",
-                                 "winnsi.dll"]
-              },
+    'py2exe': {"includes": ["numpy", "scipy", "PIL", "wx",
+                            "matplotlib",
+                            "nose", "nose.*", "nose.plugins.*",
+                            "h5py", "h5py.*", "pdb", "readline",
+                            "pyreadline", "pyreadline.console",
+                            "pyreadline.console.console",
+                            "email.iterators",
+                            "cellprofiler.modules.*"],
+               'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
+               'dll_excludes': ["jvm.dll", "iphlpapi.dll", "nsi.dll",
+                                "winnsi.dll"]
+               },
     'msi': {},
     'codesign': {}
-       }
+}
 
 data_files = []
 
@@ -256,15 +270,17 @@ if CP_NO_ILASTIK not in os.environ:
     try:
         import vigra
         import ilastik
-        vigranumpy_path = os.path.join(vigra.__path__[0],"vigranumpycore.pyd")
+
+        vigranumpy_path = os.path.join(vigra.__path__[0], "vigranumpycore.pyd")
         if os.path.exists(vigranumpy_path):
-            data_files += [(".",[vigranumpy_path])]
+            data_files += [(".", [vigranumpy_path])]
         opts['py2exe']['includes'] += ilastik_dependencies
         opts['py2exe']['excludes'] += ["ilastik", 'PyQt4.uic.port_v3']
         #
         # Put path to QT dlls in PATH environment variable
         #
         import PyQt4
+
         pyqt4_path = os.path.split(PyQt4.__file__)[0]
         os.environ["PATH"] = os.environ["PATH"] + ";" + pyqt4_path
         il_path = ilastik.__path__[0]
@@ -272,26 +288,28 @@ if CP_NO_ILASTIK not in os.environ:
             #
             # Do not include experimental modules
             #
-            relative_path = root[(len(il_path)+1):]
-            if any([relative_path.startswith(os.path.join('modules',x))
+            relative_path = root[(len(il_path) + 1):]
+            if any([relative_path.startswith(os.path.join('modules', x))
                     for x in (
-                'automatic_segmentation','object_picking',
-                'connected_components')]):
+                            'automatic_segmentation', 'object_picking',
+                            'connected_components')]):
                 continue
-            dest = os.path.join('site-packages','ilastik')
+            dest = os.path.join('site-packages', 'ilastik')
             if root != il_path:
                 dest = os.path.join(dest, relative_path)
-            ilastik_files = [os.path.join(root, f) for f in files 
+            ilastik_files = [os.path.join(root, f) for f in files
                              if f.endswith(".ui") or f.endswith(".png") or
                              f.endswith(".py")]
             if len(ilastik_files) > 0:
                 data_files += [(dest, ilastik_files)]
         try:
             import OpenGL.platform.win32
-            opts['py2exe']['includes'] += ['OpenGL.platform.win32', 
+
+            opts['py2exe']['includes'] += ['OpenGL.platform.win32',
                                            'OpenGL.arrays.*']
             try:
                 import OpenGL_accelerate
+
                 opts['py2exe']['includes'] += [
                     'OpenGL_accelerate', 'OpenGL_accelerate.*']
             except:
@@ -319,7 +337,8 @@ opts['py2exe']['includes'] += ['lxml', 'lxml.*']
 try:
     # Include this package if present
     import scipy.io.matlab.streams
-    opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
+
+    opts['py2exe']['includes'] += ["scipy.io.matlab.streams"]
 except:
     pass
 opts['py2exe']['includes'] += ["scipy.special", "scipy.special.*"]
@@ -334,7 +353,7 @@ try:
     import scipy.sparse.csgraph._validation
 except:
     pass
-opts['py2exe']['includes'] += [ 
+opts['py2exe']['includes'] += [
     "sklearn.*", "scipy.sparse.csgraph._validation",
     "sklearn.utils.*", "sklearn.neighbors", "sklearn.neighbors.*",
     "sklearn.utils.sparsetools.*"]
@@ -350,11 +369,12 @@ opts['py2exe']['includes'] += [
 ##############################################
 try:
     import zmq
+
     opts['py2exe']['includes'] += [
         "zmq", "zmq.utils", "zmq.utils.*", "zmq.utils.strtypes"]
 
     zmq_loc = os.path.split(zmq.__file__)[0]
-    os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc
+    os.environ["PATH"] = os.environ["PATH"] + ";" + zmq_loc
     #
     # 2.2 added this and distutils did not find it
     # Not present prior to 2.2
@@ -370,6 +390,7 @@ try:
         # libzmq.dll -> libzmq.pyd -> py2exe -> zmq.libzmq.pyd
         # Must prevent.
         import zmq.libzmq
+
         opts['py2exe']['excludes'] += ['zmq.libzmq']
         opts['py2exe']['dll_excludes'] += ['libzmq.pyd']
         data_files += [('.', (zmq.libzmq.__file__,))]
@@ -383,10 +404,12 @@ except:
 ##############################################
 try:
     import matplotlib.numerix.random_array
+
     opts['py2exe']['includes'] += ["matplotlib.numerix.random_array"]
 except:
     # Matplotlib 1.3 +
     pass
+
 
 ##############################################
 #
@@ -404,9 +427,11 @@ def get_visual_studio_version():
         print 'Assuming version', ver
     return ver
 
+
 try:
     # Fix for scipy 0.11
     from scipy.sparse.csgraph import _validation
+
     opts['py2exe']['includes'] += ["scipy.sparse.csgraph._validation"]
 except:
     pass
@@ -439,21 +464,22 @@ if do_modify:
     product_dir = _winreg.QueryValueEx(key, "ProductDir")[0]
     key.Close()
     redist = os.path.join(product_dir, r"redist\x86\Microsoft.VC90.CRT")
-    data_files += [(".",[os.path.join(redist, x)
-                         for x in ("Microsoft.VC90.CRT.manifest", 
-                                   "msvcr90.dll",
-                                   "msvcm90.dll",
-                                   "msvcp90.dll")])]
+    data_files += [(".", [os.path.join(redist, x)
+                          for x in ("Microsoft.VC90.CRT.manifest",
+                                    "msvcr90.dll",
+                                    "msvcm90.dll",
+                                    "msvcp90.dll")])]
 else:
-    opts['py2exe']['dll_excludes'] += ["msvcr90.dll", "msvcm90.dll", "msvcp90.dll"]
+    opts['py2exe']['dll_excludes'] += ["msvcr90.dll", "msvcm90.dll",
+                                       "msvcp90.dll"]
 
 data_files += [('artwork',
-               ['artwork\\%s'%(x)
-                for x in os.listdir('artwork')
-                if x.endswith(".png") 
-                or x.endswith(".psd") or x.endswith(".txt")]),
-              ('imagej\\jars', 
-               ['imagej\\jars\\%s' % x for x in os.listdir('imagej\\jars')])]
+                ['artwork\\%s' % (x)
+                 for x in os.listdir('artwork')
+                 if x.endswith(".png")
+                 or x.endswith(".psd") or x.endswith(".txt")]),
+               ('imagej\\jars',
+                ['imagej\\jars\\%s' % x for x in os.listdir('imagej\\jars')])]
 data_files += matplotlib.get_py2exe_datafiles()
 ################################
 #
@@ -462,9 +488,12 @@ data_files += matplotlib.get_py2exe_datafiles()
 ################################
 
 from javabridge.locate import find_jdk
+
 jdk_dir = find_jdk()
 temp_dir = tempfile.mkdtemp()
 rofiles = []
+
+
 def add_jre_files(path):
     files = []
     directories = []
@@ -473,7 +502,7 @@ def add_jre_files(path):
         if filename.startswith("."):
             continue
         local_file = os.path.join(jdk_dir, path, filename)
-        relative_path = os.path.join(path, filename) 
+        relative_path = os.path.join(path, filename)
         if not os.access(local_file, os.W_OK):
             # distutils can't deal so well with read-only files
             old_local_file = local_file
@@ -491,42 +520,47 @@ def add_jre_files(path):
         data_files.append([path, files])
     for subdirectory in directories:
         add_jre_files(subdirectory)
-    
+
+
 add_jre_files("jre")
 data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
 from javabridge import JARS
+
 data_files += [('imagej\\jars', JARS)]
 #
 # Call setup
 #
 try:
     dist = setup(
-        console=[{'script':'CellProfiler.py',
-                  'icon_resources':[(1,'artwork/CellProfilerIcon.ico')]},
-                 {'script':'cellprofiler\\analysis_worker.py',
-                  'icon_resources':[(1,'artwork/CellProfilerIcon.ico')]}],
+        console=[{'script': 'CellProfiler.py',
+                  'icon_resources': [(1, 'artwork/CellProfilerIcon.ico')]},
+                 {'script': 'cellprofiler\\analysis_worker.py',
+                  'icon_resources': [(1, 'artwork/CellProfilerIcon.ico')]}],
         name='Cell Profiler',
-        data_files = data_files,
-        cmdclass={'msi':CellProfilerMSI,
-                  'codesign':CellProfilerCodesign
+        data_files=data_files,
+        cmdclass={'msi': CellProfilerMSI,
+                  'codesign': CellProfilerCodesign
                   },
         options=opts)
 except:
     import traceback
+
     traceback.print_exc()
 finally:
     for tempfile, relative_path in rofiles:
         # TODO: extra credit for finding where the distribution
         #       is and changing the files back to read-only
         os.remove(tempfile)
-        
+
     try:
         from javabridge import kill_vm
+
         kill_vm()
         sys.stderr.flush()
         sys.stdout.flush()
         os._exit(0)
     except:
         import traceback
+
         traceback.print_exc()
         print "Caught exception while killing VM"

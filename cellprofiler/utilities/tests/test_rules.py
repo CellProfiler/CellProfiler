@@ -1,16 +1,15 @@
 '''test_rules - test the CPA rules parser
 '''
 
-
 import numpy as np
 from StringIO import StringIO
 import unittest
-
 import cellprofiler.measurements as cpmeas
 import cellprofiler.utilities.rules as R
 
 OBJECT_NAME = "MyObject"
-M_FEATURES = ["Measurement%d"%i for i in range(1,11)]
+M_FEATURES = ["Measurement%d" % i for i in range(1, 11)]
+
 
 class TestRules(unittest.TestCase):
     def test_01_01_load_rules(self):
@@ -42,87 +41,88 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         for rule in rules.rules:
             self.assertEqual(rule.object_name, "Nuclei")
             self.assertEqual(rule.comparitor, ">")
-        
+
         rule = rules.rules[0]
-        self.assertEqual(rule.feature, "Intensity_UpperQuartileIntensity_CorrDend")
+        self.assertEqual(rule.feature,
+                         "Intensity_UpperQuartileIntensity_CorrDend")
         self.assertAlmostEqual(rule.threshold, 0.127625)
-        self.assertAlmostEqual(rule.weights[0,0], 0.79607587785712131)
-        self.assertAlmostEqual(rule.weights[0,1], -0.79607587785712131)
-        self.assertAlmostEqual(rule.weights[1,0], -0.94024303819690347)
-        self.assertAlmostEqual(rule.weights[1,1], 0.94024303819690347)
-        
+        self.assertAlmostEqual(rule.weights[0, 0], 0.79607587785712131)
+        self.assertAlmostEqual(rule.weights[0, 1], -0.79607587785712131)
+        self.assertAlmostEqual(rule.weights[1, 0], -0.94024303819690347)
+        self.assertAlmostEqual(rule.weights[1, 1], 0.94024303819690347)
+
     def test_02_00_no_measurements(self):
         m = cpmeas.Measurements()
-        m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([],float))
+        m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0],">",0,
-                                     np.array([[1.0,-1.0],[-1.0,1.0]]))]
+        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 0,
+                                     np.array([[1.0, -1.0], [-1.0, 1.0]]))]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 0)
         self.assertEqual(score.shape[1], 2)
-        
+
     def test_02_01_score_one_positive(self):
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0],">",0,
-                                     np.array([[1.0,-0.5],[-2.0,0.6]]))]
+        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 0,
+                                     np.array([[1.0, -0.5], [-2.0, 0.6]]))]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
-        self.assertAlmostEqual(score[0,0],1.0)
-        self.assertAlmostEqual(score[0,1],-0.5)
-        
+        self.assertAlmostEqual(score[0, 0], 1.0)
+        self.assertAlmostEqual(score[0, 1], -0.5)
+
     def test_02_02_score_one_negative(self):
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0],">",2.0,
-                                     np.array([[1.0,-0.5],[-2.0,0.6]]))]
+        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 2.0,
+                                     np.array([[1.0, -0.5], [-2.0, 0.6]]))]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
-        self.assertAlmostEqual(score[0,0],-2.0)
-        self.assertAlmostEqual(score[0,1],0.6)
-        
+        self.assertAlmostEqual(score[0, 0], -2.0)
+        self.assertAlmostEqual(score[0, 1], 0.6)
+
     def test_02_03_score_one_nan(self):
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([np.NaN], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0],">",2.0,
-                                     np.array([[1.0,-0.5],[-2.0,0.6]]))]
+        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 2.0,
+                                     np.array([[1.0, -0.5], [-2.0, 0.6]]))]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
         self.assertTrue(score[0, 0], -2)
         self.assertTrue(score[0, 1], .6)
-        
+
     def test_03_01_score_two_rules(self):
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
         m.add_measurement(OBJECT_NAME, M_FEATURES[1], np.array([-1.5], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0],">",0,
-                                     np.array([[1.0,-0.5],[-2.0,0.6]])),
-                        R.Rules.Rule(OBJECT_NAME, M_FEATURES[1],">",0,
-                                     np.array([[1.5,-0.7],[-2.3,0.9]]))]
+        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], ">", 0,
+                                     np.array([[1.0, -0.5], [-2.0, 0.6]])),
+                        R.Rules.Rule(OBJECT_NAME, M_FEATURES[1], ">", 0,
+                                     np.array([[1.5, -0.7], [-2.3, 0.9]]))]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
-        self.assertAlmostEqual(score[0,0],1.0-2.3)
-        self.assertAlmostEqual(score[0,1],-0.5+0.9)
-        
+        self.assertAlmostEqual(score[0, 0], 1.0 - 2.3)
+        self.assertAlmostEqual(score[0, 1], -0.5 + 0.9)
+
     def test_03_02_score_two_objects(self):
         m = cpmeas.Measurements()
-        m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5,2.5], float))
+        m.add_measurement(OBJECT_NAME, M_FEATURES[0],
+                          np.array([1.5, 2.5], float))
         rules = R.Rules()
-        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0],"<",2.0,
-                                     np.array([[1.0,-0.5],[-2.0,0.6]]))]
+        rules.rules += [R.Rules.Rule(OBJECT_NAME, M_FEATURES[0], "<", 2.0,
+                                     np.array([[1.0, -0.5], [-2.0, 0.6]]))]
         score = rules.score(m)
         self.assertEqual(score.shape[0], 2)
         self.assertEqual(score.shape[1], 2)
-        self.assertAlmostEqual(score[0,0],1.0)
-        self.assertAlmostEqual(score[0,1],-0.5)
-        self.assertAlmostEqual(score[1,0],-2.0)
-        self.assertAlmostEqual(score[1,1],0.6)
-        
+        self.assertAlmostEqual(score[0, 0], 1.0)
+        self.assertAlmostEqual(score[0, 1], -0.5)
+        self.assertAlmostEqual(score[1, 0], -2.0)
+        self.assertAlmostEqual(score[1, 1], 0.6)

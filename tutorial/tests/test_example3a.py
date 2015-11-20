@@ -1,6 +1,5 @@
 import unittest
 import numpy as np
-
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
@@ -12,13 +11,14 @@ from cellprofiler.modules import instantiate_module
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 
+
 class TestExample3a(unittest.TestCase):
     def make_instance(self):
         return instantiate_module("Example3a")
-    
+
     def test_00_00_can_load(self):
         self.assertFalse(self.make_instance() is None)
-        
+
     def make_workspace(self, pixel_data, mask=None):
         input_image = cpi.Image(pixel_data, mask)
         #
@@ -60,7 +60,7 @@ class TestExample3a(unittest.TestCase):
         workspace, module = self.make_workspace(pixel_data)
         module.run(workspace)
         expected = np.var(pixel_data)
-        
+
         m = workspace.measurements
         ftr = module.get_feature_name()
         self.assertTrue(m.has_feature(cpmeas.IMAGE, ftr),
@@ -68,7 +68,7 @@ class TestExample3a(unittest.TestCase):
                         ftr)
         value = m.get_measurement(cpmeas.IMAGE, ftr)
         self.assertAlmostEqual(expected, value)
-        
+
     def test_01_02_get_measurement_columns(self):
         module = self.make_instance()
         image_name = "Hepzibah"
@@ -81,7 +81,7 @@ class TestExample3a(unittest.TestCase):
         self.assertEqual(columns[0][0], cpmeas.IMAGE)
         self.assertEqual(columns[0][1], "Example3_Variance_Hepzibah")
         self.assertEqual(columns[0][2], cpmeas.COLTYPE_FLOAT)
-        
+
     def test_02_01_mask(self):
         r = np.random.RandomState()
         r.seed(21)
@@ -90,7 +90,7 @@ class TestExample3a(unittest.TestCase):
         workspace, module = self.make_workspace(pixel_data, mask)
         module.run(workspace)
         expected = np.var(pixel_data[mask])
-        
+
         m = workspace.measurements
         ftr = module.get_feature_name()
         self.assertTrue(m.has_feature(cpmeas.IMAGE, ftr),
@@ -98,7 +98,7 @@ class TestExample3a(unittest.TestCase):
                         ftr)
         value = m.get_measurement(cpmeas.IMAGE, ftr)
         self.assertAlmostEqual(expected, value)
-        
+
     def test_02_02_all_masked(self):
         r = np.random.RandomState()
         r.seed(21)
@@ -106,7 +106,7 @@ class TestExample3a(unittest.TestCase):
         mask = np.zeros(pixel_data.shape, bool)
         workspace, module = self.make_workspace(pixel_data, mask)
         module.run(workspace)
-        
+
         m = workspace.measurements
         ftr = module.get_feature_name()
         self.assertTrue(m.has_feature(cpmeas.IMAGE, ftr),
@@ -115,4 +115,3 @@ class TestExample3a(unittest.TestCase):
         value = m.get_measurement(cpmeas.IMAGE, ftr)
         self.assertTrue(np.isnan(value),
                         "The variance of a completely masked image should be NaN")
-        

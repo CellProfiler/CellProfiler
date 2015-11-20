@@ -2,7 +2,6 @@
 directory.
 """
 
-
 # These examples:
 # http://blog.dowski.com/2008/07/31/customizing-the-python-import-system/
 # http://www.secomputing.co.uk/2009/05/importing-python-packages-in-memory.html
@@ -31,10 +30,11 @@ class PluginImporter(object):
         prefix, modname = fullname.rsplit('.', 1)
         if prefix != 'cellprofiler.modules.plugins':
             return None
-        if os.path.exists(os.path.join(cpprefs.get_plugin_directory(), modname + '.py')):
+        if os.path.exists(
+                os.path.join(cpprefs.get_plugin_directory(), modname + '.py')):
             return self
         return None
- 
+
     def load_module(self, fullname):
         if fullname in sys.modules:
             return sys.modules[fullname]
@@ -46,7 +46,8 @@ class PluginImporter(object):
             mod = imp.new_module(fullname)
             sys.modules[fullname] = mod
             mod.__loader__ = self
-            mod.__file__ = os.path.join(cpprefs.get_plugin_directory(), modname + '.py')
+            mod.__file__ = os.path.join(cpprefs.get_plugin_directory(),
+                                        modname + '.py')
 
             contents = open(mod.__file__, "r").read()
             exec compile(contents, mod.__file__, "exec") in mod.__dict__
@@ -54,5 +55,6 @@ class PluginImporter(object):
         except:
             if fullname in sys.module:
                 del sys.modules[fullname]
+
 
 sys.meta_path.append(PluginImporter())

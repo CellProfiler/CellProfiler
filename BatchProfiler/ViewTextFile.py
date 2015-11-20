@@ -4,12 +4,14 @@
 # View the text file that is produced by bsub during batch processing
 #
 import cgitb
+
 cgitb.enable()
 from bpformdata import *
 import RunBatch
 import os
 import stat
 import sys
+
 
 def main():
     batch_array_id = BATCHPROFILER_VARIABLES[BATCH_ARRAY_ID]
@@ -19,7 +21,8 @@ def main():
         do_it(batch_array_id, task_id)
     else:
         show_help()
-        
+
+
 def do_it(batch_array_id, task_id):
     batch_array = RunBatch.BPBatchArray.select(batch_array_id)
     bat = RunBatch.BPBatchArrayTask.select_by_batch_array_and_task_id(
@@ -41,13 +44,15 @@ def do_it(batch_array_id, task_id):
     else:
         show_help("Unknown file type: %s" % file_type)
 
+
 def show_file(path):
-    text_file = open(path,"r")
+    text_file = open(path, "r")
     print "Content-Type: text/plain"
     print
     print text_file.read()
     text_file.close()
-    
+
+
 def download_attachment(filename, path):
     length = os.stat(path).st_size
     print "Content-Type: application/octet-stream"
@@ -63,7 +68,8 @@ def download_attachment(filename, path):
             read_so_far += len(data)
             sys.stdout.write(data)
 
-def show_help(message = None):
+
+def show_help(message=None):
     import yattag
     doc, tag, text = yattag.Doc().tagtext()
     assert isinstance(doc, yattag.Doc)
@@ -89,5 +95,6 @@ def show_help(message = None):
     print "Content-Type: text/html"
     print
     print yattag.indent(doc.getvalue())
+
 
 main()

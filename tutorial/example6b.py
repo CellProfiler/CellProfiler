@@ -3,9 +3,7 @@
 '''
 import datetime
 import os
-
 from bioformats import load_image
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.pipeline as cpp
@@ -14,11 +12,12 @@ import cellprofiler.settings as cps
 
 M_FIRST_TIME = "Example6b_FirstTime"
 
+
 class Example6b(cpm.CPModule):
     module_name = "Example6b"
     variable_revision_number = 1
     category = "File Processing"
-    
+
     def create_settings(self):
         self.image_name = cps.ImageNameProvider(
             "Input image name", "TodaysImage")
@@ -27,19 +26,19 @@ class Example6b(cpm.CPModule):
         # to be scanned.
         #
         self.folder = cps.DirectoryPath("Folder")
-        
+
     def settings(self):
         return [self.image_name, self.folder]
-    
+
     def is_load_module(self):
         '''Tell CellProfiler that this module produces image sets'''
         return True
-    
+
     def prepare_run(self, workspace):
         measurements = workspace.measurements
         image_name = self.image_name.value
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(1)
-        iso_yesterday = yesterday.isoformat() 
+        iso_yesterday = yesterday.isoformat()
         M_FILE_NAME = cpmeas.C_FILE_NAME + "_" + image_name
         M_PATH_NAME = cpmeas.C_PATH_NAME + "_" + image_name
         #
@@ -47,7 +46,7 @@ class Example6b(cpm.CPModule):
         # as M_FIRST_TIME
         #
         for i, (pathname, filename) in enumerate(self.get_files(yesterday)):
-            image_number = i+1
+            image_number = i + 1
             #
             # Save the pathname in the M_PATH_NAME measurement
             # Save tthe filename in the M_FILE_NAME measurement
@@ -57,12 +56,12 @@ class Example6b(cpm.CPModule):
             # correct image number
             # 
         return True
-    
+
     def run(self, workspace):
         image_name = self.image_name.value
         measurements = workspace.measurements
         image_set = workspace.image_set
-        
+
         M_FILE_NAME = cpmeas.C_FILE_NAME + "_" + image_name
         M_PATH_NAME = cpmeas.C_PATH_NAME + "_" + image_name
         #
@@ -77,8 +76,7 @@ class Example6b(cpm.CPModule):
         #
         # call image_set.add to add the image to the image set
         #
-        
-        
+
     def get_files(self, utctime):
         '''Return a list of path / filename tuples created after utctime
         
@@ -88,7 +86,8 @@ class Example6b(cpm.CPModule):
                 the file in the second.
         '''
         result = []
-        for root, dirnames, filenames in os.walk(self.folder.get_absolute_path()):
+        for root, dirnames, filenames in os.walk(
+                self.folder.get_absolute_path()):
             for filename in filenames:
                 if not filename.lower().endswith(".tif"):
                     continue

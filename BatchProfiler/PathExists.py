@@ -4,6 +4,7 @@
 # Determine whether a directory exists
 #
 import cgitb
+
 cgitb.enable()
 print "Content-Type: text/plain\r"
 print "\r"

@@ -4,6 +4,7 @@
 # View a batch from the database, with some options to re-execute it
 #
 import cgitb
+
 cgitb.enable()
 from bpformdata import *
 import RunBatch
@@ -11,9 +12,11 @@ import StyleSheet
 import cgi
 import os
 
+
 def remove_if_exists(path):
     if os.path.exists(path):
         os.remove(path)
+
 
 def delete_run(my_batch, my_run):
     if delete_action in (A_DELETE_ALL, A_DELETE_TEXT):
@@ -23,7 +26,8 @@ def delete_run(my_batch, my_run):
 
     if delete_action in (A_DELETE_ALL, A_DELETE_OUTPUT):
         remove_if_exists(RunBatch.run_out_file_path(my_batch, my_run))
-    
+
+
 delete_action = BATCHPROFILER_DEFAULTS[K_DELETE_ACTION]
 run_id = BATCHPROFILER_DEFAULTS[RUN_ID]
 batch_id = BATCHPROFILER_DEFAULTS[BATCH_ID]
@@ -35,13 +39,13 @@ elif batch_id is not None:
     my_batch = RunBatch.BPBatch.select(batch_id)
     for my_run in my_batch.select_runs():
         delete_run(my_batch, my_run)
-    
-    
-url = "ViewBatch.py?batch_id=%d"%(my_batch.batch_id)
+
+url = "ViewBatch.py?batch_id=%d" % (my_batch.batch_id)
 print "Content-Type: text/html"
 print
 print "<html><head>"
-print "<meta http-equiv='refresh' content='0; URL=%(url)s' />"%(globals())
+print "<meta http-equiv='refresh' content='0; URL=%(url)s' />" % (globals())
 print "</head>"
-print "<body>This page should be redirected to <a href='%(url)s'/>%(url)s</a></body>"%(globals())
+print "<body>This page should be redirected to <a href='%(url)s'/>%(url)s</a></body>" % (
+globals())
 print "</html>"

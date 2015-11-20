@@ -34,15 +34,15 @@ import sys
 import numpy as np
 import re
 import scipy.ndimage as scind
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-from cellprofiler.modules.identify import C_PARENT, C_CHILDREN, R_PARENT, R_CHILD
-from cellprofiler.modules.identify import FF_PARENT,FF_CHILDREN_COUNT
+from cellprofiler.modules.identify import C_PARENT, C_CHILDREN, R_PARENT, \
+    R_CHILD
+from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
 from cellprofiler.modules.identify import \
-     M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
+    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import centers_of_labels
 from centrosome.outline import outline
@@ -76,29 +76,29 @@ FF_MINIMUM = '%s_%s_%%s' % (C_DISTANCE, FEAT_MINIMUM)
 FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
 
-class RelateObjects(cpm.CPModule):
 
+class RelateObjects(cpm.CPModule):
     module_name = 'RelateObjects'
     category = "Object Processing"
     variable_revision_number = 2
 
     def create_settings(self):
         self.sub_object_name = cps.ObjectNameSubscriber(
-            'Select the input child objects', cps.NONE,doc="""
+            'Select the input child objects', cps.NONE, doc="""
             Child objects are defined as those objects contained within the
             parent object. For example, when relating speckles to the
             nuclei that contains them, the speckles are the children.""")
 
         self.parent_name = cps.ObjectNameSubscriber(
             'Select the input parent objects',
-            cps.NONE,doc="""
+            cps.NONE, doc="""
             Parent objects are defined as those objects which encompass the 
             child object. For example, when relating speckles to the
             nuclei that contains them, the nuclei are the parents.""")
 
         self.find_parent_child_distances = cps.Choice(
             "Calculate child-parent distances?",
-            D_ALL,doc="""
+            D_ALL, doc="""
             Choose the method to calculate distances of each child to its parent.
             <ul>
             <li><i>%(D_NONE)s:</i> Do not calculate any distances.</li>
@@ -109,10 +109,10 @@ class RelateObjects(cpm.CPModule):
             centroid of the child object to the centroid of the parent. </li>
             <li><i>%(D_BOTH)s:</i> Calculate both the <i>%(D_MINIMUM)s</i> and 
             <i>%(D_CENTROID)s</i> distances.</li>
-            </ul>"""%globals())
-        
+            </ul>""" % globals())
+
         self.wants_step_parent_distances = cps.Binary(
-            "Calculate distances to other parents?", False,doc = """
+            "Calculate distances to other parents?", False, doc="""
             <i>(Used only if calculating distances)</i><br>
             Select <i>%(YES)s</i> to calculate the distances of the child objects to 
             some other objects. These objects must be either parents or
@@ -124,36 +124,36 @@ class RelateObjects(cpm.CPModule):
             speckles to cells and then measure distances to nuclei and
             cytoplasm. You could not use <b>RelateObjects</b> to relate speckles to
             cytoplasm and then measure distances to nuclei, because nuclei is
-            neither a direct parent or child of cytoplasm."""%globals())
+            neither a direct parent or child of cytoplasm.""" % globals())
         self.step_parent_names = []
 
-        self.add_step_parent(can_delete = False)
+        self.add_step_parent(can_delete=False)
 
-        self.add_step_parent_button = cps.DoSomething("","Add another parent",
+        self.add_step_parent_button = cps.DoSomething("", "Add another parent",
                                                       self.add_step_parent)
 
         self.wants_per_parent_means = cps.Binary(
             'Calculate per-parent means for all child measurements?',
-            False,doc="""
+            False, doc="""
             Select <i>%(YES)s</i> to calculate the per-parent mean values of every upstream 
             measurement made with the children objects and stores them as a
             measurement for the parent; the nomenclature of this new measurements is 
             "Mean_&lt;child&gt;_&lt;category&gt;_&lt;feature&gt;". 
             For this reason, this module should be placed <i>after</i> all <b>Measure</b>
-            modules that make measurements of the children objects."""%globals())
-        
-    def add_step_parent(self, can_delete = True):
+            modules that make measurements of the children objects.""" % globals())
+
+    def add_step_parent(self, can_delete=True):
         group = cps.SettingsGroup()
         group.append("step_parent_name", cps.Choice(
-            "Parent name", [cps.NONE], 
-            choices_fn = self.get_step_parents, doc = """
+            "Parent name", [cps.NONE],
+            choices_fn=self.get_step_parents, doc="""
             <i>(Used only if calculating distances to another parent)</i><br>
             Choose the name of the other parent. The <b>RelateObjects</b> module will 
             measure the distance from this parent to the child objects
             in the same manner as it does to the primary parents.
             You can only choose the parents or children of
             the parent object."""))
-        
+
         if can_delete:
             group.append("remove", cps.RemoveSettingButton(
                 "", "Remove this object", self.step_parent_names, group))
@@ -192,20 +192,20 @@ class RelateObjects(cpm.CPModule):
         '''True if there are possible step-parents for the parent object'''
         return (len(self.step_parent_names) > 0 and
                 len(self.step_parent_names[0].step_parent_name.choices) > 0)
-    
+
     def settings(self):
-        result = [self.sub_object_name, self.parent_name, 
-                  self.find_parent_child_distances, self.wants_per_parent_means, 
+        result = [self.sub_object_name, self.parent_name,
+                  self.find_parent_child_distances, self.wants_per_parent_means,
                   self.wants_step_parent_distances]
         result += [group.step_parent_name for group in self.step_parent_names]
         return result
 
     def visible_settings(self):
         result = [self.sub_object_name, self.parent_name,
-                  self.wants_per_parent_means, 
+                  self.wants_per_parent_means,
                   self.find_parent_child_distances]
-        if (self.find_parent_child_distances != D_NONE and 
-            self.has_step_parents):
+        if (self.find_parent_child_distances != D_NONE and
+                self.has_step_parents):
             result += [self.wants_step_parent_distances]
             if self.wants_step_parent_distances:
                 for group in self.step_parent_names:
@@ -220,17 +220,17 @@ class RelateObjects(cpm.CPModule):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         m.add_measurement(self.sub_object_name.value,
-                          FF_PARENT%(self.parent_name.value),
+                          FF_PARENT % (self.parent_name.value),
                           parents_of)
         m.add_measurement(self.parent_name.value,
-                          FF_CHILDREN_COUNT%(self.sub_object_name.value),
+                          FF_CHILDREN_COUNT % (self.sub_object_name.value),
                           child_count)
         good_parents = parents_of[parents_of != 0]
         image_numbers = np.ones(len(good_parents), int) * m.image_set_number
         good_children = np.argwhere(parents_of != 0).flatten() + 1
         if np.any(good_parents):
             m.add_relate_measurement(self.module_num,
-                                     R_PARENT, 
+                                     R_PARENT,
                                      self.parent_name.value,
                                      self.sub_object_name.value,
                                      image_numbers,
@@ -238,7 +238,7 @@ class RelateObjects(cpm.CPModule):
                                      image_numbers,
                                      good_children)
             m.add_relate_measurement(self.module_num,
-                                     R_CHILD, 
+                                     R_CHILD,
                                      self.sub_object_name.value,
                                      self.parent_name.value,
                                      image_numbers,
@@ -253,7 +253,7 @@ class RelateObjects(cpm.CPModule):
                 self.calculate_minimum_distances(workspace, parent_name)
 
         if self.wants_per_parent_means.value:
-            parent_indexes = np.arange(np.max(parents.segmented))+1
+            parent_indexes = np.arange(np.max(parents.segmented)) + 1
             for feature_name in m.get_feature_names(self.sub_object_name.value):
                 if not self.should_aggregate_feature(feature_name):
                     continue
@@ -261,18 +261,18 @@ class RelateObjects(cpm.CPModule):
                                                  feature_name)
                 if data is not None and len(data) > 0:
                     if len(parents_of) > 0:
-                        means = fix(scind.mean(data.astype(float), 
+                        means = fix(scind.mean(data.astype(float),
                                                parents_of, parent_indexes))
                     else:
                         means = np.zeros((0,))
                 else:
                     # No child measurements - all NaN
                     means = np.ones(len(parents_of)) * np.nan
-                mean_feature_name = FF_MEAN%(self.sub_object_name.value,
-                                             feature_name)
+                mean_feature_name = FF_MEAN % (self.sub_object_name.value,
+                                               feature_name)
                 m.add_measurement(self.parent_name.value, mean_feature_name,
                                   means)
-        
+
         if self.show_window:
             workspace.display_data.parent_labels = parents.segmented
             workspace.display_data.parent_count = parents.count
@@ -283,7 +283,7 @@ class RelateObjects(cpm.CPModule):
         if not self.show_window:
             return
         from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
-        figure.set_subplots((2,2))
+        figure.set_subplots((2, 2))
         renumbered_parent_labels = renumber_labels_for_display(
             workspace.display_data.parent_labels)
         child_labels = workspace.display_data.child_labels
@@ -291,32 +291,32 @@ class RelateObjects(cpm.CPModule):
         #
         # discover the mapping so that we can apply it to the children
         #
-        mapping = np.arange(workspace.display_data.parent_count+1)
+        mapping = np.arange(workspace.display_data.parent_count + 1)
         mapping[workspace.display_data.parent_labels.flatten()] = \
             renumbered_parent_labels.flatten()
         parent_labeled_children = np.zeros(child_labels.shape, int)
         mask = child_labels > 0
         parent_labeled_children[mask] = \
             mapping[parents_of[child_labels[mask] - 1]]
-        
+
         figure.subplot_imshow_labels(
             0, 0, renumbered_parent_labels,
-            title = self.parent_name.value,
+            title=self.parent_name.value,
             renumber=False)
         figure.subplot_imshow_labels(
             1, 0, child_labels,
-            title = self.sub_object_name.value,
-            sharex = figure.subplot(0,0),
-            sharey = figure.subplot(0,0))
+            title=self.sub_object_name.value,
+            sharex=figure.subplot(0, 0),
+            sharey=figure.subplot(0, 0))
         figure.subplot_imshow_labels(
             0, 1, parent_labeled_children,
-            "%s labeled by %s"%
+            "%s labeled by %s" %
             (self.sub_object_name.value,
              self.parent_name.value),
             renumber=False,
-            sharex = figure.subplot(0,0),
-            sharey = figure.subplot(0,0))
-    
+            sharex=figure.subplot(0, 0),
+            sharey=figure.subplot(0, 0))
+
     def get_parent_names(self):
         '''Get the names of parents to be measured for distance'''
         parent_names = [self.parent_name.value]
@@ -324,11 +324,11 @@ class RelateObjects(cpm.CPModule):
             parent_names += [group.step_parent_name.value
                              for group in self.step_parent_names]
         return parent_names
-    
+
     def calculate_centroid_distances(self, workspace, parent_name):
         '''Calculate the centroid-centroid distance between parent & child'''
         meas = workspace.measurements
-        assert isinstance(meas,cpmeas.Measurements)
+        assert isinstance(meas, cpmeas.Measurements)
         sub_object_name = self.sub_object_name.value
         parents = workspace.object_set.get_objects(parent_name)
         children = workspace.object_set.get_objects(sub_object_name)
@@ -344,14 +344,15 @@ class RelateObjects(cpm.CPModule):
             parents_of = parents_of - 1
             mask = (parents_of != -1) | (parents_of > pcenters.shape[0])
             dist = np.array([np.NaN] * ccenters.shape[0])
-            dist[mask] = np.sqrt(np.sum((ccenters[mask,:] - 
-                                         pcenters[parents_of[mask],:])**2,1))
+            dist[mask] = np.sqrt(np.sum((ccenters[mask, :] -
+                                         pcenters[parents_of[mask], :]) ** 2,
+                                        1))
         meas.add_measurement(sub_object_name, FF_CENTROID % parent_name, dist)
 
     def calculate_minimum_distances(self, workspace, parent_name):
         '''Calculate the distance from child center to parent perimeter'''
         meas = workspace.measurements
-        assert isinstance(meas,cpmeas.Measurements)
+        assert isinstance(meas, cpmeas.Measurements)
         sub_object_name = self.sub_object_name.value
         parents = workspace.object_set.get_objects(parent_name)
         children = workspace.object_set.get_objects(sub_object_name)
@@ -363,7 +364,7 @@ class RelateObjects(cpm.CPModule):
         else:
             mask = parents_of > 0
             ccenters = centers_of_labels(children.segmented).transpose()
-            ccenters = ccenters[mask,:]
+            ccenters = ccenters[mask, :]
             parents_of_masked = parents_of[mask] - 1
             pperim = outline(parents.segmented)
             #
@@ -373,18 +374,19 @@ class RelateObjects(cpm.CPModule):
             #
             # Get the label # for each point
             #
-            perim_idx = pperim[perim_loc[:,0],perim_loc[:,1]]
+            perim_idx = pperim[perim_loc[:, 0], perim_loc[:, 1]]
             #
             # Sort the points by label #
             #
-            idx = np.lexsort((perim_loc[:,1],perim_loc[:,0],perim_idx))
-            perim_loc = perim_loc[idx,:]
+            idx = np.lexsort((perim_loc[:, 1], perim_loc[:, 0], perim_idx))
+            perim_loc = perim_loc[idx, :]
             perim_idx = perim_idx[idx]
             #
             # Get counts and indexes to each run of perimeter points
             #
-            counts = fix(scind.sum(np.ones(len(perim_idx)),perim_idx,
-                                   np.arange(1,perim_idx[-1]+1))).astype(np.int32)
+            counts = fix(scind.sum(np.ones(len(perim_idx)), perim_idx,
+                                   np.arange(1, perim_idx[-1] + 1))).astype(
+                np.int32)
             indexes = np.cumsum(counts) - counts
             #
             # For the children, get the index and count of the parent
@@ -416,8 +418,8 @@ class RelateObjects(cpm.CPModule):
             # Now, calculate the distance from the centroid of each label
             # to each perimeter point in the parent.
             #
-            dist = np.sqrt(np.sum((perim_loc[cp_index,:] - 
-                                   ccenters[clabel,:])**2,1))
+            dist = np.sqrt(np.sum((perim_loc[cp_index, :] -
+                                   ccenters[clabel, :]) ** 2, 1))
             #
             # Finally, find the minimum distance per child
             #
@@ -428,7 +430,7 @@ class RelateObjects(cpm.CPModule):
             dist = np.array([np.NaN] * len(mask))
             dist[mask] = min_dist
         meas.add_measurement(sub_object_name, FF_MINIMUM % parent_name, dist)
-    
+
     def get_parents_of(self, workspace, parent_name):
         '''Return the parents_of measurment or equivalent
         
@@ -441,10 +443,10 @@ class RelateObjects(cpm.CPModule):
         '''
         meas = workspace.measurements
         assert isinstance(meas, cpmeas.Measurements)
-        parent_feature = FF_PARENT%(parent_name)
+        parent_feature = FF_PARENT % (parent_name)
         primary_parent = self.parent_name.value
         sub_object_name = self.sub_object_name.value
-        primary_parent_feature = FF_PARENT%(primary_parent)
+        primary_parent_feature = FF_PARENT % (primary_parent)
         if parent_feature in meas.get_feature_names(sub_object_name):
             parents_of = meas.get_current_measurement(sub_object_name,
                                                       parent_feature)
@@ -458,10 +460,10 @@ class RelateObjects(cpm.CPModule):
             grandparents_of = meas.get_current_measurement(primary_parent,
                                                            parent_feature)
             mask = primary_parents_of != 0
-            parents_of = np.zeros(primary_parents_of.shape[0], 
+            parents_of = np.zeros(primary_parents_of.shape[0],
                                   grandparents_of.dtype)
             if primary_parents_of.shape[0] > 0:
-                parents_of[mask] = grandparents_of[primary_parents_of[mask]-1]
+                parents_of[mask] = grandparents_of[primary_parents_of[mask] - 1]
         elif primary_parent_feature in meas.get_feature_names(parent_name):
             primary_parents_of = meas.get_current_measurement(
                 sub_object_name, primary_parent_feature)
@@ -471,12 +473,12 @@ class RelateObjects(cpm.CPModule):
             # There may not be a 1-1 relationship, but we attempt to
             # construct one
             #
-            reverse_lookup_len = max(np.max(primary_parents_of)+1,
+            reverse_lookup_len = max(np.max(primary_parents_of) + 1,
                                      len(primary_parents_of_parent))
             reverse_lookup = np.zeros(reverse_lookup_len, int)
             if primary_parents_of_parent.shape[0] > 0:
-                reverse_lookup[primary_parents_of_parent] =\
-                              np.arange(1,len(primary_parents_of_parent)+1)
+                reverse_lookup[primary_parents_of_parent] = \
+                    np.arange(1, len(primary_parents_of_parent) + 1)
             if primary_parents_of.shape[0] > 0:
                 parents_of = reverse_lookup[primary_parents_of]
         else:
@@ -485,6 +487,7 @@ class RelateObjects(cpm.CPModule):
         return parents_of
 
     ignore_features = set(M_NUMBER_OBJECT_NUMBER)
+
     def should_aggregate_feature(self, feature_name):
         '''Return True if aggregate measurements should be made on a feature
         
@@ -497,7 +500,7 @@ class RelateObjects(cpm.CPModule):
         if feature_name in self.ignore_features:
             return False
         return True
-        
+
     def validate_module(self, pipeline):
         '''Validate the module's settings
         
@@ -510,9 +513,9 @@ class RelateObjects(cpm.CPModule):
                 pipeline, self.sub_object_name.value, "Parent")
             if self.parent_name.value in (parent_features):
                 raise cps.ValidationError(
-                    "%s and %s were related by the %s module"%
+                    "%s and %s were related by the %s module" %
                     (self.sub_object_name.value, self.parent_name.value,
-                     module.module_name),self.parent_name)
+                     module.module_name), self.parent_name)
         if self.has_step_parents and self.wants_step_parent_distances:
             step_parents = set()
             for group in self.step_parent_names:
@@ -522,14 +525,14 @@ class RelateObjects(cpm.CPModule):
                         group.step_parent_name.value,
                         group.step_parent_name)
                 step_parents.add(group.step_parent_name.value)
-    
+
     def get_child_columns(self, pipeline):
         child_columns = pipeline.get_measurement_columns(self)
         child_columns = [column
                          for column in child_columns
                          if column[0] == self.sub_object_name.value and
                          self.should_aggregate_feature(column[1])] + \
-            self.get_child_measurement_columns(pipeline)
+                        self.get_child_measurement_columns(pipeline)
         return child_columns
 
     def get_child_measurement_columns(self, pipeline):
@@ -544,30 +547,30 @@ class RelateObjects(cpm.CPModule):
                 columns += [(self.sub_object_name.value,
                              FF_MINIMUM % parent_name,
                              cpmeas.COLTYPE_INTEGER)]
-        return columns        
-    
+        return columns
+
     def get_measurement_columns(self, pipeline):
         '''Return the column definitions for this module's measurements'''
         columns = [(self.sub_object_name.value,
-                    FF_PARENT%(self.parent_name.value),
+                    FF_PARENT % (self.parent_name.value),
                     cpmeas.COLTYPE_INTEGER),
                    (self.parent_name.value,
-                    FF_CHILDREN_COUNT%self.sub_object_name.value,
+                    FF_CHILDREN_COUNT % self.sub_object_name.value,
                     cpmeas.COLTYPE_INTEGER)]
         if self.wants_per_parent_means.value:
             child_columns = self.get_child_columns(pipeline)
             columns += [(self.parent_name.value,
-                         FF_MEAN%(self.sub_object_name.value, column[1]),
+                         FF_MEAN % (self.sub_object_name.value, column[1]),
                          cpmeas.COLTYPE_FLOAT)
                         for column in child_columns]
         columns += self.get_child_measurement_columns(pipeline)
         return columns
-    
+
     def get_object_relationships(self, pipeline):
         '''Return the object relationships produced by this module'''
         parent_name = self.parent_name.value
         sub_object_name = self.sub_object_name.value
-        return [(R_PARENT, parent_name, sub_object_name, 
+        return [(R_PARENT, parent_name, sub_object_name,
                  cpmeas.MCA_AVAILABLE_EACH_CYCLE),
                 (R_CHILD, sub_object_name, parent_name,
                  cpmeas.MCA_AVAILABLE_EACH_CYCLE)]
@@ -587,17 +590,17 @@ class RelateObjects(cpm.CPModule):
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.parent_name.value:
-            if category == "Mean_%s"%self.sub_object_name.value:
+            if category == "Mean_%s" % self.sub_object_name.value:
                 measurements = []
                 child_columns = self.get_child_columns(pipeline)
                 measurements += [column[1] for column in child_columns]
                 return measurements
             elif category == "Children":
-                return ["%s_Count"%self.sub_object_name.value]
+                return ["%s_Count" % self.sub_object_name.value]
         elif object_name == self.sub_object_name.value and category == "Parent":
-            return [ self.parent_name.value ]
-        elif (object_name == self.sub_object_name.value and 
-              category == C_DISTANCE):
+            return [self.parent_name.value]
+        elif (object_name == self.sub_object_name.value and
+                      category == C_DISTANCE):
             result = []
             if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
                 result += ['%s_%s' % (FEAT_CENTROID, parent_name)
@@ -619,14 +622,15 @@ class RelateObjects(cpm.CPModule):
         the number of relevant settings so they map correctly to the values.
         """
         setting_count = len(setting_values)
-        step_parent_count = ((setting_count - FIXED_SETTING_COUNT) / 
+        step_parent_count = ((setting_count - FIXED_SETTING_COUNT) /
                              VARIABLE_SETTING_COUNT)
         assert len(self.step_parent_names) > 0
         self.step_parent_names = self.step_parent_names[:1]
-        for i in range(1,step_parent_count):
+        for i in range(1, step_parent_count):
             self.add_step_parent()
-            
-    def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
         if from_matlab and variable_revision_number == 2:
             setting_values = [setting_values[0],
                               setting_values[1],
@@ -634,13 +638,13 @@ class RelateObjects(cpm.CPModule):
                               cps.DO_NOT_USE,
                               cps.YES]
             variable_revision_number = 3
-            
+
         if from_matlab and variable_revision_number == 3:
             setting_values = list(setting_values)
-            setting_values[2] = (D_MINIMUM if setting_values[2] == cps.YES 
+            setting_values[2] = (D_MINIMUM if setting_values[2] == cps.YES
                                  else D_NONE)
             variable_revision_number = 4
-                
+
         if from_matlab and variable_revision_number == 4:
             if setting_values[2] == cps.DO_NOT_USE:
                 setting_values = (setting_values[:2] + [D_NONE] +
@@ -665,5 +669,6 @@ class RelateObjects(cpm.CPModule):
                                setting_values[3]])
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
+
 
 Relate = RelateObjects

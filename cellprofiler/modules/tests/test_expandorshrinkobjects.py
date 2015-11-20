@@ -10,8 +10,8 @@ import scipy.ndimage
 from StringIO import StringIO
 import unittest
 import zlib
-
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp
@@ -20,15 +20,14 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-
 import centrosome.cpmorphology as morph
 from centrosome.outline import outline
-
 import cellprofiler.modules.expandorshrinkobjects as E
 
 INPUT_NAME = "input"
 OUTPUT_NAME = "output"
 OUTLINES_NAME = "outlines"
+
 
 class TestExpandOrShrinkObjects(unittest.TestCase):
     def test_01_01_load_matlab(self):
@@ -57,8 +56,10 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
                 'BZI5bFjMYUcyhwnKFxJmAwGwfgMC7mBkQHYHI4MhA/n2svIwgQCG/wnpZ4Ha'
                 'GSPjL7MaDiFiFYwIcxgJmANSr8GAWz0MjKonTj0AsKrvYTgV5Hg=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         # Module #3: ExpandOrShrink revision - 2
@@ -101,21 +102,21 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         # iterations - 0
         # outlines Do not use
         modules = pipeline.modules()
-        self.assertEqual(len(modules),7)
+        self.assertEqual(len(modules), 7)
         for module, output_object_name, operation, has_outline in \
-            ((modules[2], "ShrunkenNuclei", E.O_SHRINK_INF, False),
-             (modules[3], "ExpandedOnceNuclei", E.O_EXPAND, True),
-             (modules[4], "ShrunkenOnceNuclei", E.O_SHRINK, False),
-             (modules[5], "ExpandedNuclei", E.O_EXPAND_INF, False),
-             (modules[6], "DividedNuclei", E.O_DIVIDE, False)):
+                ((modules[2], "ShrunkenNuclei", E.O_SHRINK_INF, False),
+                 (modules[3], "ExpandedOnceNuclei", E.O_EXPAND, True),
+                 (modules[4], "ShrunkenOnceNuclei", E.O_SHRINK, False),
+                 (modules[5], "ExpandedNuclei", E.O_EXPAND_INF, False),
+                 (modules[6], "DividedNuclei", E.O_DIVIDE, False)):
             self.assertEqual(module.output_object_name, output_object_name)
             self.assertEqual(module.operation, operation)
             self.assertEqual(module.wants_outlines.value, has_outline)
             if has_outline:
-                self.assertEqual(module.outlines_name,"ExpandedNucleiOutlines")
+                self.assertEqual(module.outlines_name, "ExpandedNucleiOutlines")
         for module in modules[4:6]:
             self.assertEqual(module.iterations, 1)
-    
+
     def test_01_02_load_v1(self):
         '''Load ExpandOrShrink modules, v1'''
         data = ('eJztW91u2zYUlhMnbVasSHezYr3hZbPFguS2aBMUqb24W73VjlEbDYqiP7RF'
@@ -145,31 +146,33 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
                 'FMEsu2dh+l4d7pE4sJqeGPJctL9oP9kY4y/a3iuutHnrypUv9S9FGe1XYX/7'
                 '99E0/lZXczmBi+5juRaDyyuj/dzr18pk/fr2F8oHHJe1/H/d4QwI')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[2]
-        self.assertTrue(isinstance(module,E.ExpandOrShrink))
+        self.assertTrue(isinstance(module, E.ExpandOrShrink))
         self.assertEqual(module.object_name, "Nuclei")
         self.assertEqual(module.output_object_name, "ShrunkenNuclei")
         self.assertEqual(module.operation, E.O_EXPAND)
         self.assertEqual(module.iterations, 3)
         self.assertFalse(module.wants_outlines.value)
-        
+
         module = pipeline.modules()[3]
-        self.assertTrue(isinstance(module,E.ExpandOrShrink))
+        self.assertTrue(isinstance(module, E.ExpandOrShrink))
         self.assertEqual(module.object_name, "ShrunkenNuclei")
         self.assertEqual(module.output_object_name, "DividedNuclei")
         self.assertEqual(module.operation, E.O_DIVIDE)
 
-    def make_workspace(self, 
-                       labels, 
-                       operation, 
-                       iterations = 1, 
-                       wants_outlines = False,
-                       wants_fill_holes = False):
+    def make_workspace(self,
+                       labels,
+                       operation,
+                       iterations=1,
+                       wants_outlines=False,
+                       wants_fill_holes=False):
         object_set = cpo.ObjectSet()
         objects = cpo.Objects()
         objects.segmented = labels
@@ -186,20 +189,21 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
-        workspace = cpw.Workspace(pipeline, 
-                                  module, 
+        workspace = cpw.Workspace(pipeline,
+                                  module,
                                   image_set_list.get_image_set(0),
-                                  object_set, 
+                                  object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
-    
+
     def test_02_01_expand(self):
         '''Expand an object once'''
-        labels = np.zeros((10,10), int)
-        labels[4,4] = 1
-        expected = np.zeros((10,10), int)
-        expected[np.array([4,3,4,5,4],int),np.array([3,4,4,4,5],int)] = 1
+        labels = np.zeros((10, 10), int)
+        labels[4, 4] = 1
+        expected = np.zeros((10, 10), int)
+        expected[
+            np.array([4, 3, 4, 5, 4], int), np.array([3, 4, 4, 4, 5], int)] = 1
         workspace, module = self.make_workspace(labels, E.O_EXPAND)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -217,75 +221,74 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         location_y = m.get_current_measurement(OUTPUT_NAME, "Location_Center_Y")
         self.assertEqual(len(location_y), 1)
         self.assertEqual(location_y[0], 4)
-    
+
     def test_02_02_expand_twice(self):
         '''Expand an object "twice"'''
-        labels = np.zeros((10,10), int)
-        labels[4,4] = 1
-        i,j = np.mgrid[0:10,0:10]-4
-        expected = (i**2 + j**2 <=4).astype(int)
+        labels = np.zeros((10, 10), int)
+        labels[4, 4] = 1
+        i, j = np.mgrid[0:10, 0:10] - 4
+        expected = (i ** 2 + j ** 2 <= 4).astype(int)
         workspace, module = self.make_workspace(labels, E.O_EXPAND, 2)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-    
+
     def test_02_03_expand_two(self):
         '''Expand two objects once'''
-        labels = np.zeros((10,10), int)
-        labels[2,3] = 1
-        labels[6,5] = 2
-        i,j = np.mgrid[0:10,0:10]
-        expected = (((i-2)**2 + (j-3)**2 <=1).astype(int) +
-                    ((i-6)**2 + (j-5)**2 <=1).astype(int) * 2)
+        labels = np.zeros((10, 10), int)
+        labels[2, 3] = 1
+        labels[6, 5] = 2
+        i, j = np.mgrid[0:10, 0:10]
+        expected = (((i - 2) ** 2 + (j - 3) ** 2 <= 1).astype(int) +
+                    ((i - 6) ** 2 + (j - 5) ** 2 <= 1).astype(int) * 2)
         workspace, module = self.make_workspace(labels, E.O_EXPAND, 1)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-    
+
     def test_03_01_expand_inf(self):
         '''Expand two objects infinitely'''
-        labels = np.zeros((10,10), int)
-        labels[2,3] = 1
-        labels[6,5] = 2
-        i,j = np.mgrid[0:10,0:10]
-        distance = (((i-2)**2 + (j-3)**2) -
-                    ((i-6)**2 + (j-5)**2))
+        labels = np.zeros((10, 10), int)
+        labels[2, 3] = 1
+        labels[6, 5] = 2
+        i, j = np.mgrid[0:10, 0:10]
+        distance = (((i - 2) ** 2 + (j - 3) ** 2) -
+                    ((i - 6) ** 2 + (j - 5) ** 2))
         workspace, module = self.make_workspace(labels, E.O_EXPAND_INF)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
-        self.assertTrue(np.all(objects.segmented[distance < 0]==1))
-        self.assertTrue(np.all(objects.segmented[distance > 0]==2))
-    
+        self.assertTrue(np.all(objects.segmented[distance < 0] == 1))
+        self.assertTrue(np.all(objects.segmented[distance > 0] == 2))
+
     def test_04_01_divide(self):
         '''Divide two touching objects'''
-        labels = np.ones((10,10), int)
-        labels[5:,:] = 2
+        labels = np.ones((10, 10), int)
+        labels[5:, :] = 2
         expected = labels.copy()
-        expected[4:6,:] = 0
+        expected[4:6, :] = 0
         workspace, module = self.make_workspace(labels, E.O_DIVIDE)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-        
+
     def test_04_02_dont_divide(self):
         '''Don't divide an object that would disappear'''
-        labels = np.ones((10,10), int)
-        labels[9,9] = 2
+        labels = np.ones((10, 10), int)
+        labels[9, 9] = 2
         expected = labels.copy()
-        expected[8,9] = 0
-        expected[8,8] = 0
-        expected[9,8] = 0
+        expected[8, 9] = 0
+        expected[8, 8] = 0
+        expected[9, 8] = 0
         workspace, module = self.make_workspace(labels, E.O_DIVIDE)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-        
 
     def test_05_01_shrink(self):
         '''Shrink once'''
-        labels = np.zeros((10,10), int)
-        labels[1:9,1:9] = 1
-        expected = morph.thin(labels, iterations = 1)
+        labels = np.zeros((10, 10), int)
+        labels[1:9, 1:9] = 1
+        expected = morph.thin(labels, iterations=1)
         workspace, module = self.make_workspace(labels, E.O_SHRINK, 1)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
@@ -293,22 +296,22 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
 
     def test_06_01_shrink_inf(self):
         '''Shrink infinitely'''
-        labels = np.zeros((10,10), int)
-        labels[1:8,1:8] = 1
-        expected = np.zeros((10,10),int)
-        expected[4,4] = 1
+        labels = np.zeros((10, 10), int)
+        labels[1:8, 1:8] = 1
+        expected = np.zeros((10, 10), int)
+        expected[4, 4] = 1
         workspace, module = self.make_workspace(labels, E.O_SHRINK_INF)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-    
+
     def test_06_02_shrink_inf_fill_holes(self):
         '''Shrink infinitely after filling a hole'''
-        labels = np.zeros((10,10), int)
-        labels[1:8,1:8] = 1
-        labels[4,4] = 0
-        expected = np.zeros((10,10),int)
-        expected[4,4] = 1
+        labels = np.zeros((10, 10), int)
+        labels[1:8, 1:8] = 1
+        labels[4, 4] = 0
+        expected = np.zeros((10, 10), int)
+        expected[4, 4] = 1
         # Test failure without filling the hole
         workspace, module = self.make_workspace(labels, E.O_SHRINK_INF)
         module.run(workspace)
@@ -316,24 +319,23 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertFalse(np.all(objects.segmented == expected))
         # Test success after filling the hole
         workspace, module = self.make_workspace(labels, E.O_SHRINK_INF,
-                                                wants_fill_holes = True)
+                                                wants_fill_holes=True)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-    
+
     def test_07_01_outlines(self):
         '''Create an outline of the resulting objects'''
-        labels = np.zeros((10,10), int)
-        labels[4,4] = 1
-        i,j = np.mgrid[0:10,0:10]-4
-        expected = (i**2 + j**2 <=4).astype(int)
+        labels = np.zeros((10, 10), int)
+        labels[4, 4] = 1
+        i, j = np.mgrid[0:10, 0:10] - 4
+        expected = (i ** 2 + j ** 2 <= 4).astype(int)
         expected_outlines = outline(expected)
         workspace, module = self.make_workspace(labels, E.O_EXPAND, 2,
-                                                wants_outlines = True)
+                                                wants_outlines=True)
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
         self.assertTrue(OUTLINES_NAME in workspace.image_set.get_names())
         outlines = workspace.image_set.get_image(OUTLINES_NAME).pixel_data
         self.assertTrue(np.all(outlines == expected_outlines))
-        

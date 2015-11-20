@@ -73,25 +73,25 @@ from cellprofiler.settings import YES, NO
 A_RENUMBER = "Renumber"
 A_DELETE = "Delete"
 
+
 class RenameOrRenumberFiles(cpm.CPModule):
-    
     module_name = "RenameOrRenumberFiles"
     category = "File Processing"
     variable_revision_number = 2
-    
+
     def create_settings(self):
         '''Create the settings for the module's UI'''
         self.warning = cps.Divider(
             "This module allows you to rename (overwrite) your files. Please "
             "see the help for this module for warnings.")
-        
+
         self.image_name = cps.FileImageNameSubscriber(
-            'Select the input image',cps.NONE,doc="""
+            'Select the input image', cps.NONE, doc="""
             Select the images associated with the files
             you want to rename. This should be an image loaded by the
             <b>Input</b> modules.
             Be very careful because you will be renaming these files!""")
-        
+
         self.number_characters_prefix = cps.Integer(
             "Number of characters to retain at start of file name", 6,
             minval=0, doc="""
@@ -100,18 +100,18 @@ class RenameOrRenumberFiles(cpm.CPModule):
             instance, if this setting is "6" and the file name is 
             "Image-734.tif", the output file name will also start with 
             "Image-".""")
-        
+
         self.number_characters_suffix = cps.Integer(
             "Number of characters to retain at the end of file name", 4,
-            minval=0,doc="""
+            minval=0, doc="""
             Number of characters at the end of the old
             file name that will be copied over verbatim to the new file name. For
             instance, if this setting is "4" and the file name is
             "Image-734.tif", the output file name will also end with ".tif".""")
-        
+
         self.action = cps.Choice(
             "Handling of remaining characters",
-            [A_RENUMBER, A_DELETE], doc ="""
+            [A_RENUMBER, A_DELETE], doc="""
             You can either treat the characters between the start and
             end as numbers or you can delete them. If you treat them as numbers,
             you will be given the opportunity to pad the numbers with zeros
@@ -119,7 +119,7 @@ class RenameOrRenumberFiles(cpm.CPModule):
             instance, if you were to renumber the highlighted portion of the
             file "Image-<u>734</u>.tif" using four digits, the result would
             be "Image-0734.tif".""")
-        
+
         self.number_digits = cps.Integer(
             "Number of digits for numbers",
             4, minval=0, doc="""
@@ -133,44 +133,44 @@ class RenameOrRenumberFiles(cpm.CPModule):
             <tr><td>10</td><td>0010</td></tr>
             <tr><td>100</td><td>0100</td></tr>
             <tr><td>1000</td><td>1000</td></tr>
-            </table></code>"""%globals())
-        
+            </table></code>""" % globals())
+
         self.wants_text = cps.Binary(
-            "Add text to the file name?", False,doc="""
+            "Add text to the file name?", False, doc="""
             Select <i>%(YES)s</i> if you want to add text
             to the file name. If you had chosen <i>%(A_RENUMBER)s</i> above,
             the module will add the text after your number.
             If you had chosen <i>%(A_DELETE)s</i>, the module will replace
-            the deleted text with the text you enter here."""%globals())
-        
+            the deleted text with the text you enter here.""" % globals())
+
         self.text_to_add = cps.Text(
-            "Replacement text","",doc="""
+            "Replacement text", "", doc="""
             <i>(Used only if you chose to add text to the file name)</i><br>
             Enter the text that you want to add to each file name.""")
-        
+
         self.wants_to_replace_spaces = cps.Binary(
-            "Replace spaces?", False,doc = """
+            "Replace spaces?", False, doc="""
             Select <i>%(YES)s</i> to replace spaces in the final
             version of the file name with some other text. 
             <p>Select <i>%(NO)s</i> if the file name can have spaces 
-            or if none of the file names have spaces.</p>"""%globals())
-        
+            or if none of the file names have spaces.</p>""" % globals())
+
         self.space_replacement = cps.Text(
-            "Space replacement", "_",doc = """
+            "Space replacement", "_", doc="""
             This is the text that will be substituted for spaces
             in your file name.""")
-            
+
     def settings(self):
         '''Return settings in the order that they should appear in pipeline'''
-        return [ self.image_name, self.number_characters_prefix,
-                 self.number_characters_suffix, self.action, 
-                 self.number_digits, self.wants_text, self.text_to_add,
-                 self.wants_to_replace_spaces, self.space_replacement]
-    
+        return [self.image_name, self.number_characters_prefix,
+                self.number_characters_suffix, self.action,
+                self.number_digits, self.wants_text, self.text_to_add,
+                self.wants_to_replace_spaces, self.space_replacement]
+
     def visible_settings(self):
         '''Return the settings to display in the GUI'''
-        result = [ self.warning, self.image_name, self.number_characters_prefix,
-                   self.number_characters_suffix, self.action]
+        result = [self.warning, self.image_name, self.number_characters_prefix,
+                  self.number_characters_suffix, self.action]
         if self.action == A_RENUMBER:
             result += [self.number_digits]
         result += [self.wants_text]
@@ -180,7 +180,7 @@ class RenameOrRenumberFiles(cpm.CPModule):
         if self.wants_to_replace_spaces:
             result += [self.space_replacement]
         return result
-    
+
     def run(self, workspace):
         '''Run on an image set'''
         image_name = self.image_name.value
@@ -200,7 +200,7 @@ class RenameOrRenumberFiles(cpm.CPModule):
         else:
             suffix = file_name[-self.number_characters_suffix.value:]
             middle = file_name[self.number_characters_prefix.value:
-                               -self.number_characters_suffix.value]
+            -self.number_characters_suffix.value]
         #
         # Possibly apply the renumbering rule
         #
@@ -210,8 +210,8 @@ class RenameOrRenumberFiles(cpm.CPModule):
                     ('The middle of the filename, "%s", is "%s".\n'
                      "It has non-numeric characters and can't be "
                      "converted to a number") %
-                    ( file_name, middle ))
-            format = '%0'+str(self.number_digits.value)+'d'
+                    (file_name, middle))
+            format = '%0' + str(self.number_digits.value) + 'd'
             middle = format % int(middle)
         elif self.action == A_DELETE:
             middle = ""
@@ -229,30 +229,30 @@ class RenameOrRenumberFiles(cpm.CPModule):
         if self.show_window:
             workspace.display_data.old_file_name = file_name
             workspace.display_data.new_file_name = new_file_name
-        
+
         if workspace.pipeline.test_mode:
             return
         #
         # Perform the actual renaming
         #
-        
+
         # Most likely, we have a handle on the file open in BioFormats
         from bioformats.formatreader import clear_image_reader_cache
         clear_image_reader_cache()
         os.rename(os.path.join(path, file_name),
                   os.path.join(path, new_file_name))
-        
+
     def display(self, workspace, figure):
         '''Display the pathname conversion'''
         figure.set_subplots((1, 1))
         if workspace.pipeline.test_mode:
             figure.subplot_table(
-                0, 0, [["Files not renamed in test mode"]])        
+                0, 0, [["Files not renamed in test mode"]])
         else:
             statistics = [(workspace.display_data.old_file_name,
-                                   workspace.display_data.new_file_name)]            
+                           workspace.display_data.new_file_name)]
             figure.subplot_table(
-                0, 0, statistics, col_labels = ('Old file name','New file name'))
+                0, 0, statistics, col_labels=('Old file name', 'New file name'))
 
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
@@ -272,19 +272,19 @@ class RenameOrRenumberFiles(cpm.CPModule):
         from_matlab - true if pipeline was saved by CP 1.0
         '''
         if from_matlab and variable_revision_number == 1:
-            image_name, number_characters_prefix, number_characters_suffix,\
+            image_name, number_characters_prefix, number_characters_suffix, \
             text_to_add, number_digits = setting_values
-            
+
             wants_text = text_to_add.lower() != cps.DO_NOT_USE.lower()
             wants_text = cps.YES if wants_text else cps.NO
-            
+
             if number_digits.lower() == cps.DO_NOT_USE.lower():
                 number_digits = 4
                 action = A_DELETE
             else:
                 action = A_RENUMBER
-            
-            setting_values = [image_name, number_characters_prefix, 
+
+            setting_values = [image_name, number_characters_prefix,
                               number_characters_suffix, action,
                               number_digits, wants_text, text_to_add]
             variable_revision_number = 1

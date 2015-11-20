@@ -8,7 +8,6 @@ from cStringIO import StringIO
 import tempfile
 import unittest
 import urllib
-
 from bioformats import load_image
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.namesandtypes as N
@@ -17,23 +16,21 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import javabridge as J
 from cellprofiler.modules.tests import \
-     example_images_directory, testimages_directory, \
-     maybe_download_example_image, maybe_download_example_images,\
-     maybe_download_tesst_image, make_12_bit_image
+    example_images_directory, testimages_directory, \
+    maybe_download_example_image, maybe_download_example_images, \
+    maybe_download_tesst_image, make_12_bit_image
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.loadimages import \
-     C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
-from cellprofiler.measurements import C_FILE_NAME,\
-     C_PATH_NAME, C_URL, C_SERIES, C_FRAME, \
-     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, \
-     C_OBJECTS_SERIES, C_OBJECTS_FRAME
-     
+    C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
+from cellprofiler.measurements import C_FILE_NAME, \
+    C_PATH_NAME, C_URL, C_SERIES, C_FRAME, \
+    C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, \
+    C_OBJECTS_SERIES, C_OBJECTS_FRAME
 from cellprofiler.modules.identify import \
-     C_COUNT, C_LOCATION, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
-     FTR_CENTER_X, FTR_CENTER_Y
-
+    C_COUNT, C_LOCATION, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
+    FTR_CENTER_X, FTR_CENTER_Y
 from cellprofiler.modules.createbatchfiles import \
-     CreateBatchFiles, F_BATCH_DATA_H5
+    CreateBatchFiles, F_BATCH_DATA_H5
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
@@ -43,6 +40,7 @@ ALT_IMAGE_NAME = "altimagename"
 OBJECTS_NAME = "objectsname"
 ALT_OBJECTS_NAME = "altobjectsname"
 OUTLINES_NAME = "outlines"
+
 
 def md(keys_and_counts):
     '''Generate metadata dictionaries for the given metadata shape
@@ -55,11 +53,11 @@ def md(keys_and_counts):
     keys = [k for k, c in keys_and_counts]
     counts = np.array([c for k, c in keys_and_counts])
     divisors = np.hstack([[1], np.cumprod(counts[:-1])])
-    
+
     return [dict([(k, "k" + str(int(i / d) % c))
                   for k, d, c in zip(keys, divisors, counts)])
             for i in range(np.prod(counts))]
-                  
+
 
 class TestNamesAndTypes(unittest.TestCase):
     def test_00_01_load_v1(self):
@@ -123,8 +121,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
 "file:///C:/trunk/ExampleImages/ExampleHT29/k27IllumCorrControlv1.mat",,,,,,,
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -137,18 +137,25 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         self.assertEqual(module.assignments_count.value, 5)
         aa = module.assignments
         for assignment, rule, image_name, objects_name, load_as in (
-            (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE),
-            (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE),
-            (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK),
-            (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS),
-            (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION)):
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei",
+                 N.LOAD_AS_GRAYSCALE_IMAGE),
+                (aa[1],
+                 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)',
+                 "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells",
+                 N.LOAD_AS_MASK),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells",
+                 N.LOAD_AS_OBJECTS),
+                (
+                aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells",
+                N.LOAD_AS_ILLUMINATION_FUNCTION)):
             self.assertEqual(assignment.rule_filter.value, rule)
             self.assertEqual(assignment.image_name, image_name)
             self.assertEqual(assignment.object_name, objects_name)
             self.assertEqual(assignment.load_as_choice, load_as)
-    
+
     def test_00_02_load_v2(self):
-            data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130730112304
 ModuleCount:3
@@ -207,33 +214,42 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|s
 "file:///C:/trunk/ExampleImages/ExampleHT29/ExampleHT29.cp",,,,,,,
 "file:///C:/trunk/ExampleImages/ExampleHT29/k27IllumCorrControlv1.mat",,,,,,,
 """
-            pipeline = cpp.Pipeline()
-            def callback(caller, event):
-                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-            pipeline.add_listener(callback)
-            pipeline.load(StringIO(data))
-            self.assertEqual(len(pipeline.modules()), 3)
-            module = pipeline.modules()[2]
-            self.assertTrue(isinstance(module, N.NamesAndTypes))
-            self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
-            self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
-            self.assertEqual(module.single_image_provider.value, "PI")
-            self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
-            self.assertEqual(module.assignments_count.value, 5)
-            aa = module.assignments
-            for assignment, rule, image_name, objects_name, load_as in (
-                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE),
-                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE),
-                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK),
-                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS),
-                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION)):
-                self.assertEqual(assignment.rule_filter.value, rule)
-                self.assertEqual(assignment.image_name, image_name)
-                self.assertEqual(assignment.object_name, objects_name)
-                self.assertEqual(assignment.load_as_choice, load_as)
-                            
+        pipeline = cpp.Pipeline()
+
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 3)
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, N.NamesAndTypes))
+        self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
+        self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
+        self.assertEqual(module.single_image_provider.value, "PI")
+        self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
+        self.assertEqual(module.assignments_count.value, 5)
+        aa = module.assignments
+        for assignment, rule, image_name, objects_name, load_as in (
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei",
+                 N.LOAD_AS_GRAYSCALE_IMAGE),
+                (aa[1],
+                 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)',
+                 "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells",
+                 N.LOAD_AS_MASK),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells",
+                 N.LOAD_AS_OBJECTS),
+                (
+                aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells",
+                N.LOAD_AS_ILLUMINATION_FUNCTION)):
+            self.assertEqual(assignment.rule_filter.value, rule)
+            self.assertEqual(assignment.image_name, image_name)
+            self.assertEqual(assignment.object_name, objects_name)
+            self.assertEqual(assignment.load_as_choice, load_as)
+
     def test_00_03_load_v3(self):
-            data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130730112304
 ModuleCount:3
@@ -290,35 +306,47 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
     Select the image type:Illumination function
     Set intensity range from:Image metadata
 """
-            pipeline = cpp.Pipeline()
-            def callback(caller, event):
-                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-            pipeline.add_listener(callback)
-            pipeline.load(StringIO(data))
-            self.assertEqual(len(pipeline.modules()), 3)
-            module = pipeline.modules()[2]
-            self.assertTrue(isinstance(module, N.NamesAndTypes))
-            self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
-            self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
-            self.assertEqual(module.single_image_provider.value, "PI")
-            self.assertEqual(module.single_rescale, N.INTENSITY_RESCALING_BY_DATATYPE)
-            self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
-            self.assertEqual(module.assignments_count.value, 5)
-            aa = module.assignments
-            for assignment, rule, image_name, objects_name, load_as, rescale in (
-                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA),
-                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE),
-                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA),
-                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE),
-                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, N.INTENSITY_RESCALING_BY_METADATA)):
-                self.assertEqual(assignment.rule_filter.value, rule)
-                self.assertEqual(assignment.image_name, image_name)
-                self.assertEqual(assignment.object_name, objects_name)
-                self.assertEqual(assignment.load_as_choice, load_as)
-                self.assertFalse(assignment.should_save_outlines)
-                            
+        pipeline = cpp.Pipeline()
+
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 3)
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, N.NamesAndTypes))
+        self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
+        self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
+        self.assertEqual(module.single_image_provider.value, "PI")
+        self.assertEqual(module.single_rescale,
+                         N.INTENSITY_RESCALING_BY_DATATYPE)
+        self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
+        self.assertEqual(module.assignments_count.value, 5)
+        aa = module.assignments
+        for assignment, rule, image_name, objects_name, load_as, rescale in (
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei",
+                 N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA),
+                (aa[1],
+                 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)',
+                 "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE,
+                 N.INTENSITY_RESCALING_BY_DATATYPE),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells",
+                 N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells",
+                 N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE),
+                (
+                aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells",
+                N.LOAD_AS_ILLUMINATION_FUNCTION,
+                N.INTENSITY_RESCALING_BY_METADATA)):
+            self.assertEqual(assignment.rule_filter.value, rule)
+            self.assertEqual(assignment.image_name, image_name)
+            self.assertEqual(assignment.object_name, objects_name)
+            self.assertEqual(assignment.load_as_choice, load_as)
+            self.assertFalse(assignment.should_save_outlines)
+
     def test_00_04_load_v4(self):
-            data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130730112304
 ModuleCount:3
@@ -385,40 +413,57 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|s
     Retain object outlines?:No
     Name the outline image:LoadedOutlines
 """
-            pipeline = cpp.Pipeline()
-            def callback(caller, event):
-                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-            pipeline.add_listener(callback)
-            pipeline.load(StringIO(data))
-            self.assertEqual(len(pipeline.modules()), 3)
-            module = pipeline.modules()[2]
-            self.assertTrue(isinstance(module, N.NamesAndTypes))
-            self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
-            self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
-            self.assertEqual(module.single_image_provider.value, "PI")
-            self.assertEqual(module.single_rescale, N.INTENSITY_RESCALING_BY_DATATYPE)
-            self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
-            self.assertEqual(module.assignments_count.value, 5)
-            aa = module.assignments
-            for assignment, rule, image_name, objects_name, load_as, \
-                rescale, should_save_outlines, outlines_name in (
-                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
-                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines"),
-                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
-                self.assertEqual(assignment.rule_filter.value, rule)
-                self.assertEqual(assignment.image_name, image_name)
-                self.assertEqual(assignment.object_name, objects_name)
-                self.assertEqual(assignment.load_as_choice, load_as)
-                self.assertEqual(assignment.rescale, rescale)
-                self.assertEqual(assignment.should_save_outlines, should_save_outlines)
-                self.assertEqual(assignment.save_outlines, outlines_name)
-                self.assertEqual(assignment.manual_rescale, N.DEFAULT_MANUAL_RESCALE)
-            self.assertEqual(len(module.single_images), 0)
-                            
+        pipeline = cpp.Pipeline()
+
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 3)
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, N.NamesAndTypes))
+        self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
+        self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
+        self.assertEqual(module.single_image_provider.value, "PI")
+        self.assertEqual(module.single_rescale,
+                         N.INTENSITY_RESCALING_BY_DATATYPE)
+        self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
+        self.assertEqual(module.assignments_count.value, 5)
+        aa = module.assignments
+        for assignment, rule, image_name, objects_name, load_as, \
+            rescale, should_save_outlines, outlines_name in (
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei",
+                 N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA,
+                 False, "LoadedOutlines"),
+                (aa[1],
+                 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)',
+                 "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE,
+                 N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells",
+                 N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA, False,
+                 "LoadedOutlines"),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells",
+                 N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE, True,
+                 "MyCellOutlines"),
+                (
+                aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells",
+                N.LOAD_AS_ILLUMINATION_FUNCTION,
+                N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
+            self.assertEqual(assignment.rule_filter.value, rule)
+            self.assertEqual(assignment.image_name, image_name)
+            self.assertEqual(assignment.object_name, objects_name)
+            self.assertEqual(assignment.load_as_choice, load_as)
+            self.assertEqual(assignment.rescale, rescale)
+            self.assertEqual(assignment.should_save_outlines,
+                             should_save_outlines)
+            self.assertEqual(assignment.save_outlines, outlines_name)
+            self.assertEqual(assignment.manual_rescale,
+                             N.DEFAULT_MANUAL_RESCALE)
+        self.assertEqual(len(module.single_images), 0)
+
     def test_00_05_load_v5(self):
-            data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20130730112304
 ModuleCount:3
@@ -493,56 +538,66 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:5|s
     Retain object outlines?:No
     Name the outline image:LoadedOutlines
 """
-            pipeline = cpp.Pipeline()
-            def callback(caller, event):
-                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-            pipeline.add_listener(callback)
-            pipeline.load(StringIO(data))
-            self.assertEqual(len(pipeline.modules()), 3)
-            module = pipeline.modules()[2]
-            self.assertTrue(isinstance(module, N.NamesAndTypes))
-            self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
-            self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
-            self.assertEqual(module.single_image_provider.value, "PI")
-            self.assertEqual(module.single_rescale, N.INTENSITY_RESCALING_BY_DATATYPE)
-            self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
-            self.assertEqual(module.assignments_count.value, 1)
-            self.assertEqual(module.single_images_count.value, 5)
-            assignment = module.assignments[0]
-            self.assertEqual(assignment.rule_filter, 
-                             'or (metadata does ChannelNumber "0")')
-            self.assertEqual(assignment.image_name, "DNA")
-            self.assertEqual(assignment.object_name, "Nuclei")
-            self.assertEqual(assignment.load_as_choice, N.LOAD_AS_GRAYSCALE_IMAGE)
-            self.assertEqual(assignment.rescale, N.INTENSITY_RESCALING_BY_METADATA)
-            self.assertEqual(assignment.should_save_outlines, False)
-            self.assertEqual(assignment.save_outlines, "LoadedOutlines")
-            aa = module.single_images
-            first = True
-            for assignment, image_name, objects_name, load_as, \
-                rescale, should_save_outlines, outlines_name in (
-                (aa[0], "sDNA", "sNuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[1], "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
-                (aa[2], "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
-                (aa[3], "Foo", "Cells", N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines"),
-                (aa[4], "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
-                ipd = assignment.image_plane
-                self.assertEqual(ipd.url, "file:///foo/bar")
-                if first:
-                    self.assertTrue(all([
-                        x is None for x in ipd.series, ipd.index, ipd.channel]))
-                else:
-                    self.assertEqual(ipd.series, 1)
-                    self.assertEqual(ipd.index, 2)
-                    self.assertEqual(ipd.channel, 3)
-                self.assertEqual(assignment.image_name.value, image_name)
-                self.assertEqual(assignment.object_name.value, objects_name)
-                self.assertEqual(assignment.load_as_choice.value, load_as)
-                self.assertEqual(assignment.rescale.value, rescale)
-                self.assertEqual(assignment.should_save_outlines.value, should_save_outlines)
-                self.assertEqual(assignment.save_outlines.value, outlines_name)
-                first = False
-                
+        pipeline = cpp.Pipeline()
+
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 3)
+        module = pipeline.modules()[2]
+        self.assertTrue(isinstance(module, N.NamesAndTypes))
+        self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
+        self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
+        self.assertEqual(module.single_image_provider.value, "PI")
+        self.assertEqual(module.single_rescale,
+                         N.INTENSITY_RESCALING_BY_DATATYPE)
+        self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
+        self.assertEqual(module.assignments_count.value, 1)
+        self.assertEqual(module.single_images_count.value, 5)
+        assignment = module.assignments[0]
+        self.assertEqual(assignment.rule_filter,
+                         'or (metadata does ChannelNumber "0")')
+        self.assertEqual(assignment.image_name, "DNA")
+        self.assertEqual(assignment.object_name, "Nuclei")
+        self.assertEqual(assignment.load_as_choice, N.LOAD_AS_GRAYSCALE_IMAGE)
+        self.assertEqual(assignment.rescale, N.INTENSITY_RESCALING_BY_METADATA)
+        self.assertEqual(assignment.should_save_outlines, False)
+        self.assertEqual(assignment.save_outlines, "LoadedOutlines")
+        aa = module.single_images
+        first = True
+        for assignment, image_name, objects_name, load_as, \
+            rescale, should_save_outlines, outlines_name in (
+                (aa[0], "sDNA", "sNuclei", N.LOAD_AS_GRAYSCALE_IMAGE,
+                 N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
+                (aa[1], "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE,
+                 N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
+                (aa[2], "GFP", "Cells", N.LOAD_AS_MASK,
+                 N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
+                (aa[3], "Foo", "Cells", N.LOAD_AS_OBJECTS,
+                 N.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines"),
+                (aa[4], "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION,
+                 N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
+            ipd = assignment.image_plane
+            self.assertEqual(ipd.url, "file:///foo/bar")
+            if first:
+                self.assertTrue(all([
+                                        x is None for x in
+                                        ipd.series, ipd.index, ipd.channel]))
+            else:
+                self.assertEqual(ipd.series, 1)
+                self.assertEqual(ipd.index, 2)
+                self.assertEqual(ipd.channel, 3)
+            self.assertEqual(assignment.image_name.value, image_name)
+            self.assertEqual(assignment.object_name.value, objects_name)
+            self.assertEqual(assignment.load_as_choice.value, load_as)
+            self.assertEqual(assignment.rescale.value, rescale)
+            self.assertEqual(assignment.should_save_outlines.value,
+                             should_save_outlines)
+            self.assertEqual(assignment.save_outlines.value, outlines_name)
+            first = False
+
     def test_00_06_load_v6(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -631,8 +686,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
     Maximum intensity:700
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 3)
@@ -641,13 +698,14 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
         self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
         self.assertEqual(module.single_image_provider.value, "PI")
-        self.assertEqual(module.single_rescale, N.INTENSITY_RESCALING_BY_DATATYPE)
+        self.assertEqual(module.single_rescale,
+                         N.INTENSITY_RESCALING_BY_DATATYPE)
         self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
         self.assertEqual(module.assignments_count.value, 1)
         self.assertEqual(module.single_images_count.value, 5)
         self.assertEqual(module.manual_rescale.value, 100)
         assignment = module.assignments[0]
-        self.assertEqual(assignment.rule_filter, 
+        self.assertEqual(assignment.rule_filter,
                          'or (metadata does ChannelNumber "0")')
         self.assertEqual(assignment.image_name, "DNA")
         self.assertEqual(assignment.object_name, "Nuclei")
@@ -660,16 +718,27 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         first = True
         for assignment, image_name, objects_name, load_as, \
             rescale, should_save_outlines, outlines_name, manual_rescale in (
-            (aa[0], "sDNA", "sNuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 300),
-            (aa[1], "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines", 400),
-            (aa[2], "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 500),
-            (aa[3], "Foo", "Cells", N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines", 600),
-            (aa[4], "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 700)):
+                (aa[0], "sDNA", "sNuclei", N.LOAD_AS_GRAYSCALE_IMAGE,
+                 N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines",
+                 300),
+                (aa[1], "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE,
+                 N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines",
+                 400),
+                (aa[2], "GFP", "Cells", N.LOAD_AS_MASK,
+                 N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines",
+                 500),
+                (aa[3], "Foo", "Cells", N.LOAD_AS_OBJECTS,
+                 N.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines",
+                 600),
+                (aa[4], "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION,
+                 N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines",
+                 700)):
             ipd = assignment.image_plane
             self.assertEqual(ipd.url, "file:///foo/bar")
             if first:
                 self.assertTrue(all([
-                    x is None for x in ipd.series, ipd.index, ipd.channel]))
+                                        x is None for x in
+                                        ipd.series, ipd.index, ipd.channel]))
             else:
                 self.assertEqual(ipd.series, 1)
                 self.assertEqual(ipd.index, 2)
@@ -678,15 +747,16 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             self.assertEqual(assignment.object_name.value, objects_name)
             self.assertEqual(assignment.load_as_choice.value, load_as)
             self.assertEqual(assignment.rescale.value, rescale)
-            self.assertEqual(assignment.should_save_outlines.value, should_save_outlines)
+            self.assertEqual(assignment.should_save_outlines.value,
+                             should_save_outlines)
             self.assertEqual(assignment.save_outlines.value, outlines_name)
             self.assertEqual(assignment.manual_rescale, manual_rescale)
             first = False
-        
-            
+
     url_root = "file:" + urllib.pathname2url(os.path.abspath(os.path.curdir))
 
-    def do_teest(self, module, channels, expected_tags, expected_metadata, additional=None):
+    def do_teest(self, module, channels, expected_tags, expected_metadata,
+                 additional=None):
         '''Ensure that NamesAndTypes recreates the column layout when run
         
         module - instance of NamesAndTypes, set up for the test
@@ -709,7 +779,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             channels["Additional"] = additional
         for channel_name in list(channels):
             channel_data = [(self.url_root + "/" + path, metadata)
-                             for path, metadata in channels[channel_name]]
+                            for path, metadata in channels[channel_name]]
             channels[channel_name] = channel_data
             for url, metadata in channel_data:
                 if url in urls:
@@ -719,7 +789,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                 ipds.append(ipd)
         if additional is not None:
             del channels["Additional"]
-        ipds.sort(key = lambda x: x.url)
+        ipds.sort(key=lambda x: x.url)
         pipeline = cpp.Pipeline()
         pipeline.set_filtered_file_list(urls, module)
         pipeline.set_image_plane_details(ipds, metadata.keys(), module)
@@ -741,22 +811,24 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         iscds = m.get_channel_descriptors()
         self.assertEqual(len(iscds), len(channels))
         for channel_name in channels.keys():
-            iscd_match = filter(lambda x:x.name == channel_name, iscds)
+            iscd_match = filter(lambda x: x.name == channel_name, iscds)
             self.assertEquals(len(iscd_match), 1)
             iscd = iscd_match[0]
             assert isinstance(iscd, cpp.Pipeline.ImageSetChannelDescriptor)
-            for i, (expected_url, metadata) in enumerate(channels[channel_name]):
-                image_number = i+1
+            for i, (expected_url, metadata) in enumerate(
+                    channels[channel_name]):
+                image_number = i + 1
                 if iscd.channel_type == iscd.CT_OBJECTS:
                     url_ftr = "_".join((cpmeas.C_OBJECTS_URL, channel_name))
                 else:
-                    url_ftr = "_". join((cpmeas.C_URL, channel_name))
-                self.assertEqual(expected_url, m[cpmeas.IMAGE, url_ftr, image_number])
+                    url_ftr = "_".join((cpmeas.C_URL, channel_name))
+                self.assertEqual(expected_url,
+                                 m[cpmeas.IMAGE, url_ftr, image_number])
                 for key, channel in expected_metadata:
                     if channel != channel_name:
                         continue
                     md_ftr = "_".join((cpmeas.C_METADATA, key))
-                    self.assertEqual(metadata[key], 
+                    self.assertEqual(metadata[key],
                                      m[cpmeas.IMAGE, md_ftr, image_number])
         return workspace
 
@@ -781,17 +853,17 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                     ipd.put(entry.getKey(), entry.getValue());
                 }
                 ipd;
-                """, dict(url=url, metadata=jmetadata, series=series, 
+                """, dict(url=url, metadata=jmetadata, series=series,
                           index=index, channel=channel))
         return cpp.ImagePlaneDetails(jipd)
-            
+
     def test_01_00_01_all(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_ALL
         n.single_image_provider.value = C0
-        data = { C0: [("images/1.jpg", {M0:"1"})] }
-        self.do_teest(n, data, [(cpmeas.IMAGE_NUMBER,)], [(M0,C0)])
-        
+        data = {C0: [("images/1.jpg", {M0: "1"})]}
+        self.do_teest(n, data, [(cpmeas.IMAGE_NUMBER,)], [(M0, C0)])
+
     def test_01_01_one(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -800,11 +872,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.join.build("[{\"%s\":\"%s\"}]" % (C0, M0))
         # It should match by order, even if match by metadata and the joiner
         # are set up.
-        data = { C0: [ ("images/1.jpg", {M0:"k1"}),
-                       ("images/2.jpg", {M0:"k3"}),
-                       ("images/3.jpg", {M0:"k2"})]}
-        self.do_teest(n, data, [ (cpmeas.IMAGE_NUMBER,) ], [(M0, C0)])
-        
+        data = {C0: [("images/1.jpg", {M0: "k1"}),
+                     ("images/2.jpg", {M0: "k3"}),
+                     ("images/3.jpg", {M0: "k2"})]}
+        self.do_teest(n, data, [(cpmeas.IMAGE_NUMBER,)], [(M0, C0)])
+
     def test_01_02_match_one_same_key(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -815,10 +887,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[0].rule_filter.value = 'file does contain "1"'
         n.assignments[1].rule_filter.value = 'file doesnot contain "1"'
         n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M0))
-        data = { C0: [ ("images/1.jpg", {M0:"k1"})],
-                 C1: [ ("images/2.jpg", {M0:"k1"})]}
-        self.do_teest(n, data, [ (M0,) ], [(M0, C0)])
-        
+        data = {C0: [("images/1.jpg", {M0: "k1"})],
+                C1: [("images/2.jpg", {M0: "k1"})]}
+        self.do_teest(n, data, [(M0,)], [(M0, C0)])
+
     def test_01_03_match_one_different_key(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -829,10 +901,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[0].rule_filter.value = 'file does contain "1"'
         n.assignments[1].rule_filter.value = 'file doesnot contain "1"'
         n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M1))
-        data = { C0: [ ("images/1.jpg", {M0:"k1"})],
-                 C1: [ ("images/2.jpg", {M1:"k1"})]}
-        self.do_teest(n, data, [ (M0, M1) ], [(M0, C0), (M1, C1)])
-        
+        data = {C0: [("images/1.jpg", {M0: "k1"})],
+                C1: [("images/2.jpg", {M1: "k1"})]}
+        self.do_teest(n, data, [(M0, M1)], [(M0, C0), (M1, C1)])
+
     def test_01_04_match_two_one_key(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -843,13 +915,13 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M1))
-        data = { 
-            C0:[("%s%d" % (C0, i), m)
-                for i, m in enumerate(md([(M0, 2)]))],
-            C1:[("%s%d" % (C1, i), m)
-                for i, m in enumerate(md([(M1, 2)]))]}
-        self.do_teest(n, data, [(M0,M1)], [(M0, C0), (M1, C1)])
-                
+        data = {
+            C0: [("%s%d" % (C0, i), m)
+                 for i, m in enumerate(md([(M0, 2)]))],
+            C1: [("%s%d" % (C1, i), m)
+                 for i, m in enumerate(md([(M1, 2)]))]}
+        self.do_teest(n, data, [(M0, M1)], [(M0, C0), (M1, C1)])
+
     def test_01_05_match_two_and_two(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -859,16 +931,16 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[1].image_name.value = C1
         n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
-        n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" % 
+        n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" %
                      (C0, M0, C1, M2, C0, M1, C1, M3))
         data = {
-            C0:[("%s%s%s" % (C0, m[M0], m[M1]), m) 
-                for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
-            C1:[("%s%s%s" % (C1, m[M2], m[M3]), m) 
-                for i, m in enumerate(md([(M3, 3), (M2, 2)]))] }
-        self.do_teest(n, data, [(M0,M2), (M1, M3)], 
+            C0: [("%s%s%s" % (C0, m[M0], m[M1]), m)
+                 for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
+            C1: [("%s%s%s" % (C1, m[M2], m[M3]), m)
+                 for i, m in enumerate(md([(M3, 3), (M2, 2)]))]}
+        self.do_teest(n, data, [(M0, M2), (M1, M3)],
                       [(M0, C0), (M1, C0), (M2, C1), (M3, C1)])
-                
+
     def test_01_06_01_two_with_same_metadata(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -878,22 +950,22 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[1].image_name.value = C1
         n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
-        n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" % 
+        n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" %
                      (C0, M0, C1, M2, C0, M1, C1, M3))
         data = {
-            C0:[("%s%s%s" % (C0, m[M0], m[M1]), m)
-              for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
-            C1:[("%s%s%s" % (C1, m[M2], m[M3]), m)
-                for i, m in enumerate(md([(M3, 3), (M2, 2)]))] }
+            C0: [("%s%s%s" % (C0, m[M0], m[M1]), m)
+                 for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
+            C1: [("%s%s%s" % (C1, m[M2], m[M3]), m)
+                 for i, m in enumerate(md([(M3, 3), (M2, 2)]))]}
         bad_row = 5
         # Steal the bad row's metadata
-        additional = [ ("%sBad" %C0, data[C0][bad_row][1]),
-                       data[C0][bad_row], data[C1][bad_row]]
+        additional = [("%sBad" % C0, data[C0][bad_row][1]),
+                      data[C0][bad_row], data[C1][bad_row]]
         del data[C0][bad_row]
         del data[C1][bad_row]
-        self.do_teest(n, data, [(M0,M2), (M1, M3)], 
+        self.do_teest(n, data, [(M0, M2), (M1, M3)],
                       [(M0, C0), (M1, C0), (M2, C1), (M3, C1)], additional)
-        
+
     def test_01_06_02_missing(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -903,20 +975,20 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[1].image_name.value = C1
         n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
-        n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" % 
+        n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" %
                      (C0, M0, C1, M2, C0, M1, C1, M3))
         data = {
-            C0:[("%s%s%s" % (C0, m[M0], m[M1]), m)
-              for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
-            C1:[("%s%s%s" % (C1, m[M2], m[M3]), m)
-                for i, m in enumerate(md([(M3, 3), (M2, 2)]))] }
+            C0: [("%s%s%s" % (C0, m[M0], m[M1]), m)
+                 for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
+            C1: [("%s%s%s" % (C1, m[M2], m[M3]), m)
+                 for i, m in enumerate(md([(M3, 3), (M2, 2)]))]}
         bad_row = 3
         # Steal the bad row's metadata
-        additional = [ data[C1][bad_row]]
+        additional = [data[C1][bad_row]]
         del data[C0][bad_row]
         del data[C1][bad_row]
-        self.do_teest(n, data, [(M0,M2), (M1, M3)], 
-                      [(M0, C0), (M1, C0), (M2, C1), (M3, C1)], additional)        
+        self.do_teest(n, data, [(M0, M2), (M1, M3)],
+                      [(M0, C0), (M1, C0), (M2, C1), (M3, C1)], additional)
 
     def test_01_07_one_against_all(self):
         import os
@@ -930,40 +1002,42 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.join.build("[{'%s':None,'%s':'%s'}]" % (C0, C1, M0))
         data = {
-            C0:[(C0, {})] * 3,
-            C1:[("%s%d" % (C1, i), m) for i, m in enumerate(md([(M0, 3)]))] }
-        self.do_teest(n, data, [(M0, )], [(M0, C1)])
-        
+            C0: [(C0, {})] * 3,
+            C1: [("%s%d" % (C1, i), m) for i, m in enumerate(md([(M0, 3)]))]}
+        self.do_teest(n, data, [(M0,)], [(M0, C1)])
+
     def test_01_08_some_against_all(self):
         #
         # Permute both the order of the columns and the order of joins
         #
-        
-        joins = [{C0:M0, C1:M1},{C0:None, C1:M2}]
+
+        joins = [{C0: M0, C1: M1}, {C0: None, C1: M2}]
         for cA, cB in ((C0, C1), (C1, C0)):
-            for j0, j1 in ((0,1),(1,0)):
+            for j0, j1 in ((0, 1), (1, 0)):
                 n = N.NamesAndTypes()
                 n.assignment_method.value = N.ASSIGN_RULES
                 n.matching_choice.value = N.MATCH_BY_METADATA
                 n.add_assignment()
                 n.assignments[0].image_name.value = cA
                 n.assignments[1].image_name.value = cB
-                n.assignments[0].rule_filter.value = 'file does contain "%s"' % cA
-                n.assignments[1].rule_filter.value = 'file does contain "%s"' % cB
+                n.assignments[
+                    0].rule_filter.value = 'file does contain "%s"' % cA
+                n.assignments[
+                    1].rule_filter.value = 'file does contain "%s"' % cB
                 n.join.build(repr([joins[j0], joins[j1]]))
                 mA0 = [M0, M3][j0]
                 mB0 = [M0, M3][j1]
                 mA1 = joins[j0][C1]
                 mB1 = joins[j1][C1]
-                data = { 
-                    C0: [("%s%s" % (C0, m[M0]), m) 
+                data = {
+                    C0: [("%s%s" % (C0, m[M0]), m)
                          for i, m in enumerate(md([(mB0, 2), (mA0, 3)]))],
                     C1: [("%s%s%s" % (C1, m[M1], m[M2]), m)
-                         for i, m in enumerate(md([(mB1, 2),(mA1, 3)]))] }
-                expected_keys = [[(M0, M1), (M2, )][i] for i in j0, j1]
-                self.do_teest(n, data, expected_keys, 
+                         for i, m in enumerate(md([(mB1, 2), (mA1, 3)]))]}
+                expected_keys = [[(M0, M1), (M2,)][i] for i in j0, j1]
+                self.do_teest(n, data, expected_keys,
                               [(C0, M0), (C0, M3), (C1, M1), (C1, M2)])
-                    
+
     def test_01_10_by_order(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -974,10 +1048,12 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         data = {
-            C0:[("%s%d" % (C0, i+1), m) for i, m in enumerate(md([(M0, 2)]))],
-            C1:[("%s%d" % (C1, i+1), m) for i, m in enumerate(md([(M1, 2)]))] }
-        self.do_teest(n, data, [ (cpmeas.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)])
-                
+            C0: [("%s%d" % (C0, i + 1), m) for i, m in
+                 enumerate(md([(M0, 2)]))],
+            C1: [("%s%d" % (C1, i + 1), m) for i, m in
+                 enumerate(md([(M1, 2)]))]}
+        self.do_teest(n, data, [(cpmeas.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)])
+
     def test_01_11_by_order_bad(self):
         # Regression test of issue #392: columns of different lengths
         n = N.NamesAndTypes()
@@ -989,16 +1065,18 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.ipd_columns = \
-            [[self.make_ipd("%s%d" % (C0, (3-i)),  m)
+            [[self.make_ipd("%s%d" % (C0, (3 - i)), m)
               for i, m in enumerate(md([(M0, 3)]))],
-             [self.make_ipd("%s%d" % (C1, i+1), m)
+             [self.make_ipd("%s%d" % (C1, i + 1), m)
               for i, m in enumerate(md([(M1, 2)]))]]
         data = {
-            C0:[("%s%d" % (C0, i+1), m) for i, m in enumerate(md([(M0, 2)]))],
-            C1:[("%s%d" % (C1, i+1), m) for i, m in enumerate(md([(M1, 2)]))] }
+            C0: [("%s%d" % (C0, i + 1), m) for i, m in
+                 enumerate(md([(M0, 2)]))],
+            C1: [("%s%d" % (C1, i + 1), m) for i, m in
+                 enumerate(md([(M1, 2)]))]}
         additional = [("%sBad" % C0, {})]
-        self.do_teest(n, data, [ (cpmeas.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)])
-        
+        self.do_teest(n, data, [(cpmeas.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)])
+
     def test_01_12_single_image_by_order(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -1010,23 +1088,27 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.add_single_image()
         si = n.single_images[0]
-        si.image_plane.value = si.image_plane.build(self.url_root + "/illum.tif")
+        si.image_plane.value = si.image_plane.build(
+            self.url_root + "/illum.tif")
         si.image_name.value = C2
         si.load_as_choice.value = N.LOAD_AS_GRAYSCALE_IMAGE
         data = {
-            C0:[("%s%d" % (C0, i+1), m) for i, m in enumerate(md([(M0, 2)]))],
-            C1:[("%s%d" % (C1, i+1), m) for i, m in enumerate(md([(M1, 2)]))],
-            C2:[("illum.tif", {}) for i, m in enumerate(md([(M1, 2)]))]
+            C0: [("%s%d" % (C0, i + 1), m) for i, m in
+                 enumerate(md([(M0, 2)]))],
+            C1: [("%s%d" % (C1, i + 1), m) for i, m in
+                 enumerate(md([(M1, 2)]))],
+            C2: [("illum.tif", {}) for i, m in enumerate(md([(M1, 2)]))]
         }
-        workspace = self.do_teest(n, data, [ (cpmeas.IMAGE_NUMBER,)], 
+        workspace = self.do_teest(n, data, [(cpmeas.IMAGE_NUMBER,)],
                                   [(C0, M0), (C1, M1)])
         m = workspace.measurements
         image_numbers = m.get_image_numbers()
-        filenames = m[cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_" + C2, image_numbers]
+        filenames = m[
+            cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_" + C2, image_numbers]
         self.assertTrue(all([f == "illum.tif" for f in filenames]))
         urls = m[cpmeas.IMAGE, cpmeas.C_URL + "_" + C2, image_numbers]
         self.assertTrue(all([url == si.image_plane.url for url in urls]))
-       
+
     def test_01_13_single_image_by_metadata(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
@@ -1036,23 +1118,25 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         n.assignments[1].image_name.value = C1
         n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
         n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
-        n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" % 
+        n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" %
                      (C0, M0, C1, M2, C0, M1, C1, M3))
         n.add_single_image()
         si = n.single_images[0]
-        si.image_plane.value = si.image_plane.build(self.url_root + "/illum.tif")
+        si.image_plane.value = si.image_plane.build(
+            self.url_root + "/illum.tif")
         si.image_name.value = C2
         si.load_as_choice.value = N.LOAD_AS_GRAYSCALE_IMAGE
         data = {
-            C0:[("%s%s%s" % (C0, m[M0], m[M1]), m) 
-                for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
-            C1:[("%s%s%s" % (C1, m[M2], m[M3]), m) 
-                for i, m in enumerate(md([(M3, 3), (M2, 2)]))],
-            C2:[("illum.tif", {}) for i, m in enumerate(md([(M3, 3), (M2, 2)]))]
+            C0: [("%s%s%s" % (C0, m[M0], m[M1]), m)
+                 for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
+            C1: [("%s%s%s" % (C1, m[M2], m[M3]), m)
+                 for i, m in enumerate(md([(M3, 3), (M2, 2)]))],
+            C2: [("illum.tif", {}) for i, m in
+                 enumerate(md([(M3, 3), (M2, 2)]))]
         }
-        self.do_teest(n, data, [(M0,M2), (M1, M3)], 
+        self.do_teest(n, data, [(M0, M2), (M1, M3)],
                       [(M0, C0), (M1, C0), (M2, C1), (M3, C1)])
-        
+
     def test_02_01_prepare_to_create_batch_single(self):
         n = N.NamesAndTypes()
         n.module_num = 1
@@ -1065,7 +1149,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         expected_filenames = ["boo", "barbar"]
         urlnames = ["file:/foo/bar", "http://foo/bar"]
         expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
-        
+
         m.add_all_measurements(cpmeas.IMAGE,
                                cpmeas.C_FILE_NAME + "_" + IMAGE_NAME,
                                filenames)
@@ -1082,11 +1166,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         for feature, expected in ((cpmeas.C_FILE_NAME, expected_filenames),
                                   (cpmeas.C_PATH_NAME, expected_pathnames),
                                   (cpmeas.C_URL, expected_urlnames)):
-            values = m.get_measurement(cpmeas.IMAGE, 
+            values = m.get_measurement(cpmeas.IMAGE,
                                        feature + "_" + IMAGE_NAME,
                                        np.arange(len(expected)) + 1)
             self.assertSequenceEqual(expected, list(values))
-            
+
     def test_02_02_prepare_to_create_batch_multiple(self):
         n = N.NamesAndTypes()
         n.module_num = 1
@@ -1103,14 +1187,14 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         expected_filenames = ["boo", "barbar"]
         urlnames = ["file:/foo/bar", "http://foo/bar"]
         expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
-        
+
         for feature, name, values in (
-            (cpmeas.C_FILE_NAME, IMAGE_NAME, filenames),
-            (cpmeas.C_OBJECTS_FILE_NAME, OBJECTS_NAME, reversed(filenames)),
-            (cpmeas.C_PATH_NAME, IMAGE_NAME, pathnames),
-            (cpmeas.C_OBJECTS_PATH_NAME, OBJECTS_NAME, reversed(pathnames)),
-            (cpmeas.C_URL, IMAGE_NAME, urlnames),
-            (cpmeas.C_OBJECTS_URL, OBJECTS_NAME, reversed(urlnames))):
+                (cpmeas.C_FILE_NAME, IMAGE_NAME, filenames),
+                (cpmeas.C_OBJECTS_FILE_NAME, OBJECTS_NAME, reversed(filenames)),
+                (cpmeas.C_PATH_NAME, IMAGE_NAME, pathnames),
+                (cpmeas.C_OBJECTS_PATH_NAME, OBJECTS_NAME, reversed(pathnames)),
+                (cpmeas.C_URL, IMAGE_NAME, urlnames),
+                (cpmeas.C_OBJECTS_URL, OBJECTS_NAME, reversed(urlnames))):
             m.add_all_measurements(cpmeas.IMAGE,
                                    feature + "_" + name,
                                    values)
@@ -1119,17 +1203,20 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         workspace = cpw.Workspace(pipeline, n, m, None, m, None)
         n.prepare_to_create_batch(workspace, lambda x: x.replace("foo", "bar"))
         for feature, name, expected in (
-            (cpmeas.C_FILE_NAME, IMAGE_NAME, expected_filenames),
-            (cpmeas.C_OBJECTS_FILE_NAME, OBJECTS_NAME, reversed(expected_filenames)),
-            (cpmeas.C_PATH_NAME, IMAGE_NAME, expected_pathnames),
-            (cpmeas.C_OBJECTS_PATH_NAME, OBJECTS_NAME, reversed(expected_pathnames)),
-            (cpmeas.C_URL, IMAGE_NAME, expected_urlnames),
-            (cpmeas.C_OBJECTS_URL, OBJECTS_NAME, reversed(expected_urlnames))):
-            values = m.get_measurement(cpmeas.IMAGE, 
+                (cpmeas.C_FILE_NAME, IMAGE_NAME, expected_filenames),
+                (cpmeas.C_OBJECTS_FILE_NAME, OBJECTS_NAME,
+                 reversed(expected_filenames)),
+                (cpmeas.C_PATH_NAME, IMAGE_NAME, expected_pathnames),
+                (cpmeas.C_OBJECTS_PATH_NAME, OBJECTS_NAME,
+                 reversed(expected_pathnames)),
+                (cpmeas.C_URL, IMAGE_NAME, expected_urlnames),
+                (cpmeas.C_OBJECTS_URL, OBJECTS_NAME,
+                 reversed(expected_urlnames))):
+            values = m.get_measurement(cpmeas.IMAGE,
                                        feature + "_" + name,
                                        np.arange(1, 3))
             self.assertSequenceEqual(list(expected), list(values))
-            
+
     def test_02_03_prepare_to_create_batch_single_image(self):
         si_names = ["si1", "si2"]
         pathnames = ["foo", "fuu"]
@@ -1152,17 +1239,17 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             si.image_name.value = name
 
         m = cpmeas.Measurements(mode="memory")
-        
+
         for feature, name, values in (
-            (cpmeas.C_FILE_NAME, IMAGE_NAME, filenames),
-            (cpmeas.C_FILE_NAME, si_names[0], filenames[:1]*2),
-            (cpmeas.C_FILE_NAME, si_names[1], filenames[1:]*2),
-            (cpmeas.C_PATH_NAME, IMAGE_NAME, pathnames),
-            (cpmeas.C_PATH_NAME, si_names[0], pathnames[:1]*2),
-            (cpmeas.C_PATH_NAME, si_names[1], pathnames[1:]*2),
-            (cpmeas.C_URL, IMAGE_NAME, urlnames),
-            (cpmeas.C_URL, si_names[0], urlnames[:1]*2),
-            (cpmeas.C_URL, si_names[1], urlnames[1:]*2)):
+                (cpmeas.C_FILE_NAME, IMAGE_NAME, filenames),
+                (cpmeas.C_FILE_NAME, si_names[0], filenames[:1] * 2),
+                (cpmeas.C_FILE_NAME, si_names[1], filenames[1:] * 2),
+                (cpmeas.C_PATH_NAME, IMAGE_NAME, pathnames),
+                (cpmeas.C_PATH_NAME, si_names[0], pathnames[:1] * 2),
+                (cpmeas.C_PATH_NAME, si_names[1], pathnames[1:] * 2),
+                (cpmeas.C_URL, IMAGE_NAME, urlnames),
+                (cpmeas.C_URL, si_names[0], urlnames[:1] * 2),
+                (cpmeas.C_URL, si_names[1], urlnames[1:] * 2)):
             m.add_all_measurements(cpmeas.IMAGE,
                                    feature + "_" + name,
                                    values)
@@ -1171,20 +1258,20 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         workspace = cpw.Workspace(pipeline, n, m, None, m, None)
         n.prepare_to_create_batch(workspace, lambda x: x.replace("foo", "bar"))
         for feature, name, expected in (
-            (cpmeas.C_FILE_NAME, IMAGE_NAME, expected_filenames),
-            (cpmeas.C_FILE_NAME, si_names[0], expected_filenames[:1]*2),
-            (cpmeas.C_FILE_NAME, si_names[1], expected_filenames[1:]*2),
-            (cpmeas.C_PATH_NAME, IMAGE_NAME, expected_pathnames),
-            (cpmeas.C_PATH_NAME, si_names[0], expected_pathnames[:1]*2),
-            (cpmeas.C_PATH_NAME, si_names[1], expected_pathnames[1:]*2),
-            (cpmeas.C_URL, IMAGE_NAME, expected_urlnames),
-            (cpmeas.C_URL, si_names[0], expected_urlnames[:1]*2),
-            (cpmeas.C_URL, si_names[1], expected_urlnames[1:]*2)):
-            values = m.get_measurement(cpmeas.IMAGE, 
+                (cpmeas.C_FILE_NAME, IMAGE_NAME, expected_filenames),
+                (cpmeas.C_FILE_NAME, si_names[0], expected_filenames[:1] * 2),
+                (cpmeas.C_FILE_NAME, si_names[1], expected_filenames[1:] * 2),
+                (cpmeas.C_PATH_NAME, IMAGE_NAME, expected_pathnames),
+                (cpmeas.C_PATH_NAME, si_names[0], expected_pathnames[:1] * 2),
+                (cpmeas.C_PATH_NAME, si_names[1], expected_pathnames[1:] * 2),
+                (cpmeas.C_URL, IMAGE_NAME, expected_urlnames),
+                (cpmeas.C_URL, si_names[0], expected_urlnames[:1] * 2),
+                (cpmeas.C_URL, si_names[1], expected_urlnames[1:] * 2)):
+            values = m.get_measurement(cpmeas.IMAGE,
                                        feature + "_" + name,
                                        np.arange(1, 3))
             self.assertSequenceEqual(list(expected), list(values))
-        
+
     def test_02_04_create_batch_files_imagesets(self):
         # Regression test of issue 1129
         # Once imagesets are pickled in the M_IMAGE_SET measurement,
@@ -1253,10 +1340,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             module.run(workspace)
             img = workspace.image_set.get_image(IMAGE_NAME)
             target = load_image(aoi_path)
-            self.assertEquals(tuple(img.pixel_data.shape), 
+            self.assertEquals(tuple(img.pixel_data.shape),
                               tuple(target.shape))
             objs = workspace.object_set.get_objects(OBJECTS_NAME)
-            target = load_image(ooi_path, rescale = False)
+            target = load_image(ooi_path, rescale=False)
             n_objects = np.max(target)
             self.assertEquals(objs.count, n_objects)
         finally:
@@ -1264,12 +1351,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             gc.collect()
             os.remove(batch_data_filename)
             os.rmdir(tempdir)
-        
-        
-    def run_workspace(self, path, load_as_type, 
-                      series = None, index = None, channel = None,
+
+    def run_workspace(self, path, load_as_type,
+                      series=None, index=None, channel=None,
                       single=False,
-                      rescaled=N.INTENSITY_RESCALING_BY_METADATA, lsi = []):
+                      rescaled=N.INTENSITY_RESCALING_BY_METADATA, lsi=[]):
         '''Run a workspace to load a file
         
         path - path to the file
@@ -1326,7 +1412,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             frame_feature = cpmeas.C_FRAME + "_" + IMAGE_NAME
             channel_feature = cpmeas.C_CHANNEL + "_" + IMAGE_NAME
             names = J.make_list([IMAGE_NAME])
-            
+
         m.image_set_number = 1
         m.add_measurement(cpmeas.IMAGE, url_feature, url)
         m.add_measurement(cpmeas.IMAGE, path_feature, pathname)
@@ -1340,20 +1426,20 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
         m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1)
         if load_as_type == N.LOAD_AS_COLOR_IMAGE:
-            stack="Color"
+            stack = "Color"
             if channel is None:
                 channel = "INTERLEAVED"
         elif load_as_type == N.LOAD_AS_OBJECTS:
-            stack="Objects"
+            stack = "Objects"
             if channel is None:
                 channel = "OBJECT_PLANES"
         else:
-            stack="Monochrome"
+            stack = "Monochrome"
             if channel is None:
                 channel = "ALWAYS_MONOCHROME"
         ipds = J.make_list([
             self.make_ipd(url, {}, series or 0, index or 0, channel).jipd])
-        
+
         for d in lsi:
             path = d["path"]
             load_as_type = d["load_as_type"]
@@ -1371,7 +1457,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             si.manual_rescale.value = manual_rescale
             si.should_save_outlines.value = should_save_outlines
             si.save_outlines.value = outlines_name
-            
+
             url = pathname2url(path)
             pathname, filename = os.path.split(path)
             if load_as_type == N.LOAD_AS_OBJECTS:
@@ -1392,7 +1478,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             m.add_measurement(cpmeas.IMAGE, path_feature, pathname)
             m.add_measurement(cpmeas.IMAGE, file_feature, filename)
             ipds.add(self.make_ipd(url, {}).jipd)
-        
+
         script = """
         importPackage(Packages.org.cellprofiler.imageset);
         var ls = new java.util.ArrayList();
@@ -1406,15 +1492,15 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         """ % stack
         blob = J.run_script(script, dict(ipds=ipds.o, names=names.o))
         blob = J.get_env().get_byte_array_elements(blob)
-        m.add_measurement(cpmeas.IMAGE, N.M_IMAGE_SET, blob, 
+        m.add_measurement(cpmeas.IMAGE, N.M_IMAGE_SET, blob,
                           data_type=np.uint8)
-        
+
         workspace = cpw.Workspace(pipeline, n, m,
                                   N.cpo.ObjectSet(),
                                   m, None)
         n.run(workspace)
         return workspace
-        
+
     def test_03_01_load_color(self):
         shape = (21, 31, 3)
         path = maybe_download_example_image(
@@ -1432,8 +1518,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + IMAGE_NAME], md5)
         self.assertEqual(m[cpmeas.IMAGE, C_HEIGHT + "_" + IMAGE_NAME], 21)
         self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + IMAGE_NAME], 31)
-        
-        
+
     def test_03_02_load_monochrome_as_color(self):
         path = self.get_monochrome_image_path()
         target = load_image(path)
@@ -1446,11 +1531,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(np.all(pixel_data <= 1))
         np.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 1])
         np.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 2])
-        
+
     def test_03_03_load_color_frame(self):
         path = maybe_download_tesst_image("DrosophilaEmbryo_GFPHistone.avi")
         workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE,
-                                       index = 3)
+                                       index=3)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, (264, 542, 3))
@@ -1463,7 +1548,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         folder = "ExampleGrayToColor"
         file_name = "AS_09125_050116030001_D03f00d0.tif"
         return maybe_download_example_image([folder], file_name)
-    
+
     def test_03_04_load_monochrome(self):
         path = self.get_monochrome_image_path()
         target = load_image(path)
@@ -1484,10 +1569,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertSequenceEqual(pixel_data.shape, shape[:2])
         self.assertTrue(np.all(pixel_data >= 0))
         self.assertTrue(np.all(pixel_data <= 1))
-        
+
     def test_03_06_load_monochrome_plane(self):
         path = maybe_download_tesst_image("5channel.tif")
-        
+
         for i in range(5):
             workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE,
                                            index=i)
@@ -1498,7 +1583,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                 plane_0 = pixel_data.copy()
             else:
                 self.assertTrue(np.any(pixel_data != plane_0))
-                
+
     def test_03_07_load_raw(self):
         folder = "namesandtypes_03_07"
         file_name = "1-162hrh2ax2.tif"
@@ -1509,7 +1594,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertSequenceEqual(pixel_data.shape, (34, 19))
         self.assertTrue(np.all(pixel_data >= 0))
         self.assertTrue(np.all(pixel_data <= 1. / 16.))
-        
+
     def test_03_08_load_mask(self):
         path = maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif")
@@ -1518,9 +1603,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, target.shape)
-        self.assertEqual(np.sum(~pixel_data), 
+        self.assertEqual(np.sum(~pixel_data),
                          np.sum(target == 0))
-        
+
     def test_03_09_load_objects(self):
         path = maybe_download_example_image(
             ["ExampleSBSImages"], "Channel2-01-A-01.tif")
@@ -1538,11 +1623,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         m = workspace.measurements
         self.assertEqual(
             m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + OBJECTS_NAME], md5)
-        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + OBJECTS_NAME], 
+        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + OBJECTS_NAME],
                          target.shape[1])
         outlines = workspace.image_set.get_image(OUTLINES_NAME)
         self.assertEqual(o.shape, outlines.pixel_data.shape)
-        
+
     def test_03_10_load_overlapped_objects(self):
         from .test_loadimages import overlapped_objects_data
         from .test_loadimages import overlapped_objects_data_masks
@@ -1560,7 +1645,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                              overlapped_objects_data_masks[1])
             for i in range(2):
                 expected = overlapped_objects_data_masks[i]
-                i, j = o.ijv[o.ijv[:, 2] == i+1, :2].transpose()
+                i, j = o.ijv[o.ijv[:, 2] == i + 1, :2].transpose()
                 self.assertTrue(np.all(expected[i, j]))
                 mask[i, j] = True
             self.assertFalse(np.any(mask[~ expected_mask]))
@@ -1571,16 +1656,16 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                 os.unlink(path)
             except:
                 pass
-        
+
     def test_03_11_load_rescaled(self):
         # Test all color/monochrome rescaled paths
         folder = "namesandtypes_03_11"
         file_name = "1-162hrh2ax2.tif"
         path = make_12_bit_image(folder, file_name, (34, 19))
         for single in (True, False):
-            for rescaled in (N.INTENSITY_RESCALING_BY_METADATA, 
+            for rescaled in (N.INTENSITY_RESCALING_BY_METADATA,
                              N.INTENSITY_RESCALING_BY_DATATYPE,
-                             float(2**17)):
+                             float(2 ** 17)):
                 for load_as in N.LOAD_AS_COLOR_IMAGE, N.LOAD_AS_GRAYSCALE_IMAGE:
                     workspace = self.run_workspace(
                         path, load_as, single=single, rescaled=rescaled)
@@ -1594,7 +1679,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                         self.assertTrue(np.any(pixel_data > 1. / 32.))
                     else:
                         self.assertTrue(np.all(pixel_data <= 1. / 32.))
-                        
+
     def test_03_12_load_single_image(self):
         # Test loading a pipeline whose image set loads a single image
         path = maybe_download_example_image(
@@ -1603,14 +1688,14 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             ["ExampleGrayToColor"], "AS_09125_050116030001_D03f00d0.tif")
         target = load_image(lsi_path)
         workspace = self.run_workspace(
-            path, N.LOAD_AS_COLOR_IMAGE, lsi= [{
-                "path":lsi_path,
-                "load_as_type":N.LOAD_AS_GRAYSCALE_IMAGE,
-                "name":"lsi"}])
+            path, N.LOAD_AS_COLOR_IMAGE, lsi=[{
+                "path": lsi_path,
+                "load_as_type": N.LOAD_AS_GRAYSCALE_IMAGE,
+                "name": "lsi"}])
         image = workspace.image_set.get_image("lsi")
         pixel_data = image.pixel_data
         self.assertSequenceEqual(pixel_data.shape, target.shape)
-        
+
     def test_03_13_load_single_object(self):
         path = maybe_download_example_image(
             ["ExampleSBSImages"], "Channel1-01-A-01.tif")
@@ -1620,11 +1705,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         with open(lsi_path, "rb") as fd:
             md5 = hashlib.md5(fd.read()).hexdigest()
         workspace = self.run_workspace(
-            path, N.LOAD_AS_GRAYSCALE_IMAGE, lsi= [{
-                "path":lsi_path,
-                "load_as_type":N.LOAD_AS_OBJECTS,
-                "name":"lsi",
-                "should_save_outlines":True
+            path, N.LOAD_AS_GRAYSCALE_IMAGE, lsi=[{
+                "path": lsi_path,
+                "load_as_type": N.LOAD_AS_OBJECTS,
+                "name": "lsi",
+                "should_save_outlines": True
             }])
         o = workspace.object_set.get_objects("lsi")
         assert isinstance(o, N.cpo.Objects)
@@ -1639,7 +1724,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_lsi"], target.shape[1])
         outlines = workspace.image_set.get_image("lsi_outlines")
         self.assertEqual(o.shape, outlines.pixel_data.shape)
-               
+
     def test_04_01_get_measurement_columns(self):
         p = cpp.Pipeline()
         p.clear()
@@ -1651,25 +1736,25 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         m.assignments[0].image_name.value = IMAGE_NAME
         m.assignments[1].load_as_choice.value = N.LOAD_AS_OBJECTS
         m.assignments[1].object_name.value = OBJECTS_NAME
-        
+
         columns = m.get_measurement_columns(p)
-        
+
         for ftr in C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
-            C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME:
+                   C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME:
             mname = "_".join((ftr, IMAGE_NAME))
             self.assertTrue(any([c[0] == cpmeas.IMAGE and c[1] == mname
                                  for c in columns]))
-            
+
         for ftr in C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_MD5_DIGEST, \
-            C_OBJECTS_URL, C_HEIGHT, C_WIDTH, C_OBJECTS_SERIES, C_OBJECTS_FRAME, C_COUNT:
+                   C_OBJECTS_URL, C_HEIGHT, C_WIDTH, C_OBJECTS_SERIES, C_OBJECTS_FRAME, C_COUNT:
             mname = "_".join((ftr, OBJECTS_NAME))
             self.assertTrue(any([c[0] == cpmeas.IMAGE and c[1] == mname
                                  for c in columns]))
-            
+
         for mname in M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y:
             self.assertTrue(any([c[0] == OBJECTS_NAME and c[1] == mname
                                  for c in columns]))
-            
+
     def test_04_02_get_categories(self):
         p = cpp.Pipeline()
         p.clear()
@@ -1700,7 +1785,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         self.assertTrue(C_OBJECTS_URL in categories)
         categories = m.get_categories(p, OBJECTS_NAME)
         self.assertTrue(C_LOCATION in categories)
-        
+
     def test_04_03_get_measurements(self):
         p = cpp.Pipeline()
         p.clear()
@@ -1716,27 +1801,28 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             mnames = m.get_measurements(p, cpmeas.IMAGE, cname)
             self.assertEqual(len(mnames), 1)
             self.assertEqual(mnames[0], IMAGE_NAME)
-            
+
         for cname in C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, \
-            C_COUNT:
+                     C_COUNT:
             mnames = m.get_measurements(p, cpmeas.IMAGE, cname)
             self.assertEqual(len(mnames), 1)
             self.assertEqual(mnames[0], OBJECTS_NAME)
-            
+
         for cname in C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH, \
-            C_SERIES, C_FRAME:
+                     C_SERIES, C_FRAME:
             mnames = m.get_measurements(p, cpmeas.IMAGE, cname)
             self.assertEqual(len(mnames), 2)
-            self.assertTrue(all([x in mnames for x in IMAGE_NAME, OBJECTS_NAME]))
-            
+            self.assertTrue(
+                all([x in mnames for x in IMAGE_NAME, OBJECTS_NAME]))
+
         mnames = m.get_measurements(p, OBJECTS_NAME, C_LOCATION)
         self.assertTrue(all([x in mnames for x in FTR_CENTER_X, FTR_CENTER_Y]))
-        
+
     def test_05_01_validate_single_channel(self):
         # regression test for issue #1429
         #
         # Single column doesn't use MATCH_BY_METADATA
-        
+
         pipeline = cpp.Pipeline()
         pipeline.init_modules()
         for module in pipeline.modules():
@@ -1744,7 +1830,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                 module.assignment_method.value = N.ASSIGN_RULES
                 module.matching_choice.value = N.MATCH_BY_METADATA
                 module.assignments[0].image_name.value = IMAGE_NAME
-                module.join.build([{IMAGE_NAME:None}])
+                module.join.build([{IMAGE_NAME: None}])
                 module.validate_module(pipeline)
                 break
         else:

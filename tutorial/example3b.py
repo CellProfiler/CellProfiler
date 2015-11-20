@@ -29,7 +29,6 @@ by 3 in the vertical direction".
 '''
 
 import numpy as np
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -40,17 +39,18 @@ C_EXAMPLE3 = "Example3"
 '''This is the name of the feature'''
 FTR_VARIANCE = "Variance"
 
+
 class Example3b(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example3b"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.input_image_name = cps.ImageNameSubscriber("Input image")
-        
+
     def settings(self):
         return [self.input_image_name]
-    
+
     def run(self, workspace):
         image_set = workspace.image_set
         m = workspace.measurements
@@ -68,7 +68,7 @@ class Example3b(cpm.CPModule):
         else:
             variance = np.var(pixel_data)
         m.add_measurement(cpmeas.IMAGE, self.get_feature_name(), variance)
-        
+
     def get_feature_name(self):
         '''Return the name to be used to store the feature
         
@@ -78,7 +78,7 @@ class Example3b(cpm.CPModule):
               IMAGENAME is the name of the input image.
         '''
         return "_".join([C_EXAMPLE3, FTR_VARIANCE, self.input_image_name.value])
-        
+
     def get_measurement_columns(self, pipeline):
         #
         # Return a list of one tuple - that tuple should have
@@ -87,38 +87,34 @@ class Example3b(cpm.CPModule):
         # it's third.
         #
         return [(cpmeas.IMAGE, self.get_feature_name(), cpmeas.COLTYPE_FLOAT)]
-    #
-    # get_categories should return a list of the category parts of measurements
-    # made by the module. You should only return measurements whose name
-    # matches the object name given. In this case, we're making image
-    # measurements, so "object_name" must match "Image"
-    #
-    ##def get_categories(self, pipeline, object_name):
-    ##    result = []
-    ##    if object_name == cpmeas.IMAGE:
-    ##        result.append(C_EXAMPLE3)
-    ##    return result
-    #
-    # get_measurements should return a list of the features that will be
-    # produced for a given object name and category.
-    #
-    ##def get_measurements(self, pipeline, object_name, category):
-    ##    result = []
-    ##    if object_name == cpmeas.IMAGE and category == C_EXAMPLE3:
-    ##        result.append(FTR_VARIANCE)
-    ##    return result
-    #
-    # get_measurement_images should return a list of the images that will
-    # be produced, given a particular object name, category and feature name.
-    #
-    ##def get_measurement_images(self, pipeline, object_name, category, measurement):
-    ##    result = []
-    ##    if (object_name == cpmeas.IMAGE 
-    ##        and category == C_EXAMPLE3 
-    ##        and measurement == FTR_VARIANCE):
-    ##        result.append(self.input_image_name.value)
-    ##    return result
-
-        
-        
-        
+        #
+        # get_categories should return a list of the category parts of measurements
+        # made by the module. You should only return measurements whose name
+        # matches the object name given. In this case, we're making image
+        # measurements, so "object_name" must match "Image"
+        #
+        ##def get_categories(self, pipeline, object_name):
+        ##    result = []
+        ##    if object_name == cpmeas.IMAGE:
+        ##        result.append(C_EXAMPLE3)
+        ##    return result
+        #
+        # get_measurements should return a list of the features that will be
+        # produced for a given object name and category.
+        #
+        ##def get_measurements(self, pipeline, object_name, category):
+        ##    result = []
+        ##    if object_name == cpmeas.IMAGE and category == C_EXAMPLE3:
+        ##        result.append(FTR_VARIANCE)
+        ##    return result
+        #
+        # get_measurement_images should return a list of the images that will
+        # be produced, given a particular object name, category and feature name.
+        #
+        ##def get_measurement_images(self, pipeline, object_name, category, measurement):
+        ##    result = []
+        ##    if (object_name == cpmeas.IMAGE
+        ##        and category == C_EXAMPLE3
+        ##        and measurement == FTR_VARIANCE):
+        ##        result.append(self.input_image_name.value)
+        ##    return result

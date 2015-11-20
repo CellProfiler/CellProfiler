@@ -31,7 +31,6 @@ here <i>A</i> is the slope.</li>
 import numpy as np
 from scipy.linalg import lstsq
 import scipy.ndimage as scind
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
@@ -48,25 +47,26 @@ F_CORRELATION_FORMAT = "Correlation_Correlation_%s_%s"
 '''Feature name format for the slope measurement'''
 F_SLOPE_FORMAT = "Correlation_Slope_%s_%s"
 
-class MeasureCorrelation(cpm.CPModule):
 
+class MeasureCorrelation(cpm.CPModule):
     module_name = 'MeasureCorrelation'
     category = 'Measurement'
     variable_revision_number = 2
-    
+
     def create_settings(self):
         '''Create the initial settings for the module'''
         self.image_groups = []
-        self.add_image(can_delete = False)
+        self.add_image(can_delete=False)
         self.spacer_1 = cps.Divider()
-        self.add_image(can_delete = False)
+        self.add_image(can_delete=False)
         self.image_count = cps.HiddenCount(self.image_groups)
-        
-        self.add_image_button = cps.DoSomething("", 'Add another image', self.add_image)
+
+        self.add_image_button = cps.DoSomething("", 'Add another image',
+                                                self.add_image)
         self.spacer_2 = cps.Divider()
         self.images_or_objects = cps.Choice(
             'Select where to measure correlation',
-            [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc = '''
+            [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc='''
             You can measure the correlation in several ways: 
             <ul>
             <li><i>%(M_OBJECTS)s:</i> Measure correlation only in those pixels previously
@@ -74,17 +74,18 @@ class MeasureCorrelation(cpm.CPModule):
             <li><i>%(M_IMAGES)s:</i> Measure the correlation across all pixels in the images.</li>
             <li><i>%(M_IMAGES_AND_OBJECTS)s:</i> Calculate both measurements above.</li>
             </ul>
-            All methods measure correlation on a pixel by pixel basis.'''%globals())
-        
-        self.object_groups = []
-        self.add_object(can_delete = False)
-        self.object_count = cps.HiddenCount(self.object_groups)
-        
-        self.spacer_2 = cps.Divider(line=True)
-        
-        self.add_object_button = cps.DoSomething("", 'Add another object', self.add_object)
+            All methods measure correlation on a pixel by pixel basis.''' % globals())
 
-    def add_image(self, can_delete = True):
+        self.object_groups = []
+        self.add_object(can_delete=False)
+        self.object_count = cps.HiddenCount(self.object_groups)
+
+        self.spacer_2 = cps.Divider(line=True)
+
+        self.add_object_button = cps.DoSomething("", 'Add another object',
+                                                 self.add_object)
+
+    def add_image(self, can_delete=True):
         '''Add an image to the image_groups collection
         
         can_delete - set this to False to keep from showing the "remove"
@@ -94,29 +95,34 @@ class MeasureCorrelation(cpm.CPModule):
         if can_delete:
             group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(
-            'Select an image to measure',cps.NONE,doc = '''
+            'Select an image to measure', cps.NONE, doc='''
             Select an image to measure the correlation from.'''))
-        
-        if len(self.image_groups) == 0: # Insert space between 1st two images for aesthetics
+
+        if len(
+                self.image_groups) == 0:  # Insert space between 1st two images for aesthetics
             group.append("extra_divider", cps.Divider(line=False))
-        
+
         if can_delete:
-            group.append("remover", cps.RemoveSettingButton("","Remove this image", self.image_groups, group))
-            
+            group.append("remover",
+                         cps.RemoveSettingButton("", "Remove this image",
+                                                 self.image_groups, group))
+
         self.image_groups.append(group)
 
-    def add_object(self, can_delete = True):
+    def add_object(self, can_delete=True):
         '''Add an object to the object_groups collection'''
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
-            
+
         group.append("object_name", cps.ObjectNameSubscriber(
-            'Select an object to measure',cps.NONE, doc = '''
+            'Select an object to measure', cps.NONE, doc='''
             Select the objects to be measured.'''))
-        
+
         if can_delete:
-            group.append("remover", cps.RemoveSettingButton('', 'Remove this object', self.object_groups, group))
+            group.append("remover",
+                         cps.RemoveSettingButton('', 'Remove this object',
+                                                 self.object_groups, group))
         self.object_groups.append(group)
 
     def settings(self):
@@ -124,7 +130,8 @@ class MeasureCorrelation(cpm.CPModule):
         result = [self.image_count, self.object_count]
         result += [image_group.image_name for image_group in self.image_groups]
         result += [self.images_or_objects]
-        result += [object_group.object_name for object_group in self.object_groups]
+        result += [object_group.object_name for object_group in
+                   self.object_groups]
         return result
 
     def prepare_settings(self, setting_values):
@@ -132,12 +139,13 @@ class MeasureCorrelation(cpm.CPModule):
         image_count = int(setting_values[0])
         object_count = int(setting_values[1])
         if image_count < 2:
-            raise ValueError("The MeasureCorrelate module must have at least two input images. %d found in pipeline file"%image_count)
-        
+            raise ValueError(
+                "The MeasureCorrelate module must have at least two input images. %d found in pipeline file" % image_count)
+
         del self.image_groups[image_count:]
         while len(self.image_groups) < image_count:
             self.add_image()
-        
+
         del self.object_groups[object_count:]
         while len(self.object_groups) < object_count:
             self.add_object()
@@ -158,8 +166,8 @@ class MeasureCorrelation(cpm.CPModule):
         
         Yields the pairs of images in a canonical order.
         '''
-        for i in range(self.image_count.value-1):
-            for j in range(i+1, self.image_count.value):
+        for i in range(self.image_count.value - 1):
+            for j in range(i + 1, self.image_count.value):
                 yield (self.image_groups[i].image_name.value,
                        self.image_groups[j].image_name.value)
 
@@ -173,18 +181,20 @@ class MeasureCorrelation(cpm.CPModule):
 
     def run(self, workspace):
         '''Calculate measurements on an image set'''
-        col_labels = ["First image","Second image","Objects","Measurement","Value"]
+        col_labels = ["First image", "Second image", "Objects", "Measurement",
+                      "Value"]
         statistics = []
         for first_image_name, second_image_name in self.get_image_pairs():
             if self.wants_images():
-                statistics += self.run_image_pair_images(workspace, 
-                                                         first_image_name, 
+                statistics += self.run_image_pair_images(workspace,
+                                                         first_image_name,
                                                          second_image_name)
             if self.wants_objects():
-                for object_name in [group.object_name.value for group in self.object_groups]:
-                    statistics += self.run_image_pair_objects(workspace, 
+                for object_name in [group.object_name.value for group in
+                                    self.object_groups]:
+                    statistics += self.run_image_pair_objects(workspace,
                                                               first_image_name,
-                                                              second_image_name, 
+                                                              second_image_name,
                                                               object_name)
         if self.show_window:
             workspace.display_data.statistics = statistics
@@ -193,9 +203,10 @@ class MeasureCorrelation(cpm.CPModule):
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, statistics, workspace.display_data.col_labels)
+        figure.subplot_table(0, 0, statistics,
+                             workspace.display_data.col_labels)
 
-    def run_image_pair_images(self, workspace, first_image_name, 
+    def run_image_pair_images(self, workspace, first_image_name,
                               second_image_name):
         '''Calculate the correlation between the pixels of two images'''
         first_image = workspace.image_set.get_image(first_image_name,
@@ -212,12 +223,14 @@ class MeasureCorrelation(cpm.CPModule):
         # Crop the larger image similarly to the smaller one
         #
         if first_pixel_count < second_pixel_count:
-            second_pixel_data = first_image.crop_image_similarly(second_pixel_data)
+            second_pixel_data = first_image.crop_image_similarly(
+                second_pixel_data)
             second_mask = first_image.crop_image_similarly(second_mask)
         elif second_pixel_count < first_pixel_count:
-            first_pixel_data = second_image.crop_image_similarly(first_pixel_data)
+            first_pixel_data = second_image.crop_image_similarly(
+                first_pixel_data)
             first_mask = second_image.crop_image_similarly(first_mask)
-        mask = (first_mask & second_mask & 
+        mask = (first_mask & second_mask &
                 (~ np.isnan(first_pixel_data)) &
                 (~ np.isnan(second_pixel_data)))
         if np.any(mask):
@@ -228,12 +241,12 @@ class MeasureCorrelation(cpm.CPModule):
             #
             fi = first_pixel_data[mask]
             si = second_pixel_data[mask]
-            corr = np.corrcoef((fi,si))[1,0]
+            corr = np.corrcoef((fi, si))[1, 0]
             #
             # Find the slope as a linear regression to
             # A * i1 + B = i2
             #
-            coeffs = lstsq(np.array((fi,np.ones_like(fi))).transpose(),si)[0]
+            coeffs = lstsq(np.array((fi, np.ones_like(fi))).transpose(), si)[0]
             slope = coeffs[0]
         else:
             corr = np.NaN
@@ -241,14 +254,16 @@ class MeasureCorrelation(cpm.CPModule):
         #
         # Add the measurements
         #
-        corr_measurement = F_CORRELATION_FORMAT%(first_image_name, 
-                                                 second_image_name)
-        slope_measurement = F_SLOPE_FORMAT%(first_image_name,
-                                            second_image_name)
+        corr_measurement = F_CORRELATION_FORMAT % (first_image_name,
+                                                   second_image_name)
+        slope_measurement = F_SLOPE_FORMAT % (first_image_name,
+                                              second_image_name)
         workspace.measurements.add_image_measurement(corr_measurement, corr)
         workspace.measurements.add_image_measurement(slope_measurement, slope)
-        return [[first_image_name, second_image_name, "-", "Correlation","%.2f"%corr],
-                [first_image_name, second_image_name, "-", "Slope","%.2f"%slope]]
+        return [[first_image_name, second_image_name, "-", "Correlation",
+                 "%.2f" % corr],
+                [first_image_name, second_image_name, "-", "Slope",
+                 "%.2f" % slope]]
 
     def run_image_pair_objects(self, workspace, first_image_name,
                                second_image_name, object_name):
@@ -263,20 +278,23 @@ class MeasureCorrelation(cpm.CPModule):
         #
         labels = objects.segmented
         try:
-            first_pixels  = objects.crop_image_similarly(first_image.pixel_data)
-            first_mask    = objects.crop_image_similarly(first_image.mask)
+            first_pixels = objects.crop_image_similarly(first_image.pixel_data)
+            first_mask = objects.crop_image_similarly(first_image.mask)
         except ValueError:
-            first_pixels, m1 = cpo.size_similarly(labels, first_image.pixel_data)
+            first_pixels, m1 = cpo.size_similarly(labels,
+                                                  first_image.pixel_data)
             first_mask, m1 = cpo.size_similarly(labels, first_image.mask)
             first_mask[~m1] = False
         try:
-            second_pixels = objects.crop_image_similarly(second_image.pixel_data)
-            second_mask   = objects.crop_image_similarly(second_image.mask)
+            second_pixels = objects.crop_image_similarly(
+                second_image.pixel_data)
+            second_mask = objects.crop_image_similarly(second_image.mask)
         except ValueError:
-            second_pixels, m1 = cpo.size_similarly(labels, second_image.pixel_data)
+            second_pixels, m1 = cpo.size_similarly(labels,
+                                                   second_image.pixel_data)
             second_mask, m1 = cpo.size_similarly(labels, second_image.mask)
             second_mask[~m1] = False
-        mask   = ((labels > 0) & first_mask & second_mask)
+        mask = ((labels > 0) & first_mask & second_mask)
         first_pixels = first_pixels[mask]
         second_pixels = second_pixels[mask]
         labels = labels[mask]
@@ -288,20 +306,22 @@ class MeasureCorrelation(cpm.CPModule):
             # The correlation is sum((x-mean(x))(y-mean(y)) /
             #                         ((n-1) * std(x) *std(y)))
             #
-            lrange = np.arange(n_objects,dtype=np.int32)+1
-            area  = fix(scind.sum(np.ones_like(labels), labels, lrange))
+            lrange = np.arange(n_objects, dtype=np.int32) + 1
+            area = fix(scind.sum(np.ones_like(labels), labels, lrange))
             mean1 = fix(scind.mean(first_pixels, labels, lrange))
             mean2 = fix(scind.mean(second_pixels, labels, lrange))
             #
             # Calculate the standard deviation times the population.
             #
-            std1 = np.sqrt(fix(scind.sum((first_pixels-mean1[labels-1])**2,
-                                         labels, lrange)))
-            std2 = np.sqrt(fix(scind.sum((second_pixels-mean2[labels-1])**2,
-                                         labels, lrange)))
-            x = first_pixels - mean1[labels-1]  # x - mean(x)
-            y = second_pixels - mean2[labels-1] # y - mean(y)
-            corr = fix(scind.sum(x * y / (std1[labels-1] * std2[labels-1]),
+            std1 = np.sqrt(
+                fix(scind.sum((first_pixels - mean1[labels - 1]) ** 2,
+                              labels, lrange)))
+            std2 = np.sqrt(
+                fix(scind.sum((second_pixels - mean2[labels - 1]) ** 2,
+                              labels, lrange)))
+            x = first_pixels - mean1[labels - 1]  # x - mean(x)
+            y = second_pixels - mean2[labels - 1]  # y - mean(y)
+            corr = fix(scind.sum(x * y / (std1[labels - 1] * std2[labels - 1]),
                                  labels, lrange))
             # Explicitly set the correlation to NaN for masked objects
             corr[scind.sum(1, labels, lrange) == 0] = np.NaN
@@ -310,22 +330,22 @@ class MeasureCorrelation(cpm.CPModule):
         workspace.measurements.add_measurement(object_name, measurement, corr)
         if n_objects == 0:
             return [[first_image_name, second_image_name, object_name,
-                     "Mean correlation","-"],
+                     "Mean correlation", "-"],
                     [first_image_name, second_image_name, object_name,
-                     "Median correlation","-"],
+                     "Median correlation", "-"],
                     [first_image_name, second_image_name, object_name,
-                     "Min correlation","-"],
+                     "Min correlation", "-"],
                     [first_image_name, second_image_name, object_name,
-                     "Max correlation","-"]]
+                     "Max correlation", "-"]]
         else:
             return [[first_image_name, second_image_name, object_name,
-                     "Mean correlation","%.2f"%np.mean(corr)],
+                     "Mean correlation", "%.2f" % np.mean(corr)],
                     [first_image_name, second_image_name, object_name,
-                     "Median correlation","%.2f"%np.median(corr)],
+                     "Median correlation", "%.2f" % np.median(corr)],
                     [first_image_name, second_image_name, object_name,
-                     "Min correlation","%.2f"%np.min(corr)],
+                     "Min correlation", "%.2f" % np.min(corr)],
                     [first_image_name, second_image_name, object_name,
-                     "Max correlation","%.2f"%np.max(corr)]]
+                     "Max correlation", "%.2f" % np.max(corr)]]
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for all measurements made by this module'''
@@ -333,10 +353,10 @@ class MeasureCorrelation(cpm.CPModule):
         for first_image, second_image in self.get_image_pairs():
             if self.wants_images():
                 columns += [(cpmeas.IMAGE,
-                             F_CORRELATION_FORMAT%(first_image, second_image),
+                             F_CORRELATION_FORMAT % (first_image, second_image),
                              cpmeas.COLTYPE_FLOAT),
                             (cpmeas.IMAGE,
-                             F_SLOPE_FORMAT%(first_image, second_image),
+                             F_SLOPE_FORMAT % (first_image, second_image),
                              cpmeas.COLTYPE_FLOAT)]
             if self.wants_objects():
                 for i in range(self.object_count.value):
@@ -353,33 +373,35 @@ class MeasureCorrelation(cpm.CPModule):
         object_name - name of the measured object or cpmeas.IMAGE
         '''
         if ((object_name == cpmeas.IMAGE and self.wants_images()) or
-            ((object_name != cpmeas.IMAGE) and self.wants_objects() and
-             (object_name in [x.object_name.value for x in self.object_groups]))):
+                ((object_name != cpmeas.IMAGE) and self.wants_objects() and
+                     (object_name in [x.object_name.value for x in
+                                      self.object_groups]))):
             return ["Correlation"]
-        return [] 
+        return []
 
     def get_measurements(self, pipeline, object_name, category):
         if self.get_categories(pipeline, object_name) == [category]:
             if object_name == cpmeas.IMAGE:
-                return ["Correlation","Slope"]
+                return ["Correlation", "Slope"]
             else:
                 return ["Correlation"]
         return []
 
-    def get_measurement_images(self, pipeline, object_name, category, 
+    def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
         '''Return the joined pairs of images measured'''
-        if measurement in self.get_measurements(pipeline, object_name, category):
-            return ["%s_%s"%x for x in self.get_image_pairs()]
+        if measurement in self.get_measurements(pipeline, object_name,
+                                                category):
+            return ["%s_%s" % x for x in self.get_image_pairs()]
         return []
 
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Adjust the setting values for pipelines saved under old revisions'''
         if from_matlab and variable_revision_number == 3:
             image_names = [x for x in setting_values[:4]
                            if x.upper() != cps.DO_NOT_USE.upper()]
-            wants_image_measured = np.any([x==cpmeas.IMAGE 
+            wants_image_measured = np.any([x == cpmeas.IMAGE
                                            for x in setting_values[4:]])
             object_names = [x for x in setting_values[4:]
                             if not x in (cpmeas.IMAGE, cps.DO_NOT_USE)]
@@ -391,7 +413,8 @@ class MeasureCorrelation(cpm.CPModule):
             elif len(object_names):
                 m = M_OBJECTS
             else:
-                raise ValueError("Must either measure texture over images or over some set of objects")
+                raise ValueError(
+                    "Must either measure texture over images or over some set of objects")
             if len(object_names) == 0:
                 object_names = [cps.NONE]
             setting_values = ([str(len(image_names)), str(len(object_names))] +
@@ -403,9 +426,9 @@ class MeasureCorrelation(cpm.CPModule):
             # Wording of image / object text changed
             #
             image_count, object_count = [int(x) for x in setting_values[:2]]
-            image_names = setting_values[2:(image_count+2)]
-            m = setting_values[image_count+2]
-            object_names = setting_values[(image_count+3):]
+            image_names = setting_values[2:(image_count + 2)]
+            m = setting_values[image_count + 2]
+            object_names = setting_values[(image_count + 3):]
             if m == "Images":
                 m = M_IMAGES
             elif m == "Objects":
@@ -416,4 +439,3 @@ class MeasureCorrelation(cpm.CPModule):
                               image_names + [m] + object_names)
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
-

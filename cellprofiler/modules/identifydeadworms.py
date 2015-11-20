@@ -39,7 +39,6 @@ as video tutorials.</p>
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
-
 from centrosome.cpmorphology import all_connected_components
 from centrosome.cpmorphology import get_line_pts
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -62,18 +61,19 @@ LABEL_ALPHA = 1.0
 '''Alpha value for the worm shapes'''
 WORM_ALPHA = .25
 
+
 class IdentifyDeadWorms(cpm.CPModule):
     module_name = "IdentifyDeadWorms"
     variable_revision_number = 2
     category = ["Other", "Worm Toolbox"]
-    
+
     def create_settings(self):
         """Create the settings for the module
         
         Create the settings for the module during initialization.
         """
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image", cps.NONE,doc="""
+            "Select the input image", cps.NONE, doc="""
             The name of a binary image from a previous module.
             <b>IdentifyDeadWorms</b> will use this image to establish the
             foreground and background for the fitting operation. You can use
@@ -81,73 +81,75 @@ class IdentifyDeadWorms(cpm.CPModule):
             create the binary mask. You can also use a module such as
             <b>IdentifyPrimaryObjects</b> to label each worm and then use
             <b>ConvertObjectsToImage</b> to make the result a mask.""")
-        
+
         self.object_name = cps.ObjectNameProvider(
-            "Name the dead worm objects to be identified", "DeadWorms",doc="""
+            "Name the dead worm objects to be identified", "DeadWorms", doc="""
             This is the name for the dead worm objects. You can refer
             to this name in subsequent modules such as
             <b>IdentifySecondaryObjects</b>""")
-        
+
         self.worm_width = cps.Integer(
-            "Worm width", 10, minval = 1,doc = """
+            "Worm width", 10, minval=1, doc="""
             This is the width (the short axis), measured in pixels,
             of the diamond used as a template when
             matching against the worm. It should be less than the width
             of a worm.""")
-        
+
         self.worm_length = cps.Integer(
-            "Worm length", 100, minval= 1,doc = """
+            "Worm length", 100, minval=1, doc="""
             This is the length (the long axis), measured in pixels, 
             of the diamond used as a template when matching against the
             worm. It should be less than the length of a worm""")
-        
+
         self.angle_count = cps.Integer(
-            "Number of angles", 32, minval = 1,doc = """
+            "Number of angles", 32, minval=1, doc="""
             This is the number of different angles at which the
             template will be tried. For instance, if there are 12 angles,
             the template will be rotated by 0&deg;, 15&deg;, 30&deg;, 45&deg; ... 165&deg;.
             The shape is bilaterally symmetric; that is, you will get the same shape
             after rotating it by 180&deg;.""")
-        
+
         self.wants_automatic_distance = cps.Binary(
-            "Automatically calculate distance parameters?", True,doc = """
+            "Automatically calculate distance parameters?", True, doc="""
             This setting determines whether or not
             <b>IdentifyDeadWorms</b> automatically calculates the parameters
             used to determine whether two found-worm centers belong to the
             same worm. 
             <p>Select <i>%(YES)s</i> to have <b>IdentifyDeadWorms</b>
             automatically calculate the distance from the worm length
-            and width. Select <i>%(NO)s</i> to set the distances manually.</p>"""%globals())
-        
+            and width. Select <i>%(NO)s</i> to set the distances manually.</p>""" % globals())
+
         self.space_distance = cps.Float(
-            "Spatial distance", 5, minval = 1,doc = """
+            "Spatial distance", 5, minval=1, doc="""
             <i>(Used only if not automatically calculating distance parameters)</i><br>
             Enter the distance for calculating the worm centers, in units of pixels. 
             The worm centers must be at least many pixels apart for the centers to
             be considered two separate worms.""")
-        
+
         self.angular_distance = cps.Float(
-            "Angular distance", 30, minval = 1,doc = """
+            "Angular distance", 30, minval=1, doc="""
             <i>(Used only if automatically calculating distance parameters)</i><br>
             <b>IdentifyDeadWorms</b> calculates the worm centers at different
             angles. Two worm centers are considered to represent different
             worms if their angular distance is larger than this number. The
             number is measured in degrees.""")
-        
+
     def settings(self):
         '''The settings as they appear in the pipeline file'''
         return [self.image_name, self.object_name, self.worm_width,
-                self.worm_length, self.angle_count, self.wants_automatic_distance,
+                self.worm_length, self.angle_count,
+                self.wants_automatic_distance,
                 self.space_distance, self.angular_distance]
-    
+
     def visible_settings(self):
         '''The settings as they appear in the user interface'''
         result = [self.image_name, self.object_name, self.worm_width,
-                self.worm_length, self.angle_count, self.wants_automatic_distance]
+                  self.worm_length, self.angle_count,
+                  self.wants_automatic_distance]
         if not self.wants_automatic_distance:
             result += [self.space_distance, self.angular_distance]
         return result
-    
+
     def run(self, workspace):
         '''Run the algorithm on one image set'''
         #
@@ -155,7 +157,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         #
         image_set = workspace.image_set
         image = image_set.get_image(self.image_name.value,
-                                    must_be_binary = True)
+                                    must_be_binary=True)
         mask = image.pixel_data
         if image.has_mask:
             mask = mask & image.mask
@@ -171,7 +173,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         i = np.zeros(0, int)
         j = np.zeros(0, int)
         a = np.zeros(0, int)
-        
+
         ig, jg = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
         this_idx = 0
         for angle_number in range(angle_count):
@@ -189,7 +191,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         #
         # Find connections based on distances, not adjacency
         #
-        first, second = self.find_adjacent_by_distance(i,j,a)
+        first, second = self.find_adjacent_by_distance(i, j, a)
         #
         # Do all connected components.
         #
@@ -221,12 +223,12 @@ class IdentifyDeadWorms(cpm.CPModule):
             # measurement I hope.
             #
             angles = fix(mean_of_labels(a, ij_labels, label_indexes))
-            vangles = fix(mean_of_labels((a - angles[ij_labels-1])**2, 
+            vangles = fix(mean_of_labels((a - angles[ij_labels - 1]) ** 2,
                                          ij_labels, label_indexes))
             aa = a.copy()
             aa[a > np.pi / 2] -= np.pi
             aangles = fix(mean_of_labels(aa, ij_labels, label_indexes))
-            vaangles = fix(mean_of_labels((aa-aangles[ij_labels-1])**2,
+            vaangles = fix(mean_of_labels((aa - aangles[ij_labels - 1]) ** 2,
                                           ij_labels, label_indexes))
             aangles[aangles < 0] += np.pi
             angles[vaangles < vangles] = aangles[vaangles < vangles]
@@ -242,7 +244,7 @@ class IdentifyDeadWorms(cpm.CPModule):
             nlabels = 0
             label_indexes = np.zeros(0, int)
             labels = np.zeros(mask.shape, int)
-        
+
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         object_name = self.object_name.value
@@ -267,15 +269,15 @@ class IdentifyDeadWorms(cpm.CPModule):
             workspace.display_data.mask = mask
             workspace.display_data.labels = labels
             workspace.display_data.count = nlabels
-        
+
     def display(self, workspace, figure):
         '''Show an informative display'''
         import matplotlib
         import cellprofiler.gui.cpfigure
-        
+
         figure.set_subplots((2, 1))
         assert isinstance(figure, cellprofiler.gui.cpfigure.CPFigureFrame)
-        
+
         i = workspace.display_data.i
         j = workspace.display_data.j
         angles = workspace.display_data.angle
@@ -290,41 +292,43 @@ class IdentifyDeadWorms(cpm.CPModule):
         #
         # The binary mask is white.
         #
-        color_image[mask,:] = MASK_ALPHA
+        color_image[mask, :] = MASK_ALPHA
         if count > 0:
             mappable = matplotlib.cm.ScalarMappable(
-                cmap = matplotlib.cm.get_cmap(cpprefs.get_default_colormap()))
+                cmap=matplotlib.cm.get_cmap(cpprefs.get_default_colormap()))
             np.random.seed(0)
             colors = mappable.to_rgba(np.random.permutation(np.arange(count)))
-                
+
             #
             # The labels
             #
-            color_image[labels > 0,:] += colors[labels[labels > 0] - 1,:] * LABEL_ALPHA
+            color_image[labels > 0, :] += colors[labels[labels > 0] - 1,
+                                          :] * LABEL_ALPHA
             #
             # Do each diamond individually (because the angles are almost certainly
             # different for each
             #
-            lcolors = colors * .5 + .5 # Wash the colors out a little
+            lcolors = colors * .5 + .5  # Wash the colors out a little
             for ii in range(count):
                 diamond = self.get_diamond(angles[ii])
-                hshape = ((np.array(diamond.shape) -1) / 2).astype(int)
+                hshape = ((np.array(diamond.shape) - 1) / 2).astype(int)
                 iii = i[ii]
                 jjj = j[ii]
-                color_image[iii-hshape[0]:iii+hshape[0]+1,
-                            jjj-hshape[1]:jjj+hshape[1]+1,:][diamond,:] += \
-                           lcolors[ii,:] * WORM_ALPHA
+                color_image[iii - hshape[0]:iii + hshape[0] + 1,
+                jjj - hshape[1]:jjj + hshape[1] + 1, :][diamond, :] += \
+                    lcolors[ii, :] * WORM_ALPHA
         #
         # Do our own alpha-normalization
         #
-        color_image[:,:,-1][color_image[:,:,-1] == 0] = 1
-        color_image[:,:,:-1] = (color_image[:,:,:-1] / 
-                                color_image[:,:,-1][:,:,np.newaxis])
-        plot00 = figure.subplot_imshow_bw(0,0, mask, self.image_name.value)
-        figure.subplot_imshow_color(1, 0, color_image[:,:,:-1],
-                                    title= self.object_name.value,
-                                    normalize = False,
-                                    sharexy = plot00)
+        color_image[:, :, -1][color_image[:, :, -1] == 0] = 1
+        color_image[:, :, :-1] = (color_image[:, :, :-1] /
+                                  color_image[:, :, -1][:, :, np.newaxis])
+        plot00 = figure.subplot_imshow_bw(0, 0, mask, self.image_name.value)
+        figure.subplot_imshow_color(1, 0, color_image[:, :, :-1],
+                                    title=self.object_name.value,
+                                    normalize=False,
+                                    sharexy=plot00)
+
     def get_diamond(self, angle):
         '''Get a diamond-shaped structuring element
         
@@ -344,12 +348,12 @@ class IdentifyDeadWorms(cpm.CPModule):
         #
         #                   + x3,y3
         #
-        x0 = int(np.sin(angle) * worm_length/2)
-        x1 = int(np.cos(angle) * worm_width/2)
+        x0 = int(np.sin(angle) * worm_length / 2)
+        x1 = int(np.cos(angle) * worm_width / 2)
         x2 = - x0
         x3 = - x1
-        y2 = int(np.cos(angle) * worm_length/2)
-        y1 = int(np.sin(angle) * worm_width/2)
+        y2 = int(np.cos(angle) * worm_length / 2)
+        y1 = int(np.sin(angle) * worm_width / 2)
         y0 = - y2
         y3 = - y1
         xmax = np.max(np.abs([x0, x1, x2, x3]))
@@ -360,12 +364,13 @@ class IdentifyDeadWorms(cpm.CPModule):
                                           np.array([x0, x1, x2, x3]) + xmax,
                                           np.array([y1, y2, y3, y0]) + ymax,
                                           np.array([x1, x2, x3, x0]) + xmax)
-        strel[i,j] = True
+        strel[i, j] = True
         strel = binary_fill_holes(strel)
         return strel
-    
+
     @staticmethod
-    def find_adjacent(img1, offset1, count1, img2, offset2, count2, first, second):
+    def find_adjacent(img1, offset1, count1, img2, offset2, count2, first,
+                      second):
         '''Find adjacent pairs of points between two masks
         
         img1, img2 - binary images to be 8-connected
@@ -381,7 +386,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         numbering1[img1] = np.arange(count1) + offset1
         numbering2 = np.zeros(img1.shape, int)
         numbering2[img2] = np.arange(count2) + offset2
-        
+
         f = np.zeros(0, int)
         s = np.zeros(0, int)
         #
@@ -394,7 +399,7 @@ class IdentifyDeadWorms(cpm.CPModule):
                 f = np.hstack((f, f1))
                 s = np.hstack((s, s1))
         return np.hstack((first, f)), np.hstack((second, s))
-    
+
     @staticmethod
     def find_adjacent_same(img, offset, count, first, second):
         '''Find adjacent pairs of points in the same mask
@@ -416,7 +421,7 @@ class IdentifyDeadWorms(cpm.CPModule):
                 f = np.hstack((f, f1))
                 s = np.hstack((s, s1))
         return np.hstack((first, f)), np.hstack((second, s))
-    
+
     @staticmethod
     def find_adjacent_one(img1, numbering1, img2, numbering2, oi, oj):
         '''Find correlated pairs of foreground points at given offsets
@@ -431,7 +436,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         j1, j2 = IdentifyDeadWorms.get_slices(oj)
         match = img1[i1, j1] & img2[i2, j2]
         return numbering1[i1, j1][match], numbering2[i2, j2][match]
-    
+
     def find_adjacent_by_distance(self, i, j, a):
         '''Return pairs of worm centers that are deemed adjacent by distance
         
@@ -456,14 +461,14 @@ class IdentifyDeadWorms(cpm.CPModule):
         # Sort by i and break the sorted vector into chunks where
         # consecutive locations are separated by more than space_distance
         #
-        order = np.lexsort((a,j,i))
+        order = np.lexsort((a, j, i))
         i = i[order]
         j = j[order]
         a = a[order]
-        breakpoint = np.hstack(([False],i[1:] - i[:-1] > space_distance))
+        breakpoint = np.hstack(([False], i[1:] - i[:-1] > space_distance))
         if np.all(~ breakpoint):
             # No easy win - cross all with all
-            first, second = np.mgrid[0:len(i),0:len(i)]
+            first, second = np.mgrid[0:len(i), 0:len(i)]
         else:
             # The segment that each belongs to
             segment_number = np.cumsum(breakpoint)
@@ -478,7 +483,7 @@ class IdentifyDeadWorms(cpm.CPModule):
             # member_count * member_count crosses.
             #
             # # of (first,second) pairs in each segment
-            cross_size = member_count **2
+            cross_size = member_count ** 2
             # Index in final array of first element of each segment
             segment_idx = np.cumsum(cross_size)
             # relative location of first "first"
@@ -488,15 +493,15 @@ class IdentifyDeadWorms(cpm.CPModule):
             # The "firsts" array
             first = np.cumsum(first)
             first_start_idx = np.hstack(([0], first_start_idx))
-            second = (np.arange(len(first)) - 
+            second = (np.arange(len(first)) -
                       first_start_idx[first] + segment_start[first])
-        mask = ((np.abs((i[first] - i[second]) ** 2 + 
+        mask = ((np.abs((i[first] - i[second]) ** 2 +
                         (j[first] - j[second]) ** 2) <= space_distance ** 2) &
                 ((np.abs(a[first] - a[second]) <= angle_distance) |
                  (a[first] + np.pi - a[second] <= angle_distance) |
                  (a[second] + np.pi - a[first] <= angle_distance)))
         return order[first[mask]], order[second[mask]]
-    
+
     @staticmethod
     def get_slices(offset):
         '''Get slices to use for a pair of arrays, given an offset
@@ -509,13 +514,13 @@ class IdentifyDeadWorms(cpm.CPModule):
         for the first and second arrays.
         '''
         if offset > 0:
-            s0, s1= slice(0,-offset), slice(offset, np.iinfo(int).max)
+            s0, s1 = slice(0, -offset), slice(offset, np.iinfo(int).max)
         elif offset < 0:
             s1, s0 = IdentifyDeadWorms.get_slices(-offset)
         else:
             s0 = s1 = slice(0, np.iinfo(int).max)
         return s0, s1
-        
+
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         object_name = self.object_name.value
@@ -523,16 +528,17 @@ class IdentifyDeadWorms(cpm.CPModule):
                 (object_name, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_INTEGER),
                 (object_name, M_ANGLE, cpmeas.COLTYPE_FLOAT),
                 (object_name, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-                (cpmeas.IMAGE, I.FF_COUNT % object_name, cpmeas.COLTYPE_INTEGER)]
-    
+                (
+                cpmeas.IMAGE, I.FF_COUNT % object_name, cpmeas.COLTYPE_INTEGER)]
+
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [ I.C_COUNT ]
+            return [I.C_COUNT]
         elif object_name == self.object_name:
-            return [ I.C_LOCATION, I.C_NUMBER, C_WORMS]
+            return [I.C_LOCATION, I.C_NUMBER, C_WORMS]
         else:
             return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == I.C_COUNT:
             return [self.object_name.value]
@@ -544,8 +550,8 @@ class IdentifyDeadWorms(cpm.CPModule):
             elif category == C_WORMS:
                 return [F_ANGLE]
         return []
-    
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Upgrade the settings from a previous revison'''
         if variable_revision_number == 1:

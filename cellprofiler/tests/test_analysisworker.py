@@ -13,7 +13,6 @@ import traceback
 import unittest
 import uuid
 import zmq
-
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
@@ -21,12 +20,11 @@ import cellprofiler.utilities.zmqrequest as cpzmq
 import javabridge as J
 import cellprofiler.analysis_worker as cpaw
 import cellprofiler.preferences as cpprefs
-
 from cellprofiler.modules.identify import C_COUNT, M_LOCATION_CENTER_X
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
-from cellprofiler.modules.tests import\
-     example_images_directory, maybe_download_example_image, maybe_download_sbs
+from cellprofiler.modules.tests import \
+    example_images_directory, maybe_download_example_image, maybe_download_sbs
 from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 
 cpprefs.set_headless()
@@ -44,9 +42,10 @@ class TestAnalysisWorker(unittest.TestCase):
         from cellprofiler.modules.flipandrotate import FlipAndRotate
         def bogus_display_post_group(self, workspace, figure):
             pass
+
         FlipAndRotate.display_post_group = bogus_display_post_group
         maybe_download_sbs()
-        
+
     @classmethod
     def tearDownClass(cls):
         try:
@@ -55,21 +54,21 @@ class TestAnalysisWorker(unittest.TestCase):
         except:
             pass
         cls.notify_pub_socket.close()
-        
+
     def cancel(self):
         self.notify_pub_socket.send(cpaw.NOTIFY_STOP)
-            
+
     def setUp(self):
         self.out_dir = tempfile.mkdtemp()
         cpprefs.set_default_output_directory(self.out_dir)
-        self.announce_addr = "inproc://"+uuid.uuid4().hex
-        self.work_addr = "inproc://"+uuid.uuid4().hex
+        self.announce_addr = "inproc://" + uuid.uuid4().hex
+        self.work_addr = "inproc://" + uuid.uuid4().hex
         self.announce_socket = self.zmq_context.socket(zmq.PUB)
         self.announce_socket.bind(self.announce_addr)
         self.work_socket = self.zmq_context.socket(zmq.REP)
         self.work_socket.bind(self.work_addr)
         self.awthread = None
-        
+
     def tearDown(self):
         if self.awthread:
             self.cancel()
@@ -83,28 +82,28 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         h5_files = [f for f in os.listdir(self.out_dir)
                     if f.endswith(".h5")]
-        self.assertEqual(len(h5_files), 0, 
-                         msg = "Left the following files: " + str(h5_files))
-        
+        self.assertEqual(len(h5_files), 0,
+                         msg="Left the following files: " + str(h5_files))
+
     class AWThread(threading.Thread):
-        
+
         def __init__(self, announce_addr, *args, **kwargs):
             threading.Thread.__init__(self, *args, **kwargs)
             self.announce_addr = announce_addr
             self.cancelled = False
-            
+
         def start(self):
             self.setDaemon(True)
             self.setName("Analysis worker thread")
             self.up_queue = Queue.Queue()
-            self.notify_addr = "inproc://"+uuid.uuid4().hex
+            self.notify_addr = "inproc://" + uuid.uuid4().hex
             self.up_queue_recv_socket = cpaw.the_zmq_context.socket(zmq.SUB)
             self.up_queue_recv_socket.setsockopt(zmq.SUBSCRIBE, "")
             self.up_queue_recv_socket.bind(self.notify_addr)
             self.down_queue = Queue.Queue()
             threading.Thread.start(self)
             self.up_queue.get()
-            
+
         def run(self):
             up_queue_send_socket = cpaw.the_zmq_context.socket(zmq.PUB)
             up_queue_send_socket.connect(self.notify_addr)
@@ -126,7 +125,7 @@ class TestAnalysisWorker(unittest.TestCase):
                         self.up_queue.put((None, e))
                         up_queue_send_socket.send("EXCEPTION")
                 aw.exit_thread()
-                        
+
         def recv(self, work_socket, timeout=None):
             '''Receive a request from the worker
             
@@ -148,18 +147,20 @@ class TestAnalysisWorker(unittest.TestCase):
                     if e is not None:
                         raise e
                     else:
-                        raise cpp.CancelledException("Unexpected exit during recv")
+                        raise cpp.CancelledException(
+                            "Unexpected exit during recv")
                 if socket == work_socket and state == zmq.POLLIN:
                     return cpzmq.Communicable.recv(work_socket)
             raise Queue.Empty
-                    
+
         def join(self, timeout=None):
             if self.isAlive():
                 def cancel_me():
                     self.aw.cancelled = True
+
                 self.down_queue.put(cancel_me)
                 threading.Thread.join(self, timeout)
-            
+
         def execute(self, fn, *args, **kwargs):
             '''Execute a closure on the AnalysisWorker thread
             
@@ -170,7 +171,7 @@ class TestAnalysisWorker(unittest.TestCase):
             '''
             self.ex(fn, *args, **kwargs)
             return self.ecute()
-        
+
         def ex(self, fn, *args, **kwargs):
             '''Do the first part of a functional execution'''
             if len(args) == 0 and len(kwargs) == 0:
@@ -178,8 +179,9 @@ class TestAnalysisWorker(unittest.TestCase):
             else:
                 def closure():
                     return fn(*args, **kwargs)
+
                 self.down_queue.put(closure)
-            
+
         def ecute(self):
             '''Retrieve the results of self.ex()'''
             msg = self.up_queue_recv_socket.recv()
@@ -187,8 +189,7 @@ class TestAnalysisWorker(unittest.TestCase):
             if e is not None:
                 raise e
             return result
-        
-        
+
     def set_work_socket(self):
         '''Artificially set up the worker's work socket
         
@@ -196,13 +197,15 @@ class TestAnalysisWorker(unittest.TestCase):
         can be tested in the worker.
         '''
         self.analysis_id = uuid.uuid4().hex
+
         def do_set_work_socket(aw):
             aw.work_socket = cpaw.the_zmq_context.socket(zmq.REQ)
             aw.work_socket.connect(self.work_addr)
             aw.work_request_address = self.work_addr
             aw.current_analysis_id = self.analysis_id
+
         self.awthread.execute(do_set_work_socket, self.awthread.aw)
-            
+
     def send_announcement_get_work_request(self):
         '''Announce the work address until we get some sort of a request'''
         self.analysis_id = uuid.uuid4().hex
@@ -225,10 +228,10 @@ class TestAnalysisWorker(unittest.TestCase):
                 break
             except Queue.Empty:
                 continue
-        
+
         self.assertIsNone(exception)
         self.assertSequenceEqual(result, ("foo", "bar"))
-        
+
     def test_01_02_announcement_cancellation(self):
         #
         # Call AnalysisWorker.get_announcement, then notify the worker
@@ -239,14 +242,16 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread.ex(self.awthread.aw.get_announcement)
         self.cancel()
         self.assertRaises(cpp.CancelledException, self.awthread.ecute)
-        
+
     def test_02_01_send(self):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
+
         def send_something():
             reply = self.awthread.aw.send(cpanalysis.WorkRequest("foo"))
             return reply
+
         self.awthread.ex(send_something)
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.WorkRequest)
@@ -255,14 +260,16 @@ class TestAnalysisWorker(unittest.TestCase):
         reply = self.awthread.ecute()
         self.assertIsInstance(reply, cpanalysis.WorkReply)
         self.assertEqual(reply.foo, "bar")
-        
+
     def test_02_02_send_cancellation(self):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
+
         def send_something():
             reply = self.awthread.aw.send(cpanalysis.WorkRequest("foo"))
             return reply
+
         self.awthread.ex(send_something)
         self.cancel()
         self.assertRaises(cpp.CancelledException, self.awthread.ecute)
@@ -271,14 +278,16 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
+
         def send_something():
             reply = self.awthread.aw.send(cpanalysis.WorkRequest("foo"))
             return reply
+
         self.awthread.ex(send_something)
         req = self.awthread.recv(self.work_socket)
         req.reply(cpanalysis.ServerExited())
         self.assertRaises(cpp.CancelledException, self.awthread.ecute)
-        
+
     def test_03_01_work_request(self):
         #
         # Walk the worker through the connect sequence through
@@ -292,7 +301,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.send_announcement_get_work_request()
         self.assertEqual(self.analysis_id, req.analysis_id)
-        
+
     def test_03_02_pipeline_preferences(self):
         #
         # Walk the worker up through pipelines and preferences.
@@ -300,18 +309,18 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
-        self.awthread.ex(self.awthread.aw.do_job, 
+        self.awthread.ex(self.awthread.aw.do_job,
                          cpanalysis.WorkReply(
-                             image_set_numbers = [1],
-                             worker_runs_post_group = False,
-                             wants_dictionary = True))
+                             image_set_numbers=[1],
+                             worker_runs_post_group=False,
+                             wants_dictionary=True))
         #
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
-        
+
         maybe_download_example_image(["ExampleSBSImages"],
                                      "Channel1-01-A-01.tif")
         maybe_download_example_image(["ExampleHT29"],
@@ -324,26 +333,27 @@ class TestAnalysisWorker(unittest.TestCase):
         input_dir = cpprefs.get_default_image_directory()
         cpprefs.set_default_output_directory(output_dir)
         output_dir = cpprefs.get_default_output_directory()
-        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY: 
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY),
+        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
+                           cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY),
                        cpprefs.DEFAULT_OUTPUT_DIRECTORY:
-                       cpprefs.config_read(cpprefs.DEFAULT_OUTPUT_DIRECTORY)}
+                           cpprefs.config_read(
+                               cpprefs.DEFAULT_OUTPUT_DIRECTORY)}
         cpprefs.set_default_image_directory(example_images_directory())
         cpprefs.set_default_output_directory(example_images_directory())
         rep = cpanalysis.Reply(
-            pipeline_blob = np.array(GOOD_PIPELINE),
-            preferences = preferences)
+            pipeline_blob=np.array(GOOD_PIPELINE),
+            preferences=preferences)
         req.reply(rep)
         #
         # Get the next request so that we know the worker has
         # processed the preferences.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertEqual(cpprefs.get_default_image_directory(), 
+        self.assertEqual(cpprefs.get_default_image_directory(),
                          input_dir)
         self.assertEqual(cpprefs.get_default_output_directory(),
                          output_dir)
-        self.assertIn(self.analysis_id, 
+        self.assertIn(self.analysis_id,
                       self.awthread.aw.pipelines_and_preferences)
         pipe, prefs = self.awthread.aw.pipelines_and_preferences[
             self.analysis_id]
@@ -353,7 +363,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req.reply(cpanalysis.ServerExited())
         self.assertRaises(cpp.CancelledException, self.awthread.ecute)
-        
+
     def test_03_03_initial_measurements(self):
         #
         # Walk to the initial measurements
@@ -361,26 +371,26 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
-        self.awthread.ex(self.awthread.aw.do_job, 
+        self.awthread.ex(self.awthread.aw.do_job,
                          cpanalysis.WorkReply(
-                             image_set_numbers = [1],
-                             worker_runs_post_group = False,
-                             wants_dictionary = True))
+                             image_set_numbers=[1],
+                             worker_runs_post_group=False,
+                             wants_dictionary=True))
         #
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
-        
+
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         cpprefs.set_default_image_directory(input_dir)
-        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY: 
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
-        
+        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
+                           cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY)}
+
         rep = cpanalysis.Reply(
-            pipeline_blob = np.array(GOOD_PIPELINE),
-            preferences = preferences)
+            pipeline_blob=np.array(GOOD_PIPELINE),
+            preferences=preferences)
         req.reply(rep)
         #
         # The worker asks for the initial measurements.
@@ -390,12 +400,12 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline()
         try:
-            req.reply(cpanalysis.Reply(buf = m.file_contents()))
+            req.reply(cpanalysis.Reply(buf=m.file_contents()))
             req = self.awthread.recv(self.work_socket)
             #
             # Check that they were installed
             #
-            self.assertIn(self.analysis_id, 
+            self.assertIn(self.analysis_id,
                           self.awthread.aw.initial_measurements)
             cm = self.awthread.aw.initial_measurements[self.analysis_id]
             for object_name in m.get_object_names():
@@ -403,10 +413,10 @@ class TestAnalysisWorker(unittest.TestCase):
                     self.assertTrue(cm.has_feature(object_name, feature_name))
                     if feature_name == M_IMAGE_SET:
                         np.testing.assert_array_equal(
-                            cm[object_name, feature_name, 1], 
-                                     m[object_name, feature_name, 1])
+                            cm[object_name, feature_name, 1],
+                            m[object_name, feature_name, 1])
                     else:
-                        self.assertEqual(cm[object_name, feature_name, 1], 
+                        self.assertEqual(cm[object_name, feature_name, 1],
                                          m[object_name, feature_name, 1])
             #
             # Cancel and check for exit
@@ -415,7 +425,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.assertRaises(cpp.CancelledException, self.awthread.ecute)
         finally:
             m.close()
-        
+
     def test_03_04_shared_dictionary_request(self):
         #
         # The SharedDictionaryRequest
@@ -423,26 +433,26 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
-        self.awthread.ex(self.awthread.aw.do_job, 
+        self.awthread.ex(self.awthread.aw.do_job,
                          cpanalysis.WorkReply(
-                             image_set_numbers = [1],
-                             worker_runs_post_group = False,
-                             wants_dictionary = True))
+                             image_set_numbers=[1],
+                             worker_runs_post_group=False,
+                             wants_dictionary=True))
         #
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
-        
+
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         cpprefs.set_default_image_directory(input_dir)
-        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY: 
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
-        
+        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
+                           cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY)}
+
         rep = cpanalysis.Reply(
-            pipeline_blob = np.array(DISPLAY_PIPELINE),
-            preferences = preferences)
+            pipeline_blob=np.array(DISPLAY_PIPELINE),
+            preferences=preferences)
         req.reply(rep)
         #
         # The worker asks for the initial measurements.
@@ -452,7 +462,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline()
         try:
-            req.reply(cpanalysis.Reply(buf = m.file_contents()))
+            req.reply(cpanalysis.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
@@ -461,7 +471,7 @@ class TestAnalysisWorker(unittest.TestCase):
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.SharedDictionaryRequest)
         rep = cpanalysis.SharedDictionaryReply(
-            dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,8)])
+            dictionaries=[{("foo%d" % i): "bar%d" % i} for i in range(1, 8)])
         req.reply(rep)
         #
         # Sneaky way to get pipeline. First, synchronize with the next message
@@ -477,7 +487,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         self.cancel()
         self.awthread.ecute()
-                                 
+
     def test_03_05_the_happy_path_chapter_1(self):
         #
         # Run the worker clear through to the end
@@ -486,26 +496,26 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
-        self.awthread.ex(self.awthread.aw.do_job, 
+        self.awthread.ex(self.awthread.aw.do_job,
                          cpanalysis.WorkReply(
-                             image_set_numbers = [1],
-                             worker_runs_post_group = False,
-                             wants_dictionary = True))
+                             image_set_numbers=[1],
+                             worker_runs_post_group=False,
+                             wants_dictionary=True))
         #
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
-        
+
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         cpprefs.set_default_image_directory(input_dir)
-        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY: 
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
-        
+        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
+                           cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY)}
+
         rep = cpanalysis.Reply(
-            pipeline_blob = np.array(DISPLAY_PIPELINE),
-            preferences = preferences)
+            pipeline_blob=np.array(DISPLAY_PIPELINE),
+            preferences=preferences)
         req.reply(rep)
         #
         # The worker asks for the initial measurements.
@@ -515,7 +525,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline()
         try:
-            req.reply(cpanalysis.Reply(buf = m.file_contents()))
+            req.reply(cpanalysis.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
@@ -523,9 +533,10 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.SharedDictionaryRequest)
-        shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,8)]
+        shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in
+                               range(1, 8)]
         rep = cpanalysis.SharedDictionaryReply(
-            dictionaries = shared_dictionaries)
+            dictionaries=shared_dictionaries)
         req.reply(rep)
         #
         # The worker sends a display request for FlipAndRotate
@@ -535,8 +546,8 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.image_set_number, 1)
         d = req.display_data_dict
         # Possibly, this will break if someone edits FlipAndRotate. Sorry.
-        self.assertItemsEqual(d.keys(), 
-                              ['vmax', 'output_image_pixel_data', 
+        self.assertItemsEqual(d.keys(),
+                              ['vmax', 'output_image_pixel_data',
                                'image_pixel_data', 'vmin'])
         self.assertIsInstance(d['output_image_pixel_data'], np.ndarray)
         req.reply(cpanalysis.Ack())
@@ -559,12 +570,12 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Spot check for some expected stuff
         #
-        self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT+"_Nuclei"))
+        self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT + "_Nuclei"))
         self.assertTrue(m.has_feature("Nuclei", M_LOCATION_CENTER_X))
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cpanalysis.Ack())
         self.awthread.ecute()
-        
+
     def test_03_06_the_happy_path_chapter_2(self):
         #
         # Give the worker image sets # 2 and 3 and tell it to run post_group
@@ -572,26 +583,26 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
-        self.awthread.ex(self.awthread.aw.do_job, 
+        self.awthread.ex(self.awthread.aw.do_job,
                          cpanalysis.WorkReply(
-                             image_set_numbers = [2, 3],
-                             worker_runs_post_group = True,
-                             wants_dictionary = False))
+                             image_set_numbers=[2, 3],
+                             worker_runs_post_group=True,
+                             wants_dictionary=False))
         #
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
-        
+
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         cpprefs.set_default_image_directory(input_dir)
-        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY: 
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
-        
+        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
+                           cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY)}
+
         rep = cpanalysis.Reply(
-            pipeline_blob = np.array(DISPLAY_PIPELINE),
-            preferences = preferences)
+            pipeline_blob=np.array(DISPLAY_PIPELINE),
+            preferences=preferences)
         req.reply(rep)
         #
         # The worker asks for the initial measurements.
@@ -601,7 +612,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline(nimages=3)
         try:
-            req.reply(cpanalysis.Reply(buf = m.file_contents()))
+            req.reply(cpanalysis.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
@@ -639,12 +650,12 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Spot check for some expected stuff
         #
-        self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT+"_Nuclei"))
+        self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT + "_Nuclei"))
         self.assertTrue(m.has_feature("Nuclei", M_LOCATION_CENTER_X))
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cpanalysis.Ack())
         self.awthread.ecute()
-        
+
     def test_03_07_a_sad_ending(self):
         #
         # Run using the bad pipeline and lead the analysis worker
@@ -653,26 +664,26 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
-        self.awthread.ex(self.awthread.aw.do_job, 
+        self.awthread.ex(self.awthread.aw.do_job,
                          cpanalysis.WorkReply(
-                             image_set_numbers = [2],
-                             worker_runs_post_group = False,
-                             wants_dictionary = False))
+                             image_set_numbers=[2],
+                             worker_runs_post_group=False,
+                             wants_dictionary=False))
         #
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
-        
+
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         cpprefs.set_default_image_directory(input_dir)
-        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY: 
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
-        
+        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
+                           cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY)}
+
         rep = cpanalysis.Reply(
-            pipeline_blob = np.array(BAD_PIPELINE),
-            preferences = preferences)
+            pipeline_blob=np.array(BAD_PIPELINE),
+            preferences=preferences)
         req.reply(rep)
         #
         # The worker asks for the initial measurements.
@@ -682,7 +693,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline(nimages=2)
         try:
-            req.reply(cpanalysis.Reply(buf = m.file_contents()))
+            req.reply(cpanalysis.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
@@ -690,9 +701,10 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.SharedDictionaryRequest)
-        shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,8)]
+        shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in
+                               range(1, 8)]
         rep = cpanalysis.SharedDictionaryReply(
-            dictionaries = shared_dictionaries)
+            dictionaries=shared_dictionaries)
         req.reply(rep)
         #
         # The worker should choke somewhere in NamesAndTypes
@@ -701,16 +713,16 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertIsInstance(req, cpanalysis.ExceptionReport)
         password = "corned beef"
         req.reply(cpanalysis.ExceptionPleaseDebugReply(
-            disposition='DEBUG', 
-            verification_hash = hashlib.sha1(password).hexdigest()))
+            disposition='DEBUG',
+            verification_hash=hashlib.sha1(password).hexdigest()))
         #
         # Next, the worker sends DebugWaiting once it binds to a port
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.DebugWaiting)
         handle = None
-        telnet_socket = socket.socket(socket.AF_INET, 
-                                      proto = socket.IPPROTO_TCP)
+        telnet_socket = socket.socket(socket.AF_INET,
+                                      proto=socket.IPPROTO_TCP)
         telnet_socket.connect(("127.0.0.1", req.port))
         try:
             req.reply(cpanalysis.Ack())
@@ -725,8 +737,8 @@ class TestAnalysisWorker(unittest.TestCase):
             telnet_socket.close()
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.DebugComplete)
-        req.reply(cpanalysis.ExceptionPleaseDebugReply(disposition = ED_STOP))
-        
+        req.reply(cpanalysis.ExceptionPleaseDebugReply(disposition=ED_STOP))
+
     def test_03_08_a_sad_moment(self):
         #
         # Run using the good pipeline, but change one of the URLs so
@@ -735,26 +747,26 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
-        self.awthread.ex(self.awthread.aw.do_job, 
+        self.awthread.ex(self.awthread.aw.do_job,
                          cpanalysis.WorkReply(
-                             image_set_numbers = [2, 3],
-                             worker_runs_post_group = False,
-                             wants_dictionary = False))
+                             image_set_numbers=[2, 3],
+                             worker_runs_post_group=False,
+                             wants_dictionary=False))
         #
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
-        
+
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         cpprefs.set_default_image_directory(input_dir)
-        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY: 
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
-        
+        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
+                           cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY)}
+
         rep = cpanalysis.Reply(
-            pipeline_blob = np.array(GOOD_PIPELINE),
-            preferences = preferences)
+            pipeline_blob=np.array(GOOD_PIPELINE),
+            preferences=preferences)
         req.reply(rep)
         #
         # The worker asks for the initial measurements.
@@ -765,7 +777,7 @@ class TestAnalysisWorker(unittest.TestCase):
         m = get_measurements_for_good_pipeline(nimages=3)
         m[cpmeas.IMAGE, M_IMAGE_SET, 2] = np.zeros(100, np.uint8)
         try:
-            req.reply(cpanalysis.Reply(buf = m.file_contents()))
+            req.reply(cpanalysis.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
@@ -773,9 +785,10 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.SharedDictionaryRequest)
-        shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,8)]
+        shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in
+                               range(1, 8)]
         rep = cpanalysis.SharedDictionaryReply(
-            dictionaries = shared_dictionaries)
+            dictionaries=shared_dictionaries)
         req.reply(rep)
         #
         # The worker should choke somewhere in NamesAndTypes, but we
@@ -783,7 +796,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.ExceptionReport)
-        req.reply(cpanalysis.ExceptionPleaseDebugReply(disposition = ED_SKIP))
+        req.reply(cpanalysis.ExceptionPleaseDebugReply(disposition=ED_SKIP))
         #
         # The worker should send ImageSetSuccess for image set 2 anyway.
         #
@@ -808,7 +821,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Spot check for some expected stuff
         #
-        self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT+"_Nuclei"))
+        self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT + "_Nuclei"))
         self.assertTrue(m.has_feature("Nuclei", M_LOCATION_CENTER_X))
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         #
@@ -821,7 +834,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(count, len(center_x))
         req.reply(cpanalysis.Ack())
         self.awthread.ecute()
-        
+
     def test_03_09_flag_image_abort(self):
         #
         # Regression test of issue #1210
@@ -902,26 +915,26 @@ MeasureImageIntensity:[module_num:6|svn_version:\'Unknown\'|variable_revision_nu
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
-        self.awthread.ex(self.awthread.aw.do_job, 
+        self.awthread.ex(self.awthread.aw.do_job,
                          cpanalysis.WorkReply(
-                             image_set_numbers = [1],
-                             worker_runs_post_group = False,
-                             wants_dictionary = True))
+                             image_set_numbers=[1],
+                             worker_runs_post_group=False,
+                             wants_dictionary=True))
         #
         # The worker should ask for the pipeline and preferences next.
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.PipelinePreferencesRequest)
         self.assertEqual(req.analysis_id, self.analysis_id)
-        
+
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         cpprefs.set_default_image_directory(input_dir)
-        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY: 
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
-        
+        preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY:
+                           cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY)}
+
         rep = cpanalysis.Reply(
-            pipeline_blob = np.array(data),
-            preferences = preferences)
+            pipeline_blob=np.array(data),
+            preferences=preferences)
         req.reply(rep)
         #
         # The worker asks for the initial measurements.
@@ -933,9 +946,9 @@ MeasureImageIntensity:[module_num:6|svn_version:\'Unknown\'|variable_revision_nu
         pipeline = cpp.Pipeline()
         pipeline.loadtxt(StringIO(data))
         pipeline.write_pipeline_measurement(m)
-        
+
         try:
-            req.reply(cpanalysis.Reply(buf = m.file_contents()))
+            req.reply(cpanalysis.Reply(buf=m.file_contents()))
         finally:
             m.close()
         #
@@ -943,9 +956,10 @@ MeasureImageIntensity:[module_num:6|svn_version:\'Unknown\'|variable_revision_nu
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, cpanalysis.SharedDictionaryRequest)
-        shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,7)]
+        shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in
+                               range(1, 7)]
         rep = cpanalysis.SharedDictionaryReply(
-            dictionaries = shared_dictionaries)
+            dictionaries=shared_dictionaries)
         req.reply(rep)
         #
         # MeasureImageIntensity follows FlagImage and it is poised to ask
@@ -955,8 +969,8 @@ MeasureImageIntensity:[module_num:6|svn_version:\'Unknown\'|variable_revision_nu
         req = self.awthread.recv(self.work_socket)
         self.assertFalse(isinstance(req, cpanalysis.DisplayRequest))
         self.assertFalse(isinstance(req, cpanalysis.ExceptionReport))
-        
-        
+
+
 GOOD_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120712182756
@@ -1059,8 +1073,9 @@ DISPLAY_PIPELINE = GOOD_PIPELINE.replace(
     r"[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False",
     r"[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True")
 
-def get_measurements_for_good_pipeline(nimages = 1, 
-                                       group_numbers = None):
+
+def get_measurements_for_good_pipeline(nimages=1,
+                                       group_numbers=None):
     '''Get an appropriately initialized measurements structure for the good pipeline'''
     path = os.path.join(example_images_directory(), "ExampleSBSImages")
     m = cpmeas.Measurements()
@@ -1075,15 +1090,15 @@ def get_measurements_for_good_pipeline(nimages = 1,
         else:
             group_index = 1
         group_indexes.append(group_index)
-    for i in range(1, nimages+1):
-        filename = ("Channel2-%02d-%s-%02d.tif" % 
-                    (i, "ABCDEFGH"[int((i-1) / 12)], ((i-1) % 12) + 1))
+    for i in range(1, nimages + 1):
+        filename = ("Channel2-%02d-%s-%02d.tif" %
+                    (i, "ABCDEFGH"[int((i - 1) / 12)], ((i - 1) % 12) + 1))
         url = pathname2url(os.path.join(path, filename))
         m[cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_DNA", i] = filename
         m[cpmeas.IMAGE, cpmeas.C_PATH_NAME + "_DNA", i] = path
-        m[cpmeas.IMAGE, cpmeas.C_URL+"_DNA", i] = url
-        m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i] = group_numbers[i-1]
-        m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, i] = group_indexes[i-1]
+        m[cpmeas.IMAGE, cpmeas.C_URL + "_DNA", i] = url
+        m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i] = group_numbers[i - 1]
+        m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, i] = group_indexes[i - 1]
         jblob = J.run_script("""
         importPackage(Packages.org.cellprofiler.imageset);
         importPackage(Packages.org.cellprofiler.imageset.filter);
@@ -1098,11 +1113,10 @@ def get_measurements_for_good_pipeline(nimages = 1,
         var keys = java.util.Collections.singletonList(imageNumber);
         var imageSet = new ImageSet(stacks, keys);
         imageSet.compress(java.util.Collections.singletonList("DNA"), null);
-        """, dict(url=url, imageNumber = str(i)))
+        """, dict(url=url, imageNumber=str(i)))
         blob = J.get_env().get_byte_array_elements(jblob)
         m[cpmeas.IMAGE, M_IMAGE_SET, i, blob.dtype] = blob
     pipeline = cpp.Pipeline()
     pipeline.loadtxt(StringIO(GOOD_PIPELINE))
     pipeline.write_pipeline_measurement(m)
     return m
-        

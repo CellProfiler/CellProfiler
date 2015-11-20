@@ -4,14 +4,15 @@
 # Extract the pipeline from a batch data file
 #
 import cgitb
+
 cgitb.enable()
 import cgi
-
 import os, sys
 import bputilities
 from bpformdata import *
 import RunBatch
 from cellprofiler.utilities.hdf5_dict import HDF5Dict
+
 M_USER_PIPELINE = "Pipeline_UserPipeline"
 M_PIPELINE = "Pipeline_Pipeline"
 F_BATCH_DATA_H5 = "Batch_data.h5"
@@ -37,5 +38,3 @@ print "Content-Disposition: attachment; filename=\"%d.cppipe\"" % batch_id
 print
 sys.stdout.write(pipeline_text)
 sys.stdout.flush()
-
-

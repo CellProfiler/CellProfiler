@@ -6,7 +6,6 @@ import numpy as np
 from scipy.io.matlab.mio import loadmat
 import wx
 import wx.lib.scrolledpanel
-
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.pipeline as cpp
@@ -24,6 +23,7 @@ ID_FILE_EXIT = wx.NewId()
 
 ID_IMAGE_CHOOSE = wx.NewId()
 
+
 class DataToolFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         '''Instantiate a data tool frame
@@ -31,41 +31,47 @@ class DataToolFrame(wx.Frame):
         module_name: name of module to instantiate
         measurements_file_name: name of measurements file
         '''
-        assert kwds.has_key("module_name"), "DataToolFrame() needs a module_name argument"
-        assert kwds.has_key("measurements_file_name"), "DataToolFrame() needs a measurements_file_name argument"
+        assert kwds.has_key(
+            "module_name"), "DataToolFrame() needs a module_name argument"
+        assert kwds.has_key(
+            "measurements_file_name"), "DataToolFrame() needs a measurements_file_name argument"
         module_name = kwds["module_name"]
         measurements_file_name = kwds["measurements_file_name"]
 
         kwds_copy = kwds.copy()
         del kwds_copy["module_name"]
         del kwds_copy["measurements_file_name"]
-        kwds_copy["title"]="%s data tool"%module_name
+        kwds_copy["title"] = "%s data tool" % module_name
         wx.Frame.__init__(self, *args, **kwds_copy)
         self.module = instantiate_module(module_name)
         self.module.use_as_data_tool = True
         self.pipeline = cpp.Pipeline()
         if h5py.is_hdf5(measurements_file_name):
-            self.workspace = cpw.Workspace(self.pipeline, self.module, None, None, None,
+            self.workspace = cpw.Workspace(self.pipeline, self.module, None,
+                                           None, None,
                                            None)
             self.workspace.load(measurements_file_name, True)
             self.measurements = self.workspace.measurements
         else:
             self.pipeline.load(measurements_file_name)
             self.load_measurements(measurements_file_name)
-            self.workspace = cpw.Workspace(self.pipeline, self.module, None, None,
+            self.workspace = cpw.Workspace(self.pipeline, self.module, None,
+                                           None,
                                            self.measurements, None)
-        
-        self.module.module_num = len(self.pipeline.modules())+1
+
+        self.module.module_num = len(self.pipeline.modules()) + 1
         self.pipeline.add_module(self.module)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-        module_panel = wx.lib.scrolledpanel.ScrolledPanel(self,-1,style=wx.SUNKEN_BORDER)
+        module_panel = wx.lib.scrolledpanel.ScrolledPanel(self, -1,
+                                                          style=wx.SUNKEN_BORDER)
         module_panel.BackgroundColour = cpprefs.get_background_color()
         self.BackgroundColour = cpprefs.get_background_color()
 
         self.module_view = ModuleView(module_panel, self.workspace, True)
         self.module_view.set_selection(self.module.module_num)
+
         def on_change(caller, event):
             setting = event.get_setting()
             proposed_value = event.get_proposed_value()
@@ -73,6 +79,7 @@ class DataToolFrame(wx.Frame):
             self.pipeline.edit_module(event.get_module().module_num, False)
             self.module_view.reset_view()
             self.module_view.request_validation()
+
         self.module_view.add_listener(on_change)
 
         #
@@ -80,7 +87,7 @@ class DataToolFrame(wx.Frame):
         #
         panel = wx.Panel(self)
         panel_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        button = wx.Button(panel, label = "Run")
+        button = wx.Button(panel, label="Run")
 
         self.sizer.Add(module_panel, 1, wx.EXPAND)
         self.sizer.Add(panel, 0, wx.EXPAND)
@@ -99,8 +106,10 @@ class DataToolFrame(wx.Frame):
         file_menu.Append(ID_FILE_EXIT, "E&xit")
         self.MenuBar = wx.MenuBar()
         self.MenuBar.Append(file_menu, "&File")
-        self.Bind(wx.EVT_MENU, self.on_load_measurements, id=ID_FILE_LOAD_MEASUREMENTS)
-        self.Bind(wx.EVT_MENU, self.on_save_measurements, id=ID_FILE_SAVE_MEASUREMENTS)
+        self.Bind(wx.EVT_MENU, self.on_load_measurements,
+                  id=ID_FILE_LOAD_MEASUREMENTS)
+        self.Bind(wx.EVT_MENU, self.on_save_measurements,
+                  id=ID_FILE_SAVE_MEASUREMENTS)
         self.Bind(wx.EVT_MENU, self.on_exit, id=ID_FILE_EXIT)
         accelerators = wx.AcceleratorTable([
             (wx.ACCEL_CMD, ord("W"), ID_FILE_EXIT),
@@ -114,7 +123,7 @@ class DataToolFrame(wx.Frame):
         image_menu.Append(ID_IMAGE_CHOOSE, "&Choose")
         self.MenuBar.Append(image_menu, "&Image")
         self.Bind(wx.EVT_MENU, self.on_image_choose, id=ID_IMAGE_CHOOSE)
-        
+
         self.SetSizer(self.sizer)
         self.Size = (self.module_view.get_max_width(), self.Size[1])
         module_panel.Layout()
@@ -122,34 +131,34 @@ class DataToolFrame(wx.Frame):
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
         self.SetIcon(get_cp_icon())
-    
+
     def on_load_measurements(self, event):
         dlg = wx.FileDialog(self, "Load a measurements file",
-                            wildcard = "Measurements file (*.mat,*.h5)|*.mat;*.h5",
-                            style = wx.FD_OPEN)
+                            wildcard="Measurements file (*.mat,*.h5)|*.mat;*.h5",
+                            style=wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.load_measurements(dlg.GetPath())
-    
+
     def on_save_measurements(self, event):
-        with wx.FileDialog(self, "Save measurements file", wildcard = 
-                           "CellProfiler measurements file (*.h5)|*.h5|"
-                           "Matlab measurements file (*.mat)|*.mat",
-                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+        with wx.FileDialog(self, "Save measurements file", wildcard=
+        "CellProfiler measurements file (*.h5)|*.h5|"
+        "Matlab measurements file (*.mat)|*.mat",
+                           style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
                 if dlg.GetFilterIndex() == 0:
                     new_measurements = cpmeas.Measurements(
                         filename=dlg.Path,
-                        copy = self.measurements)
+                        copy=self.measurements)
                     new_measurements.flush()
                     new_measurements.close()
                 else:
                     self.pipeline.save_measurements(dlg.GetPath(),
                                                     self.measurements)
-    
+
     def on_exit(self, event):
         self.Close()
-        
+
     def on_image_choose(self, event):
         '''Choose an image from the image set'''
         dlg = wx.Dialog(self)
@@ -161,13 +170,13 @@ class DataToolFrame(wx.Frame):
         choose_sizer.Add(wx.StaticText(dlg, -1, label="Image set:"),
                          0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
         metadata_db = {}
-        metadata_features = [ 
+        metadata_features = [
             x for x in self.measurements.get_feature_names(cpmeas.IMAGE)
             if x.startswith('Metadata')]
         sel = None
         for i in self.measurements.get_image_numbers():
             metadata_key = ','.join(['%s=%s' % (
-                feature, 
+                feature,
                 self.measurements.get_measurement(cpmeas.IMAGE, feature, i))
                                      for feature in metadata_features])
             metadata_db[i] = metadata_key
@@ -183,25 +192,28 @@ class DataToolFrame(wx.Frame):
         button_sizer = wx.StdDialogButtonSizer()
         ok_button = wx.Button(dlg, wx.ID_OK)
         ok_button.SetDefault()
-        ok_button.SetHelpText("Press the OK button to change the current image to the one selected above")
+        ok_button.SetHelpText(
+            "Press the OK button to change the current image to the one selected above")
         button_sizer.AddButton(ok_button)
-        
+
         cancel_button = wx.Button(dlg, wx.ID_CANCEL)
-        cancel_button.SetHelpText("Press the cancel button if you do not want to change the current image")
+        cancel_button.SetHelpText(
+            "Press the cancel button if you do not want to change the current image")
         button_sizer.AddButton(cancel_button)
         button_sizer.Realize()
-        sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT|wx.ALL, 5)
+        sizer.Add(button_sizer, 0,
+                  wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.ALL, 5)
         dlg.Fit()
         if dlg.ShowModal() == wx.ID_OK:
             index = choice_ctl.GetSelection()
-            self.measurements.image_set_number = index+1
-        
+            self.measurements.image_set_number = index + 1
+
     def load_measurements(self, measurements_file_name):
         self.measurements = cpmeas.load_measurements(
-            measurements_file_name, can_overwrite = True)
+            measurements_file_name, can_overwrite=True)
         # Start on the first image
         self.measurements.next_image_set(1)
-        
+
     def on_run(self, event):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)

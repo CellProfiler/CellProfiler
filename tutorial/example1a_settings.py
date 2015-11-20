@@ -7,10 +7,10 @@
 # Python module, "cellprofiler.cpmodule".
 
 import cellprofiler.cpmodule as cpm
-
 # This is where all settings are defined. See below for explanation.
 
 import cellprofiler.settings as cps
+
 
 #
 # This is the module class definition. Each module is a Python class
@@ -54,7 +54,7 @@ class Example1a(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example1a"
     category = "Other"
-    
+
     #
     # The next thing that every module must have is a create_settings method.
     # A setting is a variable that influences the behavior of your module.
@@ -65,7 +65,7 @@ class Example1a(cpm.CPModule):
     #
     # This module has none, so this is the "do-nothing" version, so far.
     #
-    def create_settings(self): # "self" refers to the module's class attributes
+    def create_settings(self):  # "self" refers to the module's class attributes
         '''Create a fresh set of module settings'''
         ##self.text_setting = cps.Text("Text setting", "suggested value")
         ##self.choice_setting = cps.Choice(
@@ -73,6 +73,7 @@ class Example1a(cpm.CPModule):
         ##self.binary_setting = cps.Binary("Binary setting", False)
         ##self.integer_setting = cps.Integer("Integer setting", 15)
         ##self.float_setting = cps.Float("Float setting", 1.5)
+
     #
     # You need to be able to tell CellProfiler about the settings in your
     # module. The "settings" method returns the settings in the order that
@@ -88,6 +89,7 @@ class Example1a(cpm.CPModule):
         ##       self.binary_setting,
         ##        self.integer_setting,
         ##        self.float_setting]
+
     #
     # Finally, you need a run method. This is executed when your pipeline
     # is run by CellProfiler.
@@ -102,7 +104,7 @@ class Example1a(cpm.CPModule):
         ##print "%d + %f = %f" % (integer_value,
         ##                        float_value,
         ##                        integer_value + float_value)
-        
+
     #
     # We'll cover the display in Example # 1e, but here's a quick display
     # to give you something to look at when you execute the module.
@@ -121,20 +123,22 @@ class Example1a(cpm.CPModule):
             # Use the *new* version of subplot table to make a table that's
             # much prettier than the old one.
             #
-            frame.set_subplots((1,1))
+            frame.set_subplots((1, 1))
             frame.subplot_table(
                 0, 0,
-                [[setting.text, setting.value_text] for setting in self.settings()],
+                [[setting.text, setting.value_text] for setting in
+                 self.settings()],
                 col_labels=["Setting", "Value"])
         else:
             #
             # The old version
             #
-            frame = workspace.create_or_find_figure(subplots=(1,1))
+            frame = workspace.create_or_find_figure(subplots=(1, 1))
             frame.subplot_table(
                 0, 0,
-                [[setting.text, setting.value_text] for setting in self.settings()])
-    
+                [[setting.text, setting.value_text] for setting in
+                 self.settings()])
+
     #
     # Prior to the current release, a module had to tell CellProfiler whether
     # it interacted with the user interface inside the "run" method and by

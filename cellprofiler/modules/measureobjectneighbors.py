@@ -639,7 +639,14 @@ class MeasureObjectNeighbors(cpm.CPModule):
                              self.neighbors_name.value, scale))
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for measurements made by this module"""
+        """Return column definitions for measurements made by this module
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         coltypes = dict([(feature,
                           cpmeas.COLTYPE_INTEGER
                           if feature in (M_NUMBER_OF_NEIGHBORS,
@@ -653,7 +660,14 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 for feature_name in self.all_features]
 
     def get_object_relationships(self, pipeline):
-        """Return column definitions for object relationships output by module"""
+        """Return column definitions for object relationships output by module
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         objects_name = self.object_name.value
         if self.neighbors_are_objects:
             neighbors_name = objects_name
@@ -723,7 +737,14 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
 
 def get_colormap(name):
-    """Get colormap, accounting for possible request for default"""
+    """Get colormap, accounting for possible request for default
+    :param name:
+    :param name:
+    :param name:
+    :param name:
+    :param name:
+    :param name:
+    """
     if name == cps.DEFAULT:
         name = cpprefs.get_default_colormap()
     return matplotlib.cm.get_cmap(name)

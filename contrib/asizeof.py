@@ -222,6 +222,7 @@ else:
 
 def calcsize(fmt):
     """struct.calcsize() handling 'z' for signed Py_ssize_t and 'Z' for unsigned size_t.
+    :param fmt:
     """
     return _calcsize(fmt.replace('Z', _Zz[0]).replace('z', _Zz[1]))
 
@@ -1106,6 +1107,8 @@ class _Typedef(object):
 
     def dup(self, other=None, **kwds):
         """Duplicate attributes of dict or other typedef.
+        :param other:
+        :param kwds:
         """
         if other is None:
             d = _dict_typedef.kwds()
@@ -1116,6 +1119,8 @@ class _Typedef(object):
 
     def flat(self, obj, mask=0):
         """Return the aligned flat size.
+        :param obj:
+        :param mask:
         """
         s = self.base
         if self.leng and self.item > 0:  # include items
@@ -1149,6 +1154,9 @@ class _Typedef(object):
 
     def save(self, t, base=0, heap=False):
         """Save this typedef plus its class typedef.
+        :param t:
+        :param base:
+        :param heap:
         """
         c, k = _keytuple(t)
         if k and k not in _typedefs:  # instance key
@@ -1172,6 +1180,8 @@ class _Typedef(object):
 
     def set(self, safe_len=False, **kwds):
         """Set one or more attributes.
+        :param safe_len:
+        :param kwds:
         """
         if kwds:  # double check
             d = self.kwds()
@@ -1183,6 +1193,13 @@ class _Typedef(object):
     def reset(self, base=0, item=0, leng=None, refs=None,
               both=True, kind=None, type=None):
         """Reset all specified attributes.
+        :param base:
+        :param item:
+        :param leng:
+        :param refs:
+        :param both:
+        :param kind:
+        :param type:
         """
         if base < 0:
             raise ValueError('invalid option: %s=%r' % ('base', base))
@@ -1581,6 +1598,8 @@ class _Prof(object):
 
     def format(self, clip=0, grand=None):
         """Return format dict.
+        :param clip:
+        :param grand:
         """
         if self.number > 1:  # avg., plural
             a, p = int(self.total / self.number), 's'
@@ -1598,6 +1617,8 @@ class _Prof(object):
 
     def update(self, obj, size):
         """Update this profile.
+        :param obj:
+        :param size:
         """
         self.number += 1
         self.total += size
@@ -1638,6 +1659,7 @@ class Asized(object):
 
     def format(self, named):
         """Format name from _NamedRef instance.
+        :param named:
         """
         return self.strf[named.typ] % named.name
 
@@ -1809,6 +1831,8 @@ class Asizer(object):
 
            If only one object is given, the return value is the
            Asized instance for that object.
+           :param objs:
+           :param opts:
         """
         if opts:
             self.set(**opts)
@@ -1822,6 +1846,8 @@ class Asizer(object):
     def asizeof(self, *objs, **opts):
         """Return the combined size of the given objects
            (with modified options, see also method  set).
+           :param objs:
+           :param opts:
         """
         if opts:
             self.set(**opts)
@@ -1831,6 +1857,8 @@ class Asizer(object):
     def asizesof(self, *objs, **opts):
         """Return the individual sizes of the given objects
            (with modified options, see also method  set).
+           :param objs:
+           :param opts:
         """
         if opts:
             self.set(**opts)
@@ -1843,6 +1871,7 @@ class Asizer(object):
            While any references to the given objects are excluded, the
            objects will be sized if specified as positional arguments
            in subsequent calls to methods  asizeof and  asizesof.
+           :param objs:
         """
         for o in objs:
             self._seen.setdefault(id(o), 0)
@@ -1853,6 +1882,7 @@ class Asizer(object):
            All instances and types of the given objects are excluded,
            even objects specified as positional arguments in subsequent
            calls to methods  asizeof and  asizesof.
+           :param objs:
         """
         for o in objs:
             for t in _keytuple(o):
@@ -1865,6 +1895,9 @@ class Asizer(object):
                w=0            -- indentation for each line
                cutoff=0       -- minimum percentage printed
                print3options  -- print options, as in Python 3.0
+               :param w:
+               :param cutoff:
+               :param print3opts:
         """
         # get the profiles with non-zero size or count
         t = [(v, k) for k, v in _items(self._profs) if
@@ -1910,6 +1943,12 @@ class Asizer(object):
                sizes=()       -- optional, tuple of sizes returned
                stats=3.0      -- print statistics and cutoff percentage
                print3options  -- print options, as in Python 3.0
+               :param objs:
+               :param opts:
+               :param sized:
+               :param sizes:
+               :param stats:
+               :param print3opts:
         """
         s = min(opts.get('stats', stats) or 0, self._stats_)
         if s > 0:  # print stats
@@ -1952,6 +1991,9 @@ class Asizer(object):
                w=0            -- indentation for each line
                objs=()        -- optional, list of objects
                print3options  -- print options, as in Python 3.0
+               :param w:
+               :param objs:
+               :param print3opts:
         """
         _printf('%*d bytes%s%s', w, self._total, _SI(self._total), self._incl,
                 **print3opts)
@@ -1983,6 +2025,8 @@ class Asizer(object):
 
                w=0            -- indentation for each line
                print3options  -- print options, as in Python 3.0
+               :param w:
+               :param print3opts:
         """
         for k in _all_kinds:
             # XXX Python 3.0 doesn't sort type objects
@@ -2010,6 +2054,11 @@ class Asizer(object):
                detail=0    -- Asized refs level
                limit=100   -- recursion limit
                stats=0.0   -- print statistics and cutoff percentage
+               :param align:
+               :param code:
+               :param detail:
+               :param limit:
+               :param stats:
         """
         # adjust
         if align is not None:
@@ -2076,6 +2125,16 @@ class Asizer(object):
              stats=0.0     -- print statistics and cutoff percentage
 
         See function  asizeof for a description of the options.
+        :param align:
+        :param all:
+        :param clip:
+        :param code:
+        :param derive:
+        :param detail:
+        :param ignored:
+        :param infer:
+        :param limit:
+        :param stats:
         """
         # options
         self._align_ = align
@@ -2101,6 +2160,7 @@ class Asizer(object):
 
 def adict(*classes):
     """Install one or more classes to be handled as dict.
+    :param classes:
     """
     a = True
     for c in classes:
@@ -2143,6 +2203,8 @@ def asized(*objs, **opts):
 
        The length of the returned tuple matches the number of given
        objects, if more than one object is given.
+       :param objs:
+       :param opts:
     """
     t = _objs(objs, **opts)
     if t:
@@ -2216,6 +2278,8 @@ def asizeof(*objs, **opts):
 
        [1] See the documentation of this module for the definition
            of flat size.
+           :param objs:
+           :param opts:
     """
     t = _objs(objs, **opts)
     if t:
@@ -2246,6 +2310,8 @@ def asizesof(*objs, **opts):
 
        The length of the returned tuple equals the number of given
        objects.
+       :param objs:
+       :param opts:
     """
     t = _objs(objs, **opts)
     if t:
@@ -2277,6 +2343,8 @@ def basicsize(obj, **opts):
            derive=False  -- derive type from super type
            infer=False   -- try to infer types
            save=False    -- save typedef if new
+           :param obj:
+           :param opts:
     """
     v = _typedefof(obj, **opts)
     if v:
@@ -2291,6 +2359,9 @@ def flatsize(obj, align=0, **opts):
        See function  basicsize for a description of
        the other options.  See the documentation of
        this module for the definition of flat size.
+       :param obj:
+       :param align:
+       :param opts:
     """
     v = _typedefof(obj, **opts)
     if v:
@@ -2309,6 +2380,8 @@ def itemsize(obj, **opts):
 
        See function  basicsize for a description of
        the options.
+       :param obj:
+       :param opts:
     """
     v = _typedefof(obj, **opts)
     if v:
@@ -2321,6 +2394,8 @@ def leng(obj, **opts):
 
        See function  basicsize for a description
        of the options.
+       :param obj:
+       :param opts:
     """
     v = _typedefof(obj, **opts)
     if v:
@@ -2338,6 +2413,9 @@ def refs(obj, all=False, **opts):
 
        See function  basicsize for a description of the
        options.
+       :param obj:
+       :param all:
+       :param opts:
     """
     v = _typedefof(obj, **opts)
     if v:

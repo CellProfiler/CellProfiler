@@ -631,7 +631,9 @@ function fix_permissions() {
                                     self.text(label)
 
     def build_text_file_table_cell(self, task):
-        """Build a table cell containing links to the stdout/err output"""
+        """Build a table cell containing links to the stdout/err output
+        :param task:
+        """
         bat = task.batch_array_task
         text_path = RunBatch.batch_array_task_text_file_path(bat)
         text_file = os.path.basename(text_path)

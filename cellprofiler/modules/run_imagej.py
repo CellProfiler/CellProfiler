@@ -267,7 +267,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
     @staticmethod
     def is_leaf(node):
-        """Return True if a tree node holds a command"""
+        """Return True if a tree node holds a command
+        :param node:
+        """
         return len(node) >= 2 and node[2] is not None
 
     def make_command_choice(self, label, doc):
@@ -275,6 +277,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
         label - the label text for the setting
         doc - its documentation
+        :param doc:
+        :param label:
         """
         return cps.TreeChoice(
             label, "None", self.get_choice_tree,
@@ -321,7 +325,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             current_node[2] = module_info
 
         def sort_tree(tree):
-            """Recursively sort a tree in-place"""
+            """Recursively sort a tree in-place
+            :param tree:
+            """
             for node in tree:
                 if node[1] is not None:
                     sort_tree(node[1])
@@ -354,6 +360,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         """Get the settings associated with the current command
 
         d - the dictionary that persists the setting. None = regular
+        :param d:
+        :param command:
         """
         key = command.get_unicode_value()
         if not d.has_key(key):
@@ -561,7 +569,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         return [setting for setting, module_info in result]
 
     def is_advanced(self, command, d):
-        """A command is an advanced command if there are settings for it"""
+        """A command is an advanced command if there are settings for it
+        :param d:
+        :param command:
+        """
         return True
 
     def is_aggregation_module(self):
@@ -593,6 +604,18 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
         We have to update the ImageJ module settings in response to a
         new choice.
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
         """
         for command_choice, command_setting, module_settings, d in (
                 (self.command_or_macro,
@@ -660,13 +683,38 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
         RunImageJ remembers the image number of the first and last image
         for later processing.
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
         """
         d = self.get_dictionary(workspace.image_set_list)
         d[D_FIRST_IMAGE_SET] = image_numbers[0]
         d[D_LAST_IMAGE_SET] = image_numbers[-1]
 
     def run(self, workspace):
-        """Run the imageJ command"""
+        """Run the imageJ command
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         image_set = workspace.image_set
         d = self.get_dictionary(workspace.image_set_list)
         if self.wants_to_set_current_image:
@@ -742,6 +790,24 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         workspace - current workspace
         display - an ImageJ Display
         image_name - save the image in the image set using this name.
+        :param image_name:
+        :param display:
+        :param workspace:
+        :param image_name:
+        :param display:
+        :param workspace:
+        :param image_name:
+        :param display:
+        :param workspace:
+        :param image_name:
+        :param display:
+        :param workspace:
+        :param image_name:
+        :param display:
+        :param workspace:
+        :param image_name:
+        :param display:
+        :param workspace:
         """
         display_view = display.getActiveView()
         dataset = ij2.wrap_dataset(display_view.getData())
@@ -757,6 +823,24 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         workspace - current workspace
         dataset - an ImageJ dataset
         image_name - save the image in the image set using this name.
+        :param image_name:
+        :param dataset:
+        :param workspace:
+        :param image_name:
+        :param dataset:
+        :param workspace:
+        :param image_name:
+        :param dataset:
+        :param workspace:
+        :param image_name:
+        :param dataset:
+        :param workspace:
+        :param image_name:
+        :param dataset:
+        :param workspace:
+        :param image_name:
+        :param dataset:
+        :param workspace:
         """
         pixel_data = dataset.get_pixel_data() / IMAGEJ_SCALE
         image = cpi.Image(pixel_data)
@@ -824,6 +908,24 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
         command - name of the command
         d - dictionary to be used to find settings
+        :param d:
+        :param command:
+        :param workspace:
+        :param d:
+        :param command:
+        :param workspace:
+        :param d:
+        :param command:
+        :param workspace:
+        :param d:
+        :param command:
+        :param workspace:
+        :param d:
+        :param command:
+        :param workspace:
+        :param d:
+        :param command:
+        :param workspace:
         """
         context = get_context()
         self.get_command_settings(command, d)
@@ -1061,6 +1163,26 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         """Prepare the settings for loading
 
         set up the advanced settings for the commands
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
         """
         for command_settings, idx_choice, idx_cmd, idx_count, d in (
                 (self.command_settings, IDX_COMMAND_CHOICE, IDX_COMMAND,
@@ -1147,6 +1269,66 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         macro: the ImageJ 1.x macro to execute
 
         Returns adjusted command_or_macro, command and macro
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
+        :param macro:
+        :param command:
+        :param command_or_macro:
         """
         if command_or_macro == CM_COMMAND:
             command_or_macro = CM_MACRO

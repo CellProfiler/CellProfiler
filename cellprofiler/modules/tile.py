@@ -189,7 +189,9 @@ class Tile(cpm.CPModule):
             and columns.</p>""" % globals())
 
     def add_image(self, can_remove=True):
-        """Add an image + associated questions and buttons"""
+        """Add an image + associated questions and buttons
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=True))
@@ -243,14 +245,20 @@ class Tile(cpm.CPModule):
         return self.tile_method == T_ACROSS_CYCLES
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        """Prepare to handle a group of images when tiling"""
+        """Prepare to handle a group of images when tiling
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        """
         d = self.get_dictionary(workspace.image_set_list)
         d[IMAGE_COUNT] = len(image_numbers)
         d[IMAGE_NUMBER] = 0
         d[TILED_IMAGE] = None
 
     def run(self, workspace):
-        """do the image analysis"""
+        """do the image analysis
+        :param workspace:
+        """
         if self.tile_method == T_WITHIN_CYCLES:
             output_pixels = self.place_adjacent(workspace)
         else:
@@ -274,6 +282,8 @@ class Tile(cpm.CPModule):
 
     def display(self, workspace, figure):
         """Display
+        :param figure:
+        :param workspace:
         """
         figure.set_subplots((1, 1))
         pixels = workspace.display_data.image
@@ -285,6 +295,7 @@ class Tile(cpm.CPModule):
 
     def tile(self, workspace):
         """Tile images across image cycles
+        :param workspace:
         """
         d = self.get_dictionary(workspace.image_set_list)
         rows, columns = self.get_grid_dimensions(d[IMAGE_COUNT])
@@ -338,7 +349,9 @@ class Tile(cpm.CPModule):
         return output_pixels
 
     def place_adjacent(self, workspace):
-        """Place images from the same image set adjacent to each other"""
+        """Place images from the same image set adjacent to each other
+        :param workspace:
+        """
         rows, columns = self.get_grid_dimensions()
         image_names = ([self.input_image.value] +
                        [g.input_image_name.value
@@ -367,6 +380,9 @@ class Tile(cpm.CPModule):
         """Get the I/J coordinates for an image
 
         returns i,j where 0 < i < self.rows and 0 < j < self.columns
+        :param columns:
+        :param rows:
+        :param image_index:
         """
         if self.tile_style == S_ROW:
             tile_i = int(image_index / columns)
@@ -398,6 +414,7 @@ class Tile(cpm.CPModule):
         """Get the dimensions of the grid in i,j format
 
         image_count - # of images in the grid. If None, use info from settings.
+        :param image_count:
         """
         assert ((image_count is not None) or
                 self.tile_method == T_WITHIN_CYCLES), "Must specify image count for %s method" % self.tile_method.value
@@ -424,7 +441,9 @@ class Tile(cpm.CPModule):
             return self.rows.value, self.columns.value
 
     def get_measurement_columns(self, pipeline):
-        """return the measurements"""
+        """return the measurements
+        :param pipeline:
+        """
         columns = []
         return columns
 
@@ -433,6 +452,7 @@ class Tile(cpm.CPModule):
 
         Check to make sure that we have enough rows and columns if
         we are in PlaceAdjacent mode.
+        :param pipeline:
         """
         if (self.tile_method == T_WITHIN_CYCLES and
                 (not self.wants_automatic_rows) and
@@ -448,7 +468,12 @@ class Tile(cpm.CPModule):
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
                          module_name, from_matlab):
-        """this must take into account both Tile and PlaceAdjacent from the Matlab"""
+        """this must take into account both Tile and PlaceAdjacent from the Matlab
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        """
         if (from_matlab and module_name == "Tile" and
                     variable_revision_number == 1):
             image_name, orig_image_name, tiled_image, number_rows, \

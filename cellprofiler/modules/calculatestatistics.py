@@ -182,7 +182,8 @@ class CalculateStatistics(cpm.CPModule):
         """Add a dose value measurement to the list
 
         can_delete - set this to False to keep from showing the "remove"
-                     button for images that must be present."""
+                     button for images that must be present.
+                     :param can_remove: """
         group = cps.SettingsGroup()
         group.append("measurement",
                      cps.Measurement(
@@ -288,6 +289,7 @@ class CalculateStatistics(cpm.CPModule):
         the number of relevant settings so they map correctly to the values.
         
         See cellprofiler.modules.measureobjectsizeshape for an example.
+        :param setting_values:
         """
         value_count = len(setting_values)
         if (value_count - FIXED_SETTING_COUNT) % VARIABLE_SETTING_COUNT != 0:
@@ -312,6 +314,7 @@ class CalculateStatistics(cpm.CPModule):
             frame        - the parent frame to whatever frame is created. None means don't draw.
             
         CalculateStatistics does all of its work after running. Do nothing here.
+        :param workspace:
         """
 
     def run_as_data_tool(self, workspace):
@@ -351,6 +354,7 @@ class CalculateStatistics(cpm.CPModule):
         """Do post-processing after the run completes
         
         workspace - the workspace at the end of the run
+        :param workspace:
         """
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
@@ -428,7 +432,12 @@ class CalculateStatistics(cpm.CPModule):
 
     def include_feature(self, measurements, object_name, feature_name,
                         image_numbers):
-        """Return true if we should analyze a feature"""
+        """Return true if we should analyze a feature
+        :param image_numbers:
+        :param feature_name:
+        :param object_name:
+        :param measurements:
+        """
         if feature_name.find("Location") != -1:
             return False
         if feature_name.find("ModuleError") != -1:
@@ -461,7 +470,9 @@ class CalculateStatistics(cpm.CPModule):
         return np.asanyarray(v).dtype.kind not in "OSU"
 
     def validate_module_warnings(self, pipeline):
-        """Warn user re: Test mode """
+        """Warn user re: Test mode
+        :param pipeline:
+        """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "CalculateStatistics will not produce any output in test mode",
@@ -538,7 +549,9 @@ def z_factors(xcol, ymatr):
        between-mean Z'-factors for the corresponding measures.
 
        When ranges are zero, we set the Z' factors to a very negative
-       value."""
+       value.
+       :param ymatr:
+       :param xcol: """
 
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
     # Z' factor is defined by the positive and negative controls, so we take the
@@ -590,6 +603,20 @@ def v_factors(xcol, ymatr):
            observations and columns corresponds to different measures.
 
         Calculate the V factor = 1-6 * mean standard deviation / range
+        :param ymatr:
+        :param xcol:
+        :param ymatr:
+        :param xcol:
+        :param ymatr:
+        :param xcol:
+        :param ymatr:
+        :param xcol:
+        :param ymatr:
+        :param xcol:
+        :param ymatr:
+        :param xcol:
+        :param ymatr:
+        :param xcol:
     """
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
     #
@@ -617,6 +644,18 @@ def loc_shrink_mean_std(xcol, ymatr):
     returns xs - a vector of unique doses
             avers - the average value per label
             stds - the standard deviation per label
+            :param ymatr:
+            :param xcol:
+            :param ymatr:
+            :param xcol:
+            :param ymatr:
+            :param xcol:
+            :param ymatr:
+            :param xcol:
+            :param ymatr:
+            :param xcol:
+            :param ymatr:
+            :param xcol:
     """
     ncols = ymatr.shape[1]
     labels, labnum, xs = loc_vector_labels(xcol)
@@ -643,6 +682,12 @@ def loc_vector_labels(x):
              is an index into the vector of unique labels (uniqsortvals)
     labnum - # of unique labels in x
     uniqsortvals - a vector containing the unique labels in x
+    :param x:
+    :param x:
+    :param x:
+    :param x:
+    :param x:
+    :param x:
     """
     #
     # Get the index of each image's label in the sorted array
@@ -693,6 +738,24 @@ def calculate_ec50(conc, responses, Logarithmic):
 
        Original Matlab code Copyright 2004 Carlos Evangelista
        send comments to CCEvangelista@aol.com
+       :param Logarithmic:
+       :param responses:
+       :param conc:
+       :param Logarithmic:
+       :param responses:
+       :param conc:
+       :param Logarithmic:
+       :param responses:
+       :param conc:
+       :param Logarithmic:
+       :param responses:
+       :param conc:
+       :param Logarithmic:
+       :param responses:
+       :param conc:
+       :param Logarithmic:
+       :param responses:
+       :param conc:
        """
     # If we are using a log-domain set of doses, we have a better chance of
     # fitting a sigmoid to the curve if the concentrations are
@@ -708,6 +771,24 @@ def calculate_ec50(conc, responses, Logarithmic):
 
         This measures the least-squares error of fitting the sigmoid
         with parameters in v to the x and y data.
+        :param y:
+        :param x:
+        :param v:
+        :param y:
+        :param x:
+        :param v:
+        :param y:
+        :param x:
+        :param v:
+        :param y:
+        :param x:
+        :param v:
+        :param y:
+        :param x:
+        :param v:
+        :param y:
+        :param x:
+        :param v:
         """
         return np.sum((sigmoid(v, x) - y) ** 2)
 
@@ -729,6 +810,18 @@ def sigmoid(v, x):
         v[1] = maximum allowed value
         v[2] = ec50
         v[3] = Hill coefficient
+        :param x:
+        :param v:
+        :param x:
+        :param v:
+        :param x:
+        :param v:
+        :param x:
+        :param v:
+        :param x:
+        :param v:
+        :param x:
+        :param v:
     """
     p_min, p_max, ec50, hill = v
     return p_min + ((p_max - p_min) /
@@ -741,6 +834,18 @@ def calc_init_params(x, y):
 
       x & y are the points to be fit
       returns minimum, maximum, ec50 and hill coefficient starting points
+      :param y:
+      :param x:
+      :param y:
+      :param x:
+      :param y:
+      :param x:
+      :param y:
+      :param x:
+      :param y:
+      :param x:
+      :param y:
+      :param x:
       """
     min_0 = min(y)
     max_0 = max(y)
@@ -820,6 +925,54 @@ def write_figures(prefix, directory, dose_name,
     ec50_coeffs - coefficients calculated by calculate_ec50
     feature_set - tuples of object name and feature name in same order as data
     log_transform - true to log-transform the dose data
+    :param log_transform:
+    :param feature_set:
+    :param ec50_coeffs:
+    :param data:
+    :param dose_data:
+    :param dose_name:
+    :param directory:
+    :param prefix:
+    :param log_transform:
+    :param feature_set:
+    :param ec50_coeffs:
+    :param data:
+    :param dose_data:
+    :param dose_name:
+    :param directory:
+    :param prefix:
+    :param log_transform:
+    :param feature_set:
+    :param ec50_coeffs:
+    :param data:
+    :param dose_data:
+    :param dose_name:
+    :param directory:
+    :param prefix:
+    :param log_transform:
+    :param feature_set:
+    :param ec50_coeffs:
+    :param data:
+    :param dose_data:
+    :param dose_name:
+    :param directory:
+    :param prefix:
+    :param log_transform:
+    :param feature_set:
+    :param ec50_coeffs:
+    :param data:
+    :param dose_data:
+    :param dose_name:
+    :param directory:
+    :param prefix:
+    :param log_transform:
+    :param feature_set:
+    :param ec50_coeffs:
+    :param data:
+    :param dose_data:
+    :param dose_name:
+    :param directory:
+    :param prefix:
     """
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_pdf import FigureCanvasPdf

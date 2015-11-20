@@ -98,7 +98,9 @@ image_index_dictionary = {}
 
 
 def get_image_index(name):
-    """Return the index of an image in the image list"""
+    """Return the index of an image in the image list
+    :param name:
+    """
     global image_index_dictionary
     if not image_index_dictionary.has_key(name):
         image_index_dictionary[name] = len(image_index_dictionary)
@@ -191,6 +193,7 @@ class PipelineListView(object):
         """Allow or disallow pipeline editing
 
         allow - true to allow, false to prevent
+        :param allow:
         """
         self.__allow_editing = allow
 
@@ -287,6 +290,7 @@ class PipelineListView(object):
         """Show or hide the controls for input modules
 
         show - True to show the controls, False to hide
+        :param show:
         """
         self.input_list_ctrl.Enable(show)
         if not show:
@@ -313,7 +317,9 @@ class PipelineListView(object):
         self.__frame.show_preferences(True)
 
     def request_validation(self, module=None):
-        """Request validation of the pipeline, starting at the given module"""
+        """Request validation of the pipeline, starting at the given module
+        :param module:
+        """
         if module is None:
             if self.__pipeline is not None and len(
                     self.__pipeline.modules()) > 0:
@@ -354,7 +360,9 @@ class PipelineListView(object):
 
     def attach_to_pipeline(self, pipeline, controller):
         """Attach the viewer to the pipeline to allow it to listen for changes
-        
+        :param controller:
+        :param pipeline:
+
         """
         self.__pipeline = pipeline
         self.__controller = controller
@@ -382,7 +390,9 @@ class PipelineListView(object):
         return None
 
     def get_current_debug_module(self, ignore_disabled=True):
-        """Get the current debug module according to the slider"""
+        """Get the current debug module according to the slider
+        :param ignore_disabled:
+        """
         index = self.list_ctrl.running_item
         if index is not None:
             return self.list_ctrl.items[index].module
@@ -411,7 +421,9 @@ class PipelineListView(object):
 
     def notify(self, pipeline, event):
         """Pipeline event notifications come through here
-        
+        :param event:
+        :param pipeline:
+
         """
         if isinstance(event, cpp.PipelineLoadedEvent):
             self.__on_pipeline_loaded(pipeline, event)
@@ -460,6 +472,7 @@ class PipelineListView(object):
 
         We indicate that the pipeline can't proceed past "Images" if
         there are no files.
+        :param has_files:
         """
         modules = self.__pipeline.modules()
         self.__has_file_list = has_files
@@ -486,6 +499,7 @@ class PipelineListView(object):
         returns tuple of list control and index
 
         raises an exception if module is not in proper list control
+        :param module:
         """
         ctrl = (self.input_list_ctrl if module.is_input_module()
                 else self.list_ctrl)
@@ -497,7 +511,9 @@ class PipelineListView(object):
                          module.module_name)
 
     def select_one_module(self, module_num):
-        """Select only the given module number in the list box"""
+        """Select only the given module number in the list box
+        :param module_num:
+        """
         for module in self.__pipeline.modules(False):
             if module.module_num == module_num:
                 break
@@ -513,6 +529,8 @@ class PipelineListView(object):
     def select_module(self, module_num, selected=True):
         """Select the given one-based module number in the list
         This is mostly for testing
+        :param selected:
+        :param module_num:
         """
         for module in self.__pipeline.modules(False):
             if module.module_num == module_num:
@@ -536,6 +554,7 @@ class PipelineListView(object):
         """Retrieve a module from an event's selection
 
         event - an event from a PipelineListCtrl with an associated selection
+        :param event:
         """
         return event.EventObject.items[event.GetInt()].module
 
@@ -616,7 +635,14 @@ class PipelineListView(object):
             menu.Destroy()
 
     def start_drag_operation(self, event):
-        """Start dragging whatever is selected"""
+        """Start dragging whatever is selected
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         if event.EventObject is not self.list_ctrl:
             event.Veto()
             return
@@ -665,6 +691,24 @@ class PipelineListView(object):
         data - drop object
 
         return True if allowed
+        :param data:
+        :param y:
+        :param x:
+        :param data:
+        :param y:
+        :param x:
+        :param data:
+        :param y:
+        :param x:
+        :param data:
+        :param y:
+        :param x:
+        :param data:
+        :param y:
+        :param x:
+        :param data:
+        :param y:
+        :param x:
         """
         index = self.where_to_drop(x, y)
         if self.allow_drag(x, y):
@@ -679,6 +723,18 @@ class PipelineListView(object):
         elapsed since dragging or the user must move
         the cursor 10 pixels. Drop at drag site is not
         allowed.
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
         """
         if not self.__allow_editing:
             return False
@@ -783,7 +839,14 @@ class PipelineListView(object):
             self.__frame.show_module_ui(True)
 
     def resetItems(self, pipeline):
-        """Reset the list view and repopulate the list items"""
+        """Reset the list view and repopulate the list items
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         self.list_ctrl.DeleteAllItems()
         self.input_list_ctrl.DeleteAllItems()
         assert isinstance(pipeline, cpp.Pipeline)
@@ -889,7 +952,14 @@ class PipelineListView(object):
         self.notify_has_file_list(self.__has_file_list)
 
     def refresh_module_display(self, module):
-        """Refresh the display of a module"""
+        """Refresh the display of a module
+        :param module:
+        :param module:
+        :param module:
+        :param module:
+        :param module:
+        :param module:
+        """
         list_ctrl, index = self.get_ctrl_and_index(module)
         list_ctrl.Refresh(eraseBackground=False)
 
@@ -1039,6 +1109,46 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             state - the state bit values to set
 
             state_mask - the mask indicating which state bits to set.
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
+            :param state_mask:
+            :param state:
             """
             self.__state = (self.__state & ~ state_mask) | (state & state_mask)
 
@@ -1182,6 +1292,26 @@ class PipelineListCtrl(wx.PyScrolledWindow):
          wx.LIST_HITTEST_ONITEMLABEL - on the module name of the item
          wx.LIST_HITTEST_ONITEMICON - on one of the icons
          PLV_HITTEST_SLIDER - on the slider handle.
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
+         :param position:
         """
         position = self.CalcUnscrolledPosition(position)
         x = position[0]
@@ -1214,6 +1344,26 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         position - x, y position of mouse click
 
         returns hit code (see HitTestSubItem)
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
+        :param position:
         """
         return self.HitTestSubItem(position)[:2]
 
@@ -1237,13 +1387,114 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         item - index of item
 
         state - one of the list states
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
+        :param state_mask:
+        :param state:
+        :param item:
 
         """
         self.items[item].set_state(state, state_mask)
         self.Refresh(eraseBackground=False)
 
     def SetItemErrorToolTipString(self, item, text):
-        """Set the string to display when hovering over the error indicator"""
+        """Set the string to display when hovering over the error indicator
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        :param text:
+        :param item:
+        """
         self.items[item].tooltip = text
 
     def Select(self, index, state):
@@ -1252,6 +1503,46 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         index - index of the item to mark as selected
 
         state - True to be selected, False for not
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
+        :param state:
+        :param index:
         """
         self.items[index].select(state)
         if state:
@@ -1273,7 +1564,9 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     self.Select(i, True)
 
     def IsSelected(self, index):
-        """Return True if the item at the given index is selected"""
+        """Return True if the item at the given index is selected
+        :param index:
+        """
         return bool(self.items[index].is_selected())
 
     def DeleteAllItems(self):
@@ -1286,7 +1579,9 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.Refresh(eraseBackground=False)
 
     def DeleteItem(self, index):
-        """Remove the item at the given index"""
+        """Remove the item at the given index
+        :param index:
+        """
         del self.items[index]
         if self.active_item == index:
             self.active_item = None
@@ -1307,6 +1602,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         index - the item will appear at this slot on the list.
 
         item - a PipelineListCtrlItem
+        :param item:
+        :param index:
         """
         self.items.insert(index, item)
         if self.active_item >= index:
@@ -1326,6 +1623,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
 
         returns the index that should be used when inserting a new item into
         the list.
+        :param position:
         """
         position = self.CalcUnscrolledPosition(position)
         y = position[1]
@@ -1336,6 +1634,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         """Change the visual drop indication
 
         index - the first dropped module would end up here.
+        :param index:
         """
         self.drop_insert_point = index
         self.Refresh(eraseBackground=False)
@@ -1346,7 +1645,9 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.Refresh(eraseBackground=False)
 
     def get_index(self, position):
-        """Return the index of the item at the given position"""
+        """Return the index of the item at the given position
+        :param position:
+        """
         position = self.CalcUnscrolledPosition(position)
         y = position[1]
         row = int(y / self.line_height)
@@ -1367,6 +1668,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         """Show or hide the go / pause test-mode icons
 
         state - true to show them, false to hide them
+        :param state:
         """
         self.show_go_pause = state
         self.AdjustScrollbars()
@@ -1376,18 +1678,23 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         """Show or hide the show / hide frame column
 
         state - True to show, False to hide
+        :param state:
         """
         self.show_show_frame_column = state
         self.AdjustScrollbars()
         self.Refresh(eraseBackground=False)
 
     def set_allow_disable(self, state):
-        """Allow disabling of modules / disallow disabling of modules"""
+        """Allow disabling of modules / disallow disabling of modules
+        :param state:
+        """
         self.allow_disable = state
         self.Refresh(eraseBackground=False)
 
     def set_running_item(self, idx):
-        """The index of the next module to run in test mode"""
+        """The index of the next module to run in test mode
+        :param idx:
+        """
         self.running_item = idx
         if self.running_item > self.last_running_item:
             self.last_running_item = self.running_item
@@ -1635,6 +1942,10 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     false if the anchor should be kept where it is
 
         returns the selection state
+        :param multiple_selection:
+        :param toggle_selection:
+        :param index:
+        :param anchoring:
         """
         self.active_item = index
         plv_event = self.make_event(wx.EVT_LIST_ITEM_ACTIVATED, index)

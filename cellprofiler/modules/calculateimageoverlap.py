@@ -249,7 +249,9 @@ class CalculateImageOverlap(cpm.CPModule):
             self.measure_objects(workspace)
 
     def measure_image(self, workspace):
-        """Add the image overlap measurements"""
+        """Add the image overlap measurements
+        :param workspace:
+        """
 
         image_set = workspace.image_set
         ground_truth_image = image_set.get_image(self.ground_truth.value,
@@ -624,6 +626,27 @@ class CalculateImageOverlap(cpm.CPModule):
         MaxIndex - ExpectedIndex
         
         returns a tuple of the Rand Index and the adjusted Rand Index
+        :param mask:
+        :param ground_truth_labels:
+        :param test_labels:
+        :param mask:
+        :param ground_truth_labels:
+        :param test_labels:
+        :param mask:
+        :param ground_truth_labels:
+        :param test_labels:
+        :param mask:
+        :param ground_truth_labels:
+        :param test_labels:
+        :param mask:
+        :param ground_truth_labels:
+        :param test_labels:
+        :param mask:
+        :param ground_truth_labels:
+        :param test_labels:
+        :param mask:
+        :param ground_truth_labels:
+        :param test_labels:
         """
         ground_truth_labels = ground_truth_labels[mask].astype(np.uint64)
         test_labels = test_labels[mask].astype(np.uint64)
@@ -639,7 +662,9 @@ class CalculateImageOverlap(cpm.CPModule):
                                (ground_truth_labels, test_labels))).toarray()
 
             def choose2(x):
-                """Compute # of pairs of x things = x * (x-1) / 2"""
+                """Compute # of pairs of x things = x * (x-1) / 2
+                :param x:
+                """
                 return x * (x - 1) / 2
 
             #
@@ -694,6 +719,24 @@ class CalculateImageOverlap(cpm.CPModule):
         The basic idea of the paper is that a pair should be judged to
         agree only if the number of clusters in which they appear together
         is the same.
+        :param shape:
+        :param test_ijv:
+        :param gt_ijv:
+        :param shape:
+        :param test_ijv:
+        :param gt_ijv:
+        :param shape:
+        :param test_ijv:
+        :param gt_ijv:
+        :param shape:
+        :param test_ijv:
+        :param gt_ijv:
+        :param shape:
+        :param test_ijv:
+        :param gt_ijv:
+        :param shape:
+        :param test_ijv:
+        :param gt_ijv:
         """
         #
         # The idea here is to assign a label to every pixel position based
@@ -835,6 +878,18 @@ class CalculateImageOverlap(cpm.CPModule):
         dest_objects - move pixels to these objects
 
         returns the earth mover's distance
+        :param dest_objects:
+        :param src_objects:
+        :param dest_objects:
+        :param src_objects:
+        :param dest_objects:
+        :param src_objects:
+        :param dest_objects:
+        :param src_objects:
+        :param dest_objects:
+        :param src_objects:
+        :param dest_objects:
+        :param src_objects:
         """
         #
         # if either foreground set is empty, the emd is the penalty.
@@ -875,7 +930,14 @@ class CalculateImageOverlap(cpm.CPModule):
         return labels_mask
 
     def get_skeleton_points(self, obj):
-        """Get points by skeletonizing the objects and decimating"""
+        """Get points by skeletonizing the objects and decimating
+        :param obj:
+        :param obj:
+        :param obj:
+        :param obj:
+        :param obj:
+        :param obj:
+        """
         ii = []
         jj = []
         total_skel = np.zeros(obj.shape, bool)
@@ -928,6 +990,46 @@ class CalculateImageOverlap(cpm.CPModule):
 
         returns a vector of i coordinates of representatives and a vector
                 of j coordinates
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
+                :param dest_obj:
+                :param src_obj:
         """
         from sklearn.cluster import KMeans
 
@@ -947,6 +1049,66 @@ class CalculateImageOverlap(cpm.CPModule):
 
         Assign each pixel in the labels mask to the nearest i,j and return
         the number of pixels assigned to each i,j
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
+        :param labels_mask:
+        :param j:
+        :param i:
         """
         #
         # Create a mapping of chosen points to their index in the i,j array
@@ -977,7 +1139,48 @@ class CalculateImageOverlap(cpm.CPModule):
         return result
 
     def display(self, workspace, figure):
-        """Display the image confusion matrix & statistics"""
+        """Display the image confusion matrix & statistics
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        """
         figure.set_subplots((3, 2))
         for x, y, image, label in (
                 (0, 0, workspace.display_data.true_positives, "True positives"),
@@ -1005,20 +1208,203 @@ class CalculateImageOverlap(cpm.CPModule):
         return name
 
     def get_categories(self, pipeline, object_name):
-        """Return the measurement categories for an object"""
+        """Return the measurement categories for an object
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        """
         if object_name == cpmeas.IMAGE:
             return [C_IMAGE_OVERLAP]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        """Return the measurements made for a category"""
+        """Return the measurements made for a category
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        """
         if object_name == cpmeas.IMAGE and category == C_IMAGE_OVERLAP:
             return self.all_features()
         return []
 
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
-        """Return the images that were used when making the measurement"""
+        """Return the images that were used when making the measurement
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        """
         if measurement in self.get_measurements(pipeline, object_name, category) \
                 and self.obj_or_img == O_IMG:
             return [self.test_img.value]
@@ -1040,6 +1426,106 @@ class CalculateImageOverlap(cpm.CPModule):
 
         The "scale" in this case is the combination of ground-truth objects and
         test objects.
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if (object_name == cpmeas.IMAGE and category == C_IMAGE_OVERLAP and
                     measurement in FTR_ALL and self.obj_or_img == O_OBJ):
@@ -1055,7 +1541,28 @@ class CalculateImageOverlap(cpm.CPModule):
         return all_features
 
     def get_measurement_columns(self, pipeline):
-        """Return database column information for each measurement"""
+        """Return database column information for each measurement
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         return [(cpmeas.IMAGE,
                  self.measurement_name(feature),
                  cpmeas.COLTYPE_FLOAT)

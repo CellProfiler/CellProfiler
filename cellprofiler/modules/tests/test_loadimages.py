@@ -55,6 +55,9 @@ class ConvtesterMixin:
 
         fn_filter - a function that returns True if a file should be included
                     in the workspace file list.
+                    :param fn_filter:
+                    :param directory:
+                    :param pipeline_text:
         """
         cpprefs.set_default_image_directory(directory)
         pipeline = cpp.Pipeline()

@@ -241,6 +241,10 @@ def kalman_feature(model, matrix_or_vector, i, j=None):
     matrix_or_vector - the part of the Kalman state to save, vec, COV or noise
     i - the name for the first (or only for vec and noise) index into the vector
     j - the name of the second index into the matrix
+    :param j:
+    :param i:
+    :param matrix_or_vector:
+    :param model:
     """
     pieces = [F_KALMAN, model, matrix_or_vector, i]
     if j is not None:
@@ -792,7 +796,14 @@ class TrackObjects(cpm.CPModule):
                 self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance]
 
     def validate_module(self, pipeline):
-        """Make sure that the user has selected some limits when filtering"""
+        """Make sure that the user has selected some limits when filtering
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         if (self.tracking_method == TM_LAP and
                 self.wants_lifetime_filtering.value and
                 (
@@ -884,7 +895,14 @@ class TrackObjects(cpm.CPModule):
         self.__set("coordinates", workspace, value)
 
     def get_orig_coordinates(self, workspace):
-        """The coordinates of the first occurrence of an object's ancestor"""
+        """The coordinates of the first occurrence of an object's ancestor
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         return self.__get("orig coordinates", workspace, np.zeros((2, 0), int))
 
     def set_orig_coordinates(self, workspace, value):
@@ -927,20 +945,123 @@ class TrackObjects(cpm.CPModule):
         self.__set("kalman_states", workspace, value)
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        """Erase any tracking information at the start of a run"""
+        """Erase any tracking information at the start of a run
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        """
         d = self.get_dictionary(workspace.image_set_list)
         d.clear()
 
         return True
 
     def measurement_name(self, feature):
-        """Return a measurement name for the given feature"""
+        """Return a measurement name for the given feature
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        """
         if self.tracking_method == TM_LAP:
             return "%s_%s" % (F_PREFIX, feature)
         return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
 
     def image_measurement_name(self, feature):
-        """Return a measurement name for an image measurement"""
+        """Return a measurement name for an image measurement
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        :param feature:
+        """
         if self.tracking_method == TM_LAP:
             return "%s_%s_%s" % (F_PREFIX, feature, self.object_name.value)
         return "%s_%s_%s_%s" % (F_PREFIX, feature, self.object_name.value,
@@ -952,6 +1073,66 @@ class TrackObjects(cpm.CPModule):
         workspace - current image set's workspace
         feature - name of feature being measured
         values - one value per object
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
+        :param values:
+        :param feature:
+        :param workspace:
         """
         workspace.measurements.add_measurement(
             self.object_name.value,
@@ -1042,7 +1223,48 @@ class TrackObjects(cpm.CPModule):
                             arrowprops=dict(visible=False))
 
     def run_distance(self, workspace, objects):
-        """Track objects based on distance"""
+        """Track objects based on distance
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        """
         old_i, old_j = self.get_saved_coordinates(workspace)
         if len(old_i):
             distances, (i, j) = distance_transform_edt(objects.segmented == 0,
@@ -1082,7 +1304,48 @@ class TrackObjects(cpm.CPModule):
         self.set_saved_labels(workspace, objects.segmented)
 
     def run_lapdistance(self, workspace, objects):
-        """Track objects based on distance"""
+        """Track objects based on distance
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        :param objects:
+        :param workspace:
+        """
         m = workspace.measurements
 
         old_i, old_j = self.get_saved_coordinates(workspace)
@@ -1302,7 +1565,28 @@ class TrackObjects(cpm.CPModule):
         return models
 
     def save_kalman_measurements(self, workspace):
-        """Save the first-pass state_vec, state_cov and state_noise"""
+        """Save the first-pass state_vec, state_cov and state_noise
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
 
         m = workspace.measurements
         object_name = self.object_name.value
@@ -1356,7 +1640,10 @@ class TrackObjects(cpm.CPModule):
                     m.add_measurement(object_name, mname, values)
 
     def run_overlap(self, workspace, objects):
-        """Track objects by maximum # of overlapping pixels"""
+        """Track objects by maximum # of overlapping pixels
+        :param objects:
+        :param workspace:
+        """
         current_labels = objects.segmented
         old_labels = self.get_saved_labels(workspace)
         i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
@@ -1878,7 +2165,9 @@ class TrackObjects(cpm.CPModule):
         # Useful debugging diagnostics
         #
         def desc(node):
-            """Describe a node for graphviz"""
+            """Describe a node for graphviz
+            :param node:
+            """
             fl = F
             if node < start_end_end:
                 fmt = "N%d:%d"
@@ -1906,7 +2195,23 @@ class TrackObjects(cpm.CPModule):
                              int(fl[idx, ONIDX])))
 
         def write_graph(path, x, y):
-            """Write a graphviz DOT file"""
+            """Write a graphviz DOT file
+            :param path:
+            :param path:
+            :param path:
+            :param path:
+            :param path:
+            :param path:
+            :param path:
+            :param path:
+            :param path:
+            :param x:
+            :param x:
+            :param x:
+            :param x:
+            :param x:
+            :param y:
+            """
             with open(path, "w") as fd:
                 fd.write("digraph trackobjects {\n")
                 graph_idx = np.where(
@@ -2312,6 +2617,8 @@ class TrackObjects(cpm.CPModule):
         penalty (sqrt((a1 + a2) / b) for a1+a2 > b and b / (a1 + a2) for
         a1+a2 < b. I can't think of a good reason why they should be
         asymmetric.
+        :param a1:
+        :param a2:
         """
         result = a1 / a2
         result[result < 1] = 1 / result[result < 1]
@@ -2334,6 +2641,9 @@ class TrackObjects(cpm.CPModule):
                  the track whose index is the second element of the array.
 
                  an M-element vector of scores.
+                 :param F:
+                 :param L:
+                 :param max_gap:
         """
         #
         # There have to be at least two things to match
@@ -2417,6 +2727,8 @@ class TrackObjects(cpm.CPModule):
                  columns are the indices of the daughters in the F array
 
                  an M-element vector of distances of the parent from the expected
+                 :param F:
+                 :param L:
         """
         X = 0
         Y = 1
@@ -2471,6 +2783,8 @@ class TrackObjects(cpm.CPModule):
 
         workspace - the workspace being operated on
         image_numbers - the image numbers of the group's image sets' measurements
+        :param workspace:
+        :param image_numbers:
         """
         m = workspace.measurements
         object_name = self.object_name.value
@@ -2526,11 +2840,15 @@ class TrackObjects(cpm.CPModule):
         ancestral_object_index = ancestral_object_index[labels]
 
         def start(image_index):
-            """Return the start index in the array for the given image index"""
+            """Return the start index in the array for the given image index
+            :param image_index:
+            """
             return idx.fwd_idx[image_index]
 
         def end(image_index):
-            """Return the end index in the array for the given image index"""
+            """Return the end index in the array for the given image index
+            :param image_index:
+            """
             return start(image_index) + idx.counts[0][image_index]
 
         def slyce(image_index):
@@ -2680,6 +2998,11 @@ class TrackObjects(cpm.CPModule):
         new_to_old - an array of the new labels for every old label
         old_to_new - an array of the old labels for every new label
         i, j - the coordinates for each new object.
+        :param workspace:
+        :param new_of_old:
+        :param old_of_new:
+        :param i:
+        :param j:
         """
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -2838,7 +3161,10 @@ class TrackObjects(cpm.CPModule):
                     r_image_numbers, r_child_object_numbers)
 
     def recalculate_kalman_filters(self, workspace, image_numbers):
-        """Rerun the kalman filters to improve the motion models"""
+        """Rerun the kalman filters to improve the motion models
+        :param workspace:
+        :param image_numbers:
+        """
         m = workspace.measurements
         object_name = self.object_name.value
         object_number = m[object_name, cpmeas.OBJECT_NUMBER, image_numbers]
@@ -3032,7 +3358,9 @@ class TrackObjects(cpm.CPModule):
         return result
 
     def get_object_relationships(self, pipeline):
-        """Return the object relationships produced by this module"""
+        """Return the object relationships produced by this module
+        :param pipeline:
+        """
         object_name = self.object_name.value
         if self.wants_second_phase and self.tracking_method == TM_LAP:
             when = cpmeas.MCA_AVAILABLE_POST_GROUP

@@ -136,7 +136,9 @@ class SendEmail(cpm.CPModule):
             <b>SendEmail</b> will send an email when this event happens""")
 
     def add_recipient(self, can_delete=True):
-        """Add a recipient for the email to the list of emails"""
+        """Add a recipient for the email to the list of emails
+        :param can_delete:
+        """
         group = cps.SettingsGroup()
 
         group.append("recipient", cps.Text(
@@ -244,7 +246,9 @@ class SendEmail(cpm.CPModule):
         d[K_LAST_IN_GROUP] = image_numbers[-1]
 
     def run(self, workspace):
-        """Run every image set"""
+        """Run every image set
+        :param workspace:
+        """
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         d = self.get_dictionary()
@@ -289,14 +293,19 @@ class SendEmail(cpm.CPModule):
             figure.subplot_table(0, 0, [[workspace.display_data.result]])
 
     def post_run(self, workspace):
-        """Possibly send an email as we finish the run"""
+        """Possibly send an email as we finish the run
+        :param workspace:
+        """
         email_me = [group.message.value for group in self.when
                     if group.choice == S_LAST]
         if len(email_me) > 0:
             self.send_email(workspace, email_me)
 
     def send_email(self, workspace, messages):
-        """Send an email according to the settings"""
+        """Send an email according to the settings
+        :param messages:
+        :param workspace:
+        """
 
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
@@ -344,7 +353,9 @@ class SendEmail(cpm.CPModule):
             return "Failed to send mail"
 
     def prepare_settings(self, setting_values):
-        """Adjust the numbers of recipients and events according to the settings"""
+        """Adjust the numbers of recipients and events according to the settings
+        :param setting_values:
+        """
 
         nrecipients = int(setting_values[0])
         nevents = int(setting_values[1])
@@ -367,6 +378,10 @@ class SendEmail(cpm.CPModule):
         variable_revision_number - revision # of module that did saving
         module_name - name of module that did saving
         from_matlab - true if CP 1.0
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 1:
             recipients, sender, server, send_first, send_last, \

@@ -21,7 +21,9 @@ def get_cp_image():
 
 
 def get_cp_bitmap(size=None):
-    """The CellProfiler icon as a wx.Bitmap"""
+    """The CellProfiler icon as a wx.Bitmap
+    :param size:
+    """
     import wx
     img = get_cp_image()
     if size is not None:
@@ -30,7 +32,9 @@ def get_cp_bitmap(size=None):
 
 
 def get_cp_icon(size=None):
-    """The CellProfiler icon as a wx.Icon"""
+    """The CellProfiler icon as a wx.Icon
+    :param size:
+    """
     import wx
     if sys.platform.startswith('win'):
         path = os.path.join(get_builtin_images_path(), "CellProfilerIcon.ico")
@@ -58,6 +62,12 @@ def draw_bevel(dc, rect, width, state, shadow_pen=None, highlight_pen=None):
     highlight_pen - pen to use for drawing the light portion of the bevel
     
     returns the coordinates of the inside rectangle
+    :param highlight_pen:
+    :param shadow_pen:
+    :param state:
+    :param width:
+    :param rect:
+    :param dc:
     """
     import wx
     if shadow_pen is None:
@@ -93,6 +103,10 @@ def draw_item_selection_rect(window, dc, rect, flags):
 
     This function fixes a bug in the Carbon implementation for drawing
     with wx.CONTROL_CURRENT and not wx.CONTROL_SELECTED.
+    :param flags:
+    :param rect:
+    :param dc:
+    :param window:
     """
     # Bug in carbon DrawItemSelectionRect uses
     # uninitialized color for the rectangle

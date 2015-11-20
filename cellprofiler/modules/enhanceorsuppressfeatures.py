@@ -365,6 +365,10 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if not from_matlab and variable_revision_number == 1:
             #

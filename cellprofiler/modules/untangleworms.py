@@ -561,7 +561,9 @@ class UntangleWorms(cpm.CPModule):
         return result
 
     def overlap_weight(self, params):
-        """The overlap weight to use in the cost calculation"""
+        """The overlap weight to use in the cost calculation
+        :param params:
+        """
         if not self.wants_training_set_weights:
             return self.override_overlap_weight.value
         elif params is None:
@@ -570,7 +572,9 @@ class UntangleWorms(cpm.CPModule):
             return params.overlap_weight
 
     def leftover_weight(self, params):
-        """The leftover weight to use in the cost calculation"""
+        """The leftover weight to use in the cost calculation
+        :param params:
+        """
         if not self.wants_training_set_weights:
             return self.override_leftover_weight.value
         elif params is None:
@@ -595,7 +599,26 @@ class UntangleWorms(cpm.CPModule):
         return self.custom_complexity.value
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        """Prepare to process a group of worms"""
+        """Prepare to process a group of worms
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        """
         d = self.get_dictionary(workspace.image_set_list)
         d[TRAINING_DATA] = []
 
@@ -604,7 +627,14 @@ class UntangleWorms(cpm.CPModule):
         return {TRAINING_DATA: []}
 
     def run(self, workspace):
-        """Run the module on the current image set"""
+        """Run the module on the current image set
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         if self.mode == MODE_TRAIN:
             self.run_train(workspace)
         else:
@@ -620,7 +650,14 @@ class UntangleWorms(cpm.CPModule):
             self.radial_profile = radial_profile
 
     def run_train(self, workspace):
-        """Train based on the current image set"""
+        """Train based on the current image set
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
 
         image_name = self.image_name.value
         image_set = workspace.image_set
@@ -673,7 +710,20 @@ class UntangleWorms(cpm.CPModule):
         return self.mode == MODE_TRAIN
 
     def post_group(self, workspace, grouping):
-        """Write the training data file as we finish grouping."""
+        """Write the training data file as we finish grouping.
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
+        """
         if self.mode == MODE_TRAIN:
             from cellprofiler.utilities.version import version_number
             worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
@@ -792,7 +842,14 @@ class UntangleWorms(cpm.CPModule):
                     angles_covariance_matrix
 
     def run_untangle(self, workspace):
-        """Untangle based on the current image set"""
+        """Untangle based on the current image set
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         params = self.read_params()
         image_name = self.image_name.value
         image_set = workspace.image_set
@@ -981,6 +1038,46 @@ class UntangleWorms(cpm.CPModule):
         workspace - holds the display data used to create the display
         
         figure - the module's figure.
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
         """
         if self.mode == MODE_TRAIN:
             from matplotlib.transforms import Bbox
@@ -1029,6 +1126,106 @@ class UntangleWorms(cpm.CPModule):
               i coordinates in the first row and j coordinates in the second.)
 
         path_struct: a structure describing the path
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
+        :param params:
+        :param skeleton:
+        :param i:
+        :param labels:
+        :param workspace:
         """
         binary_im = labels == i
         skeleton &= binary_im
@@ -1097,7 +1294,91 @@ class UntangleWorms(cpm.CPModule):
            two branch areas), its orientation is well-defined, i.e. one branch
            area will be chosen as starting end. (Even though in this case, the
            "positive direction" of the segment cannot be determined from the
-           information in graph_struct.segments.)"""
+           information in graph_struct.segments.)
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im:
+           :param max_skel_length:
+           :param max_radius:
+           :param skeleton:
+           :param binary_im: """
         branch_areas_binary = morph.branchpoints(skeleton)
         if max_radius is not None:
             #
@@ -1166,6 +1447,26 @@ class UntangleWorms(cpm.CPModule):
                 the segment.)
         distance - the propagation distance of the point from the endpoint
         num_segments - the # of labelled segments
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
+        :param segments_binary:
         """
         #
         # Break long skeletons into pieces whose maximum length
@@ -1263,6 +1564,46 @@ class UntangleWorms(cpm.CPModule):
 
         Output is same format as get_graph_from_binary(), so for details, see
         get_graph_from_binary
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
+        :param segments_binary:
+        :param branch_areas_binary:
         """
         branch_areas_labeled, num_branch_areas = scind.label(
             branch_areas_binary, morph.eight_connect)
@@ -1377,6 +1718,10 @@ class UntangleWorms(cpm.CPModule):
 
         Returns a matrix where M[n,m] is true if there is some pixel in
         L1 with value n that is 8-connected to a pixel in L2 with value m
+        :param L2:
+        :param N1:
+        :param L1:
+        :param N2:
         """
         #
         # Overlay the two labels matrix
@@ -1433,7 +1778,9 @@ class UntangleWorms(cpm.CPModule):
 
         path_struct: A structure, with entries 'segments' and 'branch_areas',
         descring the path found, in relation to graph_struct. See
-        get_all_paths.m for details."""
+        get_all_paths.m for details.
+        :param graph_struct:
+        :param max_length: """
 
         path_list = self.get_all_paths(graph_struct, 0, max_length)
         current_longest_path_coords = []
@@ -1477,7 +1824,9 @@ class UntangleWorms(cpm.CPModule):
         likely to contain segments consisting of runs of pixels where each is
         close to the next (in its 8-neighbourhood), but interleaved with
         reasonably long "jumps", where there is some distance between the end
-        of one segment and the beginning of the next."""
+        of one segment and the beginning of the next.
+        :param graph_struct:
+        :param path: """
 
         if len(path.segments) == 1:
             return graph_struct.segments[path.segments[0]][0]
@@ -1492,14 +1841,18 @@ class UntangleWorms(cpm.CPModule):
         return np.vstack(result)
 
     def calculate_path_length(self, path_coords):
-        """Return the path length, given path coordinates as Nx2"""
+        """Return the path length, given path coordinates as Nx2
+        :param path_coords:
+        """
         if len(path_coords) < 2:
             return 0
         return np.sum(
             np.sqrt(np.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1)))
 
     def calculate_cumulative_lengths(self, path_coords):
-        """return a cumulative length vector given Nx2 path coordinates"""
+        """return a cumulative length vector given Nx2 path coordinates
+        :param path_coords:
+        """
         if len(path_coords) < 2:
             return np.array([0] * len(path_coords))
         return np.hstack(([0],
@@ -1533,7 +1886,10 @@ class UntangleWorms(cpm.CPModule):
             (num_control_points-1)x(num_control_points-1) double matrix. See
             calculate_angle_shape_cost() for how this is used.
 
-         Returns true if worm passes filter"""
+         Returns true if worm passes filter
+         :param path_coords:
+         :param workspace:
+         :param params: """
         if len(path_coords) < 2:
             return False
         cumul_lengths = self.calculate_cumulative_lengths(path_coords)
@@ -1568,7 +1924,10 @@ class UntangleWorms(cpm.CPModule):
         jth control point, sampled along the path. The first and last control
         points are equal to the first and last points of the path (i.e. the
         points whose coordinates are the first and last columns of
-        path_coords), respectively."""
+        path_coords), respectively.
+        :param path_coords:
+        :param cumul_lengths:
+        :param num_control_points: """
         assert num_control_points > 2
         #
         # Paranoia - eliminate any coordinates with length = 0, esp the last.
@@ -1651,7 +2010,11 @@ class UntangleWorms(cpm.CPModule):
         the case when two adjacnet line segments are parallel (and thus
         belong to the same line); the angles can be thought of as the
         (signed) angles through which the path "turns", and are thus not the
-        angles between the line segments as such."""
+        angles between the line segments as such.
+        :param control_coords:
+        :param total_length:
+        :param mean_angles:
+        :param inv_angles_covariance_matrix: """
 
         angles = self.get_angles(control_coords)
         feat_vec = np.hstack((angles, [total_length])) - mean_angles
@@ -1663,6 +2026,7 @@ class UntangleWorms(cpm.CPModule):
         control_coords - an Nx2 array of coordinates of control points
 
         returns an N-2 vector of angles between -pi and pi
+        :param control_coords:
         """
         segments_delta = control_coords[1:] - control_coords[:-1]
         segment_bearings = np.arctan2(segments_delta[:, 0],
@@ -1751,7 +2115,10 @@ class UntangleWorms(cpm.CPModule):
          The output is a list of objects, "o" of the form
 
          o.segments - segment indices of the path
-         o.branch_areas - branch area indices of the path"""
+         o.branch_areas - branch area indices of the path
+         :param min_length:
+         :param graph_struct:
+         :param max_length: """
 
         graph_struct.incident_branch_areas, graph_struct.incident_segments = \
             self.build_incidence_lists(graph_struct)
@@ -1788,7 +2155,8 @@ class UntangleWorms(cpm.CPModule):
         incident_branch_areas{j} is a row array containing a list of all those
         branch areas incident to segment j; similary, incident_segments{i} is a
         row array containing a list of all those segments incident to branch area
-        i."""
+        i.
+        :param graph_struct: """
         m = graph_struct.incidence_matrix.shape[1]
         n = graph_struct.incidence_matrix.shape[0]
         incident_segments = [
@@ -1806,6 +2174,12 @@ class UntangleWorms(cpm.CPModule):
 
         incident_branch_areas - list of all branch areas incident on a segment
         incident_segments - list of all segments incident on a branch
+        :param graph:
+        :param unfinished_segment:
+        :param unfinished_branch_areas:
+        :param min_length:
+        :param current_length:
+        :param max_length:
         """
         if len(unfinished_segment) == 0:
             return
@@ -1954,6 +2328,11 @@ class UntangleWorms(cpm.CPModule):
         paths_coords_selected: A cell array of worms selected. Each worm is
         represented as 2xm array of coordinates, specifying the skeleton of
         the worm as a polyline path.
+        :param i:
+        :param labels:
+        :param paths:
+        :param graph:
+        :param params:
 """
         min_path_length = params.min_path_length
         max_path_length = params.max_path_length
@@ -2036,6 +2415,12 @@ class UntangleWorms(cpm.CPModule):
         leftover_weight - the penalty per pixel of an unincluded segment
 
         max_num_worms - maximum # of worms allowed in returned match.
+        :param costs:
+        :param path_segment_matrix:
+        :param segment_lengths:
+        :param overlap_weight:
+        :param leftover_weight:
+        :param max_num_worms:
         """
         current_best_subset = []
         current_best_cost = np.sum(segment_lengths) * leftover_weight
@@ -2084,6 +2469,15 @@ class UntangleWorms(cpm.CPModule):
         returns the current best subset, the current best cost and
         the current_path_segment_matrix and current_path_choices for the
         next round.
+        :param costs:
+        :param path_segment_matrix:
+        :param segment_lengths:
+        :param current_best_subset:
+        :param current_best_cost:
+        :param current_path_segment_matrix:
+        :param current_path_choices:
+        :param overlap_weight:
+        :param leftover_weight:
         """
         #
         # Compute the cost, not considering uncovered segments
@@ -2171,7 +2565,20 @@ class UntangleWorms(cpm.CPModule):
 
         current_segments_coverings, meanwhile, is a logical array of length equal
         to the number of segments in the graph, keeping track of the segments
-        covered by paths in current_subset."""
+        covered by paths in current_subset.
+        :param path_segment_matrix:
+        :param segment_lengths:
+        :param path_raw_costs:
+        :param overlap_weight:
+        :param leftover_weight:
+        :param current_subset:
+        :param last_chosen:
+        :param current_cost:
+        :param current_segment_coverings:
+        :param current_best_subset:
+        :param current_best_cost:
+        :param branching_factors:
+        :param current_level: """
 
         # The cost of current_subset, including the leftover cost term
         this_cost = current_cost + leftover_weight * np.sum(
@@ -2234,6 +2641,9 @@ class UntangleWorms(cpm.CPModule):
         * the lengths of each worm
         * the angles for control points other than the ends
         * the coordinates of the control points
+        :param all_path_coords:
+        :param params:
+        :param shape:
         """
         num_control_points = params.num_control_points
         if len(all_path_coords) == 0:
@@ -2293,7 +2703,10 @@ class UntangleWorms(cpm.CPModule):
         final worm.
 
         Outputs:
-        The coordinates of all pixels in the worm in an N x 2 array"""
+        The coordinates of all pixels in the worm in an N x 2 array
+        :param control_coords:
+        :param worm_radii:
+        :param shape: """
         index, count, i, j = morph.get_line_pts(control_coords[:-1, 0],
                                                 control_coords[:-1, 1],
                                                 control_coords[1:, 0],
@@ -2377,14 +2790,18 @@ class UntangleWorms(cpm.CPModule):
                         self.training_set_file_name)
 
     def validate_module_warnings(self, pipeline):
-        """Warn user re: Test mode """
+        """Warn user re: Test mode
+        :param pipeline:
+        """
         if pipeline.test_mode and self.mode == MODE_TRAIN:
             raise cps.ValidationError(
                 "UntangleWorms will not produce training set output in Test Mode",
                 self.training_set_file_name)
 
     def get_measurement_columns(self, pipeline):
-        """Return a column of information for each measurement feature"""
+        """Return a column of information for each measurement feature
+        :param pipeline:
+        """
         result = []
         if self.mode == MODE_UNTANGLE:
             object_names = []
@@ -2417,6 +2834,7 @@ class UntangleWorms(cpm.CPModule):
         """Return a list of control point feature names
 
         get_x - return the X coordinate control point features if true, else y
+        :param get_x:
         """
         try:
             return ["_".join(
@@ -2489,6 +2907,8 @@ class UntangleWorms(cpm.CPModule):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
+                        :param workspace:
+                        :param fn_alter_path:
         """
         self.training_set_directory.alter_for_create_batch_files(fn_alter_path)
         return True
@@ -2510,6 +2930,9 @@ def read_params(training_set_directory, training_set_file_name, d):
     training_set_file_name - the training set file name setting
 
     d - a dictionary that stores cached parameters
+    :param training_set_directory:
+    :param training_set_file_name:
+    :param d:
     """
 
     #
@@ -2666,7 +3089,10 @@ def read_params(training_set_directory, training_set_file_name, d):
         MATRIX = "matrix"
 
         def mp(*args, **kwargs):
-            """Look up a field from mat_params"""
+            """Look up a field from mat_params
+            :param args:
+            :param kwargs:
+            """
             x = mat_params
             for arg in args[:-1]:
                 x = x[arg][0, 0]
@@ -2731,6 +3157,8 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     coordinate.
 
     a vector of N lengths.
+    :param all_labels:
+    :param ncontrolpoints:
     """
 
     all_object_numbers = [

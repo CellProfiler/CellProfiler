@@ -336,6 +336,7 @@ class AnalysisWorker(object):
         """Handle a work request to its completion
 
         job - WorkRequest
+        :param job:
         """
         import cellprofiler.pipeline as cpp
         job_measurements = []
@@ -524,7 +525,11 @@ class AnalysisWorker(object):
                 m.close()
 
     def interaction_handler(self, module, *args, **kwargs):
-        """handle interaction requests by passing them to the jobserver and wait for the reply."""
+        """handle interaction requests by passing them to the jobserver and wait for the reply.
+        :param kwargs:
+        :param args:
+        :param module:
+        """
         # we write args and kwargs into the InteractionRequest to allow
         # more complex data to be sent by the underlying zmq machinery.
         arg_kwarg_dict = dict(
@@ -546,7 +551,11 @@ class AnalysisWorker(object):
         self.send(AnalysisCancelRequest(self.current_analysis_id))
 
     def display_handler(self, module, display_data, image_set_number):
-        """handle display requests"""
+        """handle display requests
+        :param image_set_number:
+        :param display_data:
+        :param module:
+        """
         req = DisplayRequest(self.current_analysis_id,
                              module_num=module.module_num,
                              display_data_dict=display_data.__dict__,
@@ -575,6 +584,8 @@ class AnalysisWorker(object):
         socket - socket to use for send. Default is current work socket
 
         returns a reply on success. If cancelled, throws a CancelledException
+        :param work_socket:
+        :param req:
         """
         if self.current_analysis_id is None:
             from cellprofiler.pipeline import CancelledException
@@ -611,6 +622,12 @@ class AnalysisWorker(object):
         This should only be called upon detection of a server-driven
         cancellation of analysis: either UpstreamExit or a stop notification
         from the deadman thread.
+        :param msg:
+        :param msg:
+        :param msg:
+        :param msg:
+        :param msg:
+        :param msg:
         """
         from cellprofiler.pipeline import CancelledException
         logger.debug(msg)
@@ -665,6 +682,24 @@ class AnalysisWorker(object):
 
         A new socket is created for each exception report, to allow us to sidestep
         any REP/REQ state in the worker.
+        :param exc_info:
+        :param module_name:
+        :param image_set_number:
+        :param exc_info:
+        :param module_name:
+        :param image_set_number:
+        :param exc_info:
+        :param module_name:
+        :param image_set_number:
+        :param exc_info:
+        :param module_name:
+        :param image_set_number:
+        :param exc_info:
+        :param module_name:
+        :param image_set_number:
+        :param exc_info:
+        :param module_name:
+        :param image_set_number:
         """
         if self.current_analysis_id is None:
             # Analysis has been cancelled - don't initiate server interactions

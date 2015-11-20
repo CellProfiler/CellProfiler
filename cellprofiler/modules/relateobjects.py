@@ -160,7 +160,9 @@ class RelateObjects(cpm.CPModule):
         self.step_parent_names.append(group)
 
     def get_step_parents(self, pipeline):
-        """Return the possible step-parents associated with the parent"""
+        """Return the possible step-parents associated with the parent
+        :param pipeline:
+        """
         step_parents = set()
         parent_name = self.parent_name.value
         for module in pipeline.modules():
@@ -326,7 +328,10 @@ class RelateObjects(cpm.CPModule):
         return parent_names
 
     def calculate_centroid_distances(self, workspace, parent_name):
-        """Calculate the centroid-centroid distance between parent & child"""
+        """Calculate the centroid-centroid distance between parent & child
+        :param parent_name:
+        :param workspace:
+        """
         meas = workspace.measurements
         assert isinstance(meas, cpmeas.Measurements)
         sub_object_name = self.sub_object_name.value
@@ -350,7 +355,10 @@ class RelateObjects(cpm.CPModule):
         meas.add_measurement(sub_object_name, FF_CENTROID % parent_name, dist)
 
     def calculate_minimum_distances(self, workspace, parent_name):
-        """Calculate the distance from child center to parent perimeter"""
+        """Calculate the distance from child center to parent perimeter
+        :param parent_name:
+        :param workspace:
+        """
         meas = workspace.measurements
         assert isinstance(meas, cpmeas.Measurements)
         sub_object_name = self.sub_object_name.value
@@ -440,6 +448,8 @@ class RelateObjects(cpm.CPModule):
         the Parent measurement. Look for a direct parent / child link first
         and then look for relationships between self.parent_name and the
         named parent.
+        :param parent_name:
+        :param workspace:
         """
         meas = workspace.measurements
         assert isinstance(meas, cpmeas.Measurements)
@@ -492,6 +502,7 @@ class RelateObjects(cpm.CPModule):
         """Return True if aggregate measurements should be made on a feature
 
         feature_name - name of a measurement, such as Location_Center_X
+        :param feature_name:
         """
         if feature_name.startswith(C_MEAN):
             return False
@@ -505,7 +516,8 @@ class RelateObjects(cpm.CPModule):
         """Validate the module's settings
 
         Relate will complain if the children and parents are related
-        by a prior module or if a step-parent is named twice"""
+        by a prior module or if a step-parent is named twice
+        :param pipeline: """
         for module in pipeline.modules():
             if module == self:
                 break
@@ -550,7 +562,9 @@ class RelateObjects(cpm.CPModule):
         return columns
 
     def get_measurement_columns(self, pipeline):
-        """Return the column definitions for this module's measurements"""
+        """Return the column definitions for this module's measurements
+        :param pipeline:
+        """
         columns = [(self.sub_object_name.value,
                     FF_PARENT % (self.parent_name.value),
                     cpmeas.COLTYPE_INTEGER),
@@ -567,7 +581,9 @@ class RelateObjects(cpm.CPModule):
         return columns
 
     def get_object_relationships(self, pipeline):
-        """Return the object relationships produced by this module"""
+        """Return the object relationships produced by this module
+        :param pipeline:
+        """
         parent_name = self.parent_name.value
         sub_object_name = self.sub_object_name.value
         return [(R_PARENT, parent_name, sub_object_name,
@@ -620,6 +636,12 @@ class RelateObjects(cpm.CPModule):
         the number of settings and their value. For instance, a module that
         takes a variable number of images or objects can increase or decrease
         the number of relevant settings so they map correctly to the values.
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
         """
         setting_count = len(setting_values)
         step_parent_count = ((setting_count - FIXED_SETTING_COUNT) /

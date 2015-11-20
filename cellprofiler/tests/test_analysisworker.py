@@ -137,6 +137,8 @@ class TestAnalysisWorker(unittest.TestCase):
             This polls on both the worker and up_queue sockets and
             will throw an exception if there is anything available on
             the up-queue as this indicates that nothing is running.
+            :param timeout:
+            :param work_socket:
             """
             poller = zmq.Poller()
             poller.register(self.up_queue_recv_socket, zmq.POLLIN)
@@ -168,12 +170,19 @@ class TestAnalysisWorker(unittest.TestCase):
 
             Returns the function's result or throws whatever exception
             was thrown by the function.
+            :param kwargs:
+            :param args:
+            :param fn:
             """
             self.ex(fn, *args, **kwargs)
             return self.ecute()
 
         def ex(self, fn, *args, **kwargs):
-            """Do the first part of a functional execution"""
+            """Do the first part of a functional execution
+            :param kwargs:
+            :param args:
+            :param fn:
+            """
             if len(args) == 0 and len(kwargs) == 0:
                 self.down_queue.put(fn)
             else:
@@ -1076,7 +1085,48 @@ DISPLAY_PIPELINE = GOOD_PIPELINE.replace(
 
 def get_measurements_for_good_pipeline(nimages=1,
                                        group_numbers=None):
-    """Get an appropriately initialized measurements structure for the good pipeline"""
+    """Get an appropriately initialized measurements structure for the good pipeline
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    :param group_numbers:
+    :param nimages:
+    """
     path = os.path.join(example_images_directory(), "ExampleSBSImages")
     m = cpmeas.Measurements()
     if group_numbers is None:

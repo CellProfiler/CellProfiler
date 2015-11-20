@@ -81,7 +81,8 @@ class TreeCheckboxDialog(wx.Dialog):
         they want the files in the parent, but not in the child. Set this
         to False to make the parent state be "None" if all children are False.
         This drives the parent to None instead of False, indicating that
-        files should be picked up from the currenet directory, but not kids."""
+        files should be picked up from the currenet directory, but not kids.
+        :param value: """
         self.parent_reflects_child = value
 
     def img_idx(self, d):
@@ -98,14 +99,18 @@ class TreeCheckboxDialog(wx.Dialog):
         return d
 
     def on_expanding(self, event):
-        """Populate subitems on expansion"""
+        """Populate subitems on expansion
+        :param event:
+        """
         item_id = event.GetItem()
         d = self.get_item_data(item_id)
         if len(d) > 1:
             self.populate(item_id)
 
     def populate(self, item_id):
-        """Populate the subitems of a tree"""
+        """Populate the subitems of a tree
+        :param item_id:
+        """
         try:
             d = self.get_item_data(item_id)
             assert len(d) > 1
@@ -207,6 +212,9 @@ class TreeCheckboxDialog(wx.Dialog):
 
         flags - rendering flags including CONTROL_CHECKED and CONTROL_UNDETERMINED
         width, height - size of bitmap to return
+        :param height:
+        :param width:
+        :param flags:
         """
         dc = wx.MemoryDC()
         bitmap = wx.EmptyBitmap(width, height)

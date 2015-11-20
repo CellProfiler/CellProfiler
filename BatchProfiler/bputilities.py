@@ -28,6 +28,7 @@ def get_batch_data_version_and_githash(batch_filename):
     batch_filename - Batch_data.h5 file to look at
     
     returns the GIT hash as stored in the file.
+    :param batch_filename:
     """
     from cellprofiler.utilities.hdf5_dict import HDF5Dict
     import cellprofiler.measurements as cpmeas
@@ -131,6 +132,7 @@ def get_version_from_timestr(time_str):
 
     Returns the UTC time of the time string in the format
     YYYYMMDDHHMMSS
+    :param time_str:
     """
     t = dateutil.parser.parse(time_str).utctimetuple()
     return "%04d%02d%02d%02d%02d%02d" % \
@@ -157,6 +159,9 @@ def get_cellprofiler_location(
     """Get the location of the CellProfiler source to use
 
     There are two choices - get by batch name or by version and git hash
+    :param batch_filename:
+    :param version:
+    :param git_hash:
     """
 
     if version is None or git_hash is None:
@@ -216,6 +221,7 @@ qstat
 
 def make_temp_script(script):
     """Write a script to a tempfile
+    :param script:
     """
     host_fd, host_scriptfile = tempfile.mkstemp(suffix=".sh")
     os.fchmod(host_fd, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
@@ -257,6 +263,21 @@ def run_on_tgt_os(script,
     email_address - address of email recipient
     task_range - for array jobs, a slice giving start / stop / step for
                  task numbering
+                 :param script:
+                 :param group_name:
+                 :param job_name:
+                 :param queue_name:
+                 :param output:
+                 :param err_output:
+                 :param priority:
+                 :param cwd:
+                 :param deps:
+                 :param mail_before:
+                 :param mail_error:
+                 :param mail_after:
+                 :param email_address:
+                 :param task_range:
+                 :param memory:
     """
     if deps is not None:
         dep_cond = "-hold_jid %s" % (",".join(deps))
@@ -380,7 +401,22 @@ def python_on_tgt_os(args, group_name, job_name, queue_name, output,
                      mail_after=True,
                      email_address=None,
                      with_xvfb=False):
-    """Run Python with the given arguments on a target machine"""
+    """Run Python with the given arguments on a target machine
+    :param args:
+    :param group_name:
+    :param job_name:
+    :param queue_name:
+    :param output:
+    :param err_output:
+    :param cwd:
+    :param deps:
+    :param priority:
+    :param mail_before:
+    :param mail_error:
+    :param mail_after:
+    :param email_address:
+    :param with_xvfb:
+    """
     if cwd is None:
         cd_command = ""
     else:
@@ -421,6 +457,11 @@ def build_cellprofiler(
     email_address - send email notifications here
 
     returns a sequence of job numbers.
+    :param version:
+    :param git_hash:
+    :param queue_name:
+    :param group_name:
+    :param email_address:
     """
     path = get_cellprofiler_location(version=version, git_hash=git_hash)
     if os.path.isdir(os.path.join(path, ".git")):
@@ -500,6 +541,10 @@ def send_mail(recipient, subject, content_type, body):
     subject - subject field of email
     content_type - mime type of the message body
     body - the payload of the mail message
+    :param recipient:
+    :param subject:
+    :param content_type:
+    :param body:
     """
     pipe = subprocess.Popen([SENDMAIL, "-t"], stdin=subprocess.PIPE)
     doc = """To: %(recipient)s
@@ -519,6 +564,9 @@ def send_html_mail(recipient, subject, html):
     subject - subject field of email
     content_type - mime type of the message body
     body - the payload of the mail message
+    :param recipient:
+    :param subject:
+    :param html:
     """
     send_mail(recipient=recipient,
               subject=subject,

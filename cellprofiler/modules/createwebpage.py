@@ -244,7 +244,9 @@ class CreateWebPage(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        """Make sure metadata tags exist"""
+        """Make sure metadata tags exist
+        :param pipeline:
+        """
         for cntrl in (self.web_page_file_name, self.title):
             undefined_tags = pipeline.get_undefined_metadata_tags(cntrl.value)
             if len(undefined_tags) > 0:
@@ -271,7 +273,9 @@ class CreateWebPage(cpm.CPModule):
             figure.subplot_table(0, 0, outcomes)
 
     def post_run(self, workspace):
-        """Make all the webpages after the run"""
+        """Make all the webpages after the run
+        :param workspace:
+        """
         d = {}
         zipfiles = {}
         m = workspace.measurements
@@ -431,6 +435,9 @@ class CreateWebPage(cpm.CPModule):
 
         workspace - workspace for current image set
         image_name - image whose path should be fetched
+        :param image_number:
+        :param image_name:
+        :param workspace:
         """
         file_name_feature = '_'.join((C_FILE_NAME, image_name))
         path_name_feature = '_'.join((C_PATH_NAME, image_name))
@@ -446,7 +453,9 @@ class CreateWebPage(cpm.CPModule):
         return image_path_name, image_file_name, image_url
 
     def validate_module_warnings(self, pipeline):
-        """Warn user re: Test mode """
+        """Warn user re: Test mode
+        :param pipeline:
+        """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "CreateWebPage will not produce output in Test Mode",
@@ -512,6 +521,8 @@ class CWPDirectoryPath(cps.DirectoryPath):
 
         If the directory choice is DIR_SAME or DIR_ABOVE, we return one of
         the special tokens, USE_DIR_SAME or USE_DIR_ABOVE
+        :param image_set_number:
+        :param measurements:
         """
         if self.dir_choice == DIR_SAME:
             return self.USE_DIR_SAME

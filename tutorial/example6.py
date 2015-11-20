@@ -36,6 +36,9 @@ class Example6(cpm.CPModule):
 
         image_numbers - these are the image numbers for each cycle in the
                         group.
+                        :param image_numbers:
+                        :param grouping:
+                        :param workspace:
         """
         d = self.get_dictionary(workspace.image_set_list)
         #
@@ -105,6 +108,8 @@ def e6_state_init(d, image_numbers):
     """Initialize the module dictionary
 
     image_numbers - the image numbers for this group
+    :param d:
+    :param image_numbers:
     """
     d.clear()
     d[K_IMAGE_NUMBERS] = list(image_numbers)
@@ -119,6 +124,10 @@ def e6_state_append(d, image, image_number, scale):
     image_number - the image number of the current cycle
 
     scale - shrink the image by this scale so we can hold the whole stack.
+    :param d:
+    :param image:
+    :param image_number:
+    :param scale:
     """
     #
     # These are the mapping coordinates to decimate the image.
@@ -149,7 +158,9 @@ def e6_state_append(d, image, image_number, scale):
 
 
 def e6_state_median(d):
-    """Return a median projection scaled up to the original shape."""
+    """Return a median projection scaled up to the original shape.
+    :param d:
+    """
     a = d[K_ARRAY]
     #
     # Take the median along the stack axis

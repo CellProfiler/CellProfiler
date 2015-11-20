@@ -23,6 +23,8 @@ def run_sql_file(batch_id, sql_filename):
     queue       - run job on this queue
     email       - who to email when done
     returns the RunBatch.BPJob
+    :param batch_id:
+    :param sql_filename:
     """
     cwd = os.path.dirname(__file__)
     batch = RunBatch.select(batch_id)
@@ -43,6 +45,8 @@ def sql_file_job_and_status(batch_id, sql_file):
     sql_path - path to the sql script submitted
     
     returns latest job or None if not submitted
+    :param batch_id:
+    :param sql_file:
     """
     batch = RunBatch.select(batch_id)
     run = RunBatch.BPSQLRun.select_by_sql_filename(batch, sql_file)

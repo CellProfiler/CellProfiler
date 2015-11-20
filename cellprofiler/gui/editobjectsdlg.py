@@ -195,7 +195,9 @@ class EditObjectsDialog(wx.Dialog):
         self.undo_button.Enable(True)
 
     def undo(self, event=None):
-        """Pop an entry from the undo stack and apply"""
+        """Pop an entry from the undo stack and apply
+        :param event:
+        """
         #
         # Mix what's on the undo ijv with what's in self.last_ijv
         # and remove any 0/1 pairs.
@@ -609,7 +611,20 @@ class EditObjectsDialog(wx.Dialog):
         self.lc = self.colormap[self.ll, :]
 
     def on_close(self, event, return_code):
-        """Fix up the labels as we close"""
+        """Fix up the labels as we close
+        :param return_code:
+        :param event:
+        :param return_code:
+        :param event:
+        :param return_code:
+        :param event:
+        :param return_code:
+        :param event:
+        :param return_code:
+        :param event:
+        :param return_code:
+        :param event:
+        """
         if return_code == wx.OK:
             self.EndModal(return_code)
             open_labels = set([d[self.K_LABEL] for d in self.artists.values()])
@@ -693,6 +708,12 @@ class EditObjectsDialog(wx.Dialog):
         """Set label display to either outlines or fill
 
         mode - one of ID_LABELS_FILL or ID_LABELS_OUTLINE
+        :param mode:
+        :param mode:
+        :param mode:
+        :param mode:
+        :param mode:
+        :param mode:
         """
         self.label_display_mode = mode
         self.display()
@@ -831,7 +852,14 @@ class EditObjectsDialog(wx.Dialog):
         event.Skip()
 
     def draw_callback(self, event):
-        """Decorate the drawing with the animated artists"""
+        """Decorate the drawing with the animated artists
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         if not self.inside_print:
             self.background = self.figure.canvas.copy_from_bbox(
                 self.orig_axes.bbox)
@@ -849,6 +877,12 @@ class EditObjectsDialog(wx.Dialog):
         """Find the artist and control point under the cursor
 
         returns tuple of artist, and index of control point or None, None
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
         """
         best_d = np.inf
         best_artist = None
@@ -919,6 +953,26 @@ class EditObjectsDialog(wx.Dialog):
 
         returns the object number at the mouse location or None if
         mouse isn't over an object
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
         """
         x = int(event.xdata + .5)
         y = int(event.ydata + .5)
@@ -987,7 +1041,28 @@ class EditObjectsDialog(wx.Dialog):
             self.pressed_keys.remove(event.key)
 
     def on_context_menu(self, event):
-        """Pop up a context menu for the control"""
+        """Pop up a context menu for the control
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         if isinstance(event, wx.MouseEvent):
             x, y = self.panel.ScreenToClient(event.GetPosition())
             location_event = matplotlib.backend_bases.LocationEvent(
@@ -1374,6 +1449,7 @@ class EditObjectsDialog(wx.Dialog):
         """Delete an artist and remove its object
 
         artist to delete
+        :param artist:
         """
         object_number = self.artists[artist][self.K_LABEL]
         artist.remove()
@@ -1671,7 +1747,9 @@ class EditObjectsDialog(wx.Dialog):
 
     @staticmethod
     def get_area(artist):
-        """Get the area inside an artist polygon"""
+        """Get the area inside an artist polygon
+        :param artist:
+        """
         #
         # Thank you Darel Rex Finley:
         #
@@ -1693,6 +1771,8 @@ class EditObjectsDialog(wx.Dialog):
         returns a point midway between the previous point and the
         point in question and a point midway between the next point
         and the point in question.
+        :param artist:
+        :param idx:
         """
         a = artist.get_xydata().astype(float)
         if idx == 0:
@@ -1729,7 +1809,9 @@ class EditObjectsDialog(wx.Dialog):
         self.figure.canvas.draw()
 
     def on_freehand_draw_click(self, event):
-        """Begin drawing on mouse-down"""
+        """Begin drawing on mouse-down
+        :param event:
+        """
         self.active_artist = Line2D([event.xdata], [event.ydata],
                                     color="blue",
                                     animated=True)
@@ -1969,6 +2051,7 @@ class EditObjectsDialog(wx.Dialog):
         """Create an artist with control points for editing an object
 
         object_number - # of object to edit
+        :param object_number:
         """
         #
         # We need to make outlines of both objects and holes.
@@ -2049,6 +2132,8 @@ class EditObjectsDialog(wx.Dialog):
         label - label # of label being closed.
 
         If edited, update the labeled pixels.
+        :param label:
+        :param display:
         """
         my_artists = [artist for artist, data in self.artists.items()
                       if data[self.K_LABEL] == label]

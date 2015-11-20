@@ -112,7 +112,9 @@ class Resize(cpm.CPModule):
                                           self.add_image)
 
     def add_image(self, can_remove=True):
-        """Add an image + associated questions and buttons"""
+        """Add an image + associated questions and buttons
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -167,7 +169,9 @@ class Resize(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        """Create the correct number of additional images"""
+        """Create the correct number of additional images
+        :param setting_values:
+        """
         try:
             additional_image_setting_count = \
                 int(setting_values[S_ADDITIONAL_IMAGE_COUNT])
@@ -281,6 +285,8 @@ class Resize(cpm.CPModule):
             0: index of this statistic
             1: input image name of image being aligned
             2: output image name of image being aligned
+            :param figure:
+            :param workspace:
         """
         input_images = workspace.display_data.input_images
         output_images = workspace.display_data.output_images

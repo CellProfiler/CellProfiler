@@ -147,7 +147,9 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         return self.operands
 
     def validate_module(self, pipeline):
-        """Make sure chosen objects and images are selected only once"""
+        """Make sure chosen objects and images are selected only once
+        :param pipeline:
+        """
         settings = {}
         for group in self.operands:
             if (group.operand_choice.value,
@@ -219,7 +221,10 @@ class MeasureImageAreaOccupied(cpm.CPModule):
                              col_labels=workspace.display_data.col_labels)
 
     def measure_objects(self, operand, workspace):
-        """Performs the measurements on the requested objects"""
+        """Performs the measurements on the requested objects
+        :param workspace:
+        :param operand:
+        """
         objects = workspace.get_objects(operand.operand_objects.value)
         if objects.has_parent_image:
             area_occupied = np.sum(
@@ -249,7 +254,10 @@ class MeasureImageAreaOccupied(cpm.CPModule):
                  str(area_occupied), str(perimeter), str(total_area)]]
 
     def measure_images(self, operand, workspace):
-        """Performs measurements on the requested images"""
+        """Performs measurements on the requested images
+        :param workspace:
+        :param operand:
+        """
         image = workspace.image_set.get_image(operand.binary_name.value,
                                               must_be_binary=True)
         area_occupied = np.sum(image.pixel_data > 0)
@@ -266,7 +274,9 @@ class MeasureImageAreaOccupied(cpm.CPModule):
                  str(total_area)]]
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for measurements made by this module"""
+        """Return column definitions for measurements made by this module
+        :param pipeline:
+        """
         columns = []
         for op in self.operands:
             for feature, coltype in ((F_AREA_OCCUPIED, cpmeas.COLTYPE_FLOAT),
@@ -280,7 +290,9 @@ class MeasureImageAreaOccupied(cpm.CPModule):
 
     def get_categories(self, pipeline, object_name):
         """The categories output by this module for the given object (or Image)
-        
+        :param object_name:
+        :param pipeline:
+
         """
         if object_name == cpmeas.IMAGE:
             return [C_AREA_OCCUPIED]
@@ -288,7 +300,11 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        """The measurements available for a given category"""
+        """The measurements available for a given category
+        :param category:
+        :param object_name:
+        :param pipeline:
+        """
         if object_name == cpmeas.IMAGE and category == C_AREA_OCCUPIED:
             return ["AreaOccupied", "TotalArea"]
         return []
@@ -296,7 +312,11 @@ class MeasureImageAreaOccupied(cpm.CPModule):
     def get_measurement_objects(self, pipeline, object_name, category,
                                 measurement):
         """The objects measured for a particular measurement
-        
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+
         """
         if (object_name == "Image" and category == "AreaOccupied" and
                     measurement in ("AreaOccupied", "TotalArea")):
@@ -308,7 +328,11 @@ class MeasureImageAreaOccupied(cpm.CPModule):
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
         """The images measured for a particular measurement
-        
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+
         """
         if (object_name == "Image" and category == "AreaOccupied" and
                     measurement in ("AreaOccupied", "TotalArea")):
@@ -324,6 +348,10 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         We check for the Matlab version which did the thresholding as well
         as the measurement; this duplicated the functionality in the Identify
         modules.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab:
             raise NotImplementedError(

@@ -215,6 +215,8 @@ class MeasureNeurons(cpm.CPModule):
         image_number - the image # for the current image set
 
         Returns the edge file's path and vertex file's path
+        :param image_number:
+        :param m:
         """
         path = self.directory.get_absolute_path(m)
         edge_file = m.apply_metadata(self.edge_file_name.value, image_number)
@@ -242,7 +244,9 @@ class MeasureNeurons(cpm.CPModule):
                          EF_TOTAL_INTENSITY)
 
     def prepare_run(self, workspace):
-        """Initialize graph files"""
+        """Initialize graph files
+        :param workspace:
+        """
         if not self.wants_neuron_graph:
             return True
         edge_files = set()
@@ -272,7 +276,9 @@ class MeasureNeurons(cpm.CPModule):
         return True
 
     def run(self, workspace):
-        """Run the module on the image set"""
+        """Run the module on the image set
+        :param workspace:
+        """
         seed_objects_name = self.seed_objects_name.value
         skeleton_name = self.image_name.value
         seed_objects = workspace.object_set.get_objects(seed_objects_name)
@@ -493,7 +499,10 @@ class MeasureNeurons(cpm.CPModule):
                 fd.write(line_format % fields)
 
     def display(self, workspace, figure):
-        """Display a visualization of the results"""
+        """Display a visualization of the results
+        :param figure:
+        :param workspace:
+        """
         from matplotlib.axes import Axes
         from matplotlib.lines import Line2D
         import matplotlib.cm
@@ -532,7 +541,9 @@ class MeasureNeurons(cpm.CPModule):
                 axes.add_line(line)
 
     def get_measurement_columns(self, pipeline):
-        """Return database column definitions for measurements made here"""
+        """Return database column definitions for measurements made here
+        :param pipeline:
+        """
         return [
             (self.seed_objects_name.value,
              "_".join((C_NEURON, feature, self.image_name.value)),
@@ -545,6 +556,8 @@ class MeasureNeurons(cpm.CPModule):
 
         pipeline - pipeline being run
         object_name - name of seed object
+        :param object_name:
+        :param pipeline:
         """
         if object_name == self.seed_objects_name:
             return [C_NEURON]
@@ -557,6 +570,9 @@ class MeasureNeurons(cpm.CPModule):
         pipeline - pipeline being run
         object_name - object being measured (must be the seed object)
         category - category of measurement (must be C_NEURON)
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if category == C_NEURON and object_name == self.seed_objects_name:
             return F_ALL
@@ -571,6 +587,10 @@ class MeasureNeurons(cpm.CPModule):
         object_name - object being measured (must be the seed object)
         category - category of measurement (must be C_NEURON)
         measurement - one of the neuron measurements
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if measurement in self.get_measurements(pipeline, object_name,
                                                 category):
@@ -586,6 +606,10 @@ class MeasureNeurons(cpm.CPModule):
         variable_revision_number - the version number at time of saving
         module_name - name of original module
         from_matlab - true if a matlab pipeline, false if pyCP
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 1:
             #
@@ -638,6 +662,42 @@ class MeasureNeurons(cpm.CPModule):
         j: J coordinate of the vertex
         label: the vertex's label
         kind: kind of vertex = "T" for trunk, "B" for branchpoint or "E" for endpoint.
+        :param image:
+        :param endpoints:
+        :param branchpoints:
+        :param trunks:
+        :param skeleton_labels:
+        :param skeleton:
+        :param image:
+        :param endpoints:
+        :param branchpoints:
+        :param trunks:
+        :param skeleton_labels:
+        :param skeleton:
+        :param image:
+        :param endpoints:
+        :param branchpoints:
+        :param trunks:
+        :param skeleton_labels:
+        :param skeleton:
+        :param image:
+        :param endpoints:
+        :param branchpoints:
+        :param trunks:
+        :param skeleton_labels:
+        :param skeleton:
+        :param image:
+        :param endpoints:
+        :param branchpoints:
+        :param trunks:
+        :param skeleton_labels:
+        :param skeleton:
+        :param image:
+        :param endpoints:
+        :param branchpoints:
+        :param trunks:
+        :param skeleton_labels:
+        :param skeleton:
         """
         i, j = np.mgrid[0:skeleton.shape[0], 0:skeleton.shape[1]]
         #

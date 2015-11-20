@@ -345,6 +345,8 @@ class ReassignObjectNumbers(cpm.CPModule):
         """Display the results of relabeling
 
         workspace - workspace containing saved display data
+        :param figure:
+        :param workspace:
         """
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         import matplotlib.cm as cm
@@ -395,6 +397,8 @@ class ReassignObjectNumbers(cpm.CPModule):
 
         workspace - the workspace for the image set
         mask - mask of background points within the minimum distance
+        :param mask:
+        :param workspace:
         """
         #
         # NOTE: This is an efficient implementation and an improvement
@@ -533,6 +537,10 @@ class ReassignObjectNumbers(cpm.CPModule):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if (from_matlab and variable_revision_number == 1 and
                     module_name == 'SplitIntoContiguousObjects'):
@@ -576,7 +584,9 @@ class ReassignObjectNumbers(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
 
     def get_image(self, workspace):
-        """Get the image for image-directed merging"""
+        """Get the image for image-directed merging
+        :param workspace:
+        """
         objects = workspace.object_set.get_objects(self.objects_name.value)
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)
@@ -597,6 +607,18 @@ class ReassignObjectNumbers(cpm.CPModule):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
         """
         if object_name == 'Image':
             return ['Count']
@@ -611,6 +633,24 @@ class ReassignObjectNumbers(cpm.CPModule):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if object_name == 'Image' and category == 'Count':
             return [self.output_objects_name.value]
@@ -630,6 +670,18 @@ def copy_labels(labels, segmented):
 
     labels - labels matrix similarly segmented to "segmented"
     segmented - the newly numbered labels matrix (a subset of pixels are labeled)
+    :param segmented:
+    :param labels:
+    :param segmented:
+    :param labels:
+    :param segmented:
+    :param labels:
+    :param segmented:
+    :param labels:
+    :param segmented:
+    :param labels:
+    :param segmented:
+    :param labels:
     """
     max_labels = np.max(segmented)
     seglabel = scind.minimum(labels, segmented, np.arange(1, max_labels + 1))

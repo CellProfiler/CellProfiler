@@ -51,6 +51,8 @@ import warnings
 def set_adjustable(self, adjustable):
     """
     ACCEPTS: [ 'box' | 'datalim' | 'box-forced']
+    :param adjustable:
+    :param self:
     """
     if adjustable in ('box', 'datalim', 'box-forced'):
         if self in self._shared_x_axes or self in self._shared_y_axes:
@@ -66,6 +68,8 @@ def apply_aspect(self, position=None):
     """
     Use :meth:`_aspect` and :meth:`_adjustable` to modify the
     axes box or the view limits.
+    :param position:
+    :param self:
     """
     if position is None:
         position = self.get_position(original=True)

@@ -147,7 +147,9 @@ class Align(cpm.CPModule):
             </ul>""" % globals())
 
     def add_image(self, can_remove=True):
-        """Add an image + associated questions and buttons"""
+        """Add an image + associated questions and buttons
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -270,6 +272,8 @@ class Align(cpm.CPModule):
                  output image data
                  x offset
                  y offset
+                 :param figure:
+                 :param workspace:
         """
         image_info = workspace.display_data.image_info
         first_input_name = self.first_input_image.value
@@ -322,6 +326,9 @@ class Align(cpm.CPModule):
         first image to arrive at indexes in the second image.
 
         Returns the x,y (not i,j) offsets.
+        :param input2_name:
+        :param input1_name:
+        :param workspace:
         """
         image1 = workspace.image_set.get_image(input1_name)
         image1_pixels = image1.pixel_data.astype(float)
@@ -345,6 +352,8 @@ class Align(cpm.CPModule):
         Cross-Correlation" by J.P. Lewis
         (http://www.idiom.com/~zilla/Papers/nvisionInterface/nip.html)
         which is frequently cited when addressing this problem.
+        :param pixels2:
+        :param pixels1:
         """
         #
         # TODO: Possibly use all 3 dimensions for color some day
@@ -472,6 +481,10 @@ class Align(cpm.CPModule):
         then picks the direction in which there is the most mutual information.
         From there, it tries all offsets again and so on until it reaches
         a local maximum.
+        :param mask2:
+        :param mask1:
+        :param pixels2:
+        :param pixels1:
         """
         #
         # TODO: Possibly use all 3 dimensions for color some day
@@ -525,6 +538,12 @@ class Align(cpm.CPModule):
         off_x, off_y - offset of the resultant image relative to the origninal
 
         shape - shape of the resultant image
+        :param shape:
+        :param off_y:
+        :param off_x:
+        :param output_image_name:
+        :param input_image_name:
+        :param workspace:
         """
 
         image = workspace.image_set.get_image(input_image_name)
@@ -573,6 +592,8 @@ class Align(cpm.CPModule):
 
         Based on the crop mode, adjust the offsets and shapes to optimize
         the cropping.
+        :param shapes:
+        :param offsets:
         """
         offsets = np.array(offsets)
         shapes = np.array(shapes)
@@ -629,7 +650,9 @@ class Align(cpm.CPModule):
         return []
 
     def get_measurement_columns(self, pipeline):
-        """return the offset measurements"""
+        """return the offset measurements
+        :param pipeline:
+        """
 
         targets = ([self.first_output_image.value,
                     self.second_output_image.value] +
@@ -759,6 +782,30 @@ class Align(cpm.CPModule):
 def offset_slice(pixels1, pixels2, i, j):
     """Return two sliced arrays where the first slice is offset by i,j
     relative to the second slice.
+    :param j:
+    :param i:
+    :param pixels2:
+    :param pixels1:
+    :param j:
+    :param i:
+    :param pixels2:
+    :param pixels1:
+    :param j:
+    :param i:
+    :param pixels2:
+    :param pixels1:
+    :param j:
+    :param i:
+    :param pixels2:
+    :param pixels1:
+    :param j:
+    :param i:
+    :param pixels2:
+    :param pixels1:
+    :param j:
+    :param i:
+    :param pixels2:
+    :param pixels1:
 
     """
     if i < 0:
@@ -793,6 +840,24 @@ def cumsum_quadrant(x, i_forwards, j_forwards):
     x - the matrix to be summed
     i_forwards - sum from 0 to end in the i direction if true
     j_forwards - sum from 0 to end in the j direction if true
+    :param j_forwards:
+    :param i_forwards:
+    :param x:
+    :param j_forwards:
+    :param i_forwards:
+    :param x:
+    :param j_forwards:
+    :param i_forwards:
+    :param x:
+    :param j_forwards:
+    :param i_forwards:
+    :param x:
+    :param j_forwards:
+    :param i_forwards:
+    :param x:
+    :param j_forwards:
+    :param i_forwards:
+    :param x:
     """
     if i_forwards:
         x = x.cumsum(0)
@@ -805,7 +870,14 @@ def cumsum_quadrant(x, i_forwards, j_forwards):
 
 
 def entropy(x):
-    """The entropy of x as if x is a probability distribution"""
+    """The entropy of x as if x is a probability distribution
+    :param x:
+    :param x:
+    :param x:
+    :param x:
+    :param x:
+    :param x:
+    """
     histogram = scind.histogram(x.astype(float), np.min(x), np.max(x), 256)
     n = np.sum(histogram)
     if n > 0 and np.max(histogram) > 0:
@@ -816,7 +888,20 @@ def entropy(x):
 
 
 def entropy2(x, y):
-    """Joint entropy of paired samples X and Y"""
+    """Joint entropy of paired samples X and Y
+    :param y:
+    :param x:
+    :param y:
+    :param x:
+    :param y:
+    :param x:
+    :param y:
+    :param x:
+    :param y:
+    :param x:
+    :param y:
+    :param x:
+    """
     #
     # Bin each image into 256 gray levels
     #
@@ -840,7 +925,20 @@ def entropy2(x, y):
 
 
 def reshape_image(source, new_shape):
-    """Reshape an image to a larger shape, padding with zeros"""
+    """Reshape an image to a larger shape, padding with zeros
+    :param new_shape:
+    :param source:
+    :param new_shape:
+    :param source:
+    :param new_shape:
+    :param source:
+    :param new_shape:
+    :param source:
+    :param new_shape:
+    :param source:
+    :param new_shape:
+    :param source:
+    """
     if tuple(source.shape) == tuple(new_shape):
         return source
 

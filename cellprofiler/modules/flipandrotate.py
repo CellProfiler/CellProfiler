@@ -145,7 +145,11 @@ class FlipAndRotate(cpm.CPModule):
 
     def prepare_group(self, workspace, grouping,
                       image_numbers):
-        """Initialize the angle if appropriate"""
+        """Initialize the angle if appropriate
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        """
         if self.rotate_choice == ROTATE_MOUSE and self.how_often == IO_ONCE:
             self.get_dictionary(workspace.image_set_list)[D_ANGLE] = None
 
@@ -296,7 +300,9 @@ class FlipAndRotate(cpm.CPModule):
                                   sharexy=figure.subplot(0, 0))
 
     def handle_interaction(self, pixel_data):
-        """Run a UI that gets an angle from the user"""
+        """Run a UI that gets an angle from the user
+        :param pixel_data:
+        """
         import wx
 
         if pixel_data.ndim == 2:
@@ -532,6 +538,8 @@ def affine_offset(shape, transform):
     Return an offset for scipy.ndimage.affine_transform that does not
     transform the location of the center of the image (the image rotates
     or is flipped about the center).
+    :param transform:
+    :param shape:
     """
     c = (np.array(shape[:2]) - 1).astype(float) / 2.0
     return -np.dot(transform - np.identity(2), c)

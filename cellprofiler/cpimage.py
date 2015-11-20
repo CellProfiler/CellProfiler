@@ -280,6 +280,7 @@ class Image(object):
         """Crop a 2-d or 3-d image using this image's crop mask
         
         image - a np.ndarray to be cropped (of any type)
+        :param image:
         """
         if image.shape[:2] == self.pixel_data.shape[:2]:
             # Same size - no cropping needed
@@ -371,6 +372,8 @@ class Image(object):
         We utilize the sub-groups, "Images", "Masks" and "CropMasks".
         The best practice is to use a temporary file dedicated to images and
         maybe objects.
+        :param hdf5_file:
+        :param name:
         """
         from cellprofiler.utilities.hdf5_dict import HDF5ImageSet
         if isinstance(self.__image, ImageCache) and \
@@ -419,6 +422,8 @@ class ImageCache(object):
 
         name - unique channel name of the image
         backing_store - an HDF5ImageSet
+        :param backing_store:
+        :param name:
         """
         self.__backing_store = backing_store
         self.__name = name
@@ -440,7 +445,11 @@ class ImageCache(object):
 
 
 def crop_image(image, crop_mask, crop_internal=False):
-    """Crop an image to the size of the nonzero portion of a crop mask"""
+    """Crop an image to the size of the nonzero portion of a crop mask
+    :param crop_internal:
+    :param crop_mask:
+    :param image:
+    """
     i_histogram = crop_mask.sum(axis=1)
     i_cumsum = np.cumsum(i_histogram != 0)
     j_histogram = crop_mask.sum(axis=0)
@@ -518,7 +527,10 @@ class RGBImage(object):
 
 
 def check_consistency(image, mask):
-    """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype"""
+    """Check that the image, mask and labels arrays have the same shape and that the arrays are of the right dtype
+    :param mask:
+    :param image:
+    """
     assert (image is None) or (
     len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
     assert (mask is None) or (
@@ -536,6 +548,7 @@ class AbstractImageProvider(object):
 
     def provide_image(self, image_set):
         """Return the image that is associated with the image set
+        :param image_set:
         """
         raise NotImplementedError(
             "Please implement ProvideImage for your class")
@@ -652,6 +665,42 @@ class ImageSet(object):
         must_be_grayscale - raise an exception if not a grayscale image
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
+                      :param cache:
+                      :param must_be_rgb:
+                      :param must_be_grayscale:
+                      :param must_be_color:
+                      :param must_be_binary:
+                      :param name:
+                      :param cache:
+                      :param must_be_rgb:
+                      :param must_be_grayscale:
+                      :param must_be_color:
+                      :param must_be_binary:
+                      :param name:
+                      :param cache:
+                      :param must_be_rgb:
+                      :param must_be_grayscale:
+                      :param must_be_color:
+                      :param must_be_binary:
+                      :param name:
+                      :param cache:
+                      :param must_be_rgb:
+                      :param must_be_grayscale:
+                      :param must_be_color:
+                      :param must_be_binary:
+                      :param name:
+                      :param cache:
+                      :param must_be_rgb:
+                      :param must_be_grayscale:
+                      :param must_be_color:
+                      :param must_be_binary:
+                      :param name:
+                      :param cache:
+                      :param must_be_rgb:
+                      :param must_be_grayscale:
+                      :param must_be_color:
+                      :param must_be_binary:
+                      :param name:
         """
         name = str(name)
         if not self.__images.has_key(name):
@@ -697,6 +746,12 @@ class ImageSet(object):
         """Get a named image provider
         
         name - return the image provider with this name
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
         """
         providers = filter(lambda x: x.name == name, self.__image_providers)
         assert len(providers) > 0, "No provider of the %s image" % (name)
@@ -708,6 +763,12 @@ class ImageSet(object):
         """Remove a named image provider
         
         name - the name of the provider to remove
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
         """
         self.__image_providers = filter(lambda x: x.name != name,
                                         self.__image_providers)
@@ -716,6 +777,12 @@ class ImageSet(object):
         """Remove the image memory associated with a provider
 
         name - the name of the provider
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
         """
         self.get_image_provider(name).release_memory()
         if self.__images.has_key(name):
@@ -771,7 +838,13 @@ class ImageSetList(object):
 
     def get_image_set(self, keys_or_number):
         """Return either the indexed image set (keys_or_number = index) or the image set with matching keys
-        
+        :param keys_or_number:
+        :param keys_or_number:
+        :param keys_or_number:
+        :param keys_or_number:
+        :param keys_or_number:
+        :param keys_or_number:
+
         """
         if not isinstance(keys_or_number, dict):
             keys = {'number': keys_or_number}
@@ -809,7 +882,14 @@ class ImageSetList(object):
         return self.__associating_by_key
 
     def purge_image_set(self, number):
-        """Remove the memory associated with an image set"""
+        """Remove the memory associated with an image set
+        :param number:
+        :param number:
+        :param number:
+        :param number:
+        :param number:
+        :param number:
+        """
         keys = self.__image_sets[number].keys
         image_set = self.__image_sets[number]
         image_set.clear_cache()
@@ -822,6 +902,12 @@ class ImageSetList(object):
         """Provide an image to every image set
         
         provider - an instance of AbstractImageProvider
+        :param provider:
+        :param provider:
+        :param provider:
+        :param provider:
+        :param provider:
+        :param provider:
         """
         for image_set in self.__image_sets:
             image_set.providers.append(provider)
@@ -851,6 +937,12 @@ class ImageSetList(object):
                     that gives the group's values for each key.
                     The second element is a list of image numbers of
                     the images in the group
+                    :param keys:
+                    :param keys:
+                    :param keys:
+                    :param keys:
+                    :param keys:
+                    :param keys:
         """
         #
         # Sort order for dictionary keys
@@ -889,7 +981,14 @@ class ImageSetList(object):
         return f.getvalue()
 
     def load_state(self, state):
-        """Load an image_set_list's state from the string returned from save_state"""
+        """Load an image_set_list's state from the string returned from save_state
+        :param state:
+        :param state:
+        :param state:
+        :param state:
+        :param state:
+        :param state:
+        """
 
         self.__image_sets = []
         self.__image_sets_by_key = {}
@@ -924,7 +1023,28 @@ class ImageSetList(object):
 
 
 def make_dictionary_key(key):
-    """Make a dictionary into a stable key for another dictionary"""
+    """Make a dictionary into a stable key for another dictionary
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    :param key:
+    """
     return u", ".join([u":".join([unicode(y) for y in x])
                        for x in sorted(key.iteritems())])
 
@@ -933,6 +1053,26 @@ def readc01(fname):
     """Read a Cellomics file into an array
 
     fname - the name of the file
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
+    :param fname:
     """
 
     def readint(f):

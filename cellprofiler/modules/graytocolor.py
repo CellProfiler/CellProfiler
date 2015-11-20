@@ -278,6 +278,7 @@ class GrayToColor(cpm.CPModule):
         """Make sure that the module's settings are consistent
         
         We need at least one image name to be filled in
+        :param pipeline:
         """
         if self.scheme_choice not in (SCHEME_STACK, SCHEME_COMPOSITE):
             if all([color_scheme_setting.image_name.is_blank

@@ -44,7 +44,9 @@ class OutputExternal(cpm.CPModule):
         return result
 
     def add_image(self, can_remove=True):
-        """Add an image to the list of image names"""
+        """Add an image to the list of image names
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         group.append('divider', cps.Divider(line=False))
         group.append('image_name', cps.ExternalImageNameSubscriber(

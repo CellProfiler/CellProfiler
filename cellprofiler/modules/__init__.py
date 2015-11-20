@@ -276,6 +276,7 @@ def find_cpmodule(m):
     m - an imported module
 
     returns the CPModule class
+    :param m:
     """
     for v, val in m.__dict__.iteritems():
         if isinstance(val, type) and issubclass(val, cpm.CPModule):

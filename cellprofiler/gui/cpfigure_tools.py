@@ -8,7 +8,11 @@ from centrosome.cpmorphology import distance_color_labels
 
 
 def figure_to_image(figure, *args, **kwargs):
-    """Convert a figure to a numpy array"""
+    """Convert a figure to a numpy array
+    :param kwargs:
+    :param args:
+    :param figure:
+    """
     #
     # Save the figure as a .PNG and then load it using scipy.misc.imread
     #
@@ -26,6 +30,8 @@ def only_display_image(figure, shape):
 
     figure - a matplotlib figure
     shape - i/j size of the image being displayed
+    :param shape:
+    :param figure:
     """
     assert isinstance(figure, matplotlib.figure.Figure)
     figure.set_frameon(False)
@@ -53,5 +59,6 @@ def renumber_labels_for_display(labels):
     those of far-apart indices. Nearby labels tend to be adjacent or close,
     so a random numbering has more color-distance between labels than a
     straightforward one
+    :param labels:
     """
     return distance_color_labels(labels)

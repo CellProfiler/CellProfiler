@@ -563,6 +563,8 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         For CorrectIllumninationCalculate, we make sure the current image
         set includes the aggregate image. "run" may not have run if an
         image was filtered out.
+        :param grouping:
+        :param workspace:
         """
         if self.each_or_all != EA_EACH:
             image_set = workspace.image_set
@@ -631,6 +633,18 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         image - an instance of cpimage.Image
         
         returns another instance of cpimage.Image
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
         """
         if self.dilate_objects.value:
             #
@@ -660,7 +674,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
 
     def smoothing_filter_size(self, image_shape):
         """Return the smoothing filter size based on the settings and image size
-        
+        :param image_shape:
+        :param image_shape:
+        :param image_shape:
+        :param image_shape:
+        :param image_shape:
+        :param image_shape:
+
         """
         if self.automatic_object_width == FI_MANUALLY:
             # Convert from full-width at half-maximum to standard deviation
@@ -673,7 +693,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
 
     def preprocess_image_for_averaging(self, orig_image):
         """Create a version of the image appropriate for averaging
-        
+        :param orig_image:
+        :param orig_image:
+        :param orig_image:
+        :param orig_image:
+        :param orig_image:
+        :param orig_image:
+
         """
         pixels = orig_image.pixel_data
         if (self.intensity_choice == IC_REGULAR or
@@ -713,6 +739,18 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         image - an instance of cpimage.Image containing the pixels to analyze
         orig_image - the ancestor source image or None if ambiguous
         returns another instance of cpimage.Image
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
         """
         if self.smoothing_method == SM_NONE:
             return image
@@ -729,7 +767,20 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         return output_image
 
     def smooth_plane(self, pixel_data, mask):
-        """Smooth one 2-d color plane of an image"""
+        """Smooth one 2-d color plane of an image
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        """
 
         sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
         if self.smoothing_method == SM_FIT_POLYNOMIAL:
@@ -762,7 +813,20 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         return output_pixels
 
     def smooth_with_convex_hull(self, pixel_data, mask):
-        """Use the convex hull transform to smooth the image"""
+        """Use the convex hull transform to smooth the image
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        :param mask:
+        :param pixel_data:
+        """
         #
         # Apply an erosion, then the transform, then a dilation, heuristically
         # to ignore little spikey noisy things.
@@ -805,6 +869,18 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         
         image - an instance of cpimage.Image
         returns another instance of cpimage.Image
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
+        :param orig_image:
+        :param image:
         """
         if self.rescale_option == cps.NO:
             return image
@@ -839,7 +915,14 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         return output_image
 
     def validate_module(self, pipeline):
-        """Produce error if 'All:First' is selected and input image is not provided by the file image provider."""
+        """Produce error if 'All:First' is selected and input image is not provided by the file image provider.
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         if not pipeline.is_image_from_file(
                 self.image_name.value) and self.each_or_all == EA_ALL_FIRST:
             raise cps.ValidationError(
@@ -854,7 +937,14 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
 
     def validate_module_warnings(self, pipeline):
-        """Warn user re: Test mode """
+        """Warn user re: Test mode
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         if self.each_or_all == EA_ALL_FIRST:
             raise cps.ValidationError(
                 "Pre-calculation of the illumination function is time-intensive, especially for Test Mode. The analysis will proceed, but consider using '%s' instead." % EA_ALL_ACROSS,
@@ -875,6 +965,30 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         
         Matlab variable revision numbers 6 and 7 supported.
         pyCellProfiler variable revision number 1 supported.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
 
         if from_matlab and variable_revision_number == 6:
@@ -951,6 +1065,26 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         This function handles the legacy EA_ALL which guessed the user's
         intent: processing before the first cycle or not. We look for
         the image provider and see if it is a file image provider.
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
         """
         if self.each_or_all == EA_ALL:
             if pipeline.is_image_from_file(self.image_name.value):
@@ -986,6 +1120,26 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         """Save the internal state of the provider to a dictionary
 
         d - save to this dictionary, numpy arrays and json serializable only
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
         """
         d[self.D_NAME] = self.__name
         d[self.D_IMAGE_SUM] = self.__image_sum
@@ -999,6 +1153,46 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         module - the module providing details on how to perform the correction
 
         returns a provider set up with the restored state
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
+        :param module:
+        :param d:
         """
         provider = CorrectIlluminationImageProvider(
             d[CorrectIlluminationImageProvider.D_NAME],
@@ -1013,6 +1207,26 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         
         image - an instance of cellprofiler.cpimage.Image, including
                 image data and a mask
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
+                :param image:
         """
         self.__dirty = True
         pimage = self.__module.preprocess_image_for_averaging(image)

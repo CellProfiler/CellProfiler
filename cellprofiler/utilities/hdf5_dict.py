@@ -700,6 +700,18 @@ class HDF5Dict(object):
 
         object_name - name of object
         feature_name - name of feature
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
         """
         return self.top_group[object_name][feature_name][DATA].dtype
 
@@ -744,6 +756,36 @@ class HDF5Dict(object):
                omitted or None, image set numbers are assumed to go from 1 to N
         data_type - the data type of the array to be created or None to have
                     it inferred.
+                    :param data_type:
+                    :param idxs:
+                    :param values:
+                    :param feature_name:
+                    :param object_name:
+                    :param data_type:
+                    :param idxs:
+                    :param values:
+                    :param feature_name:
+                    :param object_name:
+                    :param data_type:
+                    :param idxs:
+                    :param values:
+                    :param feature_name:
+                    :param object_name:
+                    :param data_type:
+                    :param idxs:
+                    :param values:
+                    :param feature_name:
+                    :param object_name:
+                    :param data_type:
+                    :param idxs:
+                    :param values:
+                    :param feature_name:
+                    :param object_name:
+                    :param data_type:
+                    :param idxs:
+                    :param values:
+                    :param feature_name:
+                    :param object_name:
         """
         with self.lock:
             self.add_object(object_name)
@@ -821,6 +863,24 @@ class HDF5Dict(object):
               The image numbers will most likely be used as references within
               other measurements at later stages of the pipeline and simply
               remapping here is not sufficient.
+              :param image_numbers:
+              :param feature_name:
+              :param object_name:
+              :param image_numbers:
+              :param feature_name:
+              :param object_name:
+              :param image_numbers:
+              :param feature_name:
+              :param object_name:
+              :param image_numbers:
+              :param feature_name:
+              :param object_name:
+              :param image_numbers:
+              :param feature_name:
+              :param object_name:
+              :param image_numbers:
+              :param feature_name:
+              :param object_name:
         """
         with self.lock:
             feature_group = self.top_group.require_group(object_name). \
@@ -884,6 +944,12 @@ class HDF5FileList(object):
         """Return True if the hdf5 file has a file list
 
         hdf5_file - an h5py.File
+        :param hdf5_file:
+        :param hdf5_file:
+        :param hdf5_file:
+        :param hdf5_file:
+        :param hdf5_file:
+        :param hdf5_file:
         """
         assert isinstance(hdf5_file, h5py.File)
         if not FILE_LIST_GROUP in hdf5_file.keys():
@@ -905,6 +971,18 @@ class HDF5FileList(object):
         dest - destination for file list
 
         Any file list in dest will be erased.
+        :param dest:
+        :param src:
+        :param dest:
+        :param src:
+        :param dest:
+        :param src:
+        :param dest:
+        :param src:
+        :param dest:
+        :param src:
+        :param dest:
+        :param src:
         """
         assert isinstance(src, h5py.File)
         assert isinstance(dest, h5py.File)
@@ -982,11 +1060,52 @@ class HDF5FileList(object):
         """Add a callback that will be called if the file list changes in any way
 
         callback - a function taking no arguments.
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
         """
         self.__notification_list.append(callback)
 
     def remove_notification_callback(self, callback):
-        """Remove a previously installed callback"""
+        """Remove a previously installed callback
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        """
         self.__notification_list.remove(callback)
 
     def get_notification_callbacks(self):
@@ -1019,6 +1138,26 @@ class HDF5FileList(object):
                  And if that's not enough, the keywords, "index" and "data"
                  are needed for vstringarrays, so we encode "index" as
                  "\69ndex" and "\64ata"
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
+                 :param name:
         """
         #
         # I sure hope this isn't slow...
@@ -1034,6 +1173,26 @@ class HDF5FileList(object):
         """Decode a name back to plaintext
 
         see encode for details and editorial commentary
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
         """
         # Split string at every backslash. Every string after the first
         # begins with two hex digits which contain the character to convert
@@ -1056,6 +1215,46 @@ class HDF5FileList(object):
                        in the "//foo.jpg" directory.
 
         returns a two tuple of schema + path part sequence
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
+        :param is_directory:
+        :param url:
         """
         if isinstance(url, unicode):
             url = url.encode("utf-8")
@@ -1229,6 +1428,26 @@ class HDF5FileList(object):
         """Return True if a group is a directory
 
         g - an hdf5 object which may be a group marked as a file list group
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
+        :param g:
         """
         return isinstance(g, h5py.Group) and A_CLASS in g.attrs and \
                g.attrs[A_CLASS] == CLASS_DIRECTORY
@@ -1239,6 +1458,26 @@ class HDF5FileList(object):
         root_url - if present, get the file list below this directory.
 
         returns a sequence of urls
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
+        :param root_url:
         """
         group = self.get_filelist_group()
         with self.lock:
@@ -1289,6 +1528,8 @@ class HDF5FileList(object):
         path_tuple - the tuple of path parts to get to g
 
         returns the URL list
+        :param path_tuple:
+        :param g:
         """
         if self.__cache.has_key(path_tuple):
             return self.__cache[path_tuple].urls
@@ -1302,6 +1543,7 @@ class HDF5FileList(object):
 
         returns just the filename parts of the files in the
         directory.
+        :param url:
         """
         schema, parts = self.split_url(url, is_directory=True)
         with self.lock:
@@ -1330,6 +1572,7 @@ class HDF5FileList(object):
         "file://foo/bar/image.jpg" and "file://foo/baz/image.jpg",
         then self.list_directories("file://foo") would return
         [ "bar", "baz" ]
+        :param url:
         """
         schema, parts = self.split_url(url, is_directory=True)
         with self.lock:
@@ -1387,6 +1630,8 @@ class HDF5FileList(object):
         url - url of the file. The URL must be present in the file list
 
         metadata - the OME-XML for the file
+        :param metadata:
+        :param url:
         """
         self.__generation = uuid.uuid4()
         group, index, has_metadata = self.find_url(url)
@@ -1401,6 +1646,7 @@ class HDF5FileList(object):
         url - url of the file.
 
         metadata - the OME-XML for the file
+        :param url:
         """
         result = self.find_url(url)
         if result is None:
@@ -1423,6 +1669,7 @@ class HDF5FileList(object):
         directory, the index of the URL in the file list
         and the metadata indicators for the directory
         or None if the url is not present.
+        :param url:
         """
         schema, parts = self.split_url(url)
         with self.lock:
@@ -1452,6 +1699,7 @@ class HDF5FileList(object):
         url - url of the directory to reference
 
         returns None if never, else seconds after the epoch
+        :param url:
         """
         group = self.get_filelist_group()
         schema, path = self.split_url(url)
@@ -1474,6 +1722,7 @@ class HDF5FileList(object):
 
         Directories are traversed deepest first and the directory
         list can be trimmed during the callback to prevent traversal of children.
+        :param callback:
         """
         with self.lock:
             group = self.get_filelist_group()
@@ -1550,6 +1799,8 @@ class HDF5ImageSet(object):
         image_name - a name for storage and retrieval, the name given to
                      the data set within its group
         data - the 5-d image to be stored.
+        :param image_name:
+        :param data:
         """
         #
         # The strategy here is to reuse the dataset. The assumption is
@@ -1577,6 +1828,7 @@ class HDF5ImageSet(object):
         so any changes to it do not propagate back into the cached version.
 
         raises KeyError if your image was not there.
+        :param image_name:
         """
         return self.root[image_name][:]
 
@@ -1636,6 +1888,9 @@ class HDF5ObjectSet(object):
                to specify multiple labels per pixel by placing their label
                numbers for that pixel in array locations that only differ by
                their position on the "labeling axis".
+               :param segmentation_name:
+               :param objects_name:
+               :param data:
         """
         segmentation_group = self.__ensure_group(objects_name,
                                                  segmentation_name)
@@ -1657,6 +1912,8 @@ class HDF5ObjectSet(object):
 
         objects_name - name of the objects
         segmentation_name - name of the segmentation of these objects
+        :param objects_name:
+        :param segmentation_name:
         """
         return self.__has(objects_name, segmentation_name, self.DENSE)
 
@@ -1668,6 +1925,8 @@ class HDF5ObjectSet(object):
 
         Note that this call does not check and raise an exception if the
         data is stale. Call has_dense beforehand to check this.
+        :param objects_name:
+        :param segmentation_name:
         """
         return self.root[objects_name][segmentation_name][self.DENSE][:]
 
@@ -1684,6 +1943,9 @@ class HDF5ObjectSet(object):
                         (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                         (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)]
                data = np.array([(100, 200, 1)], dtype)
+               :param segmentation_name:
+               :param objects_name:
+               :param data:
         """
         segmentation_group = self.__ensure_group(objects_name,
                                                  segmentation_name)
@@ -1712,6 +1974,8 @@ class HDF5ObjectSet(object):
 
         objects_name - name of the objects
         segmentation_name - name of the segmentation of these objects
+        :param segmentation_name:
+        :param objects_name:
         """
         return self.__has(objects_name, segmentation_name, self.SPARSE)
 
@@ -1722,6 +1986,8 @@ class HDF5ObjectSet(object):
 
         Returns a Numpy record array with one row per pixel per label
         and columns denoting the pixel coordinates and the label.
+        :param objects_name:
+        :param segmentation_name:
         """
         ds = self.root[objects_name][segmentation_name][self.SPARSE]
         if len(ds) == 0:
@@ -1764,6 +2030,8 @@ class HDF5ObjectSet(object):
         objects_name - name of the labeled objects
         segmentation_name - name of the segmentation being cleared or None if
                             all.
+                            :param objects_name:
+                            :param segmentation_name:
         """
         if objects_name not in self.root:
             return
@@ -1794,6 +2062,9 @@ def get_top_level_group(filename, group_name='Measurements', open_mode='r'):
     open_mode - open mode for file: 'r' for read, 'w' for write
 
     returns the hdf5 file object (which must be closed) and the top-level group
+    :param group_name:
+    :param filename:
+    :param open_mode:
     """
     f = h5py.File(filename, open_mode)
     return f, f.get(group_name)
@@ -1863,6 +2134,14 @@ class HDFCSV(object):
         data - optional, add the strings for the column
 
         returns the column
+        :param name:
+        :param data:
+        :param name:
+        :param data:
+        :param name:
+        :param data:
+        :param name:
+        :param data:
         """
         with self.lock:
             column = self.top_level_group.create_group(name)
@@ -1880,6 +2159,10 @@ class HDFCSV(object):
 
         d - a dictionary. The keys are used for column names and the
             values should be sequences of strings
+            :param d:
+            :param d:
+            :param d:
+            :param d:
         """
         with self.lock:
             self.clear()
@@ -2091,7 +2374,9 @@ class VStringArray(object):
                    data[begin:end].tostring().decode("utf-8"))
 
     def set_all(self, strings):
-        """Store the strings passed, overwriting any previously stored data"""
+        """Store the strings passed, overwriting any previously stored data
+        :param strings:
+        """
         nulls = np.array([s is None for s in strings])
         strings = ["" if s is None
                    else s.encode("utf-8") if isinstance(s, unicode)
@@ -2160,6 +2445,7 @@ class VStringArray(object):
         order - a sequence of the old indices in the desired order. The order
                 can have missing indices in which case the corresponding
                 strings are deleted and the array is downsized.
+                :param order:
         """
         if len(order) == 0:
             self.index.resize(0, 0)
@@ -2171,7 +2457,10 @@ class VStringArray(object):
         self.index[:, :] = index[order, :]
 
     def insert(self, index, s):
-        """Insert a string into the array at an index"""
+        """Insert a string into the array at an index
+        :param index:
+        :param s:
+        """
         with self.lock:
             old_len = self.index.shape[0]
             self.index.resize(old_len + 1, 0)
@@ -2184,6 +2473,7 @@ class VStringArray(object):
         """Append a string to the end of the array
 
         s - string to append
+        :param s:
         """
         with self.lock:
             self.insert(len(self), s)
@@ -2192,6 +2482,7 @@ class VStringArray(object):
         """Append a sequence of strings to the end of the array
 
         strings - strings to append
+        :param strings:
         """
         if len(strings) == 0:
             return
@@ -2229,7 +2520,9 @@ class VStringArray(object):
                 self.data[begin:end] = scat
 
     def bisect_left(self, s):
-        """Return the insertion point for s, assuming the array is sorted"""
+        """Return the insertion point for s, assuming the array is sorted
+        :param s:
+        """
         if s is None:
             return 0
         elif isinstance(s, unicode):
@@ -2270,6 +2563,7 @@ class VStringArray(object):
                 True / False value) or some suitable slicing construct
                 that works with Numpy arrays. Default is return an indicator
                 per element.
+                :param index:
         """
         if isinstance(index, int) or hasattr(index, "__int__"):
             return self[index] is not None
@@ -2435,7 +2729,9 @@ class StringReferencer(object):
 
     @staticmethod
     def string_to_uint8(s):
-        """Convert a utf-8 encoded string to a np.uint8 array"""
+        """Convert a utf-8 encoded string to a np.uint8 array
+        :param s:
+        """
         if isinstance(s, unicode):
             s = s.encode('utf-8')
         elif not isinstance(s, str):
@@ -2455,6 +2751,8 @@ class StringReferencer(object):
 
         i: block #
         j: index within block
+        :param i:
+        :param j:
         """
         data_off, data_len = \
             self.blocks[i, j, self.SR_BLOCK_OFF:(self.SR_BLOCK_LEN + 1)]
@@ -2480,6 +2778,7 @@ class StringReferencer(object):
         group - an HDF5 group used to manage the references
 
         returns a numpy array of ints which are references to the strings
+        :param strings:
         """
         strings, reverse_indices = np.unique(np.array(strings, object),
                                              return_inverse=True)
@@ -2545,6 +2844,7 @@ class StringReferencer(object):
         refs - the block / index for string references
         ol - the per-reference data stored as block / index
         data - the storage for the string data.
+        :param i:
         """
         # the index of the ref that's promoted
         i1 = self.sr_alloc_block()
@@ -2616,6 +2916,11 @@ class StringReferencer(object):
         blockdesc - block descriptor for the target block
         ol - string descriptors
         next_child - block # of child after this one
+        :param s:
+        :param idx:
+        :param i:
+        :param j:
+        :param next_child:
         """
         len_s = len(s)
         data_len = self.blockdesc[i, self.SR_BLOCKDESC_DATA_LEN]
@@ -2658,6 +2963,7 @@ class StringReferencer(object):
 
         returns the block #, index of entry or insertion point
                 and a True / False indicator of whether there was an exact match
+                :param s:
         """
         #
         # bisection code taken from Python bisect package

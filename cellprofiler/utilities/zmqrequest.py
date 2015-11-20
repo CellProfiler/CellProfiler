@@ -19,7 +19,8 @@ SD_KEY_DICT = "__keydict__"
 
 def make_CP_encoder(buffers):
     """create an encoder for CellProfiler data and numpy arrays (which will be
-    stored in the input argument)"""
+    stored in the input argument)
+    :param buffers: """
 
     def encoder(data, buffers=buffers):
         if isinstance(data, np.ndarray):
@@ -84,7 +85,9 @@ def make_CP_decoder(buffers):
 
 
 def make_sendable_dictionary(d):
-    """Make a dictionary that passes muster with JSON"""
+    """Make a dictionary that passes muster with JSON
+    :param d:
+    """
     result = {}
     fake_key_idx = 1
     for k, v in d.items():
@@ -107,7 +110,9 @@ def make_sendable_dictionary(d):
 
 
 def make_sendable_sequence(l):
-    """Make a list that passes muster with JSON"""
+    """Make a list that passes muster with JSON
+    :param l:
+    """
     result = []
     for v in l:
         if isinstance(v, (list, tuple)):
@@ -120,7 +125,9 @@ def make_sendable_sequence(l):
 
 
 def decode_sendable_dictionary(d):
-    """Decode the dictionary encoded by make_sendable_dictionary"""
+    """Decode the dictionary encoded by make_sendable_dictionary
+    :param d:
+    """
     result = {}
     for k, v in d.items():
         if k == SD_KEY_DICT:
@@ -138,7 +145,10 @@ def decode_sendable_dictionary(d):
 
 
 def decode_sendable_sequence(l, desired_type):
-    """Decode a tuple encoded by make_sendable_sequence"""
+    """Decode a tuple encoded by make_sendable_sequence
+    :param desired_type:
+    :param l:
+    """
     result = []
     for v in l:
         if isinstance(v, dict):
@@ -156,6 +166,7 @@ def json_encode(o):
     o - object to encode
 
     returns a 2-tuple of json-encoded object + buffers of binary stuff
+    :param o:
     """
     sendable_dict = make_sendable_dictionary(o)
 
@@ -174,6 +185,8 @@ def json_decode(json_str, buffers):
     buffers - buffers of binary data to feed into the decoder of special cases
 
     return the decoded dictionary
+    :param buffers:
+    :param json_str:
     """
     decoder = make_CP_decoder(buffers)
     attribute_dict = json.loads(json_str, object_hook=decoder)
@@ -272,6 +285,7 @@ class Request(Communicable):
         First part of a two-part client-side request: send the request
         with an expected .recv, possibly after polling to make the .recv
         non-blocking.
+        :param socket:
         """
         Communicable.send(self, socket)
 
@@ -279,13 +293,16 @@ class Request(Communicable):
         """Set the boundary object to use when sending the reply
 
         boundary - the reply will be enqueued on this boundary's transmit thread
+        :param boundary:
         """
         self._boundary = boundary
 
     def reply(self, reply_obj, please_reply=False):
         """send a reply to a request.  If please_reply is True, wait for and
         return a reply to the reply.  Note that that reply should be treated
-        like a Request object, i.e., it should be replied to."""
+        like a Request object, i.e., it should be replied to.
+        :param please_reply:
+        :param reply_obj: """
         assert isinstance(reply_obj,
                           Reply), "send_reply() called with something other than a Reply object!"
         if self._boundary is None:
@@ -376,6 +393,8 @@ def register_analysis(analysis_id, upward_queue):
     upward_cv - the condition variable used to signal the queue's thread
 
     returns the boundary singleton.
+    :param upward_queue:
+    :param analysis_id:
     """
     global the_boundary
     start_boundary()
@@ -392,6 +411,7 @@ def cancel_analysis(analysis_id):
     given analysis_id without matching replies will receive replies of
     BoundaryExited and that no request will be added to the upward_queue
     after the call returns.
+    :param analysis_id:
     """
     global the_boundary
     the_boundary.cancel_analysis(analysis_id)
@@ -426,6 +446,8 @@ class AnalysisContext(object):
         if BoundaryExited was sent instead.
 
         Always executed on the boundary thread.
+        :param rep:
+        :param req:
         """
         with self.lock:
             if self.cancelled:
@@ -446,6 +468,7 @@ class AnalysisContext(object):
         reply to the request.
 
         Always executes on the boundary thread.
+        :param req:
         """
         with self.lock:
             if not self.cancelled:
@@ -578,6 +601,19 @@ class Boundary(object):
         analysis_id - the analysis ID embedded in each analysis request
 
         upward_queue - place the requests on this queue
+        :param upward_queue:
+        :param analysis_id:
+        :param upward_queue:
+        :param analysis_id:
+        :param upward_queue:
+        :param analysis_id:
+        :param upward_queue:
+        :param analysis_id:
+        :param upward_queue:
+        :param analysis_id:
+        :param upward_queue:
+        :param analysis_id:
+        :param analysis_id:
         """
         with self.analysis_dictionary_lock:
             self.analysis_dictionary[analysis_id] = AnalysisContext(
@@ -595,6 +631,18 @@ class Boundary(object):
                       be routed to the upward_queue
 
         upward_queue - queue that will receive the requests
+        :param upward_queue:
+        :param cls_request:
+        :param upward_queue:
+        :param cls_request:
+        :param upward_queue:
+        :param cls_request:
+        :param upward_queue:
+        :param cls_request:
+        :param upward_queue:
+        :param cls_request:
+        :param upward_queue:
+        :param cls_request:
         """
         self.request_dictionary[cls_request] = upward_queue
 
@@ -603,6 +651,18 @@ class Boundary(object):
 
         req - original request
         rep - the reply to the request
+        :param rep:
+        :param req:
+        :param rep:
+        :param req:
+        :param rep:
+        :param req:
+        :param rep:
+        :param req:
+        :param rep:
+        :param req:
+        :param rep:
+        :param req:
         """
         self.send_to_boundary_thread(self.NOTIFY_REPLY_READY, (req, rep))
 
@@ -611,6 +671,12 @@ class Boundary(object):
 
         All requests with the given analysis ID will get a BoundaryExited
         reply after this call returns.
+        :param analysis_id:
+        :param analysis_id:
+        :param analysis_id:
+        :param analysis_id:
+        :param analysis_id:
+        :param analysis_id:
         """
         with self.analysis_dictionary_lock:
             if self.analysis_dictionary[analysis_id].cancelled:
@@ -622,7 +688,20 @@ class Boundary(object):
         response_queue.get()
 
     def handle_cancel(self, analysis_id, response_queue):
-        """Handle cancellation in the boundary thread"""
+        """Handle cancellation in the boundary thread
+        :param response_queue:
+        :param analysis_id:
+        :param response_queue:
+        :param analysis_id:
+        :param response_queue:
+        :param analysis_id:
+        :param response_queue:
+        :param analysis_id:
+        :param response_queue:
+        :param analysis_id:
+        :param response_queue:
+        :param analysis_id:
+        """
         with self.analysis_dictionary_lock:
             self.analysis_dictionary[analysis_id].handle_cancel()
         self.announce_analyses()
@@ -758,6 +837,18 @@ class Boundary(object):
 
         args - supplementary arguments passed to the boundary thread via
                the downward queue.
+               :param arg:
+               :param msg:
+               :param arg:
+               :param msg:
+               :param arg:
+               :param msg:
+               :param arg:
+               :param msg:
+               :param arg:
+               :param msg:
+               :param arg:
+               :param msg:
         """
         if not hasattr(self.threadlocal, 'notify_socket'):
             self.threadlocal.notify_socket = self.zmq_context.socket(zmq.PUB)
@@ -793,6 +884,18 @@ class Boundary(object):
         response_queue - response queue. Any announce subscriber that registers
                          after the response is placed in this queue
                          will receive an announcement of the analysis.
+                         :param response_queue:
+                         :param analysis_id:
+                         :param response_queue:
+                         :param analysis_id:
+                         :param response_queue:
+                         :param analysis_id:
+                         :param response_queue:
+                         :param analysis_id:
+                         :param response_queue:
+                         :param analysis_id:
+                         :param response_queue:
+                         :param analysis_id:
         """
         self.announce_analyses()
         response_queue.put("OK")
@@ -856,7 +959,14 @@ def start_lock_thread():
 
 
 def get_lock_path(path):
-    """Return the path to the lockfile"""
+    """Return the path to the lockfile
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    """
     pathpart, filepart = os.path.split(path)
     return os.path.join(pathpart, u"." + filepart + u".lock")
 
@@ -869,6 +979,18 @@ def lock_file(path, timeout=3):
     timeout - timeout in seconds when waiting for announcement
 
     returns True if we obtained the lock, False if the file is already owned.
+    :param timeout:
+    :param path:
+    :param timeout:
+    :param path:
+    :param timeout:
+    :param path:
+    :param timeout:
+    :param path:
+    :param timeout:
+    :param path:
+    :param timeout:
+    :param path:
     """
     lock_path = get_lock_path(path)
     start_boundary()
@@ -935,7 +1057,28 @@ def lock_file(path, timeout=3):
 
 
 def unlock_file(path):
-    """Unlock the file at the given path"""
+    """Unlock the file at the given path
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    """
     if the_boundary is None:
         return
     q = Queue.Queue()

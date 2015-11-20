@@ -189,7 +189,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
             contains a lot of objects.""" % globals())
 
     def add_object(self, can_remove=True):
-        """Add a slot for another object"""
+        """Add a slot for another object
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -212,7 +214,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        """Adjust the number of object groups based on the number of setting_values"""
+        """Adjust the number of object groups based on the number of setting_values
+        :param setting_values:
+        """
         object_group_count = len(setting_values) - 1
         while len(self.object_groups) > object_group_count:
             self.remove_object(object_group_count)
@@ -229,7 +233,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        """Make sure chosen objects are selected only once"""
+        """Make sure chosen objects are selected only once
+        :param pipeline:
+        """
         objects = set()
         for group in self.object_groups:
             if group.name.value in objects:
@@ -244,6 +250,8 @@ class MeasureObjectSizeShape(cpm.CPModule):
         pipeline - pipeline being run
         object_name - name of labels in question (or 'Images')
         returns a list of category names
+        :param object_name:
+        :param pipeline:
         """
         if object_name in [og.name for og in self.object_groups]:
             return [AREA_SHAPE]
@@ -261,6 +269,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         """Return the name of a Zernike feature, given a (N,M) 2-tuple
         
         zernike_index - a 2 element sequence organized as N,M
+        :param zernike_index:
         """
         return "Zernike_%d_%d" % (zernike_index[0], zernike_index[1])
 
@@ -277,6 +286,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
         object_name - return measurements made on this object 
                       (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if (category == AREA_SHAPE and
                 self.get_categories(pipeline, object_name)):
@@ -284,7 +296,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
         return []
 
     def run(self, workspace):
-        """Run, computing the area measurements for the objects"""
+        """Run, computing the area measurements for the objects
+        :param workspace:
+        """
 
         if self.show_window:
             workspace.display_data.col_labels = \
@@ -294,7 +308,10 @@ class MeasureObjectSizeShape(cpm.CPModule):
             self.run_on_objects(object_group.name.value, workspace)
 
     def run_on_objects(self, object_name, workspace):
-        """Run, computing the area measurements for a single map of objects"""
+        """Run, computing the area measurements for a single map of objects
+        :param workspace:
+        :param object_name:
+        """
         objects = workspace.get_objects(object_name)
         assert isinstance(objects, cpo.Objects)
         #
@@ -421,6 +438,10 @@ class MeasureObjectSizeShape(cpm.CPModule):
         object_name - name of object to retrieve from workspace and deposit
                       in measurements
         feature_name- name of feature to deposit in measurements
+        :param feature_name:
+        :param object_name:
+        :param function:
+        :param workspace:
         """
         objects = workspace.get_objects(object_name)
         if len(objects.indices) > 0:
@@ -442,6 +463,10 @@ class MeasureObjectSizeShape(cpm.CPModule):
         object_name - name of object to retrieve from workspace and deposit
                       in measurements
         feature_name- name of feature to deposit in measurements
+        :param feature_name:
+        :param object_name:
+        :param function:
+        :param workspace:
         """
         objects = workspace.get_objects(object_name)
         if len(objects.indices) > 0:
@@ -452,7 +477,12 @@ class MeasureObjectSizeShape(cpm.CPModule):
 
     def record_measurement(self, workspace,
                            object_name, feature_name, result):
-        """Record the result of a measurement in the workspace's measurements"""
+        """Record the result of a measurement in the workspace's measurements
+        :param result:
+        :param feature_name:
+        :param object_name:
+        :param workspace:
+        """
         data = fix(result)
         workspace.add_measurement(object_name,
                                   "%s_%s" % (AREA_SHAPE, feature_name),
@@ -467,7 +497,8 @@ class MeasureObjectSizeShape(cpm.CPModule):
 
     def get_measurement_columns(self, pipeline):
         """Return measurement column definitions.
-        All cols returned as float even though "Area" will only ever be int"""
+        All cols returned as float even though "Area" will only ever be int
+        :param pipeline: """
         object_names = [s.value for s in self.settings()][:-1]
         measurement_names = self.get_feature_names()
         cols = []
@@ -488,6 +519,10 @@ class MeasureObjectSizeShape(cpm.CPModule):
         from_matlab - true if it was a Matlab module that saved the settings
         
         returns the modified settings, revision number and "from_matlab" flag
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 2:
             # Added Zernike question at revision # 2
@@ -506,7 +541,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
 
 
 def form_factor(objects):
-    """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular"""
+    """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular
+    :param objects:
+    """
     if len(objects.indices) > 0:
         perimeter = objects.fn_of_label_and_index(calculate_perimeters)
         return 4.0 * np.pi * objects.areas / perimeter ** 2

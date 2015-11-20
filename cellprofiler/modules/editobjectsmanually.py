@@ -174,6 +174,7 @@ class EditObjectsManually(I.Identify):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. None means don't draw.
+            :param workspace:
         """
         orig_objects_name = self.object_name.value
         filtered_objects_name = self.filtered_objects.value
@@ -450,7 +451,9 @@ class EditObjectsManually(I.Identify):
             return dialog_box.labels
 
     def get_measurement_columns(self, pipeline):
-        """Return information to use when creating database columns"""
+        """Return information to use when creating database columns
+        :param pipeline:
+        """
         orig_image_name = self.object_name.value
         filtered_image_name = self.filtered_objects.value
         columns = I.get_object_measurement_columns(filtered_image_name)
@@ -471,6 +474,8 @@ class EditObjectsManually(I.Identify):
 
         pipeline - pipeline being run
         object_name - fetch categories for this object
+        :param object_name:
+        :param pipeline:
         """
         categories = self.get_object_categories(pipeline, object_name,
                                                 self.get_object_dictionary())
@@ -482,6 +487,9 @@ class EditObjectsManually(I.Identify):
         pipeline - pipeline being run
         object_name - fetch features for this object
         category - fetch features for this category
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         measurements = self.get_object_measurements(
             pipeline, object_name, category, self.get_object_dictionary())
@@ -497,6 +505,10 @@ class EditObjectsManually(I.Identify):
         from_matlab - was a pipeline saved by CP 1.0
 
         returns upgraded settings, new variable revision number and matlab flag
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 2:
             object_name, filtered_object_name, outlines_name, \

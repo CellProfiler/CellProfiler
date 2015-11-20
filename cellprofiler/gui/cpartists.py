@@ -463,6 +463,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         """Add an image, objects or mask to the artist
 
         data - ImageData, ObjectsData or MaskData to be added
+        :param data:
         """
         assert isinstance(data, (ImageData, ObjectsData, MaskData))
         if isinstance(data, ImageData):
@@ -477,6 +478,7 @@ class CPImageArtist(matplotlib.artist.Artist):
 
         data - an ImageData, ObjectData or MaskData previously
                added (via constructor or add)
+               :param data:
         """
         assert isinstance(data, (ImageData, ObjectsData, MaskData))
         if isinstance(data, ImageData):
@@ -487,7 +489,9 @@ class CPImageArtist(matplotlib.artist.Artist):
             self.__masks.remove(data)
 
     def remove_image_by_name(self, name):
-        """Remove an image via the name given to it in its data"""
+        """Remove an image via the name given to it in its data
+        :param name:
+        """
         for data in self.__images:
             if data.name == name:
                 return self.remove(data)
@@ -495,7 +499,9 @@ class CPImageArtist(matplotlib.artist.Artist):
             raise ValueError("Could not find image named %s" % name)
 
     def remove_objects_by_name(self, name):
-        """Remove objects via their name given to it in its data"""
+        """Remove objects via their name given to it in its data
+        :param name:
+        """
         for data in self.__objects:
             if data.name == name:
                 return self.remove(data)
@@ -503,7 +509,9 @@ class CPImageArtist(matplotlib.artist.Artist):
             raise ValueError("Could not find objects named %s" % name)
 
     def remove_mask_by_name(self, name):
-        """Remove a mask via the name given to it in its data"""
+        """Remove a mask via the name given to it in its data
+        :param name:
+        """
         for data in self.__masks:
             if data.name == name:
                 return self.remove(data)
@@ -532,6 +540,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         """Return a map of channel name to intensity at the given location
 
         x, y - coordinate location
+        :param y:
+        :param x:
         """
         if x < 0 or y < 0:
             return {}
@@ -579,7 +589,9 @@ class CPImageArtist(matplotlib.artist.Artist):
             (view_ymax - view_ymin, view_xmax - view_xmin, 4), np.float32)
 
         def get_tile_and_target(pixel_data):
-            """Return the visible tile of the image and a view of the target"""
+            """Return the visible tile of the image and a view of the target
+            :param pixel_data:
+            """
             xmin = max(0, view_xmin)
             ymin = max(0, view_ymin)
             xmax = min(view_xmax, pixel_data.shape[1])
@@ -752,6 +764,18 @@ class CPImageArtist(matplotlib.artist.Artist):
         """Add to a context menu for a WX ui
 
         target - target window that will receive menu events.
+        :param menu:
+        :param target:
+        :param menu:
+        :param target:
+        :param menu:
+        :param target:
+        :param menu:
+        :param target:
+        :param menu:
+        :param target:
+        :param menu:
+        :param target:
         """
         import wx
         assert isinstance(menu, wx.Menu)

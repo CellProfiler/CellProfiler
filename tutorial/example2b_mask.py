@@ -126,6 +126,7 @@ class Example2b(cpm.CPModule):
         observed - 2-d numpy array of pixel values
 
         Sharpens the image using the Richardson/Lucy algorithm
+        :param observed:
         """
         #
         # Get the observed image from the pixel_data

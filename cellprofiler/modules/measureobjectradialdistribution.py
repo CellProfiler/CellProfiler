@@ -137,7 +137,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.add_bin_count(can_remove=False)
 
     def add_image(self, can_remove=True):
-        """Add an image to be measured"""
+        """Add an image to be measured
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -152,7 +154,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.images.append(group)
 
     def add_object(self, can_remove=True):
-        """Add an object to be measured (plus optional centers)"""
+        """Add an object to be measured (plus optional centers)
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -192,7 +196,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.objects.append(group)
 
     def add_bin_count(self, can_remove=True):
-        """Add another radial bin count at which to measure"""
+        """Add another radial bin count at which to measure
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -300,7 +306,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.heatmaps.append(group)
 
     def validate_module(self, pipeline):
-        """Make sure chosen objects, images and bins are selected only once"""
+        """Make sure chosen objects, images and bins are selected only once
+        :param pipeline:
+        """
         images = set()
         for group in self.images:
             if group.image_name.value in images:
@@ -374,7 +382,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        """Adjust the numbers of images, objects and bin counts"""
+        """Adjust the numbers of images, objects and bin counts
+        :param setting_values:
+        """
         image_count, objects_count, bin_counts_count, heatmap_count = \
             [int(x) for x in setting_values[:4]]
         for sequence, add_fn, count in \
@@ -499,6 +509,13 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         d - a dictionary for saving reusable partial results
 
         returns one statistics tuple per ring.
+        :param dd:
+        :param bin_count_settings:
+        :param center_choice:
+        :param center_object_name:
+        :param object_name:
+        :param image_name:
+        :param workspace:
         """
         assert isinstance(workspace, cpw.Workspace)
         assert isinstance(workspace.object_set, cpo.ObjectSet)

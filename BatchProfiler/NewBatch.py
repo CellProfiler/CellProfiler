@@ -393,7 +393,11 @@ batch is run.""" % globals())
             self.text(directory)
 
     def recursive_show_directory(self, key, head, tail):
-        """Recursively show the directory tree"""
+        """Recursively show the directory tree
+        :param key:
+        :param head:
+        :param tail:
+        """
         with self.doc.tag("ul"):
             with self.doc.tag("li"):
                 self.output_directory_link(key, head)
@@ -415,6 +419,8 @@ batch is run.""" % globals())
         title - the user-visible title of the field
 
         returns the current value of the key
+        :param key:
+        :param title:
         """
         path = BATCHPROFILER_DEFAULTS[key]
         data_dir_js = "document.getElementById('input_%s').value" % key

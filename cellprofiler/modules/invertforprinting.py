@@ -142,7 +142,9 @@ class InvertForPrinting(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        """Make sure the user has at least one of the grayscale boxes checked"""
+        """Make sure the user has at least one of the grayscale boxes checked
+        :param pipeline:
+        """
         if (self.input_color_choice == CC_GRAYSCALE and
                 (not self.wants_red_input.value) and
                 (not self.wants_green_input.value) and

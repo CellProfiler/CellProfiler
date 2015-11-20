@@ -98,7 +98,9 @@ recent manual is available <a href="http://www.cellprofiler.org/CPmanual/">here<
 
 
 def output_gui_html(webpage_path):
-    """Output an HTML page for each non-module help item"""
+    """Output an HTML page for each non-module help item
+    :param webpage_path:
+    """
     icons_relpath = relpath(cellprofiler.icons.__path__[0])
 
     help_text = """
@@ -146,7 +148,9 @@ def output_gui_html(webpage_path):
 
 
 def output_module_html(webpage_path):
-    """Output an HTML page for each module"""
+    """Output an HTML page for each module
+    :param webpage_path:
+    """
 
     icons_relpath = relpath(cellprofiler.icons.__path__[0])
     all_png_icons = glob(os.path.join(icons_relpath, "*.png"))
@@ -218,6 +222,7 @@ def search_module_help(text):
 
     returns an html document of all the module help pages that matched or
             None if no match found.
+            :param text:
     """
     matching_help = []
     for item in MAIN_HELP:

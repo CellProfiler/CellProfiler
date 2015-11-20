@@ -175,7 +175,9 @@ class TestCPFigure(unittest.TestCase):
         f.subplot_histogram(3, 1, [1, 1, 1, 2], 2, title="hist")
 
         def test_01_01_imshow_raw(self):
-            """Make sure the image drawn by imshow matches the input image."""
+            """Make sure the image drawn by imshow matches the input image.
+            :param self:
+            """
             image = np.zeros((100, 100))
             for y in range(image.shape[0]):
                 image[y, :] = y / 200.0

@@ -42,6 +42,8 @@ def display_error_dialog(*args, **kwargs):
             (exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback)
 
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
+    :param kwargs:
+    :param args:
     """
     global __inside_display_error_dialog
     if __inside_display_error_dialog:
@@ -295,7 +297,12 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None,
 
 
 def on_report(event, dialog, traceback_text, pipeline):
-    """Report an error to us"""
+    """Report an error to us
+    :param pipeline:
+    :param traceback_text:
+    :param dialog:
+    :param event:
+    """
     from cellprofiler.utilities.version import version_string
     params = {"traceback": traceback_text,
               "revision": version_string,
@@ -341,6 +348,10 @@ def show_warning(title, message, get_preference, set_preference):
                      not to see the warning again.
 
     The message is printed to the console if headless.
+    :param set_preference:
+    :param get_preference:
+    :param message:
+    :param title:
     """
     from cellprofiler.preferences import get_headless
 
@@ -392,6 +403,11 @@ def display_error_message(parent, message, title, buttons=None,
     size - size of frame. Defaults to 300 x 200 but will fit.
 
     returns the code from ShowModal.
+    :param size:
+    :param buttons:
+    :param title:
+    :param message:
+    :param parent:
     """
     import wx
     if buttons is None:

@@ -292,6 +292,7 @@ class IlastikPixelClassification(cpm.CPModule):
 
     def validate_module(self, pipeline):
         """Mark IlastikPixelClassification as invalid if Ilastik is not properly installed
+        :param pipeline:
 
         """
         if not has_ilastik:
@@ -312,7 +313,9 @@ class IlastikPixelClassification(cpm.CPModule):
                 raise cps.ValidationError(msg, self.classifier_file_name)
 
     def prepare_settings(self, setting_values):
-        """Prepare the module to receive the settings"""
+        """Prepare the module to receive the settings
+        :param setting_values:
+        """
         n_maps = int(setting_values[SI_PROBABILITY_MAP_COUNT])
         if len(self.probability_maps) > n_maps:
             del self.probability_maps[n_maps:]
@@ -327,6 +330,8 @@ class IlastikPixelClassification(cpm.CPModule):
 
         fn_alter_path - call this to alter any file path to target the
                         batch environment.
+                        :param fn_alter_path:
+                        :param workspace:
         """
         self.h5_directory.alter_for_create_batch_files(fn_alter_path)
         return True
@@ -339,6 +344,10 @@ class IlastikPixelClassification(cpm.CPModule):
         variable_revision_number - version number used to save the settings
         module_name - original module name used to save the settings
         from_matlab - true if CellProfiler 1.0 pipeline
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if variable_revision_number == 1:
             setting_values = [

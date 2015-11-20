@@ -45,7 +45,13 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         dc.DestroyClippingRegion()
 
     def GetBestSize(self, grid, attr, dc, row, col):
-        """Return the size of the cell's button"""
+        """Return the size of the cell's button
+        :param col:
+        :param row:
+        :param dc:
+        :param attr:
+        :param grid:
+        """
         bitmap = self.get_bitmap(grid, attr, dc, row, col)
         if bitmap:
             size = bitmap.Size
@@ -64,6 +70,11 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         attr - an instance of wx.grid.GriddCellAttr which provides rendering info
         dc   - the device context to be used for printing
         row,col - the coordinates of the cell to be rendered
+        :param col:
+        :param row:
+        :param dc:
+        :param attr:
+        :param grid:
         """
         value = grid.GetCellValue(row, col)
         key = value.split(':')[0]
@@ -77,6 +88,9 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         
         grid - the grid control
         row,col - the row and column of the cell
+        :param col:
+        :param row:
+        :param grid:
         """
         value = grid.GetCellValue(row, col)
         values = value.split(':')
@@ -91,6 +105,11 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         row,col - the cell coordinates
         key     - the keyword for the bitmap
         state   - either BU_NORMAL or BU_PRESSED
+        :param state:
+        :param key:
+        :param col:
+        :param row:
+        :param grid:
         """
         value = "%s:%s" % (key, state)
         grid.SetCellValue(row, col, value)
@@ -135,6 +154,11 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
     grid - the grid in question
     col  - the index of the column to modify
     bitmap_dictionary - a dictionary of bitmaps suitable for GridButtonRenderer
+    :param hook_events:
+    :param bevel_width:
+    :param bitmap_dictionary:
+    :param col:
+    :param grid:
     """
     renderer = GridButtonRenderer(bitmap_dictionary, bevel_width)
     ui_dictionary = {"selected_row": None}

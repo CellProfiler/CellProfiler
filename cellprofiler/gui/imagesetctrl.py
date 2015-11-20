@@ -227,7 +227,10 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
                     is_key))
 
             def ordering_fn(a, b):
-                """Put keys first, then sort by channel name"""
+                """Put keys first, then sort by channel name
+                :param b:
+                :param a:
+                """
                 #
                 # If either is a key, put the one that is a key first
                 #
@@ -293,7 +296,10 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
             return value
 
         def get_url(self, row, col):
-            """Get the URL for a cell"""
+            """Get the URL for a cell
+            :param col:
+            :param row:
+            """
             image_set = self.image_numbers[row]
             column = self.columns[col]
             if column.channel_type == cpp.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS:
@@ -454,6 +460,7 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
 
         controller - class derived from ImageSetController which is used
                      to update the image set.
+                     :param controller:
         """
         self.Table.controller = controller
 
@@ -506,7 +513,9 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
     HIT_MINUS = 5
 
     def gclw_hit_test(self, event):
-        """Return a tuple of column # and hit test code for mouse event"""
+        """Return a tuple of column # and hit test code for mouse event
+        :param event:
+        """
         assert isinstance(event, wx.MouseEvent)
 
         x, y = self.CalcUnscrolledPosition(event.X, event.Y)
@@ -842,6 +851,18 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
 
         returns the row and column of where the drop should be inserted. Returns
         a column of None if x is not within a column.
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
         """
         x, y = self.CalcUnscrolledPosition(x, y)
         if x < 0:
@@ -1198,6 +1219,86 @@ class ColLabelRenderer(GridLabelRenderer):
         last - column is the last column in the grid
 
         only - column is the only column in the grid
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
         """
         return self.get_icon_rect(rect, label_size, 0, last, only)
 
@@ -1207,15 +1308,217 @@ class ColLabelRenderer(GridLabelRenderer):
         rect - the drawing rectangle for the column header
 
         label_size - the width & height needed to draw the label
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
         """
         return self.get_icon_rect(rect, label_size, 1, last, only)
 
     def add_button_rect(self, rect, label_size, only):
-        """The position of the add button in the last column"""
+        """The position of the add button in the last column
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param label_size:
+        :param rect:
+        """
         return self.get_icon_rect(rect, label_size, 2, True, only)
 
     def remove_icon_rect(self, rect, label_size, last):
-        """The position of the remove button"""
+        """The position of the remove button
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param last:
+        :param label_size:
+        :param rect:
+        """
         return self.get_icon_rect(rect, label_size, 3 if last else 2, last,
                                   False)
 
@@ -1227,6 +1530,106 @@ class ColLabelRenderer(GridLabelRenderer):
         index - icon index
         last - True if the last column (needs +)
         only - True if this is the only column (no -)
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param index:
+        :param label_size:
+        :param rect:
         """
         label_width, label_height = label_size
         n_icons = 3 if last else 2
@@ -1240,7 +1643,68 @@ class ColLabelRenderer(GridLabelRenderer):
         return wx.Rect(x, y, self.icon_size, max(self.icon_size, label_height))
 
     def get_edit_rect(self, rect, last, only):
-        """The rectangle for the column label editor"""
+        """The rectangle for the column label editor
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        :param only:
+        :param last:
+        :param rect:
+        """
         x = rect.X + self.gap_size
         y = rect.Y + self.gap_size
         height = rect.Height - self.gap_size * 2
@@ -1250,7 +1714,108 @@ class ColLabelRenderer(GridLabelRenderer):
         return wx.Rect(x, y, width, height)
 
     def draw_button(self, window, dc, rect, bitmap, flags):
-        """Draw a button with the given flags"""
+        """Draw a button with the given flags
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        :param flags:
+        :param bitmap:
+        :param rect:
+        :param dc:
+        :param window:
+        """
         assert isinstance(dc, wx.DC)
         x, y, width, height = rect
         rect = wx.Rect(x - self.icon_padding,
@@ -1275,6 +1840,86 @@ class ColLabelRenderer(GridLabelRenderer):
         rect - the drawing rectangle for the column header
 
         label_size - the width & height needed to draw the label
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
+        :param only:
+        :param last:
+        :param label_size:
+        :param rect:
         """
         label_width, label_height = tuple(label_size)
         if self.read_only:
@@ -1376,6 +2021,8 @@ class ImageSetController:
         old_name - current name of the channel
 
         new_name - new name for the channel
+        :param old_name:
+        :param new_name:
         """
         raise NotImplementedError("Changing channel name is unsupported")
 
@@ -1385,6 +2032,8 @@ class ImageSetController:
         name - channel name
 
         channel_type - channel descriptor type
+        :param channel_type:
+        :param name:
         """
         raise NotImplementedError("Changing channel type is unsupported")
 
@@ -1396,6 +2045,7 @@ class ImageSetController:
         """Remove a channel from the list of channels
 
         channel_name - name of the channel
+        :param channel_name:
         """
         raise NotImplementedError("Removing channels is not supported")
 
@@ -1407,6 +2057,9 @@ class ImageSetController:
         channel_name - the name of the channel
 
         image_set - insert beginning at this image set
+        :param channel_name:
+        :param file_names:
+        :param image_set:
         """
         raise NotImplementedError("Adding files is not supported")
 
@@ -1414,11 +2067,15 @@ class ImageSetController:
         """Remove image sets from the image set list
 
         image_set_numbers - remove these image sets
+        :param image_set_numbers:
         """
         raise NotImplementedError("Removing image sets is not supported")
 
     def remove_files(self, channel_name, image_set_numbers):
-        """Remove files from a channel, shifting the remaining ones to fill"""
+        """Remove files from a channel, shifting the remaining ones to fill
+        :param channel_name:
+        :param image_set_numbers:
+        """
         raise NotImplementedError(
             "Removing files from a channel is not supported")
 
@@ -1478,7 +2135,9 @@ class FilterPanelDlg(wx.Dialog):
         self.Destroy()
 
     def fn_filter(self, url):
-        """A filter function that applies the current filter to a URL"""
+        """A filter function that applies the current filter to a URL
+        :param url:
+        """
         modpath = Images.url_to_modpath(url)
         return self.filter_setting.evaluate(
             (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None))
@@ -1496,6 +2155,9 @@ class FilterPanelDlg(wx.Dialog):
         channel_names - the list of channels that the user can switch to
 
         function_dict - dictionary of button name to function to run.
+        :param channel_names:
+        :param channel_name:
+        :param function_list:
         """
         from cellprofiler.gui.moduleview import FilterPanelController
 

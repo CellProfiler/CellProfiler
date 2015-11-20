@@ -34,7 +34,9 @@ DISPOSITION_CANCEL = "Cancel"
 
 
 def is_workspace_file(path):
-    """Return True if the file along the given path is a workspace file"""
+    """Return True if the file along the given path is a workspace file
+    :param path:
+    """
     if not h5py.is_hdf5(path):
         return False
     h5file = h5py.File(path, mode="r")
@@ -148,6 +150,7 @@ class Workspace(object):
         """Return the objects.Objects instance for the given name.
         
         objects_name - the name of the objects to retrieve
+        :param objects_name:
         """
         return self.object_set.get_objects(objects_name)
 
@@ -164,6 +167,9 @@ class Workspace(object):
         object_name - name of the objects measured or 'Image'
         feature_name - name of the feature measured
         data - the result of the measurement
+        :param data:
+        :param feature_name:
+        :param object_name:
         """
         self.measurements.add_measurement(object_name, feature_name, data)
 
@@ -177,6 +183,7 @@ class Workspace(object):
         A caller can set the file list to the file list in some other
         workspace. This lets a single, sometimes very bulky file list be
         used without copying it to a measurements file.
+        :param file_list:
         """
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(
@@ -189,7 +196,9 @@ class Workspace(object):
     file_list = property(get_file_list)
 
     def get_grid(self, grid_name):
-        """Return a grid with the given name"""
+        """Return a grid with the given name
+        :param grid_name:
+        """
         if not self.__grid.has_key(grid_name):
             raise ValueError("Could not find grid %s" % grid_name)
         return self.__grid[grid_name]
@@ -200,6 +209,7 @@ class Workspace(object):
         last - none if first in image set or the return value from
                this method.
         returns a grid dictionary
+        :param last:
         """
         if last is None:
             last = {}
@@ -207,7 +217,10 @@ class Workspace(object):
         return self.__grid
 
     def set_grid(self, grid_name, grid_info):
-        """Add a grid to the workspace"""
+        """Add a grid to the workspace
+        :param grid_info:
+        :param grid_name:
+        """
         self.__grid[grid_name] = grid_info
 
     def cache(self):
@@ -243,7 +256,11 @@ class Workspace(object):
     in_background = property(get_in_background, set_in_background)
 
     def get_module_figure(self, module, image_set_number, parent=None):
-        """Create a CPFigure window or find one already created"""
+        """Create a CPFigure window or find one already created
+        :param parent:
+        :param image_set_number:
+        :param module:
+        """
         import cellprofiler.gui.cpfigure as cpf
         import cellprofiler.measurements as cpmeas
 
@@ -280,7 +297,11 @@ class Workspace(object):
 
     def create_or_find_figure(self, title=None, subplots=None,
                               window_name=None):
-        """Create a matplotlib figure window or find one already created"""
+        """Create a matplotlib figure window or find one already created
+        :param window_name:
+        :param subplots:
+        :param title:
+        """
         import cellprofiler.gui.cpfigure as cpf
 
         # catch any background threads trying to call display functions.
@@ -310,11 +331,16 @@ class Workspace(object):
         return self.__outlines.keys()
 
     def add_outline(self, name, outline):
-        """Add an object outline to the workspace"""
+        """Add an object outline to the workspace
+        :param outline:
+        :param name:
+        """
         self.__outlines[name] = outline
 
     def get_outline(self, name):
-        """Get a named outline"""
+        """Get a named outline
+        :param name:
+        """
         return self.__outlines[name]
 
     def get_module(self):
@@ -324,7 +350,9 @@ class Workspace(object):
     module = property(get_module)
 
     def set_module(self, module):
-        """Set the module currently being run"""
+        """Set the module currently being run
+        :param module:
+        """
         self.__module = module
 
     def interaction_request(self, module, *args, **kwargs):
@@ -336,6 +364,9 @@ class Workspace(object):
                       a headless context. An example is synchronized access to
                       a shared resource which must be coordinated among all
                       workers.
+                      :param kwargs:
+                      :param args:
+                      :param module:
         """
         # See also:
         # main().interaction_handler() in analysis_worker.py
@@ -366,6 +397,7 @@ class Workspace(object):
         """Perform whatever post-group module display is necessary
 
         module - module being run
+        :param module:
         """
         if self.post_group_display_handler is not None:
             self.post_group_display_handler(
@@ -381,6 +413,7 @@ class Workspace(object):
         """Perform whatever post-run module display is necessary
 
         module - module being run
+        :param module:
         """
         if self.post_run_display_handler is not None:
             self.post_run_display_handler(self, module)
@@ -429,6 +462,8 @@ class Workspace(object):
 
         load_pipeline - true to load the pipeline from the file, false to
                         use the current pipeline.
+                        :param load_pipeline:
+                        :param filename:
         """
         import shutil
         from .pipeline import M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
@@ -514,6 +549,7 @@ class Workspace(object):
         path - path to file to save
 
         Note: "saving" means copying the temporary workspace file
+        :param path:
         """
         self.save_default_folders_to_measurements()
         self.measurements.flush()
@@ -576,6 +612,7 @@ class Workspace(object):
         measurements. If image set measurements are present, then we
         assume that the cache reflects pipeline + file list unless "force"
         is true.
+        :param force:
         """
         import cellprofiler.measurements as cpmeas
         if len(self.measurements.get_image_numbers()) == 0 or force:
@@ -613,6 +650,12 @@ class Workspace(object):
 
         callback - a function to be called when an event occurs. The signature
         is: callback(event)
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
+        :param callback:
         """
         self.__notification_callbacks.append(callback)
 

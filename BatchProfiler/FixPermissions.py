@@ -18,6 +18,9 @@ def maybe_chmod(path, mode, d):
     path - path to file or directory
     mode - the new mode
     d - add the key/value of path:mode to the dictionary if the mode was changed
+    :param path:
+    :param mode:
+    :param d:
     """
     if os.path.exists(path) and \
                     stat.S_IMODE(os.stat(path).st_mode) != mode:

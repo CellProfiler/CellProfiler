@@ -423,14 +423,19 @@ class Crop(cpm.CPModule):
                                  self.cropped_image_name.value)
 
     def get_measurement_columns(self, pipeline):
-        """Return information on the measurements made during cropping"""
+        """Return information on the measurements made during cropping
+        :param pipeline:
+        """
         return [(cpmeas.IMAGE,
                  x % self.cropped_image_name.value,
                  cpmeas.COLTYPE_INTEGER)
                 for x in (FF_AREA_RETAINED, FF_ORIGINAL_AREA)]
 
     def ui_crop(self, workspace, orig_image):
-        """Crop into a rectangle or ellipse, guided by UI"""
+        """Crop into a rectangle or ellipse, guided by UI
+        :param orig_image:
+        :param workspace:
+        """
         d = self.get_dictionary(workspace.image_set_list)
         if ((not d.has_key(self.shape.value)) or
                     self.individual_or_once == IO_INDIVIDUALLY):
@@ -444,7 +449,10 @@ class Crop(cpm.CPModule):
             return self.apply_rectangle_cropping(workspace, orig_image)
 
     def handle_interaction(self, current_shape, orig_image):
-        """Show the cropping user interface"""
+        """Show the cropping user interface
+        :param orig_image:
+        :param current_shape:
+        """
         import matplotlib as M
         import matplotlib.cm
         import wx
@@ -481,7 +489,9 @@ class Crop(cpm.CPModule):
         current_handle = [None]
 
         def data_xy(mouse_event):
-            """Return the mouse event's x & y converted into data-relative coords"""
+            """Return the mouse event's x & y converted into data-relative coords
+            :param mouse_event:
+            """
             x = mouse_event.xdata
             y = mouse_event.ydata
             return (x, y)
@@ -743,7 +753,20 @@ class Crop(cpm.CPModule):
             }
 
     def get_ellipse_cropping(self, workspace, orig_image):
-        """Crop into an ellipse using user-specified coordinates"""
+        """Crop into an ellipse using user-specified coordinates
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        """
         x_center = self.ellipse_center.x
         y_center = self.ellipse_center.y
         x_radius = self.ellipse_x_radius.value
@@ -784,7 +807,20 @@ class Crop(cpm.CPModule):
         return cropping
 
     def get_rectangle_cropping(self, workspace, orig_image):
-        """Crop into a rectangle using user-specified coordinates"""
+        """Crop into a rectangle using user-specified coordinates
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        :param orig_image:
+        :param workspace:
+        """
         cropping = np.ones(orig_image.pixel_data.shape[:2], bool)
         if not self.horizontal_limits.unbounded_min:
             cropping[:, :self.horizontal_limits.min] = False
@@ -818,6 +854,12 @@ class Crop(cpm.CPModule):
         The rules:
         * Trim rows and columns off of the edges if less than 50%
         * Use the horizontal and vertical trim to trim the image further
+        :param pixel_data:
+        :param pixel_data:
+        :param pixel_data:
+        :param pixel_data:
+        :param pixel_data:
+        :param pixel_data:
         """
         pixel_data = pixel_data.copy()
         i_histogram = pixel_data.sum(axis=1)

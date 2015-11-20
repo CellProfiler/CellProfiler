@@ -49,6 +49,7 @@ def md(keys_and_counts):
                       their extent. For instance [(M0, 2), (M1, 3)] generates
                       six dictionaries with two unique values of M0 and
                       three for M1
+                      :param keys_and_counts:
     """
     keys = [k for k, c in keys_and_counts]
     counts = np.array([c for k, c in keys_and_counts])

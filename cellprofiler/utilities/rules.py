@@ -42,6 +42,7 @@ class Rules(object):
             Returns a MxN matrix where M is the number of measurements taken
             for the given feature in the current image set and N is the
             number of categories as indicated by the weights.
+            :param measurements:
             """
             values = measurements.get_current_measurement(self.object_name,
                                                           self.feature)
@@ -82,6 +83,7 @@ class Rules(object):
         fd_or_file - either a filename or a file descriptor. Parse assumes
                      that fd_or_file is a file name if it's a string or
                      unicode, otherwise it assumes that it's a file descriptor.
+                     :param fd_or_file:
         """
         line_pattern = ("^IF\\s+\\((?P<object_name>[^_]+)"
                         "_(?P<feature>\\S+)"
@@ -117,7 +119,9 @@ class Rules(object):
                 fd.close()
 
     def score(self, measurements):
-        """Score the measurements according to the rules list"""
+        """Score the measurements according to the rules list
+        :param measurements:
+        """
         if len(self.rules) == 0:
             raise ValueError("No rules to apply")
         score = self.rules[0].score(measurements)

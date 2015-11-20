@@ -17,6 +17,7 @@ else:
 
         see docs for itertools.product for full documentation
         (available in Python 2.6+)
+        :param args:
         """
         lengths = [len(arg) for arg in args]
         total = reduce(lambda a, b: a * b, lengths)

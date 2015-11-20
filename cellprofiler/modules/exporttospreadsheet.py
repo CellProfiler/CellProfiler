@@ -357,7 +357,9 @@ class ExportToSpreadsheet(cpm.CPModule):
         self.object_groups.append(group)
 
     def prepare_settings(self, setting_values):
-        """Add enough object groups to capture the settings"""
+        """Add enough object groups to capture the settings
+        :param setting_values:
+        """
         setting_count = len(setting_values)
         assert ((setting_count - SETTING_OG_OFFSET) %
                 SETTING_OBJECT_GROUP_CT == 0)
@@ -428,7 +430,9 @@ class ExportToSpreadsheet(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        """Test the module settings to make sure they are internally consistent"""
+        """Test the module settings to make sure they are internally consistent
+        :param pipeline:
+        """
         if (len(self.delimiter.value) != 1 and
                 not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
             raise cps.ValidationError(
@@ -447,7 +451,9 @@ class ExportToSpreadsheet(cpm.CPModule):
                         group.file_name)
 
     def validate_module_warnings(self, pipeline):
-        """Warn user re: Test mode """
+        """Warn user re: Test mode
+        :param pipeline:
+        """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "ExportToSpreadsheet will not produce output in Test Mode",
@@ -484,6 +490,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         workspace - workspace with image set populated (at this point)
 
         returns False if analysis can't be done
+        :param workspace:
         """
         return self.check_overwrite(workspace)
 
@@ -532,6 +539,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
         For ExportToSpreadsheet, we do the "post_run" method in order to write
         out the .csv files as if the experiment had just finished.
+        :param workspace:
         """
         #
         # Set the measurements to the end of the list to mimic the state
@@ -542,7 +550,9 @@ class ExportToSpreadsheet(cpm.CPModule):
         self.post_run(workspace)
 
     def post_run(self, workspace):
-        """Save measurements at end of run"""
+        """Save measurements at end of run
+        :param workspace:
+        """
         #
         # Don't export in test mode
         #
@@ -582,6 +592,7 @@ class ExportToSpreadsheet(cpm.CPModule):
 
         Objects can be collected together in one file. Return true if
         this is the last object in a collection.
+        :param i:
         """
 
         group = self.object_groups[i]
@@ -601,6 +612,18 @@ class ExportToSpreadsheet(cpm.CPModule):
                     grouping measurements populated.
         settings_group - if saving individual objects, this is the settings
                          group that controls naming the files.
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
         """
         if settings_group is None or settings_group.wants_automatic_file_name:
             tags = []
@@ -618,7 +641,25 @@ class ExportToSpreadsheet(cpm.CPModule):
                        which tell us which objects get piled into each file
         workspace - get the images from here.
         settings_group - if present, use the settings group for naming.
-        
+        :param settings_group:
+        :param workspace:
+        :param object_names:
+        :param settings_group:
+        :param workspace:
+        :param object_names:
+        :param settings_group:
+        :param workspace:
+        :param object_names:
+        :param settings_group:
+        :param workspace:
+        :param object_names:
+        :param settings_group:
+        :param workspace:
+        :param object_names:
+        :param settings_group:
+        :param workspace:
+        :param object_names:
+
         """
         if len(object_names) == 1 and object_names[0] == EXPERIMENT:
             self.make_experiment_file(workspace, settings_group)
@@ -650,6 +691,24 @@ class ExportToSpreadsheet(cpm.CPModule):
         * change the relative path into an absolute one using the "." and "&"
           convention
         * Create any directories along the path
+        :param image_set_number:
+        :param workspace:
+        :param file_name:
+        :param image_set_number:
+        :param workspace:
+        :param file_name:
+        :param image_set_number:
+        :param workspace:
+        :param file_name:
+        :param image_set_number:
+        :param workspace:
+        :param file_name:
+        :param image_set_number:
+        :param workspace:
+        :param file_name:
+        :param image_set_number:
+        :param workspace:
+        :param file_name:
         """
         if image_set_number is not None and workspace is not None:
             file_name = workspace.measurements.apply_metadata(file_name,
@@ -708,6 +767,24 @@ class ExportToSpreadsheet(cpm.CPModule):
         image_number - the first image number in the group being written
         settings_group - the settings group asking for the file to be written
                         if not wants_everything
+                        :param settings_group:
+                        :param image_set_number:
+                        :param workspace:
+                        :param settings_group:
+                        :param image_set_number:
+                        :param workspace:
+                        :param settings_group:
+                        :param image_set_number:
+                        :param workspace:
+                        :param settings_group:
+                        :param image_set_number:
+                        :param workspace:
+                        :param settings_group:
+                        :param image_set_number:
+                        :param workspace:
+                        :param settings_group:
+                        :param image_set_number:
+                        :param workspace:
         """
         file_name = self.make_objects_file_name(
             IMAGE, workspace, image_set_number, settings_group)
@@ -721,6 +798,12 @@ class ExportToSpreadsheet(cpm.CPModule):
         workspace - workspace with all image sets already populated
         
         returns True if ok to proceed, False if user cancels
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
         """
         if self.wants_overwrite_without_warning:
             return True
@@ -782,6 +865,18 @@ class ExportToSpreadsheet(cpm.CPModule):
         settings_group - the settings group used to choose the experiment
                          measurements for output or None if everything
                          is to be exported
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
+                         :param settings_group:
+                         :param workspace:
         """
         m = workspace.measurements
         file_name = self.make_objects_file_name(
@@ -815,6 +910,24 @@ class ExportToSpreadsheet(cpm.CPModule):
         settings_group - the settings group used to choose the image
                          measurements for output or None if everything
                          is to be exported
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
         """
         m = workspace.measurements
         file_name = self.make_objects_file_name(
@@ -885,6 +998,24 @@ class ExportToSpreadsheet(cpm.CPModule):
         file_name - create a file with this name
         image_set_numbers - the image sets whose data gets extracted
         workspace - workspace containing the measurements
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
         """
         from loaddata import is_path_name_feature, is_file_name_feature
         from loadimages import C_PATH_NAME, C_FILE_NAME, C_URL
@@ -894,7 +1025,14 @@ class ExportToSpreadsheet(cpm.CPModule):
                                             settings_group)
 
         def ignore_feature(feature_name):
-            """Return true if we should ignore a feature"""
+            """Return true if we should ignore a feature
+            :param feature_name:
+            :param feature_name:
+            :param feature_name:
+            :param feature_name:
+            :param feature_name:
+            :param feature_name:
+            """
             if (is_file_name_feature(feature_name) or
                     is_path_name_feature(feature_name) or
                     feature_name.startswith('ImageNumber') or
@@ -990,7 +1128,88 @@ class ExportToSpreadsheet(cpm.CPModule):
             fd.close()
 
     def check_excel_limits(self, workspace, file_name, row_count, col_count):
-        """Return False if we shouldn't write because of Excel"""
+        """Return False if we shouldn't write because of Excel
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        :param col_count:
+        :param row_count:
+        :param file_name:
+        :param workspace:
+        """
         if self.excel_limits and self.show_window:
             message = None
             if col_count > MAX_EXCEL_COLUMNS:
@@ -1049,6 +1268,86 @@ Do you want to save it anyway?""" %
         workspace - workspace containing the measurements
         settings_group - the settings group used to choose to make the file or
                          None if wants_everything
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
+                         :param settings_group:
+                         :param workspace:
+                         :param image_set_numbers:
+                         :param object_names:
         """
         m = workspace.measurements
         file_name = self.make_objects_file_name(
@@ -1128,7 +1427,68 @@ Do you want to save it anyway?""" %
 
     def make_relationships_file(self, image_set_numbers, workspace,
                                 settings_group=None):
-        """Create a CSV file documenting the relationships between objects"""
+        """Create a CSV file documenting the relationships between objects
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        :param settings_group:
+        :param workspace:
+        :param image_set_numbers:
+        """
 
         file_name = self.make_objects_file_name(
             OBJECT_RELATIONSHIPS, workspace, image_set_numbers[0],
@@ -1185,6 +1545,46 @@ Do you want to save it anyway?""" %
 
         ExportToSpreadsheet has to convert the path to file names to
         something that can be used on the cluster.
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
         """
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
@@ -1192,7 +1592,87 @@ Do you want to save it anyway?""" %
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         """Adjust the setting values based on the version that saved them
-        
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+
         """
 
         if variable_revision_number == 1 and from_matlab:
@@ -1336,7 +1816,9 @@ Do you want to save it anyway?""" %
 
 
 def is_object_group(group):
-    """True if the group's object name is not one of the static names"""
+    """True if the group's object name is not one of the static names
+    :param group:
+    """
     return not group.name.value in (IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS)
 
 

@@ -14,7 +14,9 @@ import multiprocessing
 
 
 def well_row_name(x):
-    """Return a well row name for the given zero-based index"""
+    """Return a well row name for the given zero-based index
+    :param x:
+    """
     if x < 26:
         return chr(ord('A') + x)
     return chr(ord('A') + int(x / 26) - 1) + chr(ord('A') + x % 26)
@@ -88,6 +90,14 @@ class PlateData(object):
         the planar image
         z_indexes - if present, the Z index of the plane
         t_indexes - if present, the time index of the plane
+        :param t_indexes:
+        :param z_indexes:
+        :param channel_names:
+        :param plane_indexes:
+        :param sites:
+        :param wellnames:
+        :param platenames:
+        :param filenames:
         """
         self.has_channel_names |= channel_names is not None
         self.has_z_indexes |= z_indexes is not None
@@ -397,6 +407,8 @@ class PlateViewer(object):
         """Return the row and column of the well or None if not hit
 
         x, y - coordinates of pixel on plate panel surface
+        :param y:
+        :param x:
         """
         side = self.get_well_side()
         col = (float(x) - self.get_border_width() - float(side) / 2) / side
@@ -454,7 +466,9 @@ class PlateViewer(object):
                                    radius * 2, radius * 2)
 
     def set_display_well(self, well):
-        """Set the display well and redraw the figure"""
+        """Set the display well and redraw the figure
+        :param well:
+        """
         with self.image_dict_lock:
             self.image_dict = {}
             self.image_dict_generation += 1

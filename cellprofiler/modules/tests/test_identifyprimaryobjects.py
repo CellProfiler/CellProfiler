@@ -3010,7 +3010,10 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
 
 
 def add_noise(img, fraction):
-    """Add a fractional amount of noise to an image to make it look real"""
+    """Add a fractional amount of noise to an image to make it look real
+    :param img:
+    :param fraction:
+    """
     np.random.seed(0)
     noise = np.random.uniform(low=1 - fraction / 2, high=1 + fraction / 2,
                               size=img.shape)

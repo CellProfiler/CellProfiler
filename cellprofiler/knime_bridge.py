@@ -151,14 +151,22 @@ class KnimeBridgeServer(threading.Thread):
             javabridge.detach()
 
     def connect(self, session_id, message_type, message):
-        """Handle the connect message"""
+        """Handle the connect message
+        :param message:
+        :param message_type:
+        :param session_id:
+        """
         self.socket.send_multipart(
             [zmq.Frame(session_id),
              zmq.Frame(),
              zmq.Frame(CONNECT_REPLY_1)])
 
     def pipeline_info(self, session_id, message_type, message):
-        """Handle the pipeline info message"""
+        """Handle the pipeline info message
+        :param message:
+        :param message_type:
+        :param session_id:
+        """
         logger.info("Handling pipeline info request")
         pipeline_txt = message.pop(0).bytes
         pipeline = cpp.Pipeline()
@@ -183,7 +191,11 @@ class KnimeBridgeServer(threading.Thread):
         self.socket.send_multipart(msg_out)
 
     def clean_pipeline(self, session_id, message_type, message):
-        """Handle the clean pipeline request message"""
+        """Handle the clean pipeline request message
+        :param message:
+        :param message_type:
+        :param session_id:
+        """
         logger.info("Handling clean pipeline request")
         pipeline_txt = message.pop(0).bytes
         module_names = json.loads(message.pop(0).bytes)
@@ -212,7 +224,11 @@ class KnimeBridgeServer(threading.Thread):
         self.socket.send_multipart(msg_out)
 
     def run_request(self, session_id, message_type, message):
-        """Handle the run request message"""
+        """Handle the run request message
+        :param message:
+        :param message_type:
+        :param session_id:
+        """
         pipeline, m, object_set = self.prepare_run(message, session_id)
         if pipeline is None:
             return
@@ -304,7 +320,11 @@ class KnimeBridgeServer(threading.Thread):
              zmq.Frame(bytes(data.data))])
 
     def run_group_request(self, session_id, message_type, message):
-        """Handle a run-group request message"""
+        """Handle a run-group request message
+        :param message:
+        :param message_type:
+        :param session_id:
+        """
         pipeline = cpp.Pipeline()
         m = cpmeas.Measurements()
         image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
@@ -486,6 +506,9 @@ class KnimeBridgeServer(threading.Thread):
         message - the run-request or run-groups-request message
         session_id - the session ID for the session
         grouping_allowed - true to allow grouped images
+        :param grouping_allowed:
+        :param session_id:
+        :param message:
         """
         pipeline = cpp.Pipeline()
         m = cpmeas.Measurements()
@@ -552,6 +575,7 @@ class KnimeBridgeServer(threading.Thread):
         pipeline - the pipeline to be split
 
         returns a two-tuple of input modules and other
+        :param pipeline:
         """
         input_modules = []
         other_modules = []
@@ -563,7 +587,9 @@ class KnimeBridgeServer(threading.Thread):
         return input_modules, other_modules
 
     def find_channels(self, input_modules):
-        """Find image providers in the input modules"""
+        """Find image providers in the input modules
+        :param input_modules:
+        """
         channels = []
         for module in input_modules:
             for setting in module.visible_settings():
@@ -582,6 +608,21 @@ class KnimeBridgeServer(threading.Thread):
             A dictionary whose key is the object name and whose
             value is a list of two-tuples of feature name and index into
             the java types array.
+            :param pipeline:
+            :param modules:
+            :param pipeline:
+            :param modules:
+            :param pipeline:
+            :param modules:
+            :param pipeline:
+            :param modules:
+            :param pipeline:
+            :param modules:
+            :param pipeline:
+            :param modules:
+            :param modules:
+            :param pipeline:
+            :param modules:
         """
         jtypes = ["java.lang.Integer"]
         features = {}
@@ -626,6 +667,9 @@ class KnimeBridgeServer(threading.Thread):
         grouping_allowed: true if we can accept images grouped by X or T
 
         returns numpy array in y, x indexing format.
+        :param grouping_allowed:
+        :param buf:
+        :param channel_metadata:
         """
         pixel_data = np.frombuffer(buf, "<f8")
         strides_out = [None] * len(channel_metadata)

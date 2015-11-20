@@ -248,6 +248,7 @@ class CalculateMath(cpm.CPModule):
         """Fixup any measurement names that might have been ambiguously loaded
 
         pipeline - for access to other module's measurements
+        :param pipeline:
         """
         for operand in self.operands:
             measurement = operand.operand_measurement.value
@@ -363,7 +364,11 @@ class CalculateMath(cpm.CPModule):
                     # count > 1 -> mean
                     #
                     def bincount(indexes, weights=None, minlength=None):
-                        """Minlength was added to numpy at some point...."""
+                        """Minlength was added to numpy at some point....
+                        :param minlength:
+                        :param weights:
+                        :param indexes:
+                        """
                         result = np.bincount(indexes, weights)
                         if minlength is not None and len(result) < minlength:
                             result = np.hstack(
@@ -534,6 +539,7 @@ class CalculateMath(cpm.CPModule):
 
         Check to make sure the output measurements aren't duplicated
         by prior modules.
+        :param pipeline:
         """
         all_object_names = [operand.operand_objects.value
                             for operand in self.operands

@@ -297,6 +297,7 @@ class MeasurementTemplate(cpm.CPModule):
 
         wants_negative - if True, return both positive and negative M, if false
                          return only positive
+                         :param wants_negative:
         """
         zi = get_zernike_indexes(self.radial_degree.value + 1)
         if wants_negative:
@@ -333,6 +334,13 @@ class MeasurementTemplate(cpm.CPModule):
 
         See http://en.wikipedia.org/wiki/Zernike_polynomials for an
         explanation of the Zernike polynomials
+        :param m:
+        :param n:
+        :param radius:
+        :param centers:
+        :param indexes:
+        :param labels:
+        :param pixels:
         """
         #
         # The strategy here is to operate on the whole array instead
@@ -430,7 +438,10 @@ class MeasurementTemplate(cpm.CPModule):
     # use the same functions in different places.
     #
     def get_feature_name(self, n, m):
-        """Return a measurement feature name for the given Zernike"""
+        """Return a measurement feature name for the given Zernike
+        :param m:
+        :param n:
+        """
         #
         # Something nice and simple for a name... Intensity_DNA_N4M2 for instance
         #
@@ -440,7 +451,10 @@ class MeasurementTemplate(cpm.CPModule):
             return "Intensity_%s_N%dMM%d" % (self.input_image_name.value, n, -m)
 
     def get_measurement_name(self, n, m):
-        """Return the whole measurement name"""
+        """Return the whole measurement name
+        :param m:
+        :param n:
+        """
         input_image_name = self.input_image_name.value
         return '_'.join([C_MEASUREMENT_TEMPLATE,
                          self.get_feature_name(n, m)])
@@ -523,6 +537,11 @@ class MeasurementTemplate(cpm.CPModule):
 
         For the Zernikes, the scales are of the form, N2M2 or N2MM2 for
         negative azimuthal degree
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if image_name in self.get_measurement_images(
                 pipeline, object_name, category, measurement):
@@ -541,6 +560,8 @@ class MeasurementTemplate(cpm.CPModule):
         magnitudes.
 
         returns a greyscale image based on the feature dictionary.
+        :param feature_dictionary:
+        :param radius:
         """
         i, j = np.mgrid[-radius:(radius + 1), -radius:(radius + 1)].astype(
             float) / radius

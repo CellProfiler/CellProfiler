@@ -440,7 +440,9 @@ class NamesAndTypes(cpm.CPModule):
                                                     "Update image set table")
 
     def add_assignment(self, can_remove=True):
-        """Add a rules assignment"""
+        """Add a rules assignment
+        :param can_remove:
+        """
         unique_image_name = self.get_unique_image_name()
         unique_object_name = self.get_unique_object_name()
         group = cps.SettingsGroup()
@@ -532,6 +534,9 @@ class NamesAndTypes(cpm.CPModule):
         assignment - assignment to copy
         assignment_list - add the assignment to this list
         add_assignment_fn - this appends a new assignment to the list
+        :param add_assignment_fn:
+        :param assignment_list:
+        :param assignment:
         """
         add_assignment_fn()
         new_assignment = assignment_list.pop()
@@ -720,7 +725,14 @@ class NamesAndTypes(cpm.CPModule):
             self.add_single_image()
 
     def post_pipeline_load(self, pipeline):
-        """Fix up metadata predicates after the pipeline loads"""
+        """Fix up metadata predicates after the pipeline loads
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         if self.assignment_method == ASSIGN_RULES:
             filters = []
             self.metadata_keys = []
@@ -767,6 +779,12 @@ class NamesAndTypes(cpm.CPModule):
         """Return True if changing the setting passed changes the image sets
 
         setting - the setting that was changed
+        :param setting:
+        :param setting:
+        :param setting:
+        :param setting:
+        :param setting:
+        :param setting:
         """
         if setting is self.add_assignment_button:
             return True
@@ -797,7 +815,14 @@ class NamesAndTypes(cpm.CPModule):
         return result
 
     def prepare_run(self, workspace):
-        """Write the image set to the measurements"""
+        """Write the image set to the measurements
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         if workspace.pipeline.in_batch_mode():
             return True
         column_names = self.get_column_names()
@@ -1000,6 +1025,26 @@ class NamesAndTypes(cpm.CPModule):
         """Make image sets using the Java framework
 
         workspace - the current workspace
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
         """
         pipeline = workspace.pipeline
         ipds = pipeline.get_image_plane_details(workspace)
@@ -1037,6 +1082,26 @@ class NamesAndTypes(cpm.CPModule):
         returns the CellProfiler java PlaneStack prebuilt axes list that
         is the appropriate shape for the channel's image stack, e.g. XYCAxes
         for color.
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
+        :param load_as_choice:
         """
         script = "Packages.org.cellprofiler.imageset.PlaneStack.%s;"
         if load_as_choice == LOAD_AS_COLOR_IMAGE:
@@ -1047,7 +1112,48 @@ class NamesAndTypes(cpm.CPModule):
             return J.run_script(script % "XYAxes")
 
     def make_channel_filter(self, group, name):
-        """Make a channel filter to get images for this group"""
+        """Make a channel filter to get images for this group
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        :param name:
+        :param group:
+        """
         script = """
         importPackage(Packages.org.cellprofiler.imageset);
         importPackage(Packages.org.cellprofiler.imageset.filter);
@@ -1061,7 +1167,48 @@ class NamesAndTypes(cpm.CPModule):
             script, dict(expr=group.rule_filter.value, name=name, axes=axes))
 
     def get_metadata_comparator(self, workspace, key):
-        """Get a Java Comparator<String> for a metadata key"""
+        """Get a Java Comparator<String> for a metadata key
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        :param key:
+        :param workspace:
+        """
         pipeline = workspace.pipeline
         if pipeline.get_available_metadata_keys().get(key) in (
                 cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER):
@@ -1097,6 +1244,46 @@ class NamesAndTypes(cpm.CPModule):
 
         returns a Java list of ImageSet objects and a dictionary of
         channel name to index in the image set.
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
+        :param ipd_list:
+        :param workspace:
         """
         metadata_types = workspace.pipeline.get_available_metadata_keys()
         #
@@ -1172,6 +1359,46 @@ class NamesAndTypes(cpm.CPModule):
         workspace - workspace for the analysis
         ipd_list - a wrapped Java List<ImagePlaneDetails> containing
                    the IPDs to be composed into channels.
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
         """
         axes = self.get_axes_for_load_as_choice(
             self.single_load_as_choice.value)
@@ -1194,6 +1421,46 @@ class NamesAndTypes(cpm.CPModule):
         workspace - workspace for the analysis
         ipd_list - a wrapped Java List<ImagePlaneDetails> containing
                    the IPDs to be composed into channels.
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
+                   :param ipd_list:
+                   :param workspace:
         """
         channel_filters = J.make_list(
             [self.make_channel_filter(group, name)
@@ -1213,6 +1480,26 @@ class NamesAndTypes(cpm.CPModule):
         """Append the single image channels to every image set
 
         image_sets - a java list of image sets
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
+        :param image_sets:
         """
         for group in self.single_images:
             url = group.image_plane.url
@@ -1259,6 +1546,26 @@ class NamesAndTypes(cpm.CPModule):
 
         returns True if no errors or if user is OK with them
                 False if user wants to abort.
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
+                :param errors:
         """
         if len(errors) == 0:
             return True
@@ -1292,6 +1599,66 @@ class NamesAndTypes(cpm.CPModule):
         the deflation and inflation process.
 
         This writes the dictionary to the experiment measurements.
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
+        :param channel_names:
+        :param image_sets:
+        :param workspace:
         """
         if len(image_sets) < 4:
             dlist = image_sets
@@ -1310,7 +1677,28 @@ class NamesAndTypes(cpm.CPModule):
         return cd
 
     def get_imageset_dictionary(self, workspace):
-        """Returns the imageset dictionary as a Java byte array"""
+        """Returns the imageset dictionary as a Java byte array
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         m = workspace.measurements
         if m.has_feature(cpmeas.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY):
             d = m[cpmeas.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY]
@@ -1318,7 +1706,9 @@ class NamesAndTypes(cpm.CPModule):
         return None
 
     def get_imageset(self, workspace):
-        """Get the Java ImageSet for the current image number"""
+        """Get the Java ImageSet for the current image number
+        :param workspace:
+        """
         compression_dictionary = self.get_imageset_dictionary(workspace)
         m = workspace.measurements
         blob = m[cpmeas.IMAGE, M_IMAGE_SET]
@@ -1347,7 +1737,10 @@ class NamesAndTypes(cpm.CPModule):
             columns.append([ipd] * max_len)
 
     def get_single_image_ipd(self, single_image, ipds):
-        """Get an image plane descriptor for this single_image group"""
+        """Get an image plane descriptor for this single_image group
+        :param single_image:
+        :param ipds:
+        """
         if single_image.image_plane.url is None:
             raise ValueError("Single image is not yet specified")
         ipd = cpp.find_image_plane_details(cpp.ImagePlaneDetails(
@@ -1366,6 +1759,8 @@ class NamesAndTypes(cpm.CPModule):
         workspace - workspace containing pipeline & image measurements
         fn_alter_path - call this function to alter any path to target
                         operating environment
+                        :param workspace:
+                        :param fn_alter_path:
         """
         if self.assignment_method == ASSIGN_ALL:
             names = [self.single_image_provider.value]
@@ -1428,6 +1823,11 @@ class NamesAndTypes(cpm.CPModule):
                   INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE
                   or a floating point manual value.
         stack - the ImagePlaneDetailsStack that describes the image's planes
+        :param rescale:
+        :param load_choice:
+        :param name:
+        :param workspace:
+        :param stack:
         """
         if rescale == INTENSITY_RESCALING_BY_METADATA:
             rescale = True
@@ -1515,6 +1915,9 @@ class NamesAndTypes(cpm.CPModule):
         m - measurements structure
         image_or_objects - cpmeas.IMAGE if the provider is an image provider
                            otherwise cpmeas.OBJECT if it provides objects
+                           :param m:
+                           :param provider:
+                           :param image_or_objects:
         """
         from cellprofiler.modules.loadimages import \
             C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
@@ -1534,7 +1937,10 @@ class NamesAndTypes(cpm.CPModule):
 
     @staticmethod
     def get_file_hash(provider, measurements):
-        """Get an md5 checksum from the (cached) file courtesy of the provider"""
+        """Get an md5 checksum from the (cached) file courtesy of the provider
+        :param measurements:
+        :param provider:
+        """
         return provider.get_md5_hash(measurements)
 
     def add_objects(self, workspace, name, should_save_outlines,
@@ -1546,6 +1952,11 @@ class NamesAndTypes(cpm.CPModule):
         should_save_outlines - True if the user wants to save outlines as an image
         outlines_name - the name of the outlines image in the pipeline
         stack - the ImagePlaneDetailsStack representing the planes to be loaded
+        :param name:
+        :param workspace:
+        :param should_save_outlines:
+        :param outlines_name:
+        :param stack:
         """
         from cellprofiler.modules.identify import add_object_count_measurements
         from cellprofiler.modules.identify import \
@@ -1634,7 +2045,10 @@ class NamesAndTypes(cpm.CPModule):
         self.pipeline = None
 
     def on_setting_changed(self, setting, pipeline):
-        """Handle updates to all settings"""
+        """Handle updates to all settings
+        :param setting:
+        :param pipeline:
+        """
         self.update_joiner()
         self.update_all_metadata_predicates()
 
@@ -1680,6 +2094,7 @@ class NamesAndTypes(cpm.CPModule):
 
         For NamesAndTypes, we anticipate that the pipeline will create
         the text measurements for the images.
+        :param pipeline:
         """
         from cellprofiler.modules.loadimages import \
             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
@@ -1786,6 +2201,7 @@ class NamesAndTypes(cpm.CPModule):
 
         Make sure the metadata matcher has at least one completely
         specified channel.
+        :param pipeline:
         """
         if self.assignment_method == ASSIGN_RULES \
                 and self.matching_choice == MATCH_BY_METADATA \
@@ -1953,6 +2369,7 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
         """Define the possible metadata keys to be matched against literal values
 
         keys - a list of keys
+        :param keys:
         """
         sub_subpredicates = [
             cps.Filter.FilterPredicate(
@@ -1976,6 +2393,8 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
 
         The metadata predicate has subpredicates that look up their
         metadata key in the ipd and compare it against a literal.
+        :param arg:
+        :param vargs:
         """
         node_type, modpath, resolver = arg
         ipd = resolver.get_image_plane_details(modpath)
@@ -2050,6 +2469,7 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
 
     def provide_image(self, image_set):
         """Load an image from a pathname
+        :param image_set:
         """
         self.cache_file()
         filename = self.get_filename()

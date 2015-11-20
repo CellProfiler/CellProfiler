@@ -353,6 +353,7 @@ class DefineGrid(cpm.CPModule):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. None means don't draw.
+            :param workspace:
         """
         background_image = self.get_background_image(workspace, None)
 
@@ -443,6 +444,7 @@ class DefineGrid(cpm.CPModule):
         """Automatically define a grid based on objects
 
         Returns a CPGridInfo object
+        :param workspace:
         """
         objects = workspace.object_set.get_objects(self.object_name.value)
         centroids = centers_of_labels(objects.segmented)
@@ -484,6 +486,7 @@ class DefineGrid(cpm.CPModule):
         """Define a grid based on the coordinates of two points
 
         Returns a CPGridInfo object
+        :param workspace:
         """
         if self.display_image_name.value in workspace.image_set.names:
             image = workspace.image_set.get_image(self.display_image_name.value)
@@ -507,6 +510,8 @@ class DefineGrid(cpm.CPModule):
         """Define a grid by running the UI
 
         Returns a CPGridInfo object
+        :param image_set_number:
+        :param background_image:
         """
         import matplotlib
         import matplotlib.backends.backend_wxagg as backend
@@ -704,6 +709,24 @@ class DefineGrid(cpm.CPModule):
 
         feature - the feature name of the measurement to add
         value - the value for the measurement
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
+        :param value:
+        :param feature:
+        :param workspace:
         """
         feature_name = self.get_feature_name(feature)
         workspace.measurements.add_image_measurement(feature_name, value)
@@ -711,7 +734,62 @@ class DefineGrid(cpm.CPModule):
     def build_grid_info(self, first_x, first_y, first_row, first_col,
                         second_x, second_y, second_row, second_col,
                         image_shape=None):
-        """Populate and return a CPGridInfo based on two cell locations"""
+        """Populate and return a CPGridInfo based on two cell locations
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        :param image_shape:
+        :param second_col:
+        :param second_row:
+        :param second_y:
+        :param second_x:
+        :param first_col:
+        :param first_row:
+        :param first_y:
+        :param first_x:
+        """
         first_row, first_col = \
             self.canonical_row_and_column(first_row, first_col)
         second_row, second_col = \
@@ -802,6 +880,18 @@ class DefineGrid(cpm.CPModule):
         The user might select something other than the bottom left as the
         origin of their coordinate space. This method returns a row and
         column using a numbering where the top left corner is 0,0
+        :param column:
+        :param row:
+        :param column:
+        :param row:
+        :param column:
+        :param row:
+        :param column:
+        :param row:
+        :param column:
+        :param row:
+        :param column:
+        :param row:
         """
         if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
             row = self.grid_rows.value - row
@@ -826,7 +916,32 @@ class DefineGrid(cpm.CPModule):
                               ax)
 
     def display_grid(self, background_image, gridding, image_set_number, axes):
-        """Display the grid in a figure"""
+        """Display the grid in a figure
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        :param axes:
+        :param image_set_number:
+        :param gridding:
+        :param background_image:
+        """
         import matplotlib
 
         axes.cla()
@@ -867,21 +982,48 @@ class DefineGrid(cpm.CPModule):
         axes.axis('image')
 
     def get_good_gridding(self, workspace):
-        """Get either the first gridding or the most recent successful gridding"""
+        """Get either the first gridding or the most recent successful gridding
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         d = self.get_dictionary()
         if not GOOD_GRIDDING in d:
             return None
         return d[GOOD_GRIDDING]
 
     def set_good_gridding(self, workspace, gridding):
-        """Set the gridding to use upon failure"""
+        """Set the gridding to use upon failure
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        :param gridding:
+        :param workspace:
+        """
         d = self.get_dictionary()
         if (self.failed_grid_choice == FAIL_ANY_PREVIOUS or
                 not d.has_key(GOOD_GRIDDING)):
             d[GOOD_GRIDDING] = gridding
 
     def validate_module(self, pipeline):
-        """Make sure that the row and column are different"""
+        """Make sure that the row and column are different
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         if (self.auto_or_manual == AM_MANUAL and
                     self.manual_choice == MAN_COORDINATES):
             if self.first_spot_row.value == self.second_spot_row.value:
@@ -915,6 +1057,30 @@ class DefineGrid(cpm.CPModule):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 3:
             grid_name, rows_cols, left_or_right, top_or_bottom, \
@@ -988,6 +1154,26 @@ class DefineGrid(cpm.CPModule):
                       to add_measurement)
         third entry: the column data type (for instance, "varchar(255)" or
                      "float")
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
         """
         return [(cpmeas.IMAGE, self.get_feature_name(F_ROWS),
                  cpmeas.COLTYPE_INTEGER),
@@ -1008,6 +1194,46 @@ class DefineGrid(cpm.CPModule):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
         """
         if object_name == cpmeas.IMAGE:
             return [M_CATEGORY]

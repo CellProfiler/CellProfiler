@@ -54,6 +54,7 @@ def get_patcher_args(class_path):
     class_path - absolute path to all jars needed by ImageJ
 
     returns a sequence of arguments to add to the JVM args
+    :param class_path:
     """
 
     patchers = filter((lambda x: x.find("ij1-patcher") >= 0), class_path)
@@ -159,6 +160,7 @@ def add_logback_xml_arg(args):
     """Add the logback.xml configuration arg if appropriate
 
     args: the args to send to the JVM.
+    :param args:
     """
     logback_path = find_logback_xml()
     if logback_path is not None:
@@ -274,6 +276,7 @@ def cp_stop_vm(kill=True):
 
     Check for headlessness and the state of ImageJ and take
     whatever action is needed to stop AWT and the JVM.
+    :param kill:
     """
     from imagej.imagej2 import allow_quit, the_imagej_context
     ij1 = javabridge.JClassWrapper("ij.IJ").getInstance()

@@ -232,7 +232,8 @@ class MeasureTexture(cpm.CPModule):
 
     def prepare_settings(self, setting_values):
         """Adjust the number of object groups based on the number of
-        setting_values"""
+        setting_values
+        :param setting_values: """
         for count, sequence, fn in \
                 ((int(setting_values[0]), self.image_groups, self.add_image_cb),
                  (int(setting_values[1]), self.object_groups,
@@ -278,6 +279,7 @@ class MeasureTexture(cpm.CPModule):
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
+                     :param can_remove:
         """
         group = cps.SettingsGroup()
         if can_remove:
@@ -298,6 +300,7 @@ class MeasureTexture(cpm.CPModule):
 
         can_delete - set this to False to keep from showing the "remove"
                      button for objects that must be present.
+                     :param can_remove:
         """
         group = cps.SettingsGroup()
         if can_remove:
@@ -324,6 +327,7 @@ class MeasureTexture(cpm.CPModule):
 
         can_delete - set this to False to keep from showing the "remove"
                      button for scales that must be present.
+                     :param can_remove:
         """
         group = cps.SettingsGroup()
         if can_remove:
@@ -363,7 +367,9 @@ class MeasureTexture(cpm.CPModule):
         self.scale_groups.append(group)
 
     def validate_module(self, pipeline):
-        """Make sure chosen objects, images and scales are selected only once"""
+        """Make sure chosen objects, images and scales are selected only once
+        :param pipeline:
+        """
         images = set()
         for group in self.image_groups:
             if group.image_name.value in images:
@@ -395,6 +401,8 @@ class MeasureTexture(cpm.CPModule):
         pipeline - pipeline being run
         object_name - name of labels in question (or 'Images')
         returns a list of category names
+        :param object_name:
+        :param pipeline:
         """
         if self.wants_object_measurements() and \
                 any([object_name == og.object_name for og in
@@ -415,6 +423,9 @@ class MeasureTexture(cpm.CPModule):
         pipeline - pipeline being run
         object_name - name of objects being measured
         category - measurement category
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if category in self.get_categories(pipeline, object_name):
             return self.get_features()
@@ -428,6 +439,10 @@ class MeasureTexture(cpm.CPModule):
         object_name - name of objects being measured
         category - measurement category
         measurement - measurement made on images
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         measurements = self.get_measurements(pipeline, object_name, category)
         if measurement in measurements:
@@ -443,6 +458,11 @@ class MeasureTexture(cpm.CPModule):
         category - measurement category
         measurement - name of measurement made
         image_name - name of image that was measured
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if len(self.get_measurement_images(pipeline, object_name, category,
                                            measurement)) > 0:
@@ -455,7 +475,9 @@ class MeasureTexture(cpm.CPModule):
         return []
 
     def get_measurement_columns(self, pipeline):
-        """Get column names output for each measurement."""
+        """Get column names output for each measurement.
+        :param pipeline:
+        """
         cols = []
         if self.wants_image_measurements():
             for feature in self.get_features():
@@ -502,7 +524,9 @@ class MeasureTexture(cpm.CPModule):
         return cols
 
     def run(self, workspace):
-        """Run, computing the area measurements for the objects"""
+        """Run, computing the area measurements for the objects
+        :param workspace:
+        """
 
         workspace.display_data.col_labels = [
             "Image", "Object", "Measurement", "Scale", "Value"]
@@ -538,7 +562,13 @@ class MeasureTexture(cpm.CPModule):
                              col_labels=workspace.display_data.col_labels)
 
     def run_one(self, image_name, object_name, scale, angle, workspace):
-        """Run, computing the area measurements for a single map of objects"""
+        """Run, computing the area measurements for a single map of objects
+        :param workspace:
+        :param angle:
+        :param scale:
+        :param object_name:
+        :param image_name:
+        """
         statistics = []
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
@@ -592,7 +622,32 @@ class MeasureTexture(cpm.CPModule):
             return scale, -scale
 
     def run_image(self, image_name, scale, angle, workspace):
-        """Run measurements on image"""
+        """Run measurements on image
+        :param workspace:
+        :param angle:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param angle:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param angle:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param angle:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param angle:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param angle:
+        :param scale:
+        :param image_name:
+        """
         statistics = []
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
@@ -685,7 +740,43 @@ class MeasureTexture(cpm.CPModule):
                            image_name, object_name, scale,
                            feature_name, result):
         """Record the result of a measurement in the workspace's
-        measurements"""
+        measurements
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param object_name:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param object_name:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param object_name:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param object_name:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param object_name:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param object_name:
+        :param image_name:
+        :param workspace: """
         data = fix(result)
         data[~np.isfinite(data)] = 0
         workspace.add_measurement(
@@ -706,7 +797,37 @@ class MeasureTexture(cpm.CPModule):
                                  image_name, scale,
                                  feature_name, result):
         """Record the result of a measurement in the workspace's
-        measurements"""
+        measurements
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param image_name:
+        :param workspace:
+        :param result:
+        :param feature_name:
+        :param scale:
+        :param image_name:
+        :param workspace: """
         if not np.isfinite(result):
             result = 0
         workspace.measurements.add_image_measurement("%s_%s_%s_%s" %
@@ -730,6 +851,30 @@ class MeasureTexture(cpm.CPModule):
         from_matlab - true if it was a Matlab module that saved the settings
         
         returns the modified settings, revision number and "from_matlab" flag
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 2:
             #

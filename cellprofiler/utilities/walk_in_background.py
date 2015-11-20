@@ -90,6 +90,10 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
     To stop, call it like this: fn(THREAD_STOP)
     To pause, call it with THREAD_PAUSE, to resume, call it with
     THREAD_RESUME
+    :param metadata_fn:
+    :param completed_fn:
+    :param callback_fn:
+    :param path:
     """
 
     checkpoint = Checkpoint()
@@ -152,6 +156,9 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed=None):
     fn_completed - called when operation is complete
 
     Returns a function that can be called to interrupt the operation.
+    :param fn_completed:
+    :param fn_callback:
+    :param pathnames:
     """
     checkpoint = Checkpoint()
 

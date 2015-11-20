@@ -99,6 +99,7 @@ class Example6b(cpm.CPModule):
 
         returns a list of two-tuples with the path in the first tuple and
                 the file in the second.
+                :param utctime:
         """
         result = []
         for root, dirnames, filenames in os.walk(

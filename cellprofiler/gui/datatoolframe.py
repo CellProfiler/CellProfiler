@@ -160,7 +160,9 @@ class DataToolFrame(wx.Frame):
         self.Close()
 
     def on_image_choose(self, event):
-        """Choose an image from the image set"""
+        """Choose an image from the image set
+        :param event:
+        """
         dlg = wx.Dialog(self)
         dlg.Title = "Choose an image set"
         sizer = wx.BoxSizer(wx.VERTICAL)

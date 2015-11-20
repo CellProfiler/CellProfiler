@@ -46,6 +46,9 @@ def bind_data_class(data_class, color_select, fn_redraw):
     color_select - a color select button whose color synchronizes
                    to that of the data
     fn_redraw - function to be called
+    :param fn_redraw:
+    :param color_select:
+    :param data_class:
     """
     assert issubclass(data_class, ColorMixin)
     assert isinstance(color_select, ColourSelect)
@@ -114,7 +117,9 @@ class VWRow(object):
         self.update_chooser()
 
     def update_chooser(self, first=False):
-        """Update the chooser with the given list of names"""
+        """Update the chooser with the given list of names
+        :param first:
+        """
         name = self.chooser.GetStringSelection()
         names = self.get_names()
         current_names = sorted(self.chooser.GetItems())
@@ -156,7 +161,9 @@ class VWImageRow(VWRow):
         return self.vw.workspace.image_set.get_names()
 
     def update_data(self, name):
-        """Update the image data from the workspace"""
+        """Update the image data from the workspace
+        :param name:
+        """
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
         self.data.pixel_data = image.pixel_data
@@ -212,7 +219,9 @@ class VWMaskRow(VWRow):
         return names
 
     def update_data(self, name):
-        """Update the image data from the workspace"""
+        """Update the image data from the workspace
+        :param name:
+        """
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
         self.data.mask = image.mask
@@ -220,7 +229,9 @@ class VWMaskRow(VWRow):
 
 class VWFigureFrame(CPFigureFrame):
     def on_close(self, event):
-        """Hide instead of close"""
+        """Hide instead of close
+        :param event:
+        """
         if isinstance(event, wx.CloseEvent):
             event.Veto()
         self.Hide()
@@ -545,7 +556,9 @@ class ViewWorkspace(object):
         self.redraw()
 
     def set_workspace(self, workspace):
-        """Rebuild the workspace control panel"""
+        """Rebuild the workspace control panel
+        :param workspace:
+        """
         self.workspace = workspace
         self.ignore_redraw = True
         try:

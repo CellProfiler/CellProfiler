@@ -202,6 +202,9 @@ def add_all_images(handles, image_set, object_set):
     """ Add all images to the handles structure passed
     
     Add images to the handles structure, for example in the Python sandwich.
+    :param object_set:
+    :param image_set:
+    :param handles:
     """
     images = {}
     for provider in image_set.providers:
@@ -232,6 +235,8 @@ def map_feature_names(feature_names, max_size=63):
 
     returns a dictionary where the key is the field name and
     the value is the feature name.
+    :param max_size:
+    :param feature_names:
     """
     mapping = {}
     seeded = False
@@ -282,7 +287,9 @@ def map_feature_names(feature_names, max_size=63):
 
 def add_all_measurements(handles, measurements):
     """Add all measurements from our measurements object into the numpy structure passed
-    
+    :param measurements:
+    :param handles:
+
     """
     object_names = [name for name in measurements.get_object_names()
                     if len(measurements.get_feature_names(name)) > 0]
@@ -378,6 +385,7 @@ class ModuleRunner(threading.Thread):
         or cancel running the pipeline. We want to postpone posting done
         during pause and post done if we've finished running and
         we're switching from paused to not paused
+        :param event:
         """
         if event.disposition == cpw.DISPOSITION_PAUSE:
             self.paused = True
@@ -519,6 +527,7 @@ def read_file_list(file_or_fd):
     "Version":"1","PlaneCount":"1"
     "URL","Series","Index","Channel"
     "file:///imaging/analysis/singleplane.tif",,,
+    :param file_or_fd:
     """
 
     if isinstance(file_or_fd, basestring):
@@ -561,6 +570,8 @@ def write_file_list(file_or_fd, file_list):
     file_or_fd - a path or a file like object
 
     file_list - collection of URLs to be output
+    :param file_list:
+    :param file_or_fd:
 
     """
     if isinstance(file_or_fd, basestring):
@@ -679,7 +690,14 @@ class Pipeline(object):
         self.__undo_stack = []
 
     def copy(self, save_image_plane_details=True):
-        """Create a copy of the pipeline modules and settings"""
+        """Create a copy of the pipeline modules and settings
+        :param save_image_plane_details:
+        :param save_image_plane_details:
+        :param save_image_plane_details:
+        :param save_image_plane_details:
+        :param save_image_plane_details:
+        :param save_image_plane_details:
+        """
         fd = StringIO.StringIO()
         self.save(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
@@ -696,6 +714,18 @@ class Pipeline(object):
 
         We use secure hashing functions which are really good at avoiding
         collisions for small changes in data.
+        :param as_string:
+        :param until_module:
+        :param as_string:
+        :param until_module:
+        :param as_string:
+        :param until_module:
+        :param as_string:
+        :param until_module:
+        :param as_string:
+        :param until_module:
+        :param as_string:
+        :param until_module:
         """
         h = hashlib.md5()
         for module in self.modules():
@@ -710,7 +740,13 @@ class Pipeline(object):
 
     def create_from_handles(self, handles):
         """Read a pipeline's modules out of the handles structure
-        
+        :param handles:
+        :param handles:
+        :param handles:
+        :param handles:
+        :param handles:
+        :param handles:
+
         """
         self.__modules = []
         try:
@@ -839,6 +875,12 @@ class Pipeline(object):
         filename - path to the file
 
         returns True if the file starts with the CellProfiler cookie.
+        :param filename:
+        :param filename:
+        :param filename:
+        :param filename:
+        :param filename:
+        :param filename:
         """
         with open(filename, "rb") as fd:
             return Pipeline.is_pipeline_txt_fd(fd)
@@ -859,6 +901,12 @@ class Pipeline(object):
         """Load the pipeline from a file
         
         fd_or_filename - either the name of a file or a file-like object
+        :param fd_or_filename:
+        :param fd_or_filename:
+        :param fd_or_filename:
+        :param fd_or_filename:
+        :param fd_or_filename:
+        :param fd_or_filename:
         """
         self.__modules = []
         self.__undo_stack = []
@@ -954,6 +1002,46 @@ class Pipeline(object):
                          exception rather than generating a LoadException event.
 
         See savetxt for more comprehensive documentation.
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
+        :param raise_on_error:
+        :param fd_or_filename:
         """
         from cellprofiler.utilities.version import \
             version_number as cp_version_number
@@ -1211,6 +1299,66 @@ class Pipeline(object):
         """Save the pipeline to a file
         
         fd_or_filename - either a file descriptor or the name of the file
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param format:
+        :param fd_or_filename:
         """
         if format == FMT_MATLAB:
             handles = self.save_to_handles()
@@ -1229,6 +1377,26 @@ class Pipeline(object):
         Encode for automatic decoding using the 'string_escape' decoder.
         We encode the special characters, '[', ':', '|' and ']' using the '\\x'
         syntax.
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
+        :param s:
         """
         s = s.encode('string_escape')
         s = s.replace(':', '\\x3A')
@@ -1275,6 +1443,66 @@ class Pipeline(object):
         The image plane details can be saved along with the pipeline. These
         are a collection of images and their metadata.
         See read_image_plane_details for the file format
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
+        :param save_image_plane_details:
+        :param modules_to_save:
+        :param fd_or_filename:
         """
         from cellprofiler.utilities.version import version_number
         if hasattr(fd_or_filename, "write"):
@@ -1334,6 +1562,8 @@ class Pipeline(object):
         fd - file descriptor of the file.
 
         indent - indent of the notes relative to module header.
+        :param indent:
+        :param fd:
         """
         lines = []
         for module in self.modules(exclude_disabled=False):
@@ -1352,6 +1582,8 @@ class Pipeline(object):
         
         filename     - name of file to create, or a file-like object
         measurements - measurements structure that is the result of running the pipeline
+        :param measurements:
+        :param filename:
         """
         handles = self.build_matlab_handles()
         add_all_measurements(handles, measurements)
@@ -1378,6 +1610,8 @@ class Pipeline(object):
                         M_USER_PIPELINE is the pipeline that should be loaded
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
+                        :param user_pipeline:
+                        :param m:
         """
         assert (isinstance(m, cpmeas.Measurements))
         fd = StringIO.StringIO()
@@ -1391,12 +1625,16 @@ class Pipeline(object):
         """Erase all measurements, but make sure to re-establish the pipeline one
 
         m - measurements to be cleared
+        :param m:
         """
         m.clear()
         self.write_experiment_measurements(m)
 
     def savemat(self, filename, root):
-        """Save a handles structure accounting for scipy version compatibility to a filename or file-like object"""
+        """Save a handles structure accounting for scipy version compatibility to a filename or file-like object
+        :param root:
+        :param filename:
+        """
         sver = scipy.__version__.split('.')
         if (len(sver) >= 2 and sver[0].isdigit() and int(sver[0]) == 0 and
                 sver[1].isdigit() and int(sver[1]) < 8):
@@ -1589,6 +1827,7 @@ class Pipeline(object):
         """Convert all references to the default input folder to abolute paths
 
         path - the path to use in place of the default input folder
+        :param path:
         """
         with self.undoable_action("Convert default input folder"):
             for module in self.modules(False):
@@ -1655,6 +1894,7 @@ class Pipeline(object):
         
         image_dict - dictionary mapping image names to image pixel data in the 
                      form of a numpy array.
+                     :param image_dict:
         """
         import cellprofiler.settings as cps
         from cellprofiler import objects as cpo
@@ -1707,6 +1947,12 @@ class Pipeline(object):
         grouping - a dictionary that gives the keys and values in the
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
+        :param frame:
+        :param image_set_start:
+        :param image_set_end:
+        :param grouping:
+        :param measurements_filename:
+        :param initial_measurements:
         """
         measurements = cpmeas.Measurements(
             image_set_start=image_set_start,
@@ -1746,13 +1992,21 @@ class Pipeline(object):
                              running each module.
         
         Run the pipeline, returning the measurements made
+        :param frame:
+        :param image_set_start:
+        :param image_set_end:
+        :param grouping:
+        :param run_in_background:
+        :param status_callback:
+        :param initial_measurements:
         """
 
         can_display = not cpprefs.get_headless()
 
         def group(workspace):
             """Enumerate relevant image sets.  This function is
-            side-effect free, so it can be called more than once."""
+            side-effect free, so it can be called more than once.
+            :param workspace: """
             keys, groupings = self.get_groupings(workspace)
             if grouping is not None and set(keys) != set(grouping.keys()):
                 raise ValueError(
@@ -2010,6 +2264,47 @@ class Pipeline(object):
              self.prepare_run() and self.prepare_group() must have already been called.
         
         Returns a workspace suitable for use in self.post_group()
+        :param measurements:
+        :param image_set_number:
+        :param interaction_handler:
+        :param display_handler:
+        :param cancel_handler:
+        :param cancel_handler:
+        :param measurements:
+        :param image_set_number:
+        :param interaction_handler:
+        :param display_handler:
+        :param cancel_handler:
+        :param measurements:
+        :param image_set_number:
+        :param interaction_handler:
+        :param display_handler:
+        :param cancel_handler:
+        :param measurements:
+        :param image_set_number:
+        :param interaction_handler:
+        :param display_handler:
+        :param cancel_handler:
+        :param measurements:
+        :param image_set_number:
+        :param interaction_handler:
+        :param display_handler:
+        :param cancel_handler:
+        :param measurements:
+        :param image_set_number:
+        :param interaction_handler:
+        :param display_handler:
+        :param cancel_handler:
+        :param measurements:
+        :param image_set_number:
+        :param interaction_handler:
+        :param display_handler:
+        :param cancel_handler:
+        :param measurements:
+        :param image_set_number:
+        :param interaction_handler:
+        :param display_handler:
+        :param cancel_handler:
         """
         measurements.next_image_set(image_set_number)
         measurements.group_number = measurements[
@@ -2114,6 +2409,12 @@ class Pipeline(object):
         The function yields the current workspace at the end of processing
         each image set. The workspace has a valid image_set and the
         measurements' image_number is the current image number.
+        :param workspace:
+        :param grouping:
+        :param image_numbers:
+        :param stop_module:
+        :param title:
+        :param message:
         """
         m = workspace.measurements
         pipeline = workspace.pipeline
@@ -2159,6 +2460,8 @@ class Pipeline(object):
 
         Run the CellProfiler module with whatever preparation and cleanup
         needs to be done before and after.
+        :param module:
+        :param workspace:
         """
         try:
             module.run(workspace)
@@ -2173,6 +2476,7 @@ class Pipeline(object):
         """Write the standard experiment measurments to the measurements file
 
         Write the pipeline, version # and timestamp.
+        :param m:
         """
         assert isinstance(m, cpmeas.Measurements)
         self.write_pipeline_measurement(m)
@@ -2204,6 +2508,8 @@ class Pipeline(object):
         test_mode - None = use pipeline's test mode, True or False to set explicitly
         
         end_module - if present, terminate before executing this module
+        :param workspace:
+        :param end_module:
         """
         assert (isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
@@ -2297,6 +2603,7 @@ class Pipeline(object):
         measurements - the measurements for the run
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
+        :param args:
         """
         from cellprofiler.cpmodule import CPModule
         if len(args) == 3:
@@ -2351,6 +2658,8 @@ class Pipeline(object):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
+                        :param workspace:
+                        :param fn_alter_path:
         """
         assert workspace.pipeline == self
         for module in self.modules():
@@ -2381,6 +2690,7 @@ class Pipeline(object):
         and 'Metadata_Column' and a group_list of:
         [ (('A','01'), [0,96,192]),
           (('A','02'), [1,97,193]),... ]
+          :param workspace:
         """
         groupings = None
         grouping_module = None
@@ -2410,6 +2720,7 @@ class Pipeline(object):
                   metadata into a string. Each token has the form:
                   "\(?<METADATA_TAG>\)" (matlab-style) or
                   "\g<METADATA_TAG>" (Python-style)
+                  :param pattern:
         """
         columns = self.get_measurement_columns()
         current_metadata = []
@@ -2437,6 +2748,9 @@ class Pipeline(object):
         grouping - a dictionary giving the keys and values for the group
 
         returns true if the group should be run
+        :param workspace:
+        :param grouping:
+        :param image_numbers:
         """
         for module in self.modules():
             try:
@@ -2454,6 +2768,8 @@ class Pipeline(object):
         """Do post-processing after a group completes
 
         workspace - the last workspace run
+        :param workspace:
+        :param grouping:
         """
         from cellprofiler.cpmodule import CPModule
         for module in self.modules():
@@ -2541,6 +2857,8 @@ class Pipeline(object):
         
         Move the 1-indexed module either up one or down one in the list, displacing
         the other modules in the list
+        :param module_num:
+        :param direction:
         """
         idx = module_num - 1
         if direction == DIRECTION_DOWN:
@@ -2586,7 +2904,9 @@ class Pipeline(object):
         self.__undo_stack.append((undo, message))
 
     def enable_module(self, module):
-        """Enable a module = make it executable"""
+        """Enable a module = make it executable
+        :param module:
+        """
         if module.enabled:
             logger.warn(
                 "Asked to enable module %s, but it was already enabled" %
@@ -2602,7 +2922,9 @@ class Pipeline(object):
         self.__undo_stack.append((undo, message))
 
     def disable_module(self, module):
-        """Disable a module = prevent it from being executed"""
+        """Disable a module = prevent it from being executed
+        :param module:
+        """
         if not module.enabled:
             logger.warn(
                 "Asked to disable module %s, but it was already disabled" %
@@ -2622,6 +2944,8 @@ class Pipeline(object):
         module - module to show or hide
 
         state - True to show, False to hide
+        :param module:
+        :param state:
         """
         if state != module.show_window:
             module.show_window = state
@@ -2639,6 +2963,8 @@ class Pipeline(object):
 
         urls - a collection of URLs
         add_undo - True to add the undo operation of this to the undo stack
+        :param urls:
+        :param add_undo:
         """
         real_list = []
         urls = sorted(urls)
@@ -2699,7 +3025,9 @@ class Pipeline(object):
             self.__undo_stack.append((undo, "Remove images"))
 
     def clear_urls(self, add_undo=True):
-        """Remove all URLs from the pipeline"""
+        """Remove all URLs from the pipeline
+        :param add_undo:
+        """
         old_urls = list(self.__file_list)
         self.__file_list = []
         if len(old_urls):
@@ -2715,6 +3043,7 @@ class Pipeline(object):
 
     def load_file_list(self, workspace):
         """Load the pipeline's file_list from the workspace file list
+        :param workspace:
 
         """
         file_list = workspace.file_list
@@ -2741,6 +3070,8 @@ class Pipeline(object):
         """Read a file of one file or URL per line into the file list
 
         path - a path to a file or a URL
+        :param path_or_fd:
+        :param add_undo:
         """
         if isinstance(path_or_fd, basestring):
             from cellprofiler.modules.loadimages import \
@@ -2767,7 +3098,10 @@ class Pipeline(object):
             add_undo=add_undo)
 
     def add_pathnames_to_file_list(self, pathnames, add_undo=True):
-        """Add a sequence of paths or URLs to the file list"""
+        """Add a sequence of paths or URLs to the file list
+        :param pathnames:
+        :param add_undo:
+        """
         from cellprofiler.modules.loadimages import pathname2url
         urls = []
         for pathname in pathnames:
@@ -2790,6 +3124,7 @@ class Pipeline(object):
 
         returns an object that represents the state of the first instance
         of the named module or None if not in pipeline
+        :param module_name_or_module:
         """
         if isinstance(module_name_or_module, basestring):
             modules = [module for module in self.modules()
@@ -2818,6 +3153,7 @@ class Pipeline(object):
 
     def get_filtered_file_list(self, workspace):
         """Return the file list as filtered by the Images module
+        :param workspace:
 
         """
         if not self.has_cached_filtered_file_list():
@@ -2836,6 +3172,7 @@ class Pipeline(object):
 
     def get_image_plane_details(self, workspace):
         """Return the image plane details with metadata computed
+        :param workspace:
 
         """
         if self.has_cached_image_plane_details():
@@ -2857,7 +3194,9 @@ class Pipeline(object):
         return module.get_data_type(module.get_metadata_keys())
 
     def use_case_insensitive_metadata_matching(self, key):
-        """Return TRUE if metadata should be matched without regard to case"""
+        """Return TRUE if metadata should be matched without regard to case
+        :param key:
+        """
         modules = [module for module in self.modules()
                    if module.module_name == "Metadata"]
         if len(modules) == 0:
@@ -2865,7 +3204,10 @@ class Pipeline(object):
         return modules[0].wants_case_insensitive_matching(key)
 
     def set_filtered_file_list(self, file_list, module):
-        """The Images module calls this to report its list of filtered files"""
+        """The Images module calls this to report its list of filtered files
+        :param file_list:
+        :param module:
+        """
         self.__filtered_file_list = file_list
         self.__filtered_file_list_images_settings = \
             self.get_module_state(module)
@@ -2878,6 +3220,9 @@ class Pipeline(object):
                                   metadata extraction.
         module - the metadata module that made them (so we can cache based
                  on the module's settings.
+                 :param ipds:
+                 :param available_metadata_keys:
+                 :param module:
         """
         self.__image_plane_details = ipds
         self.__available_metadata_keys = available_metadata_keys
@@ -2940,6 +3285,8 @@ class Pipeline(object):
         image set.
 
         This function leaves out any image set that is ill-defined.
+        :param workspace:
+        :param end_module:
         """
 
         pipeline = self.copy(save_image_plane_details=False)
@@ -3036,6 +3383,7 @@ class Pipeline(object):
         with pipeline.undoable_action():
             pipeline.add_module(module1)
             pipeline.add_module(module2)
+            :param name:
         """
 
         class UndoableAction():
@@ -3060,7 +3408,9 @@ class Pipeline(object):
         self.__undo_start = len(self.__undo_stack)
 
     def stop_undoable_action(self, name="Composite edit"):
-        """Stop editing the pipeline, combining many actions into one"""
+        """Stop editing the pipeline, combining many actions into one
+        :param name:
+        """
         if len(self.__undo_stack) > self.__undo_start + 1:
             # Only combine if two or more edits
             actions = self.__undo_stack[self.__undo_start:]
@@ -3076,6 +3426,7 @@ class Pipeline(object):
         """Return the list of modules
 
         exclude_disabled - only return enabled modules if True (default)
+        :param exclude_disabled:
         """
         if exclude_disabled:
             return [m for m in self.__modules if m.enabled]
@@ -3096,6 +3447,7 @@ class Pipeline(object):
 
         Return a list of setting values that can be fed into the module's
         set_settings_from_values method to reconstruct the module in its original form.
+        :param module:
         """
         return [setting.get_unicode_value() for setting in module.settings()]
 
@@ -3105,6 +3457,7 @@ class Pipeline(object):
         Insert a module into the pipeline with the given module #. 
         'file_name' - the path to the file containing the variables for the module.
         ModuleNum - the one-based index for the placement of the module in the pipeline
+        :param new_module:
         """
         is_image_set_modification = new_module.is_load_module()
         module_num = new_module.module_num
@@ -3129,6 +3482,7 @@ class Pipeline(object):
         
         Remove a module from the pipeline
         ModuleNum - the one-based index of the module
+        :param module_num:
         """
         idx = module_num - 1
         removed_module = self.__modules[idx]
@@ -3148,7 +3502,9 @@ class Pipeline(object):
 
     def edit_module(self, module_num, is_image_set_modification):
         """Notify listeners of a module edit
-        
+        :param module_num:
+        :param is_image_set_modification:
+
         """
         idx = module_num - 1
         old_settings = self.__settings[idx]
@@ -3352,7 +3708,8 @@ class Pipeline(object):
 
     def notify_listeners(self, event):
         """Notify listeners of an event that happened to this pipeline
-        
+        :param event:
+
         """
         for listener in self.__listeners:
             listener(self, event)
@@ -3394,13 +3751,16 @@ class Pipeline(object):
         message - the message for the user
 
         Report errors due to misconfiguration, such as no files found.
+        :param module:
+        :param message:
         """
         event = PrepareRunErrorEvent(module, message)
         self.notify_listeners(event)
 
     def is_image_from_file(self, image_name):
         """Return True if any module in the pipeline claims to be
-        loading this image name from a file."""
+        loading this image name from a file.
+        :param image_name: """
         for module in self.modules():
             if module.is_image_from_file(image_name):
                 return True
@@ -3422,6 +3782,7 @@ class Pipeline(object):
         fourth entry (optional): attribute dictionary. This tags
                      the column with attributes such as MCA_AVAILABLE_POST_GROUP
                      (column values are only added in post_group).
+                     :param terminating_module:
         """
         hash = self.settings_hash()
         if hash != self.__measurement_column_hash:
@@ -3494,6 +3855,8 @@ class Pipeline(object):
         a list of tuples of module and setting where the module provides
         the name and the setting is the setting that controls the name (and
         the setting can be None).
+        :param groupname:
+        :param module:
 
         """
         target_module = module
@@ -3608,6 +3971,12 @@ class Pipeline(object):
         feature - a descriptive name for the measurement
         image - the measurement should be made on this image (optional)
         scale - the measurement should be made at this scale
+        :param module:
+        :param object:
+        :param category:
+        :param feature:
+        :param image:
+        :param scale:
         """
         measurement_columns = self.get_measurement_columns(module)
         measurements = [x[1] for x in measurement_columns
@@ -3651,6 +4020,8 @@ def find_image_plane_details(exemplar, ipds):
     ipds - an ordered list of ImagePlaneDetails instances
 
     Returns the match or None if not found
+    :param exemplar:
+    :param ipds:
     """
     pos = bisect.bisect_left(ipds, exemplar)
     if (pos == len(ipds) or

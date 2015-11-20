@@ -206,7 +206,12 @@ class DisplayScatterPlot(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        """Adjust the setting_values to upgrade from a previous version"""
+        """Adjust the setting_values to upgrade from a previous version
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        """
         if not from_matlab and variable_revision_number == 1:
             if setting_values[0] == cpmeas.IMAGE:
                 # self.source, self.x_axis, "Image", self.y_axis, self.xscale, self.yscale, self.title

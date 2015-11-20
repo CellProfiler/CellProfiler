@@ -126,6 +126,8 @@ def load_pipeline(test_case, encoded_data):
     bindata = fd.read()
     fd.close()
     b64data = base64.b64encode(bindata)
+    :param encoded_data:
+    :param test_case:
     """
     import cellprofiler.pipeline
 
@@ -159,6 +161,9 @@ def maybe_download_example_image(folders, file_name, shape=None):
     Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
 
     Returns the local path to the file which is often useful.
+    :param shape:
+    :param file_name:
+    :param folders:
     """
     if shape is None:
         shape = (20, 30)
@@ -186,6 +191,9 @@ def make_12_bit_image(folder, filename, shape):
     filename - filename for image file
     shape - 2-tuple or 3-tuple of the dimensions of the image. The axis order
             is i, j, c or y, x, c
+            :param shape:
+            :param filename:
+            :param folder:
     """
     r = np.random.RandomState()
     r.seed(np.frombuffer(
@@ -252,6 +260,8 @@ def maybe_download_example_images(folders, file_names):
                 described by the list of folders
 
     Returns the local directory containing the images.
+    :param file_names:
+    :param folders:
     """
     for file_name in file_names:
         maybe_download_example_image(folders, file_name)
@@ -296,6 +306,7 @@ def maybe_download_tesst_image(file_name):
     file_name - name of file to fetch
 
     Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
+    :param file_name:
     """
     local_path = os.path.join(testimages_directory(), file_name)
     if not os.path.exists(local_path):
@@ -312,6 +323,9 @@ def read_example_image(folder, file_name, **kwargs):
     file_name - the name of the file within the folder
 
     **kwargs - any keyword arguments are passed onto load_image
+    :param kwargs:
+    :param file_name:
+    :param folder:
     """
     from bioformats import load_image
     path = os.path.join(example_images_directory(), folder, file_name)

@@ -99,6 +99,17 @@ class BPBatch(object):
         project - who to charge
         memory_limit - # of mb reserved on cluster node
         priority - priority of job
+        :param cursor:
+        :param email:
+        :param data_dir:
+        :param queue:
+        :param batch_size:
+        :param write_data:
+        :param timeout:
+        :param cpcluster:
+        :param project:
+        :param memory_limit:
+        :param priority:
         """
         cmd = """
         insert into batch (batch_id, email, data_dir, queue, batch_size, 
@@ -136,6 +147,9 @@ class BPBatch(object):
         start - one-based index of the first row in the table to return
         count - max # of rows to return
         desc - True to order by largest batch ID first, False for first
+        :param start:
+        :param count:
+        :param desc:
         """
         desc_kwd = "desc" if desc else ""
         cmd = """select batch_id, email, data_dir, queue, batch_size, 
@@ -168,7 +182,9 @@ class BPBatch(object):
 
     @staticmethod
     def select(batch_id):
-        """Select a batch from the database"""
+        """Select a batch from the database
+        :param batch_id:
+        """
         with bpcursor() as cursor:
             cmd = """
             select email, data_dir, queue, batch_size, write_data, timeout,
@@ -200,7 +216,9 @@ class BPBatch(object):
         return result
 
     def select_task_count(self, run_type):
-        """Return the # of jobs with links to the batch through the run tbl"""
+        """Return the # of jobs with links to the batch through the run tbl
+        :param run_type:
+        """
         cmd = """
         select count('x') 
           from run_job_status r 
@@ -211,7 +229,10 @@ class BPBatch(object):
             return cursor.fetchone()[0]
 
     def select_task_count_by_state(self, run_type, state):
-        """Return the # of jobs in a particular state"""
+        """Return the # of jobs in a particular state
+        :param run_type:
+        :param state:
+        """
         cmd = """
         select count('x') from run_job_status r
          where r.batch_id = %d and r.run_type='%s' and r.status='%s'
@@ -221,7 +242,9 @@ class BPBatch(object):
             return cursor.fetchone()[0]
 
     def select_task_count_group_by_state(self, run_type):
-        """Return a dictionary of state and # jobs in that state"""
+        """Return a dictionary of state and # jobs in that state
+        :param run_type:
+        """
         cmd = """
         select count('x') as job_count, rjs.status
         from run_job_status rjs where batch_id = %d and run_type = '%s'
@@ -240,6 +263,9 @@ class BPBatch(object):
         state - one of the states, for instance "RUNNING"
 
         returns a sequence of BPTaskStatus records
+        :param page_size:
+        :param first_item:
+        :param state:
         """
         cmd = """
         select rjs.run_id, rjs.bstart, rjs.bend, rjs.command, 
@@ -351,6 +377,8 @@ class BPRunBase(object):
     @staticmethod
     def select(run_id, batch=None):
         """Select a BPRun or BPSQLRun given a run_id
+        :param run_id:
+        :param batch:
 
         """
         with bpcursor() as cursor:
@@ -565,7 +593,9 @@ class BPJobTask(object):
 
     @staticmethod
     def select_by_run(run):
-        """Find the submitted or running tasks, if any, for a run"""
+        """Find the submitted or running tasks, if any, for a run
+        :param run:
+        """
         cmd = """
             select rjs.batch_array_id, rjs.batch_array_task_id, rjs.task_id,
                    rjs.job_record_id, rjs.job_id, rjs.job_created,
@@ -666,6 +696,9 @@ class BPJob(object):
     @staticmethod
     def create(cursor, batch_array, job_id):
         """Write the job to the database
+        :param cursor:
+        :param batch_array:
+        :param job_id:
 
         """
         cmd = """
@@ -750,7 +783,10 @@ class BPTaskHost(object):
 
 def run(batch, runs, cwd=None):
     """Submit a job array for the given runs
-    
+    :param batch:
+    :param runs:
+    :param cwd:
+
     """
     txt_output = text_file_directory(batch)
     scripts = script_file_directory(batch)
@@ -942,6 +978,7 @@ def run_text_file(run):
     
     Return the name of the text file created by bsub
     run - instance of BPRun
+    :param run:
     """
     assert isinstance(run, BPRunBase)
     return "%s.txt" % run.get_file_name()
@@ -951,6 +988,7 @@ def run_err_file(run):
     """Return the name of the stderr output created by bsub
     
     run - instance of BPRun
+    :param run:
     """
     assert isinstance(run, BPRunBase)
     return "%s.err.txt" % run.get_file_name()
@@ -968,6 +1006,7 @@ def batch_script_file(script_file):
     """The name of the SQL script file modded to pull in all of the .CSV files
 
     script_file - the name of the original file
+    :param script_file:
     """
     return "batch_%s" % script_file
 
@@ -981,6 +1020,7 @@ def batch_script_directory(batch):
     Note: this can't be in batch.data_dir because
           it would be automagically scanned and
           picked up by sql_jobs
+          :param batch:
     """
     return os.path.join(batch.data_dir, "sql_scripts")
 
@@ -1016,7 +1056,9 @@ def batch_array_task_err_file_path(task):
 
 
 def batch_data_file_path(batch):
-    """Return the path to Batch_data.h5 for this batch"""
+    """Return the path to Batch_data.h5 for this batch
+    :param batch:
+    """
     return os.path.join(batch.data_dir, "Batch_data.h5")
 
 
@@ -1037,6 +1079,8 @@ def GetCPUTime(batch, run):
 
     batch - the batch being queried
     run - the job's last run
+    :param batch:
+    :param run:
     """
     assert isinstance(batch, BPBatch)
     assert isinstance(run, BPRunBase)

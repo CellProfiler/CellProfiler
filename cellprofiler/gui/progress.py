@@ -176,6 +176,10 @@ class ProgressFrame(wx.Frame):
         labels that show the current module and image set.  This
         method is called by the pipelinecontroller at the beginning of
         every module execution to update the progress bar.
+        :param num_image_sets:
+        :param image_set_index:
+        :param num_modules:
+        :param module:
         """
         self.current_module = module
         self.num_modules = num_modules

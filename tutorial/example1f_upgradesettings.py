@@ -105,6 +105,10 @@ class Example1f(cpm.CPModule):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
+        :param setting_values:
+        :param variable_revision_number:
+        :param module_name:
+        :param from_matlab:
         """
         #
         # Check if the settings were saved with variable_revision_number 1

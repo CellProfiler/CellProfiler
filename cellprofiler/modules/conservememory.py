@@ -58,6 +58,7 @@ class ConserveMemory(cpm.CPModule):
 
         can_remove - set this to False to keep from showing the "remove"
                      button for images that must be present.
+                     :param can_remove:
         """
         group = cps.SettingsGroup()
         if can_remove:

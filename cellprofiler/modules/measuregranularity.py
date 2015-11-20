@@ -145,7 +145,9 @@ class MeasureGranularity(cpm.CPModule):
         return group
 
     def validate_module(self, pipeline):
-        """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
+        """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated
+        :param pipeline:
+        """
         measurements, sources = self.get_measurement_columns(pipeline,
                                                              return_sources=True)
         d = {}
@@ -166,7 +168,9 @@ class MeasureGranularity(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        """Adjust self.images to account for the expected # of images"""
+        """Adjust self.images to account for the expected # of images
+        :param setting_values:
+        """
         image_count = int(setting_values[0])
         idx = 1
         del self.images[:]
@@ -365,6 +369,7 @@ class MeasureGranularity(cpm.CPModule):
         """Return all image records that match the given object name
         
         object_name - name of an object or IMAGE to match all
+        :param object_name:
         """
         if object_name == cpmeas.IMAGE:
             return self.images

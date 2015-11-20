@@ -215,6 +215,7 @@ def header_to_column(field):
     This function converts Image_FileName to FileName and
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
+    :param field:
     """
     for name in (C_PATH_NAME, C_FILE_NAME, C_URL,
                  C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL):
@@ -224,12 +225,16 @@ def header_to_column(field):
 
 
 def is_path_name_feature(feature):
-    """Return true if the feature name is a path name"""
+    """Return true if the feature name is a path name
+    :param feature:
+    """
     return feature.startswith(C_PATH_NAME + '_')
 
 
 def is_file_name_feature(feature):
-    """Return true if the feature name is a file name"""
+    """Return true if the feature name is a file name
+    :param feature:
+    """
     return feature.startswith(C_FILE_NAME + '_')
 
 
@@ -238,12 +243,16 @@ def is_url_name_feature(feature):
 
 
 def is_objects_path_name_feature(feature):
-    """Return true if the feature name is the path to a labels file"""
+    """Return true if the feature name is the path to a labels file
+    :param feature:
+    """
     return feature.startswith(C_OBJECTS_PATH_NAME + "_")
 
 
 def is_objects_file_name_feature(feature):
-    """Return true if the feature name is a labels file name"""
+    """Return true if the feature name is a labels file name
+    :param feature:
+    """
     return feature.startswith(C_OBJECTS_FILE_NAME + "_")
 
 
@@ -252,7 +261,9 @@ def is_objects_url_name_feature(feature):
 
 
 def get_image_name(feature):
-    """Extract the image name from a feature name"""
+    """Extract the image name from a feature name
+    :param feature:
+    """
     if is_path_name_feature(feature):
         return feature[len(C_PATH_NAME + '_'):]
     if is_file_name_feature(feature):
@@ -264,7 +275,9 @@ def get_image_name(feature):
 
 
 def get_objects_name(feature):
-    """Extract the objects name from a feature name"""
+    """Extract the objects name from a feature name
+    :param feature:
+    """
     if is_objects_path_name_feature(feature):
         return feature[len(C_OBJECTS_PATH_NAME + "_"):]
     if is_objects_file_name_feature(feature):
@@ -280,6 +293,7 @@ def make_path_name_feature(image):
 
     The path name feature is the name of the measurement that stores
     the image's path name.
+    :param image:
     """
     return C_PATH_NAME + '_' + image
 
@@ -289,6 +303,7 @@ def make_file_name_feature(image):
 
     The file name feature is the name of the measurement that stores
     the image's file name.
+    :param image:
     """
     return C_FILE_NAME + '_' + image
 
@@ -298,6 +313,7 @@ def make_objects_path_name_feature(objects_name):
 
     The path name feature is the name of the measurement that stores
     the objects file path name.
+    :param objects_name:
     """
     return C_OBJECTS_PATH_NAME + '_' + objects_name
 
@@ -307,6 +323,7 @@ def make_objects_file_name_feature(objects_name):
 
     The file name feature is the name of the measurement that stores
     the objects file name.
+    :param objects_name:
     """
     return C_OBJECTS_FILE_NAME + '_' + objects_name
 
@@ -477,6 +494,7 @@ class LoadData(cpm.CPModule):
         """Check for potentially dangerous settings
 
         The best practice is to have a single LoadImages or LoadData module.
+        :param pipeline:
         """
         from cellprofiler.modules.loadimages import LoadImages
 
@@ -647,7 +665,14 @@ class LoadData(cpm.CPModule):
         return entry
 
     def open_csv(self, do_not_cache=False):
-        """Open the csv file or URL, returning a file descriptor"""
+        """Open the csv file or URL, returning a file descriptor
+        :param do_not_cache:
+        :param do_not_cache:
+        :param do_not_cache:
+        :param do_not_cache:
+        :param do_not_cache:
+        :param do_not_cache:
+        """
         global header_cache
 
         if cpprefs.is_url_path(self.csv_path):
@@ -709,6 +734,12 @@ class LoadData(cpm.CPModule):
 
         Open the csv file indicated by the settings and read the fields
         of its first line. These should be the measurement columns.
+        :param do_not_cache:
+        :param do_not_cache:
+        :param do_not_cache:
+        :param do_not_cache:
+        :param do_not_cache:
+        :param do_not_cache:
         """
         entry = self.get_cache_info()
         if entry.has_key("header"):
@@ -745,7 +776,14 @@ class LoadData(cpm.CPModule):
         return list(object_names)
 
     def other_providers(self, group):
-        """Get name providers from the CSV header"""
+        """Get name providers from the CSV header
+        :param group:
+        :param group:
+        :param group:
+        :param group:
+        :param group:
+        :param group:
+        """
         if group == 'imagegroup' and self.wants_images.value:
             try:
                 # do not load URLs automatically
@@ -762,7 +800,14 @@ class LoadData(cpm.CPModule):
         return []
 
     def is_image_from_file(self, image_name):
-        """Return True if LoadData provides the given image name"""
+        """Return True if LoadData provides the given image name
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        """
         providers = self.other_providers('imagegroup')
         return image_name in providers
 
@@ -1005,6 +1050,46 @@ class LoadData(cpm.CPModule):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
         """
 
         if self.wants_images:
@@ -1079,7 +1164,28 @@ class LoadData(cpm.CPModule):
             index=frame)
 
     def run(self, workspace):
-        """Populate the images and objects"""
+        """Populate the images and objects
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_set = workspace.image_set
@@ -1154,6 +1260,26 @@ class LoadData(cpm.CPModule):
         """Return the image groupings of the image sets
 
         See CPModule for documentation
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
         """
         if (self.wants_images.value and
                 self.wants_image_groupings.value and
@@ -1168,7 +1294,28 @@ class LoadData(cpm.CPModule):
         return None
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for measurements output by this module"""
+        """Return column definitions for measurements output by this module
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         entry = None
         try:
             entry = self.get_cache_info()
@@ -1345,6 +1492,7 @@ class LoadData(cpm.CPModule):
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to do "prepare_run".
+        :param setting:
         """
         if self.wants_images or setting == self.wants_images:
             return True
@@ -1450,6 +1598,8 @@ def best_cast(sequence, coltype=None):
 
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
+    :param coltype:
+    :param sequence:
     """
     if (isinstance(coltype, (str, unicode)) and
             coltype.startswith(cpmeas.COLTYPE_VARCHAR)):
@@ -1484,6 +1634,7 @@ def get_loaddata_type(x):
     If x cannot be represented in 32 bits but is an integer,
     return cpmeas.COLTYPE_VARCHAR
     If x can be represented as a float, return COLTYPE_FLOAT
+    :param x:
     """
     global int32_max, int32_min
 

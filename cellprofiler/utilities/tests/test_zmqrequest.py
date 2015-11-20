@@ -131,7 +131,9 @@ class TestZMQRequest(unittest.TestCase):
             return self
 
         def recv(self, timeout):
-            """Receive a message"""
+            """Receive a message
+            :param timeout:
+            """
             try:
                 req = self.upq.get(timeout)
                 return req

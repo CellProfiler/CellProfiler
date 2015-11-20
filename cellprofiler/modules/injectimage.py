@@ -55,11 +55,13 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
 
     def write_to_handles(self, handles):
         """Write out the module's state to the handles
-        
+        :param handles:
+
         """
 
     def write_to_text(self, file):
         """Write the module's state, informally, to a text file
+        :param file:
         """
 
     def prepare_run(self, workspace):
@@ -78,6 +80,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         image_set    - the images in the image set being processed
         object_set   - the objects (labeled masks) in this image set
         measurements - the measurements for this run
+        :param workspace:
         """
         if isinstance(self.__image, (tuple, list)):
             image = self.__image[workspace.image_set.image_number - 1]
@@ -99,6 +102,8 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
         """
         return []
 
@@ -107,18 +112,30 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         return []
 
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
         """Return a list of image names used as a basis for a particular measure
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category,
                                measurement, image_name):
         """Return a list of scales (eg for texture) at which a measurement was taken
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         return []
 

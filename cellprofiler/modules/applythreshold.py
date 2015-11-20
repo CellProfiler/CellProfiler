@@ -131,6 +131,7 @@ class ApplyThreshold(Identify):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - display within this frame (or None to not display)
+            :param workspace:
         """
         input = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)

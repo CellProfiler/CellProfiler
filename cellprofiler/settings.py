@@ -125,6 +125,7 @@ class Setting(object):
         called with the target value. An example is to allow the user to
         enter an invalid text value, but still maintain the last valid value
         entered.
+        :param value:
         """
         self.__value = value
 
@@ -147,6 +148,7 @@ class Setting(object):
 
         override this to do things like compare whether an integer
         setting's value matches a given number
+        :param x:
         """
         return self.value == unicode(x)
 
@@ -170,7 +172,9 @@ class Setting(object):
     is_do_not_use = property(get_is_do_not_use)
 
     def test_valid(self, pipeline):
-        """Throw a ValidationError if the value of this setting is inappropriate for the context"""
+        """Throw a ValidationError if the value of this setting is inappropriate for the context
+        :param pipeline:
+        """
         pass
 
     def test_setting_warnings(self, pipeline):
@@ -180,6 +184,7 @@ class Setting(object):
         likely to be in error, but could possibly be correct. An example is
         a field that can be left blank, but is filled in, except for rare
         cases.
+        :param pipeline:
         """
         pass
 
@@ -229,7 +234,9 @@ class HiddenCount(Setting):
         return len(self.__sequence)
 
     def set_sequence(self, sequence):
-        """Set the sequence used to maintain the count"""
+        """Set the sequence used to maintain the count
+        :param sequence:
+        """
         self.__sequence = sequence
 
     def __str__(self):
@@ -318,11 +325,17 @@ class DirectoryPath(Text):
         return tuple(value.split('|', 1))
 
     def join_parts(self, dir_choice=None, custom_path=None):
-        """Join the directory choice and custom path to form a value"""
+        """Join the directory choice and custom path to form a value
+        :param custom_path:
+        :param dir_choice:
+        """
         self.value = self.join_string(dir_choice, custom_path)
 
     def join_string(self, dir_choice=None, custom_path=None):
-        """Return the value string composed of a directory choice & path"""
+        """Return the value string composed of a directory choice & path
+        :param custom_path:
+        :param dir_choice:
+        """
         return self.static_join_string(
             dir_choice if dir_choice is not None
             else self.dir_choice,
@@ -369,6 +382,8 @@ class DirectoryPath(Text):
 
         Concoct an absolute path based on the directory choice,
         the custom path and metadata taken from the measurements.
+        :param image_set_number:
+        :param measurements:
         """
         if self.dir_choice == DEFAULT_INPUT_FOLDER_NAME:
             return get_default_image_directory()
@@ -407,7 +422,9 @@ class DirectoryPath(Text):
         return os.path.abspath(path)
 
     def get_parts_from_path(self, path):
-        """Figure out how to set up dir_choice and custom path given a path"""
+        """Figure out how to set up dir_choice and custom path given a path
+        :param path:
+        """
         path = os.path.abspath(path)
         custom_path = self.custom_path
         img_dir = get_default_image_directory()
@@ -440,7 +457,9 @@ class DirectoryPath(Text):
         return dir_choice, custom_path
 
     def alter_for_create_batch_files(self, fn_alter_path):
-        """Call this to alter the setting appropriately for batch execution"""
+        """Call this to alter the setting appropriately for batch execution
+        :param fn_alter_path:
+        """
         custom_path = self.custom_path
         if custom_path.startswith("\g<") and sys.platform.startswith("win"):
             # So ugly, the "\" sets us up for the root directory during
@@ -589,6 +608,24 @@ class ImagePlane(Setting):
 
         channel - the channel of an interlaced color image or None if all
                   channels
+                  :param channel:
+                  :param index:
+                  :param channel:
+                  :param index:
+                  :param channel:
+                  :param index:
+                  :param channel:
+                  :param index:
+                  :param channel:
+                  :param index:
+                  :param channel:
+                  :param index:
+                  :param channel:
+                  :param index:
+                  :param channel:
+                  :param index:
+                  :param series:
+                  :param url:
         """
         if " " in url:
             # Spaces are not legal characters in URLs, nevertheless, I try
@@ -665,6 +702,12 @@ class AlphanumericText(Text):
         """Restrict names to legal ascii C variables
 
         First letter = a-zA-Z and underbar, second is that + digit.
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
         """
         self.validate_alphanumeric_text(self.value, self,
                                         self.first_must_be_alpha)
@@ -678,6 +721,24 @@ class AlphanumericText(Text):
         setting - blame this setting on failure
 
         first_must_be_alpha - True if the first letter has to be alpha or underbar
+        :param first_must_be_alpha:
+        :param setting:
+        :param text:
+        :param first_must_be_alpha:
+        :param setting:
+        :param text:
+        :param first_must_be_alpha:
+        :param setting:
+        :param text:
+        :param first_must_be_alpha:
+        :param setting:
+        :param text:
+        :param first_must_be_alpha:
+        :param setting:
+        :param text:
+        :param first_must_be_alpha:
+        :param setting:
+        :param text:
         """
         if first_must_be_alpha:
             pattern = "^[A-Za-z_][A-Za-z_0-9]*$"
@@ -715,6 +776,12 @@ class Number(Text):
         
         Override this in a derived class to parse the numeric text or
         raise an exception if badly formatted.
+        :param str_value:
+        :param str_value:
+        :param str_value:
+        :param str_value:
+        :param str_value:
+        :param str_value:
         """
         raise NotImplementedError("Please define str_to_value in a subclass")
 
@@ -722,11 +789,23 @@ class Number(Text):
         """Return the string representation of the value passed
         
         Override this in a derived class to convert a numeric value into text
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
         """
         raise NotImplementedError("Please define value_to_str in a subclass")
 
     def set_value(self, value):
         """Convert integer to string
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
         """
         str_value = unicode(value) if isinstance(value, basestring) \
             else self.value_to_str(value)
@@ -734,6 +813,12 @@ class Number(Text):
 
     def get_value(self, reraise=False):
         """Return the value of the setting as a float
+        :param reraise:
+        :param reraise:
+        :param reraise:
+        :param reraise:
+        :param reraise:
+        :param reraise:
         """
         return self.__default
 
@@ -747,6 +832,12 @@ class Number(Text):
 
     def test_valid(self, pipeline):
         """Return true only if the text value is float
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
         """
         try:
             value = self.str_to_value(self.value_text)
@@ -762,7 +853,14 @@ class Number(Text):
                 (self.value_to_str(self.__maxval), self.value_text), self)
 
     def eq(self, x):
-        """Equal if our value equals the operand"""
+        """Equal if our value equals the operand
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        """
         return self.value == x
 
 
@@ -806,12 +904,26 @@ class Range(Setting):
         self.__default_max = self.max
 
     def str_to_value(self, value_str):
-        """Convert a min/max value as a string to the native type"""
+        """Convert a min/max value as a string to the native type
+        :param value_str:
+        :param value_str:
+        :param value_str:
+        :param value_str:
+        :param value_str:
+        :param value_str:
+        """
         raise NotImplementedError(
             "str_to_value must be implemented in derived class")
 
     def value_to_str(self, value):
-        """Convert a string to a min/max value in the native type"""
+        """Convert a string to a min/max value in the native type
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        """
         raise NotImplementedError(
             "value_to_str must be implemented in derived class")
 
@@ -820,7 +932,14 @@ class Range(Setting):
         return self.min, self.max
 
     def set_value(self, value):
-        """Set the value of this range using either a string or a two-tuple"""
+        """Set the value of this range using either a string or a two-tuple
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        """
         if isinstance(value, basestring):
             self.set_value_text(value)
         elif hasattr(value, "__getitem__") and len(value) == 2:
@@ -863,6 +982,12 @@ class Range(Setting):
         """Return the text value that would set the minimum to the proposed value
         
         value - the proposed minimum value as text
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
         """
         return ",".join((value, self.get_max_text()))
 
@@ -874,6 +999,12 @@ class Range(Setting):
         """Return the text value that would set the maximum to the proposed value
         
         value - the proposed maximum value as text
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
         """
         return ",".join((self.get_min_text(), value))
 
@@ -919,7 +1050,28 @@ class Range(Setting):
                                   (self.min_text, self.max_text), self)
 
     def eq(self, x):
-        """If the operand is a sequence, true if it matches the min and max"""
+        """If the operand is a sequence, true if it matches the min and max
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        :param x:
+        """
         if hasattr(x, "__getitem__") and len(x) == 2:
             return x[0] == self.min and x[1] == self.max
         return False
@@ -962,6 +1114,26 @@ class Coordinates(Setting):
 
     def set_value(self, value):
         """Convert integer tuples to string
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
         """
         try:
             if len(value) == 2:
@@ -1083,6 +1255,26 @@ class IntegerOrUnboundedRange(IntegerRange):
         
         Returns a text value suitable for this setting that sets the
         maximum while keeping the minimum and abs/rel the same
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
+        :param dm_value:
         """
         if self.is_abs():
             return self.compose_max_text(dm_value)
@@ -1206,6 +1398,26 @@ class BinaryMatrix(Setting):
         format is <row-count>,<column-count>,<0 or 1>*row-count*column-count
 
         e.g. [[True, False, True], [True, True, True]] -> "2,3,101111"
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
+        :param matrix:
         """
         h = len(matrix)
         w = 0 if h == 0 else len(matrix[0])
@@ -1386,7 +1598,9 @@ class NameSubscriber(Setting):
     is_blank = property(get_is_blank)
 
     def matches(self, setting):
-        """Return true if this subscriber matches the category of the provider"""
+        """Return true if this subscriber matches the category of the provider
+        :param setting:
+        """
         return all([setting.provided_attributes.get(key, None) ==
                     self.__required_attributes[key]
                     for key in self.__required_attributes.keys()])
@@ -1403,7 +1617,9 @@ class NameSubscriber(Setting):
 
 
 def filter_duplicate_names(name_list):
-    """remove any repeated names from a list of (name, ...) keeping the last occurrence."""
+    """remove any repeated names from a list of (name, ...) keeping the last occurrence.
+    :param name_list:
+    """
     name_dict = dict(zip((n[0] for n in name_list), name_list))
     return [name_dict[n[0]] for n in name_list]
 
@@ -1415,6 +1631,9 @@ def get_name_provider_choices(pipeline, last_setting, group):
     last_setting - scan the modules in order until you arrive at this setting
     group - the name of the group of providers to scan
     returns a list of tuples, each with (provider name, module name, module number)
+    :param group:
+    :param last_setting:
+    :param pipeline:
     """
     choices = []
     for module in pipeline.modules(False):
@@ -1443,6 +1662,8 @@ def get_name_providers(pipeline, last_setting):
     last_setting - scan the modules in order until you arrive at this setting
     returns a list of providers that provide a correct "thing" with the
     same name as that of the subscriber
+    :param pipeline:
+    :param last_setting:
     """
     choices = []
     for module in pipeline.modules(False):
@@ -1533,7 +1754,9 @@ class OutlineNameSubscriber(ImageNameSubscriber):
                                                     **kwargs)
 
     def matches(self, setting):
-        """Only match OutlineNameProvider variables"""
+        """Only match OutlineNameProvider variables
+        :param setting:
+        """
         return isinstance(setting, OutlineNameProvider)
 
 
@@ -1580,7 +1803,9 @@ class Binary(Setting):
         super(Binary, self).__init__(text, str_value, *args, **kwargs)
 
     def set_value(self, value):
-        """When setting, translate true and false into yes and no"""
+        """When setting, translate true and false into yes and no
+        :param value:
+        """
         if value == YES or value == NO or \
                 isinstance(value, str) or isinstance(value, unicode):
             super(Binary, self).set_value(value)
@@ -1646,7 +1871,9 @@ class Choice(Setting):
         return self.__tooltips is not None
 
     def test_valid(self, pipeline):
-        """Check to make sure that the value is among the choices"""
+        """Check to make sure that the value is among the choices
+        :param pipeline:
+        """
         if self.__choices_fn is not None:
             self.__choices = self.__choices_fn(pipeline)
         if self.value not in self.choices:
@@ -1673,7 +1900,9 @@ class CustomChoice(Choice):
         return choices
 
     def set_value(self, value):
-        """Bypass the check in "Choice"."""
+        """Bypass the check in "Choice".
+        :param value:
+        """
         Setting.set_value(self, value)
 
 
@@ -1722,6 +1951,7 @@ class MultiChoice(Setting):
 
         value is either a single string, a comma-separated string of
         multiple choices or a list of strings
+        :param value:
         """
         super(MultiChoice, self).set_value(self.parse_value(value))
 
@@ -1735,7 +1965,9 @@ class MultiChoice(Setting):
     selections = property(get_selections)
 
     def test_valid(self, pipeline):
-        """Ensure that the selections are among the choices"""
+        """Ensure that the selections are among the choices
+        :param pipeline:
+        """
         for selection in self.get_selections():
             if selection not in self.choices:
                 if len(self.choices) == 0:
@@ -1770,7 +2002,9 @@ class SubscriberMultiChoice(MultiChoice):
                                                     *args, **kwargs)
 
     def load_choices(self, pipeline):
-        """Get the choice list from name providers"""
+        """Get the choice list from name providers
+        :param pipeline:
+        """
         self.choices = sorted([
                                   c[0] for c in
                                   get_name_provider_choices(pipeline, self,
@@ -1787,6 +2021,7 @@ class SubscriberMultiChoice(MultiChoice):
         that are selected. For instance, if you want a list of only
         FileImageNameProviders (images loaded from files), you can
         check that here.
+        :param provider:
         """
         return all([provider.provided_attributes.get(key, None) ==
                     self.__required_attributes[key]
@@ -1834,15 +2069,30 @@ class MeasurementMultiChoice(MultiChoice):
                                                      **kwargs)
 
     def encode_object_name(self, object_name):
-        """Encode object name, escaping |"""
+        """Encode object name, escaping |
+        :param object_name:
+        :param object_name:
+        :param object_name:
+        :param object_name:
+        """
         return object_name.replace('|', '||')
 
     def decode_object_name(self, object_name):
-        """Decode the escaped object name"""
+        """Decode the escaped object name
+        :param object_name:
+        :param object_name:
+        :param object_name:
+        :param object_name:
+        """
         return object_name.replace('||', '|')
 
     def split_choice(self, choice):
-        """Split object and feature within a choice"""
+        """Split object and feature within a choice
+        :param choice:
+        :param choice:
+        :param choice:
+        :param choice:
+        """
         subst_choice = choice.replace('||', '++')
         loc = subst_choice.find('|')
         if loc == -1:
@@ -1863,11 +2113,20 @@ class MeasurementMultiChoice(MultiChoice):
         """Return the string value representing the choices made
 
         choices - a collection of choices as returned by make_measurement_choice
+        :param choices:
+        :param choices:
+        :param choices:
+        :param choices:
         """
         return ','.join(choices)
 
     def test_valid(self, pipeline):
-        """Get the choices here and call the superclass validator"""
+        """Get the choices here and call the superclass validator
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         self.populate_choices(pipeline)
         super(MeasurementMultiChoice, self).test_valid(pipeline)
 
@@ -1882,7 +2141,12 @@ class MeasurementMultiChoice(MultiChoice):
         columns = pipeline.get_measurement_columns(module)
 
         def valid_mc(c):
-            """Disallow any measurement column with "," or "|" in its names"""
+            """Disallow any measurement column with "," or "|" in its names
+            :param c:
+            :param c:
+            :param c:
+            :param c:
+            """
             return not any([any([bad in f for f in c[:2]]) for bad in ",", "|"])
 
         self.set_choices([self.make_measurement_choice(c[0], c[1])
@@ -1917,6 +2181,7 @@ class SubdirectoryFilter(MultiChoice):
         """Return the string value representing the choices made
 
         choices - a collection of choices as returned by make_measurement_choice
+        :param choices:
         """
         return ','.join(choices)
 
@@ -1975,13 +2240,16 @@ class TreeChoice(Setting):
 
     @staticmethod
     def encode_path_parts(value):
-        """Return the setting value for a list of menu path parts"""
+        """Return the setting value for a list of menu path parts
+        :param value:
+        """
         return "|".join([x.replace("|", "||") for x in value])
 
     def get_leaves(self, path=[]):
         """Get all leaf nodes of a given parent node
 
         path - the names of nodes traversing the path down the tree
+        :param path:
         """
         current = self.get_tree()
         while len(path) > 0:
@@ -1997,6 +2265,7 @@ class TreeChoice(Setting):
         """Get all child nodes that are not leaves for a  given parent
 
         path - the names of nodes traversing the path down the tree
+        :param path:
         """
         current = self.get_tree()
         while len(path) > 0:
@@ -2090,6 +2359,7 @@ class DoThings(Setting):
         """Retrieve one of the actions' labels
 
         idx - the index of the action
+        :param idx:
         """
         return self.__labels_and_callbacks[idx][0]
 
@@ -2099,6 +2369,8 @@ class DoThings(Setting):
         idx - the index of the action
 
         label - the label to display for that action
+        :param idx:
+        :param label:
         """
         self.__labels_and_callbacks[idx] = \
             (label, self.__labels_and_callbacks[idx][1])
@@ -2107,6 +2379,7 @@ class DoThings(Setting):
         """Call the indexed action's callback
 
         idx - index of the action to fire
+        :param idx:
         """
         self.__labels_and_callbacks[idx][1](*self.__args)
 
@@ -2152,7 +2425,12 @@ class Measurement(Setting):
 
     def construct_value(self, category, feature_name, object_or_image_name,
                         scale):
-        """Construct a value that might represent a partially complete value"""
+        """Construct a value that might represent a partially complete value
+        :param category:
+        :param feature_name:
+        :param object_or_image_name:
+        :param scale:
+        """
         if category is None:
             value = 'None'
         elif feature_name is None:
@@ -2176,7 +2454,10 @@ class Measurement(Setting):
         return self.__object_fn()
 
     def get_category_choices(self, pipeline, object_name=None):
-        """Find the categories of measurements available from the object """
+        """Find the categories of measurements available from the object
+        :param pipeline:
+        :param object_name:
+        """
         if object_name is None:
             object_name = self.__object_fn()
         categories = set()
@@ -2189,7 +2470,10 @@ class Measurement(Setting):
         return result
 
     def get_category(self, pipeline, object_name=None):
-        """Return the currently chosen category"""
+        """Return the currently chosen category
+        :param pipeline:
+        :param object_name:
+        """
         categories = self.get_category_choices(pipeline, object_name)
         for category in categories:
             if (self.value.startswith(category + '_') or
@@ -2200,7 +2484,11 @@ class Measurement(Setting):
     def get_feature_name_choices(self, pipeline,
                                  object_name=None,
                                  category=None):
-        """Find the feature name choices available for the chosen category"""
+        """Find the feature name choices available for the chosen category
+        :param pipeline:
+        :param object_name:
+        :param category:
+        """
         if object_name is None:
             object_name = self.__object_fn()
         if category is None:
@@ -2220,7 +2508,11 @@ class Measurement(Setting):
     def get_feature_name(self, pipeline,
                          object_name=None,
                          category=None):
-        """Return the currently selected feature name"""
+        """Return the currently selected feature name
+        :param pipeline:
+        :param object_name:
+        :param category:
+        """
         if category is None:
             category = self.get_category(pipeline, object_name)
         if category is None:
@@ -2244,6 +2536,10 @@ class Measurement(Setting):
         A measurement can still be valid, even if there are no available
         image name choices. The UI should not offer image name choices
         if no choices are returned.
+        :param pipeline:
+        :param object_name:
+        :param category:
+        :param feature_name:
         """
         if object_name is None:
             object_name = self.__object_fn()
@@ -2270,7 +2566,12 @@ class Measurement(Setting):
                        object_name=None,
                        category=None,
                        feature_name=None):
-        """Return the currently chosen image name"""
+        """Return the currently chosen image name
+        :param pipeline:
+        :param object_name:
+        :param category:
+        :param feature_name:
+        """
         if object_name is None:
             object_name = self.__object_fn()
         if category is None:
@@ -2308,6 +2609,11 @@ class Measurement(Setting):
 
         The setting may still be valid, even though there are no scale choices.
         In this case, the UI should not offer the user a scale choice.
+        :param pipeline:
+        :param object_name:
+        :param category:
+        :param feature_name:
+        :param image_name:
         """
         if object_name is None:
             object_name = self.__object_fn()
@@ -2339,7 +2645,13 @@ class Measurement(Setting):
                   category=None,
                   feature_name=None,
                   image_name=None):
-        """Return the currently chosen scale"""
+        """Return the currently chosen scale
+        :param pipeline:
+        :param object_name:
+        :param category:
+        :param feature_name:
+        :param image_name:
+        """
         if object_name is None:
             object_name = self.__object_fn()
         if category is None:
@@ -2371,6 +2683,10 @@ class Measurement(Setting):
         """Return a list of objects for a particular feature
 
         Typically these are image features measured on the objects in the image
+        :param pipeline:
+        :param object_name:
+        :param category:
+        :param feature_name:
         """
         if object_name is None:
             object_name = self.__object_fn()
@@ -2396,7 +2712,12 @@ class Measurement(Setting):
     def get_object_name(self, pipeline, object_name=None,
                         category=None,
                         feature_name=None):
-        """Return the currently chosen image name"""
+        """Return the currently chosen image name
+        :param pipeline:
+        :param object_name:
+        :param category:
+        :param feature_name:
+        """
         if object_name is None:
             object_name = self.__object_fn()
         if category is None:
@@ -2707,7 +3028,10 @@ class Filter(Setting):
             return self.function(*args, **kwargs)
 
         def test_valid(self, pipeline, *args):
-            """Try running the filter on a test string"""
+            """Try running the filter on a test string
+            :param pipeline:
+            :param args:
+            """
             self("", *args)
 
         @classmethod
@@ -2716,12 +3040,15 @@ class Filter(Setting):
 
             The parser needs to have special characters escaped. These are
             backslash, open and close parentheses, space and double quote.
+            :param symbol:
             """
             return re.escape(symbol)
 
         @classmethod
         def decode_symbol(cls, symbol):
-            """Decode an escape-encoded symbol"""
+            """Decode an escape-encoded symbol
+            :param symbol:
+            """
             s = ''
             in_escape = False
             for c in symbol:
@@ -2819,7 +3146,9 @@ class Filter(Setting):
         self.cached_tokens = None
 
     def evaluate(self, x):
-        """Evaluate the value passed using the predicates"""
+        """Evaluate the value passed using the predicates
+        :param x:
+        """
         try:
             tokens = self.parse()
             return tokens[0](x, *tokens[1:])
@@ -2848,6 +3177,7 @@ class Filter(Setting):
 
         We need to be able to generate a default list of tokens if the
         pipeline has been corrupted and the text can't be parsed.
+        :param predicates:
         """
         tokens = []
         if predicates is None:
@@ -2868,6 +3198,8 @@ class Filter(Setting):
 
         Returns the next token in the string, the rest of the string
         and the acceptable tokens for the rest of the string.
+        :param s:
+        :param predicates:
         """
         orig_predicates = predicates
         if list in predicates:
@@ -2937,7 +3269,9 @@ class Filter(Setting):
 
     @classmethod
     def encode_literal(cls, literal):
-        """Encode a literal value with backslash escapes"""
+        """Encode a literal value with backslash escapes
+        :param literal:
+        """
         return literal.replace("\\", "\\\\").replace('"', '\\"')
 
     def build(self, structure):
@@ -2960,6 +3294,7 @@ class Filter(Setting):
         "or (eq "Hello")(eq "World")"
 
         The function sets the filter's value using the generated string.
+        :param structure:
         """
         self.value = self.build_string(structure)
 
@@ -2969,6 +3304,7 @@ class Filter(Setting):
 
         This is a helper function for self.build. See self.build's
         documentation.
+        :param structure:
         """
         s = []
         for element in structure:
@@ -2995,6 +3331,7 @@ class Filter(Setting):
 
     def test_setting_warnings(self, pipeline):
         """Warn on empty literal token
+        :param pipeline:
         """
         super(Filter, self).test_setting_warnings(pipeline)
         self.__warn_if_blank(self.parse())
@@ -3145,11 +3482,15 @@ class FileCollectionDisplay(Setting):
             self.fn_update(cmd, mods)
 
     def set_update_function(self, fn_update=None):
-        """Set the function that will be called when the file_tree is updated"""
+        """Set the function that will be called when the file_tree is updated
+        :param fn_update:
+        """
         self.fn_update = fn_update
 
     def initialize_tree(self, mods):
-        """Remove all nodes in the file tree"""
+        """Remove all nodes in the file tree
+        :param mods:
+        """
         self.file_tree = {}
         self.add_subtree(mods, self.file_tree)
 
@@ -3157,6 +3498,7 @@ class FileCollectionDisplay(Setting):
         """Add nodes to the file tree
 
         mods - modification structure. See class documentation for its form.
+        :param mods:
         """
         self.add_subtree(mods, self.file_tree)
         self.update_ui(self.ADD, mods)
@@ -3165,6 +3507,7 @@ class FileCollectionDisplay(Setting):
         """Indicate a minor modification such as metadtaa change
 
         mods - modification structure. See class documentation for its form.
+        :param mods:
         """
         self.update_ui(self.METADATA, mods)
 
@@ -3175,11 +3518,14 @@ class FileCollectionDisplay(Setting):
         The leaves are either strings representing the last part of a path
         or 3-tuples representing image planes within an image file. Branches
         are two-tuples composed of a path part and more branches / leaves
+        :param mod:
         """
         return len(mod) != 2 or not isinstance(mod[0], basestring)
 
     def node_count(self, file_tree=None):
-        """Count the # of nodes (leaves + directories) in the tree"""
+        """Count the # of nodes (leaves + directories) in the tree
+        :param file_tree:
+        """
         if file_tree is None:
             file_tree = self.file_tree
         count = 0
@@ -3199,6 +3545,7 @@ class FileCollectionDisplay(Setting):
 
         returns a modpath (two-tuples where the first is the key and the second
         is a list of sub-modpaths)
+        :param path:
         """
         tree = self.file_tree
         root_modlist = sub_modlist = []
@@ -3215,7 +3562,9 @@ class FileCollectionDisplay(Setting):
         return root_modlist[0]
 
     def get_all_modpaths(self, tree):
-        """Get all sub-modpaths from the branches of the given tree"""
+        """Get all sub-modpaths from the branches of the given tree
+        :param tree:
+        """
         result = []
         for key in tree.keys():
             if key is None:
@@ -3243,6 +3592,7 @@ class FileCollectionDisplay(Setting):
         """Called when the UI wants to remove nodes
 
         mods - a modlist of nodes to remove
+        :param mods:
         """
         self.fn_on_remove(mods)
 
@@ -3250,6 +3600,7 @@ class FileCollectionDisplay(Setting):
         """Remove nodes from the file tree
 
         mods - modification structure. See class documentation for its form.
+        :param mods:
         """
         for mod in mods:
             self.remove_subtree(mod, self.file_tree)
@@ -3290,6 +3641,8 @@ class FileCollectionDisplay(Setting):
         mods - modification structure. See class documentation for its form.
 
         keep - true to mark a node as in the set, false to filter it out.
+        :param mods:
+        :param keep:
         """
         self.mark_subtree(mods, keep, self.file_tree)
         self.update_ui()
@@ -3316,6 +3669,7 @@ class FileCollectionDisplay(Setting):
         path - path to the image plane as a list of nodes
 
         returns a tuple of display name, node type and tool tip
+        :param path:
         """
         display_name, node_type, tool_tip, menu = self.fn_get_path_info(path)
         return display_name, node_type, tool_tip
@@ -3326,6 +3680,7 @@ class FileCollectionDisplay(Setting):
         path - path to the image plane
 
         returns a list of context menu items.
+        :param path:
         """
         display_name, node_type, tool_tip, menu = self.fn_get_path_info(path)
         return menu
@@ -3425,6 +3780,8 @@ class Table(Setting):
 
         Adds the column to the table and sets the value for any existing
         rows to None.
+        :param index:
+        :param column_name:
         """
         self.column_names.insert(index, column_name)
         for row in self.data:
@@ -3437,6 +3794,8 @@ class Table(Setting):
 
         data - rows of data to add. Each field in a row is placed
                at the column indicated by "columns"
+               :param columns:
+               :param data:
         """
         indices = [columns.index(c) if c in columns else None
                    for c in self.column_names]
@@ -3445,7 +3804,9 @@ class Table(Setting):
                               for index in indices])
 
     def sort_rows(self, columns):
-        """Sort rows based on values in columns"""
+        """Sort rows based on values in columns
+        :param columns:
+        """
         indices = [self.column_names.index(c) for c in columns]
 
         def compare_fn(row1, row2):
@@ -3473,6 +3834,8 @@ class Table(Setting):
 
         columns - the names of the columns to fetch, in the order they will
                   appear in the row
+                  :param row_index:
+                  :param columns:
         """
         column_indices = [self.column_names.index(c) for c in columns]
         if isinstance(row_index, int):
@@ -3488,6 +3851,9 @@ class Table(Setting):
         attribute - one of the ATTR_ values, for instance ATTR_ERROR
 
         set_attribute - True to set, False to clear
+        :param row_index:
+        :param attribute:
+        :param set_attribute:
         """
         if set_attribute:
             if self.row_attributes.has_key(row_index):
@@ -3507,6 +3873,7 @@ class Table(Setting):
         row_index - index of the row being queried
 
         returns None if no attributes or a set of attributes set on the row
+        :param row_index:
         """
         return self.row_attributes.get(row_index, None)
 
@@ -3521,6 +3888,10 @@ class Table(Setting):
         attribute - one of the ATTR_ values, for instance ATTR_ERROR
 
         set_attribute - True to set, False to clear
+        :param row_index:
+        :param column_name:
+        :param attribute:
+        :param set_attribute:
         """
         key = (row_index, self.column_names.index(column_name))
         if set_attribute:
@@ -3541,6 +3912,8 @@ class Table(Setting):
         row_index - index of the row being queried
 
         returns None if no attributes or a set of attributes set on the row
+        :param row_index:
+        :param column_name:
         """
         key = (row_index, self.column_names.index(column_name))
         return self.cell_attributes.get(key, None)
@@ -3629,7 +4002,9 @@ class Joiner(Setting):
             else None) for k in self.entities.keys()])]
 
     def build(self, dictionary_list):
-        """Build a value from a list of dictionaries"""
+        """Build a value from a list of dictionaries
+        :param dictionary_list:
+        """
         self.value = self.build_string(dictionary_list)
 
     @classmethod
@@ -3638,6 +4013,7 @@ class Joiner(Setting):
 
     def test_valid(self, pipeline):
         """Test the joiner setting to ensure that the join is supported
+        :param pipeline:
 
         """
         join = self.parse()
@@ -3699,7 +4075,9 @@ class DataTypes(Setting):
 
     @staticmethod
     def encode_data_types(d):
-        """Encode a data type dictionary as a potential value for this setting"""
+        """Encode a data type dictionary as a potential value for this setting
+        :param d:
+        """
         return json.dumps(d)
 
 
@@ -3716,6 +4094,8 @@ class SettingsGroup(object):
     def append(self, name, setting):
         """Add a new setting to the group, with a name.  The setting
         will then be available as group.name
+        :param name:
+        :param setting:
         """
         assert name not in self.__dict__, "%s already in SettingsGroup (previous setting or built in attribute)" % (
         name)

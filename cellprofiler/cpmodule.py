@@ -107,6 +107,8 @@ class CPModule(object):
         
         Returns a module with the settings decanted from the handles.
         If the revision is old, a different and compatible module can be returned.
+        :param module_num:
+        :param handles:
         """
         self.__module_num = module_num
         idx = module_num - 1
@@ -157,6 +159,7 @@ class CPModule(object):
         the number of relevant settings so they map correctly to the values.
         
         See cellprofiler.modules.measureobjectareashape for an example.
+        :param setting_values:
         """
         pass
 
@@ -169,6 +172,10 @@ class CPModule(object):
         module may want to tailor the particular settings set to
         whatever values are in the list or however many values
         are in the list.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab is None:
             from_matlab = not '.' in module_name
@@ -204,12 +211,17 @@ class CPModule(object):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         return setting_values, variable_revision_number, from_matlab
 
     def post_pipeline_load(self, pipeline):
         """This is a convenient place to do things to your module after the 
-           settings have been loaded or initialized"""
+           settings have been loaded or initialized
+           :param pipeline: """
         pass
 
     def get_help(self):
@@ -284,6 +296,7 @@ class CPModule(object):
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to call "prepare_run".
+        :param setting:
         """
         return False
 
@@ -303,6 +316,7 @@ class CPModule(object):
         """Test to see if the module is in a valid state to run
         
         Throw a ValidationError exception with an explanation if a module is not valid.
+        :param pipeline:
         """
         try:
             for setting in self.visible_settings():
@@ -320,6 +334,7 @@ class CPModule(object):
         Throw a ValidationError exception with an explanation if a module
         is likely to be misconfigured. An example is if ExportToDatabase is
         not the last module.
+        :param pipeline:
         """
         try:
             for setting in self.visible_settings():
@@ -341,6 +356,7 @@ class CPModule(object):
 
         Throw a cps.ValidationError, selecting the most egregiously offending
         setting to indicate failure.
+        :param pipeline:
         """
         pass
 
@@ -351,6 +367,7 @@ class CPModule(object):
         find setting combinations that can cause unexpected results.
         Implementers should throw a cps.ValidationError, selecting the
         most egregiously offending setting to indicate failure.
+        :param pipeline:
         """
         pass
 
@@ -361,6 +378,7 @@ class CPModule(object):
 
         This routine returns additional providers beyond those that
         are listed by the module's visible_settings.
+        :param group:
         """
         return []
 
@@ -436,6 +454,7 @@ class CPModule(object):
 
     def setting(self, setting_num):
         """Reference a setting by its one-based setting number
+        :param setting_num:
         """
         return self.settings()[setting_num - 1]
 
@@ -488,12 +507,14 @@ class CPModule(object):
 
     def write_to_handles(self, handles):
         """Write out the module's state to the handles
-        
+        :param handles:
+
         """
         pass
 
     def write_to_text(self, file):
         """Write the module's state, informally, to a text file
+        :param file:
         """
         pass
 
@@ -515,6 +536,7 @@ class CPModule(object):
                     disabled
         
         return True if operation completed, False if aborted 
+        :param workspace:
         """
         return True
 
@@ -570,6 +592,10 @@ class CPModule(object):
         namesandtypes - the pipeline's NamesAndTypes module
 
         groups - the pipeline's Groups module
+        :param groups:
+        :param namesandtypes:
+        :param metadata:
+        :param pipeline:
 
         """
         pass
@@ -594,6 +620,12 @@ class CPModule(object):
 
         run() should not attempt to display any data, but should communicate it
         to display() via the workspace.
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
         """
         pass
 
@@ -601,6 +633,12 @@ class CPModule(object):
         """Do post-processing after the run completes
         
         workspace - the workspace at the end of the run
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
         """
         pass
 
@@ -612,6 +650,18 @@ class CPModule(object):
         The run() method should store whatever data display() needs in
         workspace.display_data.  The module is given a CPFigure to use for
         display in the third argument.
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
         """
         figure.Close()  # modules that don't override display() shouldn't
         # display anything
@@ -627,6 +677,18 @@ class CPModule(object):
                     allowed.
                     
         figure - the figure to use for the display.
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
         """
         pass
 
@@ -636,6 +698,18 @@ class CPModule(object):
         workspace - a workspace with pipeline, module and measurements valid
         
         figure - display results in this CPFigure
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
         """
         pass
 
@@ -661,6 +735,18 @@ class CPModule(object):
                         pathname stored in the settings or legacy fields.
 
         Returns True if it succeeds.
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
         """
         return True
 
@@ -686,6 +772,12 @@ class CPModule(object):
 
         Returns None to indicate that the module does not contribute any
         groupings.
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
         """
         return None
 
@@ -703,6 +795,24 @@ class CPModule(object):
 
         prepare_group is called once after prepare_run if there are no
         groups.
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
         """
         pass
 
@@ -711,6 +821,18 @@ class CPModule(object):
 
         workspace - the workspace at the end of the group
         grouping - the group that's being run
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
+        :param grouping:
+        :param workspace:
         """
         pass
 
@@ -727,6 +849,12 @@ class CPModule(object):
                       to add_measurement)
         third entry: the column data type (for instance, "varchar(255)" or
                      "float")
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
+                     :param pipeline:
         """
         return []
 
@@ -749,11 +877,23 @@ class CPModule(object):
         MCA_AVAILABLE_POST_GROUP indicates that the relationship is not available
         until the group has completed - all relationships with a group's
         image number will be written in that case.
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
         """
         return []
 
     def get_dictionary(self, ignore=None):
         """Get the dictionary for this module
+        :param ignore:
+        :param ignore:
+        :param ignore:
+        :param ignore:
+        :param ignore:
+        :param ignore:
         """
         return self.shared_state
 
@@ -775,6 +915,12 @@ class CPModule(object):
         """Initialize this worker's dictionary using results from first worker
 
         see get_dictionary_for_worker for details.
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
+        :param d:
         """
         self.get_dictionary().clear()
         self.get_dictionary().update(d)
@@ -783,6 +929,18 @@ class CPModule(object):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
         """
         return []
 
@@ -791,12 +949,54 @@ class CPModule(object):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         return []
 
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
         """Return a list of image names used as a basis for a particular measure
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         return []
 
@@ -817,17 +1017,78 @@ class CPModule(object):
         In addition, some modules may make use of two segmentations, for instance
         when measuring the total value of secondary objects related to primary
         ones. This mechanism can be used to identify the secondary objects used.
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         return []
 
     def get_measurement_scales(self, pipeline, object_name, category,
                                measurement, image_name):
         """Return a list of scales (eg for texture) at which a measurement was taken
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_name:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         return []
 
     def is_image_from_file(self, image_name):
-        """Return True if this module loads this image name from a file."""
+        """Return True if this module loads this image name from a file.
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        """
         for setting in self.settings():
             if (isinstance(setting, cps.FileImageNameProvider) and
                         setting.value == image_name):
@@ -853,6 +1114,12 @@ class CPModule(object):
 
         Legacy modules might need the default image folder as does any module
         that uses the DirectoryPath setting.
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
         """
         for setting in self.visible_settings():
             if isinstance(setting, cps.DirectoryPath):
@@ -877,6 +1144,12 @@ class CPModule(object):
         elements of the pipeline, such as the image plane details or image
         set list. You're allowed to modify these parts of the pipeline
         in the UI thread until on_deactivated is called.
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
         """
         pass
 
@@ -889,5 +1162,18 @@ class CPModule(object):
         pass
 
     def on_setting_changed(self, setting, pipeline):
-        """Called when a setting has been changed in the GUI"""
+        """Called when a setting has been changed in the GUI
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        """
         pass

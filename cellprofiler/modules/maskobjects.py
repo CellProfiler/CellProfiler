@@ -70,6 +70,7 @@ def s_lookup(x):
     """Look up the current value for a setting choice w/backwards compatibility
 
     x - setting value from pipeline
+    :param x:
     """
     return S_DICTIONARY.get(x, x)
 
@@ -226,7 +227,9 @@ class MaskObjects(I.Identify):
         return result
 
     def run(self, workspace):
-        """Run the module on an image set"""
+        """Run the module on an image set
+        :param workspace:
+        """
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
@@ -339,7 +342,10 @@ class MaskObjects(I.Identify):
             workspace.display_data.mask = mask
 
     def display(self, workspace, figure):
-        """Create an informative display for the module"""
+        """Create an informative display for the module
+        :param figure:
+        :param workspace:
+        """
         import matplotlib
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         original_labels = workspace.display_data.original_labels
@@ -381,7 +387,9 @@ class MaskObjects(I.Identify):
                                     sharexy=figure.subplot(0, 0))
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for measurements made by this module"""
+        """Return column definitions for measurements made by this module
+        :param pipeline:
+        """
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
@@ -396,6 +404,8 @@ class MaskObjects(I.Identify):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
         """
 
         object_dictionary = self.get_object_dictionary()
@@ -418,12 +428,17 @@ class MaskObjects(I.Identify):
         pipeline - pipeline being run
         object_name - object being measured (or Image)
         category - category of measurement, for instance, "Location"
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         return self.get_object_measurements(pipeline, object_name, category,
                                             self.get_object_dictionary())
 
     def validate_module(self, pipeline):
-        """Bypass Identify.validate_module"""
+        """Bypass Identify.validate_module
+        :param pipeline:
+        """
         pass
 
     def upgrade_settings(self, setting_values, variable_revision_number,

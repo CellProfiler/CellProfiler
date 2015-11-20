@@ -18,6 +18,8 @@ def memoize_method(function, *args):
     The dictionary is indexed by function name and the values of that
     dictionary are themselves dictionaries with args[1:] as the keys
     and the result of applying function to args[1:] as the values.
+    :param args:
+    :param function:
     """
     sself = args[0]
     d = getattr(sself, "memoize_method_dictionary", False)
@@ -130,6 +132,7 @@ class Objects(object):
         non-overlapping labels.
 
         returns a list of label matrixes and the indexes in each
+        :param shape:
         """
         dense, indices = self.__segmented.get_dense()
         return [
@@ -188,6 +191,8 @@ class Objects(object):
 
         hdf5_object_set - an HDF5ObjectSet attached to an HDF5 file
         objects_name - name of the objects
+        :param objects_name:
+        :param hdf5_object_set:
         """
         for segmentation, segmentation_name in (
                 (self.__segmented, Segmentation.SEGMENTED),
@@ -227,7 +232,9 @@ class Objects(object):
     has_parent_image = property(get_has_parent_image)
 
     def crop_image_similarly(self, image):
-        """Crop an image in the same way as the parent image was cropped."""
+        """Crop an image in the same way as the parent image was cropped.
+        :param image:
+        """
         if image.shape == self.segmented.shape:
             return image
         if self.parent_image is None:
@@ -241,6 +248,7 @@ class Objects(object):
         objects that might overlap.
 
         colors: a N x 3 color map to be used to color the outlines
+        :param colors:
         """
         #
         # Get planes of non-overlapping objects. The idea here is to use
@@ -290,6 +298,7 @@ class Objects(object):
         Returns two 1-d arrays. The first gives the number of children within
         each parent. The second gives the mapping of each child to its parent's
         object number.
+        :param children:
         """
         histogram = self.histogram_from_ijv(self.ijv, children.ijv)
         return self.relate_histogram(histogram)
@@ -304,6 +313,8 @@ class Objects(object):
         Returns two 1-d arrays. The first gives the number of children within
         each parent. The second gives the mapping of each child to its parent's
         object number.
+        :param child_labels:
+        :param parent_labels:
         """
         histogram = self.histogram_from_labels(parent_labels, child_labels)
         return self.relate_histogram(histogram)
@@ -312,6 +323,7 @@ class Objects(object):
         """Return child counts and parents of children given a histogram
 
         histogram - histogram from histogram_from_ijv or histogram_from_labels
+        :param histogram:
         """
         parent_count = histogram.shape[0] - 1
         child_count = histogram.shape[1] - 1
@@ -338,6 +350,8 @@ class Objects(object):
         Returns a 2d array of overlap between each parent and child.
         Note that the first row and column are empty, as these
         correspond to parent and child labels of 0.
+        :param child_labels:
+        :param parent_labels:
 
         """
         parent_count = np.max(parent_labels)
@@ -373,6 +387,8 @@ class Objects(object):
         Returns a 2d array of overlap between each parent and child.
         Note that the first row and column are empty, as these
         correspond to parent and child labels of 0.
+        :param child_ijv:
+        :param parent_ijv:
 
         """
         parent_count = 0 if (parent_ijv.shape[0] == 0) else np.max(
@@ -433,6 +449,7 @@ class Objects(object):
         
         function - should have a signature like
             labels - label_matrix
+            :param function:
     """
         return function(self.segmented)
 
@@ -444,6 +461,7 @@ class Objects(object):
                    labels - label matrix
                    index  - sequence of label indices documenting which
                             label indices are of interest
+                            :param function:
         """
         return function(self.segmented, self.indices)
 
@@ -458,6 +476,7 @@ class Objects(object):
                             label indices are of interest
         Pass this function an "image" of all ones, for instance to compute
         a center or an area
+        :param function:
         """
 
         return function(np.ones(self.segmented.shape),
@@ -473,6 +492,8 @@ class Objects(object):
                    labels - label matrix
                    index  - sequence of label indices documenting which
                             label indices are of interest
+                            :param image:
+                            :param function:
         """
         return function(image,
                         self.segmented,
@@ -521,6 +542,9 @@ class Segmentation(object):
         segmentation_name - name of this particular segmentation, for instance,
                             Segmentation.SEGMENTED for the user-visible
                             segmentation.
+                            :param segmentation_name:
+                            :param objects_name:
+                            :param hdf5_object_set:
         """
         if self.__cache is not None:
             return
@@ -843,6 +867,24 @@ class Segmentation(object):
 
 def check_consistency(segmented, unedited_segmented, small_removed_segmented):
     """Check the three components of Objects to make sure they are consistent
+    :param small_removed_segmented:
+    :param unedited_segmented:
+    :param segmented:
+    :param small_removed_segmented:
+    :param unedited_segmented:
+    :param segmented:
+    :param small_removed_segmented:
+    :param unedited_segmented:
+    :param segmented:
+    :param small_removed_segmented:
+    :param unedited_segmented:
+    :param segmented:
+    :param small_removed_segmented:
+    :param unedited_segmented:
+    :param segmented:
+    :param small_removed_segmented:
+    :param unedited_segmented:
+    :param segmented:
     """
     assert segmented is None or np.all(segmented >= 0)
     assert unedited_segmented is None or np.all(unedited_segmented >= 0)
@@ -897,6 +939,12 @@ class ObjectSet(object):
 
     def get_objects(self, name):
         """Return the objects instance with the given name
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        :param name:
         """
         return self.__objects_by_name[name]
 
@@ -926,6 +974,66 @@ class ObjectSet(object):
         type_name - the name of the instance's type
         instance_name - the name of the instance
         instance - the instance itself
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
+        :param instance:
+        :param instance_name:
+        :param type_name:
         """
         if type_name not in self.__types_and_instances:
             self.__types_and_instances[type_name] = {}
@@ -936,6 +1044,46 @@ class ObjectSet(object):
 
         type_name - the name of the type of instance
         instance_name - the name of the instance to retrieve
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
+        :param instance_name:
+        :param type_name:
         """
         if (type_name not in self.__types_and_instance or
                     instance_name not in self.__types_and_instances[type_name]):
@@ -948,13 +1096,54 @@ class ObjectSet(object):
         hdf5_object_set - an HDF5ObjectSet that is used to store
                           the segmentations so that they can be
                           flushed out of memory.
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
+                          :param hdf5_object_set:
         """
         for objects_name in self.get_object_names():
             self.get_objects(objects_name).cache(hdf5_object_set, objects_name)
 
 
 def downsample_labels(labels):
-    """Convert a labels matrix to the smallest possible integer format"""
+    """Convert a labels matrix to the smallest possible integer format
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    :param labels:
+    """
     labels_max = np.max(labels)
     if labels_max < 128:
         return labels.astype(np.int8)
@@ -970,6 +1159,46 @@ def crop_labels_and_image(labels, image):
     image - a 2-d or 3-d image
 
     Assumes that points outside of the common boundary should be masked.
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
+    :param image:
+    :param labels:
     """
     min_height = min(labels.shape[0], image.shape[0])
     min_width = min(labels.shape[1], image.shape[1])
@@ -992,6 +1221,46 @@ def size_similarly(labels, secondary):
 
     Either the mask is all ones or the result is a copy, so you can
     modify the output within the unmasked region w/o destroying the original.
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
+    :param secondary:
+    :param labels:
     """
     if labels.shape[:2] == secondary.shape[:2]:
         return secondary, np.ones(secondary.shape, bool)

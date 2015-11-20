@@ -67,6 +67,7 @@ def get_empty_pipeline():
 
 def exploding_pipeline(test):
     """Return a pipeline that fails if the run exception callback is called during a run
+    :param test:
     """
     x = get_empty_pipeline()
 

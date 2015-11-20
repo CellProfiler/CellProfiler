@@ -169,7 +169,11 @@ class MaskImage(cpm.CPModule):
                          variable_revision_number,
                          module_name, from_matlab):
         """Adjust the setting_values to upgrade from a previous version
-        
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+
         """
         if from_matlab and variable_revision_number == 3:
             from_matlab = False

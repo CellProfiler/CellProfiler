@@ -182,7 +182,9 @@ class RenameOrRenumberFiles(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        """Run on an image set"""
+        """Run on an image set
+        :param workspace:
+        """
         image_name = self.image_name.value
         m = workspace.measurements
         #
@@ -243,7 +245,10 @@ class RenameOrRenumberFiles(cpm.CPModule):
                   os.path.join(path, new_file_name))
 
     def display(self, workspace, figure):
-        """Display the pathname conversion"""
+        """Display the pathname conversion
+        :param figure:
+        :param workspace:
+        """
         figure.set_subplots((1, 1))
         if workspace.pipeline.test_mode:
             figure.subplot_table(
@@ -255,7 +260,9 @@ class RenameOrRenumberFiles(cpm.CPModule):
                 0, 0, statistics, col_labels=('Old file name', 'New file name'))
 
     def validate_module_warnings(self, pipeline):
-        """Warn user re: Test mode """
+        """Warn user re: Test mode
+        :param pipeline:
+        """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "RenameOrRenumberFiles will not rename files in test mode",
@@ -270,6 +277,10 @@ class RenameOrRenumberFiles(cpm.CPModule):
                                    time of saving
         module_name - the name of the module that saved the settings
         from_matlab - true if pipeline was saved by CP 1.0
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 1:
             image_name, number_characters_prefix, number_characters_suffix, \

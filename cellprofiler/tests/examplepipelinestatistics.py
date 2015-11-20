@@ -47,6 +47,13 @@ def test_files(test_name, test_file, reference_file, output_file,
     max_nan_deviation - the maximum deviation in the # of nans relative to
                         the sample size
     max_obj_deviation - the maximum deviation in the # of objects per image set
+    :param max_obj_deviation:
+    :param max_nan_deviation:
+    :param max_deviation:
+    :param output_file:
+    :param reference_file:
+    :param test_file:
+    :param test_name:
     """
     output_fd = open(output_file, "w")
     output_fd.write("""<?xml version="1.0" encoding="UTF-8"?>
@@ -180,6 +187,7 @@ def collect_measurements(rdr):
     """Create a dictionary of feature name to vector of measurements
 
     rdr - a csv reader
+    :param rdr:
     """
     header = rdr.next()
     d = {}
@@ -244,6 +252,8 @@ def test_matching_columns(test_measurements, reference_measurements):
 
     Has side-effect of deleting measurements that are present in one
     but missing in other.
+    :param reference_measurements:
+    :param test_measurements:
     """
     assert isinstance(test_measurements, dict)
     assert isinstance(reference_measurements, dict)

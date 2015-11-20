@@ -59,6 +59,7 @@ class HeadlessConfig(object):
         """Get the data type of the registry key.
 
         Returns wx.Config.Type_String = 1
+        :param kwd:
         """
         return 1
 
@@ -90,6 +91,7 @@ def set_awt_headless(value):
     If this is not called, Java is started with AWT headless if
     we are headless and the environment variable, CELLPROFILER_USE_XVFB,
     is not present.
+    :param value:
     """
     global __awt_headless
     __awt_headless = value
@@ -147,7 +149,9 @@ def preferences_as_dict():
 
 
 def set_preferences_from_dict(d):
-    """Set the preferences by faking the configuration cache"""
+    """Set the preferences by faking the configuration cache
+    :param d:
+    """
     global __cached_values
     __cached_values = d.copy()
     #
@@ -181,6 +185,7 @@ def config_read(key):
     each other's values for things like the current output directory.
 
     Decode escaped config sequences too.
+    :param key:
     """
     global __cached_values
     if not __is_headless:
@@ -220,6 +225,8 @@ def config_write(key, value):
     """Write the given configuration value
 
     Encode escaped config sequences.
+    :param value:
+    :param key:
     """
     if not __is_headless:
         #
@@ -234,7 +241,9 @@ def config_write(key, value):
 
 
 def config_exists(key):
-    """Return True if the key is defined in the configuration"""
+    """Return True if the key is defined in the configuration
+    :param key:
+    """
     global __cached_values
     if key in __cached_values and __cached_values[key] is not None:
         return True
@@ -504,14 +513,16 @@ __image_directory_listeners = []
 
 def add_image_directory_listener(listener):
     """Add a listener that will be notified when the image directory changes
-    
+    :param listener:
+
     """
     __image_directory_listeners.append(listener)
 
 
 def remove_image_directory_listener(listener):
     """Remove a previously-added image directory listener
-    
+    :param listener:
+
     """
     if listener in __image_directory_listeners:
         __image_directory_listeners.remove(listener)
@@ -570,14 +581,16 @@ __output_directory_listeners = []
 
 def add_output_directory_listener(listener):
     """Add a listener that will be notified when the output directory changes
-    
+    :param listener:
+
     """
     __output_directory_listeners.append(listener)
 
 
 def remove_output_directory_listener(listener):
     """Remove a previously-added image directory listener
-    
+    :param listener:
+
     """
     if listener in __output_directory_listeners:
         __output_directory_listeners.remove(listener)
@@ -661,6 +674,12 @@ def get_background_color():
 
 def set_background_color(color):
     """Set the color to be used for window backgrounds
+    :param color:
+    :param color:
+    :param color:
+    :param color:
+    :param color:
+    :param color:
 
     """
     global __background_color
@@ -699,6 +718,12 @@ def set_error_color(color):
     """Set the color to be used for error text
 
     color - a WX color or ducktyped
+    :param color:
+    :param color:
+    :param color:
+    :param color:
+    :param color:
+    :param color:
     """
     global __error_color
     config_write(ERROR_COLOR,
@@ -757,6 +782,18 @@ def get_absolute_path(path, abspath_mode=ABSPATH_IMAGE):
     Default Input Folder.
     If a "path" has no path component then make the path relative to
     the Default Output Folder.
+    :param abspath_mode:
+    :param path:
+    :param abspath_mode:
+    :param path:
+    :param abspath_mode:
+    :param path:
+    :param abspath_mode:
+    :param path:
+    :param abspath_mode:
+    :param path:
+    :param abspath_mode:
+    :param path:
     """
 
     if abspath_mode == ABSPATH_OUTPUT:
@@ -784,7 +821,14 @@ def get_absolute_path(path, abspath_mode=ABSPATH_IMAGE):
 
 
 def is_url_path(path):
-    """Return True if the path should be treated as a URL"""
+    """Return True if the path should be treated as a URL
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    :param path:
+    """
     for protocol in ('http', 'https', 'ftp'):
         if path.lower().startswith('%s:' % protocol):
             return True
@@ -1104,7 +1148,28 @@ def get_allow_output_file_overwrite():
 
 
 def set_allow_output_file_overwrite(value):
-    """Allow overwrite of .MAT file if true, warn user if false"""
+    """Allow overwrite of .MAT file if true, warn user if false
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    """
     global __allow_output_file_overwrite
     __allow_output_file_overwrite = value
     config_write(ALLOW_OUTPUT_FILE_OVERWRITE,
@@ -1126,7 +1191,28 @@ def get_show_analysis_complete_dlg():
 
 
 def set_show_analysis_complete_dlg(value):
-    """Set the "show analysis complete" flag"""
+    """Set the "show analysis complete" flag
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    """
     global __show_analysis_complete_dlg
     __show_analysis_complete_dlg = value
     config_write(SHOW_ANALYSIS_COMPLETE_DLG,
@@ -1148,7 +1234,28 @@ def get_show_exiting_test_mode_dlg():
 
 
 def set_show_exiting_test_mode_dlg(value):
-    """Set the "exiting test mode" flag"""
+    """Set the "exiting test mode" flag
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    """
     global __show_exiting_test_mode_dlg
     __show_exiting_test_mode_dlg = value
     config_write(SHOW_EXITING_TEST_MODE_DLG,
@@ -1170,7 +1277,28 @@ def get_show_report_bad_sizes_dlg():
 
 
 def set_show_report_bad_sizes_dlg(value):
-    """Set the "exiting test mode" flag"""
+    """Set the "exiting test mode" flag
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    """
     global __show_report_bad_sizes_dlg
     __show_report_bad_sizes_dlg = value
     config_write(SHOW_BAD_SIZES_DLG,
@@ -1200,7 +1328,28 @@ def get_write_MAT_files():
 
 
 def set_write_MAT_files(value):
-    """Set the "Write MAT files" flag"""
+    """Set the "Write MAT files" flag
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    """
     global __write_MAT_files
     __write_MAT_files = value
     config_write(WRITE_MAT,
@@ -1222,7 +1371,28 @@ def get_warn_about_old_pipeline():
 
 
 def set_warn_about_old_pipeline(value):
-    """Set the "warn about old pipelines" flag"""
+    """Set the "warn about old pipelines" flag
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    """
     global __warn_about_old_pipeline
     __warn_about_old_pipeline = value
     config_write(WARN_ABOUT_OLD_PIPELINE,
@@ -1243,7 +1413,28 @@ def get_use_more_figure_space():
 
 
 def set_use_more_figure_space(value):
-    """Set the "use more figure space" flag"""
+    """Set the "use more figure space" flag
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    """
     global __use_more_figure_space
     __use_more_figure_space = value
     config_write(USE_MORE_FIGURE_SPACE,
@@ -1275,6 +1466,26 @@ def set_ij_version(value):
     """Set the ImageJ version to use
 
     value: one of IJ_1 or IJ_2
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
+    :param value:
     """
     global __ij_version
     assert value in (IJ_1, IJ_2)
@@ -1304,6 +1515,29 @@ def set_workspace_file(path, permanently=True):
     permanently - True to write it to the configuration, False if the file
                   should only be set for the running instance (e.g. as a
                   command-line parameter for a scripted run)
+                  :param permanently:
+                  :param permanently:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
+                  :param path:
     """
     global __workspace_file
     __workspace_file = path
@@ -1335,7 +1569,10 @@ def get_omero_server():
 
 
 def set_omero_server(omero_server, globally=True):
-    """Set the DNS name of the Omero server"""
+    """Set the DNS name of the Omero server
+    :param globally:
+    :param omero_server:
+    """
     global __omero_server
     __omero_server = omero_server
     if globally:
@@ -1356,7 +1593,10 @@ def get_omero_port():
 
 
 def set_omero_port(omero_port, globally=True):
-    """Set the port used to connect to the Omero server"""
+    """Set the port used to connect to the Omero server
+    :param globally:
+    :param omero_port:
+    """
     global __omero_port
     __omero_port = omero_port
     if globally:
@@ -1374,7 +1614,10 @@ def get_omero_user():
 
 
 def set_omero_user(omero_user, globally=True):
-    """Set the Omero user name"""
+    """Set the Omero user name
+    :param globally:
+    :param omero_user:
+    """
     global __omero_user
     __omero_user = omero_user
     if globally:
@@ -1392,7 +1635,10 @@ def get_omero_session_id():
 
 
 def set_omero_session_id(omero_session_id, globally=True):
-    """Set the Omero session ID"""
+    """Set the Omero session ID
+    :param globally:
+    :param omero_session_id:
+    """
     global __omero_session_id
     __omero_session_id = omero_session_id
     if globally:
@@ -1422,7 +1668,9 @@ def get_max_workers():
 
 
 def set_max_workers(value):
-    """Set the maximum number of worker processes allowed during analysis"""
+    """Set the maximum number of worker processes allowed during analysis
+    :param value:
+    """
     global __max_workers
     get_config().WriteInt(MAX_WORKERS, value)
     __max_workers = value
@@ -1453,6 +1701,8 @@ def set_temporary_directory(tempdir, globally=False):
     """Set the directory to be used for temporary files
 
     tempdir - pathname of the directory
+    :param tempdir:
+    :param globally:
     """
     global __temp_dir
     if globally:
@@ -1507,7 +1757,9 @@ def get_intensity_mode():
 
 
 def set_intensity_mode(value):
-    """Set the intensity scaling mode for matplotlib"""
+    """Set the intensity scaling mode for matplotlib
+    :param value:
+    """
     global __intensity_mode
     __intensity_mode = value
     config_write(INTENSITY_MODE, value)
@@ -1537,6 +1789,8 @@ def set_jvm_heap_mb(value, save_config=True):
 
     value - value in megabytes or as a string with a K/ M or G postifx
     save_config - True to save the value in the configuration, False to set locally
+    :param value:
+    :param save_config:
     """
     global __jvm_heap_mb
     try:
@@ -1599,6 +1853,7 @@ def set_allow_schema_write(value):
     have multiple processes overwrite the database schema. Although
     CreateBatchFiles is suggested for this scenario, we put this switch in
     to support disabling schema writes from the command line.
+    :param value:
     """
     global __allow_schema_write
     __allow_schema_write = value
@@ -1621,7 +1876,9 @@ def get_filename_re_guess_file():
 
 
 def set_filename_re_guess_file(value):
-    """Set the path to the filename regular expression guess file"""
+    """Set the path to the filename regular expression guess file
+    :param value:
+    """
     global __filename_re_guess_file
     __filename_re_guess_file = value
     config_write(FILENAME_RE_GUESSES_FILE, value)
@@ -1644,7 +1901,9 @@ def get_pathname_re_guess_file():
 
 
 def set_pathname_re_guess_file(value):
-    """Set the path to the pathname regular expression guess file"""
+    """Set the path to the pathname regular expression guess file
+    :param value:
+    """
     global __pathname_re_guess_file
     __pathname_re_guess_file = value
     config_write(PATHNAME_RE_GUESSES_FILE, value)
@@ -1679,7 +1938,9 @@ __image_set_filename = None
 
 
 def set_image_set_file(filename):
-    """Record the name of the image set that should be loaded upon startup"""
+    """Record the name of the image set that should be loaded upon startup
+    :param filename:
+    """
     global __image_set_filename
     __image_set_filename = filename
 
@@ -1739,6 +2000,7 @@ def add_progress_callback(callback):
                 ...
 
     does not work because the reference is lost when __init__ returns.
+    :param callback:
     """
     global __progress_data
     if __progress_data.callbacks is None:
@@ -1763,6 +2025,9 @@ def report_progress(operation_id, progress, message):
                reported at the outset and 1 at the end.
 
     message - an informative message.
+    :param progress:
+    :param operation_id:
+    :param message:
     """
     global __progress_data
     if __progress_data.callbacks is None:
@@ -1784,6 +2049,10 @@ def map_report_progress(fn_map, fn_report, sequence, freq=None):
 
     freq - report on mapping every N items. Default is to report 100 or less
            times.
+           :param sequence:
+           :param fn_report:
+           :param fn_map:
+           :param freq:
     """
     n_items = len(sequence)
     if n_items == 0:

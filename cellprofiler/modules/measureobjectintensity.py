@@ -120,6 +120,7 @@ class MeasureObjectIntensity(cpm.CPModule):
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
+                     :param can_remove:
         """
         group = cps.SettingsGroup()
         if can_remove:
@@ -139,6 +140,7 @@ class MeasureObjectIntensity(cpm.CPModule):
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
+                     :param can_remove:
         """
         group = cps.SettingsGroup()
         if can_remove:
@@ -189,6 +191,10 @@ class MeasureObjectIntensity(cpm.CPModule):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 2:
             # Old matlab-style. Erase any setting values that are
@@ -220,6 +226,7 @@ class MeasureObjectIntensity(cpm.CPModule):
         the number of relevant settings so they map correctly to the values.
         
         See cellprofiler.modules.measureobjectsizeshape for an example.
+        :param setting_values:
         """
         #
         # The settings have two parts - images, then objects
@@ -235,7 +242,9 @@ class MeasureObjectIntensity(cpm.CPModule):
             self.add_object()
 
     def validate_module(self, pipeline):
-        """Make sure chosen objects and images are selected only once"""
+        """Make sure chosen objects and images are selected only once
+        :param pipeline:
+        """
         images = set()
         for group in self.images:
             if group.name.value in images:
@@ -253,7 +262,9 @@ class MeasureObjectIntensity(cpm.CPModule):
             objects.add(group.name.value)
 
     def get_measurement_columns(self, pipeline):
-        """Return the column definitions for measurements made by this module"""
+        """Return the column definitions for measurements made by this module
+        :param pipeline:
+        """
         columns = []
         for image_name in [im.name for im in self.images]:
             for object_name in [obj.name for obj in self.objects]:
@@ -274,6 +285,8 @@ class MeasureObjectIntensity(cpm.CPModule):
         pipeline - pipeline being run
         object_name - name of labels in question (or 'Images')
         returns a list of category names
+        :param object_name:
+        :param pipeline:
         """
         for object_name_variable in [obj.name for obj in self.objects]:
             if object_name_variable.value == object_name:
@@ -281,7 +294,11 @@ class MeasureObjectIntensity(cpm.CPModule):
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        """Get the measurements made on the given object in the given category"""
+        """Get the measurements made on the given object in the given category
+        :param category:
+        :param object_name:
+        :param pipeline:
+        """
         if category == C_LOCATION:
             all_measurements = ALL_LOCATION_MEASUREMENTS
         elif category == INTENSITY:
@@ -295,7 +312,12 @@ class MeasureObjectIntensity(cpm.CPModule):
 
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
-        """Get the images used to make the given measurement in the given category on the given object"""
+        """Get the images used to make the given measurement in the given category on the given object
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        """
         if category == INTENSITY:
             if measurement not in ALL_MEASUREMENTS:
                 return []

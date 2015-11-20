@@ -80,7 +80,9 @@ class LabelImages(cpm.CPModule):
                 self.order]
 
     def run(self, workspace):
-        """Run one image set"""
+        """Run one image set
+        :param workspace:
+        """
         m = workspace.measurements
         well_count, site_index = divmod(m.image_set_number - 1,
                                         self.site_count.value)
@@ -151,7 +153,10 @@ class LabelImages(cpm.CPModule):
         return []
 
     def display(self, workspace, figure):
-        """Display the plate / well information in a figure table"""
+        """Display the plate / well information in a figure table
+        :param figure:
+        :param workspace:
+        """
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
@@ -165,6 +170,10 @@ class LabelImages(cpm.CPModule):
         variable_revision_number - revision of the module that saved the settings
         module_name - name of the module that saved the settings
         from_matlab - settings are from the Matlab version of CellProfiler
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 1:
             label_name, rows_cols, row_or_column, image_cycles_per_well = \

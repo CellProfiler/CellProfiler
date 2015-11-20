@@ -361,7 +361,11 @@ class RegexpState:
         self.matching_braces += [None] * length
 
     def open_group(self, length, group_name=None, is_non_grouping=False):
-        """Open a grouping expression"""
+        """Open a grouping expression
+        :param is_non_grouping:
+        :param group_name:
+        :param length:
+        """
         self.__group_depth += 1
         self.__group_starts.append(self.position)
         self.__any_tokens = True
@@ -421,7 +425,10 @@ class RegexpState:
         self.position += length
 
     def parsed_special(self, length=1, label=TOK_SPECIAL):
-        """Parse a token that's not repeatable"""
+        """Parse a token that's not repeatable
+        :param label:
+        :param length:
+        """
         self.__any_tokens = False
         self.mark_tokens(length, label)
         self.position += length
@@ -459,6 +466,8 @@ def looking_at_escape(s, state):
     state - the current search state
 
     returns either None or the # of characters in the escape
+    :param state:
+    :param s:
     """
     if s[0] != "\\":
         return

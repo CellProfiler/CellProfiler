@@ -16,6 +16,8 @@ def utf16encode(x):
     0x20 <= c < 0xff -> c
 
     all others -> \u####
+    :param x:
+    :param x:
     """
     y = ''
     for z in x:
@@ -31,6 +33,7 @@ def utf16encode(x):
 
 def utf16decode(x):
     """Decode an escaped utf8-encoded string
+    :param x:
     """
     y = u""
     state = -1

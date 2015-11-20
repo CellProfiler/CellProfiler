@@ -413,7 +413,8 @@ class MeasureImageQuality(cpm.CPModule):
 
     def prepare_settings(self, setting_values):
         """Adjust image_groups and threshold_groups to account for the expected # of
-            images, scales, and threshold methods"""
+            images, scales, and threshold methods
+            :param setting_values: """
         image_group_count = int(setting_values[1])
         del self.image_groups[:]
         for i in range(image_group_count):
@@ -519,7 +520,9 @@ class MeasureImageQuality(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        """Make sure a mesurement is selected in image_names"""
+        """Make sure a mesurement is selected in image_names
+        :param pipeline:
+        """
         if self.images_choice.value == O_SELECT:
             for image_group in self.image_groups:
                 if not image_group.image_names.get_selections():
@@ -571,7 +574,10 @@ class MeasureImageQuality(cpm.CPModule):
                     for image_group in self.image_groups])
 
     def get_measurement_columns(self, pipeline, return_sources=False):
-        """Return column definitions for all measurements"""
+        """Return column definitions for all measurements
+        :param return_sources:
+        :param pipeline:
+        """
         columns = []
         sources = []
         for image_group in self.image_groups:
@@ -758,7 +764,38 @@ class MeasureImageQuality(cpm.CPModule):
 
     def get_measurement_scales(self, pipeline, object_name, category,
                                measurement, image_names):
-        """Get the scales (window_sizes) for the given measurement"""
+        """Get the scales (window_sizes) for the given measurement
+        :param image_names:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_names:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_names:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_names:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_names:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param image_names:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        """
         if (object_name == cpmeas.IMAGE and category == C_IMAGE_QUALITY):
             if measurement in (F_LOCAL_FOCUS_SCORE, F_CORRELATION):
                 result = []
@@ -784,7 +821,14 @@ class MeasureImageQuality(cpm.CPModule):
         return []
 
     def run(self, workspace):
-        """Calculate statistics over all image groups"""
+        """Calculate statistics over all image groups
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         statistics = []
         for image_group in self.image_groups:
             statistics += self.run_on_image_group(image_group, workspace)
@@ -797,14 +841,34 @@ class MeasureImageQuality(cpm.CPModule):
             figure.subplot_table(0, 0, statistics)
 
     def post_run(self, workspace):
-        """Calculate the experiment statistics at the end of a run"""
+        """Calculate the experiment statistics at the end of a run
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         statistics = []
         for image_group in self.image_groups:
             statistics += self.calculate_experiment_threshold(image_group,
                                                               workspace)
 
     def run_on_image_group(self, image_group, workspace):
-        """Calculate statistics for a particular image"""
+        """Calculate statistics for a particular image
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        """
         statistics = []
         if image_group.include_image_scalings.value:
             statistics += self.retrieve_image_scalings(image_group, workspace)
@@ -822,7 +886,20 @@ class MeasureImageQuality(cpm.CPModule):
         return statistics
 
     def retrieve_image_scalings(self, image_group, workspace):
-        """Grab the scalings from the image """
+        """Grab the scalings from the image
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        """
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
@@ -835,7 +912,20 @@ class MeasureImageQuality(cpm.CPModule):
         return result
 
     def calculate_focus_scores(self, image_group, workspace):
-        """Calculate a local blur measurement and a image-wide one"""
+        """Calculate a local blur measurement and a image-wide one
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        """
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
@@ -928,7 +1018,48 @@ class MeasureImageQuality(cpm.CPModule):
         return result
 
     def calculate_correlation(self, image_group, workspace):
-        """Calculate a correlation measure from the Harlick feature set"""
+        """Calculate a correlation measure from the Harlick feature set
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        """
         result = []
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name,
@@ -954,7 +1085,48 @@ class MeasureImageQuality(cpm.CPModule):
         return result
 
     def calculate_saturation(self, image_group, workspace):
-        """Count the # of pixels at saturation"""
+        """Count the # of pixels at saturation
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        """
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
@@ -990,7 +1162,48 @@ class MeasureImageQuality(cpm.CPModule):
         return result
 
     def calculate_image_intensity(self, image_group, workspace):
-        """Calculate intensity-based metrics, mostly from MeasureImageIntensity"""
+        """Calculate intensity-based metrics, mostly from MeasureImageIntensity
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        """
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
@@ -1103,7 +1316,48 @@ class MeasureImageQuality(cpm.CPModule):
         return result
 
     def calculate_thresholds(self, image_group, workspace):
-        """Calculate a threshold for this image"""
+        """Calculate a threshold for this image
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        """
         result = []
         all_threshold_groups = self.get_all_threshold_groups(image_group)
 
@@ -1158,13 +1412,74 @@ class MeasureImageQuality(cpm.CPModule):
         """Get all threshold groups to apply to an image group
 
         image_group - the image group to try thresholding on
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
+        :param image_group:
         """
         if image_group.use_all_threshold_methods.value:
             return self.build_threshold_parameter_list()
         return image_group.threshold_groups
 
     def calculate_experiment_threshold(self, image_group, workspace):
-        """Calculate experiment-wide threshold mean, median and standard-deviation"""
+        """Calculate experiment-wide threshold mean, median and standard-deviation
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        :param workspace:
+        :param image_group:
+        """
         m = workspace.measurements
         statistics = []
         all_threshold_groups = self.get_all_threshold_groups(image_group)
@@ -1228,7 +1543,68 @@ class MeasureImageQuality(cpm.CPModule):
         return threshold_groups
 
     def images_to_process(self, image_group, workspace, pipeline=None):
-        """Return a list of input image names appropriate to the setting choice """
+        """Return a list of input image names appropriate to the setting choice
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        :param pipeline:
+        :param workspace:
+        :param image_group:
+        """
         if self.images_choice.value == O_SELECT:
             return image_group.image_names.get_selections()
         elif self.images_choice.value == O_ALL_LOADED:
@@ -1251,7 +1627,88 @@ class MeasureImageQuality(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        """Upgrade from previous versions of setting formats"""
+        """Upgrade from previous versions of setting formats
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        """
 
         if (from_matlab and variable_revision_number == 4 and
                     module_name == 'MeasureImageSaturationBlur'):
@@ -1457,7 +1914,10 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
         return self.threshold_method.value.split(' ')[0]
 
     def threshold_feature_name(self, image_name, agg=None):
-        """The feature name of the threshold measurement generated"""
+        """The feature name of the threshold measurement generated
+        :param image_name:
+        :param agg:
+        """
         scale = self.threshold_scale
         if agg is None:
             hdr = F_THRESHOLD
@@ -1503,6 +1963,8 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
         image_name - name of thresholded image
 
         agg - if present, the aggregating method, e.g. "Mean"
+        :param agg:
+        :param image_name:
         """
         if self.threshold_algorithm == cpthresh.TM_OTSU:
             if self.use_weighted_variance == O_WEIGHTED_VARIANCE:

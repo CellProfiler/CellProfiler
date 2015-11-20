@@ -247,7 +247,9 @@ class StraightenWorms(cpm.CPModule):
             </ul>""" % globals())
 
         def image_choices_fn(pipeline):
-            """Return the image choices for the alignment image"""
+            """Return the image choices for the alignment image
+            :param pipeline:
+            """
             return [group.image_name.value
                     for group in self.images]
 
@@ -267,7 +269,9 @@ class StraightenWorms(cpm.CPModule):
             Press this button to add another image to be straightened""")
 
     def add_image(self, can_delete=True):
-        """Add an image to the list of images to be straightened"""
+        """Add an image to the list of images to be straightened
+        :param can_delete:
+        """
 
         group = cps.SettingsGroup()
         group.append("divider", cps.Divider())
@@ -349,7 +353,9 @@ class StraightenWorms(cpm.CPModule):
             super(self.__class__, self).__init__(*args)
 
     def run(self, workspace):
-        """Process one image set"""
+        """Process one image set
+        :param workspace:
+        """
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
 
@@ -382,7 +388,10 @@ class StraightenWorms(cpm.CPModule):
             control_points = control_points.transpose(2, 1, 0)
         else:
             def sort_fn(a, b):
-                """Sort by control point number"""
+                """Sort by control point number
+                :param b:
+                :param a:
+                """
                 acp = int(a.split("_")[-1])
                 bcp = int(b.split("_")[-1])
                 return cmp(acp, bcp)
@@ -563,7 +572,9 @@ class StraightenWorms(cpm.CPModule):
         self.make_objects(workspace, labels, nworms)
 
     def read_params(self, workspace):
-        """Read the training params or use the cached value"""
+        """Read the training params or use the cached value
+        :param workspace:
+        """
         if not hasattr(self, "training_params"):
             self.training_params = {}
         params = read_params(self.training_set_directory,
@@ -885,6 +896,60 @@ class StraightenWorms(cpm.CPModule):
         scales - the "scale" portion of the measurement for each of the bins
                  shaped the same as the i_dest, j_dest coordinates
         nworms - # of labels.
+        :param nworms:
+        :param scales:
+        :param labels_src:
+        :param weight:
+        :param j_dest:
+        :param i_dest:
+        :param j_src:
+        :param i_src:
+        :param workspace:
+        :param nworms:
+        :param scales:
+        :param labels_src:
+        :param weight:
+        :param j_dest:
+        :param i_dest:
+        :param j_src:
+        :param i_src:
+        :param workspace:
+        :param nworms:
+        :param scales:
+        :param labels_src:
+        :param weight:
+        :param j_dest:
+        :param i_dest:
+        :param j_src:
+        :param i_src:
+        :param workspace:
+        :param nworms:
+        :param scales:
+        :param labels_src:
+        :param weight:
+        :param j_dest:
+        :param i_dest:
+        :param j_src:
+        :param i_src:
+        :param workspace:
+        :param nworms:
+        :param scales:
+        :param labels_src:
+        :param weight:
+        :param j_dest:
+        :param i_dest:
+        :param j_src:
+        :param i_src:
+        :param workspace:
+        :param nworms:
+        :param scales:
+        :param labels_src:
+        :param weight:
+        :param j_dest:
+        :param i_dest:
+        :param j_src:
+        :param i_src:
+        :param workspace:
         """
         image_set = workspace.image_set
         m = workspace.measurements
@@ -948,7 +1013,48 @@ class StraightenWorms(cpm.CPModule):
                                          labels, nworms)
 
     def display(self, workspace, figure):
-        """Display the results of the worm straightening"""
+        """Display the results of the worm straightening
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        """
         image_pairs = workspace.display_data.image_pairs
         figure.set_subplots((2, len(image_pairs)))
         src_axis = None
@@ -973,6 +1079,46 @@ class StraightenWorms(cpm.CPModule):
 
         longitudinal - band # (0 to # of stripes) or None for transverse-only
         transverse - band # (0 to # of stripes) or None  for longitudinal-only
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
+        :param transverse:
+        :param longitudinal:
         """
         if longitudinal is None:
             longitudinal = 0
@@ -989,7 +1135,28 @@ class StraightenWorms(cpm.CPModule):
             SCALE_VERTICAL, longitudinal + 1, lcount)
 
     def get_measurement_columns(self, pipeline):
-        """Return columns that define the measurements produced by this module"""
+        """Return columns that define the measurements produced by this module
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         result = get_object_measurement_columns(
             self.straightened_objects_name.value)
         if self.wants_measurements:
@@ -1099,6 +1266,86 @@ class StraightenWorms(cpm.CPModule):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
 
         if variable_revision_number == 1:
@@ -1135,6 +1382,46 @@ class StraightenWorms(cpm.CPModule):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
         """
         self.training_set_directory.alter_for_create_batch_files(fn_alter_path)
 
@@ -1150,6 +1437,66 @@ class StraightenWorms(cpm.CPModule):
         image_set_number - the cycle #
 
         returns a tuple of flipped worm images and the flipped labels matrix
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
+        :param image_set_number:
+        :param labels:
+        :param straightened_images:
         """
         import wx
         import matplotlib

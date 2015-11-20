@@ -39,7 +39,11 @@ __all__ = ['cardinal', 'ordinal',
 # ----------------------------------------------------------------------------
 
 def enumerate(stuff, separator=',', conjunction='and'):
-    """Returns a phrase that recites a list of noun phrases naturally."""
+    """Returns a phrase that recites a list of noun phrases naturally.
+    :param stuff:
+    :param separator:
+    :param conjunction:
+    """
     text = ''
     n = len(stuff)
     for i in range(len(stuff)):
@@ -143,6 +147,8 @@ def conjugate(word, tense='present'):
         'present'
     This routine does not add companion words such as "has" or "will"
     to the verb phrase.  It only conjugates the word itself.
+    :param word:
+    :param tense:
     """
 
     if 'participle' in tense:
@@ -209,6 +215,8 @@ def cardinal(number, style=None):
     """Returns a phrase that spells out the cardinal form of a number.
     This routine does not currently try to understand "big integer"
     numbers using words like 'septillion'.
+    :param number:
+    :param style:
     """
     if not number:
         return __score[0]
@@ -251,7 +259,10 @@ __decadeth = ['zeroth', 'tenth', 'twentieth', 'thirtieth', 'fortieth',
 
 
 def ordinal(number, style=None):
-    """Returns a phrase that spells out the ordinal form of a number."""
+    """Returns a phrase that spells out the ordinal form of a number.
+    :param number:
+    :param style:
+    """
     if not number:
         return __scoreth[0]
     text = ''

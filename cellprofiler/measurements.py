@@ -200,7 +200,9 @@ F_BATCH_DATA_H5 = 'Batch_data.h5'
 
 
 def get_length_from_varchar(x):
-    """Retrieve the length of a varchar column from its coltype def"""
+    """Retrieve the length of a varchar column from its coltype def
+    :param x:
+    """
     m = re.match(r'^varchar\(([0-9]+)\)$', x)
     if m is None:
         return None
@@ -393,6 +395,7 @@ class Measurements(object):
         get_measurement_columns()
 
         measurement_columns - list of 3-tuples: object name, feature, type
+        :param measurement_columns:
         """
         # clear the old data, if any
         self.hdf5_dict.clear()
@@ -462,12 +465,16 @@ class Measurements(object):
         return self.image_set_start is not None
 
     def load(self, measurements_file_name):
-        """Load measurements from a matlab file"""
+        """Load measurements from a matlab file
+        :param measurements_file_name:
+        """
         handles = loadmat(measurements_file_name, struct_as_record=True)
         self.create_from_handles(handles)
 
     def create_from_handles(self, handles):
-        """Load measurements from a handles structure"""
+        """Load measurements from a handles structure
+        :param handles:
+        """
         m = handles["handles"][0, 0][MEASUREMENTS_GROUP_NAME][0, 0]
         for object_name in m.dtype.fields.keys():
             omeas = m[object_name][0, 0]
@@ -509,6 +516,9 @@ class Measurements(object):
 
     def add_image_measurement(self, feature_name, data, can_overwrite=False):
         """Add a measurement to the "Image" category
+        :param can_overwrite:
+        :param data:
+        :param feature_name:
 
         """
         self.add_measurement(IMAGE, feature_name, data)
@@ -517,6 +527,8 @@ class Measurements(object):
         """Add an experiment measurement to the measurement
 
         Experiment measurements have one value per experiment
+        :param data:
+        :param feature_name:
         """
         if isinstance(data, basestring):
             data = unicode(data).encode('unicode_escape')
@@ -556,6 +568,7 @@ class Measurements(object):
         and 'Metadata_Column' and a group_list of:
         [ ({'Metadata_Row':'A','Metadata_Column':'01'}, [1,97,193]),
           ({'Metadata_Row':'A','Metadata_Column':'02'), [2,98,194]),... ]
+          :param features:
         """
         d = {}
         image_numbers = self.get_image_numbers()
@@ -571,7 +584,12 @@ class Measurements(object):
 
     def get_relationship_hdf5_group(self, module_number, relationship,
                                     object_name1, object_name2):
-        """Return the HDF5 group for a relationship"""
+        """Return the HDF5 group for a relationship
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param module_number:
+        """
         return self.hdf5_dict.top_group \
             .require_group(RELATIONSHIP) \
             .require_group(str(module_number)) \
@@ -613,6 +631,50 @@ class Measurements(object):
             ImageNumber_Second, ObjectNumber_Second]
 
         The leaves are vector datasets.
+        :param object_numbers2:
+        :param image_numbers2:
+        :param object_numbers1:
+        :param image_numbers1:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param object_numbers2:
+        :param image_numbers2:
+        :param object_numbers1:
+        :param image_numbers1:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param object_numbers2:
+        :param image_numbers2:
+        :param object_numbers1:
+        :param image_numbers1:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param object_numbers2:
+        :param image_numbers2:
+        :param object_numbers1:
+        :param image_numbers1:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param object_numbers2:
+        :param image_numbers2:
+        :param object_numbers1:
+        :param image_numbers1:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param object_numbers2:
+        :param image_numbers2:
+        :param object_numbers1:
+        :param image_numbers1:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param relationship:
+        :param module_number:
         """
         if len(image_numbers1) == 0:
             return
@@ -679,6 +741,36 @@ class Measurements(object):
         returns a recarray with the following fields:
         R_FIRST_IMAGE_NUMBER, R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
         R_SECOND_OBJECT_NUMBER
+        :param image_numbers:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param module_number:
+        :param image_numbers:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param module_number:
+        :param image_numbers:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param module_number:
+        :param image_numbers:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param module_number:
+        :param image_numbers:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param module_number:
+        :param image_numbers:
+        :param object_name2:
+        :param object_name1:
+        :param relationship:
+        :param module_number:
         """
         features = (R_FIRST_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
                     R_SECOND_IMAGE_NUMBER, R_SECOND_OBJECT_NUMBER)
@@ -746,6 +838,12 @@ class Measurements(object):
         returns a dictionary whose key is image number and whose value
         is a pair of the minimum and maximum position in the array of that
         image number.
+        :param grp:
+        :param grp:
+        :param grp:
+        :param grp:
+        :param grp:
+        :param grp:
         """
         d = {}
         chunk_size = 1000000
@@ -766,6 +864,24 @@ class Measurements(object):
         offset - the offset of this chunk within the relationships records
 
         d - the dictionary to update
+        :param d:
+        :param offset:
+        :param imgnums:
+        :param d:
+        :param offset:
+        :param imgnums:
+        :param d:
+        :param offset:
+        :param imgnums:
+        :param d:
+        :param offset:
+        :param imgnums:
+        :param d:
+        :param offset:
+        :param imgnums:
+        :param d:
+        :param offset:
+        :param imgnums:
         """
 
         offsets = offset + np.arange(len(imgnums))
@@ -783,6 +899,12 @@ class Measurements(object):
         """Copy the relationships from another measurements file
 
         src - a Measurements possibly having relationships.
+        :param src:
+        :param src:
+        :param src:
+        :param src:
+        :param src:
+        :param src:
         """
         for rk in src.get_relationship_groups():
             r = src.get_relationships(
@@ -808,6 +930,42 @@ class Measurements(object):
                            a sequence of image sets, write the sequence of
                            data values to the sequence of image sets
         data_type - an explicit data type to use when storing the measurements.
+        :param data_type:
+        :param image_set_number:
+        :param can_overwrite:
+        :param data:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param image_set_number:
+        :param can_overwrite:
+        :param data:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param image_set_number:
+        :param can_overwrite:
+        :param data:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param image_set_number:
+        :param can_overwrite:
+        :param data:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param image_set_number:
+        :param can_overwrite:
+        :param data:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param image_set_number:
+        :param can_overwrite:
+        :param data:
+        :param feature_name:
+        :param object_name:
         """
         if image_set_number is None:
             image_set_number = self.image_set_number
@@ -859,6 +1017,24 @@ class Measurements(object):
                       will remove measurements for all objects
         feature_name - name of the measurement feature
         image_number - the image set's image number
+        :param image_number:
+        :param feature_name:
+        :param object_name:
+        :param image_number:
+        :param feature_name:
+        :param object_name:
+        :param image_number:
+        :param feature_name:
+        :param object_name:
+        :param image_number:
+        :param feature_name:
+        :param object_name:
+        :param image_number:
+        :param feature_name:
+        :param object_name:
+        :param image_number:
+        :param feature_name:
+        :param object_name:
         """
         if image_number is None:
             del self.hdf5_dict[object_name, feature_name]
@@ -879,6 +1055,12 @@ class Measurements(object):
 
     def get_feature_names(self, object_name):
         """The list of feature names (measurements) for an object
+        :param object_name:
+        :param object_name:
+        :param object_name:
+        :param object_name:
+        :param object_name:
+        :param object_name:
         """
         return [name for name in self.hdf5_dict.second_level_names(object_name)
                 if name not in ('ImageNumber', 'ObjectNumber')]
@@ -903,6 +1085,12 @@ class Measurements(object):
         in the measurements themselves. It is intended for use in
         prepare_run when it is necessary to reorder image numbers because
         of regrouping.
+        :param new_image_numbers:
+        :param new_image_numbers:
+        :param new_image_numbers:
+        :param new_image_numbers:
+        :param new_image_numbers:
+        :param new_image_numbers:
         """
         for feature in self.get_feature_names(IMAGE):
             self.hdf5_dict.reorder(IMAGE, feature, new_image_numbers)
@@ -914,6 +1102,26 @@ class Measurements(object):
         """Return the value for the named image measurement
 
         feature_name - the name of the measurement feature to be returned
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
         """
         return self.get_current_measurement(IMAGE, feature_name)
 
@@ -921,6 +1129,46 @@ class Measurements(object):
         """Return the value for the named measurement for the current image set
         object_name  - the name of the objects being measured or "Image"
         feature_name - the name of the measurement feature to be returned
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
+        :param feature_name:
+        :param object_name:
         """
         return self.get_measurement(object_name, feature_name,
                                     self.image_set_number)
@@ -958,6 +1206,66 @@ class Measurements(object):
                            image set or a sequence of image numbers to
                            return measurements for each of the image sets
                            listed.
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
+                           :param image_set_number:
+                           :param feature_name:
+                           :param object_name:
         """
         if object_name == EXPERIMENT:
             result = self.hdf5_dict[EXPERIMENT, feature_name, 0]
@@ -1050,6 +1358,86 @@ class Measurements(object):
         object_name - name of object or Images
         feature_name - feature to add
         values - list of either values or arrays of values
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
+        :param data_type:
+        :param values:
+        :param feature_name:
+        :param object_name:
         """
         values = [[] if value is None
                   else [Measurements.wrap_string(value)] if np.isscalar(value)
@@ -1067,6 +1455,26 @@ class Measurements(object):
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
+        :param feature_name:
         """
         result = self.get_measurement(EXPERIMENT, feature_name)
         return 'N/A' if result is None else result
@@ -1090,6 +1498,46 @@ class Measurements(object):
         there it is.
         
         returns a string with the metadata tags replaced by the metadata
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
+        :param image_set_number:
+        :param pattern:
         """
         if image_set_number is None:
             image_set_number = self.image_set_number
@@ -1151,6 +1599,26 @@ class Measurements(object):
         Returns a sequence of MetadataGroup objects. Each one represents
         a set of values for the metadata tags along with the image numbers of
         the image sets that match the values
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
+        :param tags:
         """
         if len(tags) == 0:
             # if there are no tags, all image sets match each other
@@ -1199,6 +1667,8 @@ class Measurements(object):
         than one row in the values matches the same image set unless the number
         of values in each vector equals the number of image sets - in that case,
         the vectors are assumed to be arranged in the correct order already.
+        :param features:
+        :param values:
         """
         #
         # Get image features populated by previous modules. If there are any,
@@ -1264,12 +1734,17 @@ class Measurements(object):
         return result
 
     def agg_ignore_object(self, object_name):
-        """Ignore objects (other than 'Image') if this returns true"""
+        """Ignore objects (other than 'Image') if this returns true
+        :param object_name:
+        """
         if object_name in (EXPERIMENT, NEIGHBORS):
             return True
 
     def agg_ignore_feature(self, object_name, feature_name):
-        """Return true if we should ignore a feature during aggregation"""
+        """Return true if we should ignore a feature during aggregation
+        :param object_name:
+        :param feature_name:
+        """
 
         if self.agg_ignore_object(object_name):
             return True
@@ -1283,6 +1758,8 @@ class Measurements(object):
 
         returns a dictionary whose key is the aggregate measurement name and
         whose value is the aggregate measurement value
+        :param image_set_number:
+        :param aggs:
         """
         d = {}
         if len(aggs) == 0:
@@ -1328,6 +1805,9 @@ class Measurements(object):
                 measurements starting at line 2 into image set # 2
 
         stop - stop loading when this line is reached.
+        :param start:
+        :param fd_or_file:
+        :param stop:
         """
         if isinstance(fd_or_file, basestring):
             with open(fd_or_file, "r") as fd:
@@ -1437,6 +1917,9 @@ class Measurements(object):
         name - name of the image or objects
         is_image - True to load as an image, False to load as objects
         fn_later_path - call this function to alter the path for batch processing
+        :param fn_alter_path:
+        :param is_image:
+        :param name:
         """
         from cellprofiler.modules.loadimages import url2pathname, pathname2url
         if is_image:
@@ -1489,6 +1972,7 @@ class Measurements(object):
         mappings - a sequence of two-tuples. The first tuple is the local
                    path and the second is the remote path (on the target
                    machine for the run)
+                   :param mappings:
         """
         d = {
             K_CASE_SENSITIVE: (os.path.normcase("A") != os.path.normcase("a")),
@@ -1509,6 +1993,7 @@ class Measurements(object):
         url - the url to map
 
         returns - a possibly mapped URL
+        :param url:
         """
         if not url.lower().startswith("file:"):
             return url
@@ -1590,6 +2075,12 @@ class Measurements(object):
         must_be_grayscale - raise an exception if not a grayscale image
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
+                      :param name:
+                      :param must_be_binary:
+                      :param must_be_color:
+                      :param must_be_grayscale:
+                      :param must_be_rgb:
+                      :param cache:
         """
         from .modules.loadimages import LoadImagesImageProviderURL
         from .cpimage import GrayscaleImage, RGBImage
@@ -1672,6 +2163,7 @@ class Measurements(object):
         """Get a named image provider
         
         name - return the image provider with this name
+        :param name:
         """
         providers = filter(lambda x: x.name == name, self.__image_providers)
         assert len(providers) > 0, "No provider of the %s image" % (name)
@@ -1683,6 +2175,7 @@ class Measurements(object):
         """Remove a named image provider
         
         name - the name of the provider to remove
+        :param name:
         """
         self.__image_providers = filter(lambda x: x.name != name,
                                         self.__image_providers)
@@ -1691,6 +2184,7 @@ class Measurements(object):
         """Remove the image memory associated with a provider
 
         name - the name of the provider
+        :param name:
         """
         self.get_image_provider(name).release_memory()
         if self.__images.has_key(name):
@@ -1749,6 +2243,10 @@ class Measurements(object):
 
         channel_descriptors - pipeline channel descriptors describing the
                               channels in the image set.
+                              :param channel_descriptors:
+                              :param channel_descriptors:
+                              :param channel_descriptors:
+                              :param channel_descriptors:
         """
         for iscd in channel_descriptors:
             feature = "_".join((C_CHANNEL_TYPE, iscd.name))
@@ -1778,7 +2276,12 @@ class Measurements(object):
         return iscds
 
     def get_channel_descriptor(self, name):
-        """Return the channel descriptor with the given name"""
+        """Return the channel descriptor with the given name
+        :param name:
+        :param name:
+        :param name:
+        :param name:
+        """
         for iscd in self.get_channel_descriptors():
             if iscd.name == name:
                 return iscd
@@ -1790,6 +2293,10 @@ class Measurements(object):
         metadata_tags - image feature names of the metadata tags that uniquely
                         define an image set. If metadata matching wasn't used,
                         write the image number feature name.
+                        :param metadata_tags:
+                        :param metadata_tags:
+                        :param metadata_tags:
+                        :param metadata_tags:
         """
         data = json.dumps(metadata_tags)
         self.add_experiment_measurement(M_METADATA_TAGS, data)
@@ -1808,6 +2315,10 @@ class Measurements(object):
 
         grouping_tags - image feature names of the metadata tags that
                         uniquely define a group.
+                        :param grouping_tags:
+                        :param grouping_tags:
+                        :param grouping_tags:
+                        :param grouping_tags:
         """
         data = json.dumps(grouping_tags)
         self.add_experiment_measurement(M_GROUPING_TAGS, data)
@@ -1858,6 +2369,26 @@ def load_measurements(filename, dest_file=None, can_overwrite=False,
                from multiple runs). By default, takes the last.
 
     returns a Measurements object
+    :param filename:
+    :param dest_file:
+    :param can_overwrite:
+    :param run_name:
+    :param image_numbers:
+    :param filename:
+    :param dest_file:
+    :param can_overwrite:
+    :param run_name:
+    :param image_numbers:
+    :param filename:
+    :param dest_file:
+    :param can_overwrite:
+    :param run_name:
+    :param image_numbers:
+    :param filename:
+    :param dest_file:
+    :param can_overwrite:
+    :param run_name:
+    :param image_numbers:
     """
     HDF5_HEADER = (chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) +
                    chr(26) + chr(10))
@@ -1924,6 +2455,7 @@ def find_metadata_tokens(pattern):
               "(?<METADATA_TAG>...match-exp...)" (matlab-style) or
               "\g<METADATA_TAG>" (Python-style replace)
               "(?P<METADATA_TAG>...match-exp..)" (Python-style search)
+              :param pattern:
     """
     result = []
     while True:
@@ -1950,6 +2482,8 @@ def extract_metadata(pattern, text):
 
     We do a little fixup in here to change Matlab searches to Python ones
     before executing.
+    :param pattern:
+    :param text:
     """
     # Convert Matlab to Python
     orig_pattern = pattern
@@ -1964,12 +2498,16 @@ def extract_metadata(pattern, text):
 
 
 def is_well_row_token(x):
-    """True if the string represents a well row metadata tag"""
+    """True if the string represents a well row metadata tag
+    :param x:
+    """
     return x.lower() in ("wellrow", "well_row", "row")
 
 
 def is_well_column_token(x):
-    """true if the string represents a well column metadata tag"""
+    """true if the string represents a well column metadata tag
+    :param x:
+    """
     return x.lower() in ("wellcol", "well_col", "wellcolumn", "well_column",
                          "column", "col")
 
@@ -1980,12 +2518,17 @@ def get_agg_measurement_name(agg, object_name, feature):
     agg - one of the names in AGG_NAMES, like AGG_MEAN
     object_name - the name of the object that we're aggregating
     feature - the name of the object's measurement
+    :param agg:
+    :param object_name:
+    :param feature:
     """
     return "%s_%s_%s" % (agg, object_name, feature)
 
 
 def agg_ignore_feature(feature_name):
-    """Return True if the feature is one to be ignored when aggregating"""
+    """Return True if the feature is one to be ignored when aggregating
+    :param feature_name:
+    """
     if feature_name.startswith('Description_'):
         return True
     if feature_name.startswith('ModuleError_'):
@@ -2088,6 +2631,8 @@ class ImageSetCache(object):
         name - name of the attribute
 
         strings - a sequence of strings or unicode strings
+        :param name:
+        :param strings:
         """
         if len(strings) > 0:
             strings = [unicode(x).encode("utf-8") for x in strings]
@@ -2102,6 +2647,7 @@ class ImageSetCache(object):
 
         returns a sequence of strings if the attribute exists, otherwise
         an empty sequence
+        :param name:
         """
         return [x.decode("utf-8")
                 for x in self.image_set_cache_group.attrs.get(name, [])]
@@ -2151,6 +2697,9 @@ class ImageSetCache(object):
 
         metadata_keys - the names of the columns that provide the unique keys
                         for each image set. Index by order if None.
+                        :param image_names:
+                        :param image_set_data:
+                        :param metadata_keys:
         """
         if not self.__has_cache:
             self.image_set_cache_group = self.hdf5_file.require_group(
@@ -2234,6 +2783,7 @@ class ImageSetCache(object):
         returns a list of two tuples of the form:
         image_index - index of the name of the image in self.image_names
         msg - descriptive error message
+        :param idx:
         """
         if self.error_row_and_column_dataset.shape[0] == 0:
             return []
@@ -2245,7 +2795,9 @@ class ImageSetCache(object):
                 for i in errors]
 
     def get_image_set_data(self, idx):
-        """Get an ImageSetData item for the indexed image set"""
+        """Get an ImageSetData item for the indexed image set
+        :param idx:
+        """
         errors = self.get_errors(idx)
         if self.metadata_keys is not None:
             key = tuple([self.image_set_table[k][idx]

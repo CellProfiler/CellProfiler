@@ -63,6 +63,7 @@ def main(args):
     """Run CellProfiler
 
     args - command-line arguments, e.g. sys.argv
+    :param args:
     """
     import cellprofiler.preferences as cpprefs
     cpprefs.set_awt_headless(True)
@@ -299,7 +300,9 @@ def main(args):
 
 
 def parse_args(args):
-    """Parse the CellProfiler command-line arguments"""
+    """Parse the CellProfiler command-line arguments
+    :param args:
+    """
     import optparse
     usage = """usage: %prog [options] [<output-file>])
          where <output-file> is the optional filename for the output file of 
@@ -562,7 +565,9 @@ def parse_args(args):
 
 
 def set_log_level(options):
-    """Set the logging package's log level based on command-line options"""
+    """Set the logging package's log level based on command-line options
+    :param options:
+    """
     try:
         if options.log_level.isdigit():
             logging.root.setLevel(int(options.log_level))
@@ -583,6 +588,7 @@ def set_omero_credentials_from_string(credentials_string):
                         port - the TCP port to use to connect
                         user - the user name
                         session-id - the session ID used for authentication
+                        :param credentials_string:
     """
     import cellprofiler.preferences as cpprefs
     from bioformats.formatreader import use_omero_credentials
@@ -690,6 +696,7 @@ def print_measurements(options):
     with Knime and write a Knime node that let the user specify a pipeline
     file. The node could then execute CellProfiler with the --measurements
     switch and display the measurements as node outputs.
+    :param options:
     """
 
     if options.pipeline_filename is None:
@@ -719,6 +726,7 @@ def print_groups(filename):
     of the groups in the pipeline image set. Each element of the list is
     a two-tuple whose first element is a key/value dictionary of the
     group's key and the second is a tuple of the image numbers in the group.
+    :param filename:
     """
     import json
     import cellprofiler.measurements as cpmeas
@@ -740,6 +748,7 @@ def get_batch_commands(filename):
     run through a utility such as "sed":
 
     CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
+    :param filename:
     """
 
     import cellprofiler.measurements as cpmeas
@@ -876,7 +885,10 @@ def build_extensions():
 
 
 def run_pipeline_headless(options, args):
-    """Run a CellProfiler pipeline in headless mode"""
+    """Run a CellProfiler pipeline in headless mode
+    :param options:
+    :param args:
+    """
     #
     # Start Ilastik's workers
     #

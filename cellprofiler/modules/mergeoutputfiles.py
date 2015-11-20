@@ -174,7 +174,11 @@ class MergeOutputFiles(cpm.CPModule):
 
     @staticmethod
     def on_add(event, list_control, order):
-        """Handle the add button being pressed"""
+        """Handle the add button being pressed
+        :param order:
+        :param list_control:
+        :param event:
+        """
         import wx
         assert isinstance(list_control, wx.ListCtrl)
         dlg = wx.FileDialog(list_control.Parent,
@@ -193,7 +197,11 @@ class MergeOutputFiles(cpm.CPModule):
 
     @staticmethod
     def on_remove(event, list_control, order):
-        """Remove the selected items for the list control"""
+        """Remove the selected items for the list control
+        :param order:
+        :param list_control:
+        :param event:
+        """
         import wx
         assert isinstance(list_control, wx.ListCtrl)
 
@@ -216,7 +224,9 @@ class MergeOutputFiles(cpm.CPModule):
 
     @staticmethod
     def get_anti_order(order):
-        """Return a dictionary whose values are the keys of the input and vice versa"""
+        """Return a dictionary whose values are the keys of the input and vice versa
+        :param order:
+        """
         anti_order = {}
         for key in order.keys():
             anti_order[order[key]] = key
@@ -289,6 +299,8 @@ class MergeOutputFiles(cpm.CPModule):
         order - a dictionary where the keys are the item ids
                 and the values are the relative order of those ids
                 with respect to each other
+                :param order:
+                :param list_ctrl:
         """
 
         def sortfn(item1, item2):

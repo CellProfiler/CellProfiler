@@ -44,6 +44,7 @@ class Example1e(cpm.CPModule):
         """Add a group to the list of groups
 
         can_delete - if true, add a button that removes the entry
+        :param can_delete:
         """
         #
         # Make a new settings group to hold the settings

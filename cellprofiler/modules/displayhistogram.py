@@ -113,6 +113,7 @@ class DisplayHistogram(cpm.CPModule):
 
     def run(self, workspace):
         """Run the module
+        :param workspace:
         """
         if self.show_window:
             m = workspace.get_measurements()

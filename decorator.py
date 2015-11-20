@@ -72,7 +72,10 @@ class FunctionMaker(object):
             raise TypeError('You are decorating a non function: %s' % func)
 
     def update(self, func, **kw):
-        """Update the signature of func with the data in self"""
+        """Update the signature of func with the data in self
+        :param kw:
+        :param func:
+        """
         func.__name__ = self.name
         func.__doc__ = getattr(self, 'doc', None)
         func.__dict__ = getattr(self, 'dict', {})
@@ -82,7 +85,12 @@ class FunctionMaker(object):
         func.__dict__.update(kw)
 
     def make(self, src_templ, evaldict=None, addsource=False, **attrs):
-        """Make a new function from a given template and update the signature"""
+        """Make a new function from a given template and update the signature
+        :param src_templ:
+        :param evaldict:
+        :param addsource:
+        :param attrs:
+        """
         src = src_templ % vars(self)  # expand name and signature
         evaldict = evaldict or {}
         mo = DEF.match(src)
@@ -114,6 +122,11 @@ def decorator(caller, func=None):
     """
     decorator(caller) converts a caller function into a decorator;
     decorator(caller, func) decorates a function using a caller.
+    :param caller:
+    :param caller:
+    :param caller:
+    :param func:
+    :param func:
     """
     if func is None:  # returns a decorator
         fun = FunctionMaker(caller)
@@ -133,7 +146,14 @@ def decorator(caller, func=None):
 
 @decorator
 def deprecated(func, *args, **kw):
-    """A decorator for deprecated functions"""
+    """A decorator for deprecated functions
+    :param func:
+    :param args:
+    :param kw:
+    :param func:
+    :param args:
+    :param kw:
+    """
     warnings.warn(
         ('Calling the deprecated function %r\n'
          'Downgrade to decorator 2.3 if you want to use this functionality')
@@ -167,6 +187,8 @@ def getinfo(func):
 
     >>> info["signature"]
     'self, x, y, *args, **kw'
+    :param func:
+    :param func:
     """
     assert inspect.ismethod(func) or inspect.isfunction(func)
     regargs, varargs, varkwargs, defaults = inspect.getargspec(func)
@@ -185,7 +207,14 @@ def getinfo(func):
 
 @deprecated
 def update_wrapper(wrapper, model, infodict=None):
-    """A replacement for functools.update_wrapper"""
+    """A replacement for functools.update_wrapper
+    :param wrapper:
+    :param model:
+    :param infodict:
+    :param wrapper:
+    :param model:
+    :param infodict:
+    """
     infodict = infodict or getinfo(model)
     wrapper.__name__ = infodict['name']
     wrapper.__doc__ = infodict['doc']
@@ -204,6 +233,10 @@ def new_wrapper(wrapper, model):
     right signature and by updating the copy, not the original.
     Moreovoer, 'model' can be a dictionary with keys 'name', 'doc', 'module',
     'dict', 'defaults'.
+    :param wrapper:
+    :param model:
+    :param wrapper:
+    :param model:
     """
     if isinstance(model, dict):
         infodict = model

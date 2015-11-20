@@ -68,7 +68,10 @@ class IdentifyObjectsManually(I.Identify):
         return result
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        """This module cannot be used in a batch context"""
+        """This module cannot be used in a batch context
+        :param fn_alter_path:
+        :param workspace:
+        """
         raise ValueError(
             "The IdentifyObjectsManually module cannot be run in batch mode")
 
@@ -136,6 +139,8 @@ class IdentifyObjectsManually(I.Identify):
         labels - labels for image
 
         returns - color image of same size as pixel_data
+        :param labels:
+        :param pixel_data:
         """
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         import matplotlib
@@ -167,7 +172,10 @@ class IdentifyObjectsManually(I.Identify):
         return image
 
     def handle_interaction(self, pixel_data, image_set_number):
-        """Display a UI for editing"""
+        """Display a UI for editing
+        :param image_set_number:
+        :param pixel_data:
+        """
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         from wx import OK
         title = "%s #%d, image cycle #%d: " % (self.module_name,
@@ -203,6 +211,7 @@ class IdentifyObjectsManually(I.Identify):
         pipeline - pipeline being run
 
         Return a list of tuples of object name, measurement name and data type
+        :param pipeline:
         """
         result = I.get_object_measurement_columns(self.objects_name.value)
         return result
@@ -223,6 +232,8 @@ class IdentifyObjectsManually(I.Identify):
 
         pipeline - pipeline being run
         object_name - find categories of measurements made on this object
+        :param object_name:
+        :param pipeline:
         """
         return self.get_object_categories(pipeline, object_name,
                                           self.measurement_dictionary)
@@ -233,6 +244,9 @@ class IdentifyObjectsManually(I.Identify):
         pipeline - pipeline being run
         object_name - name of object being measured
         category - category of measurement being queried
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         return self.get_object_measurements(pipeline, object_name, category,
                                             self.measurement_dictionary)

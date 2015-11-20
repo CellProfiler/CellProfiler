@@ -159,7 +159,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
 
     def create_threshold_settings(self, methods=TM_METHODS):
 
-        """Create settings related to thresholding"""
+        """Create settings related to thresholding
+        :param methods:
+        """
         # The threshold setting version is invisible to the user
         self.threshold_setting_version = cps.Integer(
             "Threshold setting version",
@@ -749,7 +751,91 @@ class Identify(cellprofiler.cpmodule.CPModule):
         All parameters should be self-explanatory except for
         threshold_smoothing_choice which should be TSM_AUTOMATIC if
         smoothing was applied to the image before thresholding or TSM_NONE
-        if it wasn't"""
+        if it wasn't
+        :param masking_objects:
+        :param adaptive_window_size:
+        :param adaptive_window_method:
+        :param assign_middle_to_foreground:
+        :param use_weighted_variance:
+        :param two_class_otsu:
+        :param binary_image:
+        :param thresholding_measurement:
+        :param manual_threshold:
+        :param object_fraction:
+        :param threshold_range:
+        :param threshold_correction_factor:
+        :param threshold_smoothing_choice:
+        :param threshold_method:
+        :param masking_objects:
+        :param adaptive_window_size:
+        :param adaptive_window_method:
+        :param assign_middle_to_foreground:
+        :param use_weighted_variance:
+        :param two_class_otsu:
+        :param binary_image:
+        :param thresholding_measurement:
+        :param manual_threshold:
+        :param object_fraction:
+        :param threshold_range:
+        :param threshold_correction_factor:
+        :param threshold_smoothing_choice:
+        :param threshold_method:
+        :param masking_objects:
+        :param adaptive_window_size:
+        :param adaptive_window_method:
+        :param assign_middle_to_foreground:
+        :param use_weighted_variance:
+        :param two_class_otsu:
+        :param binary_image:
+        :param thresholding_measurement:
+        :param manual_threshold:
+        :param object_fraction:
+        :param threshold_range:
+        :param threshold_correction_factor:
+        :param threshold_smoothing_choice:
+        :param threshold_method:
+        :param masking_objects:
+        :param adaptive_window_size:
+        :param adaptive_window_method:
+        :param assign_middle_to_foreground:
+        :param use_weighted_variance:
+        :param two_class_otsu:
+        :param binary_image:
+        :param thresholding_measurement:
+        :param manual_threshold:
+        :param object_fraction:
+        :param threshold_range:
+        :param threshold_correction_factor:
+        :param threshold_smoothing_choice:
+        :param threshold_method:
+        :param masking_objects:
+        :param adaptive_window_size:
+        :param adaptive_window_method:
+        :param assign_middle_to_foreground:
+        :param use_weighted_variance:
+        :param two_class_otsu:
+        :param binary_image:
+        :param thresholding_measurement:
+        :param manual_threshold:
+        :param object_fraction:
+        :param threshold_range:
+        :param threshold_correction_factor:
+        :param threshold_smoothing_choice:
+        :param threshold_method:
+        :param masking_objects:
+        :param adaptive_window_size:
+        :param adaptive_window_method:
+        :param assign_middle_to_foreground:
+        :param use_weighted_variance:
+        :param two_class_otsu:
+        :param binary_image:
+        :param thresholding_measurement:
+        :param manual_threshold:
+        :param object_fraction:
+        :param threshold_range:
+        :param threshold_correction_factor:
+        :param threshold_smoothing_choice:
+        :param threshold_method: """
         if threshold_method == TM_BINARY_IMAGE:
             threshold_scope = TS_BINARY_IMAGE
             threshold_method = TM_OTSU
@@ -781,6 +867,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
 
         use the first setting which is the version to determine the
         threshold settings version and upgrade as appropriate
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
         """
         version = int(setting_values[0])
         if version == 1:
@@ -850,6 +942,24 @@ class Identify(cellprofiler.cpmodule.CPModule):
         workspace - get any measurements / objects / images from the workspace
         
         returns: thresholded binary image
+        :param wants_local_threshold:
+        :param workspace:
+        :param image_name:
+        :param wants_local_threshold:
+        :param workspace:
+        :param image_name:
+        :param wants_local_threshold:
+        :param workspace:
+        :param image_name:
+        :param wants_local_threshold:
+        :param workspace:
+        :param image_name:
+        :param wants_local_threshold:
+        :param workspace:
+        :param image_name:
+        :param wants_local_threshold:
+        :param workspace:
+        :param image_name:
         """
         #
         # Retrieve the relevant image and mask
@@ -907,6 +1017,24 @@ class Identify(cellprofiler.cpmodule.CPModule):
 
         workspace - get objects and measurements from this workspace and
                     add threshold measurements to this workspace's measurements.
+                    :param workspace:
+                    :param mask:
+                    :param image:
+                    :param workspace:
+                    :param mask:
+                    :param image:
+                    :param workspace:
+                    :param mask:
+                    :param image:
+                    :param workspace:
+                    :param mask:
+                    :param image:
+                    :param workspace:
+                    :param mask:
+                    :param image:
+                    :param workspace:
+                    :param mask:
+                    :param image:
         """
         if self.threshold_scope == TM_MANUAL:
             local_threshold = global_threshold = self.manual_threshold.value
@@ -1042,6 +1170,66 @@ class Identify(cellprofiler.cpmodule.CPModule):
         local_threshold - either a per-pixel threshold (a matrix) or a
                           copy of the global threshold (a scalar)
         global_threshold - the globally-calculated threshold
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
+        :param global_threshold:
+        :param local_threshold:
+        :param measurements:
         """
         objname = self.get_measurement_objects_name()
         ave_threshold = np.mean(np.atleast_1d(local_threshold))
@@ -1062,6 +1250,86 @@ class Identify(cellprofiler.cpmodule.CPModule):
         mask - mask of pixels to be considered
 
         binary_image - the foreground / background segmentation of the image
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
+        :param binary_image:
+        :param mask:
+        :param image:
+        :param measurements:
         """
         objname = self.get_measurement_objects_name()
         wv = weighted_variance(image, mask, binary_image)
@@ -1127,7 +1395,28 @@ class Identify(cellprofiler.cpmodule.CPModule):
     threshold_algorithm = property(get_threshold_algorithm)
 
     def get_threshold_measurement_columns(self, pipeline):
-        """Return the measurement columns for the threshold measurements"""
+        """Return the measurement columns for the threshold measurements
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         features = [FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE]
         if self.threshold_scope != TS_BINARY_IMAGE:
             features += [FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD]
@@ -1136,7 +1425,48 @@ class Identify(cellprofiler.cpmodule.CPModule):
                  cpmeas.COLTYPE_FLOAT) for ftr in features]
 
     def get_threshold_categories(self, pipeline, object_name):
-        """Get categories related to thresholding"""
+        """Get categories related to thresholding
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        """
         if object_name == cpmeas.IMAGE:
             return [C_THRESHOLD]
         return []
@@ -1146,6 +1476,66 @@ class Identify(cellprofiler.cpmodule.CPModule):
 
         object_name - either "Image" or an object name
         category - must be "Threshold" to get anything back
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if object_name == cpmeas.IMAGE and category == C_THRESHOLD:
             if self.threshold_scope == TS_BINARY_IMAGE:
@@ -1162,6 +1552,86 @@ class Identify(cellprofiler.cpmodule.CPModule):
         object_name - either "Image" or an object name. (must be "Image")
         category - the measurement category. (must be "Threshold")
         measurement - the feature being measured
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param measurement:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if measurement in self.get_threshold_measurements(
                 pipeline, object_name, category):
@@ -1178,6 +1648,66 @@ class Identify(cellprofiler.cpmodule.CPModule):
         object_dictionary - a dictionary where each key is the name of
                             an object created by this module and each
                             value is a list of names of parents.
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
+                            :param object_dictionary:
+                            :param object_name:
+                            :param pipeline:
         """
         if object_name == cpmeas.IMAGE:
             return [C_COUNT]
@@ -1200,6 +1730,86 @@ class Identify(cellprofiler.cpmodule.CPModule):
         object_dictionary - a dictionary where each key is the name of
                             an object created by this module and each
                             value is a list of names of parents.
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
+                            :param object_dictionary:
+                            :param category:
+                            :param object_name:
+                            :param pipleline:
         """
         if object_name == cpmeas.IMAGE and category == C_COUNT:
             return list(object_dictionary.keys())
@@ -1231,6 +1841,10 @@ def add_object_location_measurements(measurements,
     object_count - (optional) the object count if known, otherwise
                    takes the maximum value in the labels matrix which is
                    usually correct.
+                   :param measurements:
+                   :param object_name:
+                   :param labels:
+                   :param object_count:
     """
     if object_count is None:
         object_count = np.max(labels)
@@ -1260,7 +1874,12 @@ def add_object_location_measurements(measurements,
 def add_object_location_measurements_ijv(measurements,
                                          object_name,
                                          ijv, object_count=None):
-    """Add object location measurements for IJV-style objects"""
+    """Add object location measurements for IJV-style objects
+    :param measurements:
+    :param object_name:
+    :param ijv:
+    :param object_count:
+    """
     if object_count is None:
         object_count = 0 if ijv.shape[0] == 0 else np.max(ijv[:, 2])
     if object_count == 0:
@@ -1279,7 +1898,11 @@ def add_object_location_measurements_ijv(measurements,
 
 
 def add_object_count_measurements(measurements, object_name, object_count):
-    """Add the # of objects to the measurements"""
+    """Add the # of objects to the measurements
+    :param object_name:
+    :param measurements:
+    :param object_count:
+    """
     measurements.add_measurement('Image',
                                  FF_COUNT % (object_name),
                                  np.array([object_count],
@@ -1293,6 +1916,7 @@ def get_object_measurement_columns(object_name):
     CPModule.get_measurement_columns to get the column definitions for
     the measurements made by add_object_location_measurements and
     add_object_count_measurements.
+    :param object_name:
     """
     return [(object_name, M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
             (object_name, M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
@@ -1304,6 +1928,7 @@ def get_threshold_measurement_columns(image_name):
     """Get the column definitions for threshold measurements, if made
 
     image_name - name of the image
+    :param image_name:
     """
     return [
         (cpmeas.IMAGE, FF_FINAL_THRESHOLD % image_name, cpmeas.COLTYPE_FLOAT),
@@ -1313,7 +1938,11 @@ def get_threshold_measurement_columns(image_name):
 
 
 def draw_outline(img, outline, color):
-    """Draw the given outline on the given image in the given color"""
+    """Draw the given outline on the given image in the given color
+    :param color:
+    :param outline:
+    :param img:
+    """
     red = float(color.Red()) / 255.0
     green = float(color.Green()) / 255.0
     blue = float(color.Blue()) / 255.0

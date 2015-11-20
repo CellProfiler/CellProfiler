@@ -118,6 +118,9 @@ class FileFinderDialog(wx.Dialog):
 
         flags - rendering flags including CONTROL_CHECKED and CONTROL_UNDETERMINED
         width, height - size of bitmap to return
+        :param height:
+        :param width:
+        :param flags:
         """
         dc = wx.MemoryDC()
         bitmap = wx.EmptyBitmap(width, height)

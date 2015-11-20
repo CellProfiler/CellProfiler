@@ -1555,7 +1555,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
             @staticmethod
             def in_module(flag):
-                """Return True to add the measurement to module's get_measurement_columns"""
+                """Return True to add the measurement to module's get_measurement_columns
+                :param flag:
+                """
                 return flag and flag != MISSING_FROM_MODULE
 
             @staticmethod

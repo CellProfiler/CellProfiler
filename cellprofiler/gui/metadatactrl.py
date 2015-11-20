@@ -414,6 +414,8 @@ class MetadataControl(wx.PyControl):
 
         start_idx - index of first token in string
         end_idx - index of last token or -1 for all
+        :param end_idx:
+        :param start_idx:
         """
         value = ""
         if end_idx is None:
@@ -514,7 +516,9 @@ class MetadataControl(wx.PyControl):
         self.on_token_change()
 
     def get_positions(self, dc):
-        """Get the widths of each of the tokens"""
+        """Get the widths of each of the tokens
+        :param dc:
+        """
         text = self.get_text(0, len(self.__tokens))
         raw_positions = dc.GetPartialTextExtents(text)
         positions = [self.padding]

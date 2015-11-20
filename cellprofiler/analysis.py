@@ -90,6 +90,9 @@ class Analysis(object):
 
         overwrite - True (default) to process all image sets, False to only
                     process incomplete ones (or incomplete groups if grouping)
+                    :param overwrite:
+                    :param num_workers:
+                    :param analysis_event_callback:
         """
         with self.runner_lock:
             assert not self.analysis_in_progress
@@ -210,6 +213,8 @@ class AnalysisRunner(object):
         num_workers - # of workers to run, default = # of cores
         overwrite - if True, overwrite existing image set measurements, False
                     try to reuse them.
+                    :param overwrite:
+                    :param num_workers:
         """
 
         # Although it would be nice to reuse the worker pool, I'm not entirely
@@ -300,6 +305,10 @@ class AnalysisRunner(object):
         image_set_start - beginning image set number to process
         image_set_end - last image set number to process
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
+        :param overwrite:
+        :param image_set_end:
+        :param image_set_start:
+        :param start_signal:
         """
         from javabridge import attach, detach
         posted_analysis_started = False
@@ -530,6 +539,9 @@ class AnalysisRunner(object):
         measurements - local measurements = destination for copy
 
         image_numbers - image numbers processed by worker
+        :param image_numbers:
+        :param measurements:
+        :param recd_measurements:
         """
         measurements.copy_relationships(recd_measurements)
         for o in recd_measurements.get_object_names():
@@ -838,6 +850,12 @@ def find_worker_env(idx):
     """Construct a command-line environment for the worker
 
     idx - index of the worker, e.g. 0 for the first, 1 for the second...
+    :param idx:
+    :param idx:
+    :param idx:
+    :param idx:
+    :param idx:
+    :param idx:
     """
     newenv = os.environ.copy()
     root_dir = os.path.abspath(

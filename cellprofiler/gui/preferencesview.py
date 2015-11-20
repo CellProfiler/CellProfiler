@@ -305,6 +305,7 @@ class PreferencesView:
         """Update the # of running workers in the progress UI
 
         n_workers - # of workers running
+        :param n_workers:
         """
         if n_workers == 1:
             label = "Running 1 worker."
@@ -349,6 +350,9 @@ class PreferencesView:
         progress - a number from 0 to 1 where 0 is the start of the operation
                    and 1 is its end.
         message - the message to display to the user.
+        :param message:
+        :param progress:
+        :param operation_id:
         """
         if progress is None:
             if message is None:
@@ -634,6 +638,30 @@ class ProgressWatcher:
         labels that show the current module and image set.  This
         method is called by the pipelinecontroller at the beginning of
         every module execution to update the progress bar.
+        :param num_image_sets:
+        :param image_set_index:
+        :param num_modules:
+        :param module:
+        :param num_image_sets:
+        :param image_set_index:
+        :param num_modules:
+        :param module:
+        :param num_image_sets:
+        :param image_set_index:
+        :param num_modules:
+        :param module:
+        :param num_image_sets:
+        :param image_set_index:
+        :param num_modules:
+        :param module:
+        :param num_image_sets:
+        :param image_set_index:
+        :param num_modules:
+        :param module:
+        :param num_image_sets:
+        :param image_set_index:
+        :param num_modules:
+        :param module:
         """
         self.current_module = module
         self.current_module_name = module.module_name

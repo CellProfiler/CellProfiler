@@ -115,7 +115,9 @@ class LoadSingleImage(cpm.CPModule):
                                           self.add_file)
 
     def add_file(self, can_remove=True):
-        """Add settings for another file to the list"""
+        """Add settings for another file to the list
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -259,7 +261,9 @@ class LoadSingleImage(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        """Adjust the file_settings depending on how many files there are"""
+        """Adjust the file_settings depending on how many files there are
+        :param setting_values:
+        """
         count = ((len(setting_values) - S_FIXED_SETTINGS_COUNT) /
                  S_FILE_SETTINGS_COUNT)
         del self.file_settings[count:]
@@ -281,6 +285,8 @@ class LoadSingleImage(cpm.CPModule):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
+                        :param fn_alter_path:
+                        :param workspace:
         """
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
@@ -294,6 +300,8 @@ class LoadSingleImage(cpm.CPModule):
         workspace - workspace for current image set
         
         returns a dictionary of image_name keys and file path values
+        :param image_set_number:
+        :param workspace:
         """
         result = {}
         for file_setting in self.file_settings:
@@ -309,7 +317,9 @@ class LoadSingleImage(cpm.CPModule):
         return result
 
     def get_file_settings(self, image_name):
-        """Get the file settings associated with a given image name"""
+        """Get the file settings associated with a given image name
+        :param image_name:
+        """
         for file_setting in self.file_settings:
             if (file_setting.image_objects_choice == IO_IMAGES and
                         file_setting.image_name == image_name):
@@ -320,7 +330,9 @@ class LoadSingleImage(cpm.CPModule):
         return None
 
     def file_wants_images(self, file_setting):
-        """True if the file_setting produces images, false if it produces objects"""
+        """True if the file_setting produces images, false if it produces objects
+        :param file_setting:
+        """
         return file_setting.image_objects_choice == IO_IMAGES
 
     def is_load_module(self):
@@ -508,6 +520,9 @@ class LoadSingleImage(cpm.CPModule):
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         result = []
         if object_name == cpmeas.IMAGE:
@@ -560,7 +575,9 @@ class LoadSingleImage(cpm.CPModule):
                     group.file_name)
 
     def validate_module_warnings(self, pipeline):
-        """Check for potentially dangerous settings"""
+        """Check for potentially dangerous settings
+        :param pipeline:
+        """
         # Check that user-specified names don't have bad characters
         invalid_chars_pattern = "^[A-Za-z][A-Za-z0-9_]+$"
         warning_text = "The image name has questionable characters. The pipeline can use this name " \
@@ -576,7 +593,12 @@ class LoadSingleImage(cpm.CPModule):
         return True
 
     def convert(self, pipeline, metadata, namesandtypes, groups):
-        """Convert from legacy to modern"""
+        """Convert from legacy to modern
+        :param groups:
+        :param namesandtypes:
+        :param metadata:
+        :param pipeline:
+        """
         import cellprofiler.modules.metadata as cpmetadata
         import cellprofiler.modules.namesandtypes as cpnamesandtypes
         import cellprofiler.modules.groups as cpgroups

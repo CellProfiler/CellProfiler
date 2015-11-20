@@ -128,7 +128,9 @@ class MeasureImageIntensity(cpm.CPModule):
         self.images.append(group)
 
     def validate_module(self, pipeline):
-        """Make sure chosen objects and images are selected only once"""
+        """Make sure chosen objects and images are selected only once
+        :param pipeline:
+        """
         settings = {}
         for group in self.images:
             if (group.image_name.value, group.wants_objects.value,
@@ -179,7 +181,9 @@ class MeasureImageIntensity(cpm.CPModule):
         return dict.values()
 
     def run(self, workspace):
-        """Perform the measurements on the imageset"""
+        """Perform the measurements on the imageset
+        :param workspace:
+        """
         #
         # Then measure each
         #
@@ -201,6 +205,8 @@ class MeasureImageIntensity(cpm.CPModule):
 
         im - image measurement info (see ImageMeasurement class above)
         workspace - has all the details for current image set
+        :param workspace:
+        :param im:
         """
         image = workspace.image_set.get_image(im.image_name.value,
                                               must_be_grayscale=True)
@@ -285,7 +291,9 @@ class MeasureImageIntensity(cpm.CPModule):
                                             ('Total area', pixel_count))]
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for measurements made by this module"""
+        """Return column definitions for measurements made by this module
+        :param pipeline:
+        """
         columns = []
         for im in self.get_non_redundant_image_measurements():
             for feature, coltype in ((F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
@@ -338,6 +346,10 @@ class MeasureImageIntensity(cpm.CPModule):
 
         We handle Matlab revision # 2 here. We don't support thresholding
         because it was generally unused. The first setting is the image name.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 2:
             setting_values = [setting_values[0],  # image name

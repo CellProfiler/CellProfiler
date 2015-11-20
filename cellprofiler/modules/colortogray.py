@@ -135,7 +135,9 @@ class ColorToGray(cpm.CPModule):
                      [str(x) for x in range(5, 20)])
 
     def add_channel(self, can_remove=True):
-        """Add another channel to the channels list"""
+        """Add another channel to the channels list
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
         group.can_remove = can_remove
         group.append("channel_choice", cps.Choice(
@@ -240,6 +242,7 @@ class ColorToGray(cpm.CPModule):
         
         Throw a ValidationError exception with an explanation if a module is not valid.
         Make sure that we output at least one image if split
+        :param pipeline:
         """
         if self.should_split():
             if (self.rgb_or_channels == CH_RGB) and not any(
@@ -275,6 +278,7 @@ class ColorToGray(cpm.CPModule):
         choice - one of the strings from channel_choices or similar
                  (string ending in a one-based index)
         returns the zero-based index of the channel.
+        :param choice:
         """
         return int(re.search("[0-9]+$", choice).group()) - 1
 
@@ -312,6 +316,7 @@ class ColorToGray(cpm.CPModule):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - display within this frame (or None to not display)
+            :param workspace:
         """
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_color=True)
@@ -328,6 +333,8 @@ class ColorToGray(cpm.CPModule):
 
     def run_combine(self, workspace, image):
         """Combine images to make a grayscale one
+        :param image:
+        :param workspace:
         """
         input_image = image.pixel_data
         channels, contributions = zip(*self.channels_and_contributions())
@@ -359,6 +366,8 @@ class ColorToGray(cpm.CPModule):
 
     def run_split(self, workspace, image):
         """Split image into individual components
+        :param image:
+        :param workspace:
         """
         input_image = image.pixel_data
         disp_collection = []
@@ -412,6 +421,7 @@ class ColorToGray(cpm.CPModule):
 
         Adjust the number of channels to match the number indicated in
         the settings.
+        :param setting_values:
         """
         del self.channels[1:]
         nchannels = int(setting_values[SLOT_CHANNEL_COUNT])

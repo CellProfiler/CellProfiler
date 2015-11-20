@@ -444,7 +444,9 @@ class ImageMath(cpm.CPModule):
                  sharexy=figure.subplot(0, 0))
 
     def validate_module(self, pipeline):
-        """Guarantee that at least one operand is an image"""
+        """Guarantee that at least one operand is an image
+        :param pipeline:
+        """
         for i in range(self.operand_count):
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:

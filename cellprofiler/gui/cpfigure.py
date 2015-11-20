@@ -46,7 +46,9 @@ g_use_imshow = False
 
 
 def log_transform(im):
-    """returns log(image) scaled to the interval [0,1]"""
+    """returns log(image) scaled to the interval [0,1]
+    :param im:
+    """
     orig = im
     try:
         im = im.copy()
@@ -61,7 +63,9 @@ def log_transform(im):
 
 
 def auto_contrast(im):
-    """returns image scaled to the interval [0,1]"""
+    """returns image scaled to the interval [0,1]
+    :param im:
+    """
     im = im.copy()
     if np.prod(im.shape) == 0:
         return im
@@ -166,12 +170,19 @@ window_ids = []
 
 
 def window_name(module):
-    """Return a module's figure window name"""
+    """Return a module's figure window name
+    :param module:
+    """
     return "CellProfiler:%s:%s" % (module.module_name, module.module_num)
 
 
 def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
-    """Find a figure frame window. Returns the window or None"""
+    """Find a figure frame window. Returns the window or None
+    :param subplots:
+    :param name:
+    :param title:
+    :param parent:
+    """
     for w in wx.GetTopLevelWindows():
         if w.GetName() == name:
             return w
@@ -182,7 +193,17 @@ def create_or_find(parent=None, id=-1, title="",
                    style=wx.DEFAULT_FRAME_STYLE, name=wx.FrameNameStr,
                    subplots=None,
                    on_close=None):
-    """Create or find a figure frame window"""
+    """Create or find a figure frame window
+    :param on_close:
+    :param subplots:
+    :param name:
+    :param style:
+    :param size:
+    :param pos:
+    :param title:
+    :param id:
+    :param parent:
+    """
     win = find_fig(parent, title, name, subplots)
     return win or CPFigureFrame(parent, id, title, pos, size, style, name,
                                 subplots, on_close)
@@ -432,7 +453,9 @@ class CPFigureFrame(wx.Frame):
         self.widgets = []
 
     def on_resize(self, event):
-        """Handle mpl_connect('resize_event')"""
+        """Handle mpl_connect('resize_event')
+        :param event:
+        """
         assert isinstance(event, matplotlib.backend_bases.ResizeEvent)
         for x, y, width, height, halign, valign, ctrl in self.widgets:
             self.align_widget(ctrl, x, y, width, height, halign, valign,
@@ -454,6 +477,15 @@ class CPFigureFrame(wx.Frame):
                          than the space (wx.ALIGN_xx or wx.EXPAND)
 
         canvas_width, canvas_height - the width and height of the canvas parent
+        :param canvas_height:
+        :param canvas_width:
+        :param valign:
+        :param halign:
+        :param height:
+        :param width:
+        :param x:
+        :param ctrl:
+        :param y:
         """
         assert isinstance(ctrl, wx.Window)
         x = x * canvas_width
@@ -495,6 +527,7 @@ class CPFigureFrame(wx.Frame):
         Sizers have proven to be too unpredictable and useless. So
         we do it manually here. Reinventing the wheel is so much quicker
         and works much better.
+        :param event:
         """
         if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
             return
@@ -536,7 +569,9 @@ class CPFigureFrame(wx.Frame):
             self.__menu_item_measure_length.Check(False)
 
     def on_measure_length(self, event):
-        """Measure length menu item selected."""
+        """Measure length menu item selected.
+        :param event:
+        """
         if self.__menu_item_measure_length.IsChecked():
             self.mouse_mode = MODE_MEASURE_LENGTH
             self.navtoolbar.cancel_mode()
@@ -591,7 +626,26 @@ class CPFigureFrame(wx.Frame):
 
     @staticmethod
     def in_bounds(im, xi, yi):
-        """Return false if xi or yi are outside of the bounds of the image"""
+        """Return false if xi or yi are outside of the bounds of the image
+        :param yi:
+        :param xi:
+        :param im:
+        :param yi:
+        :param xi:
+        :param im:
+        :param yi:
+        :param xi:
+        :param im:
+        :param yi:
+        :param xi:
+        :param im:
+        :param yi:
+        :param xi:
+        :param im:
+        :param yi:
+        :param xi:
+        :param im:
+        """
         return not (im is None or xi >= im.shape[1] or yi >= im.shape[0]
                     or xi < 0 or yi < 0)
 
@@ -639,7 +693,12 @@ class CPFigureFrame(wx.Frame):
         self.status_bar.SetFields(fields)
 
     def get_fields(self, event, yi, xi, x1):
-        """Get the standard fields at the cursor location"""
+        """Get the standard fields at the cursor location
+        :param x1:
+        :param yi:
+        :param event:
+        :param xi:
+        """
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
             im = self.find_image_for_axes(event.inaxes)
@@ -734,6 +793,24 @@ class CPFigureFrame(wx.Frame):
         event - event generating the request
 
         x, y - the placement of the subplot
+        :param y:
+        :param x:
+        :param event:
+        :param y:
+        :param x:
+        :param event:
+        :param y:
+        :param x:
+        :param event:
+        :param y:
+        :param x:
+        :param event:
+        :param y:
+        :param x:
+        :param event:
+        :param y:
+        :param x:
+        :param event:
         """
         # 
         # Thank you Joe Kington
@@ -779,6 +856,30 @@ class CPFigureFrame(wx.Frame):
                  here to share the X axis with. eg: for zooming, panning
         sharey - If creating a new subplot, you can specify a subplot instance 
                  here to share the Y axis with. eg: for zooming, panning
+                 :param sharey:
+                 :param sharex:
+                 :param y:
+                 :param x:
+                 :param sharey:
+                 :param sharex:
+                 :param y:
+                 :param x:
+                 :param sharey:
+                 :param sharex:
+                 :param y:
+                 :param x:
+                 :param sharey:
+                 :param sharex:
+                 :param y:
+                 :param x:
+                 :param sharey:
+                 :param sharex:
+                 :param y:
+                 :param x:
+                 :param sharey:
+                 :param sharex:
+                 :param y:
+                 :param x:
         """
         if not self.subplots[x, y]:
             rows, cols = self.subplots.shape
@@ -793,6 +894,24 @@ class CPFigureFrame(wx.Frame):
         title - title for subplot
         x - subplot's column
         y - subplot's row
+        :param y:
+        :param x:
+        :param title:
+        :param y:
+        :param x:
+        :param title:
+        :param y:
+        :param x:
+        :param title:
+        :param y:
+        :param x:
+        :param title:
+        :param y:
+        :param x:
+        :param title:
+        :param y:
+        :param x:
+        :param title:
         """
         fontname = fontname = cpprefs.get_title_font_name()
 
@@ -805,6 +924,18 @@ class CPFigureFrame(wx.Frame):
 
         x - subplot's column
         y - subplot's row
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
+        :param y:
+        :param x:
         """
         if not self.subplots[x, y]:
             return
@@ -904,7 +1035,28 @@ class CPFigureFrame(wx.Frame):
             item_nearest.Check()
 
         def open_image_in_new_figure(evt):
-            """Callback for "Open image in new window" popup menu item """
+            """Callback for "Open image in new window" popup menu item
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            """
             # Store current zoom limits
             xlims = self.subplot(x, y).get_xlim()
             ylims = self.subplot(x, y).get_ylim()
@@ -924,7 +1076,28 @@ class CPFigureFrame(wx.Frame):
             fig.figure.canvas.draw()
 
         def show_hist(evt):
-            """Callback for "Show image histogram" popup menu item"""
+            """Callback for "Show image histogram" popup menu item
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            """
             new_title = '%s %s image histogram' % (self.Title, (x, y))
             fig = create_or_find(self, -1, new_title, subplots=(1, 1),
                                  name=new_title)
@@ -933,7 +1106,28 @@ class CPFigureFrame(wx.Frame):
             fig.figure.canvas.draw()
 
         def change_contrast(evt):
-            """Callback for Image contrast menu items"""
+            """Callback for Image contrast menu items
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            :param evt:
+            """
             # Store zoom limits
             xlims = self.subplot(x, y).get_xlim()
             ylims = self.subplot(x, y).get_ylim()
@@ -994,7 +1188,28 @@ class CPFigureFrame(wx.Frame):
             popup.AppendMenu(-1, 'Channels', submenu)
 
             def toggle_channels(evt):
-                """Callback for channel menu items."""
+                """Callback for channel menu items.
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                :param evt:
+                """
                 # Store zoom limits
                 xlims = self.subplot(x, y).get_xlim()
                 ylims = self.subplot(x, y).get_ylim()
@@ -1127,6 +1342,326 @@ class CPFigureFrame(wx.Frame):
         cplabels - a list of dictionaries of labels properties. Each dictionary
                    describes a set of labels. See the documentation of
                    the CPLD_* constants for details.
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
+                   :param cplabels:
+                   :param interpolation:
+                   :param use_imshow:
+                   :param sharey:
+                   :param sharex:
+                   :param rgb_mask:
+                   :param vmax:
+                   :param vmin:
+                   :param normalize:
+                   :param colorbar:
+                   :param colormap:
+                   :param clear:
+                   :param title:
+                   :param image:
+                   :param y:
+                   :param x:
         """
         orig_vmin = vmin
         orig_vmax = vmax
@@ -1357,6 +1892,15 @@ class CPFigureFrame(wx.Frame):
                 panning and zooming, if any
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
+                     :param title:
+                     :param labels:
+                     :param y:
+                     :param x:
+                     :param clear:
+                     :param sharex:
+                     :param renumber:
+                     :param sharey:
+                     :param use_imshow:
         """
         if renumber:
             labels = renumber_labels_for_display(labels)
@@ -1396,6 +1940,16 @@ class CPFigureFrame(wx.Frame):
                 panning and zooming, if any
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
+                     :param shape:
+                     :param ijv:
+                     :param y:
+                     :param x:
+                     :param title:
+                     :param sharex:
+                     :param renumber:
+                     :param clear:
+                     :param sharey:
+                     :param use_imshow:
         """
         if shape is None:
             if len(ijv) == 0:
@@ -1440,6 +1994,11 @@ class CPFigureFrame(wx.Frame):
                 panning and zooming, if any
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
+                     :param kwargs:
+                     :param title:
+                     :param image:
+                     :param y:
+                     :param x:
         """
         if image.dtype.type == np.float64:
             image = image.astype(np.float32)
@@ -1459,13 +2018,21 @@ class CPFigureFrame(wx.Frame):
                 panning and zooming, if any
         use_imshow - Use matplotlib's imshow to display instead of creating
                      our own artist.
+                     :param title:
+                     :param image:
+                     :param y:
+                     :param x:
+                     :param kwargs:
         """
         kwargs = kwargs.copy()
         kwargs['colormap'] = matplotlib.cm.binary_r
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
     def normalize_image(self, image, **kwargs):
-        """Produce a color image normalized according to user spec"""
+        """Produce a color image normalized according to user spec
+        :param image:
+        :param kwargs:
+        """
         colormap = kwargs['colormap']
         normalize = kwargs['normalize']
         vmin = kwargs['vmin']
@@ -1555,6 +2122,14 @@ class CPFigureFrame(wx.Frame):
         row_labels - labels for the row header
         
         **kwargs - for backwards compatibility, old argument values
+        :param y:
+        :param x:
+        :param statistics:
+        :param col_labels:
+        :param row_labels:
+        :param n_cols:
+        :param n_rows:
+        :param kwargs:
         """
 
         nx, ny = self.subplots.shape
@@ -1625,6 +2200,16 @@ class CPFigureFrame(wx.Frame):
         xscale - scaling of the x axis (e.g. 'log' or 'linear')
         yscale - scaling of the y axis (e.g. 'log' or 'linear')
         title  - string title for the plot
+        :param x:
+        :param y:
+        :param xvals:
+        :param yvals:
+        :param ylabel:
+        :param xlabel:
+        :param xscale:
+        :param yscale:
+        :param title:
+        :param clear:
         """
         xvals = np.array(xvals).flatten()
         yvals = np.array(yvals).flatten()
@@ -1663,6 +2248,15 @@ class CPFigureFrame(wx.Frame):
         xscale - 'log' to log-transform the data
         yscale - scaling of the y axis (e.g. 'log')
         title  - string title for the plot
+        :param y:
+        :param x:
+        :param values:
+        :param bins:
+        :param xlabel:
+        :param xscale:
+        :param yscale:
+        :param title:
+        :param clear:
         """
         if clear:
             self.clear_subplot(x, y)
@@ -1716,6 +2310,18 @@ class CPFigureFrame(wx.Frame):
         yscale - scaling of the y axis (e.g. 'log' or 'linear')
         bins - scaling of the color map (e.g. None or 'log', see mpl.hexbin)
         title  - string title for the plot
+        :param y:
+        :param x:
+        :param points:
+        :param gridsize:
+        :param xlabel:
+        :param ylabel:
+        :param xscale:
+        :param yscale:
+        :param bins:
+        :param cmap:
+        :param title:
+        :param clear:
         """
         if clear:
             self.clear_subplot(x, y)
@@ -1783,6 +2389,13 @@ class CPFigureFrame(wx.Frame):
                      Warning: gray is currently used for NaN values)
         title      - name for this subplot
         clear      - clear the subplot axes before display if True
+        :param plates_dict:
+        :param y:
+        :param x:
+        :param plate_type:
+        :param colorbar:
+        :param cmap:
+        :param title:
         """
         plate_names = sorted(plates_dict.keys())
 
@@ -1913,6 +2526,8 @@ def format_plate_data_as_array(plate_dict, plate_type):
     plate_dict  -  dict mapping well names to data. eg: d["A01"] --> data
                    data values must be of numerical or string types
     plate_type  - '96' (return 8x12 array) or '384' (return 16x24 array)
+    :param plate_dict:
+    :param plate_type:
     """
     if plate_type == '96':
         plate_shape = (8, 12)
@@ -1941,6 +2556,9 @@ def show_image(url, parent=None, needs_raise_after=True):
 
     url - url of the image
     parent - parent frame to this one.
+    :param url:
+    :param parent:
+    :param needs_raise_after:
     """
     filename = url[(url.rfind("/") + 1):]
     try:
@@ -2155,7 +2773,9 @@ class CPNavigationToolbar(NavigationToolbar2WxAgg):
     """Navigation toolbar for EditObjectsDialog"""
 
     def set_cursor(self, cursor):
-        """Set the cursor based on the mode"""
+        """Set the cursor based on the mode
+        :param cursor:
+        """
         if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
             self.canvas.SetCursor(get_crosshair_cursor())
         else:

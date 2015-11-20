@@ -421,6 +421,7 @@ class Groups(cpm.CPModule):
         and 'Metadata_Column' and a group_list of:
         [ ({'Row':'A','Column':'01'), [0,96,192]),
           (('Row':'A','Column':'02'), [1,97,193]),... ]
+          :param workspace:
         """
         if not self.wants_groups:
             return
@@ -449,6 +450,7 @@ class Groups(cpm.CPModule):
         """Return True if changing the setting passed changes the image sets
 
         setting - the setting that was changed
+        :param setting:
         """
         return setting in self.settings()
 
@@ -465,7 +467,9 @@ class Groups(cpm.CPModule):
         return True
 
     def prepare_run(self, workspace):
-        """Reorder the image sets and assign group number and index"""
+        """Reorder the image sets and assign group number and index
+        :param workspace:
+        """
         if workspace.pipeline.in_batch_mode():
             return True
 
@@ -522,6 +526,7 @@ class Groups(cpm.CPModule):
         """Return the measurments recorded by this module
 
         GroupNumber and GroupIndex are accounted for by the pipeline itself.
+        :param pipeline:
         """
         result = []
         if self.wants_groups:

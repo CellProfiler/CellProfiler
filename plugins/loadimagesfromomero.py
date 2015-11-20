@@ -157,7 +157,12 @@ V_OMERO = 1
 def create_omero_gateway(host=DEFAULT_OMERO_HOST, port=DEFAULT_OMERO_PORT,
                          username=DEFAULT_OMERO_USERNAME,
                          password=DEFAULT_OMERO_PASSWORD):
-    """Connect to an omero server and create an omero gateway instance"""
+    """Connect to an omero server and create an omero gateway instance
+    :param host:
+    :param port:
+    :param username:
+    :param password:
+    """
     try:
         omero_client = omero.client(host, port)
         omero_session = omero_client.createSession(username, password)
@@ -221,6 +226,7 @@ class OmeroLoadImages(cpm.CPModule):
         """Get plate from omero
 
         id - id of plate in omero
+        :param plate_id:
         """
         return omero_session.getQueryService().findByString("Plate", "id",
                                                             plate_id)
@@ -297,6 +303,7 @@ class OmeroLoadImages(cpm.CPModule):
         """Add another image channel
 
         can_remove - true if we are allowed to remove this channel
+        :param can_remove:
         """
         group = cps.SettingsGroup()
         self.channels.append(group)
@@ -350,7 +357,9 @@ class OmeroLoadImages(cpm.CPModule):
         return varlist
 
     def validate_module(self, pipeline):
-        """Validate a module's settings"""
+        """Validate a module's settings
+        :param pipeline:
+        """
         for setting in (self.omero_host, self.omero_port, self.omero_username,
                         self.omero_password):
             if setting.value == '':
@@ -363,7 +372,9 @@ class OmeroLoadImages(cpm.CPModule):
         return True
 
     def prepare_run(self, workspace):
-        """Set up omero image providers inside the image_set_list"""
+        """Set up omero image providers inside the image_set_list
+        :param workspace:
+        """
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         if pipeline.in_batch_mode():
@@ -427,6 +438,8 @@ class OmeroLoadImages(cpm.CPModule):
     def get_images_from_dataset(self, dataset_id, limit=None):
         """Get images from dataset
         limit - maximum number of images to retrieve
+        :param dataset_id:
+        :param limit:
         """
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
@@ -447,6 +460,8 @@ class OmeroLoadImages(cpm.CPModule):
 
             plate_id	- id of the plate
             limit		- maximum number of wells to retrieve
+            :param plate_id:
+            :param limit:
         """
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
@@ -476,6 +491,11 @@ class OmeroLoadImages(cpm.CPModule):
                 by load_image_set_info to create the actual provider)
         version - the version # of the provider, in case the arguments change
         args - string arguments that will be passed to the provider's init fn
+        :param image_set:
+        :param image_name:
+        :param provider:
+        :param version:
+        :param args:
         """
         if provider != P_OMERO:
             raise NotImplementedError(
@@ -484,7 +504,9 @@ class OmeroLoadImages(cpm.CPModule):
         d[image_name] = [provider, version] + list(args)
 
     def load_image_set_info(self, image_set):
-        """Loads the image set information, creating the providers"""
+        """Loads the image set information, creating the providers
+        :param image_set:
+        """
         d = self.get_dictionary(image_set)
         for image_name in d.keys():
             values = d[image_name]
@@ -499,7 +521,9 @@ class OmeroLoadImages(cpm.CPModule):
                     version)
 
     def get_dictionary(self, image_set):
-        """Get the module's legacy fields dictionary for this image set"""
+        """Get the module's legacy fields dictionary for this image set
+        :param image_set:
+        """
         key = "%s:%d" % (self.module_name, self.module_num)
         if not image_set.legacy_fields.has_key(key):
             image_set.legacy_fields[key] = {}
@@ -509,14 +533,20 @@ class OmeroLoadImages(cpm.CPModule):
         return d[image_set.image_number]
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        """Load the images from the dictionary into the image sets here"""
+        """Load the images from the dictionary into the image sets here
+        :param workspace:
+        :param grouping:
+        :param image_numbers:
+        """
         for image_number in image_numbers:
             image_set = workspace.image_set_list.get_image_set(
                 image_number - 1)
             self.load_image_set_info(image_set)
 
     def run(self, workspace):
-        """Run the module. Add the measurements. """
+        """Run the module. Add the measurements.
+        :param workspace:
+        """
 
         statistics_dict = {}
         ratio_dict = {}
@@ -583,7 +613,9 @@ class OmeroLoadImages(cpm.CPModule):
                     print "\t%s: %s" % (header[i], row[i])
 
     def post_run(self, workspace):
-        """Disconnect from the omero server after the run completes"""
+        """Disconnect from the omero server after the run completes
+        :param workspace:
+        """
         self.omero_client.closeSession()
 
     def display(self, workspace):
@@ -609,13 +641,20 @@ class OmeroLoadImages(cpm.CPModule):
                     workspace.display_data.statistics[channel_number])
 
     def get_categories(self, pipeline, object_name):
-        """Return the categories that this module produces"""
+        """Return the categories that this module produces
+        :param pipeline:
+        :param object_name:
+        """
         if object_name == cpmeas.IMAGE:
             return [C_IMAGE, C_PIXELS, C_METADATA]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        """Return the measurements that this module produces"""
+        """Return the measurements that this module produces
+        :param pipeline:
+        :param object_name:
+        :param category:
+        """
         if object_name == cpmeas.IMAGE:
             return [meas.split('_', 1)[1] for ob, meas, dtype in
                     self.get_measurement_columns(pipeline)
@@ -623,7 +662,9 @@ class OmeroLoadImages(cpm.CPModule):
         return []
 
     def get_measurement_columns(self, pipeline):
-        """Return a sequence describing the measurement columns needed by this module"""
+        """Return a sequence describing the measurement columns needed by this module
+        :param pipeline:
+        """
         cols = []
         for channel in self.channels:
             name = channel.cpimage_name.value
@@ -658,7 +699,9 @@ class OmeroLoadImages(cpm.CPModule):
         return cols
 
     def change_causes_prepare_run(self, setting):
-        """Check to see if changing the given setting means you have to restart"""
+        """Check to see if changing the given setting means you have to restart
+        :param setting:
+        """
         # It's safest to say that any change in OmeroLoadImages requires a restart
         return True
 
@@ -695,6 +738,7 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
     def provide_image(self, image_set):
         """load an image plane from an omero server
         and return a 2-d grayscale image
+        :param image_set:
         """
         # TODO: return 3d RGB images when c == None like loadimage.py does?
 

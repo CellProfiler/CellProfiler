@@ -155,6 +155,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
                     and the parent frame for the application if the module
                     is allowed to display. If the module should not display,
                     workspace.frame is None.
+                    :param workspace:
         """
         #
         # The object set holds "objects". Each of these is a container
@@ -350,7 +351,9 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         return True
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for measurements made by this module"""
+        """Return column definitions for measurements made by this module
+        :param pipeline:
+        """
         subregion_name = self.subregion_objects_name.value
         columns = cpmi.get_object_measurement_columns(subregion_name)
         for parent in (self.primary_objects_name.value,
@@ -387,6 +390,10 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         
         returns the modified setting_values, the corrected 
                 variable_revision_number and the corrected from_matlab flag
+                :param from_matlab:
+                :param module_name:
+                :param variable_revision_number:
+                :param setting_values:
         """
 
         if from_matlab and variable_revision_number == 1:
@@ -415,6 +422,8 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
         """
         categories = []
         if object_name == cpmeas.IMAGE:
@@ -431,6 +440,9 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         result = []
 

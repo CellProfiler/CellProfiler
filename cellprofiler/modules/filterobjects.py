@@ -277,7 +277,9 @@ class FilterObjects(cpm.CPModule):
             return [str(i) for i in range(1, 3)]
 
     def add_measurement(self, can_delete=True):
-        """Add another measurement to the filter list"""
+        """Add another measurement to the filter list
+        :param can_delete:
+        """
         group = cps.SettingsGroup()
         group.append("measurement", cps.Measurement(
             'Select the measurement to filter by',
@@ -336,7 +338,8 @@ class FilterObjects(cpm.CPModule):
 
     def prepare_settings(self, setting_values):
         """Make sure the # of slots for additional objects matches
-           the anticipated number of additional objects"""
+           the anticipated number of additional objects
+           :param setting_values: """
         additional_object_count = int(
             setting_values[ADDITIONAL_OBJECT_SETTING_INDEX])
         while len(self.additional_objects) > additional_object_count:
@@ -421,7 +424,9 @@ class FilterObjects(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        """Make sure that the user has selected some limits when filtering"""
+        """Make sure that the user has selected some limits when filtering
+        :param pipeline:
+        """
         if (self.mode == MODE_MEASUREMENTS and
                     self.filter_choice == FI_LIMITS):
             for group in self.measurements:
@@ -453,7 +458,9 @@ class FilterObjects(cpm.CPModule):
                         self.rules_file_name)
 
     def run(self, workspace):
-        """Filter objects for this image set, display results"""
+        """Filter objects for this image set, display results
+        :param workspace:
+        """
         src_objects = workspace.get_objects(self.object_name.value)
         if self.mode == MODE_RULES:
             indexes = self.keep_by_rules(workspace, src_objects)
@@ -565,7 +572,10 @@ class FilterObjects(cpm.CPModule):
             workspace.display_data.target_objects_segmented = target_objects.segmented
 
     def display(self, workspace, figure):
-        """Display what was filtered"""
+        """Display what was filtered
+        :param figure:
+        :param workspace:
+        """
         src_name = self.object_name.value
         src_objects_segmented = workspace.display_data.src_objects_segmented
         image = workspace.display_data.image
@@ -612,6 +622,18 @@ class FilterObjects(cpm.CPModule):
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
         """
         measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
@@ -628,6 +650,18 @@ class FilterObjects(cpm.CPModule):
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
         """
         measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
@@ -735,6 +769,18 @@ class FilterObjects(cpm.CPModule):
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
         """
         src_name = self.object_name.value
         hits = None
@@ -764,6 +810,18 @@ class FilterObjects(cpm.CPModule):
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
         """
         labeled_image = src_objects.segmented
 
@@ -837,6 +895,18 @@ class FilterObjects(cpm.CPModule):
 
         Open the rules file indicated by the settings and score the
         objects by the rules. Return the indexes of the objects that pass.
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
+        :param src_objects:
+        :param workspace:
         """
         rules = self.get_rules()
         rules_class = int(self.rules_class.value) - 1
@@ -852,7 +922,14 @@ class FilterObjects(cpm.CPModule):
         return indexes
 
     def get_measurement_columns(self, pipeline):
-        """Return measurement column defs for the parent/child measurement"""
+        """Return measurement column defs for the parent/child measurement
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         object_list = ([(self.object_name.value, self.target_name.value)] +
                        [(x.object_name.value, x.target_name.value)
                         for x in self.additional_objects])
@@ -871,6 +948,18 @@ class FilterObjects(cpm.CPModule):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
         """
         categories = []
         if object_name == cpmeas.IMAGE:
@@ -886,6 +975,24 @@ class FilterObjects(cpm.CPModule):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         result = []
 
@@ -918,6 +1025,18 @@ class FilterObjects(cpm.CPModule):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
+                        :param fn_alter_path:
+                        :param workspace:
         """
         self.rules_directory.alter_for_create_batch_files(fn_alter_path)
         return True
@@ -934,6 +1053,86 @@ class FilterObjects(cpm.CPModule):
                       it is KeepLargestObject for Matlab's module of that
                       name.
         from_matlab - true if file was saved by Matlab CP
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
 
         DIR_DEFAULT_INPUT = "Default input folder"

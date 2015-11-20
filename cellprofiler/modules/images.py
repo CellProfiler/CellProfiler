@@ -233,6 +233,7 @@ class Images(cpm.CPModule):
         Images should return True if any setting changes because that
         will affect the image plane descriptors passed onto later modules
         which will change the image set produced by the pipeline.
+        :param setting:
         """
         return setting in self.settings()
 
@@ -241,7 +242,9 @@ class Images(cpm.CPModule):
         return True
 
     def prepare_run(self, workspace):
-        """Create an IPD for every url that passes the filter"""
+        """Create an IPD for every url that passes the filter
+        :param workspace:
+        """
         if workspace.pipeline.in_batch_mode():
             return True
         file_list = workspace.pipeline.file_list
@@ -289,6 +292,10 @@ class Images(cpm.CPModule):
         module_name / from_matlab - ignore please
 
         Returns upgraded setting values, revision number and matlab flag
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if variable_revision_number == 1:
             # Changed from yes/no for filter to a choice
@@ -327,6 +334,7 @@ class DirectoryPredicate(cps.Filter.FilterPredicate):
         the node is not a directory, otherwise it composites the
         modpath into a file path and applies it to the rest of
         the args.
+        :param args:
         """
         if isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             path = os.path.join(*modpath[:-2])
@@ -364,6 +372,7 @@ class FilePredicate(cps.Filter.FilterPredicate):
         the node is not a directory, otherwise it composites the
         modpath into a file path and applies it to the rest of
         the args
+        :param args:
         """
         if node_type == cps.FileCollectionDisplay.NODE_DIRECTORY:
             return None
@@ -379,7 +388,9 @@ class FilePredicate(cps.Filter.FilterPredicate):
 
 
 def is_image_extension(suffix):
-    """Return True if the extension is one of those recongized by bioformats"""
+    """Return True if the extension is one of those recongized by bioformats
+    :param suffix:
+    """
     extensions = J.get_collection_wrapper(
         J.static_call("org/cellprofiler/imageset/filter/IsImagePredicate",
                       "getImageSuffixes", "()Ljava/util/Set;"))
@@ -433,6 +444,7 @@ class ExtensionPredicate(cps.Filter.FilterPredicate):
 
         If the element is a file, try the different predicates on
         all possible extension parsings.
+        :param args:
         """
         if node_type == cps.FileCollectionDisplay.NODE_DIRECTORY:
             return None

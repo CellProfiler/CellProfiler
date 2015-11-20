@@ -661,7 +661,31 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         """Upgrade the strings in setting_values dependent on saved revision
-        
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+
         """
         if variable_revision_number == 12 and from_matlab:
             # Translating from Matlab:
@@ -893,6 +917,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             image_set    - the images in the image set being processed
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
+            :param workspace:
+            :param workspace:
+            :param workspace:
+            :param workspace:
+            :param workspace:
+            :param workspace:
         """
         image_name = self.image_name.value
         image = workspace.image_set.get_image(image_name)
@@ -1030,6 +1060,46 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         object_count - check to see if this exceeds the maximum
 
         returns a new labeled_image and object count
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
         """
         if object_count > self.maximum_object_count.value:
             if self.limit_choice == LIMIT_ERASE:
@@ -1063,7 +1133,48 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         return labeled_image, object_count
 
     def smooth_image(self, image, mask):
-        """Apply the smoothing filter to the image"""
+        """Apply the smoothing filter to the image
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        :param mask:
+        :param image:
+        """
 
         filter_size = self.calc_smoothing_filter_size()
         if filter_size == 0:
@@ -1111,6 +1222,66 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         returns revised labeled_image, object count, maxima_suppression_size, 
         LoG threshold and filter diameter
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
+        :param object_count:
+        :param labeled_image:
+        :param workspace:
         """
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
             return labeled_image, object_count, 7, 0.5, 5
@@ -1311,6 +1482,46 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         object_count - # of objects in the labeled image
         returns the labeled image, and the labeled image with the 
         small objects removed
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
+        :param object_count:
+        :param labeled_image:
         """
         if self.exclude_size.value and object_count > 0:
             areas = scipy.ndimage.measurements.sum(np.ones(labeled_image.shape),
@@ -1337,6 +1548,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         In addition, if the image has a mask, filter out objects
         touching the border of the mask.
+        :param labeled_image:
+        :param image:
         """
         if self.exclude_border_objects.value:
             border_labels = list(labeled_image[0, :])
@@ -1437,7 +1650,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         return self.object_name.value
 
     def get_measurement_columns(self, pipeline):
-        """Column definitions for measurements made by IdentifyPrimAutomatic"""
+        """Column definitions for measurements made by IdentifyPrimAutomatic
+        :param pipeline:
+        """
         columns = cpmi.get_object_measurement_columns(self.object_name.value)
         columns += self.get_threshold_measurement_columns(pipeline)
         return columns
@@ -1446,6 +1661,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
         """
         result = self.get_threshold_categories(pipeline, object_name)
         result += self.get_object_categories(pipeline, object_name,
@@ -1457,6 +1674,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param object_name:
+        :param pipeline:
+        :param category:
         """
         result = self.get_threshold_measurements(pipeline, object_name,
                                                  category)
@@ -1467,7 +1687,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     def get_measurement_objects(self, pipeline, object_name, category,
                                 measurement):
         """Return the objects associated with image measurements
-        
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param measurement:
+
         """
         return self.get_threshold_measurement_objects(pipeline, object_name,
                                                       category, measurement)

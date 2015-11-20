@@ -9,6 +9,8 @@ def get_image(imageprocessor_obj, do_scaling=False):
     """Retrieve the image from an ImageProcessor
 
     Returns the image as a numpy float array.
+    :param imageprocessor_obj:
+    :param do_scaling:
     """
     #
     # The strategy is:
@@ -36,6 +38,7 @@ def make_image_processor(array):
 
     array - an array that will be cast to double. Values should be
             between 0 and 255
+            :param array:
     """
     return J.make_instance(
         'ij/process/FloatProcessor', '(II[D)V',

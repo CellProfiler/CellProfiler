@@ -202,7 +202,9 @@ class CreateBatchFiles(cpm.CPModule):
         return result
 
     def prepare_run(self, workspace):
-        """Invoke the image_set_list pickling mechanism and save the pipeline"""
+        """Invoke the image_set_list pickling mechanism and save the pipeline
+        :param workspace:
+        """
 
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
@@ -242,7 +244,9 @@ class CreateBatchFiles(cpm.CPModule):
         self.from_old_matlab.value = cps.NO
 
     def validate_module(self, pipeline):
-        """Make sure the module settings are valid"""
+        """Make sure the module settings are valid
+        :param pipeline:
+        """
         # Ensure we're not an un-updatable version of the module from way back.
         if self.from_old_matlab.value:
             raise cps.ValidationError(
@@ -256,7 +260,9 @@ class CreateBatchFiles(cpm.CPModule):
                                       self.wants_default_output_directory)
 
     def validate_module_warnings(self, pipeline):
-        """Warn user re: Test mode """
+        """Warn user re: Test mode
+        :param pipeline:
+        """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "CreateBatchFiles will not produce output in Test Mode",
@@ -269,6 +275,8 @@ class CreateBatchFiles(cpm.CPModule):
         module in batch mode.
 
         if outf is not None, it is used as a file object destination.
+        :param outf:
+        :param workspace:
         """
         from cellprofiler.utilities.version import version_number
 
@@ -326,7 +334,9 @@ class CreateBatchFiles(cpm.CPModule):
         return self.batch_mode.value
 
     def enter_batch_mode(self, workspace):
-        """Restore the image set list from its setting as we go into batch mode"""
+        """Restore the image set list from its setting as we go into batch mode
+        :param workspace:
+        """
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
         assert not self.distributed_mode, "Distributed mode no longer supported"
@@ -392,6 +402,8 @@ class CreateBatchFiles(cpm.CPModule):
 
         path = path to modify
         regexp_substitution - if true, exclude \g<...> from substitution
+        :param varargs:
+        :param path:
         """
         regexp_substitution = varargs.get("regexp_substitution", False)
         for mapping in self.mappings:

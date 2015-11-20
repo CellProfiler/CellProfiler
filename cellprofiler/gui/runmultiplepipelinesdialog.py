@@ -55,7 +55,9 @@ class RunMultplePipelinesDialog(wx.Dialog):
         self.Layout()
 
     def add_file_chooser(self, sizer):
-        """Add UI elements for displaying files in a directory."""
+        """Add UI elements for displaying files in a directory.
+        :param sizer:
+        """
         #
         # File list box on left, buttons on right
         #

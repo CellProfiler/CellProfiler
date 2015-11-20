@@ -19,6 +19,7 @@ def read_directory_url(url):
     * Second entry is either IS_DIRECTORY, IS_FILE or IS_UNKNOWN depending
       on whether the filename is the name of a directory, file or
       is not known.
+      :param url:
     """
     #
     # See http://httpd.apache.org/docs/trunk/mod/mod_autoindex.html

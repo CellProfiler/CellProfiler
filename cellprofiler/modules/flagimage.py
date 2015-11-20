@@ -209,7 +209,9 @@ class FlagImage(cpm.CPModule):
                         positive score is higher than the negative score.</p>""" % globals()))
 
         def get_rules_class_choices(group=group):
-            """Get the available choices from the rules file"""
+            """Get the available choices from the rules file
+            :param group:
+            """
             try:
                 rules = self.get_rules(group)
                 nclasses = len(rules.rules[0].weights[0])
@@ -277,7 +279,9 @@ class FlagImage(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        """Construct the correct number of flags"""
+        """Construct the correct number of flags
+        :param setting_values:
+        """
         flag_count = int(setting_values[0])
         del self.flags[:]
         self.add_flag(can_delete=False)
@@ -341,7 +345,9 @@ class FlagImage(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        """If using rules, validate them"""
+        """If using rules, validate them
+        :param pipeline:
+        """
         for flag in self.flags:
             for measurement_setting in flag.measurement_settings:
                 if measurement_setting.source_choice == S_RULES:
@@ -478,7 +484,9 @@ class FlagImage(cpm.CPModule):
         return "_".join((flag.category.value, flag.feature_name.value))
 
     def get_rules(self, measurement_group):
-        """Read the rules from a file"""
+        """Read the rules from a file
+        :param measurement_group:
+        """
         rules_file = measurement_group.rules_file_name.value
         rules_directory = measurement_group.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
@@ -522,6 +530,8 @@ class FlagImage(cpm.CPModule):
            first tuple element is True = pass, False = Fail
            second tuple element has all of the statistics except for the
                         flag name
+                        :param ms:
+                        :param workspace:
         """
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -593,7 +603,14 @@ class FlagImage(cpm.CPModule):
                              "Fail" if fail else "Pass"))
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for each flag mesurment in the module"""
+        """Return column definitions for each flag mesurment in the module
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         return [
             (cpmeas.IMAGE, self.measurement_name(flag), cpmeas.COLTYPE_INTEGER)
             for flag in self.flags]

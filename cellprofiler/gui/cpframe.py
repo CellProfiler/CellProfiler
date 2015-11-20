@@ -336,6 +336,8 @@ class CPFrame(wx.Frame):
 
         pipeline_path - the pipeline to load after the workspace has been
                         loaded or None for the workspace's pipeline.
+                        :param pipeline_path:
+                        :param workspace_path:
         """
         self.__pipeline_controller.start(workspace_path, pipeline_path)
         self.__module_view.start()
@@ -351,6 +353,7 @@ class CPFrame(wx.Frame):
         """Show or hide the path list control
 
         show - true to show, false to hide
+        :param show:
         """
         if bool(show) == bool(self.__path_list_sash.IsShown()):
             return
@@ -362,6 +365,7 @@ class CPFrame(wx.Frame):
         """Show or hide the imageset control
 
         show - true to show, false to hide
+        :param show:
         """
         if bool(show) == bool(self.__imageset_sash.IsShown()):
             return
@@ -401,7 +405,9 @@ class CPFrame(wx.Frame):
         self.__imageset_ctrl.recompute()
 
     def show_module_ui(self, show):
-        """Show or hide the module and notes panel"""
+        """Show or hide the module and notes panel
+        :param show:
+        """
         if (show == self.__path_module_imageset_panel.IsShownOnScreen() and
                     show == self.__notes_panel.IsShownOnScreen()):
             return
@@ -426,6 +432,8 @@ class CPFrame(wx.Frame):
 
         show - If True, show the welcome screen and hide the preferences
                and module UI, otherwise hide the welcome screen.
+               :param show:
+               :param show:
         """
         self.startup_blurb_frame.Show(show)
         if (show):
@@ -436,6 +444,7 @@ class CPFrame(wx.Frame):
 
         show - if True, show the preferences panel and hide the welcome
                and module UI. If false, just hide the preferences.
+               :param show:
         """
         self.__preferences_panel.Show(show)
         if show:
@@ -514,6 +523,7 @@ class CPFrame(wx.Frame):
         wx.ID_PASTE
         wx.ID_DELETE
         wx.ID_SELECTALL
+        :param ids:
         """
         d = dict([(x, False) for x in
                   (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
@@ -874,7 +884,14 @@ class CPFrame(wx.Frame):
     # http://wxpython-users.1045709.n5.nabble.com/how-to-implement-copy-paste-with-accelerators-td3337472.html
     #########################################################
     def on_cut(self, event):
-        """Handle ID_CUT"""
+        """Handle ID_CUT
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         focus = wx.Window.FindFocus()
         if (focus is not None and hasattr(focus, "Cut")
             and hasattr(focus, 'CanCut') and focus.CanCut()):
@@ -886,7 +903,14 @@ class CPFrame(wx.Frame):
             focus and hasattr(focus, 'CanCut') and focus.CanCut()))
 
     def on_copy(self, event):
-        """Handle ID_COPY"""
+        """Handle ID_COPY
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         focus = wx.Window.FindFocus()
         if focus is not None and hasattr(focus, "Copy") and \
                 hasattr(focus, 'CanCopy') and focus.CanCopy():
@@ -898,7 +922,14 @@ class CPFrame(wx.Frame):
             focus and hasattr(focus, 'CanCopy') and focus.CanCopy()))
 
     def on_paste(self, event):
-        """Handle ID_PASTE"""
+        """Handle ID_PASTE
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         focus = wx.Window.FindFocus()
         if focus is not None and hasattr(focus, "Paste") and \
                 hasattr(focus, "CanPaste") and focus.CanPaste():
@@ -1257,14 +1288,136 @@ class CPFrame(wx.Frame):
         helpframe.Show()
 
     def print_help(self, event, module_name, help_text):
-        """Print the help text for a module"""
+        """Print the help text for a module
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        """
         printer = wx.html.HtmlEasyPrinting("Printing %s" % module_name,
                                            event.GetEventObject())
         printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
         printer.PrintText(help_text)
 
     def save_help(self, event, module_name, help_text):
-        """Save the help text for a module"""
+        """Save the help text for a module
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        :param help_text:
+        :param module_name:
+        :param event:
+        """
         save_dlg = wx.FileDialog(event.GetEventObject(),
                                  message="Save help for %s to file" % module_name,
                                  defaultFile="%s.html" % module_name,
@@ -1401,6 +1554,7 @@ class CPFrame(wx.Frame):
 
             The HTML window (on Windows at least) jams the anchor to the
             top of the window which obscures it.
+            :param event:
             """
             linkinfo = event.GetLinkInfo()
             if linkinfo.GetHref()[0] != "#":
@@ -1473,6 +1627,8 @@ class CPFrame(wx.Frame):
 
     def display_error(self, message, error):
         """Displays an exception in a standardized way
+        :param error:
+        :param message:
 
         """
         for listener in self.__error_listeners:
@@ -1484,11 +1640,15 @@ class CPFrame(wx.Frame):
         display_error_message(self, text, "Caught exception during operation")
 
     def add_error_listener(self, listener):
-        """Add a listener for display errors"""
+        """Add a listener for display errors
+        :param listener:
+        """
         self.__error_listeners.append(listener)
 
     def remove_error_listener(self, listener):
-        """Remove a listener for display errors"""
+        """Remove a listener for display errors
+        :param listener:
+        """
         self.__error_listeners.remove(listener)
 
     def get_preferences_view(self):
@@ -1541,24 +1701,34 @@ class CPSizer(wx.PySizer):
 
     def set_ignore_width(self, col, row, ignore=True):
         """Don't pay any attention to the minimum width of the item in grid cell col,row
+        :param row:
+        :param col:
+        :param ignore:
 
         """
         self.__ignore_width[col][row] = ignore
 
     def get_ignore_width(self, col, row):
         """Return true if we should ignore the minimum width of the item at col,row
+        :param col:
+        :param row:
 
         """
         return self.__ignore_width[col][row]
 
     def set_ignore_height(self, col, row, ignore=True):
         """Don't pay any attention to the minimum height of the item in grid cell col,row
+        :param ignore:
+        :param row:
+        :param col:
 
         """
         self.__ignore_height[col][row] = ignore
 
     def get_ignore_height(self, col, row):
         """Return true if we should ignore the minimum height of the item at col,row
+        :param col:
+        :param row:
 
         """
         return self.__ignore_height[col][row]

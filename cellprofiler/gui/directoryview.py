@@ -55,6 +55,7 @@ class DirectoryView(object):
         The listener should be a function to be called back with the parameters:
         * caller - the directory view
         * event - a LoadPipelineRequestEvent whose Path is the pipeline to open
+        :param listener:
         """
         self.__pipeline_listeners.append(listener)
 
@@ -64,7 +65,8 @@ class DirectoryView(object):
     def notify_pipeline_listeners(self, event):
         """Notify all pipeline listeners of an event that indicates that the user
         wants to open a pipeline
-        
+        :param event:
+
         """
         for listener in self.__pipeline_listeners:
             listener(self, event)

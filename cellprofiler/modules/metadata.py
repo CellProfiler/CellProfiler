@@ -499,7 +499,9 @@ class Metadata(cpm.CPModule):
                 self.extraction_methods, group))
 
     def get_group_header(self, group):
-        """Get the header line from the imported extraction group's csv file"""
+        """Get the header line from the imported extraction group's csv file
+        :param group:
+        """
         csv_path = group.csv_location.value
         if csv_path == group.imported_metadata_header_path:
             if group.csv_location.is_url():
@@ -530,6 +532,9 @@ class Metadata(cpm.CPModule):
 
         for_metadata_only - if true, only give the header to the
                  imported metadata extractor.
+                 :param for_metadata_only:
+                 :param extractor:
+                 :param group:
         """
         key_pairs = []
         dt_numeric = (cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER)
@@ -587,7 +592,14 @@ class Metadata(cpm.CPModule):
             rdr, key_pairs)
 
     def refresh_group_joiner(self, group):
-        """Refresh the metadata entries for a group's joiner"""
+        """Refresh the metadata entries for a group's joiner
+        :param group:
+        :param group:
+        :param group:
+        :param group:
+        :param group:
+        :param group:
+        """
         if group.extraction_method != X_IMPORTED_EXTRACTION:
             return
         #
@@ -697,6 +709,12 @@ class Metadata(cpm.CPModule):
         """Return True if changing the setting passed changes the image sets
 
         setting - the setting that was changed
+        :param setting:
+        :param setting:
+        :param setting:
+        :param setting:
+        :param setting:
+        :param setting:
         """
         return setting in self.settings()
 
@@ -705,7 +723,14 @@ class Metadata(cpm.CPModule):
         return True
 
     def prepare_run(self, workspace):
-        """Initialize the pipeline's metadata"""
+        """Initialize the pipeline's metadata
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         if workspace.pipeline.in_batch_mode():
             return True
 
@@ -745,6 +770,18 @@ class Metadata(cpm.CPModule):
         end_group - stop building the extractor when you reach this group.
                     default is build all.
         for_metadata_only - only build an extractor to capture the header info
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
+        :param for_metadata_only:
+        :param end_group:
         """
         #
         # Build a metadata extractor
@@ -880,7 +917,20 @@ class Metadata(cpm.CPModule):
             self.update_table()
 
     def on_setting_changed(self, setting, pipeline):
-        """Update the imported extraction joiners on setting changes"""
+        """Update the imported extraction joiners on setting changes
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        :param pipeline:
+        :param setting:
+        """
         if not self.wants_metadata:
             return
         visible_settings = self.visible_settings()
@@ -939,13 +989,75 @@ class Metadata(cpm.CPModule):
         self.pipeline = None
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        """Alter internal paths for batch creation"""
+        """Alter internal paths for batch creation
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        :param fn_alter_path:
+        :param workspace:
+        """
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 group.csv_location.alter_for_create_batch(fn_alter_path)
 
     def prepare_settings(self, setting_values):
-        """Prepare the module to receive the settings"""
+        """Prepare the module to receive the settings
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        """
         #
         # Set the number of extraction methods based on the extraction method
         # count.
@@ -964,6 +1076,26 @@ class Metadata(cpm.CPModule):
 
         Metadata throws an exception if any of the metadata tags collide with
         tags that can be automatically extracted.
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
         """
         for group in self.extraction_methods:
             if group.extraction_method == X_MANUAL_EXTRACTION:
@@ -1000,7 +1132,28 @@ class Metadata(cpm.CPModule):
         cpp.ImagePlaneDetails.MD_SIZE_Y, cpmeas.C_SERIES, cpmeas.C_FRAME)
 
     def get_data_type(self, key):
-        """Get the data type for a particular metadata key"""
+        """Get the data type for a particular metadata key
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        """
         if isinstance(key, basestring):
             return self.get_data_type([key]).get(key, cpmeas.COLTYPE_VARCHAR)
         result = {}
@@ -1032,6 +1185,26 @@ class Metadata(cpm.CPModule):
         imported metadata matcher. Perhaps this should be migrated into
         the data types control, but for now, we look for the key to be
         present in the joiner for any imported metadata matcher.
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
+        :param key:
         """
         if not self.wants_metadata:
             return False
@@ -1045,7 +1218,28 @@ class Metadata(cpm.CPModule):
         return False
 
     def get_measurement_columns(self, pipeline):
-        """Get the metadata measurements collected by this module"""
+        """Get the metadata measurements collected by this module
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         key_types = pipeline.get_available_metadata_keys()
         result = []
         for key, coltype in key_types.iteritems():
@@ -1066,7 +1260,48 @@ class Metadata(cpm.CPModule):
         return result
 
     def get_categories(self, pipeline, object_name):
-        """Return the measurement categories for a particular object"""
+        """Return the measurement categories for a particular object
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        """
         if object_name == cpmeas.IMAGE and len(self.get_metadata_keys()) > 0:
             return [cpmeas.C_METADATA]
         return []

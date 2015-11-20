@@ -48,7 +48,9 @@ class PathListCtrl(wx.PyScrolledWindow):
             self.opened = True
 
         def get_full_path(self, idx):
-            """Get the full pathname for the indexed file"""
+            """Get the full pathname for the indexed file
+            :param idx:
+            """
             if self.folder_name.lower() == OMERO_SCHEME:
                 return self.folder_name + self.filenames[idx]
             return self.folder_name + "/" + self.filenames[idx]
@@ -153,6 +155,12 @@ class PathListCtrl(wx.PyScrolledWindow):
 
         fn_do_empty_menu_command - a function that performs the command from
                   the empty menu
+                  :param fn_do_empty_command:
+                  :param fn_do_folder_menu_command:
+                  :param fn_do_menu_command:
+                  :param fn_empty_menu:
+                  :param fn_folder_menu:
+                  :param fn_context_menu:
         """
         self.fn_context_menu = fn_context_menu
         self.fn_do_menu_command = fn_do_menu_command
@@ -165,6 +173,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         """Set the function to call to delete items
 
         fn_delete - a function whose signature is fn_delete(paths)
+        :param fn_delete:
         """
         self.fn_delete = fn_delete
 
@@ -172,6 +181,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         """Show or hide disabled files
 
         show - true to show them, false to hide them
+        :param show:
         """
         if show == self.show_disabled:
             return
@@ -242,6 +252,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         """Add the given URLs to the control
 
         paths - a sequence of URLs
+        :param paths:
         """
         uid = uuid.uuid4()
         npaths = len(paths)
@@ -281,6 +292,8 @@ class PathListCtrl(wx.PyScrolledWindow):
         paths - a sequence of URLs
 
         enabled - True to enable them, False to disable them.
+        :param enabled:
+        :param paths:
         """
         for path in paths:
             folder, filename = self.splitpath(path)
@@ -309,14 +322,18 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.Refresh(eraseBackground=False)
 
     def expand_all(self, event=None):
-        """Expand all folders"""
+        """Expand all folders
+        :param event:
+        """
         for folder_item in self.folder_items:
             folder_item.opened = True
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
 
     def collapse_all(self, event=None):
-        """Collapse all folders"""
+        """Collapse all folders
+        :param event:
+        """
         for folder_item in self.folder_items:
             folder_item.opened = False
         self.schmutzy = True
@@ -327,6 +344,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         """Return a path name for a URL
 
         For files, the user expects to see a path, not a URL
+        :param folder:
         """
         if folder.startswith("file:"):
             return urllib.url2pathname(folder[5:]).decode("utf8")
@@ -369,7 +387,9 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.SetVirtualSize((max_width, total_height))
 
     def remove_paths(self, paths):
-        """Remove a sequence of URLs from the UI"""
+        """Remove a sequence of URLs from the UI
+        :param paths:
+        """
         for path in paths:
             folder, filename = self.splitpath(path)
             idx = bisect.bisect_left(self.folder_names, folder)
@@ -406,6 +426,7 @@ class PathListCtrl(wx.PyScrolledWindow):
                 as enabled, PathListCtrl.FLAG_SELECTED_ONLY to return only
                 selected paths, PathListCtrl.FLAG_FOCUS_ITEM_ONLY to return
                 either an empty list or the focus item's path.
+                :param flags:
         """
         paths = []
         if self.schmutzy:
@@ -455,6 +476,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         url - url to select if it is present
 
         returns True if the URL was selected
+        :param url:
+        :param url:
+        :param url:
+        :param url:
+        :param url:
+        :param url:
+        :param url:
+        :param url:
         """
         folder, filename = self.splitpath(url)
         idx = bisect.bisect_left(self.folder_names, folder)
@@ -487,6 +516,8 @@ class PathListCtrl(wx.PyScrolledWindow):
         flags - FLAG_ENABLED_ONLY to only return enabled files or folders
                 with enabled files. FLAG_FOLDERS to return folders instead
                 of files. FLAG_RECURSE to do all subfolders.
+                :param flags:
+                :param path:
         """
         idx = bisect.bisect_left(self.folder_names, path)
         folders = []
@@ -556,7 +587,9 @@ class PathListCtrl(wx.PyScrolledWindow):
         return self.__DROP_FILES_AND_FOLDERS_FONT
 
     def show_idx_as_selected(self, idx):
-        """Return True if the indexed line should be shown selected"""
+        """Return True if the indexed line should be shown selected
+        :param idx:
+        """
         if idx in self.selections:
             return True
         if self.mouse_down_idx is None:
@@ -566,7 +599,9 @@ class PathListCtrl(wx.PyScrolledWindow):
         return idx >= sel_start and idx < sel_end
 
     def on_paint(self, event):
-        """Handle the paint event"""
+        """Handle the paint event
+        :param event:
+        """
         assert isinstance(event, wx.PaintEvent)
         paint_dc = wx.BufferedPaintDC(self)
         if self.schmutzy:
@@ -675,6 +710,12 @@ class PathListCtrl(wx.PyScrolledWindow):
         """Signal the window to repaint the given item
 
         idx - index of the item.
+        :param idx:
+        :param idx:
+        :param idx:
+        :param idx:
+        :param idx:
+        :param idx:
         """
         total_height = (self.line_height + self.leading)
         y = (idx - self.GetScrollPos(wx.SB_VERTICAL)) * total_height
@@ -683,7 +724,14 @@ class PathListCtrl(wx.PyScrolledWindow):
                      rect=wx.Rect(0, y, width, total_height))
 
     def get_mouse_idx(self, event):
-        """Return the line index at the event's mouse coordinate"""
+        """Return the line index at the event's mouse coordinate
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         if len(self.folder_items) == 0:
             return -1
         x, y = event.GetPositionTuple()
@@ -714,7 +762,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         return treeitem_x
 
     def on_mouse_down(self, event):
-        """Handle left mouse button down"""
+        """Handle left mouse button down
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         assert isinstance(event, wx.MouseEvent)
         self.SetFocus()
         idx = self.get_mouse_idx(event)
@@ -749,7 +804,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.Refresh(eraseBackground=False)
 
     def on_double_click(self, event):
-        """Handle double click event"""
+        """Handle double click event
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         idx = self.get_mouse_idx(event)
         if idx == -1:
             self.fn_do_menu_command([], None)
@@ -774,7 +836,14 @@ class PathListCtrl(wx.PyScrolledWindow):
             self.fn_do_menu_command([item.get_full_path(path_idx)], None)
 
     def on_right_mouse_down(self, event):
-        """Handle right mouse button down"""
+        """Handle right mouse button down
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         assert isinstance(event, wx.MouseEvent)
         self.SetFocus()
         idx = self.get_mouse_idx(event)
@@ -790,7 +859,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         event.Skip(True)
 
     def on_mouse_moved(self, event):
-        """Handle mouse movement during capture"""
+        """Handle mouse movement during capture
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         if self.mouse_down_idx is None:
             return
         self.mouse_idx = self.get_mouse_idx(event)
@@ -813,7 +889,14 @@ class PathListCtrl(wx.PyScrolledWindow):
             self.Scroll(current_x, self.focus_item - height + 1)
 
     def on_mouse_up(self, event):
-        """Handle left mouse button up event"""
+        """Handle left mouse button up event
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         if self.mouse_down_idx is None:
             return
         if self.mouse_down_idx == self.mouse_idx:
@@ -832,7 +915,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.ReleaseMouse()
 
     def on_mouse_capture_lost(self, event):
-        """Handle loss of mouse capture"""
+        """Handle loss of mouse capture
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         self.mouse_down_idx = None
 
     def on_up_down(self, event, direction):
@@ -842,6 +932,18 @@ class PathListCtrl(wx.PyScrolledWindow):
 
         event - key event
         direction - 1 for down,  -1 for up
+        :param direction:
+        :param event:
+        :param direction:
+        :param event:
+        :param direction:
+        :param event:
+        :param direction:
+        :param event:
+        :param direction:
+        :param event:
+        :param direction:
+        :param event:
         """
         needs_selchange_event = False
         if (self.focus_item in self.selections and
@@ -868,7 +970,14 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.refresh_item(self.focus_item)
 
     def on_key_down(self, event):
-        """Handle a key press"""
+        """Handle a key press
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         assert isinstance(event, wx.KeyEvent)
         if event.KeyCode == wx.WXK_DELETE and self.fn_delete is not None:
             paths = self.get_paths(self.FLAG_SELECTED_ONLY)
@@ -887,7 +996,14 @@ class PathListCtrl(wx.PyScrolledWindow):
     context_menu_ids = []
 
     def on_context_menu(self, event):
-        """Handle a context menu request"""
+        """Handle a context menu request
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        :param event:
+        """
         if self.focus_item is None:
             fn_context_menu = self.fn_empty_context_menu
             fn_do_menu_command = self.fn_do_empty_context_menu_command

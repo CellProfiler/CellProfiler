@@ -48,7 +48,9 @@ import cellprofiler.preferences as cpprefs
 
 
 def html_color(rgb):
-    """Return an HTML color for a given stain"""
+    """Return an HTML color for a given stain
+    :param rgb:
+    """
     rgb = np.exp(-np.array(rgb)) * 255
     rgb = rgb.astype(int)
     color = hex((rgb[0] * 256 + rgb[1]) * 256 + rgb[2])
@@ -304,7 +306,9 @@ class UnmixColors(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        """Unmix the colors on an image in the image set"""
+        """Unmix the colors on an image in the image set
+        :param workspace:
+        """
         input_image_name = self.input_image_name.value
         input_image = workspace.image_set.get_image(input_image_name,
                                                     must_be_rgb=True)
@@ -316,7 +320,11 @@ class UnmixColors(cpm.CPModule):
             self.run_on_output(workspace, input_image, output)
 
     def run_on_output(self, workspace, input_image, output):
-        """Produce one image - storing it in the image set"""
+        """Produce one image - storing it in the image set
+        :param output:
+        :param input_image:
+        :param workspace:
+        """
         input_pixels = input_image.pixel_data
         inverse_absorbances = self.get_inverse_absorbances(output)
         #########################################
@@ -353,7 +361,10 @@ class UnmixColors(cpm.CPModule):
             workspace.display_data.outputs[image_name] = image
 
     def display(self, workspace, figure):
-        """Display all of the images in a figure"""
+        """Display all of the images in a figure
+        :param figure:
+        :param workspace:
+        """
         figure.set_subplots((len(self.outputs) + 1, 1))
         input_image = workspace.display_data.input_image
         figure.subplot_imshow_color(0, 0, input_image,
@@ -367,7 +378,9 @@ class UnmixColors(cpm.CPModule):
                                             sharexy=ax)
 
     def get_absorbances(self, output):
-        """Given one of the outputs, return the red, green and blue absorbance"""
+        """Given one of the outputs, return the red, green and blue absorbance
+        :param output:
+        """
 
         if output.stain_choice == CHOICE_CUSTOM:
             result = np.array(
@@ -387,6 +400,7 @@ class UnmixColors(cpm.CPModule):
 
         returns a 3-tuple which is the column of the inverse of the matrix
         of absorbances corresponding to the entered row.
+        :param output:
         """
         idx = self.outputs.index(output)
         absorbance_array = np.array([self.get_absorbances(o)

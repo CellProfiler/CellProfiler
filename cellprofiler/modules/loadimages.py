@@ -370,11 +370,15 @@ class LoadImages(cpmodule.CPModule):
                                          self.add_imagecb)
 
     def add_imagecb(self, can_remove=True):
-        """Adds another image to the settings"""
+        """Adds another image to the settings
+        :param can_remove:
+        """
         group = cps.SettingsGroup()
 
         def example_file_fn(path=None):
-            """Get an example file for use in the file metadata regexp editor"""
+            """Get an example file for use in the file metadata regexp editor
+            :param path:
+            """
             if path is None:
                 path = self.image_directory()
                 default = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
@@ -643,6 +647,13 @@ class LoadImages(cpmodule.CPModule):
 
         image_settings - the image's settings group
         can_remove - true if we are allowed to remove this channel
+        :param can_remove:
+        :param can_remove:
+        :param can_remove:
+        :param can_remove:
+        :param can_remove:
+        :param can_remove:
+        :param image_settings:
         """
 
         group = cps.SettingsGroup()
@@ -757,7 +768,14 @@ class LoadImages(cpmodule.CPModule):
                 group))
 
     def channel_wants_images(self, channel):
-        """True if the channel produces images, false if it produces objects"""
+        """True if the channel produces images, false if it produces objects
+        :param channel:
+        :param channel:
+        :param channel:
+        :param channel:
+        :param channel:
+        :param channel:
+        """
         return channel.image_object_choice == IO_IMAGES
 
     def help_settings(self):
@@ -892,6 +910,12 @@ class LoadImages(cpmodule.CPModule):
         """Validate a module's settings
 
         LoadImages marks the common_text as invalid if it's blank.
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
         """
         if self.match_method == MS_EXACT_MATCH:
             for image_group in self.images:
@@ -903,7 +927,14 @@ class LoadImages(cpmodule.CPModule):
                         image_group.common_text)
 
     def validate_module_warnings(self, pipeline):
-        """Check for potentially dangerous settings"""
+        """Check for potentially dangerous settings
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
 
         # Check that user has selected fields for grouping if grouping is turned on
         if self.group_by_metadata.value and (
@@ -1100,7 +1131,28 @@ class LoadImages(cpmodule.CPModule):
         return self.has_metadata
 
     def get_channel_for_image_name(self, image_name):
-        """Given an image name, return the channel that holds its settings"""
+        """Given an image name, return the channel that holds its settings
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        :param image_name:
+        """
         for image_settings in self.images:
             for channel in image_settings.channels:
                 if channel.get_image_name() == image_name:
@@ -1118,6 +1170,26 @@ class LoadImages(cpmodule.CPModule):
             """Upgrade rev 1 LoadImages to rev 2
 
             Handle movie formats new to rev 2
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
             """
             new_values = list(setting_values[:10])
             image_or_movie = setting_values[10]
@@ -1134,14 +1206,56 @@ class LoadImages(cpmodule.CPModule):
             return (new_values, 2)
 
         def upgrade_2_to_3(setting_values):
-            """Added binary/grayscale question"""
+            """Added binary/grayscale question
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             new_values = list(setting_values)
             new_values.append('grayscale')
             new_values.append('')
             return (new_values, 3)
 
         def upgrade_3_to_4(setting_values):
-            """Added text exclusion at slot # 10"""
+            """Added text exclusion at slot # 10
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             new_values = list(setting_values)
             new_values.insert(10, cps.DO_NOT_USE)
             return (new_values, 4)
@@ -1152,7 +1266,28 @@ class LoadImages(cpmodule.CPModule):
             return (new_values, 5)
 
         def upgrade_5_to_new_1(setting_values):
-            """Take the old LoadImages values and put them in the correct slots"""
+            """Take the old LoadImages values and put them in the correct slots
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             loc = setting_values[13]
             custom_path = loc
             if loc == '.':
@@ -1194,7 +1329,28 @@ class LoadImages(cpmodule.CPModule):
         # New revisions in CP2.0
         #
         def upgrade_new_1_to_2(setting_values):
-            """Add the metadata slots to the images"""
+            """Add the metadata slots to the images
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V1])
             new_values.append(cps.NO)  # Group by metadata is off
             for i in range((len(
@@ -1209,7 +1365,28 @@ class LoadImages(cpmodule.CPModule):
             return (new_values, 2)
 
         def upgrade_new_2_to_3(setting_values):
-            """Add the checkbox for excluding certain files"""
+            """Add the checkbox for excluding certain files
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V2])
             if setting_values[self.SLOT_MATCH_EXCLUDE] == cps.DO_NOT_USE:
                 new_values += [cps.NO]
@@ -1219,14 +1396,56 @@ class LoadImages(cpmodule.CPModule):
             return (new_values, 3)
 
         def upgrade_new_3_to_4(setting_values):
-            """Add the metadata_fields setting"""
+            """Add the metadata_fields setting
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V3])
             new_values.append('')
             new_values += setting_values[self.SLOT_FIRST_IMAGE_V3:]
             return (new_values, 4)
 
         def upgrade_new_4_to_5(setting_values):
-            """Combine the location and custom location values"""
+            """Combine the location and custom location values
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             setting_values = cps.standardize_default_folder_names(
                 setting_values, self.SLOT_LOCATION)
             custom_location = setting_values[self.SLOT_LOCATION + 1]
@@ -1245,7 +1464,28 @@ class LoadImages(cpmodule.CPModule):
             return (setting_values, 5)
 
         def upgrade_new_5_to_6(setting_values):
-            """Added separate channels for flex images"""
+            """Added separate channels for flex images
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V5])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V5:]
             image_count = (len(setting_values) / self.SLOT_IMAGE_FIELD_COUNT_V5)
@@ -1268,7 +1508,28 @@ class LoadImages(cpmodule.CPModule):
             return (new_values, 6)
 
         def upgrade_new_6_to_7(setting_values):
-            """Added movie frame grouping"""
+            """Added movie frame grouping
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V6])
             image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V6])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V6:]
@@ -1284,7 +1545,28 @@ class LoadImages(cpmodule.CPModule):
             return (new_values, 7)
 
         def upgrade_new_7_to_8(setting_values):
-            """Added rescale control"""
+            """Added rescale control
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V7])
             image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V7])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V7:]
@@ -1301,7 +1583,28 @@ class LoadImages(cpmodule.CPModule):
             return (new_values, 8)
 
         def upgrade_new_8_to_9(setting_values):
-            """Added object loading"""
+            """Added object loading
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            :param setting_values:
+            """
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V8])
             image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V8])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V8:]
@@ -1323,7 +1626,9 @@ class LoadImages(cpmodule.CPModule):
             return (new_values, 9)
 
         def upgrade_new_9_to_10(setting_values):
-            """Added outlines to object loading"""
+            """Added outlines to object loading
+            :param setting_values:
+            """
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V9])
             image_count = int(setting_values[self.SLOT_IMAGE_COUNT_V9])
             setting_values = setting_values[self.SLOT_FIRST_IMAGE_V9:]
@@ -1343,7 +1648,9 @@ class LoadImages(cpmodule.CPModule):
             return (new_values, 10)
 
         def upgrade_new_10_to_11(setting_values):
-            """Added subdirectory filter"""
+            """Added subdirectory filter
+            :param setting_values:
+            """
             new_values = (setting_values[:self.SLOT_IMAGE_COUNT_V10] +
                           [""] + setting_values[self.SLOT_IMAGE_COUNT_V10:])
             if new_values[self.SLOT_DESCEND_SUBDIRECTORIES] == cps.YES:
@@ -1423,6 +1730,7 @@ class LoadImages(cpmodule.CPModule):
 
     def prepare_run(self, workspace):
         """Set up all of the image providers inside the image_set_list
+        :param workspace:
         """
         if workspace.pipeline.in_batch_mode():
             # Don't set up if we're going to retrieve the image set list
@@ -1436,7 +1744,9 @@ class LoadImages(cpmodule.CPModule):
             return self.prepare_run_of_images(workspace)
 
     def prepare_run_of_images(self, workspace):
-        """Set up image providers for image files"""
+        """Set up image providers for image files
+        :param workspace:
+        """
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
@@ -1454,7 +1764,9 @@ class LoadImages(cpmodule.CPModule):
 
     def organize_by_order(self, workspace, files):
         """Organize each kind of file by their lexical order
-        
+        :param workspace:
+        :param files:
+
         """
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
@@ -1497,7 +1809,9 @@ class LoadImages(cpmodule.CPModule):
 
     def organize_by_metadata(self, workspace, files):
         """Organize each kind of file by metadata
-        
+        :param workspace:
+        :param files:
+
         """
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
@@ -1658,6 +1972,7 @@ class LoadImages(cpmodule.CPModule):
         metadata values and the second element contains a list of
         (path,filename) tuples for each image (or are None for errors where 
         there is no metadata match).
+        :param d:
         """
 
         if not any([isinstance(dd, dict) for dd in d]):
@@ -1697,6 +2012,8 @@ class LoadImages(cpmodule.CPModule):
                                  for each tag
 
         tags - the metadata tags to be used for matching
+        :param workspace:
+        :param tags:
         """
         measurements = workspace.measurements
         metadata_features = [
@@ -1730,6 +2047,9 @@ class LoadImages(cpmodule.CPModule):
                         where at least one of the file tuples is None indicating
                         a missing image
         frame: the parent for the error report
+        :param missing_images:
+        :param conflicts:
+        :param frame:
         """
         import wx
         import wx.html
@@ -1825,7 +2145,9 @@ class LoadImages(cpmodule.CPModule):
         my_frame.Show()
 
     def prepare_run_of_flex(self, workspace):
-        """Set up image providers for flex files"""
+        """Set up image providers for flex files
+        :param workspace:
+        """
         import bioformats.omexml
         from bioformats.formatreader import get_omexml_metadata
 
@@ -2087,7 +2409,9 @@ class LoadImages(cpmodule.CPModule):
         return True
 
     def prepare_run_of_movies(self, workspace):
-        """Set up image providers for movie files"""
+        """Set up image providers for movie files
+        :param workspace:
+        """
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
@@ -2181,6 +2505,8 @@ class LoadImages(cpmodule.CPModule):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
+                        :param workspace:
+                        :param fn_alter_path:
         """
         image_set_list = workspace.image_set_list
         m = workspace.measurements
@@ -2196,7 +2522,8 @@ class LoadImages(cpmodule.CPModule):
 
     def run(self, workspace):
         """Run the module - add the measurements
-        
+        :param workspace:
+
         """
         header = ["Image name", "Path", "Filename"]
         ratio = [1.0, 2.5, 2.0]
@@ -2370,6 +2697,9 @@ class LoadImages(cpmodule.CPModule):
         fd - file/image dictionary
         filename - filename to be parsed
         path - path to be parsed
+        :param fd:
+        :param filename:
+        :param path:
         """
         metadata = {}
         if self.has_file_metadata(fd):
@@ -2407,6 +2737,13 @@ class LoadImages(cpmodule.CPModule):
 
         channel - write measurements for all channels if None, else write only
                   for this channel.
+                  :param measurements:
+                  :param image_number:
+                  :param image_settings:
+                  :param full_path:
+                  :param series:
+                  :param frame:
+                  :param channel_name:
         """
         if measurements is not None:
             assert isinstance(measurements, cpmeas.Measurements)
@@ -2450,7 +2787,9 @@ class LoadImages(cpmodule.CPModule):
             return d
 
     def get_frame_count(self, pathname):
-        """Return the # of frames in a movie"""
+        """Return the # of frames in a movie
+        :param pathname:
+        """
         import bioformats.omexml
         from bioformats.formatreader import get_omexml_metadata
         if self.file_types in (FF_AVI_MOVIES, FF_OTHER_MOVIES, FF_STK_MOVIES):
@@ -2470,6 +2809,7 @@ class LoadImages(cpmodule.CPModule):
         """True if the metadata choice is either M_FILE_NAME or M_BOTH
 
         fd - one of the image file descriptors from self.images
+        :param fd:
         """
         return fd.metadata_choice in (M_FILE_NAME, M_BOTH)
 
@@ -2478,6 +2818,7 @@ class LoadImages(cpmodule.CPModule):
         """True if the metadata choice is either M_PATH or M_BOTH
 
         fd - one of the image file descriptors from self.images
+        :param fd:
         """
         return fd.metadata_choice in (M_PATH, M_BOTH)
 
@@ -2485,6 +2826,7 @@ class LoadImages(cpmodule.CPModule):
         """Find the metadata tags for the indexed image
 
         fd - an image file directory from self.images
+        :param fd:
         """
         if not fd:
             s = set()
@@ -2524,6 +2866,7 @@ class LoadImages(cpmodule.CPModule):
 
         Returns None to indicate that the module does not contribute any
         groupings.
+        :param workspace:
         """
         image_name = self.images[0].channels[0].get_image_name()
         url_feature = '_'.join((C_URL, image_name))
@@ -2585,6 +2928,7 @@ class LoadImages(cpmodule.CPModule):
         Returns a list of two-tuples where the first element of the tuple is the path
         from the root directory, including the file name, the second element is the
         index within the image settings (e.g. ImageNameVars).
+        :param workspace:
         """
         global cached_file_lists
         can_cache = workspace.pipeline.test_mode
@@ -2713,6 +3057,7 @@ class LoadImages(cpmodule.CPModule):
         
         Returns true if in image mode and an image extension
         or if in movie mode and extension is a movie extension.
+        :param filename:
         """
         if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES):
             if not is_movie(filename):
@@ -2730,6 +3075,7 @@ class LoadImages(cpmodule.CPModule):
         filename - filename in question
 
         Returns either the index of the image or None if no match
+        :param filename:
         """
         if not self.filter_filename(filename):
             return None
@@ -2745,6 +3091,7 @@ class LoadImages(cpmodule.CPModule):
         filename - filename in question
 
         Returns either the index of the image or None if no match
+        :param filename:
         """
         ttfs = self.text_to_find_vars()
         for i, ttf in enumerate(ttfs):
@@ -2759,6 +3106,7 @@ class LoadImages(cpmodule.CPModule):
 
         Returns either the image index or None if the index, modulo the
         # of files in a group is greater than the number of images.
+        :param index:
         """
         result = (index % self.order_group_size.value) + 1
         for i, fd in enumerate(self.images):
@@ -2770,6 +3118,8 @@ class LoadImages(cpmodule.CPModule):
         """Return the categories of measurements that this module produces
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param pipeline:
+        :param object_name:
         """
         res = []
         object_names = sum(
@@ -2808,6 +3158,9 @@ class LoadImages(cpmodule.CPModule):
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param pipeline:
+        :param object_name:
+        :param category:
         """
         result = []
         object_names = sum(
@@ -2830,6 +3183,7 @@ class LoadImages(cpmodule.CPModule):
 
     def get_measurement_columns(self, pipeline):
         """Return a sequence describing the measurement columns needed by this module
+        :param pipeline:
         """
         cols = []
         all_tokens = []
@@ -2909,6 +3263,7 @@ class LoadImages(cpmodule.CPModule):
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to do "prepare_run".
+        :param setting:
         """
         #
         # It's safest to say that any change in loadimages requires a restart
@@ -2932,6 +3287,10 @@ class LoadImages(cpmodule.CPModule):
         namesandtypes - the namesandtypes module
         groups - the groups module
         first - True if no images have been added to namesandtypes yet.
+        :param pipeline:
+        :param metadata:
+        :param namesandtypes:
+        :param groups:
         """
         import cellprofiler.modules.metadata as cpmetadata
         import cellprofiler.modules.namesandtypes as cpnamesandtypes
@@ -3075,7 +3434,9 @@ class LoadImages(cpmodule.CPModule):
 
 
 def well_metadata_tokens(tokens):
-    """Return the well row and well column tokens out of a set of metadata tokens"""
+    """Return the well row and well column tokens out of a set of metadata tokens
+    :param tokens:
+    """
 
     well_row_token = None
     well_column_token = None
@@ -3091,6 +3452,7 @@ def needs_well_metadata(tokens):
     """Return true if, based on a set of metadata tokens, we need a well token
 
     Check for a row and column token and the absence of the well token.
+    :param tokens:
     """
     if cpmeas.FTR_WELL.lower() in [x.lower() for x in tokens]:
         return False
@@ -3099,7 +3461,9 @@ def needs_well_metadata(tokens):
 
 
 def is_image(filename):
-    """Determine if a filename is a potential image file based on extension"""
+    """Determine if a filename is a potential image file based on extension
+    :param filename:
+    """
     ext = os.path.splitext(filename)[1].lower()
     return ext in SUPPORTED_IMAGE_EXTENSIONS
 
@@ -3224,6 +3588,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 
         measurements - backup for case where MD5 is calculated on image data
                        directly retrieved from URL
+                       :param measurements:
         """
         #
         # Cache the MD5 hash on the image reader
@@ -3291,6 +3656,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
 
     def provide_image(self, image_set):
         """Load an image from a pathname
+        :param image_set:
         """
         from bioformats.formatreader import get_image_reader
         self.cache_file()
@@ -3421,6 +3787,7 @@ def convert_image_to_objects(image):
 
     returns - a similarly shaped integer array with zero representing background
               and other values representing the indices of the associated object.
+              :param image:
     """
     assert isinstance(image, np.ndarray)
     if image.ndim == 2:
@@ -3454,6 +3821,10 @@ def bad_sizes_warning(first_size, first_filename,
     first_filename: file name of first image
     second_size: tuple of height / width of second image
     second_filename: file name of second image
+    :param first_size:
+    :param first_filename:
+    :param second_size:
+    :param second_filename:
     """
     warning = ("Warning: loading image files of different dimensions.\n\n"
                "%s: width = %d, height = %d\n"
@@ -3468,7 +3839,9 @@ PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero")
 
 
 def pathname2url(path):
-    """Convert the unicode path to a file: url"""
+    """Convert the unicode path to a file: url
+    :param path:
+    """
     utf8_path = path.encode('utf-8')
     if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
@@ -3494,6 +3867,7 @@ def urlfilename(url):
 
     For instance http://cellprofiler.org/linked_files/file%20has%20spaces.txt
     has a file part of "file has spaces.txt"
+    :param url:
     """
     if is_file_url(url):
         return os.path.split(url2pathname(url))[1]
@@ -3511,6 +3885,7 @@ def urlpathname(url):
     has a path of http://cellprofiler.org/Comma,separated
 
     A file url has the normal sort of path that you'd expect.
+    :param url:
     """
     if is_file_url(url):
         return os.path.split(url2pathname(url))[0]

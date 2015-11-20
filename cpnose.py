@@ -172,12 +172,17 @@ class LoadTestsFromXML(nose.plugins.Plugin):
             self.config = conf
 
     def prepareTestLoader(self, loader):
-        """Replace the loader with ourself"""
+        """Replace the loader with ourself
+        :param loader:
+        """
         if self.enabled:
             return self
 
     def loadTestsFromNames(self, names, module=None):
-        """Instead of processing the names, return the tests in the XML file"""
+        """Instead of processing the names, return the tests in the XML file
+        :param names:
+        :param module:
+        """
         if self.enabled:
             tests = get_tests_from_xml_files([self.xml_test_file], self.config)
             return tests
@@ -201,6 +206,8 @@ def get_tests_from_xml_files(paths, config):
     paths - paths to xml files
 
     returns a test suite with the paths
+    :param paths:
+    :param config:
     """
     factory = ContextSuiteFactory(config=config)
     hierarchy = {}
@@ -235,7 +242,11 @@ def get_tests_from_xml_files(paths, config):
 
 
 def get_suite_from_dictionary(factory, d, parts=[]):
-    """Recursively combine the values in a dictionary into a suite"""
+    """Recursively combine the values in a dictionary into a suite
+    :param factory:
+    :param d:
+    :param parts:
+    """
     tests = []
     for key in sorted(d.keys()):
         test = d[key]
@@ -247,7 +258,9 @@ def get_suite_from_dictionary(factory, d, parts=[]):
 
 
 def main(*args):
-    """Run the CellProfiler nose tests"""
+    """Run the CellProfiler nose tests
+    :param args:
+    """
     args = list(args)
     import cellprofiler.preferences as cpprefs
     cpprefs.set_headless()

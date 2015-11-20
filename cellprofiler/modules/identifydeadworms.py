@@ -151,7 +151,9 @@ class IdentifyDeadWorms(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        """Run the algorithm on one image set"""
+        """Run the algorithm on one image set
+        :param workspace:
+        """
         #
         # Get the image as a binary image
         #
@@ -271,7 +273,10 @@ class IdentifyDeadWorms(cpm.CPModule):
             workspace.display_data.count = nlabels
 
     def display(self, workspace, figure):
-        """Show an informative display"""
+        """Show an informative display
+        :param figure:
+        :param workspace:
+        """
         import matplotlib
         import cellprofiler.gui.cpfigure
 
@@ -336,6 +341,7 @@ class IdentifyDeadWorms(cpm.CPModule):
 
         returns a binary array that can be used as a footprint for
         the erosion
+        :param angle:
         """
         worm_width = self.worm_width.value
         worm_length = self.worm_length.value
@@ -381,6 +387,14 @@ class IdentifyDeadWorms(cpm.CPModule):
         first, second - prior collection of points
 
         returns augmented collection of points
+        :param second:
+        :param first:
+        :param count2:
+        :param offset2:
+        :param img2:
+        :param count1:
+        :param offset1:
+        :param img1:
         """
         numbering1 = np.zeros(img1.shape, int)
         numbering1[img1] = np.arange(count1) + offset1
@@ -409,6 +423,11 @@ class IdentifyDeadWorms(cpm.CPModule):
         first, second - prior collection of points
 
         returns augmented collection of points
+        :param second:
+        :param first:
+        :param count:
+        :param offset:
+        :param img:
         """
         numbering = np.zeros(img.shape, int)
         numbering[img] = np.arange(count) + offset
@@ -431,6 +450,12 @@ class IdentifyDeadWorms(cpm.CPModule):
         oi, oj - offset for second image
 
         returns two vectors: index in first and index in second
+        :param oj:
+        :param oi:
+        :param numbering2:
+        :param img2:
+        :param numbering1:
+        :param img1:
         """
         i1, i2 = IdentifyDeadWorms.get_slices(oi)
         j1, j2 = IdentifyDeadWorms.get_slices(oj)
@@ -446,6 +471,9 @@ class IdentifyDeadWorms(cpm.CPModule):
 
         Returns two vectors giving the indices of the first and second
         centers that are connected.
+        :param a:
+        :param j:
+        :param i:
         """
         if len(i) < 2:
             return (np.zeros(len(i), int), np.zeros(len(i), int))
@@ -512,6 +540,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         an offset of 1 means that the first array has a slice of :-1
         and the second has a slice of 1:. Return the slice to use
         for the first and second arrays.
+        :param offset:
         """
         if offset > 0:
             s0, s1 = slice(0, -offset), slice(offset, np.iinfo(int).max)
@@ -522,7 +551,9 @@ class IdentifyDeadWorms(cpm.CPModule):
         return s0, s1
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for measurements made by this module"""
+        """Return column definitions for measurements made by this module
+        :param pipeline:
+        """
         object_name = self.object_name.value
         return [(object_name, I.M_LOCATION_CENTER_X, cpmeas.COLTYPE_INTEGER),
                 (object_name, I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_INTEGER),
@@ -553,7 +584,12 @@ class IdentifyDeadWorms(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        """Upgrade the settings from a previous revison"""
+        """Upgrade the settings from a previous revison
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        """
         if variable_revision_number == 1:
             setting_values = setting_values + [
                 cps.YES, 5, 30]

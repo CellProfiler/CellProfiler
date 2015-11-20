@@ -18,6 +18,7 @@ def new_string_cell_array(shape):
     with each cell in the array filled with a numpy.ndarray with shape = (1,0) 
     and dtype=dtype('float64'). This appears to be the form that's created in matlab
     for this sort of object. 
+    :param shape:
     """
     result = numpy.ndarray(shape, dtype=numpy.dtype('object'))
     for i in range(0, shape[0]):
@@ -30,6 +31,7 @@ def make_cell_struct_dtype(fields):
     """Makes the dtype of a struct composed of cells
     
     fields - the names of the fields in the struct
+    :param fields:
     """
     return numpy.dtype([(str(x), '|O4') for x in fields])
 
@@ -38,6 +40,7 @@ def encapsulate_strings_in_arrays(handles):
     """Recursively descend through the handles structure, replacing strings as arrays packed with strings
     
     This function makes the handles structure loaded through the sandwich compatible with loadmat. It operates on the array in-place.
+    :param handles:
     """
     if handles.dtype.kind == 'O':
         # cells - descend recursively
@@ -59,6 +62,7 @@ def encapsulate_strings_in_arrays(handles):
 
 def encapsulate_string(s):
     """Encapsulate a string in an array of shape 1 of the length of the string
+    :param s:
     """
     if isinstance(s, str):
         result = numpy.ndarray((1,), '<S%d' % (len(s)))

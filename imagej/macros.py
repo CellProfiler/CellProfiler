@@ -37,7 +37,10 @@ def get_commands():
 
 
 def execute_command(command, options=None):
-    """Execute the named command within ImageJ"""
+    """Execute the named command within ImageJ
+    :param command:
+    :param options:
+    """
     if options is None:
         J.static_call("ij/IJ", "run", "(Ljava/lang/String;)V", command)
     else:
@@ -50,6 +53,7 @@ def set_current_image(image_plus):
     """Put the given image on the top of the batch mode image stack
 
     image_plus - a wrapped imagePlus
+    :param image_plus:
     """
     #
     # Make sure we are in batch mode prior to adding the image.
@@ -86,6 +90,7 @@ def execute_macro(macro_text):
     """Execute a macro in ImageJ
 
     macro_text - the macro program to be run
+    :param macro_text:
     """
     interp = J.make_instance("ij/macro/Interpreter", "()V")
     J.call(interp, "run", "(Ljava/lang/String;)V", macro_text)
@@ -98,6 +103,8 @@ def run_batch_macro(macro_text, imp):
     imp - an image plus to become the active image
 
     returns the image plus that was the active image at the end of the run
+    :param macro_text:
+    :param imp:
     """
     script = """
     new java.util.concurrent.Callable() {
@@ -116,7 +123,9 @@ def get_user_loader():
 
 
 def get_plugin(classname):
-    """Return an instance of the named plugin"""
+    """Return an instance of the named plugin
+    :param classname:
+    """
     if classname.startswith("ij."):
         cls = J.class_for_name(classname)
     else:

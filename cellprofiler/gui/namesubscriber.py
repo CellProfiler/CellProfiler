@@ -7,6 +7,11 @@ def align_twosided_items(parent, items, min_spacing=8, left_texts=[],
                          right_texts=[]):
     """Find spacing for a list of pairs of text such that the left texts are
     left justified and the right texts (roughly) right justified.
+    :param right_texts:
+    :param left_texts:
+    :param min_spacing:
+    :param items:
+    :param parent:
     """
     if items:
         if wx.Platform == '__WXMSW__':

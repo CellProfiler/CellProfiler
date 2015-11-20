@@ -55,7 +55,9 @@ class CorrectIlluminationApply(cpm.CPModule):
                                                 self.add_image)
 
     def add_image(self, can_delete=True):
-        """Add an image and its settings to the list of images"""
+        """Add an image and its settings to the list of images
+        :param can_delete:
+        """
         image_name = cps.ImageNameSubscriber(
             "Select the input image",
             cps.NONE, doc='''
@@ -150,6 +152,7 @@ class CorrectIlluminationApply(cpm.CPModule):
         the number of settings and their value. For instance, a module that
         takes a variable number of images or objects can increase or decrease
         the number of relevant settings so they map correctly to the values.
+        :param setting_values:
         """
         #
         # Figure out how many images there are based on the number of setting_values
@@ -169,12 +172,15 @@ class CorrectIlluminationApply(cpm.CPModule):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. None means don't draw.
+            :param workspace:
         """
         for image in self.images:
             self.run_image(image, workspace)
 
     def run_image(self, image, workspace):
         """Perform illumination according to the parameters of one image setting group
+        :param workspace:
+        :param image:
 
         """
         #
@@ -225,7 +231,10 @@ class CorrectIlluminationApply(cpm.CPModule):
                 illum_correct_name] = illum_function.pixel_data
 
     def display(self, workspace, figure):
-        """ Display one row of orig / illum / output per image setting group"""
+        """ Display one row of orig / illum / output per image setting group
+        :param figure:
+        :param workspace:
+        """
         figure.set_subplots((3, len(self.images)))
         for j, image in enumerate(self.images):
             image_name = image.image_name.value
@@ -261,7 +270,9 @@ class CorrectIlluminationApply(cpm.CPModule):
                    sharexy=figure.subplot(0, 0))
 
     def validate_module_warnings(self, pipeline):
-        """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
+        """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user.
+        :param pipeline:
+        """
         for j, image in enumerate(self.images):
             if image.rescale_option != RE_NONE:
                 raise cps.ValidationError((
@@ -284,6 +295,10 @@ class CorrectIlluminationApply(cpm.CPModule):
         from_matlab - True if saved in CP Matlab, False if saved in pyCP
 
         returns the updated setting_values, revision # and matlab flag
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         # No SVN records of revisions 1 & 2
         if from_matlab and variable_revision_number == 3:

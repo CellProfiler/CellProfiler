@@ -92,6 +92,7 @@ def text_control_name(v):
     """Return the name of a setting's text control
     v - the setting
     The text control name is built using the setting's key
+    :param v:
     """
     return "%s_text" % (str(v.key()))
 
@@ -102,6 +103,8 @@ def button_control_name(v, idx=None):
     v - the setting
     
     idx - if present, the index of one of several buttons for the setting
+    :param idx:
+    :param v:
     """
     if idx is None:
         return "%s_button" % (str(v.key()))
@@ -113,6 +116,7 @@ def edit_control_name(v):
     """Return the name of a setting's edit control
     v - the setting
     The edit control name is built using the setting's key
+    :param v:
     """
     return str(v.key())
 
@@ -120,6 +124,7 @@ def edit_control_name(v):
 def min_control_name(v):
     """For a range, return the control that sets the minimum value
     v - the setting
+    :param v:
     """
     return "%s_min" % (str(v.key()))
 
@@ -127,6 +132,7 @@ def min_control_name(v):
 def max_control_name(v):
     """For a range, return the control that sets the maximum value
     v - the setting
+    :param v:
     """
     return "%s_max" % (str(v.key()))
 
@@ -137,6 +143,7 @@ def absrel_control_name(v):
     v - the setting
     Absolute - far coordinate is an absolute value
     From edge - far coordinate is a distance from the far edge
+    :param v:
     """
     return "%s_absrel" % (str(v.key()))
 
@@ -144,6 +151,7 @@ def absrel_control_name(v):
 def x_control_name(v):
     """For coordinates, return the control that sets the x value
     v - the setting
+    :param v:
     """
     return "%s_x" % (str(v.key()))
 
@@ -151,6 +159,7 @@ def x_control_name(v):
 def y_control_name(v):
     """For coordinates, return the control that sets the y value
     v - the setting
+    :param v:
     """
     return "%s_y" % (str(v.key()))
 
@@ -159,6 +168,7 @@ def category_control_name(v):
     """For measurements, return the control that sets the measurement category
 
     v - the setting
+    :param v:
     """
     return "%s_category" % (str(v.key()))
 
@@ -171,6 +181,7 @@ def feature_control_name(v):
     """For measurements, return the control that sets the feature name
 
     v - the setting
+    :param v:
     """
     return "%s_feature" % (str(v.key()))
 
@@ -183,6 +194,7 @@ def image_control_name(v):
     """For measurements, return the control that sets the image name
 
     v - the setting
+    :param v:
     """
     return "%s_image" % (str(v.key()))
 
@@ -195,6 +207,7 @@ def object_control_name(v):
     """For measurements, return the control that sets the object name
 
     v - the setting
+    :param v:
     """
     return "%s_object" % (str(v.key()))
 
@@ -207,6 +220,7 @@ def scale_control_name(v):
     """For measurements, return the control that sets the measurement scale
 
     v - the setting
+    :param v:
     """
     return "%s_scale" % (str(v.key()))
 
@@ -248,6 +262,7 @@ def encode_label(text):
     
     The ampersand (&) needs to be encoded as && for wx.StaticText
     and wx.Button in order to keep it from signifying an accelerator.
+    :param text:
     """
     return text.replace('&', '&&')
 
@@ -396,7 +411,9 @@ class ModuleView:
     DO_FREEZE = wx.VERSION < (2, 9, 0, 0)
 
     def set_selection(self, module_num):
-        """Initialize the controls in the view to the settings of the module"""
+        """Initialize the controls in the view to the settings of the module
+        :param module_num:
+        """
         if self.DO_FREEZE:
             self.module_panel.Freeze()
         self.__handle_change = False
@@ -692,7 +709,26 @@ class ModuleView:
                               self.module_notes_control)
 
     def make_binary_control(self, v, control_name, control):
-        """Make a checkbox control for a Binary setting"""
+        """Make a checkbox control for a Binary setting
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        """
         if not control:
             control = wx.RadioBox(
                 self.__module_panel,
@@ -715,6 +751,30 @@ class ModuleView:
         v            - the setting
         choices      - a list of (name, module_name, module_number)
         control_name - assign this name to the control
+        :param control:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param control_name:
+        :param choices:
+        :param v:
         """
         if v.value not in [c[0] for c in choices]:
             choices = choices + [(v.value, "", 0, False)]
@@ -744,6 +804,36 @@ class ModuleView:
         choices      - the possible values for the setting
         control_name - assign this name to the control
         style        - one of the CB_ styles 
+        :param control:
+        :param style:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param style:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param style:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param style:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param style:
+        :param control_name:
+        :param choices:
+        :param v:
+        :param control:
+        :param style:
+        :param control_name:
+        :param choices:
+        :param v:
         """
         assert isinstance(v, (cps.Choice, cps.FigureSubscriber))
         try:
@@ -793,7 +883,26 @@ class ModuleView:
         return control
 
     def make_measurement_multichoice_control(self, v, control_name, control):
-        """Make a button that, when pressed, launches the tree editor"""
+        """Make a button that, when pressed, launches the tree editor
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        """
         if control is None:
             control = wx.Button(self.module_panel, -1,
                                 "Press button to select measurements")
@@ -1024,6 +1133,66 @@ class ModuleView:
         choices      - the possible values for the setting
         control_name - assign this name to the control
         style        - one of the CB_ styles 
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
         """
         try:
             if v.value == cps.DEFAULT:
@@ -1185,7 +1354,68 @@ class ModuleView:
         return control
 
     def make_callback_control(self, v, control_name, control):
-        """Make a control that calls back using the callback buried in the setting"""
+        """Make a control that calls back using the callback buried in the setting
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        """
         if not control:
             control = wx.Button(self.module_panel, -1,
                                 v.label, name=control_name)
@@ -1206,6 +1436,66 @@ class ModuleView:
         control_name - the name that we apply to the panel
 
         control - either None or the panel containing the buttons
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
+        :param control:
+        :param control_name:
+        :param v:
         """
         assert isinstance(v, cps.DoThings)
         if not control:
@@ -1234,7 +1524,10 @@ class ModuleView:
         return control
 
     def make_regexp_control(self, v, control):
-        """Make a textbox control + regular expression button"""
+        """Make a textbox control + regular expression button
+        :param control:
+        :param v:
+        """
         if not control:
             panel = wx.Panel(self.__module_panel,
                              -1,
@@ -1306,7 +1599,10 @@ class ModuleView:
         return control
 
     def make_filename_text_control(self, v, control):
-        """Make a filename text control"""
+        """Make a filename text control
+        :param control:
+        :param v:
+        """
         edit_name = subedit_control_name(v)
         control_name = edit_control_name(v)
         button_name = button_control_name(v)
@@ -1338,7 +1634,9 @@ class ModuleView:
                                              name=button_name)
 
             def on_press(event):
-                """Open a file browser"""
+                """Open a file browser
+                :param event:
+                """
                 if v.mode == cps.FilenameText.MODE_OPEN:
                     mode = wx.FD_OPEN
                 elif v.mode == cps.FilenameText.MODE_APPEND:
@@ -1415,7 +1713,11 @@ class ModuleView:
             custom_sizer.Add(browse_ctrl, 0, wx.ALIGN_CENTER | wx.LEFT, 2)
 
             def on_dir_choice_change(event, v=v, dir_ctrl=dir_ctrl):
-                """Handle a change to the directory choice combobox"""
+                """Handle a change to the directory choice combobox
+                :param v:
+                :param event:
+                :param dir_ctrl:
+                """
                 if not self.__handle_change:
                     return
                 proposed_value = v.join_string(
@@ -1426,7 +1728,11 @@ class ModuleView:
                 self.reset_view()
 
             def on_custom_path_change(event, v=v, custom_ctrl=custom_ctrl):
-                """Handle a change to the custom path"""
+                """Handle a change to the custom path
+                :param v:
+                :param event:
+                :param custom_ctrl:
+                """
                 if not self.__handle_change:
                     return
                 proposed_value = v.join_string(custom_path=custom_ctrl.Value)
@@ -1437,7 +1743,12 @@ class ModuleView:
 
             def on_browse_pressed(event, v=v, dir_ctrl=dir_ctrl,
                                   custom_ctrl=custom_ctrl):
-                """Handle browse button pressed"""
+                """Handle browse button pressed
+                :param v:
+                :param event:
+                :param dir_ctrl:
+                :param custom_ctrl:
+                """
                 dlg = wx.DirDialog(self.module_panel,
                                    v.text,
                                    v.get_absolute_path())
@@ -1540,7 +1851,10 @@ class ModuleView:
         return control
 
     def make_image_plane_control(self, v, control):
-        """Make a control to pick an image plane from the file list"""
+        """Make a control to pick an image plane from the file list
+        :param v:
+        :param control:
+        """
         from cellprofiler.modules.loadimages import url2pathname
 
         assert isinstance(v, cps.ImagePlane)
@@ -1576,7 +1890,11 @@ class ModuleView:
         return control
 
     def make_text_control(self, v, control_name, control):
-        """Make a textbox control"""
+        """Make a textbox control
+        :param control_name:
+        :param v:
+        :param control:
+        """
         text = None
         if not control:
             if v.metadata_display:
@@ -1628,7 +1946,10 @@ class ModuleView:
         return control
 
     def make_range_control(self, v, panel):
-        """Make a "control" composed of a panel and two edit boxes representing a range"""
+        """Make a "control" composed of a panel and two edit boxes representing a range
+        :param v:
+        :param panel:
+        """
         if not panel:
             panel = wx.Panel(self.__module_panel, -1, name=edit_control_name(v))
             sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1670,6 +1991,8 @@ class ModuleView:
         
         The combo box has the word to use to indicate that the range is unbounded
         and the text portion is the value
+        :param v:
+        :param panel:
         """
         if not panel:
             panel = wx.Panel(self.__module_panel, -1, name=edit_control_name(v))
@@ -1748,7 +2071,10 @@ class ModuleView:
         return panel
 
     def make_coordinates_control(self, v, panel):
-        """Make a "control" composed of a panel and two edit boxes representing X and Y"""
+        """Make a "control" composed of a panel and two edit boxes representing X and Y
+        :param v:
+        :param panel:
+        """
         if not panel:
             panel = wx.Panel(self.__module_panel, -1, name=edit_control_name(v))
             sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -1810,6 +2136,8 @@ class ModuleView:
         Object name - an optional set of objects used to compute the measurement
         Scale - an optional scale, generally in pixels, that controls the size
                 of the measured features.
+                :param v:
+                :param panel:
         """
         #
         # We either come in here with:
@@ -1881,7 +2209,32 @@ class ModuleView:
                           feature_ctrl=feature_ctrl,
                           object_ctrl=object_ctrl,
                           scale_ctrl=scale_ctrl):
-                """Reconstruct the measurement value if anything changes"""
+                """Reconstruct the measurement value if anything changes
+                :param event:
+                :param v:
+                :param category_ctrl:
+                :param feature_ctrl:
+                :param object_ctrl:
+                :param scale_ctrl:
+                :param event:
+                :param v:
+                :param category_ctrl:
+                :param feature_ctrl:
+                :param object_ctrl:
+                :param scale_ctrl:
+                :param event:
+                :param v:
+                :param category_ctrl:
+                :param feature_ctrl:
+                :param object_ctrl:
+                :param scale_ctrl:
+                :param event:
+                :param v:
+                :param category_ctrl:
+                :param feature_ctrl:
+                :param object_ctrl:
+                :param scale_ctrl:
+                """
                 if not self.__handle_change:
                     return
 
@@ -2095,6 +2448,11 @@ class ModuleView:
         timeout - None = reset view immediately, False = don't reset view
                   otherwise the # of milliseconds to wait before
                   refresh.
+                  :param setting:
+                  :param control:
+                  :param proposed_value:
+                  :param event:
+                  :param timeout:
         """
         setting_edited_event = SettingEditedEvent(setting,
                                                   self.__module,
@@ -2107,7 +2465,9 @@ class ModuleView:
             self.reset_view(timeout)
 
     def fit_ctrl(self, ctrl):
-        """Fit the control to its text size"""
+        """Fit the control to its text size
+        :param ctrl:
+        """
         width, height = ctrl.GetTextExtent(ctrl.Value + "MM")
         ctrl.SetSizeHintsSz(wx.Size(width, -1))
         ctrl.Parent.Fit()
@@ -2133,7 +2493,9 @@ class ModuleView:
         self.fit_ctrl(control)
 
     def request_validation(self, module=None):
-        """Request validation of the current module in its current state"""
+        """Request validation of the current module in its current state
+        :param module:
+        """
         if module is None:
             module = self.__module
         if self.__validation_request is not None:
@@ -2248,6 +2610,8 @@ class ModuleView:
         setting - set the tooltip for this setting
 
         message - message to display or None for no tool tip
+        :param setting:
+        :param message:
         """
         control_name = edit_control_name(setting)
         control = self.__module_panel.FindWindowByName(
@@ -2271,6 +2635,7 @@ class ModuleView:
         """Redo all of the controls after something has changed
         
         refresh_delay - wait this many ms before refreshing the display
+        :param refresh_delay:
         """
         if self.__module is None:
             return
@@ -2329,7 +2694,9 @@ class FilterPanelController(object):
         self.update()
 
     def get_sizer(self, address):
-        """Find or create the sizer that's associated with a particular address"""
+        """Find or create the sizer that's associated with a particular address
+        :param address:
+        """
         key = tuple(address)
         line_name = self.line_name(address)
         self.hide_show_dict[line_name] = True
@@ -2428,7 +2795,9 @@ class FilterPanelController(object):
         sizer.AddSpacer((len(address) * 20, 0))
 
     def find_and_mark(self, name):
-        """Find a control and mark it to be shown"""
+        """Find a control and mark it to be shown
+        :param name:
+        """
         ctrl = self.panel.FindWindowByName(name)
         self.hide_show_dict[name] = True
         return ctrl
@@ -2586,6 +2955,10 @@ class FilterPanelController(object):
         index - index of the control within the sizer
 
         address - address of the sizer
+        :param sizer:
+        :param item:
+        :param index:
+        :param address:
         """
         key = tuple(address + [index])
         next_key = tuple(address + [index + 1])
@@ -2650,7 +3023,10 @@ class FilterPanelController(object):
         self.on_value_change(event, new_text)
 
     def find_address(self, sequence, address):
-        """Find the sequence with the given address"""
+        """Find the sequence with the given address
+        :param sequence:
+        :param address:
+        """
         if len(address) == 0:
             return sequence
         subsequence = sequence[address[0] + 1]
@@ -2990,14 +3366,18 @@ class FileCollectionDisplayController(object):
         self.stop_button.Enable(False)
 
     def on_stop(self, event):
-        """Stop button pressed"""
+        """Stop button pressed
+        :param event:
+        """
         self.v.fn_on_bkgnd_control(self.v.BKGND_STOP)
         self.pause_button.Label = "Pause"
         self.pause_button.Enable(False)
         self.stop_button.Enable(False)
 
     def on_pause_resume(self, event):
-        """Pause / resume pressed"""
+        """Pause / resume pressed
+        :param event:
+        """
         if self.pause_button.Label == "Pause":
             action = self.v.BKGND_PAUSE
             self.pause_button.Label = "Resume"
@@ -3011,6 +3391,9 @@ class FileCollectionDisplayController(object):
 
         modpath - a collection of path parts to the item in the tree
         text - the text to appear in the item
+        :param modpath:
+        :param text:
+        :param sort:
         """
         parent_key = tuple(modpath[:-1])
         modpath = tuple(modpath)
@@ -3076,7 +3459,9 @@ class FileCollectionDisplayController(object):
 
     @classmethod
     def get_modpath(cls, path):
-        """Break a path into its components"""
+        """Break a path into its components
+        :param path:
+        """
         result = []
         while True:
             new_path, part = os.path.split(path)
@@ -3090,7 +3475,11 @@ class FileCollectionDisplayController(object):
         self.v.fn_on_drop(filenames, True)
 
     def on_drop_text(self, x, y, text):
-        """Text is assumed to be one file name per line"""
+        """Text is assumed to be one file name per line
+        :param x:
+        :param y:
+        :param text:
+        """
         filenames = [line.strip() for line in text.split("\n")
                      if len(line.strip()) > 0]
         self.v.fn_on_drop(filenames, False)
@@ -3101,6 +3490,7 @@ class FileCollectionDisplayController(object):
         event - event from tree control (e.g. EVT_TREE_ITEM_ACTIVATED)
 
         returns a sequence of path items from the root
+        :param event:
         """
         item = event.GetItem()
         path = []
@@ -3173,7 +3563,9 @@ class FileCollectionDisplayController(object):
         self.v.on_remove([self.v.get_tree_modpaths(mod) for mod in mods])
 
     def get_item_address(self, item):
-        """Get an item's address as a collection of names"""
+        """Get an item's address as a collection of names
+        :param item:
+        """
         result = []
         while True:
             name = self.tree_ctrl.GetItemPyData(item)
@@ -3188,6 +3580,7 @@ class FileCollectionDisplayController(object):
         """Get an item from its modpath
 
         returns the tree item id or None if not found.
+        :param modpath:
         """
         return self.modpath_to_item.get(tuple(modpath))
 
@@ -3438,6 +3831,7 @@ class FileCollectionDisplayController(object):
 
         returns the number of immediate unfiltered and filtered subfolders
         and number of unfiltered and filtered files in the hierarchy
+        :param tree:
         """
         unfiltered_subfolders = filtered_subfolders = 0
         unfiltered_files = filtered_files = 0
@@ -3514,6 +3908,8 @@ class JoinerController(object):
         """Update the Joiner setting's control
 
         returns the control
+        :param module_view:
+        :param v:
         """
         assert isinstance(module_view, ModuleView)
         control = module_view.module_panel.FindWindowByName(
@@ -3817,6 +4213,8 @@ class BinaryMatrixController(object):
         """Return the i, j coordinates at the mouse
 
         returns i, j or None, None if misses the hit test
+        :param x:
+        :param y:
         """
         bx, ex, dx, by, ey, dy = [
             wx.SystemSettings.GetMetric(m) for m in (
@@ -3866,6 +4264,8 @@ class BinaryMatrixController(object):
         """Update the Joiner setting's control
 
         returns the control
+        :param module_view:
+        :param v:
         """
         assert isinstance(module_view, ModuleView)
         control = module_view.module_panel.FindWindowByName(
@@ -3944,11 +4344,15 @@ class DataTypeController(object):
         event.Skip()
 
     def get_label_control_name(self, rowidx):
-        """The name of the label control that holds the feature name"""
+        """The name of the label control that holds the feature name
+        :param rowidx:
+        """
         return "label_control_%d_%s" % (rowidx, str(self.v.key()))
 
     def get_choice_control_name(self, rowidx):
-        """The name of the choice control holding the data type choices"""
+        """The name of the choice control holding the data type choices
+        :param rowidx:
+        """
         return "choice_control_%d_%s" % (rowidx, str(self.v.key()))
 
     def update(self):
@@ -4036,6 +4440,8 @@ class DataTypeController(object):
         """Update the Joiner setting's control
 
         returns the control
+        :param module_view:
+        :param v:
         """
         assert isinstance(module_view, ModuleView)
         control = module_view.module_panel.FindWindowByName(
@@ -4064,6 +4470,7 @@ class TableController(wx.grid.PyGridTableBase):
 
         Binds on_mouse_motion and on_column_resize in order to do tooltips.
         Sets up editing / auto size and other to customize for table type.
+        :param grid:
         """
         self.grid = grid
         grid.AutoSize()
@@ -4313,6 +4720,7 @@ class ModuleSizer(wx.PySizer):
     def calc_column_size(self, j):
         """Return a wx.Size with the total height of the controls in
         column j and the maximum of their widths.
+        :param j:
         """
         height = 0
         width = 0
@@ -4465,7 +4873,9 @@ class ValidationRequest(object):
 
 
 def cache_pipeline(pipeline):
-    """Return a single cached copy of a pipeline to limit the # of copies"""
+    """Return a single cached copy of a pipeline to limit the # of copies
+    :param pipeline:
+    """
     d = getattr(request_pipeline_cache, "d", None)
     if d is None:
         d = weakref.WeakValueDictionary()
@@ -4486,6 +4896,10 @@ def validate_module(pipeline, module_num, test_mode, callback):
     callback - a callback with the signature, "fn(setting, message, pipeline_data)"
     where setting is the setting that is in error and message is the message to
     display.
+    :param pipeline:
+    :param module_num:
+    :param test_mode:
+    :param callback:
     """
     pipeline.test_mode = test_mode
     modules = [m for m in pipeline.modules() if m.module_num == module_num]
@@ -4533,6 +4947,7 @@ def validation_queue_handler():
 
 def request_module_validation(validation_request):
     """Request that a module be validated
+    :param validation_request:
 
     """
     global pipeline_queue_thread, validation_queue

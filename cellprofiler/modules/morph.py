@@ -634,7 +634,9 @@ class Morph(cpm.CPModule):
         self.functions.append(group)
 
     def prepare_settings(self, setting_values):
-        """Adjust the # of functions to match the # of setting values"""
+        """Adjust the # of functions to match the # of setting values
+        :param setting_values:
+        """
         assert (len(setting_values) - 2) % FUNCTION_SETTING_COUNT == 0
         function_count = (len(setting_values) - 2) / FUNCTION_SETTING_COUNT
         del self.functions[function_count:]
@@ -744,7 +746,26 @@ class Morph(cpm.CPModule):
                                             sharexy=figure.subplot(0, 0))
 
     def run_function(self, function, pixel_data, mask):
-        """Apply the function once to the image, returning the result"""
+        """Apply the function once to the image, returning the result
+        :param mask:
+        :param pixel_data:
+        :param function:
+        :param mask:
+        :param pixel_data:
+        :param function:
+        :param mask:
+        :param pixel_data:
+        :param function:
+        :param mask:
+        :param pixel_data:
+        :param function:
+        :param mask:
+        :param pixel_data:
+        :param function:
+        :param mask:
+        :param pixel_data:
+        :param function:
+        """
         count = function.repeat_count
         function_name = function.function.value
         scale = function.scale.value
@@ -933,7 +954,88 @@ class Morph(cpm.CPModule):
     def upgrade_settings(self, setting_values,
                          variable_revision_number, module_name,
                          from_matlab):
-        """Adjust the setting_values of previous revisions to match this one"""
+        """Adjust the setting_values of previous revisions to match this one
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        """
         if from_matlab and variable_revision_number in (1, 2):
             # Settings:
             # image name

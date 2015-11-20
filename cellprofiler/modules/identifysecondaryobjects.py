@@ -814,6 +814,24 @@ class IdentifySecondaryObjects(cpmi.Identify):
         labels_out - the unfiltered output labels
         objects    - the objects thing, containing both segmented and 
                      small_removed labels
+                     :param workspace:
+                     :param objects:
+                     :param labels_out:
+                     :param workspace:
+                     :param objects:
+                     :param labels_out:
+                     :param workspace:
+                     :param objects:
+                     :param labels_out:
+                     :param workspace:
+                     :param objects:
+                     :param labels_out:
+                     :param workspace:
+                     :param objects:
+                     :param labels_out:
+                     :param workspace:
+                     :param objects:
+                     :param labels_out:
         """
         segmented_labels = objects.segmented
         max_out = np.max(labels_out)
@@ -857,7 +875,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return True
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for measurements made by this module"""
+        """Return column definitions for measurements made by this module
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        :param pipeline:
+        """
         columns = cpmi.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,
                      cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
@@ -890,6 +915,18 @@ class IdentifySecondaryObjects(cpmi.Identify):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
         """
         object_dictionary = self.get_object_dictionary()
         categories = []
@@ -904,6 +941,24 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         object_dictionary = self.get_object_dictionary()
         result = []

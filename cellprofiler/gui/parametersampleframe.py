@@ -319,6 +319,7 @@ class ParameterSampleFrame(wx.Frame):
         on the right will correspond to widgets to the right of the check
         boxes. This method assumes that 'parameters_list' is correctly
         initialized (see 'get_parameters_list()').
+        :param parameters_list:
         """
         parameters_to_widgets_list = []
         index_count = 0
@@ -333,7 +334,9 @@ class ParameterSampleFrame(wx.Frame):
         return parameters_to_widgets_list
 
     def get_parameter_type(self, setting):
-        """Get parameter type of 'setting' by considering its class."""
+        """Get parameter type of 'setting' by considering its class.
+        :param setting:
+        """
         if isinstance(setting, settings.Binary):
             return PARAM_CLASS_BOUNDED_DISCRETE
         elif isinstance(setting, settings.Choice):
@@ -369,7 +372,9 @@ class ParameterSampleFrame(wx.Frame):
             return 'whatever is left'
 
     def get_parameter_input_size(self, setting):
-        """Get input size of 'setting'."""
+        """Get input size of 'setting'.
+        :param setting:
+        """
         size = 1
         try:
             size = len(setting.get_value())
@@ -541,6 +546,10 @@ class ParameterSampleFrame(wx.Frame):
         size 'number_samples'. If 'is_int' is true, samples will be rounded to
         the nearest integer, except for the last, which will be rounded to
         'upper_bound'.
+        :param is_int:
+        :param number_samples:
+        :param upper_bound:
+        :param lower_bound:
         """
         samples = []
         if number_samples > 1:
@@ -568,6 +577,7 @@ class ParameterSampleFrame(wx.Frame):
                 how-can-i-compute-a-cartesian-product-iteratively>
         If one of the lists in 'list_of_lists' is empty - eg,
         [[1, 2], [], [3, 4]] - the method will not work.
+        :param list_of_lists:
         """
         if not list_of_lists:
             yield []
@@ -616,6 +626,12 @@ class ParameterSampleFrame(wx.Frame):
         pretty much using it as a black box.
 
         Assumption: 'self.prepare_for_run()' was called first.
+        :param module:
+        :param module:
+        :param module:
+        :param module:
+        :param module:
+        :param module:
         """
         failure = 1
         try:
@@ -662,7 +678,25 @@ class ParameterSampleFrame(wx.Frame):
 
     def save_run_output(self, sample_num, directory_path, output_file):
         """Save the parameter settings and images for the current run of
-        'self.__module'."""
+        'self.__module'.
+        :param output_file:
+        :param directory_path:
+        :param sample_num:
+        :param output_file:
+        :param directory_path:
+        :param sample_num:
+        :param output_file:
+        :param directory_path:
+        :param sample_num:
+        :param output_file:
+        :param directory_path:
+        :param sample_num:
+        :param output_file:
+        :param directory_path:
+        :param sample_num:
+        :param output_file:
+        :param directory_path:
+        :param sample_num: """
         for i, setting in enumerate(self.__module.visible_settings()):
             value_to_write = ''
 
@@ -728,7 +762,20 @@ class ParameterSampleFrame(wx.Frame):
                 # ~^~
 
     def save_image(self, image, path):
-        """TODO: add comments"""
+        """TODO: add comments
+        :param path:
+        :param image:
+        :param path:
+        :param image:
+        :param path:
+        :param image:
+        :param path:
+        :param image:
+        :param path:
+        :param image:
+        :param path:
+        :param image:
+        """
 
         import PIL.Image as PILImage
         pixels = image.pixel_data

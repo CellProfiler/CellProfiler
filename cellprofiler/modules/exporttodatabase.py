@@ -281,7 +281,12 @@ def get_next_result(cursor):
 
 
 def connect_mysql(host, user, pw, db):
-    """Creates and returns a db connection and cursor."""
+    """Creates and returns a db connection and cursor.
+    :param db:
+    :param pw:
+    :param user:
+    :param host:
+    """
     connection = MySQLdb.connect(host=host, user=user, passwd=pw, db=db)
     cursor = SSCursor(connection)
     #
@@ -295,7 +300,9 @@ def connect_mysql(host, user, pw, db):
 
 
 def connect_sqlite(db_file):
-    """Creates and returns a db connection and cursor."""
+    """Creates and returns a db connection and cursor.
+    :param db_file:
+    """
     import sqlite3
     connection = sqlite3.connect(db_file, timeout=30)
     cursor = connection.cursor()
@@ -1504,7 +1511,9 @@ class ExportToDatabase(cpm.CPModule):
                 raise cps.ValidationError(msg, self.table_prefix)
 
     def validate_module_warnings(self, pipeline):
-        """Warn user re: Test mode """
+        """Warn user re: Test mode
+        :param pipeline:
+        """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "ExportToDatabase does not produce output in Test Mode",
@@ -1636,6 +1645,9 @@ class ExportToDatabase(cpm.CPModule):
         * change the relative path into an absolute one using the "." and "&"
           convention
         * Create any directories along the path
+        :param image_set_index:
+        :param workspace:
+        :param file_name:
         """
         if image_set_index is not None and workspace is not None:
             file_name = workspace.measurements.apply_metadata(file_name,
@@ -1651,7 +1663,9 @@ class ExportToDatabase(cpm.CPModule):
 
     def prepare_run(self, workspace, as_data_tool=False):
         """Prepare to run the pipeline
-        Establish a connection to the database."""
+        Establish a connection to the database.
+        :param workspace:
+        :param as_data_tool: """
 
         if not as_data_tool:
             self.get_dictionary().clear()
@@ -1760,7 +1774,10 @@ class ExportToDatabase(cpm.CPModule):
                 self.cursor = None
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        """Alter the output directory path for the remote batch host"""
+        """Alter the output directory path for the remote batch host
+        :param workspace:
+        :param fn_alter_path:
+        """
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
@@ -1778,6 +1795,7 @@ class ExportToDatabase(cpm.CPModule):
 
         ExportToDatabase has two modes - writing CSVs and writing directly.
         We write CSVs in post_run. We write directly in run.
+        :param workspace:
         """
         #
         # The measurements may have been created by an old copy of CP. We
@@ -1894,7 +1912,11 @@ class ExportToDatabase(cpm.CPModule):
     INTERACTION_ADD_RELATIONSHIP_TYPE = "AddRelationshipType"
 
     def handle_interaction(self, command, *args, **kwargs):
-        """Handle sqllite interactions from workers"""
+        """Handle sqllite interactions from workers
+        :param args:
+        :param command:
+        :param kwargs:
+        """
 
         if command == self.INTERACTION_EXECUTE:
             return self.handle_interaction_execute(*args, **kwargs)
@@ -1939,6 +1961,7 @@ class ExportToDatabase(cpm.CPModule):
         json_struct - the result from handle_interaction_get_relationship_types
                       which has been dumbed-down for json and which json
                       has likely turned tuples to lists
+                      :param json_struct:
         """
         return dict([(tuple(k), v) for k, v in json_struct])
 
@@ -1948,6 +1971,7 @@ class ExportToDatabase(cpm.CPModule):
         returns a dictionary whose key is
         (module_number, relationship name, object_name1, object_name2) and
         whose value is the relationship type ID for that relationship.
+        :param cursor:
         """
         relationship_type_table = self.get_table_name(T_RELATIONSHIP_TYPES)
         statement = "SELECT %s, %s, %s, %s, %s FROM %s" % (
@@ -1967,6 +1991,10 @@ class ExportToDatabase(cpm.CPModule):
               to the relationship in the relationship type table
 
         returns the relationship type ID
+        :param module_num:
+        :param relationship:
+        :param object_name1:
+        :param object_name2:
         """
         with DBContext(self) as (connection, cursor):
             return self.add_relationship_type(
@@ -1980,6 +2008,11 @@ class ExportToDatabase(cpm.CPModule):
               to the relationship in the relationship type table
 
         returns the relationship type ID
+        :param module_num:
+        :param relationship:
+        :param object_name1:
+        :param object_name2:
+        :param cursor:
         """
         logger.info("Adding missing relationship type:")
         logger.info("        module #: %d" % module_num)
@@ -2043,7 +2076,10 @@ class ExportToDatabase(cpm.CPModule):
         return int(result[0][0])
 
     def post_group(self, workspace, grouping):
-        """Write out any columns that are only available post-group"""
+        """Write out any columns that are only available post-group
+        :param workspace:
+        :param grouping:
+        """
         if workspace.pipeline.test_mode:
             return
 
@@ -2129,6 +2165,8 @@ class ExportToDatabase(cpm.CPModule):
         """Ignore objects (other than 'Image') if this returns true
         
         If strict is True, then we ignore objects based on the object selection
+        :param object_name:
+        :param strict:
         """
         if object_name in (cpmeas.EXPERIMENT, cpmeas.NEIGHBORS):
             return True
@@ -2141,7 +2179,12 @@ class ExportToDatabase(cpm.CPModule):
 
     def ignore_feature(self, object_name, feature_name, measurements=None,
                        strict=False):
-        """Return true if we should ignore a feature"""
+        """Return true if we should ignore a feature
+        :param object_name:
+        :param feature_name:
+        :param measurements:
+        :param strict:
+        """
         if (self.ignore_object(object_name, strict) or
                 feature_name.startswith('Description_') or
                 feature_name.startswith('ModuleError_') or
@@ -2154,7 +2197,10 @@ class ExportToDatabase(cpm.CPModule):
         return False
 
     def get_column_name_mappings(self, pipeline, image_set_list):
-        """Scan all the feature names in the measurements, creating column names"""
+        """Scan all the feature names in the measurements, creating column names
+        :param pipeline:
+        :param image_set_list:
+        """
         columns = self.get_pipeline_measurement_columns(pipeline,
                                                         image_set_list)
         mappings = ColumnNameMapping(self.max_column_size.value)
@@ -2185,6 +2231,9 @@ class ExportToDatabase(cpm.CPModule):
         result[1] - feature name
         result[2] - aggregation operation
         result[3] - column name in Image database
+        :param pipeline:
+        :param image_set_list:
+        :param post_group:
         """
         columns = self.get_pipeline_measurement_columns(pipeline,
                                                         image_set_list)
@@ -2208,7 +2257,10 @@ class ExportToDatabase(cpm.CPModule):
         return result
 
     def get_object_names(self, pipeline, image_set_list):
-        """Get the names of the objects whose measurements are being taken"""
+        """Get the names of the objects whose measurements are being taken
+        :param pipeline:
+        :param image_set_list:
+        """
         column_defs = self.get_pipeline_measurement_columns(pipeline,
                                                             image_set_list)
         obnames = set([c[0] for c in column_defs])
@@ -2253,6 +2305,8 @@ class ExportToDatabase(cpm.CPModule):
         cursor - database cursor for creating the tables
         column_defs - column definitions as returned by get_measurement_columns
         mappings - mappings from measurement feature names to column names
+        :param cursor:
+        :param workspace:
         """
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
@@ -2423,7 +2477,10 @@ CREATE TABLE %s (
         return statements
 
     def get_create_image_table_statement(self, pipeline, image_set_list):
-        """Return a SQL statement that generates the image table"""
+        """Return a SQL statement that generates the image table
+        :param pipeline:
+        :param image_set_list:
+        """
         statement = 'CREATE TABLE ' + self.get_table_name(cpmeas.IMAGE) + ' (\n'
         statement += '%s INTEGER' % C_IMAGE_NUMBER
 
@@ -2449,6 +2506,9 @@ CREATE TABLE %s (
         """Get the "CREATE TABLE" statement for the given object table
 
         object_name - None = PerObject, otherwise a specific table
+        :param object_name:
+        :param pipeline:
+        :param image_set_list:
         """
         if object_name is None:
             object_table = self.get_table_name(cpmeas.OBJECT)
@@ -2483,6 +2543,9 @@ CREATE TABLE %s (
         """Get the "CREATE VIEW" statement for the given object view
 
         object_names is the list of objects to be included into the view
+        :param object_names:
+        :param pipeline:
+        :param image_set_list:
         """
         object_table = self.get_table_name(cpmeas.OBJECT)
 
@@ -2535,6 +2598,7 @@ CREATE TABLE %s (
         """Get the statements to create the relationships table
         
         Returns a list of statements to execute.
+        :param pipeline:
         """
         statements = []
         #
@@ -2650,6 +2714,11 @@ CREATE TABLE %s (
         type record in the relationship types table.
 
         NOTE: this should not be called for CSV databases.
+        :param workspace:
+        :param module_num:
+        :param relationship:
+        :param object_name1:
+        :param object_name2:
         """
         assert self.db_type != DB_MYSQL_CSV
 
@@ -2690,6 +2759,7 @@ CREATE TABLE %s (
         
         The column order here is the same as in get_pipeline_measurement_columns
         with the aggregates following the regular image columns.
+        :param workspace:
         """
 
         pipeline = workspace.pipeline
@@ -2769,6 +2839,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         image_set_list -
         fid - file handle of file to write or None if statements
               should be written to a separate file.
+              :param pipeline:
+              :param image_set_list:
+              :param fid:
         """
         if fid is None:
             file_name = "%s_Per_Well_SETUP.SQL" % (self.sql_file_prefix)
@@ -2873,7 +2946,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             "Writing to an Oracle database is not yet supported")
 
     def base_name(self, workspace):
-        """The base for the output file name"""
+        """The base for the output file name
+        :param workspace:
+        """
         m = workspace.measurements
         first = m.image_set_start_number
         last = m.image_set_number
@@ -2882,6 +2957,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
     def write_csv_data(self, workspace):
         """Write the data in the measurements out to the csv files
         workspace - contains the measurements
+        :param workspace:
         """
         if self.show_window:
             disp_header = ['Table', 'Filename']
@@ -3027,6 +3103,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         post_group - True if in post_group, false if in run
 
         returns True if column should be written
+        :param column:
+        :param post_group:
         """
         if len(column) == 3:
             return not post_group
@@ -3044,6 +3122,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         workspace - contains the measurements
         mappings  - map a feature name to a column name
         image_number - image number for primary database key. Defaults to current.
+        :param workspace:
+        :param post_group:
+        :param image_number:
         """
         if self.show_window:
             disp_header = ["Table", "Statement"]
@@ -3358,6 +3439,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
     def truncate_string_for_display(self, s, field_size=100):
         """ Any string with more than this # of characters will
                 be truncated using an ellipsis.
+                :param s:
+                :param field_size:
         """
         if len(s) > field_size:
             half = int(field_size - 3) / 2
@@ -3381,7 +3464,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                              col_labels=workspace.display_data.header)
 
     def write_post_run_measurements(self, workspace):
-        """Write any experiment measurements marked as post-run"""
+        """Write any experiment measurements marked as post-run
+        :param workspace:
+        """
         columns = workspace.pipeline.get_measurement_columns()
         columns = filter(
             (lambda c:
@@ -3404,7 +3489,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     connection.commit()
 
     def write_properties_file(self, workspace):
-        """Write the CellProfiler Analyst properties file"""
+        """Write the CellProfiler Analyst properties file
+        :param workspace:
+        """
         all_properties = self.get_property_file_text(workspace)
         for properties in all_properties:
             fid = open(properties.file_name, "wt")
@@ -3428,6 +3515,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         * text - the text to save
 
         * properties - a key / value dictionary of the properties
+        :param workspace:
         """
 
         class Properties(object):
@@ -3918,7 +4006,9 @@ CP version : %d\n""" % version_number
         fd.close()
 
     def get_file_path_width(self, workspace):
-        """Compute the file name and path name widths needed in table defs"""
+        """Compute the file name and path name widths needed in table defs
+        :param workspace:
+        """
         m = workspace.measurements
         #
         # Find the length for the file name and path name fields
@@ -3952,12 +4042,17 @@ CP version : %d\n""" % version_number
         """Return the table name associated with a given object
 
         object_name - name of object or "Image", "Object" or "Well"
+        :param object_name:
         """
         return self.get_table_prefix() + 'Per_' + object_name
 
     def get_pipeline_measurement_columns(self, pipeline, image_set_list,
                                          remove_postgroup_key=False):
-        """Get the measurement columns for this pipeline, possibly cached"""
+        """Get the measurement columns for this pipeline, possibly cached
+        :param pipeline:
+        :param image_set_list:
+        :param remove_postgroup_key:
+        """
         d = self.get_dictionary(image_set_list)
         if not d.has_key(D_MEASUREMENT_COLUMNS):
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
@@ -3969,7 +4064,9 @@ CP version : %d\n""" % version_number
         return d[D_MEASUREMENT_COLUMNS]
 
     def filter_measurement_columns(self, columns):
-        """Filter out and properly sort measurement columns"""
+        """Filter out and properly sort measurement columns
+        :param columns:
+        """
         columns = [x for x in columns
                    if not self.ignore_feature(x[0], x[1], True)]
 
@@ -4354,7 +4451,9 @@ class ColumnNameMapping:
         self.__max_len = max_len
 
     def add(self, feature_name):
-        """Add a feature name to the collection"""
+        """Add a feature name to the collection
+        :param feature_name:
+        """
 
         self.__dictionary[feature_name] = feature_name
         self.__mapped = False
@@ -4451,6 +4550,7 @@ def random_number_generator(seed):
     seed - a string to seed the generator
 
     yields integers in the range 0-65535 on iteration
+    :param seed:
     """
     m = hashlib.md5()
     m.update(seed)

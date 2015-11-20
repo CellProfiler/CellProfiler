@@ -237,6 +237,7 @@ class ClassifyObjects(cpm.CPModule):
 
         can_delete - True to include a "remove" button, False if you're not
                      allowed to remove it.
+                     :param can_delete:
         """
         group = cps.SettingsGroup()
         if can_delete:
@@ -492,7 +493,9 @@ class ClassifyObjects(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        """Classify the objects in the image cycle"""
+        """Classify the objects in the image cycle
+        :param workspace:
+        """
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             if self.show_window:
                 workspace.display_data.labels = []
@@ -648,7 +651,20 @@ class ClassifyObjects(cpm.CPModule):
             patch.set_facecolor(colors[i + 1, :])
 
     def run_single_measurement(self, group, workspace):
-        """Classify objects based on one measurement"""
+        """Classify objects based on one measurement
+        :param workspace:
+        :param group:
+        :param workspace:
+        :param group:
+        :param workspace:
+        :param group:
+        :param workspace:
+        :param group:
+        :param workspace:
+        :param group:
+        :param workspace:
+        :param group:
+        """
         object_name = group.object_name.value
         feature = group.measurement.value
         objects = workspace.object_set.get_objects(object_name)
@@ -717,7 +733,20 @@ class ClassifyObjects(cpm.CPModule):
                 workspace.display_data.values.append(values[~np.isnan(values)])
 
     def display_single_measurement(self, workspace, figure):
-        """Display an array of single measurements"""
+        """Display an array of single measurements
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        :param figure:
+        :param workspace:
+        """
         figure.set_subplots((3, len(self.single_measurements)))
         for i, group in enumerate(self.single_measurements):
             bin_hits = workspace.display_data.bins[i]
@@ -755,7 +784,14 @@ class ClassifyObjects(cpm.CPModule):
                                          sharexy=figure.subplot(2, 0))
 
     def get_colors(self, count):
-        """Get colors used for two-measurement labels image"""
+        """Get colors used for two-measurement labels image
+        :param count:
+        :param count:
+        :param count:
+        :param count:
+        :param count:
+        :param count:
+        """
         import matplotlib.cm as cm
         cmap = cm.get_cmap(cpprefs.get_default_colormap())
         #
@@ -773,7 +809,13 @@ class ClassifyObjects(cpm.CPModule):
         This method allows a module to specialize itself according to
         the number of settings and their value. For instance, a module that
         takes a variable number of images or objects can increase or decrease
-        the number of relevant settings so they map correctly to the values."""
+        the number of relevant settings so they map correctly to the values.
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values:
+        :param setting_values: """
 
         single_measurement_count = int(setting_values[1])
         if single_measurement_count < len(self.single_measurements):
@@ -806,6 +848,30 @@ class ClassifyObjects(cpm.CPModule):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if (from_matlab and
                     module_name == 'ClassifyObjectsByTwoMeasurements' and
@@ -953,6 +1019,46 @@ class ClassifyObjects(cpm.CPModule):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
+        :param object_name:
+        :param pipeline:
         """
         if ((object_name == cpmeas.IMAGE) or
                 (self.contrast_choice == BY_SINGLE_MEASUREMENT and
@@ -970,6 +1076,66 @@ class ClassifyObjects(cpm.CPModule):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if category != M_CATEGORY:
             return []

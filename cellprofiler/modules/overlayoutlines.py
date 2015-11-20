@@ -353,7 +353,10 @@ class OverlayOutlines(cpm.CPModule):
         return pixel_data
 
     def get_outline(self, workspace, outline):
-        """Get outline, with aliasing and taking widths into account"""
+        """Get outline, with aliasing and taking widths into account
+        :param outline:
+        :param workspace:
+        """
         if outline.outline_choice == FROM_IMAGES:
             name = outline.outline_name.value
             pixel_data = workspace.image_set.get_image(name).pixel_data

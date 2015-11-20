@@ -268,6 +268,8 @@ class ExportToCellH5(cpm.CPModule):
 
         returns a tuple which can be used for the hierarchical path
         to the group for a particular field of view
+        :param image_number:
+        :param workspace:
         """
         m = workspace.measurements
         path = []
@@ -285,6 +287,7 @@ class ExportToCellH5(cpm.CPModule):
         Internally, this tells the UI to create a link from the master file
         to the plate / well / site group that will be used to store results.
         Then, the worker writes into that file.
+        :param workspace:
         """
         master_file_name = self.get_path_to_master_file(workspace.measurements)
         path = self.get_site_path(
@@ -311,6 +314,9 @@ class ExportToCellH5(cpm.CPModule):
         returns the name of the subfile to be used. After return, the
         subfile has been closed by the UI and a link has been established
         to the group named by the path.
+        :param path:
+        :param pid:
+        :param master_file:
         """
         master_dict = self.get_dictionary().setdefault(master_file, {})
         if pid not in master_dict:

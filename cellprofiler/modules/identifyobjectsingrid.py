@@ -199,6 +199,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. None means don't draw.
+            :param workspace:
         """
         gridding = workspace.get_grid(self.grid_name.value)
         if self.shape_choice == SHAPE_RECTANGLE:
@@ -229,11 +230,17 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             workspace.display_data.labels = labels
 
     def run_rectangle(self, workspace, gridding):
-        """Return a labels matrix composed of the grid rectangles"""
+        """Return a labels matrix composed of the grid rectangles
+        :param gridding:
+        :param workspace:
+        """
         return self.fill_grid(workspace, gridding)
 
     def fill_grid(self, workspace, gridding):
-        """Fill a labels matrix by labeling each rectangle in the grid"""
+        """Fill a labels matrix by labeling each rectangle in the grid
+        :param gridding:
+        :param workspace:
+        """
         assert isinstance(gridding, cpg.CPGridInfo)
         i, j = np.mgrid[0:gridding.image_height,
                0:gridding.image_width]
@@ -252,7 +259,10 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return labels
 
     def run_forced_circle(self, workspace, gridding):
-        """Return a labels matrix composed of circles centered in the grids"""
+        """Return a labels matrix composed of circles centered in the grids
+        :param gridding:
+        :param workspace:
+        """
         i, j = np.mgrid[0:gridding.rows, 0:gridding.columns]
 
         return self.run_circle(workspace, gridding,
@@ -266,6 +276,10 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         gridding - an instance of CPGridInfo giving the details of the grid
         spot_center_i, spot_center_j - the locations of the grid centers.
                    This should have one coordinate per grid cell.
+                   :param spot_center_j:
+                   :param spot_center_i:
+                   :param gridding:
+                   :param workspace:
         """
 
         assert isinstance(gridding, cpg.CPGridInfo)
@@ -295,7 +309,10 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return labels
 
     def run_natural_circle(self, workspace, gridding):
-        """Return a labels matrix composed of circles found from objects"""
+        """Return a labels matrix composed of circles found from objects
+        :param gridding:
+        :param workspace:
+        """
         #
         # Find the centroid of any guide label in a grid
         #
@@ -316,7 +333,9 @@ class IdentifyObjectsInGrid(cpm.CPModule):
 
     def run_natural(self, workspace, gridding):
         """Return a labels matrix made by masking the grid labels with
-        the filtered guide labels"""
+        the filtered guide labels
+        :param gridding:
+        :param workspace: """
         guide_label = self.filtered_labels(workspace, gridding)
         labels = self.fill_grid(workspace, gridding)
         labels = self.fit_labels_to_guiding_objects(workspace, labels)
@@ -330,6 +349,8 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         The gridding is typically smaller in extent than the image it's
         based on. This function enlarges the labels matrix to match the
         dimensions of the guiding objects matrix if appropriate.
+        :param labels:
+        :param workspace:
         """
         if not self.wants_guiding_objects():
             # No guiding objects? No-op
@@ -344,7 +365,10 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return labels
 
     def get_radius(self, workspace, gridding):
-        """Get the radius for circles"""
+        """Get the radius for circles
+        :param gridding:
+        :param workspace:
+        """
         if self.diameter_choice == AM_MANUAL:
             return self.diameter.value / 2
         labels = self.filtered_labels(workspace, gridding)
@@ -357,7 +381,10 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return max(1, np.sqrt(median_area / np.pi))
 
     def filtered_labels(self, workspace, gridding):
-        """Filter labels by proximity to edges of grid"""
+        """Filter labels by proximity to edges of grid
+        :param gridding:
+        :param workspace:
+        """
         #
         # A label might slightly graze a grid other than its own or
         # a label might be something small in a corner of the grid.
@@ -411,14 +438,19 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return filtered_guide_labels
 
     def get_guide_labels(self, workspace):
-        """Return the guide labels matrix for this module"""
+        """Return the guide labels matrix for this module
+        :param workspace:
+        """
         guide_labels = workspace.object_set.get_objects(
             self.guiding_object_name.value)
         guide_labels = guide_labels.segmented
         return guide_labels
 
     def display(self, workspace, figure):
-        """Display the resulting objects"""
+        """Display the resulting objects
+        :param figure:
+        :param workspace:
+        """
         import matplotlib
         gridding = workspace.display_data.gridding
         labels = workspace.display_data.labels
@@ -454,6 +486,10 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
         """
         if from_matlab and variable_revision_number == 2:
             grid_name, new_object_name, shape, old_object_name, \
@@ -482,13 +518,17 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        """Column definitions for measurements made by IdentifyPrimaryObjects"""
+        """Column definitions for measurements made by IdentifyPrimaryObjects
+        :param pipeline:
+        """
         return get_object_measurement_columns(self.output_objects_name.value)
 
     def get_categories(self, pipeline, object_name):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
         """
         if object_name == 'Image':
             return ['Count']
@@ -501,6 +541,9 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         if object_name == 'Image' and category == 'Count':
             return [self.output_objects_name.value]

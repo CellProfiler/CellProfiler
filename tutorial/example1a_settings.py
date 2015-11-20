@@ -98,7 +98,9 @@ class Example1a(cpm.CPModule):
     # tutorials will go over all of those pieces.
     #
     def run(self, workspace):
-        """Execute the module's code on the current image set"""
+        """Execute the module's code on the current image set
+        :param workspace:
+        """
         ##integer_value = self.integer_setting.value
         ##float_value = self.float_setting.value
         ##print "%d + %f = %f" % (integer_value,

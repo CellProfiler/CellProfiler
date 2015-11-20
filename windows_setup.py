@@ -125,6 +125,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
                         to pick up the manifest in the assembly
         Read the manifest using "mt", hack the XML to change the version
         and reinsert it into the resource.
+        :param resource_name:
         """
         #
         # Find mt

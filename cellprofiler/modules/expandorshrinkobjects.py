@@ -184,7 +184,9 @@ class ExpandOrShrinkObjects(cpm.CPModule):
                                      sharexy=figure.subplot(0, 0))
 
     def do_labels(self, labels):
-        """Run whatever transformation on the given labels matrix"""
+        """Run whatever transformation on the given labels matrix
+        :param labels:
+        """
         if (self.operation in (O_SHRINK, O_SHRINK_INF) and
                 self.wants_fill_holes.value):
             labels = fill_labeled_holes(labels)
@@ -244,7 +246,9 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        """Return column definitions for measurements made by this module"""
+        """Return column definitions for measurements made by this module
+        :param pipeline:
+        """
         columns = get_object_measurement_columns(self.output_object_name.value)
         return columns
 
@@ -252,6 +256,8 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         """Return the categories of measurements that this module produces
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
+        :param object_name:
+        :param pipeline:
         """
         categories = []
         if object_name == cpmeas.IMAGE:
@@ -265,6 +271,9 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
+        :param category:
+        :param object_name:
+        :param pipeline:
         """
         result = []
 

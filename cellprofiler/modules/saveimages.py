@@ -470,6 +470,7 @@ class SaveImages(cpm.CPModule):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - display within this frame (or None to not display)
+            :param workspace:
         """
         if self.save_image_or_figure.value in (IF_IMAGE, IF_MASK, IF_CROPPING):
             should_save = self.run_image(workspace)
@@ -499,7 +500,9 @@ class SaveImages(cpm.CPModule):
                                          (workspace.display_data.filename)]])
 
     def run_image(self, workspace):
-        """Handle saving an image"""
+        """Handle saving an image
+        :param workspace:
+        """
         #
         # First, check to see if we should save this image
         #
@@ -635,6 +638,72 @@ class SaveImages(cpm.CPModule):
         sizeT - # of timepoints in the stack
 
         channel_names - names of the channels (make up names if not present
+        :param channel_names:
+        :param size_t:
+        :param size_z:
+        :param size_c:
+        :param t:
+        :param z:
+        :param c:
+        :param pixel_type:
+        :param pixels:
+        :param filename:
+        :param workspace:
+        :param channel_names:
+        :param size_t:
+        :param size_z:
+        :param size_c:
+        :param t:
+        :param z:
+        :param c:
+        :param pixel_type:
+        :param pixels:
+        :param filename:
+        :param workspace:
+        :param channel_names:
+        :param size_t:
+        :param size_z:
+        :param size_c:
+        :param t:
+        :param z:
+        :param c:
+        :param pixel_type:
+        :param pixels:
+        :param filename:
+        :param workspace:
+        :param channel_names:
+        :param size_t:
+        :param size_z:
+        :param size_c:
+        :param t:
+        :param z:
+        :param c:
+        :param pixel_type:
+        :param pixels:
+        :param filename:
+        :param workspace:
+        :param channel_names:
+        :param size_t:
+        :param size_z:
+        :param size_c:
+        :param t:
+        :param z:
+        :param c:
+        :param pixel_type:
+        :param pixels:
+        :param filename:
+        :param workspace:
+        :param channel_names:
+        :param size_t:
+        :param size_z:
+        :param size_c:
+        :param t:
+        :param z:
+        :param c:
+        :param pixel_type:
+        :param pixels:
+        :param filename:
+        :param workspace:
         """
         write_image(filename, pixels, pixel_type,
                     c=c, z=z, t=t,
@@ -728,6 +797,18 @@ class SaveImages(cpm.CPModule):
 
         Throws an exception if can't overwrite and no interaction available.
         Returns False if can't overwrite, otherwise True.
+        :param workspace:
+        :param filename:
+        :param workspace:
+        :param filename:
+        :param workspace:
+        :param filename:
+        :param workspace:
+        :param filename:
+        :param workspace:
+        :param filename:
+        :param workspace:
+        :param filename:
         """
         if not self.overwrite.value and os.path.isfile(filename):
             try:
@@ -741,7 +822,20 @@ class SaveImages(cpm.CPModule):
         return True
 
     def handle_interaction(self, image_set_number, filename):
-        """handle an interaction request from check_overwrite()"""
+        """handle an interaction request from check_overwrite()
+        :param filename:
+        :param image_set_number:
+        :param filename:
+        :param image_set_number:
+        :param filename:
+        :param image_set_number:
+        :param filename:
+        :param image_set_number:
+        :param filename:
+        :param image_set_number:
+        :param filename:
+        :param image_set_number:
+        """
         import wx
         dlg = wx.MessageDialog(wx.GetApp().TopWindow,
                                "%s #%d, set #%d - Do you want to overwrite %s?" % \
@@ -798,7 +892,14 @@ class SaveImages(cpm.CPModule):
         return '_'.join((C_FILE_NAME, self.file_image_name.value))
 
     def source_path(self, workspace):
-        """The path for the image data, or its first parent with a path"""
+        """The path for the image data, or its first parent with a path
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        :param workspace:
+        """
         if self.file_name_method.value == FN_FROM_IMAGE:
             path_feature = '%s_%s' % (C_PATH_NAME, self.file_image_name.value)
             assert workspace.measurements.has_feature(cpmeas.IMAGE,
@@ -826,7 +927,26 @@ class SaveImages(cpm.CPModule):
             return []
 
     def get_filename(self, workspace, make_dirs=True, check_overwrite=True):
-        """Concoct a filename for the current image based on the user settings"""
+        """Concoct a filename for the current image based on the user settings
+        :param check_overwrite:
+        :param make_dirs:
+        :param workspace:
+        :param check_overwrite:
+        :param make_dirs:
+        :param workspace:
+        :param check_overwrite:
+        :param make_dirs:
+        :param workspace:
+        :param check_overwrite:
+        :param make_dirs:
+        :param workspace:
+        :param check_overwrite:
+        :param make_dirs:
+        :param workspace:
+        :param check_overwrite:
+        :param make_dirs:
+        :param workspace:
+        """
 
         measurements = workspace.measurements
         if self.file_name_method == FN_SINGLE_NAME:
@@ -897,7 +1017,31 @@ class SaveImages(cpm.CPModule):
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         """Adjust the setting values to be backwards-compatible with old versions
-        
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+        :param from_matlab:
+        :param module_name:
+        :param variable_revision_number:
+        :param setting_values:
+
         """
 
         PC_DEFAULT = "Default output folder"
@@ -1190,7 +1334,28 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
 
     @staticmethod
     def upgrade_setting(value):
-        """Upgrade setting from previous version"""
+        """Upgrade setting from previous version
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        :param value:
+        """
         dir_choice, custom_path = cps.DirectoryPath.split_string(value)
         if dir_choice in OLD_PC_WITH_IMAGE_VALUES:
             dir_choice = PC_WITH_IMAGE
@@ -1215,6 +1380,8 @@ def save_bmp(path, img):
     img - either a 2d, uint8 image or a 2d + 3 plane uint8 RGB color image
 
     Saves file as an uncompressed 8-bit or 24-bit .bmp image
+    :param img:
+    :param path:
     """
     #
     # Details from
@@ -1260,11 +1427,15 @@ def save_bmp(path, img):
     bmp = np.ascontiguousarray(np.flipud(img)).data
     with open(path, "wb") as fd:
         def write2(value):
-            """write a two-byte little-endian value to the file"""
+            """write a two-byte little-endian value to the file
+            :param value:
+            """
             fd.write(np.array([value], "<u2").data[:2])
 
         def write4(value):
-            """write a four-byte little-endian value to the file"""
+            """write a four-byte little-endian value to the file
+            :param value:
+            """
             fd.write(np.array([value], "<u4").data[:4])
 
         #

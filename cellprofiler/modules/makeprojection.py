@@ -135,7 +135,11 @@ class MakeProjection(cpm.CPModule):
         return result
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        """Reset the aggregate image at the start of group processing"""
+        """Reset the aggregate image at the start of group processing
+        :param image_numbers:
+        :param grouping:
+        :param workspace:
+        """
         if len(image_numbers) > 0:
             provider = ImageProvider(self.projection_image_name.value,
                                      self.projection_type.value,
@@ -167,6 +171,8 @@ class MakeProjection(cpm.CPModule):
 
         Add the provider to the workspace if not present. This could
         happen if the image set didn't reach this module.
+        :param grouping:
+        :param workspace:
         """
         image_set = workspace.image_set
         if self.projection_image_name.value not in image_set.get_names():
@@ -261,6 +267,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         """Save the provider state to a dictionary
 
         d - store state in this dictionary
+        :param d:
         """
         d[self.D_NAME] = self.__name
         d[self.D_FREQUENCY] = self.frequency
@@ -283,6 +290,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         d - dictionary from call to save_state
 
         returns a new ImageProvider built from the saved state
+        :param d:
         """
         name = d[ImageProvider.D_NAME]
         frequency = d[ImageProvider.D_FREQUENCY]

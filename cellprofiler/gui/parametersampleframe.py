@@ -370,7 +370,7 @@ class ParameterSampleFrame(wx.Frame):
 
     def get_parameter_input_size(self, setting):
         """Get input size of 'setting'."""
-        size = 1;
+        size = 1
         try:
             size = len(setting.get_value())
         except:
@@ -657,7 +657,7 @@ class ParameterSampleFrame(wx.Frame):
             module_error_measurement = 'ModuleError_%02d%s' % (
             module.module_num, module.module_name)
             self.__measurements.add_measurement(
-                'Image', module_error_measurement, failure);
+                'Image', module_error_measurement, failure)
         return failure == 0
 
     def save_run_output(self, sample_num, directory_path, output_file):
@@ -891,7 +891,7 @@ class ParameterSampleFrame(wx.Frame):
                     # 4. Run pipeline once for each sample
 
                     # ~*~
-                    self.Show(False);
+                    self.Show(False)
                     progressDialog = wx.ProgressDialog(
                         parent=self, title='Sampling parameters',
                         message='Run 1', maximum=len(self.__sample_list))

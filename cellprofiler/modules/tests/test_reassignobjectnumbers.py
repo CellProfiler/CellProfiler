@@ -522,7 +522,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
         parent_labels = np.zeros(labels.shape, int)
-        parent_labels[1:6, 2:19] = 1;
+        parent_labels[1:6, 2:19] = 1
 
         labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
                                             unify_option=R.UNIFY_PARENT,
@@ -537,7 +537,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         expected = np.zeros(labels.shape, int)
         expected[2:5, 3:18] = 1
         parent_labels = np.zeros(labels.shape, int)
-        parent_labels[1:6, 2:19] = 1;
+        parent_labels[1:6, 2:19] = 1
 
         labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
                                             unify_option=R.UNIFY_PARENT,

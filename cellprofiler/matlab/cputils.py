@@ -65,4 +65,4 @@ def encapsulate_string(s):
     else:
         result = numpy.ndarray((1,), '<U%d' % (len(s)))
     result[0] = s
-    return result;
+    return result

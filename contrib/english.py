@@ -129,7 +129,7 @@ __irregular_participle = {
         'torn', 'throw': 'thrown', 'tread': 'trodden', 'wake':
         'woken', 'wear': 'worn', 'write': 'written'}
 
-import re;
+import re
 from re import sub, match
 
 

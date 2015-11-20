@@ -793,7 +793,7 @@ class NamesAndTypes(cpm.CPModule):
                         else:
                             result.append(
                                 '_'.join((cpmeas.C_METADATA, k[column_name])))
-                    break;
+                    break
         return result
 
     def prepare_run(self, workspace):
@@ -846,7 +846,7 @@ class NamesAndTypes(cpm.CPModule):
             workspace, image_sets, image_set_channel_names)
         env = J.get_env()
         intcls = env.find_class("[I")
-        strcls = env.find_class("[Ljava/lang/String;");
+        strcls = env.find_class("[Ljava/lang/String;")
         urls, path_names, file_names, series, index, channel = [
             env.make_object_array(len(image_set_channel_names), cls)
             for cls in (strcls, strcls, strcls, intcls, intcls, intcls)]

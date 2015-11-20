@@ -56,7 +56,7 @@ def display_error_dialog(*args, **kwargs):
                                exc_info=True)
         except Exception:
             sys.stderr.write(
-                "Exception logging exception in display_error_dialog().  Everything probably broken.\n");
+                "Exception logging exception in display_error_dialog().  Everything probably broken.\n")
             pass
     finally:
         __inside_display_error_dialog = False

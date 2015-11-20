@@ -515,7 +515,7 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(), cpm.Measurements(),
                                   image_set_list)
-        module.prepare_group(workspace, {}, [1]);
+        module.prepare_group(workspace, {}, [1])
         return workspace, module
 
     def make_workspaces(self, input_images):
@@ -541,7 +541,7 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
                                       image_set_list)
             workspaces.append(workspace)
         module.prepare_group(workspaces[0], {},
-                             list(range(1, len(input_images) + 1)));
+                             list(range(1, len(input_images) + 1)))
         return workspaces, module
 
     def test_02_01_run_null_command(self):

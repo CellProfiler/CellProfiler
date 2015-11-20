@@ -223,7 +223,7 @@ class OmeroLoadImages(cpm.CPModule):
         id - id of plate in omero
         '''
         return omero_session.getQueryService().findByString("Plate", "id",
-                                                            plate_id);
+                                                            plate_id)
 
     def load_channels(self):
         '''Add and set channels based on an image from omero '''
@@ -291,7 +291,7 @@ class OmeroLoadImages(cpm.CPModule):
                 wx.ICON_INFORMATION)
         except:
             wx.MessageBox(traceback.format_exc(limit=0), "Exception",
-                          wx.ICON_ERROR);
+                          wx.ICON_ERROR)
 
     def add_channelfn(self, can_remove=True):
         '''Add another image channel

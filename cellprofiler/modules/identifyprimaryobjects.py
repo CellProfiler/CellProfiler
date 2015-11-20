@@ -1423,7 +1423,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     def calc_smoothing_filter_size(self):
         """Return the size of the smoothing filter, calculating it if in automatic mode"""
         if self.automatic_smoothing.value:
-            return 2.35 * self.size_range.min / 3.5;
+            return 2.35 * self.size_range.min / 3.5
         else:
             return self.smoothing_filter_size.value
 

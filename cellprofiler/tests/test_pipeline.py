@@ -1264,7 +1264,7 @@ class TestImagePlaneDetails(unittest.TestCase):
         return cpp.ImagePlaneDetails(jipd)
 
     def test_01_01_init(self):
-        self.get_ipd();
+        self.get_ipd()
 
     def test_02_01_path_url(self):
         url = "http://google.com"

@@ -242,7 +242,7 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         self.assertEqual(key_list[1], "Metadata_Site")
         self.assertEqual(len(groupings), 8)
 
-        idx = 0;
+        idx = 0
         for plate in ("P-12345", "P-23456"):
             for site in ("1", "2", "3", "4"):
                 grouping, image_set_list = groupings[idx]

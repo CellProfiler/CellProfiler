@@ -94,7 +94,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         score = rules.score(m)
         self.assertEqual(score.shape[0], 1)
         self.assertEqual(score.shape[1], 2)
-        self.assertTrue(np.all(np.isnan(score)))
+        self.assertTrue(score[0, 0], -2)
+        self.assertTrue(score[0, 1], .6)
         
     def test_03_01_score_two_rules(self):
         m = cpmeas.Measurements()

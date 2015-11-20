@@ -66,7 +66,7 @@ class NewVersionDialog(wx.Dialog):
 
     def go_to_url(self, evt):
         if not wx.LaunchDefaultBrowser(self.url):
-            wx.MessageBox("Could not open default browser (%s)" % (self.url),
+            wx.MessageBox("Could not open default browser (%s)" % self.url,
                           "Can't open browser", wx.ICON_EXCLAMATION)
 
 

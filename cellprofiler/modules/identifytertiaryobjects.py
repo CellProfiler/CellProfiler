@@ -280,7 +280,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
                 (self.secondary_objects_name, secondary_parents,
                  child_count_of_secondary, R_PARENT)):
             m.add_measurement(self.subregion_objects_name.value,
-                              cpmi.FF_PARENT % (parent_objects_name.value),
+                              cpmi.FF_PARENT % parent_objects_name.value,
                               parents_of)
             m.add_measurement(parent_objects_name.value,
                               cpmi.FF_CHILDREN_COUNT % (
@@ -431,7 +431,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         elif (object_name == self.primary_objects_name or
                       object_name == self.secondary_objects_name):
             categories.append("Children")
-        if (object_name == self.subregion_objects_name):
+        if object_name == self.subregion_objects_name:
             categories += ("Parent", "Location", "Number")
         return categories
 

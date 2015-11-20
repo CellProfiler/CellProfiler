@@ -200,7 +200,7 @@ class TestMeasureObjects(unittest.TestCase):
                 feature_name = "%s_%s_%s" % (category, meas_name, 'MyImage')
                 data = m.get_current_measurement('MyObjects', feature_name)
                 self.assertEqual(np.product(data.shape), 0,
-                                 "Got data for feature %s" % (feature_name))
+                                 "Got data for feature %s" % feature_name)
             self.features_and_columns_match(m, moi)
 
     def test_03_01_01_masked(self):

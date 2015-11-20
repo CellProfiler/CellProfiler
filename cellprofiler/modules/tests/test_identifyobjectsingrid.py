@@ -141,7 +141,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
                                   object_set, cpmeas.Measurements(),
                                   image_set_list)
         workspace.set_grid(GRID_NAME, gridding)
-        return (workspace, module)
+        return workspace, module
 
     def make_rectangular_grid(self, gridding):
         self.assertTrue(isinstance(gridding, cpg.CPGridInfo))

@@ -800,7 +800,7 @@ class NamesAndTypes(cpm.CPModule):
         """
         column_names = self.get_column_names()
         result = []
-        if (self.matching_method == MATCH_BY_METADATA):
+        if self.matching_method == MATCH_BY_METADATA:
             md_keys = self.join.parse()
             for column_name in column_names:
                 if all([k[column_name] is not None for k in md_keys]):
@@ -850,7 +850,7 @@ class NamesAndTypes(cpm.CPModule):
         elif self.assignment_method == ASSIGN_RULES:
             load_choices = [group.load_as_choice.value
                             for group in self.assignments + self.single_images]
-            if (self.matching_method == MATCH_BY_METADATA):
+            if self.matching_method == MATCH_BY_METADATA:
                 m.set_metadata_tags(self.get_metadata_features())
             else:
                 m.set_metadata_tags([cpmeas.IMAGE_NUMBER])

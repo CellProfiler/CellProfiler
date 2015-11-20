@@ -1737,13 +1737,13 @@ class TrackObjects(cpm.CPModule):
 
     def flood(self, i, at, a, b, c, d, z):
         z[i] = at
-        if (a[i] != -1 and z[a[i]] == 0):
+        if a[i] != -1 and z[a[i]] == 0:
             z = self.flood(a[i], at, a, b, c, d, z)
-        if (b[i] != -1 and z[b[i]] == 0):
+        if b[i] != -1 and z[b[i]] == 0:
             z = self.flood(b[i], at, a, b, c, d, z)
-        if (c[i] != -1 and z[c[i]] == 0):
+        if c[i] != -1 and z[c[i]] == 0:
             z = self.flood(c[i], at, a, b, c, d, z)
-        if (c[i] != -1 and z[c[i]] == 0):
+        if c[i] != -1 and z[c[i]] == 0:
             z = self.flood(c[i], at, a, b, c, d, z)
         return z
 
@@ -1762,7 +1762,7 @@ class TrackObjects(cpm.CPModule):
             return
 
         self.recalculate_kalman_filters(workspace, image_numbers)
-        if (not self.wants_second_phase):
+        if not self.wants_second_phase:
             return
 
         gap_cost = float(self.gap_cost.value)
@@ -2433,10 +2433,10 @@ class TrackObjects(cpm.CPModule):
         end_idxs = np.where(
             x[:start_end_end] != np.arange(gap_off, gap_end))[0]
         for i in end_idxs:
-            if (x[i] < start_end_end):
+            if x[i] < start_end_end:
                 a[i + 1] = x[i] + 1
                 d[a[i + 1]] = i + 1
-            elif (x[i] >= merge_off and x[i] < merge_end):
+            elif x[i] >= merge_off and x[i] < merge_end:
                 # -------------------
                 #
                 #    MERGE

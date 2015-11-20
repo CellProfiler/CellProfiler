@@ -531,7 +531,7 @@ class FilterObjects(cpm.CPModule):
             # Relate the old numbering to the new numbering
             #
             m.add_measurement(target_name,
-                              FF_PARENT % (src_name),
+                              FF_PARENT % src_name,
                               np.array(indexes))
             #
             # Count the children (0 / 1)

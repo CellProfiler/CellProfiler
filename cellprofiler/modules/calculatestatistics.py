@@ -593,7 +593,7 @@ def z_factors(xcol, ymatr):
     z_one_tailed = 1 - 3 * (zstd / zrange)
     # Otherwise, set it to a really negative value
     z_one_tailed[(~ np.isfinite(zstd)) | (zrange == 0)] = -1e5
-    return (z, z_one_tailed, xs, avers)
+    return z, z_one_tailed, xs, avers
 
 
 def v_factors(xcol, ymatr):
@@ -712,7 +712,7 @@ def loc_vector_labels(x):
     sorted_labels = np.cumsum(first_occurrence) - 1
     labels = sorted_labels[reverse_order]
     uniqsortvals = sorted_x[first_occurrence]
-    return (labels, len(uniqsortvals), uniqsortvals)
+    return labels, len(uniqsortvals), uniqsortvals
 
 
 #######################################################
@@ -909,7 +909,7 @@ def calc_init_params(x, y):
         hillc = -1
     else:
         hillc = 1
-    return (min_0, max_0, ec50, hillc)
+    return min_0, max_0, ec50, hillc
 
 
 def write_figures(prefix, directory, dose_name,

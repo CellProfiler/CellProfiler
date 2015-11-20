@@ -989,7 +989,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if self.show_window:
             statistics = workspace.display_data.statistics
             statistics.append(["# of accepted objects",
-                               "%d" % (object_count)])
+                               "%d" % object_count])
             if object_count > 0:
                 areas = scipy.ndimage.sum(np.ones(labeled_image.shape),
                                           labeled_image,
@@ -1002,11 +1002,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 high_diameter = (
                 math.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
                 statistics.append(["10th pctile diameter",
-                                   "%.1f pixels" % (low_diameter)])
+                                   "%.1f pixels" % low_diameter])
                 statistics.append(["Median diameter",
-                                   "%.1f pixels" % (median_diameter)])
+                                   "%.1f pixels" % median_diameter])
                 statistics.append(["90th pctile diameter",
-                                   "%.1f pixels" % (high_diameter)])
+                                   "%.1f pixels" % high_diameter])
                 object_area = np.sum(areas)
                 total_area = np.product(labeled_image.shape[:2])
                 statistics.append(["Area covered by objects",
@@ -1019,14 +1019,14 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 if self.unclump_method != UN_NONE:
                     if self.unclump_method == UN_LOG:
                         statistics.append(["LoG threshold",
-                                           "%.1f" % (LoG_threshold)])
+                                           "%.1f" % LoG_threshold])
                         statistics.append(["LoG filter diameter",
-                                           "%.1f" % (LoG_filter_diameter)])
+                                           "%.1f" % LoG_filter_diameter])
                     statistics.append(["Declumping smoothing filter size",
                                        "%.1f" % (
                                        self.calc_smoothing_filter_size())])
                     statistics.append(["Maxima suppression size",
-                                       "%.1f" % (maxima_suppression_size)])
+                                       "%.1f" % maxima_suppression_size])
             workspace.display_data.image = image.pixel_data
             workspace.display_data.labeled_image = labeled_image
             workspace.display_data.size_excluded_labels = size_excluded_labeled_image
@@ -1541,7 +1541,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             labeled_image[area_image > max_allowed_area] = 0
         else:
             small_removed_labels = labeled_image.copy()
-        return (labeled_image, small_removed_labels)
+        return labeled_image, small_removed_labels
 
     def filter_on_border(self, image, labeled_image):
         """Filter out objects touching the border
@@ -1624,7 +1624,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                      labels=[size_excluded_labeled_image]),
                 dict(name="Objects touching border",
                      labels=[border_excluded_labeled_image])]
-            title = "%s outlines" % (self.object_name.value)
+            title = "%s outlines" % self.object_name.value
             figure.subplot_imshow_grayscale(
                 0, 1, image, title, cplabels=cplabels, sharexy=ax)
 

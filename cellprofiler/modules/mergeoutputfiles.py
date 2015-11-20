@@ -207,7 +207,7 @@ class MergeOutputFiles(cpm.CPModule):
 
         def selections():
             current_selection = list_control.GetFirstSelected()
-            while (current_selection != -1):
+            while current_selection != -1:
                 yield current_selection
                 current_selection = list_control.GetNextSelected(
                     current_selection)

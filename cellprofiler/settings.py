@@ -196,7 +196,7 @@ class Setting(object):
         if isinstance(self.__value, unicode):
             return str(utf16encode(self.__value))
         if not isinstance(self.__value, str):
-            raise ValidationError("%s was not a string" % (self.__value), self)
+            raise ValidationError("%s was not a string" % self.__value, self)
         return self.__value
 
     @property
@@ -285,9 +285,9 @@ class RegexpText(Setting):
         try:
             # Convert Matlab to Python
             pattern = re.sub('(\\(\\?)([<][^)>]+?[>])', '\\1P\\2', self.value)
-            re.search('(|(%s))' % (pattern), '')
+            re.search('(|(%s))' % pattern, '')
         except re.error, v:
-            raise ValidationError("Invalid regexp: %s" % (v), self)
+            raise ValidationError("Invalid regexp: %s" % v, self)
 
 
 class DirectoryPath(Text):
@@ -1037,7 +1037,7 @@ class Range(Setting):
             try:
                 self.str_to_value(value)
             except:
-                raise ValidationError(self.valid_format_text % (value), self)
+                raise ValidationError(self.valid_format_text % value, self)
         v_min, v_max = [self.str_to_value(value) for value in values]
         if self._minval is not None and self._minval > v_min:
             raise ValidationError("%s can't be less than %s" % (
@@ -1146,7 +1146,7 @@ class Coordinates(Setting):
 
     def get_value(self):
         """Convert the underlying string to a two-tuple"""
-        return (self.get_x(), self.get_y())
+        return self.get_x(), self.get_y()
 
     def get_x_text(self):
         """Get the x coordinate as text"""
@@ -1179,7 +1179,7 @@ class Coordinates(Setting):
             raise ValidationError("Only two values allowed", self)
         for value in values:
             if not value.isdigit():
-                raise ValidationError("%s is not an integer" % (value), self)
+                raise ValidationError("%s is not an integer" % value, self)
 
 
 BEGIN = "begin"
@@ -1609,7 +1609,7 @@ class NameSubscriber(Setting):
         choices = self.get_choices(pipeline)
         if len(choices) == 0:
             raise ValidationError(
-                "No prior instances of %s were defined" % (self.group), self)
+                "No prior instances of %s were defined" % self.group, self)
         if self.value not in [c[0] for c in choices]:
             raise ValidationError("%s not in %s" % (
             self.value, ", ".join(c[0] for c in self.get_choices(pipeline))),
@@ -1821,7 +1821,7 @@ class Binary(Setting):
     def eq(self, x):
         if x == NO:
             x = False
-        return (self.value and x) or ((not self.value) and (not x))
+        return (self.value and x) or (not self.value and not x)
 
     def __nonzero__(self):
         """Return the value when testing for True / False"""
@@ -2097,7 +2097,7 @@ class MeasurementMultiChoice(MultiChoice):
         loc = subst_choice.find('|')
         if loc == -1:
             return subst_choice, "Invalid"
-        return (choice[:loc], choice[(loc + 1):])
+        return choice[:loc], choice[(loc + 1):]
 
     def get_measurement_object(self, choice):
         return self.decode_object_name(self.split_choice(choice)[0])
@@ -4200,7 +4200,7 @@ class AfterChangeSettingEvent(ChangeSettingEvent):
         ChangeSettingEvent.__init__(self, old_value, new_value)
 
 
-class DeleteSettingEvent():
+class DeleteSettingEvent:
     def __init__(self):
         pass
 

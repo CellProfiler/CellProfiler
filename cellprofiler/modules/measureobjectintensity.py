@@ -271,7 +271,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                 for category, features in (
                         (INTENSITY, ALL_MEASUREMENTS),
                         (C_LOCATION, ALL_LOCATION_MEASUREMENTS)):
-                    for feature in (features):
+                    for feature in features:
                         columns.append((object_name.value,
                                         "%s_%s_%s" % (category, feature,
                                                       image_name.value),

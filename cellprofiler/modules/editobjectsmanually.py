@@ -236,10 +236,10 @@ class EditObjectsManually(I.Identify):
         m = workspace.measurements
         child_count, parents = orig_objects.relate_children(filtered_objects)
         m.add_measurement(filtered_objects_name,
-                          I.FF_PARENT % (orig_objects_name),
+                          I.FF_PARENT % orig_objects_name,
                           parents)
         m.add_measurement(orig_objects_name,
-                          I.FF_CHILDREN_COUNT % (filtered_objects_name),
+                          I.FF_CHILDREN_COUNT % filtered_objects_name,
                           child_count)
         #
         # The object count

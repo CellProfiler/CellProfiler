@@ -281,7 +281,7 @@ def find_cpmodule(m):
     for v, val in m.__dict__.iteritems():
         if isinstance(val, type) and issubclass(val, cpm.CPModule):
             return val
-    raise "Could not find cpm.CPModule class in %s" % (m.__file__)
+    raise "Could not find cpm.CPModule class in %s" % m.__file__
 
 
 def fill_modules():

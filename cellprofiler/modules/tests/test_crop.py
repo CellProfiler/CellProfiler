@@ -89,12 +89,12 @@ class TestCrop(unittest.TestCase):
         self.assertEqual(len(columns), 2)
         self.assertTrue(all([x[0] == cpm.IMAGE for x in columns]))
         self.assertTrue(all([x[2] == cpm.COLTYPE_INTEGER for x in columns]))
-        feature = 'Crop_OriginalImageArea_%s' % (OUTPUT_IMAGE)
+        feature = 'Crop_OriginalImageArea_%s' % OUTPUT_IMAGE
         self.assertTrue(feature in [x[1] for x in columns])
         self.assertTrue(feature in m.get_feature_names('Image'))
         values = m.get_current_measurement('Image', feature)
         self.assertAlmostEqual(values, 10 * 10)
-        feature = 'Crop_AreaRetainedAfterCropping_%s' % (OUTPUT_IMAGE)
+        feature = 'Crop_AreaRetainedAfterCropping_%s' % OUTPUT_IMAGE
         self.assertTrue(feature in [x[1] for x in columns])
         self.assertTrue(feature in m.get_feature_names('Image'))
         values = m.get_current_measurement('Image', feature)

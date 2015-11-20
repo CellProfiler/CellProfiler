@@ -79,7 +79,7 @@ class TestManual(unittest.TestCase):
             for p, dd in ((pattern, d),
                           (anti_pattern, anti_d)):
                 pos = 0
-                while (True):
+                while True:
                     m = re.search(p, data[pos:])
                     if m is None:
                         break

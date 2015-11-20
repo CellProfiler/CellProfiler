@@ -1204,7 +1204,7 @@ class LoadImages(cpmodule.CPModule):
                 raise ValueError(
                     'Unhandled movie type: %s' % (setting_values[11]))
             new_values.extend(setting_values[12:])
-            return (new_values, 2)
+            return new_values, 2
 
         def upgrade_2_to_3(setting_values):
             """Added binary/grayscale question
@@ -1232,7 +1232,7 @@ class LoadImages(cpmodule.CPModule):
             new_values = list(setting_values)
             new_values.append('grayscale')
             new_values.append('')
-            return (new_values, 3)
+            return new_values, 3
 
         def upgrade_3_to_4(setting_values):
             """Added text exclusion at slot # 10
@@ -1259,12 +1259,12 @@ class LoadImages(cpmodule.CPModule):
             """
             new_values = list(setting_values)
             new_values.insert(10, cps.DO_NOT_USE)
-            return (new_values, 4)
+            return new_values, 4
 
         def upgrade_4_to_5(setting_values):
             new_values = list(setting_values)
             new_values.append(cps.NO)
-            return (new_values, 5)
+            return new_values, 5
 
         def upgrade_5_to_new_1(setting_values):
             """Take the old LoadImages values and put them in the correct slots
@@ -1324,7 +1324,7 @@ class LoadImages(cpmodule.CPModule):
                                 image_name == '\\':
                     break
                 new_values.extend([text_to_find, image_name, text_to_find])
-            return (new_values, 1)
+            return new_values, 1
 
         #
         # New revisions in CP2.0
@@ -1363,7 +1363,7 @@ class LoadImages(cpmodule.CPModule):
                                    M_NONE,
                                    cps.NONE,
                                    cps.NONE])
-            return (new_values, 2)
+            return new_values, 2
 
         def upgrade_new_2_to_3(setting_values):
             """Add the checkbox for excluding certain files
@@ -1394,7 +1394,7 @@ class LoadImages(cpmodule.CPModule):
             else:
                 new_values += [cps.YES]
             new_values += setting_values[self.SLOT_FIRST_IMAGE_V2:]
-            return (new_values, 3)
+            return new_values, 3
 
         def upgrade_new_3_to_4(setting_values):
             """Add the metadata_fields setting
@@ -1422,7 +1422,7 @@ class LoadImages(cpmodule.CPModule):
             new_values = list(setting_values[:self.SLOT_FIRST_IMAGE_V3])
             new_values.append('')
             new_values += setting_values[self.SLOT_FIRST_IMAGE_V3:]
-            return (new_values, 4)
+            return new_values, 4
 
         def upgrade_new_4_to_5(setting_values):
             """Combine the location and custom location values
@@ -1462,7 +1462,7 @@ class LoadImages(cpmodule.CPModule):
             setting_values = (setting_values[:self.SLOT_LOCATION] +
                               [location] +
                               setting_values[self.SLOT_LOCATION + 2:])
-            return (setting_values, 5)
+            return setting_values, 5
 
         def upgrade_new_5_to_6(setting_values):
             """Added separate channels for flex images
@@ -1506,7 +1506,7 @@ class LoadImages(cpmodule.CPModule):
                 new_values += [
                     "1", setting_values[self.SLOT_OFFSET_IMAGE_NAME_V5], "1"]
                 setting_values = setting_values[self.SLOT_IMAGE_FIELD_COUNT_V5:]
-            return (new_values, 6)
+            return new_values, 6
 
         def upgrade_new_6_to_7(setting_values):
             """Added movie frame grouping
@@ -1543,7 +1543,7 @@ class LoadImages(cpmodule.CPModule):
                 channel_field_count = self.SLOT_CHANNEL_FIELD_COUNT_V6 * channel_count
                 new_values += setting_values[:channel_field_count]
                 setting_values = setting_values[channel_field_count:]
-            return (new_values, 7)
+            return new_values, 7
 
         def upgrade_new_7_to_8(setting_values):
             """Added rescale control
@@ -1581,7 +1581,7 @@ class LoadImages(cpmodule.CPModule):
                                   :self.SLOT_CHANNEL_FIELD_COUNT_V7] + [cps.YES]
                     setting_values = setting_values[
                                      self.SLOT_CHANNEL_FIELD_COUNT_V7:]
-            return (new_values, 8)
+            return new_values, 8
 
         def upgrade_new_8_to_9(setting_values):
             """Added object loading
@@ -1624,7 +1624,7 @@ class LoadImages(cpmodule.CPModule):
                                   self.SLOT_CHANNEL_FIELD_COUNT_V8]
                     setting_values = setting_values[
                                      self.SLOT_CHANNEL_FIELD_COUNT_V8:]
-            return (new_values, 9)
+            return new_values, 9
 
         def upgrade_new_9_to_10(setting_values):
             """Added outlines to object loading
@@ -1646,7 +1646,7 @@ class LoadImages(cpmodule.CPModule):
                                   self.SLOT_OFFSET_OBJECT_NAME_V9:self.SLOT_CHANNEL_FIELD_COUNT_V9]
                     setting_values = setting_values[
                                      self.SLOT_CHANNEL_FIELD_COUNT_V9:]
-            return (new_values, 10)
+            return new_values, 10
 
         def upgrade_new_10_to_11(setting_values):
             """Added subdirectory filter
@@ -1658,7 +1658,7 @@ class LoadImages(cpmodule.CPModule):
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_ALL
             else:
                 new_values[self.SLOT_DESCEND_SUBDIRECTORIES] = SUB_NONE
-            return (new_values, 11)
+            return new_values, 11
 
         if from_matlab:
             if variable_revision_number == 1:
@@ -1755,7 +1755,7 @@ class LoadImages(cpmodule.CPModule):
         if len(files) == 0:
             return False
 
-        if (self.do_group_by_metadata and len(self.get_metadata_tags())):
+        if self.do_group_by_metadata and len(self.get_metadata_tags()):
             result = self.organize_by_metadata(workspace, files)
         else:
             result = self.organize_by_order(workspace, files)
@@ -1905,7 +1905,7 @@ class LoadImages(cpmodule.CPModule):
                             fd = self.images[i]
                             if mi[1][i] is None:
                                 message += ("%s: missing " %
-                                            (fd.channels[0].image_name.value))
+                                            fd.channels[0].image_name.value)
                             else:
                                 message += ("%s: path=%s, file=%s" %
                                             (fd.channels[0].image_name.value,
@@ -2803,7 +2803,7 @@ class LoadImages(cpmodule.CPModule):
             return frame_count
 
         raise NotImplementedError(
-            "get_frame_count not implemented for %s" % (self.file_types))
+            "get_frame_count not implemented for %s" % self.file_types)
 
     @staticmethod
     def has_file_metadata(fd):
@@ -3411,10 +3411,10 @@ class LoadImages(cpmodule.CPModule):
             groups.wants_groups.value = True
             edited_modules.add(groups)
             metadata_fields = self.metadata_fields.get_selections()
-            if (len(groups.grouping_metadata) > len(metadata_fields)):
+            if len(groups.grouping_metadata) > len(metadata_fields):
                 del groups.grouping_metadata[len(metadata_fields):]
             else:
-                while (len(groups.grouping_metadata) < len(metadata_fields)):
+                while len(groups.grouping_metadata) < len(metadata_fields):
                     groups.add_grouping_metadata()
 
             for i, field in enumerate(metadata_fields):

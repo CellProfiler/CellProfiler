@@ -811,7 +811,7 @@ class AnalysisRunner(object):
                     close_fds=close_fds)
 
             def run_logger(workR, widx):
-                while (True):
+                while True:
                     try:
                         line = workR.stdout.readline()
                         if not line:

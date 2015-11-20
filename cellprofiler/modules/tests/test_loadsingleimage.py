@@ -485,7 +485,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         self.assertEqual(len(measurements), 0)
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
         self.assertEqual(len(categories), 6)
-        for category in (categories):
+        for category in categories:
             measurements = module.get_measurements(workspace.pipeline,
                                                    cpmeas.IMAGE, category)
             for i in range(2):

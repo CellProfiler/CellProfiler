@@ -278,7 +278,7 @@ class Crop(cpm.CPModule):
         result = [self.image_name, self.cropped_image_name, self.shape]
         if self.shape.value in (SH_RECTANGLE, SH_ELLIPSE):
             result += [self.crop_method, self.individual_or_once]
-            if (self.crop_method == CM_COORDINATES):
+            if self.crop_method == CM_COORDINATES:
                 if self.shape == SH_RECTANGLE:
                     result += [self.horizontal_limits, self.vertical_limits]
                 elif self.shape == SH_ELLIPSE:
@@ -294,7 +294,7 @@ class Crop(cpm.CPModule):
             result.append(self.objects_source)
         else:
             raise NotImplementedError(
-                "Unimplemented shape type: %s" % (self.shape.value))
+                "Unimplemented shape type: %s" % self.shape.value)
         result += [self.remove_rows_and_columns]
         return result
 
@@ -403,11 +403,11 @@ class Crop(cpm.CPModule):
         #
         original_image_area = np.product(orig_image.pixel_data.shape[:2])
         area_retained_after_cropping = np.sum(cropping)
-        feature = FF_AREA_RETAINED % (self.cropped_image_name.value)
+        feature = FF_AREA_RETAINED % self.cropped_image_name.value
         m = workspace.measurements
         m.add_measurement('Image', feature,
                           np.array([area_retained_after_cropping]))
-        feature = FF_ORIGINAL_AREA % (self.cropped_image_name.value)
+        feature = FF_ORIGINAL_AREA % self.cropped_image_name.value
         m.add_measurement('Image', feature,
                           np.array([original_image_area]))
 
@@ -494,7 +494,7 @@ class Crop(cpm.CPModule):
             """
             x = mouse_event.xdata
             y = mouse_event.ydata
-            return (x, y)
+            return x, y
 
         class handle(M.patches.Rectangle):
             dm = max((10, min(pixel_data.shape) / 50))

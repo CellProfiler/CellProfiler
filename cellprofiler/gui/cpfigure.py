@@ -1181,7 +1181,7 @@ class CPFigureFrame(wx.Frame):
                    for i in range(len(rgb_mask))]
             for name, value, id in zip(wraparound(COLOR_NAMES), rgb_mask, ids):
                 item = submenu.Append(id, name,
-                                      'Show/Hide the %s channel' % (name),
+                                      'Show/Hide the %s channel' % name,
                                       wx.ITEM_CHECK)
                 if value != 0:
                     item.Check()

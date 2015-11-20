@@ -684,7 +684,7 @@ class MeasureImageQuality(cpm.CPModule):
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
             return [C_IMAGE_QUALITY]
-        elif (object_name == cpmeas.EXPERIMENT and self.any_threshold()):
+        elif object_name == cpmeas.EXPERIMENT and self.any_threshold():
             return [C_IMAGE_QUALITY]
         return []
 
@@ -796,7 +796,7 @@ class MeasureImageQuality(cpm.CPModule):
         :param object_name:
         :param pipeline:
         """
-        if (object_name == cpmeas.IMAGE and category == C_IMAGE_QUALITY):
+        if object_name == cpmeas.IMAGE and category == C_IMAGE_QUALITY:
             if measurement in (F_LOCAL_FOCUS_SCORE, F_CORRELATION):
                 result = []
                 for image_group in self.image_groups:
@@ -1312,7 +1312,7 @@ class MeasureImageQuality(cpm.CPModule):
                                       image_name),
                                       powerslope)
             result += [["%s %s" % (image_name, F_POWER_SPECTRUM_SLOPE),
-                        "%.1f" % (powerslope)]]
+                        "%.1f" % powerslope]]
         return result
 
     def calculate_thresholds(self, image_group, workspace):

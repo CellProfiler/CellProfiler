@@ -836,7 +836,7 @@ class MeasureTexture(cpm.CPModule):
                                                      result)
         statistics = [[image_name, "-",
                        feature_name, scale,
-                       "%.2f" % (result)]]
+                       "%.2f" % result]]
         return statistics
 
     def upgrade_settings(self, setting_values, variable_revision_number,

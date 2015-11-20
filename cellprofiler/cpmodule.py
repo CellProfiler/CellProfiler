@@ -270,7 +270,7 @@ class CPModule(object):
                     module_idx, i] = variable.get_unicode_value()
             if isinstance(variable, cps.NameProvider):
                 setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode(
-                    "%s indep" % (variable.group))
+                    "%s indep" % variable.group)
             elif isinstance(variable, cps.NameSubscriber):
                 setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode(
                     variable.group)

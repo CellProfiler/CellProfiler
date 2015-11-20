@@ -1547,7 +1547,7 @@ class Measurements(object):
         for piece in pattern.split(double_backquote):
             # Replace tags in piece
             result = ''
-            while (True):
+            while True:
                 # Replace one tag
                 m = re.search('\\(\\?[<](.+?)[>]\\)', piece)
                 if not m:
@@ -2099,7 +2099,7 @@ class Measurements(object):
                 index_feature_name = "_".join((C_FRAME, name))
                 if not self.has_feature(IMAGE, url_feature_name):
                     raise ValueError(
-                        "The %s image is missing from the pipeline." % (name))
+                        "The %s image is missing from the pipeline." % name)
                 # URL should be ASCII only
                 url = str(self.get_current_image_measurement(url_feature_name))
                 if self.has_feature(IMAGE, series_feature_name):
@@ -2166,7 +2166,7 @@ class Measurements(object):
         :param name:
         """
         providers = filter(lambda x: x.name == name, self.__image_providers)
-        assert len(providers) > 0, "No provider of the %s image" % (name)
+        assert len(providers) > 0, "No provider of the %s image" % name
         assert len(providers) == 1, "More than one provider of the %s image" % (
         name)
         return providers[0]

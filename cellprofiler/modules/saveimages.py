@@ -70,7 +70,7 @@ FN_SINGLE_NAME = "Single name"
 SINGLE_NAME_TEXT = "Enter single file name"
 FN_WITH_METADATA = "Name with metadata"
 FN_IMAGE_FILENAME_WITH_METADATA = "Image filename with metadata"
-METADATA_NAME_TEXT = ("""Enter file name with metadata""")
+METADATA_NAME_TEXT = """Enter file name with metadata"""
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
 FF_BMP = "bmp"
 FF_JPG = "jpg"
@@ -415,7 +415,7 @@ class SaveImages(cpm.CPModule):
             result.append(self.single_file_name)
         else:
             raise NotImplementedError(
-                "Unhandled file name method: %s" % (self.file_name_method))
+                "Unhandled file name method: %s" % self.file_name_method)
         if self.save_image_or_figure == IF_MOVIE:
             result.append(self.movie_format)
         else:
@@ -480,7 +480,7 @@ class SaveImages(cpm.CPModule):
             self.run_objects(workspace)
         else:
             raise NotImplementedError(("Saving a %s is not yet supported" %
-                                       (self.save_image_or_figure)))
+                                       self.save_image_or_figure))
         workspace.display_data.filename = self.get_filename(
             workspace, make_dirs=False, check_overwrite=False)
 
@@ -497,7 +497,7 @@ class SaveImages(cpm.CPModule):
             outcome = ("Wrote %s" if workspace.display_data.wrote_image
                        else "Did not write %s")
             figure.subplot_table(0, 0, [[outcome %
-                                         (workspace.display_data.filename)]])
+                                         workspace.display_data.filename]])
 
     def run_image(self, workspace):
         """Handle saving an image
@@ -904,7 +904,7 @@ class SaveImages(cpm.CPModule):
             path_feature = '%s_%s' % (C_PATH_NAME, self.file_image_name.value)
             assert workspace.measurements.has_feature(cpmeas.IMAGE,
                                                       path_feature), \
-                "Image %s does not have a path!" % (self.file_image_name.value)
+                "Image %s does not have a path!" % self.file_image_name.value
             return workspace.measurements.get_current_image_measurement(
                 path_feature)
 

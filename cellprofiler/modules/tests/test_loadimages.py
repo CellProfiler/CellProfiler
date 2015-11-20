@@ -230,8 +230,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                           m, image_set_list))
         self.assertEqual(len(image_set.get_names()), 4)
         for i in range(0, 4):
-            self.assertTrue("my_image%d" % (i) in image_set.get_names())
-            self.assertTrue(image_set.get_image("my_image%d" % (i)))
+            self.assertTrue("my_image%d" % i in image_set.get_names())
+            self.assertTrue(image_set.get_image("my_image%d" % i))
 
     def test_02_01_load_image_regex_match(self):
         l = LI.LoadImages()

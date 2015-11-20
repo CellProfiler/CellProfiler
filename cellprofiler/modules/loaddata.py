@@ -753,7 +753,7 @@ class LoadData(cpm.CPModule):
             try:
                 data = self.convert()
             except Exception, e:
-                raise RuntimeError("%s" % (e))
+                raise RuntimeError("%s" % e)
             header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
         return entry["header"]

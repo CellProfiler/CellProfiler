@@ -1687,7 +1687,7 @@ Do you want to save it anyway?""" %
             setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO,
                               cps.NO, cps.NO]
             for name in object_names:
-                setting_values.extend([name, cps.NO, "%s.csv" % (name)])
+                setting_values.extend([name, cps.NO, "%s.csv" % name])
             variable_revision_number = 1
             from_matlab = False
         if variable_revision_number == 3 and from_matlab:

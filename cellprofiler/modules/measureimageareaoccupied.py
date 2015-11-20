@@ -238,11 +238,11 @@ class MeasureImageAreaOccupied(cpm.CPModule):
             total_area = np.product(objects.segmented.shape)
         m = workspace.measurements
         m.add_image_measurement(
-            F_AREA_OCCUPIED % (operand.operand_objects.value),
+            F_AREA_OCCUPIED % operand.operand_objects.value,
             np.array([area_occupied], dtype=float))
-        m.add_image_measurement(F_PERIMETER % (operand.operand_objects.value),
+        m.add_image_measurement(F_PERIMETER % operand.operand_objects.value,
                                 np.array([perimeter], dtype=float))
-        m.add_image_measurement(F_TOTAL_AREA % (operand.operand_objects.value),
+        m.add_image_measurement(F_TOTAL_AREA % operand.operand_objects.value,
                                 np.array([total_area], dtype=float))
         if operand.should_save_image.value:
             binary_pixels = objects.segmented > 0
@@ -264,11 +264,11 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         perimeter = np.sum(outline(image.pixel_data) > 0)
         total_area = np.prod(np.shape(image.pixel_data))
         m = workspace.measurements
-        m.add_image_measurement(F_AREA_OCCUPIED % (operand.binary_name.value),
+        m.add_image_measurement(F_AREA_OCCUPIED % operand.binary_name.value,
                                 np.array([area_occupied], dtype=float))
-        m.add_image_measurement(F_PERIMETER % (operand.binary_name.value),
+        m.add_image_measurement(F_PERIMETER % operand.binary_name.value,
                                 np.array([perimeter], dtype=float))
-        m.add_image_measurement(F_TOTAL_AREA % (operand.binary_name.value),
+        m.add_image_measurement(F_TOTAL_AREA % operand.binary_name.value,
                                 np.array([total_area], dtype=float))
         return [[operand.binary_name.value, str(area_occupied), str(perimeter),
                  str(total_area)]]

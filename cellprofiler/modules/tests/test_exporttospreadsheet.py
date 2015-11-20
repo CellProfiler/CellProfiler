@@ -1019,7 +1019,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             if i:
                 m.next_image_set()
             for j in range(3):
-                m.add_image_measurement("measurement_%d" % (j),
+                m.add_image_measurement("measurement_%d" % j,
                                         "%d:%d" % (i, j))
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(self.make_measurements_pipeline(m),
@@ -1036,7 +1036,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertEqual(len(header), 4)
             self.assertEqual(header[0], "ImageNumber")
             for i in range(3):
-                self.assertEqual(header[i + 1], "measurement_%d" % (i))
+                self.assertEqual(header[i + 1], "measurement_%d" % i)
             for i in range(2):
                 row = reader.next()
                 self.assertEqual(len(row), 4)
@@ -1101,7 +1101,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         np.random.seed(0)
         mvalues = np.random.uniform(size=(2, 3))
         for i in range(3):
-            m.add_measurement("my_object", "measurement_%d" % (i),
+            m.add_measurement("my_object", "measurement_%d" % i,
                               mvalues[:, i])
         m.add_image_measurement("Count_my_object", 2)
         image_set_list = cpi.ImageSetList()
@@ -1123,7 +1123,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertEqual(header[0], "ImageNumber")
             self.assertEqual(header[1], "ObjectNumber")
             for i in range(3):
-                self.assertEqual(header[i + 2], "measurement_%d" % (i))
+                self.assertEqual(header[i + 2], "measurement_%d" % i)
             for i in range(2):
                 row = reader.next()
                 self.assertEqual(len(row), 5)
@@ -1155,8 +1155,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         mvalues = np.random.uniform(size=(4, 3, 2))
         for oidx in range(2):
             for i in range(3):
-                m.add_measurement("object_%d" % (oidx),
-                                  "measurement_%d" % (i), mvalues[:, i, oidx])
+                m.add_measurement("object_%d" % oidx,
+                                  "measurement_%d" % i, mvalues[:, i, oidx])
         m.add_image_measurement("Count_object_0", 4)
         m.add_image_measurement("Count_object_1", 4)
         image_set_list = cpi.ImageSetList()
@@ -1179,7 +1179,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             for oidx in range(2):
                 for i in range(3):
                     self.assertEqual(header[i + oidx * 3 + 2],
-                                     "object_%d" % (oidx))
+                                     "object_%d" % oidx)
             header = reader.next()
             self.assertEqual(len(header), 8)
             self.assertEqual(header[0], "ImageNumber")
@@ -1187,7 +1187,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             for oidx in range(2):
                 for i in range(3):
                     self.assertEqual(header[i + oidx * 3 + 2],
-                                     "measurement_%d" % (i))
+                                     "measurement_%d" % i)
 
             for i in range(4):
                 row = reader.next()

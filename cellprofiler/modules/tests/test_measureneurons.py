@@ -494,7 +494,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         vertex_number = np.zeros(len(np.unique(poi[poi >= 1])), int)
         for v in vertex_graph:
             p = poi[v["i"], v["j"]]
-            if (p > 1):
+            if p > 1:
                 vertex_number[p - 2] = v["vertex_number"]
         poi_number = np.zeros(len(vertex_graph) + 1, int)
         poi_number[vertex_number] = np.arange(2, len(vertex_number) + 2)

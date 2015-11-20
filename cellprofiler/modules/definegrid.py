@@ -901,7 +901,7 @@ class DefineGrid(cpm.CPModule):
             column = self.grid_columns.value - column
         else:
             column -= 1
-        return (row, column)
+        return row, column
 
     def display(self, workspace, figure):
         if self.show_window:

@@ -920,7 +920,7 @@ def start_lock_thread():
         global __lock_thread
         locked_uids = {}
         locked_files = {}
-        while (True):
+        while True:
             msg = __lock_queue.get()
             boundary = msg[0]
             if msg[1] == Boundary.NOTIFY_STOP:
@@ -1018,7 +1018,7 @@ def lock_file(path, timeout=3):
             poller = zmq.Poller()
             poller.register(request_socket, zmq.POLLIN)
             keep_polling = True
-            while (keep_polling):
+            while keep_polling:
                 keep_polling = False
                 for socket, status in poller.poll(timeout * 1000):
                     keep_polling = True

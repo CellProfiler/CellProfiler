@@ -338,7 +338,7 @@ class MetadataControl(wx.PyControl):
         ##################
         elif (keycode == ord('V')) and cmd_down:
             # Cribbed from the WX drag and drop demo
-            if (wx.TheClipboard.Open()):
+            if wx.TheClipboard.Open():
                 try:
                     data_object = wx.TextDataObject()
                     success = wx.TheClipboard.GetData(data_object)
@@ -364,7 +364,7 @@ class MetadataControl(wx.PyControl):
             selection = list(self.selection)
             selection.sort()
             text = self.get_text(selection[0], selection[1])
-            if (wx.TheClipboard.Open()):
+            if wx.TheClipboard.Open():
                 try:
                     self.__clipboard_text = wx.TextDataObject()
                     self.__clipboard_text.SetText(text)

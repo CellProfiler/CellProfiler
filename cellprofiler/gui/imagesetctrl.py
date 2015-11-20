@@ -525,7 +525,7 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
             if r.Contains(event.Position):
                 return self.Table.GetNumberCols() - 1, self.HIT_PLUS
         if self.Table.GetNumberCols() == 0:
-            return (None, None)
+            return None, None
         only = self.Table.GetNumberCols() == 1
         for i in range(self.Table.GetNumberCols()):
             last = i == self.Table.GetNumberCols() - 1
@@ -536,24 +536,24 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
                 rl = self.col_label_renderer.label_rect(
                     r, label_size, last, only)
                 if rl.ContainsXY(x, y):
-                    return (i, self.HIT_LABEL)
+                    return i, self.HIT_LABEL
                 rct = self.col_label_renderer.channel_type_icon_rect(
                     r, label_size, last, only)
                 if self.read_only:
-                    return (i, self.HIT_NOTHING)
+                    return i, self.HIT_NOTHING
                 if rct.ContainsXY(x, y):
-                    return (i, self.HIT_CHANNEL_TYPE_BUTTON)
+                    return i, self.HIT_CHANNEL_TYPE_BUTTON
                 rf = self.col_label_renderer.filter_icon_rect(
                     r, label_size, last, only)
                 if rf.ContainsXY(x, y):
-                    return (i, self.HIT_FILTER_BUTTON)
+                    return i, self.HIT_FILTER_BUTTON
                 if self.Table.GetNumberCols() > 1:
                     rr = self.col_label_renderer.remove_icon_rect(
                         r, label_size, last)
                     if rr.ContainsXY(x, y):
-                        return (i, self.HIT_MINUS)
-                return (i, self.HIT_NOTHING)
-        return (None, None)
+                        return i, self.HIT_MINUS
+                return i, self.HIT_NOTHING
+        return None, None
 
     def on_gclw_left_mouse_down(self, event):
         assert isinstance(event, wx.MouseEvent)

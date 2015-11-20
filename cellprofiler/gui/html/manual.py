@@ -196,7 +196,7 @@ def output_module_html(webpage_path):
 
             # Include images specific to the module, relative to html files ('images' dir)
             LOCATION_MODULE_IMAGES = os.path.join('images',
-                                                  '%s.png' % (module_name))
+                                                  '%s.png' % module_name)
             result += '\n\n<div><p><img src="%s", width="50%%"></p></div>\n' % LOCATION_MODULE_IMAGES
 
             # Now end the help text

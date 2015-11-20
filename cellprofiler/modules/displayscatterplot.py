@@ -159,7 +159,7 @@ class DisplayScatterPlot(cpm.CPModule):
                                             for x, y in zip(xvals, yvals)
                                             if (x is not None) and (
                                             y is not None)]).transpose()
-                title = '%s' % (self.title.value)
+                title = '%s' % self.title.value
             else:
                 xvals = m.get_current_measurement(self.get_x_object(),
                                                   self.x_axis.value)
@@ -192,7 +192,7 @@ class DisplayScatterPlot(cpm.CPModule):
     def display(self, workspace, figure):
         xvals = workspace.display_data.xvals
         yvals = workspace.display_data.yvals
-        title = '%s' % (self.title.value)
+        title = '%s' % self.title.value
         figure.set_subplots((1, 1))
         figure.subplot_scatter(0, 0, xvals, yvals,
                                xlabel=self.x_axis.value,

@@ -1645,7 +1645,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
 
         module.run(workspace)
         filename = os.path.join(cpprefs.get_default_output_directory(),
-                                "metadatatestC08.%s" % (cpm_si.FF_PNG))
+                                "metadatatestC08.%s" % cpm_si.FF_PNG)
         self.assertTrue(os.path.isfile(filename))
         pixel_data = load_image(filename)
         self.assertEqual(pixel_data.shape, image.shape)
@@ -1667,7 +1667,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         module.rescale.value = False
         module.run(workspace)
         filename = os.path.join(cpprefs.get_default_output_directory(),
-                                "foo.%s" % (cpm_si.FF_PNG))
+                                "foo.%s" % cpm_si.FF_PNG)
         self.assertTrue(os.path.isfile(filename))
         pixel_data = load_image(filename)
         self.assertEqual(pixel_data.shape, image.shape)
@@ -1691,7 +1691,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         module.rescale.value = True
         module.run(workspace)
         filename = os.path.join(cpprefs.get_default_output_directory(),
-                                "foo.%s" % (cpm_si.FF_PNG))
+                                "foo.%s" % cpm_si.FF_PNG)
         self.assertTrue(os.path.isfile(filename))
         pixel_data = load_image(filename)
         self.assertEqual(pixel_data.shape, image.shape)
@@ -1712,7 +1712,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         module.rescale.value = True
         module.run(workspace)
         filename = os.path.join(cpprefs.get_default_output_directory(),
-                                "foo.%s" % (cpm_si.FF_PNG))
+                                "foo.%s" % cpm_si.FF_PNG)
         self.assertTrue(os.path.isfile(filename))
         pixel_data = load_image(filename)
         self.assertEqual(pixel_data.shape, image.shape)

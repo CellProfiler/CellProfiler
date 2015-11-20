@@ -770,11 +770,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
             high_diameter = (
             np.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
             statistics.append(["10th pctile diameter",
-                               "%.1f pixels" % (low_diameter)])
+                               "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter",
-                               "%.1f pixels" % (median_diameter)])
+                               "%.1f pixels" % median_diameter])
             statistics.append(["90th pctile diameter",
-                               "%.1f pixels" % (high_diameter)])
+                               "%.1f pixels" % high_diameter])
             if self.method != M_DISTANCE_N and self.threshold_scope != TS_BINARY_IMAGE:
                 statistics.append(["Thresholding filter size",
                                    "%.1f" % (
@@ -784,7 +784,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         workspace.display_data.statistics = statistics
 
         figure.set_subplots((2, 2))
-        title = "Input image, cycle #%d" % (workspace.measurements.image_number)
+        title = "Input image, cycle #%d" % workspace.measurements.image_number
         figure.subplot_imshow_grayscale(0, 0, img, title)
         figure.subplot_imshow_labels(1, 0, segmented_out,
                                      "%s objects" % self.objects_name.value,

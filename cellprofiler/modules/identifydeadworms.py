@@ -476,7 +476,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         :param i:
         """
         if len(i) < 2:
-            return (np.zeros(len(i), int), np.zeros(len(i), int))
+            return np.zeros(len(i), int), np.zeros(len(i), int)
         if self.wants_automatic_distance:
             space_distance = self.worm_width.value
             angle_distance = np.arctan2(self.worm_width.value,

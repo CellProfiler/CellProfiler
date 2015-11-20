@@ -198,7 +198,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
     @property
     def neighbors_are_objects(self):
         """True if the neighbors are taken from the same object set as objects"""
-        return (self.object_name.value == self.neighbors_name.value)
+        return self.object_name.value == self.neighbors_name.value
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)

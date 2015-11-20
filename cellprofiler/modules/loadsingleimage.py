@@ -350,8 +350,8 @@ class LoadSingleImage(cpm.CPModule):
             image_numbers = m.get_image_numbers()
 
         for image_number in image_numbers:
-            dict = self.get_file_names(workspace, image_set_number=image_number)
-            for image_name in dict.keys():
+            dictionary = self.get_file_names(workspace, image_set_number=image_number)
+            for image_name in dictionary.keys():
                 file_settings = self.get_file_settings(image_name)
                 if file_settings.image_objects_choice == IO_IMAGES:
                     #
@@ -368,10 +368,10 @@ class LoadSingleImage(cpm.CPModule):
                     file_name_category = C_OBJECTS_FILE_NAME
                     url_category = C_OBJECTS_URL
 
-                url = pathname2url(os.path.join(root, dict[image_name]))
+                url = pathname2url(os.path.join(root, dictionary[image_name]))
                 for category, value in (
                         (path_name_category, root),
-                        (file_name_category, dict[image_name]),
+                        (file_name_category, dictionary[image_name]),
                         (url_category, url)):
                     measurement_name = "_".join((category, image_name))
                     m.add_measurement(cpmeas.IMAGE, measurement_name, value,
@@ -757,14 +757,14 @@ class LoadSingleImage(cpm.CPModule):
 
         if variable_revision_number == 2 and (not from_matlab):
             # changes to DirectoryPath and URL handling
-            dir = setting_values[0]
-            dir_choice, custom_dir = cps.DirectoryPath.split_string(dir)
+            directory = setting_values[0]
+            dir_choice, custom_dir = cps.DirectoryPath.split_string(directory)
             if dir_choice == cps.URL_FOLDER_NAME:
-                dir = cps.DirectoryPath.static_join_string(dir_choice, '')
+                directory = cps.DirectoryPath.static_join_string(dir_choice, '')
 
                 filenames = setting_values[1::2]
                 imagenames = setting_values[2::2]
-                setting_values = [dir] + sum(
+                setting_values = [directory] + sum(
                     [[custom_dir + '/' + filename, image_name]
                      for filename, image_name in zip(filenames, imagenames)],
                     [])

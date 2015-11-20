@@ -215,11 +215,11 @@ def make_temporary_file():
     returns a file descriptor (that should be closed when done) and a
     file name.
     """
-    dir = cpprefs.get_temporary_directory()
-    if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
-        dir = None
+    directory = cpprefs.get_temporary_directory()
+    if not (os.path.exists(directory) and os.access(directory, os.W_OK)):
+        directory = None
     return tempfile.mkstemp(
-        prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
+        prefix='Cpmeasurements', suffix='.hdf5', dir=directory)
 
 
 class Measurements(object):
@@ -2336,11 +2336,11 @@ class Measurements(object):
 
 
 def load_measurements_from_buffer(buf):
-    dir = cpprefs.get_default_output_directory()
-    if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
-        dir = None
+    directory = cpprefs.get_default_output_directory()
+    if not (os.path.exists(directory) and os.access(directory, os.W_OK)):
+        directory = None
     fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5',
-                                    dir=dir)
+                                    dir=directory)
     if sys.platform.startswith('win'):
         # Change file descriptor mode to binary
         import msvcrt

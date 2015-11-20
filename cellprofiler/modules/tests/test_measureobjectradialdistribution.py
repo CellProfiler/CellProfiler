@@ -26,25 +26,25 @@ IMAGE_NAME = 'imagename'
 HEAT_MAP_NAME = 'heatmapname'
 
 
-def feature_frac_at_d(bin, bin_count, image_name=IMAGE_NAME):
-    if bin == bin_count + 1:
+def feature_frac_at_d(binned, bin_count, image_name=IMAGE_NAME):
+    if binned == bin_count + 1:
         return "_".join(
             [M.M_CATEGORY, M.F_FRAC_AT_D, image_name, M.FF_OVERFLOW])
-    return M.M_CATEGORY + "_" + M.FF_FRAC_AT_D % (image_name, bin, bin_count)
+    return M.M_CATEGORY + "_" + M.FF_FRAC_AT_D % (image_name, binned, bin_count)
 
 
-def feature_mean_frac(bin, bin_count, image_name=IMAGE_NAME):
-    if bin == bin_count + 1:
+def feature_mean_frac(binned, bin_count, image_name=IMAGE_NAME):
+    if binned == bin_count + 1:
         return "_".join(
             [M.M_CATEGORY, M.F_MEAN_FRAC, image_name, M.FF_OVERFLOW])
-    return M.M_CATEGORY + "_" + M.FF_MEAN_FRAC % (image_name, bin, bin_count)
+    return M.M_CATEGORY + "_" + M.FF_MEAN_FRAC % (image_name, binned, bin_count)
 
 
-def feature_radial_cv(bin, bin_count, image_name=IMAGE_NAME):
-    if bin == bin_count + 1:
+def feature_radial_cv(binned, bin_count, image_name=IMAGE_NAME):
+    if binned == bin_count + 1:
         return "_".join(
             [M.M_CATEGORY, M.F_RADIAL_CV, image_name, M.FF_OVERFLOW])
-    return M.M_CATEGORY + "_" + M.FF_RADIAL_CV % (image_name, bin, bin_count)
+    return M.M_CATEGORY + "_" + M.FF_RADIAL_CV % (image_name, binned, bin_count)
 
 
 class TestMeasureObjectRadialDistribution(unittest.TestCase):
@@ -396,11 +396,11 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
                 for bin_count, wants_scaled in [
                     (x.bin_count.value, x.wants_scaled.value)
                     for x in module.bin_counts]:
-                    for bin in range(1, bin_count + (1 if wants_scaled else 2)):
+                    for binned in range(1, bin_count + (1 if wants_scaled else 2)):
                         for feature_fn in (feature_frac_at_d,
                                            feature_mean_frac,
                                            feature_radial_cv):
-                            measurement = feature_fn(bin, bin_count, image_name)
+                            measurement = feature_fn(binned, bin_count, image_name)
                             key = (object_name, measurement)
                             self.assertTrue(column_dictionary.has_key(key))
                             del column_dictionary[key]
@@ -539,10 +539,10 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
     def test_03_01_zeros_self(self):
         """Test the module on an empty labels matrix, self-labeled"""
         m = self.run_module(np.zeros((10, 10)), np.zeros((10, 10), int))
-        for bin in range(1, 5):
-            for feature in (feature_frac_at_d(bin, 4),
-                            feature_mean_frac(bin, 4),
-                            feature_radial_cv(bin, 4)):
+        for binned in range(1, 5):
+            for feature in (feature_frac_at_d(binned, 4),
+                            feature_mean_frac(binned, 4),
+                            feature_radial_cv(binned, 4)):
                 self.assertTrue(feature in m.get_feature_names(OBJECT_NAME))
                 data = m.get_current_measurement(OBJECT_NAME, feature)
                 self.assertEqual(len(data), 0)
@@ -555,33 +555,33 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             np.ones(labels.shape), labels, wants_workspace=True)
         assert isinstance(workspace, cpw.Workspace)
         bins = labels * (1 + (np.sqrt(i * i + j * j) / 10).astype(int))
-        for bin in range(1, 5):
+        for binned in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_frac_at_d(bin, 4))
+                                             feature_frac_at_d(binned, 4))
             self.assertEqual(len(data), 1)
-            area = (float(bin) * 2.0 - 1.0) / 16.0
+            area = (float(binned) * 2.0 - 1.0) / 16.0
             self.assertTrue(data[0] > area - .1)
             self.assertTrue(data[0] < area + .1)
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME + M.F_FRAC_AT_D).pixel_data
             data = data.astype(heatmap.dtype)
-            self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
+            self.assertEqual(mode(heatmap[bins == binned])[0][0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_mean_frac(bin, 4))
+                                             feature_mean_frac(binned, 4))
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 1, 2)
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME + M.F_MEAN_FRAC).pixel_data
             data = data.astype(heatmap.dtype)
-            self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
+            self.assertEqual(mode(heatmap[bins == binned])[0][0], data[0])
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_radial_cv(bin, 4))
+                                             feature_radial_cv(binned, 4))
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 0, 2)
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
             data = data.astype(heatmap.dtype)
-            self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
+            self.assertEqual(mode(heatmap[bins == binned])[0][0], data[0])
 
     def test_03_03_half_circle(self):
         """Test the module on a circle and an image that's 1/2 zeros
@@ -652,22 +652,22 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
         normalized_distance = distance_to_center / (
         distance_to_center + distance_to_edge + .001)
         bin_labels = (normalized_distance * 4).astype(int)
-        for bin in range(1, 5):
+        for binned in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_frac_at_d(bin, 4))
+                                             feature_frac_at_d(binned, 4))
             self.assertEqual(len(data), 1)
             bin_intensity = np.sum(image[(labels == 1) &
-                                         (bin_labels == bin - 1)])
+                                         (bin_labels == binned - 1)])
             expected = bin_intensity / total_intensity
             self.assertTrue(np.abs(expected - data[0]) < .1 * expected)
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_mean_frac(bin, 4))
+                                             feature_mean_frac(binned, 4))
             expected = expected * np.sum(labels == 1) / np.sum((labels == 1) &
                                                                (
-                                                               bin_labels == bin - 1))
+                                                                   bin_labels == binned - 1))
             self.assertTrue(np.abs(data[0] - expected) < .1 * expected)
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_radial_cv(bin, 4))
+                                             feature_radial_cv(binned, 4))
             self.assertEqual(len(data), 1)
 
     def test_03_05_no_scaling(self):
@@ -688,22 +688,22 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
         bin_labels[bin_labels > 4] = 4
         m = self.run_module(image, labels, bin_count=4,
                             maximum_radius=20, wants_scaled=False)
-        for bin in range(1, 6):
+        for binned in range(1, 6):
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_frac_at_d(bin, 4))
+                                             feature_frac_at_d(binned, 4))
             self.assertEqual(len(data), 1)
             bin_intensity = np.sum(image[(labels == 1) &
-                                         (bin_labels == bin - 1)])
+                                         (bin_labels == binned - 1)])
             expected = bin_intensity / total_intensity
             self.assertAlmostEqual(expected, data[0], 4)
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_mean_frac(bin, 4))
+                                             feature_mean_frac(binned, 4))
             expected = expected * np.sum(labels == 1) / np.sum((labels == 1) &
                                                                (
-                                                               bin_labels == bin - 1))
+                                                                   bin_labels == binned - 1))
             self.assertAlmostEqual(data[0], expected, 4)
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_radial_cv(bin, 4))
+                                             feature_radial_cv(binned, 4))
             self.assertEqual(len(data), 1)
 
     def test_03_06_edges_of_objects(self):
@@ -750,39 +750,39 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             img, labels, wants_workspace=True)
         assert isinstance(workspace, cpw.Workspace)
         bins = (labels != 0) * (1 + (np.sqrt(i * i + j * j) / 10).astype(int))
-        for bin in range(1, 5):
+        for binned in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_frac_at_d(bin, 4))
+                                             feature_frac_at_d(binned, 4))
             self.assertEqual(len(data), 2)
-            area = (float(bin) * 2.0 - 1.0) / 16.0
-            bin_d = (float(bin) - .5) * 8 / 21
+            area = (float(binned) * 2.0 - 1.0) / 16.0
+            bin_d = (float(binned) - .5) * 8 / 21
             self.assertLess(np.abs(data[0] - area), .1)
             self.assertLess(np.abs(data[1] - area * bin_d), .1)
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME + M.F_FRAC_AT_D).pixel_data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
-                mask = (bins == bin) & (labels == label)
+                mask = (bins == binned) & (labels == label)
                 self.assertEqual(mode(heatmap[mask])[0][0], data[label - 1])
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_mean_frac(bin, 4))
+                                             feature_mean_frac(binned, 4))
             self.assertEqual(len(data), 2)
             self.assertAlmostEqual(data[0], 1, 2)
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME + M.F_MEAN_FRAC).pixel_data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
-                mask = (bins == bin) & (labels == label)
+                mask = (bins == binned) & (labels == label)
                 self.assertEqual(mode(heatmap[mask])[0][0], data[label - 1])
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_radial_cv(bin, 4))
+                                             feature_radial_cv(binned, 4))
             self.assertEqual(len(data), 2)
             self.assertAlmostEqual(data[0], 0, 2)
             heatmap = workspace.image_set.get_image(
                 HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
-                mask = (bins == bin) & (labels == label)
+                mask = (bins == binned) & (labels == label)
                 self.assertEqual(mode(heatmap[mask])[0][0], data[label - 1])
 
     def test_04_01_img_607(self):
@@ -803,9 +803,9 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             m = self.run_module(image, labels,
                                 center_labels=center_labels,
                                 bin_count=4)
-            for bin in range(1, 5):
+            for binned in range(1, 5):
                 data = m.get_current_measurement(OBJECT_NAME,
-                                                 feature_frac_at_d(bin, 4))
+                                                 feature_frac_at_d(binned, 4))
                 self.assertEqual(len(data), 3)
                 self.assertTrue(np.isnan(data[1]))
 
@@ -831,15 +831,15 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
                                 center_labels=center_labels,
                                 center_choice=center_choice,
                                 bin_count=4)
-            for bin in range(1, 5):
+            for binned in range(1, 5):
                 data = m.get_current_measurement(OBJECT_NAME,
-                                                 feature_frac_at_d(bin, 4))
+                                                 feature_frac_at_d(binned, 4))
                 self.assertEqual(len(data), 1)
 
         m = self.run_module(image, labels, bin_count=4)
-        for bin in range(1, 5):
+        for binned in range(1, 5):
             data = m.get_current_measurement(OBJECT_NAME,
-                                             feature_frac_at_d(bin, 4))
+                                             feature_frac_at_d(binned, 4))
             self.assertEqual(len(data), 1)
 
     def test_04_03_wrong_size(self):

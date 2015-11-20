@@ -249,21 +249,21 @@ batch is run.""" % globals())
                 with self.tag("div", **{"class": "error_message"}):
                     self.text(self.no_image_sets_reason)
 
-    def build_queue_choices(self, id, name):
-        with self.doc.select(id=id, name=name):
+    def build_queue_choices(self, identifier, name):
+        with self.doc.select(id=identifier, name=name):
             for queue in get_queues():
                 with self.doc.option(value=queue):
                     self.text(queue)
 
-    def build_write_data(self, id, name):
+    def build_write_data(self, identifier, name):
         kwds = {}
         if BATCHPROFILER_DEFAULTS.has_key(WRITE_DATA) and \
                         BATCHPROFILER_DEFAULTS[WRITE_DATA] == "yes":
             kwds["checked"] = "yes"
-        self.doc.input(type="checkbox", id=id, name=name, **kwds)
+        self.doc.input(type="checkbox", id=identifier, name=name, **kwds)
 
-    def build_revision(self, id, name):
-        self.doc.input(type="text", id=id, name=name)
+    def build_revision(self, identifier, name):
+        self.doc.input(type="text", id=identifier, name=name)
         if self.has_image_sets and self.batch_git_hash is not None:
             with self.tag("button",
                           type="button",

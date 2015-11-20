@@ -46,8 +46,8 @@ class FileFinderDialog(wx.Dialog):
 
         self.key_to_itemid = {None: self.root_id}
         self.file_finder = filefinder.Locator(self.finder_cb, self.metadata_cb)
-        for dir in dirs:
-            self.file_finder.queue(dir)
+        for directory in dirs:
+            self.file_finder.queue(directory)
 
         # self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.on_expanding, self.tree_ctrl)
         self.tree_ctrl.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)

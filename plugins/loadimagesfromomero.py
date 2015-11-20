@@ -236,18 +236,18 @@ class OmeroLoadImages(cpm.CPModule):
         global omero_image
         try:
             self.create_omero_gateway()
-            id = int(self.omero_object_id.value)
+            identifier = int(self.omero_object_id.value)
 
             if self.omero_object == MS_IMAGE:
-                omero_image = self.omero_gateway.getImage(id)
+                omero_image = self.omero_gateway.getImage(identifier)
             elif self.omero_object == MS_DATASET:
-                images_from_dataset = self.get_images_from_dataset(id, 1)
+                images_from_dataset = self.get_images_from_dataset(identifier, 1)
                 if len(images_from_dataset) == 0:
                     omero_image = None
                 else:
                     omero_image = images_from_dataset[0]
             elif self.omero_object == MS_PLATE:
-                wells_from_plate = self.get_wells_from_plate(id, 1)
+                wells_from_plate = self.get_wells_from_plate(identifier, 1)
                 if len(wells_from_plate) == 0:
                     omero_image = None
                 else:
@@ -260,7 +260,7 @@ class OmeroLoadImages(cpm.CPModule):
                 # because the omero account used does not have permissions to retrieve the image
                 # or images.
                 raise RuntimeError("No image found for %s with id %d" % (
-                self.omero_object, id))
+                    self.omero_object, identifier))
 
             omero_image_id = omero_image.getId().getValue()
             pixels = self.omero_gateway.getPixelsFromImage(omero_image_id)[0]

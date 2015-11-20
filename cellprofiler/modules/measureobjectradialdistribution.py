@@ -540,10 +540,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     heatmaps[MEASUREMENT_ALIASES[heatmap.measurement.value]] = \
                     np.zeros(labels.shape)
         if nobjects == 0:
-            for bin in range(1, bin_count + 1):
+            for binned in range(1, bin_count + 1):
                 for feature in (F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV):
                     feature_name = (
-                        (feature + FF_GENERIC) % (image_name, bin, bin_count))
+                        (feature + FF_GENERIC) % (image_name, binned, bin_count))
                     measurements.add_measurement(
                         object_name, "_".join([M_CATEGORY, feature_name]),
                         np.zeros(0))
@@ -701,11 +701,11 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                         absmask.astype(int) * 4)
         statistics = []
 
-        for bin in range(bin_count + (0 if wants_scaled else 1)):
-            bin_mask = (good_mask & (bin_indexes == bin))
+        for binned in range(bin_count + (0 if wants_scaled else 1)):
+            bin_mask = (good_mask & (bin_indexes == binned))
             bin_pixels = np.sum(bin_mask)
             bin_labels = labels[bin_mask]
-            bin_radial_index = radial_index[bin_indexes[good_mask] == bin]
+            bin_radial_index = radial_index[bin_indexes[good_mask] == binned]
             labels_and_radii = (bin_labels - 1, bin_radial_index)
             radial_values = coo_matrix((pixel_data[bin_mask],
                                         labels_and_radii),
@@ -717,26 +717,26 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             radial_cv = np.std(radial_means, 1) / np.mean(radial_means, 1)
             radial_cv[np.sum(~mask, 1) == 0] = 0
             for measurement, feature, overflow_feature in (
-                    (fraction_at_distance[:, bin], MF_FRAC_AT_D, OF_FRAC_AT_D),
-                    (mean_pixel_fraction[:, bin], MF_MEAN_FRAC, OF_MEAN_FRAC),
+                    (fraction_at_distance[:, binned], MF_FRAC_AT_D, OF_FRAC_AT_D),
+                    (mean_pixel_fraction[:, binned], MF_MEAN_FRAC, OF_MEAN_FRAC),
                     (np.array(radial_cv), MF_RADIAL_CV, OF_RADIAL_CV)):
 
-                if bin == bin_count:
+                if binned == bin_count:
                     measurement_name = overflow_feature % image_name
                 else:
                     measurement_name = feature % (
-                    image_name, bin + 1, bin_count)
+                        image_name, binned + 1, bin_count)
                 measurements.add_measurement(object_name,
                                              measurement_name,
                                              measurement)
                 if feature in heatmaps:
                     heatmaps[feature][bin_mask] = measurement[bin_labels - 1]
             radial_cv.mask = np.sum(~mask, 1) == 0
-            bin_name = str(bin + 1) if bin < bin_count else "Overflow"
+            bin_name = str(binned + 1) if binned < bin_count else "Overflow"
             statistics += [(image_name, object_name, bin_name, str(bin_count),
-                            round(np.mean(masked_fraction_at_distance[:, bin]),
+                            round(np.mean(masked_fraction_at_distance[:, binned]),
                                   4),
-                            round(np.mean(masked_mean_pixel_fraction[:, bin]),
+                            round(np.mean(masked_mean_pixel_fraction[:, binned]),
                                   4),
                             round(np.mean(radial_cv), 4))]
         return statistics
@@ -752,10 +752,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                             (MF_FRAC_AT_D, OF_FRAC_AT_D),
                             (MF_MEAN_FRAC, OF_MEAN_FRAC),
                             (MF_RADIAL_CV, OF_RADIAL_CV)):
-                        for bin in range(1, bin_count + 1):
+                        for binned in range(1, bin_count + 1):
                             columns.append((o.object_name.value,
                                             feature % (image.image_name.value,
-                                                       bin, bin_count),
+                                                       binned, bin_count),
                                             cpmeas.COLTYPE_FLOAT))
                         if not wants_scaling:
                             columns.append(
@@ -783,9 +783,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                                image_name):
         if image_name in self.get_measurement_images(pipeline, object_name,
                                                      category, feature):
-            result = [FF_SCALE % (bin, bin_count.bin_count.value)
+            result = [FF_SCALE % (binned, bin_count.bin_count.value)
                       for bin_count in self.bin_counts
-                      for bin in range(1, bin_count.bin_count.value + 1)]
+                      for binned in range(1, bin_count.bin_count.value + 1)]
             if any([not bin_count.wants_scaled.value
                     for bin_count in self.bin_counts]):
                 result += [FF_OVERFLOW]

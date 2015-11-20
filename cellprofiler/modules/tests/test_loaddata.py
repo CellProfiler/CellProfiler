@@ -662,14 +662,14 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
 
     def test_08_01_get_groupings(self):
         """Test the get_groupings method"""
-        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        directory = os.path.join(example_images_directory(), "ExampleSBSImages")
         pattern = 'Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})\\.tif'
         csv_text = '"Image_FileName_Cytoplasm","Image_PathName_Cytoplasm","Metadata_ROW","Metadata_COL"\n'
-        for filename in os.listdir(dir):
+        for filename in os.listdir(directory):
             match = re.match(pattern, filename)
             if match:
                 csv_text += ('"%s","%s","%s","%s"\n' %
-                             (filename, dir, match.group("ROW"),
+                             (filename, directory, match.group("ROW"),
                               match.group("COL")))
         pipeline, module, filename = self.make_pipeline(csv_text)
         self.assertTrue(isinstance(module, L.LoadText))
@@ -987,13 +987,13 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         #
         # Regression test of issue #1211 - extra line at end / blank lines
         #
-        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        directory = os.path.join(example_images_directory(), "ExampleSBSImages")
         file_name = 'Channel2-01-A-01.tif'
 
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
 
-''' % (file_name, dir)
+''' % (file_name, directory)
         pipeline, module, filename = self.make_pipeline(csv_text)
         try:
             assert isinstance(module, L.LoadData)

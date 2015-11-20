@@ -173,12 +173,12 @@ class MeasureImageIntensity(cpm.CPModule):
 
     def get_non_redundant_image_measurements(self):
         """Return a non-redundant sequence of image measurement objects"""
-        dict = {}
+        dictionary = {}
         for im in self.images:
             key = ((im.image_name, im.object_name) if im.wants_objects.value
                    else (im.image_name,))
-            dict[key] = im
-        return dict.values()
+            dictionary[key] = im
+        return dictionary.values()
 
     def run(self, workspace):
         """Perform the measurements on the imageset

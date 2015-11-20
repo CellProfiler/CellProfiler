@@ -1,35 +1,27 @@
 """PipelineListView.py
 """
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 try:
     from cStringIO import StringIO
 except:
     from StringIO import StringIO
 import logging
-import numpy as np
-import time
-import base64
 import math
 import os
-import zlib
-import wx
 import sys
+import time
 
-if __name__ == "__main__":
-    app = wx.PySimpleApp(False)
+import wx
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect
-import cellprofiler.gui.movieslider as cpgmov
 from cellprofiler.gui.cpfigure import window_name, find_fig
-from cellprofiler.icons import get_builtin_image
 from cellprofiler.gui.moduleview import request_module_validation, \
     ValidationRequest
+from cellprofiler.icons import get_builtin_image
+
+logger = logging.getLogger(__name__)
 
 IMG_OK = get_builtin_image('IMG_OK')
 IMG_ERROR = get_builtin_image('IMG_ERROR')
@@ -1328,7 +1320,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             return None, wx.LIST_HITTEST_NOWHERE, None
         column = int((x - x0) / self.column_width)
         if not (
-            self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
+                    self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None
         if not self.show_show_frame_column and column == EYE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None

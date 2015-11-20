@@ -3,33 +3,32 @@
 """
 
 import logging
+import sys
 
-logger = logging.getLogger(__name__)
-
-import os
 import matplotlib
-import matplotlib.figure
-from matplotlib.lines import Line2D
-from matplotlib.path import Path
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 import matplotlib.backend_bases
+import matplotlib.figure
 import numpy as np
 import scipy.ndimage
-from scipy.ndimage import gaussian_filter, binary_dilation, grey_dilation
-import sys
 import wx
 import wx.html
-import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
-from centrosome.outline import outline
+from centrosome.cpmorphology import get_outline_pts, color_labels
+from centrosome.cpmorphology import polygon_lines_to_mask
 from centrosome.cpmorphology import triangle_areas, distance2_to_line, \
     convex_hull_image
-from centrosome.cpmorphology import polygon_lines_to_mask
-from centrosome.cpmorphology import get_outline_pts, thicken, color_labels
 from centrosome.index import Indexes
-from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
+from matplotlib.lines import Line2D
+from matplotlib.path import Path
+from scipy.ndimage import gaussian_filter
+
+import cellprofiler.objects as cpo
+import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.cpfigure import CPNavigationToolbar
+from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
 from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint
+
+logger = logging.getLogger(__name__)
 
 
 class EditObjectsDialog(wx.Dialog):
@@ -480,7 +479,8 @@ class EditObjectsDialog(wx.Dialog):
         self.Bind(
             wx.EVT_MENU,
             (
-            lambda event: self.set_label_display_mode(self.ID_LABELS_OUTLINES)),
+                lambda event: self.set_label_display_mode(
+                    self.ID_LABELS_OUTLINES)),
             id=self.ID_LABELS_OUTLINES)
         self.Bind(
             wx.EVT_MENU,
@@ -756,7 +756,7 @@ class EditObjectsDialog(wx.Dialog):
             if self.scaling_mode == self.SM_RAW:
                 cimage = image.copy()
             elif self.scaling_mode in (
-            self.SM_NORMALIZED, self.SM_LOG_NORMALIZED):
+                    self.SM_NORMALIZED, self.SM_LOG_NORMALIZED):
                 min_intensity = np.min(image)
                 max_intensity = np.max(image)
                 if min_intensity == max_intensity:
@@ -783,7 +783,7 @@ class EditObjectsDialog(wx.Dialog):
                 in_artist[d[self.K_LABEL]] = True
             if self.label_display_mode == self.ID_LABELS_OUTLINES:
                 for k, stipple in (
-                (self.to_keep, False), (~self.to_keep, True)):
+                        (self.to_keep, False), (~self.to_keep, True)):
                     k = k & ~ in_artist
                     if not np.any(k):
                         continue
@@ -803,7 +803,7 @@ class EditObjectsDialog(wx.Dialog):
                         indexer = Indexes((counts,))
                         e = 1 + 3 * (counts[indexer.rev_idx] >= 16)
                         dash_mask = (indexer.idx[0] & (2 ** e - 1)) >= 2 ** (
-                        e - 1)
+                            e - 1)
                         color[self.oi[mask], self.oj[mask]] = \
                             self.oc[mask] * dash_mask[:, np.newaxis]
                     else:
@@ -1482,7 +1482,7 @@ class EditObjectsDialog(wx.Dialog):
                         self.labels[0].dtype)
         i, j = np.mgrid[0:lnew.shape[0], 0:lnew.shape[1]]
         lnew[(i - event.ydata) ** 2 + (
-        j - event.xdata) ** 2 <= 400] = object_number
+            j - event.xdata) ** 2 <= 400] = object_number
         self.labels.append(lnew)
         self.restructure_labels()
         self.init_labels()

@@ -1,44 +1,41 @@
 # -*- Encoding: utf-8 -*-
 """ CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
 """
-import logging
-
-logger = logging.getLogger(__name__)
 import inspect
+import logging
 import os
 import pdb
-import wx
-import wx.html
+import sys
+import traceback
+
 import wx.lib.scrolledpanel
-import cellprofiler.preferences as cpprefs
-import cellprofiler.measurements as cpmeas
-import cellprofiler.workspace as cpw
-from cellprofiler.icons import get_builtin_image, get_icon_copyrights
-from cellprofiler.modules import get_data_tool_names, instantiate_module
-from cellprofiler.gui import get_cp_icon, get_cp_bitmap
-from cellprofiler.gui.pipelinelistview import PipelineListView
-from cellprofiler.gui.cpfigure import close_all
-from cellprofiler.gui.help import MAIN_HELP, make_help_menu, \
-    HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_FILE_LIST, PLATEVIEWER_HELP
-from cellprofiler.pipeline import Pipeline
-from cellprofiler.gui.pipelinecontroller import PipelineController
-from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
-from cellprofiler.gui.preferencesview import PreferencesView
-from cellprofiler.gui.directoryview import DirectoryView
-from cellprofiler.gui.datatoolframe import DataToolFrame
-from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow, \
-    WELCOME_SCREEN_FRAME
-from cellprofiler.gui.errordialog import display_error_message
-from cellprofiler.gui.pathlist import PathListCtrl
-from cellprofiler.gui.imagesetctrl import ImageSetCtrl
-from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint, \
-    sp_bind_to_evt_paint
-from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
+
 import cellprofiler.gui.html
 import cellprofiler.gui.preferencesdlg
+import cellprofiler.preferences as cpprefs
 import cellprofiler.utilities.version as version
-import traceback
-import sys
+import cellprofiler.workspace as cpw
+from cellprofiler.gui import get_cp_icon
+from cellprofiler.gui.cpfigure import close_all
+from cellprofiler.gui.datatoolframe import DataToolFrame
+from cellprofiler.gui.errordialog import display_error_message
+from cellprofiler.gui.help import MAIN_HELP, make_help_menu, \
+    HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_FILE_LIST, PLATEVIEWER_HELP
+from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow, \
+    WELCOME_SCREEN_FRAME
+from cellprofiler.gui.imagesetctrl import ImageSetCtrl
+from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
+from cellprofiler.gui.pathlist import PathListCtrl
+from cellprofiler.gui.pipelinecontroller import PipelineController
+from cellprofiler.gui.pipelinelistview import PipelineListView
+from cellprofiler.gui.preferencesview import PreferencesView
+from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint, \
+    sp_bind_to_evt_paint
+from cellprofiler.icons import get_builtin_image, get_icon_copyrights
+from cellprofiler.modules import get_data_tool_names, instantiate_module
+from cellprofiler.pipeline import Pipeline
+
+logger = logging.getLogger(__name__)
 
 ID_FILE_NEW_WORKSPACE = wx.ID_NEW
 ID_FILE_LOAD = wx.ID_OPEN

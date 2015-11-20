@@ -1,19 +1,21 @@
 """ImageSetCtrl.py - A control to display an imageset
 """
 
-import numpy as np
 import re
 import urllib
+
+import numpy as np
 import wx
 import wx.grid
-from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
 from wx.combo import BitmapComboBox
+from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
+
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from cellprofiler.modules.images import Images
-from cellprofiler.gui.cornerbuttonmixin import CornerButtonMixin
 from cellprofiler.gui import draw_item_selection_rect
+from cellprofiler.gui.cornerbuttonmixin import CornerButtonMixin
+from cellprofiler.modules.images import Images
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"
@@ -440,7 +442,6 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
         self.Table.workspace.refresh_image_set()
         n_imagesets = self.Table.workspace.measurements.image_set_count
         if n_imagesets == 0:
-            from help import CREATING_A_PROJECT_CAPTION
             wx.MessageBox(
                 "Sorry, your pipeline doesn't produce any valid image sets "
                 "as currently configured. Check your Input module settings, "
@@ -642,7 +643,7 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
             assert isinstance(dlg, wx.Dialog)
             channel_name = self.Table.columns[col].channel
             dlg.Title = "Change image type for %s" % (
-            self.Table.GetColLabelValue(col))
+                self.Table.GetColLabelValue(col))
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             choices = [
                 (cpp.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,

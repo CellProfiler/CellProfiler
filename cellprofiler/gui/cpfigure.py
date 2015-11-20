@@ -1,36 +1,37 @@
 """ cpfigure.py - provides a frame with a figure inside
 """
 
-import logging
-
-logger = logging.getLogger(__name__)
 import csv
-import numpy as np
+import functools
+import logging
 import os
 import sys
 import uuid
-import wx
+
+import centrosome.outline
 import matplotlib
-import matplotlib.cm
-import numpy.ma
-import matplotlib.patches
-import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
-from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
+import matplotlib.cm
+import matplotlib.colorbar
+import matplotlib.patches
+import numpy as np
+import numpy.ma
+import wx
+from centrosome.cpmorphology import get_outline_pts
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-from cellprofiler.preferences import update_cpfigure_position, \
-    get_next_cpfigure_position, reset_cpfigure_position
-from scipy.sparse import coo_matrix
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
 from scipy.ndimage import distance_transform_edt, label
-import functools
+from scipy.sparse import coo_matrix
+
+import cellprofiler.gui.cpartists
+import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
-import cellprofiler.preferences as cpprefs
-from cpfigure_tools import figure_to_image, only_display_image, \
-    renumber_labels_for_display
-import cellprofiler.gui.cpartists
-import centrosome.outline
-from centrosome.cpmorphology import get_outline_pts
+from cellprofiler.preferences import get_next_cpfigure_position, \
+    reset_cpfigure_position
+from cpfigure_tools import renumber_labels_for_display
+
+logger = logging.getLogger(__name__)
 
 #
 # Monkey-patch the backend canvas to only report the truly supported filetypes
@@ -56,7 +57,7 @@ def log_transform(im):
         (min, max) = (im[im > 0].min(), im[np.isfinite(im)].max())
         if (max > min) and (max > 0):
             return (np.log(im.clip(min, max)) - np.log(min)) / (
-            np.log(max) - np.log(min))
+                np.log(max) - np.log(min))
     except:
         pass
     return orig
@@ -1841,8 +1842,9 @@ class CPFigureFrame(wx.Frame):
                     menu_pos += 1
         self.subplot_menus[(x, y)] = self.menu_subplots.InsertMenu(menu_pos,
                                                                    -1, (
-                                                                   title or 'Subplot (%s,%s)' % (
-                                                                   x, y)),
+                                                                       title or 'Subplot (%s,%s)' % (
+                                                                           x,
+                                                                           y)),
                                                                    self.get_imshow_menu(
                                                                        (x, y)))
 
@@ -2547,7 +2549,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
             if display_error:
                 logging.getLogger("cellprofiler.gui.cpfigure").warning(
                     'A well value (%s) does not fit in the given plate type.\n' % (
-                    well))
+                        well))
                 display_error = False
             continue
         data[r, c] = val

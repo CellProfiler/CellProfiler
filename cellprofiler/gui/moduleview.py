@@ -1,38 +1,36 @@
 """ModuleView.py - implements a view on a module
 """
+import Queue
 import logging
-import matplotlib.cm
-import numpy as np
 import os
 import stat
+import sys
 import threading
-import Queue
 import time
-import traceback
 import uuid
-import cStringIO
+import weakref
+
+import matplotlib.cm
+import numpy as np
 import wx
 import wx.grid
 import wx.lib.colourselect
 import wx.lib.rcsizer
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
-import sys
-import weakref
 
-logger = logging.getLogger(__name__)
 import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
 from cellprofiler.icons import get_builtin_image
-from regexp_editor import edit_regexp, RE_FILENAME_GUESSES, RE_FOLDER_GUESSES
+from cornerbuttonmixin import CornerButtonMixin
 from htmldialog import HTMLDialog
-from treecheckboxdialog import TreeCheckboxDialog
 from metadatactrl import MetadataControl
 from namesubscriber import NameSubscriberComboBox
-from cornerbuttonmixin import CornerButtonMixin
-import cellprofiler.utilities.walk_in_background as W
-import cellprofiler.gui.pathlist as PL
+from regexp_editor import edit_regexp, RE_FILENAME_GUESSES, RE_FOLDER_GUESSES
+from treecheckboxdialog import TreeCheckboxDialog
+
+logger = logging.getLogger(__name__)
 
 WARNING_COLOR = wx.Colour(224, 224, 0, 255)
 RANGE_TEXT_WIDTH = 40  # number of pixels in a range text box TO_DO - calculate it
@@ -395,7 +393,7 @@ class ModuleView:
         except:
             wx.MessageBox(
                 "Module %s.visible_settings() did not return a list!\n  value: %s" % (
-                module_name, settings),
+                    module_name, settings),
                 "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
             settings = []
         try:
@@ -403,7 +401,7 @@ class ModuleView:
         except:
             wx.MessageBox(
                 "Module %s.visible_settings() returned something other than a list of Settings!\n  value: %s" % (
-                module_name, settings),
+                    module_name, settings),
                 "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
             settings = []
         return settings
@@ -1017,7 +1015,7 @@ class ModuleView:
                                 if (stat.S_IREAD & dirstat.st_mode) == 0:
                                     continue
                                 d[dirname] = lambda \
-                                    dirpath=dirpath: fn_populate(dirpath)
+                                        dirpath=dirpath: fn_populate(dirpath)
                         except:
                             print "Warning: failed to list directory %s" % root
                         return d
@@ -3161,7 +3159,7 @@ class FilterPanelController(object):
 
     def static_text_name(self, index, address):
         return "%s_static_text_%d_%s" % (
-        self.key, index, self.saddress(address))
+            self.key, index, self.saddress(address))
 
 
 class FileCollectionDisplayController(object):
@@ -3629,8 +3627,9 @@ class FileCollectionDisplayController(object):
             if hint != cps.FileCollectionDisplay.REMOVE:
                 self.status_text.Label = \
                     (
-                    "Processing " + path[-1] if isinstance(path[-1], basestring)
-                    else path[-2])
+                        "Processing " + path[-1] if isinstance(path[-1],
+                                                               basestring)
+                        else path[-2])
             self.status_text.Update()
             if not any_others:
                 #
@@ -4596,7 +4595,7 @@ class TableController(wx.grid.PyGridTableBase):
         s = unicode(self.v.data[row][col])
         if len(self.column_size) <= col:
             self.column_size += [self.v.max_field_size] * (
-            col - len(self.column_size) + 1)
+                col - len(self.column_size) + 1)
         field_size = self.column_size[col]
         if len(s) > field_size:
             half = int(field_size - 3) / 2
@@ -4755,7 +4754,7 @@ class ModuleSizer(wx.PySizer):
             control = item.GetWindow()
             assert isinstance(control, wx.StaticText), 'Control at column 0, ' \
                                                        '%d of grid is not StaticText: %s' % (
-                                                       i, str(control))
+                                                           i, str(control))
             text = control.GetLabel().replace('\n', ' ')
             ctrl_width = control.GetTextExtent(text)[0] + 2 * item.GetBorder()
             width = max(width, ctrl_width)
@@ -4795,7 +4794,7 @@ class ModuleSizer(wx.PySizer):
                 control = text_item.GetWindow()
                 assert isinstance(control,
                                   wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s' % (
-                i, str(control))
+                    i, str(control))
                 text = control.GetLabel()
                 edit_control = edit_item.GetWindow()
                 height_border = max(
@@ -4834,7 +4833,8 @@ class ModuleSizer(wx.PySizer):
                             item_size = item.CalcMin()
                             if item.Flag & wx.ALIGN_CENTER_VERTICAL:
                                 item_y = height + (
-                                                  row_height - item_size[1]) / 2
+                                                      row_height - item_size[
+                                                          1]) / 2
                             if item.Flag & wx.ALIGN_CENTER_HORIZONTAL:
                                 item_x += (widths[j] - item_size[0]) / 2
                             elif item.Flag & wx.ALIGN_RIGHT:

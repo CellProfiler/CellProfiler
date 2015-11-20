@@ -1,9 +1,9 @@
 """cpgrid.py - wx.grid helpers for cellprofiler
 """
 
-import StringIO
 import wx
 import wx.grid
+
 from cellprofiler.gui import draw_bevel, BV_UP, BV_DOWN
 
 BU_NORMAL = "normal"

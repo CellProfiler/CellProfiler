@@ -1,10 +1,12 @@
 """filefinderdlg.py - tree checkbox dialog wrapping the cellprofiler file finder
 """
 
-import wx
-import cellprofiler.utilities.filefinder as filefinder
-import os.path
 import Queue
+import os.path
+
+import wx
+
+import cellprofiler.utilities.filefinder as filefinder
 
 
 class FileFinderDialog(wx.Dialog):
@@ -59,7 +61,8 @@ class FileFinderDialog(wx.Dialog):
                         flag=wx.LEFT | wx.RIGHT, border=3)
         for i, (bitmap, description) in enumerate((
                 (
-                image_list.GetBitmap(0), "No subitems selected / not selected"),
+                        image_list.GetBitmap(0),
+                        "No subitems selected / not selected"),
                 (image_list.GetBitmap(2), "All subitems selected / selected"),
                 (image_list.GetBitmap(4),
                  "Some subitems selected. Open tree to see selections."))):

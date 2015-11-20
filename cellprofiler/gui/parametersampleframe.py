@@ -5,17 +5,17 @@ Author: AJ Pretorius
         a.j.pretorius@leeds.ac.uk
 """
 
-import numpy as np
 import os
-import sys
-import time
 import traceback
+
+import numpy as np
 import wx
 import wx.lib.agw.floatspin as fs
+
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule
 import cellprofiler.measurements as cpm
 import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
 import cellprofiler.preferences
 import cellprofiler.settings as settings
 import cellprofiler.workspace as cpw
@@ -425,13 +425,15 @@ class ParameterSampleFrame(wx.Frame):
                 elif input_size == 2:
                     widget_idx = self.__parameters_to_widgets_list[i][0]
                     lower_value = (
-                    self.__lower_bound_spin_ctrl_list[widget_idx].GetValue(),
-                    self.__lower_bound_spin_ctrl_list[
-                        widget_idx + 1].GetValue())
+                        self.__lower_bound_spin_ctrl_list[
+                            widget_idx].GetValue(),
+                        self.__lower_bound_spin_ctrl_list[
+                            widget_idx + 1].GetValue())
                     upper_value = (
-                    self.__upper_bound_spin_ctrl_list[widget_idx].GetValue(),
-                    self.__upper_bound_spin_ctrl_list[
-                        widget_idx + 1].GetValue())
+                        self.__upper_bound_spin_ctrl_list[
+                            widget_idx].GetValue(),
+                        self.__upper_bound_spin_ctrl_list[
+                            widget_idx + 1].GetValue())
 
                 old_value = setting.get_value()
                 try:
@@ -673,7 +675,7 @@ class ParameterSampleFrame(wx.Frame):
         if ((module.module_name != 'Restart' or failure == -1) and
                     self.__measurements is not None):
             module_error_measurement = 'ModuleError_%02d%s' % (
-            module.module_num, module.module_name)
+                module.module_num, module.module_name)
             self.__measurements.add_measurement(
                 'Image', module_error_measurement, failure)
         return failure == 0

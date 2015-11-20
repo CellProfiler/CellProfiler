@@ -1,57 +1,52 @@
 """PipelineController.py - controls (modifies) a pipeline
 """
 
+import Queue
 import csv
 import datetime
 import exceptions
-import h5py
-import logging
-import math
-import numpy as np
-import wx
-import os
-import re
-import shutil
-import sys
-import Queue
-import cpframe
-import random
-import string
 import hashlib
-from cStringIO import StringIO
+import logging
+import os
+import random
+import re
+import string
+import sys
 import threading
 import urllib
+from cStringIO import StringIO
+
+import h5py
+import numpy as np
+import wx
 from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
+
+import cellprofiler.analysis as cpanalysis
+import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpmodule
+import cellprofiler.gui.moduleview
+import cellprofiler.gui.parametersampleframe as psf
+import cellprofiler.measurements as cpm
+import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpm
-import cellprofiler.workspace as cpw
-import cellprofiler.objects as cpo
-import cellprofiler.analysis as cpanalysis
-from cellprofiler.gui.addmoduleframe import AddModuleFrame
-from cellprofiler.gui import get_cp_bitmap
-import cellprofiler.gui.moduleview
-from cellprofiler.gui.movieslider import EVT_TAKE_STEP
-from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED, \
-    PLATEVIEWER_HELP
-from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
 import cellprofiler.utilities.version as version
-from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
-from errordialog import display_error_message
-from runmultiplepipelinesdialog import RunMultplePipelinesDialog
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
-from cellprofiler.modules.loadimages import pathname2url
-import cellprofiler.gui.parametersampleframe as psf
-import cellprofiler.analysis as cpanalysis
-import cellprofiler.cpmodule as cpmodule
-import cellprofiler.utilities.walk_in_background as W
-from cellprofiler.gui.omerologin import OmeroLoginDlg
-from cellprofiler.icons import get_builtin_image
+import cellprofiler.workspace as cpw
+import cpframe
+from cellprofiler.gui.addmoduleframe import AddModuleFrame
+from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
+from cellprofiler.gui.help import PLATEVIEWER_HELP
 from cellprofiler.gui.htmldialog import HTMLDialog
+from cellprofiler.gui.omerologin import OmeroLoginDlg
 from cellprofiler.gui.pathlist import EVT_PLC_SELECTION_CHANGED
 from cellprofiler.gui.viewworkspace import \
     show_workspace_viewer, update_workspace_viewer
+from cellprofiler.icons import get_builtin_image
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
+from cellprofiler.modules.loadimages import pathname2url
+from errordialog import display_error_dialog, ED_STOP, ED_SKIP
+from errordialog import display_error_message
+from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in
@@ -791,7 +786,6 @@ class PipelineController:
                                  "ExampleSBSImages/ExampleSBS.cppipe",
                                  "Load pipeline via URL")
         if dlg.ShowModal() == wx.ID_OK:
-            import urllib2
             filename, headers = urllib.urlretrieve(dlg.Value)
             try:
                 self.do_load_pipeline(filename)
@@ -1394,16 +1388,16 @@ class PipelineController:
         path, file = os.path.split(pathname)
         if self.__dirty_workspace:
             self.__frame.Title = "CellProfiler %s: %s* (%s)" % (
-            version.title_string, file, path)
+                version.title_string, file, path)
         else:
             self.__frame.Title = "CellProfiler %s: %s (%s)" % (
-            version.title_string, file, path)
+                version.title_string, file, path)
 
     def __on_clear_pipeline(self, event):
         if wx.MessageBox(
                 "Do you really want to remove all modules from the pipeline?",
                 "Clearing pipeline",
-                wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
+                        wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
             self.stop_debugging()
             if self.is_running():
                 self.stop_running()
@@ -1582,8 +1576,8 @@ class PipelineController:
             module_name = event.module.module_name
         if event.settings is None or len(event.settings) == 0:
             message = (
-            "Error while loading %s: %s\nDo you want to stop processing?" %
-            (module_name, event.error.message))
+                "Error while loading %s: %s\nDo you want to stop processing?" %
+                (module_name, event.error.message))
         else:
             message = ("Error while loading %s: %s\n"
                        "Do you want to stop processing?\n\n"
@@ -1676,7 +1670,8 @@ class PipelineController:
                 (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (
-                self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
+                    self.PATHLIST_CMD_COLLAPSE_ALL,
+                    self.PATHLIST_CMD_COLLAPSE_ALL),
                 (self.PATHLIST_CMD_CLEAR, self.PATHLIST_CMD_CLEAR))
 
     def on_pathlist_file_command(self, paths, cmd):
@@ -1715,7 +1710,8 @@ class PipelineController:
                 (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (
-                self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
+                    self.PATHLIST_CMD_COLLAPSE_ALL,
+                    self.PATHLIST_CMD_COLLAPSE_ALL),
                 (self.PATHLIST_CMD_CLEAR, self.PATHLIST_CMD_CLEAR))
 
     def on_pathlist_folder_command(self, path, cmd):
@@ -1922,7 +1918,7 @@ class PipelineController:
                     minutes = int(waiting_for) / 60
                     seconds = waiting_for % 60
                     msg += "\nElapsed time: %d minutes, %d seconds" % (
-                    minutes, seconds)
+                        minutes, seconds)
                     msg += "\nConsider using the LoadData module for loading large numbers of images."
                 keep_going, skip = dlg.UpdatePulse(msg)
                 return keep_going
@@ -2421,7 +2417,7 @@ class PipelineController:
     def __on_module_view_event(self, caller, event):
         assert isinstance(event,
                           cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent' % (
-        str(event))
+            str(event))
         setting = event.get_setting()
         proposed_value = event.get_proposed_value()
         setting.set_value_text(proposed_value)
@@ -3121,7 +3117,7 @@ class PipelineController:
         if ((module.module_name != 'Restart' or failure == -1) and
                     self.__debug_measurements is not None):
             module_error_measurement = 'ModuleError_%02d%s' % (
-            module.module_num, module.module_name)
+                module.module_num, module.module_name)
             self.__debug_measurements.add_measurement('Image',
                                                       module_error_measurement,
                                                       failure)
@@ -3164,7 +3160,7 @@ class PipelineController:
         with wx.ProgressDialog(
                 "Running modules in test mode",
                         message_format % (
-                    index + 1, count, first_module.module_name),
+                            index + 1, count, first_module.module_name),
                 maximum=count,
                 parent=self.__frame,
                 style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT) as dlg:
@@ -3214,8 +3210,8 @@ class PipelineController:
     def on_debug_prev_image_set(self, event):
         keys, image_numbers = self.__groupings[self.__grouping_index]
         self.__within_group_index = (
-        (self.__within_group_index + len(image_numbers) - 1) %
-        len(image_numbers))
+            (self.__within_group_index + len(image_numbers) - 1) %
+            len(image_numbers))
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
         self.__pipeline_list_view.reset_debug_module()
@@ -3243,7 +3239,7 @@ class PipelineController:
         np.random.seed()
         image_number_index = np.random.randint(1, len(image_numbers), size=1)[0]
         self.__within_group_index = (
-        (image_number_index - 1) % len(image_numbers))
+            (image_number_index - 1) % len(image_numbers))
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
         self.__pipeline_list_view.reset_debug_module()
@@ -3666,7 +3662,7 @@ class PipelineController:
                     break
             result = wx.MessageDialog(parent=self.__frame,
                                       message='%s already exists. Would you like to create %s instead?' % (
-                                      path, alternate_name),
+                                          path, alternate_name),
                                       caption='Output file exists',
                                       style=wx.YES_NO + wx.ICON_QUESTION)
             user_choice = result.ShowModal()

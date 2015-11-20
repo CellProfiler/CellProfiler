@@ -1,12 +1,14 @@
 """preferencesdlg.py Edit global preferences
 """
 
-import wx
-import matplotlib.cm
 import os
 import sys
-import cellprofiler.preferences as cpprefs
+
+import matplotlib.cm
+import wx
+
 import cellprofiler.gui.help as cphelp
+import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.htmldialog import HTMLDialog
 
 DIRBROWSE = "Browse"
@@ -121,7 +123,8 @@ class PreferencesDlg(wx.Dialog):
                                   validator=validator)
                 min_height = ctl.GetMinHeight()
                 min_width = \
-                ctl.GetTextExtent("Make sure the window can display this")[0]
+                    ctl.GetTextExtent("Make sure the window can display this")[
+                        0]
                 ctl.SetMinSize((min_width, min_height))
             controls.append(ctl)
             sizer.Add(ctl, (index, 1), flag=wx.EXPAND)

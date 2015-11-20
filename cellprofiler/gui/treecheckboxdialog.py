@@ -59,7 +59,8 @@ class TreeCheckboxDialog(wx.Dialog):
                         flag=wx.LEFT | wx.RIGHT, border=3)
         for i, (bitmap, description) in enumerate((
                 (
-                image_list.GetBitmap(0), "No subitems selected / not selected"),
+                        image_list.GetBitmap(0),
+                        "No subitems selected / not selected"),
                 (image_list.GetBitmap(2), "All subitems selected / selected"),
                 (image_list.GetBitmap(4),
                  "Some subitems selected. Open tree to see selections."))):

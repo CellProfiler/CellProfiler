@@ -6,7 +6,7 @@ of the cell profiler program
 
 import os
 import sys
-import cellprofiler.preferences
+
 from cellprofiler.icons import get_builtin_image, get_builtin_images_path
 
 cp_image = None

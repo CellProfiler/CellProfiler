@@ -4,9 +4,11 @@
 import datetime
 import os
 import sys
+
 import wx
-import cellprofiler.preferences as cpprefs
+
 import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
 
 FC_FILENAME_COLUMN = 0
 FC_DATE_COLUMN = 1
@@ -238,7 +240,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
                 if result == wx.ID_OK:
                     self.pipeline_list_view.SetItemText(item, dlg.Path)
             elif subitem in (
-            P_INPUT_DIRECTORY_COLUMN, P_OUTPUT_DIRECTORY_COLUMN):
+                    P_INPUT_DIRECTORY_COLUMN, P_OUTPUT_DIRECTORY_COLUMN):
                 dest = "input" if subitem == P_INPUT_DIRECTORY_COLUMN else "output"
                 dlg = wx.DirDialog(self,
                                    "Choose the default %s folder to use for the pipeline")

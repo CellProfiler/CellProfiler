@@ -1,16 +1,17 @@
 """plateviewer.py - a user interface to view the image files for a plate
 """
 
+import multiprocessing
+import threading
+import traceback
+
+import matplotlib
+import matplotlib.cm
 import numpy as np
 import wx
 import wx.grid
-import matplotlib
-import matplotlib.cm
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
-import threading
-import traceback
-import multiprocessing
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 
 def well_row_name(x):

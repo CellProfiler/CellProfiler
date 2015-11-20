@@ -4,15 +4,16 @@
 import os
 import string
 import time
+
 import numpy as np
 import wx
+
+import cellprofiler.analysis as cpanalysis
 import cellprofiler.preferences as cpprefs
-from cellprofiler.icons import get_builtin_image
-from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
     DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, \
     USING_THE_OUTPUT_FILE_HELP
-import cellprofiler.analysis as cpanalysis
+from cellprofiler.gui.htmldialog import HTMLDialog
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
 
@@ -607,7 +608,8 @@ class ProgressWatcher:
 
     def update(self, event=None):
         status = '%s, Image Set %d/%d' % (
-        self.current_module_name, self.image_set_index + 1, self.num_image_sets)
+            self.current_module_name, self.image_set_index + 1,
+            self.num_image_sets)
         self.update_callback(status,
                              self.elapsed_time(),
                              self.remaining_time())

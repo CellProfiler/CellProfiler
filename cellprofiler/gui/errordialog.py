@@ -1,14 +1,14 @@
 """errordialog - dialog box for reporting error.
 """
 
+import logging
 import os
-from StringIO import StringIO
+import platform
+import sys
+import traceback
 import urllib
 import urllib2
-import traceback
-import sys
-import platform
-import logging
+from StringIO import StringIO
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
@@ -193,7 +193,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None,
     # Handle pdb button
     #
     if ((tb or remote_exc_info) is not None) and (
-        not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG')):
+                not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG')):
         if not from_subprocess:
             pdb_button = wx.Button(dialog, -1, "Debug in pdb...")
             pdb_button.SetToolTipString("Debug in python's pdb on the console")

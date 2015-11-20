@@ -1,12 +1,14 @@
+import fnmatch
+import os
+import os.path
+import re
+import sys
+
 import wx
 import wx.html
 import wx.lib.agw.customtreectrl as CT
+
 import scrollable_text
-import os
-import os.path
-import fnmatch
-import re
-import sys
 
 default_input = '/tmp'
 default_output = '/Users/thouis'
@@ -249,7 +251,8 @@ class LocationPanel(wx.Panel):
             descend_dirs = descend_dir_choices[self.descend_dirs.GetSelection()]
 
         if descend_dirs == FS_DESCEND_NO:
-            self.file_list = [(directory, '', f) for f in os.listdir(directory) if
+            self.file_list = [(directory, '', f) for f in os.listdir(directory)
+                              if
                               os.path.isfile(os.path.join(directory, f))]
         elif descend_dirs == FS_DESCEND_YES:
             progress = wx.ProgressDialog('Finding files...',
@@ -514,7 +517,8 @@ class ImagePage(wx.Panel):
                     idx = file_string.index(pattern)
                     return prefix + [('black', file_string[:idx]),
                                      ('red', pattern), (
-                                     'black', file_string[idx + len(pattern):])]
+                                         'black',
+                                         file_string[idx + len(pattern):])]
             else:
                 return prefix + [('red', file_string)]
         elif modestr == FS_SHELL:

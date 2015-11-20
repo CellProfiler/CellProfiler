@@ -1,26 +1,25 @@
 """ViewWorkspace.py - view the image sets and object sets in a workspace
 """
 
-import numpy as np
 import matplotlib
+import numpy as np
 import wx
-from wx.lib.intctrl import IntCtrl, EVT_INT
-from wx.lib.resizewidget import ResizeWidget
 from wx.lib.colourselect import ColourSelect, EVT_COLOURSELECT
 from wx.lib.scrolledpanel import ScrolledPanel
-from cellprofiler.gui.cpfigure import \
-    CPFigureFrame, get_matplotlib_interpolation_preference
+
+import cellprofiler.measurements as cpmeas
+import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.cpartists import \
     CPImageArtist, ImageData, ObjectsData, MaskData, ColorMixin, \
     MODE_COLORIZE, MODE_HIDE, MODE_LINES, \
     NORMALIZE_LINEAR, NORMALIZE_LOG, NORMALIZE_RAW, \
     INTERPOLATION_BICUBIC, INTERPOLATION_BILINEAR, INTERPOLATION_NEAREST
+from cellprofiler.gui.cpfigure import \
+    CPFigureFrame
 from cellprofiler.gui.help import WV_FIGURE_HELP, WORKSPACE_VIEWER_HELP
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, \
     M_LOCATION_CENTER_Y
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
 
 __the_workspace_viewer = None
 

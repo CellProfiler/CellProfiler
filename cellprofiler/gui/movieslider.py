@@ -5,9 +5,10 @@ Buttons included in this file Copyright Audacity
 public license.
 """
 
-import math
 import StringIO
+
 import wx
+
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_bevel, BV_DOWN
 
@@ -73,10 +74,10 @@ class SliderCtl(wx.Panel):
     def set_value(self, new_value):
         if new_value < self.min_value:
             raise ValueError("Value %d is less than minimum (= %d)" % (
-            new_value, self.min_value))
+                new_value, self.min_value))
         if new_value > self.max_value:
             raise ValueError("Value %d is more than minimum (= %d)" % (
-            new_value, self.max_value))
+                new_value, self.max_value))
         if self.__value == new_value:
             return
         if self.__start_value > new_value:
@@ -98,10 +99,10 @@ class SliderCtl(wx.Panel):
     def set_start_value(self, new_value):
         if new_value < self.min_value:
             raise ValueError("Value %d is less than minimum (= %d)" % (
-            new_value, self.min_value))
+                new_value, self.min_value))
         if new_value > self.max_value:
             raise ValueError("Value %d is more than minimum (= %d)" % (
-            new_value, self.max_value))
+                new_value, self.max_value))
         if self.__start_value == new_value:
             return
         if new_value == self.__stop_value:
@@ -117,10 +118,10 @@ class SliderCtl(wx.Panel):
     def set_stop_value(self, new_value):
         if new_value < self.min_value:
             raise ValueError("Value %d is less than minimum (= %d)" % (
-            new_value, self.min_value))
+                new_value, self.min_value))
         if new_value > self.max_value:
             raise ValueError("Value %d is more than minimum (= %d)" % (
-            new_value, self.max_value))
+                new_value, self.max_value))
         if self.__stop_value == new_value:
             return
         if new_value == self.__start_value and new_value > 0:

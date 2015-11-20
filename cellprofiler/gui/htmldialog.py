@@ -20,8 +20,8 @@ diameter', meaning the diameter of a circle with the same area as the
 object."""
 
 import wx
+
 from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
-import webbrowser
 
 
 class HTMLDialog(wx.Dialog):

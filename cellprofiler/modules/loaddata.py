@@ -153,9 +153,10 @@ See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics<
 import csv
 import hashlib
 import logging
-import numpy as np
 import os
 import sys
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 try:

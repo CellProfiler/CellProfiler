@@ -5,8 +5,9 @@ __version__ = "$Revision$"
 import os
 import unittest
 
-from bioformats import load_image
 import javabridge as J
+from bioformats import load_image
+
 import imagej.imageplus as I
 
 

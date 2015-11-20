@@ -1,13 +1,15 @@
 '''test_rescaleintensity.py - test the RescaleIntensity module
 '''
 
-import base64
-import numpy as np
 import StringIO
+import base64
 import unittest
 import zlib
 
+import numpy as np
+
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp

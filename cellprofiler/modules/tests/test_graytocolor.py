@@ -1,24 +1,23 @@
 '''test_graytocolor.py - Test the GrayToColor module
 '''
 
-import numpy as np
-
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
-
 import base64
-import numpy as np
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
 
-import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
+import numpy as np
+import numpy as np
+
 import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
+import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.workspace as cpw
 import cellprofiler.modules.graytocolor as G
+import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.settings as cps
+import cellprofiler.workspace as cpw
 
 OUTPUT_IMAGE_NAME = 'outputimage'
 class TestGrayToColor(unittest.TestCase):

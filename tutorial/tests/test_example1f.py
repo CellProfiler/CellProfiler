@@ -1,9 +1,10 @@
-from cStringIO import StringIO
 import unittest
+from cStringIO import StringIO
 
-from cellprofiler.modules import instantiate_module
-import cellprofiler.settings as cps
 import cellprofiler.pipeline as cpp
+import cellprofiler.settings as cps
+from cellprofiler.modules import instantiate_module
+
 
 class TestExample1f(unittest.TestCase):
     def setUp(self):

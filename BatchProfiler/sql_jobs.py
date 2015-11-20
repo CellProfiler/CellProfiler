@@ -8,11 +8,13 @@ command-line:
 sql_jobs.py --help
 """
 
-import re
 import os
+import re
 import subprocess
 import sys
+
 import RunBatch
+
 
 def run_sql_file(batch_id, sql_filename):
     """Use the mysql command line to run the given SQL script

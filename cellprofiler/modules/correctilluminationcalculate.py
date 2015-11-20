@@ -16,29 +16,27 @@ on the CellProfiler website for further advice.
 See also <b>CorrectIlluminationApply</b>, <b>EnhanceOrSuppressFeatures</b>.
 '''
 
-
-
-import numpy as np
-import scipy.ndimage as scind
-import scipy.linalg
-
-import cellprofiler.cpimage  as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
 import centrosome.cpmorphology as cpmm
-from centrosome.smooth import smooth_with_function_and_mask
+import numpy as np
+import scipy.linalg
+import scipy.ndimage as scind
+from centrosome.bg_compensate import MODE_DARK, MODE_GRAY
+from centrosome.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import grey_erosion, grey_dilation
+from centrosome.filter import median_filter, convex_hull_transform
 from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
-from centrosome.filter import median_filter, convex_hull_transform
-from centrosome.cpmorphology import grey_erosion, grey_dilation
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
-from centrosome.bg_compensate import MODE_DARK, MODE_GRAY
+from centrosome.smooth import smooth_with_function_and_mask
+
+import cellprofiler.cpimage  as cpi
+import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.settings as cps
+import cellprofiler.workspace as cpw
+from cellprofiler.settings import YES, NO
 
 IC_REGULAR         = "Regular"
 IC_BACKGROUND      = "Background"

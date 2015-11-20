@@ -8,22 +8,23 @@ dist:  the contents that need to be given to the user to run WormProfiler.
 output: contains the .msi if you did the msi commmand
 """
 
-from distutils.core import setup
 import distutils.core
 import distutils.errors
-import py2exe
-import sys
 import glob
-import subprocess
-import re
 import os
+import re
 import shutil
 import site
-import _winreg
-import matplotlib
-import pyreadline
+import subprocess
+import sys
 import tempfile
 import xml.dom.minidom
+from distutils.core import setup
+
+import _winreg
+import matplotlib
+import py2exe
+import pyreadline
 
 CP_NO_ILASTIK = "CP_NO_ILASTIK"
 # make sure external dependencies match requirements

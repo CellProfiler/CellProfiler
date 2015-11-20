@@ -1,18 +1,19 @@
 '''test_metadata.py - test the Metadata module
 '''
 
-import numpy as np
 import os
-from cStringIO import StringIO
 import tempfile
 import unittest
 import urllib
+from cStringIO import StringIO
 
-import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
+import numpy as np
+
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.images as I
 import cellprofiler.modules.metadata as M
+import cellprofiler.pipeline as cpp
+import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 
 OME_XML = open(os.path.join(os.path.split(__file__)[0], "omexml.xml"), "r").read()

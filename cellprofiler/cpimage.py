@@ -5,15 +5,15 @@ ImageSetList - Represents the list of image filenames that make up a pipeline ru
 """
 
 import logging
-import numpy as np
 import math
 import sys
-
+from StringIO import StringIO
+from cPickle import dump, Unpickler
 from struct import unpack
 from zlib import decompress
-from StringIO import StringIO
+
+import numpy as np
 from numpy import fromstring, uint8, uint16
-from cPickle import dump, Unpickler
 
 logger = logging.getLogger(__name__)
 

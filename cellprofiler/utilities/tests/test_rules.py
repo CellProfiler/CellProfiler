@@ -1,10 +1,10 @@
 '''test_rules - test the CPA rules parser
 '''
 
+import unittest
+from StringIO import StringIO
 
 import numpy as np
-from StringIO import StringIO
-import unittest
 
 import cellprofiler.measurements as cpmeas
 import cellprofiler.utilities.rules as R

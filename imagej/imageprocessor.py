@@ -1,8 +1,9 @@
 # imagej.imageprocessor.py - utilities for image processors
 
-import numpy as np
 import bioformats
 import javabridge as J
+import numpy as np
+
 
 def get_image(imageprocessor_obj, do_scaling = False):
     '''Retrieve the image from an ImageProcessor

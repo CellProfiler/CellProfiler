@@ -1,18 +1,18 @@
 '''test_sendemail - test the SendEmail module
 '''
 
-import asyncore
-from cStringIO import StringIO
 import Queue
+import asyncore
 import smtpd
 import threading
 import unittest
+from cStringIO import StringIO
 
-import cellprofiler.pipeline as cpp
 import cellprofiler.measurements as cpmeas
-import cellprofiler.workspace as cpw
-import cellprofiler.objects as cpo
 import cellprofiler.modules.sendemail as SE
+import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 SENDER = "sender@cellprofiler.org"
 def recipient_addr(idx):

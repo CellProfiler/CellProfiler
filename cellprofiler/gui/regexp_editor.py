@@ -2,6 +2,7 @@
 """
 
 import re
+
 import wx
 import wx.stc
 

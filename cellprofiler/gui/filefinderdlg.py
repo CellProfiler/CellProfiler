@@ -1,10 +1,13 @@
 '''filefinderdlg.py - tree checkbox dialog wrapping the cellprofiler file finder
 '''
 
-import wx
-import cellprofiler.utilities.filefinder as filefinder
-import os.path
 import Queue
+import os.path
+
+import wx
+
+import cellprofiler.utilities.filefinder as filefinder
+
 
 class FileFinderDialog(wx.Dialog):
     '''A dialog wrapping the cellprofiler file finder'''

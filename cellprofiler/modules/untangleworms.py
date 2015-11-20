@@ -68,16 +68,18 @@ as video tutorials.</p>
 '''
 
 import logging
-import numpy as np
-import matplotlib.mlab as mlab
 import os
+import sys
+import urllib2
+import xml.dom.minidom as DOM
+
+import matplotlib.mlab as mlab
+import numpy as np
 import scipy.ndimage as scind
-from scipy.sparse import coo
 from scipy.interpolate import interp1d
 from scipy.io import loadmat
-import sys
-import xml.dom.minidom as DOM
-import urllib2
+from scipy.sparse import coo
+
 logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas

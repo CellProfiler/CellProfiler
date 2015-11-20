@@ -1,7 +1,8 @@
-from cStringIO import StringIO
 import unittest
+from cStringIO import StringIO
 
 import cellprofiler.pipeline as cpp
+
 
 class TestExample1(unittest.TestCase):
     def test_01_01_load(self):

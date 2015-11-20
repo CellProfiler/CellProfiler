@@ -1,12 +1,13 @@
 """cpjvm.py - CellProfiler-specific JVM utilities
 """
 
-import javabridge
-import bioformats
 import logging
 import os
 import sys
 import tempfile
+
+import bioformats
+import javabridge
 
 import cellprofiler.preferences as cpprefs
 

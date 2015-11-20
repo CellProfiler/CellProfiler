@@ -2,13 +2,15 @@
 '''
 
 import base64
-import numpy as np
-from scipy.ndimage import distance_transform_edt
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
+from scipy.ndimage import distance_transform_edt
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp

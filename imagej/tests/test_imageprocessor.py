@@ -2,13 +2,15 @@
 
 __version__ = "$Revision$"
 
-import numpy as np
 import os
 import unittest
 
 import javabridge as J
+import numpy as np
+
 import imagej.imageplus as I
 import imagej.imageprocessor as IP
+
 
 class TestImageProcessor(unittest.TestCase):
     def setUp(self):

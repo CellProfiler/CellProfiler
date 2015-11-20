@@ -16,8 +16,8 @@ import numpy as np
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
+import cellprofiler.settings as cps
 
 SOURCE_IM = cpmeas.IMAGE
 SOURCE_OBJ = "Object"

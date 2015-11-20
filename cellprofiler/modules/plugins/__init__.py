@@ -8,10 +8,11 @@ directory.
 # http://www.secomputing.co.uk/2009/05/importing-python-packages-in-memory.html
 # were helpful when writing this code.
 
-import imp
-import sys
-import os.path
 import glob
+import imp
+import os.path
+import sys
+
 import cellprofiler.preferences as cpprefs
 
 

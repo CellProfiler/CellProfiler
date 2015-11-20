@@ -1,14 +1,16 @@
 '''test_hdf5_dict - test the hdf5_dict module
 '''
 
-import h5py
-import numpy as np
 import os
+import sys
 import tempfile
 import unittest
-import sys
+
+import h5py
+import numpy as np
 
 import cellprofiler.utilities.hdf5_dict as H5DICT
+
 E = H5DICT.HDF5FileList.encode
 D = H5DICT.HDF5FileList.decode
 

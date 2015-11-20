@@ -29,14 +29,14 @@ here <i>A</i> is the slope.</li>
 '''
 
 import numpy as np
-from scipy.linalg import lstsq
 import scipy.ndimage as scind
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from scipy.linalg import lstsq
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-import cellprofiler.measurements as cpmeas
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"

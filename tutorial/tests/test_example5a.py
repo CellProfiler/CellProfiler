@@ -1,7 +1,8 @@
-import numpy as np
-import scipy.ndimage
 import sys
 import unittest
+
+import numpy as np
+import scipy.ndimage
 
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo

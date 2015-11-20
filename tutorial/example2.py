@@ -5,9 +5,9 @@ your own filter in the "run" method.
 '''
 import numpy as np
 
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-import cellprofiler.cpimage as cpi
 
 class Example2(cpm.CPModule):
     variable_revision_number = 1

@@ -1,6 +1,5 @@
 '''test_settings.py - test the settings classes'''
 
-
 import unittest
 
 import cellprofiler.settings as cps

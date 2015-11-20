@@ -7,9 +7,11 @@ method to use.
 """
 
 import logging
-import numpy as np
 import traceback
+
+import numpy as np
 from scipy.ndimage import affine_transform, map_coordinates
+
 logger = logging.getLogger(__name__)
 
 import cellprofiler.cpmodule as cpm

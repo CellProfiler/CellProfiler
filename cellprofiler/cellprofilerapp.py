@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
 
-import wx
-from cellprofiler.icons import get_builtin_image
 import cStringIO
-import cellprofiler.preferences as cpp
-from cellprofiler.gui.errordialog import display_error_dialog
 import sys
 
+import wx
+
+import cellprofiler.preferences as cpp
+from cellprofiler.gui.errordialog import display_error_dialog
+from cellprofiler.icons import get_builtin_image
 # Make sure sys.excepthook is called for any uncaught exceptions, even in threads.
 import cellprofiler.utilities.thread_excepthook
 cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()

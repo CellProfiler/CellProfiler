@@ -5,36 +5,37 @@ import base64
 import gc
 import glob
 import hashlib
-import numpy as np
 import os
 import re
-import unittest
+import sys
 import tempfile
 import time
+import traceback
+import unittest
 import urllib
-import sys
 import zlib
 from StringIO import StringIO
-import traceback
 
-import cellprofiler.pipeline as cpp
+import numpy as np
+from bioformats.formatreader import clear_image_reader_cache
+from bioformats.formatwriter import write_image
+from bioformats.omexml import PT_UINT8
+
+import cellprofiler.cpimage as I
 import cellprofiler.cpmodule as CPM
+import cellprofiler.measurements as measurements
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.tests as T
-import cellprofiler.cpimage as I
 import cellprofiler.objects as cpo
-import cellprofiler.measurements as measurements
+import cellprofiler.pipeline as cpp
 import cellprofiler.pipeline as P
+import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as W
+from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_example_images, \
      maybe_download_sbs, maybe_download_tesst_image, maybe_download_fly,\
      example_images_url, make_12_bit_image
-from cellprofiler.modules.namesandtypes import M_IMAGE_SET
-import cellprofiler.preferences as cpprefs
-from bioformats.omexml import PT_UINT8
-from bioformats.formatreader import clear_image_reader_cache
-from bioformats.formatwriter import write_image
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"

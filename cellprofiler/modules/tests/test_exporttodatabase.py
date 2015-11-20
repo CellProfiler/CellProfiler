@@ -2,7 +2,9 @@
 '''
 
 import base64
+
 import numpy as np
+
 np.random.seed(9804)
 import os
 import PIL.Image as PILImage

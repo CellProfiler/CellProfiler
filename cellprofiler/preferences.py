@@ -6,11 +6,10 @@
 """
 
 import logging
-import random
-import cellprofiler
 import multiprocessing
 import os
 import os.path
+import random
 import re
 import sys
 import tempfile
@@ -19,6 +18,8 @@ import time
 import traceback
 import uuid
 import weakref
+
+import cellprofiler
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
 logger = logging.getLogger(__name__)

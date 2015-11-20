@@ -1,15 +1,16 @@
 """test_nowx.py - ensure that there's no dependency on wx when headless
 """
+import __builtin__
 import os
 import sys
 import tempfile
 import traceback
-from urllib2 import urlopen
 import unittest
+from urllib2 import urlopen
+
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_sbs, maybe_download_fly
 
-import __builtin__
 
 def import_all_but_wx(name, 
                       globals = __builtin__.globals(), 

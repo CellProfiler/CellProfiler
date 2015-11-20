@@ -5,19 +5,19 @@ Author: AJ Pretorius
         a.j.pretorius@leeds.ac.uk
 """
 
-import numpy as np
 import os
 import sys
 import time
 import traceback
 
+import numpy as np
 import wx
 import wx.lib.agw.floatspin as fs
 
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule
 import cellprofiler.measurements as cpm
 import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
 import cellprofiler.preferences
 import cellprofiler.settings as settings
 import cellprofiler.workspace as cpw

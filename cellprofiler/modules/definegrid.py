@@ -31,11 +31,10 @@ each other.
 See also <b>IdentifyObjectsInGrid</b>.
 '''
 
-
-
 import logging
-import numpy as np
 import traceback
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 import cellprofiler.cpgridinfo as cpg

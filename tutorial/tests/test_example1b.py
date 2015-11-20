@@ -1,8 +1,9 @@
-from cStringIO import StringIO
 import unittest
+from cStringIO import StringIO
 
 import cellprofiler.pipeline as cpp
 from cellprofiler.modules import instantiate_module
+
 
 class TestExample1b(unittest.TestCase):
     def make_instance(self):

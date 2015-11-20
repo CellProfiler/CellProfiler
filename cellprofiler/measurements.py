@@ -2,10 +2,10 @@
 """
 from __future__ import with_statement
 
-
-import h5py
 import json
 import logging
+
+import h5py
 logger = logging.getLogger(__name__)
 import numpy as np
 import re

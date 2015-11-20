@@ -5,28 +5,25 @@ This module creates an html file that displays the specified
 images, and optionally a link to a compressed ZIP file of all of the images shown.
 '''
 
-
-
-
 import os
-from cStringIO import StringIO
+import shutil
 import sys
 import uuid
-from urllib2 import urlopen
-import shutil
 import zipfile
+from cStringIO import StringIO
+from urllib2 import urlopen
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
+import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO, ABSOLUTE_FOLDER_NAME
+from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
+from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.settings import \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
-import cellprofiler.preferences as cpprefs
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
-from cellprofiler.modules.loadimages import pathname2url
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+from cellprofiler.settings import YES, NO, ABSOLUTE_FOLDER_NAME
 
 IDX_DIRECTORY_CHOICE_V1 = 4
 

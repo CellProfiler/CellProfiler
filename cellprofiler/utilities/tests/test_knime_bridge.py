@@ -1,26 +1,28 @@
 '''test_knime_bridge.py - test the Knime bridge'''
 
-from cStringIO import StringIO
 import json
-import numpy as np
 import unittest
 import uuid
+from cStringIO import StringIO
+
+import numpy as np
 import zmq
 
+import cellprofiler.measurements as cpmeas
+import cellprofiler.pipeline as cpp
 from cellprofiler.analysis_worker import NOTIFY_STOP
 from cellprofiler.knime_bridge import KnimeBridgeServer, \
      CONNECT_REQ_1, CONNECT_REPLY_1, \
      PIPELINE_INFO_REQ_1, PIPELINE_INFO_REPLY_1, PIPELINE_EXCEPTION_1,\
      RUN_REQ_1, RUN_GROUP_REQ_1, RUN_REPLY_1, CELLPROFILER_EXCEPTION_1,\
      CLEAN_PIPELINE_REQ_1, CLEAN_PIPELINE_REPLY_1
-import cellprofiler.pipeline as cpp
-import cellprofiler.measurements as cpmeas
-from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
-from cellprofiler.modules.identify import TS_MANUAL
 from cellprofiler.modules.flagimage import FlagImage, S_IMAGE
+from cellprofiler.modules.identify import TS_MANUAL
+from cellprofiler.modules.identifyprimaryobjects import IdentifyPrimaryObjects
 from cellprofiler.modules.loadimages import LoadImages
 from cellprofiler.modules.measureobjectsizeshape import MeasureObjectSizeShape
 from cellprofiler.modules.saveimages import SaveImages
+
 
 class TestKnimeBridge(unittest.TestCase):
     def setUp(self):

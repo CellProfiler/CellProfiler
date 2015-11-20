@@ -1,11 +1,13 @@
 """test_colortogray.py - test the ColorToGray module
 """
 
-from StringIO import StringIO
 import unittest
+from StringIO import StringIO
+
 import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp

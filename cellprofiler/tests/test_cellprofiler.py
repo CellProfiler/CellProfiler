@@ -2,18 +2,19 @@
 '''
 
 import datetime
-import dateutil.parser
 import os
-import unittest
-from cStringIO import StringIO
 import shutil
 import subprocess
 import sys
 import tempfile
-from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_example_images
+import unittest
+from cStringIO import StringIO
+
+import dateutil.parser
 
 import CellProfiler
+from cellprofiler.modules.tests import \
+     example_images_directory, maybe_download_example_images
 
 if hasattr(sys, 'frozen'):
     ARGLIST_START = [sys.executable]

@@ -68,36 +68,35 @@ Toolbox</a> page for sample images and pipelines, as well
 as video tutorials.</p>
 '''
 
-import numpy as np
 import os
+
+import centrosome.cpmorphology as morph
+import centrosome.index as INDEX
+import numpy as np
 from scipy.interpolate import interp1d
 from scipy.interpolate.fitpack import bisplrep, dblint
 from scipy.ndimage import map_coordinates, extrema
 from scipy.ndimage import mean as nd_mean
 from scipy.ndimage import standard_deviation as nd_standard_deviation
 
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import centrosome.cpmorphology as morph
-import centrosome.index as INDEX
 import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
 from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.settings import YES, NO
 from cellprofiler.utilities import product
-
-from untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
-from untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
-from untangleworms import recalculate_single_worm_control_points
-from untangleworms import read_params
-
-from identify import get_object_measurement_columns
-from identify import add_object_count_measurements
-from identify import add_object_location_measurements
 from identify import C_COUNT, C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y
 from identify import C_NUMBER, FTR_OBJECT_NUMBER
+from identify import add_object_count_measurements
+from identify import add_object_location_measurements
+from identify import get_object_measurement_columns
+from untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
+from untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
+from untangleworms import read_params
+from untangleworms import recalculate_single_worm_control_points
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"

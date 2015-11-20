@@ -4,7 +4,7 @@
 import re
 
 import wx
-import wx.lib.masked 
+import wx.lib.masked
 
 import cellprofiler.measurements as cpmeas
 from cellprofiler.preferences import get_primary_outline_color

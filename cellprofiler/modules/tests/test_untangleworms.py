@@ -1,26 +1,27 @@
 '''test_untangleworms.py - test the UntangleWorms module'''
 
+import StringIO
 import base64
 import gc
-import numpy as np
-from scipy.ndimage import binary_dilation
 import os
-import StringIO
 import tempfile
 import unittest
 import zlib
+
 import PIL.Image
+import numpy as np
+from centrosome.outline import outline
 from matplotlib.image import pil_to_array
+from scipy.ndimage import binary_dilation
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
+import cellprofiler.modules.untangleworms as U
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-from centrosome.outline import outline
 
-import cellprofiler.modules.untangleworms as U
 U.CAROLINAS_HACK = False
 
 IMAGE_NAME = "myimage"

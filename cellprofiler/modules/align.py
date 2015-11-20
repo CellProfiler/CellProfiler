@@ -21,18 +21,16 @@ aligned image with respect to the original image.</li>
 </ul>
 '''
 
-
-
 import numpy as np
-from scipy.fftpack import fft2, ifft2
 import scipy.ndimage as scind
 import scipy.sparse
+from centrosome.filter import stretch
+from scipy.fftpack import fft2, ifft2
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
-from centrosome.filter import stretch
+import cellprofiler.settings as cps
 
 M_MUTUAL_INFORMATION = 'Mutual Information'
 M_CROSS_CORRELATION = 'Normalized Cross Correlation'

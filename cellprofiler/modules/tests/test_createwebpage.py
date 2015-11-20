@@ -2,20 +2,22 @@
 '''
 
 import base64
-import numpy as np
 import os
-from bioformats.formatwriter import write_image
-from bioformats import PT_UINT8
 import shutil
-from StringIO import StringIO
 import tempfile
 import unittest
-from urllib2 import urlopen
 import xml.dom.minidom as DOM
 import zipfile
 import zlib
+from StringIO import StringIO
+from urllib2 import urlopen
+
+import numpy as np
+from bioformats import PT_UINT8
+from bioformats.formatwriter import write_image
 
 import cellprofiler.preferences as cpprefs
+
 cpprefs.set_headless()
 
 import cellprofiler.workspace as cpw

@@ -57,16 +57,16 @@ the pixel with the maximum intensity within the object.</li>
 See also <b>NamesAndTypes</b>, <b>MeasureImageIntensity</b>.
 """
 
+import centrosome.outline as cpmo
 import numpy as np
 import scipy.ndimage as nd
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.filter import stretch
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-import centrosome.outline as cpmo
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.filter import stretch
 from identify import C_LOCATION
 
 INTENSITY = 'Intensity'

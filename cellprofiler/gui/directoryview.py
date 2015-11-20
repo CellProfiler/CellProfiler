@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import traceback
+
 import wx
 
 logger = logging.getLogger(__name__)

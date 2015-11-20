@@ -1,12 +1,14 @@
 '''test_measureimageintensity.py Test the MeasureImageIntensity module
 '''
 
-import base64
-import numpy as np
-import unittest
 import StringIO
+import base64
+import unittest
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.cpmodule as cpm

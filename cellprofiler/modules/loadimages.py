@@ -39,19 +39,20 @@ filename, if requested.</li>
 See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
 '''
 
-import logging
-import numpy as np
 import cgi
 import hashlib
 import httplib
+import logging
 import os
 import re
-import sys
 import stat
+import sys
 import tempfile
 import traceback
 import urllib
 import urlparse
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 cached_file_lists = {}

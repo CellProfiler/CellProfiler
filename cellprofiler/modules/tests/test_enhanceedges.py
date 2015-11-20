@@ -1,13 +1,15 @@
 '''test_enhanceedges - test the EnhanceEdges module
 '''
 
-from base64 import b64decode
-import numpy as np
 import unittest
-from zlib import decompress
 from StringIO import StringIO
+from base64 import b64decode
+from zlib import decompress
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.cpmodule as cpm

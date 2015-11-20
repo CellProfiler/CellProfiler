@@ -4,9 +4,11 @@
 import os
 import tempfile
 import unittest
-import cellprofiler.settings as cps
+
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
+
 
 class TestVariable(unittest.TestCase):
     def test_00_00_init(self):

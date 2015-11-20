@@ -42,10 +42,11 @@ See also <b>ColorToGray</b>.
 import numpy as np
 from scipy.linalg import lstsq
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
 import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
+
 
 def html_color(rgb):
     '''Return an HTML color for a given stain'''

@@ -39,21 +39,21 @@ there will not be a corresponding <i>ClosestObjectNumber</i>.
 See also the <b>Identify</b> modules.
 '''
 
+import matplotlib.cm
 import numpy as np
 import scipy.ndimage as scind
-import matplotlib.cm
-
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.preferences as cpprefs
-import cellprofiler.workspace as cpw
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
 from centrosome.outline import outline
+
+import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
+import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
+import cellprofiler.workspace as cpw
+from cellprofiler.settings import YES, NO
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND   = 'Expand until adjacent'

@@ -2,31 +2,32 @@
 """
 from __future__ import with_statement
 
-import subprocess
-import multiprocessing
-import logging
-import tempfile
-import threading
 import Queue
-import uuid
-import h5py
-import numpy as np
 import cStringIO as StringIO
-import sys
+import collections
+import gc
+import logging
+import multiprocessing
 import os
 import os.path
+import subprocess
+import sys
+import tempfile
+import threading
+import uuid
+
+import h5py
+import numpy as np
 import zmq
-import gc
-import collections
 
 import cellprofiler
-import cellprofiler.measurements as cpmeas
-import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpimage
+import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
+import cellprofiler.workspace as cpw
 from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
-from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
 from cellprofiler.utilities.zmqrequest import get_announcer_address
+from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
 
 logger = logging.getLogger(__name__)
 

@@ -1,15 +1,16 @@
+import os
 import re
 import sys
-import os
-import cellprofiler.icons
 from glob import glob
 from shutil import copy
-from cellprofiler.modules import get_module_names, instantiate_module
+
+import cellprofiler.icons
 import cellprofiler.preferences as cpprefs
-from cellprofiler.gui.help import MAIN_HELP
-from cellprofiler.utilities.relpath import relpath
 import cellprofiler.utilities.version as version
-    
+from cellprofiler.gui.help import MAIN_HELP
+from cellprofiler.modules import get_module_names, instantiate_module
+from cellprofiler.utilities.relpath import relpath
+
 LOCATION_COVERPAGE = os.path.join('images','CPCoverPage.png')
 LOCATION_WHITEHEADLOGO = os.path.join('images','WhiteheadInstituteLogo.png')
 LOCATION_CSAILLOGO = os.path.join('images','CSAIL_Logo.png')

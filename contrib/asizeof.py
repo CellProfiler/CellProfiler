@@ -176,14 +176,14 @@ Notes
 
 from __future__ import generators  #PYCHOK for yield in Python 2.2
 
+import sys
+import types    as     Types
+import weakref  as     Weakref
 from inspect    import isbuiltin, isclass, iscode, isframe, \
                        isfunction, ismethod, ismodule, stack
 from math       import log
 from os         import linesep
 from struct     import calcsize as _calcsize
-import sys
-import types    as     Types
-import weakref  as     Weakref
 
 try:
     import numpy

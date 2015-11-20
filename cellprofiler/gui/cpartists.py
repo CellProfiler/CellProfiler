@@ -5,10 +5,10 @@ import matplotlib
 import matplotlib.artist
 import matplotlib.collections
 import numpy as np
-from scipy.ndimage import distance_transform_edt, label
-
 from centrosome.cpmorphology import get_outline_pts
 from centrosome.outline import outline
+from scipy.ndimage import distance_transform_edt, label
+
 from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
 
 '''Render the image in shades of gray'''

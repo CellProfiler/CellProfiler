@@ -1,24 +1,25 @@
 """ModuleView.py - implements a view on a module
 """
+import Queue
+import cStringIO
 import logging
-import matplotlib.cm
-import numpy as np
 import os
 import stat
+import sys
 import threading
-import Queue
 import time
 import traceback
 import uuid
-import cStringIO
+import weakref
+
+import matplotlib.cm
+import numpy as np
 import wx
 import wx.grid
 import wx.lib.colourselect
 import wx.lib.rcsizer
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
-import sys
-import weakref
 
 logger = logging.getLogger(__name__)
 import cellprofiler.pipeline as cpp

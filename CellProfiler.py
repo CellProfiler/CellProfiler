@@ -1,12 +1,13 @@
-import h5py
 import logging
 import logging.config
+import os
 import re
 import sys
-import os
-import numpy as np
 import tempfile
 from cStringIO import StringIO
+
+import h5py
+import numpy as np
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"

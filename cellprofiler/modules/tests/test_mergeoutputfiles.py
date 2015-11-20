@@ -1,15 +1,17 @@
 '''test_mergeoutputfiles.py - test the MergeOutputFiles module'''
 
 import gc
-import numpy as np
 import os
 import tempfile
 import unittest
 
-import cellprofiler.pipeline as cpp
+import numpy as np
+
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.mergeoutputfiles as M
+import cellprofiler.pipeline as cpp
 from cellprofiler.modules.loadimages import LoadImages
+
 
 class TestMergeOutputFiles(unittest.TestCase):
     def execute_merge_files(self, mm):

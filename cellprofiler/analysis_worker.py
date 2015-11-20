@@ -17,9 +17,10 @@ the analysis worker runs three threads:
                    the read call throws an exception and the monitor thread
                    stops the main thread's run loop.
 """
-import sys
-import os
 import logging
+import os
+import sys
+
 logger = logging.getLogger(__name__)
 
 '''Set the log level through the environment by specifying AW_LOG_LEVEL'''

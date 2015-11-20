@@ -2,38 +2,37 @@
 '''
 
 import hashlib
-import numpy as np
 import os
-from cStringIO import StringIO
 import tempfile
 import unittest
 import urllib
+from cStringIO import StringIO
 
-from bioformats import load_image
-import cellprofiler.pipeline as cpp
-import cellprofiler.modules.namesandtypes as N
-import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
-import cellprofiler.workspace as cpw
 import javabridge as J
-from cellprofiler.modules.tests import \
-     example_images_directory, testimages_directory, \
-     maybe_download_example_image, maybe_download_example_images,\
-     maybe_download_tesst_image, make_12_bit_image
-from cellprofiler.modules.loadimages import pathname2url
-from cellprofiler.modules.loadimages import \
-     C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
+import numpy as np
+from bioformats import load_image
+
+import cellprofiler.measurements as cpmeas
+import cellprofiler.modules.namesandtypes as N
+import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 from cellprofiler.measurements import C_FILE_NAME,\
      C_PATH_NAME, C_URL, C_SERIES, C_FRAME, \
      C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, \
      C_OBJECTS_SERIES, C_OBJECTS_FRAME
-     
+from cellprofiler.modules.createbatchfiles import \
+     CreateBatchFiles, F_BATCH_DATA_H5
 from cellprofiler.modules.identify import \
      C_COUNT, C_LOCATION, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
      FTR_CENTER_X, FTR_CENTER_Y
-
-from cellprofiler.modules.createbatchfiles import \
-     CreateBatchFiles, F_BATCH_DATA_H5
+from cellprofiler.modules.loadimages import \
+     C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
+from cellprofiler.modules.loadimages import pathname2url
+from cellprofiler.modules.tests import \
+     example_images_directory, testimages_directory, \
+     maybe_download_example_image, maybe_download_example_images,\
+     maybe_download_tesst_image, make_12_bit_image
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]

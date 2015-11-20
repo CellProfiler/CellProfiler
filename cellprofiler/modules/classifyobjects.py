@@ -52,16 +52,12 @@ binned into bins above ("high") and below ("low") the cutoff.</li>
 See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> category.
 '''
 
-
-
-
-import cellprofiler.preferences as cpprefs
-
 import numpy as np
 
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
+import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 

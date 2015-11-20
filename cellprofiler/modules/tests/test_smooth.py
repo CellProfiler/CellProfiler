@@ -1,14 +1,16 @@
 '''test_smooth.py - test the smooth module
 '''
 
-import base64
-import numpy as np
-from scipy.ndimage import gaussian_filter
 import StringIO
+import base64
 import unittest
 import zlib
 
+import numpy as np
+from scipy.ndimage import gaussian_filter
+
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw

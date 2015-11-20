@@ -9,16 +9,16 @@
 ################
 
 
-from MySQLdb import OperationalError
 import os
 import sys
 import time
 import traceback
 
+from MySQLdb import OperationalError
+
 from RunBatch import BPJob, BPJobTask, BPTaskHost, BPJobTaskStatus, \
      BPBatchArray, \
      JS_SUBMITTED, JS_RUNNING, bpcursor
-
 
 '''Wait a maximum of 60 seconds for the job to be placed in the database'''
 JOB_QUERY_TIMEOUT = 60

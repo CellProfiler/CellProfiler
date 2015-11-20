@@ -2,10 +2,11 @@
 """test_preferences.py - test the preferences module
 """
 
-import unittest
 import tempfile
+import unittest
 
 import cellprofiler.preferences as cpprefs
+
 
 class TestPreferences(unittest.TestCase):
     def test_01_01_folder_translations(self):

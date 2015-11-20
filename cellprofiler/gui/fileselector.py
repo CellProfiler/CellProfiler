@@ -1,12 +1,14 @@
+import fnmatch
+import os
+import os.path
+import re
+import sys
+
 import wx
 import wx.html
 import wx.lib.agw.customtreectrl as CT
+
 import scrollable_text
-import os
-import os.path
-import fnmatch
-import re
-import sys
 
 default_input = '/tmp'
 default_output = '/Users/thouis'

@@ -2,9 +2,11 @@
 """
 
 import unittest
+
 import numpy
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 from cellprofiler.modules.injectimage import InjectImage

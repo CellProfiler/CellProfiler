@@ -2,11 +2,12 @@
 '''
 
 import datetime
-import sys
-import subprocess
-import re
-import os.path
 import logging
+import os.path
+import re
+import subprocess
+import sys
+
 
 def datetime_from_isoformat(dt_str):
     return datetime.datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S")

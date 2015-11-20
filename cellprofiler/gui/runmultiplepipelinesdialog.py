@@ -4,10 +4,11 @@
 import datetime
 import os
 import sys
+
 import wx
 
-import cellprofiler.preferences as cpprefs
 import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
 
 FC_FILENAME_COLUMN = 0
 FC_DATE_COLUMN = 1

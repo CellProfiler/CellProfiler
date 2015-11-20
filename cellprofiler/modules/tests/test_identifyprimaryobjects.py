@@ -1,26 +1,26 @@
 """test_identifyprimautomatic.py: test the IdentifyPrimAutomatic module
 """
-import os
-
-import base64
-import unittest
-import numpy as np
-import scipy.ndimage
-import tempfile
 import StringIO
+import base64
+import os
+import tempfile
+import unittest
 import zlib
 
-import cellprofiler.modules.identifyprimaryobjects as ID
-import cellprofiler.modules.identify as I
 import centrosome.threshold as T
-from cellprofiler.modules.injectimage import InjectImage
-import cellprofiler.settings
+import numpy as np
+import scipy.ndimage
+
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
+import cellprofiler.modules.identify as I
+import cellprofiler.modules.identifyprimaryobjects as ID
+import cellprofiler.objects as cpo
 import cellprofiler.pipeline
-from cellprofiler.workspace import Workspace
+import cellprofiler.settings
+from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.modules.tests import read_example_image
+from cellprofiler.workspace import Workspace
 
 IMAGE_NAME = "my_image"
 OBJECTS_NAME = "my_objects"

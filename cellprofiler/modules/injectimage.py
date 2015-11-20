@@ -2,13 +2,15 @@
 InjectImage.py - for testing, this module injects a single image into the image set
 """
 import hashlib
+
 import numpy as np
 
-import cellprofiler.cpmodule
 import cellprofiler.cpimage
+import cellprofiler.cpmodule
 import cellprofiler.measurements as cpmeas
-import cellprofiler.settings
 import cellprofiler.objects
+import cellprofiler.settings
+
 
 class InjectImage(cellprofiler.cpmodule.CPModule):
     """This module is intended for testing. It injects an image into the

@@ -16,12 +16,12 @@
 # and construct the method, "upgrade_settings", which is responsible
 # for converting the settings of a version 1 module to a version 2 module.
 #
+from centrosome.filter import sobel
+from scipy.ndimage import gaussian_filter
+
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-import cellprofiler.cpimage as cpi
-
-from scipy.ndimage import gaussian_filter
-from centrosome.filter import sobel
 
 S_GAUSSIAN = "Gaussian"
 S_GAUSSIAN_V1 = "Gassian"

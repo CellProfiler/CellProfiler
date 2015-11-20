@@ -2975,8 +2975,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                                         remove_postgroup_key=True)
         agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
         for image_number in measurements.get_image_numbers():
-            image_row = []
-            image_row.append(image_number)
+            image_row = [image_number]
             for object_name, feature, coltype in columns:
                 if object_name != cpmeas.IMAGE:
                     continue

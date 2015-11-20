@@ -349,7 +349,7 @@ automatic_object_width = %(ow)s""" % locals())
         module.image_name.value = "MyImage"
         module.illumination_image_name.value = "OutputImage"
         module.intensity_choice.value = calc.IC_BACKGROUND
-        module.each_or_all.value == calc.EA_EACH
+        module.each_or_all.value() == calc.EA_EACH
         module.block_size.value = 20
         module.rescale_option.value = cps.NO
         module.dilate_objects.value = False
@@ -392,7 +392,7 @@ automatic_object_width = %(ow)s""" % locals())
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
         module.intensity_choice.value = calc.IC_REGULAR
-        module.each_or_all.value == calc.EA_EACH
+        module.each_or_all.value() == calc.EA_EACH
         module.smoothing_method.value = calc.SM_NONE
         module.rescale_option.value = cps.NO
         module.dilate_objects.value = False
@@ -442,7 +442,7 @@ automatic_object_width = %(ow)s""" % locals())
             module.image_name.value = image_name
             module.illumination_image_name.value = "OutputImage"
             module.intensity_choice.value = calc.IC_REGULAR
-            module.each_or_all.value == calc.EA_EACH
+            module.each_or_all.value() == calc.EA_EACH
             module.smoothing_method.value = calc.SM_FIT_POLYNOMIAL
             module.rescale_option.value = cps.NO
             module.dilate_objects.value = False
@@ -487,7 +487,7 @@ automatic_object_width = %(ow)s""" % locals())
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
         module.intensity_choice.value = calc.IC_REGULAR
-        module.each_or_all.value == calc.EA_EACH
+        module.each_or_all.value() == calc.EA_EACH
         module.smoothing_method.value = calc.SM_GAUSSIAN_FILTER
         module.automatic_object_width.value = calc.FI_MANUALLY
         module.size_of_smoothing_filter.value = 10
@@ -537,7 +537,7 @@ automatic_object_width = %(ow)s""" % locals())
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
         module.intensity_choice.value = calc.IC_REGULAR
-        module.each_or_all.value == calc.EA_EACH
+        module.each_or_all.value() == calc.EA_EACH
         module.smoothing_method.value = calc.SM_MEDIAN_FILTER
         module.automatic_object_width.value = calc.FI_MANUALLY
         module.size_of_smoothing_filter.value = 10
@@ -580,7 +580,7 @@ automatic_object_width = %(ow)s""" % locals())
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
         module.intensity_choice.value = calc.IC_REGULAR
-        module.each_or_all.value == calc.EA_EACH
+        module.each_or_all.value() == calc.EA_EACH
         module.smoothing_method.value = calc.SM_TO_AVERAGE
         module.automatic_object_width.value = calc.FI_MANUALLY
         module.size_of_smoothing_filter.value = 10
@@ -880,7 +880,7 @@ automatic_object_width = %(ow)s""" % locals())
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
         module.intensity_choice.value = calc.IC_REGULAR
-        module.each_or_all.value == calc.EA_EACH
+        module.each_or_all.value() == calc.EA_EACH
         module.smoothing_method.value = calc.SM_NONE
         module.automatic_object_width.value = calc.FI_MANUALLY
         module.size_of_smoothing_filter.value = 10
@@ -925,7 +925,7 @@ automatic_object_width = %(ow)s""" % locals())
         module.image_name.value = image_name
         module.illumination_image_name.value = "OutputImage"
         module.intensity_choice.value = calc.IC_REGULAR
-        module.each_or_all.value == calc.EA_EACH
+        module.each_or_all.value() == calc.EA_EACH
         module.smoothing_method.value = calc.SM_NONE
         module.automatic_object_width.value = calc.FI_MANUALLY
         module.size_of_smoothing_filter.value = 10

@@ -862,7 +862,7 @@ class CPFigureFrame(wx.Frame):
 
         if params['normalize'] == 'log':
             item_log.Check()
-        elif params['normalize'] == True:
+        elif params['normalize']:
             item_normalized.Check()
         else:
             item_raw.Check()
@@ -1209,7 +1209,7 @@ class CPFigureFrame(wx.Frame):
         # further which makes no sense.
         # ??? - We may want to change the normalize vs vmin,vmax behavior so if 
         # vmin,vmax are passed in, then normalize is ignored.
-        if normalize != False:
+        if normalize:
             vmin, vmax = 0, 1
 
         if clear:
@@ -1475,7 +1475,7 @@ class CPFigureFrame(wx.Frame):
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
         # Perform normalization
-        if normalize == True:
+        if normalize:
             if is_color_image(image):
                 image = np.dstack([auto_contrast(image[:, :, ch])
                                    for ch in range(image.shape[2])])

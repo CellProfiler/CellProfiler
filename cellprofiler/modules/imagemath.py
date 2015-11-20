@@ -359,7 +359,7 @@ class ImageMath(cpm.CPModule):
                     output_pixel_data &= comparitor == pd
                 else:
                     output_pixel_data = op(output_pixel_data, pd)
-                if self.ignore_mask == True:
+                if self.ignore_mask:
                     continue
                 else:
                     if output_mask is None:

@@ -552,7 +552,7 @@ class TestObjects(unittest.TestCase):
         labels_children_per_parent, labels_parents_of_children = x.relate_children(
             y)
         # force generation of ijv
-        x.ijv, y.ijv
+        x.ijv(), y.ijv
         ijv_children_per_parent, ijv_parents_of_children = x.relate_children(y)
         np.testing.assert_array_equal(labels_children_per_parent,
                                       ijv_children_per_parent)

@@ -1314,7 +1314,9 @@ class ModuleView:
                     new_path = v.encode_path_parts(id_dict[event.GetId()])
                     self.on_value_change(v, control, new_path, event)
 
-                def make_menu(tree, id_dict=id_dict, path=[]):
+                def make_menu(tree, id_dict=id_dict, path=None):
+                    if not path:
+                        path = []
                     menu = wx.Menu()
                     for node in tree:
                         text, subtree = node[:2]

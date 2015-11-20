@@ -19,8 +19,12 @@ import cellprofiler.modules.measureimageintensity as M
 
 
 class TestMeasureImageIntensity(unittest.TestCase):
-    def make_workspace(self, object_dict={}, image_dict={}):
+    def make_workspace(self, object_dict=None, image_dict=None):
         """Make a workspace for testing MeasureImageIntensity"""
+        if not image_dict:
+            image_dict = {}
+        if not object_dict:
+            object_dict = {}
         module = M.MeasureImageIntensity()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()

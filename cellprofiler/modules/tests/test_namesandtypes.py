@@ -1353,10 +1353,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
             os.remove(batch_data_filename)
             os.rmdir(tempdir)
 
-    def run_workspace(self, path, load_as_type,
-                      series=None, index=None, channel=None,
-                      single=False,
-                      rescaled=N.INTENSITY_RESCALING_BY_METADATA, lsi=[]):
+    def run_workspace(self, path, load_as_type, series=None, index=None,
+                      channel=None, single=False,
+                      rescaled=N.INTENSITY_RESCALING_BY_METADATA, lsi=None):
         """Run a workspace to load a file
 
         path - path to the file
@@ -1373,6 +1372,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
         returns the workspace after running
         """
+        if not lsi:
+            lsi = []
         if isinstance(rescaled, float):
             manual_rescale = rescaled
             rescaled = N.INTENSITY_MANUAL

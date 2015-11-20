@@ -960,7 +960,9 @@ class DictionaryReqRep(Reply):
 
 
 class MeasurementsReport(AnalysisRequest):
-    def __init__(self, analysis_id, buf, image_set_numbers=[]):
+    def __init__(self, analysis_id, buf, image_set_numbers=None):
+        if not image_set_numbers:
+            image_set_numbers = []
         AnalysisRequest.__init__(self, analysis_id,
                                  buf=buf,
                                  image_set_numbers=image_set_numbers)
@@ -1007,7 +1009,9 @@ class SharedDictionaryRequest(AnalysisRequest):
 
 
 class SharedDictionaryReply(Reply):
-    def __init__(self, dictionaries=[{}]):
+    def __init__(self, dictionaries=None):
+        if not dictionaries:
+            dictionaries = [{}]
         Reply.__init__(self, dictionaries=dictionaries)
 
 

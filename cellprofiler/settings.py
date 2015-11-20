@@ -2245,12 +2245,14 @@ class TreeChoice(Setting):
         """
         return "|".join([x.replace("|", "||") for x in value])
 
-    def get_leaves(self, path=[]):
+    def get_leaves(self, path=None):
         """Get all leaf nodes of a given parent node
 
         path - the names of nodes traversing the path down the tree
         :param path:
         """
+        if not path:
+            path = []
         current = self.get_tree()
         while len(path) > 0:
             idx = current.index(path[0])
@@ -2261,12 +2263,14 @@ class TreeChoice(Setting):
             path = path[1:]
         return [x[0] for x in current if x[1] is None or len(x[1] == 0)]
 
-    def get_subnodes(self, path=[]):
+    def get_subnodes(self, path=None):
         """Get all child nodes that are not leaves for a  given parent
 
         path - the names of nodes traversing the path down the tree
         :param path:
         """
+        if not path:
+            path = []
         current = self.get_tree()
         while len(path) > 0:
             idx = current.index(path[0])

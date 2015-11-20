@@ -11,11 +11,11 @@ from cellprofiler.modules.tests import \
 import __builtin__
 
 
-def import_all_but_wx(name,
-                      globals=__builtin__.globals(),
-                      locals=__builtin__.locals(),
-                      fromlist=[], level=-1,
+def import_all_but_wx(name, globals=__builtin__.globals(),
+                      locals=__builtin__.locals(), fromlist=None, level=-1,
                       default_import=__builtin__.__import__):
+    if not fromlist:
+        fromlist = []
     if name == "wx" or name.startswith("wx."):
         raise ImportError("Not allowed to import wx!")
     return default_import(name, globals, locals, fromlist, level)

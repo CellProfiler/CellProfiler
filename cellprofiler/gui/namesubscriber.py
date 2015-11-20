@@ -3,8 +3,8 @@
 import wx
 
 
-def align_twosided_items(parent, items, min_spacing=8, left_texts=[],
-                         right_texts=[]):
+def align_twosided_items(parent, items, min_spacing=8, left_texts=None,
+                         right_texts=None):
     """Find spacing for a list of pairs of text such that the left texts are
     left justified and the right texts (roughly) right justified.
     :param right_texts:
@@ -13,6 +13,10 @@ def align_twosided_items(parent, items, min_spacing=8, left_texts=[],
     :param items:
     :param parent:
     """
+    if not right_texts:
+        right_texts = []
+    if not left_texts:
+        left_texts = []
     if items:
         if wx.Platform == '__WXMSW__':
             # ignore minspacing for windows
@@ -40,7 +44,9 @@ class NameSubscriberComboBox(wx.Panel):
     Parent, modulenum).
     """
 
-    def __init__(self, annotation, choices=[], value='', name=''):
+    def __init__(self, annotation, choices=None, value='', name=''):
+        if not choices:
+            choices = []
         wx.Panel.__init__(self, annotation, name=name)
         self.orig_choices = choices
         self.IDs = [wx.NewId() for c in choices]

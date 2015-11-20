@@ -1872,8 +1872,10 @@ class CPFigureFrame(wx.Frame):
                                     float) / 255.))
 
     @allow_sharexy
-    def subplot_imshow_color(self, x, y, image, title=None,
-                             normalize=False, rgb_mask=[1, 1, 1], **kwargs):
+    def subplot_imshow_color(self, x, y, image, title=None, normalize=False,
+                             rgb_mask=None, **kwargs):
+        if not rgb_mask:
+            rgb_mask = [1, 1, 1]
         return self.subplot_imshow(
             x, y, image, title, normalize=normalize, rgb_mask=rgb_mask,
             **kwargs)

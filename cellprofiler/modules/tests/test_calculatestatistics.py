@@ -488,7 +488,8 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                 os.remove(path)
             os.rmdir(temp_dir)
 
-    def make_workspace(self, mdict, controls_measurement, dose_measurements=[]):
+    def make_workspace(self, mdict, controls_measurement,
+                       dose_measurements=None):
         """Make a workspace and module for running CalculateStatistics
 
         mdict - a two-level dictionary that mimics the measurements structure
@@ -497,6 +498,8 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                 for the measurement M1 with values for 3 image sets
         controls_measurement - the name of the controls measurement
         """
+        if not dose_measurements:
+            dose_measurements = []
         module = C.CalculateStatistics()
         module.module_num = 1
         module.grouping_values.value = controls_measurement

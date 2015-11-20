@@ -32,8 +32,12 @@ TEST_FTR = "my_measurement"
 
 
 class TestFilterObjects(unittest.TestCase):
-    def make_workspace(self, object_dict={}, image_dict={}):
+    def make_workspace(self, object_dict=None, image_dict=None):
         """Make a workspace for testing FilterByObjectMeasurement"""
+        if not image_dict:
+            image_dict = {}
+        if not object_dict:
+            object_dict = {}
         module = F.FilterByObjectMeasurement()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()

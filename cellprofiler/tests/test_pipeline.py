@@ -1244,10 +1244,10 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
 
 
 class TestImagePlaneDetails(unittest.TestCase):
-    def get_ipd(self,
-                url="http://cellprofiler.org",
-                series=0, index=0, channel=0,
-                metadata={}):
+    def get_ipd(self, url="http://cellprofiler.org", series=0, index=0,
+                channel=0, metadata=None):
+        if not metadata:
+            metadata = {}
         d = cpp.J.make_map(**metadata)
         jipd = cpp.J.run_script(
             """
@@ -1379,7 +1379,14 @@ class ATestModule(cpm.CPModule):
     module_name = "ATestModule"
     variable_revision_number = 1
 
-    def __init__(self, settings=[], measurement_columns=[], other_providers={}):
+    def __init__(self, settings=None, measurement_columns=None,
+                 other_providers=None):
+        if not other_providers:
+            other_providers = {}
+        if not measurement_columns:
+            measurement_columns = []
+        if not settings:
+            settings = []
         super(type(self), self).__init__()
         super(ATestModule, self).__init__()
         self.__settings = settings

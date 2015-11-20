@@ -1152,7 +1152,7 @@ class TrackObjects(cpm.CPModule):
             t = np.argwhere((d < minDist))
             x = np.sqrt((old_i[t[0:t.size, 0]] - new_i[t[0:t.size, 1]]) ** 2 + (
             old_j[t[0:t.size, 0]] - new_j[t[0:t.size, 1]]) ** 2)
-            t = t + 1
+            t += 1
             t = np.column_stack((t, x))
             a = np.arange(len(old_i)) + 2
             x = np.searchsorted(t[0:(t.size / 2), 0], a)
@@ -1164,7 +1164,7 @@ class TrackObjects(cpm.CPModule):
 
             i, j = np.mgrid[0:len(new_i), 0:len(old_i) + 1]
             i = i + len(old_i) + 1
-            j = j + len(new_i)
+            j += len(new_i)
             j[0:len(new_i) + 1, 0] = i[0:len(new_i) + 1, 0] - len(old_i)
             x = np.zeros((len(new_i), len(old_i) + 1))
             x[0:len(new_i) + 1, 0] = costBorn

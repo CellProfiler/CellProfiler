@@ -1229,7 +1229,7 @@ class PipelineController:
         
         caption - caption on frame bar
         '''
-        message = message + "\n\nPress ""Help"" for the plate viewer manual page."
+        message += "\n\nPress ""Help"" for the plate viewer manual page."
         with wx.Dialog(self.__frame, title=caption) as dlg:
             assert isinstance(dlg, wx.Dialog)
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)

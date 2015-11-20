@@ -234,7 +234,7 @@ class CPModule(object):
                 if key not in seen_setting_docs:
                     seen_setting_docs.add(key)
                     if first_setting_doc:
-                        result = result + "</div><div><h2>Settings:</h2>"
+                        result += "</div><div><h2>Settings:</h2>"
                         first_setting_doc = False
                     result = (result + "<h4>" + setting.text + "</h4><div>" +
                               setting.doc + "</div>")

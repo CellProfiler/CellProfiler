@@ -407,7 +407,7 @@ class MovieSlider(wx.Panel):
             self.set_state(STATE_PAUSED)
 
     def on_step_taken(self):
-        self.slider.value = self.slider.value + 1
+        self.slider.value += 1
         if self.slider.value == self.slider.stop_value:
             self.set_state(STATE_PAUSED)
         if self.state == STATE_PLAYING:

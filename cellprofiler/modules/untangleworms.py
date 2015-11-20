@@ -1031,7 +1031,7 @@ class UntangleWorms(cpm.CPModule):
         path_struct: a structure describing the path
         '''
         binary_im = labels == i
-        skeleton = skeleton & binary_im
+        skeleton &= binary_im
         graph_struct = self.get_graph_from_binary(binary_im, skeleton)
         return self.get_longest_path_coords(
             graph_struct, params.max_path_length)
@@ -1677,7 +1677,7 @@ class UntangleWorms(cpm.CPModule):
 
     def cluster_graph_building(self, workspace, labels, i, skeleton, params):
         binary_im = labels == i
-        skeleton = skeleton & binary_im
+        skeleton &= binary_im
 
         return self.get_graph_from_binary(
             binary_im, skeleton, params.max_radius,

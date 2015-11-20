@@ -219,7 +219,7 @@ class ClassifyPixels(cpm.CPModule):
             image_ = image_ * image.get_scale()
         else:
             # Best guess for derived images
-            image_ = image_ * 255.0
+            image_ *= 255.0
         #
         # Apply a rescaling that's done similarly in ilastik's dataImpex
         #

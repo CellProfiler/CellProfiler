@@ -138,8 +138,8 @@ class PlateData(object):
                 temp[:, :] = None
                 temp[:n_rows, :n_cols] = a
                 a = temp
-                n_rows = n_rows * 2
-                n_cols = n_cols * 2
+                n_rows *= 2
+                n_cols *= 2
             a[row, col] = wd
         self.plate_layout = (n_rows, n_cols)
         return a

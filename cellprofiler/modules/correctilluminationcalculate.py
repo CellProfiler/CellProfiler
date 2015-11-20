@@ -1030,10 +1030,10 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
             else:
                 self.__image_sum[mask, :] = \
                     self.__image_sum[mask, :] + pixel_data[mask, :]
-            self.__mask_count[mask] = self.__mask_count[mask] + 1
+            self.__mask_count[mask] += 1
         else:
             self.__image_sum = self.__image_sum + pixel_data
-            self.__mask_count = self.__mask_count + 1
+            self.__mask_count += 1
 
     def reset(self):
         '''Reset the image sum at the start of a group'''

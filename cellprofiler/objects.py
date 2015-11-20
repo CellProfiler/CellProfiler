@@ -726,8 +726,7 @@ class Segmentation(object):
         mask = available_columns[0][sort_order[:-1]] != \
                available_columns[0][sort_order[1:]]
         for column in available_columns[1:]:
-            mask = mask | (column[sort_order[:-1]] !=
-                           column[sort_order[1:]])
+            mask |= column[sort_order[:-1]] != column[sort_order[1:]]
         breaks = np.hstack(([0], np.where(mask)[0] + 1, [len(labels)]))
         firsts = breaks[:-1]
         counts = breaks[1:] - firsts

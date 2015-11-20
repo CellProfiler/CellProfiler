@@ -4396,7 +4396,7 @@ class ColumnNameMapping:
                     i = 1
                     while reverse_dictionary.has_key(name + str(i)):
                         i += 1
-                    name = name + str(i)
+                    name += str(i)
             starting_name = name
             starting_positions = [x for x in [name.find("_"), 0]
                                   if x != -1]

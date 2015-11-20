@@ -1034,7 +1034,7 @@ class ModuleView:
             sm = matplotlib.cm.ScalarMappable(cmap=cm)
             i, j = np.mgrid[0:12, 0:128]
             if cm.N < 128:
-                j = j * int((cm.N + 128) / 128)
+                j *= int((cm.N + 128) / 128)
             image = (sm.to_rgba(j) * 255).astype(np.uint8)
             bitmap = wx.BitmapFromBufferRGBA(128, 12, image.tostring())
         except:

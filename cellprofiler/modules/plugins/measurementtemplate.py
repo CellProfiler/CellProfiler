@@ -553,7 +553,7 @@ class MeasurementTemplate(cpm.CPModule):
             j, i, np.abs(zernike_indexes), mask=mask)
         zn = (2 * zernike_indexes[:, 0] + 2) / (
         (zernike_indexes[:, 1] == 0) + 1) / np.pi
-        z = z * zn[np.newaxis, np.newaxis, :]
+        z *= zn[np.newaxis, np.newaxis, :]
         z = z.real * (zernike_indexes[:, 1] >= 0)[np.newaxis, np.newaxis, :] + \
             z.imag * (zernike_indexes[:, 1] <= 0)[np.newaxis, np.newaxis, :]
         return np.sum(z * zernike_features[np.newaxis, np.newaxis, :], 2)

@@ -227,7 +227,7 @@ class MetadataControl(wx.PyControl):
                 token = self.__tokens[pos]
                 try:
                     idx = self.__metadata_choices.index(token.value) + 1
-                    idx = idx % len(self.__metadata_choices)
+                    idx %= len(self.__metadata_choices)
                 except ValueError:
                     idx = 0
                 if len(self.__metadata_choices):

@@ -631,7 +631,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             if center_choice == C_EDGES_OF_OTHER:
                 # Exclude pixels within the centering objects
                 # when performing calculations from the centers
-                good_mask = good_mask & (center_labels == 0)
+                good_mask &= center_labels == 0
             i_center = np.zeros(cl.shape)
             i_center[good_mask] = i[cl[good_mask] - 1]
             j_center = np.zeros(cl.shape)

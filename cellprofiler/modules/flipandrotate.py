@@ -205,7 +205,7 @@ class FlipAndRotate(cpm.CPModule):
                                 reshape=True) > .50
             crop = scind.rotate(np.ones(pixel_data.shape[:2]), angle,
                                 reshape=True) > .50
-            mask = mask & crop
+            mask &= crop
             pixel_data = scind.rotate(pixel_data, angle, reshape=True)
             if self.wants_crop.value:
                 #

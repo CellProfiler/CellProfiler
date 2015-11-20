@@ -312,7 +312,7 @@ class MeasureNeurons(cpm.CPModule):
         closed_labels = grey_erosion(dilated_labels,
                                      footprint=my_disk)
         seed_center = closed_labels > 0
-        combined_skel = combined_skel & (~seed_center)
+        combined_skel &= ~seed_center
         #
         # Fill in single holes (but not a one-pixel hole made by
         # a one-pixel image)

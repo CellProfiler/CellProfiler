@@ -356,7 +356,7 @@ class ImageMath(cpm.CPModule):
                     if pd.ndim == 2:
                         pd = pd[:, :, np.newaxis]
                 if opval == O_EQUALS:
-                    output_pixel_data = output_pixel_data & (comparitor == pd)
+                    output_pixel_data &= comparitor == pd
                 else:
                     output_pixel_data = op(output_pixel_data, pd)
                 if self.ignore_mask == True:

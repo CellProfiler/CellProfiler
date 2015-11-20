@@ -232,7 +232,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         expected = np.zeros((10, 10), np.float32)
         for image, mask in images_and_masks:
             expected += image
-        expected = expected / len(images_and_masks)
+        expected /= len(images_and_masks)
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertFalse(image.has_mask)
         self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
@@ -250,7 +250,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         for image, mask in images_and_masks:
             expected[mask] += image[mask]
             expected_count[mask] += 1
-            expected_mask = mask | expected_mask
+            expected_mask |= mask
         expected = expected / expected_count
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertTrue(image.has_mask)
@@ -266,7 +266,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         expected = np.zeros((10, 10, 3), np.float32)
         for image, mask in images_and_masks:
             expected += image
-        expected = expected / len(images_and_masks)
+        expected /= len(images_and_masks)
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertFalse(image.has_mask)
         self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
@@ -284,7 +284,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         for image, mask in images_and_masks:
             expected[mask, :] += image[mask, :]
             expected_count[mask] += 1
-            expected_mask = mask | expected_mask
+            expected_mask |= mask
         expected = expected / expected_count[:, :, np.newaxis]
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertTrue(image.has_mask)
@@ -315,7 +315,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         expected_mask = np.zeros((100, 100), bool)
         for image, mask in images_and_masks:
             expected[mask] = np.maximum(expected[mask], image[mask])
-            expected_mask = mask | expected_mask
+            expected_mask |= mask
         image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
         self.assertTrue(image.has_mask)
         self.assertTrue(np.all(expected_mask == image.mask))
@@ -397,7 +397,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         expected_mask = np.zeros((100, 100), bool)
         for image, mask in images_and_masks:
             expected[mask] = np.minimum(expected[mask], image[mask])
-            expected_mask = mask | expected_mask
+            expected_mask |= mask
         image = self.run_image_set(M.P_MINIMUM, images_and_masks)
         self.assertTrue(image.has_mask)
         self.assertTrue(np.any(image.mask == False))
@@ -436,7 +436,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
                             for i in range(3)]
         expected = np.ones((10, 10), bool)
         for _, mask in images_and_masks:
-            expected = expected & mask
+            expected &= mask
         image = self.run_image_set(M.P_MASK, images_and_masks)
         self.assertTrue(np.all(image.pixel_data == expected))
 

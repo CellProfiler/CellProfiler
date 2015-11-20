@@ -971,7 +971,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
             expected = np.ones(image0.shape, bool)
             for i in range(1, n):
                 image = np.random.uniform(size=(20, 20)) > .5
-                expected = expected & (image == image0)
+                expected &= image == image0
                 images.append(dict(pixel_data=image))
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)

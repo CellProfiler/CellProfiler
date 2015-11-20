@@ -579,7 +579,7 @@ class Align(cpm.CPModule):
         if self.crop_mode == C_CROP:
             # modify the offsets so that all are negative
             max_offset = np.max(offsets, 0)
-            offsets = offsets - max_offset[np.newaxis, :]
+            offsets -= max_offset[np.newaxis, :]
             #
             # Reduce each shape by the amount chopped off
             #
@@ -595,7 +595,7 @@ class Align(cpm.CPModule):
             # modify the offsets so that they are all positive
             #
             min_offset = np.min(offsets, 0)
-            offsets = offsets - min_offset[np.newaxis, :]
+            offsets -= min_offset[np.newaxis, :]
             #
             # Expand each shape by the top-left padding
             #

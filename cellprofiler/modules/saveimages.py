@@ -534,7 +534,7 @@ class SaveImages(cpm.CPModule):
 
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data
-        pixels = pixels * 255
+        pixels *= 255
         frames = d['N_FRAMES']
         current_frame = d["CURRENT_FRAME"]
         d["CURRENT_FRAME"] += 1

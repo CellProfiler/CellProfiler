@@ -341,7 +341,7 @@ class RelateObjects(cpm.CPModule):
             #
             # Make indexing of parents_of be same as pcenters
             #
-            parents_of = parents_of - 1
+            parents_of -= 1
             mask = (parents_of != -1) | (parents_of > pcenters.shape[0])
             dist = np.array([np.NaN] * ccenters.shape[0])
             dist[mask] = np.sqrt(np.sum((ccenters[mask, :] -

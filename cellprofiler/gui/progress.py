@@ -28,7 +28,7 @@ def duration_label(duration):
     hours = dur // (60 * 60)
     rest = dur % (60 * 60)
     minutes = rest // 60
-    rest = rest % 60
+    rest %= 60
     seconds = rest
     s = "%d h " % (hours,) if hours > 0 else ""
     s += "%d min " % (minutes,) if hours > 0 or minutes > 0 else ""

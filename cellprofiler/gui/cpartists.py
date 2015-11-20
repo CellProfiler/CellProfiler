@@ -245,7 +245,7 @@ class OutlinesMixin(ColorMixin):
                 if i == 0:
                     self._outlines = outline(labels) != 0
                 else:
-                    self._outlines = self._outlines | (outline(labels) != 0)
+                    self._outlines |= outline(labels) != 0
             if self.line_width > 1:
                 hw = float(self.line_width) / 2
                 d = distance_transform_edt(~ self._outlines)

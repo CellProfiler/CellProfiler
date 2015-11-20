@@ -3135,7 +3135,7 @@ class Pipeline(object):
         is_image_set_modification = removed_module.is_load_module()
         self.__modules = self.__modules[:idx] + self.__modules[idx + 1:]
         for module in self.__modules[idx:]:
-            module.module_num = module.module_num - 1
+            module.module_num -= 1
         self.notify_listeners(ModuleRemovedPipelineEvent(
             module_num, is_image_set_modification=is_image_set_modification))
         del self.__settings[idx]

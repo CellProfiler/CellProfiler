@@ -830,7 +830,7 @@ class Morph(cpm.CPModule):
             elif function_name == F_DISTANCE:
                 image = scind.distance_transform_edt(pixel_data)
                 if function.rescale_values.value:
-                    image = image / np.max(image)
+                    image /= np.max(image)
                 return image
             elif function_name == F_ENDPOINTS:
                 return morph.endpoints(pixel_data, mask)

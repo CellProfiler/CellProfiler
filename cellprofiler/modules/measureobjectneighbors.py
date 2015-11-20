@@ -229,7 +229,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             # Add the border labels if any were excluded
             touching_border_object_number = np.cumsum(touching_border) + \
                                             np.max(neighbor_labels)
-            touching_border_mask = touching_border_mask & (neighbor_labels == 0)
+            touching_border_mask &= neighbor_labels == 0
             neighbor_labels = neighbor_labels.copy().astype(np.int32)
             neighbor_labels[touching_border_mask] = \
             touching_border_object_number[

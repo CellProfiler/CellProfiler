@@ -1,5 +1,5 @@
-'''test_morph - test the morphology module
-'''
+"""test_morph - test the morphology module
+"""
 
 import base64
 import numpy as np
@@ -25,7 +25,7 @@ import centrosome.filter as cpfilter
 
 class TestMorph(unittest.TestCase):
     def test_01_01_load_matlab(self):
-        '''Load a pipeline that has a morph module in it'''
+        """Load a pipeline that has a morph module in it"""
         #
         # Pipeline has Morph as second module
         # input_name = OrigBlue
@@ -79,7 +79,7 @@ class TestMorph(unittest.TestCase):
                          morph.R_FOREVER)
 
     def test_01_02_load_v1(self):
-        '''Load a revision 1 pipeline that has a morph module in it'''
+        """Load a revision 1 pipeline that has a morph module in it"""
         #
         # Pipeline has Morph as second module
         # input_name = OrigBlue
@@ -423,7 +423,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
 
     def execute(self, image, function, mask=None, custom_repeats=None,
                 scale=None, module=None):
-        '''Run the morph module on an input and return the resulting image'''
+        """Run the morph module on an input and return the resulting image"""
         INPUT_IMAGE_NAME = 'input'
         OUTPUT_IMAGE_NAME = 'output'
         if module is None:

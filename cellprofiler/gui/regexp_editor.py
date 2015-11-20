@@ -305,7 +305,7 @@ class RegexpDialog(wx.Dialog):
     test_text = property(get_test_text, set_test_text)
 
     def get_guesses(self):
-        '''The guess regexps used when the user presses the "guess" button'''
+        """The guess regexps used when the user presses the "guess" button"""
         return self.__guesses
 
     def set_guesses(self, value):
@@ -361,7 +361,7 @@ class RegexpState:
         self.matching_braces += [None] * length
 
     def open_group(self, length, group_name=None, is_non_grouping=False):
-        '''Open a grouping expression'''
+        """Open a grouping expression"""
         self.__group_depth += 1
         self.__group_starts.append(self.position)
         self.__any_tokens = True
@@ -372,7 +372,7 @@ class RegexpState:
         self.position += length
 
     def close_group(self):
-        '''Close a grouping expression returning the matching position'''
+        """Close a grouping expression returning the matching position"""
         if self.__group_depth == 0:
             raise ValueError("Unmatched closing parentheses")
         if self.__group_name is not None:
@@ -393,7 +393,7 @@ class RegexpState:
         return self.__group_count
 
     def get_in_brackets(self):
-        '''True if the state is within [] brackets'''
+        """True if the state is within [] brackets"""
         return self.__in_brackets
 
     in_brackets = property(get_in_brackets)
@@ -421,7 +421,7 @@ class RegexpState:
         self.position += length
 
     def parsed_special(self, length=1, label=TOK_SPECIAL):
-        '''Parse a token that's not repeatable'''
+        """Parse a token that's not repeatable"""
         self.__any_tokens = False
         self.mark_tokens(length, label)
         self.position += length
@@ -441,7 +441,7 @@ class RegexpState:
 
     @property
     def open_expression_start(self):
-        '''Return the start of the innermost open expression or None'''
+        """Return the start of the innermost open expression or None"""
         if self.__in_brackets:
             return self.__bracket_start
         elif self.__group_depth:
@@ -453,13 +453,13 @@ class RegexpState:
 
 
 def looking_at_escape(s, state):
-    '''Return # of characters in an escape
-    
+    """Return # of characters in an escape
+
     s - string to look at
     state - the current search state
-    
+
     returns either None or the # of characters in the escape
-    '''
+    """
     if s[0] != "\\":
         return
     if len(s) < 2:

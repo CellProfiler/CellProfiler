@@ -1,5 +1,5 @@
-'''test_cellprofiler - test the CellProfiler command-line interface
-'''
+"""test_cellprofiler - test the CellProfiler command-line interface
+"""
 
 import datetime
 import dateutil.parser
@@ -23,10 +23,10 @@ else:
 @unittest.skipIf(sys.platform != 'win32', "Skip tests on all but Windows")
 class TestCellProfiler(unittest.TestCase):
     def run_cellprofiler(self, *args):
-        '''Run CellProfiler with the given arguments list
-        
+        """Run CellProfiler with the given arguments list
+
         returns STDOUT from running it.
-        '''
+        """
         if hasattr(sys, "frozen"):
             args = [sys.argv[0]] + list(args)
             return subprocess.check_output(args)

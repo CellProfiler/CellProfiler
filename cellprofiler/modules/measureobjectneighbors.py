@@ -1,17 +1,17 @@
-'''<b>Measure Object Neighbors</b> calculates how many neighbors each 
-object has and records various properties about the neighbors' relationships, 
+"""<b>Measure Object Neighbors</b> calculates how many neighbors each
+object has and records various properties about the neighbors' relationships,
 including the percentage of an object's edge pixels that touch a neighbor.
 <hr>
 Given an image with objects identified (e.g., nuclei or cells), this
-module determines how many neighbors each object has. You can specify 
-the distance within which objects should be considered neighbors, or 
+module determines how many neighbors each object has. You can specify
+the distance within which objects should be considered neighbors, or
 that objects are only considered neighbors if they are directly touching.
 
 <h4>Available measurements</h4>
 <b>Object measurements</b>
 <ul>
 <li><i>NumberOfNeighbors:</i> Number of neighbor objects.</li>
-<li><i>PercentTouching:</i> Percent of the object's boundary pixels that touch 
+<li><i>PercentTouching:</i> Percent of the object's boundary pixels that touch
 neighbors, after the objects have been expanded to the specified distance.
 Note: This measurement is only available if you use the same set of objects
 for both objects and neighbors.</li>
@@ -19,25 +19,25 @@ for both objects and neighbors.</li>
 <li><i>FirstClosestDistance:</i> The distance to the closest object.</li>
 <li><i>SecondClosestObjectNumber:</i> The index of the second closest object.</li>
 <li><i>SecondClosestDistance:</i> The distance to the second closest object.</li>
-<li><i>AngleBetweenNeighbors:</i> The angle formed with the object center as the 
+<li><i>AngleBetweenNeighbors:</i> The angle formed with the object center as the
 vertex and the first and second closest object centers along the vectors.</li>
 </ul>
 
-<b>Object relationships:</b> The identity of the neighboring objects, for 
-each object. Since per-object output is one-to-one and neighbors relationships 
-are often many-to-one, they may be saved as a separate file in 
+<b>Object relationships:</b> The identity of the neighboring objects, for
+each object. Since per-object output is one-to-one and neighbors relationships
+are often many-to-one, they may be saved as a separate file in
 <b>ExportToSpreadsheet</b> by selecting <i>Object
 relationships</i> from the list of objects to export.
 
-<h4>Technical notes</h4> 
-Objects discarded via modules such as <b>IdentifyPrimaryObjects</b> or 
+<h4>Technical notes</h4>
+Objects discarded via modules such as <b>IdentifyPrimaryObjects</b> or
 <b>IdentifySecondaryObjects</b> will still register as a neighbors for the purposes
-of accurate measurement. For instance, if an object touches a single object and 
-that object had been discarded, <i>NumberOfNeighbors</i> will be positive, but 
+of accurate measurement. For instance, if an object touches a single object and
+that object had been discarded, <i>NumberOfNeighbors</i> will be positive, but
 there will not be a corresponding <i>ClosestObjectNumber</i>.
 
 See also the <b>Identify</b> modules.
-'''
+"""
 
 import numpy as np
 import scipy.ndimage as scind
@@ -197,7 +197,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
     @property
     def neighbors_are_objects(self):
-        '''True if the neighbors are taken from the same object set as objects'''
+        """True if the neighbors are taken from the same object set as objects"""
         return (self.object_name.value == self.neighbors_name.value)
 
     def run(self, workspace):
@@ -639,7 +639,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                              self.neighbors_name.value, scale))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         coltypes = dict([(feature,
                           cpmeas.COLTYPE_INTEGER
                           if feature in (M_NUMBER_OF_NEIGHBORS,
@@ -653,7 +653,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 for feature_name in self.all_features]
 
     def get_object_relationships(self, pipeline):
-        '''Return column definitions for object relationships output by module'''
+        """Return column definitions for object relationships output by module"""
         objects_name = self.object_name.value
         if self.neighbors_are_objects:
             neighbors_name = objects_name
@@ -723,7 +723,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
 
 def get_colormap(name):
-    '''Get colormap, accounting for possible request for default'''
+    """Get colormap, accounting for possible request for default"""
     if name == cps.DEFAULT:
         name = cpprefs.get_default_colormap()
     return matplotlib.cm.get_cmap(name)

@@ -1,4 +1,4 @@
-'''<b>Example1c</b> demonstrates help documentation
+"""<b>Example1c</b> demonstrates help documentation
 <hr>
 
 This module demonstrates how you can document your modules using HTML
@@ -9,7 +9,7 @@ HTML support is limited by what's available currently in WX but
 <li><i>Italics</i> work</li>
 <li><a href="http://www.indicthreads.com/1106/incorporating-html-into-wxpython-part-1/">Links</a> work</li>
 <li>If you write a real module, CellProfiler's tests will fail if you don't remember to close all of your tags!</li></ul>
-'''
+"""
 # example1c.py
 #
 # This is the minimum skeleton for a CellProfiler module.

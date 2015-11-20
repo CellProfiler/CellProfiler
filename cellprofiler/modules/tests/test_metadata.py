@@ -1,5 +1,5 @@
-'''test_metadata.py - test the Metadata module
-'''
+"""test_metadata.py - test the Metadata module
+"""
 
 import numpy as np
 import os
@@ -269,7 +269,7 @@ Metadata:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         self.assertTrue(em1.wants_case_insensitive)
 
     def check(self, module, url, dd, keys=None, xml=None):
-        '''Check that running the metadata module on a url generates the expected dictionary'''
+        """Check that running the metadata module on a url generates the expected dictionary"""
         pipeline = cpp.Pipeline()
         imgs = I.Images()
         imgs.filter_choice.value = I.FILTER_CHOICE_NONE

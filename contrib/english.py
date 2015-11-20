@@ -1,6 +1,6 @@
 # english - generic english tools
 
-'''
+"""
 
 Some generic English word-munging routines.
 
@@ -30,7 +30,7 @@ AUTHOR
     Copying in whole or in part, with author attribution, is expressly allowed.
     http://http://halley.cc/code/?python/english.py
 
-'''
+"""
 
 __all__ = ['cardinal', 'ordinal',
            'conjugate', 'enumerate']
@@ -39,7 +39,7 @@ __all__ = ['cardinal', 'ordinal',
 # ----------------------------------------------------------------------------
 
 def enumerate(stuff, separator=',', conjunction='and'):
-    '''Returns a phrase that recites a list of noun phrases naturally.'''
+    """Returns a phrase that recites a list of noun phrases naturally."""
     text = ''
     n = len(stuff)
     for i in range(len(stuff)):
@@ -134,7 +134,7 @@ from re import sub, match
 
 
 def conjugate(word, tense='present'):
-    '''Conjugates an English word (a verb) for a specific tense.
+    """Conjugates an English word (a verb) for a specific tense.
     Tenses known include:
         'present participle'
         'past participle'
@@ -143,7 +143,7 @@ def conjugate(word, tense='present'):
         'present'
     This routine does not add companion words such as "has" or "will"
     to the verb phrase.  It only conjugates the word itself.
-    '''
+    """
 
     if 'participle' in tense:
         if word in __irregular_participle:
@@ -206,10 +206,10 @@ __groupvalues = [0, 1000, 1000000, 1000000000,
 
 
 def cardinal(number, style=None):
-    '''Returns a phrase that spells out the cardinal form of a number.
+    """Returns a phrase that spells out the cardinal form of a number.
     This routine does not currently try to understand "big integer"
     numbers using words like 'septillion'.
-    '''
+    """
     if not number:
         return __score[0]
     text = ''
@@ -251,7 +251,7 @@ __decadeth = ['zeroth', 'tenth', 'twentieth', 'thirtieth', 'fortieth',
 
 
 def ordinal(number, style=None):
-    '''Returns a phrase that spells out the ordinal form of a number.'''
+    """Returns a phrase that spells out the ordinal form of a number."""
     if not number:
         return __scoreth[0]
     text = ''

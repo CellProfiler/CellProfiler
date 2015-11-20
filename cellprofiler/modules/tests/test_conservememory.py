@@ -1,5 +1,5 @@
-'''test_conservememory - Test the ConserveMemory module
-'''
+"""test_conservememory - Test the ConserveMemory module
+"""
 
 import base64
 from matplotlib.image import pil_to_array
@@ -25,7 +25,7 @@ import cellprofiler.modules.conservememory as S
 
 class TestConserveMemory(unittest.TestCase):
     def test_01_01_load_matlab(self):
-        '''Load a Matlab pipeline with a SpeedUpCellProfiler module'''
+        """Load a Matlab pipeline with a SpeedUpCellProfiler module"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggH0sGpBQrGBgqGplbGBlbGhgpGBgaWCiQDBkZPX34GBoaXjAwM'
                 'FXPehlv7HzYQ2LeMV4snsLGVcUmPzlNFMbcjzouEpnQxCS3OvJNwsnOxzapp'

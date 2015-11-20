@@ -167,7 +167,7 @@ class TestSaveImages(unittest.TestCase):
         self.assertFalse(module.overwrite)
 
     def test_00_04_01_load_v4(self):
-        '''Regression test of IMG-759 - load v4 SaveImages'''
+        """Regression test of IMG-759 - load v4 SaveImages"""
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9438
@@ -1274,7 +1274,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.assertTrue(np.all(data == expected_data))
 
     def test_01_10_save_all_to_custom_png_rgb(self):
-        '''Tests the path of saving an image with a colormap other than gray'''
+        """Tests the path of saving an image with a colormap other than gray"""
         img1_filename = os.path.join(self.new_image_directory, 'img1.tif')
         img1_out_filename = os.path.join(self.custom_directory, 'img1OUT.png')
         img2_filename = os.path.join(self.new_image_directory, 'img2.tif')
@@ -1344,10 +1344,10 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.assertTrue(np.all(data == expected_data))
 
     def test_01_11_save_to_image_subfolder(self):
-        '''Test saving to a subfolder of the image folder
-        
+        """Test saving to a subfolder of the image folder
+
         Regression test of IMG-978
-        '''
+        """
         img_filename = os.path.join(self.new_image_directory, "test",
                                     'img1.tiff')
         workspace, module = self.make_workspace(np.zeros((10, 10)))
@@ -1361,10 +1361,10 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.assertTrue(os.path.exists(img_filename))
 
     def test_01_12_save_to_output_subfolder(self):
-        '''Test saving to a subfolder of the image folder
-        
+        """Test saving to a subfolder of the image folder
+
         Regression test of IMG-978
-        '''
+        """
         img_filename = os.path.join(self.new_output_directory, "test",
                                     'img1.tiff')
         workspace, module = self.make_workspace(np.zeros((10, 10)))
@@ -1378,7 +1378,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.assertTrue(os.path.exists(img_filename))
 
     def test_01_13_save_with_metadata(self):
-        '''Test saving to a custom folder with metadata in the path'''
+        """Test saving to a custom folder with metadata in the path"""
         img_filename = os.path.join(self.new_output_directory, "test",
                                     'img1.tif')
         workspace, module = self.make_workspace(np.zeros((10, 10)))
@@ -1506,7 +1506,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
                         img2_out_filename + " does not exist")
 
     def test_02_01_prepare_to_create_batch(self):
-        '''Test the "prepare_to_create_batch" method'''
+        """Test the "prepare_to_create_batch" method"""
         orig_path = '/foo/bar'
 
         def fn_alter_path(path, **varargs):
@@ -1520,10 +1520,10 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.assertEqual(module.pathname.custom_path, '/imaging/analysis')
 
     def test_02_02_regression_prepare_to_create_batch(self):
-        '''Make sure that "prepare_to_create_batch" handles metadata
+        """Make sure that "prepare_to_create_batch" handles metadata
 
         This is a regression test for IMG-200
-        '''
+        """
         cmodule = cpm_c.CreateBatchFiles()
         module = cpm_si.SaveImages()
         module.pathname.custom_path = '.\\\\\\g<Test>Outlines\\\\g<Run>_\\g<Plate>'
@@ -1563,7 +1563,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
     def make_workspace(self, image, filename=None, path=None,
                        convert=True, save_objects=False, shape=None,
                        mask=None, cropping=None):
-        '''Make a workspace and module appropriate for running saveimages'''
+        """Make a workspace and module appropriate for running saveimages"""
         module = cpm_si.SaveImages()
         module.module_num = 1
         module.image_name.value = IMAGE_NAME
@@ -1719,10 +1719,10 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
 
     def run_movie(self, groupings=None, fn=None, color=False):
-        '''Run a pipeline that produces a movie
-        
+        """Run a pipeline that produces a movie
+
         Returns a list containing the movie frames
-        '''
+        """
         image_set_list = cpi.ImageSetList()
         if groupings is None:
             nframes = 5
@@ -1792,7 +1792,7 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
             self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
 
     def test_05_02_save_two_movies(self):
-        '''Use metadata grouping to write two movies'''
+        """Use metadata grouping to write two movies"""
         grouping = (('Metadata_test',),
                     (({'Metadata_test': "foo"}, [1, 2, 3, 4, 5]),
                      ({'Metadata_test': "bar"}, [6, 7, 8, 9])))
@@ -1813,11 +1813,11 @@ SaveImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
                 self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
 
     def test_05_03_save_color_movie(self):
-        '''Regression test of img-1227 - save a color movie saved in b/w
-        
+        """Regression test of img-1227 - save a color movie saved in b/w
+
         also BioFormats crashed when saving in color, requiring update of
         loci_tools.jar
-        '''
+        """
         frames = self.run_movie(color=True)
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")

@@ -1,8 +1,8 @@
-'''<b>Filter Objects</b> eliminates objects based on their measurements (e.g., area, shape,
+"""<b>Filter Objects</b> eliminates objects based on their measurements (e.g., area, shape,
 texture, intensity).
 <hr>
-This module removes selected objects based on measurements produced by another module (e.g., 
-<b>MeasureObjectSizeShape</b>, <b>MeasureObjectIntensity</b>, <b>MeasureTexture</b>, etc). 
+This module removes selected objects based on measurements produced by another module (e.g.,
+<b>MeasureObjectSizeShape</b>, <b>MeasureObjectIntensity</b>, <b>MeasureTexture</b>, etc).
 All objects that do not satisfy the specified parameters will be discarded.
 
 <p>This module also may remove objects touching the image border or edges of a mask. This is useful if
@@ -19,15 +19,15 @@ set will need to be made post-filtering by the desired measurement modules.</p>
 </ul>
 <b>Object measurements:</b>
 <ul>
-<li><i>Parent:</i> The identity of the input object associated with each filtered 
+<li><i>Parent:</i> The identity of the input object associated with each filtered
 object.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
 mass of the remaining objects.</li>
 </ul>
 
 See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>,
 <b>MeasureCorrelation</b>, and <b>CalculateRatios</b>.
-'''
+"""
 
 import logging
 
@@ -104,7 +104,7 @@ class FilterObjects(cpm.CPModule):
     variable_revision_number = 7
 
     def create_settings(self):
-        '''Create the initial settings and name the module'''
+        """Create the initial settings and name the module"""
         self.target_name = cps.ObjectNameProvider(
             'Name the output objects', 'FilteredBlue', doc="""
             Enter a name for the collection of objects that are retained after applying the filter(s).""")
@@ -222,7 +222,7 @@ class FilterObjects(cpm.CPModule):
             </ul></p>""" % globals())
 
         def get_directory_fn():
-            '''Get the directory for the rules file name'''
+            """Get the directory for the rules file name"""
             return self.rules_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -277,7 +277,7 @@ class FilterObjects(cpm.CPModule):
             return [str(i) for i in range(1, 3)]
 
     def add_measurement(self, can_delete=True):
-        '''Add another measurement to the filter list'''
+        """Add another measurement to the filter list"""
         group = cps.SettingsGroup()
         group.append("measurement", cps.Measurement(
             'Select the measurement to filter by',
@@ -335,8 +335,8 @@ class FilterObjects(cpm.CPModule):
         self.additional_objects.append(group)
 
     def prepare_settings(self, setting_values):
-        '''Make sure the # of slots for additional objects matches 
-           the anticipated number of additional objects'''
+        """Make sure the # of slots for additional objects matches
+           the anticipated number of additional objects"""
         additional_object_count = int(
             setting_values[ADDITIONAL_OBJECT_SETTING_INDEX])
         while len(self.additional_objects) > additional_object_count:
@@ -421,7 +421,7 @@ class FilterObjects(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure that the user has selected some limits when filtering'''
+        """Make sure that the user has selected some limits when filtering"""
         if (self.mode == MODE_MEASUREMENTS and
                     self.filter_choice == FI_LIMITS):
             for group in self.measurements:
@@ -453,7 +453,7 @@ class FilterObjects(cpm.CPModule):
                         self.rules_file_name)
 
     def run(self, workspace):
-        '''Filter objects for this image set, display results'''
+        """Filter objects for this image set, display results"""
         src_objects = workspace.get_objects(self.object_name.value)
         if self.mode == MODE_RULES:
             indexes = self.keep_by_rules(workspace, src_objects)
@@ -565,7 +565,7 @@ class FilterObjects(cpm.CPModule):
             workspace.display_data.target_objects_segmented = target_objects.segmented
 
     def display(self, workspace, figure):
-        '''Display what was filtered'''
+        """Display what was filtered"""
         src_name = self.object_name.value
         src_objects_segmented = workspace.display_data.src_objects_segmented
         image = workspace.display_data.image
@@ -608,11 +608,11 @@ class FilterObjects(cpm.CPModule):
                             "Number of objects post-filtering"))
 
     def keep_one(self, workspace, src_objects):
-        '''Return an array containing the single object to keep
-        
+        """Return an array containing the single object to keep
+
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
         values = workspace.measurements.get_current_measurement(src_name,
@@ -624,11 +624,11 @@ class FilterObjects(cpm.CPModule):
         return np.array([best_idx], int)
 
     def keep_per_object(self, workspace, src_objects):
-        '''Return an array containing the best object per enclosing object
-        
+        """Return an array containing the best object per enclosing object
+
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         measurement = self.measurements[0].measurement.value
         src_name = self.object_name.value
         enclosing_name = self.enclosing_object_name.value
@@ -731,11 +731,11 @@ class FilterObjects(cpm.CPModule):
                                                            0] == 0 else indexes
 
     def keep_within_limits(self, workspace, src_objects):
-        '''Return an array containing the indices of objects to keep
-        
+        """Return an array containing the indices of objects to keep
+
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         src_name = self.object_name.value
         hits = None
         m = workspace.measurements
@@ -760,11 +760,11 @@ class FilterObjects(cpm.CPModule):
         return indexes
 
     def discard_border_objects(self, workspace, src_objects):
-        '''Return an array containing the indices of objects to keep
+        """Return an array containing the indices of objects to keep
 
         workspace - workspace passed into Run
         src_objects - the Objects instance to be filtered
-        '''
+        """
         labeled_image = src_objects.segmented
 
         border_labeled_image = labeled_image.copy()
@@ -817,7 +817,7 @@ class FilterObjects(cpm.CPModule):
         return np.unique(border_labeled_image)[1:]
 
     def get_rules(self):
-        '''Read the rules from a file'''
+        """Read the rules from a file"""
         rules_file = self.rules_file_name.value
         rules_directory = self.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
@@ -830,14 +830,14 @@ class FilterObjects(cpm.CPModule):
             return rules
 
     def keep_by_rules(self, workspace, src_objects):
-        '''Keep objects according to rules
-        
+        """Keep objects according to rules
+
         workspace - workspace holding the measurements for the rules
         src_objects - filter these objects (uses measurement indexes instead)
-        
+
         Open the rules file indicated by the settings and score the
         objects by the rules. Return the indexes of the objects that pass.
-        '''
+        """
         rules = self.get_rules()
         rules_class = int(self.rules_class.value) - 1
         scores = rules.score(workspace.measurements)
@@ -852,7 +852,7 @@ class FilterObjects(cpm.CPModule):
         return indexes
 
     def get_measurement_columns(self, pipeline):
-        '''Return measurement column defs for the parent/child measurement'''
+        """Return measurement column defs for the parent/child measurement"""
         object_list = ([(self.object_name.value, self.target_name.value)] +
                        [(x.object_name.value, x.target_name.value)
                         for x in self.additional_objects])
@@ -904,13 +904,13 @@ class FilterObjects(cpm.CPModule):
         return result
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
-        
+        """Prepare to create a batch file
+
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
         "legacy_fields" dictionary. This callback lets a module prepare for
         saving.
-        
+
         pipeline - the pipeline to be saved
         image_set_list - the image set list to be saved
         fn_alter_path - this is a function that takes a pathname on the local
@@ -918,14 +918,14 @@ class FilterObjects(cpm.CPModule):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
         self.rules_directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Account for old save formats
-        
+        """Account for old save formats
+
         setting_values - the strings for the settings as saved in the pipeline
         variable_revision_number - the variable revision number at the time
                                    of saving
@@ -934,7 +934,7 @@ class FilterObjects(cpm.CPModule):
                       it is KeepLargestObject for Matlab's module of that
                       name.
         from_matlab - true if file was saved by Matlab CP
-        '''
+        """
 
         DIR_DEFAULT_INPUT = "Default input folder"
         DIR_DEFAULT_OUTPUT = "Default output folder"

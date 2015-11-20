@@ -186,8 +186,8 @@ class CPModule(object):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
-        
+        """Adjust setting values if they came from a previous revision
+
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
         variable_revision_number - the variable revision number of the
@@ -199,12 +199,12 @@ class CPModule(object):
                       that module was merged into the current module
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
-        
+
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         return setting_values, variable_revision_number, from_matlab
 
     def post_pipeline_load(self, pipeline):
@@ -273,30 +273,30 @@ class CPModule(object):
             self.batch_state.tostring(), np.uint8)
 
     def in_batch_mode(self):
-        '''Return True if the module knows that the pipeline is in batch mode'''
+        """Return True if the module knows that the pipeline is in batch mode"""
         return None
 
     def change_causes_prepare_run(self, setting):
-        '''Check to see if changing the given setting means you have to restart
-        
+        """Check to see if changing the given setting means you have to restart
+
         Some settings, esp in modules like LoadImages, affect more than
         the current image set when changed. For instance, if you change
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to call "prepare_run".
-        '''
+        """
         return False
 
     def turn_off_batch_mode(self):
-        '''Reset the module to an editable state if batch mode is on
-        
+        """Reset the module to an editable state if batch mode is on
+
         A module is allowed to create hidden information that it uses
         to turn batch mode on or to save state to be used in batch mode.
         This call signals that the pipeline has been opened for editing,
         even if it is a batch pipeline; all modules should be restored
         to a state that's appropriate for creating a batch file, not
         for running a batch file
-        '''
+        """
         pass
 
     def test_valid(self, pipeline):
@@ -332,36 +332,36 @@ class CPModule(object):
                                       self.visible_settings()[0])
 
     def validate_module(self, pipeline):
-        '''Implement this to validate module settings
-        
+        """Implement this to validate module settings
+
         Module implementers should implement validate_module to
         further validate a module's settings. For instance, load_data
         checks the .csv file that it uses in validate_module to ensure
         that the user has chosen a valid .csv file.
-        
+
         Throw a cps.ValidationError, selecting the most egregiously offending
         setting to indicate failure.
-        '''
+        """
         pass
 
     def validate_module_warnings(self, pipeline):
-        '''Implement this to flag potentially dangerous settings
-        
+        """Implement this to flag potentially dangerous settings
+
         Module implementers should implement validate_module_warnings to
         find setting combinations that can cause unexpected results.
         Implementers should throw a cps.ValidationError, selecting the
         most egregiously offending setting to indicate failure.
-        '''
+        """
         pass
 
     def other_providers(self, group):
-        '''Return a list of hidden name/object/etc. providers supplied by the module for this group
-        
+        """Return a list of hidden name/object/etc. providers supplied by the module for this group
+
         group - a group supported by a subclass of NameProvider
-        
+
         This routine returns additional providers beyond those that
         are listed by the module's visible_settings.
-        '''
+        """
         return []
 
     def get_module_num(self):
@@ -402,20 +402,20 @@ class CPModule(object):
     enabled = property(get_enabled, set_enabled)
 
     def get_use_as_data_tool(self):
-        '''True if the module is being used as a data tool
+        """True if the module is being used as a data tool
 
         This flag can be used to modify the visible_settings and other things
         to make the module's behavior more appropriate for use as a data tool.
         For instance, you shouldn't offer to show measurements as a color
         map in DisplayDataOnImage if you don't have access to the segmentation
         because you're running as a data tool.
-        '''
+        """
         return self.__as_data_tool
 
     def set_use_as_data_tool(self, as_data_tool):
-        '''Mark the module as being used as a data tool
-        
-        '''
+        """Mark the module as being used as a data tool
+
+        """
         self.__as_data_tool = as_data_tool
 
     use_as_data_tool = property(get_use_as_data_tool, set_use_as_data_tool)
@@ -431,7 +431,7 @@ class CPModule(object):
         return self.__settings
 
     def help_settings(self):
-        '''Override this if you want the settings for help to be in a different order'''
+        """Override this if you want the settings for help to be in a different order"""
         return self.settings()
 
     def setting(self, setting_num):
@@ -448,7 +448,7 @@ class CPModule(object):
         return self.settings()
 
     def get_show_window(self):
-        '''True if the user wants to see the figure for this module'''
+        """True if the user wants to see the figure for this module"""
         return self.__show_window
 
     def set_show_window(self, show_window):
@@ -457,7 +457,7 @@ class CPModule(object):
     show_window = property(get_show_window, set_show_window)
 
     def get_wants_pause(self):
-        '''True if the user wants to pause at this module while debugging'''
+        """True if the user wants to pause at this module while debugging"""
         return self.__wants_pause
 
     def set_wants_pause(self, wants_pause):
@@ -531,12 +531,12 @@ class CPModule(object):
         return False
 
     def is_create_batch_module(self):
-        '''If true, the module will pickle the pipeline into a batch file and exit
-        
+        """If true, the module will pickle the pipeline into a batch file and exit
+
         This is needed by modules which can't properly operate in a batch
         mode (e.g. do all their work post_run or don't work so well if
         run in parallel)
-        '''
+        """
         return False
 
     def is_aggregation_module(self):
@@ -550,28 +550,28 @@ class CPModule(object):
         return False
 
     def needs_conversion(self):
-        '''Return True if the module needs to be converted from legacy
-        
+        """Return True if the module needs to be converted from legacy
+
         A module can throw an exception if it is impossible to convert - for
         instance, LoadData.
-        '''
+        """
         return False
 
     def convert(self, pipeline, metadata, namesandtypes, groups):
-        '''Convert the input processing of this module from the legacy format
-        
+        """Convert the input processing of this module from the legacy format
+
         Legacy modules like LoadImages should copy their settings into
         the Metadata, NamesAndTypes and Groups modules when this call is made.
-        
+
         pipeline - the pipeline being converted
-        
+
         metadata - the pipeline's Metadata module
-        
+
         namesandtypes - the pipeline's NamesAndTypes module
-        
+
         groups - the pipeline's Groups module
-        
-        '''
+
+        """
         pass
 
     def is_object_identification_module(self):
@@ -640,8 +640,8 @@ class CPModule(object):
         pass
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
-        
+        """Prepare to create a batch file
+
         This function is called when CellProfiler is about to create a
         file for batch processing. It gives a module an opportunity to
         change its settings and measurements to adapt to file mount differences
@@ -650,28 +650,28 @@ class CPModule(object):
         if your module stores paths in settings or measurements. You should
         call fn_alter_path(path) to update any paths to those of the target
         machine.
-        
+
         workspace - the workspace including the pipeline, the image_set_list
                     and the measurements that need to be modified.
-                    
+
         fn_alter_path - this is a function that takes a pathname on the local
                         host and returns a pathname on the remote host. It
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-                        
+
         Returns True if it succeeds.
-        '''
+        """
         return True
 
     def get_groupings(self, workspace):
-        '''Return the image groupings of the image sets in an image set list
-        
+        """Return the image groupings of the image sets in an image set list
+
         get_groupings is called after prepare_run
-        
+
         workspace - a workspace with an image_set_list and measurements
                     as prepared by prepare_run.
-        
+
         returns a tuple of key_names and group_list:
         key_names - the names of the keys that identify the groupings
         group_list - a sequence composed of two-tuples.
@@ -683,15 +683,15 @@ class CPModule(object):
         and 'Metadata_Column' and a group_list of:
         [ ({'Metadata_Row':'A','Metadata_Column':'01'}, [1,97,193]),
           ({'Metadata_Row':'A','Metadata_Column':'02'), [2,98,194]),... ]
-        
+
         Returns None to indicate that the module does not contribute any
         groupings.
-        '''
+        """
         return None
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to start processing a new grouping
-        
+        """Prepare to start processing a new grouping
+
         workspace - the workspace for the group. The pipeline, measurements
                     and image_set_list are valid at this point and you can
                     fill in image_sets at this point.
@@ -700,82 +700,82 @@ class CPModule(object):
         image_numbers - a sequence of the image numbers within the
                    group (image sets can be retreved as
                    image_set_list.get_image_set(image_numbers[i]-1)
-        
+
         prepare_group is called once after prepare_run if there are no
         groups.
-        '''
+        """
         pass
 
     def post_group(self, workspace, grouping):
-        '''Do post-processing after a group completes
-        
+        """Do post-processing after a group completes
+
         workspace - the workspace at the end of the group
         grouping - the group that's being run
-        '''
+        """
         pass
 
     def get_measurement_columns(self, pipeline):
-        '''Return a sequence describing the measurement columns needed by this module
-        
+        """Return a sequence describing the measurement columns needed by this module
+
         This call should return one element per image or object measurement
         made by the module during image set analysis. The element itself
         is a 3-tuple:
         first entry: either one of the predefined measurement categories,
                      {"Image", "Experiment" or "Neighbors" or the name of one
                      of the objects.}
-        second entry: the measurement name (as would be used in a call 
+        second entry: the measurement name (as would be used in a call
                       to add_measurement)
         third entry: the column data type (for instance, "varchar(255)" or
                      "float")
-        '''
+        """
         return []
 
     def get_object_relationships(self, pipeline):
-        '''Return a sequence describing the relationships recorded in measurements
-        
+        """Return a sequence describing the relationships recorded in measurements
+
         This method reports the relationships recorded in the measurements
         using add_relate_measurement. Modules that add relationships should
-        return one 4-tuple of 
+        return one 4-tuple of
         (<relationship-name>, <object-name-1>, <object-name-2>, <when>)
         for every combination of relationship and parent / child objects
         that will be produced during the course of a run.
-        
-        <when> is one of cpmeas.MCA_AVAILABILE_EACH_CYCLE or 
-        cpmeas.MCA_AVAILABLE_POST_GROUP. cpmeas.MCA_AVAILABLE_EACH_CYCLE 
+
+        <when> is one of cpmeas.MCA_AVAILABILE_EACH_CYCLE or
+        cpmeas.MCA_AVAILABLE_POST_GROUP. cpmeas.MCA_AVAILABLE_EACH_CYCLE
         promises that the relationships will be available after each cycle.
         Any relationship with that cycle's image number (as either the
         parent or child) will be inserted if not already present in the database.
-        
+
         MCA_AVAILABLE_POST_GROUP indicates that the relationship is not available
         until the group has completed - all relationships with a group's
         image number will be written in that case.
-        '''
+        """
         return []
 
     def get_dictionary(self, ignore=None):
-        '''Get the dictionary for this module
-        '''
+        """Get the dictionary for this module
+        """
         return self.shared_state
 
     def get_dictionary_for_worker(self):
-        '''Get the dictionary that should be shared between analysis workers
-        
+        """Get the dictionary that should be shared between analysis workers
+
         A module might use the dictionary for cacheing information stored on
         disk or that's difficult to compute. It might also use it to store
         aggregate data, but this data may not be useful to other workers.
-        
+
         Finally, a module might store Python objects that aren't JSON serializable
         in its dictionary. In these cases, the module should create a dictionary
         that can be JSON serialized in get_dictionary_for_worker and then
         reconstruct the result of JSON deserialization in set_dictionary_in_worker.
-        '''
+        """
         return self.get_dictionary()
 
     def set_dictionary_for_worker(self, d):
-        '''Initialize this worker's dictionary using results from first worker
-        
+        """Initialize this worker's dictionary using results from first worker
+
         see get_dictionary_for_worker for details.
-        '''
+        """
         self.get_dictionary().clear()
         self.get_dictionary().update(d)
 
@@ -835,59 +835,59 @@ class CPModule(object):
         return False
 
     def should_stop_writing_measurements(self):
-        '''Returns True if measurements should not be taken after this module
-        
+        """Returns True if measurements should not be taken after this module
+
         The ExportToDatabase and ExportToExcel modules expect that no
         measurements will be recorded in latter modules. This function
         returns False in the default, indicating that measurements should
         keep being made, but returns True for these modules, indicating
         that any subsequent modules will lose their measurements and should
         not write any.
-        '''
+        """
         return False
 
     def needs_default_image_folder(self, pipeline):
-        '''Returns True if the module needs the default image folder
-        
+        """Returns True if the module needs the default image folder
+
         pipeline - pipeline being run
-        
+
         Legacy modules might need the default image folder as does any module
         that uses the DirectoryPath setting.
-        '''
+        """
         for setting in self.visible_settings():
             if isinstance(setting, cps.DirectoryPath):
                 return True
         return False
 
     def obfuscate(self):
-        '''Erase any sensitive information in a module's settings
-        
+        """Erase any sensitive information in a module's settings
+
         You should implement "obfuscate" to erase information like
         passwords or file names so that the pipeline can be uploaded
         for error reporting without revealing that information.
-        '''
+        """
         pass
 
     def on_activated(self, workspace):
-        '''Called when the module is activated in the GUI
-        
+        """Called when the module is activated in the GUI
+
         workspace - the workspace that's currently running
-        
+
         on_activated is here to give modules the chance to modify other
         elements of the pipeline, such as the image plane details or image
         set list. You're allowed to modify these parts of the pipeline
         in the UI thread until on_deactivated is called.
-        '''
+        """
         pass
 
     def on_deactivated(self):
-        '''Called when the module is deactivated in the GUI
-        
+        """Called when the module is deactivated in the GUI
+
         This is the signal that the settings have been unhooked from the
         GUI and can't be used to edit the pipeline
-        '''
+        """
         pass
 
     def on_setting_changed(self, setting, pipeline):
-        '''Called when a setting has been changed in the GUI'''
+        """Called when a setting has been changed in the GUI"""
         pass

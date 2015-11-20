@@ -1,5 +1,5 @@
-'''test_graytocolor.py - Test the GrayToColor module
-'''
+"""test_graytocolor.py - Test the GrayToColor module
+"""
 
 import numpy as np
 import cellprofiler.cpmodule as cpm

@@ -1,4 +1,4 @@
-'''<b>Measure Correlation</b> measures the correlation between intensities in different images (e.g.,
+"""<b>Measure Correlation</b> measures the correlation between intensities in different images (e.g.,
 different color channels) on a pixel-by-pixel basis, within identified
 objects or across an entire image.
 <hr>
@@ -7,9 +7,9 @@ pixel intensities. The correlation can be measured for entire
 images, or a correlation measurement can be made within each
 individual object.
 
-Correlations will be calculated between all pairs of images that are selected in 
-the module, as well as between selected objects. For example, if correlations 
-are to be measured for a set of red, green, and blue images containing identified nuclei, 
+Correlations will be calculated between all pairs of images that are selected in
+the module, as well as between selected objects. For example, if correlations
+are to be measured for a set of red, green, and blue images containing identified nuclei,
 measurements will be made between the following:
 <ul>
 <li>The blue and green, red and green, and red and blue images. </li>
@@ -18,7 +18,7 @@ measurements will be made between the following:
 
 <h4>Available measurements</h4>
 <ul>
-<li><i>Correlation:</i> The correlation between a pair of images <i>I</i> and <i>J</i>, 
+<li><i>Correlation:</i> The correlation between a pair of images <i>I</i> and <i>J</i>,
 calculated as Pearson's correlation coefficient. The formula is
 covariance(<i>I</i> ,<i>J</i>)/[std(<i>I</i> ) &times; std(<i>J</i>)].</li>
 <li><i>Slope:</i> The slope of the least-squares regression between a pair of images
@@ -26,7 +26,7 @@ I and J. Calculated using the model <i>A</i> &times; <i>I</i> + <i>B</i> = <i>J<
 here <i>A</i> is the slope.</li>
 </ul>
 
-'''
+"""
 
 import numpy as np
 from scipy.linalg import lstsq
@@ -54,7 +54,7 @@ class MeasureCorrelation(cpm.CPModule):
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the initial settings for the module'''
+        """Create the initial settings for the module"""
         self.image_groups = []
         self.add_image(can_delete=False)
         self.spacer_1 = cps.Divider()
@@ -86,11 +86,11 @@ class MeasureCorrelation(cpm.CPModule):
                                                  self.add_object)
 
     def add_image(self, can_delete=True):
-        '''Add an image to the image_groups collection
-        
+        """Add an image to the image_groups collection
+
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
@@ -110,7 +110,7 @@ class MeasureCorrelation(cpm.CPModule):
         self.image_groups.append(group)
 
     def add_object(self, can_delete=True):
-        '''Add an object to the object_groups collection'''
+        """Add an object to the object_groups collection"""
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
@@ -126,7 +126,7 @@ class MeasureCorrelation(cpm.CPModule):
         self.object_groups.append(group)
 
     def settings(self):
-        '''Return the settings to be saved in the pipeline'''
+        """Return the settings to be saved in the pipeline"""
         result = [self.image_count, self.object_count]
         result += [image_group.image_name for image_group in self.image_groups]
         result += [self.images_or_objects]
@@ -135,7 +135,7 @@ class MeasureCorrelation(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Make sure there are the right number of image and object slots for the incoming settings'''
+        """Make sure there are the right number of image and object slots for the incoming settings"""
         image_count = int(setting_values[0])
         object_count = int(setting_values[1])
         if image_count < 2:
@@ -162,25 +162,25 @@ class MeasureCorrelation(cpm.CPModule):
         return result
 
     def get_image_pairs(self):
-        '''Yield all permutations of pairs of images to correlate
-        
+        """Yield all permutations of pairs of images to correlate
+
         Yields the pairs of images in a canonical order.
-        '''
+        """
         for i in range(self.image_count.value - 1):
             for j in range(i + 1, self.image_count.value):
                 yield (self.image_groups[i].image_name.value,
                        self.image_groups[j].image_name.value)
 
     def wants_images(self):
-        '''True if the user wants to measure correlation on whole images'''
+        """True if the user wants to measure correlation on whole images"""
         return self.images_or_objects in (M_IMAGES, M_IMAGES_AND_OBJECTS)
 
     def wants_objects(self):
-        '''True if the user wants to measure per-object correlations'''
+        """True if the user wants to measure per-object correlations"""
         return self.images_or_objects in (M_OBJECTS, M_IMAGES_AND_OBJECTS)
 
     def run(self, workspace):
-        '''Calculate measurements on an image set'''
+        """Calculate measurements on an image set"""
         col_labels = ["First image", "Second image", "Objects", "Measurement",
                       "Value"]
         statistics = []
@@ -208,7 +208,7 @@ class MeasureCorrelation(cpm.CPModule):
 
     def run_image_pair_images(self, workspace, first_image_name,
                               second_image_name):
-        '''Calculate the correlation between the pixels of two images'''
+        """Calculate the correlation between the pixels of two images"""
         first_image = workspace.image_set.get_image(first_image_name,
                                                     must_be_grayscale=True)
         second_image = workspace.image_set.get_image(second_image_name,
@@ -267,7 +267,7 @@ class MeasureCorrelation(cpm.CPModule):
 
     def run_image_pair_objects(self, workspace, first_image_name,
                                second_image_name, object_name):
-        '''Calculate per-object correlations between intensities in two images'''
+        """Calculate per-object correlations between intensities in two images"""
         first_image = workspace.image_set.get_image(first_image_name,
                                                     must_be_grayscale=True)
         second_image = workspace.image_set.get_image(second_image_name,
@@ -348,7 +348,7 @@ class MeasureCorrelation(cpm.CPModule):
                      "Max correlation", "%.2f" % np.max(corr)]]
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for all measurements made by this module'''
+        """Return column definitions for all measurements made by this module"""
         columns = []
         for first_image, second_image in self.get_image_pairs():
             if self.wants_images():
@@ -368,10 +368,10 @@ class MeasureCorrelation(cpm.CPModule):
         return columns
 
     def get_categories(self, pipeline, object_name):
-        '''Return the categories supported by this module for the given object
-        
+        """Return the categories supported by this module for the given object
+
         object_name - name of the measured object or cpmeas.IMAGE
-        '''
+        """
         if ((object_name == cpmeas.IMAGE and self.wants_images()) or
                 ((object_name != cpmeas.IMAGE) and self.wants_objects() and
                      (object_name in [x.object_name.value for x in
@@ -389,7 +389,7 @@ class MeasureCorrelation(cpm.CPModule):
 
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
-        '''Return the joined pairs of images measured'''
+        """Return the joined pairs of images measured"""
         if measurement in self.get_measurements(pipeline, object_name,
                                                 category):
             return ["%s_%s" % x for x in self.get_image_pairs()]
@@ -397,7 +397,7 @@ class MeasureCorrelation(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust the setting values for pipelines saved under old revisions'''
+        """Adjust the setting values for pipelines saved under old revisions"""
         if from_matlab and variable_revision_number == 3:
             image_names = [x for x in setting_values[:4]
                            if x.upper() != cps.DO_NOT_USE.upper()]

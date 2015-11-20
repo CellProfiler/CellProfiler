@@ -1,5 +1,5 @@
-'''test_namesandtypes.py - test the NamesAndTypes module
-'''
+"""test_namesandtypes.py - test the NamesAndTypes module
+"""
 
 import hashlib
 import numpy as np
@@ -43,13 +43,13 @@ OUTLINES_NAME = "outlines"
 
 
 def md(keys_and_counts):
-    '''Generate metadata dictionaries for the given metadata shape
-    
+    """Generate metadata dictionaries for the given metadata shape
+
     keys_and_counts - a collection of metadata keys and the dimension of
                       their extent. For instance [(M0, 2), (M1, 3)] generates
                       six dictionaries with two unique values of M0 and
                       three for M1
-    '''
+    """
     keys = [k for k, c in keys_and_counts]
     counts = np.array([c for k, c in keys_and_counts])
     divisors = np.hstack([[1], np.cumprod(counts[:-1])])
@@ -757,10 +757,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
 
     def do_teest(self, module, channels, expected_tags, expected_metadata,
                  additional=None):
-        '''Ensure that NamesAndTypes recreates the column layout when run
-        
+        """Ensure that NamesAndTypes recreates the column layout when run
+
         module - instance of NamesAndTypes, set up for the test
-        
+
         channels - a dictionary of channel name to list of "ipds" for that
                    channel where "ipd" is a tuple of URL and metadata dictionary
                    Entries may appear multiple times (e.g. illumination function)
@@ -771,7 +771,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
         additional - if present, these are added as ImagePlaneDetails in order
                      to create errors. Format is same as a single channel of
                      channels.
-        '''
+        """
         ipds = []
         urls = set()
         channels = dict(channels)
@@ -1356,8 +1356,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
                       series=None, index=None, channel=None,
                       single=False,
                       rescaled=N.INTENSITY_RESCALING_BY_METADATA, lsi=[]):
-        '''Run a workspace to load a file
-        
+        """Run a workspace to load a file
+
         path - path to the file
         load_as_type - one of the LOAD_AS... constants
         series, index, channel - pick a plane from within a file
@@ -1369,9 +1369,9 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:6|s
               "load_as_type": <how to load single image>
               "name": <image or object name>
               "rescaled": True or False (defaults to True)
-        
+
         returns the workspace after running
-        '''
+        """
         if isinstance(rescaled, float):
             manual_rescale = rescaled
             rescaled = N.INTENSITY_MANUAL

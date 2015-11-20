@@ -1,5 +1,5 @@
-'''preferencesdlg.py Edit global preferences
-'''
+"""preferencesdlg.py Edit global preferences
+"""
 
 import wx
 import matplotlib.cm
@@ -17,11 +17,11 @@ CHOICE = "Choice"
 
 
 class IntegerPreference(object):
-    '''User interface info for an integer preference
-    
+    """User interface info for an integer preference
+
     This signals that a preference should be displayed and edited as
     an integer, optionally limited by a range.
-    '''
+    """
 
     def __init__(self, minval=None, maxval=None):
         self.minval = minval
@@ -56,11 +56,11 @@ class ClassPathValidator(wx.PyValidator):
 
 
 class PreferencesDlg(wx.Dialog):
-    '''Display a dialog for setting preferences
-    
+    """Display a dialog for setting preferences
+
     The dialog handles fetching current defaults and setting the
     defaults when the user hits OK.
-    '''
+    """
 
     def __init__(self, parent=None, ID=-1, title="CellProfiler preferences",
                  size=wx.DefaultSize, pos=wx.DefaultPosition,
@@ -216,8 +216,8 @@ class PreferencesDlg(wx.Dialog):
                 setter(value)
 
     def get_preferences(self):
-        '''Get the list of preferences.
-        
+        """Get the list of preferences.
+
         Each row in the list has the following form:
         Title - the text that appears to the right of the edit box
         get_function - retrieves the persistent preference value
@@ -225,7 +225,7 @@ class PreferencesDlg(wx.Dialog):
         display - If this is a list, it represents the valid choices.
                   If it is "dirbrowse", put a directory browse button
                   to the right of the edit box.
-        '''
+        """
         cmaps = list(matplotlib.cm.datad.keys())
         cmaps.sort()
         return [["Default Input Folder",

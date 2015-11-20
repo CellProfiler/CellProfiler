@@ -66,7 +66,7 @@ class Example1a(cpm.CPModule):
     # This module has none, so this is the "do-nothing" version, so far.
     #
     def create_settings(self):  # "self" refers to the module's class attributes
-        '''Create a fresh set of module settings'''
+        """Create a fresh set of module settings"""
         ##self.text_setting = cps.Text("Text setting", "suggested value")
         ##self.choice_setting = cps.Choice(
         ##    "Choice setting", ["Choice 1", "Choice 2", "Choice 3"])
@@ -83,7 +83,7 @@ class Example1a(cpm.CPModule):
     # unless you use "visible_settings" which we'll go over later
     #
     def settings(self):
-        '''Return these settings to CellProfiler'''
+        """Return these settings to CellProfiler"""
         ##return [self.text_setting,
         ##        self.choice_setting,
         ##       self.binary_setting,
@@ -98,7 +98,7 @@ class Example1a(cpm.CPModule):
     # tutorials will go over all of those pieces.
     #
     def run(self, workspace):
-        '''Execute the module's code on the current image set'''
+        """Execute the module's code on the current image set"""
         ##integer_value = self.integer_setting.value
         ##float_value = self.float_setting.value
         ##print "%d + %f = %f" % (integer_value,

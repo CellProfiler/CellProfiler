@@ -1,5 +1,5 @@
-'''version.py - Version fetching and comparison.
-'''
+"""version.py - Version fetching and comparison.
+"""
 
 import datetime
 import sys
@@ -14,10 +14,10 @@ def datetime_from_isoformat(dt_str):
 
 
 def get_version():
-    '''Get a version as "timestamp version", where timestamp is when the last
+    """Get a version as "timestamp version", where timestamp is when the last
     commit was made, and version is a git hash, or if that fails, SVN version
     (relative to whatever SVN repository is in the source), and otherwise, just
-    the current time and "unkown".'''
+    the current time and "unkown"."""
 
     if not hasattr(sys, 'frozen'):
         import cellprofiler

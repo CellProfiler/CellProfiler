@@ -1,60 +1,60 @@
-'''<b>Load Data</b> loads text or numerical data to be associated with images, and 
+"""<b>Load Data</b> loads text or numerical data to be associated with images, and
 can also load images specified by file names.
 <hr>
-This module loads a file that supplies text or numerical data associated with 
-the images to be processed, e.g., sample names, plate names, well 
+This module loads a file that supplies text or numerical data associated with
+the images to be processed, e.g., sample names, plate names, well
 identifiers, or even a list of image filenames to be processed in the analysis run.
 
 <p><i>Disclaimer:</i> Please note that the Input modues (i.e., <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
-and <b>Groups</b>) largely supercedes this module. However, old pipelines loaded into 
-CellProfiler that contain this module will provide the option of preserving them; 
+and <b>Groups</b>) largely supercedes this module. However, old pipelines loaded into
+CellProfiler that contain this module will provide the option of preserving them;
 these pipelines will operate exactly as before.</p>
 
-<p>The module currently reads files in CSV (comma-separated values) format. 
+<p>The module currently reads files in CSV (comma-separated values) format.
 These files can be produced by saving a spreadsheet from Excel as
-"Windows Comma Separated Values" file format. 
+"Windows Comma Separated Values" file format.
  The lines of the file represent the rows, and each field in a row is
 separated by a comma. Text values may be optionally enclosed by double
-quotes. The <b>LoadData</b> module uses the first row of the file as a header. 
+quotes. The <b>LoadData</b> module uses the first row of the file as a header.
 The fields in this row provide the labels for each column of data. Subsequent rows
 provide the values for each image cycle.<p>
 
 <p>There are many reasons why you might want to prepare a CSV file and load it
-via <b>LoadData</b>. Below, we describe how the column nomenclature allows for special 
-functionality for some downstream modules: 
+via <b>LoadData</b>. Below, we describe how the column nomenclature allows for special
+functionality for some downstream modules:
 <ul>
-<li><i>Columns with any name:</i> Any data loaded via <b>LoadData</b> will be exported 
+<li><i>Columns with any name:</i> Any data loaded via <b>LoadData</b> will be exported
 as a per-image measurement along with CellProfiler-calculated data. This is a
 convenient way for you to add data from your own sources to the files exported by
 CellProfiler.</li>
 
 <li><i>Columns whose name begins with Image_FileName or Image_PathName:</i>
-A column whose name begins with "Image_FileName" or "Image_PathName" can be used to 
+A column whose name begins with "Image_FileName" or "Image_PathName" can be used to
 supply the file name and path name (relative to the base folder) of an image that you want to load.
 The image's name within CellProfiler appears afterward. For instance,
 "Image_FileName_CY3" would supply the file name for the CY3-stained image, and
-choosing the <i>Load images based on this data?</i> option allows the CY3 images to be 
+choosing the <i>Load images based on this data?</i> option allows the CY3 images to be
 selected later in the pipeline. "Image_PathName_CY3" would supply the path names
-for the CY3-stained images. The path name column is optional; if all image files are in the base 
+for the CY3-stained images. The path name column is optional; if all image files are in the base
 folder, this column is not needed.</li>
 
 <li><i>Columns whose name begins with Image_ObjectsFileName or Image_ObjectsPathName:</i>
 The behavior of these columns is identical to that of "Image_FileName" or "Image_PathName"
 except that it is used to specify an image that you want to load as objects. </li>
 
-<li><i>Columns whose name begins with Metadata:</i> A column whose name begins with 
+<li><i>Columns whose name begins with Metadata:</i> A column whose name begins with
 "Metadata" can be used to group or associate files loaded by <b>LoadData</b>.
-<p>For instance, an experiment might require that images created on the same day 
-use an illumination correction function calculated from all images from that day, 
-and furthermore, that the date be captured in the file names for the individual image 
-sets and in a CSV file specifying the illumination correction functions. 
-<p>In this case, if the illumination correction images are loaded with the 
-<b>LoadData</b> module, the file should have a "Metadata_Date" 
-column which contains the date metadata tags. Similarly, if the individual images 
-are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
-<Date> metadata tag from the file names (see <b>LoadImages</b> for more details 
-on how to do so). The pipeline will then match the individual image with 
-their corresponding illumination correction functions based on matching 
+<p>For instance, an experiment might require that images created on the same day
+use an illumination correction function calculated from all images from that day,
+and furthermore, that the date be captured in the file names for the individual image
+sets and in a CSV file specifying the illumination correction functions.
+<p>In this case, if the illumination correction images are loaded with the
+<b>LoadData</b> module, the file should have a "Metadata_Date"
+column which contains the date metadata tags. Similarly, if the individual images
+are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the
+<Date> metadata tag from the file names (see <b>LoadImages</b> for more details
+on how to do so). The pipeline will then match the individual image with
+their corresponding illumination correction functions based on matching
 "Metadata_Date" tags. This is useful if the same data is associated with several
 images (for example, multiple images obtained from a single well).</li>
 
@@ -65,18 +65,18 @@ example, "Frame_DNA" would supply the frame number for the movie/image stack fil
 by the "Image_FileName_DNA" and "Image_PathName_DNA" columns.
 <p>Using a CSV for loading frames and/or series from an movie/image stack allows you more
 flexibility in assembling image sets for operations that would difficult or impossible
-using the Input modules alone. For example, if you wanted to analyze a movie of 1,000 frames 
-by computing the difference between frames, you could create two 
+using the Input modules alone. For example, if you wanted to analyze a movie of 1,000 frames
+by computing the difference between frames, you could create two
 image columns in a CSV, one for loading frames 1,2,...,999, and the other for loading
 frames 2,3,...,1000. In this case, CellProfiler would load the frame and its predecessor
 for each cycle and <b>ImageMath</b> could be used to create the differece image for downstream use.</p>
 </li>
 
-<li><i>Columns that contain dose-response or positive/negative control information:</i> 
-The <b>CalculateStatistics</b> module can calculate metrics of assay quality for 
+<li><i>Columns that contain dose-response or positive/negative control information:</i>
+The <b>CalculateStatistics</b> module can calculate metrics of assay quality for
 an experiment if provided with information about which images represent positive
 and negative controls and/or what dose of treatment has been used for which images.
-This information is provided to <b>CalculateStatistics</b> via the <b>LoadData</b> 
+This information is provided to <b>CalculateStatistics</b> via the <b>LoadData</b>
 module, using particular formats described in the help for <b>CalculateStatistics</b>.
 Again, using <b>LoadData</b> is useful if the same data is associated with several
 images (for example, multiple images obtained from a single well).</li>
@@ -89,13 +89,13 @@ images (for example, multiple images obtained from a single well).</li>
 <tr><td>"51265_d1.tif",</td><td>"2009-07-09",</td><td>"P-12345",</td><td>2750</td></tr>
 </table></tt>
 
-After the first row of header information (the column names), the first 
-image-specific row specifies the file, "2009-07-08/04923_d1.tif" for the FITC 
-image (2009-07-08 is the name of the subfolder that contains the image, 
-relative to the Default Input Folder). The plate metadata is "P-12345" and 
-the NaCl titration used in the well is 750 uM. The second image-specific row 
-has the values "2009-07-09/51265_d1.tif", "P-12345" and 2750 uM. The NaCl 
-titration for the image is available for modules that use numeric metadata, 
+After the first row of header information (the column names), the first
+image-specific row specifies the file, "2009-07-08/04923_d1.tif" for the FITC
+image (2009-07-08 is the name of the subfolder that contains the image,
+relative to the Default Input Folder). The plate metadata is "P-12345" and
+the NaCl titration used in the well is 750 uM. The second image-specific row
+has the values "2009-07-09/51265_d1.tif", "P-12345" and 2750 uM. The NaCl
+titration for the image is available for modules that use numeric metadata,
 such as <b>CalculateStatistics</b>; "Titration" will be the category and "NaCl_uM"
 will be the measurement.
 
@@ -103,7 +103,7 @@ will be the measurement.
 
 <p>If you would like to use the metadata-specific settings, please see <i>Help > General help > Using
 metadata in CellProfiler</i> for more details on metadata usage and syntax. Briefly, <b>LoadData</b> can
-use metadata provided by the input CSV file for grouping similar images together for the 
+use metadata provided by the input CSV file for grouping similar images together for the
 analysis run and for metadata-specfic options in other modules; see the settings help for
 <i>Group images by metadata</i> and, if that setting is selected, <i>Select metadata tags for grouping</i>
 for details.</p>
@@ -124,18 +124,18 @@ one row per image.</li>
 <li>Corrupt files (will cause failure on image loading) </li>
 </ul></li>
 <li>The image data table may be linked to metadata contained in plate maps. These plate maps should
-be stored as flat files, and may be updated periodically via queries to a laboratory information 
+be stored as flat files, and may be updated periodically via queries to a laboratory information
 management system (LIMS) database. </li>
-<li>The complete image location and metadata is written to a CSV file where the headers can easily 
-be formatted to match <b>LoadData</b>'s input requirements (see column descriptions above). Single 
-plates split across multiple directories (which often occurs in MetaXpress) are written 
+<li>The complete image location and metadata is written to a CSV file where the headers can easily
+be formatted to match <b>LoadData</b>'s input requirements (see column descriptions above). Single
+plates split across multiple directories (which often occurs in MetaXpress) are written
 to separate files and then merged, thereby removing the discontinuity.</li>
 </ul>
-For a GUI-based approach to performing this task, we suggest using <a href="http://accelrys.com/products/pipeline-pilot/">Pipeline 
+For a GUI-based approach to performing this task, we suggest using <a href="http://accelrys.com/products/pipeline-pilot/">Pipeline
 Pilot</a>.
 
 <p>For more details on configuring CellProfiler
-(and LoadData in particular) for a LIMS environment, please see our 
+(and LoadData in particular) for a LIMS environment, please see our
 <a href="https://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment">wiki</a> on the subject.</p>
 
 <h4>Available measurements</h4>
@@ -143,12 +143,12 @@ Pilot</a>.
 <li><i>Pathname, Filename:</i> The full path and the filename of each image, if
 image loading was requested by the user.</li>
 <li>Per-image information obtained from the input file provided by the user.</li>
-<li><i>Scaling:</i> The maximum possible intensity value for the image format.</li> 
-<li><i>Height, Width:</i> The height and width of the current image.</li> 
+<li><i>Scaling:</i> The maximum possible intensity value for the image format.</li>
+<li><i>Height, Width:</i> The height and width of the current image.</li>
 </ul>
 
 See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics</b>.
-'''
+"""
 
 import csv
 import hashlib
@@ -210,12 +210,12 @@ header_cache = {}
 ###################################################################
 
 def header_to_column(field):
-    '''Convert the field name in the header to a column name
-    
-    This function converts Image_FileName to FileName and 
+    """Convert the field name in the header to a column name
+
+    This function converts Image_FileName to FileName and
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
-    '''
+    """
     for name in (C_PATH_NAME, C_FILE_NAME, C_URL,
                  C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL):
         if field.startswith(cpmeas.IMAGE + '_' + name + '_'):
@@ -224,12 +224,12 @@ def header_to_column(field):
 
 
 def is_path_name_feature(feature):
-    '''Return true if the feature name is a path name'''
+    """Return true if the feature name is a path name"""
     return feature.startswith(C_PATH_NAME + '_')
 
 
 def is_file_name_feature(feature):
-    '''Return true if the feature name is a file name'''
+    """Return true if the feature name is a file name"""
     return feature.startswith(C_FILE_NAME + '_')
 
 
@@ -238,12 +238,12 @@ def is_url_name_feature(feature):
 
 
 def is_objects_path_name_feature(feature):
-    '''Return true if the feature name is the path to a labels file'''
+    """Return true if the feature name is the path to a labels file"""
     return feature.startswith(C_OBJECTS_PATH_NAME + "_")
 
 
 def is_objects_file_name_feature(feature):
-    '''Return true if the feature name is a labels file name'''
+    """Return true if the feature name is a labels file name"""
     return feature.startswith(C_OBJECTS_FILE_NAME + "_")
 
 
@@ -252,7 +252,7 @@ def is_objects_url_name_feature(feature):
 
 
 def get_image_name(feature):
-    '''Extract the image name from a feature name'''
+    """Extract the image name from a feature name"""
     if is_path_name_feature(feature):
         return feature[len(C_PATH_NAME + '_'):]
     if is_file_name_feature(feature):
@@ -264,7 +264,7 @@ def get_image_name(feature):
 
 
 def get_objects_name(feature):
-    '''Extract the objects name from a feature name'''
+    """Extract the objects name from a feature name"""
     if is_objects_path_name_feature(feature):
         return feature[len(C_OBJECTS_PATH_NAME + "_"):]
     if is_objects_file_name_feature(feature):
@@ -276,38 +276,38 @@ def get_objects_name(feature):
 
 
 def make_path_name_feature(image):
-    '''Return the path name feature, given an image name
+    """Return the path name feature, given an image name
 
     The path name feature is the name of the measurement that stores
     the image's path name.
-    '''
+    """
     return C_PATH_NAME + '_' + image
 
 
 def make_file_name_feature(image):
-    '''Return the file name feature, given an image name
-    
+    """Return the file name feature, given an image name
+
     The file name feature is the name of the measurement that stores
     the image's file name.
-    '''
+    """
     return C_FILE_NAME + '_' + image
 
 
 def make_objects_path_name_feature(objects_name):
-    '''Return the path name feature, given an object name
+    """Return the path name feature, given an object name
 
     The path name feature is the name of the measurement that stores
     the objects file path name.
-    '''
+    """
     return C_OBJECTS_PATH_NAME + '_' + objects_name
 
 
 def make_objects_file_name_feature(objects_name):
-    '''Return the file name feature, given an object name
-    
+    """Return the file name feature, given an object name
+
     The file name feature is the name of the measurement that stores
     the objects file name.
-    '''
+    """
     return C_OBJECTS_FILE_NAME + '_' + objects_name
 
 
@@ -331,7 +331,7 @@ class LoadData(cpm.CPModule):
             </ul></p>""" % globals())
 
         def get_directory_fn():
-            '''Get the directory for the CSV file name'''
+            """Get the directory for the CSV file name"""
             return self.csv_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -474,10 +474,10 @@ class LoadData(cpm.CPModule):
                 (self.csv_path, e), self.csv_file_name)
 
     def validate_module_warnings(self, pipeline):
-        '''Check for potentially dangerous settings
-        
+        """Check for potentially dangerous settings
+
         The best practice is to have a single LoadImages or LoadData module.
-        '''
+        """
         from cellprofiler.modules.loadimages import LoadImages
 
         for module in pipeline.modules():
@@ -614,7 +614,7 @@ class LoadData(cpm.CPModule):
 
     @property
     def csv_path(self):
-        '''The path and file name of the CSV file to be loaded'''
+        """The path and file name of the CSV file to be loaded"""
         if cpprefs.get_data_file() is not None:
             return cpprefs.get_data_file()
         if self.csv_directory.dir_choice == cps.URL_FOLDER_NAME:
@@ -629,11 +629,11 @@ class LoadData(cpm.CPModule):
 
     @property
     def legacy_field_key(self):
-        '''The key to use to retrieve the metadata from the image set list'''
+        """The key to use to retrieve the metadata from the image set list"""
         return 'LoadTextMetadata_%d' % self.module_num
 
     def get_cache_info(self):
-        '''Get the cached information for the data file'''
+        """Get the cached information for the data file"""
         global header_cache
         entry = header_cache.get(self.csv_path, dict(ctime=0))
         if cpprefs.is_url_path(self.csv_path):
@@ -647,7 +647,7 @@ class LoadData(cpm.CPModule):
         return entry
 
     def open_csv(self, do_not_cache=False):
-        '''Open the csv file or URL, returning a file descriptor'''
+        """Open the csv file or URL, returning a file descriptor"""
         global header_cache
 
         if cpprefs.is_url_path(self.csv_path):
@@ -705,11 +705,11 @@ class LoadData(cpm.CPModule):
         frame.Show()
 
     def get_header(self, do_not_cache=False):
-        '''Read the header fields from the csv file
-        
+        """Read the header fields from the csv file
+
         Open the csv file indicated by the settings and read the fields
         of its first line. These should be the measurement columns.
-        '''
+        """
         entry = self.get_cache_info()
         if entry.has_key("header"):
             return entry["header"]
@@ -745,7 +745,7 @@ class LoadData(cpm.CPModule):
         return list(object_names)
 
     def other_providers(self, group):
-        '''Get name providers from the CSV header'''
+        """Get name providers from the CSV header"""
         if group == 'imagegroup' and self.wants_images.value:
             try:
                 # do not load URLs automatically
@@ -762,12 +762,12 @@ class LoadData(cpm.CPModule):
         return []
 
     def is_image_from_file(self, image_name):
-        '''Return True if LoadData provides the given image name'''
+        """Return True if LoadData provides the given image name"""
         providers = self.other_providers('imagegroup')
         return image_name in providers
 
     def is_load_module(self):
-        '''LoadData can make image sets so it's a load module'''
+        """LoadData can make image sets so it's a load module"""
         return True
 
     def prepare_run(self, workspace):
@@ -991,13 +991,13 @@ class LoadData(cpm.CPModule):
         return True
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
-        
+        """Prepare to create a batch file
+
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
         "legacy_fields" dictionary. This callback lets a module prepare for
         saving.
-        
+
         pipeline - the pipeline to be saved
         image_set_list - the image set list to be saved
         fn_alter_path - this is a function that takes a pathname on the local
@@ -1005,7 +1005,7 @@ class LoadData(cpm.CPModule):
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        '''
+        """
 
         if self.wants_images:
             m = workspace.measurements
@@ -1079,7 +1079,7 @@ class LoadData(cpm.CPModule):
             index=frame)
 
     def run(self, workspace):
-        '''Populate the images and objects'''
+        """Populate the images and objects"""
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_set = workspace.image_set
@@ -1151,10 +1151,10 @@ class LoadData(cpm.CPModule):
         figure.subplot_table(0, 0, workspace.display_data.statistics)
 
     def get_groupings(self, workspace):
-        '''Return the image groupings of the image sets
+        """Return the image groupings of the image sets
 
         See CPModule for documentation
-        '''
+        """
         if (self.wants_images.value and
                 self.wants_image_groupings.value and
                     len(self.metadata_fields.selections) > 0):
@@ -1168,7 +1168,7 @@ class LoadData(cpm.CPModule):
         return None
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements output by this module'''
+        """Return column definitions for measurements output by this module"""
         entry = None
         try:
             entry = self.get_cache_info()
@@ -1303,9 +1303,9 @@ class LoadData(cpm.CPModule):
         return result
 
     def has_synthetic_well_metadata(self):
-        '''Determine if we should synthesize a well metadata feature
-        
-        '''
+        """Determine if we should synthesize a well metadata feature
+
+        """
         fields = self.get_header()
         has_well_col = False
         has_well_row = False
@@ -1338,14 +1338,14 @@ class LoadData(cpm.CPModule):
                  and column[1].startswith(category + "_")]]
 
     def change_causes_prepare_run(self, setting):
-        '''Check to see if changing the given setting means you have to restart
-        
+        """Check to see if changing the given setting means you have to restart
+
         Some settings, esp in modules like LoadImages, affect more than
         the current image set when changed. For instance, if you change
         the name specification for files, you have to reload your image_set_list.
         Override this and return True if changing the given setting means
         that you'll have to do "prepare_run".
-        '''
+        """
         if self.wants_images or setting == self.wants_images:
             return True
         return False
@@ -1444,13 +1444,13 @@ LoadText = LoadData
 
 
 def best_cast(sequence, coltype=None):
-    '''Return the best cast (integer, float or string) of the sequence
-    
+    """Return the best cast (integer, float or string) of the sequence
+
     sequence - a sequence of strings
-    
+
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
-    '''
+    """
     if (isinstance(coltype, (str, unicode)) and
             coltype.startswith(cpmeas.COLTYPE_VARCHAR)):
         # Cast columns already defined as strings as same
@@ -1478,13 +1478,13 @@ int32_min = np.iinfo(np.int32).min
 
 
 def get_loaddata_type(x):
-    '''Return the type to use to represent x
+    """Return the type to use to represent x
 
     If x is a 32-bit integer, return cpmeas.COLTYPE_INTEGER.
     If x cannot be represented in 32 bits but is an integer,
     return cpmeas.COLTYPE_VARCHAR
     If x can be represented as a float, return COLTYPE_FLOAT
-    '''
+    """
     global int32_max, int32_min
 
     try:

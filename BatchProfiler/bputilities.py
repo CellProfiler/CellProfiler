@@ -127,11 +127,11 @@ def get_version_and_githash(treeish):
 
 
 def get_version_from_timestr(time_str):
-    '''convert ISO date to dateversion format
-    
+    """convert ISO date to dateversion format
+
     Returns the UTC time of the time string in the format
     YYYYMMDDHHMMSS
-    '''
+    """
     t = dateutil.parser.parse(time_str).utctimetuple()
     return "%04d%02d%02d%02d%02d%02d" % \
            (t.tm_year, t.tm_mon, t.tm_mday,
@@ -139,7 +139,7 @@ def get_version_from_timestr(time_str):
 
 
 def get_versions_and_githashes():
-    '''Get the versions and githashes via git-log'''
+    """Get the versions and githashes via git-log"""
     splooge = subprocess.check_output(
         ["git", "log", "--pretty=%ai_%H"], cwd=ROOT_DIR)
     result = []
@@ -154,10 +154,10 @@ def get_versions_and_githashes():
 
 def get_cellprofiler_location(
         batch_filename=None, version=None, git_hash=None):
-    '''Get the location of the CellProfiler source to use
+    """Get the location of the CellProfiler source to use
 
     There are two choices - get by batch name or by version and git hash
-    '''
+    """
 
     if version is None or git_hash is None:
         version, git_hash = get_batch_data_version_and_githash(batch_filename)
@@ -167,7 +167,7 @@ def get_cellprofiler_location(
 
 
 def get_queues():
-    '''Return a list of queues'''
+    """Return a list of queues"""
     try:
         host_fd, host_scriptfile = tempfile.mkstemp(suffix=".sh")
         os.fchmod(host_fd, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
@@ -189,7 +189,7 @@ fi
 
 
 def get_jobs():
-    '''Return a list of all jobs for the webserver user'''
+    """Return a list of all jobs for the webserver user"""
     script = """#!/bin/sh
 set -v
 if [ -e "$HOME/.batchprofiler.sh" ]; then
@@ -215,8 +215,8 @@ qstat
 
 
 def make_temp_script(script):
-    '''Write a script to a tempfile
-    '''
+    """Write a script to a tempfile
+    """
     host_fd, host_scriptfile = tempfile.mkstemp(suffix=".sh")
     os.fchmod(host_fd, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
     os.write(host_fd, script)
@@ -239,8 +239,8 @@ def run_on_tgt_os(script,
                   email_address=None,
                   task_range=None,
                   memory=None):
-    '''Run the given script on the target operating system
-    
+    """Run the given script on the target operating system
+
     script - the script to be run with shebang header line
              (e.g. #!/bin/sh)
     group_name - charge to this group
@@ -257,7 +257,7 @@ def run_on_tgt_os(script,
     email_address - address of email recipient
     task_range - for array jobs, a slice giving start / stop / step for
                  task numbering
-    '''
+    """
     if deps is not None:
         dep_cond = "-hold_jid %s" % (",".join(deps))
     else:
@@ -380,7 +380,7 @@ def python_on_tgt_os(args, group_name, job_name, queue_name, output,
                      mail_after=True,
                      email_address=None,
                      with_xvfb=False):
-    '''Run Python with the given arguments on a target machine'''
+    """Run Python with the given arguments on a target machine"""
     if cwd is None:
         cd_command = ""
     else:
@@ -413,15 +413,15 @@ def build_cellprofiler(
         queue_name=None,
         group_name="imaging",
         email_address=None):
-    '''Build/rebuild a version of CellProfiler
+    """Build/rebuild a version of CellProfiler
 
     version - numeric version # based on commit date
     git_hash - git hash of version
     group_name - fairshare group for remote jobs
     email_address - send email notifications here
-    
+
     returns a sequence of job numbers.
-    '''
+    """
     path = get_cellprofiler_location(version=version, git_hash=git_hash)
     if os.path.isdir(os.path.join(path, ".git")):
         subprocess.check_call(["git", "clean", "-d", "-f", "-x", "-q"],
@@ -494,13 +494,13 @@ def is_built(version, git_hash):
 
 
 def send_mail(recipient, subject, content_type, body):
-    '''Send mail to a single recipient
-    
+    """Send mail to a single recipient
+
     recipient - email address of recipient
     subject - subject field of email
     content_type - mime type of the message body
     body - the payload of the mail message
-    '''
+    """
     pipe = subprocess.Popen([SENDMAIL, "-t"], stdin=subprocess.PIPE)
     doc = """To: %(recipient)s
 Subject: %(subject)s
@@ -513,13 +513,13 @@ Content-Type: %(content_type)s; charset=UTF-8
 
 
 def send_html_mail(recipient, subject, html):
-    '''Send mail that has HTML in the body
+    """Send mail that has HTML in the body
 
     recipient - email address of recipient
     subject - subject field of email
     content_type - mime type of the message body
     body - the payload of the mail message
-    '''
+    """
     send_mail(recipient=recipient,
               subject=subject,
               content_type="text/html",
@@ -527,11 +527,11 @@ def send_html_mail(recipient, subject, html):
 
 
 class CellProfilerContext(object):
-    '''Wrap CellProfiler operations in a handy context
-    
+    """Wrap CellProfiler operations in a handy context
+
     Redirect stderr and stdout to prevent log printing
     On exit, shut things down
-    '''
+    """
 
     def __enter__(self):
         devnull = open("/dev/null", "w")
@@ -548,9 +548,9 @@ class CellProfilerContext(object):
 
 
 def shutdown_cellprofiler():
-    '''Oh sadness and so many threads that won't die...
-    
-    '''
+    """Oh sadness and so many threads that won't die...
+
+    """
     try:
         import javabridge
         javabridge.kill_vm()

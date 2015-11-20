@@ -1,11 +1,11 @@
-'''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features 
-(such as speckles, ring shapes, and neurites), which can improve subsequent 
+"""<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features
+(such as speckles, ring shapes, and neurites), which can improve subsequent
 identification of objects.
 <hr>
 This module enhances or suppresses the intensity of certain pixels relative
-to the rest of the image, by applying image processing filters to the image. It 
+to the rest of the image, by applying image processing filters to the image. It
 produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
-'''
+"""
 
 import numpy as np
 from scipy.ndimage import gaussian_filter
@@ -347,8 +347,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
-        
+        """Adjust setting values if they came from a previous revision
+
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
         variable_revision_number - the variable revision number of the
@@ -360,12 +360,12 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                       that module was merged into the current module
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
-        
+
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if not from_matlab and variable_revision_number == 1:
             #
             # V1 -> V2, added enhance method and hole size

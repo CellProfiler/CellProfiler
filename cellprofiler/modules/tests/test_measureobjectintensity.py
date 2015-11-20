@@ -119,7 +119,7 @@ class TestMeasureObjects(unittest.TestCase):
                         ['MyImage'])
 
     def test_02_02_get_measurement_columns(self):
-        '''test the get_measurement_columns method'''
+        """test the get_measurement_columns method"""
         moi = MOI.MeasureObjectIntensity()
         moi.images[0].name.value = 'MyImage'
         moi.add_object()
@@ -668,7 +668,7 @@ class TestMeasureObjects(unittest.TestCase):
                     self.assertEqual(m0[i], m1[0])
 
     def test_04_01_wrong_image_size(self):
-        '''Regression test of IMG-961 - object and image size differ'''
+        """Regression test of IMG-961 - object and image size differ"""
         np.random.seed(41)
         labels = np.ones((20, 50), int)
         image = np.random.uniform(size=(30, 40)).astype(np.float32)

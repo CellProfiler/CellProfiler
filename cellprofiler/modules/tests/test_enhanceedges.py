@@ -1,5 +1,5 @@
-'''test_enhanceedges - test the EnhanceEdges module
-'''
+"""test_enhanceedges - test the EnhanceEdges module
+"""
 
 from base64 import b64decode
 import numpy as np
@@ -26,7 +26,7 @@ OUTPUT_IMAGE_NAME = 'outputimage'
 
 class TestEnhanceEdges(unittest.TestCase):
     def make_workspace(self, image, mask=None):
-        '''Make a workspace for testing FindEdges'''
+        """Make a workspace for testing FindEdges"""
         module = F.FindEdges()
         module.image_name.value = INPUT_IMAGE_NAME
         module.output_image_name.value = OUTPUT_IMAGE_NAME
@@ -46,7 +46,7 @@ class TestEnhanceEdges(unittest.TestCase):
         return workspace, module
 
     def test_01_01_load_matlab(self):
-        '''Load a Matlab pipeline with a version 3 FindEdges module'''
+        """Load a Matlab pipeline with a version 3 FindEdges module"""
         data = ("eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s"
                 "SU1RyM+zUgjJKFXwTaxUMDJUMDSxMjCyMrJQMDIwsFQgGTAwevryMzAwfGNk"
                 "YKiYczfM2/+Qg4Cc18FwlVcnm9vl9v7oEu/LuuChlNEyYUZF5Iso88hdS/hZ"
@@ -80,7 +80,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertEqual(module.direction.value, F.E_ALL)
 
     def test_01_02_load_v1(self):
-        '''Load a Python pipeline with a version 1 FindEdges module'''
+        """Load a Python pipeline with a version 1 FindEdges module"""
         data = ('eJztWNFu2jAUNZR2o5um7qHqHv0IW4kS1m4UTW0ZdBpaYahF7aqq61wwJZIT'
                 'o+C0ZVOlPe4T9jn7hH3CPqGfMBsSCC5rIC2TNiXICvfmHp/rk2tjXMpVt3Ov'
                 '4aqiwlKummroBMMKQaxBLSMLTbYM8xZGDNchNbOw2rRhCXVgWoPaSlZ7mVVX'
@@ -163,7 +163,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertEqual(module.low_threshold.value, 0.1)
 
     def test_02_01_sobel_horizontal(self):
-        '''Test the Sobel horizontal transform'''
+        """Test the Sobel horizontal transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -174,7 +174,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == FIL.hsobel(image)))
 
     def test_02_02_sobel_vertical(self):
-        '''Test the Sobel vertical transform'''
+        """Test the Sobel vertical transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -185,7 +185,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == FIL.vsobel(image)))
 
     def test_02_03_sobel_all(self):
-        '''Test the Sobel transform'''
+        """Test the Sobel transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -196,7 +196,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == FIL.sobel(image)))
 
     def test_03_01_prewitt_horizontal(self):
-        '''Test the prewitt horizontal transform'''
+        """Test the prewitt horizontal transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -207,7 +207,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == FIL.hprewitt(image)))
 
     def test_03_02_prewitt_vertical(self):
-        '''Test the prewitt vertical transform'''
+        """Test the prewitt vertical transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -218,7 +218,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == FIL.vprewitt(image)))
 
     def test_03_03_prewitt_all(self):
-        '''Test the prewitt transform'''
+        """Test the prewitt transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -229,7 +229,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == FIL.prewitt(image)))
 
     def test_04_01_roberts(self):
-        '''Test the roberts transform'''
+        """Test the roberts transform"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -239,7 +239,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == FIL.roberts(image)))
 
     def test_05_01_log_automatic(self):
-        '''Test the laplacian of gaussian with automatic sigma'''
+        """Test the laplacian of gaussian with automatic sigma"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -257,7 +257,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == expected))
 
     def test_05_02_log_manual(self):
-        '''Test the laplacian of gaussian with manual sigma'''
+        """Test the laplacian of gaussian with manual sigma"""
         np.random.seed(0)
         image = np.random.uniform(size=(20, 20)).astype(np.float32)
         workspace, module = self.make_workspace(image)
@@ -275,7 +275,7 @@ class TestEnhanceEdges(unittest.TestCase):
         self.assertTrue(np.all(output.pixel_data == expected))
 
     def test_06_01_canny(self):
-        '''Test the canny method'''
+        """Test the canny method"""
         i, j = np.mgrid[-20:20, -20:20]
         image = np.logical_and(i > j, i ** 2 + j ** 2 < 300).astype(np.float32)
         np.random.seed(0)

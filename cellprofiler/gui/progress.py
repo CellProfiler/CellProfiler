@@ -120,9 +120,9 @@ class ProgressFrame(wx.Frame):
         return "Elapsed: " + duration_label(self.elapsed_time())
 
     def elapsed_time(self):
-        '''Return the number of seconds that have elapsed since start
+        """Return the number of seconds that have elapsed since start
            as a float.  Pauses are taken into account.
-        '''
+        """
         return self.adjusted_time() - self.start_time
 
     def remaining_label(self):

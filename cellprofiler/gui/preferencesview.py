@@ -92,14 +92,14 @@ class PreferencesView:
             parent = parent.GetParent()
 
     def show_progress_panel(self):
-        '''Show the pipeline progress panel and hide the status text'''
+        """Show the pipeline progress panel and hide the status text"""
         self.__parent_sizer.Hide(self.__status_panel)
         self.__parent_sizer.Show(self.__progress_panel)
         self.__parent_sizer.Layout()
         self.__progress_panel.Layout()
 
     def show_status_text(self):
-        '''Show the status text and hide the pipeline progress panel'''
+        """Show the status text and hide the pipeline progress panel"""
         self.__parent_sizer.Show(self.__status_panel)
         self.__parent_sizer.Hide(self.__progress_panel)
         self.__parent_sizer.Layout()
@@ -302,10 +302,10 @@ class PreferencesView:
         on_write_MAT_files_combo_box(None)
 
     def update_worker_count_info(self, n_workers):
-        '''Update the # of running workers in the progress UI
-        
+        """Update the # of running workers in the progress UI
+
         n_workers - # of workers running
-        '''
+        """
         if n_workers == 1:
             label = "Running 1 worker."
         else:
@@ -343,13 +343,13 @@ class PreferencesView:
         self.__progress_dialog = None
 
     def progress_callback(self, operation_id, progress, message):
-        '''Monitor progress events in the UI thread
-        
+        """Monitor progress events in the UI thread
+
         operation_id - a unique id identifying an instance of an operation
         progress - a number from 0 to 1 where 0 is the start of the operation
                    and 1 is its end.
         message - the message to display to the user.
-        '''
+        """
         if progress is None:
             if message is None:
                 message = WELCOME_MESSAGE
@@ -392,7 +392,7 @@ class PreferencesView:
         wx.SafeYield(None, True)  # ouch, can't repaint without it.
 
     def check_preferences(self):
-        '''Return True if preferences are OK (e.g. directories exist)'''
+        """Return True if preferences are OK (e.g. directories exist)"""
         path = self.__image_edit_box.Value
         if not os.path.isdir(path):
             if wx.MessageBox(('The Default Input Folder is "%s", but '
@@ -675,9 +675,9 @@ class ProgressWatcher:
         return time.time() - pauses_duration
 
     def elapsed_time(self):
-        '''Return the number of seconds that have elapsed since start
+        """Return the number of seconds that have elapsed since start
            as a float.  Pauses are taken into account.
-        '''
+        """
         return self.adjusted_time() - self.start_time
 
     def remaining_time(self):

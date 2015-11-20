@@ -1,9 +1,9 @@
-'''<b>Tile</b> tiles images together to form large montage images.
+"""<b>Tile</b> tiles images together to form large montage images.
 <hr>
 This module allows more than one image to be placed next to each other in a
-grid layout you specify. It might be helpful, for example, to place images adjacent to 
+grid layout you specify. It might be helpful, for example, to place images adjacent to
 each other when multiple fields of view have been imaged for the same sample.
-Images can be tiled either across cycles (multiple fields of view, for example) 
+Images can be tiled either across cycles (multiple fields of view, for example)
 or within a cycle (multiple channels of the same field of view, for example).
 <p>
 Tiling images to create a montage with this module generates an
@@ -11,20 +11,20 @@ image that is roughly the size of all the images' sizes added together.  For lar
 numbers of images,
 this may cause memory errors, which might be avoided by the following suggestions:
 <ul>
-<li>Resize the images to a fraction of their original size, using the <b>Resize</b> 
+<li>Resize the images to a fraction of their original size, using the <b>Resize</b>
 module prior to this module in the pipeline.</li>
-<li>Rescale the images to 8-bit using the <b>RescaleIntensity</b> module, which 
+<li>Rescale the images to 8-bit using the <b>RescaleIntensity</b> module, which
 diminished image quality by decreasing the number of graylevels in the image (that is, bit depth)
 but also decreases the size of the image. </li>
-<li> Use the <b>ConserveMemory</b> module just before this module to clear out 
-images created previously in the pipeline that are stored in memory but no 
-longer needed. 
-Place this module prior to the <b>Tile</b> module (and maybe also afterwards) and 
+<li> Use the <b>ConserveMemory</b> module just before this module to clear out
+images created previously in the pipeline that are stored in memory but no
+longer needed.
+Place this module prior to the <b>Tile</b> module (and maybe also afterwards) and
 set it to retain only those images that are needed for downstream modules. </li>
 </ul>
 
-<p>Please also note that this module does not perform <i>image stitching</i> 
-(i.e., intelligent adjustment of the alignment between adjacent images). For 
+<p>Please also note that this module does not perform <i>image stitching</i>
+(i.e., intelligent adjustment of the alignment between adjacent images). For
 image stitching, you may find the following list of software packages useful:
 <ul>
 <li><a href="http://graphicssoft.about.com/cs/photoshop/qt/csphotomerge.htm">Photomerge Feature in Photoshop CS</a></li>
@@ -33,7 +33,7 @@ image stitching, you may find the following list of software packages useful:
 <li><a href="http://bigwww.epfl.ch/thevenaz/mosaicj/">ImageJ with the MosaicJ plugin</a></li>
 </ul>
 Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm">here</a></p>
-'''
+"""
 
 import logging
 import numpy as np
@@ -189,7 +189,7 @@ class Tile(cpm.CPModule):
             and columns.</p>""" % globals())
 
     def add_image(self, can_remove=True):
-        '''Add an image + associated questions and buttons'''
+        """Add an image + associated questions and buttons"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=True))
@@ -243,14 +243,14 @@ class Tile(cpm.CPModule):
         return self.tile_method == T_ACROSS_CYCLES
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to handle a group of images when tiling'''
+        """Prepare to handle a group of images when tiling"""
         d = self.get_dictionary(workspace.image_set_list)
         d[IMAGE_COUNT] = len(image_numbers)
         d[IMAGE_NUMBER] = 0
         d[TILED_IMAGE] = None
 
     def run(self, workspace):
-        '''do the image analysis'''
+        """do the image analysis"""
         if self.tile_method == T_WITHIN_CYCLES:
             output_pixels = self.place_adjacent(workspace)
         else:
@@ -269,12 +269,12 @@ class Tile(cpm.CPModule):
                               cpi.Image(d[TILED_IMAGE]))
 
     def is_aggregation_module(self):
-        '''Need to run all cycles in same worker if across cycles'''
+        """Need to run all cycles in same worker if across cycles"""
         return self.tile_method == T_ACROSS_CYCLES
 
     def display(self, workspace, figure):
-        '''Display 
-        '''
+        """Display
+        """
         figure.set_subplots((1, 1))
         pixels = workspace.display_data.image
         name = self.output_image.value
@@ -284,8 +284,8 @@ class Tile(cpm.CPModule):
             figure.subplot_imshow_grayscale(0, 0, pixels, title=name)
 
     def tile(self, workspace):
-        '''Tile images across image cycles
-        '''
+        """Tile images across image cycles
+        """
         d = self.get_dictionary(workspace.image_set_list)
         rows, columns = self.get_grid_dimensions(d[IMAGE_COUNT])
         image_set = workspace.image_set
@@ -338,7 +338,7 @@ class Tile(cpm.CPModule):
         return output_pixels
 
     def place_adjacent(self, workspace):
-        '''Place images from the same image set adjacent to each other'''
+        """Place images from the same image set adjacent to each other"""
         rows, columns = self.get_grid_dimensions()
         image_names = ([self.input_image.value] +
                        [g.input_image_name.value
@@ -364,10 +364,10 @@ class Tile(cpm.CPModule):
         return output_pixels
 
     def get_tile_ij(self, image_index, rows, columns):
-        '''Get the I/J coordinates for an image
-        
+        """Get the I/J coordinates for an image
+
         returns i,j where 0 < i < self.rows and 0 < j < self.columns
-        '''
+        """
         if self.tile_style == S_ROW:
             tile_i = int(image_index / columns)
             tile_j = image_index % columns
@@ -395,10 +395,10 @@ class Tile(cpm.CPModule):
         return tile_i, tile_j
 
     def get_grid_dimensions(self, image_count=None):
-        '''Get the dimensions of the grid in i,j format
-        
+        """Get the dimensions of the grid in i,j format
+
         image_count - # of images in the grid. If None, use info from settings.
-        '''
+        """
         assert ((image_count is not None) or
                 self.tile_method == T_WITHIN_CYCLES), "Must specify image count for %s method" % self.tile_method.value
         if image_count is None:
@@ -424,16 +424,16 @@ class Tile(cpm.CPModule):
             return self.rows.value, self.columns.value
 
     def get_measurement_columns(self, pipeline):
-        '''return the measurements'''
+        """return the measurements"""
         columns = []
         return columns
 
     def validate_module(self, pipeline):
-        '''Make sure the settings are consistent
-        
+        """Make sure the settings are consistent
+
         Check to make sure that we have enough rows and columns if
         we are in PlaceAdjacent mode.
-        '''
+        """
         if (self.tile_method == T_WITHIN_CYCLES and
                 (not self.wants_automatic_rows) and
                 (not self.wants_automatic_columns) and
@@ -448,7 +448,7 @@ class Tile(cpm.CPModule):
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
                          module_name, from_matlab):
-        '''this must take into account both Tile and PlaceAdjacent from the Matlab'''
+        """this must take into account both Tile and PlaceAdjacent from the Matlab"""
         if (from_matlab and module_name == "Tile" and
                     variable_revision_number == 1):
             image_name, orig_image_name, tiled_image, number_rows, \

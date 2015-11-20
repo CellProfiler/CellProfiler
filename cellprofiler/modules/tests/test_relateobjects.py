@@ -1,5 +1,5 @@
-'''test_relateobjects.py - test the RelateObjects module
-'''
+"""test_relateobjects.py - test the RelateObjects module
+"""
 
 import base64
 import numpy as np
@@ -27,7 +27,7 @@ IGNORED_MEASUREMENT = '%s_Foo' % R.C_PARENT
 
 class TestRelateObjects(unittest.TestCase):
     def make_workspace(self, parents, children, fake_measurement=False):
-        '''Make a workspace for testing Relate'''
+        """Make a workspace for testing Relate"""
         pipeline = cpp.Pipeline()
         if fake_measurement:
             class FakeModule(cpm.CPModule):
@@ -89,7 +89,7 @@ class TestRelateObjects(unittest.TestCase):
             self.assertTrue(column[1] in features[index])
 
     def test_01_01_load_matlab_v4(self):
-        '''Load a Matlab pipeline with a version 4 relate module'''
+        """Load a Matlab pipeline with a version 4 relate module"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
                 'sSU1RyM+zUggpTVXwKs1TMDRTMLCwMjGwMjBWMDIwsFQgGTAwevryMzAwHG'
                 'ViYKiY8zbidt5lA4my3UtuLZBKFhXyUHg6qdsw6uBRve2GEhMXrL2WJSRkn'
@@ -132,7 +132,7 @@ class TestRelateObjects(unittest.TestCase):
         self.assertTrue(module.wants_per_parent_means.value)
 
     def test_01_02_load_v1(self):
-        '''Load a pipeline with a version 1 relate module'''
+        """Load a pipeline with a version 1 relate module"""
         data = ('eJztm1tP2zAUx90LCIY0sUnTmHixeJomiNINNuBlKTCgEzdBxba3palbvLl'
                 '2lTiM7hPsI+1xH2WPe9xHWAwpSb1AQkjbFBIpSo/r3/n7HF+aS7Nbru6U1+'
                 'CSosLdcnWhgQmCB0TnDWa2ViHl83DdRDpHdcjoKqzaCL63KSy9hury6uLK6'
@@ -337,7 +337,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
             self.assertEqual(group.step_parent_name, expected)
 
     def test_02_01_relate_zeros(self):
-        '''Relate a field of empty parents to empty children'''
+        """Relate a field of empty parents to empty children"""
         labels = np.zeros((10, 10), int)
         workspace, module = self.make_workspace(labels, labels)
         module.wants_per_parent_means.value = False
@@ -353,7 +353,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.features_and_columns_match(workspace)
 
     def test_02_01_relate_one(self):
-        '''Relate one parent to one child'''
+        """Relate one parent to one child"""
         parent_labels = np.ones((10, 10), int)
         child_labels = np.zeros((10, 10), int)
         child_labels[3:5, 4:7] = 1
@@ -373,11 +373,11 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.features_and_columns_match(workspace)
 
     def test_02_02_relate_wrong_size(self):
-        '''Regression test of IMG-961
-        
+        """Regression test of IMG-961
+
         Perhaps someone is trying to relate cells to wells and the grid
         doesn't completely cover the labels matrix.
-        '''
+        """
         parent_labels = np.ones((20, 10), int)
         parent_labels[10:, :] = 0
         child_labels = np.zeros((10, 20), int)
@@ -398,7 +398,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.features_and_columns_match(workspace)
 
     def test_02_03_relate_ijv(self):
-        '''Regression test of IMG-1317: relating objects in ijv form'''
+        """Regression test of IMG-1317: relating objects in ijv form"""
 
         child_ijv = np.array([[5, 5, 1], [5, 5, 2], [20, 15, 3]])
         parent_ijv = np.array([[5, 5, 1], [20, 15, 2]])
@@ -420,7 +420,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.assertEqual(child_count[1], 1)
 
     def test_03_01_mean(self):
-        '''Compute the mean for two parents and four children'''
+        """Compute the mean for two parents and four children"""
         i, j = np.mgrid[0:20, 0:20]
         parent_labels = (i / 10 + 1).astype(int)
         child_labels = (i / 10).astype(int) + (j / 10).astype(int) * 2 + 1
@@ -466,7 +466,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.assertFalse(name in m.get_feature_names(PARENT_OBJECTS))
 
     def test_04_00_distance_empty(self):
-        '''Make sure we can handle labels matrices that are all zero'''
+        """Make sure we can handle labels matrices that are all zero"""
         empty_labels = np.zeros((10, 20), int)
         some_labels = np.zeros((10, 20), int)
         some_labels[2:7, 3:8] = 1
@@ -488,7 +488,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
                     self.assertTrue(np.all(np.isnan(v)))
 
     def test_04_01_distance_centroids(self):
-        '''Check centroid-centroid distance calculation'''
+        """Check centroid-centroid distance calculation"""
         i, j = np.mgrid[0:14, 0:30]
         parent_labels = (i >= 7) * 1 + (j >= 15) * 2 + 1
         # Centers should be at i=3 and j=7
@@ -517,7 +517,7 @@ Relate:[module_num:8|svn_version:\'8866\'|variable_revision_number:2|show_window
         self.assertTrue(np.all(np.abs(v - expected) < .0001))
 
     def test_04_02_distance_minima(self):
-        '''Check centroid-perimeter distance calculation'''
+        """Check centroid-perimeter distance calculation"""
         i, j = np.mgrid[0:14, 0:30]
         #
         # Make the objects different sizes to exercise more code

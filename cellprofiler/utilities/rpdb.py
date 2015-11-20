@@ -1,5 +1,5 @@
-'''Remote debugger class, useful for multiprocess and distributed debugging.
-'''
+"""Remote debugger class, useful for multiprocess and distributed debugging.
+"""
 
 # modified version of http://snippets.dzone.com/posts/show/7248
 
@@ -11,7 +11,7 @@ import readline  # otherwise, pdb.Pdb.__init__ hangs
 
 
 class Rpdb(pdb.Pdb):
-    '''A remote python debugger.
+    """A remote python debugger.
 
     Create with Rpdb(port, verification_hash), then call verify() to complete
     creation, and post_mortem(traceback=None) to debug a particular traceback.
@@ -23,7 +23,7 @@ class Rpdb(pdb.Pdb):
     verification_hash - the SHA1 hash hexdigest of a string to be sent as the
            first message to the port, or None for no verification.  Default =
            None.
-    '''
+    """
 
     def __init__(self, port=0, verification_hash=None, port_callback=None):
         self.old_stds = (sys.stdin, sys.stdout)

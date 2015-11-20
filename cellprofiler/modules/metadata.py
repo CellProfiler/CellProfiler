@@ -499,7 +499,7 @@ class Metadata(cpm.CPModule):
                 self.extraction_methods, group))
 
     def get_group_header(self, group):
-        '''Get the header line from the imported extraction group's csv file'''
+        """Get the header line from the imported extraction group's csv file"""
         csv_path = group.csv_location.value
         if csv_path == group.imported_metadata_header_path:
             if group.csv_location.is_url():
@@ -522,15 +522,15 @@ class Metadata(cpm.CPModule):
 
     def build_imported_metadata_extractor(self, group, extractor,
                                           for_metadata_only):
-        '''Build an extractor of imported metadata for this group
-        
+        """Build an extractor of imported metadata for this group
+
         group - a settings group to extract imported metadata
-        
+
         extractor - the extractor as built up to the current point
-        
+
         for_metadata_only - if true, only give the header to the
                  imported metadata extractor.
-        '''
+        """
         key_pairs = []
         dt_numeric = (cpmeas.COLTYPE_FLOAT, cpmeas.COLTYPE_INTEGER)
         kp_cls = 'org/cellprofiler/imageset/MetadataKeyPair'
@@ -587,7 +587,7 @@ class Metadata(cpm.CPModule):
             rdr, key_pairs)
 
     def refresh_group_joiner(self, group):
-        '''Refresh the metadata entries for a group's joiner'''
+        """Refresh the metadata entries for a group's joiner"""
         if group.extraction_method != X_IMPORTED_EXTRACTION:
             return
         #
@@ -668,7 +668,7 @@ class Metadata(cpm.CPModule):
         return result
 
     def example_file_fn(self):
-        '''Get an example file name for the regexp editor'''
+        """Get an example file name for the regexp editor"""
         if self.pipeline is not None:
             if self.pipeline.has_cached_filtered_file_list():
                 urls = self.pipeline.get_filtered_file_list(self.workspace)
@@ -681,7 +681,7 @@ class Metadata(cpm.CPModule):
         return "PLATE_A01_s1_w11C78E18A-356E-48EC-B204-3F4379DC43AB.tif"
 
     def example_directory_fn(self):
-        '''Get an example directory name for the regexp editor'''
+        """Get an example directory name for the regexp editor"""
         if self.pipeline is not None:
             if self.pipeline.has_cached_filtered_file_list():
                 urls = self.pipeline.get_filtered_file_list(self.workspace)
@@ -694,10 +694,10 @@ class Metadata(cpm.CPModule):
         return "/images/2012_01_12"
 
     def change_causes_prepare_run(self, setting):
-        '''Return True if changing the setting passed changes the image sets
-        
+        """Return True if changing the setting passed changes the image sets
+
         setting - the setting that was changed
-        '''
+        """
         return setting in self.settings()
 
     @classmethod
@@ -705,7 +705,7 @@ class Metadata(cpm.CPModule):
         return True
 
     def prepare_run(self, workspace):
-        '''Initialize the pipeline's metadata'''
+        """Initialize the pipeline's metadata"""
         if workspace.pipeline.in_batch_mode():
             return True
 
@@ -740,12 +740,12 @@ class Metadata(cpm.CPModule):
         return True
 
     def build_extractor(self, end_group=None, for_metadata_only=False):
-        '''Build a Java metadata extractor using the module settings
+        """Build a Java metadata extractor using the module settings
 
         end_group - stop building the extractor when you reach this group.
                     default is build all.
         for_metadata_only - only build an extractor to capture the header info
-        '''
+        """
         #
         # Build a metadata extractor
         #
@@ -880,7 +880,7 @@ class Metadata(cpm.CPModule):
             self.update_table()
 
     def on_setting_changed(self, setting, pipeline):
-        '''Update the imported extraction joiners on setting changes'''
+        """Update the imported extraction joiners on setting changes"""
         if not self.wants_metadata:
             return
         visible_settings = self.visible_settings()
@@ -939,13 +939,13 @@ class Metadata(cpm.CPModule):
         self.pipeline = None
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Alter internal paths for batch creation'''
+        """Alter internal paths for batch creation"""
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 group.csv_location.alter_for_create_batch(fn_alter_path)
 
     def prepare_settings(self, setting_values):
-        '''Prepare the module to receive the settings'''
+        """Prepare the module to receive the settings"""
         #
         # Set the number of extraction methods based on the extraction method
         # count.
@@ -958,13 +958,13 @@ class Metadata(cpm.CPModule):
             self.add_extraction_method()
 
     def validate_module(self, pipeline):
-        '''Validate the module settings
-        
+        """Validate the module settings
+
         pipeline - current pipeline
-        
+
         Metadata throws an exception if any of the metadata tags collide with
         tags that can be automatically extracted.
-        '''
+        """
         for group in self.extraction_methods:
             if group.extraction_method == X_MANUAL_EXTRACTION:
                 re_setting = (group.file_regexp if group.source == XM_FILE_NAME
@@ -976,7 +976,7 @@ class Metadata(cpm.CPModule):
                             token, re_setting)
 
     def get_metadata_keys(self):
-        '''Return a collection of metadata keys to be associated with files'''
+        """Return a collection of metadata keys to be associated with files"""
         if not self.wants_metadata:
             return []
         extractor = self.build_extractor(for_metadata_only=True)
@@ -987,9 +987,9 @@ class Metadata(cpm.CPModule):
         return keys
 
     def get_dt_metadata_keys(self):
-        '''Get the metadata keys which can have flexible datatyping
-        
-        '''
+        """Get the metadata keys which can have flexible datatyping
+
+        """
         return filter((lambda k: k not in self.NUMERIC_DATA_TYPES),
                       self.get_metadata_keys())
 
@@ -1000,7 +1000,7 @@ class Metadata(cpm.CPModule):
         cpp.ImagePlaneDetails.MD_SIZE_Y, cpmeas.C_SERIES, cpmeas.C_FRAME)
 
     def get_data_type(self, key):
-        '''Get the data type for a particular metadata key'''
+        """Get the data type for a particular metadata key"""
         if isinstance(key, basestring):
             return self.get_data_type([key]).get(key, cpmeas.COLTYPE_VARCHAR)
         result = {}
@@ -1024,15 +1024,15 @@ class Metadata(cpm.CPModule):
         return result
 
     def wants_case_insensitive_matching(self, key):
-        '''Return True if the key should be matched using case-insensitive matching
-        
+        """Return True if the key should be matched using case-insensitive matching
+
         key - key to check.
-        
+
         Currently, there is a case-insensitive matching flag in the
         imported metadata matcher. Perhaps this should be migrated into
         the data types control, but for now, we look for the key to be
         present in the joiner for any imported metadata matcher.
-        '''
+        """
         if not self.wants_metadata:
             return False
         for group in self.extraction_methods:
@@ -1045,7 +1045,7 @@ class Metadata(cpm.CPModule):
         return False
 
     def get_measurement_columns(self, pipeline):
-        '''Get the metadata measurements collected by this module'''
+        """Get the metadata measurements collected by this module"""
         key_types = pipeline.get_available_metadata_keys()
         result = []
         for key, coltype in key_types.iteritems():
@@ -1066,7 +1066,7 @@ class Metadata(cpm.CPModule):
         return result
 
     def get_categories(self, pipeline, object_name):
-        '''Return the measurement categories for a particular object'''
+        """Return the measurement categories for a particular object"""
         if object_name == cpmeas.IMAGE and len(self.get_metadata_keys()) > 0:
             return [cpmeas.C_METADATA]
         return []

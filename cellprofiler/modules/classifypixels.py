@@ -1,33 +1,33 @@
-'''<b>ClassifyPixels</b> classify image pixels as belonging to different 
+"""<b>ClassifyPixels</b> classify image pixels as belonging to different
 classes using the machine-learning tool, ilastik 0.5.
 <hr>
 
-<b>This module is based on ilastik 0.5. It will be removed 
-in future releases. Please switch to newer ilastik versions >= 1.0 
+<b>This module is based on ilastik 0.5. It will be removed
+in future releases. Please switch to newer ilastik versions >= 1.0
 and the use the <i>IlastikPixelClassification</i> module.</b>
 
-ClassifyPixels performs per-pixel classification using the 
+ClassifyPixels performs per-pixel classification using the
 <a href="http://www.ilastik.org/">ilastik 0.5</a> application.
 Ilastik is now bundled with the CellProfiler distribution; it applies
 supervised machine learning techniques to images to learn their features.
 A user trains a classifier with Ilastik and then saves the classifier.
 The user then uses the ClassifyPixels module to classify the pixels in an
-image. 
+image.
 
 ClassifyPixels produces an "image" consisting of probabilities that
 the pixel belongs to the chosen class; this image is similar to
 an intensity image that would be produced by fluorescence imaging.
 Provided that the classifier is sufficiently accurate, the image is
 well-suited for input into one of the <b>Identify</b> modules for
-object detection. More instructions on using the interface may be found 
+object detection. More instructions on using the interface may be found
 <a href="http://ilastik.org/index.php?cat=20_Documentation&page=03_Cellprofiler">here</a>.
 Please note that you must use the same image format for classification
 as for the initial learning phase.
 
 Currently, ilastik is only available for Windows, and is accessible from
-in the CellProfiler folder under the Start Menu. A 64-bit system is 
+in the CellProfiler folder under the Start Menu. A 64-bit system is
 recommended for running ilastik.
-'''
+"""
 
 import urllib
 import cellprofiler.cpmodule as cpm
@@ -137,7 +137,7 @@ class ClassifyPixels(cpm.CPModule):
             %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
 
         def get_directory_fn():
-            '''Get the directory for the CSV file name'''
+            """Get the directory for the CSV file name"""
             return self.h5_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -309,14 +309,14 @@ class ClassifyPixels(cpm.CPModule):
         return d
 
     def parse_classifier_hdf5(self, filename):
-        '''Parse the classifiers out of the HDF5 file
-        
+        """Parse the classifiers out of the HDF5 file
+
         filename - name of classifier file
-        
+
         returns a dictionary
            CLASSIFIERS_KEY - the random forest classifiers
            FEATURE_ITEMS_KEY - the features needed by the classifier
-        '''
+        """
         d = {}
         if not isinstance(filename, str):
             filename = filename.encode('utf-8')
@@ -366,9 +366,9 @@ class ClassifyPixels(cpm.CPModule):
                 sharexy=src_plot)
 
     def validate_module(self, pipeline):
-        '''Mark ClassifyPixels as invalid if Ilastik is not properly installed
-        
-        '''
+        """Mark ClassifyPixels as invalid if Ilastik is not properly installed
+
+        """
         if not has_ilastik:
             raise cps.ValidationError(
                 "ClassifyPixels is not available on this platform.",
@@ -387,7 +387,7 @@ class ClassifyPixels(cpm.CPModule):
                 raise cps.ValidationError(msg, self.classifier_file_name)
 
     def prepare_settings(self, setting_values):
-        '''Prepare the module to receive the settings'''
+        """Prepare the module to receive the settings"""
         n_maps = int(setting_values[SI_PROBABILITY_MAP_COUNT])
         if len(self.probability_maps) > n_maps:
             del self.probability_maps[n_maps:]
@@ -396,25 +396,25 @@ class ClassifyPixels(cpm.CPModule):
                 self.add_probability_map()
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare the module's settings for the batch target environment
-        
+        """Prepare the module's settings for the batch target environment
+
         workspace - workspace / measurements / pipeline for batch file
-        
+
         fn_alter_path - call this to alter any file path to target the
                         batch environment.
-        '''
+        """
         self.h5_directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Upgrade settings to maintain backwards compatibility
-        
+        """Upgrade settings to maintain backwards compatibility
+
         setting_values - list of setting strings
         variable_revision_number - version number used to save the settings
         module_name - original module name used to save the settings
         from_matlab - true if CellProfiler 1.0 pipeline
-        '''
+        """
         if variable_revision_number == 1:
             setting_values = [
                 setting_values[0],  # image_name

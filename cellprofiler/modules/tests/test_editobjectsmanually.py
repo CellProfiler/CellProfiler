@@ -1,5 +1,5 @@
-'''test_editobjectsmanually - test the EditObjectsManually module
-'''
+"""test_editobjectsmanually - test the EditObjectsManually module
+"""
 
 import base64
 import numpy as np

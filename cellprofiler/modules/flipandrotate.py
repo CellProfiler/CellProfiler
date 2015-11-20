@@ -1,10 +1,10 @@
-'''<b>Flip and rotate</b> flips (mirror image) and/or rotates an image
+"""<b>Flip and rotate</b> flips (mirror image) and/or rotates an image
 <hr>
 <h4>Available measurements</h4>
 <ul>
 <li><i>Rotation:</i> Angle of rotation for the input image.</li>
 </ul>
-'''
+"""
 
 import numpy as np
 import scipy.ndimage as scind
@@ -145,7 +145,7 @@ class FlipAndRotate(cpm.CPModule):
 
     def prepare_group(self, workspace, grouping,
                       image_numbers):
-        '''Initialize the angle if appropriate'''
+        """Initialize the angle if appropriate"""
         if self.rotate_choice == ROTATE_MOUSE and self.how_often == IO_ONCE:
             self.get_dictionary(workspace.image_set_list)[D_ANGLE] = None
 
@@ -296,7 +296,7 @@ class FlipAndRotate(cpm.CPModule):
                                   sharexy=figure.subplot(0, 0))
 
     def handle_interaction(self, pixel_data):
-        '''Run a UI that gets an angle from the user'''
+        """Run a UI that gets an angle from the user"""
         import wx
 
         if pixel_data.ndim == 2:
@@ -524,14 +524,14 @@ class FlipAndRotate(cpm.CPModule):
 
 
 def affine_offset(shape, transform):
-    '''Calculate an offset given an array's shape and an affine transform
-    
+    """Calculate an offset given an array's shape and an affine transform
+
     shape - the shape of the array to be transformed
     transform - the transform to be performed
-    
+
     Return an offset for scipy.ndimage.affine_transform that does not
     transform the location of the center of the image (the image rotates
     or is flipped about the center).
-    '''
+    """
     c = (np.array(shape[:2]) - 1).astype(float) / 2.0
     return -np.dot(transform - np.identity(2), c)

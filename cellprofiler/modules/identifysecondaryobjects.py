@@ -853,11 +853,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return segmented_labels_out
 
     def is_object_identification_module(self):
-        '''IdentifySecondaryObjects makes secondary objects sets so it's a identification module'''
+        """IdentifySecondaryObjects makes secondary objects sets so it's a identification module"""
         return True
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = cpmi.get_object_measurement_columns(self.objects_name.value)
         columns += [(self.primary_objects.value,
                      cpmi.FF_CHILDREN_COUNT % self.objects_name.value,
@@ -915,10 +915,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
         return result
 
     def get_object_dictionary(self):
-        '''Get the dictionary of parent child relationships
-        
+        """Get the dictionary of parent child relationships
+
         see Identify.get_object_categories, Identify.get_object_measurements
-        '''
+        """
         object_dictionary = {
             self.objects_name.value: [self.primary_objects.value]
         }

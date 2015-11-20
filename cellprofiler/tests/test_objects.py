@@ -292,7 +292,7 @@ class TestObjects(unittest.TestCase):
         assert (np.all(child_counts == 0))
 
     def test_06_01_segmented_to_ijv(self):
-        '''Convert the segmented representation to an IJV one'''
+        """Convert the segmented representation to an IJV one"""
         x = cpo.Objects()
         np.random.seed(61)
         labels = np.random.randint(0, 10, size=(20, 20))
@@ -303,7 +303,7 @@ class TestObjects(unittest.TestCase):
         self.assertTrue(np.all(labels == new_labels))
 
     def test_06_02_ijv_to_labels_empty(self):
-        '''Convert a blank ijv representation to labels'''
+        """Convert a blank ijv representation to labels"""
         x = cpo.Objects()
         x.ijv = np.zeros((0, 3), int)
         y = x.get_labels()
@@ -313,7 +313,7 @@ class TestObjects(unittest.TestCase):
         self.assertTrue(np.all(labels == 0))
 
     def test_06_03_ijv_to_labels_simple(self):
-        '''Convert an ijv representation w/o overlap to labels'''
+        """Convert an ijv representation w/o overlap to labels"""
         x = cpo.Objects()
         np.random.seed(63)
         labels = np.zeros((20, 20), int)
@@ -332,7 +332,7 @@ class TestObjects(unittest.TestCase):
         self.assertTrue(np.all(np.unique(indices) == np.arange(1, 10)))
 
     def test_06_04_ijv_to_labels_overlapping(self):
-        '''Convert an ijv representation with overlap to labels'''
+        """Convert an ijv representation with overlap to labels"""
         ijv = np.array([[1, 1, 1],
                         [1, 2, 1],
                         [2, 1, 1],

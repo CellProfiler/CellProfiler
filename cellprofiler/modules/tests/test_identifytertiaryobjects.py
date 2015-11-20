@@ -217,11 +217,11 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             self.assertTrue(np.all(parent_labels == mapped_labels))
 
     def test_01_04_wrong_size(self):
-        '''Regression test of img-961, what if objects have different sizes?
-        
+        """Regression test of img-961, what if objects have different sizes?
+
         Slightly bizarre use case: maybe if user wants to measure background
         outside of cells in a plate of wells???
-        '''
+        """
         expected_primary_parents = np.zeros((20, 20), int)
         expected_secondary_parents = np.zeros((20, 20), int)
         primary_labels = np.zeros((10, 30), int)
@@ -247,7 +247,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         self.assertTrue(np.all(output_labels[output_outlines.pixel_data] > 0))
 
     def test_02_01_load_matlab(self):
-        '''Load a Matlab pipeline with an IdentifyTertiary module'''
+        """Load a Matlab pipeline with an IdentifyTertiary module"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
                 'sSU1RyM+zUggpTVXwKs1RMDBXMDS2MjW3MjZRMDIwsFQgGTAwevryMzAwJD'
                 'AyMFTMWRu80e+wgcDekMxQh1VRalqGKSktvYKcbFYBWkGhazyLdd3WyaqaK'
@@ -314,7 +314,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         self.assertEqual(module.outlines_name.value, "CytoplasmOutline")
 
     def test_03_01_get_measurement_columns(self):
-        '''Test the get_measurement_columns method'''
+        """Test the get_measurement_columns method"""
         module = cpmit.IdentifyTertiarySubregion()
         module.primary_objects_name.value = PRIMARY
         module.secondary_objects_name.value = SECONDARY
@@ -337,7 +337,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                                  for ec in expected]))
 
     def test_04_01_do_not_shrink(self):
-        '''Test the option to not shrink the smaller objects'''
+        """Test the option to not shrink the smaller objects"""
         primary_labels = np.zeros((10, 10), int)
         secondary_labels = np.zeros((10, 10), int)
         primary_labels[3:6, 4:7] = 1
@@ -356,7 +356,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         self.assertTrue(np.all(output_objects.segmented == expected_labels))
 
     def test_04_02_do_not_shrink_identical(self):
-        '''Test a case where the primary and secondary objects are identical'''
+        """Test a case where the primary and secondary objects are identical"""
         primary_labels = np.zeros((20, 20), int)
         secondary_labels = np.zeros((20, 20), int)
         expected_labels = np.zeros((20, 20), int)

@@ -1,7 +1,7 @@
-'''<b>Crop</b> crops or masks an image.
+"""<b>Crop</b> crops or masks an image.
 <hr>
 This module crops images into a rectangle, ellipse, an arbitrary shape provided by
-you, the shape of object(s) identified by an <b>Identify</b> module, or a shape created 
+you, the shape of object(s) identified by an <b>Identify</b> module, or a shape created
 using a previous <b>Crop</b> module in the pipeline.
 
 <p>Keep in mind that cropping changes the size of your images, which may
@@ -16,12 +16,12 @@ size.</p>
 <li><i>OriginalImageArea:</i> The area of the original input image.</li>
 </ul>
 
-<i>Special note on saving images:</i> You can save the cropping shape that you have 
+<i>Special note on saving images:</i> You can save the cropping shape that you have
 defined in this module (e.g., an ellipse
 you drew) so that you can use the <i>Image</i> option in future analyses. To do
-this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImages</b> 
+this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImages</b>
 module help for more information on saving cropping shapes.
-'''
+"""
 
 import logging
 import math
@@ -423,7 +423,7 @@ class Crop(cpm.CPModule):
                                  self.cropped_image_name.value)
 
     def get_measurement_columns(self, pipeline):
-        '''Return information on the measurements made during cropping'''
+        """Return information on the measurements made during cropping"""
         return [(cpmeas.IMAGE,
                  x % self.cropped_image_name.value,
                  cpmeas.COLTYPE_INTEGER)
@@ -444,7 +444,7 @@ class Crop(cpm.CPModule):
             return self.apply_rectangle_cropping(workspace, orig_image)
 
     def handle_interaction(self, current_shape, orig_image):
-        '''Show the cropping user interface'''
+        """Show the cropping user interface"""
         import matplotlib as M
         import matplotlib.cm
         import wx
@@ -481,7 +481,7 @@ class Crop(cpm.CPModule):
         current_handle = [None]
 
         def data_xy(mouse_event):
-            '''Return the mouse event's x & y converted into data-relative coords'''
+            """Return the mouse event's x & y converted into data-relative coords"""
             x = mouse_event.xdata
             y = mouse_event.ydata
             return (x, y)
@@ -528,12 +528,12 @@ class Crop(cpm.CPModule):
 
             @property
             def center_x(self):
-                '''The handle's notion of its x coordinate'''
+                """The handle's notion of its x coordinate"""
                 return self.get_x() + self.get_width() / 2
 
             @property
             def center_y(self):
-                '''The handle's notion of its y coordinate'''
+                """The handle's notion of its y coordinate"""
                 return self.get_y() + self.get_height() / 2
 
             def handle_pick(self, event):
@@ -627,8 +627,8 @@ class Crop(cpm.CPModule):
 
         class crop_ellipse(object):
             def __init__(self, center, radius):
-                '''Draw an ellipse with control points at the ellipse center and
-                a given x and y radius'''
+                """Draw an ellipse with control points at the ellipse center and
+                a given x and y radius"""
                 self.center_x, self.center_y = center
                 self.radius_x = self.center_x + radius[0] / 2
                 self.radius_y = self.center_y + radius[1] / 2

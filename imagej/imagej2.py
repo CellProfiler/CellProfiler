@@ -1,4 +1,4 @@
-'''imagej2 - in-process connection to ImageJ 2.0'''
+"""imagej2 - in-process connection to ImageJ 2.0"""
 
 import logging
 
@@ -81,12 +81,12 @@ def run_imagej(*args):
 
 
 def create_context(service_classes):
-    '''Create an ImageJ context for getting services
+    """Create an ImageJ context for getting services
 
     This is an imagej.ImageJ, which at one point was the context.
-    Call self.getContext() to get the org.scijava.Context which may be 
+    Call self.getContext() to get the org.scijava.Context which may be
     what you want.
-    '''
+    """
 
     class Context(object):
         def __init__(self):
@@ -113,12 +113,12 @@ def create_context(service_classes):
             self.o = J.call(ctxt_fn, 'call', '()Ljava/lang/Object;')
 
         def getService(self, class_name):
-            '''Get a service with the given class name
-            
+            """Get a service with the given class name
+
             class_name - class name in dotted form
-            
+
             returns the class or None if no implementor loaded.
-            '''
+            """
             klass = J.class_for_name(class_name)
             return J.call(
                 self.o, 'get',
@@ -134,14 +134,14 @@ the_imagej_context = None
 
 
 def get_context():
-    '''Get the ImageJ context
-    
+    """Get the ImageJ context
+
     This is a singleton ImageJ context. We need a singleton for now because
     of http://trac.imagej.net/ticket/1413
     This is an imagej.ImageJ, which at one point was the context.
-    Call self.getContext() to get the org.scijava.Context which may be 
+    Call self.getContext() to get the org.scijava.Context which may be
     what you want.
-    '''
+    """
     global the_imagej_context
     if the_imagej_context is None:
         the_imagej_context = create_context(None)
@@ -184,8 +184,8 @@ def get_context():
 
 
 def allow_quit():
-    '''Allow the CellProfilerAppEventService to dispose of ImageJ
-    '''
+    """Allow the CellProfilerAppEventService to dispose of ImageJ
+    """
     J.static_call("org/cellprofiler/ijutils/CellProfilerApp",
                   "allowQuit", "()V")
 
@@ -199,12 +199,12 @@ def quit():
 
 
 def get_module_service(context):
-    '''Get the module service for a given context
-    
+    """Get the module service for a given context
+
     context - the instance of ImageJ created by create_context
-    
+
     returns a module service
-    '''
+    """
     o = context.getService('org.scijava.module.ModuleService')
 
     class ModuleService(object):
@@ -236,16 +236,16 @@ def get_module_service(context):
                 pre=None,
                 post=None,
                 **kwargs):
-            '''Run a module
-            
+            """Run a module
+
             module_info - the module_info of the module to run
-            
+
             pre - list of PreprocessorPlugins to run before running module
-            
+
             post - list of PostprocessorPlugins to run after running module
-            
+
             *kwargs - names and values for input parameters
-            '''
+            """
             input_map = J.make_map(kwargs)
             if pre is not None:
                 pre = J.static_call("java/util/Arrays", "asList",
@@ -272,7 +272,7 @@ def get_module_service(context):
 
 
 def wrap_module_info(instance):
-    '''Wrap a java object of class org/scijava/module/ModuleInfo'''
+    """Wrap a java object of class org/scijava/module/ModuleInfo"""
 
     class ModuleInfo(object):
         def __init__(self):
@@ -320,7 +320,7 @@ def wrap_module_info(instance):
 
 
 def wrap_module_item(instance):
-    '''Wrap a Java object of class imagej.module.ModuleItem'''
+    """Wrap a Java object of class imagej.module.ModuleItem"""
 
     class ModuleItem(object):
         def __init__(self):
@@ -403,7 +403,7 @@ def wrap_module(module):
 
 
 def wrap_menu_entry(menu_entry):
-    '''Wrap an instance of imagej.ext.MenuEntry'''
+    """Wrap an instance of imagej.ext.MenuEntry"""
 
     class MenuEntry(object):
         def __init__(self, o=menu_entry):
@@ -428,11 +428,11 @@ def wrap_menu_entry(menu_entry):
 
 
 def get_command_service(context):
-    '''Get the command service for a given context
-    
+    """Get the command service for a given context
+
     The command service is used to run modules with command pre and post
     processing.
-    '''
+    """
     command_service = context.getService("org.scijava.command.CommandService")
 
     class CommandService(object):
@@ -469,7 +469,7 @@ def get_command_service(context):
 
 
 def get_object_service(context):
-    '''Get the object service for a given context'''
+    """Get the object service for a given context"""
     o = context.getService('org.scijava.object.ObjectService')
 
     class ObjectService(object):
@@ -485,10 +485,10 @@ def get_object_service(context):
 
 
 def get_display_service(context):
-    '''Get the display service for a given context
-    
+    """Get the display service for a given context
+
     context - the ImageJ context for the thread
-    '''
+    """
     o = context.getService('org.scijava.display.DisplayService')
 
     class DisplayService(object):
@@ -496,18 +496,18 @@ def get_display_service(context):
             self.o = o
 
         def createDisplay(self, name, dataset):
-            '''Create a display that contains the given dataset'''
+            """Create a display that contains the given dataset"""
             return wrap_display(J.call(
                 o, "createDisplay",
                 "(Ljava/lang/String;Ljava/lang/Object;)Lorg/scijava/display/Display;",
                 name, dataset))
 
         def getActiveDisplay(self, klass=None):
-            '''Get the first display, optionally of the given type from the list
-            
-            klass - if not None, return the first display of this type, 
+            """Get the first display, optionally of the given type from the list
+
+            klass - if not None, return the first display of this type,
                     otherwise return the first display
-            '''
+            """
             if klass is None:
                 return wrap_display(J.call(
                     self.o, "getActiveDisplay",
@@ -518,7 +518,7 @@ def get_display_service(context):
                     "(Ljava/lang/Class;)Lorg/scijava/display/Display;", klass))
 
         def getActiveImageDisplay(self):
-            '''Get the active imagej.data.display.ImageDisplay'''
+            """Get the active imagej.data.display.ImageDisplay"""
             return wrap_display(J.call(
                 self.o, "getActiveDisplay",
                 "()Lorg/scijava/display/Display;",
@@ -666,7 +666,7 @@ def get_dataset_service(context):
 
 
 def get_overlay_service(context):
-    '''Get the context's overlay service'''
+    """Get the context's overlay service"""
     o = context.getService('net.imagej.display.OverlayService')
 
     class OverlayService(object):
@@ -689,12 +689,12 @@ def get_overlay_service(context):
 
 
 def select_overlay(display, overlay, select=True):
-    '''Select or deselect an overlay
-    
+    """Select or deselect an overlay
+
     display - the overlay's display
-    
+
     overlay - the overlay to select
-    '''
+    """
     for view in J.get_collection_wrapper(display, fn_wrapper=wrap_data_view):
         if J.call(overlay, "equals", "(Ljava/lang/Object;)Z", view.getData()):
             view.setSelected(select)
@@ -704,7 +704,7 @@ def select_overlay(display, overlay, select=True):
 
 
 class Axes(object):
-    '''Represents the net.imglib2.img.Axes enum'''
+    """Represents the net.imglib2.img.Axes enum"""
 
     def get_named_axis(self, axis_name):
         return J.get_static_field("net/imglib2/meta/Axes", axis_name,
@@ -724,13 +724,13 @@ class Axes(object):
 
 
 def create_dataset(context, pixel_data, name=None, axes=None):
-    '''Create a dataset from a numpy array
-    
+    """Create a dataset from a numpy array
+
     pixel_data - numpy array where index 0 is the I or Y axis, index 1 is the
                  J or X axis and index 2, if it exists, is the channel axis.
-                 
+
     name - optional name for the dataset
-    '''
+    """
     dataset_service = get_dataset_service(context)
     if axes is None:
         if pixel_data.ndim == 2:
@@ -757,10 +757,10 @@ def create_dataset(context, pixel_data, name=None, axes=None):
 
 
 def make_bit_img(shape):
-    '''Make an imglib img of BitType with the given shape
-    
+    """Make an imglib img of BitType with the given shape
+
     shape - a sequence of image dimensions
-    '''
+    """
     imgFactory = J.make_instance(
         "net/imglib2/img/planar/PlanarImgFactory", "()V")
     bit_type = J.make_instance("net/imglib2/type/logic/BitType", "()V")
@@ -772,10 +772,10 @@ def make_bit_img(shape):
 
 
 def create_overlay(context, mask):
-    '''Create a bitmask overlay from a numpy boolean array
-    
+    """Create a bitmask overlay from a numpy boolean array
+
     mask - boolean numpy array organized as i,j = y,x
-    '''
+    """
     assert mask.ndim == 2
     mask = mask.transpose()
     strides = np.array([mask.shape[1], 1], int)
@@ -795,12 +795,12 @@ def create_overlay(context, mask):
 
 
 def create_mask(display):
-    '''Create a binary mask from a sequence of overlays
-    
+    """Create a binary mask from a sequence of overlays
+
     display - an image display
-    
+
     returns a binary mask
-    '''
+    """
     jmask = J.static_call(
         "org/cellprofiler/ijutils/OverlayUtils",
         "extractMask",
@@ -833,13 +833,13 @@ def wrap_data_view(view):
 
 
 def calculate_transpose(actual_axes, desired_axes=None):
-    '''Calculate the transpose tuple that converts the actual orientation to the desired
-    
+    """Calculate the transpose tuple that converts the actual orientation to the desired
+
     actual_axes - a list of the AxisType arguments as fetched from
                   a display, ImgPlus, view or overlay
-                  
+
     desired_axes - the desired orientation. By default, this is i,j = Y, X
-    '''
+    """
     if desired_axes is None:
         desired_axes = [Axes().Y, Axes().X]
         if len(actual_axes) > 2:
@@ -888,7 +888,7 @@ def wrap_dataset(dataset):
 
 
 def get_pixel_data(img):
-    '''Get the pixel data from an image'''
+    """Get the pixel data from an image"""
     interval = wrap_interval(img)
     dims = interval.dimensions()
     #
@@ -906,10 +906,10 @@ def get_pixel_data(img):
 
 
 def get_bit_data(img):
-    '''Get the pixel data from a binary mask
-    
+    """Get the pixel data from a binary mask
+
     returns a Numpy array of boolean type
-    '''
+    """
     interval = wrap_interval(img)
     dims = interval.dimensions()
     #
@@ -927,10 +927,10 @@ def get_bit_data(img):
 
 
 def wrap_interval(interval):
-    '''Return a class wrapper around a net.imglib2.Interval
-    
+    """Return a class wrapper around a net.imglib2.Interval
+
     Provides additional methods if it's a calibrated interval.
-    '''
+    """
 
     class Interval(object):
         def __init__(self, o=interval):
@@ -964,13 +964,13 @@ def wrap_interval(interval):
         # minimum and maximum by axis
         #
         def minAx(self, axis):
-            '''Get the minimum of the interval along the given axis'''
+            """Get the minimum of the interval along the given axis"""
             axes = self.getAxes()
             idx = axes.index(axis)
             return self.min1D(idx)
 
         def maxAx(self, axis):
-            '''Get the maximum of the interval along the given axis'''
+            """Get the maximum of the interval along the given axis"""
             axes = self.getAxes()
             idx = axes.index(axis)
             return self.max1D(idx)
@@ -979,12 +979,12 @@ def wrap_interval(interval):
 
 
 def get_script_service(context):
-    '''Get the script service for a given context
-    
+    """Get the script service for a given context
+
     context - the instance of ImageJ created by create_context
-    
+
     returns a script service
-    '''
+    """
     o = context.getService('org.scijava.script.ScriptService')
 
     class ScriptService(object):
@@ -1014,7 +1014,7 @@ def get_script_service(context):
 
 
 def wrap_script_engine_factory(o):
-    '''Wrap a javax.script.ScriptEngineFactory object'''
+    """Wrap a javax.script.ScriptEngineFactory object"""
 
     class ScriptEngineFactory(object):
         def __init__(self, o=o):
@@ -1061,7 +1061,7 @@ def wrap_script_engine_factory(o):
 
 
 def wrap_script_engine(o):
-    '''Return a class wrapper for javax.script.ScriptEngine'''
+    """Return a class wrapper for javax.script.ScriptEngine"""
     klass = 'javax/script/ScriptEngine'
 
     class ScriptEngine(object):
@@ -1140,7 +1140,7 @@ def wrap_script_engine(o):
 
 
 def get_ui_service(context):
-    '''Return a wrapped imagej.ui.UIService for this context'''
+    """Return a wrapped imagej.ui.UIService for this context"""
     ui_service = context.getService('org.scijava.ui.UIService')
     if ui_service is None:
         return None
@@ -1164,18 +1164,18 @@ def get_ui_service(context):
 
 
 def update_never_remind():
-    '''Tell ImageJ never to remind us of updates
-    
+    """Tell ImageJ never to remind us of updates
+
     Not as harsh as it sounds - this is done with headless preferences
     which go to /dev/null.
-    '''
+    """
     never = J.get_static_field("java/lang/Long", "MAX_VALUE", "J")
     J.static_call("net/imagej/updater/UpToDate",
                   "setLatestNag", "(J)V", never)
 
 
 def wrap_user_interface(o):
-    '''Return a wrapped imagej.ui.UserInterface'''
+    """Return a wrapped imagej.ui.UserInterface"""
 
     class UserInterface(object):
         def __init__(self):
@@ -1191,12 +1191,12 @@ def wrap_user_interface(o):
 
 def make_invoke_method(method, returns_value=False, doc=None,
                        fn_post_process=None):
-    '''Make a method that will invoke on the UI thread
-    
+    """Make a method that will invoke on the UI thread
+
     method - the name of the method to call on self.o
-    
+
     returns_value - True if the method returns a value.
-    '''
+    """
     #
     # TO-DO - replace instances of make_invoke_method with a more
     #         straightforward call of the method.

@@ -1,19 +1,19 @@
-'''<b>Measure Neurons</b> measures branching information for neurons or
+"""<b>Measure Neurons</b> measures branching information for neurons or
 any skeleton objects with seed points.
 <hr>
 <p>This module measures the number of trunks and branches for each neuron in
-an image. The module takes a skeletonized image of the neuron plus previously 
-identified seed objects (for instance, the neuron soma) and finds the number of 
+an image. The module takes a skeletonized image of the neuron plus previously
+identified seed objects (for instance, the neuron soma) and finds the number of
 axon or dendrite trunks that emerge from the soma and the number of branches along the
-axons and dendrites. Note that the seed objects must be both smaller than, and touching 
+axons and dendrites. Note that the seed objects must be both smaller than, and touching
 the skeleton in order to be counted.</p>
 
 <p>The typical approach for this module is the following:
 <ul>
-<li>Identify a seed object. This object is typically a nucleus, identified with a 
+<li>Identify a seed object. This object is typically a nucleus, identified with a
 module such as <b>IdentifyPrimaryObjects</b>. </li>
-<li>Identify a larger object that touches or encloses this seed object. 
-For example, the neuron cell can be grown outwards from the initial seed nuclei 
+<li>Identify a larger object that touches or encloses this seed object.
+For example, the neuron cell can be grown outwards from the initial seed nuclei
 using <b>IdentifySecondaryObjects</b>. </li>
 <li>Use the <b>Morph</b> module to skeletonize the secondary objects.</li>
 <li>Finally, the primary objects and the skeleton objects
@@ -21,20 +21,20 @@ are used as inputs to <b>MeasureNeurons</b>.</li>
 </ul>
 </p>
 
-<p>The module determines distances from the seed objects along the axons and dendrites 
+<p>The module determines distances from the seed objects along the axons and dendrites
 and assigns branchpoints based on distance to the closest seed object when two seed objects
 appear to be attached to the same dendrite or axon.</p>
 
 <h4>Available measurements</h4>
 <ul>
-<li><i>NumberTrunks:</i> The number of trunks. Trunks are branchpoints that lie 
+<li><i>NumberTrunks:</i> The number of trunks. Trunks are branchpoints that lie
 within the seed objects</li>
-<li><i>NumberNonTrunkBranches:</i> The number of non-trunk branches. Branches are 
+<li><i>NumberNonTrunkBranches:</i> The number of non-trunk branches. Branches are
 the branchpoints that lie outside the seed objects.</li>
 <li><i>NumberBranchEnds</i>: The number of branch end-points, i.e, termini.</li>
 <li><i>TotalNeuriteLength</i>: The length of all skeleton segments per neuron.</li>
 </ul>
-'''
+"""
 
 import numpy as np
 from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion
@@ -76,7 +76,7 @@ class MeasureNeurons(cpm.CPModule):
     variable_revision_number = 3
 
     def create_settings(self):
-        '''Create the UI settings for the module'''
+        """Create the UI settings for the module"""
         self.seed_objects_name = cps.ObjectNameSubscriber(
             "Select the seed objects", cps.NONE, doc="""
             Select the previously identified objects that you want to use as the
@@ -182,7 +182,7 @@ class MeasureNeurons(cpm.CPModule):
             </p>""")
 
     def settings(self):
-        '''The settings, in the order that they are saved in the pipeline'''
+        """The settings, in the order that they are saved in the pipeline"""
         return [self.seed_objects_name, self.image_name,
                 self.wants_branchpoint_image, self.branchpoint_image_name,
                 self.wants_to_fill_holes, self.maximum_hole_size,
@@ -190,7 +190,7 @@ class MeasureNeurons(cpm.CPModule):
                 self.directory, self.vertex_file_name, self.edge_file_name]
 
     def visible_settings(self):
-        '''The settings that are displayed in the GUI'''
+        """The settings that are displayed in the GUI"""
         result = [self.seed_objects_name, self.image_name,
                   self.wants_branchpoint_image]
         if self.wants_branchpoint_image:
@@ -205,17 +205,17 @@ class MeasureNeurons(cpm.CPModule):
         return result
 
     def get_graph_file_paths(self, m, image_number):
-        '''Get the paths to the graph files for the given image set
-        
+        """Get the paths to the graph files for the given image set
+
         Apply metadata tokens to the graph file names to get the graph files
         for the given image set.
-        
+
         m - measurements for the run
-        
+
         image_number - the image # for the current image set
-        
+
         Returns the edge file's path and vertex file's path
-        '''
+        """
         path = self.directory.get_absolute_path(m)
         edge_file = m.apply_metadata(self.edge_file_name.value, image_number)
         edge_path = os.path.abspath(os.path.join(path, edge_file))
@@ -242,7 +242,7 @@ class MeasureNeurons(cpm.CPModule):
                          EF_TOTAL_INTENSITY)
 
     def prepare_run(self, workspace):
-        '''Initialize graph files'''
+        """Initialize graph files"""
         if not self.wants_neuron_graph:
             return True
         edge_files = set()
@@ -272,7 +272,7 @@ class MeasureNeurons(cpm.CPModule):
         return True
 
     def run(self, workspace):
-        '''Run the module on the image set'''
+        """Run the module on the image set"""
         seed_objects_name = self.seed_objects_name.value
         skeleton_name = self.image_name.value
         seed_objects = workspace.object_set.get_objects(seed_objects_name)
@@ -493,7 +493,7 @@ class MeasureNeurons(cpm.CPModule):
                 fd.write(line_format % fields)
 
     def display(self, workspace, figure):
-        '''Display a visualization of the results'''
+        """Display a visualization of the results"""
         from matplotlib.axes import Axes
         from matplotlib.lines import Line2D
         import matplotlib.cm
@@ -532,7 +532,7 @@ class MeasureNeurons(cpm.CPModule):
                 axes.add_line(line)
 
     def get_measurement_columns(self, pipeline):
-        '''Return database column definitions for measurements made here'''
+        """Return database column definitions for measurements made here"""
         return [
             (self.seed_objects_name.value,
              "_".join((C_NEURON, feature, self.image_name.value)),
@@ -541,23 +541,23 @@ class MeasureNeurons(cpm.CPModule):
             for feature in F_ALL]
 
     def get_categories(self, pipeline, object_name):
-        '''Get the measurement categories generated by this module
-        
+        """Get the measurement categories generated by this module
+
         pipeline - pipeline being run
         object_name - name of seed object
-        '''
+        """
         if object_name == self.seed_objects_name:
             return [C_NEURON]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return the measurement features generated by this module
-        
+        """Return the measurement features generated by this module
+
         pipeline - pipeline being run
         object_name - object being measured (must be the seed object)
         category - category of measurement (must be C_NEURON)
-        '''
+        """
         if category == C_NEURON and object_name == self.seed_objects_name:
             return F_ALL
         else:
@@ -565,13 +565,13 @@ class MeasureNeurons(cpm.CPModule):
 
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
-        '''Return the images measured by this module
-        
+        """Return the images measured by this module
+
         pipeline - pipeline being run
         object_name - object being measured (must be the seed object)
         category - category of measurement (must be C_NEURON)
         measurement - one of the neuron measurements
-        '''
+        """
         if measurement in self.get_measurements(pipeline, object_name,
                                                 category):
             return [self.image_name.value]
@@ -580,13 +580,13 @@ class MeasureNeurons(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Provide backwards compatibility for old pipelines
-        
+        """Provide backwards compatibility for old pipelines
+
         setting_values - the strings to be fed to settings
         variable_revision_number - the version number at time of saving
         module_name - name of original module
         from_matlab - true if a matlab pipeline, false if pyCP
-        '''
+        """
         if from_matlab and variable_revision_number == 1:
             #
             # Added "Wants branchpoint image" and branchpoint image name 
@@ -614,15 +614,15 @@ class MeasureNeurons(cpm.CPModule):
 
     def make_neuron_graph(self, skeleton, skeleton_labels,
                           trunks, branchpoints, endpoints, image):
-        '''Make a table that captures the graph relationship of the skeleton
-        
+        """Make a table that captures the graph relationship of the skeleton
+
         skeleton - binary skeleton image + outline of seed objects
         skeleton_labels - labels matrix of skeleton
         trunks - binary image with trunk points as 1
         branchpoints - binary image with branchpoints as 1
         endpoints - binary image with endpoints as 1
         image - image for intensity measurement
-        
+
         returns two tables.
         Table 1: edge table
         The edge table is a numpy record array with the following named
@@ -631,14 +631,14 @@ class MeasureNeurons(cpm.CPModule):
         v2: index into vertex table of second vertex of edge
         length: # of intermediate pixels + 2 (for two vertices)
         total_intensity: sum of intensities along the edge
-        
+
         Table 2: vertex table
         The vertex table is a numpy record array:
         i: I coordinate of the vertex
         j: J coordinate of the vertex
         label: the vertex's label
         kind: kind of vertex = "T" for trunk, "B" for branchpoint or "E" for endpoint.
-        '''
+        """
         i, j = np.mgrid[0:skeleton.shape[0], 0:skeleton.shape[1]]
         #
         # Give each point of interest a unique number

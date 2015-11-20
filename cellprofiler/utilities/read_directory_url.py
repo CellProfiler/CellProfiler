@@ -1,5 +1,5 @@
-'''read_directory_url.py - get a directory listing from a URL
-'''
+"""read_directory_url.py - get a directory listing from a URL
+"""
 
 import os
 import urllib
@@ -12,14 +12,14 @@ IS_UNKNOWN = 0
 
 
 def read_directory_url(url):
-    '''Given a URL representing a directory, return a list of subdirectories and files
-    
+    """Given a URL representing a directory, return a list of subdirectories and files
+
     Returns a list of two-tuples:
     * First entry is the file name
     * Second entry is either IS_DIRECTORY, IS_FILE or IS_UNKNOWN depending
       on whether the filename is the name of a directory, file or
       is not known.
-    '''
+    """
     #
     # See http://httpd.apache.org/docs/trunk/mod/mod_autoindex.html
     #     F=0 is simple list

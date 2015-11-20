@@ -1,6 +1,6 @@
-'''<b>Example3</b> boilerplate for measurement exercises
+"""<b>Example3</b> boilerplate for measurement exercises
 <hr>
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpmodule as cpm
@@ -41,13 +41,13 @@ class Example3(cpm.CPModule):
         #
 
     def get_feature_name(self):
-        '''Return the name to be used to store the feature
-        
+        """Return the name to be used to store the feature
+
         Returns CATEGORY_FEATURE_IMAGENAME
         where CATEGORY is Example3
               FEATURE is Variance
               IMAGENAME is the name of the input image.
-        '''
+        """
         return "_".join([C_EXAMPLE3, FTR_VARIANCE, self.input_image_name.value])
 
     def get_measurement_columns(self, pipeline):

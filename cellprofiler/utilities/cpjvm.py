@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_path_to_jars():
-    '''Return the path to CellProfiler's jars directory'''
+    """Return the path to CellProfiler's jars directory"""
     if hasattr(sys, 'frozen') and sys.platform != 'darwin':
         # Starting path is base/CellProfiler - split off CellProfiler
         start_path = sys.argv[0]
@@ -32,29 +32,29 @@ def get_path_to_jars():
 
 
 def get_patcher_args(class_path):
-    '''Return the JVM args needed to patch ij1 classes
-    
+    """Return the JVM args needed to patch ij1 classes
+
     ImageJ says:
-    
+
     Please make sure that you initialize the LegacyService before using
     any ImageJ 1.x class. You can do that by adding this static initializer:
-    
+
         static {
             LegacyInjector.preinit();
         }
-    
+
     To debug this issue, start the JVM with the option:
-    
+
     -javaagent:<path-to>/ij1-patcher-0.2.1.jar
-    
+
     To enforce pre-initialization, start the JVM with the option:
-    
+
     -javaagent:<path-to>/ij1-patcher-0.2.1.jar=init
-    
+
     class_path - absolute path to all jars needed by ImageJ
-    
+
     returns a sequence of arguments to add to the JVM args
-    '''
+    """
 
     patchers = filter((lambda x: x.find("ij1-patcher") >= 0), class_path)
     if len(patchers) > 0:
@@ -65,7 +65,7 @@ def get_patcher_args(class_path):
 
 
 def get_jars():
-    '''Get the final list of JAR files passed to javabridge'''
+    """Get the final list of JAR files passed to javabridge"""
     imagej_path = get_path_to_jars()
     if hasattr(sys, 'frozen'):
         jar_files = [
@@ -139,11 +139,11 @@ def get_jars():
 
 
 def find_logback_xml():
-    '''Find the location of the logback.xml file for Java logging config
-    
+    """Find the location of the logback.xml file for Java logging config
+
     Paths to search are the current directory, the utilities directory
     and ../../java/src/main/resources
-    '''
+    """
     paths = [os.curdir,
              os.path.dirname(__file__),
              os.path.join(
@@ -156,10 +156,10 @@ def find_logback_xml():
 
 
 def add_logback_xml_arg(args):
-    '''Add the logback.xml configuration arg if appropriate
-    
+    """Add the logback.xml configuration arg if appropriate
+
     args: the args to send to the JVM.
-    '''
+    """
     logback_path = find_logback_xml()
     if logback_path is not None:
         if sys.platform.startswith("win"):
@@ -172,15 +172,15 @@ def add_logback_xml_arg(args):
 
 
 def cp_start_vm():
-    '''Start CellProfiler's JVM via Javabridge
-    
+    """Start CellProfiler's JVM via Javabridge
+
     JVM parameters are harvested from preferences and
     the environment variables:
-    
+
     CP_JDWP_PORT - port # for debugging Java within the JVM
     cpprefs.get_awt_headless() - controls java.awt.headless to prevent
         awt from being invoked
-    '''
+    """
     args = ["-Dloci.bioformats.loaded=true",
             "-Djava.util.prefs.PreferencesFactory=" +
             "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
@@ -218,7 +218,7 @@ def cp_start_vm():
     old_get_class_list = bioformats.formatreader.get_class_list
 
     def get_class_list():
-        "Return a wrapped instance of loci.formats.ClassList"
+        """Return a wrapped instance of loci.formats.ClassList"""
 
         env = javabridge.get_env()
         class_list = old_get_class_list()
@@ -270,11 +270,11 @@ def cp_start_vm():
 
 
 def cp_stop_vm(kill=True):
-    '''Shut down the Java VM
+    """Shut down the Java VM
 
     Check for headlessness and the state of ImageJ and take
     whatever action is needed to stop AWT and the JVM.
-    '''
+    """
     from imagej.imagej2 import allow_quit, the_imagej_context
     ij1 = javabridge.JClassWrapper("ij.IJ").getInstance()
     if the_imagej_context is not None:

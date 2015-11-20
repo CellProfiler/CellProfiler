@@ -1,4 +1,4 @@
-'''<b>Example2b</b> - Handling masked images
+"""<b>Example2b</b> - Handling masked images
 <hr>
 This example deconvolves the image with a Gaussian. Given a point spread
 function that is an accurate representation of how optics aberations map
@@ -16,7 +16,7 @@ http://en.wikipedia.org/wiki/Deconvolution#Optics_and_other_imaging
 
 The code is taken from the following page:
 http://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution
-'''
+"""
 import numpy as np
 #
 # We use scipy.stats.norm to make the Gaussian
@@ -121,12 +121,12 @@ class Example2b(cpm.CPModule):
             workspace.display_data.output_image = output_pixels
 
     def sharpen(self, observed):
-        '''Sharpen an observed image
-        
+        """Sharpen an observed image
+
         observed - 2-d numpy array of pixel values
-        
+
         Sharpens the image using the Richardson/Lucy algorithm
-        '''
+        """
         #
         # Get the observed image from the pixel_data
         #

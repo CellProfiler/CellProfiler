@@ -71,7 +71,7 @@ PRI_IMMEDIATE, PRI_DIRECTORY, PRI_STAT, PRI_METADATA = [0, 1, 2, 3]
 
 
 class Locator(object):
-    '''A queue-and-callback driven file finder, using multiple threads to
+    """A queue-and-callback driven file finder, using multiple threads to
     search for files and extract metadata from them.
 
     creation:
@@ -117,7 +117,7 @@ class Locator(object):
     loc.block(key)  # prevents (and interrupts) searching key's directory and all of its children
     loc.unblock(key)  # reallows searching a key's directory and children
 
-    '''
+    """
 
     def __init__(self, callback, metadata_function, descend=True,
                  num_threads=20, max_fallbacks=4, listdir_time=30, stat_time=1):

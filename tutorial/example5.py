@@ -1,6 +1,6 @@
-'''<b>Example 5</b> Object measurements
+"""<b>Example 5</b> Object measurements
 <hr>
-'''
+"""
 
 import numpy as np
 import scipy.ndimage

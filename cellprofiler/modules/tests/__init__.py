@@ -25,7 +25,7 @@ __temp_example_images_folder = None
 
 
 class TestAllModules(unittest.TestCase):
-    '''Test things having to do with modules'''
+    """Test things having to do with modules"""
     optional_modules = ('classifypixels', 'ilastik_pixel_classification')
 
     def test_01_01_import_all(self):
@@ -68,11 +68,11 @@ def example_images_directory():
 
 
 def svn_mirror_url():
-    '''Return the URL for the SVN mirror
-    
+    """Return the URL for the SVN mirror
+
     Use the value of the environment variable, "CP_SVNMIRROR_URL" with
     a default of http://cellprofiler.org/svnmirror.
-    '''
+    """
     return os.environ.get("CP_SVNMIRROR_URL",
                           "http://cellprofiler.org/svnmirror")
 
@@ -151,15 +151,15 @@ def load_pipeline(test_case, encoded_data):
 
 
 def maybe_download_example_image(folders, file_name, shape=None):
-    '''Download the given ExampleImages file if not in the directory
-    
+    """Download the given ExampleImages file if not in the directory
+
     folders - sequence of subfolders starting at ExampleImages
     file_name - name of file to fetch
-    
+
     Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
-    
+
     Returns the local path to the file which is often useful.
-    '''
+    """
     if shape is None:
         shape = (20, 30)
     local_path = os.path.join(*tuple([
@@ -180,13 +180,13 @@ def maybe_download_example_image(folders, file_name, shape=None):
 
 
 def make_12_bit_image(folder, filename, shape):
-    '''Create a 12-bit image of the desired shape
-    
+    """Create a 12-bit image of the desired shape
+
     folder - subfolder of example images directory
     filename - filename for image file
     shape - 2-tuple or 3-tuple of the dimensions of the image. The axis order
             is i, j, c or y, x, c
-    '''
+    """
     r = np.random.RandomState()
     r.seed(np.frombuffer(
         hashlib.sha1("/".join([folder, filename])).digest(),
@@ -245,21 +245,21 @@ def make_12_bit_image(folder, filename, shape):
 
 
 def maybe_download_example_images(folders, file_names):
-    '''Download multiple files to the example images directory
-    
+    """Download multiple files to the example images directory
+
     folders - sequence of subfolders of ExampleImages
     file_names - sequence of file names to be fetched from the single directory
                 described by the list of folders
-    
+
     Returns the local directory containing the images.
-    '''
+    """
     for file_name in file_names:
         maybe_download_example_image(folders, file_name)
     return os.path.join(example_images_directory(), *folders)
 
 
 def maybe_download_sbs():
-    '''Download the SBS dataset to its expected location if necessary'''
+    """Download the SBS dataset to its expected location if necessary"""
     files = []
     for channel in 1, 2:
         idx = 1
@@ -282,7 +282,7 @@ def maybe_download_sbs():
 
 
 def maybe_download_fly():
-    '''Download the fly example directory'''
+    """Download the fly example directory"""
     return maybe_download_example_images(
         ["ExampleFlyImages"],
         ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF",
@@ -291,12 +291,12 @@ def maybe_download_fly():
 
 
 def maybe_download_tesst_image(file_name):
-    '''Download the given TestImages file if not in the directory
-    
+    """Download the given TestImages file if not in the directory
+
     file_name - name of file to fetch
-    
+
     Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
-    '''
+    """
     local_path = os.path.join(testimages_directory(), file_name)
     if not os.path.exists(local_path):
         url = testimages_url() + "/" + file_name
@@ -305,14 +305,14 @@ def maybe_download_tesst_image(file_name):
 
 
 def read_example_image(folder, file_name, **kwargs):
-    '''Read an example image from one of the example image directories
-    
+    """Read an example image from one of the example image directories
+
     folder - folder containing images, e.g. "ExampleFlyImages"
-    
+
     file_name - the name of the file within the folder
-    
+
     **kwargs - any keyword arguments are passed onto load_image
-    '''
+    """
     from bioformats import load_image
     path = os.path.join(example_images_directory(), folder, file_name)
     maybe_download_example_image([folder], file_name)

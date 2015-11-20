@@ -80,20 +80,20 @@ def draw_bevel(dc, rect, width, state, shadow_pen=None, highlight_pen=None):
 
 
 def draw_item_selection_rect(window, dc, rect, flags):
-    '''Replacement for RendererNative.DrawItemSelectionRect
-    
+    """Replacement for RendererNative.DrawItemSelectionRect
+
     window - draw in this window
-    
+
     dc - device context to use for drawing
-    
+
     rect - draw selection UI inside this rectangle
-    
+
     flags - a combination of wx.CONTROL_SELECTED, wx.CONTROL_CURRENT and
             wx.CONTROL_FOCUSED
-            
+
     This function fixes a bug in the Carbon implementation for drawing
     with wx.CONTROL_CURRENT and not wx.CONTROL_SELECTED.
-    '''
+    """
     # Bug in carbon DrawItemSelectionRect uses
     # uninitialized color for the rectangle
     # if it's not selected.

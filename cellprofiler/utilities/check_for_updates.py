@@ -1,6 +1,6 @@
-'''Check for new versions on a web page, in a separate thread, and
+"""Check for new versions on a web page, in a separate thread, and
 call a callback with the new version information if there is one.
-'''
+"""
 
 import logging
 import threading

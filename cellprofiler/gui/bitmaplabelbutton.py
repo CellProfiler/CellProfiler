@@ -1,6 +1,6 @@
-'''bitmaplabelbutton.py - a button that displays a bitmap to the left of a label
+"""bitmaplabelbutton.py - a button that displays a bitmap to the left of a label
 
-'''
+"""
 
 import wx
 from wx.lib.buttons import GenBitmapTextButton

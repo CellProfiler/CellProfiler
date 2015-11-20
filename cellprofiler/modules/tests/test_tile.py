@@ -1,5 +1,5 @@
-'''test_tile.py - Test the tile module
-'''
+"""test_tile.py - Test the tile module
+"""
 
 import base64
 import numpy as np

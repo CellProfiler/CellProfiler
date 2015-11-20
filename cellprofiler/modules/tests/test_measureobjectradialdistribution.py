@@ -1,5 +1,5 @@
-'''test_measureobjectradialdistribution.py
-'''
+"""test_measureobjectradialdistribution.py
+"""
 
 import base64
 import numpy as np
@@ -482,14 +482,14 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
                    bin_count=4,
                    maximum_radius=100, wants_scaled=True,
                    wants_workspace=False):
-        '''Run the module, returning the measurements
-        
+        """Run the module, returning the measurements
+
         image - matrix representing the image to be analyzed
         labels - labels matrix of objects to be analyzed
         center_labels - labels matrix of alternate centers or None for self
                         centers
         bin_count - # of radial bins
-        '''
+        """
         module = M.MeasureObjectRadialDistribution()
         module.images[0].image_name.value = IMAGE_NAME
         module.objects[0].object_name.value = OBJECT_NAME
@@ -537,7 +537,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
         return measurements
 
     def test_03_01_zeros_self(self):
-        '''Test the module on an empty labels matrix, self-labeled'''
+        """Test the module on an empty labels matrix, self-labeled"""
         m = self.run_module(np.zeros((10, 10)), np.zeros((10, 10), int))
         for bin in range(1, 5):
             for feature in (feature_frac_at_d(bin, 4),
@@ -548,7 +548,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
                 self.assertEqual(len(data), 0)
 
     def test_03_02_circle(self):
-        '''Test the module on a uniform circle'''
+        """Test the module on a uniform circle"""
         i, j = np.mgrid[-50:51, -50:51]
         labels = (np.sqrt(i * i + j * j) <= 40).astype(int)
         m, workspace = self.run_module(
@@ -584,12 +584,12 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
 
     def test_03_03_half_circle(self):
-        '''Test the module on a circle and an image that's 1/2 zeros
-        
+        """Test the module on a circle and an image that's 1/2 zeros
+
         The measurements here are somewhat considerably off because
         the propagate function uses a Manhattan distance with jaywalking
         allowed instead of the Euclidean distance.
-        '''
+        """
         i, j = np.mgrid[-50:51, -50:51]
         labels = (np.sqrt(i * i + j * j) <= 40).astype(int)
         image = np.zeros(labels.shape)
@@ -625,7 +625,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             self.assertTrue(np.abs(data[0] - expected_cv) < .2 * expected_cv)
 
     def test_03_04_line(self):
-        '''Test the alternate centers with a line'''
+        """Test the alternate centers with a line"""
         labels = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
                            [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -786,11 +786,11 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
                 self.assertEqual(mode(heatmap[mask])[0][0], data[label - 1])
 
     def test_04_01_img_607(self):
-        '''Regression test of bug IMG-607
-        
+        """Regression test of bug IMG-607
+
         MeasureObjectRadialDistribution fails if there are no pixels for
         some of the objects.
-        '''
+        """
         np.random.seed(41)
         labels = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 1, 1, 1, 0, 0, 3, 3, 3, 0],
@@ -810,7 +810,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
                 self.assertTrue(np.isnan(data[1]))
 
     def test_04_02_center_outside_of_object(self):
-        '''Make sure MeasureObjectRadialDistribution can handle oddly shaped objects'''
+        """Make sure MeasureObjectRadialDistribution can handle oddly shaped objects"""
         np.random.seed(42)
         labels = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -843,11 +843,11 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             self.assertEqual(len(data), 1)
 
     def test_04_03_wrong_size(self):
-        '''Regression test for IMG-961: objects & image of different sizes
-        
+        """Regression test for IMG-961: objects & image of different sizes
+
         Make sure that the module executes without exception with and
         without centers and with similarly and differently shaped centers
-        '''
+        """
         np.random.seed(43)
         labels = np.ones((30, 40), int)
         image = np.random.uniform(size=(20, 50))
@@ -860,7 +860,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
         m = self.run_module(image, labels, centers)
 
     def test_05_01_more_labels_than_centers(self):
-        '''Regression test of img-1463'''
+        """Regression test of img-1463"""
         np.random.seed(51)
         i, j = np.mgrid[0:100, 0:100]
         ir = (i % 10) - 5
@@ -889,7 +889,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
         m = self.run_module(image, labels, center_labels)
 
     def test_05_02_more_centers_than_labels(self):
-        '''Regression test of img-1463'''
+        """Regression test of img-1463"""
         np.random.seed(51)
         i, j = np.mgrid[0:100, 0:100]
         ir = (i % 10) - 5

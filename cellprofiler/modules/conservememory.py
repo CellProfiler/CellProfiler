@@ -1,13 +1,13 @@
-'''<b>Conserve Memory</b> speeds up CellProfiler by removing images from memory.
+"""<b>Conserve Memory</b> speeds up CellProfiler by removing images from memory.
 <hr>
 
 This module removes images from memory, which can speed up processing and
 prevent out-of-memory errors.
 
-<i>Note:</i> CellProfiler 1.0's <b>SpeedUpCellProfiler</b> had an option that let you 
+<i>Note:</i> CellProfiler 1.0's <b>SpeedUpCellProfiler</b> had an option that let you
 choose how often the output file of measurements was saved. This option is no longer neccessary since
 the output file is automatically updated with each image set.
-'''
+"""
 
 import gc
 import numpy as np
@@ -54,11 +54,11 @@ class ConserveMemory(cpm.CPModule):
             return "Select image to keep"
 
     def add_image(self, can_remove=True):
-        '''Add an image to the list of image names
-        
+        """Add an image to the list of image names
+
         can_remove - set this to False to keep from showing the "remove"
                      button for images that must be present.
-        '''
+        """
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))

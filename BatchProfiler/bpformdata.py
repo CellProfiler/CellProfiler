@@ -1,6 +1,6 @@
-'''bpformdata.py - Form data constants for Batch Profiler
+"""bpformdata.py - Form data constants for Batch Profiler
 
-'''
+"""
 
 import cgi
 import os

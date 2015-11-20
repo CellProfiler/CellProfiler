@@ -1,8 +1,8 @@
-'''<b>Example2</b> - an image processing module
+"""<b>Example2</b> - an image processing module
 <hr>
 This is the boilerplate for an image processing module. You can implement
 your own filter in the "run" method.
-'''
+"""
 import numpy as np
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps

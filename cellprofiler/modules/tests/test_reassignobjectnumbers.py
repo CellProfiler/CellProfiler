@@ -1,4 +1,4 @@
-'''test_relabelobjects.py - test the RelabelObjects module'''
+"""test_relabelobjects.py - test the RelabelObjects module"""
 
 import base64
 import numpy as np
@@ -245,10 +245,10 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                outline_name="None",
                parent_object="Parent_object",
                parent_labels=np.zeros((10, 20), int)):
-        '''Run the RelabelObjects module
-        
+        """Run the RelabelObjects module
+
         returns the labels matrix and the workspace.
-        '''
+        """
         module = R.RelabelObjects()
         module.module_num = 1
         module.objects_name.value = INPUT_OBJECTS_NAME

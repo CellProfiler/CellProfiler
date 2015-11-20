@@ -1,4 +1,4 @@
-'''<b>SendEmail</b> send emails to a specified address at desired stages
+"""<b>SendEmail</b> send emails to a specified address at desired stages
 of the analysis run.
 <hr>
 This module sends email about the current
@@ -7,7 +7,7 @@ are sent out (for example, after the first cycle, after the last cycle,
 after every <i>N</i> cycles, after <i>N</i> cycles). This module should be placed at
 the point in the pipeline when you want the emails to be sent. If email
 sending fails for any reason, a warning message will appear but
-processing will continue regardless.'''
+processing will continue regardless."""
 
 import logging
 import email.message
@@ -63,7 +63,7 @@ class SendEmail(cpm.CPModule):
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the UI settings for this module'''
+        """Create the UI settings for this module"""
 
         self.recipients = []
         self.recipient_count = cps.HiddenCount(self.recipients)
@@ -136,7 +136,7 @@ class SendEmail(cpm.CPModule):
             <b>SendEmail</b> will send an email when this event happens""")
 
     def add_recipient(self, can_delete=True):
-        '''Add a recipient for the email to the list of emails'''
+        """Add a recipient for the email to the list of emails"""
         group = cps.SettingsGroup()
 
         group.append("recipient", cps.Text(
@@ -206,7 +206,7 @@ class SendEmail(cpm.CPModule):
         self.when.append(group)
 
     def settings(self):
-        '''The settings as saved in the pipeline'''
+        """The settings as saved in the pipeline"""
         result = [self.recipient_count, self.when_count,
                   self.from_address, self.subject, self.smtp_server,
                   self.port,
@@ -217,7 +217,7 @@ class SendEmail(cpm.CPModule):
         return result
 
     def visible_settings(self):
-        '''The settings as displayed in the UI'''
+        """The settings as displayed in the UI"""
         result = []
         for group in self.recipients:
             result += group.visible_settings()
@@ -244,7 +244,7 @@ class SendEmail(cpm.CPModule):
         d[K_LAST_IN_GROUP] = image_numbers[-1]
 
     def run(self, workspace):
-        '''Run every image set'''
+        """Run every image set"""
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         d = self.get_dictionary()
@@ -289,14 +289,14 @@ class SendEmail(cpm.CPModule):
             figure.subplot_table(0, 0, [[workspace.display_data.result]])
 
     def post_run(self, workspace):
-        '''Possibly send an email as we finish the run'''
+        """Possibly send an email as we finish the run"""
         email_me = [group.message.value for group in self.when
                     if group.choice == S_LAST]
         if len(email_me) > 0:
             self.send_email(workspace, email_me)
 
     def send_email(self, workspace, messages):
-        '''Send an email according to the settings'''
+        """Send an email according to the settings"""
 
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
@@ -344,7 +344,7 @@ class SendEmail(cpm.CPModule):
             return "Failed to send mail"
 
     def prepare_settings(self, setting_values):
-        '''Adjust the numbers of recipients and events according to the settings'''
+        """Adjust the numbers of recipients and events according to the settings"""
 
         nrecipients = int(setting_values[0])
         nevents = int(setting_values[1])
@@ -361,13 +361,13 @@ class SendEmail(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Upgrade the pipeline settings from a previous CP version
-        
+        """Upgrade the pipeline settings from a previous CP version
+
         setting_values - one string per setting
         variable_revision_number - revision # of module that did saving
         module_name - name of module that did saving
         from_matlab - true if CP 1.0
-        '''
+        """
         if from_matlab and variable_revision_number == 1:
             recipients, sender, server, send_first, send_last, \
             image_set_count = setting_values[:6]

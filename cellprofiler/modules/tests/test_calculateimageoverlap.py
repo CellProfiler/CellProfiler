@@ -1,5 +1,5 @@
-'''test_calculateimageoverlap - test the CalculateImageOverlap module
-'''
+"""test_calculateimageoverlap - test the CalculateImageOverlap module
+"""
 
 import base64
 import numpy as np
@@ -200,15 +200,15 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertTrue(module.penalize_missing)
 
     def make_workspace(self, ground_truth, test):
-        '''Make a workspace with a ground-truth image and a test image
-        
+        """Make a workspace with a ground-truth image and a test image
+
         ground_truth and test are dictionaries with the following keys:
         image     - the pixel data
         mask      - (optional) the mask data
         crop_mask - (optional) a cropping mask
-        
+
         returns a workspace and module
-        '''
+        """
         module = C.CalculateImageOverlap()
         module.module_num = 1
         module.obj_or_img.value = O_IMG
@@ -240,7 +240,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         return workspace, module
 
     def make_obj_workspace(self, ground_truth_obj, id_obj, ground_truth, id):
-        '''make a workspace to test comparing objects'''
+        """make a workspace to test comparing objects"""
         ''' ground truth object and ID object  are dictionaires w/ the following keys'''
         '''i - i component of pixel coordinates
         j - j component of pixel coordinates
@@ -283,7 +283,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         return workspace, module
 
     def test_03_01_zeros(self):
-        '''Test ground-truth of zeros and image of zeros'''
+        """Test ground-truth of zeros and image of zeros"""
 
         workspace, module = self.make_workspace(
             dict(image=np.ones((20, 10), bool)),
@@ -306,7 +306,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(measurements[cpmeas.IMAGE, ftr_emd], 0)
 
     def test_03_02_ones(self):
-        '''Test ground-truth of ones and image of ones'''
+        """Test ground-truth of ones and image of ones"""
 
         workspace, module = self.make_workspace(
             dict(image=np.zeros((20, 10), bool)),
@@ -334,7 +334,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             mname)))
 
     def test_03_03_masked(self):
-        '''Test ground-truth of a masked image'''
+        """Test ground-truth of a masked image"""
 
         workspace, module = self.make_workspace(
             dict(image=np.zeros((20, 10), bool)),

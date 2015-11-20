@@ -107,7 +107,7 @@ class TestPipeline(unittest.TestCase):
         x = cpp.Pipeline()
 
     def test_01_01_load_mat(self):
-        '''Regression test of img-942, load a batch data pipeline with notes'''
+        """Regression test of img-942, load a batch data pipeline with notes"""
 
         global img_942_data  # see bottom of this file
 
@@ -162,7 +162,7 @@ HasImagePlaneDetails:False"""
         x.run()
 
     def test_07_01_find_external_input_images(self):
-        '''Check find_external_input_images'''
+        """Check find_external_input_images"""
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9870
@@ -188,7 +188,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertEqual(external_inputs[1], "Ho")
 
     def test_07_02_find_external_output_images(self):
-        '''Check find_external_input_images'''
+        """Check find_external_input_images"""
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:9870
@@ -242,7 +242,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             np.testing.assert_array_almost_equal(d[key], d_out[key])
 
     def test_09_01_get_measurement_columns(self):
-        '''Test the get_measurement_columns method'''
+        """Test the get_measurement_columns method"""
         x = get_empty_pipeline()
         module = MyClassForTest0801()
         module.module_num = 1
@@ -297,7 +297,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertTrue(any([column[1] == "bar" for column in columns]))
 
     def test_10_01_all_groups(self):
-        '''Test running a pipeline on all groups'''
+        """Test running a pipeline on all groups"""
         pipeline = exploding_pipeline(self)
         expects = ['PrepareRun', 0]
         keys = ('foo', 'bar')
@@ -387,7 +387,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertTrue(np.all(group_indexes == np.array([1, 2, 1, 2])))
 
     def test_10_02_one_group(self):
-        '''Test running a pipeline on one group'''
+        """Test running a pipeline on one group"""
         pipeline = exploding_pipeline(self)
         expects = ['PrepareRun', 0]
         keys = ('foo', 'bar')
@@ -527,10 +527,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertIn("post_run_display_handler", callbacks_called)
 
     def test_11_01_catch_operational_error(self):
-        '''Make sure that a pipeline can catch an operational error
-        
+        """Make sure that a pipeline can catch an operational error
+
         This is a regression test of IMG-277
-        '''
+        """
         module = MyClassForTest1101()
         module.module_num = 1
         pipeline = cpp.Pipeline()
@@ -575,7 +575,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertEqual(workspace.measurements.image_set_count, 0)
 
     def test_12_01_img_286(self):
-        '''Regression test for img-286: module name in class'''
+        """Regression test for img-286: module name in class"""
         cellprofiler.modules.fill_modules()
         success = True
         all_keys = list(cellprofiler.modules.all_modules.keys())

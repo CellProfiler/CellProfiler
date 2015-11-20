@@ -1,5 +1,5 @@
-'''test_expandorshrink - test the ExpandOrShrink module
-'''
+"""test_expandorshrink - test the ExpandOrShrink module
+"""
 
 import base64
 from matplotlib.image import pil_to_array
@@ -31,7 +31,7 @@ OUTLINES_NAME = "outlines"
 
 class TestExpandOrShrinkObjects(unittest.TestCase):
     def test_01_01_load_matlab(self):
-        '''Load a matlab pipeline with ExpandOrShrink modules'''
+        """Load a matlab pipeline with ExpandOrShrink modules"""
         data = ('eJwB+QMG/E1BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
                 'Q3JlYXRlZCBvbjogV2VkIEp1bCAyMiAwODozNDoyNSAyMDA5ICAgICAgICAg'
                 'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAAAUlN'
@@ -118,7 +118,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
             self.assertEqual(module.iterations, 1)
 
     def test_01_02_load_v1(self):
-        '''Load ExpandOrShrink modules, v1'''
+        """Load ExpandOrShrink modules, v1"""
         data = ('eJztW91u2zYUlhMnbVasSHezYr3hZbPFguS2aBMUqb24W73VjlEbDYqiP7RF'
                 'x2xpUpCoJF5RoJd7lD3GHmeXe4SJshTJnFvJju1YqQQI8jnidw6/Qx6KEs1a'
                 'ufW0/DO4p2qgVm4Vupgg0CCQd5nV3wWUb4N9C0GODMDoLjh0r785BBSLQNvZ'
@@ -198,7 +198,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         return workspace, module
 
     def test_02_01_expand(self):
-        '''Expand an object once'''
+        """Expand an object once"""
         labels = np.zeros((10, 10), int)
         labels[4, 4] = 1
         expected = np.zeros((10, 10), int)
@@ -223,7 +223,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertEqual(location_y[0], 4)
 
     def test_02_02_expand_twice(self):
-        '''Expand an object "twice"'''
+        """Expand an object "twice\""""
         labels = np.zeros((10, 10), int)
         labels[4, 4] = 1
         i, j = np.mgrid[0:10, 0:10] - 4
@@ -234,7 +234,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
 
     def test_02_03_expand_two(self):
-        '''Expand two objects once'''
+        """Expand two objects once"""
         labels = np.zeros((10, 10), int)
         labels[2, 3] = 1
         labels[6, 5] = 2
@@ -247,7 +247,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
 
     def test_03_01_expand_inf(self):
-        '''Expand two objects infinitely'''
+        """Expand two objects infinitely"""
         labels = np.zeros((10, 10), int)
         labels[2, 3] = 1
         labels[6, 5] = 2
@@ -261,7 +261,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented[distance > 0] == 2))
 
     def test_04_01_divide(self):
-        '''Divide two touching objects'''
+        """Divide two touching objects"""
         labels = np.ones((10, 10), int)
         labels[5:, :] = 2
         expected = labels.copy()
@@ -272,7 +272,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
 
     def test_04_02_dont_divide(self):
-        '''Don't divide an object that would disappear'''
+        """Don't divide an object that would disappear"""
         labels = np.ones((10, 10), int)
         labels[9, 9] = 2
         expected = labels.copy()
@@ -285,7 +285,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
 
     def test_05_01_shrink(self):
-        '''Shrink once'''
+        """Shrink once"""
         labels = np.zeros((10, 10), int)
         labels[1:9, 1:9] = 1
         expected = morph.thin(labels, iterations=1)
@@ -295,7 +295,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
 
     def test_06_01_shrink_inf(self):
-        '''Shrink infinitely'''
+        """Shrink infinitely"""
         labels = np.zeros((10, 10), int)
         labels[1:8, 1:8] = 1
         expected = np.zeros((10, 10), int)
@@ -306,7 +306,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
 
     def test_06_02_shrink_inf_fill_holes(self):
-        '''Shrink infinitely after filling a hole'''
+        """Shrink infinitely after filling a hole"""
         labels = np.zeros((10, 10), int)
         labels[1:8, 1:8] = 1
         labels[4, 4] = 0
@@ -325,7 +325,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(np.all(objects.segmented == expected))
 
     def test_07_01_outlines(self):
-        '''Create an outline of the resulting objects'''
+        """Create an outline of the resulting objects"""
         labels = np.zeros((10, 10), int)
         labels[4, 4] = 1
         i, j = np.mgrid[0:10, 0:10] - 4

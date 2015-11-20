@@ -1,4 +1,4 @@
-'''test_imageplus - test imageplus.py'''
+"""test_imageplus - test imageplus.py"""
 
 __version__ = "$Revision$"
 

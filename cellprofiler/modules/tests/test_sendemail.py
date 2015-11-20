@@ -1,5 +1,5 @@
-'''test_sendemail - test the SendEmail module
-'''
+"""test_sendemail - test the SendEmail module
+"""
 
 import asyncore
 from cStringIO import StringIO
@@ -51,7 +51,7 @@ class TestSendEmail(unittest.TestCase):
     def recv(self, module, whens,
              expected_subject=None,
              expected_body=None):
-        '''Receive an email from the daemon and validate'''
+        """Receive an email from the daemon and validate"""
         try:
             peer, mailfrom, rcpttos, data = self.queue.get(timeout=10)
         except Queue.Empty:

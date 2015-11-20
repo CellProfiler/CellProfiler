@@ -13,12 +13,12 @@ import yattag
 
 
 def maybe_chmod(path, mode, d):
-    '''Change the mode of a file if it exists and needs changing
-    
+    """Change the mode of a file if it exists and needs changing
+
     path - path to file or directory
     mode - the new mode
     d - add the key/value of path:mode to the dictionary if the mode was changed
-    '''
+    """
     if os.path.exists(path) and \
                     stat.S_IMODE(os.stat(path).st_mode) != mode:
         os.chmod(path, mode)
@@ -87,7 +87,7 @@ TITLE = "BatchProfiler: fix file permissions"
 
 
 def handle_get():
-    '''Display a form for fixing the permissions'''
+    """Display a form for fixing the permissions"""
     batch_id_id = "input_%s" % BATCH_ID
     button_id = "button_%s" % BATCH_ID
     fix_permissions_action = "on_click_%s()" % button_id

@@ -1,4 +1,4 @@
-'''test_overlayoutlines.py Test the OverlayOutlines module'''
+"""test_overlayoutlines.py Test the OverlayOutlines module"""
 
 import base64
 import numpy as np
@@ -25,7 +25,7 @@ OBJECTS_NAME = 'objectsname'
 
 class TestOverlayOutlines(unittest.TestCase):
     def make_workspace(self, image, outline=None, labels=None):
-        '''Make a workspace for testing ApplyThreshold'''
+        """Make a workspace for testing ApplyThreshold"""
         m = cpmeas.Measurements()
         object_set = cpo.ObjectSet()
         module = O.OverlayOutlines()
@@ -296,7 +296,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             self.assertTrue(np.all(output_image.pixel_data == expected))
 
     def test_02_04_wrong_size_gray_to_color(self):
-        '''Regression test of img-961'''
+        """Regression test of img-961"""
         np.random.seed(24)
         image = np.random.uniform(size=(50, 50)).astype(np.float32)
         image[0, 0] = 1
@@ -404,7 +404,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         self.assertTrue(np.all(output_image.pixel_data == expected))
 
     def test_03_03_wrong_size_gray(self):
-        '''Regression test of IMG-961 - image and outline size differ'''
+        """Regression test of IMG-961 - image and outline size differ"""
         np.random.seed(41)
         image = np.random.uniform(size=(50, 50)).astype(np.float32) * .5
         outline = np.zeros((60, 40), bool)

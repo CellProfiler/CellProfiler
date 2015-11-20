@@ -1,16 +1,16 @@
-'''<b>Display Scatter Plot </b> plots the values for two measurements.
+"""<b>Display Scatter Plot </b> plots the values for two measurements.
 <hr>
-A scatter plot displays the relationship between two measurements (that is, features) as a 
-collection of points.  If there are too many data points on the plot, you should consider 
+A scatter plot displays the relationship between two measurements (that is, features) as a
+collection of points.  If there are too many data points on the plot, you should consider
 using <b>DisplayDensityPlot</b> instead.
 
-<p>The module will show a plot shows the values generated for the current cycle. However, 
+<p>The module will show a plot shows the values generated for the current cycle. However,
 this module can also be run as a Data Tool, in which you will first be asked
-for the output file produced by the analysis run. The resultant plot is 
+for the output file produced by the analysis run. The resultant plot is
 created from all the measurements collected during the run.</p>
 
 See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>.
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpimage as cpi

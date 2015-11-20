@@ -1,6 +1,6 @@
-'''<b>Example4</b> Object processing
+"""<b>Example4</b> Object processing
 <hr>
-'''
+"""
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo

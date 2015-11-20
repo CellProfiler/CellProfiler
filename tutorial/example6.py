@@ -1,6 +1,6 @@
-'''<b>Example6</b> CellProfiler lifecycle
+"""<b>Example6</b> CellProfiler lifecycle
 <hr>
-'''
+"""
 
 import numpy as np
 import scipy.ndimage
@@ -26,17 +26,17 @@ class Example6(cpm.CPModule):
         return [self.input_image_name, self.output_image_name, self.scale]
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to execute a group's cycles
-        
+        """Prepare to execute a group's cycles
+
         workspace - at this point, the module, pipeline and measurements
                     are valid, but there is no image or object set
-                    
+
         grouping - This is a key/value dictionary that has the metadata used
                    to identify the members of the group.
-    
+
         image_numbers - these are the image numbers for each cycle in the
                         group.
-        '''
+        """
         d = self.get_dictionary(workspace.image_set_list)
         #
         # Initialize the state here using e6_state_init
@@ -102,24 +102,24 @@ K_SHAPE = "Shape"
 
 
 def e6_state_init(d, image_numbers):
-    '''Initialize the module dictionary 
-    
+    """Initialize the module dictionary
+
     image_numbers - the image numbers for this group
-    '''
+    """
     d.clear()
     d[K_IMAGE_NUMBERS] = list(image_numbers)
     d[K_CYCLE_COUNT] = len(image_numbers)
 
 
 def e6_state_append(d, image, image_number, scale):
-    '''Add an image to the module state
-    
+    """Add an image to the module state
+
     image - an NxM array of grayscale pixel values
-    
+
     image_number - the image number of the current cycle
-    
+
     scale - shrink the image by this scale so we can hold the whole stack.
-    '''
+    """
     #
     # These are the mapping coordinates to decimate the image.
     #
@@ -149,7 +149,7 @@ def e6_state_append(d, image, image_number, scale):
 
 
 def e6_state_median(d):
-    '''Return a median projection scaled up to the original shape.'''
+    """Return a median projection scaled up to the original shape."""
     a = d[K_ARRAY]
     #
     # Take the median along the stack axis

@@ -1,9 +1,9 @@
-'''<b>Create Web Page</b> creates the html file for a webpage to display images 
+"""<b>Create Web Page</b> creates the html file for a webpage to display images
 (or their thumbnails, if desired).
 <hr>
 This module creates an html file that displays the specified
 images, and optionally a link to a compressed ZIP file of all of the images shown.
-'''
+"""
 
 import os
 from cStringIO import StringIO
@@ -218,7 +218,7 @@ class CreateWebPage(cpm.CPModule):
             Specify the name for the ZIP file.""")
 
     def settings(self):
-        '''The settings as saved in the pipeline'''
+        """The settings as saved in the pipeline"""
         return [self.orig_image_name, self.wants_thumbnails,
                 self.thumbnail_image_name, self.web_page_file_name,
                 self.directory_choice, self.title, self.background_color,
@@ -228,7 +228,7 @@ class CreateWebPage(cpm.CPModule):
                 self.wants_zip_file, self.zipfile_name]
 
     def visible_settings(self):
-        '''the settings as displayed in the gui'''
+        """the settings as displayed in the gui"""
         result = [self.orig_image_name, self.wants_thumbnails]
         if self.wants_thumbnails:
             result += [self.thumbnail_image_name]
@@ -244,7 +244,7 @@ class CreateWebPage(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure metadata tags exist'''
+        """Make sure metadata tags exist"""
         for cntrl in (self.web_page_file_name, self.title):
             undefined_tags = pipeline.get_undefined_metadata_tags(cntrl.value)
             if len(undefined_tags) > 0:
@@ -271,7 +271,7 @@ class CreateWebPage(cpm.CPModule):
             figure.subplot_table(0, 0, outcomes)
 
     def post_run(self, workspace):
-        '''Make all the webpages after the run'''
+        """Make all the webpages after the run"""
         d = {}
         zipfiles = {}
         m = workspace.measurements
@@ -423,15 +423,15 @@ class CreateWebPage(cpm.CPModule):
         workspace.display_data.wrote_zip = True
 
     def use_relative_image_urls(self):
-        '''Return True if using relative URL paths for images'''
+        """Return True if using relative URL paths for images"""
         return self.directory_choice.dir_choice in (DIR_ABOVE, DIR_SAME)
 
     def get_image_location(self, workspace, image_name, image_number):
-        '''Get the path and file name for an image
-        
+        """Get the path and file name for an image
+
         workspace - workspace for current image set
         image_name - image whose path should be fetched
-        '''
+        """
         file_name_feature = '_'.join((C_FILE_NAME, image_name))
         path_name_feature = '_'.join((C_PATH_NAME, image_name))
         url_feature = '_'.join((C_URL, image_name))
@@ -446,7 +446,7 @@ class CreateWebPage(cpm.CPModule):
         return image_path_name, image_file_name, image_url
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "CreateWebPage will not produce output in Test Mode",
@@ -492,27 +492,27 @@ class CreateWebPage(cpm.CPModule):
 
 
 class CWPDirectoryPath(cps.DirectoryPath):
-    '''The CreateWebPage DirectoryPath setting
-    
+    """The CreateWebPage DirectoryPath setting
+
     This setting has the additional options of DIR_SAME to place the HTML
     file in the same directory as the images or DIR_ABOVE to place the HTML
     one level above the images.
-    '''
+    """
     USE_DIR_SAME = object()
     USE_DIR_ABOVE = object()
 
     def get_absolute_path(self, measurements, image_set_number=None):
-        '''Get the absolute directory path... with some exceptions
-        
+        """Get the absolute directory path... with some exceptions
+
         measurements - the measurements may be used to reconcile metadata tags
-        
+
         image_set_number - the current image set number
-        
+
         See cps.DirectoryPath.get_absolute_path()
-        
+
         If the directory choice is DIR_SAME or DIR_ABOVE, we return one of
         the special tokens, USE_DIR_SAME or USE_DIR_ABOVE
-        '''
+        """
         if self.dir_choice == DIR_SAME:
             return self.USE_DIR_SAME
         elif self.dir_choice == DIR_ABOVE:

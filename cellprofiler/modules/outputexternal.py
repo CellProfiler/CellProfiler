@@ -1,22 +1,22 @@
-'''<b>Output External</b> specfies which images can be made
+"""<b>Output External</b> specfies which images can be made
 available to external sources (e.g., Java)
 <hr>
-<b>OutputExternal</b> is a helper module for ImageJ. <b>Do not add it to 
+<b>OutputExternal</b> is a helper module for ImageJ. <b>Do not add it to
 a pipeline.</b>
 
-<p>The <b>InputExternal</b> and <b>OutputExternal</b> modules are 
+<p>The <b>InputExternal</b> and <b>OutputExternal</b> modules are
 placeholders if CellProfiler is run programatically. For example,
-another program, e.g., a plugin to ImageJ, is provided with 
+another program, e.g., a plugin to ImageJ, is provided with
 a CellProfiler pipeline. This program should then replace the input
-modules with <b>InputExternal</b> modules and prompt the user what inputs 
-should be supplied to the pipeline through <b>InputExternal</b>. The program 
-should also specify which inputs are to be sent back to the source program 
-via <b>OutputExternal</b>. The calling program would insert the images into 
-the image set before running the pipeline and remove the images from the 
+modules with <b>InputExternal</b> modules and prompt the user what inputs
+should be supplied to the pipeline through <b>InputExternal</b>. The program
+should also specify which inputs are to be sent back to the source program
+via <b>OutputExternal</b>. The calling program would insert the images into
+the image set before running the pipeline and remove the images from the
 image set at the end.</p>
 
 See also <b>RunImageJ</b>
-'''
+"""
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -44,7 +44,7 @@ class OutputExternal(cpm.CPModule):
         return result
 
     def add_image(self, can_remove=True):
-        '''Add an image to the list of image names'''
+        """Add an image to the list of image names"""
         group = cps.SettingsGroup()
         group.append('divider', cps.Divider(line=False))
         group.append('image_name', cps.ExternalImageNameSubscriber(

@@ -47,10 +47,10 @@ CLEAN_PIPELINE_REPLY_1 = "clean-pipeline-reply-1"
 
 
 class KnimeBridgeServer(threading.Thread):
-    '''The server maintains the port and hands off the requests to workers
-    
+    """The server maintains the port and hands off the requests to workers
+
     example of use:
-    
+
     context = zmq.Context()
     with KnimeBridgeServer(
         context,
@@ -61,7 +61,7 @@ class KnimeBridgeServer(threading.Thread):
         notify_socket.bind("inproc://Notify")
         ....
         notify_socket.send("Stop")
-    '''
+    """
 
     def __init__(self, context, address, notify_address, notify_stop, **kwargs):
         super(KnimeBridgeServer, self).__init__(**kwargs)
@@ -151,14 +151,14 @@ class KnimeBridgeServer(threading.Thread):
             javabridge.detach()
 
     def connect(self, session_id, message_type, message):
-        '''Handle the connect message'''
+        """Handle the connect message"""
         self.socket.send_multipart(
             [zmq.Frame(session_id),
              zmq.Frame(),
              zmq.Frame(CONNECT_REPLY_1)])
 
     def pipeline_info(self, session_id, message_type, message):
-        '''Handle the pipeline info message'''
+        """Handle the pipeline info message"""
         logger.info("Handling pipeline info request")
         pipeline_txt = message.pop(0).bytes
         pipeline = cpp.Pipeline()
@@ -183,7 +183,7 @@ class KnimeBridgeServer(threading.Thread):
         self.socket.send_multipart(msg_out)
 
     def clean_pipeline(self, session_id, message_type, message):
-        '''Handle the clean pipeline request message'''
+        """Handle the clean pipeline request message"""
         logger.info("Handling clean pipeline request")
         pipeline_txt = message.pop(0).bytes
         module_names = json.loads(message.pop(0).bytes)
@@ -212,7 +212,7 @@ class KnimeBridgeServer(threading.Thread):
         self.socket.send_multipart(msg_out)
 
     def run_request(self, session_id, message_type, message):
-        '''Handle the run request message'''
+        """Handle the run request message"""
         pipeline, m, object_set = self.prepare_run(message, session_id)
         if pipeline is None:
             return
@@ -304,7 +304,7 @@ class KnimeBridgeServer(threading.Thread):
              zmq.Frame(bytes(data.data))])
 
     def run_group_request(self, session_id, message_type, message):
-        '''Handle a run-group request message'''
+        """Handle a run-group request message"""
         pipeline = cpp.Pipeline()
         m = cpmeas.Measurements()
         image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
@@ -481,12 +481,12 @@ class KnimeBridgeServer(threading.Thread):
              zmq.Frame(data)])
 
     def prepare_run(self, message, session_id, grouping_allowed=False):
-        '''Prepare a pipeline and measurements to run
-        
+        """Prepare a pipeline and measurements to run
+
         message - the run-request or run-groups-request message
         session_id - the session ID for the session
         grouping_allowed - true to allow grouped images
-        '''
+        """
         pipeline = cpp.Pipeline()
         m = cpmeas.Measurements()
         object_set = cpo.ObjectSet()
@@ -547,12 +547,12 @@ class KnimeBridgeServer(threading.Thread):
              zmq.Frame(message)])
 
     def split_pipeline(self, pipeline):
-        '''Split the pipeline into input modules and everything else
-        
+        """Split the pipeline into input modules and everything else
+
         pipeline - the pipeline to be split
-        
+
         returns a two-tuple of input modules and other
-        '''
+        """
         input_modules = []
         other_modules = []
         for module in pipeline.modules():
@@ -563,7 +563,7 @@ class KnimeBridgeServer(threading.Thread):
         return input_modules, other_modules
 
     def find_channels(self, input_modules):
-        '''Find image providers in the input modules'''
+        """Find image providers in the input modules"""
         channels = []
         for module in input_modules:
             for setting in module.visible_settings():
@@ -572,17 +572,17 @@ class KnimeBridgeServer(threading.Thread):
         return channels
 
     def find_measurements(self, modules, pipeline):
-        '''Scan the modules for features
-        
+        """Scan the modules for features
+
         modules - modules to scan for features
         pipeline - the pipeline they came from
-        
+
         returns a two tuple of
             Java types, e.g. "java.lang.Integer"
             A dictionary whose key is the object name and whose
             value is a list of two-tuples of feature name and index into
             the java types array.
-        '''
+        """
         jtypes = ["java.lang.Integer"]
         features = {}
         for module in modules:
@@ -619,14 +619,14 @@ class KnimeBridgeServer(threading.Thread):
         return jtypes, features_out
 
     def decode_image(self, channel_metadata, buf, grouping_allowed=False):
-        '''Decode an image sent via the wire format
-        
+        """Decode an image sent via the wire format
+
         channel_metadata: sequence of 3 tuples of axis name, dimension and stride
         buf: byte-buffer, low-endian representation of doubles
         grouping_allowed: true if we can accept images grouped by X or T
-        
+
         returns numpy array in y, x indexing format.
-        '''
+        """
         pixel_data = np.frombuffer(buf, "<f8")
         strides_out = [None] * len(channel_metadata)
         dimensions_out = [None] * len(channel_metadata)

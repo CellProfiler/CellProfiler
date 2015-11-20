@@ -1,20 +1,20 @@
-'''<b>Correct Illumination - Calculate</b> calculates an illumination function that is used to correct uneven
+"""<b>Correct Illumination - Calculate</b> calculates an illumination function that is used to correct uneven
 illumination/lighting/shading or to reduce uneven background in images.
 <hr>
 This module calculates an illumination function that can either be saved to the
 hard drive for later use or immediately applied to images later in the
-pipeline. This function will correct for the uneven illumination in images.  
-If saving, select <i>.mat</i> format in <b>SaveImages</b>.  
+pipeline. This function will correct for the uneven illumination in images.
+If saving, select <i>.mat</i> format in <b>SaveImages</b>.
 Use the <b>CorrectIlluminationApply</b> module to apply the
 function to the image to be corrected.
 
-Illumination correction is a challenge to do properly; please see the 
-<a href="http://www.cellprofiler.org/examples.shtml">examples</a> and 
-<a href="http://www.cellprofiler.org/tutorials.shtml">tutorials</a> pages 
+Illumination correction is a challenge to do properly; please see the
+<a href="http://www.cellprofiler.org/examples.shtml">examples</a> and
+<a href="http://www.cellprofiler.org/tutorials.shtml">tutorials</a> pages
 on the CellProfiler website for further advice.
 
 See also <b>CorrectIlluminationApply</b>, <b>EnhanceOrSuppressFeatures</b>.
-'''
+"""
 
 import numpy as np
 import scipy.ndimage as scind
@@ -554,16 +554,16 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             workspace.display_data.output_image = output_image.pixel_data
 
     def is_aggregation_module(self):
-        '''Return True if aggregation is performed within a group'''
+        """Return True if aggregation is performed within a group"""
         return self.each_or_all != EA_EACH
 
     def post_group(self, workspace, grouping):
-        '''Handle tasks to be performed after a group has been processed
-        
+        """Handle tasks to be performed after a group has been processed
+
         For CorrectIllumninationCalculate, we make sure the current image
         set includes the aggregate image. "run" may not have run if an
         image was filtered out.
-        '''
+        """
         if self.each_or_all != EA_EACH:
             image_set = workspace.image_set
             d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
@@ -729,7 +729,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         return output_image
 
     def smooth_plane(self, pixel_data, mask):
-        '''Smooth one 2-d color plane of an image'''
+        """Smooth one 2-d color plane of an image"""
 
         sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
         if self.smoothing_method == SM_FIT_POLYNOMIAL:
@@ -762,7 +762,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         return output_pixels
 
     def smooth_with_convex_hull(self, pixel_data, mask):
-        '''Use the convex hull transform to smooth the image'''
+        """Use the convex hull transform to smooth the image"""
         #
         # Apply an erosion, then the transform, then a dilation, heuristically
         # to ignore little spikey noisy things.
@@ -839,7 +839,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         return output_image
 
     def validate_module(self, pipeline):
-        '''Produce error if 'All:First' is selected and input image is not provided by the file image provider.'''
+        """Produce error if 'All:First' is selected and input image is not provided by the file image provider."""
         if not pipeline.is_image_from_file(
                 self.image_name.value) and self.each_or_all == EA_ALL_FIRST:
             raise cps.ValidationError(
@@ -854,7 +854,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if self.each_or_all == EA_ALL_FIRST:
             raise cps.ValidationError(
                 "Pre-calculation of the illumination function is time-intensive, especially for Test Mode. The analysis will proceed, but consider using '%s' instead." % EA_ALL_ACROSS,
@@ -946,12 +946,12 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
 
     def post_pipeline_load(self, pipeline):
-        '''After loading, set each_or_all appropriately
-        
+        """After loading, set each_or_all appropriately
+
         This function handles the legacy EA_ALL which guessed the user's
         intent: processing before the first cycle or not. We look for
         the image provider and see if it is a file image provider.
-        '''
+        """
         if self.each_or_all == EA_ALL:
             if pipeline.is_image_from_file(self.image_name.value):
                 self.each_or_all.value = EA_ALL_FIRST
@@ -983,23 +983,23 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
     D_MASK_COUNT = "mask_count"
 
     def serialize(self, d):
-        '''Save the internal state of the provider to a dictionary
-        
+        """Save the internal state of the provider to a dictionary
+
         d - save to this dictionary, numpy arrays and json serializable only
-        '''
+        """
         d[self.D_NAME] = self.__name
         d[self.D_IMAGE_SUM] = self.__image_sum
         d[self.D_MASK_COUNT] = self.__mask_count
 
     @staticmethod
     def deserialize(d, module):
-        '''Restore a state saved by serialize
-        
+        """Restore a state saved by serialize
+
         d - dictionary containing the state
         module - the module providing details on how to perform the correction
-        
+
         returns a provider set up with the restored state
-        '''
+        """
         provider = CorrectIlluminationImageProvider(
             d[CorrectIlluminationImageProvider.D_NAME],
             module)
@@ -1036,7 +1036,7 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
             self.__mask_count += 1
 
     def reset(self):
-        '''Reset the image sum at the start of a group'''
+        """Reset the image sum at the start of a group"""
         self.__image_sum = None
         self.__cached_image = None
         self.__cached_avg_image = None

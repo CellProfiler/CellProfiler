@@ -1,14 +1,14 @@
-'''<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
+"""<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
 objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape.
 <hr>
 <h4>What is a tertiary object?</h4>
 In CellProfiler, we use the term <i>object</i> as a generic term to refer to an identifed
 feature in an image, usually a cellular subcompartment of some kind (for example,
-nuclei, cells, colonies, worms). 
-We define an object as <i>tertiary</i> when it is identified by using a prior primary and 
+nuclei, cells, colonies, worms).
+We define an object as <i>tertiary</i> when it is identified by using a prior primary and
 secondary objects for reference. A common use case is when nuclei have been found using
-<b>IdentifyPrimaryObjects</b> and the cell body has been found using <b>IdentifySecondaryObjects</b> 
-but measurements from the cytoplasm, the region outside the nucleus but within the cell body, 
+<b>IdentifyPrimaryObjects</b> and the cell body has been found using <b>IdentifySecondaryObjects</b>
+but measurements from the cytoplasm, the region outside the nucleus but within the cell body,
 are desired. This module may be used to define the cytoplasm as an new object.
 
 <h4>What do I need as input?</h4>
@@ -22,18 +22,18 @@ satisfy this constraint. Ideally, both inputs should be objects produced by prio
 <b>Identify</b> modules.
 
 <h4>What do I get as output?</h4>
-A set of tertiary objects are produced by this module, which can be used in 
-downstream modules for measurement purposes or other operations. Because each 
-tertiary object is produced from primary and secondary objects, there will 
+A set of tertiary objects are produced by this module, which can be used in
+downstream modules for measurement purposes or other operations. Because each
+tertiary object is produced from primary and secondary objects, there will
 always be at most one secondary object for each primary object.
-See the section <a href="#Available_measurements">"Available measurements"</a> below for 
+See the section <a href="#Available_measurements">"Available measurements"</a> below for
 the measurements that are produced by this module.
 
-<p>Note that creating subregions using this module can result in objects with 
+<p>Note that creating subregions using this module can result in objects with
 a single label that nonetheless are not contiguous. This may lead to unexpected
-results when running measurment modules such as <b>MeasureObjectSizeShape</b> 
+results when running measurment modules such as <b>MeasureObjectSizeShape</b>
 because calculations of the perimeter, aspect ratio, solidity, etc. typically
-make sense only for contiguous objects. Other modules, such as <b>MeasureImageIntensity</b> and 
+make sense only for contiguous objects. Other modules, such as <b>MeasureImageIntensity</b> and
 <b>MeasureTexture</b> modules, are not affected and will yield expected results.
 
 <h4>Available measurements</h4>
@@ -44,14 +44,14 @@ make sense only for contiguous objects. Other modules, such as <b>MeasureImageIn
 
 <b>Object measurements:</b>
 <ul>
-<li><i>Parent:</i> The identity of the primary object and secondary object associated 
+<li><i>Parent:</i> The identity of the primary object and secondary object associated
 with each tertiary object.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of mass of the 
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of mass of the
 identified tertiary objects.</li>
 </ul>
 
 See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules.
-'''
+"""
 
 import numpy as np
 import matplotlib
@@ -346,11 +346,11 @@ class IdentifyTertiaryObjects(cpm.CPModule):
                                  sharexy=figure.subplot(0, 0))
 
     def is_object_identification_module(self):
-        '''IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module'''
+        """IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module"""
         return True
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         subregion_name = self.subregion_objects_name.value
         columns = cpmi.get_object_measurement_columns(subregion_name)
         for parent in (self.primary_objects_name.value,

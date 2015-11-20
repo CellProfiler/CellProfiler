@@ -1,8 +1,8 @@
-'''walk_in_background.py - walk a directory tree from a background thread
+"""walk_in_background.py - walk a directory tree from a background thread
 
 This module walks a directory tree, incrementally reporting the
 results to the UI thread.
-'''
+"""
 
 import logging
 
@@ -27,7 +27,7 @@ class InterruptException(Exception):
 
 
 class Checkpoint(object):
-    '''A class that manages pausing and stopping'''
+    """A class that manages pausing and stopping"""
 
     def __init__(self):
         self.state = THREAD_RUNNING
@@ -74,10 +74,10 @@ def get_metadata(path):
 
 
 def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
-    '''Walk a directory tree in the background
-    
+    """Walk a directory tree in the background
+
     path - path to walk
-    
+
     callback_fn - a function that's called in the UI thread and incrementally
                   reports results. The callback is called with the
                   dirpath, dirnames and filenames for each iteration of walk.
@@ -85,12 +85,12 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
     metadata_fn - if present, call back with metadata. The signature is
                   metadata_fn(path, OMEXML) or metadata_fn(path, None) if
                   the webserver did not find metadata.
-                  
+
     Returns a function that can be called to interrupt the operation.
     To stop, call it like this: fn(THREAD_STOP)
     To pause, call it with THREAD_PAUSE, to resume, call it with
     THREAD_RESUME
-    '''
+    """
 
     checkpoint = Checkpoint()
 
@@ -145,14 +145,14 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
 
 
 def get_metadata_in_background(pathnames, fn_callback, fn_completed=None):
-    '''Get image metadata for each path
-    
+    """Get image metadata for each path
+
     pathnames - list of pathnames
     fn_callback - callback with signature fn_callback(pathname, metadata)
     fn_completed - called when operation is complete
 
     Returns a function that can be called to interrupt the operation.
-    '''
+    """
     checkpoint = Checkpoint()
 
     def metadata_fn(path, metadata):
@@ -192,11 +192,11 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed=None):
 
 
 class WalkCollection(object):
-    '''A collection of all walks in progress
-    
+    """A collection of all walks in progress
+
     This class manages a group of walks that are in progress so that they
     can be paused, resumed and stopped in unison.
-    '''
+    """
 
     def __init__(self, fn_on_completed):
         self.fn_on_completed = fn_on_completed

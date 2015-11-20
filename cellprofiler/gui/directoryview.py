@@ -45,7 +45,7 @@ class DirectoryView(object):
         self.__pipeline_listeners = []
 
     def close(self):
-        '''Disconnect from the preferences when the window closes'''
+        """Disconnect from the preferences when the window closes"""
         cellprofiler.preferences.remove_image_directory_listener(
             self.__on_image_directory_changed)
 

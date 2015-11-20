@@ -1,5 +1,5 @@
-'''Test check_for_updates
-'''
+"""Test check_for_updates
+"""
 
 import os
 import tempfile

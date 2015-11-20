@@ -1,4 +1,4 @@
-'''test_filterbyobjectmeasurements.py: Test FilterByObjectMeasurements module'''
+"""test_filterbyobjectmeasurements.py: Test FilterByObjectMeasurements module"""
 
 import base64
 import numpy as np
@@ -33,7 +33,7 @@ TEST_FTR = "my_measurement"
 
 class TestFilterObjects(unittest.TestCase):
     def make_workspace(self, object_dict={}, image_dict={}):
-        '''Make a workspace for testing FilterByObjectMeasurement'''
+        """Make a workspace for testing FilterByObjectMeasurement"""
         module = F.FilterByObjectMeasurement()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
@@ -54,7 +54,7 @@ class TestFilterObjects(unittest.TestCase):
         return workspace, module
 
     def test_00_01_zeros_single(self):
-        '''Test keep single object on an empty labels matrix'''
+        """Test keep single object on an empty labels matrix"""
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS: np.zeros((10, 10), int)})
         module.object_name.value = INPUT_OBJECTS
@@ -68,7 +68,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == 0))
 
     def test_00_02_zeros_per_object(self):
-        '''Test keep per object filtering on an empty labels matrix'''
+        """Test keep per object filtering on an empty labels matrix"""
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS: np.zeros((10, 10), int),
              ENCLOSING_OBJECTS: np.zeros((10, 10), int)})
@@ -84,7 +84,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == 0))
 
     def test_00_03_zeros_filter(self):
-        '''Test object filtering on an empty labels matrix'''
+        """Test object filtering on an empty labels matrix"""
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS: np.zeros((10, 10), int)})
         module.object_name.value = INPUT_OBJECTS
@@ -100,7 +100,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == 0))
 
     def test_01_01_keep_single_min(self):
-        '''Keep a single object (min) from among two'''
+        """Keep a single object (min) from among two"""
         labels = np.zeros((10, 10), int)
         labels[2:4, 3:5] = 1
         labels[6:9, 5:8] = 2
@@ -130,7 +130,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertEqual(child_count[1], 1)
 
     def test_01_02_keep_single_max(self):
-        '''Keep a single object (max) from among two'''
+        """Keep a single object (max) from among two"""
         labels = np.zeros((10, 10), int)
         labels[2:4, 3:5] = 1
         labels[6:9, 5:8] = 2
@@ -149,7 +149,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == expected))
 
     def test_02_01_keep_one_min(self):
-        '''Keep two sub-objects (min) from among four enclosed by two'''
+        """Keep two sub-objects (min) from among four enclosed by two"""
         sub_labels = np.zeros((20, 20), int)
         expected = np.zeros((20, 20), int)
         for i, j, k, e in (
@@ -173,7 +173,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == expected))
 
     def test_02_02_keep_one_max(self):
-        '''Keep two sub-objects (max) from among four enclosed by two'''
+        """Keep two sub-objects (max) from among four enclosed by two"""
         sub_labels = np.zeros((20, 20), int)
         expected = np.zeros((20, 20), int)
         for i, j, k, e in (
@@ -243,7 +243,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == expected))
 
     def test_03_01_filter(self):
-        '''Filter objects by limits'''
+        """Filter objects by limits"""
         n = 40
         labels = np.zeros((10, n * 10), int)
         for i in range(40):
@@ -274,7 +274,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == expected))
 
     def test_03_02_filter(self):
-        '''Filter objects by min limits'''
+        """Filter objects by min limits"""
         n = 40
         labels = np.zeros((10, n * 10), int)
         for i in range(40):
@@ -303,7 +303,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == expected))
 
     def test_03_03_filter(self):
-        '''Filter objects by maximum limits'''
+        """Filter objects by maximum limits"""
         n = 40
         labels = np.zeros((10, n * 10), int)
         for i in range(40):
@@ -332,7 +332,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == expected))
 
     def test_03_04_filter_two(self):
-        '''Filter objects by two measurements'''
+        """Filter objects by two measurements"""
         n = 40
         labels = np.zeros((10, n * 10), int)
         for i in range(40):
@@ -365,7 +365,7 @@ class TestFilterObjects(unittest.TestCase):
         self.assertTrue(np.all(labels.segmented == expected))
 
     def test_04_01_renumber_other(self):
-        '''Renumber an associated object'''
+        """Renumber an associated object"""
         n = 40
         labels = np.zeros((10, n * 10), int)
         alternates = np.zeros((10, n * 10), int)
@@ -439,8 +439,8 @@ FilterByObjectMeasurement:[module_num:1|svn_version:\'8913\'|variable_revision_n
         self.assertEqual(module.outlines_name, "MyOutlines")
 
     def test_05_01_load_matlab(self):
-        '''Test loading a Matlab pipeline
-        
+        """Test loading a Matlab pipeline
+
 Saved Pipeline, in file fbom_pipe.txt, Saved on 22-Apr-2009
 
 SVN version number: 7297
@@ -461,7 +461,7 @@ Module #2: FilterByObjectMeasurement revision - 6
      Which object would you like to filter by, or if using a Ratio, what is the numerator object?    LargestObjects
      Which category of measurements would you want to filter by?    AreaShape
      Which feature do you want to use? (Enter the feature number or name - see help for details)    Perimeter
-     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?    
+     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
      For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?    1
      Minimum value required:    200
      Maximum value allowed:    No maximum
@@ -472,12 +472,12 @@ Module #3: FilterByObjectMeasurement revision - 6
      Which object would you like to filter by, or if using a Ratio, what is the numerator object?    TargetObjects
      Which category of measurements would you want to filter by?    Intensity
      Which feature do you want to use? (Enter the feature number or name - see help for details)    MeanIntensity
-     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?    
+     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
      For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?    1
      Minimum value required:    No minimum
      Maximum value allowed:    .25
      What do you want to call the outlines of the identified objects? Type "Do not use" to ignore.    OutlineObjects
-        '''
+        """
         data = ('TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBD' +
                 'cmVhdGVkIG9uOiBXZWQgQXByIDIyIDEyOjM2OjQ3IDIwMDkgICAg' +
                 'ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg' +
@@ -537,7 +537,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(fbom2.outlines_name.value, 'OutlineObjects')
 
     def test_05_02_load(self):
-        '''Load a pipeline saved by pyCP'''
+        """Load a pipeline saved by pyCP"""
         data = ('TUFUTEFCIDUuMCBNQVQtZmlsZSBQbGF0Zm9ybTogbnQsIENyZWF0ZW' +
                 'Qgb246IFdlZCBBcHIgMjIgMTM6MzA6MTQgMjAwOQAAAAAAAAAAAAAA' +
                 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' +
@@ -1465,7 +1465,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertFalse(group.wants_outlines)
 
     def test_06_01_get_measurement_columns(self):
-        '''Test the get_measurement_columns function'''
+        """Test the get_measurement_columns function"""
         workspace, module = self.make_workspace(
             {INPUT_OBJECTS: np.zeros((10, 10), int)})
         module.object_name.value = INPUT_OBJECTS
@@ -1600,7 +1600,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             os.remove(rules_path)
 
     def test_09_01_discard_border_objects(self):
-        '''Test the mode to discard border objects'''
+        """Test the mode to discard border objects"""
         labels = np.zeros((10, 10), int)
         labels[1:4, 0:3] = 1
         labels[4:8, 1:5] = 2
@@ -1618,7 +1618,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         self.assertTrue(np.all(expected == output_objects.segmented))
 
     def test_09_02_discard_mask_objects(self):
-        '''Test discarding objects that touch the mask of objects parent img'''
+        """Test discarding objects that touch the mask of objects parent img"""
         mask = np.ones((10, 10), bool)
         mask[5, 5] = False
         labels = np.zeros((10, 10), int)

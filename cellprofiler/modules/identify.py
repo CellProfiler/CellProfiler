@@ -159,7 +159,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
 
     def create_threshold_settings(self, methods=TM_METHODS):
 
-        '''Create settings related to thresholding'''
+        """Create settings related to thresholding"""
         # The threshold setting version is invisible to the user
         self.threshold_setting_version = cps.Integer(
             "Threshold setting version",
@@ -684,7 +684,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             you may want to use a multiple of the largest expected object size.""" % globals())
 
     def get_threshold_settings(self):
-        '''Return the threshold settings to be saved in the pipeline'''
+        """Return the threshold settings to be saved in the pipeline"""
         return [self.threshold_setting_version,
                 self.threshold_scope, self.threshold_method,
                 self.threshold_smoothing_choice,
@@ -709,7 +709,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 self.number_of_deviations]
 
     def get_threshold_help_settings(self):
-        '''Return the threshold settings to be displayed in help'''
+        """Return the threshold settings to be displayed in help"""
         return [self.threshold_scope,
                 self.threshold_method,
                 self.binary_image,
@@ -740,16 +740,16 @@ class Identify(cellprofiler.cpmodule.CPModule):
             two_class_otsu, use_weighted_variance, assign_middle_to_foreground,
             adaptive_window_method, adaptive_window_size,
             masking_objects=O_FROM_IMAGE):
-        '''Return threshold setting strings built from the legacy elements
-        
+        """Return threshold setting strings built from the legacy elements
+
         IdentifyPrimaryObjects, IdentifySecondaryObjects and ApplyThreshold
         used to store their settings independently. This method creates the
         unified settings block from the values in their separate arrangements.
-        
+
         All parameters should be self-explanatory except for
         threshold_smoothing_choice which should be TSM_AUTOMATIC if
         smoothing was applied to the image before thresholding or TSM_NONE
-        if it wasn't'''
+        if it wasn't"""
         if threshold_method == TM_BINARY_IMAGE:
             threshold_scope = TS_BINARY_IMAGE
             threshold_method = TM_OTSU
@@ -777,11 +777,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
         return setting_values
 
     def upgrade_threshold_settings(self, setting_values):
-        '''Upgrade the threshold settings to the current version
-        
+        """Upgrade the threshold settings to the current version
+
         use the first setting which is the version to determine the
         threshold settings version and upgrade as appropriate
-        '''
+        """
         version = int(setting_values[0])
         if version == 1:
             # Added robust background settings
@@ -799,7 +799,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         return setting_values
 
     def get_threshold_visible_settings(self):
-        '''Return visible settings related to thresholding'''
+        """Return visible settings related to thresholding"""
         vv = [self.threshold_scope]
         if self.threshold_scope == TS_AUTOMATIC:
             return vv
@@ -899,15 +899,15 @@ class Identify(cellprofiler.cpmodule.CPModule):
         return binary_image
 
     def get_threshold(self, image, mask, workspace):
-        '''Calculate a local and global threshold
-        
+        """Calculate a local and global threshold
+
         img - base the threshold on this image's intensity
-        
+
         mask - use this mask to define the pixels of interest
-        
+
         workspace - get objects and measurements from this workspace and
                     add threshold measurements to this workspace's measurements.
-        '''
+        """
         if self.threshold_scope == TM_MANUAL:
             local_threshold = global_threshold = self.manual_threshold.value
         else:
@@ -1025,24 +1025,24 @@ class Identify(cellprofiler.cpmodule.CPModule):
         return local_threshold, global_threshold
 
     def get_measurement_objects_name(self):
-        '''Return the name of the measurement objects
-        
+        """Return the name of the measurement objects
+
         Identify modules and ApplyThreshold store measurements in the Image
         table and append an object name or, for ApplyThreshold, an image
         name to distinguish between different thresholds in the same pipeline.
-        '''
+        """
         raise NotImplementedError(
             "Please implement get_measurement_objects_name() for this module")
 
     def add_threshold_measurements(self, measurements,
                                    local_threshold, global_threshold):
-        '''Compute and add threshold statistics measurements 
-        
+        """Compute and add threshold statistics measurements
+
         measurements - add the measurements here
-        local_threshold - either a per-pixel threshold (a matrix) or a 
+        local_threshold - either a per-pixel threshold (a matrix) or a
                           copy of the global threshold (a scalar)
         global_threshold - the globally-calculated threshold
-        '''
+        """
         objname = self.get_measurement_objects_name()
         ave_threshold = np.mean(np.atleast_1d(local_threshold))
         measurements.add_measurement(cpmeas.IMAGE,
@@ -1053,16 +1053,16 @@ class Identify(cellprofiler.cpmodule.CPModule):
                                      global_threshold)
 
     def add_fg_bg_measurements(self, measurements, image, mask, binary_image):
-        '''Add statistical measures of the within class variance and entropy
-        
+        """Add statistical measures of the within class variance and entropy
+
         measurements - store measurements here
-        
+
         image - assess the variance and entropy on this intensity image
-        
+
         mask - mask of pixels to be considered
-        
+
         binary_image - the foreground / background segmentation of the image
-        '''
+        """
         objname = self.get_measurement_objects_name()
         wv = weighted_variance(image, mask, binary_image)
         measurements.add_measurement(cpmeas.IMAGE,
@@ -1127,7 +1127,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
     threshold_algorithm = property(get_threshold_algorithm)
 
     def get_threshold_measurement_columns(self, pipeline):
-        '''Return the measurement columns for the threshold measurements'''
+        """Return the measurement columns for the threshold measurements"""
         features = [FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE]
         if self.threshold_scope != TS_BINARY_IMAGE:
             features += [FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD]
@@ -1136,17 +1136,17 @@ class Identify(cellprofiler.cpmodule.CPModule):
                  cpmeas.COLTYPE_FLOAT) for ftr in features]
 
     def get_threshold_categories(self, pipeline, object_name):
-        '''Get categories related to thresholding'''
+        """Get categories related to thresholding"""
         if object_name == cpmeas.IMAGE:
             return [C_THRESHOLD]
         return []
 
     def get_threshold_measurements(self, pipeline, object_name, category):
-        '''Return a list of threshold measurements for a given category
-        
+        """Return a list of threshold measurements for a given category
+
         object_name - either "Image" or an object name
         category - must be "Threshold" to get anything back
-        '''
+        """
         if object_name == cpmeas.IMAGE and category == C_THRESHOLD:
             if self.threshold_scope == TS_BINARY_IMAGE:
                 return [FTR_SUM_OF_ENTROPIES, FTR_WEIGHTED_VARIANCE]
@@ -1156,13 +1156,13 @@ class Identify(cellprofiler.cpmodule.CPModule):
 
     def get_threshold_measurement_objects(self, pipeline, object_name, category,
                                           measurement):
-        '''Get the measurement objects for a threshold measurement
-        
+        """Get the measurement objects for a threshold measurement
+
         pipeline - not used
         object_name - either "Image" or an object name. (must be "Image")
         category - the measurement category. (must be "Threshold")
         measurement - the feature being measured
-        '''
+        """
         if measurement in self.get_threshold_measurements(
                 pipeline, object_name, category):
             return [self.get_measurement_objects_name()]
@@ -1171,14 +1171,14 @@ class Identify(cellprofiler.cpmodule.CPModule):
 
     def get_object_categories(self, pipeline, object_name,
                               object_dictionary):
-        '''Get categories related to creating new children
-        
+        """Get categories related to creating new children
+
         pipeline - the pipeline being run (not used)
         object_name - the base object of the measurement: "Image" or an object
         object_dictionary - a dictionary where each key is the name of
                             an object created by this module and each
                             value is a list of names of parents.
-        '''
+        """
         if object_name == cpmeas.IMAGE:
             return [C_COUNT]
         result = []
@@ -1193,14 +1193,14 @@ class Identify(cellprofiler.cpmodule.CPModule):
 
     def get_object_measurements(self, pipleline, object_name, category,
                                 object_dictionary):
-        '''Get measurements related to creating new children
-        
+        """Get measurements related to creating new children
+
         pipeline - the pipeline being run (not used)
         object_name - the base object of the measurement: "Image" or an object
-        object_dictionary - a dictionary where each key is the name of 
+        object_dictionary - a dictionary where each key is the name of
                             an object created by this module and each
                             value is a list of names of parents.
-        '''
+        """
         if object_name == cpmeas.IMAGE and category == C_COUNT:
             return list(object_dictionary.keys())
 
@@ -1260,7 +1260,7 @@ def add_object_location_measurements(measurements,
 def add_object_location_measurements_ijv(measurements,
                                          object_name,
                                          ijv, object_count=None):
-    '''Add object location measurements for IJV-style objects'''
+    """Add object location measurements for IJV-style objects"""
     if object_count is None:
         object_count = 0 if ijv.shape[0] == 0 else np.max(ijv[:, 2])
     if object_count == 0:
@@ -1287,13 +1287,13 @@ def add_object_count_measurements(measurements, object_name, object_count):
 
 
 def get_object_measurement_columns(object_name):
-    '''Get the column definitions for measurements made by identify modules
-    
+    """Get the column definitions for measurements made by identify modules
+
     Identify modules can use this call when implementing
     CPModule.get_measurement_columns to get the column definitions for
     the measurements made by add_object_location_measurements and
     add_object_count_measurements.
-    '''
+    """
     return [(object_name, M_LOCATION_CENTER_X, cpmeas.COLTYPE_FLOAT),
             (object_name, M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT),
             (object_name, M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
@@ -1301,10 +1301,10 @@ def get_object_measurement_columns(object_name):
 
 
 def get_threshold_measurement_columns(image_name):
-    '''Get the column definitions for threshold measurements, if made
-    
+    """Get the column definitions for threshold measurements, if made
+
     image_name - name of the image
-    '''
+    """
     return [
         (cpmeas.IMAGE, FF_FINAL_THRESHOLD % image_name, cpmeas.COLTYPE_FLOAT),
         (cpmeas.IMAGE, FF_ORIG_THRESHOLD % image_name, cpmeas.COLTYPE_FLOAT),
@@ -1313,7 +1313,7 @@ def get_threshold_measurement_columns(image_name):
 
 
 def draw_outline(img, outline, color):
-    '''Draw the given outline on the given image in the given color'''
+    """Draw the given outline on the given image in the given color"""
     red = float(color.Red()) / 255.0
     green = float(color.Green()) / 255.0
     blue = float(color.Blue()) / 255.0
@@ -1323,7 +1323,7 @@ def draw_outline(img, outline, color):
 
 
 class MaskObjectNameSubscriber(cps.ObjectNameSubscriber):
-    '''This class allows the legacy "From Image" choice'''
+    """This class allows the legacy "From Image" choice"""
 
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)

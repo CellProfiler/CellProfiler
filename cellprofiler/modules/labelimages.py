@@ -1,4 +1,4 @@
-'''<b>LabelImages</b> assigns plate metadata to image sets.
+"""<b>LabelImages</b> assigns plate metadata to image sets.
 <hr>
 <b>LabelImages</b> assigns a plate number, well and site number to each image
 set based on the order in which they are processed. You can use <b>Label
@@ -21,7 +21,7 @@ number of images per plate is the same. </li>
 </ul>
 
 See also the <b>Metadata</b> module.
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpmodule as cpm
@@ -75,12 +75,12 @@ class LabelImages(cpm.CPModule):
             is by row and then by column.</p>""" % globals())
 
     def settings(self):
-        '''The settings as they appear in the pipeline'''
+        """The settings as they appear in the pipeline"""
         return [self.site_count, self.column_count, self.row_count,
                 self.order]
 
     def run(self, workspace):
-        '''Run one image set'''
+        """Run one image set"""
         m = workspace.measurements
         well_count, site_index = divmod(m.image_set_number - 1,
                                         self.site_count.value)
@@ -115,16 +115,16 @@ class LabelImages(cpm.CPModule):
 
     @property
     def row_digits(self):
-        '''The number of letters it takes to represent a row.
-        
+        """The number of letters it takes to represent a row.
+
         If a plate has more than 26 rows, you need two digits. The following
         is sufficiently general.
-        '''
+        """
         return int(1 + np.log(self.row_count.value) / np.log(26))
 
     @property
     def column_digits(self):
-        '''The number of digits it takes to represent a column.'''
+        """The number of digits it takes to represent a column."""
 
         return int(1 + np.log10(self.column_count.value))
 
@@ -151,7 +151,7 @@ class LabelImages(cpm.CPModule):
         return []
 
     def display(self, workspace, figure):
-        '''Display the plate / well information in a figure table'''
+        """Display the plate / well information in a figure table"""
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
@@ -159,13 +159,13 @@ class LabelImages(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Upgrade the pipeline settings to the current revision of the module
-        
+        """Upgrade the pipeline settings to the current revision of the module
+
         setting_values - setting strings from the pipeline
         variable_revision_number - revision of the module that saved the settings
         module_name - name of the module that saved the settings
         from_matlab - settings are from the Matlab version of CellProfiler
-        '''
+        """
         if from_matlab and variable_revision_number == 1:
             label_name, rows_cols, row_or_column, image_cycles_per_well = \
                 setting_values

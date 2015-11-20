@@ -55,7 +55,7 @@ class RunMultplePipelinesDialog(wx.Dialog):
         self.Layout()
 
     def add_file_chooser(self, sizer):
-        '''Add UI elements for displaying files in a directory.'''
+        """Add UI elements for displaying files in a directory."""
         #
         # File list box on left, buttons on right
         #
@@ -261,15 +261,15 @@ class RunMultplePipelinesDialog(wx.Dialog):
                      RUN_MULTIPLE_PIPELINES_HELP).Show()
 
     def get_pipelines(self):
-        '''Return the user's chosen pipelines & other details
-        
+        """Return the user's chosen pipelines & other details
+
         The return value is a list of objects with the following attributes
         .path - path to the pipeline file
         .default_input_folder - default input folder when running the pipeline
         .default_output_folder - default output folder when running the pipeline
         .measurements_file - .mat file to use when storing measurements. Can
                              be None if none wanted.
-        '''
+        """
         result = []
 
         class PipelineDetails(object):

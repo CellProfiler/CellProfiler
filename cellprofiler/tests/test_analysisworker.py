@@ -127,17 +127,17 @@ class TestAnalysisWorker(unittest.TestCase):
                 aw.exit_thread()
 
         def recv(self, work_socket, timeout=None):
-            '''Receive a request from the worker
-            
+            """Receive a request from the worker
+
             work_socket - receive a request on this socket
-            
+
             timeout - if request isn't received by the timeout, raise Queue.Empty
                       default = blocks forever
-                      
+
             This polls on both the worker and up_queue sockets and
             will throw an exception if there is anything available on
             the up-queue as this indicates that nothing is running.
-            '''
+            """
             poller = zmq.Poller()
             poller.register(self.up_queue_recv_socket, zmq.POLLIN)
             poller.register(work_socket, zmq.POLLIN)
@@ -162,18 +162,18 @@ class TestAnalysisWorker(unittest.TestCase):
                 threading.Thread.join(self, timeout)
 
         def execute(self, fn, *args, **kwargs):
-            '''Execute a closure on the AnalysisWorker thread
-            
+            """Execute a closure on the AnalysisWorker thread
+
             fn - closure to execute
-            
+
             Returns the function's result or throws whatever exception
             was thrown by the function.
-            '''
+            """
             self.ex(fn, *args, **kwargs)
             return self.ecute()
 
         def ex(self, fn, *args, **kwargs):
-            '''Do the first part of a functional execution'''
+            """Do the first part of a functional execution"""
             if len(args) == 0 and len(kwargs) == 0:
                 self.down_queue.put(fn)
             else:
@@ -183,7 +183,7 @@ class TestAnalysisWorker(unittest.TestCase):
                 self.down_queue.put(closure)
 
         def ecute(self):
-            '''Retrieve the results of self.ex()'''
+            """Retrieve the results of self.ex()"""
             msg = self.up_queue_recv_socket.recv()
             result, e = self.up_queue.get()
             if e is not None:
@@ -191,11 +191,11 @@ class TestAnalysisWorker(unittest.TestCase):
             return result
 
     def set_work_socket(self):
-        '''Artificially set up the worker's work socket
-        
+        """Artificially set up the worker's work socket
+
         This sets self.aw.work_socket so that methods other than "run"
         can be tested in the worker.
-        '''
+        """
         self.analysis_id = uuid.uuid4().hex
 
         def do_set_work_socket(aw):
@@ -207,7 +207,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread.execute(do_set_work_socket, self.awthread.aw)
 
     def send_announcement_get_work_request(self):
-        '''Announce the work address until we get some sort of a request'''
+        """Announce the work address until we get some sort of a request"""
         self.analysis_id = uuid.uuid4().hex
         while True:
             self.announce_socket.send_json(
@@ -1076,7 +1076,7 @@ DISPLAY_PIPELINE = GOOD_PIPELINE.replace(
 
 def get_measurements_for_good_pipeline(nimages=1,
                                        group_numbers=None):
-    '''Get an appropriately initialized measurements structure for the good pipeline'''
+    """Get an appropriately initialized measurements structure for the good pipeline"""
     path = os.path.join(example_images_directory(), "ExampleSBSImages")
     m = cpmeas.Measurements()
     if group_numbers is None:

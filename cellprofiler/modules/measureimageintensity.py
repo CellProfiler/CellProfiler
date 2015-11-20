@@ -1,4 +1,4 @@
-'''<b>Measure Image Intensity</b> measures the total intensity in an image 
+"""<b>Measure Image Intensity</b> measures the total intensity in an image
 by summing all of the pixel intensities (excluding masked pixels).
 <hr>
 This module will sum all pixel values to measure the total image
@@ -8,13 +8,13 @@ unmasked pixels will be measured.
 
 <p>Note that for publication purposes, the units of
 intensity from microscopy images are usually described as "Intensity
-units" or "Arbitrary intensity units" since microscopes are not 
-calibrated to an absolute scale. Also, it is important to note whether 
+units" or "Arbitrary intensity units" since microscopes are not
+calibrated to an absolute scale. Also, it is important to note whether
 you are reporting either the mean or the integrated intensity, so specify
 "Mean intensity units" or "Integrated intensity units" accordingly.</p>
 
-<p>Keep in mind that the default behavior in CellProfiler is to rescale the 
-image intensity from 0 to 1 by dividing all pixels in the image by the 
+<p>Keep in mind that the default behavior in CellProfiler is to rescale the
+image intensity from 0 to 1 by dividing all pixels in the image by the
 maximum possible intensity value. This "maximum possible" value
 is defined by the "Set intensity range from" setting in <b>NamesAndTypes</b>;
 see the help for that setting for more details.</p>
@@ -23,10 +23,10 @@ see the help for that setting for more details.</p>
 <ul>
 <li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
 <li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
-<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation 
+<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation
 (MAD) of pixel intensity values. The MAD is defined as the median(|x<sub>i</sub> - median(x)|).</li>
 <li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
-<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25% 
+<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%
 of the pixels in the object have lower values.</li>
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
 of the pixels in the object have lower values.</li>
@@ -34,7 +34,7 @@ of the pixels in the object have lower values.</li>
 </ul>
 
 See also <b>MeasureObjectIntensity</b>, <b>MaskImage</b>.
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpmodule as cpm
@@ -89,7 +89,7 @@ class MeasureImageIntensity(cpm.CPModule):
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the settings & name the module'''
+        """Create the settings & name the module"""
         self.divider_top = cps.Divider(line=False)
         self.images = []
         self.add_image_measurement(can_remove=False)
@@ -170,7 +170,7 @@ class MeasureImageIntensity(cpm.CPModule):
             self.remove_image_measurement(self.images[-1].key)
 
     def get_non_redundant_image_measurements(self):
-        '''Return a non-redundant sequence of image measurement objects'''
+        """Return a non-redundant sequence of image measurement objects"""
         dict = {}
         for im in self.images:
             key = ((im.image_name, im.object_name) if im.wants_objects.value
@@ -179,7 +179,7 @@ class MeasureImageIntensity(cpm.CPModule):
         return dict.values()
 
     def run(self, workspace):
-        '''Perform the measurements on the imageset'''
+        """Perform the measurements on the imageset"""
         #
         # Then measure each
         #
@@ -197,11 +197,11 @@ class MeasureImageIntensity(cpm.CPModule):
                              col_labels=workspace.display_data.col_labels)
 
     def measure(self, im, workspace):
-        '''Perform measurements according to the image measurement in im
-        
+        """Perform measurements according to the image measurement in im
+
         im - image measurement info (see ImageMeasurement class above)
         workspace - has all the details for current image set
-        '''
+        """
         image = workspace.image_set.get_image(im.image_name.value,
                                               must_be_grayscale=True)
         pixels = image.pixel_data
@@ -285,7 +285,7 @@ class MeasureImageIntensity(cpm.CPModule):
                                             ('Total area', pixel_count))]
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = []
         for im in self.get_non_redundant_image_measurements():
             for feature, coltype in ((F_TOTAL_INTENSITY, cpmeas.COLTYPE_FLOAT),
@@ -334,11 +334,11 @@ class MeasureImageIntensity(cpm.CPModule):
     def upgrade_settings(self, setting_values,
                          variable_revision_number,
                          module_name, from_matlab):
-        '''Account for prior versions when loading
-        
+        """Account for prior versions when loading
+
         We handle Matlab revision # 2 here. We don't support thresholding
         because it was generally unused. The first setting is the image name.
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
             setting_values = [setting_values[0],  # image name
                               cps.NO,  # wants objects

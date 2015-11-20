@@ -1,4 +1,4 @@
-'''test_measurecorrelation - test the MeasureCorrelation module'''
+"""test_measurecorrelation - test the MeasureCorrelation module"""
 
 import base64
 import numpy as np
@@ -24,7 +24,7 @@ OBJECTS_NAME = 'objects'
 
 class TestMeasureCorrelation(unittest.TestCase):
     def make_workspace(self, image1, image2, objects=None):
-        '''Make a workspace for testing ApplyThreshold'''
+        """Make a workspace for testing ApplyThreshold"""
         module = M.MeasureCorrelation()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -50,7 +50,7 @@ class TestMeasureCorrelation(unittest.TestCase):
         return workspace, module
 
     def test_01_01_load_matlab(self):
-        '''Load a Matlab pipeline with a MeasureCorrelation module'''
+        """Load a Matlab pipeline with a MeasureCorrelation module"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
                 'sSU1RyM+zUgjJKFXwKs1TMDRUMLC0MjS1MjZTMDIwsFQgGTAwevryMzAwSD'
                 'EzMFTMeRtxN++WgYiZQMT10NjrWZeWFB58qhfBfre/bGefn/Qlroy1Wr63j'
@@ -104,7 +104,7 @@ class TestMeasureCorrelation(unittest.TestCase):
             self.assertTrue(name in ["Nuclei", "Cells"])
 
     def test_01_02_load_v1(self):
-        '''Load a version-1 MeasureCorrelation module'''
+        """Load a version-1 MeasureCorrelation module"""
         data = ('eJztW++O2kYQXzju2muk6FKpatR82Y+59kCG5NoLqi5Q6B/ag6AcTRRFabs'
                 'HC2y17CJ7fTlaRcoj9RH6GH2Efswj1As2NlsfNmBzENmSBTPsb2ZndnZmbO'
                 'N6uXVW/gYe5zRYL7eyXUIxbFIkulwfFCETR7CiYyRwB3JWhK2+CX80Gczno'
@@ -275,7 +275,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertTrue(name in ["Nuclei", "Cells"])
 
     def test_02_01_get_categories(self):
-        '''Test the get_categories function for some different cases'''
+        """Test the get_categories function for some different cases"""
         module = M.MeasureCorrelation()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -295,7 +295,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(cat(OBJECTS_NAME))
 
     def test_02_02_get_measurements(self):
-        '''Test the get_measurements function for some different cases'''
+        """Test the get_measurements function for some different cases"""
         module = M.MeasureCorrelation()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -320,7 +320,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertTrue(meas(OBJECTS_NAME))
 
     def test_02_03_get_measurement_images(self):
-        '''Test the get_measurment_images function for some different cases'''
+        """Test the get_measurment_images function for some different cases"""
         module = M.MeasureCorrelation()
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
@@ -423,7 +423,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertTrue(column[1] in features)
 
     def test_03_02_anticorrelated(self):
-        '''Test two anticorrelated images'''
+        """Test two anticorrelated images"""
         #
         # Make a checkerboard pattern and reverse it for one image
         #
@@ -442,7 +442,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertAlmostEqual(corr, -1)
 
     def test_04_01_slope(self):
-        '''Test the slope measurement'''
+        """Test the slope measurement"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(10, 10)).astype(np.float32)
         image2 = image1 * .5
@@ -461,7 +461,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertAlmostEqual(slope, 2)
 
     def test_05_01_crop(self):
-        '''Test similarly cropping one image to another'''
+        """Test similarly cropping one image to another"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
         i1 = cpi.Image(image1)
@@ -478,7 +478,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertAlmostEqual(corr, 1)
 
     def test_05_02_mask(self):
-        '''Test images with two different masks'''
+        """Test images with two different masks"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
         mask1 = np.ones((20, 20), bool)
@@ -503,7 +503,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertAlmostEqual(corr, 1)
 
     def test_06_01_objects(self):
-        '''Test images with two objects'''
+        """Test images with two objects"""
         labels = np.zeros((10, 10), int)
         labels[:4, :4] = 1
         labels[6:, 6:] = 2
@@ -544,7 +544,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
                 self.assertTrue(column[1] in object_features)
 
     def test_06_02_cropped_objects(self):
-        '''Test images and objects with a cropping mask'''
+        """Test images and objects with a cropping mask"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
         i1 = cpi.Image(image1)
@@ -571,7 +571,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertAlmostEqual(corr[1], 1)
 
     def test_06_03_no_objects(self):
-        '''Test images with no objects'''
+        """Test images with no objects"""
         labels = np.zeros((10, 10), int)
         i, j = np.mgrid[0:10, 0:10]
         image1 = ((i + j) % 2).astype(float)
@@ -603,7 +603,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
                 self.assertTrue(column[1] in object_features)
 
     def test_06_04_wrong_size(self):
-        '''Regression test of IMG-961 - objects and images of different sizes'''
+        """Regression test of IMG-961 - objects and images of different sizes"""
         np.random.seed(0)
         image1 = np.random.uniform(size=(20, 20))
         i1 = cpi.Image(image1)

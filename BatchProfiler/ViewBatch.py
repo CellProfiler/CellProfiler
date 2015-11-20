@@ -584,7 +584,7 @@ function fix_permissions() {
                                             'to delete %s?")' % filename)
 
     def build_footer(self):
-        '''Build the footer for scrolling through the pages'''
+        """Build the footer for scrolling through the pages"""
         page_size = BATCHPROFILER_DEFAULTS[PAGE_SIZE] or 25
         first_item = BATCHPROFILER_VARIABLES[FIRST_ITEM] or 1
         if self.status is None:
@@ -631,7 +631,7 @@ function fix_permissions() {
                                     self.text(label)
 
     def build_text_file_table_cell(self, task):
-        '''Build a table cell containing links to the stdout/err output'''
+        """Build a table cell containing links to the stdout/err output"""
         bat = task.batch_array_task
         text_path = RunBatch.batch_array_task_text_file_path(bat)
         text_file = os.path.basename(text_path)

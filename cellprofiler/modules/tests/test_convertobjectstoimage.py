@@ -1,5 +1,5 @@
-'''test_converttoimage.py - test the ConvertToImage module
-'''
+"""test_converttoimage.py - test the ConvertToImage module
+"""
 
 import base64
 import numpy as np
@@ -45,7 +45,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         return (workspace, module)
 
     def test_01_01_load_matlab(self):
-        '''load a matlab pipeline with ConvertToImage in it'''
+        """load a matlab pipeline with ConvertToImage in it"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
                 'sSU1RyM+zUnArylTwKs1TMDRSMDS2Mja3MjBUMDIwsFQgGTAwevryMzAwrG'
                 'BiYKiY8zbcMf+WgUiZgsI1v45A31uNzn3WJbI5l7c81rLK9ZAO0V5lkikuz'
@@ -77,7 +77,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertEqual(module.colormap.value, "flag")
 
     def test_01_02_load_v1(self):
-        '''load a pipeline with a variable_revision_number=1 ConvertToImage'''
+        """load a pipeline with a variable_revision_number=1 ConvertToImage"""
         data = ('eJztWltv2jAUNpeidpW6rnvYpL74cZvaKKFF2ngZFNaNqVy0ok57WxoM9WR'
                 'slDgU9kv2U/a4n7SfsBhCSbzQcGm5SIlkwXH8ne+c4xM7OXI5X7/In8GMos'
                 'Jyvn7cxATBGtF5k5ntLKT8CBZMpHPUgIxm4bmJ4WebQi0NtZOspmZPMzCtq'
@@ -112,7 +112,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertEqual(module.colormap.value, "winter")
 
     def test_02_01_bw(self):
-        '''Test conversion of labels to black and white'''
+        """Test conversion of labels to black and white"""
         workspace, module = self.make_workspace()
         module.image_mode.value = C.IM_BINARY
         module.run(workspace)
@@ -122,7 +122,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertTrue(np.all(pixel_data[i * j > 0]))
 
     def test_02_02_gray(self):
-        '''Test conversion of labels to grayscale'''
+        """Test conversion of labels to grayscale"""
         workspace, module = self.make_workspace()
         module.image_mode.value = C.IM_GRAYSCALE
         module.run(workspace)
@@ -131,7 +131,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertTrue(np.all(pixel_data == expected))
 
     def test_02_03_color(self):
-        '''Test conversion of labels to color'''
+        """Test conversion of labels to color"""
         for color in C.COLORMAPS:
             workspace, module = self.make_workspace()
             module.image_mode.value = C.IM_COLOR

@@ -1,4 +1,4 @@
-'''run_loop.py - support for running the OS/X event loop
+"""run_loop.py - support for running the OS/X event loop
 
 OS/X needs to run an event loop on the main thread in order to run a user
 interface. This is handled by WX when running in 32-bit mode, but needs to
@@ -7,7 +7,7 @@ badly-written ImageJ 2.0 plugin).
 
 The run loop stalls the main thread on other platforms without doing anything
 else.
-'''
+"""
 import sys
 
 if sys.platform == "darwin":

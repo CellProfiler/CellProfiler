@@ -1,18 +1,18 @@
-'''<b>Image Math</b> performs simple mathematical operations on image intensities.
+"""<b>Image Math</b> performs simple mathematical operations on image intensities.
 <hr>
 This module can perform addition, subtraction, multiplication, division, or averaging
-of two or more image intensities, as well as inversion, log transform, or scaling by 
+of two or more image intensities, as well as inversion, log transform, or scaling by
 a constant for individual image intensities.
 
-<p>Keep in mind that after the requested operations are carried out, the final image 
+<p>Keep in mind that after the requested operations are carried out, the final image
 may have a substantially different range of pixel
 intensities than the original. CellProfiler
-assumes that the image is scaled from 0 &ndash; 1 for object identification and 
-display purposes, so additional rescaling may be needed. Please see the 
+assumes that the image is scaled from 0 &ndash; 1 for object identification and
+display purposes, so additional rescaling may be needed. Please see the
 <b>RescaleIntensity</b> module for more scaling options.</p>
 
 See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
-'''
+"""
 
 import numpy as np
 from contrib.english import ordinal
@@ -211,7 +211,7 @@ class ImageMath(cpm.CPModule):
 
     @property
     def operand_count(self):
-        '''# of operands, taking the operation into consideration'''
+        """# of operands, taking the operation into consideration"""
         if self.operation.value in (
         O_INVERT, O_LOG_TRANSFORM, O_LOG_TRANSFORM_LEGACY, O_NONE, O_NOT):
             return 1
@@ -444,7 +444,7 @@ class ImageMath(cpm.CPModule):
                  sharexy=figure.subplot(0, 0))
 
     def validate_module(self, pipeline):
-        '''Guarantee that at least one operand is an image'''
+        """Guarantee that at least one operand is an image"""
         for i in range(self.operand_count):
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:

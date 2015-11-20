@@ -1,5 +1,5 @@
-'''test_maskobjects.py - test the MaskObjects module
-'''
+"""test_maskobjects.py - test the MaskObjects module
+"""
 
 import base64
 from matplotlib.image import pil_to_array
@@ -31,7 +31,7 @@ OUTPUT_OUTLINES = 'outputoutlines'
 
 class TestMaskObjects(unittest.TestCase):
     def test_01_01_load_matlab_exclude(self):
-        '''Load a pipeline with an Exclude module'''
+        """Load a pipeline with an Exclude module"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUvDNz1NwS01SMDBUMLCwMjGzAjKMDAwNFEgGDIyevvwMDAwKzAwM'
                 'FXOeRtzNu2UgYiYSsTss1N10pfjUWadjc2I32b/d9FtT9hLbirVab1cZdXrb'
@@ -275,7 +275,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         return workspace, module
 
     def test_02_01_measurement_columns(self):
-        '''Test get_measurement_columns'''
+        """Test get_measurement_columns"""
         workspace, module = self.make_workspace(np.zeros((20, 10), int),
                                                 M.P_MASK,
                                                 np.zeros((20, 10), int))

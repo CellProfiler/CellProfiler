@@ -1,18 +1,18 @@
-'''<b>Display Platemap </b> displays a desired measurement in a plate map view.
+"""<b>Display Platemap </b> displays a desired measurement in a plate map view.
 <hr>
-<b>Display Platemap</b> is a tool for browsing image-based data laid out on 
+<b>Display Platemap</b> is a tool for browsing image-based data laid out on
 multi-well plates common to high-throughput biological screens. The display
 window for this module shows a plate map with each well color-coded according
-to the measurement chosen. 
+to the measurement chosen.
 
-<p>As the pipeline runs, the measurement information displayed is updated, so 
-the value shown for each well is current up to the image cycle currently being 
-processed; wells which have no corresponding measurements as yet as shown as 
+<p>As the pipeline runs, the measurement information displayed is updated, so
+the value shown for each well is current up to the image cycle currently being
+processed; wells which have no corresponding measurements as yet as shown as
 blank.
 
-See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>, 
+See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>,
 <b>DisplayScatterPlot</b>.
-'''
+"""
 
 import numpy as np
 from contrib.english import ordinal

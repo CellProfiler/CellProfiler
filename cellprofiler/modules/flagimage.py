@@ -1,28 +1,28 @@
-'''<b>Flag Image</b> allows you to flag an image based on properties 
+"""<b>Flag Image</b> allows you to flag an image based on properties
 that you specify, for example, quality control measurements.
 <hr>
 
 This module allows you to assign a flag if
-an image meets certain measurement criteria that you specify (for 
+an image meets certain measurement criteria that you specify (for
 example, if the image fails a quality control measurement).  The
-value of the flag is 1 if the image meets the selected criteria (for 
-example, if it fails QC), and 0 if it does not meet the criteria (if 
-it passes QC). The flag can be used in post-processing to filter out 
-images you do not want to analyze, e.g., in CellProfiler Analyst. In 
-addition, you can use <b>ExportToSpreadsheet</b> to generate a file 
-that includes the flag as a metadata measurement associated with the 
-images. The <b>Metadata</b> module can then use this flag 
-to put images that pass QC into one group and images that fail 
+value of the flag is 1 if the image meets the selected criteria (for
+example, if it fails QC), and 0 if it does not meet the criteria (if
+it passes QC). The flag can be used in post-processing to filter out
+images you do not want to analyze, e.g., in CellProfiler Analyst. In
+addition, you can use <b>ExportToSpreadsheet</b> to generate a file
+that includes the flag as a metadata measurement associated with the
+images. The <b>Metadata</b> module can then use this flag
+to put images that pass QC into one group and images that fail
 into another.
 
-A flag can be based on one or more measurements. If you create a flag 
+A flag can be based on one or more measurements. If you create a flag
 based on more than one measurement, you can choose between setting the
-flag if all measurements are outside the bounds or if one of the 
+flag if all measurements are outside the bounds or if one of the
 measurements is outside of the bounds.
 
-This module must be placed in the pipeline after the relevant measurement 
+This module must be placed in the pipeline after the relevant measurement
 modules upon which the flags are based.
-'''
+"""
 
 import logging
 import numpy as np
@@ -182,7 +182,7 @@ class FlagImage(cpm.CPModule):
                         %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals()))
 
         def get_directory_fn():
-            '''Get the directory for the rules file name'''
+            """Get the directory for the rules file name"""
             return group.rules_directory.get_absolute_path()
 
         def set_directory_fn(path):
@@ -209,7 +209,7 @@ class FlagImage(cpm.CPModule):
                         positive score is higher than the negative score.</p>""" % globals()))
 
         def get_rules_class_choices(group=group):
-            '''Get the available choices from the rules file'''
+            """Get the available choices from the rules file"""
             try:
                 rules = self.get_rules(group)
                 nclasses = len(rules.rules[0].weights[0])
@@ -277,7 +277,7 @@ class FlagImage(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Construct the correct number of flags'''
+        """Construct the correct number of flags"""
         flag_count = int(setting_values[0])
         del self.flags[:]
         self.add_flag(can_delete=False)
@@ -341,7 +341,7 @@ class FlagImage(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        '''If using rules, validate them'''
+        """If using rules, validate them"""
         for flag in self.flags:
             for measurement_setting in flag.measurement_settings:
                 if measurement_setting.source_choice == S_RULES:
@@ -478,7 +478,7 @@ class FlagImage(cpm.CPModule):
         return "_".join((flag.category.value, flag.feature_name.value))
 
     def get_rules(self, measurement_group):
-        '''Read the rules from a file'''
+        """Read the rules from a file"""
         rules_file = measurement_group.rules_file_name.value
         rules_directory = measurement_group.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
@@ -513,16 +513,16 @@ class FlagImage(cpm.CPModule):
         return statistics
 
     def eval_measurement(self, workspace, ms):
-        '''Evaluate a measurement
-        
+        """Evaluate a measurement
+
         workspace - holds the measurements to be evaluated
         ms - the measurement settings indicating how to evaluate
-        
+
         returns a tuple
            first tuple element is True = pass, False = Fail
            second tuple element has all of the statistics except for the
                         flag name
-        '''
+        """
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         fail = False
@@ -593,7 +593,7 @@ class FlagImage(cpm.CPModule):
                              "Fail" if fail else "Pass"))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for each flag mesurment in the module'''
+        """Return column definitions for each flag mesurment in the module"""
         return [
             (cpmeas.IMAGE, self.measurement_name(flag), cpmeas.COLTYPE_INTEGER)
             for flag in self.flags]

@@ -1,6 +1,6 @@
-'''<b>Example6b</b> Creating an image set list
+"""<b>Example6b</b> Creating an image set list
 <hr>
-'''
+"""
 import datetime
 import os
 from bioformats import load_image
@@ -31,7 +31,7 @@ class Example6b(cpm.CPModule):
         return [self.image_name, self.folder]
 
     def is_load_module(self):
-        '''Tell CellProfiler that this module produces image sets'''
+        """Tell CellProfiler that this module produces image sets"""
         return True
 
     def prepare_run(self, workspace):
@@ -78,13 +78,13 @@ class Example6b(cpm.CPModule):
         #
 
     def get_files(self, utctime):
-        '''Return a list of path / filename tuples created after utctime
-        
+        """Return a list of path / filename tuples created after utctime
+
         utctime - a utc datetime representing the earliest acceptable creation time
-        
+
         returns a list of two-tuples with the path in the first tuple and
                 the file in the second.
-        '''
+        """
         result = []
         for root, dirnames, filenames in os.walk(
                 self.folder.get_absolute_path()):

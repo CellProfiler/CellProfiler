@@ -34,10 +34,10 @@ class TestZMQRequest(unittest.TestCase):
             os.environ['HOSTNAME'] = cls.old_hostname
 
     class ZMQClient(threading.Thread):
-        '''A mockup of a ZMQ client to the boundary
-        
+        """A mockup of a ZMQ client to the boundary
+
         must be instantiated after an analysis has been started
-        '''
+        """
         MSG_STOP = "STOP"
         MSG_SEND = "SEND"
 
@@ -131,7 +131,7 @@ class TestZMQRequest(unittest.TestCase):
             return self
 
         def recv(self, timeout):
-            '''Receive a message'''
+            """Receive a message"""
             try:
                 req = self.upq.get(timeout)
                 return req

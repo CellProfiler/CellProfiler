@@ -71,7 +71,7 @@ class CreateBatchFiles(cpm.CPModule):
 
     #
     def create_settings(self):
-        '''Create the module settings and name the module'''
+        """Create the module settings and name the module"""
         self.wants_default_output_directory = cps.Binary(
             "Store batch files in default output folder?", True, doc="""
             Select <i>%(YES)s</i> to store batch files in the Default Output folder. <br>
@@ -202,7 +202,7 @@ class CreateBatchFiles(cpm.CPModule):
         return result
 
     def prepare_run(self, workspace):
-        '''Invoke the image_set_list pickling mechanism and save the pipeline'''
+        """Invoke the image_set_list pickling mechanism and save the pipeline"""
 
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
@@ -242,7 +242,7 @@ class CreateBatchFiles(cpm.CPModule):
         self.from_old_matlab.value = cps.NO
 
     def validate_module(self, pipeline):
-        '''Make sure the module settings are valid'''
+        """Make sure the module settings are valid"""
         # Ensure we're not an un-updatable version of the module from way back.
         if self.from_old_matlab.value:
             raise cps.ValidationError(
@@ -256,20 +256,20 @@ class CreateBatchFiles(cpm.CPModule):
                                       self.wants_default_output_directory)
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "CreateBatchFiles will not produce output in Test Mode",
                 self.wants_default_output_directory)
 
     def save_pipeline(self, workspace, outf=None):
-        '''Save the pipeline in Batch_data.mat
-        
+        """Save the pipeline in Batch_data.mat
+
         Save the pickled image_set_list state in a setting and put this
         module in batch mode.
 
         if outf is not None, it is used as a file object destination.
-        '''
+        """
         from cellprofiler.utilities.version import version_number
 
         if outf is None:
@@ -322,11 +322,11 @@ class CreateBatchFiles(cpm.CPModule):
         return True
 
     def in_batch_mode(self):
-        '''Tell the system whether we are in batch mode on the cluster'''
+        """Tell the system whether we are in batch mode on the cluster"""
         return self.batch_mode.value
 
     def enter_batch_mode(self, workspace):
-        '''Restore the image set list from its setting as we go into batch mode'''
+        """Restore the image set list from its setting as we go into batch mode"""
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
         assert not self.distributed_mode, "Distributed mode no longer supported"
@@ -346,15 +346,15 @@ class CreateBatchFiles(cpm.CPModule):
                 default_image_directory)
 
     def turn_off_batch_mode(self):
-        '''Remove any indications that we are in batch mode
-        
+        """Remove any indications that we are in batch mode
+
         This call restores the module to an editable state.
-        '''
+        """
         self.batch_mode.value = False
         self.batch_state = np.zeros((0,), np.uint8)
 
     def check_paths(self):
-        '''Check to make sure the default directories are remotely accessible'''
+        """Check to make sure the default directories are remotely accessible"""
         import wx
 
         def check(path):
@@ -388,11 +388,11 @@ class CreateBatchFiles(cpm.CPModule):
             wx.MessageBox("All paths are accessible")
 
     def alter_path(self, path, **varargs):
-        '''Modify the path passed so that it can be executed on the remote host
-        
+        """Modify the path passed so that it can be executed on the remote host
+
         path = path to modify
         regexp_substitution - if true, exclude \g<...> from substitution
-        '''
+        """
         regexp_substitution = varargs.get("regexp_substitution", False)
         for mapping in self.mappings:
             local_directory = mapping.local_directory.value

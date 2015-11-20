@@ -1,5 +1,5 @@
-'''filefinderdlg.py - tree checkbox dialog wrapping the cellprofiler file finder
-'''
+"""filefinderdlg.py - tree checkbox dialog wrapping the cellprofiler file finder
+"""
 
 import wx
 import cellprofiler.utilities.filefinder as filefinder
@@ -8,13 +8,13 @@ import Queue
 
 
 class FileFinderDialog(wx.Dialog):
-    '''A dialog wrapping the cellprofiler file finder'''
+    """A dialog wrapping the cellprofiler file finder"""
 
     def __init__(self, parent, dirs, *args, **kwargs):
-        '''Initialize the dialog
+        """Initialize the dialog
 
         dirs - list of directories to search
-        '''
+        """
         wx.Dialog.__init__(self, parent, *args, **kwargs)
 
         self.bitmaps = []
@@ -114,11 +114,11 @@ class FileFinderDialog(wx.Dialog):
                                     wx.TreeItemIcon_SelectedExpanded)
 
     def get_checkbox_bitmap(self, flags, width, height):
-        '''Return a bitmap with a checkbox drawn into it
+        """Return a bitmap with a checkbox drawn into it
 
         flags - rendering flags including CONTROL_CHECKED and CONTROL_UNDETERMINED
         width, height - size of bitmap to return
-        '''
+        """
         dc = wx.MemoryDC()
         bitmap = wx.EmptyBitmap(width, height)
         dc.SelectObject(bitmap)

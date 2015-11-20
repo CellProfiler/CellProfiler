@@ -72,7 +72,7 @@ class FunctionMaker(object):
             raise TypeError('You are decorating a non function: %s' % func)
 
     def update(self, func, **kw):
-        "Update the signature of func with the data in self"
+        """Update the signature of func with the data in self"""
         func.__name__ = self.name
         func.__doc__ = getattr(self, 'doc', None)
         func.__dict__ = getattr(self, 'dict', {})
@@ -82,7 +82,7 @@ class FunctionMaker(object):
         func.__dict__.update(kw)
 
     def make(self, src_templ, evaldict=None, addsource=False, **attrs):
-        "Make a new function from a given template and update the signature"
+        """Make a new function from a given template and update the signature"""
         src = src_templ % vars(self)  # expand name and signature
         evaldict = evaldict or {}
         mo = DEF.match(src)
@@ -133,7 +133,7 @@ def decorator(caller, func=None):
 
 @decorator
 def deprecated(func, *args, **kw):
-    "A decorator for deprecated functions"
+    """A decorator for deprecated functions"""
     warnings.warn(
         ('Calling the deprecated function %r\n'
          'Downgrade to decorator 2.3 if you want to use this functionality')
@@ -185,7 +185,7 @@ def getinfo(func):
 
 @deprecated
 def update_wrapper(wrapper, model, infodict=None):
-    "A replacement for functools.update_wrapper"
+    """A replacement for functools.update_wrapper"""
     infodict = infodict or getinfo(model)
     wrapper.__name__ = infodict['name']
     wrapper.__doc__ = infodict['doc']

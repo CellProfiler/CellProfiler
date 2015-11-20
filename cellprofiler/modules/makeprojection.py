@@ -135,7 +135,7 @@ class MakeProjection(cpm.CPModule):
         return result
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Reset the aggregate image at the start of group processing'''
+        """Reset the aggregate image at the start of group processing"""
         if len(image_numbers) > 0:
             provider = ImageProvider(self.projection_image_name.value,
                                      self.projection_type.value,
@@ -159,15 +159,15 @@ class MakeProjection(cpm.CPModule):
                 provider.provide_image(workspace.image_set).pixel_data
 
     def is_aggregation_module(self):
-        '''Return True because we aggregate over all images in a group'''
+        """Return True because we aggregate over all images in a group"""
         return True
 
     def post_group(self, workspace, grouping):
-        '''Handle processing that takes place at the end of a group
+        """Handle processing that takes place at the end of a group
 
         Add the provider to the workspace if not present. This could
         happen if the image set didn't reach this module.
-        '''
+        """
         image_set = workspace.image_set
         if self.projection_image_name.value not in image_set.get_names():
             provider = ImageProvider.restore_from_state(self.get_dictionary())
@@ -258,10 +258,10 @@ class ImageProvider(cpi.AbstractImageProvider):
     D_NORM0 = "norm0"
 
     def save_state(self, d):
-        '''Save the provider state to a dictionary
-        
+        """Save the provider state to a dictionary
+
         d - store state in this dictionary
-        '''
+        """
         d[self.D_NAME] = self.__name
         d[self.D_FREQUENCY] = self.frequency
         d[self.D_IMAGE] = self.__image
@@ -278,12 +278,12 @@ class ImageProvider(cpi.AbstractImageProvider):
 
     @staticmethod
     def restore_from_state(d):
-        '''Create a provider from the state stored in the dictionary
-        
+        """Create a provider from the state stored in the dictionary
+
         d - dictionary from call to save_state
-        
+
         returns a new ImageProvider built from the saved state
-        '''
+        """
         name = d[ImageProvider.D_NAME]
         frequency = d[ImageProvider.D_FREQUENCY]
         how_to_accumulate = d[ImageProvider.D_HOW_TO_ACCUMULATE]
@@ -301,7 +301,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         return image_provider
 
     def reset(self):
-        '''Reset accumulator at start of groups'''
+        """Reset accumulator at start of groups"""
         self.__image_count = None
         self.__image = None
         self.__cached_image = None
@@ -464,5 +464,5 @@ class ImageProvider(cpi.AbstractImageProvider):
         return self.__name
 
     def release_memory(self):
-        '''Don't discard the image at end of image set'''
+        """Don't discard the image at end of image set"""
         pass

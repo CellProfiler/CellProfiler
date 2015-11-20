@@ -1,6 +1,6 @@
-'''<b>Example4b</b> Object processing - location measurements 
+"""<b>Example4b</b> Object processing - location measurements
 <hr>
-'''
+"""
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas

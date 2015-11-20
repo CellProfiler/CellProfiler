@@ -1,12 +1,12 @@
-'''<b>Mask Objects</b> removes objects outside of a specified region or regions.
+"""<b>Mask Objects</b> removes objects outside of a specified region or regions.
 <hr>
-This module allows you to delete the objects or portions of objects that are 
+This module allows you to delete the objects or portions of objects that are
 outside of a region (mask) you specify. For example, after
 identifying nuclei and tissue regions in previous <b>Identify</b> modules, you might
-want to exclude all nuclei that are outside of a tissue region.  
+want to exclude all nuclei that are outside of a tissue region.
 
-<p>If using a masking image, the mask is composed of the foreground (white portions); 
-if using a masking object, the mask is composed of the area within the object. 
+<p>If using a masking image, the mask is composed of the foreground (white portions);
+if using a masking object, the mask is composed of the area within the object.
 You can choose to remove only the portion of each object that is outside of
 the region, remove the whole object if it is partially or fully
 outside of the region, or retain the whole object unless it is fully outside
@@ -21,10 +21,10 @@ of the region. </p>
 <b>Masked object measurements:</b>
 <ul>
 <li><i>Parent:</i> The label number of the parent object.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
 mass of the masked objects.</li>
 </ul>
-'''
+"""
 
 import numpy as np
 import scipy.ndimage as scind
@@ -67,10 +67,10 @@ S_DICTIONARY = {
 
 
 def s_lookup(x):
-    '''Look up the current value for a setting choice w/backwards compatibility
-    
+    """Look up the current value for a setting choice w/backwards compatibility
+
     x - setting value from pipeline
-    '''
+    """
     return S_DICTIONARY.get(x, x)
 
 
@@ -80,7 +80,7 @@ class MaskObjects(I.Identify):
     variable_revision_number = 2
 
     def create_settings(self):
-        '''Create the settings that control this module'''
+        """Create the settings that control this module"""
         self.object_name = cps.ObjectNameSubscriber(
             "Select objects to be masked", cps.NONE, doc="""
             Select the objects that will be masked (that is, excluded in whole 
@@ -194,7 +194,7 @@ class MaskObjects(I.Identify):
             %(NAMING_OUTLINES_HELP)s""" % globals())
 
     def settings(self):
-        '''The settings as they appear in the pipeline'''
+        """The settings as they appear in the pipeline"""
         return [self.object_name, self.remaining_objects, self.mask_choice,
                 self.masking_objects, self.masking_image, self.overlap_choice,
                 self.overlap_fraction, self.retain_or_renumber,
@@ -202,7 +202,7 @@ class MaskObjects(I.Identify):
                 self.wants_inverted_mask]
 
     def help_settings(self):
-        '''The settings as they appear in the pipeline'''
+        """The settings as they appear in the pipeline"""
         return [self.object_name, self.remaining_objects, self.mask_choice,
                 self.masking_objects, self.masking_image,
                 self.wants_inverted_mask,
@@ -211,7 +211,7 @@ class MaskObjects(I.Identify):
                 self.wants_outlines, self.outlines_name]
 
     def visible_settings(self):
-        '''The settings as they appear in the UI'''
+        """The settings as they appear in the UI"""
         result = [self.object_name, self.remaining_objects, self.mask_choice,
                   self.masking_image if self.mask_choice == MC_IMAGE
                   else self.masking_objects, self.wants_inverted_mask,
@@ -226,7 +226,7 @@ class MaskObjects(I.Identify):
         return result
 
     def run(self, workspace):
-        '''Run the module on an image set'''
+        """Run the module on an image set"""
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
@@ -339,7 +339,7 @@ class MaskObjects(I.Identify):
             workspace.display_data.mask = mask
 
     def display(self, workspace, figure):
-        '''Create an informative display for the module'''
+        """Create an informative display for the module"""
         import matplotlib
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         original_labels = workspace.display_data.original_labels
@@ -381,7 +381,7 @@ class MaskObjects(I.Identify):
                                     sharexy=figure.subplot(0, 0))
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
@@ -403,22 +403,22 @@ class MaskObjects(I.Identify):
                                           object_dictionary)
 
     def get_object_dictionary(self):
-        '''Get the dictionary of parent child relationships
-        
+        """Get the dictionary of parent child relationships
+
         see Identify.get_object_categories, Identify.get_object_measurements
-        '''
+        """
         object_dictionary = {
             self.remaining_objects.value: [self.object_name.value]
         }
         return object_dictionary
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return names of the measurements made by this module
-        
+        """Return names of the measurements made by this module
+
         pipeline - pipeline being run
         object_name - object being measured (or Image)
         category - category of measurement, for instance, "Location"
-        '''
+        """
         return self.get_object_measurements(pipeline, object_name, category,
                                             self.get_object_dictionary())
 

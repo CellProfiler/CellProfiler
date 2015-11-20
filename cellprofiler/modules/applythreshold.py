@@ -188,11 +188,11 @@ class ApplyThreshold(Identify):
             workspace.display_data.col_labels)
 
     def get_measurement_objects_name(self):
-        '''Return the name of the "objects" used to name thresholding measurements
-        
+        """Return the name of the "objects" used to name thresholding measurements
+
         In the case of ApplyThreshold, we use the image name to name the
         measurements, so the code here works, but is misnamed.
-        '''
+        """
         return self.thresholded_image_name.value
 
     def get_measurement_columns(self, pipeline):

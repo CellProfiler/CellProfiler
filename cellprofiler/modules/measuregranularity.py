@@ -1,11 +1,11 @@
-'''<b>Measure Granularity</b> outputs spectra of size measurements 
+"""<b>Measure Granularity</b> outputs spectra of size measurements
 of the textures in the image.
 <hr>
-Image granularity is a texture measurement that tries a series of structure elements 
-of increasing size and outputs a spectrum of measures of how well these structure 
-elements fit in the texture of the image. Granularity is measured as described by 
-Ilya Ravkin (references below). The size of the starting structure element as well 
-as the range of the spectrum is given as input. 
+Image granularity is a texture measurement that tries a series of structure elements
+of increasing size and outputs a spectrum of measures of how well these structure
+elements fit in the texture of the image. Granularity is measured as described by
+Ilya Ravkin (references below). The size of the starting structure element as well
+as the range of the spectrum is given as input.
 
 <h4>Available measurements</h4>
 <ul>
@@ -28,7 +28,7 @@ Intelligence</i>, 11, N 7, pp. 701-716, 1989</li>
 <i>Applied Informatics</i>, v.14, pp. 41-90, Finances and Statistics, Moskow,
 (in Russian)</li>
 </ul>
-'''
+"""
 
 import numpy as np
 import scipy.ndimage as scind
@@ -145,7 +145,7 @@ class MeasureGranularity(cpm.CPModule):
         return group
 
     def validate_module(self, pipeline):
-        '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
+        """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
         measurements, sources = self.get_measurement_columns(pipeline,
                                                              return_sources=True)
         d = {}
@@ -166,7 +166,7 @@ class MeasureGranularity(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Adjust self.images to account for the expected # of images'''
+        """Adjust self.images to account for the expected # of images"""
         image_count = int(setting_values[0])
         idx = 1
         del self.images[:]

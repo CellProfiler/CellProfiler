@@ -1,25 +1,25 @@
-'''<b>Align</b> aligns images relative to each other, for example, to correct 
-shifts in the optical path of a microscope in each channel of a multi-channel 
+"""<b>Align</b> aligns images relative to each other, for example, to correct
+shifts in the optical path of a microscope in each channel of a multi-channel
 set of images.
 <hr>
-For two or more input images, this module determines the optimal alignment 
-among them. Aligning images is useful to obtain proper measurements of the 
-intensities in one channel based on objects identified in another channel, 
-for example. Alignment is often needed when the microscope is not perfectly 
-calibrated. It can also be useful to align images in a time-lapse series of 
+For two or more input images, this module determines the optimal alignment
+among them. Aligning images is useful to obtain proper measurements of the
+intensities in one channel based on objects identified in another channel,
+for example. Alignment is often needed when the microscope is not perfectly
+calibrated. It can also be useful to align images in a time-lapse series of
 images.  The module stores the amount of shift between images as a
-measurement, which can be useful for quality control purposes. 
+measurement, which can be useful for quality control purposes.
 
-<p>Note that the second image (and others following) is always aligned 
+<p>Note that the second image (and others following) is always aligned
 with respect to the first image. That is, the X/Y offsets indicate how much
 the second image needs to be shifted by to match the first.</p>
 
 <h4>Available measurements</h4>
-<ul> 
-<li><i>XShift, Yshift:</i> The pixel shift in X and Y of the  
+<ul>
+<li><i>XShift, Yshift:</i> The pixel shift in X and Y of the
 aligned image with respect to the original image.</li>
 </ul>
-'''
+"""
 
 import numpy as np
 from scipy.fftpack import fft2, ifft2
@@ -147,7 +147,7 @@ class Align(cpm.CPModule):
             </ul>""" % globals())
 
     def add_image(self, can_remove=True):
-        '''Add an image + associated questions and buttons'''
+        """Add an image + associated questions and buttons"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -260,7 +260,7 @@ class Align(cpm.CPModule):
              in zip(names, offsets, shapes)]
 
     def display(self, workspace, figure):
-        '''Display the overlaid images
+        """Display the overlaid images
 
         workspace - the workspace being run, with display_data holding:
             image_info - a list of lists:
@@ -270,7 +270,7 @@ class Align(cpm.CPModule):
                  output image data
                  x offset
                  y offset
-        '''
+        """
         image_info = workspace.display_data.image_info
         first_input_name = self.first_input_image.value
         first_output_name = self.first_output_image.value
@@ -316,13 +316,13 @@ class Align(cpm.CPModule):
                                   sharexy=figure.subplot(0, 0))
 
     def align(self, workspace, input1_name, input2_name):
-        '''Align the second image with the first
-        
+        """Align the second image with the first
+
         Calculate the alignment offset that must be added to indexes in the
         first image to arrive at indexes in the second image.
-        
+
         Returns the x,y (not i,j) offsets.
-        '''
+        """
         image1 = workspace.image_set.get_image(input1_name)
         image1_pixels = image1.pixel_data.astype(float)
         image2 = workspace.image_set.get_image(input2_name)
@@ -336,16 +336,16 @@ class Align(cpm.CPModule):
                                                  image1_mask, image2_mask)
 
     def align_cross_correlation(self, pixels1, pixels2):
-        '''Align the second image with the first using max cross-correlation
-        
+        """Align the second image with the first using max cross-correlation
+
         returns the x,y offsets to add to image1's indexes to align it with
         image2
-        
+
         Many of the ideas here are based on the paper, "Fast Normalized
-        Cross-Correlation" by J.P. Lewis 
+        Cross-Correlation" by J.P. Lewis
         (http://www.idiom.com/~zilla/Papers/nvisionInterface/nip.html)
         which is frequently cited when addressing this problem.
-        '''
+        """
         #
         # TODO: Possibly use all 3 dimensions for color some day
         #
@@ -462,17 +462,17 @@ class Align(cpm.CPModule):
         return j, i
 
     def align_mutual_information(self, pixels1, pixels2, mask1, mask2):
-        '''Align the second image with the first using mutual information
-        
+        """Align the second image with the first using mutual information
+
         returns the x,y offsets to add to image1's indexes to align it with
         image2
-        
+
         The algorithm computes the mutual information content of the two
         images, offset by one in each direction (including diagonal) and
         then picks the direction in which there is the most mutual information.
         From there, it tries all offsets again and so on until it reaches
         a local maximum.
-        '''
+        """
         #
         # TODO: Possibly use all 3 dimensions for color some day
         #
@@ -514,18 +514,18 @@ class Align(cpm.CPModule):
 
     def apply_alignment(self, workspace, input_image_name, output_image_name,
                         off_x, off_y, shape):
-        '''Apply an alignment to the input image to result in the output image
-        
+        """Apply an alignment to the input image to result in the output image
+
         workspace - image set's workspace passed to run
-        
+
         input_image_name - name of the image to be aligned
-        
+
         output_image_name - name of the resultant image
-        
+
         off_x, off_y - offset of the resultant image relative to the origninal
-        
+
         shape - shape of the resultant image
-        '''
+        """
 
         image = workspace.image_set.get_image(input_image_name)
         pixel_data = image.pixel_data
@@ -561,19 +561,19 @@ class Align(cpm.CPModule):
         workspace.image_set.add(output_image_name, output_image)
 
     def adjust_offsets(self, offsets, shapes):
-        '''Adjust the offsets and shapes for output
-        
+        """Adjust the offsets and shapes for output
+
         workspace - workspace passed to "run"
-        
-        offsets - i,j offsets for each image 
-        
+
+        offsets - i,j offsets for each image
+
         shapes - shapes of the input images
-        
+
         names - pairs of input / output names
-        
+
         Based on the crop mode, adjust the offsets and shapes to optimize
         the cropping.
-        '''
+        """
         offsets = np.array(offsets)
         shapes = np.array(shapes)
         if self.crop_mode == C_CROP:
@@ -629,7 +629,7 @@ class Align(cpm.CPModule):
         return []
 
     def get_measurement_columns(self, pipeline):
-        '''return the offset measurements'''
+        """return the offset measurements"""
 
         targets = ([self.first_output_image.value,
                     self.second_output_image.value] +
@@ -757,10 +757,10 @@ class Align(cpm.CPModule):
 
 
 def offset_slice(pixels1, pixels2, i, j):
-    '''Return two sliced arrays where the first slice is offset by i,j
+    """Return two sliced arrays where the first slice is offset by i,j
     relative to the second slice.
-    
-    '''
+
+    """
     if i < 0:
         height = min(pixels1.shape[0] + i, pixels2.shape[0])
         p1_imin = -i
@@ -788,12 +788,12 @@ def offset_slice(pixels1, pixels2, i, j):
 
 
 def cumsum_quadrant(x, i_forwards, j_forwards):
-    '''Return the cumulative sum going in the i, then j direction
-    
+    """Return the cumulative sum going in the i, then j direction
+
     x - the matrix to be summed
     i_forwards - sum from 0 to end in the i direction if true
     j_forwards - sum from 0 to end in the j direction if true
-    '''
+    """
     if i_forwards:
         x = x.cumsum(0)
     else:
@@ -805,7 +805,7 @@ def cumsum_quadrant(x, i_forwards, j_forwards):
 
 
 def entropy(x):
-    '''The entropy of x as if x is a probability distribution'''
+    """The entropy of x as if x is a probability distribution"""
     histogram = scind.histogram(x.astype(float), np.min(x), np.max(x), 256)
     n = np.sum(histogram)
     if n > 0 and np.max(histogram) > 0:
@@ -816,7 +816,7 @@ def entropy(x):
 
 
 def entropy2(x, y):
-    '''Joint entropy of paired samples X and Y'''
+    """Joint entropy of paired samples X and Y"""
     #
     # Bin each image into 256 gray levels
     #
@@ -840,7 +840,7 @@ def entropy2(x, y):
 
 
 def reshape_image(source, new_shape):
-    '''Reshape an image to a larger shape, padding with zeros'''
+    """Reshape an image to a larger shape, padding with zeros"""
     if tuple(source.shape) == tuple(new_shape):
         return source
 

@@ -1,5 +1,5 @@
-'''test_images.py - test the Images module
-'''
+"""test_images.py - test the Images module
+"""
 
 import csv
 import numpy as np
@@ -105,7 +105,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             self.check(module, url, expected)
 
     def check(self, module, url, expected):
-        '''Check filtering of one URL using the module as configured'''
+        """Check filtering of one URL using the module as configured"""
         pipeline = cpp.Pipeline()
         pipeline.add_urls([url])
         module.module_num = 1

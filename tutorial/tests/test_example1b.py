@@ -6,7 +6,7 @@ from cellprofiler.modules import instantiate_module
 
 class TestExample1b(unittest.TestCase):
     def make_instance(self):
-        '''Return an instance of example1 this way because it's not on classpath'''
+        """Return an instance of example1 this way because it's not on classpath"""
         return instantiate_module("Example1b")
 
     def test_01_01_off(self):

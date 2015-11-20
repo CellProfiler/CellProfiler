@@ -18,18 +18,18 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     variable_revision_number = 1
 
     def __init__(self, image_name, image, mask=None, release_image=False):
-        '''Initializer
-        
+        """Initializer
+
         image_name - the name of the image to put into the image set
-        
+
         image - either the pixel data for the image if adding the same
                 image to every set or a list or tuple of pixel data,
                 one per image set
-                
+
         mask - None for no mask (default), a binary 2-d matrix if same mask
                for all image sets or a list or tuple of masks if one
                different mask per image set.
-        '''
+        """
         super(InjectImage, self).__init__()
         self.__image_name = image_name
         self.__image = image

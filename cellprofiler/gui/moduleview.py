@@ -156,10 +156,10 @@ def y_control_name(v):
 
 
 def category_control_name(v):
-    '''For measurements, return the control that sets the measurement category
-    
+    """For measurements, return the control that sets the measurement category
+
     v - the setting
-    '''
+    """
     return "%s_category" % (str(v.key()))
 
 
@@ -168,10 +168,10 @@ def category_text_control_name(v):
 
 
 def feature_control_name(v):
-    '''For measurements, return the control that sets the feature name
+    """For measurements, return the control that sets the feature name
 
     v - the setting
-    '''
+    """
     return "%s_feature" % (str(v.key()))
 
 
@@ -180,10 +180,10 @@ def feature_text_control_name(v):
 
 
 def image_control_name(v):
-    '''For measurements, return the control that sets the image name
+    """For measurements, return the control that sets the image name
 
     v - the setting
-    '''
+    """
     return "%s_image" % (str(v.key()))
 
 
@@ -192,10 +192,10 @@ def image_text_control_name(v):
 
 
 def object_control_name(v):
-    '''For measurements, return the control that sets the object name
+    """For measurements, return the control that sets the object name
 
     v - the setting
-    '''
+    """
     return "%s_object" % (str(v.key()))
 
 
@@ -204,10 +204,10 @@ def object_text_control_name(v):
 
 
 def scale_control_name(v):
-    '''For measurements, return the control that sets the measurement scale
+    """For measurements, return the control that sets the measurement scale
 
     v - the setting
-    '''
+    """
     return "%s_scale" % (str(v.key()))
 
 
@@ -266,13 +266,13 @@ class ModuleView:
                  as_datatool=False,
                  frame=None,
                  notes_panel=None):
-        '''Constructor
-        
+        """Constructor
+
         module_panel - the top-level panel used by the view
         workspace - the current workspace
         as_datatool - True if module is being run as a data tool
         notes_panel - panel in which to construct the notes GUI
-        '''
+        """
         pipeline = workspace.pipeline
         self.__workspace = workspace
         self.__module = None
@@ -325,11 +325,11 @@ class ModuleView:
         self.__validation_request = None
 
     def start(self):
-        '''Start the module view
-        
+        """Start the module view
+
         Start the module view after the pipeline and workspace have been
         properly initialized.
-        '''
+        """
         self.__pipeline.add_listener(self.__on_pipeline_event)
         self.__workspace.add_notification_callback(
             self.__on_workspace_event)
@@ -658,7 +658,7 @@ class ModuleView:
                     self.module_panel.Thaw()
 
     def make_notes_gui(self):
-        '''Make the GUI elements that contain the module notes'''
+        """Make the GUI elements that contain the module notes"""
         #
         # The notes sizer contains a static box that surrounds the notes
         # plus the notes text control.
@@ -793,7 +793,7 @@ class ModuleView:
         return control
 
     def make_measurement_multichoice_control(self, v, control_name, control):
-        '''Make a button that, when pressed, launches the tree editor'''
+        """Make a button that, when pressed, launches the tree editor"""
         if control is None:
             control = wx.Button(self.module_panel, -1,
                                 "Press button to select measurements")
@@ -1199,14 +1199,14 @@ class ModuleView:
         return control
 
     def make_callback_controls(self, v, control_name, control):
-        '''Make a panel of buttons for each of the setting's actions
-        
+        """Make a panel of buttons for each of the setting's actions
+
         v - a DoThings setting
-        
+
         control_name - the name that we apply to the panel
-        
+
         control - either None or the panel containing the buttons
-        '''
+        """
         assert isinstance(v, cps.DoThings)
         if not control:
             control = wx.Panel(self.module_panel, name=control_name)
@@ -1338,7 +1338,7 @@ class ModuleView:
                                              name=button_name)
 
             def on_press(event):
-                '''Open a file browser'''
+                """Open a file browser"""
                 if v.mode == cps.FilenameText.MODE_OPEN:
                     mode = wx.FD_OPEN
                 elif v.mode == cps.FilenameText.MODE_APPEND:
@@ -1415,7 +1415,7 @@ class ModuleView:
             custom_sizer.Add(browse_ctrl, 0, wx.ALIGN_CENTER | wx.LEFT, 2)
 
             def on_dir_choice_change(event, v=v, dir_ctrl=dir_ctrl):
-                '''Handle a change to the directory choice combobox'''
+                """Handle a change to the directory choice combobox"""
                 if not self.__handle_change:
                     return
                 proposed_value = v.join_string(
@@ -1426,7 +1426,7 @@ class ModuleView:
                 self.reset_view()
 
             def on_custom_path_change(event, v=v, custom_ctrl=custom_ctrl):
-                '''Handle a change to the custom path'''
+                """Handle a change to the custom path"""
                 if not self.__handle_change:
                     return
                 proposed_value = v.join_string(custom_path=custom_ctrl.Value)
@@ -1437,7 +1437,7 @@ class ModuleView:
 
             def on_browse_pressed(event, v=v, dir_ctrl=dir_ctrl,
                                   custom_ctrl=custom_ctrl):
-                '''Handle browse button pressed'''
+                """Handle browse button pressed"""
                 dlg = wx.DirDialog(self.module_panel,
                                    v.text,
                                    v.get_absolute_path())
@@ -1540,7 +1540,7 @@ class ModuleView:
         return control
 
     def make_image_plane_control(self, v, control):
-        '''Make a control to pick an image plane from the file list'''
+        """Make a control to pick an image plane from the file list"""
         from cellprofiler.modules.loadimages import url2pathname
 
         assert isinstance(v, cps.ImagePlane)
@@ -1801,8 +1801,8 @@ class ModuleView:
         return panel
 
     def make_measurement_control(self, v, panel):
-        '''Make a composite measurement control
-        
+        """Make a composite measurement control
+
         The measurement control has the following parts:
         Category - a measurement category like AreaShape or Intensity
         Feature name - the feature being measured or algorithm applied
@@ -1810,7 +1810,7 @@ class ModuleView:
         Object name - an optional set of objects used to compute the measurement
         Scale - an optional scale, generally in pixels, that controls the size
                 of the measured features.
-        '''
+        """
         #
         # We either come in here with:
         # * panel = None - create the controls
@@ -1881,7 +1881,7 @@ class ModuleView:
                           feature_ctrl=feature_ctrl,
                           object_ctrl=object_ctrl,
                           scale_ctrl=scale_ctrl):
-                '''Reconstruct the measurement value if anything changes'''
+                """Reconstruct the measurement value if anything changes"""
                 if not self.__handle_change:
                     return
 
@@ -2086,8 +2086,8 @@ class ModuleView:
 
     def on_value_change(self, setting, control, proposed_value, event,
                         timeout=None):
-        '''Handle a change in value to a setting
-        
+        """Handle a change in value to a setting
+
         setting - the setting that changed
         control - the WX control whose UI signalled the change
         proposed_value - the proposed new value for the setting
@@ -2095,7 +2095,7 @@ class ModuleView:
         timeout - None = reset view immediately, False = don't reset view
                   otherwise the # of milliseconds to wait before
                   refresh.
-        '''
+        """
         setting_edited_event = SettingEditedEvent(setting,
                                                   self.__module,
                                                   proposed_value,
@@ -2107,7 +2107,7 @@ class ModuleView:
             self.reset_view(timeout)
 
     def fit_ctrl(self, ctrl):
-        '''Fit the control to its text size'''
+        """Fit the control to its text size"""
         width, height = ctrl.GetTextExtent(ctrl.Value + "MM")
         ctrl.SetSizeHintsSz(wx.Size(width, -1))
         ctrl.Parent.Fit()
@@ -2133,7 +2133,7 @@ class ModuleView:
         self.fit_ctrl(control)
 
     def request_validation(self, module=None):
-        '''Request validation of the current module in its current state'''
+        """Request validation of the current module in its current state"""
         if module is None:
             module = self.__module
         if self.__validation_request is not None:
@@ -2243,12 +2243,12 @@ class ModuleView:
             pass
 
     def set_tool_tip(self, setting, message):
-        '''Set the tool tip for a setting to display a message
-        
+        """Set the tool tip for a setting to display a message
+
         setting - set the tooltip for this setting
-        
+
         message - message to display or None for no tool tip
-        '''
+        """
         control_name = edit_control_name(setting)
         control = self.__module_panel.FindWindowByName(
             control_name)
@@ -2307,11 +2307,11 @@ class ModuleView:
 
 
 class FilterPanelController(object):
-    '''Handle representation of the filter panel
-    
+    """Handle representation of the filter panel
+
     The code for handling the filter UI is moderately massive, so it gets
     its own class, if for no other reason than to organize the code.
-    '''
+    """
 
     def __init__(self, module_view, v, panel):
         assert isinstance(module_view, ModuleView)
@@ -2329,7 +2329,7 @@ class FilterPanelController(object):
         self.update()
 
     def get_sizer(self, address):
-        '''Find or create the sizer that's associated with a particular address'''
+        """Find or create the sizer that's associated with a particular address"""
         key = tuple(address)
         line_name = self.line_name(address)
         self.hide_show_dict[line_name] = True
@@ -2428,7 +2428,7 @@ class FilterPanelController(object):
         sizer.AddSpacer((len(address) * 20, 0))
 
     def find_and_mark(self, name):
-        '''Find a control and mark it to be shown'''
+        """Find a control and mark it to be shown"""
         ctrl = self.panel.FindWindowByName(name)
         self.hide_show_dict[name] = True
         return ctrl
@@ -2577,16 +2577,16 @@ class FilterPanelController(object):
         self.on_value_change(event, new_text)
 
     def add_to_sizer(self, sizer, item, index, address):
-        '''Insert the item in the sizer at the right location
-        
+        """Insert the item in the sizer at the right location
+
         sizer - sizer for the line
-        
+
         item - the control to be added
-        
+
         index - index of the control within the sizer
-        
+
         address - address of the sizer
-        '''
+        """
         key = tuple(address + [index])
         next_key = tuple(address + [index + 1])
         if self.sizer_item_dict.has_key(next_key):
@@ -2650,7 +2650,7 @@ class FilterPanelController(object):
         self.on_value_change(event, new_text)
 
     def find_address(self, sequence, address):
-        '''Find the sequence with the given address'''
+        """Find the sequence with the given address"""
         if len(address) == 0:
             return sequence
         subsequence = sequence[address[0] + 1]
@@ -2785,28 +2785,28 @@ class FilterPanelController(object):
 
 
 class FileCollectionDisplayController(object):
-    '''This class provides the UI for the file collection display
-    
+    """This class provides the UI for the file collection display
+
     The UI has a browse button, a hide checkbox and a tree control.
-    
+
     Critical attributes:
-    
+
     self.walks_in_progress - this is a dictionary of keys to directory walks
                              and metadata fetches that are happening in the
                              background. The value of the dictionary entry
                              is the function to call to stop the search.
-                             
+
                              There's a completion callback that's called to
                              remove an entry from the dictionary. When the
                              dictionary size reaches zero, the stop and pause
                              buttons are disabled.
-    
+
     self.modpath_to_item - a modpath is a collection of path parts to some file
                              handled by the controller. There's a tree item
                              for every modpath in this dictionary and the
                              dictionary can be used for fast lookup of the
                              item without traversing the entire tree.
-    '''
+    """
     IMAGE_LIST = wx.ImageList(16, 16, 3)
     FOLDER_IMAGE_INDEX = IMAGE_LIST.Add(
         wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
@@ -2990,14 +2990,14 @@ class FileCollectionDisplayController(object):
         self.stop_button.Enable(False)
 
     def on_stop(self, event):
-        '''Stop button pressed'''
+        """Stop button pressed"""
         self.v.fn_on_bkgnd_control(self.v.BKGND_STOP)
         self.pause_button.Label = "Pause"
         self.pause_button.Enable(False)
         self.stop_button.Enable(False)
 
     def on_pause_resume(self, event):
-        '''Pause / resume pressed'''
+        """Pause / resume pressed"""
         if self.pause_button.Label == "Pause":
             action = self.v.BKGND_PAUSE
             self.pause_button.Label = "Resume"
@@ -3007,11 +3007,11 @@ class FileCollectionDisplayController(object):
         self.v.fn_on_bkgnd_control(action)
 
     def add_item(self, modpath, text=None, sort=True):
-        '''Add an item to the tree
-        
+        """Add an item to the tree
+
         modpath - a collection of path parts to the item in the tree
         text - the text to appear in the item
-        '''
+        """
         parent_key = tuple(modpath[:-1])
         modpath = tuple(modpath)
         if self.modpath_to_item.has_key(modpath):
@@ -3076,7 +3076,7 @@ class FileCollectionDisplayController(object):
 
     @classmethod
     def get_modpath(cls, path):
-        '''Break a path into its components'''
+        """Break a path into its components"""
         result = []
         while True:
             new_path, part = os.path.split(path)
@@ -3090,18 +3090,18 @@ class FileCollectionDisplayController(object):
         self.v.fn_on_drop(filenames, True)
 
     def on_drop_text(self, x, y, text):
-        '''Text is assumed to be one file name per line'''
+        """Text is assumed to be one file name per line"""
         filenames = [line.strip() for line in text.split("\n")
                      if len(line.strip()) > 0]
         self.v.fn_on_drop(filenames, False)
 
     def get_path_from_event(self, event):
-        '''Given a tree control event, find the path from the root
-        
+        """Given a tree control event, find the path from the root
+
         event - event from tree control (e.g. EVT_TREE_ITEM_ACTIVATED)
-        
+
         returns a sequence of path items from the root
-        '''
+        """
         item = event.GetItem()
         path = []
         while True:
@@ -3173,7 +3173,7 @@ class FileCollectionDisplayController(object):
         self.v.on_remove([self.v.get_tree_modpaths(mod) for mod in mods])
 
     def get_item_address(self, item):
-        '''Get an item's address as a collection of names'''
+        """Get an item's address as a collection of names"""
         result = []
         while True:
             name = self.tree_ctrl.GetItemPyData(item)
@@ -3185,10 +3185,10 @@ class FileCollectionDisplayController(object):
         return result
 
     def get_item_from_modpath(self, modpath):
-        '''Get an item from its modpath
-        
+        """Get an item from its modpath
+
         returns the tree item id or None if not found.
-        '''
+        """
         return self.modpath_to_item.get(tuple(modpath))
 
     def request_update(self, hint=None, modpath=None):
@@ -3284,11 +3284,11 @@ class FileCollectionDisplayController(object):
         cpprefs.report_progress(operation_id, 1, None)
 
     def manage_expansion(self):
-        '''Handle UI expansion issues
-        
+        """Handle UI expansion issues
+
         Make sure that the tree is auto-expanded if appropriate and that
         the root nodes are expanded.
-        '''
+        """
         if (not self.user_collapsed_a_node):
             #
             # Expand all until we reach a node that has more than
@@ -3434,11 +3434,11 @@ class FileCollectionDisplayController(object):
 
     @classmethod
     def get_file_and_folder_counts(cls, tree):
-        '''Count the number of files and folders in the tree
-        
+        """Count the number of files and folders in the tree
+
         returns the number of immediate unfiltered and filtered subfolders
         and number of unfiltered and filtered files in the hierarchy
-        '''
+        """
         unfiltered_subfolders = filtered_subfolders = 0
         unfiltered_files = filtered_files = 0
         for key in tree:
@@ -3471,7 +3471,7 @@ class FileCollectionDisplayController(object):
 
 
 class JoinerController(object):
-    '''The JoinerController managers a joiner setting'''
+    """The JoinerController managers a joiner setting"""
     #
     # It's important that DISPLAY_NONE be an illegal name for metadata
     # so that it can be recognized by its string. If this isn't acceptable,
@@ -3511,10 +3511,10 @@ class JoinerController(object):
 
     @classmethod
     def update_control(cls, module_view, v):
-        '''Update the Joiner setting's control
-        
+        """Update the Joiner setting's control
+
         returns the control
-        '''
+        """
         assert isinstance(module_view, ModuleView)
         control = module_view.module_panel.FindWindowByName(
             edit_control_name(v))
@@ -3527,20 +3527,20 @@ class JoinerController(object):
 
     @property
     def column_names(self):
-        '''Names of the entities in alphabetical order'''
+        """Names of the entities in alphabetical order"""
         return sorted(self.v.entities.keys())
 
     @property
     def joins(self):
-        '''The join rows of the controlled setting
-        
+        """The join rows of the controlled setting
+
         Each row is a dictionary of key / value where key is the entity name
         and value is the column or metadata value for the join row.
-        '''
+        """
         return self.v.parse()
 
     def update(self):
-        '''Update the control to match the setting'''
+        """Update the control to match the setting"""
         column_names = self.column_names
         joins = self.joins
         if len(joins) == 0:
@@ -3702,12 +3702,12 @@ class BinaryMatrixController(object):
     """
 
     def __init__(self, module_view, v):
-        '''Initialize the controller
-        
+        """Initialize the controller
+
         module_view - the module_view that contains the controller's panel
-        
+
         v - the setting
-        '''
+        """
         self.module_view = module_view
         self.setting = v
         self.panel = wx.Panel(module_view.module_panel,
@@ -3814,10 +3814,10 @@ class BinaryMatrixController(object):
                        ey * (2 * i + 1) + dy * i + by * i, dx, dy)
 
     def hit_test(self, x, y):
-        '''Return the i, j coordinates at the mouse
-        
+        """Return the i, j coordinates at the mouse
+
         returns i, j or None, None if misses the hit test
-        '''
+        """
         bx, ex, dx, by, ey, dy = [
             wx.SystemSettings.GetMetric(m) for m in (
                 wx.SYS_BORDER_X, wx.SYS_EDGE_X, wx.SYS_SMALLICON_X,
@@ -3863,10 +3863,10 @@ class BinaryMatrixController(object):
 
     @classmethod
     def update_control(cls, module_view, v):
-        '''Update the Joiner setting's control
-        
+        """Update the Joiner setting's control
+
         returns the control
-        '''
+        """
         assert isinstance(module_view, ModuleView)
         control = module_view.module_panel.FindWindowByName(
             edit_control_name(v))
@@ -3879,7 +3879,7 @@ class BinaryMatrixController(object):
 
 
 class DataTypeController(object):
-    '''The DataTypeController manages a DataType setting'''
+    """The DataTypeController manages a DataType setting"""
     DTC_NONE = "None"
     DTC_TEXT = "Text"
     DTC_INTEGER = "Integer"
@@ -3944,15 +3944,15 @@ class DataTypeController(object):
         event.Skip()
 
     def get_label_control_name(self, rowidx):
-        '''The name of the label control that holds the feature name'''
+        """The name of the label control that holds the feature name"""
         return "label_control_%d_%s" % (rowidx, str(self.v.key()))
 
     def get_choice_control_name(self, rowidx):
-        '''The name of the choice control holding the data type choices'''
+        """The name of the choice control holding the data type choices"""
         return "choice_control_%d_%s" % (rowidx, str(self.v.key()))
 
     def update(self):
-        '''Change the UI state to match that of the DataTypes setting'''
+        """Change the UI state to match that of the DataTypes setting"""
         d = self.v.get_data_types()
         needs_bind = []
         sizer = self.panel.Sizer
@@ -4033,10 +4033,10 @@ class DataTypeController(object):
 
     @classmethod
     def update_control(cls, module_view, v):
-        '''Update the Joiner setting's control
-        
+        """Update the Joiner setting's control
+
         returns the control
-        '''
+        """
         assert isinstance(module_view, ModuleView)
         control = module_view.module_panel.FindWindowByName(
             edit_control_name(v))
@@ -4060,11 +4060,11 @@ class TableController(wx.grid.PyGridTableBase):
         self.column_size = [v.max_field_size] * len(v.column_names)
 
     def bind_to_grid(self, grid):
-        '''Bind to intercept events on the grid
-        
+        """Bind to intercept events on the grid
+
         Binds on_mouse_motion and on_column_resize in order to do tooltips.
         Sets up editing / auto size and other to customize for table type.
-        '''
+        """
         self.grid = grid
         grid.AutoSize()
         grid.EnableEditing(False)
@@ -4092,7 +4092,7 @@ class TableController(wx.grid.PyGridTableBase):
         grid.Bind(wx.grid.EVT_GRID_COL_SIZE, self.on_column_resize)
 
     def update_grid(self):
-        '''Update the grid after the table data has changed'''
+        """Update the grid after the table data has changed"""
         need_column_layout = False
         grid = self.grid
         v = self.v
@@ -4445,15 +4445,15 @@ validation_queue_keep_running = True
 
 
 class ValidationRequest(object):
-    '''A request for module validation'''
+    """A request for module validation"""
 
     def __init__(self, pipeline, module, callback):
-        '''Initialize the validation request
-        
+        """Initialize the validation request
+
         pipeline - pipeline in question
         module - module in question
         callback - call this callback if there is an error. Do it on the GUI thread
-        '''
+        """
         self.pipeline = cache_pipeline(pipeline)
         self.module_num = module.module_num
         self.test_mode = pipeline.test_mode
@@ -4465,7 +4465,7 @@ class ValidationRequest(object):
 
 
 def cache_pipeline(pipeline):
-    '''Return a single cached copy of a pipeline to limit the # of copies'''
+    """Return a single cached copy of a pipeline to limit the # of copies"""
     d = getattr(request_pipeline_cache, "d", None)
     if d is None:
         d = weakref.WeakValueDictionary()
@@ -4478,15 +4478,15 @@ def cache_pipeline(pipeline):
 
 
 def validate_module(pipeline, module_num, test_mode, callback):
-    '''Validate a module and execute the callback on error on the main thread
-    
+    """Validate a module and execute the callback on error on the main thread
+
     pipeline - a pipeline to be validated
     module_num - the module number of the module to be validated
     test_mode - whether pipeline is in test mode
     callback - a callback with the signature, "fn(setting, message, pipeline_data)"
     where setting is the setting that is in error and message is the message to
     display.
-    '''
+    """
     pipeline.test_mode = test_mode
     modules = [m for m in pipeline.modules() if m.module_num == module_num]
     if len(modules) != 1:
@@ -4532,9 +4532,9 @@ def validation_queue_handler():
 
 
 def request_module_validation(validation_request):
-    '''Request that a module be validated
+    """Request that a module be validated
 
-    '''
+    """
     global pipeline_queue_thread, validation_queue
 
     if pipeline_queue_thread is None:
@@ -4547,7 +4547,7 @@ def request_module_validation(validation_request):
 
 
 def stop_validation_queue_thread():
-    '''Stop the thread that handles module validation'''
+    """Stop the thread that handles module validation"""
     global validation_queue_keep_running
     if pipeline_queue_thread is not None:
         validation_queue_keep_running = False

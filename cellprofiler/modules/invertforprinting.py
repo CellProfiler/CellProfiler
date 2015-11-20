@@ -1,17 +1,17 @@
-'''<b>Invert For Printing</b> inverts fluorescent images into 
+"""<b>Invert For Printing</b> inverts fluorescent images into
 brightfield-looking images for printing.
 <hr>
 This module turns a single or multi-channel immunofluorescent-stained image
-into an image that resembles a brightfield image stained with similarly 
+into an image that resembles a brightfield image stained with similarly
 colored stains, which generally prints better.
 
 You can operate on up to three grayscale images (representing
-the red, green, and blue channels of a color image) or on an image that is 
+the red, green, and blue channels of a color image) or on an image that is
 already a color image. The module can produce either three grayscale
 images or one color image as output.
 
 If you want to invert the grayscale intensities of an image, use <b>ImageMath</b>.
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpimage as cpi
@@ -91,7 +91,7 @@ class InvertForPrinting(cpm.CPModule):
             Enter a name for the inverted color image.''')
 
     def settings(self):
-        '''Return the settings as saved in the pipeline'''
+        """Return the settings as saved in the pipeline"""
         return [self.input_color_choice,
                 self.wants_red_input, self.red_input_image,
                 self.wants_green_input, self.green_input_image,
@@ -116,7 +116,7 @@ class InvertForPrinting(cpm.CPModule):
                 self.wants_blue_output, self.blue_output_image]
 
     def visible_settings(self):
-        '''Return the settings as displayed in the UI'''
+        """Return the settings as displayed in the UI"""
         result = [self.input_color_choice]
         if self.input_color_choice == CC_GRAYSCALE:
             for wants_input, input_image in \
@@ -142,7 +142,7 @@ class InvertForPrinting(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure the user has at least one of the grayscale boxes checked'''
+        """Make sure the user has at least one of the grayscale boxes checked"""
         if (self.input_color_choice == CC_GRAYSCALE and
                 (not self.wants_red_input.value) and
                 (not self.wants_green_input.value) and

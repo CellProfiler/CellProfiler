@@ -1,8 +1,8 @@
-'''<b>Edit Objects Manually</b> allows you create, remove and edit objects previously defined.
+"""<b>Edit Objects Manually</b> allows you create, remove and edit objects previously defined.
 <hr>
 The interface will show the image that you selected as the
 guiding image, overlaid with colored outlines of the selected objects (or filled
-objects if you choose). This module allows you to remove or edit specific objects 
+objects if you choose). This module allows you to remove or edit specific objects
 by pointing and clicking to select objects for removal or editing. Once
 editing is complete, the module displays the objects as originally identified (left)
 and the objects that remain after this module (right).
@@ -24,7 +24,7 @@ and continue the pipeline.
 </ul>
 
 See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>ConvertToImage</b>.
-'''
+"""
 
 import logging
 
@@ -450,7 +450,7 @@ class EditObjectsManually(I.Identify):
             return dialog_box.labels
 
     def get_measurement_columns(self, pipeline):
-        '''Return information to use when creating database columns'''
+        """Return information to use when creating database columns"""
         orig_image_name = self.object_name.value
         filtered_image_name = self.filtered_objects.value
         columns = I.get_object_measurement_columns(filtered_image_name)
@@ -463,41 +463,41 @@ class EditObjectsManually(I.Identify):
         return columns
 
     def get_object_dictionary(self):
-        '''Return the dictionary that's used by identify.get_object_*'''
+        """Return the dictionary that's used by identify.get_object_*"""
         return {self.filtered_objects.value: [self.object_name.value]}
 
     def get_categories(self, pipeline, object_name):
-        '''Get the measurement categories produced by this module
-        
+        """Get the measurement categories produced by this module
+
         pipeline - pipeline being run
         object_name - fetch categories for this object
-        '''
+        """
         categories = self.get_object_categories(pipeline, object_name,
                                                 self.get_object_dictionary())
         return categories
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Get the measurement features produced by this module
-      
+        """Get the measurement features produced by this module
+
         pipeline - pipeline being run
         object_name - fetch features for this object
         category - fetch features for this category
-        '''
+        """
         measurements = self.get_object_measurements(
             pipeline, object_name, category, self.get_object_dictionary())
         return measurements
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Upgrade the settings written by a prior version of this module
-        
+        """Upgrade the settings written by a prior version of this module
+
         setting_values - array of string values for the module's settings
         variable_revision_number - revision number of module at time of saving
         module_name - name of module that saved settings
         from_matlab - was a pipeline saved by CP 1.0
-        
+
         returns upgraded settings, new variable revision number and matlab flag
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
             object_name, filtered_object_name, outlines_name, \
             renumber_or_retain = setting_values

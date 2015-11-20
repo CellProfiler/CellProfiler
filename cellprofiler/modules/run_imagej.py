@@ -1,4 +1,4 @@
-'''<b>Run ImageJ</b> runs an ImageJ command.
+"""<b>Run ImageJ</b> runs an ImageJ command.
 <hr>
 <a href="http://rsbweb.nih.gov/ij/">ImageJ</a> is an image processing and analysis program.
 It operates by processing commands that operate on one or more images,
@@ -16,14 +16,14 @@ desired, retrieves images you want to process further in CellProfiler.
 <p>ImageJ runs using Java, and as such, relies on proper handling of the Java memory requirements.
 When ImageJ starts, the Java Virtual Machine (JVM) allocates a portion of memory for its
 own use from the operating system; this memory is called the <i>java heap memory</i>. If you
-encounter JVM memory errors, you can tell CellProfiler to increase the size of the Java heap memory 
+encounter JVM memory errors, you can tell CellProfiler to increase the size of the Java heap memory
 on startup.</p>
 <p>To do this, run CellProfiler from the command line with the following argument:
 <code>--jvm-heap-size=JVM_HEAP_SIZE</code><br>
 where <code>JVM_HEAP_SIZE</code> is the amount of memory to be reserved for the JVM. Example formats
 for <code>JVM_HEAP_SIZE</code> include <i>512000k</i>, <i>512m</i>, <i>1g</i>, etc. For example,
 to increase the JVM heap memory to 2GB, use <code>--jvm-heap-size=2g</code></p>
-'''
+"""
 
 import logging
 
@@ -77,7 +77,7 @@ class RunImageJ(cpm.CPModule):
     do_not_check = True
 
     def create_settings(self):
-        '''Create the settings for the module'''
+        """Create the settings for the module"""
         logger.debug("Creating RunImageJ module settings")
 
         self.command_or_macro = cps.Choice(
@@ -267,25 +267,25 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
     @staticmethod
     def is_leaf(node):
-        '''Return True if a tree node holds a command'''
+        """Return True if a tree node holds a command"""
         return len(node) >= 2 and node[2] is not None
 
     def make_command_choice(self, label, doc):
-        '''Make a version-appropriate command chooser setting
-        
+        """Make a version-appropriate command chooser setting
+
         label - the label text for the setting
         doc - its documentation
-        '''
+        """
         return cps.TreeChoice(
             label, "None", self.get_choice_tree,
             fn_is_leaf=self.is_leaf, doc=doc)
 
     def get_choice_tree(self):
-        '''Get the ImageJ command choices for the TreeChoice control
-        
+        """Get the ImageJ command choices for the TreeChoice control
+
         The menu items are augmented with a third tuple entry which is
         the ModuleInfo for the command.
-        '''
+        """
         global cached_choice_tree
         global cached_commands
         if cached_choice_tree is not None:
@@ -321,7 +321,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             current_node[2] = module_info
 
         def sort_tree(tree):
-            '''Recursively sort a tree in-place'''
+            """Recursively sort a tree in-place"""
             for node in tree:
                 if node[1] is not None:
                     sort_tree(node[1])
@@ -351,10 +351,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         return ij2.wrap_module_info(module.getInfo())
 
     def get_command_settings(self, command, d):
-        '''Get the settings associated with the current command
-        
+        """Get the settings associated with the current command
+
         d - the dictionary that persists the setting. None = regular
-        '''
+        """
         key = command.get_unicode_value()
         if not d.has_key(key):
             try:
@@ -561,16 +561,16 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         return [setting for setting, module_info in result]
 
     def is_advanced(self, command, d):
-        '''A command is an advanced command if there are settings for it'''
+        """A command is an advanced command if there are settings for it"""
         return True
 
     def is_aggregation_module(self):
-        '''RunImageJ is an aggregation module if it performs a prepare or post group command'''
+        """RunImageJ is an aggregation module if it performs a prepare or post group command"""
         return self.prepare_group_choice != CM_NOTHING and \
                self.post_group_choice != CM_NOTHING
 
     def settings(self):
-        '''The settings as loaded or stored in the pipeline'''
+        """The settings as loaded or stored in the pipeline"""
         return ([
                     self.command_or_macro, self.command, self.macro,
                     self.macro_language,
@@ -589,11 +589,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 self.pre_command_settings + self.post_command_settings)
 
     def on_setting_changed(self, setting, pipeline):
-        '''Respond to a setting change
-        
+        """Respond to a setting change
+
         We have to update the ImageJ module settings in response to a
         new choice.
-        '''
+        """
         for command_choice, command_setting, module_settings, d in (
                 (self.command_or_macro,
                  self.command,
@@ -617,7 +617,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 del module_settings[:]
 
     def visible_settings(self):
-        '''The settings as seen by the user'''
+        """The settings as seen by the user"""
         uses_macros = ((self.command_or_macro == CM_SCRIPT) or
                        (self.prepare_group_choice == CM_SCRIPT) or
                        (self.post_group_choice == CM_SCRIPT))
@@ -656,17 +656,17 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         return result
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to run a group
-        
+        """Prepare to run a group
+
         RunImageJ remembers the image number of the first and last image
         for later processing.
-        '''
+        """
         d = self.get_dictionary(workspace.image_set_list)
         d[D_FIRST_IMAGE_SET] = image_numbers[0]
         d[D_LAST_IMAGE_SET] = image_numbers[-1]
 
     def run(self, workspace):
-        '''Run the imageJ command'''
+        """Run the imageJ command"""
         image_set = workspace.image_set
         d = self.get_dictionary(workspace.image_set_list)
         if self.wants_to_set_current_image:
@@ -737,12 +737,12 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                                                output_image_name)
 
     def save_display_as_image(self, workspace, display, image_name):
-        '''Convert an ImageJ display to an image and save in the image set
-        
+        """Convert an ImageJ display to an image and save in the image set
+
         workspace - current workspace
         display - an ImageJ Display
         image_name - save the image in the image set using this name.
-        '''
+        """
         display_view = display.getActiveView()
         dataset = ij2.wrap_dataset(display_view.getData())
         pixel_data = dataset.get_pixel_data() / IMAGEJ_SCALE
@@ -752,12 +752,12 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         return pixel_data
 
     def save_dataset_as_image(self, workspace, dataset, image_name):
-        '''Convert an ImageJ dataset to an image and save in the image set
-        
+        """Convert an ImageJ dataset to an image and save in the image set
+
         workspace - current workspace
         dataset - an ImageJ dataset
         image_name - save the image in the image set using this name.
-        '''
+        """
         pixel_data = dataset.get_pixel_data() / IMAGEJ_SCALE
         image = cpi.Image(pixel_data)
         workspace.image_set.add(image_name, image)
@@ -820,11 +820,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 ijmacros.execute_macro(macro)
 
     def execute_advanced_command(self, workspace, command, d):
-        '''Execute an advanced command
+        """Execute an advanced command
 
         command - name of the command
         d - dictionary to be used to find settings
-        '''
+        """
         context = get_context()
         self.get_command_settings(command, d)
         wants_display = self.show_window
@@ -1058,10 +1058,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                                horizontalalignment='center')
 
     def prepare_settings(self, setting_values):
-        '''Prepare the settings for loading
-        
+        """Prepare the settings for loading
+
         set up the advanced settings for the commands
-        '''
+        """
         for command_settings, idx_choice, idx_cmd, idx_count, d in (
                 (self.command_settings, IDX_COMMAND_CHOICE, IDX_COMMAND,
                  IDX_COMMAND_COUNT, self.command_settings_dictionary),
@@ -1138,16 +1138,16 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         return setting_values, variable_revision_number, from_matlab
 
     def upgrade_settings_from_v3(self, command_or_macro, command, macro):
-        '''Upgrade settings from ImageJ 1.x to ImageJ 2.x
-        
+        """Upgrade settings from ImageJ 1.x to ImageJ 2.x
+
         command_or_macro: either CM_COMMAND or CM_MACRO
-        
+
         command: the ImageJ 1.x menu command to execute
-        
+
         macro: the ImageJ 1.x macro to execute
-        
+
         Returns adjusted command_or_macro, command and macro
-        '''
+        """
         if command_or_macro == CM_COMMAND:
             command_or_macro = CM_MACRO
             macro = 'run("%s");' % command
@@ -1159,7 +1159,7 @@ IJ_TABLE_TYPE = "net.imagej.table.TableDisplay"
 
 
 class IJTableProvider(cps.NameProvider):
-    '''A setting provider of ImageJ table names'''
+    """A setting provider of ImageJ table names"""
 
     def __init__(self, text, *args, **kwargs):
         super(IJTableProvider, self).__init__(
@@ -1167,7 +1167,7 @@ class IJTableProvider(cps.NameProvider):
 
 
 class IJTableSubscriber(cps.NameSubscriber):
-    '''A setting subscriber to ImageJ table names'''
+    """A setting subscriber to ImageJ table names"""
 
     def __init__(self, text, *args, **kwargs):
         super(IJTableSubscriber, self).__init__(

@@ -34,9 +34,9 @@ OBJECTS_FEATURE = "objectsfeature"
 
 class TestAnalysis(unittest.TestCase):
     class FakeWorker(threading.Thread):
-        '''A mockup of a ZMQ client to the boundary
-        
-        '''
+        """A mockup of a ZMQ client to the boundary
+
+        """
 
         def __init__(self, name="Client thread"):
             threading.Thread.__init__(self, name=name)
@@ -109,7 +109,7 @@ class TestAnalysis(unittest.TestCase):
             return self.recv
 
         def request_work(self):
-            '''Send a work request until we get a WorkReply'''
+            """Send a work request until we get a WorkReply"""
             while True:
                 reply = self.send(cpanalysis.WorkRequest(self.analysis_id))()
                 if isinstance(reply, cpanalysis.WorkReply):
@@ -274,7 +274,7 @@ class TestAnalysis(unittest.TestCase):
         return pipeline, m
 
     def check_display_post_run_requests(self, pipeline):
-        '''Read the DisplayPostRunRequest messages during the post_run phase'''
+        """Read the DisplayPostRunRequest messages during the post_run phase"""
 
         for module in pipeline.modules():
             if module.show_window and \

@@ -22,7 +22,7 @@ class TestExample1a(unittest.TestCase):
         self.assertEqual(len(module.settings()), 5)
 
     def make_instance(self):
-        '''Return an instance of example1 this way because it's not on classpath'''
+        """Return an instance of example1 this way because it's not on classpath"""
         return instantiate_module("Example1a")
 
     def test_02_01_create_settings(self):

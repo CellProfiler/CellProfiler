@@ -1,19 +1,19 @@
-'''<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
+"""<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
 <hr>
 The module expands or shrinks objects by adding or removing border
 pixels. You can specify a certain number of border pixels to be
 added or removed, expand objects until they are almost touching or shrink
-objects down to a point. Objects are never lost using this module (shrinking 
+objects down to a point. Objects are never lost using this module (shrinking
 stops when an object becomes a single pixel). The module can separate touching
 objects without otherwise shrinking
 the objects.
 
-<p><b>ExpandOrShrinkObjects</b> can perform some specialized morphological operations that 
+<p><b>ExpandOrShrinkObjects</b> can perform some specialized morphological operations that
 remove pixels without completely removing an object. See the Settings help (below)
 for more detail.</p>
 
 <p><i>Special note on saving images:</i> You can use the settings in this module to pass object
-outlines along to the module <b>OverlayOutlines</b> and then save them 
+outlines along to the module <b>OverlayOutlines</b> and then save them
 with the <b>SaveImages</b> module. You can also pass the identified objects themselves along to the
 object processing module <b>ConvertToImage</b> and then save them with the
 <b>SaveImages</b> module.</p>
@@ -25,11 +25,11 @@ object processing module <b>ConvertToImage</b> and then save them with the
 </ul>
 <b>Object measurements:</b>
 <ul>
-<li><i>Location_X, Location_Y:</i> Pixel (<i>X,Y</i>) coordinates of the center of mass of 
+<li><i>Location_X, Location_Y:</i> Pixel (<i>X,Y</i>) coordinates of the center of mass of
 the expanded/shrunken objects.</li>
 </ul>
 
-<p>See also <b>Identify</b> modules.</p>'''
+<p>See also <b>Identify</b> modules.</p>"""
 
 import numpy as np
 from scipy.ndimage import distance_transform_edt
@@ -184,7 +184,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
                                      sharexy=figure.subplot(0, 0))
 
     def do_labels(self, labels):
-        '''Run whatever transformation on the given labels matrix'''
+        """Run whatever transformation on the given labels matrix"""
         if (self.operation in (O_SHRINK, O_SHRINK_INF) and
                 self.wants_fill_holes.value):
             labels = fill_labeled_holes(labels)
@@ -244,7 +244,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        '''Return column definitions for measurements made by this module'''
+        """Return column definitions for measurements made by this module"""
         columns = get_object_measurement_columns(self.output_object_name.value)
         return columns
 

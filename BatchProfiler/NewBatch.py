@@ -283,7 +283,7 @@ batch is run.""" % globals())
 
     @property
     def has_image_sets(self):
-        '''True if the data directory has a good batch data file'''
+        """True if the data directory has a good batch data file"""
         if self.__has_image_sets is not None:
             return self.__has_image_sets
         self.__has_image_sets = False
@@ -327,7 +327,7 @@ batch is run.""" % globals())
 
     @property
     def inputs_validated(self):
-        '''True if the inputs for job submission are OK'''
+        """True if the inputs for job submission are OK"""
         if self.__inputs_validated is not None:
             return self.__inputs_validated
         self.__inputs_validated = False
@@ -393,7 +393,7 @@ batch is run.""" % globals())
             self.text(directory)
 
     def recursive_show_directory(self, key, head, tail):
-        '''Recursively show the directory tree'''
+        """Recursively show the directory tree"""
         with self.doc.tag("ul"):
             with self.doc.tag("li"):
                 self.output_directory_link(key, head)
@@ -409,13 +409,13 @@ batch is run.""" % globals())
                 self.recursive_show_directory(key, next_head, tail[1:])
 
     def show_directory(self, key, title):
-        '''Show the directory structure for the variable given by the key
-    
+        """Show the directory structure for the variable given by the key
+
         key - key into form_data
         title - the user-visible title of the field
-    
+
         returns the current value of the key
-        '''
+        """
         path = BATCHPROFILER_DEFAULTS[key]
         data_dir_js = "document.getElementById('input_%s').value" % key
         go_to_key = "javascript:go_to_key('%s',%s) " % (key, data_dir_js)
@@ -452,10 +452,10 @@ batch is run.""" % globals())
         return path
 
     def build_submit_batch(self):
-        '''Build the webpage for handling a submitted batch
-        
+        """Build the webpage for handling a submitted batch
+
         Also do the batch submission
-        '''
+        """
         batch_size = int(BATCHPROFILER_DEFAULTS[BATCH_SIZE])
         if self.has_groups:
             first_last = np.hstack(

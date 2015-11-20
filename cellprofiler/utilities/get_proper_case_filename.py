@@ -1,5 +1,5 @@
-'''get_proper_case_filename.py - convert filename to proper case for Windows
-'''
+"""get_proper_case_filename.py - convert filename to proper case for Windows
+"""
 
 import sys
 import os

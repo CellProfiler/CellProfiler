@@ -1,14 +1,14 @@
-'''<b>Identify Objects In Grid</b> identifies objects within each section of a grid 
+"""<b>Identify Objects In Grid</b> identifies objects within each section of a grid
 that has been defined by the <b>DefineGrid</b> module.
 <hr>
-This module identifies objects that are contained within in a grid pattern, allowing 
-you to measure the objects using <b>Measure</b> modules. It requires you to have 
+This module identifies objects that are contained within in a grid pattern, allowing
+you to measure the objects using <b>Measure</b> modules. It requires you to have
 defined a grid earlier in the pipeline, using the <b>DefineGrid</b> module.
 
-For several of the automatic options, you will need to enter the names of previously 
-identified objects. Typically, this module is used to refine locations and/or 
-shapes of objects of interest that you roughly identified in a previous <b>Identify</b> 
-module. Within this module, objects are re-numbered according to the grid definitions 
+For several of the automatic options, you will need to enter the names of previously
+identified objects. Typically, this module is used to refine locations and/or
+shapes of objects of interest that you roughly identified in a previous <b>Identify</b>
+module. Within this module, objects are re-numbered according to the grid definitions
 rather than their original numbering from the earlier <b>Identify</b> module.
 
 If placing the objects within the grid is impossible for some reason (the
@@ -18,7 +18,7 @@ you choose to re-use a grid from a previous successful image cycle.
 
 <i>Special note on saving images:</i> You can use the settings in this module to
 pass object outlines along to the <b>OverlayOutlines</b>module and then
-save them with the <b>SaveImages</b> module. You can also pass along objects themselves 
+save them with the <b>SaveImages</b> module. You can also pass along objects themselves
 to the object processing module <b>ConvertToImage</b> and then save them with the
 <b>SaveImages</b> module.
 
@@ -29,14 +29,14 @@ to the object processing module <b>ConvertToImage</b> and then save them with th
 </ul>
 <b>Object measurements:</b>
 <ul>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
 mass of the identified objects.</li>
 <li><i>Number:</i> The numeric label assigned to each identified object
 according to the arrangement order specified by the user.</li>
 </ul>
 
 <p>See also <b>DefineGrid</b>.
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpgridinfo as cpg
@@ -185,21 +185,21 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return result
 
     def wants_guiding_objects(self):
-        '''Return TRUE if the settings require valid guiding objects'''
+        """Return TRUE if the settings require valid guiding objects"""
         return ((self.shape_choice == SHAPE_CIRCLE_FORCED and
                  self.diameter_choice == AM_AUTOMATIC) or
                 (self.shape_choice in (SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL)))
 
     def run(self, workspace):
-        '''Find the outlines on the current image set
-        
+        """Find the outlines on the current image set
+
         workspace    - The workspace contains
             pipeline     - instance of cpp for this run
             image_set    - the images in the image set being processed
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. None means don't draw.
-        '''
+        """
         gridding = workspace.get_grid(self.grid_name.value)
         if self.shape_choice == SHAPE_RECTANGLE:
             labels = self.run_rectangle(workspace, gridding)
@@ -229,11 +229,11 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             workspace.display_data.labels = labels
 
     def run_rectangle(self, workspace, gridding):
-        '''Return a labels matrix composed of the grid rectangles'''
+        """Return a labels matrix composed of the grid rectangles"""
         return self.fill_grid(workspace, gridding)
 
     def fill_grid(self, workspace, gridding):
-        '''Fill a labels matrix by labeling each rectangle in the grid'''
+        """Fill a labels matrix by labeling each rectangle in the grid"""
         assert isinstance(gridding, cpg.CPGridInfo)
         i, j = np.mgrid[0:gridding.image_height,
                0:gridding.image_width]
@@ -252,7 +252,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return labels
 
     def run_forced_circle(self, workspace, gridding):
-        '''Return a labels matrix composed of circles centered in the grids'''
+        """Return a labels matrix composed of circles centered in the grids"""
         i, j = np.mgrid[0:gridding.rows, 0:gridding.columns]
 
         return self.run_circle(workspace, gridding,
@@ -260,13 +260,13 @@ class IdentifyObjectsInGrid(cpm.CPModule):
                                gridding.x_locations[j])
 
     def run_circle(self, workspace, gridding, spot_center_i, spot_center_j):
-        '''Return a labels matrix compose of circles centered on the x,y locs
-        
+        """Return a labels matrix compose of circles centered on the x,y locs
+
         workspace - workspace for the run
         gridding - an instance of CPGridInfo giving the details of the grid
-        spot_center_i, spot_center_j - the locations of the grid centers. 
+        spot_center_i, spot_center_j - the locations of the grid centers.
                    This should have one coordinate per grid cell.
-        '''
+        """
 
         assert isinstance(gridding, cpg.CPGridInfo)
         radius = self.get_radius(workspace, gridding)
@@ -295,7 +295,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return labels
 
     def run_natural_circle(self, workspace, gridding):
-        '''Return a labels matrix composed of circles found from objects'''
+        """Return a labels matrix composed of circles found from objects"""
         #
         # Find the centroid of any guide label in a grid
         #
@@ -315,8 +315,8 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return self.run_circle(workspace, gridding, centers_i, centers_j)
 
     def run_natural(self, workspace, gridding):
-        '''Return a labels matrix made by masking the grid labels with
-        the filtered guide labels'''
+        """Return a labels matrix made by masking the grid labels with
+        the filtered guide labels"""
         guide_label = self.filtered_labels(workspace, gridding)
         labels = self.fill_grid(workspace, gridding)
         labels = self.fit_labels_to_guiding_objects(workspace, labels)
@@ -325,12 +325,12 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return labels
 
     def fit_labels_to_guiding_objects(self, workspace, labels):
-        '''Make the labels matrix the same size as the guiding objects matrix
-        
+        """Make the labels matrix the same size as the guiding objects matrix
+
         The gridding is typically smaller in extent than the image it's
         based on. This function enlarges the labels matrix to match the
         dimensions of the guiding objects matrix if appropriate.
-        '''
+        """
         if not self.wants_guiding_objects():
             # No guiding objects? No-op
             return labels
@@ -344,7 +344,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return labels
 
     def get_radius(self, workspace, gridding):
-        '''Get the radius for circles'''
+        """Get the radius for circles"""
         if self.diameter_choice == AM_MANUAL:
             return self.diameter.value / 2
         labels = self.filtered_labels(workspace, gridding)
@@ -357,7 +357,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return max(1, np.sqrt(median_area / np.pi))
 
     def filtered_labels(self, workspace, gridding):
-        '''Filter labels by proximity to edges of grid'''
+        """Filter labels by proximity to edges of grid"""
         #
         # A label might slightly graze a grid other than its own or
         # a label might be something small in a corner of the grid.
@@ -411,14 +411,14 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return filtered_guide_labels
 
     def get_guide_labels(self, workspace):
-        '''Return the guide labels matrix for this module'''
+        """Return the guide labels matrix for this module"""
         guide_labels = workspace.object_set.get_objects(
             self.guiding_object_name.value)
         guide_labels = guide_labels.segmented
         return guide_labels
 
     def display(self, workspace, figure):
-        '''Display the resulting objects'''
+        """Display the resulting objects"""
         import matplotlib
         gridding = workspace.display_data.gridding
         labels = workspace.display_data.labels
@@ -436,8 +436,8 @@ class IdentifyObjectsInGrid(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
-        
+        """Adjust setting values if they came from a previous revision
+
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
         variable_revision_number - the variable revision number of the
@@ -449,12 +449,12 @@ class IdentifyObjectsInGrid(cpm.CPModule):
                       that module was merged into the current module
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
-        
+
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if from_matlab and variable_revision_number == 2:
             grid_name, new_object_name, shape, old_object_name, \
             diameter, save_outlines, failed_grid_choice = setting_values
@@ -482,7 +482,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
-        '''Column definitions for measurements made by IdentifyPrimaryObjects'''
+        """Column definitions for measurements made by IdentifyPrimaryObjects"""
         return get_object_measurement_columns(self.output_objects_name.value)
 
     def get_categories(self, pipeline, object_name):

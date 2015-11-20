@@ -1,5 +1,5 @@
-'''test_identifyobjectsingrid.py - test the IdentifyObjectsInGrid module
-'''
+"""test_identifyobjectsingrid.py - test the IdentifyObjectsInGrid module
+"""
 
 import base64
 import numpy as np
@@ -419,7 +419,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertEqual(count, gridding.rows * gridding.columns)
 
     def test_03_03_img_891(self):
-        '''Regression test of img-891, last spot filtered out'''
+        """Regression test of img-891, last spot filtered out"""
         d = D.DefineGrid()
         d.ordering.value = D.NUM_BY_COLUMNS
         #

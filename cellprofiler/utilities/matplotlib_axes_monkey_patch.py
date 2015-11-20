@@ -63,10 +63,10 @@ def set_adjustable(self, adjustable):
 
 
 def apply_aspect(self, position=None):
-    '''
+    """
     Use :meth:`_aspect` and :meth:`_adjustable` to modify the
     axes box or the view limits.
-    '''
+    """
     if position is None:
         position = self.get_position(original=True)
 

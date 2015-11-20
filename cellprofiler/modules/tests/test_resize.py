@@ -1,5 +1,5 @@
-'''test_resize.py - test the Resize module
-'''
+"""test_resize.py - test the Resize module
+"""
 
 import base64
 from matplotlib.image import pil_to_array
@@ -242,7 +242,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                np.sqrt(np.finfo(float).eps)))
 
     def test_03_02_bicubic(self):
-        '''Test bicubic interpolation'''
+        """Test bicubic interpolation"""
         i, j = np.mgrid[0:10, 0:10]
         image = i.astype(float) ** 2
         # Bicubic here should be betweeen nearest neighbor and bilinear
@@ -268,7 +268,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                np.sqrt(np.finfo(float).eps)))
 
     def test_04_01_reshape_double(self):
-        '''Make an image twice as large by changing the shape'''
+        """Make an image twice as large by changing the shape"""
         i, j = np.mgrid[0:10, 0:10].astype(float)
         image = i + j * 10
         i, j = np.mgrid[0:19, 0:19].astype(float) / 2.0
@@ -283,7 +283,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                np.sqrt(np.finfo(float).eps)))
 
     def test_04_02_reshape_half(self):
-        '''Make an image half as large by changing the shape'''
+        """Make an image half as large by changing the shape"""
         i, j = np.mgrid[0:19, 0:19].astype(float) / 2.0
         image = i + j * 10
         i, j = np.mgrid[0:10, 0:10].astype(float)
@@ -298,7 +298,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                np.sqrt(np.finfo(float).eps)))
 
     def test_04_03_reshape_half_and_double(self):
-        '''Make an image twice as large in one dimension and half in other'''
+        """Make an image twice as large in one dimension and half in other"""
         i, j = np.mgrid[0:10, 0:19].astype(float)
         image = i + j * 5.0
         i, j = np.mgrid[0:19, 0:10].astype(float)
@@ -313,7 +313,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                np.sqrt(np.finfo(float).eps)))
 
     def test_04_04_reshape_using_another_images_dimensions(self):
-        ''''Resize to another image's dimensions'''
+        """'Resize to another image's dimensions"""
         i, j = np.mgrid[0:10, 0:19].astype(float)
         image = i + j
         i, j = np.mgrid[0:19, 0:10].astype(float)

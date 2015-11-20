@@ -235,13 +235,13 @@ F_EXPT_FILT_NUMTRACKS = "%s_FilteredNumberOfTracks" % F_PREFIX
 
 
 def kalman_feature(model, matrix_or_vector, i, j=None):
-    '''Return the feature name for a Kalman feature
-    
+    """Return the feature name for a Kalman feature
+
     model - model used for Kalman feature: velocity or static
     matrix_or_vector - the part of the Kalman state to save, vec, COV or noise
     i - the name for the first (or only for vec and noise) index into the vector
     j - the name of the second index into the matrix
-    '''
+    """
     pieces = [F_KALMAN, model, matrix_or_vector, i]
     if j is not None:
         pieces.append(j)
@@ -792,7 +792,7 @@ class TrackObjects(cpm.CPModule):
                 self.max_lifetime, self.mitosis_cost, self.mitosis_max_distance]
 
     def validate_module(self, pipeline):
-        '''Make sure that the user has selected some limits when filtering'''
+        """Make sure that the user has selected some limits when filtering"""
         if (self.tracking_method == TM_LAP and
                 self.wants_lifetime_filtering.value and
                 (
@@ -884,7 +884,7 @@ class TrackObjects(cpm.CPModule):
         self.__set("coordinates", workspace, value)
 
     def get_orig_coordinates(self, workspace):
-        '''The coordinates of the first occurrence of an object's ancestor'''
+        """The coordinates of the first occurrence of an object's ancestor"""
         return self.__get("orig coordinates", workspace, np.zeros((2, 0), int))
 
     def set_orig_coordinates(self, workspace, value):
@@ -927,32 +927,32 @@ class TrackObjects(cpm.CPModule):
         self.__set("kalman_states", workspace, value)
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Erase any tracking information at the start of a run'''
+        """Erase any tracking information at the start of a run"""
         d = self.get_dictionary(workspace.image_set_list)
         d.clear()
 
         return True
 
     def measurement_name(self, feature):
-        '''Return a measurement name for the given feature'''
+        """Return a measurement name for the given feature"""
         if self.tracking_method == TM_LAP:
             return "%s_%s" % (F_PREFIX, feature)
         return "%s_%s_%s" % (F_PREFIX, feature, str(self.pixel_radius.value))
 
     def image_measurement_name(self, feature):
-        '''Return a measurement name for an image measurement'''
+        """Return a measurement name for an image measurement"""
         if self.tracking_method == TM_LAP:
             return "%s_%s_%s" % (F_PREFIX, feature, self.object_name.value)
         return "%s_%s_%s_%s" % (F_PREFIX, feature, self.object_name.value,
                                 str(self.pixel_radius.value))
 
     def add_measurement(self, workspace, feature, values):
-        '''Add a measurement to the workspace's measurements
+        """Add a measurement to the workspace's measurements
 
         workspace - current image set's workspace
         feature - name of feature being measured
         values - one value per object
-        '''
+        """
         workspace.measurements.add_measurement(
             self.object_name.value,
             self.measurement_name(feature),
@@ -1042,7 +1042,7 @@ class TrackObjects(cpm.CPModule):
                             arrowprops=dict(visible=False))
 
     def run_distance(self, workspace, objects):
-        '''Track objects based on distance'''
+        """Track objects based on distance"""
         old_i, old_j = self.get_saved_coordinates(workspace)
         if len(old_i):
             distances, (i, j) = distance_transform_edt(objects.segmented == 0,
@@ -1082,7 +1082,7 @@ class TrackObjects(cpm.CPModule):
         self.set_saved_labels(workspace, objects.segmented)
 
     def run_lapdistance(self, workspace, objects):
-        '''Track objects based on distance'''
+        """Track objects based on distance"""
         m = workspace.measurements
 
         old_i, old_j = self.get_saved_coordinates(workspace)
@@ -1292,7 +1292,7 @@ class TrackObjects(cpm.CPModule):
         self.set_saved_labels(workspace, objects.segmented)
 
     def get_kalman_models(self):
-        '''Return tuples of model and names of the vector elements'''
+        """Return tuples of model and names of the vector elements"""
         if self.static_model:
             models = [(F_STATIC_MODEL, (F_Y, F_X))]
         else:
@@ -1302,7 +1302,7 @@ class TrackObjects(cpm.CPModule):
         return models
 
     def save_kalman_measurements(self, workspace):
-        '''Save the first-pass state_vec, state_cov and state_noise'''
+        """Save the first-pass state_vec, state_cov and state_noise"""
 
         m = workspace.measurements
         object_name = self.object_name.value
@@ -1356,7 +1356,7 @@ class TrackObjects(cpm.CPModule):
                     m.add_measurement(object_name, mname, values)
 
     def run_overlap(self, workspace, objects):
-        '''Track objects by maximum # of overlapping pixels'''
+        """Track objects by maximum # of overlapping pixels"""
         current_labels = objects.segmented
         old_labels = self.get_saved_labels(workspace)
         i, j = (centers_of_labels(objects.segmented) + .5).astype(int)
@@ -1461,7 +1461,7 @@ class TrackObjects(cpm.CPModule):
         return z
 
     def is_aggregation_module(self):
-        '''We connect objects across imagesets within a group = aggregation'''
+        """We connect objects across imagesets within a group = aggregation"""
         return True
 
     def post_group(self, workspace, grouping):
@@ -1878,7 +1878,7 @@ class TrackObjects(cpm.CPModule):
         # Useful debugging diagnostics
         #
         def desc(node):
-            '''Describe a node for graphviz'''
+            """Describe a node for graphviz"""
             fl = F
             if node < start_end_end:
                 fmt = "N%d:%d"
@@ -1906,7 +1906,7 @@ class TrackObjects(cpm.CPModule):
                              int(fl[idx, ONIDX])))
 
         def write_graph(path, x, y):
-            '''Write a graphviz DOT file'''
+            """Write a graphviz DOT file"""
             with open(path, "w") as fd:
                 fd.write("digraph trackobjects {\n")
                 graph_idx = np.where(
@@ -2302,39 +2302,39 @@ class TrackObjects(cpm.CPModule):
         self.recalculate_group(workspace, image_numbers)
 
     def calculate_area_penalty(self, a1, a2):
-        '''Calculate a penalty for areas that don't match
-        
+        """Calculate a penalty for areas that don't match
+
         Ideally, area should be conserved while tracking. We divide the larger
         of the two by the smaller of the two to get the area penalty
         which is then multiplied by the distance.
-        
+
         Note that this differs from Jaqaman eqn 5 which has an asymmetric
-        penalty (sqrt((a1 + a2) / b) for a1+a2 > b and b / (a1 + a2) for 
+        penalty (sqrt((a1 + a2) / b) for a1+a2 > b and b / (a1 + a2) for
         a1+a2 < b. I can't think of a good reason why they should be
         asymmetric.
-        '''
+        """
         result = a1 / a2
         result[result < 1] = 1 / result[result < 1]
         result[np.isnan(result)] = np.inf
         return result
 
     def get_gap_pair_scores(self, F, L, max_gap):
-        '''Compute scores for matching last frame with first to close gaps
-        
+        """Compute scores for matching last frame with first to close gaps
+
         F - an N x 3 (or more) array giving X, Y and frame # of the first object
             in each track
-            
+
         L - an N x 3 (or more) array giving X, Y and frame # of the last object
             in each track
-            
+
         max_gap - the maximum allowed # of frames between the last and first
-        
+
         Returns: an M x 2 array of M pairs where the first element of the array
                  is the index of the track whose last frame is to be joined to
                  the track whose index is the second element of the array.
-                 
+
                  an M-element vector of scores.
-        '''
+        """
         #
         # There have to be at least two things to match
         #
@@ -2404,20 +2404,20 @@ class TrackObjects(cpm.CPModule):
         return np.column_stack((ai, aj)), d * rho
 
     def get_mitotic_triple_scores(self, F, L):
-        '''Compute scores for matching a parent to two daughters
-        
+        """Compute scores for matching a parent to two daughters
+
         F - an N x 3 (or more) array giving X, Y and frame # of the first object
             in each track
-            
+
         L - an N x 3 (or more) array giving X, Y and frame # of the last object
             in each track
-            
+
         Returns: an M x 3 array of M triples where the first column is the
                  index in the L array of the parent cell and the remaining
                  columns are the indices of the daughters in the F array
-                 
+
                  an M-element vector of distances of the parent from the expected
-        '''
+        """
         X = 0
         Y = 1
         IIDX = 2
@@ -2467,11 +2467,11 @@ class TrackObjects(cpm.CPModule):
         return np.column_stack((i[ij], j[ij], k)), d * rho
 
     def recalculate_group(self, workspace, image_numbers):
-        '''Recalculate all measurements once post_group has run
-        
+        """Recalculate all measurements once post_group has run
+
         workspace - the workspace being operated on
         image_numbers - the image numbers of the group's image sets' measurements
-        '''
+        """
         m = workspace.measurements
         object_name = self.object_name.value
 
@@ -2526,18 +2526,18 @@ class TrackObjects(cpm.CPModule):
         ancestral_object_index = ancestral_object_index[labels]
 
         def start(image_index):
-            '''Return the start index in the array for the given image index'''
+            """Return the start index in the array for the given image index"""
             return idx.fwd_idx[image_index]
 
         def end(image_index):
-            '''Return the end index in the array for the given image index'''
+            """Return the end index in the array for the given image index"""
             return start(image_index) + idx.counts[0][image_index]
 
         def slyce(image_index):
             return slice(start(image_index), end(image_index))
 
         class wrapped(object):
-            '''make an indexable version of a measurement, with parent and ancestor fetching'''
+            """make an indexable version of a measurement, with parent and ancestor fetching"""
 
             def __init__(self, feature_name):
                 self.feature_name = feature_name
@@ -2674,13 +2674,13 @@ class TrackObjects(cpm.CPModule):
                                          nlabels - len(labels_to_filter))
 
     def map_objects(self, workspace, new_of_old, old_of_new, i, j):
-        '''Record the mapping of old to new objects and vice-versa
+        """Record the mapping of old to new objects and vice-versa
 
         workspace - workspace for current image set
         new_to_old - an array of the new labels for every old label
         old_to_new - an array of the old labels for every new label
         i, j - the coordinates for each new object.
-        '''
+        """
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_number = m.get_current_image_measurement(cpp.IMAGE_NUMBER)
@@ -2838,7 +2838,7 @@ class TrackObjects(cpm.CPModule):
                     r_image_numbers, r_child_object_numbers)
 
     def recalculate_kalman_filters(self, workspace, image_numbers):
-        '''Rerun the kalman filters to improve the motion models'''
+        """Rerun the kalman filters to improve the motion models"""
         m = workspace.measurements
         object_name = self.object_name.value
         object_number = m[object_name, cpmeas.OBJECT_NUMBER, image_numbers]
@@ -3032,7 +3032,7 @@ class TrackObjects(cpm.CPModule):
         return result
 
     def get_object_relationships(self, pipeline):
-        '''Return the object relationships produced by this module'''
+        """Return the object relationships produced by this module"""
         object_name = self.object_name.value
         if self.wants_second_phase and self.tracking_method == TM_LAP:
             when = cpmeas.MCA_AVAILABLE_POST_GROUP

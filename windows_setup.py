@@ -119,13 +119,13 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         os.remove("ilastik.iss")
 
     def modify_manifest(self, resource_name):
-        '''Change the manifest of a resource to match the CRT
-        
+        """Change the manifest of a resource to match the CRT
+
         resource_name - the name of the executable or DLL maybe + ;#2
                         to pick up the manifest in the assembly
         Read the manifest using "mt", hack the XML to change the version
         and reinsert it into the resource.
-        '''
+        """
         #
         # Find mt
         #

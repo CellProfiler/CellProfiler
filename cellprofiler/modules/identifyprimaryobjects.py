@@ -1024,13 +1024,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             workspace.image_set.add(self.save_outlines.value, out_img)
 
     def limit_object_count(self, labeled_image, object_count):
-        '''Limit the object count according to the rules
-        
+        """Limit the object count according to the rules
+
         labeled_image - image to be limited
         object_count - check to see if this exceeds the maximum
-        
+
         returns a new labeled_image and object count
-        '''
+        """
         if object_count > self.maximum_object_count.value:
             if self.limit_choice == LIMIT_ERASE:
                 labeled_image = np.zeros(labeled_image.shape, int)
@@ -1428,16 +1428,16 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             return self.smoothing_filter_size.value
 
     def is_object_identification_module(self):
-        '''IdentifyPrimaryObjects makes primary objects sets so it's a identification module'''
+        """IdentifyPrimaryObjects makes primary objects sets so it's a identification module"""
         return True
 
     def get_measurement_objects_name(self):
-        '''Return the name to be appended to image measurements made by module
-        '''
+        """Return the name to be appended to image measurements made by module
+        """
         return self.object_name.value
 
     def get_measurement_columns(self, pipeline):
-        '''Column definitions for measurements made by IdentifyPrimAutomatic'''
+        """Column definitions for measurements made by IdentifyPrimAutomatic"""
         columns = cpmi.get_object_measurement_columns(self.object_name.value)
         columns += self.get_threshold_measurement_columns(pipeline)
         return columns

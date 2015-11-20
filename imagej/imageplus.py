@@ -5,7 +5,7 @@ import javabridge as J
 
 
 def get_imageplus_wrapper(imageplus_obj):
-    '''Wrap the imageplus object as a Java class'''
+    """Wrap the imageplus object as a Java class"""
     if imageplus_obj is None:
         return None
 
@@ -32,7 +32,7 @@ def get_imageplus_wrapper(imageplus_obj):
             'getCurrentSlice', '()I', 'Returns the current stack slice number')
 
         def getDimensions(self):
-            'Returns the dimensions of this image: (width, height, nChannels, nSlices, nFrames)'
+            """Returns the dimensions of this image: (width, height, nChannels, nSlices, nFrames)"""
             jresult = J.call(self.o, 'getDimensions', '()[I')
             return jresult
 
@@ -66,7 +66,7 @@ def get_imageplus_wrapper(imageplus_obj):
 
 
 def load_imageplus(file_name):
-    '''Create an ImagePlus instance from a file'''
+    """Create an ImagePlus instance from a file"""
     imageplus_obj = J.make_instance('ij/ImagePlus',
                                     '(Ljava/lang/String;)V',
                                     file_name)
@@ -74,11 +74,11 @@ def load_imageplus(file_name):
 
 
 def make_imageplus_from_processor(title, processor):
-    '''Make an ImagePlus object from an ImageProcessor object
-    
+    """Make an ImagePlus object from an ImageProcessor object
+
     title - the window title for the ImagePlus object
     processor - the ImageProcessor instance
-    '''
+    """
     imageplus_obj = J.make_instance(
         'ij/ImagePlus',
         '(Ljava/lang/String;Lij/process/ImageProcessor;)V',

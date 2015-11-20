@@ -428,7 +428,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         return result
 
     def validate_module(self, pipeline):
-        '''Test the module settings to make sure they are internally consistent'''
+        """Test the module settings to make sure they are internally consistent"""
         if (len(self.delimiter.value) != 1 and
                 not self.delimiter.value in (DELIMITER_TAB, DELIMITER_COMMA)):
             raise cps.ValidationError(
@@ -447,7 +447,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                         group.file_name)
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "ExportToSpreadsheet will not produce output in Test Mode",
@@ -479,12 +479,12 @@ class ExportToSpreadsheet(cpm.CPModule):
             return self.delimiter.value.encode("ascii")
 
     def prepare_run(self, workspace):
-        '''Prepare an image set to be run
-        
+        """Prepare an image set to be run
+
         workspace - workspace with image set populated (at this point)
-        
+
         returns False if analysis can't be done
-        '''
+        """
         return self.check_overwrite(workspace)
 
     def run(self, workspace):
@@ -528,11 +528,11 @@ class ExportToSpreadsheet(cpm.CPModule):
                                  col_labels=workspace.display_data.header)
 
     def run_as_data_tool(self, workspace):
-        '''Run the module as a data tool
-        
+        """Run the module as a data tool
+
         For ExportToSpreadsheet, we do the "post_run" method in order to write
         out the .csv files as if the experiment had just finished.
-        '''
+        """
         #
         # Set the measurements to the end of the list to mimic the state
         # at the end of the run.
@@ -542,7 +542,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         self.post_run(workspace)
 
     def post_run(self, workspace):
-        '''Save measurements at end of run'''
+        """Save measurements at end of run"""
         #
         # Don't export in test mode
         #
@@ -576,13 +576,13 @@ class ExportToSpreadsheet(cpm.CPModule):
                 object_names = []
 
     def last_in_file(self, i):
-        '''Return true if the group is the last to be included in a csv file
-        
+        """Return true if the group is the last to be included in a csv file
+
         i - the index of the group being considered.
-        
+
         Objects can be collected together in one file. Return true if
         this is the last object in a collection.
-        '''
+        """
 
         group = self.object_groups[i]
         return ((i == len(self.object_groups) - 1) or
@@ -591,17 +591,17 @@ class ExportToSpreadsheet(cpm.CPModule):
                 (not self.object_groups[i + 1].previous_file.value))
 
     def should_stop_writing_measurements(self):
-        '''All subsequent modules should not write measurements'''
+        """All subsequent modules should not write measurements"""
         return True
 
     def get_metadata_groups(self, workspace, settings_group=None):
-        '''Find the metadata groups that are relevant for creating the file name
-        
+        """Find the metadata groups that are relevant for creating the file name
+
         workspace - the workspace with the image set metadata elements and
                     grouping measurements populated.
         settings_group - if saving individual objects, this is the settings
                          group that controls naming the files.
-        '''
+        """
         if settings_group is None or settings_group.wants_automatic_file_name:
             tags = []
         else:
@@ -666,24 +666,24 @@ class ExportToSpreadsheet(cpm.CPModule):
         return os.path.join(path, file)
 
     def extension(self):
-        '''Return the appropriate extension for the CSV file name
-        
+        """Return the appropriate extension for the CSV file name
+
         The appropriate extension is "csv" if comma is used as the
         delimiter, otherwise "txt"
-        '''
+        """
         return "csv" if self.delimiter == DELIMITER_COMMA else "txt"
 
     def make_objects_file_name(
             self, object_name, workspace, image_set_number,
             settings_group=None):
-        '''Concoct the .CSV filename for some object category
-        
+        """Concoct the .CSV filename for some object category
+
         :param object_name: name of the objects whose measurements are to be
                             saved (or IMAGES or EXPERIMENT)
         :param workspace: the current workspace
         :param image_set_number: the current image set number
         :param settings_group: the settings group used to name the file
-        '''
+        """
         if self.wants_everything:
             filename = "%s.%s" % (object_name, self.extension())
 
@@ -702,13 +702,13 @@ class ExportToSpreadsheet(cpm.CPModule):
 
     def make_gct_file_name(self, workspace, image_set_number,
                            settings_group=None):
-        '''Concoct a name for the .gct file
-        
+        """Concoct a name for the .gct file
+
         workspace - workspace containing metadata measurements
         image_number - the first image number in the group being written
         settings_group - the settings group asking for the file to be written
                         if not wants_everything
-        '''
+        """
         file_name = self.make_objects_file_name(
             IMAGE, workspace, image_set_number, settings_group)
         if any([file_name.lower().endswith(x) for x in ".csv", "txt"]):
@@ -990,7 +990,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             fd.close()
 
     def check_excel_limits(self, workspace, file_name, row_count, col_count):
-        '''Return False if we shouldn't write because of Excel'''
+        """Return False if we shouldn't write because of Excel"""
         if self.excel_limits and self.show_window:
             message = None
             if col_count > MAX_EXCEL_COLUMNS:
@@ -1128,7 +1128,7 @@ Do you want to save it anyway?""" %
 
     def make_relationships_file(self, image_set_numbers, workspace,
                                 settings_group=None):
-        '''Create a CSV file documenting the relationships between objects'''
+        """Create a CSV file documenting the relationships between objects"""
 
         file_name = self.make_objects_file_name(
             OBJECT_RELATIONSHIPS, workspace, image_set_numbers[0],
@@ -1168,13 +1168,13 @@ Do you want to save it anyway?""" %
             fd.close()
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
-        '''Prepare to create a batch file
-        
+        """Prepare to create a batch file
+
         This function is called when CellProfiler is about to create a
         file for batch processing. It will pickle the image set list's
         "legacy_fields" dictionary. This callback lets a module prepare for
         saving.
-        
+
         pipeline - the pipeline to be saved
         image_set_list - the image set list to be saved
         fn_alter_path - this is a function that takes a pathname on the local
@@ -1182,10 +1182,10 @@ Do you want to save it anyway?""" %
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
-        
+
         ExportToSpreadsheet has to convert the path to file names to
         something that can be used on the cluster.
-        '''
+        """
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True
 

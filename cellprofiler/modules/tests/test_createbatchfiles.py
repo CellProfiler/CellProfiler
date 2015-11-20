@@ -1,5 +1,5 @@
-'''test_createbatchfiles - test the CreateBatchFiles module
-'''
+"""test_createbatchfiles - test the CreateBatchFiles module
+"""
 
 import base64
 import cPickle
@@ -32,7 +32,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertEqual(C.CreateBatchFiles.variable_revision_number, 7)
 
     def test_01_01_load_matlab(self):
-        '''Load a matlab pipeline containing a single CreateBatchFiles module'''
+        """Load a matlab pipeline containing a single CreateBatchFiles module"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggpTVVwLE1XMDRUMLC0Mja0MjVQMDIwsFQgGTAwevryMzAwaDAy'
                 'MFTMmRu00e+wgcDeJXlXV2pJMzMrCzdO5WxsOeXgKBLKw7OjQHeazPIuWZff'
@@ -62,7 +62,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertFalse(module.batch_mode.value)
 
     def test_01_02_load_v1(self):
-        '''Load a version 1 pipeline'''
+        """Load a version 1 pipeline"""
         data = ('eJztVdtOwjAY7pCDxMTond710gsdgwSiuzHDxEgiSGQhmpCYAgWadCvZwYhP'
                 '4aWP4SP4SDyCLWwwmoUBemmzZvsP3/+1X5t/dcO8N6qwrGqwbpgXA0IxbFLk'
                 'DZhj6dD2zuGNg5GH+5DZOjR9DA1/CItFWNT0UkUvlWFJ067AbkOp1Q/56yML'
@@ -93,7 +93,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertFalse(module.batch_mode.value)
 
     def test_01_03_load_v2(self):
-        '''Load a version 2 pipeline'''
+        """Load a version 2 pipeline"""
         data = ('eJztVdFOIjEULSMaxcTsJj6sb330QYdZsuwGXlYwGkkEiRCzD5NoBy7QpNOS'
                 'mWLUL/Fz/CQ/wXaYgaEhjOK+7TaZdG57zzntmXZus9a9rNVx2XZws9Y9HlAG'
                 'uM2IHIjAr2Iuj/BpAERCHwtexecBxbXJEH//gZ1KtfSrWqrgkuNU0Hot12ju'
@@ -167,7 +167,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertEqual(module.revision.value, 8014)
 
     def test_01_05_load_v3_batch_data(self):
-        '''Test loading a version 3 pipeline with batch data in it'''
+        """Test loading a version 3 pipeline with batch data in it"""
         data = ('eJztnX9vG0d6xynHzsVO2kuCAtf+EYAHFHDSRvLO71m3yEm2klio5egi937g'
                 'fPXR0lpiQZECSSVWiwPuz76k/tnX0lfQl9CdHe5wnglHpKhHEimNAFneJZ/5'
                 'Pt9nd4ef3VnObm+8fL7xpCnWsub2xsvVt+1O0dzptIZve/2jx83u8Mvm037R'
@@ -405,7 +405,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         self.assertEqual(mapping.remote_directory, r"/imaging/docs")
 
     def test_02_01_module_must_be_last(self):
-        '''Make sure that the pipeline is invalid if CreateBatchFiles is not last'''
+        """Make sure that the pipeline is invalid if CreateBatchFiles is not last"""
         #
         # First, make sure that a naked CPModule tests valid
         #
@@ -429,7 +429,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         self.assertRaises(cps.ValidationError, pipeline.test_valid)
 
     def test_03_01_save_and_load(self):
-        '''Save a pipeline to batch data, open it to check and load it'''
+        """Save a pipeline to batch data, open it to check and load it"""
         data = ('eJztWW1PGkEQXhC1WtPYTzb9tB+llROoGiWNgi9NSYUSIbZGbbvCApvu7ZJ7'
                 'UWlj0o/9Wf1J/QndxTs4tsoBRS3JHbkcMzfPPDOzs8uxl8uU9jPbcFWLw1ym'
                 'FKsSimGBIqvKDT0FmbUEdwyMLFyBnKVgycYwY9dgIgET8dTqRmolCZPx+AYY'

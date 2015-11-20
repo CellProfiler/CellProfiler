@@ -1,14 +1,14 @@
-'''
+"""
 <b>Gray to Color</b> takes grayscale images and and produces a
 color image from them.
 <hr>
-This module takes grayscale images as input and assigns them to 
+This module takes grayscale images as input and assigns them to
 colors in a red, green,
-blue (RGB) image or a cyan, magenta, yellow, black (CMYK) image. 
-Each color's brightness can be adjusted independently by using 
+blue (RGB) image or a cyan, magenta, yellow, black (CMYK) image.
+Each color's brightness can be adjusted independently by using
 relative weights.
 
-<p>See also <b>ColorToGray</b>.'''
+<p>See also <b>ColorToGray</b>."""
 
 import numpy as np
 import cellprofiler.cpimage as cpi
@@ -462,18 +462,18 @@ class GrayToColor(cpm.CPModule):
 
 
 class ColorSchemeSettings(object):
-    '''Collect all of the details for one color in one place'''
+    """Collect all of the details for one color in one place"""
 
     def __init__(self, image_name_setting, adjustment_setting,
                  red_intensity, green_intensity, blue_intensity):
-        '''Initialize with settings and multipliers
-        
+        """Initialize with settings and multipliers
+
         image_name_setting - names the image to use for the color
         adjustment_setting - weights the image
         red_intensity - indicates how much it contributes to the red channel
         green_intensity - indicates how much it contributes to the green channel
         blue_intensity - indicates how much it contributes to the blue channel
-        '''
+        """
         self.image_name = image_name_setting
         self.adjustment_factor = adjustment_setting
         self.red_intensity = red_intensity
@@ -482,7 +482,7 @@ class ColorSchemeSettings(object):
 
     @property
     def intensities(self):
-        '''The intensities in RGB order as a numpy array'''
+        """The intensities in RGB order as a numpy array"""
         return np.array((self.red_intensity,
                          self.green_intensity,
                          self.blue_intensity))

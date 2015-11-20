@@ -1,4 +1,4 @@
-'''
+"""
 <b>Morph</b> performs low-level morphological operations on binary or grayscale images
 <hr>
 
@@ -14,7 +14,7 @@ The following operations are available:<br><br>
 <td><b>Input image type allowed</b></td></tr>
 <tr>
 <td><i>Bothat</i></td>
-<td>Bottom-hat filter: A bottom-hat filter enhances black spots in a white background. 
+<td>Bottom-hat filter: A bottom-hat filter enhances black spots in a white background.
 It subtracts the morphological <i>Close</i> of the image from the image. See below for a description of <i>Close</i>.</td>
 <td>Binary, grayscale</td>
 </tr>
@@ -24,33 +24,33 @@ This operation should be applied to an image after skeletonizing. It leaves
 only those pixels that are at the intersection of branches.<br>
 <table>
 <tr><td><table border="1">
-<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>      
-<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>    
+<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
 </table></td>
 <td>&rarr;</td>
 <td><table border="1">
-<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>      
-<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>?</td></tr>    
+<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>?</td></tr>
 </table></td></tr>
 </table></td>
 <td>Binary
 </td></tr>
 <tr>
 <td><i>Bridge</i></td>
-<td>Sets a pixel to 1 if it has two non-zero neighbors that are on opposite 
+<td>Sets a pixel to 1 if it has two non-zero neighbors that are on opposite
 sides of this pixel:<br>
-<table> 
+<table>
 <tr>
 <td><table border="1">
-<tr><td>1</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>0</td><td>1</td></tr>      
+<tr><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td></tr>
 </table></td>
 <td>&rarr;</td>
 <td><table border="1">
@@ -66,12 +66,12 @@ sides of this pixel:<br>
 <tr>
 <td><i>Clean</i></td>
 <td>Removes isolated pixels:<br>
-<table> 
+<table>
 <tr>
 <td><table border=1>
-<tr><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>1</td><td>0</td></tr>  
-<tr><td>0</td><td>0</td><td>0</td></tr>      
+<tr><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
 </table></td>
 <td>&rarr;</td>
 <td><table border=1>
@@ -101,7 +101,7 @@ single object in an image, for instance, the edge of a well.</td>
 <td>Binary</td></tr>
 <tr>
 <td><i>Diag</i></td>
-<td>Fills in pixels whose neighbors are diagnonally connected to 4-connect 
+<td>Fills in pixels whose neighbors are diagnonally connected to 4-connect
 pixels that are 8-connected:<br>
 <table>
 <tr>
@@ -131,7 +131,7 @@ pixels that are 8-connected:<br>
 </tr>
 <tr>
 <td><i>Dilate</i></td>
-<td>For binary, replaces any 0 pixel by 1 if any of its neighbors is 1. 
+<td>For binary, replaces any 0 pixel by 1 if any of its neighbors is 1.
 For grayscale, each pixel is replaced by the maximum of its neighbors and itself.</td>
 <td>Binary, grayscale</td>
 </tr>
@@ -142,9 +142,9 @@ foreground pixel is computed to the nearest background pixel. The resulting
 image is then scaled so that the largest distance is 1.</td>
 <td>Binary</td>
 </tr>
-<tr>        
+<tr>
 <td><i>Erode</i></td>
-<td>For binary, replaces any 1 pixel by 0 if any of its neighbors is 0. 
+<td>For binary, replaces any 1 pixel by 0 if any of its neighbors is 0.
 For grayscale, each pixel is replaced by the minimum of its neighbors and itself.</td>
 <td>Binary, grayscale</td>
 </tr>
@@ -154,19 +154,19 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 <table>
 <tr>
 <td><table border=1>
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>      
-<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>    
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>
 </table></td>
 <td>&rarr;</td>
 <td><table border="1">
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>      
-<tr><td>0</td><td>?</td><td>0</td><td>0</td><td>?</td></tr>    
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>?</td><td>0</td><td>0</td><td>?</td></tr>
 </table></td>
 </tr>
 </table>
@@ -232,7 +232,7 @@ For a grayscale image, invert its intensity.
 </tr>
 <tr>
 <td><i>Majority</i></td>
-<td>Each pixel takes on the value of the majority that surround it 
+<td>Each pixel takes on the value of the majority that surround it
 (keep pixel value to break ties):<br>
 <table>
 <tr>
@@ -253,8 +253,8 @@ For a grayscale image, invert its intensity.
 <td>Binary</td>
 </tr>
 <tr>
-<td><i>Life</i></td><td>Applies the interaction rules from the 
-<a href="http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game of Life</a>, 
+<td><i>Life</i></td><td>Applies the interaction rules from the
+<a href="http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game of Life</a>,
 an example of a cellular automaton.</td>
 <td>Binary</td>
 </tr>
@@ -270,7 +270,7 @@ The effect is to return parts of the image that have a linear intensity distribu
 </tr>
 <tr>
 <td><i>Remove</i></td>
-<td>Removes pixels that are otherwise surrounded by others (4 connected). 
+<td>Removes pixels that are otherwise surrounded by others (4 connected).
 The effect is to leave the perimeter of a solid object:<br>
 <table>
 <tr>
@@ -293,13 +293,13 @@ The effect is to leave the perimeter of a solid object:<br>
 <tr>
 <td><i>Shrink</i></td>
 <td>Performs a thinning operation that erodes unless that operation
-would change the image's Euler number. This means that blobs are reduced to single 
+would change the image's Euler number. This means that blobs are reduced to single
 points and blobs with holes are reduced to rings if shrunken indefinitely.</td>
 <td>Binary</td>
 </tr>
 <tr>
 <td><i>Skel</i></td>
-<td>Performs a skeletonizing operation (medial axis transform). Preserves 
+<td>Performs a skeletonizing operation (medial axis transform). Preserves
 the points at the edges of objects but erodes everything else to lines that connect those edges.
 See <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm">here</a> for a description.</td>
 <td>Binary</td>
@@ -307,12 +307,12 @@ See <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm">here</a> for 
 <tr>
 <td><i>SkelPE</i></td>
 <td>Performs a skeletonizing operation using the metric, PE * D to
-control the erosion order. PE is the Poisson Equation (see Gorelick, 
-"Shape representation and classification using the Poisson Equation", 
+control the erosion order. PE is the Poisson Equation (see Gorelick,
+"Shape representation and classification using the Poisson Equation",
 IEEE Transactions on Pattern Analysis and Machine Intelligence V28, # 12, 2006)
 evaluated within the foreground with the boundary condition that the background
 is zero. D is the distance transform (distance of a pixel to the nearest edge).
-The resulting skeleton has fewer spurs but some bit of erosion at the endpoints 
+The resulting skeleton has fewer spurs but some bit of erosion at the endpoints
 in the binary image.</td>
 <td>Binary</td>
 </tr>
@@ -343,22 +343,22 @@ operation essentially removes the endpoints of lines.<br>
 <tr>
 <td><i>Thicken</i></td>
 <td>Dilates the exteriors of objects where that dilation does not
-8-connect the object with another. The image is labeled and the labeled objects are filled. 
+8-connect the object with another. The image is labeled and the labeled objects are filled.
 Unlabeled points adjacent to uniquely labeled points change from background to foreground.</td>
 <td>Binary</td>
 </tr>
 <tr>
 <td><i>Thin</i></td>
-<td>Thin lines preserving the Euler number using the thinning algorithm # 1 described in 
-Guo, "Parallel Thinning with Two Subiteration Algorithms", <i>Communications of the ACM,</i> Vol 32 #3, 
+<td>Thin lines preserving the Euler number using the thinning algorithm # 1 described in
+Guo, "Parallel Thinning with Two Subiteration Algorithms", <i>Communications of the ACM,</i> Vol 32 #3,
 page 359. The result generally preserves the lines in an image while eroding their thickness.</td>
 <td>Binary</td>
 </tr>
 <tr>
 <td><i>Tophat</i></td>
-<td>Subtracts the morphological opening of the image from the image. This enhances white spots 
+<td>Subtracts the morphological opening of the image from the image. This enhances white spots
 in a black background. Note that this tophat operation is slightly different than that in the
-<b>EnhanceOrSupressFeatures</b> module, in that you would need to subtract 1 from the diameter 
+<b>EnhanceOrSupressFeatures</b> module, in that you would need to subtract 1 from the diameter
 in <b>Morph</b> to achieve the same result.</td>
 <td>Binary, grayscale</td>
 </tr>
@@ -383,7 +383,7 @@ in <b>Morph</b> to achieve the same result.</td>
   <td>Binary</td>
 </tr>
 </table>
-'''
+"""
 
 import logging
 import numpy as np
@@ -634,7 +634,7 @@ class Morph(cpm.CPModule):
         self.functions.append(group)
 
     def prepare_settings(self, setting_values):
-        '''Adjust the # of functions to match the # of setting values'''
+        """Adjust the # of functions to match the # of setting values"""
         assert (len(setting_values) - 2) % FUNCTION_SETTING_COUNT == 0
         function_count = (len(setting_values) - 2) / FUNCTION_SETTING_COUNT
         del self.functions[function_count:]
@@ -642,7 +642,7 @@ class Morph(cpm.CPModule):
             self.add_function()
 
     def settings(self):
-        '''Return the settings as saved in the pipeline file'''
+        """Return the settings as saved in the pipeline file"""
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
             result += [function.function, function.repeats_choice,
@@ -655,7 +655,7 @@ class Morph(cpm.CPModule):
         return result
 
     def visible_settings(self):
-        '''Return the settings as displayed to the user'''
+        """Return the settings as displayed to the user"""
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
             if function.can_remove:
@@ -744,7 +744,7 @@ class Morph(cpm.CPModule):
                                             sharexy=figure.subplot(0, 0))
 
     def run_function(self, function, pixel_data, mask):
-        '''Apply the function once to the image, returning the result'''
+        """Apply the function once to the image, returning the result"""
         count = function.repeat_count
         function_name = function.function.value
         scale = function.scale.value
@@ -933,7 +933,7 @@ class Morph(cpm.CPModule):
     def upgrade_settings(self, setting_values,
                          variable_revision_number, module_name,
                          from_matlab):
-        '''Adjust the setting_values of previous revisions to match this one'''
+        """Adjust the setting_values of previous revisions to match this one"""
         if from_matlab and variable_revision_number in (1, 2):
             # Settings:
             # image name
@@ -1001,7 +1001,7 @@ class Morph(cpm.CPModule):
 class MorphSettingsGroup(cps.SettingsGroup):
     @property
     def repeat_count(self):
-        ''  # of times to repeat'''
+        """"""  # of times to repeat'''
         if self.repeats_choice == R_ONCE:
             return 1
         elif self.repeats_choice == R_FOREVER:

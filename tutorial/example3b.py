@@ -1,4 +1,4 @@
-'''<b>Example3b</b> Being nice to CellProfiler when adding a measurement
+"""<b>Example3b</b> Being nice to CellProfiler when adding a measurement
 <hr>
 This module demonstrates how to fully inform CellProfiler about the
 measurements produced by your module. At a minimum, you must implement
@@ -21,12 +21,12 @@ should only be implemented for measurements that do make reference to
 a particular image or secondary objecct.</li>
 <li><i>get_measurement_scales()</i> gives the scale part of a measurement.
 We've broadened the concept of "Scale" to include any major parameter condition
-where a user might be expected to sample among a variety of parameter 
+where a user might be expected to sample among a variety of parameter
 configurations. An example of a measurement with a scale is the texture measurement,
 "Texture_Variance_DNA_3_90" which has a scale of "3_90", meaning "pixels offset
 by 3 in the vertical direction".
 </li></ul>
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpmodule as cpm
@@ -70,13 +70,13 @@ class Example3b(cpm.CPModule):
         m.add_measurement(cpmeas.IMAGE, self.get_feature_name(), variance)
 
     def get_feature_name(self):
-        '''Return the name to be used to store the feature
-        
+        """Return the name to be used to store the feature
+
         Returns CATEGORY_FEATURE_IMAGENAME
         where CATEGORY is Example3
               FEATURE is Variance
               IMAGENAME is the name of the input image.
-        '''
+        """
         return "_".join([C_EXAMPLE3, FTR_VARIANCE, self.input_image_name.value])
 
     def get_measurement_columns(self, pipeline):

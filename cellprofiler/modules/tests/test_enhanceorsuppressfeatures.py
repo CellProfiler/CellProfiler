@@ -1,4 +1,4 @@
-'''test_enhanceorsuppressspeckles - test the EnhanceOrSuppressSpeckles module'''
+"""test_enhanceorsuppressspeckles - test the EnhanceOrSuppressSpeckles module"""
 
 import base64
 import numpy as np
@@ -24,7 +24,7 @@ OUTPUT_IMAGE_NAME = 'myfilteredimage'
 
 class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
     def make_workspace(self, image, mask):
-        '''Make a workspace for testing FilterByObjectMeasurement'''
+        """Make a workspace for testing FilterByObjectMeasurement"""
         module = E.EnhanceOrSuppressSpeckles()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
@@ -42,7 +42,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         return workspace, module
 
     def test_00_00_enhance_zero(self):
-        '''Test enhance of an image of all zeros'''
+        """Test enhance of an image of all zeros"""
         workspace, module = self.make_workspace(np.zeros((10, 10)), None)
         self.assertTrue(module.method.value == E.ENHANCE)
         module.run(workspace)
@@ -51,7 +51,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         self.assertTrue(np.all(result.pixel_data == 0))
 
     def test_00_01_suppress_zero(self):
-        '''Test suppress of an image of all zeros'''
+        """Test suppress of an image of all zeros"""
         workspace, module = self.make_workspace(np.zeros((10, 10)), None)
         module.method.value = E.SUPPRESS
         module.run(workspace)
@@ -60,7 +60,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         self.assertTrue(np.all(result.pixel_data == 0))
 
     def test_01_00_check_version(self):
-        '''Make sure the test covers the latest revision number'''
+        """Make sure the test covers the latest revision number"""
         # Create a new test and update this one after changing settings
         self.assertEqual(E.EnhanceOrSuppressFeatures.variable_revision_number,
                          5)
@@ -345,7 +345,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         self.assertEqual(module.neurite_choice, E.N_GRADIENT)
 
     def test_02_01_enhance(self):
-        '''Enhance an image composed of two circles of different diameters'''
+        """Enhance an image composed of two circles of different diameters"""
         #
         # Make an image which has circles of diameters 10 and 7. We should
         # keep the smaller circle and erase the larger
@@ -368,7 +368,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         self.assertTrue(np.all(result.pixel_data == expected))
 
     def test_02_02_suppress(self):
-        '''Suppress a speckle in an image composed of two circles'''
+        """Suppress a speckle in an image composed of two circles"""
         image = np.zeros((11, 20))
         expected = np.zeros((11, 20))
         i, j = np.mgrid[-5:6, -5:15]
@@ -385,7 +385,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         self.assertTrue(np.all(result.pixel_data == expected))
 
     def test_03_01_enhancemask(self):
-        '''Enhance a speckles image, masking a portion'''
+        """Enhance a speckles image, masking a portion"""
         image = np.zeros((10, 10))
         mask = np.ones((10, 10), bool)
         #
@@ -423,7 +423,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
             self.assertTrue(np.all(result.pixel_data == 0))
 
     def test_03_02_suppressmask(self):
-        '''Suppress a speckles image, masking a portion'''
+        """Suppress a speckles image, masking a portion"""
         image = np.zeros((10, 10))
         mask = np.ones((10, 10), bool)
         #
@@ -454,7 +454,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         self.assertTrue(np.all(result.pixel_data == image))
 
     def test_04_01_enhance_neurites(self):
-        '''Check enhance neurites against Matlab'''
+        """Check enhance neurites against Matlab"""
         data = np.array([[7, 9, 5, 6, 3, 3, 6, 4, 1, 6, 4, 4, 3, 3, 9, 6, 2, 8,
                           7, 2, 7, 7, 7, 3, 7, 5, 4, 7, 4, 4, 4, 4, 6, 3, 4, 6,
                           4, 5, 4, 1, 4, 10, 4, 8, 8, 3, 9, 5, 3, 5, 4, 7, 4, 7,
@@ -3696,7 +3696,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         np.testing.assert_array_almost_equal(pixel_data, 0)
 
     def test_05_01_enhance_dark_holes(self):
-        '''Check enhancement of dark holes'''
+        """Check enhancement of dark holes"""
         #
         # enhance_dark_holes's function is tested more extensively
         # in test_filter

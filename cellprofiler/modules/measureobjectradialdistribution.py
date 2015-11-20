@@ -137,7 +137,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.add_bin_count(can_remove=False)
 
     def add_image(self, can_remove=True):
-        '''Add an image to be measured'''
+        """Add an image to be measured"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -152,7 +152,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.images.append(group)
 
     def add_object(self, can_remove=True):
-        '''Add an object to be measured (plus optional centers)'''
+        """Add an object to be measured (plus optional centers)"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -192,7 +192,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.objects.append(group)
 
     def add_bin_count(self, can_remove=True):
-        '''Add another radial bin count at which to measure'''
+        """Add another radial bin count at which to measure"""
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
@@ -374,7 +374,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         return result
 
     def prepare_settings(self, setting_values):
-        '''Adjust the numbers of images, objects and bin counts'''
+        """Adjust the numbers of images, objects and bin counts"""
         image_count, objects_count, bin_counts_count, heatmap_count = \
             [int(x) for x in setting_values[:4]]
         for sequence, add_fn, count in \
@@ -485,8 +485,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
     def do_measurements(self, workspace, image_name, object_name,
                         center_object_name, center_choice,
                         bin_count_settings, dd):
-        '''Perform the radial measurements on the image set
-        
+        """Perform the radial measurements on the image set
+
         workspace - workspace that holds images / objects
         image_name - make measurements on this image
         object_name - make measurements on these objects
@@ -497,9 +497,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                       C_SELF, C_CENTERS_OF_OBJECTS or C_EDGES_OF_OBJECTS.
         bin_count_settings - the bin count settings group
         d - a dictionary for saving reusable partial results
-        
+
         returns one statistics tuple per ring.
-        '''
+        """
         assert isinstance(workspace, cpw.Workspace)
         assert isinstance(workspace.object_set, cpo.ObjectSet)
         bin_count = bin_count_settings.bin_count.value
@@ -822,7 +822,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
 
 
 class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
-    '''An object name subscriber limited by the objects in the objects' group'''
+    """An object name subscriber limited by the objects in the objects' group"""
 
     def set_module(self, module):
         assert isinstance(module, MeasureObjectRadialDistribution)
@@ -839,11 +839,11 @@ class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
         return filter(self.__is_valid_choice, super_choices)
 
     def is_visible(self):
-        '''Return True if a choice should be displayed'''
+        """Return True if a choice should be displayed"""
         return len(self.__module.objects) > 1
 
     def get_objects_name(self):
-        '''Return the name of the objects to use in the display'''
+        """Return the name of the objects to use in the display"""
         if len(self.__module.objects) == 1:
             return self.__module.objects[0].object_name.value
         else:
@@ -851,7 +851,7 @@ class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
 
 
 class MORDImageNameSubscriber(cps.ImageNameSubscriber):
-    '''An image name subscriber limited by the images in the image group'''
+    """An image name subscriber limited by the images in the image group"""
 
     def set_module(self, module):
         assert isinstance(module, MeasureObjectRadialDistribution)
@@ -868,11 +868,11 @@ class MORDImageNameSubscriber(cps.ImageNameSubscriber):
         return filter(self.__is_valid_choice, super_choices)
 
     def is_visible(self):
-        '''Return True if a choice should be displayed'''
+        """Return True if a choice should be displayed"""
         return len(self.__module.images) > 1
 
     def get_image_name(self):
-        '''Return the name of the image to use in the display'''
+        """Return the name of the image to use in the display"""
         if len(self.__module.images) == 1:
             return self.__module.images[0].image_name.value
         else:

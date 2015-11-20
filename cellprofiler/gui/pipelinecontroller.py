@@ -197,11 +197,11 @@ class PipelineController:
         set_omero_login_hook(self.omero_login)
 
     def start(self, workspace_file, pipeline_path):
-        '''Do initialization after GUI hookup
-        
+        """Do initialization after GUI hookup
+
         Perform steps that need to happen after all of the user interface
         elements have been initialized.
-        '''
+        """
         if workspace_file is not None:
             self.do_open_workspace(workspace_file,
                                    load_pipeline=(pipeline_path is None))
@@ -223,11 +223,11 @@ class PipelineController:
     def attach_to_path_list_ctrl(self,
                                  path_list_ctrl,
                                  path_list_filtered_files_checkbox):
-        '''Attach the pipeline controller to the path_list_ctrl
-        
+        """Attach the pipeline controller to the path_list_ctrl
+
         This lets the pipeline controller populate the path list as
         it changes.
-        '''
+        """
         self.__path_list_ctrl = path_list_ctrl
         self.__path_list_is_filtered = None
         self.__path_list_filter_checkbox = path_list_filtered_files_checkbox
@@ -254,10 +254,10 @@ class PipelineController:
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
 
     def set_path_list_filtering(self, use_filter):
-        '''Update the path list UI according to the filter on/off state
-        
+        """Update the path list UI according to the filter on/off state
+
         use_filter - True if filtering, False if all files enabled.
-        '''
+        """
         use_filter = bool(use_filter)
         if self.__path_list_is_filtered is not use_filter:
             sizer = self.__path_list_filter_checkbox.GetContainingSizer()
@@ -458,7 +458,7 @@ class PipelineController:
         self.show_launch_controls()
 
     def show_launch_controls(self):
-        '''Show the "Analyze images" and "Enter test mode" buttons'''
+        """Show the "Analyze images" and "Enter test mode" buttons"""
         self.__test_controls_panel.Sizer.Hide(self.__tcp_test_sizer)
         self.__test_controls_panel.Sizer.Hide(self.__tcp_analysis_sizer)
         self.__test_controls_panel.Sizer.Show(self.__tcp_launch_sizer)
@@ -467,7 +467,7 @@ class PipelineController:
         self.__frame.enable_launch_commands()
 
     def show_analysis_controls(self):
-        '''Show the controls that stop and pause analysis'''
+        """Show the controls that stop and pause analysis"""
         self.__test_controls_panel.Sizer.Hide(self.__tcp_test_sizer)
         self.__test_controls_panel.Sizer.Hide(self.__tcp_launch_sizer)
         self.__test_controls_panel.Sizer.Show(self.__tcp_analysis_sizer)
@@ -490,7 +490,7 @@ class PipelineController:
         self.__test_controls_panel.Layout()
 
     def show_test_controls(self):
-        '''Show the controls for dealing with test mode'''
+        """Show the controls for dealing with test mode"""
         self.__test_controls_panel.Sizer.Show(self.__tcp_test_sizer)
         self.__test_controls_panel.Sizer.Hide(self.__tcp_launch_sizer)
         self.__test_controls_panel.Sizer.Hide(self.__tcp_analysis_sizer)
@@ -503,7 +503,7 @@ class PipelineController:
             dlg.ShowModal()
 
     def __on_open_workspace(self, event):
-        '''Handle the Open Workspace menu command'''
+        """Handle the Open Workspace menu command"""
         path = self.do_open_workspace_dlg()
         if path is not None:
             self.do_open_workspace(path, True)
@@ -514,11 +514,11 @@ class PipelineController:
             self.do_open_workspace(path, True)
 
     def do_open_workspace_dlg(self):
-        '''Display the open workspace dialog, returning the chosen file
-        
+        """Display the open workspace dialog, returning the chosen file
+
         returns a path or None if the user canceled. If it returns a path,
         the workspace file is locked.
-        '''
+        """
         wildcard = "CellProfiler project (%s)|%s|All files (*.*)|*.*" % (
             ",".join(["*.%s" % x for x in cpprefs.EXT_PROJECT_CHOICES]),
             ";".join(["*.%s" % x for x in cpprefs.EXT_PROJECT_CHOICES]))
@@ -531,10 +531,10 @@ class PipelineController:
             return None
 
     def do_open_workspace(self, filename, load_pipeline=True):
-        '''Open the given workspace file
-        
+        """Open the given workspace file
+
         filename - the path to the file to open. It should already be locked.
-        '''
+        """
         if not os.path.isfile(filename):
             wx.MessageBox("Could not find project file: %s" % filename,
                           caption="Error opening project file",
@@ -664,7 +664,7 @@ class PipelineController:
             frame.Show()
 
     def __on_new_workspace(self, event):
-        '''Handle the New Workspace menu command'''
+        """Handle the New Workspace menu command"""
         if self.__dirty_workspace:
             result = wx.MessageBox(
                 "Do you want to save your existing project?",
@@ -683,7 +683,7 @@ class PipelineController:
         self.do_create_workspace()
 
     def do_create_workspace(self):
-        '''Create a new workspace file'''
+        """Create a new workspace file"""
         self.stop_debugging()
         if self.is_running():
             self.stop_running()
@@ -700,7 +700,7 @@ class PipelineController:
         self.set_title()
 
     def __on_save_as_workspace(self, event):
-        '''Handle the Save Workspace As menu command'''
+        """Handle the Save Workspace As menu command"""
         self.do_save_as_workspace()
 
     def do_save_as_workspace(self):
@@ -726,7 +726,7 @@ class PipelineController:
             return False
 
     def __on_save_workspace(self, event):
-        '''Handle the Save Project menu command'''
+        """Handle the Save Project menu command"""
         path = cpprefs.get_current_workspace_path()
         if path is None:
             self.do_save_as_workspace()
@@ -734,7 +734,7 @@ class PipelineController:
             self.do_save_workspace(path)
 
     def do_save_workspace(self, filename):
-        '''Create a copy of the current workspace file'''
+        """Create a copy of the current workspace file"""
         self.__workspace.save(filename)
         cpprefs.set_workspace_file(filename)
         self.__dirty_workspace = False
@@ -796,35 +796,35 @@ class PipelineController:
                     self.do_import_text_file_list(dlg.Path)
 
     def do_import_csv_file_list(self, path):
-        '''Import path names from a CSV file
-        
+        """Import path names from a CSV file
+
         path - path to the CSV file
-        
+
         The CSV file should have no header. Each field in the CSV file
         is treated as a path. An example:
         "/images/A01_w1.tif","/images/A01_w2.tif"
         "/images/A02_w1.tif","/images/A02_w2.tif"
-        '''
+        """
         with open(path, mode="rb") as fd:
             rdr = csv.reader(fd)
             pathnames = sum(rdr, [])
             self.__pipeline.add_pathnames_to_file_list(pathnames)
 
     def do_import_text_file_list(self, path):
-        '''Import path names from a text file
-        
+        """Import path names from a text file
+
         path - path to the text file
-        
+
         Each line in the text file is treated as a path. Whitespace at the
         start or end of the line is stripped. An example:
         /images/A01_w1.tif
         /images/A01_w2.tif
         /images/A02_w1.tif
         /images/A02_w2.tif
-        
+
         If your file name has line feeds in it or whitespace at the start
         or end of the line, maybe you're asking too much :-)
-        '''
+        """
         with open(path, mode="r") as fd:
             pathnames = [p.strip().decode("utf-8") for p in fd]
             self.__pipeline.add_pathnames_to_file_list(pathnames)
@@ -968,10 +968,10 @@ class PipelineController:
                                  continue_only=True)
 
     def load_hdf5_pipeline(self, pathname):
-        '''Load a pipeline from an HDF5 measurements file or similar
-        
+        """Load a pipeline from an HDF5 measurements file or similar
+
         pathname - pathname to the file
-        '''
+        """
         assert h5py.is_hdf5(pathname)
         m = cpm.Measurements(
             filename=pathname,
@@ -1043,10 +1043,10 @@ class PipelineController:
                           wx.ICON_ERROR | wx.OK, self.__frame)
 
     def do_save_pipeline(self):
-        '''Save the pipeline, asking the user for the name
+        """Save the pipeline, asking the user for the name
 
         return True if the user saved the pipeline
-        '''
+        """
         default_filename = cpprefs.get_current_workspace_path()
         if default_filename is None:
             default_filename = "pipeline.%s" % cpprefs.EXT_PIPELINE
@@ -1084,7 +1084,7 @@ class PipelineController:
             return False
 
     def __on_export_image_sets(self, event):
-        '''Export the pipeline's image sets to a .csv file'''
+        """Export the pipeline's image sets to a .csv file"""
         dlg = wx.FileDialog(self.__frame, "Export image sets",
                             wildcard="Image set file (*.csv)|*.csv",
                             style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
@@ -1223,12 +1223,12 @@ class PipelineController:
         self.__pv_frame.Show()
 
     def display_plate_viewer_help(self, message, caption):
-        '''Display a helpful dialog for a plate viewer config error
-        
+        """Display a helpful dialog for a plate viewer config error
+
         message - message to display
-        
+
         caption - caption on frame bar
-        '''
+        """
         message += "\n\nPress ""Help"" for the plate viewer manual page."
         with wx.Dialog(self.__frame, title=caption) as dlg:
             assert isinstance(dlg, wx.Dialog)
@@ -1268,7 +1268,7 @@ class PipelineController:
         self.populate_recent_files()
 
     def populate_recent_files(self):
-        '''Populate the recent files menu'''
+        """Populate the recent files menu"""
         for menu, ids, file_names, fn in (
                 (self.__frame.recent_pipeline_files,
                  RECENT_PIPELINE_FILE_MENU_ID,
@@ -1290,7 +1290,7 @@ class PipelineController:
                     id=ids[index])
 
     def set_title(self):
-        '''Set the title of the parent frame'''
+        """Set the title of the parent frame"""
         pathname = cpprefs.get_current_workspace_path()
         if pathname is None:
             self.__frame.Title = "CellProfiler %s" % (version.title_string)
@@ -1317,10 +1317,10 @@ class PipelineController:
             self.enable_module_controls_panel_buttons()
 
     def check_close(self):
-        '''Return True if we are allowed to close
-        
+        """Return True if we are allowed to close
+
         Check for pipeline dirty, return false if user doesn't want to close
-        '''
+        """
         if self.__dirty_workspace:
             #
             # Create a dialog box asking the user what to do.
@@ -1469,13 +1469,13 @@ class PipelineController:
         self.on_image_set_modification()
 
     def on_workspace_event(self, event):
-        '''Workspace's file list changed. Invalidate the workspace cache.'''
+        """Workspace's file list changed. Invalidate the workspace cache."""
         if isinstance(event, cpw.Workspace.WorkspaceFileListNotification):
             self.on_image_set_modification()
             self.__dirty_workspace = True
 
     def on_load_exception_event(self, event):
-        '''Handle a pipeline load exception'''
+        """Handle a pipeline load exception"""
         if event.module is None:
             module_name = event.module_name
         else:
@@ -1498,7 +1498,7 @@ class PipelineController:
             event.cancel_run = False
 
     def on_urls_added(self, event):
-        '''Callback from pipeline when paths are added to the pipeline'''
+        """Callback from pipeline when paths are added to the pipeline"""
         urls = event.urls
         self.__path_list_ctrl.add_paths(urls)
         self.__workspace.file_list.add_files_to_filelist(urls)
@@ -1507,7 +1507,7 @@ class PipelineController:
         self.exit_test_mode()
 
     def on_urls_removed(self, event):
-        '''Callback from pipeline when paths are removed from the pipeline'''
+        """Callback from pipeline when paths are removed from the pipeline"""
         urls = event.urls
         self.__path_list_ctrl.remove_paths(urls)
         self.__workspace.file_list.remove_files_from_filelist(urls)
@@ -1524,7 +1524,7 @@ class PipelineController:
         self.__path_list_ctrl.enable_paths(disabled_urls, False)
 
     def on_update_pathlist_ui(self, event):
-        '''Called with an UpdateUIEvent for a pathlist command ID'''
+        """Called with an UpdateUIEvent for a pathlist command ID"""
         assert isinstance(event, wx.UpdateUIEvent)
         event.Enable(True)
         if not self.__path_list_ctrl.IsShownOnScreen():
@@ -1537,7 +1537,7 @@ class PipelineController:
                 event.Enable(False)
 
     def on_pathlist_browse(self, event, default_dir=wx.EmptyString):
-        '''Handle request for browsing for pathlist files'''
+        """Handle request for browsing for pathlist files"""
         with wx.FileDialog(
                 self.__path_list_ctrl,
                 "Select image files",
@@ -1641,13 +1641,13 @@ class PipelineController:
         self.__path_list_ctrl.collapse_all()
 
     def on_pathlist_remove(self, event=None):
-        '''Remove selected files from the path list'''
+        """Remove selected files from the path list"""
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_SELECTED_ONLY)
         self.on_pathlist_file_delete(paths)
 
     def on_pathlist_show(self, event=None):
-        '''Show the focused item's image'''
+        """Show the focused item's image"""
         from cellprofiler.gui.cpfigure import show_image
         from cellprofiler.modules.loadimages import url2pathname
         paths = self.__path_list_ctrl.get_paths(
@@ -1726,7 +1726,7 @@ class PipelineController:
                 self.__pipeline.remove_urls(to_remove)
 
     def on_pathlist_clear(self, event):
-        '''Remove all files from the path list'''
+        """Remove all files from the path list"""
         result = wx.MessageBox(
             "Are you sure you want to clear all files from your project?\n\n"
             "Clearing will remove the files from your project,\n"
@@ -1837,16 +1837,16 @@ class PipelineController:
 
     def pick_from_pathlist(self, selected_url, title=None,
                            instructions=None):
-        '''Pick a file from the pathlist control
-        
+        """Pick a file from the pathlist control
+
         This function displays the pathlist control within a dialog box. The
         single pathlist control is reparented to the dialog box during its
         modal display.
-        
+
         selected_url - select this URL in the pathlist control.
-        
+
         returns the URL or None if the user cancelled.
-        '''
+        """
         if title is None:
             title = "Select an image file"
         with wx.Dialog(
@@ -1893,12 +1893,12 @@ class PipelineController:
                 self.__path_list_ctrl.Reparent(old_parent)
 
     def add_urls(self, urls):
-        '''Add URLS to the pipeline'''
+        """Add URLS to the pipeline"""
         # The pipeline's notification callback will add them to the workspace
         self.__pipeline.add_urls(urls)
 
     def on_walk_callback(self, dirpath, dirnames, filenames):
-        '''Handle an iteration of file walking'''
+        """Handle an iteration of file walking"""
 
         hdf_file_list = self.__workspace.get_file_list()
         file_list = [pathname2url(os.path.join(dirpath, filename))
@@ -1958,7 +1958,7 @@ class PipelineController:
         self.__add_module_frame.Raise()
 
     def populate_edit_menu(self, menu):
-        '''Display a menu of modules to add'''
+        """Display a menu of modules to add"""
         from cellprofiler.modules import get_module_names
         #
         # Get a two-level dictionary of categories and names
@@ -1998,7 +1998,7 @@ class PipelineController:
             menu.AppendSubMenu(sub_menu, category)
 
     def populate_goto_menu(self, menu=None):
-        '''Populate the menu items in the edit->goto menu'''
+        """Populate the menu items in the edit->goto menu"""
         if menu is None:
             menu = self.__frame.menu_edit_goto_module
         assert isinstance(menu, wx.Menu)
@@ -2045,15 +2045,15 @@ class PipelineController:
                     event.Id, event.GetString()))
 
     def __get_selected_modules(self):
-        '''Get the modules selected in the GUI, but not input modules'''
+        """Get the modules selected in the GUI, but not input modules"""
         return filter(lambda x: not x.is_input_module(),
                       self.__pipeline_list_view.get_selected_modules())
 
     def ok_to_edit_pipeline(self):
-        '''Return True if ok to edit pipeline
-        
+        """Return True if ok to edit pipeline
+
         Warns user if not OK (is_running)
-        '''
+        """
         if self.is_running():
             wx.MessageBox(
                 "Pipeline modification is disabled during analysis.\n"
@@ -2090,10 +2090,10 @@ class PipelineController:
             self.exit_test_mode()
 
     def exit_test_mode(self):
-        '''Exit test mode with all the bells and whistles
-        
+        """Exit test mode with all the bells and whistles
+
         This is safe to call if not in test mode
-        '''
+        """
         if self.is_in_debug_mode():
             self.stop_debugging()
             if cpprefs.get_show_exiting_test_mode_dlg():
@@ -2165,10 +2165,10 @@ class PipelineController:
                 self.show_exiting_test_mode()
 
     def on_update_module_enable(self, event):
-        '''Update the UI for the ENABLE_MODULE menu item / button
-        
+        """Update the UI for the ENABLE_MODULE menu item / button
+
         event - an UpdateUIEvent for the item
-        '''
+        """
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is not None:
             event.SetText("Disable Module" if active_module.enabled
@@ -2179,7 +2179,7 @@ class PipelineController:
             event.Enable(True)
 
     def on_module_enable(self, event):
-        '''Toggle the active module's enable state'''
+        """Toggle the active module's enable state"""
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is None:
             logger.warn(
@@ -2292,7 +2292,7 @@ class PipelineController:
         self.__frame.preferences_view.on_pipeline_progress(*args)
 
     def on_run_multiple_pipelines(self, event):
-        '''Menu handler for run multiple pipelines'''
+        """Menu handler for run multiple pipelines"""
         dlg = RunMultplePipelinesDialog(
             parent=self.__frame,
             title="Run multiple pipelines",
@@ -2318,11 +2318,11 @@ class PipelineController:
         self.on_analyze_images(event)
 
     def on_analyze_images(self, event):
-        '''Handle a user request to start running the pipeline'''
+        """Handle a user request to start running the pipeline"""
         self.do_analyze_images()
 
     def do_analyze_images(self):
-        '''Analyze images using the current workspace and pipeline'''
+        """Analyze images using the current workspace and pipeline"""
         ##################################
         #
         # Preconditions:
@@ -2387,11 +2387,11 @@ class PipelineController:
         return
 
     def on_prepare_run_error_event(self, pipeline, event):
-        '''Display an error message box on error during prepare_run
-        
+        """Display an error message box on error during prepare_run
+
         This is called if the pipeline is misconfigured - an unrecoverable
         error that's the user's fault.
-        '''
+        """
         if isinstance(event, cpp.PrepareRunErrorEvent):
             if event.module is None:
                 caption = "Cannot run pipeline"
@@ -2475,10 +2475,10 @@ class PipelineController:
             raise ValueError("Unknown event type %s %s" % (type(evt), evt))
 
     def handle_analysis_feedback(self):
-        '''Process any pending exception or interaction requests from the
+        """Process any pending exception or interaction requests from the
         pipeline.  This function guards against multiple modal dialogs being
         opened, which can overwhelm the user and cause UI hangs.
-        '''
+        """
         # just in case.
         assert wx.Thread_IsMain(), "PipelineController.handle_analysis_feedback() must be called from main thread!"
 
@@ -2500,8 +2500,8 @@ class PipelineController:
             self.interaction_pending = False
 
     def module_display_request(self, evt):
-        '''
-        '''
+        """
+        """
         assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
 
         module_num = evt.module_num
@@ -2584,9 +2584,9 @@ class PipelineController:
             evt.reply(cpanalysis.Ack())
 
     def module_interaction_request(self, evt):
-        '''forward a module interaction request from the running pipeline to
+        """forward a module interaction request from the running pipeline to
         our own pipeline's instance of the module, and reply with the result.
-        '''
+        """
         module_num = evt.module_num
         # extract args and kwargs from the request.
         # see main().interaction_handler() in analysis_worker.py
@@ -2610,13 +2610,13 @@ class PipelineController:
             evt.reply(cpanalysis.InteractionReply(result=result))
 
     def omero_login_request(self, evt):
-        '''Handle retrieval of the Omero credentials'''
+        """Handle retrieval of the Omero credentials"""
         from bioformats.formatreader import get_omero_credentials
         evt.reply(cpanalysis.OmeroLoginReply(get_omero_credentials()))
 
     def analysis_exception(self, evt):
-        '''Report an error in analysis to the user, giving options for
-        skipping, aborting, and debugging.'''
+        """Report an error in analysis to the user, giving options for
+        skipping, aborting, and debugging."""
 
         assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
 
@@ -2684,7 +2684,7 @@ class PipelineController:
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
     def on_restart(self, event):
-        '''Restart a pipeline from a measurements file'''
+        """Restart a pipeline from a measurements file"""
         dlg = wx.FileDialog(self.__frame, "Select measurements file",
                             wildcard="Measurements file (*.mat, *.h5)|*.mat;*.h5",
                             style=wx.FD_OPEN)
@@ -2743,7 +2743,7 @@ class PipelineController:
         self.__resume_button.Enable(False)
 
     def on_stop_running(self, event):
-        '''Handle a user interface request to stop running'''
+        """Handle a user interface request to stop running"""
         self.__stop_analysis_button.Enable(False)
         self.pipeline_list = []
         if (self.__analysis is not None) and self.__analysis.check_running():
@@ -2753,14 +2753,14 @@ class PipelineController:
         self.stop_running()
 
     def on_stop_analysis(self, event):
-        '''Stop an analysis run.
-        
+        """Stop an analysis run.
+
         Handle chores that need completing after an analysis is cancelled
         or finished, like closing the measurements file or writing the .MAT
         file.
-        
+
         event - a cpanalysis.AnalysisFinished event
-        '''
+        """
         try:
             if cpprefs.get_write_MAT_files() is True:
                 # The user wants to write a .mat file.
@@ -3095,7 +3095,7 @@ class PipelineController:
         self.__debug_outlines = {}
 
     def on_debug_choose_group(self, event):
-        '''Choose a group'''
+        """Choose a group"""
         if len(self.__groupings) < 2:
             wx.MessageBox(
                 "There is only one group and it is currently running in test mode",
@@ -3137,9 +3137,9 @@ class PipelineController:
             dialog.Destroy()
 
     def on_debug_choose_image_set(self, event):
-        '''Choose one of the current image sets
-        
-        '''
+        """Choose one of the current image sets
+
+        """
 
         def feature_cmp(x, y):
             if "_" not in x or "_" not in y:
@@ -3291,7 +3291,7 @@ class PipelineController:
                 self.debug_init_imageset()
 
     def debug_init_imageset(self):
-        '''Initialize the current image set by running the input modules'''
+        """Initialize the current image set by running the input modules"""
         for module in self.__pipeline.modules():
             if module.is_input_module():
                 if not self.do_step(module, False):
@@ -3306,10 +3306,10 @@ class PipelineController:
         return True
 
     def on_debug_reload(self, event):
-        '''Reload modules from source, warning the user if the pipeline could
+        """Reload modules from source, warning the user if the pipeline could
         not be reinstantiated with the new versions.
 
-        '''
+        """
         success = self.__pipeline.reload_modules()
         if not success:
             wx.MessageBox(("CellProfiler has reloaded modules from source, but "
@@ -3319,7 +3319,7 @@ class PipelineController:
                           wx.ICON_ERROR | wx.OK)
 
     def on_debug_view_workspace(self, event):
-        '''Show the workspace viewer'''
+        """Show the workspace viewer"""
         workspace = cpw.Workspace(
             self.__pipeline,
             None,
@@ -3357,7 +3357,7 @@ class PipelineController:
     # ~^~
 
     def show_analysis_complete(self, n_image_sets):
-        '''Show the "Analysis complete" dialog'''
+        """Show the "Analysis complete" dialog"""
         dlg = wx.Dialog(self.__frame, -1, "Analysis complete")
         sizer = wx.BoxSizer(wx.VERTICAL)
         dlg.SetSizer(sizer)
@@ -3430,7 +3430,7 @@ class PipelineController:
             dlg.Destroy()
 
     def show_exiting_test_mode(self):
-        '''Show the "Analysis complete" dialog'''
+        """Show the "Analysis complete" dialog"""
         dlg = wx.Dialog(self.__frame, -1, "Exiting test mode")
         sizer = wx.BoxSizer(wx.VERTICAL)
         dlg.SetSizer(sizer)
@@ -3496,13 +3496,13 @@ class PipelineController:
         return path
 
     def on_show_all_windows(self, event):
-        '''Turn "show_window" on for every module in the pipeline'''
+        """Turn "show_window" on for every module in the pipeline"""
         with self.__pipeline.undoable_action("Show all windows"):
             for module in self.__pipeline.modules(exclude_disabled=False):
                 self.__pipeline.show_module_window(module, True)
 
     def on_hide_all_windows(self, event):
-        '''Turn "show_window" off for every module in the pipeline'''
+        """Turn "show_window" off for every module in the pipeline"""
         with self.__pipeline.undoable_action("Hide all windows"):
             for module in self.__pipeline.modules(exclude_disabled=False):
                 self.__pipeline.show_module_window(module, False)
@@ -3514,7 +3514,7 @@ class PipelineController:
 
 
 class FLDropTarget(wx.PyDropTarget):
-    '''A generic drop target (for the path list)'''
+    """A generic drop target (for the path list)"""
 
     def __init__(self, file_callback_fn, text_callback_fn):
         super(self.__class__, self).__init__()

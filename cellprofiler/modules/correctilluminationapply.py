@@ -1,13 +1,13 @@
-'''<b>Correct Illumination - Apply</b> applies an illumination function, usually created by
+"""<b>Correct Illumination - Apply</b> applies an illumination function, usually created by
 <b>CorrectIlluminationCalculate</b>, to an image in order to correct for uneven
 illumination (uneven shading).
 <hr>
 
 This module applies a previously created illumination correction function,
 either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIlluminationCalculate</b>.
-This module corrects each image in the pipeline using the function specified. 
+This module corrects each image in the pipeline using the function specified.
 
-See also <b>CorrectIlluminationCalculate</b>.'''
+See also <b>CorrectIlluminationCalculate</b>."""
 
 import numpy as np
 import cellprofiler.cpmodule as cpm
@@ -55,7 +55,7 @@ class CorrectIlluminationApply(cpm.CPModule):
                                                 self.add_image)
 
     def add_image(self, can_delete=True):
-        '''Add an image and its settings to the list of images'''
+        """Add an image and its settings to the list of images"""
         image_name = cps.ImageNameSubscriber(
             "Select the input image",
             cps.NONE, doc='''
@@ -174,9 +174,9 @@ class CorrectIlluminationApply(cpm.CPModule):
             self.run_image(image, workspace)
 
     def run_image(self, image, workspace):
-        '''Perform illumination according to the parameters of one image setting group
+        """Perform illumination according to the parameters of one image setting group
 
-        '''
+        """
         #
         # Get the image names from the settings
         #
@@ -225,7 +225,7 @@ class CorrectIlluminationApply(cpm.CPModule):
                 illum_correct_name] = illum_function.pixel_data
 
     def display(self, workspace, figure):
-        ''' Display one row of orig / illum / output per image setting group'''
+        """ Display one row of orig / illum / output per image setting group"""
         figure.set_subplots((3, len(self.images)))
         for j, image in enumerate(self.images):
             image_name = image.image_name.value

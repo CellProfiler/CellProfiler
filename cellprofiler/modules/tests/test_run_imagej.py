@@ -1,4 +1,4 @@
-'''test_run_imagej.py - test the run_imagej module'''
+"""test_run_imagej.py - test the run_imagej module"""
 
 import numpy as np
 from StringIO import StringIO

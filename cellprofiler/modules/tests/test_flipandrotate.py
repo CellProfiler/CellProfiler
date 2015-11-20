@@ -1,5 +1,5 @@
-'''test_flipandrotate - test the FlipAndRotate module
-'''
+"""test_flipandrotate - test the FlipAndRotate module
+"""
 
 import base64
 import numpy as np
@@ -152,7 +152,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         self.assertEqual(module.angle.value, 5)
 
     def test_01_02_load_v1(self):
-        '''Load a variable_revision_number = 1 module'''
+        """Load a variable_revision_number = 1 module"""
         data = ('eJztWM9PGkEUXhCtP5pWkyb1OEdpgSyojZJGRakpqSARYmOMbUd2gElmZ8iw'
                 'a8XGpMf+WT322D+lxx47g7vsMkUXVkkPZclkeW/f974338wswxRz1YPcLlhP'
                 '6aCYqybrmCBQJtCqM25mAbUSYI8jaCEDMJoF+xyDCmqBzDpIp7Orm9m1VyCj'
@@ -195,7 +195,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         self.assertEqual(module.horiz_or_vert, F.C_HORIZONTALLY)
 
     def test_01_03_load_v2(self):
-        '''Load a v2 pipeline'''
+        """Load a v2 pipeline"""
         data = ('eJztWFtPGkEUXhCtl6bVpEn7OI/SAlmstkoaFaWmpIJEaBtjbDuyA0wyO0N2'
                 'Z1VsTPrYn9af4M/oYx87gwu7TFeXi6QPZc0Gz9nzfecyZ5bDFLKV/ewOWEvp'
                 'oJCtJGuYIFAikNeYZWYA5QmwayHIkQEYzYACo+CgyoG+BtJ6Jv06s/oKrOj6'
@@ -239,15 +239,15 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         self.assertEqual(module.horiz_or_vert, F.C_HORIZONTALLY)
 
     def run_module(self, image, mask=None, fn=None):
-        '''Run the FlipAndRotate module
-        
+        """Run the FlipAndRotate module
+
         image - pixel data to be transformed
         mask  - optional mask on the pixel data
         fn    - function with signature, "fn(module)" that will be
                 called with the FlipAndRotate module
         returns an Image object containing the flipped/rotated/masked/cropped
         image and the angle measurement.
-        '''
+        """
         img = cpi.Image(image, mask)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -353,7 +353,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
                                np.finfo(float).eps))
 
     def test_03_01_rotate_angle(self):
-        '''Rotate an image through an angle'''
+        """Rotate an image through an angle"""
         #
         # Draw a rectangle with intensity that varies monotonically according
         # to angle.
@@ -426,7 +426,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
                     self.assertFalse(output_image.mask[ci, cj])
 
     def test_03_02_rotate_coordinates(self):
-        '''Test rotating a line to the horizontal and vertical'''
+        """Test rotating a line to the horizontal and vertical"""
 
         img = np.zeros((20, 20))
         pt0 = (2, 2)
@@ -471,7 +471,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
                     np.all(pixels[:20, :20][np.abs(j - line_j) > 1] < .1))
 
     def test_04_01_crop(self):
-        '''Turn cropping on and check that the cropping mask covers the mask'''
+        """Turn cropping on and check that the cropping mask covers the mask"""
         image = np.random.uniform(size=(19, 21))
         i, j = np.mgrid[0:19, 0:21].astype(float)
         image = i / 100 + j / 10000
@@ -518,7 +518,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
             # self.assertTrue(np.all(crop_output_image.crop_image_similarly(mask)))
 
     def test_05_01_get_measurements(self):
-        '''Test the get_measurements and allied methods'''
+        """Test the get_measurements and allied methods"""
         module = F.FlipAndRotate()
         module.output_name.value = OUTPUT_IMAGE
         columns = module.get_measurement_columns(None)

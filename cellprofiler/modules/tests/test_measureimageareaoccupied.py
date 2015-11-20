@@ -127,7 +127,7 @@ class TestMeasureImageArea(unittest.TestCase):
                                  for ex in expected]))
 
     def test_03_01_load_v1(self):
-        '''Load a pipeline with MeasureImageAreaOccupied revision_number 1'''
+        """Load a pipeline with MeasureImageAreaOccupied revision_number 1"""
         data = ('eJztWlFv2zYQlmMnWFpgyIphK9AXPjZdLEheg6VBkdqNl81b7RiN0aAouo2R'
                 '6JgDRRoSlcYbCvRxP2mPe9zP2U+YKFOxzDiVbCe2UkiAIN+RH7+74+lE0WrW'
                 'Oi9qz8G2boBmrVPuYoJAm0DeZa6zCyjfAvsughzZgNFdcBxcf/IJMHaAaeya'

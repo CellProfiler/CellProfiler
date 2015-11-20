@@ -1,5 +1,5 @@
-'''test_maskimage - Test the MaskImage module
-'''
+"""test_maskimage - Test the MaskImage module
+"""
 
 import base64
 import numpy as np

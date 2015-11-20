@@ -1,7 +1,7 @@
-'''<b>Example 5a</b> Object measurements
+"""<b>Example 5a</b> Object measurements
 <hr>
 This version does not support overlapping objects.
-'''
+"""
 
 import numpy as np
 import scipy.ndimage

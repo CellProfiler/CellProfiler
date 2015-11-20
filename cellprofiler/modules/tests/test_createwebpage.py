@@ -1,5 +1,5 @@
-'''test_createwebpage - Test the CreateWebPage module
-'''
+"""test_createwebpage - Test the CreateWebPage module
+"""
 
 import base64
 import numpy as np
@@ -56,7 +56,7 @@ class TestCreateWebPage(unittest.TestCase):
         shutil.rmtree(self.alt_directory)
 
     def test_00_00_remember_to_put_new_text_in_the_dictionary(self):
-        '''Make sure people use TRANSLATION_DICTIONARY'''
+        """Make sure people use TRANSLATION_DICTIONARY"""
         self.assertTrue(C.DIR_ABOVE in C.TRANSLATION_DICTIONARY)
         self.assertTrue(C.DIR_SAME in C.TRANSLATION_DICTIONARY)
         self.assertTrue("One level over the images" in C.TRANSLATION_DICTIONARY)
@@ -289,8 +289,8 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
 
     def run_create_webpage(self, image_paths, thumb_paths=None,
                            metadata=None, alter_fn=None):
-        '''Run the create_webpage module, returning the resulting HTML document
-        
+        """Run the create_webpage module, returning the resulting HTML document
+
         image_paths - list of path / filename tuples. The function will
                       write an image to each of these and put images and
                       measurements into the workspace for each.
@@ -298,7 +298,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         metadata    - a dictionary of feature / string values
         alter_fn    - function taking a CreateWebPage module, for you to
                       alter the module's settings
-        '''
+        """
 
         np.random.seed(0)
         module = C.CreateWebPage()
@@ -372,10 +372,10 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         return measurements
 
     def read_html(self, html_path=None):
-        '''Read html file, assuming the default location
-        
+        """Read html file, assuming the default location
+
         returns a DOM
-        '''
+        """
         if html_path is None:
             html_path = os.path.join(cpprefs.get_default_image_directory(),
                                      DEFAULT_HTML_FILE)
@@ -387,12 +387,12 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
             fd.close()
 
     def ap(self, path):
-        '''Get the absolute path to the file'''
+        """Get the absolute path to the file"""
         path = os.path.join(cpprefs.get_default_image_directory(), path)
         return os.path.abspath(path)
 
     def test_02_01_one_image_file(self):
-        '''Test an image set with one image file'''
+        """Test an image set with one image file"""
         self.run_create_webpage([(None, 'A01.png')])
         dom = self.read_html()
         self.assertTrue(dom.documentElement.tagName.lower(), "html")
@@ -655,7 +655,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertFalse(link.hasAttribute("target"))
 
     def test_04_01_above_image(self):
-        '''Make the HTML file in the directory above the image'''
+        """Make the HTML file in the directory above the image"""
 
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))
@@ -670,7 +670,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertEqual(img.getAttribute("src"), "1/A01.png")
 
     def test_04_02_thumb_in_other_dir(self):
-        '''Put the image and thumbnail in different directories'''
+        """Put the image and thumbnail in different directories"""
         self.run_create_webpage([(None, 'A01.png')],
                                 [(os.path.join(self.directory, "2"),
                                   'A01_thumb.png')])
@@ -682,7 +682,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         self.assertEqual(img.getAttribute("src"), "../2/A01_thumb.png")
 
     def test_04_03_metadata_filename(self):
-        '''Make two different webpages using metadata'''
+        """Make two different webpages using metadata"""
 
         def alter_fn(module):
             self.assertTrue(isinstance(module, C.CreateWebPage))

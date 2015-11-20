@@ -1,4 +1,4 @@
-'''<b>OmeroLoadImages</b> loads one or more images from <i>OMERO</i>.
+"""<b>OmeroLoadImages</b> loads one or more images from <i>OMERO</i>.
 <hr>
 
 This module retrieves all images in a dataset or plate from an OMERO server.
@@ -26,7 +26,7 @@ In the above example the pipeline "mypipeline" will be run with "1" as omero obj
 <li>www.openmicroscopy.org.uk</li>
 <li>University of Dundee</li>
 </ul>
-'''
+"""
 
 # module author: Bram Gerritsen
 # e-mail: b.gerritsen@nki.nl
@@ -157,7 +157,7 @@ V_OMERO = 1
 def create_omero_gateway(host=DEFAULT_OMERO_HOST, port=DEFAULT_OMERO_PORT,
                          username=DEFAULT_OMERO_USERNAME,
                          password=DEFAULT_OMERO_PASSWORD):
-    '''Connect to an omero server and create an omero gateway instance'''
+    """Connect to an omero server and create an omero gateway instance"""
     try:
         omero_client = omero.client(host, port)
         omero_session = omero_client.createSession(username, password)
@@ -210,7 +210,7 @@ class OmeroLoadImages(cpm.CPModule):
                                            self.add_channelfn)
 
     def create_omero_gateway(self):
-        '''Create omero gateway based on module settings '''
+        """Create omero gateway based on module settings """
         if self.omero_client is not None:
             self.omero_client.closeSession()
         self.omero_client, self.omero_session, self.omero_gateway = create_omero_gateway(
@@ -218,15 +218,15 @@ class OmeroLoadImages(cpm.CPModule):
             self.omero_username.value, self.omero_password.value)
 
     def get_omero_plate(self, plate_id):
-        '''Get plate from omero
+        """Get plate from omero
 
         id - id of plate in omero
-        '''
+        """
         return omero_session.getQueryService().findByString("Plate", "id",
                                                             plate_id)
 
     def load_channels(self):
-        '''Add and set channels based on an image from omero '''
+        """Add and set channels based on an image from omero """
         try:
             self.create_omero_gateway()
             id = int(self.omero_object_id.value)
@@ -294,10 +294,10 @@ class OmeroLoadImages(cpm.CPModule):
                           wx.ICON_ERROR)
 
     def add_channelfn(self, can_remove=True):
-        '''Add another image channel
+        """Add another image channel
 
         can_remove - true if we are allowed to remove this channel
-        '''
+        """
         group = cps.SettingsGroup()
         self.channels.append(group)
 
@@ -350,7 +350,7 @@ class OmeroLoadImages(cpm.CPModule):
         return varlist
 
     def validate_module(self, pipeline):
-        '''Validate a module's settings'''
+        """Validate a module's settings"""
         for setting in (self.omero_host, self.omero_port, self.omero_username,
                         self.omero_password):
             if setting.value == '':
@@ -359,11 +359,11 @@ class OmeroLoadImages(cpm.CPModule):
                     setting)
 
     def is_load_module(self):
-        '''This module creates image sets so it is a load module'''
+        """This module creates image sets so it is a load module"""
         return True
 
     def prepare_run(self, workspace):
-        '''Set up omero image providers inside the image_set_list'''
+        """Set up omero image providers inside the image_set_list"""
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         if pipeline.in_batch_mode():
@@ -425,9 +425,9 @@ class OmeroLoadImages(cpm.CPModule):
         return True
 
     def get_images_from_dataset(self, dataset_id, limit=None):
-        '''Get images from dataset
+        """Get images from dataset
         limit - maximum number of images to retrieve
-        '''
+        """
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
         p.map = {}
@@ -442,12 +442,12 @@ class OmeroLoadImages(cpm.CPModule):
         return q.findAllByQuery(sql, p)
 
     def get_wells_from_plate(self, plate_id, limit=None):
-        ''' Retrieves every well of a plate that has an image attached to it
+        """ Retrieves every well of a plate that has an image attached to it
         (via a wellsample of course).
 
             plate_id	- id of the plate
             limit		- maximum number of wells to retrieve
-        '''
+        """
         q = self.omero_session.getQueryService()
         p = omero.sys.Parameters()
         p.map = {}
@@ -465,7 +465,7 @@ class OmeroLoadImages(cpm.CPModule):
 
     def save_image_set_info(self, image_set, image_name, provider, version,
                             *args):
-        '''Write out the details for creating an image provider
+        """Write out the details for creating an image provider
 
         Write information to the image set list legacy fields for saving
         the state needed to create an image provider.
@@ -476,7 +476,7 @@ class OmeroLoadImages(cpm.CPModule):
                 by load_image_set_info to create the actual provider)
         version - the version # of the provider, in case the arguments change
         args - string arguments that will be passed to the provider's init fn
-        '''
+        """
         if provider != P_OMERO:
             raise NotImplementedError(
                 "provider %s has not been implemented by this module" % provider)
@@ -484,7 +484,7 @@ class OmeroLoadImages(cpm.CPModule):
         d[image_name] = [provider, version] + list(args)
 
     def load_image_set_info(self, image_set):
-        '''Loads the image set information, creating the providers'''
+        """Loads the image set information, creating the providers"""
         d = self.get_dictionary(image_set)
         for image_name in d.keys():
             values = d[image_name]
@@ -499,7 +499,7 @@ class OmeroLoadImages(cpm.CPModule):
                     version)
 
     def get_dictionary(self, image_set):
-        '''Get the module's legacy fields dictionary for this image set'''
+        """Get the module's legacy fields dictionary for this image set"""
         key = "%s:%d" % (self.module_name, self.module_num)
         if not image_set.legacy_fields.has_key(key):
             image_set.legacy_fields[key] = {}
@@ -509,14 +509,14 @@ class OmeroLoadImages(cpm.CPModule):
         return d[image_set.image_number]
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Load the images from the dictionary into the image sets here'''
+        """Load the images from the dictionary into the image sets here"""
         for image_number in image_numbers:
             image_set = workspace.image_set_list.get_image_set(
                 image_number - 1)
             self.load_image_set_info(image_set)
 
     def run(self, workspace):
-        '''Run the module. Add the measurements. '''
+        """Run the module. Add the measurements. """
 
         statistics_dict = {}
         ratio_dict = {}
@@ -583,7 +583,7 @@ class OmeroLoadImages(cpm.CPModule):
                     print "\t%s: %s" % (header[i], row[i])
 
     def post_run(self, workspace):
-        '''Disconnect from the omero server after the run completes'''
+        """Disconnect from the omero server after the run completes"""
         self.omero_client.closeSession()
 
     def display(self, workspace):
@@ -609,13 +609,13 @@ class OmeroLoadImages(cpm.CPModule):
                     workspace.display_data.statistics[channel_number])
 
     def get_categories(self, pipeline, object_name):
-        '''Return the categories that this module produces'''
+        """Return the categories that this module produces"""
         if object_name == cpmeas.IMAGE:
             return [C_IMAGE, C_PIXELS, C_METADATA]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        '''Return the measurements that this module produces'''
+        """Return the measurements that this module produces"""
         if object_name == cpmeas.IMAGE:
             return [meas.split('_', 1)[1] for ob, meas, dtype in
                     self.get_measurement_columns(pipeline)
@@ -623,7 +623,7 @@ class OmeroLoadImages(cpm.CPModule):
         return []
 
     def get_measurement_columns(self, pipeline):
-        '''Return a sequence describing the measurement columns needed by this module'''
+        """Return a sequence describing the measurement columns needed by this module"""
         cols = []
         for channel in self.channels:
             name = channel.cpimage_name.value
@@ -658,7 +658,7 @@ class OmeroLoadImages(cpm.CPModule):
         return cols
 
     def change_causes_prepare_run(self, setting):
-        '''Check to see if changing the given setting means you have to restart'''
+        """Check to see if changing the given setting means you have to restart"""
         # It's safest to say that any change in OmeroLoadImages requires a restart
         return True
 
@@ -666,10 +666,10 @@ class OmeroLoadImages(cpm.CPModule):
 # TODO: add exception handling
 # TODO: reconnect when gateway has been disconnected?
 class OmeroImageProvider(cpimage.AbstractImageProvider):
-    '''Provide a single image based on omero pixels id'''
+    """Provide a single image based on omero pixels id"""
 
     def __init__(self, name, gateway, pixels_id, z=0, c=0, t=0):
-        '''Initializer
+        """Initializer
 
         name		- name of image to be provided
         gateway		- provides connection to an omero server
@@ -677,7 +677,7 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
         z			- z depth
         c			- channel
         t			- time index
-        '''
+        """
         self.__name = name
         self.__gateway = gateway
         self.__pixels_id = long(pixels_id)
@@ -693,9 +693,9 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
             self.__image_id).getName().getValue()
 
     def provide_image(self, image_set):
-        '''load an image plane from an omero server
+        """load an image plane from an omero server
         and return a 2-d grayscale image
-        '''
+        """
         # TODO: return 3d RGB images when c == None like loadimage.py does?
 
         if self.__is_cached:
@@ -756,38 +756,38 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
         return image
 
     def get_name(self):
-        '''get the name of this image'''
+        """get the name of this image"""
         return self.__name
 
     def get_gateway(self):
-        '''get omero gateway'''
+        """get omero gateway"""
         return self.__gateway
 
     def get_pixels_id(self):
-        '''get the pixels id'''
+        """get the pixels id"""
         return self.__pixels_id
 
     def get_z(self):
-        '''get the z depth'''
+        """get the z depth"""
         return self.__z
 
     def get_c(self):
-        '''get the channel'''
+        """get the channel"""
         return self.__c
 
     def get_t(self):
-        '''get the time index'''
+        """get the time index"""
         return self.__t
 
     def get_image_id(self):
-        '''return the image id (note: id of the image in omero)'''
+        """return the image id (note: id of the image in omero)"""
         return self.__image_id
 
     def get_omero_image_name(self):
-        '''return the omero image name of this image'''
+        """return the omero image name of this image"""
         return self.__omero_image_name
 
     def release_memory(self):
-        '''Release whatever memory is associated with the image'''
+        """Release whatever memory is associated with the image"""
         self.__cpimage_data = None
         self.__is_cached = False

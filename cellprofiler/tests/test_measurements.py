@@ -394,7 +394,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_03_apply_metadata_with_two_slashes(self):
-        '''Regression test of img-1144'''
+        """Regression test of img-1144"""
         x = cpmeas.Measurements()
         plate = "P12345"
         well = "A01"
@@ -413,7 +413,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.apply_metadata(pattern), expected)
 
     def test_06_05_apply_metadata_twice(self):
-        '''Regression test of img-1144 (second part)'''
+        """Regression test of img-1144 (second part)"""
         x = cpmeas.Measurements()
         plate = "P12345"
         well = "A01"
@@ -808,7 +808,7 @@ class TestMeasurements(unittest.TestCase):
             os.unlink(name)
 
     def test_15_01_get_object_names(self):
-        '''Test the get_object_names() function'''
+        """Test the get_object_names() function"""
         m = cpmeas.Measurements()
         try:
             m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
@@ -820,7 +820,7 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_15_02_get_object_names_relationships(self):
-        '''Regression test - don't return Relationships'''
+        """Regression test - don't return Relationships"""
         m = cpmeas.Measurements()
         try:
             m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
@@ -887,7 +887,7 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_17_02_aggregate_measurements_with_relate(self):
-        '''regression test of img-1554'''
+        """regression test of img-1554"""
         m = cpmeas.Measurements()
         try:
             values = np.arange(5).astype(float)

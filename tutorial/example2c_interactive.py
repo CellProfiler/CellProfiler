@@ -1,4 +1,4 @@
-'''<b>Example2c</b> User interaction with an image.
+"""<b>Example2c</b> User interaction with an image.
 
 Sometimes, it's useful to have a semi-automated or completely manual step
 in your pipeline. CellProfiler <i>can</i> do this, but is designed to
@@ -22,7 +22,7 @@ returns the edited image to the "run" method after the user closes the
 dialog.
 
 <b>Note</b> This will only work with the new multiprocessing code.
-'''
+"""
 
 import numpy as np
 # We get the CPModule class from here. "cpm" is the standard alias for the

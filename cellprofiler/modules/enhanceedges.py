@@ -1,13 +1,13 @@
-'''<b>Enhance Edges</b> enhances or identifies edges in an image, which can improve object
+"""<b>Enhance Edges</b> enhances or identifies edges in an image, which can improve object
 identification or other downstream image processing.
 <hr>
 This module enhances the edges (gradients) in a grayscale image. All methods
-other than Canny produce a grayscale image that can be used in an 
-<b>Identify</b> module or thresholded using the <b>ApplyThreshold</b> module 
+other than Canny produce a grayscale image that can be used in an
+<b>Identify</b> module or thresholded using the <b>ApplyThreshold</b> module
 to produce a binary (black/white) mask of edges. The Canny algorithm
 produces a binary (black/white) mask image consisting of the edge pixels.
 
-'''
+"""
 
 import numpy as np
 from scipy.ndimage import convolve

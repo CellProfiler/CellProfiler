@@ -1,11 +1,11 @@
-'''<b>Example1e</b> demonstrates SettingsGroup
+"""<b>Example1e</b> demonstrates SettingsGroup
 <hr>
 There are many circumstances where it would be useful to let a user specify
 an arbitrary number of a group of settings. For instance, you might want to
 sum an arbitrary number of images together in your module or perform the
 same operation on every listed image or object. This is done using
 cps.SettingsGroup and by overriding the prepare_settings method.
-'''
+"""
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -41,10 +41,10 @@ class Example1e(cpm.CPModule):
         self.add_group(False)
 
     def add_group(self, can_delete=True):
-        '''Add a group to the list of groups
-        
+        """Add a group to the list of groups
+
         can_delete - if true, add a button that removes the entry
-        '''
+        """
         #
         # Make a new settings group to hold the settings
         #

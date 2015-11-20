@@ -1,4 +1,4 @@
-'''test_knime_bridge.py - test the Knime bridge'''
+"""test_knime_bridge.py - test the Knime bridge"""
 
 from cStringIO import StringIO
 import json

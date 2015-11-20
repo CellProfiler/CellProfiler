@@ -1,5 +1,5 @@
-'''test_renameorrenumberfiles.py - test the RenameOrRenumberFiles module
-'''
+"""test_renameorrenumberfiles.py - test the RenameOrRenumberFiles module
+"""
 
 import base64
 import numpy as np

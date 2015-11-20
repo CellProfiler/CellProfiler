@@ -1,12 +1,12 @@
-'''<b>Calculate Statistics</b> calculates measures of assay quality 
+"""<b>Calculate Statistics</b> calculates measures of assay quality
 (V and Z' factors) and dose response data (EC50) for all measured features
 made from images.
 <hr>
 The V and Z' factors are statistical measures of assay quality and are
-calculated for each per-image measurement and for each average per-object 
-measurement that you have made in the pipeline. Placing 
-this module at the end of a pipeline in order to calculate these values allows 
-you to identify which measured features are most powerful for distinguishing 
+calculated for each per-image measurement and for each average per-object
+measurement that you have made in the pipeline. Placing
+this module at the end of a pipeline in order to calculate these values allows
+you to identify which measured features are most powerful for distinguishing
 positive and negative control samples, or for accurately quantifying the assay's
 response to dose. These measurements will be calculated for all
 measured values (Intensity, AreaShape, Texture, etc.). These measurements
@@ -15,29 +15,29 @@ can be exported as the "Experiment" set of data.
 <h4>Available measurements</h4>
 
 <ul>
-<li><b>Experiment features:</b> Whereas most CellProfiler measurements are calculated for each object (per-object) 
-or for each image (per-image), this module produces <i>per-experiment</i> values; 
+<li><b>Experiment features:</b> Whereas most CellProfiler measurements are calculated for each object (per-object)
+or for each image (per-image), this module produces <i>per-experiment</i> values;
 for example, one Z' factor is calculated for each measurement, across the entire analysis run.
 <ul>
 <li><i>Zfactor:</i> The Z'-factor indicates how well separated the positive and negative controls are.
 A Z'-factor &gt; 0 is potentially screenable; a Z'-factor &gt; 0.5 is considered an excellent assay.
-The formula is 1 &minus 3 &times; (&sigma;<sub>p</sub> + &sigma;<sub>n</sub>)/|&mu;<sub>p</sub> - &mu;<sub>n</sub>| 
-where &sigma;<sub>p</sub> and &sigma;<sub>n</sub> are the standard deviations of the positive and negative controls, 
+The formula is 1 &minus 3 &times; (&sigma;<sub>p</sub> + &sigma;<sub>n</sub>)/|&mu;<sub>p</sub> - &mu;<sub>n</sub>|
+where &sigma;<sub>p</sub> and &sigma;<sub>n</sub> are the standard deviations of the positive and negative controls,
 and &mu;<sub>p</sub> and &mu;<sub>n</sub> are the means of the positive and negative controls.</li>
-<li><i>Vfactor:</i> The V-factor is a generalization of the Z'-factor, and is 
+<li><i>Vfactor:</i> The V-factor is a generalization of the Z'-factor, and is
 calculated as 1 &minus 6 &times; mean(&sigma;)/|&mu;<sub>p</sub> - &mu;<sub>n</sub>| where
 &sigma; are the standard deviations of the data, and &mu;<sub>p</sub> and &mu;<sub>n</sub>
 are defined as above.</li>
 <li><i>EC50:</i> The half maximal effective concentration (EC50) is the concentration of a
 treatment required to induce a response which is 50%% of the maximal response.</li>
-<li><i>OneTailedZfactor:</i> This measure is an attempt to overcome a limitation of 
-the original Z'-factor formulation (it assumes a Gaussian distribution) and is 
-informative for populations with moderate or high amounts of skewness. In these 
-cases, long tails opposite to the mid-range point lead to a high standard deviation 
-for either population, which results in a low Z' factor even though the population 
-means and samples between the means may be well-separated. Therefore, the 
-one-tailed Z' factor is calculated with the same formula but using only those samples that lie 
-between the positive/negative population means. <b>This is not yet a well established 
+<li><i>OneTailedZfactor:</i> This measure is an attempt to overcome a limitation of
+the original Z'-factor formulation (it assumes a Gaussian distribution) and is
+informative for populations with moderate or high amounts of skewness. In these
+cases, long tails opposite to the mid-range point lead to a high standard deviation
+for either population, which results in a low Z' factor even though the population
+means and samples between the means may be well-separated. Therefore, the
+one-tailed Z' factor is calculated with the same formula but using only those samples that lie
+between the positive/negative population means. <b>This is not yet a well established
 measure of assay robustness, and should be considered experimental.</b></li>
 </ul>
 </li>
@@ -54,7 +54,7 @@ factor.
 
 <p><i>Note:</i> If the standard deviation of a measured feature is zero for a
 particular set of samples (e.g., all the positive controls), the Z' and V
-factors will equal 1 despite the fact that the assay quality is poor. 
+factors will equal 1 despite the fact that the assay quality is poor.
 This can occur when there is only one sample at each dose.
 This also occurs for some non-informative measured features, like the
 number of cytoplasm compartments per cell, which is always equal to 1.</p>
@@ -73,19 +73,19 @@ throughput screening assays" <i>J Biomolecular Screening</i> 4(2): 67-73.
 <li><i>V factor:</i> Ravkin I (2004): Poster #P12024 - Quality
 Measures for Imaging-based Cellular Assays. <i>Society for Biomolecular
 Screening Annual Meeting Abstracts</i>. </li>
-<li>Code for the calculation of Z' and V factors was kindly donated by 
-<a href="http://www.ravkin.net">Ilya Ravkin</a>. Carlos 
+<li>Code for the calculation of Z' and V factors was kindly donated by
+<a href="http://www.ravkin.net">Ilya Ravkin</a>. Carlos
 Evangelista donated his copyrighted dose-response-related code.</li>
 </ul>
 
 <p><i>Example format for a file to be loaded by <b>LoadData</b> for this module:</i><br>
 
-<b>LoadData</b> loads information from a CSV file. The first line of this file is a 
+<b>LoadData</b> loads information from a CSV file. The first line of this file is a
 header that names the items.
 Each subsequent line represents data for one image cycle, so your file should have
 the header line plus one line per image to be processed. You can also make a
-file for <b>LoadData</b> to load that contains the positive/negative control and 
-dose designations <i>plus</i> the image file names to be processed, which is a good way 
+file for <b>LoadData</b> to load that contains the positive/negative control and
+dose designations <i>plus</i> the image file names to be processed, which is a good way
 to guarantee that images are matched with the correct data. The control and dose
 information can be designated in one of two ways:
 <ul>
@@ -93,7 +93,7 @@ information can be designated in one of two ways:
 the "Metadata_" tag). "Metadata" is the category and the name after the underscore
 is the measurement.</li>
 <li>As some other type of data, in which case the header needs
-to be of the form <i>&lt;prefix&gt;_&lt;measurement&gt;</i>. Select <i>&lt;prefix&gt;</i> as 
+to be of the form <i>&lt;prefix&gt;_&lt;measurement&gt;</i>. Select <i>&lt;prefix&gt;</i> as
 the category and <i>&lt;measurement&gt;</i> as the measurement.</li>
 </ul>
 Here is an example file:<br><br>
@@ -109,7 +109,7 @@ Here is an example file:<br><br>
 <br>
 
 See also the <b>Metadata</b> and legacy <b>LoadData</b> modules.
-'''
+"""
 
 import numpy as np
 import scipy.optimize
@@ -179,10 +179,10 @@ class CalculateStatistics(cpm.CPModule):
                                                self.add_dose_value)
 
     def add_dose_value(self, can_remove=True):
-        '''Add a dose value measurement to the list
-        
+        """Add a dose value measurement to the list
+
         can_delete - set this to False to keep from showing the "remove"
-                     button for images that must be present.'''
+                     button for images that must be present."""
         group = cps.SettingsGroup()
         group.append("measurement",
                      cps.Measurement(
@@ -428,7 +428,7 @@ class CalculateStatistics(cpm.CPModule):
 
     def include_feature(self, measurements, object_name, feature_name,
                         image_numbers):
-        '''Return true if we should analyze a feature'''
+        """Return true if we should analyze a feature"""
         if feature_name.find("Location") != -1:
             return False
         if feature_name.find("ModuleError") != -1:
@@ -461,7 +461,7 @@ class CalculateStatistics(cpm.CPModule):
         return np.asanyarray(v).dtype.kind not in "OSU"
 
     def validate_module_warnings(self, pipeline):
-        '''Warn user re: Test mode '''
+        """Warn user re: Test mode """
         if pipeline.test_mode:
             raise cps.ValidationError(
                 "CalculateStatistics will not produce any output in test mode",
@@ -528,17 +528,17 @@ class CalculateStatistics(cpm.CPModule):
 # http://www.ravkin.net
 ########################################################        
 def z_factors(xcol, ymatr):
-    '''xcol is (Nobservations,1) column vector of grouping values
+    """xcol is (Nobservations,1) column vector of grouping values
            (in terms of dose curve it may be Dose).
-       ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to 
+       ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to
            observations and columns corresponds to different measures.
-       
+
        returns v, z, z_one_tailed, OrderedUniqueDoses, OrderedAverageValues
-       z and z_bwtn_mean are (1, Nmeasures) row vectors containing Z'- and 
+       z and z_bwtn_mean are (1, Nmeasures) row vectors containing Z'- and
        between-mean Z'-factors for the corresponding measures.
 
        When ranges are zero, we set the Z' factors to a very negative
-       value.'''
+       value."""
 
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
     # Z' factor is defined by the positive and negative controls, so we take the
@@ -584,13 +584,13 @@ def z_factors(xcol, ymatr):
 
 
 def v_factors(xcol, ymatr):
-    '''xcol is (Nobservations,1) column vector of grouping values
+    """xcol is (Nobservations,1) column vector of grouping values
            (in terms of dose curve it may be Dose).
-       ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to 
+       ymatr is (Nobservations, Nmeasures) matrix, where rows correspond to
            observations and columns corresponds to different measures.
-        
+
         Calculate the V factor = 1-6 * mean standard deviation / range
-    '''
+    """
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
     #
     # Range of averages per label
@@ -608,16 +608,16 @@ def v_factors(xcol, ymatr):
 
 
 def loc_shrink_mean_std(xcol, ymatr):
-    '''Compute mean and standard deviation per label
-    
+    """Compute mean and standard deviation per label
+
     xcol - column of image labels or doses
     ymatr - a matrix with rows of values per image and columns
             representing different measurements
-    
+
     returns xs - a vector of unique doses
             avers - the average value per label
             stds - the standard deviation per label
-    '''
+    """
     ncols = ymatr.shape[1]
     labels, labnum, xs = loc_vector_labels(xcol)
     avers = np.zeros((labnum, ncols))
@@ -634,16 +634,16 @@ def loc_shrink_mean_std(xcol, ymatr):
 
 
 def loc_vector_labels(x):
-    '''Identify unique labels from the vector of image labels
-    
+    """Identify unique labels from the vector of image labels
+
     x - a vector of one label or dose per image
-    
+
     returns labels, labnum, uniqsortvals
     labels - a vector giving an ordinal per image where that ordinal
              is an index into the vector of unique labels (uniqsortvals)
     labnum - # of unique labels in x
     uniqsortvals - a vector containing the unique labels in x
-    '''
+    """
     #
     # Get the index of each image's label in the sorted array
     #
@@ -676,7 +676,7 @@ def loc_vector_labels(x):
 #
 #######################################################
 def calculate_ec50(conc, responses, Logarithmic):
-    '''EC50 Function to fit a dose-response data to a 4 parameter dose-response
+    """EC50 Function to fit a dose-response data to a 4 parameter dose-response
        curve.
 
        Inputs: 1. a 1 dimensional array of drug concentrations
@@ -693,7 +693,7 @@ def calculate_ec50(conc, responses, Logarithmic):
 
        Original Matlab code Copyright 2004 Carlos Evangelista
        send comments to CCEvangelista@aol.com
-       '''
+       """
     # If we are using a log-domain set of doses, we have a better chance of
     # fitting a sigmoid to the curve if the concentrations are
     # log-transformed.
@@ -704,11 +704,11 @@ def calculate_ec50(conc, responses, Logarithmic):
     results = np.zeros((n, 4))
 
     def error_fn(v, x, y):
-        '''Least-squares error function
-        
+        """Least-squares error function
+
         This measures the least-squares error of fitting the sigmoid
         with parameters in v to the x and y data.
-        '''
+        """
         return np.sum((sigmoid(v, x) - y) ** 2)
 
     for i in range(n):
@@ -722,26 +722,26 @@ def calculate_ec50(conc, responses, Logarithmic):
 
 
 def sigmoid(v, x):
-    '''This is the EC50 sigmoid function
+    """This is the EC50 sigmoid function
 
     v is a vector of parameters:
         v[0] = minimum allowed value
         v[1] = maximum allowed value
         v[2] = ec50
         v[3] = Hill coefficient
-    '''
+    """
     p_min, p_max, ec50, hill = v
     return p_min + ((p_max - p_min) /
                     (1 + (x / ec50) ** hill))
 
 
 def calc_init_params(x, y):
-    '''This generates the min, max, x value at the mid-y value, and Hill
+    """This generates the min, max, x value at the mid-y value, and Hill
       coefficient. These values are starting points for the sigmoid fitting.
 
       x & y are the points to be fit
       returns minimum, maximum, ec50 and hill coefficient starting points
-      '''
+      """
     min_0 = min(y)
     max_0 = max(y)
 
@@ -810,8 +810,8 @@ def calc_init_params(x, y):
 def write_figures(prefix, directory, dose_name,
                   dose_data, data, ec50_coeffs,
                   feature_set, log_transform):
-    '''Write out figure scripts for each measurement
-    
+    """Write out figure scripts for each measurement
+
     prefix - prefix for file names
     directory - write files into this directory
     dose_name - name of the dose measurement
@@ -820,7 +820,7 @@ def write_figures(prefix, directory, dose_name,
     ec50_coeffs - coefficients calculated by calculate_ec50
     feature_set - tuples of object name and feature name in same order as data
     log_transform - true to log-transform the dose data
-    '''
+    """
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_pdf import FigureCanvasPdf
 

@@ -1,5 +1,5 @@
-'''test_rescaleintensity.py - test the RescaleIntensity module
-'''
+"""test_rescaleintensity.py - test the RescaleIntensity module
+"""
 
 import base64
 import numpy as np
@@ -115,7 +115,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertAlmostEqual(module.custom_high_truncation.value, 0.99)
 
     def test_01_01_load_matlab_stretch(self):
-        '''Load a pipeline with RescaleIntensity set up to stretch'''
+        """Load a pipeline with RescaleIntensity set up to stretch"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylTwKs1RMDQAIitjUysTEwUjAwNLBZIBA6OnLz8DA0MwIwND'
                 'xZy9ISf9DhsIzHXJjOxaJOP4aILy8W/8GtvlNFY4ioZvn8nmfXOKRUfRo8s/'
@@ -143,7 +143,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.rescale_method, R.M_STRETCH)
 
     def test_01_02_load_matlab_enter_auto_low(self):
-        '''Load a pipeline with automatic low manual scaling'''
+        """Load a pipeline with automatic low manual scaling"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylTwKs1RMDQAIisTAytTcwUjAwNLBZIBA6OnLz8DA0MLIwND'
                 'xZy9U7z9DzkIHF/ue5C9zeTjos52OVvFCQIWXZ2dMi7MbRWxb5zMXmrXalR8'
@@ -179,7 +179,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.high_truncation_choice.value, R.R_SET_TO_CUSTOM)
 
     def test_01_03_load_matlab_enter_auto_high(self):
-        '''Load a pipeline with automatic high manual scaling'''
+        """Load a pipeline with automatic high manual scaling"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylTwKs1RMDQAIitTQytTCwUjAwNLBZIBA6OnLz8DA0MLIwND'
                 'xZy9U7z9DzkIHF/ue5C9zeTjos52OVvFCQIWXZ2dMi7MbRWxb5zMXmrXalR8'
@@ -208,7 +208,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertAlmostEqual(module.source_low.value, .5)
 
     def test_01_04_load_matlab_enter_manual(self):
-        '''Load a pipeline with manual low and high scaling'''
+        """Load a pipeline with manual low and high scaling"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylTwKs1RMDQAIitTYytTAwUjAwNLBZIBA6OnLz8DA0MLIwND'
                 'xZy9U856HXYQOK6uuFZ+qtCHRQ8U3f236k65NpujyTZi6dRHpdnbUhVvttSs'
@@ -238,7 +238,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertAlmostEqual(module.source_scale.max, .9)
 
     def test_01_05_load_matlab_greater_than_one(self):
-        '''Load a pipeline, dividing by the minimum'''
+        """Load a pipeline, dividing by the minimum"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylTwKs1RMDQAIitTMysTSwUjAwNLBZIBA6OnLz8DA0M1IwND'
                 'xZy9U876HXIQOL7c9yA/z8OOTva+eRwTBD6k7ZHgW8TovEev7IDvqW2Z291s'
@@ -266,7 +266,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                          R.M_DIVIDE_BY_IMAGE_MINIMUM)
 
     def test_01_06_load_matlab_match(self):
-        '''Load a pipeline, matching to another image'''
+        """Load a pipeline, matching to another image"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylTwKs1RMDRQMDS0MjCwMjRTMDIwsFQgGTAwevryMzAwTGFk'
                 'YKiYs3eKt/8hB4Hjy30PsntVXTnC7O7P4sFRoXzPgoGN5+OuCwvzLoX/Mnhw'
@@ -296,7 +296,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.matching_image_name, "ReferenceBlue")
 
     def test_01_07_load_matlab_convert(self):
-        '''Load a matlab pipeline with convert to 8-bit'''
+        """Load a matlab pipeline with convert to 8-bit"""
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylTwKs1RMDRQMDS0MjC2MjJQMDIwsFQgGTAwevryMzAw1DAy'
                 'MFTM2TvlfPYhA5Hj8d6l9jKPLh7ks32notXxzmzb5PadC53LerOnOPh6zT51'
@@ -730,10 +730,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                         pixels[expected_high_mask], high_value)
 
     def test_04_06_color_mask(self):
-        '''Regression test - color image + truncate with mask
-        
+        """Regression test - color image + truncate with mask
+
         The bug: color image yielded a 3-d mask
-        '''
+        """
         np.random.seed(0)
         expected = np.random.uniform(size=(10, 10, 3)).astype(np.float32)
         expected_mask = (expected >= .2) & (expected <= .8)

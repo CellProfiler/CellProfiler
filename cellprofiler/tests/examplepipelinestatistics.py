@@ -1,19 +1,19 @@
-'''Check the example pipeline .csv output against a reference
+"""Check the example pipeline .csv output against a reference
 
 Usage:
 python examplepipelinestatistics --test-name <test-name>
-                                 --test-file <test-file> 
+                                 --test-file <test-file>
                                  --reference-file <reference-file>
                                  --output <output-xml-file>
 
 The output is in the JUnit format:
-<testsuite name="<test-name>" test-file="<file-name>" 
+<testsuite name="<test-name>" test-file="<file-name>"
             reference-file="<file-name>" tests="#" failures="#" >
   <testcase name="<feature-name>" ref-mean="#" test-mean="#" ref-std="#" test-std="#" test-nan="#", ref-nan="#">
-    <error type="<type>" message="message" />  
+    <error type="<type>" message="message" />
     <failure type="<type>" message="<message>" />
 </testsuite>
-'''
+"""
 
 import csv
 import numpy as np
@@ -36,8 +36,8 @@ ERROR_TYPE_MEASUREMENT = "measurement"
 def test_files(test_name, test_file, reference_file, output_file,
                max_deviation=.1, max_nan_deviation=.1,
                max_obj_deviation=.1):
-    '''Compare a test file against a reference file, generating output xml
-    
+    """Compare a test file against a reference file, generating output xml
+
     test_name - the name that appears in the test-suite
     test_file - the .csv file containing the test data
     reference_file - the .csv file containing the reference data
@@ -47,7 +47,7 @@ def test_files(test_name, test_file, reference_file, output_file,
     max_nan_deviation - the maximum deviation in the # of nans relative to
                         the sample size
     max_obj_deviation - the maximum deviation in the # of objects per image set
-    '''
+    """
     output_fd = open(output_file, "w")
     output_fd.write("""<?xml version="1.0" encoding="UTF-8"?>
 <testsuite name="%(test_name)s"
@@ -177,10 +177,10 @@ def count_errors(statistics):
 
 
 def collect_measurements(rdr):
-    '''Create a dictionary of feature name to vector of measurements
-    
+    """Create a dictionary of feature name to vector of measurements
+
     rdr - a csv reader
-    '''
+    """
     header = rdr.next()
     d = {}
     for field in header:
@@ -240,11 +240,11 @@ def collect_per_image(measurements, image_numbers):
 
 
 def test_matching_columns(test_measurements, reference_measurements):
-    '''Ensure that the test and reference measurements have the same features
-    
+    """Ensure that the test and reference measurements have the same features
+
     Has side-effect of deleting measurements that are present in one
     but missing in other.
-    '''
+    """
     assert isinstance(test_measurements, dict)
     assert isinstance(reference_measurements, dict)
     missing_in_test = []

@@ -1,8 +1,8 @@
-'''<b>Example1d</b> CellProfiler display
+"""<b>Example1d</b> CellProfiler display
 <hr>
 This module demonstrates some things you can do with CellProfiler
 and its displays.
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpmodule as cpm

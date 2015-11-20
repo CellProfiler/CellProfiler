@@ -1,4 +1,4 @@
-'''Tests for cellprofiler.gui.html.manual'''
+"""Tests for cellprofiler.gui.html.manual"""
 
 import os
 import re

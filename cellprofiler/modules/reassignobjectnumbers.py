@@ -1,6 +1,6 @@
-'''<b>Reassign Object Numbers</b> renumbers previously identified objects.
+"""<b>Reassign Object Numbers</b> renumbers previously identified objects.
 <hr>
-Objects and their measurements are associated 
+Objects and their measurements are associated
 with each other based on their object numbers (also known as <i>labels</i>). Typically,
 each object is assigned a single unique number, such that the exported measurements are ordered
 by this numbering.  This module
@@ -16,22 +16,22 @@ the same label, or splitting portions of separate objects that previously had th
 <b>Reassigned object measurements:</b>
 <ul>
 <li><i>Parent:</i>The label number of the parent object.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of
 mass of the reassigned objects.</li>
 </ul>
 
 <h4>Technical notes</h4>
-Reassignment means that the numerical value of every pixel within 
-an object (in the label matrix version of the image) gets changed, as specified by 
-the module settings. In order to ensure that objects are labeled consecutively 
-without gaps in the numbering (which other modules may depend on), 
-<b>ReassignObjectNumbers</b> will typically result in most of the objects having 
-their numbers reordered. This reassignment information is stored as a per-object measurement 
-with both the original input and reasigned output objects, in case you need to track the 
+Reassignment means that the numerical value of every pixel within
+an object (in the label matrix version of the image) gets changed, as specified by
+the module settings. In order to ensure that objects are labeled consecutively
+without gaps in the numbering (which other modules may depend on),
+<b>ReassignObjectNumbers</b> will typically result in most of the objects having
+their numbers reordered. This reassignment information is stored as a per-object measurement
+with both the original input and reasigned output objects, in case you need to track the
 reassignment.
 
 <p>See also <b>RelateObjects</b>.</p>
-'''
+"""
 
 import numpy as np
 import scipy.ndimage as scind
@@ -342,10 +342,10 @@ class ReassignObjectNumbers(cpm.CPModule):
                         self.parent_object.value).segmented
 
     def display(self, workspace, figure):
-        '''Display the results of relabeling
-        
+        """Display the results of relabeling
+
         workspace - workspace containing saved display data
-        '''
+        """
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         import matplotlib.cm as cm
 
@@ -391,11 +391,11 @@ class ReassignObjectNumbers(cpm.CPModule):
                                          sharexy=ax)
 
     def filter_using_image(self, workspace, mask):
-        '''Filter out connections using local intensity minima between objects
-        
+        """Filter out connections using local intensity minima between objects
+
         workspace - the workspace for the image set
         mask - mask of background points within the minimum distance
-        '''
+        """
         #
         # NOTE: This is an efficient implementation and an improvement
         #       in accuracy over the Matlab version. It would be faster and
@@ -515,8 +515,8 @@ class ReassignObjectNumbers(cpm.CPModule):
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        '''Adjust setting values if they came from a previous revision
-        
+        """Adjust setting values if they came from a previous revision
+
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
         variable_revision_number - the variable revision number of the
@@ -528,12 +528,12 @@ class ReassignObjectNumbers(cpm.CPModule):
                       that module was merged into the current module
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
-        
+
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
-        '''
+        """
         if (from_matlab and variable_revision_number == 1 and
                     module_name == 'SplitIntoContiguousObjects'):
             setting_values = setting_values + [OPTION_SPLIT, '0',
@@ -576,7 +576,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
 
     def get_image(self, workspace):
-        '''Get the image for image-directed merging'''
+        """Get the image for image-directed merging"""
         objects = workspace.object_set.get_objects(self.objects_name.value)
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)
@@ -626,11 +626,11 @@ class ReassignObjectNumbers(cpm.CPModule):
 
 
 def copy_labels(labels, segmented):
-    '''Carry differences between orig_segmented and new_segmented into "labels"
-    
+    """Carry differences between orig_segmented and new_segmented into "labels"
+
     labels - labels matrix similarly segmented to "segmented"
     segmented - the newly numbered labels matrix (a subset of pixels are labeled)
-    '''
+    """
     max_labels = np.max(segmented)
     seglabel = scind.minimum(labels, segmented, np.arange(1, max_labels + 1))
     labels_new = labels.copy()

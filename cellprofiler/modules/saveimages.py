@@ -1,8 +1,8 @@
-'''<b>Save Images </b> saves image or movie files.
+"""<b>Save Images </b> saves image or movie files.
 <hr>
 Because CellProfiler usually performs many image analysis steps on many
 groups of images, it does <i>not</i> save any of the resulting images to the
-hard drive unless you specifically choose to do so with the <b>SaveImages</b> 
+hard drive unless you specifically choose to do so with the <b>SaveImages</b>
 module. You can save any of the
 processed images created by CellProfiler during the analysis using this module.
 
@@ -14,7 +14,7 @@ in their original format and then saving them in an alternate format.</p>
 is supported for TIFF only.</p>
 
 See also <b>NamesAndTypes</b>, <b>ConserveMemory</b>.
-'''
+"""
 
 import logging
 import matplotlib
@@ -484,7 +484,7 @@ class SaveImages(cpm.CPModule):
             workspace, make_dirs=False, check_overwrite=False)
 
     def is_aggregation_module(self):
-        '''SaveImages is an aggregation module when it writes movies'''
+        """SaveImages is an aggregation module when it writes movies"""
         return self.save_image_or_figure == IF_MOVIE or \
                self.when_to_save == WS_LAST_CYCLE
 
@@ -612,30 +612,30 @@ class SaveImages(cpm.CPModule):
                       c=0, z=0, t=0,
                       size_c=1, size_z=1, size_t=1,
                       channel_names=None):
-        '''Save image using bioformats
-        
+        """Save image using bioformats
+
         workspace - the current workspace
-        
+
         filename - save to this filename
-        
+
         pixels - the image to save
-        
+
         pixel_type - save using this pixel type
-        
+
         c - the image's channel index
-        
+
         z - the image's z index
-        
+
         t - the image's t index
-        
+
         sizeC - # of channels in the stack
-        
+
         sizeZ - # of z stacks
-        
+
         sizeT - # of timepoints in the stack
-        
+
         channel_names - names of the channels (make up names if not present
-        '''
+        """
         write_image(filename, pixels, pixel_type,
                     c=c, z=z, t=t,
                     size_c=size_c, size_z=size_z, size_t=size_t,
@@ -724,11 +724,11 @@ class SaveImages(cpm.CPModule):
             self.save_filename_measurements(workspace)
 
     def check_overwrite(self, filename, workspace):
-        '''Check to see if it's legal to overwrite a file
+        """Check to see if it's legal to overwrite a file
 
         Throws an exception if can't overwrite and no interaction available.
         Returns False if can't overwrite, otherwise True.
-        '''
+        """
         if not self.overwrite.value and os.path.isfile(filename):
             try:
                 return (workspace.interaction_request(self,
@@ -741,7 +741,7 @@ class SaveImages(cpm.CPModule):
         return True
 
     def handle_interaction(self, image_set_number, filename):
-        '''handle an interaction request from check_overwrite()'''
+        """handle an interaction request from check_overwrite()"""
         import wx
         dlg = wx.MessageDialog(wx.GetApp().TopWindow,
                                "%s #%d, set #%d - Do you want to overwrite %s?" % \
@@ -773,32 +773,32 @@ class SaveImages(cpm.CPModule):
 
     @property
     def file_name_feature(self):
-        '''The file name measurement for the output file'''
+        """The file name measurement for the output file"""
         if self.save_image_or_figure == IF_OBJECTS:
             return '_'.join((C_OBJECTS_FILE_NAME, self.objects_name.value))
         return '_'.join((C_FILE_NAME, self.image_name.value))
 
     @property
     def path_name_feature(self):
-        '''The path name measurement for the output file'''
+        """The path name measurement for the output file"""
         if self.save_image_or_figure == IF_OBJECTS:
             return '_'.join((C_OBJECTS_PATH_NAME, self.objects_name.value))
         return '_'.join((C_PATH_NAME, self.image_name.value))
 
     @property
     def url_feature(self):
-        '''The URL measurement for the output file'''
+        """The URL measurement for the output file"""
         if self.save_image_or_figure == IF_OBJECTS:
             return '_'.join((C_OBJECTS_URL, self.objects_name.value))
         return '_'.join((C_URL, self.image_name.value))
 
     @property
     def source_file_name_feature(self):
-        '''The file name measurement for the exemplar disk image'''
+        """The file name measurement for the exemplar disk image"""
         return '_'.join((C_FILE_NAME, self.file_image_name.value))
 
     def source_path(self, workspace):
-        '''The path for the image data, or its first parent with a path'''
+        """The path for the image data, or its first parent with a path"""
         if self.file_name_method.value == FN_FROM_IMAGE:
             path_feature = '%s_%s' % (C_PATH_NAME, self.file_image_name.value)
             assert workspace.measurements.has_feature(cpmeas.IMAGE,
@@ -826,7 +826,7 @@ class SaveImages(cpm.CPModule):
             return []
 
     def get_filename(self, workspace, make_dirs=True, check_overwrite=True):
-        "Concoct a filename for the current image based on the user settings"
+        """Concoct a filename for the current image based on the user settings"""
 
         measurements = workspace.measurements
         if self.file_name_method == FN_SINGLE_NAME:
@@ -1160,14 +1160,14 @@ class SaveImages(cpm.CPModule):
 
 
 class SaveImagesDirectoryPath(cps.DirectoryPath):
-    '''A specialized version of DirectoryPath to handle saving in the image dir'''
+    """A specialized version of DirectoryPath to handle saving in the image dir"""
 
     def __init__(self, text, file_image_name, doc):
-        '''Constructor
+        """Constructor
         text - explanatory text to display
         file_image_name - the file_image_name setting so we can save in same dir
         doc - documentation for user
-        '''
+        """
         super(SaveImagesDirectoryPath, self).__init__(
             text, dir_choices=[
                 cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
@@ -1190,7 +1190,7 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
 
     @staticmethod
     def upgrade_setting(value):
-        '''Upgrade setting from previous version'''
+        """Upgrade setting from previous version"""
         dir_choice, custom_path = cps.DirectoryPath.split_string(value)
         if dir_choice in OLD_PC_WITH_IMAGE_VALUES:
             dir_choice = PC_WITH_IMAGE
@@ -1208,14 +1208,14 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
 
 
 def save_bmp(path, img):
-    '''Save an image as a Microsoft .bmp file
-    
+    """Save an image as a Microsoft .bmp file
+
     path - path to file to save
-    
+
     img - either a 2d, uint8 image or a 2d + 3 plane uint8 RGB color image
-    
+
     Saves file as an uncompressed 8-bit or 24-bit .bmp image
-    '''
+    """
     #
     # Details from
     # http://en.wikipedia.org/wiki/BMP_file_format#cite_note-DIBHeaderTypes-3
@@ -1260,11 +1260,11 @@ def save_bmp(path, img):
     bmp = np.ascontiguousarray(np.flipud(img)).data
     with open(path, "wb") as fd:
         def write2(value):
-            '''write a two-byte little-endian value to the file'''
+            """write a two-byte little-endian value to the file"""
             fd.write(np.array([value], "<u2").data[:2])
 
         def write4(value):
-            '''write a four-byte little-endian value to the file'''
+            """write a four-byte little-endian value to the file"""
             fd.write(np.array([value], "<u4").data[:4])
 
         #

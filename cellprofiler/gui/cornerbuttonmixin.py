@@ -1,24 +1,24 @@
-'''CornerButtonMixin.py - a mixin for wx.grid.Grid that manages a button in the corner
-'''
+"""CornerButtonMixin.py - a mixin for wx.grid.Grid that manages a button in the corner
+"""
 import wx
 from wx.lib.mixins.gridlabelrenderer import GridDefaultCornerLabelRenderer
 
 
 class CornerButtonMixin(object):
-    '''A mixin class for wx.grid.Grid that adds a button in the corner
-    
+    """A mixin class for wx.grid.Grid that adds a button in the corner
+
     This should be added as a mixin to a class derived from wx.grid.Grid.
     It takes control of the grid's GridCornerLabelWindow, managing mouseclicks
     and painting to make it appear as if there is a button there
-    '''
+    """
 
     def __init__(self, fn_clicked, label="Update", tooltip="Update this table"):
-        '''Initialize the mixin - call after wx.grid.Grid.__init__
-        
+        """Initialize the mixin - call after wx.grid.Grid.__init__
+
         fn_clicked - function to call upon button press
-        
+
         label - the button's label
-        '''
+        """
         self.fn_clicked = fn_clicked
         self.label = label
         self.tooltip = tooltip

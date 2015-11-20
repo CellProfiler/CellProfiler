@@ -24,7 +24,7 @@ class TestCPFigure(unittest.TestCase):
         self.frame.Destroy()
 
     def test_01_01_imshow_raw(self):
-        '''Make sure the image drawn by imshow matches the input image.'''
+        """Make sure the image drawn by imshow matches the input image."""
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y, :] = y / 200.0
@@ -35,7 +35,7 @@ class TestCPFigure(unittest.TestCase):
         my_frame.Destroy()
 
     def test_01_02_imshow_raw_rgb(self):
-        '''Make sure the image drawn by imshow matches the input RGB image.'''
+        """Make sure the image drawn by imshow matches the input RGB image."""
         image = np.zeros((100, 100, 3))
         for y in range(image.shape[0]):
             image[y, :, :] = y / 200.0
@@ -47,7 +47,7 @@ class TestCPFigure(unittest.TestCase):
         my_frame.Destroy()
 
     def test_01_03_imshow_normalized(self):
-        '''Make sure the image drawn by imshow is normalized.'''
+        """Make sure the image drawn by imshow is normalized."""
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y, :] = y / 200.0
@@ -60,7 +60,7 @@ class TestCPFigure(unittest.TestCase):
         my_frame.Destroy()
 
     def test_01_04_imshow_normalized_rgb(self):
-        '''Make sure the RGB image drawn by imshow is normalized.'''
+        """Make sure the RGB image drawn by imshow is normalized."""
         image = np.zeros((100, 100, 3))
         for y in range(image.shape[0]):
             image[y, :, :] = y / 200.0
@@ -74,7 +74,7 @@ class TestCPFigure(unittest.TestCase):
         my_frame.Destroy()
 
     def test_01_05_imshow_log_normalized(self):
-        '''Make sure the image drawn by imshow is log normalized.'''
+        """Make sure the image drawn by imshow is log normalized."""
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y, :] = y / 200.0
@@ -89,7 +89,7 @@ class TestCPFigure(unittest.TestCase):
         my_frame.Destroy()
 
     def test_01_06_imshow_log_normalized_rgb(self):
-        '''Make sure the RGB image drawn by imshow is log normalized.'''
+        """Make sure the RGB image drawn by imshow is log normalized."""
         image = np.zeros((100, 100, 3))
         for y in range(image.shape[0]):
             image[y, :] = y / 200.0
@@ -105,8 +105,8 @@ class TestCPFigure(unittest.TestCase):
         my_frame.Destroy()
 
     def test_02_01_show_pixel_data(self):
-        '''Make sure the values reported by show_pixel_data are the raw image
-        values for grayscale images.'''
+        """Make sure the values reported by show_pixel_data are the raw image
+        values for grayscale images."""
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y, :] = y / 200.0
@@ -128,8 +128,8 @@ class TestCPFigure(unittest.TestCase):
         my_frame.Destroy()
 
     def test_02_02_show_pixel_data_rgb(self):
-        '''Make sure the values reported by show_pixel_data are the raw image
-        values for RGB images.'''
+        """Make sure the values reported by show_pixel_data are the raw image
+        values for RGB images."""
         image = np.zeros((100, 100, 3))
         for y in range(image.shape[0]):
             image[y, :, :] = y / 200.0
@@ -156,9 +156,9 @@ class TestCPFigure(unittest.TestCase):
         my_frame.Destroy()
 
     def test_03_01_menu_order(self):
-        '''Make sure that the subplots submenus are presented in the right order
+        """Make sure that the subplots submenus are presented in the right order
         no matter what order they are drawn in.
-        Also tests that the order is not affected after calling clf()'''
+        Also tests that the order is not affected after calling clf()"""
         f = cpfig.create_or_find(None, -1, subplots=(4, 2),
                                  name="test_03_01_menu_order")
 
@@ -175,7 +175,7 @@ class TestCPFigure(unittest.TestCase):
         f.subplot_histogram(3, 1, [1, 1, 1, 2], 2, title="hist")
 
         def test_01_01_imshow_raw(self):
-            '''Make sure the image drawn by imshow matches the input image.'''
+            """Make sure the image drawn by imshow matches the input image."""
             image = np.zeros((100, 100))
             for y in range(image.shape[0]):
                 image[y, :] = y / 200.0
@@ -205,9 +205,9 @@ class TestCPFigure(unittest.TestCase):
         f.Destroy()
 
     def test_03_02_menu_order2(self):
-        '''Make sure that the subplots submenus are presented in the right order
-        after they are redrawn as a result of menu handlers 
-        (e.g. change_contrast)'''
+        """Make sure that the subplots submenus are presented in the right order
+        after they are redrawn as a result of menu handlers
+        (e.g. change_contrast)"""
         f = cpfig.create_or_find(None, -1, subplots=(2, 2),
                                  name="test_03_02_menu_order2")
 
@@ -259,7 +259,7 @@ class TestCPFigure(unittest.TestCase):
         f.Destroy()
 
     def test_04_01_sharexy(self):
-        '''Make sure we can use the sharexy argument.'''
+        """Make sure we can use the sharexy argument."""
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y, :] = y / 200.0
@@ -276,7 +276,7 @@ class TestCPFigure(unittest.TestCase):
         my_frame.Destroy()
 
     def test_04_02_no_sharexy_and_sharex_or_y(self):
-        '''Make sure we can't specify sharex or sharey and sharexy'''
+        """Make sure we can't specify sharex or sharey and sharexy"""
         image = np.zeros((100, 100))
         for y in range(image.shape[0]):
             image[y, :] = y / 200.0

@@ -1,11 +1,11 @@
-'''<b>RescaleIntensity</b> changes the intensity range of an image to your 
+"""<b>RescaleIntensity</b> changes the intensity range of an image to your
 desired specifications.
 <hr>
 This module lets you rescale the intensity of the input images by any of several
 methods. You should use caution when interpreting intensity and texture measurements
 derived from images that have been rescaled because certain options for this module
 do not preserve the relative intensities from image to image.
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpmodule as cpm
@@ -258,8 +258,8 @@ class RescaleIntensity(cpm.CPModule):
         return d[HIGH_ALL_IMAGES]
 
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Handle initialization per-group
-        
+        """Handle initialization per-group
+
         pipeline - the pipeline being run
         image_set_list - the list of image sets for the whole experiment
         grouping - a dictionary that describes the key for the grouping.
@@ -267,11 +267,11 @@ class RescaleIntensity(cpm.CPModule):
         image_numbers - a sequence of the image numbers within the
                    group (image sets can be retreved as
                    image_set_list.get_image_set(image_numbers[i]-1)
-                   
+
         We use prepare_group to compute the minimum or maximum values
         among all images in the group for certain values of
         "wants_automatic_[low,high]".
-        '''
+        """
         if (self.wants_automatic_high != HIGH_ALL_IMAGES and
                     self.wants_automatic_low != LOW_ALL_IMAGES):
             return True
@@ -310,7 +310,7 @@ class RescaleIntensity(cpm.CPModule):
             self.set_automatic_minimum(workspace.image_set_list, min_value)
 
     def is_aggregation_module(self):
-        '''We scan through all images in a group in some cases'''
+        """We scan through all images in a group in some cases"""
         return ((self.wants_automatic_high == HIGH_ALL_IMAGES) or
                 (self.wants_automatic_low == LOW_ALL_IMAGES))
 
@@ -352,7 +352,7 @@ class RescaleIntensity(cpm.CPModule):
                                                  rescaled_image.pixel_data]
 
     def display(self, workspace, figure):
-        '''Display the input image and rescaled image'''
+        """Display the input image and rescaled image"""
         figure.set_subplots((2, 1))
 
         for image_name, i, j in ((self.image_name, 0, 0),
@@ -370,14 +370,14 @@ class RescaleIntensity(cpm.CPModule):
                                       sharexy=figure.subplot(0, 0))
 
     def stretch(self, input_image):
-        '''Stretch the input image to the range 0:1'''
+        """Stretch the input image to the range 0:1"""
         if input_image.has_mask:
             return stretch(input_image.pixel_data, input_image.mask)
         else:
             return stretch(input_image.pixel_data)
 
     def manual_input_range(self, input_image, workspace):
-        '''Stretch the input image from the requested range to 0:1'''
+        """Stretch the input image from the requested range to 0:1"""
 
         src_min, src_max = self.get_source_range(input_image, workspace)
         rescaled_image = ((input_image.pixel_data - src_min) /
@@ -385,7 +385,7 @@ class RescaleIntensity(cpm.CPModule):
         return self.truncate_values(input_image, rescaled_image, 0, 1)
 
     def manual_io_range(self, input_image, workspace):
-        '''Stretch the input image using manual input and output values'''
+        """Stretch the input image using manual input and output values"""
 
         src_min, src_max = self.get_source_range(input_image, workspace)
         rescaled_image = ((input_image.pixel_data - src_min) /
@@ -398,7 +398,7 @@ class RescaleIntensity(cpm.CPModule):
                                     dest_min, dest_max)
 
     def divide_by_image_minimum(self, input_image):
-        '''Divide the image by its minimum to get an illumination correction function'''
+        """Divide the image by its minimum to get an illumination correction function"""
 
         if input_image.has_mask:
             src_min = np.min(input_image.pixel_data[input_image.mask])
@@ -409,7 +409,7 @@ class RescaleIntensity(cpm.CPModule):
         return rescaled_image
 
     def divide_by_image_maximum(self, input_image):
-        '''Stretch the input image from 0 to the image maximum'''
+        """Stretch the input image from 0 to the image maximum"""
 
         if input_image.has_mask:
             src_max = np.max(input_image.pixel_data[input_image.mask])
@@ -420,23 +420,23 @@ class RescaleIntensity(cpm.CPModule):
         return rescaled_image
 
     def divide_by_value(self, input_image):
-        '''Divide the image by a user-specified value'''
+        """Divide the image by a user-specified value"""
         return input_image.pixel_data / self.divisor_value.value
 
     def divide_by_measurement(self, workspace, input_image):
-        '''Divide the image by the value of an image measurement'''
+        """Divide the image by the value of an image measurement"""
         m = workspace.measurements
         value = m.get_current_image_measurement(self.divisor_measurement.value)
         return input_image.pixel_data / float(value)
 
     def scale_by_image_maximum(self, workspace, input_image):
-        '''Scale the image by the maximum of another image
-        
+        """Scale the image by the maximum of another image
+
         Find the maximum value within the unmasked region of the input
         and reference image. Multiply by the reference maximum, divide
         by the input maximum to scale the input image to the same
         range as the reference image
-        '''
+        """
         reference_image = workspace.image_set.get_image(
             self.matching_image_name.value)
         reference_pixels = reference_image.pixel_data
@@ -452,11 +452,11 @@ class RescaleIntensity(cpm.CPModule):
         return input_image.pixel_data * reference_max / image_max
 
     def convert_to_8_bit(self, input_image):
-        '''Convert the image data to uint8'''
+        """Convert the image data to uint8"""
         return (input_image.pixel_data * 255).astype(np.uint8)
 
     def get_source_range(self, input_image, workspace):
-        '''Get the source range, accounting for automatically computed values'''
+        """Get the source range, accounting for automatically computed values"""
         if (self.wants_automatic_high == CUSTOM_VALUE and
                     self.wants_automatic_low == CUSTOM_VALUE):
             return self.source_scale.min, self.source_scale.max
@@ -483,16 +483,16 @@ class RescaleIntensity(cpm.CPModule):
 
     def truncate_values(self, input_image, rescaled_image, target_min,
                         target_max):
-        '''Handle out of range values based on user settings
-        
+        """Handle out of range values based on user settings
+
         input_image - the original input image
         rescaled_image - the pixel data after scaling
         target_min - values below this are out of range
         target_max - values above this are out of range
-        
+
         returns the truncated pixel data and either a mask or None
         if the user doesn't want to mask out-of-range values
-        '''
+        """
 
         if (self.low_truncation_choice == R_MASK or
                     self.high_truncation_choice == R_MASK):

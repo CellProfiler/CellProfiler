@@ -1,5 +1,5 @@
-'''omerologin - dialog box to capture login credentials for Omero
-'''
+"""omerologin - dialog box to capture login credentials for Omero
+"""
 
 import wx
 import cellprofiler.preferences as cpprefs

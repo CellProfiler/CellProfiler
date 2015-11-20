@@ -1,5 +1,5 @@
-'''test_identifydeadworms.py - test the IdentifyDeadWorms module
-'''
+"""test_identifydeadworms.py - test the IdentifyDeadWorms module
+"""
 
 import numpy as np
 from scipy.ndimage import binary_fill_holes
@@ -112,7 +112,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         return workspace, module
 
     def test_02_01_zeros(self):
-        '''Run the module with an image of all zeros'''
+        """Run the module with an image of all zeros"""
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
         module.run(workspace)
         count = workspace.measurements.get_current_image_measurement(
@@ -120,7 +120,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertEqual(count, 0)
 
     def test_02_02_one_worm(self):
-        '''Find a single worm'''
+        """Find a single worm"""
         image = np.zeros((20, 20), bool)
         index, count, i, j = get_line_pts(
             np.array([1, 6, 19, 14]),
@@ -153,7 +153,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertAlmostEqual(a[0], 135, 0)
 
     def test_02_03_crossing_worms(self):
-        '''Find two worms that cross'''
+        """Find two worms that cross"""
         image = np.zeros((20, 20), bool)
         index, count, i, j = get_line_pts(
             np.array([1, 4, 19, 16]),
@@ -200,7 +200,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertAlmostEqual(y[order[1]], 9., 0)
 
     def test_03_01_measurement_columns(self):
-        '''Test get_measurement_columns'''
+        """Test get_measurement_columns"""
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
         self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
         columns = module.get_measurement_columns(workspace.pipeline)

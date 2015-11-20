@@ -1,14 +1,14 @@
-'''<b>Convert Objects To Image </b> converts objects you have identified into an image.
+"""<b>Convert Objects To Image </b> converts objects you have identified into an image.
 <hr>
 
 This module allows you to take previously identified objects and convert
-them into an image according to a colormap you select, which can then be saved 
+them into an image according to a colormap you select, which can then be saved
 with the <b>SaveImages</b> modules.
 
 <p>If you would like to save your objects but do not need a colormap,
-you can by bypass this module and use the <b>SaveImages</b> module directly 
+you can by bypass this module and use the <b>SaveImages</b> module directly
 by specifying "Objects" as the type of image to save.
-'''
+"""
 
 import numpy as np
 import cellprofiler.cpmodule as cpm

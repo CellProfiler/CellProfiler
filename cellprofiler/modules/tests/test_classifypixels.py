@@ -1,5 +1,5 @@
-'''test_classifypixels - test the ClassifyPixels module
-'''
+"""test_classifypixels - test the ClassifyPixels module
+"""
 
 import base64
 import numpy as np

@@ -1,5 +1,5 @@
-'''Utilities for CellProfiler
-'''
+"""Utilities for CellProfiler
+"""
 
 ########################
 #
@@ -13,11 +13,11 @@ if _sys.version_info[0] > 2 or _sys.version_info[1] >= 6:
     from itertools import product
 else:
     def product(*args):
-        '''The cartesian product of the arguments
-        
+        """The cartesian product of the arguments
+
         see docs for itertools.product for full documentation
         (available in Python 2.6+)
-        '''
+        """
         lengths = [len(arg) for arg in args]
         total = reduce(lambda a, b: a * b, lengths)
         for idx in range(total):

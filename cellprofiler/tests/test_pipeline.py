@@ -1381,6 +1381,7 @@ class ATestModule(cpm.CPModule):
 
     def __init__(self, settings=[], measurement_columns=[], other_providers={}):
         super(type(self), self).__init__()
+        super(ATestModule, self).__init__()
         self.__settings = settings
         self.__measurement_columns = measurement_columns
         self.__other_providers = other_providers

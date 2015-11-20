@@ -4176,6 +4176,7 @@ class RunExceptionEvent(AbstractPipelineEvent):
     """
 
     def __init__(self, error, module, tb=None):
+        super(RunExceptionEvent, self).__init__()
         self.error = error
         self.cancel_run = True
         self.skip_thisset = False
@@ -4220,6 +4221,7 @@ class LoadExceptionEvent(AbstractPipelineEvent):
     """
 
     def __init__(self, error, module, module_name=None, settings=None):
+        super(LoadExceptionEvent, self).__init__()
         self.error = error
         self.cancel_run = True
         self.module = module
@@ -4373,6 +4375,10 @@ class ObjectDependency(Dependency):
                  source_setting=None, destination_setting=None):
         super(type(self), self).__init__(source_module, destination_module,
                                          source_setting, destination_setting)
+        super(ObjectDependency, self).__init__(source_module,
+                                               destination_module,
+                                               source_setting,
+                                               destination_setting)
         self.__object_name = object_name
 
     @property
@@ -4391,6 +4397,9 @@ class ImageDependency(Dependency):
                  source_setting=None, destination_setting=None):
         super(type(self), self).__init__(source_module, destination_module,
                                          source_setting, destination_setting)
+        super(ImageDependency, self).__init__(source_module, destination_module,
+                                              source_setting,
+                                              destination_setting)
         self.__image_name = image_name
 
     @property
@@ -4405,8 +4414,8 @@ class ImageDependency(Dependency):
 class MeasurementDependency(Dependency):
     """A dependency on a measurement"""
 
-    def __init__(self, source_module, destination_module, object_name,
-                 feature, source_setting=None, destination_setting=None):
+    def __init__(self, source_module, destination_module, object_name, feature,
+                 source_setting=None, destination_setting=None):
         """Initialize using source, destination and measurement
 
         source_module - module producing the measurement
@@ -4426,6 +4435,10 @@ class MeasurementDependency(Dependency):
         """
         super(type(self), self).__init__(source_module, destination_module,
                                          source_setting, destination_setting)
+        super(MeasurementDependency, self).__init__(source_module,
+                                                    destination_module,
+                                                    source_setting,
+                                                    destination_setting)
         self.__object_name = object_name
         self.__feature = feature
 

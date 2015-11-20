@@ -129,7 +129,7 @@ class ViewBatchDoc(object):
                             self.text(label)
 
     def build_submit_run(self):
-        title = "Batch # %d resubmitted" % (self.my_batch.batch_id)
+        title = "Batch # %d resubmitted" % self.my_batch.batch_id
         with self.tag("html"):
             with self.tag("head"):
                 with self.tag("title"):

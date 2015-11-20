@@ -584,7 +584,7 @@ td {
                          BATCHPROFILER_DEFAULTS[DATA_DIR])
         email_text = yattag.indent(doc.getvalue())
         send_html_mail(recipient=BATCHPROFILER_DEFAULTS[EMAIL],
-                       subject="Batch %d submitted" % (batch.batch_id),
+                       subject="Batch %d submitted" % batch.batch_id,
                        html=email_text)
 
 

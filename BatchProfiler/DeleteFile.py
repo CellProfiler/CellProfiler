@@ -40,7 +40,7 @@ elif batch_id is not None:
     for my_run in my_batch.select_runs():
         delete_run(my_batch, my_run)
 
-url = "ViewBatch.py?batch_id=%d" % (my_batch.batch_id)
+url = "ViewBatch.py?batch_id=%d" % my_batch.batch_id
 print "Content-Type: text/html"
 print
 print "<html><head>"

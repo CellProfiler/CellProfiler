@@ -48,9 +48,9 @@ def enumerate(stuff, separator=',', conjunction='and'):
     n = len(stuff)
     for i in range(len(stuff)):
         text += str(stuff[i])
-        if (i < n - 2): text += separator
-        if (i == n - 2): text += ' ' + conjunction
-        if (i < n - 1): text += ' '
+        if i < n - 2: text += separator
+        if i == n - 2: text += ' ' + conjunction
+        if i < n - 1: text += ' '
     return text
 
 

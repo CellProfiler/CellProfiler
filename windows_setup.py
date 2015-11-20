@@ -475,7 +475,7 @@ else:
                                        "msvcp90.dll"]
 
 data_files += [('artwork',
-                ['artwork\\%s' % (x)
+                ['artwork\\%s' % x
                  for x in os.listdir('artwork')
                  if x.endswith(".png")
                  or x.endswith(".psd") or x.endswith(".txt")]),

@@ -827,7 +827,7 @@ fi
         data += ',"%s":\'$JOB_ID\'' % JOB_ID
         data += ',"%s":%d' % (BATCH_ARRAY_ID, batch_array.batch_array_id)
         data += ',"%s":\'$SGE_TASK_ID\'' % TASK_ID
-        data += ',"%s":"\'$HOSTNAME\'"}' % (K_HOST_NAME)
+        data += ',"%s":"\'$HOSTNAME\'"}' % K_HOST_NAME
         script += """BATCHPROFILER_COMMAND=`curl -s """
         script += """-H "Content-type: application/json" -X PUT """
         script += """--data '%s' %s/JobStatus.py`\n""" % (

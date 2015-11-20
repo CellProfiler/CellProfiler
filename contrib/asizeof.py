@@ -749,7 +749,7 @@ def _weak_refs(obj, unused):  # named unused for PyChecker
     """Return weakly referent object.
     """
     try:  # ignore 'key' of KeyedRef
-        return (obj(),)
+        return obj(),
     except:  # XXX ReferenceError
         return ()  # PYCHOK OK
 
@@ -876,7 +876,7 @@ def _len_slice(obj):
     """Slice length.
     """
     try:
-        return ((obj.stop - obj.start + 1) // obj.step)
+        return (obj.stop - obj.start + 1) // obj.step
     except (AttributeError, TypeError):
         return 0
 

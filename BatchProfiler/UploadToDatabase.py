@@ -121,12 +121,12 @@ for line, index in zip(lines, range(line_count)):
     if line_count > 10 and index == 3:
         print "<div id='verbose_placeholder' style='display:block'>...</div>"
         print "<div id='too_verbose' style='display:none'>"
-    print "<div style='whitespace:nowrap'>%s</div>" % (line)
+    print "<div style='whitespace:nowrap'>%s</div>" % line
     if line_count > 10 and index == line_count - 4:
         print "</div>"
 print "</tt>"
 job = sql_jobs.run_sql_file(batch_id, batch_script_file)
 
-print "<h2>SQL script submitted to cluster as job # %s" % (job.job_id)
+print "<h2>SQL script submitted to cluster as job # %s" % job.job_id
 print "</body>"
 print "</html>"

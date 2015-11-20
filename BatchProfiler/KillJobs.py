@@ -40,7 +40,7 @@ if job_id is not None:
 elif batch_id is not None:
     RunBatch.kill_batch(batch_id)
 
-    url = "ViewBatch.py?batch_id=%d" % (batch_id)
+    url = "ViewBatch.py?batch_id=%d" % batch_id
     print "<html><head>"
     print "<meta http-equiv='refresh' content='0; URL=%(url)s' />" % (globals())
     print "</head>"

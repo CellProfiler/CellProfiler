@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<xs:schema targetNamespace="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd"
-    elementFormDefault="qualified"
-    xmlns="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd"
-    xmlns:mstns="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd"
-    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+<xs:schema
+        targetNamespace="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd"
+        elementFormDefault="qualified"
+        xmlns="http://www.cellprofiler.org/linked_files/schemas/UntangleWorms.xsd"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
 >
   <xs:annotation>
     <xs:appinfo>

@@ -1,14 +1,14 @@
-import numpy as np
 import os
-import unittest
 import tempfile
+import unittest
+
+import numpy as np
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-
 from cellprofiler.modules import instantiate_module
 
 IMAGE_1_NAME = "Image1.tif"

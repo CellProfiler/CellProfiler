@@ -1,15 +1,17 @@
 '''test_groups.py - test the Groups module
 '''
 
-import numpy as np
 import os
-from cStringIO import StringIO
 import unittest
+from cStringIO import StringIO
 
-import cellprofiler.pipeline as cpp
-import cellprofiler.modules.groups as G
+import numpy as np
+
 import cellprofiler.measurements as cpmeas
+import cellprofiler.modules.groups as G
+import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
+
 
 class TestGroups(unittest.TestCase):
     def test_01_01_load_v1(self):

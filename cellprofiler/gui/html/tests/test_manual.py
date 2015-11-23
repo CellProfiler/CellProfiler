@@ -2,11 +2,13 @@
 
 import os
 import re
-import unittest
 import tempfile
 import traceback
+import unittest
+
 import cellprofiler.gui.html.manual as M
 import cellprofiler.preferences as cpprefs
+
 
 class TestManual(unittest.TestCase):
     def setUp(self):

@@ -7,18 +7,15 @@ of every object in an image. The display itself is an image which you
 can save to a file using <b>SaveImages</b>.
 '''
 
-
-
-
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.workspace as cpw
+import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
+import cellprofiler.workspace as cpw
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
 OI_OBJECTS = "Object"

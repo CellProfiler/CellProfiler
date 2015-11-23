@@ -5,18 +5,18 @@ interface for measurements, backed by an HDF5 file.
 """
 from __future__ import with_statement
 
-
 import bisect
+import logging
 import os
+import sys
 import tempfile
 import threading
-import numpy as np
-import h5py
-import sys
 import time
-import logging
 import urllib2
 import uuid
+
+import h5py
+import numpy as np
 logger = logging.getLogger(__name__)
 
 version_number = 1

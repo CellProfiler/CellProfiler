@@ -37,19 +37,19 @@ as video tutorials.</p>
 '''
 
 import numpy as np
+from centrosome.cpmorphology import all_connected_components
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
-from centrosome.cpmorphology import all_connected_components
-from centrosome.cpmorphology import get_line_pts
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
 import identify as I
+from cellprofiler.settings import YES, NO
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"

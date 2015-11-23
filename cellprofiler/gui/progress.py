@@ -1,12 +1,15 @@
 import cStringIO
-import numpy as np
-import time
-import wx
 import sys
+import time
+
+import numpy as np
+import wx
+
 import cellprofiler
-from cellprofiler.icons import get_builtin_image
 import cellprofiler.utilities.version as version
 from cellprofiler.gui import get_cp_icon, get_cp_bitmap
+from cellprofiler.icons import get_builtin_image
+
 
 def module_label(module):
     if module:

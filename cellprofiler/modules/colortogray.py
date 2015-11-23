@@ -12,14 +12,14 @@ the relative weights will adjust the contribution of the colors relative to each
 <p>See also <b>GrayToColor</b>.
 '''
 
-
-import numpy as np
 import re
-import matplotlib.colors
 
+import matplotlib.colors
+import numpy as np
+
+import cellprofiler.cpimage  as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-import cellprofiler.cpimage  as cpi
 
 COMBINE = "Combine"
 SPLIT = "Split"

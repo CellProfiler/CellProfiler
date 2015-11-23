@@ -386,9 +386,10 @@ in <b>Morph</b> to achieve the same result.</td>
 '''
 
 import logging
+import sys
+
 import numpy as np
 import scipy.ndimage as scind
-import sys
 
 logger = logging.getLogger(__name__)
 

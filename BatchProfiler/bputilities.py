@@ -1,14 +1,16 @@
 # Utility functions for Batch Profiler
 import datetime
-import dateutil.parser
-import numpy as np
 import os
 import re
-import sys
-from cStringIO import StringIO
-import subprocess
-import tempfile
 import stat
+import subprocess
+import sys
+import tempfile
+from cStringIO import StringIO
+
+import dateutil.parser
+import numpy as np
+
 from bpformdata import PREFIX, LC_ALL, BATCHPROFILER_CPCHECKOUT, \
      BATCHPROFILER_CELLPROFILER_REPO
 

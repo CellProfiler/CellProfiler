@@ -8,14 +8,14 @@ resulting image can be saved using the <b>SaveImages</b> module.
 See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects, IdentifyTertiaryObjects</b>.
 '''
 
+import centrosome.outline
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import centrosome.outline
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"

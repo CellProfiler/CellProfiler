@@ -1,14 +1,16 @@
 import os
 import sys
-import wx
-import wx.html
-import content
-import webbrowser
 import urllib
 import urllib2
+import webbrowser
+
+import wx
+import wx.html
+
 import cellprofiler.preferences as cpprefs
-from cellprofiler.icons import get_builtin_images_path
+import content
 from cellprofiler.gui.html.content import WELCOME_HELP
+from cellprofiler.icons import get_builtin_images_path
 
 MEMORY_SCHEME = "memory:"
 WELCOME_SCREEN_FRAME = "WelcomeScreenFrame"

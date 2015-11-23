@@ -16,8 +16,9 @@ The output is in the JUnit format:
 '''
 
 import csv
-import numpy as np
 import traceback
+
+import numpy as np
 
 OUTPUT_PRESENT = "output-present"
 MATCHING_COLUMNS = "matching-columns"

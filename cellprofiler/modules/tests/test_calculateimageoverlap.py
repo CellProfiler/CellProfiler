@@ -1,17 +1,18 @@
 '''test_calculateimageoverlap - test the CalculateImageOverlap module
 '''
 
-
 import base64
-import numpy as np
-import scipy.ndimage as ndimage
 import os
 import tempfile
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
+import scipy.ndimage as ndimage
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp

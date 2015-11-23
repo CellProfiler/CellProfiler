@@ -3,15 +3,17 @@
 
 import base64
 import cPickle
-import numpy as np
 import os
 import sys
 import tempfile
 import unittest
-from StringIO import StringIO
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw

@@ -2,8 +2,9 @@
 """ test_haralick -- tests for centrosome.haralick
 """
 import unittest
-import numpy as np
+
 import centrosome.haralick as haralick
+import numpy as np
 
 gray4 = np.array([[0,0,1,1],[0,0,1,1],[0,2,2,2],[2,2,3,3]])
 gray = gray4 / (1.0 * gray4.max())

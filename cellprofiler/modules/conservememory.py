@@ -9,9 +9,8 @@ choose how often the output file of measurements was saved. This option is no lo
 the output file is automatically updated with each image set.
 '''
 
-
-
 import gc
+
 import numpy as np
 
 import cellprofiler.cpmodule as cpm

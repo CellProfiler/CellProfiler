@@ -1,13 +1,15 @@
 """test_crop.py - test the Crop module
 """
 
-import base64
-import numpy as np
-import unittest
 import StringIO
+import base64
+import unittest
 import zlib
 
+import numpy as np
+
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw

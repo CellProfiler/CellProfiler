@@ -10,15 +10,12 @@ you can by bypass this module and use the <b>SaveImages</b> module directly
 by specifying "Objects" as the type of image to save.
 '''
 
-
-
-
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
 import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
 
 DEFAULT_COLORMAP = "Default"
 COLORCUBE = "colorcube"

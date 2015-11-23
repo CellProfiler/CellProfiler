@@ -1,14 +1,14 @@
-from scipy.ndimage import label, distance_transform_edt
-import numpy as np
 import unittest
 
-import cellprofiler.pipeline as cpp
+import numpy as np
+from centrosome.cpmorphology import skeletonize_labels
+from scipy.ndimage import label, distance_transform_edt
+
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-
 from cellprofiler.modules import instantiate_module
-from centrosome.cpmorphology import skeletonize_labels
 
 MODULE_NAME = "Example4a"
 INPUT_OBJECTS_NAME = "inputobjects"

@@ -27,7 +27,11 @@ for the documentation.
 
 __all__ = ["decorator", "FunctionMaker", "deprecated", "getinfo", "new_wrapper"]
 
-import os, sys, re, inspect, warnings
+import inspect
+import os
+import re
+import sys
+import warnings
 
 DEF = re.compile('\s*def\s*([_\w][_\w\d]*)\s*\(')
 

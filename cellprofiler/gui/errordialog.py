@@ -1,14 +1,14 @@
 '''errordialog - dialog box for reporting error.
 '''
 
+import logging
 import os
-from StringIO import StringIO
+import platform
+import sys
+import traceback
 import urllib
 import urllib2
-import traceback
-import sys
-import platform
-import logging
+from StringIO import StringIO
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"

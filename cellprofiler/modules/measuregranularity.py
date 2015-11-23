@@ -30,16 +30,16 @@ Intelligence</i>, 11, N 7, pp. 701-716, 1989</li>
 </ul>
 '''
 
+import centrosome.cpmorphology as morph
 import numpy as np
 import scipy.ndimage as scind
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-import cellprofiler.cpimage as cpi
-import centrosome.cpmorphology as morph
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 'Granularity category'
 C_GRANULARITY = "Granularity_%s_%s"

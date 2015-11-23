@@ -14,16 +14,16 @@ display to within that rectangle.</li>
 '''
 
 import numpy as np
-
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
-import cellprofiler.preferences as cpprefs
-import identify as I
-import cellprofiler.settings as cps
-from centrosome.outline import outline
 from centrosome.cpmorphology import draw_line
 from centrosome.cpmorphology import fill_labeled_holes
+from centrosome.outline import outline
+
+import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
+import cellprofiler.objects as cpo
+import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
+import identify as I
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 TOOL_OUTLINE = "Outline"

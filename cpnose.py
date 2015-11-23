@@ -1,8 +1,10 @@
-from unittest.case import SkipTest
-from pkg_resources import load_entry_point
 import exceptions
 import logging
 import logging.handlers
+from unittest.case import SkipTest
+
+from pkg_resources import load_entry_point
+
 logger = logging.getLogger(__name__)
 import javabridge
 import nose

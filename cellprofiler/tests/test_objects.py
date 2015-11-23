@@ -1,16 +1,18 @@
 """Tests for CellProfiler.Objects
 """
+import base64
+import bz2
+import cStringIO
+import unittest
+
 import numpy as np
 import scipy.ndimage
-import unittest
-import cStringIO
-import bz2
-import base64
-
-import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
 from centrosome.outline import outline
+
+import cellprofiler.cpimage as cpi
+import cellprofiler.objects as cpo
 from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
+
 
 class TestObjects(unittest.TestCase):
     def setUp(self):

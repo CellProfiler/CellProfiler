@@ -1,12 +1,12 @@
+import unittest
+
 import numpy as np
 import scipy.ndimage
-import unittest
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-
 from cellprofiler.modules import instantiate_module
 
 MODULE_NAME = "Example6a"

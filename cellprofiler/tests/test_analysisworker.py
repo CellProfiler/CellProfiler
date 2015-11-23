@@ -1,33 +1,33 @@
 """test_analysisworker.py - test the analysis client framework
 """
 
-from cStringIO import StringIO
-import hashlib
-import numpy as np
-import os
 import Queue
+import hashlib
+import os
 import socket
 import tempfile
 import threading
 import traceback
 import unittest
 import uuid
+from cStringIO import StringIO
+
+import javabridge as J
+import numpy as np
 import zmq
 
 import cellprofiler.analysis as cpanalysis
+import cellprofiler.analysis_worker as cpaw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
-import cellprofiler.utilities.zmqrequest as cpzmq
-import javabridge as J
-import cellprofiler.analysis_worker as cpaw
 import cellprofiler.preferences as cpprefs
-
+import cellprofiler.utilities.zmqrequest as cpzmq
+from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 from cellprofiler.modules.identify import C_COUNT, M_LOCATION_CENTER_X
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from cellprofiler.modules.tests import\
      example_images_directory, maybe_download_example_image, maybe_download_sbs
-from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 
 cpprefs.set_headless()
 

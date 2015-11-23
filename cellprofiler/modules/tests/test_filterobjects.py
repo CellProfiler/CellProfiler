@@ -1,14 +1,16 @@
 '''test_filterbyobjectmeasurements.py: Test FilterByObjectMeasurements module'''
 
-import base64
-import numpy as np
-import os
 import StringIO
+import base64
+import os
 import tempfile
-import zlib
 import unittest
+import zlib
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw

@@ -4,14 +4,16 @@
 import os
 import string
 import time
+
 import numpy as np
 import wx
+
+import cellprofiler.analysis as cpanalysis
 import cellprofiler.preferences as cpprefs
-from cellprofiler.icons import get_builtin_image
-from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
      DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, USING_THE_OUTPUT_FILE_HELP
-import cellprofiler.analysis as cpanalysis
+from cellprofiler.gui.htmldialog import HTMLDialog
+from cellprofiler.icons import get_builtin_image
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
 

@@ -1,13 +1,15 @@
 """test_cpfigure- test cpfigure functionality
 """
 
-import numpy as np
 import time
 import unittest
 
-import wx
 import matplotlib
+import numpy as np
+import wx
+
 from cellprofiler.preferences import set_headless
+
 set_headless()
 import cellprofiler.gui.cpfigure as cpfig
 

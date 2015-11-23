@@ -1,19 +1,21 @@
 '''test_loaddata - Test the LoadData (formerly LoadText) module
 '''
 
-from bioformats import load_image
 import base64
-import numpy as np
+import hashlib
 import os
 import re
-from StringIO import StringIO
 import tempfile
 import unittest
 import zlib
+from StringIO import StringIO
+
 import PIL.Image
-import hashlib
+import numpy as np
+from bioformats import load_image
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp

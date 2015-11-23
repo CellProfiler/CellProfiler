@@ -1,10 +1,13 @@
 """test_Image.py - test the CellProfiler.Image module
 """
 
-import cellprofiler.cpimage as cpi
-import unittest
-import numpy as np
 import math
+import unittest
+
+import numpy as np
+
+import cellprofiler.cpimage as cpi
+
 
 class TestImage(unittest.TestCase):
     def test_00_00_init(self):

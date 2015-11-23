@@ -23,21 +23,19 @@ this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImag
 module help for more information on saving cropping shapes.
 '''
 
-
-
-
 import logging
 import math
-import numpy as np
 import sys
 
+import numpy as np
+from centrosome.filter import stretch
+
 import cellprofiler.cpimage as cpi
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
-from centrosome.filter import stretch
+import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 
 logger = logging.getLogger(__name__)
 

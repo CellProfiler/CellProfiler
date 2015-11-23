@@ -2,26 +2,27 @@
 """
 
 import math
+
+import centrosome.outline
+import numpy as np
 import scipy.ndimage
 import scipy.sparse
-import numpy as np
 import scipy.stats
+from centrosome.smooth import smooth_with_function_and_mask
+from centrosome.smooth import smooth_with_noise
+from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_BINARY_IMAGE
+from centrosome.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS, get_threshold
+from centrosome.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_BACKGROUND, TM_KAPUR, TM_ROBUST_BACKGROUND, TM_RIDLER_CALVARD
+from centrosome.threshold import mad, binned_mode
+from centrosome.threshold import weighted_variance, sum_of_entropies
 
 import cellprofiler.cpmodule
-import cellprofiler.settings as cps
+import cellprofiler.icons
 import cellprofiler.measurements as cpmeas
-import centrosome.outline
 import cellprofiler.objects
-from centrosome.smooth import smooth_with_noise
-from centrosome.smooth import smooth_with_function_and_mask
-from centrosome.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS, get_threshold
-from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_BINARY_IMAGE
-from centrosome.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_BACKGROUND, TM_KAPUR, TM_ROBUST_BACKGROUND, TM_RIDLER_CALVARD
-from centrosome.threshold import weighted_variance, sum_of_entropies
-from centrosome.threshold import mad, binned_mode
+import cellprofiler.settings as cps
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
-import cellprofiler.icons 
-        
+
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
 

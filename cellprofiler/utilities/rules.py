@@ -1,11 +1,12 @@
 '''rules - code for parsing and applying rules from CPA
 '''
 
-
-import numpy as np
 import re
 
+import numpy as np
+
 import cellprofiler.measurements as cpmeas
+
 
 class Rules(object):
     '''Represents a set of CPA rules'''

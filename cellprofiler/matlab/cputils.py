@@ -1,10 +1,12 @@
 """Utils.py - utility functions for manipulating the Matlab blackboard
 """
 
-import numpy
-import tempfile
-import scipy.io.matlab.mio
 import os
+import tempfile
+
+import numpy
+import scipy.io.matlab.mio
+
 
 def new_string_cell_array(shape):
     """Return a numpy.ndarray that looks like {NxM cell} to Matlab

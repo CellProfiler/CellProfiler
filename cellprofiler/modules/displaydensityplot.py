@@ -17,12 +17,12 @@ created from all the measurements collected during the run.</p>
 See also <b>DisplayScatterPlot</b>, <b>DisplayHistogram</b>.
 '''
 
+import matplotlib.cm
 import numpy as np
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-import matplotlib.cm
 
 class DisplayDensityPlot(cpm.CPModule):
     

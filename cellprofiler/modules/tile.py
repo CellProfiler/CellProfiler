@@ -36,9 +36,11 @@ Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama
 '''
 
 import logging
+import sys
+
 import numpy as np
 import scipy.ndimage as scind
-import sys
+
 logger = logging.getLogger(__name__)
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm

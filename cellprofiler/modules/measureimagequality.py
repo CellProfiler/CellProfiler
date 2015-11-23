@@ -57,8 +57,10 @@ control in large-scale high-content screens." <i>J Biomol Screen</i> 17(2):266-7
 </ul>
 '''
 
-import numpy as np
 import logging
+
+import numpy as np
+
 logger = logging.getLogger(__name__)
 import scipy.ndimage as scind
 from scipy.linalg.basic import lstsq

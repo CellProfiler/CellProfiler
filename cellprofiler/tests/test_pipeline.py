@@ -1,35 +1,34 @@
 """test_Pipeline.py - test the CellProfiler.Pipeline module
 """
 
-
 import base64
-import csv
-import re
-import unittest
-import numpy as np
-import numpy.lib.index_tricks
-import cStringIO
-import zlib
-import tempfile
 import cProfile
-import pstats
+import cStringIO
+import csv
 import os
+import pstats
+import re
 import sys
+import tempfile
 import traceback
+import unittest
+import zlib
 from urllib2 import urlopen
 
-import cellprofiler.pipeline as cpp
-import cellprofiler.objects as cpo
-import cellprofiler.cpmodule as cpm
+import numpy as np
+import numpy.lib.index_tricks
+
 import cellprofiler.cpimage as cpi
-import cellprofiler.settings as cps
+import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.workspace as cpw
-import cellprofiler.preferences as cpprefs
 import cellprofiler.modules
 import cellprofiler.modules.loadimages as LI
+import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
+import cellprofiler.workspace as cpw
 from cellprofiler.modules.injectimage import InjectImage
-
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_fly, maybe_download_sbs
 

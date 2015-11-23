@@ -44,14 +44,17 @@ as a data tool.</p>
 <p>See also <b>CreateBatchFiles</b>, <b>ExportToDatabase</b>.</p>
 '''
 
-import h5py
-import numpy as np
 import os
 import sys
+
+import h5py
+import numpy as np
+
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 from cellprofiler.preferences import get_headless
+
 
 class MergeOutputFiles(cpm.CPModule):
     module_name = "MergeOutputFiles"

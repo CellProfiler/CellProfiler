@@ -6,10 +6,10 @@ import os
 
 from bioformats import load_image
 
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
-import cellprofiler.pipeline as cpp
+import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
+import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 
 M_FIRST_TIME = "Example6b_FirstTime"

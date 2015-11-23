@@ -1,10 +1,11 @@
-from setuptools import setup
-import sys
+import ctypes.util
+import glob
 import os
 import os.path
-import glob
+import sys
 from subprocess import call
-import ctypes.util
+
+from setuptools import setup
 
 sys.path.append('.')
 import cellprofiler.utilities.version

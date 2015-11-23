@@ -1,10 +1,11 @@
-from cStringIO import StringIO
 import re
 import sys
 import unittest
+from cStringIO import StringIO
 
 import cellprofiler.pipeline as cpp
 from cellprofiler.modules import instantiate_module
+
 
 class TestExample1a(unittest.TestCase):
     def test_01_01_load(self):

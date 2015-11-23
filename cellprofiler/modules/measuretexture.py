@@ -119,15 +119,15 @@ SMC-3(6):610-621.
 
 import numpy as np
 import scipy.ndimage as scind
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.filter import gabor, stretch
+from centrosome.haralick import Haralick, normalized_per_object
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.measurements as cpmeas
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.haralick import Haralick, normalized_per_object
-from centrosome.filter import gabor, stretch
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'

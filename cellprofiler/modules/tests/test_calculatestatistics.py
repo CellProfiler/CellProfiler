@@ -2,16 +2,18 @@
 '''
 
 import base64
-import numpy as np
 import os
-from StringIO import StringIO
 import tempfile
-import urllib
 import unittest
+import urllib
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 from scipy.io.matlab import loadmat
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.cpmodule as cpm

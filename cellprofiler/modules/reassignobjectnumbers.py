@@ -33,26 +33,26 @@ reassignment.
 <p>See also <b>RelateObjects</b>.</p>
 '''
 
+import centrosome.cpmorphology as morph
+import centrosome.outline
 import numpy as np
 import scipy.ndimage as scind
+from centrosome.filter import stretch
 from scipy.sparse import coo_matrix
 
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.cpimage as cpi
 import cellprofiler.preferences as cpprefs
-from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
+import cellprofiler.settings as cps
+from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.modules.identify import C_PARENT, C_CHILDREN
 from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
-import centrosome.cpmorphology as morph
-from centrosome.filter import stretch
-import centrosome.outline
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.modules.identify import add_object_count_measurements
+from cellprofiler.modules.identify import add_object_location_measurements
+from cellprofiler.modules.identify import get_object_measurement_columns
+from cellprofiler.settings import YES, NO
 
 OPTION_UNIFY = "Unify"
 OPTION_SPLIT = "Split"

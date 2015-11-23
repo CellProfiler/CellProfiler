@@ -9,14 +9,11 @@ This module corrects each image in the pipeline using the function specified.
 
 See also <b>CorrectIlluminationCalculate</b>.'''
 
-
-
-
 import numpy as np
 
+import cellprofiler.cpimage  as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-import cellprofiler.cpimage  as cpi
 from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
 
 ######################################

@@ -3,13 +3,16 @@
 #
 # Kill all jobs in a batch
 #
+import cgi
+import json
+import os
+import stat
+
+import yattag
+
 import RunBatch
 from bpformdata import *
-import cgi
-import os
-import json
-import stat
-import yattag
+
 
 def maybe_chmod(path, mode, d):
     '''Change the mode of a file if it exists and needs changing

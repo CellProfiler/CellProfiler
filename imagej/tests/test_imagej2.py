@@ -1,11 +1,13 @@
 '''test_imagej2 - test the imagej2 module'''
 
-import numpy as np
 import unittest
 
 import bioformats
 import javabridge as J
+import numpy as np
+
 import imagej.imagej2 as ij2
+
 
 class TestImagej2(unittest.TestCase):
     @classmethod

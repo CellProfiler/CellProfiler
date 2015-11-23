@@ -36,21 +36,22 @@ the branchpoints that lie outside the seed objects.</li>
 </ul>
 '''
 
-import numpy as np
-from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion
-import scipy.ndimage as scind
 import os
+
+import centrosome.cpmorphology as morph
+import centrosome.propagate as propagate
+import numpy as np
+import scipy.ndimage as scind
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
+import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import centrosome.cpmorphology as morph
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-import centrosome.propagate as propagate
-import cellprofiler.preferences as cpprefs
 
 '''The measurement category'''
 C_NEURON = "Neuron"

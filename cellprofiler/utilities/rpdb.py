@@ -3,10 +3,11 @@
 
 # modified version of http://snippets.dzone.com/posts/show/7248
 
+import hashlib
 import pdb
 import socket
 import sys
-import hashlib
+
 import readline  # otherwise, pdb.Pdb.__init__ hangs
 
 

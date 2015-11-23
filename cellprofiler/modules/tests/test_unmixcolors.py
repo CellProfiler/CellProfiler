@@ -1,17 +1,18 @@
 '''test_unmixcolors - test the unmixcolors module
 '''
 
-import numpy as np
 import unittest
 from StringIO import StringIO
+
+import numpy as np
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.objects as cpo
-import cellprofiler.workspace as cpw
 import cellprofiler.modules.unmixcolors as U
+import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 
 INPUT_IMAGE = "inputimage"
 def output_image_name(idx):

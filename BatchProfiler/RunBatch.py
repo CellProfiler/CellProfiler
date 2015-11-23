@@ -1,11 +1,12 @@
 #
 # Functions for running a batch or a single run from the database
 #
-import MySQLdb
-import subprocess
 import os
 import re
 import stat
+import subprocess
+
+import MySQLdb
 
 import bputilities
 from bpformdata import BATCHPROFILER_MYSQL_HOST, \

@@ -15,13 +15,13 @@ See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationC
 '''
 
 import numpy as np
-from contrib.english import ordinal
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.measurements as cpmeas
+from contrib.english import ordinal
 
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"

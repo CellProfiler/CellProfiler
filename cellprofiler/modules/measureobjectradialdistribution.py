@@ -28,28 +28,28 @@ over 8 slices.</li>
 See also <b>MeasureObjectIntensity</b>.
 """
 
-import numpy as np
-import matplotlib.cm
-from numpy.ma import masked_array
-from scipy.sparse import coo_matrix
-import scipy.ndimage as scind
 import sys
 
+import matplotlib.cm
+import numpy as np
+import scipy.ndimage as scind
+from centrosome.cpmorphology import centers_of_labels
+from centrosome.cpmorphology import color_labels
+from centrosome.cpmorphology import distance_to_edge
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import maximum_position_of_labels
+from centrosome.propagate import propagate
+from numpy.ma import masked_array
+from scipy.sparse import coo_matrix
+
+import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.workspace as cpw
-
-from centrosome.cpmorphology import distance_to_edge
-from centrosome.cpmorphology import centers_of_labels
-from centrosome.cpmorphology import maximum_position_of_labels
-from centrosome.cpmorphology import color_labels
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.propagate import propagate
+from cellprofiler.settings import YES, NO
 
 C_SELF = 'These objects'
 C_CENTERS_OF_OTHER_V2 = 'Other objects'

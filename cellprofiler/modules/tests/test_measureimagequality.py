@@ -1,13 +1,15 @@
 '''test_measureimagequality.py - test the MeasureImageQuality module
 '''
 
-from scipy.io.matlab import savemat
-import base64
-import numpy as np
 import StringIO
+import base64
 import unittest
 
+import numpy as np
+from scipy.io.matlab import savemat
+
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.modules.measureimagequality as miq

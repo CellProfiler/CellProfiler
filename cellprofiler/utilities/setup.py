@@ -4,8 +4,8 @@ __test__=False
 
 import logging
 import os
-import sys
 import subprocess
+import sys
 import traceback
 
 logger = logging.getLogger(__name__)

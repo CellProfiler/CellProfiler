@@ -3,18 +3,19 @@
     TO-DO: capture and save module revision #s in the handles
 """
 
-import re
 import os
+import re
 import sys
 import uuid
 
 import numpy as np
 
-import cellprofiler.settings as cps
 import cellprofiler.cpimage
-import cellprofiler.objects
 import cellprofiler.measurements
+import cellprofiler.objects
+import cellprofiler.settings as cps
 import pipeline as cpp
+
 
 class CPModule(object):
     """ Derive from the abstract module class to create your own module in Python

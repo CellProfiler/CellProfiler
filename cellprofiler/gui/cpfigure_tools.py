@@ -1,9 +1,10 @@
 """ cpfigure_tools.py - cpfigure tools that do not depend on WX
 """
 from cStringIO import StringIO
+
+import matplotlib
 import numpy as np
 import scipy
-import matplotlib
 from centrosome.cpmorphology import distance_color_labels
 
 

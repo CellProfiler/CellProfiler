@@ -2,17 +2,17 @@
 """
 from __future__ import with_statement
 
-
 import bisect
 import csv
+import gc
 import hashlib
 import json
 import logging
-import gc
-import numpy as np
-import scipy.io.matlab
-import scipy
 import uuid
+
+import numpy as np
+import scipy
+import scipy.io.matlab
 try:
     #implemented in scipy.io.matlab.miobase.py@5582
     from scipy.io.matlab.miobase import MatReadError

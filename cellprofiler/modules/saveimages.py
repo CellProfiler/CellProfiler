@@ -17,13 +17,14 @@ See also <b>NamesAndTypes</b>, <b>ConserveMemory</b>.
 '''
 
 import logging
+import os
+import re
+import sys
+import traceback
+
 import matplotlib
 import numpy as np
-import re
-import os
-import sys
 import scipy.io.matlab.mio
-import traceback
 
 logger = logging.getLogger(__name__)
 

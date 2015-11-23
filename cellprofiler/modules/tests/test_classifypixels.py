@@ -2,17 +2,18 @@
 '''
 
 import base64
-import numpy as np
 import os
-from cStringIO import StringIO
 import tempfile
 import unittest
 import zlib
+from cStringIO import StringIO
 
-import cellprofiler.pipeline as cpp
+import numpy as np
+
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 
 try:

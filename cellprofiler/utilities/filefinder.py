@@ -1,12 +1,14 @@
 from __future__ import with_statement
-import threading
+
 import Queue
-import uuid
-import os
-import time
-import stat
-import traceback
 import errno
+import os
+import stat
+import threading
+import time
+import traceback
+import uuid
+
 
 class TimeOutException(Exception):
     pass

@@ -3,18 +3,19 @@
 
 import base64
 import gc
-import h5py
-import unittest
-import numpy as np
 import os
 import sys
 import tempfile
+import unittest
 import uuid
 import zlib
-
-import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
 from cStringIO import StringIO
+
+import h5py
+import numpy as np
+
+import cellprofiler.cpimage as cpi
+import cellprofiler.measurements as cpmeas
 
 OBJECT_NAME = "myobjects"
 FEATURE_NAME = "feature"

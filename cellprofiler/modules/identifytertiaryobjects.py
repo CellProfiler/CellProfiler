@@ -53,20 +53,20 @@ identified tertiary objects.</li>
 See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules.
 '''
 
-import numpy as np
 import matplotlib
 import matplotlib.cm
+import numpy as np
+from centrosome.outline import outline
 
-import identify as cpmi
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
-from centrosome.outline import outline
+import cellprofiler.settings as cps
+import identify as cpmi
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.settings import YES, NO
 
 '''The parent object relationship points to the secondary / larger objects'''
 R_PARENT = "Parent"

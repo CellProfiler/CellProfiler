@@ -5,9 +5,10 @@
 import numpy as np
 import scipy.ndimage
 
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
+
 
 class Example6a(cpm.CPModule):
     module_name = "Example6a"

@@ -3,20 +3,20 @@
 
 import h5py
 import numpy as np
-from scipy.io.matlab.mio import loadmat
 import wx
 import wx.lib.scrolledpanel
+from scipy.io.matlab.mio import loadmat
 
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
 import cellprofiler.gui.cpfigure as cpf
+import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
+import cellprofiler.workspace as cpw
+from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.modules import instantiate_module
-from cellprofiler.gui import get_cp_icon
 
 ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
 ID_FILE_SAVE_MEASUREMENTS = wx.NewId()

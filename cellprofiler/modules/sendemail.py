@@ -9,12 +9,12 @@ the point in the pipeline when you want the emails to be sent. If email
 sending fails for any reason, a warning message will appear but
 processing will continue regardless.'''
 
-import logging
 import email.message
+import logging
 import os
-import traceback
 import smtplib
 import sys
+import traceback
 
 logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm

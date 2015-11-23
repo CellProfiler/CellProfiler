@@ -1,9 +1,8 @@
 '''get_proper_case_filename.py - convert filename to proper case for Windows
 '''
 
-
-import sys
 import os
+import sys
 
 if sys.platform.startswith("win"):
     import _get_proper_case_filename

@@ -2444,15 +2444,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 "Channel1-02-A-02.tif","%s","Hello"
 '''%info
         pipeline, module, input_filename = self.make_pipeline(csv_text)
-        
+
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
-            
+
         # ExportToSpreadsheet
         module = self.add_gct_settings(output_csv_filename)
         module.how_to_specify_gene_name.value = "Image filename"
         module.use_which_image_for_gene_name.value = "Foo"
         pipeline.add_module(module)
-        
+
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -2492,15 +2492,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 "Channel1-02-A-02.tif","%s","Hello"
 '''%info
         pipeline, module, input_filename = self.make_pipeline(csv_text)
-        
+
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
-            
+
         # ExportToSpreadsheet
         module = self.add_gct_settings(output_csv_filename)
         module.how_to_specify_gene_name.value = "Image filename"
         module.use_which_image_for_gene_name.value = "Foo"
         pipeline.add_module(module)
-        
+
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -2522,7 +2522,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
               
     def test_08_03_make_gct_file_with_metadata(self):
         maybe_download_sbs()
-            
+
         # LoadData with data
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
@@ -2532,15 +2532,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 "Channel1-02-A-02.tif","%s","Hello"
 '''%info
         pipeline, module, input_filename = self.make_pipeline(csv_text)
-        
+
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
-            
+
         # ExportToSpreadsheet
         module = self.add_gct_settings(output_csv_filename)
         module.how_to_specify_gene_name.value = "Metadata"
         module.gene_name_column.value = "Metadata_Bar"
         pipeline.add_module(module)
-        
+
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))

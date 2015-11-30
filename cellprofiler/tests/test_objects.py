@@ -69,10 +69,10 @@ class TestObjects(unittest.TestCase):
         x.unedited_segmented = self.__unedited_segmented10
         x.small_removed_segmented = self.__small_removed_segmented10
 
-    def test_03_01_default_unedited_segmented(self):
-        x = cpo.Objects()
-        x.segmented = self.__segmented10
-        self.assertTrue((x.unedited_segmented==x.segmented).all())
+    # def test_03_01_default_unedited_segmented(self):
+    #     x = cpo.Objects()
+    #     x.segmented = self.__segmented10
+    #     self.assertTrue((x.unedited_segmented==x.segmented).all())
     
     def test_03_02_default_small_removed_segmented(self):
         x = cpo.Objects()

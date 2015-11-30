@@ -12,7 +12,6 @@ from cStringIO import StringIO
 
 import dateutil.parser
 
-import CellProfiler
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_example_images
 

@@ -1,13 +1,12 @@
+import h5py
 import logging
 import logging.config
-import os
 import re
 import sys
+import os
+import numpy as np
 import tempfile
 from cStringIO import StringIO
-
-import h5py
-import numpy as np
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -55,11 +54,13 @@ if os.path.exists(site_packages) and os.path.isdir(site_packages):
     import site
     site.addsitedir(site_packages)
     
-def main(args):
+def main(args = None):
     '''Run CellProfiler
 
     args - command-line arguments, e.g. sys.argv
     '''
+    if args is None:
+        args = sys.argv
     import cellprofiler.preferences as cpprefs
     cpprefs.set_awt_headless(True)
     switches = ('--work-announce', '--knime-bridge-address')
@@ -77,11 +78,7 @@ def main(args):
         cellprofiler.analysis_worker.aw_parse_args()
         cellprofiler.analysis_worker.main()
         sys.exit(0)
-        
-    if any([arg.startswith('--xml-test-file=') for arg in sys.argv]):
-        import cpnose
-        cpnose.main(*sys.argv)
-        return
+
     options, args = parse_args(args)
     if options.print_version:
         from cellprofiler.utilities.version import \
@@ -158,11 +155,6 @@ def main(args):
     from matplotlib import use as mpluse
     mpluse('WXAgg')
     
-    if (not hasattr(sys, 'frozen')) and options.build_extensions:
-        build_extensions()
-        if options.build_and_exit:
-            return
-    
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)
     if options.plugins_directory is not None:
@@ -180,7 +172,7 @@ def main(args):
     #
     # After the crucial preferences are established, we can start the VM
     #
-    from cellprofiler.utilities.cpjvm import cp_start_vm, cp_stop_vm
+    from cellprofiler.utilities.cpjvm import cp_start_vm
     cp_start_vm()
     #
     # Not so crucial preferences...
@@ -267,23 +259,24 @@ def main(args):
         raise
     
     finally:
-        if __name__ == "__main__":
-            try:
-                from ilastik.core.jobMachine import GLOBAL_WM
-                GLOBAL_WM.stopWorkers()
-            except:
-                logging.root.warn("Failed to stop Ilastik")
-            try:
-                from cellprofiler.utilities.zmqrequest import join_to_the_boundary
-                join_to_the_boundary()
-            except:
-                logging.root.warn("Failed to stop zmq boundary", exc_info=1)
-            try:
-                cp_stop_vm()
-            except:
-                logging.root.warn("Failed to stop the JVM", exc_info=1)
-            os._exit(0)
-
+        stop_cellprofiler()
+def stop_cellprofiler():
+    try:
+        from ilastik.core.jobMachine import GLOBAL_WM
+        GLOBAL_WM.stopWorkers()
+    except:
+        logging.root.warn("Failed to stop Ilastik")
+    try:
+        from cellprofiler.utilities.zmqrequest import join_to_the_boundary
+        join_to_the_boundary()
+    except:
+        logging.root.warn("Failed to stop zmq boundary", exc_info=1)
+    try:
+        from cellprofiler.utilities.cpjvm import cp_stop_vm
+        cp_stop_vm()
+    except:
+        logging.root.warn("Failed to stop the JVM", exc_info=1)
+    
 def parse_args(args):
     '''Parse the CellProfiler command-line arguments'''
     import optparse
@@ -507,15 +500,6 @@ def parse_args(args):
                               ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL")) +
                               ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
                               " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
-    
-    parser.add_option(
-        "--xml-test-file",
-        dest = "tests",
-        default = None,
-        metavar = "XML-FILE",
-        help = ("Run unit tests. Tests can be collected by nose using a "
-                "command line such as \"python cpnose.py --collect-only "
-                "--with-xunit --xunit-file=XML-FILE"))
     
     parser.add_option("--code-statistics", 
                           dest = "code_statistics",
@@ -793,7 +777,7 @@ def build_extensions():
     #
     # Check for dependencies and compile if necessary
     #
-    compile_scripts = [(os.path.join('cellprofiler', 'utilities', 'setup.py'), cellprofiler.utilities.setup)]
+    compile_scripts = [(os.path.join('cellprofiler', 'utilities', 'mac_setup.py'), cellprofiler.utilities.setup)]
     env = os.environ.copy()
     old_pythonpath = os.getenv('PYTHONPATH', None)
 
@@ -955,6 +939,3 @@ def run_pipeline_headless(options, args):
     if measurements is not None:
         measurements.close()
     
-if __name__ == "__main__":
-    main(sys.argv)
-    os._exit(0)

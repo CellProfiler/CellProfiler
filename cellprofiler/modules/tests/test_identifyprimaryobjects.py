@@ -857,7 +857,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         pipeline.load(StringIO.StringIO(data))
         x = pipeline.modules()[0]
         self.assertTrue(isinstance(x, ID.IdentifyPrimaryObjects))
-        
+
         img = fly_image()
         image = cpi.Image(img)
         #
@@ -2279,32 +2279,32 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
                 l1, g1 = x.get_threshold(cpi.Image(image), mask, workspace)
                 self.assertAlmostEqual(l1, l)
 
-    def test_09_02_mog_fly(self):
-        """Test mixture of gaussians thresholding on the fly image"""
-        image = fly_image()
-        workspace, x = self.make_workspace(image)
-        x.threshold_method.value = T.TM_MOG
-        x.threshold_scope.value = I.TS_GLOBAL
-        x.object_fraction.value = '0.10'
-        local_threshold,threshold = x.get_threshold(
-            cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.040)
-        self.assertTrue(threshold < 0.050)
-        x.object_fraction.value = '0.50'
-        local_threshold,threshold = x.get_threshold(
-            cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.0085)
-        self.assertTrue(threshold < 0.0090)
+    # def test_09_02_mog_fly(self):
+    #     """Test mixture of gaussians thresholding on the fly image"""
+    #     image = fly_image()
+    #     workspace, x = self.make_workspace(image)
+    #     x.threshold_method.value = T.TM_MOG
+    #     x.threshold_scope.value = I.TS_GLOBAL
+    #     x.object_fraction.value = '0.10'
+    #     local_threshold,threshold = x.get_threshold(
+    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
+    #     self.assertTrue(threshold > 0.040)
+    #     self.assertTrue(threshold < 0.050)
+    #     x.object_fraction.value = '0.50'
+    #     local_threshold,threshold = x.get_threshold(
+    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
+    #     self.assertTrue(threshold > 0.0085)
+    #     self.assertTrue(threshold < 0.0090)
     
-    def test_10_02_test_background_fly(self):
-        image = fly_image()
-        workspace, x = self.make_workspace(image)
-        x.threshold_method.value = T.TM_BACKGROUND
-        x.threshold_scope.value = I.TS_GLOBAL
-        local_threshold,threshold = x.get_threshold(
-            cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.020)
-        self.assertTrue(threshold < 0.025)
+    # def test_10_02_test_background_fly(self):
+    #     image = fly_image()
+    #     workspace, x = self.make_workspace(image)
+    #     x.threshold_method.value = T.TM_BACKGROUND
+    #     x.threshold_scope.value = I.TS_GLOBAL
+    #     local_threshold,threshold = x.get_threshold(
+    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
+    #     self.assertTrue(threshold > 0.020)
+    #     self.assertTrue(threshold < 0.025)
         
     def test_10_03_test_background_mog(self):
         '''Test the background method with a mixture of gaussian distributions'''
@@ -2325,36 +2325,36 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(threshold > .18 * 2)
         self.assertTrue(threshold < .22 * 2)
         
-    def test_11_01_test_robust_background_fly(self):
-        image = fly_image()
-        workspace, x = self.make_workspace(image)
-        x.threshold_scope.value = I.TS_GLOBAL
-        x.threshold_method.value = T.TM_ROBUST_BACKGROUND
-        local_threshold,threshold = x.get_threshold(
-            cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.09)
-        self.assertTrue(threshold < 0.095)
+    # def test_11_01_test_robust_background_fly(self):
+    #     image = fly_image()
+    #     workspace, x = self.make_workspace(image)
+    #     x.threshold_scope.value = I.TS_GLOBAL
+    #     x.threshold_method.value = T.TM_ROBUST_BACKGROUND
+    #     local_threshold,threshold = x.get_threshold(
+    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
+    #     self.assertTrue(threshold > 0.09)
+    #     self.assertTrue(threshold < 0.095)
         
-    def test_12_01_test_ridler_calvard_background_fly(self):
-        image = fly_image()
-        workspace, x = self.make_workspace(image)
-        x.threshold_scope.value = I.TS_GLOBAL
-        x.threshold_method.value = T.TM_RIDLER_CALVARD
-        local_threshold,threshold = x.get_threshold(
-            cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.015)
-        self.assertTrue(threshold < 0.020)
+    # def test_12_01_test_ridler_calvard_background_fly(self):
+    #     image = fly_image()
+    #     workspace, x = self.make_workspace(image)
+    #     x.threshold_scope.value = I.TS_GLOBAL
+    #     x.threshold_method.value = T.TM_RIDLER_CALVARD
+    #     local_threshold,threshold = x.get_threshold(
+    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
+    #     self.assertTrue(threshold > 0.015)
+    #     self.assertTrue(threshold < 0.020)
         
         
-    def test_13_01_test_kapur_background_fly(self):
-        image = fly_image()
-        workspace, x = self.make_workspace(image)
-        x.threshold_scope.value = I.TS_GLOBAL
-        x.threshold_method.value = T.TM_KAPUR
-        local_threshold,threshold = x.get_threshold(
-            cpi.Image(image), np.ones(image.shape,bool), workspace)
-        self.assertTrue(threshold > 0.015)
-        self.assertTrue(threshold < 0.020)
+    # def test_13_01_test_kapur_background_fly(self):
+    #     image = fly_image()
+    #     workspace, x = self.make_workspace(image)
+    #     x.threshold_scope.value = I.TS_GLOBAL
+    #     x.threshold_method.value = T.TM_KAPUR
+    #     local_threshold,threshold = x.get_threshold(
+    #         cpi.Image(image), np.ones(image.shape,bool), workspace)
+    #     self.assertTrue(threshold > 0.015)
+    #     self.assertTrue(threshold < 0.020)
     
     def test_14_01_test_manual_background(self):
         """Test manual background"""

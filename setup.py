@@ -25,7 +25,7 @@ class Install(setuptools.command.install.install):
 
         version = "1.0.3"
 
-        directory = os.path.join("imagej", "jars")
+        directory = os.path.join(self.build_lib, "imagej", "jars")
 
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -48,7 +48,9 @@ class Install(setuptools.command.install.install):
 
                         f.flush()
 
-        dependencies = os.path.abspath("imagej/jars/cellprofiler-java-dependencies-classpath.txt")
+        dependencies = os.path.abspath(os.path.join(
+            self.build_lib, 'imagej', 'jars', 
+            'cellprofiler-java-dependencies-classpath.txt'))
 
         if not os.path.isfile(dependencies):
             dependency = open(dependencies, "w")
@@ -134,16 +136,6 @@ setuptools.setup(
         "install": Install,
         "test": Test
     },
-    data_files=[
-        (
-            os.path.join("artwork"),
-            glob.glob(os.path.join("artwork", '*'))
-        ),
-        (
-            os.path.join("imagej", "jars"),
-            glob.glob(os.path.join("imagej", "jars", "*.jar"))
-        )
-    ],
     description="",
     entry_points={
         'console_scripts': [
@@ -153,6 +145,7 @@ setuptools.setup(
 
         ]
     },
+    include_package_data=True,
     install_requires=[
         "cellh5",
         "centrosome",
@@ -171,13 +164,16 @@ setuptools.setup(
     license="BSD",
     long_description="",
     name="cellprofiler",
+    package_data = {
+        "artwork": glob.glob(os.path.join("artwork", "*"))
+    },
     packages=setuptools.find_packages(exclude=[
         "*.tests",
         "*.tests.*",
         "tests.*",
         "tests",
         "tutorial"
-    ]),
+    ]) + ["artwork"],
     setup_requires=[
         "clint",
         "requests",

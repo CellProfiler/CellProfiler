@@ -1,3 +1,4 @@
-from cellprofiler import __main__
+import cellprofiler.__main__
 
-__main__.main()
+if __name__ == "__main__":
+    cellprofiler.__main__.main()

@@ -22,6 +22,7 @@ with open("cellprofiler/frozen_version.py", "w") as fd:
     fd.write("version_string='%s'\n" % version_string)
 
 if sys.platform.startswith("win"):
+    import _winreg
     try:
         import py2exe
         has_py2exe = True
@@ -29,9 +30,10 @@ if sys.platform.startswith("win"):
         # See http://www.py2exe.org/index.cgi/Py2exeAndzmq
         # Recipe needed for py2exe to package libzmq.dll
         os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
-        
     except:
         has_py2exe = False
+else:
+    has_py2exe = False    
 
 # Recipe needed to get real distutils if virtualenv.
 # Error message is "ImportError: cannot import name dist"
@@ -150,31 +152,62 @@ class Test(setuptools.Command):
         cellprofiler.__main__.stop_cellprofiler()
 
         sys.exit(errno)
+
+if has_py2exe:        
+    class CPPy2Exe(py2exe.build_exe.py2exe):
+        def run(self):
+            #
+            # py2exe runs install_data a second time. We want to inject some
+            # data files into the dist but we do it here so that if the user
+            # does a straight "install", they won't end up dumped into their
+            # Python directory.
+            #
+            import javabridge
+            from cellprofiler.utilities.cpjvm import get_path_to_jars
+            
+            if self.distribution.data_files is None:
+                self.distribution.data_files = []
+            self.distribution.data_files += matplotlib.get_py2exe_datafiles()
+            self.distribution.data_files.append(
+                ("javabridge/jars", javabridge.JARS))
+            self.distribution.data_files.append(
+                ("imagej/jars", 
+                 glob.glob(os.path.join(get_path_to_jars(), "prokaryote*.jar")) +
+                 [os.path.join(get_path_to_jars(), 
+                               "cellprofiler-java-dependencies-classpath.txt")]))
+            self.distribution.data_files.append(
+                ("artwork", glob.glob("artwork/*")))
+            py2exe.build_exe.py2exe.run(self)
         
-class CPPy2Exe(py2exe.build_exe.py2exe):
+class CPNSIS(setuptools.Command):
+    description = "Use NSIS to create an MSI for windows installation"
+    user_options = [('nsis-exe', None, "Path to the NSIS executable")]
+    
+    def initialize_options(self):
+        self.nsis_exe = None
+        
+    def finalize_options(self):
+        if self.nsis_exe is None:
+            for path in ((_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE", "NSIS"), 
+                         (_winreg.HKEY_LOCAL_MACHINE, "SOFTWARE", 
+                          "Wow6432Node", "NSIS")):
+                key = path[0]
+                try:
+                    for subkey in path[1:]:
+                        key = _winreg.OpenKey(key, sub_key)
+                    break
+                except WindowsError:
+                    continue
+            else:
+                raise distutils.errors.DistutilsExecError(
+                    "The NSIS installer is not installed on your system")
+            self.nsis_exe = os.path.join(_winreg.QueryValue(key, None), 
+                                         "NSIS.exe")
+    
     def run(self):
-        #
-        # py2exe runs install_data a second time. We want to inject some
-        # data files into the dist but we do it here so that if the user
-        # does a straight "install", they won't end up dumped into their
-        # Python directory.
-        #
-        import javabridge
-        from cellprofiler.utilities.cpjvm import get_path_to_jars
-        
-        if self.distribution.data_files is None:
-            self.distribution.data_files = []
-        self.distribution.data_files += matplotlib.get_py2exe_datafiles()
-        self.distribution.data_files.append(
-            ("javabridge/jars", javabridge.JARS))
-        self.distribution.data_files.append(
-            ("imagej/jars", 
-             glob.glob(os.path.join(get_path_to_jars(), "prokaryote*.jar")) +
-             [os.path.join(get_path_to_jars(), 
-                           "cellprofiler-java-dependencies-classpath.txt")]))
-        self.distribution.data_files.append(
-            ("artwork", glob.glob("artwork/*")))
-        py2exe.build_exe.py2exe.run(self)
+        pass
+            
+    sub_commands = setuptools.Command.sub_commands + [ ("py2exe", None) ]
         
 packages = setuptools.find_packages(exclude=[
         "*.tests",
@@ -286,8 +319,12 @@ setuptools.setup(
     packages = packages + ["artwork"],
     setup_requires=[
         "clint",
+        "matplotlib",
+        "numpy",
+        "pytest",
         "requests",
-        "pytest"
+        "scipy",
+        "pyzmq"
     ],
     url="https://github.com/CellProfiler/CellProfiler",
     version="2.2.0"

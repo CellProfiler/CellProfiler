@@ -1,19 +1,57 @@
+import distutils
 import glob
 import os
 import setuptools
 import setuptools.command.build_ext
+import setuptools.command.install
 import setuptools.dist
 import sys
-import setuptools.command.install
 
-setuptools.dist.Distribution({
-    "setup_requires": [
-        "clint",
-        "requests",
-        "pytest"
-    ]
-})
+try:
+    import matplotlib
+    import numpy # for proper discovery of its libraries by distutils
+    import scipy.sparse.csgraph._validation
+    import zmq   # for proper discovery of its libraries by distutils
+    import zmq.libzmq
+except ImportError:
+    pass
 
+from cellprofiler.utilities.version import version_string
+
+with open("cellprofiler/frozen_version.py", "w") as fd:
+    fd.write("version_string='%s'\n" % version_string)
+
+if sys.platform.startswith("win"):
+    try:
+        import py2exe
+        has_py2exe = True
+        #
+        # See http://www.py2exe.org/index.cgi/Py2exeAndzmq
+        # Recipe needed for py2exe to package libzmq.dll
+        os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
+        
+    except:
+        has_py2exe = False
+
+# Recipe needed to get real distutils if virtualenv.
+# Error message is "ImportError: cannot import name dist"
+# when running app.
+# See http://sourceforge.net/p/py2exe/mailman/attachment/47C45804.9030206@free.fr/1/
+#
+if hasattr(sys, 'real_prefix'):
+    # Running from a virtualenv
+    assert hasattr(distutils, 'distutils_path'), \
+           "Can't get real distutils path"
+    libdir = os.path.dirname(distutils.distutils_path)
+    sys.path.insert(0, libdir)
+    #
+    # Get the system "site" package, not the virtualenv one. This prevents
+    # site.virtual_install_main_packages from being called, resulting in
+    # "IOError: [Errno 2] No such file or directory: 'orig-prefix.txt'
+    #
+    del sys.modules["site"]
+    import site
+    assert not hasattr(site, "virtual_install_main_packages")
 
 class Install(setuptools.command.install.install):
     def run(self):
@@ -112,7 +150,39 @@ class Test(setuptools.Command):
         cellprofiler.__main__.stop_cellprofiler()
 
         sys.exit(errno)
-
+        
+class CPPy2Exe(py2exe.build_exe.py2exe):
+    def run(self):
+        #
+        # py2exe runs install_data a second time. We want to inject some
+        # data files into the dist but we do it here so that if the user
+        # does a straight "install", they won't end up dumped into their
+        # Python directory.
+        #
+        import javabridge
+        from cellprofiler.utilities.cpjvm import get_path_to_jars
+        
+        if self.distribution.data_files is None:
+            self.distribution.data_files = []
+        self.distribution.data_files += matplotlib.get_py2exe_datafiles()
+        self.distribution.data_files.append(
+            ("javabridge/jars", javabridge.JARS))
+        self.distribution.data_files.append(
+            ("imagej/jars", 
+             glob.glob(os.path.join(get_path_to_jars(), "prokaryote*.jar")) +
+             [os.path.join(get_path_to_jars(), 
+                           "cellprofiler-java-dependencies-classpath.txt")]))
+        self.distribution.data_files.append(
+            ("artwork", glob.glob("artwork/*")))
+        py2exe.build_exe.py2exe.run(self)
+        
+packages = setuptools.find_packages(exclude=[
+        "*.tests",
+        "*.tests.*",
+        "tests.*",
+        "tests",
+        "tutorial"
+    ])
 
 setuptools.setup(
     author="cellprofiler-dev",
@@ -134,8 +204,22 @@ setuptools.setup(
     ],
     cmdclass={
         "install": Install,
+        "py2exe": CPPy2Exe,
         "test": Test
     },
+    console = [ 
+        {
+        "icon_resources": [
+            (1, "artwork/CellProfilerIcon.ico")
+            ],
+        "script" : "CellProfiler.py"
+        },
+        {
+            "icon_resources": [
+                (1, "artwork/CellProfilerIcon.ico")
+                ],
+            "script" : "cellprofiler/analysis_worker.py"
+            }],
     description="",
     entry_points={
         'console_scripts': [
@@ -164,16 +248,42 @@ setuptools.setup(
     license="BSD",
     long_description="",
     name="cellprofiler",
+    options = {
+        "py2exe": {
+            "dll_excludes": [
+                "iphlpapi.dll",
+                "jvm.dll",
+                "msvcr90.dll",
+                "msvcm90.dll",
+                "msvcp90.dll",
+                "nsi.dll",
+                "winnsi.dll"
+                ],
+            "excludes": [
+                "Cython",
+                "IPython",
+                "pylab",
+                "Tkinter"
+                ],
+            "includes": [
+                "h5py", "h5py.*",
+                "lxml", "lxml.*",
+                "scipy.io.matlab.streams", "scipy.special", "scipy.special.*",
+                "scipy.sparse.csgraph._validation",
+                "skimage.draw", "skimage._shared.geometry", 
+                "skimage.filters.rank.*",
+                "sklearn.*", "sklearn.neighbors", "sklearn.neighbors.*",
+                "sklearn.utils.*", "sklearn.utils.sparsetools.*",
+                "zmq", "zmq.utils", "zmq.utils.*", "zmq.utils.strtypes"
+                ],
+            "packages": packages,
+            "skip_archive": True
+            }
+    },
     package_data = {
         "artwork": glob.glob(os.path.join("artwork", "*"))
     },
-    packages=setuptools.find_packages(exclude=[
-        "*.tests",
-        "*.tests.*",
-        "tests.*",
-        "tests",
-        "tutorial"
-    ]) + ["artwork"],
+    packages = packages + ["artwork"],
     setup_requires=[
         "clint",
         "requests",

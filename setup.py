@@ -202,10 +202,14 @@ class CPNSIS(setuptools.Command):
                 raise distutils.errors.DistutilsExecError(
                     "The NSIS installer is not installed on your system")
             self.nsis_exe = os.path.join(_winreg.QueryValue(key, None), 
-                                         "NSIS.exe")
+                                         "MakeNSIS.exe")
     
     def run(self):
-        pass
+        self.spawn([
+            self.nsis_exe,
+            "cp.nsi",
+            "/DCP_VERSION=%s" % self.distribution.version
+        ])
             
     sub_commands = setuptools.Command.sub_commands + [ ("py2exe", None) ]
         
@@ -217,6 +221,15 @@ packages = setuptools.find_packages(exclude=[
         "tutorial"
     ])
 
+cmdclass = {
+        "install": Install,
+        "test": Test
+    }
+
+if has_py2exe:
+    cmdclass["py2exe"] = CPPy2Exe
+    cmdclass["nsis"] = CPNSIS
+    
 setuptools.setup(
     author="cellprofiler-dev",
     author_email="cellprofiler-dev@broadinstitute.org",
@@ -235,11 +248,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Image Recognition",
         "Topic :: Scientific/Engineering"
     ],
-    cmdclass={
-        "install": Install,
-        "py2exe": CPPy2Exe,
-        "test": Test
-    },
+    cmdclass = cmdclass,
     console = [ 
         {
         "icon_resources": [

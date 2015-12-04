@@ -5,7 +5,7 @@
 ; See the accompanying file LICENSE for details.
 ; 
 ; Copyright (c) 2003-2009 Massachusetts Institute of Technology
-; Copyright (c) 2009-2015 Broad Institute
+; Copyright (c) 2009-2014 Broad Institute
 ; All rights reserved.
 ; 
 ; Please see the AUTHORS file for credits.
@@ -30,6 +30,7 @@ SetupIconFile=.\artwork\CellProfilerIcon.ico
 Compression=lzma
 SolidCompression=yes
 ChangesAssociations=yes
+ArchitecturesInstallIn64BitMode=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -45,7 +46,6 @@ Name: "{userappdata}\CellProfiler\ijplugins"; Flags: uninsneveruninstall
 Source: ".\dist\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\dist\analysis_worker.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: ".\windows\vcredist_x64.exe"; DestDir: "{tmp}"
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [InstallDelete]
@@ -75,7 +75,6 @@ Root: HKCU; Subkey: "Software\CellProfilerLocal.cfg"; ValueType: string; ValueNa
 ; Turn on the startup blurb again
 Root: HKCU; Subkey: "Software\CellProfilerLocal.cfg"; ValueType: dword; ValueName: "StartupBlurb"; ValueData: "1"
 [Run]
-Filename: "{tmp}\vcredist_x64.exe"; Parameters: "/q"
 Filename: "{app}\CellProfiler.exe"; Description: "{cm:LaunchProgram,CellProfiler}"; Flags: nowait postinstall skipifsilent
 
 [Code]
@@ -101,6 +100,7 @@ End;
 function InitializeSetup(): Boolean;
 Var
   Message: String;
+  JavaVer: String;
 Begin
 Message := 'This build can only run on a 64-bit operating system, but yours is 32-bit. '+
            'Please download the Windows 32-bit version of CellProfiler from the '+
@@ -114,7 +114,20 @@ Message := 'This build can only run on a 64-bit operating system, but yours is 3
       Result := False;
       End
     else
-      Result := True;
+//
+// Check taken from the following stackoverflow post:
+//
+// http://stackoverflow.com/questions/1297773/check-java-is-present-before-installing
+//
+      RegQueryStringValue(HKLM, 'SOFTWARE\JavaSoft\Java Runtime Environment', 'CurrentVersion', JavaVer);
+      if Length( JavaVer ) > 0 then Begin
+        Result := True;
+        End
+      else Begin
+          MsgBox('CellProfiler can only work if Java is installed on your computer.'+
+                 'Please go to http://java.com and install the 64-bit version of Java.',
+                 mbInformation, MB_OK);
+      End
     End
   else Begin
     MsgBox(Message, mbInformation, MB_OK);

@@ -5,6 +5,7 @@ import setuptools.command.build_ext
 import setuptools.dist
 import sys
 import setuptools.command.install
+import cellprofiler.utilities.version
 
 setuptools.dist.Distribution({
     "setup_requires": [
@@ -22,6 +23,9 @@ class Install(setuptools.command.install.install):
             import requests
         except ImportError:
             raise ImportError
+
+        with open("cellprofiler/frozen_version.py", "w") as fd:
+            fd.write("version_string='%s'\n" % cellprofiler.utilities.version.version_string)
 
         version = "1.0.3"
 
@@ -115,6 +119,9 @@ class Test(setuptools.Command):
 
 
 setuptools.setup(
+    app=[
+        "CellProfiler.py"
+    ],
     author="cellprofiler-dev",
     author_email="cellprofiler-dev@broadinstitute.org",
     classifiers=[
@@ -138,11 +145,8 @@ setuptools.setup(
     },
     description="",
     entry_points={
-        'console_scripts': [
+        "console_scripts": [
             "cellprofiler=cellprofiler.__main__:main"
-        ],
-        'gui_scripts': [
-
         ]
     },
     include_package_data=True,
@@ -163,8 +167,8 @@ setuptools.setup(
     keywords="",
     license="BSD",
     long_description="",
-    name="cellprofiler",
-    package_data = {
+    name="CellProfiler",
+    package_data={
         "artwork": glob.glob(os.path.join("artwork", "*"))
     },
     packages=setuptools.find_packages(exclude=[
@@ -173,7 +177,7 @@ setuptools.setup(
         "tests.*",
         "tests",
         "tutorial"
-    ]) + ["artwork"],
+    ]),
     setup_requires=[
         "clint",
         "requests",

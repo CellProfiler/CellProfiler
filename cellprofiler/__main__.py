@@ -938,4 +938,6 @@ def run_pipeline_headless(options, args):
         fd.close()
     if measurements is not None:
         measurements.close()
-    
+
+if __name__ == "__main__":
+    main()

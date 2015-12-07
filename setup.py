@@ -145,11 +145,8 @@ setuptools.setup(
     },
     description="",
     entry_points={
-        'console_scripts': [
+        "console_scripts": [
             "cellprofiler=cellprofiler.__main__:main"
-        ],
-        'gui_scripts': [
-
         ]
     },
     include_package_data=True,
@@ -171,24 +168,6 @@ setuptools.setup(
     license="BSD",
     long_description="",
     name="CellProfiler",
-    options={
-        "py2app": {
-            "packages": [
-                "cellprofiler",
-                "centrosome",
-                "contrib",
-                "h5py",
-                "imagej",
-                "lxml",
-                "javabridge",
-                "libtiff",
-                "numpy",
-                "skimage",
-                "scipy",
-                "zmq"
-            ]
-        }
-    },
     package_data={
         "artwork": glob.glob(os.path.join("artwork", "*"))
     },
@@ -198,7 +177,7 @@ setuptools.setup(
         "tests.*",
         "tests",
         "tutorial"
-    ]) + ["artwork"],
+    ]),
     setup_requires=[
         "clint",
         "requests",

@@ -61,15 +61,6 @@ if sys.platform.startswith("win"):
     # Recipe needed for py2exe to package libzmq.dll
     os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
 
-zmq_includes = ["zmq", "zmq.utils", "zmq.utils.*", "zmq.utils.strtypes"]
-
-zmq_version = tuple([int(_) for _ in zmq.__version__.split(".")])
-if zmq_version >= (14, 0, 0):
-    # Backends are new in 14.x
-    zmq_includes += [
-        "zmq.backend", "zmq.backend.cython", "zmq.backend.cython.*",
-        "zmq.backend.cffi", "zmq.backend.cffi.*"]
-    
 class Install(setuptools.command.install.install):
     def run(self):
         try:
@@ -172,10 +163,13 @@ if has_py2exe:
     class CPPy2Exe(py2exe.build_exe.py2exe):
         user_options = py2exe.build_exe.py2exe.user_options + [
             ("msvcrt-redist=", None, 
-             "Directory containing the MSVC redistributables")]
+             "Directory containing the MSVC redistributables"),
+            ("with-ilastik", None,
+             "Build CellProfiler with Ilastik dependencies")]
         def initialize_options(self):
             py2exe.build_exe.py2exe.initialize_options(self)
             self.msvcrt_redist = None
+            self.with_ilastik = None
             
         def finalize_options(self):
             py2exe.build_exe.py2exe.finalize_options(self)
@@ -199,12 +193,22 @@ if has_py2exe:
             # does a straight "install", they won't end up dumped into their
             # Python directory.
             #
+            # py2exe doesn't have its own data_files or resources options.
+            #
             import javabridge
             from cellprofiler.utilities.cpjvm import get_path_to_jars
             
             if self.distribution.data_files is None:
                 self.distribution.data_files = []
+            self.distribution.data_files.append(
+                ("artwork", glob.glob("artwork/*")))
+            #
+            # py2exe recipe for matplotlib
+            #
             self.distribution.data_files += matplotlib.get_py2exe_datafiles()
+            #
+            # Collect the javabridge and imagej JAR files
+            #
             self.distribution.data_files.append(
                 ("javabridge/jars", javabridge.JARS))
             self.distribution.data_files.append(
@@ -212,12 +216,30 @@ if has_py2exe:
                  glob.glob(os.path.join(get_path_to_jars(), "prokaryote*.jar")) +
                  [os.path.join(get_path_to_jars(), 
                                "cellprofiler-java-dependencies-classpath.txt")]))
-            self.distribution.data_files.append(
-                ("artwork", glob.glob("artwork/*")))
+            #
+            # Support for zmq-14.0.0+
+            #
+            zmq_version = tuple([int(_) for _ in zmq.__version__.split(".")])
+            if zmq_version >= (14, 0, 0):
+                # Backends are new in 14.x
+                self.includes += [
+                    "zmq.backend", "zmq.backend.cython", "zmq.backend.cython.*",
+                    "zmq.backend.cffi", "zmq.backend.cffi.*"]
+                #
+                # Must include libzmq.pyd without renaming because it's
+                # linked against. The problem is that py2exe renames it
+                # to "zmq.libzmq.pyd" and then the linking fails. So we
+                # include it as a data file and exclude it as a dll.
+                #
+                if zmq_version >= (14, 0, 0):
+                    self.distribution.data_files.append(
+                        (".", [zmq.libzmq.__file__]))
+                    self.dll_excludes.append("libzmq.pyd")
             #
             # Add ilastik UI files
             #
-            if has_ilastik:
+            if self.with_ilastik:
+                import ilastik
                 ilastik_root = os.path.dirname(ilastik.__file__)
                 for root, directories, filenames in os.walk(ilastik_root):
                     relpath = root[len(os.path.dirname(ilastik_root))+1:]
@@ -228,23 +250,13 @@ if has_py2exe:
                     if len(ui_filenames) > 0:
                         self.distribution.data_files.append(
                             (relpath, ui_filenames))
-                    
-            #
-            # Must include libzmq.pyd without renaming because it's
-            # linked against.
-            #
-            if zmq_version >= (14, 0, 0):
-                self.distribution.data_files.append(
-                    (".", [zmq.libzmq.__file__]))
-            #
-            # Same with vigranumpycore.pyd
-            #
-            try:
+                
+                #
+                # Prevent rename of vigranumpycore similarly to libzmq
+                #
                 import vigra.vigranumpycore
                 self.distribution.data_files.append(
                     (".", [vigra.vigranumpycore.__file__]))
-            except ImportError:
-                pass
             
             if self.msvcrt_redist is not None:
                 sources = [
@@ -258,15 +270,15 @@ if has_py2exe:
     class CellProfilerMSI(distutils.core.Command):
         description = \
             "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
-        user_options = [("without-ilastik", None, 
-                         "Do not include a start menu entry for Ilastik"),
+        user_options = [("with-ilastik", None, 
+                         "Include a start menu entry for Ilastik"),
                         ("output-dir=", None,
                          "Output directory for MSI file"),
                         ("msi-name=", None,
                          "Name of MSI file to generate (w/o extension)")]
         
         def initialize_options(self):
-            self.without_ilastik = None
+            self.with_ilastik = None
             self.py2exe_dist_dir = None
             self.output_dir = None
             self.msi_name = None
@@ -275,7 +287,7 @@ if has_py2exe:
             self.set_undefined_options(
                 "py2exe", ("dist_dir", "py2exe_dist_dir"))
             if self.output_dir is None:
-                self.output_dir = "output"
+                self.output_dir = ".\\output"
             if self.msi_name is None:
                 self.msi_name = \
                     "CellProfiler-" + self.distribution.metadata.version
@@ -287,10 +299,12 @@ if has_py2exe:
                 fd.write("""
     AppVerName=CellProfiler %s
     OutputBaseFilename=%s
+    OutputDir=%s
     """ % (self.distribution.metadata.version, 
+           self.output_dir,
            self.msi_name))
             with open("ilastik.iss", "w") as fd:
-                if not self.without_ilastik:
+                if self.with_ilastik:
                     fd.write(
                         'Name: "{group}\Ilastik"; '
                         'Filename: "{app}\CellProfiler.exe"; '
@@ -326,8 +340,11 @@ if has_py2exe:
             except WindowsError:
                 if key:
                     key.Close()
-                raise distutils.errors.DistutilsFileError, "Inno Setup does not seem to be installed properly. Specifically, there is no entry in the HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\Compile\\command"
-            
+                raise distutils.errors.DistutilsFileError, \
+                      "Inno Setup does not seem to be installed properly. " + \
+                      "Specifically, there is no entry in the " +\
+                      "HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\" + \
+                      "Compile\\command"
         
 packages = setuptools.find_packages(exclude=[
         "*.tests",
@@ -341,28 +358,35 @@ packages = setuptools.find_packages(exclude=[
 # These includes are for packaging Ilastik as an application along with
 # CellProfiler for py2exe and py2app (but not for install).
 #
-ilastik_includes = []
-try:
-    import ilastik
-    ilastik_includes = [ 
-        "ilastik", "ilastik.*", "ilastik.core.*", "ilastik.core.overlays.*", 
-        "ilastik.core.unsupervised.*", "ilastik.gui.*", 
-        "ilastik.gui.overlayDialogs.*", "ilastik.gui.ribbons.*",
-        "ilastik.modules.classification.*", 
-        "ilastik.modules.classification.core.*",
-        "ilastik.modules.classification.core.classifiers.*",
-        "ilastik.modules.classification.core.features.*",
-        "ilastik.modules.classification.gui.*",
-        "ilastik.modules.project_gui.*",
-        "ilastik.modules.project_gui.core.*",
-        "ilastik.modules.project_gui.gui.*",
-        "ilastik.modules.help.*",
-        "ilastik.modules.help.core.*",
-        "ilastik.modules.help.gui.*"
-    ]
-    has_ilastik = True
-except ImportError:
-    has_ilastik = False
+#ilastik_includes = []
+#try:
+    #import ilastik
+    #ilastik_includes = [ 
+        #"ilastik", "ilastik.*", "ilastik.core.*", "ilastik.core.overlays.*", 
+        #"ilastik.core.unsupervised.*", "ilastik.gui.*", 
+        #"ilastik.gui.overlayDialogs.*", "ilastik.gui.ribbons.*",
+        #"ilastik.modules.classification.*", 
+        #"ilastik.modules.classification.core.*",
+        #"ilastik.modules.classification.core.classifiers.*",
+        #"ilastik.modules.classification.core.features.*",
+        #"ilastik.modules.classification.gui.*",
+        #"ilastik.modules.project_gui.*",
+        #"ilastik.modules.project_gui.core.*",
+        #"ilastik.modules.project_gui.gui.*",
+        #"ilastik.modules.help.*",
+        #"ilastik.modules.help.core.*",
+        #"ilastik.modules.help.gui.*",
+        #"PyQt4.QtOpenGL", "PyQt4.uic", "sip",
+        #"qimage2ndarray", "qimage2ndarray.*"
+    #]
+    #try:
+        #import OpenGL.platform.win32
+        #ilastik_includes += ["OpenGL.platform.win32"]
+    #except:
+        #pass
+    #has_ilastik = True
+#except ImportError:
+    #has_ilastik = False
 
 cmdclass = {
         "install": Install,
@@ -371,6 +395,7 @@ cmdclass = {
 
 if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
+    cmdclass["py2exe_ilastik"] = CPPy2Exe
     cmdclass["msi"] = CellProfilerMSI
 
 setuptools.setup(
@@ -433,46 +458,6 @@ setuptools.setup(
     license="BSD",
     long_description="",
     name="cellprofiler",
-    options = {
-        "py2exe": {
-            "dll_excludes": [
-                "crypt32.dll",
-                "iphlpapi.dll",
-                "jvm.dll",
-                "kernelbase.dll",
-                "libzmq.pyd", # zmq 14.x must prevent renaming to zmq.libzmq
-                "mpr.dll",
-                "msasn1.dll",
-                "msvcr90.dll",
-                "msvcm90.dll",
-                "msvcp90.dll",
-                "nsi.dll",
-                "uxtheme.dll",
-                "vigranumpycore.pyd", # Same as libzmq.pyd - prevent rename
-                "winnsi.dll"
-                ],
-            "excludes": [
-                "Cython",
-                "IPython",
-                "pylab",
-                "PyQt4.uic.port_v3", # python 3 -> 2 compatibility
-                "Tkinter",
-                "zmq.libzmq" # zmq 14.x added manually
-                ],
-            "includes": [
-                "h5py", "h5py.*",
-                "lxml", "lxml.*",
-                "scipy.io.matlab.streams", "scipy.special", "scipy.special.*",
-                "scipy.sparse.csgraph._validation",
-                "skimage.draw", "skimage._shared.geometry", 
-                "skimage.filters.rank.*",
-                "sklearn.*", "sklearn.neighbors", "sklearn.neighbors.*",
-                "sklearn.utils.*", "sklearn.utils.sparsetools.*"
-                ] + zmq_includes + ilastik_includes,
-            "packages": packages,
-            "skip_archive": True
-            }
-    },
     package_data = {
         "artwork": glob.glob(os.path.join("artwork", "*"))
     },

@@ -92,10 +92,22 @@ def get_version():
         import cellprofiler.frozen_version
         return cellprofiler.frozen_version.version_string
 
+def get_dotted_version():
+    if not hasattr(sys, 'frozen'):
+        try:
+            return subprocess.check_output(
+                ["git", "describe", "--tags"]).strip()
+        except:
+            logging.root.warning("Unable to find version - no GIT")
+            return "0.0.0"
+    else:
+        import cellprofiler.frozen_version
+        return cellprofiler.frozen_version.dotted_version
+    
 '''Code version'''
 version_string = get_version()
 version_number = int(datetime_from_isoformat(version_string.split(' ')[0]).strftime('%Y%m%d%H%M%S'))
-dotted_version = '2.1.2'
+dotted_version = get_dotted_version()
 git_hash = version_string.split(' ', 1)[1]
 title_string = '%s (rev %s)' % (dotted_version, git_hash)
 

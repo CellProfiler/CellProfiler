@@ -11,8 +11,6 @@ if you move them to a new folder.
 import os
 import tempfile
 
-import cellh5
-import cellh5write
 import h5py
 import numpy as np
 import scipy.ndimage

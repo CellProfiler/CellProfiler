@@ -43,6 +43,7 @@ install:
 # of numpy
 #
   - pip install --no-deps javabridge
+  - pip install --requirement requirements.txt
   - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
   - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
   - pip freeze

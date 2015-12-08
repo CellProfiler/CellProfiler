@@ -4,33 +4,12 @@ import os
 import shlex
 import setuptools
 import setuptools.command.build_ext
+import setuptools.command.develop
 import setuptools.command.install
 import setuptools.dist
 import sys
-
-try:
-    import matplotlib
-    import numpy # for proper discovery of its libraries by distutils
-    import scipy.sparse.csgraph._validation
-    import zmq   # for proper discovery of its libraries by distutils
-    import zmq.libzmq
-except ImportError:
-    pass
-
-from cellprofiler.utilities.version import version_string
-
-with open("cellprofiler/frozen_version.py", "w") as fd:
-    fd.write("version_string='%s'\n" % version_string)
-
-if sys.platform.startswith("win"):
-    import _winreg
-    try:
-        import py2exe
-        has_py2exe = True
-    except:
-        has_py2exe = False
-else:
-    has_py2exe = False    
+import setuptools.command.install
+import cellprofiler.utilities.version
 
 # Recipe needed to get real distutils if virtualenv.
 # Error message is "ImportError: cannot import name dist"
@@ -52,6 +31,38 @@ if hasattr(sys, 'real_prefix'):
     import site
     assert not hasattr(site, "virtual_install_main_packages")
 
+setuptools.dist.Distribution({
+    "setup_requires": [
+        "clint",
+        "javabridge",
+        "matplotlib",
+        "numpy",
+        "pytest",
+        "requests",
+        "scipy",
+        "pyzmq"
+    ]
+})
+
+try:
+    import matplotlib
+    import numpy # for proper discovery of its libraries by distutils
+    import scipy.sparse.csgraph._validation
+    import zmq   # for proper discovery of its libraries by distutils
+    import zmq.libzmq
+except ImportError:
+    pass
+
+if sys.platform.startswith("win"):
+    import _winreg
+    try:
+        import py2exe
+        has_py2exe = True
+    except:
+        has_py2exe = False
+else:
+    has_py2exe = False    
+
 #
 # Recipe for ZMQ
 #
@@ -63,22 +74,70 @@ if sys.platform.startswith("win"):
 
 class Install(setuptools.command.install.install):
     def run(self):
+        self.run_command("build_version")
+        self.run_command("build_java_dependencies")
+        setuptools.command.install.install.run(self)
+
+class Develop(setuptools.command.develop.develop):
+    def install_for_development(self):
+        self.reinitialize_command("build_java_dependencies", inplace=1)
+        setuptools.command.develop.develop.install_for_development(self)
+
+class BuildVersion(setuptools.Command):
+    user_options = [
+        ("version", None, "CellProfiler semantic version")]
+
+    def initialize_options(self):
+        self.version = None
+
+    def finalize_options(self):
+        if self.version is None:
+            self.version = self.distribution.metadata.version
+
+    def run(self):
+        with open(os.path.join("cellprofiler", "frozen_version.py"),
+                  "w") as fd:
+            fd.write("version_string='%s'\n" % 
+                     cellprofiler.utilities.version.version_string)
+            fd.write("dotted_version='%s'\n" % self.version)
+
+class BuildJavaDependencies(setuptools.Command):
+    user_options = [
+        ("prokaryote-version=", None, "Version # of prokaryote to fetch"),
+        ("inplace", None, "Put dependencies in-place in the source tree")]
+
+    def initialize_options(self):
+        self.build_lib = None
+        self.prokaryote_version = None
+        self.inplace = None
+
+    def finalize_options(self):
+        self.set_undefined_options(
+            'build', ('build_lib', 'build_lib'))
+        if self.prokaryote_version is None:
+            raise distutils.errors.DistutilsSetupError(
+                "The version of the prokaryote jar must be specified using the "
+                "--prokaryote-version switch")
+
+    def run(self):
         try:
             import clint.textui
             import requests
         except ImportError:
             raise ImportError
 
-        version = "1.0.3"
-
-        directory = os.path.join(self.build_lib, "imagej", "jars")
+        root = os.path.dirname(__file__) if self.inplace else self.build_lib
+        directory = os.path.join(root, "imagej", "jars")
 
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        prokaryote = "{}/prokaryote-{}.jar".format(os.path.abspath(directory), version)
+        prokaryote = "{}/prokaryote-{}.jar".format(
+            os.path.abspath(directory), self.prokaryote_version)
 
-        resource = "https://github.com/CellProfiler/prokaryote/" + "releases/download/{tag}/prokaryote-{tag}.jar".format(tag=version)
+        resource = "https://github.com/CellProfiler/prokaryote/" + \
+            "releases/download/{tag}/prokaryote-{tag}.jar".format(
+                tag=self.prokaryote_version)
 
         request = requests.get(resource, stream=True)
 
@@ -95,7 +154,7 @@ class Install(setuptools.command.install.install):
                         f.flush()
 
         dependencies = os.path.abspath(os.path.join(
-            self.build_lib, 'imagej', 'jars', 
+            root, 'imagej', 'jars', 
             'cellprofiler-java-dependencies-classpath.txt'))
 
         if not os.path.isfile(dependencies):
@@ -104,9 +163,6 @@ class Install(setuptools.command.install.install):
             dependency.write(prokaryote)
 
             dependency.close()
-
-        setuptools.command.install.install.run(self)
-
 
 class Test(setuptools.Command):
     user_options = [
@@ -187,6 +243,10 @@ if has_py2exe:
                         "Package will not include MSVCRT redistributables", 3)
             
         def run(self):
+            self.reinitialize_command("build_version", inplace=1)
+            self.run_command("build_version")
+            self.reinitialize_command("build_java_dependencies", inplace=1)
+            self.run_command("build_java_dependencies")
             #
             # py2exe runs install_data a second time. We want to inject some
             # data files into the dist but we do it here so that if the user
@@ -301,8 +361,8 @@ if has_py2exe:
     OutputBaseFilename=%s
     OutputDir=%s
     """ % (self.distribution.metadata.version, 
-           self.output_dir,
-           self.msi_name))
+           self.msi_name,
+           self.output_dir))
             with open("ilastik.iss", "w") as fd:
                 if self.with_ilastik:
                     fd.write(
@@ -345,50 +405,11 @@ if has_py2exe:
                       "Specifically, there is no entry in the " +\
                       "HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\" + \
                       "Compile\\command"
-        
-packages = setuptools.find_packages(exclude=[
-        "*.tests",
-        "*.tests.*",
-        "tests.*",
-        "tests",
-        "tutorial"
-    ])
-
-#
-# These includes are for packaging Ilastik as an application along with
-# CellProfiler for py2exe and py2app (but not for install).
-#
-#ilastik_includes = []
-#try:
-    #import ilastik
-    #ilastik_includes = [ 
-        #"ilastik", "ilastik.*", "ilastik.core.*", "ilastik.core.overlays.*", 
-        #"ilastik.core.unsupervised.*", "ilastik.gui.*", 
-        #"ilastik.gui.overlayDialogs.*", "ilastik.gui.ribbons.*",
-        #"ilastik.modules.classification.*", 
-        #"ilastik.modules.classification.core.*",
-        #"ilastik.modules.classification.core.classifiers.*",
-        #"ilastik.modules.classification.core.features.*",
-        #"ilastik.modules.classification.gui.*",
-        #"ilastik.modules.project_gui.*",
-        #"ilastik.modules.project_gui.core.*",
-        #"ilastik.modules.project_gui.gui.*",
-        #"ilastik.modules.help.*",
-        #"ilastik.modules.help.core.*",
-        #"ilastik.modules.help.gui.*",
-        #"PyQt4.QtOpenGL", "PyQt4.uic", "sip",
-        #"qimage2ndarray", "qimage2ndarray.*"
-    #]
-    #try:
-        #import OpenGL.platform.win32
-        #ilastik_includes += ["OpenGL.platform.win32"]
-    #except:
-        #pass
-    #has_ilastik = True
-#except ImportError:
-    #has_ilastik = False
 
 cmdclass = {
+        "build_java_dependencies": BuildJavaDependencies,
+        "build_version": BuildVersion,
+        "develop": Develop,
         "install": Install,
         "test": Test
     }
@@ -399,6 +420,9 @@ if has_py2exe:
     cmdclass["msi"] = CellProfilerMSI
 
 setuptools.setup(
+    app=[
+        "CellProfiler.py"
+    ],
     author="cellprofiler-dev",
     author_email="cellprofiler-dev@broadinstitute.org",
     classifiers=[
@@ -432,11 +456,8 @@ setuptools.setup(
             }],
     description="",
     entry_points={
-        'console_scripts': [
+        "console_scripts": [
             "cellprofiler=cellprofiler.__main__:main"
-        ],
-        'gui_scripts': [
-
         ]
     },
     include_package_data=True,
@@ -457,20 +478,22 @@ setuptools.setup(
     keywords="",
     license="BSD",
     long_description="",
-    name="cellprofiler",
-    package_data = {
+    name="CellProfiler",
+    package_data={
         "artwork": glob.glob(os.path.join("artwork", "*"))
     },
-    packages = packages + ["artwork"],
+    packages=setuptools.find_packages(exclude=[
+        "*.tests",
+        "*.tests.*",
+        "tests.*",
+        "tests",
+        "tutorial"
+    ]),
     setup_requires=[
         "clint",
-        "matplotlib",
-        "numpy",
         "pytest",
-        "requests",
-        "scipy",
-        "pyzmq"
+        "requests"
     ],
     url="https://github.com/CellProfiler/CellProfiler",
-    version="2.2.0"
+    version="2.2.0rc1"
 )

@@ -67,7 +67,7 @@ def get_patcher_args(class_path):
 
     patchers = filter(
         (lambda x:os.path.split(x)[1].startswith("prokaryote")), class_path)
-    if len(patchers) > 0 and False:
+    if len(patchers) > 0:
         patcher = patchers[0]
         return ["-javaagent:%s=init" % patcher]
     logger.warn("Did not find prokaryote in %s" % repr(class_path))

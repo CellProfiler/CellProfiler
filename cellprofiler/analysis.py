@@ -736,20 +736,7 @@ class AnalysisRunner(object):
             # closed, the subprocess exits.
             if hasattr(sys, 'frozen'):
                 if sys.platform == 'darwin':
-                    # sys.argv[0] points at 
-                    # CellProfiler.app/Contents/Resources/CellProfiler.py
-                    # We want
-                    # CellProfiler.app/Contents/MacOS/CellProfiler
-                    #
-                    contents_resources_dir = os.path.split(sys.argv[0])[0]
-                    contents_dir = os.path.split(contents_resources_dir)[0]
-                    cp_executable = os.path.join(contents_dir, "MacOS", "CellProfiler")
-                    assert os.path.isfile(cp_executable), \
-                           "Did not find CellProfiler in its expected place: %s" % cp_executable
-                    assert os.access(cp_executable, os.EX_OK), \
-                           "%s is not executable" % cp_executable
-                    args = (["arch", "-x86_64", "-i386", cp_executable] + 
-                            aw_args)
+                    args = ([sys.executable, "CellProfiler.py"] + aw_args)
                 elif sys.platform.startswith('linux'):
                     aw_path = os.path.join(os.path.dirname(__file__),
                                            "analysis_worker.py")

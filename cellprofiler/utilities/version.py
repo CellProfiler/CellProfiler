@@ -95,8 +95,9 @@ def get_version():
 def get_dotted_version():
     if not hasattr(sys, 'frozen'):
         try:
-            return subprocess.check_output(
-                ["git", "describe", "--tags"]).strip()
+            return subprocess.check_output(["git", "describe", "--tags"])\
+                .strip()\
+                .partition("-")[0]
         except:
             logging.root.warning("Unable to find version - no GIT")
             return "0.0.0"

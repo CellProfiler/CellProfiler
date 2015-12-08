@@ -88,6 +88,7 @@ ADDITIONAL_OBJECT_SETTING_INDEX = 11
 MEASUREMENT_COUNT_SETTING_INDEX = 10
 
 MODE_RULES = "Rules"
+MODE_CLASSIFIERS = "Classifiers"
 MODE_MEASUREMENTS = "Measurements"
 MODE_BORDER = "Image or mask border"
 
@@ -102,7 +103,7 @@ class FilterObjects(cpm.CPModule):
     module_name = 'FilterObjects'
     category = "Object Processing"
     variable_revision_number = 7
-    
+
     def create_settings(self):
         '''Create the initial settings and name the module'''
         self.target_name = cps.ObjectNameProvider(
@@ -123,7 +124,7 @@ class FilterObjects(cpm.CPModule):
         
         self.mode = cps.Choice(
             'Select the filtering mode',
-            [MODE_MEASUREMENTS, MODE_RULES, MODE_BORDER],doc = """
+            [MODE_MEASUREMENTS, MODE_RULES, MODE_BORDER, MODE_CLASSIFIERS],doc = """
             You can choose from the following options:
             <ul>
             <li><i>%(MODE_MEASUREMENTS)s</i>: Specify a per-object measurement made by an upstream 
@@ -133,6 +134,9 @@ class FilterObjects(cpm.CPModule):
             produced by upstream modules in the pipeline.</li>
             <li><i>%(MODE_BORDER)s</i>: Remove objects touching the border of the image and/or the 
             edges of an image mask.</li>
+            <li><i>%(MODE_CLASSIFIERS)s</i>: Use a file containing trained classifier from CellProfiler Analyst.
+            You will need to ensure that the measurements specified by the rules file are
+            produced by upstream modules in the pipeline.</li>
             </ul>"""%globals())
         self.spacer_2 = cps.Divider(line=False)
         
@@ -219,7 +223,9 @@ class FilterObjects(cpm.CPModule):
             <li>You can make multiple class selections. If you do so, the module
             will retain the object if the object falls into any of the selected classes.</li>
             </ul></p>"""%globals())
- 
+        
+        #self.classifier_class = cps.Choice("Class number", choices = ["1", "2"], choices_fn = self.get_classifier_class_choices)
+        
         def get_directory_fn():
             '''Get the directory for the rules file name'''
             return self.rules_directory.get_absolute_path()
@@ -245,7 +251,7 @@ class FilterObjects(cpm.CPModule):
             pixels and will score the opposite for nuclei whose area is larger.
             The filter adds positive and negative and keeps only objects whose
             positive score is higher than the negative score.</p>"""%globals())
-        
+
         self.wants_outlines = cps.Binary(
             'Retain outlines of the identified objects?', False, doc="""
             %(RETAINING_OUTLINES_HELP)s"""%globals())
@@ -271,6 +277,13 @@ class FilterObjects(cpm.CPModule):
             rules = self.get_rules()
             nclasses = len(rules.rules[0].weights[0])
             return [str(i) for i in range(1, nclasses+1)]
+        except:
+            return [str(i) for i in range(1, 3)]
+        
+    def get_classifier_class_choices(self, pipeline):
+        try:
+            classifier = self.get_classifier()
+            return [str(i) for i in range(1, classifier.n_classes_+1)]
         except:
             return [str(i) for i in range(1, 3)]
         
@@ -367,6 +380,14 @@ class FilterObjects(cpm.CPModule):
     def visible_settings(self):
         result =[self.target_name, self.object_name, 
                  self.spacer_2, self.mode]
+        if self.mode == MODE_CLASSIFIERS:
+            result += [self.rules_file_name, self.rules_directory,
+                       self.rules_class]
+            try:
+                self.rules_class.test_valid(None)
+            except:
+                pass
+
         if self.mode == MODE_RULES:
             result += [self.rules_file_name, self.rules_directory,
                        self.rules_class]
@@ -455,6 +476,8 @@ class FilterObjects(cpm.CPModule):
                 indexes = self.keep_within_limits(workspace, src_objects)
         elif self.mode == MODE_BORDER:
             indexes = self.discard_border_objects(workspace, src_objects)
+        elif self.mode == MODE_CLASSIFIERS:
+            indexes = self.keep_by_class(workspace, src_objects)
         else:
             raise ValueError("Unknown filter choice: %s"%
                              self.mode.value)
@@ -810,7 +833,21 @@ class FilterObjects(cpm.CPModule):
             rules = cprules.Rules()
             rules.parse(path)
             return rules
-        
+
+    def get_classifier(self):
+        file_ = self.rules_file_name.value
+        directory_ = self.rules_directory.get_absolute_path()
+        path_ = os.path.join(directory_, file_)
+        if not os.path.isfile(path_):
+            raise cps.ValidationError("No such rules file: %s"%path_, file_)
+        else:
+            from sklearn.externals import joblib
+            #with open(path_, 'rb') as fid:
+            classifier, bin_labels, name = joblib.load(path_)             
+            #classifier, bin_labels, name = joblib.load('/Volumes/imaging_analysis/2010_08_21_Malaria_MartiLab_MatthiasMarti_HSPH/2015_11_18/my_model.model')
+            
+            return classifier
+
     def keep_by_rules(self, workspace, src_objects):
         '''Keep objects according to rules
         
@@ -833,6 +870,28 @@ class FilterObjects(cpm.CPModule):
             indexes = np.array([],int)
         return indexes
     
+    def keep_by_class(self, workspace, src_objects):
+        ''' Keep objects according to their predicted class
+        :param workspace: workspace holding the measurements for the rules
+        :param src_objects: filter these objects (uses measurement indexes instead)
+        :return: indexes (base 1) of the objects that pass
+        '''
+        classifier = self.get_classifier()
+        target_class = int(self.rules_class.value)
+        feature_names_set = [c[1] for c in workspace.pipeline.get_measurement_columns(self) if c[0] == self.object_name.value]        
+        feature_names_ordered = np.array(workspace.measurements.get_feature_names(self.object_name.value))
+        extra_features = list(set(feature_names_ordered) - set(feature_names_set))
+        mask = np.in1d(feature_names_ordered, extra_features)        
+        if mask.sum() > 0:
+            feature_names = feature_names_ordered[~mask]
+        else:
+            feature_names = feature_names_ordered
+        feature_vector = np.column_stack([workspace.measurements[self.object_name.value, feature_name] for feature_name in feature_names])        
+        predicted_classes = classifier.predict(feature_vector)
+        hits = predicted_classes == target_class
+        indexes = np.argwhere(hits) + 1
+        return indexes.flatten()
+
     def get_measurement_columns(self, pipeline):
         '''Return measurement column defs for the parent/child measurement'''
         object_list = ([(self.object_name.value, self.target_name.value)] + 

@@ -48,6 +48,7 @@ try:
     import matplotlib
     import numpy # for proper discovery of its libraries by distutils
     import scipy.sparse.csgraph._validation
+    import scipy.linalg
     import zmq   # for proper discovery of its libraries by distutils
     import zmq.libzmq
 except ImportError:

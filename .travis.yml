@@ -48,4 +48,5 @@ install:
   - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
   - pip freeze
 script:
-  - python setup.py develop install test
+  - python setup.py install
+  - python setup.py test

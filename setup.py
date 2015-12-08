@@ -202,8 +202,11 @@ class Test(setuptools.Command):
 
         try:
             import ilastik.core.jobMachine
-
-            ilastik.core.jobMachine.GLOBAL_WM.set_thread_count(1)
+            
+            try:
+                ilastik.core.jobMachine.GLOBAL_WM.set_thread_count(1)
+            except AttributeError:
+                ilastik.core.jobMachine.GLOBAL_WM.setThreadCount(1)
         except ImportError:
             pass
 

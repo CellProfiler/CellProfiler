@@ -842,10 +842,7 @@ class FilterObjects(cpm.CPModule):
             raise cps.ValidationError("No such rules file: %s"%path_, file_)
         else:
             from sklearn.externals import joblib
-            #with open(path_, 'rb') as fid:
-            classifier, bin_labels, name = joblib.load(path_)             
-            #classifier, bin_labels, name = joblib.load('/Volumes/imaging_analysis/2010_08_21_Malaria_MartiLab_MatthiasMarti_HSPH/2015_11_18/my_model.model')
-            
+            classifier, bin_labels, name = joblib.load(path_)
             return classifier
 
     def keep_by_rules(self, workspace, src_objects):

@@ -19,7 +19,7 @@ import cellprofiler.utilities.version
 if hasattr(sys, 'real_prefix'):
     # Running from a virtualenv
     assert hasattr(distutils, 'distutils_path'), \
-           "Can't get real distutils path"
+        "Can't get real distutils path"
     libdir = os.path.dirname(distutils.distutils_path)
     sys.path.insert(0, libdir)
     #
@@ -29,6 +29,7 @@ if hasattr(sys, 'real_prefix'):
     #
     del sys.modules["site"]
     import site
+
     assert not hasattr(site, "virtual_install_main_packages")
 
 setuptools.dist.Distribution({
@@ -46,23 +47,25 @@ setuptools.dist.Distribution({
 
 try:
     import matplotlib
-    import numpy # for proper discovery of its libraries by distutils
+    import numpy  # for proper discovery of its libraries by distutils
     import scipy.sparse.csgraph._validation
     import scipy.linalg
-    import zmq   # for proper discovery of its libraries by distutils
+    import zmq  # for proper discovery of its libraries by distutils
     import zmq.libzmq
 except ImportError:
     pass
 
 if sys.platform.startswith("win"):
     import _winreg
+
     try:
         import py2exe
+
         has_py2exe = True
     except:
         has_py2exe = False
 else:
-    has_py2exe = False    
+    has_py2exe = False
 
 #
 # Recipe for ZMQ
@@ -73,16 +76,19 @@ if sys.platform.startswith("win"):
     # Recipe needed for py2exe to package libzmq.dll
     os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
 
+
 class Install(setuptools.command.install.install):
     def run(self):
         self.run_command("build_version")
         self.run_command("build_java_dependencies")
         setuptools.command.install.install.run(self)
 
+
 class Develop(setuptools.command.develop.develop):
     def install_for_development(self):
         self.reinitialize_command("build_java_dependencies", inplace=1)
         setuptools.command.develop.develop.install_for_development(self)
+
 
 class BuildVersion(setuptools.Command):
     user_options = [
@@ -98,9 +104,10 @@ class BuildVersion(setuptools.Command):
     def run(self):
         with open(os.path.join("cellprofiler", "frozen_version.py"),
                   "w") as fd:
-            fd.write("version_string='%s'\n" % 
+            fd.write("version_string='%s'\n" %
                      cellprofiler.utilities.version.version_string)
             fd.write("dotted_version='%s'\n" % self.version)
+
 
 class BuildJavaDependencies(setuptools.Command):
     user_options = [
@@ -137,8 +144,8 @@ class BuildJavaDependencies(setuptools.Command):
             os.path.abspath(directory), self.prokaryote_version)
 
         resource = "https://github.com/CellProfiler/prokaryote/" + \
-            "releases/download/{tag}/prokaryote-{tag}.jar".format(
-                tag=self.prokaryote_version)
+                   "releases/download/{tag}/prokaryote-{tag}.jar".format(
+                       tag=self.prokaryote_version)
 
         request = requests.get(resource, stream=True)
 
@@ -146,7 +153,10 @@ class BuildJavaDependencies(setuptools.Command):
             with open(prokaryote, "wb") as f:
                 total_length = int(request.headers.get("content-length"))
 
-                chunks = clint.textui.progress.bar(request.iter_content(chunk_size=32768), expected_size=(total_length / 32768) + 1, hide=not self.verbose)
+                chunks = clint.textui.progress.bar(
+                    request.iter_content(chunk_size=32768),
+                    expected_size=(total_length / 32768) + 1,
+                    hide=not self.verbose)
 
                 for chunk in chunks:
                     if chunk:
@@ -155,7 +165,7 @@ class BuildJavaDependencies(setuptools.Command):
                         f.flush()
 
         dependencies = os.path.abspath(os.path.join(
-            root, 'imagej', 'jars', 
+            root, 'imagej', 'jars',
             'cellprofiler-java-dependencies-classpath.txt'))
 
         if not os.path.isfile(dependencies):
@@ -164,6 +174,7 @@ class BuildJavaDependencies(setuptools.Command):
             dependency.write(prokaryote)
 
             dependency.close()
+
 
 class Test(setuptools.Command):
     user_options = [
@@ -203,7 +214,7 @@ class Test(setuptools.Command):
 
         try:
             import ilastik.core.jobMachine
-            
+
             try:
                 ilastik.core.jobMachine.GLOBAL_WM.set_thread_count(1)
             except AttributeError:
@@ -219,25 +230,27 @@ class Test(setuptools.Command):
 
         sys.exit(errno)
 
-if has_py2exe:        
+
+if has_py2exe:
     class CPPy2Exe(py2exe.build_exe.py2exe):
         user_options = py2exe.build_exe.py2exe.user_options + [
-            ("msvcrt-redist=", None, 
+            ("msvcrt-redist=", None,
              "Directory containing the MSVC redistributables"),
             ("with-ilastik", None,
              "Build CellProfiler with Ilastik dependencies")]
+
         def initialize_options(self):
             py2exe.build_exe.py2exe.initialize_options(self)
             self.msvcrt_redist = None
             self.with_ilastik = None
-            
+
         def finalize_options(self):
             py2exe.build_exe.py2exe.finalize_options(self)
             if self.msvcrt_redist is None:
                 try:
                     key = _winreg.OpenKey(
                         _winreg.HKEY_LOCAL_MACHINE,
-                        r"SOFTWARE\Wow6432Node\Microsoft\VisualStudio\9.0"+
+                        r"SOFTWARE\Wow6432Node\Microsoft\VisualStudio\9.0" +
                         r"\Setup\VC")
                     product_dir = _winreg.QueryValueEx(key, "ProductDir")[0]
                     self.msvcrt_redist = os.path.join(
@@ -245,7 +258,7 @@ if has_py2exe:
                 except WindowsError:
                     self.announce(
                         "Package will not include MSVCRT redistributables", 3)
-            
+
         def run(self):
             self.reinitialize_command("build_version", inplace=1)
             self.run_command("build_version")
@@ -261,7 +274,7 @@ if has_py2exe:
             #
             import javabridge
             from cellprofiler.utilities.cpjvm import get_path_to_jars
-            
+
             if self.distribution.data_files is None:
                 self.distribution.data_files = []
             self.distribution.data_files.append(
@@ -276,9 +289,10 @@ if has_py2exe:
             self.distribution.data_files.append(
                 ("javabridge/jars", javabridge.JARS))
             self.distribution.data_files.append(
-                ("imagej/jars", 
-                 glob.glob(os.path.join(get_path_to_jars(), "prokaryote*.jar")) +
-                 [os.path.join(get_path_to_jars(), 
+                ("imagej/jars",
+                 glob.glob(
+                     os.path.join(get_path_to_jars(), "prokaryote*.jar")) +
+                 [os.path.join(get_path_to_jars(),
                                "cellprofiler-java-dependencies-classpath.txt")]))
             #
             # Support for zmq-14.0.0+
@@ -306,22 +320,22 @@ if has_py2exe:
                 import ilastik
                 ilastik_root = os.path.dirname(ilastik.__file__)
                 for root, directories, filenames in os.walk(ilastik_root):
-                    relpath = root[len(os.path.dirname(ilastik_root))+1:]
+                    relpath = root[len(os.path.dirname(ilastik_root)) + 1:]
                     ui_filenames = [
                         os.path.join(root, f) for f in filenames
-                        if any([f.lower().endswith(ext) 
+                        if any([f.lower().endswith(ext)
                                 for ext in ".ui", ".png"])]
                     if len(ui_filenames) > 0:
                         self.distribution.data_files.append(
                             (relpath, ui_filenames))
-                
+
                 #
                 # Prevent rename of vigranumpycore similarly to libzmq
                 #
                 import vigra.vigranumpycore
                 self.distribution.data_files.append(
                     (".", [vigra.vigranumpycore.__file__]))
-            
+
             if self.msvcrt_redist is not None:
                 sources = [
                     os.path.join(self.msvcrt_redist, filename)
@@ -330,23 +344,24 @@ if has_py2exe:
                     ("./Microsoft.VC90.CRT", sources))
 
             py2exe.build_exe.py2exe.run(self)
-        
+
+
     class CellProfilerMSI(distutils.core.Command):
         description = \
             "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
-        user_options = [("with-ilastik", None, 
+        user_options = [("with-ilastik", None,
                          "Include a start menu entry for Ilastik"),
                         ("output-dir=", None,
                          "Output directory for MSI file"),
                         ("msi-name=", None,
                          "Name of MSI file to generate (w/o extension)")]
-        
+
         def initialize_options(self):
             self.with_ilastik = None
             self.py2exe_dist_dir = None
             self.output_dir = None
             self.msi_name = None
-        
+
         def finalize_options(self):
             self.set_undefined_options(
                 "py2exe", ("dist_dir", "py2exe_dist_dir"))
@@ -355,7 +370,7 @@ if has_py2exe:
             if self.msi_name is None:
                 self.msi_name = \
                     "CellProfiler-" + self.distribution.metadata.version
-        
+
         def run(self):
             if not os.path.isdir(self.output_dir):
                 os.makedirs(self.output_dir)
@@ -364,7 +379,7 @@ if has_py2exe:
     AppVerName=CellProfiler %s
     OutputBaseFilename=%s
     OutputDir=%s
-    """ % (self.distribution.metadata.version, 
+    """ % (self.distribution.metadata.version,
            self.msi_name,
            self.output_dir))
             with open("ilastik.iss", "w") as fd:
@@ -378,14 +393,14 @@ if has_py2exe:
             else:
                 cell_profiler_iss = "CellProfiler.iss"
             required_files = [
-                os.path.join(self.py2exe_dist_dir, "CellProfiler.exe"), 
+                os.path.join(self.py2exe_dist_dir, "CellProfiler.exe"),
                 cell_profiler_iss]
             compile_command = self.__compile_command()
             compile_command = compile_command.replace("%1", cell_profiler_iss)
             compile_command = shlex.split(compile_command)
             self.make_file(
-                required_files, 
-                os.path.join(self.output_dir, self.msi_name + ".msi"), 
+                required_files,
+                os.path.join(self.output_dir, self.msi_name + ".msi"),
                 self.spawn, [compile_command],
                 "Compiling %s" % cell_profiler_iss)
             os.remove("version.iss")
@@ -396,27 +411,27 @@ if has_py2exe:
             """
             try:
                 key = _winreg.OpenKey(
-                    _winreg.HKEY_CLASSES_ROOT, 
+                    _winreg.HKEY_CLASSES_ROOT,
                     "InnoSetupScriptFile\\shell\\Compile\\command")
-                result = _winreg.QueryValueEx(key,None)[0]
+                result = _winreg.QueryValueEx(key, None)[0]
                 key.Close()
                 return result
             except WindowsError:
                 if key:
                     key.Close()
                 raise distutils.errors.DistutilsFileError, \
-                      "Inno Setup does not seem to be installed properly. " + \
-                      "Specifically, there is no entry in the " +\
-                      "HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\" + \
-                      "Compile\\command"
+                    "Inno Setup does not seem to be installed properly. " + \
+                    "Specifically, there is no entry in the " + \
+                    "HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\" + \
+                    "Compile\\command"
 
 cmdclass = {
-        "build_java_dependencies": BuildJavaDependencies,
-        "build_version": BuildVersion,
-        "develop": Develop,
-        "install": Install,
-        "test": Test
-    }
+    "build_java_dependencies": BuildJavaDependencies,
+    "build_version": BuildVersion,
+    "develop": Develop,
+    "install": Install,
+    "test": Test
+}
 
 if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
@@ -444,20 +459,21 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Image Recognition",
         "Topic :: Scientific/Engineering"
     ],
-    cmdclass = cmdclass,
-    console = [ 
+    cmdclass=cmdclass,
+    console=[
         {
-        "icon_resources": [
-            (1, "artwork/CellProfilerIcon.ico")
+            "icon_resources": [
+                (1, "artwork/CellProfilerIcon.ico")
             ],
-        "script" : "CellProfiler.py"
+            "script": "CellProfiler.py"
         },
         {
             "icon_resources": [
                 (1, "artwork/CellProfilerIcon.ico")
-                ],
-            "script" : "cellprofiler/analysis_worker.py"
-            }],
+            ],
+            "script": "cellprofiler/analysis_worker.py"
+        }
+    ],
     description="",
     entry_points={
         "console_scripts": [

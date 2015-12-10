@@ -29,16 +29,18 @@ logger = logging.getLogger(__name__)
 
 def get_path_to_jars():
     '''Return the path to CellProfiler's jars directory'''
-    # Starting path is base/cellprofiler/utilities/cpjvm.py
-    # Split 3 times.
-    start_path = __file__
-    split_count = 3
-    root_path = os.path.abspath(start_path)
-    for _ in range(split_count):
-        root_path = os.path.split(root_path)[0]
 
-    imagej_path = os.path.join(root_path, 'imagej','jars')
-    return imagej_path
+    pathnames = [
+        os.path.join(
+            directory, "imagej", "jars"
+        ) for directory in sys.path if os.path.exists(
+            os.path.join(
+                directory, "imagej", "jars", "prokaryote-1.0.4.jar"
+            )
+        )
+    ]
+
+    return pathnames.pop()
 
 def get_patcher_args(class_path):
     '''Return the JVM args needed to patch ij1 classes

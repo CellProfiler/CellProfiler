@@ -27,7 +27,7 @@ class Install(setuptools.command.install.install):
         with open("cellprofiler/frozen_version.py", "w") as fd:
             fd.write("version_string='%s'\n" % cellprofiler.utilities.version.version_string)
 
-        version = "1.0.3"
+        version = "1.0.4"
 
         directory = os.path.join(self.build_lib, "imagej", "jars")
 
@@ -184,5 +184,5 @@ setuptools.setup(
         "pytest"
     ],
     url="https://github.com/CellProfiler/CellProfiler",
-    version="2.2.0rc1"
+    version="2.2.0rc2"
 )

@@ -4,7 +4,6 @@ addons:
       - cython
       - libhdf5-serial-dev
       - python-dateutil
-      - python-h5py
       - python-imaging
       - python-lxml
       - python-matplotlib
@@ -41,7 +40,7 @@ install:
   - pip install --upgrade pip
   - pip install --upgrade wheel
   - pip install --upgrade pytest
-  - pip install --upgrade cython h5py lxml matplotlib mysql-python networkx numpy pandas pillow pyzmq scikit-learn scipy
+  - pip install --upgrade cython lxml matplotlib mysql-python networkx numpy pandas pillow pyzmq scikit-learn scipy
 # Explicitly install Javabridge here - if you let it get installed implicitly
 # by parsing requirements.txt, it is somehow linked to the wrong version
 # of numpy

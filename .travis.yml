@@ -1,8 +1,10 @@
 addons:
   apt:
     packages:
+      - cython
       - libhdf5-serial-dev
       - python-dateutil
+      - python-h5py
       - python-imaging
       - python-lxml
       - python-matplotlib
@@ -15,6 +17,7 @@ addons:
       - python-scipy
       - python-tk
       - python-wxgtk2.8
+      - python-zmq
 env:
   - LC_ALL="en_US.UTF-8"
 before_script:

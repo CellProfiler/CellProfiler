@@ -3,13 +3,17 @@ addons:
     packages:
       - libhdf5-serial-dev
       - libzmq3-dev
+      - pandas
+      - python-dateutil
       - python-imaging
       - python-lxml
       - python-matplotlib
       - python-mysqldb
+      - python-networkx
       - python-numpy
       - python-pandas
       - python-pip
+      - python-scikits-learn
       - python-scipy
       - python-tk
       - python-wxgtk2.8

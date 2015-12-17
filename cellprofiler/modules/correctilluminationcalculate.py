@@ -20,12 +20,13 @@ import centrosome.cpmorphology as cpmm
 import numpy as np
 import scipy.linalg
 import scipy.ndimage as scind
-import skimage.filter
+import skimage.filters
 from centrosome.bg_compensate import MODE_DARK, MODE_GRAY
 from centrosome.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import grey_erosion, grey_dilation, strel_disk
 from centrosome.filter import convex_hull_transform
+from centrosome.rankorder import rank_order
 from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
@@ -735,12 +736,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         elif self.smoothing_method == SM_MEDIAN_FILTER:
             filter_sigma = max(1, int(sigma+.5))
             strel = strel_disk(filter_sigma)
-            values, indices = np.unique(pixel_data, return_index=True)
-            while len(values) > 65535:
-                values = values[:,:,2]
-                indices = indices / 2
+            indices, values = rank_order(pixel_data, 65535)
             indices = indices.astype(np.uint16)
-            output_pixels = skimage.filter.median(
+            output_pixels = skimage.filters.median(
                 pixel_data, strel, mask = mask)
             output_pixels = values[output_pixels]
         elif self.smoothing_method == SM_TO_AVERAGE:

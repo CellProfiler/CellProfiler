@@ -8,6 +8,14 @@ import re
 import subprocess
 import sys
 
+def get_git_dir():
+    import cellprofiler
+    cellprofiler_basedir = os.path.abspath(
+        os.path.join(os.path.dirname(cellprofiler.__file__), '..'))
+    git_dir = os.path.join(cellprofiler_basedir, ".git")
+    if not os.path.isdir(git_dir):
+        return None
+    return cellprofiler_basedir
 
 def datetime_from_isoformat(dt_str):
     return datetime.datetime.strptime(dt_str, "%Y-%m-%dT%H:%M:%S")
@@ -18,15 +26,16 @@ def get_version():
     (relative to whatever SVN repository is in the source), and otherwise, just
     the current time and "unkown".'''
 
+    unknown_rev = '%s Unknown rev.' % (
+        datetime.datetime.utcnow().isoformat('T').split('.')[0])
     if not hasattr(sys, 'frozen'):
-        import cellprofiler
-        cellprofiler_basedir = os.path.abspath(os.path.join(os.path.dirname(cellprofiler.__file__), '..'))
         # Evil GIT without GIT. Look for what we want in the log files.
         try:
+            cellprofiler_basedir = get_git_dir()
+            if cellprofiler_basedir is None:
+                return unknown_rev
+            logging.debug("Traversing file system")
             while True:
-                git_dir = os.path.join(cellprofiler_basedir, ".git")
-                if not os.path.isdir(git_dir):
-                    break
                 with open(os.path.join(git_dir, "HEAD"), "r") as fd:
                     line = fd.readline().strip()
                 # Line is like this:
@@ -61,33 +70,17 @@ def get_version():
 
         # GIT
         try:
-            timestamp, hash = subprocess.Popen(['git', 'log', '--format=%ct %h', '-n', '1'],
-                                               stdout=subprocess.PIPE,
-                                               stderr=subprocess.STDOUT,
-                                               cwd=cellprofiler_basedir).communicate()[0].strip().split(' ')
+            with open(os.devnull, "r") as devnull:
+                timestamp, hash = subprocess.check_output(
+                    ['git', 'log', '--format=%ct %h', '-n', '1'],
+                    stdin = devnull,
+                    cwd = cellprofiler_basedir).strip().split(' ')
             return '%s %s' % (datetime.datetime.utcfromtimestamp(float(timestamp)).isoformat('T'), hash)
         except (OSError, subprocess.CalledProcessError, ValueError), e:
             pass
 
-        # SVN
-        try:
-            if os.path.isdir(os.path.join(cellprofiler_basedir, ".svn")):
-                # use svn info because it doesn't require the network.
-                output = subprocess.Popen(['svn', 'info', '--xml'],
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.STDOUT,
-                                          cwd=cellprofiler_basedir).communicate()[0]
-                date = re.search('<date>([^.]*)(\\.[0-9]*Z)</date>', output).group(1)
-                version = re.search('revision="(.*)">', output).group(1)
-                return '%s SVN:%s' % (datetime_from_isoformat(date).isoformat('T'), version)
-        except (OSError, subprocess.CalledProcessError), e:
-            pass
-        except (AttributeError,), e:
-            import logging
-            logging.root.error("Could not parse SVN XML output while finding version.\n" + output)
-
         # Give up
-        return '%s Unknown rev.' % (datetime.datetime.utcnow().isoformat('T').split('.')[0])
+        return unknown_rev
     else:
         import cellprofiler.frozen_version
         return cellprofiler.frozen_version.version_string
@@ -95,9 +88,15 @@ def get_version():
 def get_dotted_version():
     if not hasattr(sys, 'frozen'):
         try:
-            return subprocess.check_output(["git", "describe", "--tags"])\
-                .strip()\
-                .partition("-")[0]
+            cellprofiler_dir = get_git_dir()
+            if cellprofiler_dir is None:
+                return "0.0.0"
+            with open(os.devnull, "r") as devnull:
+                output = subprocess.check_output(
+                    ["git", "describe", "--tags"],
+                    stdin = devnull,
+                    cwd = cellprofiler_dir)
+            return output.strip().partition("-")[0]
         except:
             logging.root.warning("Unable to find version - no GIT")
             return "0.0.0"

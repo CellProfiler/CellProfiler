@@ -292,8 +292,7 @@ class MeasureCorrelation(cpm.CPModule):
         labels = labels[mask]
         n_objects = objects.count
 
-        # TODO: update with cellprofiler patch (once available) that handle this error (both images for the correlation are completely masked out)
-        # added (np.where(mask)[0].__len__()) to the condition to handle this case
+        # Handle case when both images for the correlation are completely masked out
 
         if ((n_objects == 0)):
             corr = np.zeros((0,))

@@ -281,8 +281,13 @@ class MeasureCorrelation(cpm.CPModule):
         second_pixels = second_pixels[mask]
         labels = labels[mask]
         n_objects = objects.count
-        if n_objects == 0:
+        # Handle case when both images for the correlation are completely masked out
+
+        if ((n_objects == 0)):
             corr = np.zeros((0,))
+        elif((np.where(mask)[0].__len__()==0)):
+            corr = np.zeros((n_objects,))
+            corr[:]=np.NaN
         else:
             #
             # The correlation is sum((x-mean(x))(y-mean(y)) /

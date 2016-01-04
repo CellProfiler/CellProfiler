@@ -135,7 +135,7 @@ class FilterObjects(cpm.CPModule):
             <li><i>%(MODE_BORDER)s</i>: Remove objects touching the border of the image and/or the 
             edges of an image mask.</li>
             <li><i>%(MODE_CLASSIFIERS)s</i>: Use a file containing trained classifier from CellProfiler Analyst.
-            You will need to ensure that the measurements specified by the rules file are
+            You will need to ensure that the measurements specified by the file are
             produced by upstream modules in the pipeline.</li>
             </ul>"""%globals())
         self.spacer_2 = cps.Divider(line=False)
@@ -211,7 +211,7 @@ class FilterObjects(cpm.CPModule):
         self.rules_class = cps.Choice(
             "Class number",
             choices = ["1", "2"],
-            choices_fn = self.get_rules_class_choices,doc = """
+            choices_fn = self.get_class_choices,doc ="""
             <i>(Used only when filtering using %(MODE_RULES)s)</i><br>
             Select which of the classes to keep when filtering. The
             CellProfiler Analyst classifier user interface lists the names of 
@@ -222,9 +222,8 @@ class FilterObjects(cpm.CPModule):
             <li>The object is retained if the object falls into the selected class.</li>
             <li>You can make multiple class selections. If you do so, the module
             will retain the object if the object falls into any of the selected classes.</li>
-            </ul></p>"""%globals())
-        
-        #self.classifier_class = cps.Choice("Class number", choices = ["1", "2"], choices_fn = self.get_classifier_class_choices)
+            </ul></p>""" % globals())
+
         
         def get_directory_fn():
             '''Get the directory for the rules file name'''
@@ -272,18 +271,15 @@ class FilterObjects(cpm.CPModule):
             the filtered object. This is useful in making sure that labeling is maintained 
             between related objects (e.g., primary and secondary objects) after filtering.""")
     
-    def get_rules_class_choices(self, pipeline):
+    def get_class_choices(self, pipeline):
         try:
-            rules = self.get_rules()
-            nclasses = len(rules.rules[0].weights[0])
-            return [str(i) for i in range(1, nclasses+1)]
-        except:
-            return [str(i) for i in range(1, 3)]
-        
-    def get_classifier_class_choices(self, pipeline):
-        try:
-            classifier = self.get_classifier()
-            return [str(i) for i in range(1, classifier.n_classes_+1)]
+            if self.mode == MODE_CLASSIFIERS:
+                classifier = self.get_classifier()
+                return [str(i) for i in range(1, classifier.n_classes_+1)]
+            elif self.mode == MODE_RULES:
+                rules = self.get_rules()
+                nclasses = len(rules.rules[0].weights[0])
+                return [str(i) for i in range(1, nclasses+1)]
         except:
             return [str(i) for i in range(1, 3)]
         
@@ -380,15 +376,8 @@ class FilterObjects(cpm.CPModule):
     def visible_settings(self):
         result =[self.target_name, self.object_name, 
                  self.spacer_2, self.mode]
-        if self.mode == MODE_CLASSIFIERS:
-            result += [self.rules_file_name, self.rules_directory,
-                       self.rules_class]
-            try:
-                self.rules_class.test_valid(None)
-            except:
-                pass
 
-        if self.mode == MODE_RULES:
+        if self.mode == MODE_RULES or self.mode == MODE_CLASSIFIERS:
             result += [self.rules_file_name, self.rules_directory,
                        self.rules_class]
             try:
@@ -873,6 +862,7 @@ class FilterObjects(cpm.CPModule):
         :param src_objects: filter these objects (uses measurement indexes instead)
         :return: indexes (base 1) of the objects that pass
         '''
+        import re
         classifier = self.get_classifier()
         target_class = int(self.rules_class.value)
         feature_names_set = [c[1] for c in workspace.pipeline.get_measurement_columns(self) if c[0] == self.object_name.value]        
@@ -883,7 +873,9 @@ class FilterObjects(cpm.CPModule):
             feature_names = feature_names_ordered[~mask]
         else:
             feature_names = feature_names_ordered
-        feature_vector = np.column_stack([workspace.measurements[self.object_name.value, feature_name] for feature_name in feature_names])        
+        regex = re.compile('ImageNumber|Number|Location_Center_|Parent|Children|Metadata')
+        ignore_features = [l for l in feature_names for m in [regex.search(l)] if m]
+        feature_vector = np.column_stack([workspace.measurements[self.object_name.value, feature_name] for feature_name in feature_names if feature_name not in ignore_features])
         predicted_classes = classifier.predict(feature_vector)
         hits = predicted_classes == target_class
         indexes = np.argwhere(hits) + 1

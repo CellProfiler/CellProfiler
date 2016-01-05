@@ -356,6 +356,12 @@ class FlagImage(cpm.CPModule):
                         raise cps.ValidationError("The rule described by %s has not been measured earlier in the pipeline."%undef_features[0],
                                                     measurement_setting.rules_file_name)
 
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
+        for flag_settings in self.flags:
+            for group in flag_settings.measurement_settings:
+                group.rules_directory.alter_for_create_batch_files(
+                    fn_alter_path)
+
     def run(self, workspace):
         col_labels = ("Flag", "Source", "Measurement", "Value","Pass/Fail")
         statistics = []

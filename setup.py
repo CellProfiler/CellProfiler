@@ -134,7 +134,7 @@ setuptools.setup(
         "tests.*",
         "tests",
         "tutorial"
-    ]),
+    ])+["artwork"],
     setup_requires=[
         "pytest"
     ],

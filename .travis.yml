@@ -3,6 +3,8 @@ addons:
     packages:
       - cython
       - libhdf5-serial-dev
+      - libwxgtk2.8-dev
+      - libgtk2.0-dev
       - python-dateutil
       - python-imaging
       - python-lxml
@@ -12,11 +14,9 @@ addons:
       - python-numpy
       - python-pandas
       - python-pip
-      - python-scikits-learn
       - python-scipy
       - python-tk
       - python-wxgtk2.8
-      - python-zmq
 env:
   - LC_ALL="en_US.UTF-8"
 before_script:
@@ -27,7 +27,6 @@ cache:
   apt: true
   directories:
     - $HOME/.cache/pip
-    - $TRAVIS_BUILD_DIR/imagej/jars
 language: python
 notifications:
   email: false
@@ -40,7 +39,9 @@ install:
   - pip install --upgrade pip
   - pip install --upgrade wheel
   - pip install --upgrade pytest
-  - pip install --upgrade cython lxml matplotlib mysql-python networkx numpy pandas pillow pyzmq scikit-learn scipy
+  - pip install cython
+  - pip install joblib
+  - pip install scikit-learn
 # Explicitly install Javabridge here - if you let it get installed implicitly
 # by parsing requirements.txt, it is somehow linked to the wrong version
 # of numpy
@@ -49,5 +50,6 @@ install:
   - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py
   - pip install --editable git+https://github.com/CellH5/cellh5.git#egg=cellh5
   - pip freeze
+  - python setup.py install
 script:
-  - python setup.py develop --no-deps install test
+  - python setup.py test

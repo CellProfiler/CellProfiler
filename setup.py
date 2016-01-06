@@ -80,15 +80,7 @@ if sys.platform.startswith("win"):
 class Install(setuptools.command.install.install):
     def run(self):
         self.run_command("build_version")
-        self.run_command("build_java_dependencies")
         setuptools.command.install.install.run(self)
-
-
-class Develop(setuptools.command.develop.develop):
-    def install_for_development(self):
-        self.reinitialize_command("build_java_dependencies", inplace=1)
-        setuptools.command.develop.develop.install_for_development(self)
-
 
 class BuildVersion(setuptools.Command):
     user_options = [
@@ -107,74 +99,6 @@ class BuildVersion(setuptools.Command):
             fd.write("version_string='%s'\n" %
                      cellprofiler.utilities.version.version_string)
             fd.write("dotted_version='%s'\n" % self.version)
-
-
-class BuildJavaDependencies(setuptools.Command):
-    user_options = [
-        ("prokaryote-version=", None, "Version # of prokaryote to fetch"),
-        ("inplace", None, "Put dependencies in-place in the source tree")]
-
-    def initialize_options(self):
-        self.build_lib = None
-        self.prokaryote_version = None
-        self.inplace = None
-
-    def finalize_options(self):
-        self.set_undefined_options(
-            'build', ('build_lib', 'build_lib'))
-        if self.prokaryote_version is None:
-            raise distutils.errors.DistutilsSetupError(
-                "The version of the prokaryote jar must be specified using the "
-                "--prokaryote-version switch")
-
-    def run(self):
-        try:
-            import clint.textui
-            import requests
-        except ImportError:
-            raise ImportError
-
-        root = os.path.dirname(__file__) if self.inplace else self.build_lib
-        directory = os.path.join(root, "imagej", "jars")
-
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        prokaryote = "{}/prokaryote-{}.jar".format(
-            os.path.abspath(directory), self.prokaryote_version)
-
-        resource = "https://github.com/CellProfiler/prokaryote/" + \
-                   "releases/download/{tag}/prokaryote-{tag}.jar".format(
-                       tag=self.prokaryote_version)
-
-        request = requests.get(resource, stream=True)
-
-        if not os.path.isfile(prokaryote):
-            with open(prokaryote, "wb") as f:
-                total_length = int(request.headers.get("content-length"))
-
-                chunks = clint.textui.progress.bar(
-                    request.iter_content(chunk_size=32768),
-                    expected_size=(total_length / 32768) + 1,
-                    hide=not self.verbose)
-
-                for chunk in chunks:
-                    if chunk:
-                        f.write(chunk)
-
-                        f.flush()
-
-        dependencies = os.path.abspath(os.path.join(
-            root, 'imagej', 'jars',
-            'cellprofiler-java-dependencies-classpath.txt'))
-
-        if not os.path.isfile(dependencies):
-            dependency = open(dependencies, "w")
-
-            dependency.write(prokaryote)
-
-            dependency.close()
-
 
 class Test(setuptools.Command):
     user_options = [
@@ -426,9 +350,6 @@ if has_py2exe:
                     "Compile\\command"
 
 cmdclass = {
-    "build_java_dependencies": BuildJavaDependencies,
-    "build_version": BuildVersion,
-    "develop": Develop,
     "install": Install,
     "test": Test
 }
@@ -490,6 +411,7 @@ setuptools.setup(
         "matplotlib",
         "MySQL-python",
         "numpy",
+        "prokaryote",
         "pytest",
         "python-bioformats",
         "pyzmq",

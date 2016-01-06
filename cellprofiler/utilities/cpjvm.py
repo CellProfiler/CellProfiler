@@ -28,17 +28,9 @@ import cellprofiler.preferences as cpprefs
 logger = logging.getLogger(__name__)
 
 def get_path_to_jars():
-    '''Return the path to CellProfiler's jars directory'''
-    # Starting path is base/cellprofiler/utilities/cpjvm.py
-    # Split 3 times.
-    start_path = __file__
-    split_count = 3
-    root_path = os.path.abspath(start_path)
-    for _ in range(split_count):
-        root_path = os.path.split(root_path)[0]
+    import prokaryote
 
-    imagej_path = os.path.join(root_path, 'imagej','jars')
-    return imagej_path
+    return os.path.dirname(prokaryote.__file__)
 
 def get_patcher_args(class_path):
     '''Return the JVM args needed to patch ij1 classes

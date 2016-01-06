@@ -1,18 +1,22 @@
 addons:
   apt:
     packages:
+      - cython
       - libhdf5-serial-dev
-      - libzmq3-dev
+      - python-dateutil
       - python-imaging
       - python-lxml
       - python-matplotlib
       - python-mysqldb
+      - python-networkx
       - python-numpy
       - python-pandas
       - python-pip
+      - python-scikits-learn
       - python-scipy
       - python-tk
       - python-wxgtk2.8
+      - python-zmq
 env:
   - LC_ALL="en_US.UTF-8"
 before_script:
@@ -36,12 +40,10 @@ install:
   - pip install --upgrade pip
   - pip install --upgrade wheel
   - pip install --upgrade pytest
-  - pip install cython
-#
+  - pip install --upgrade cython lxml matplotlib mysql-python networkx numpy pandas pillow pyzmq scikit-learn scipy
 # Explicitly install Javabridge here - if you let it get installed implicitly
 # by parsing requirements.txt, it is somehow linked to the wrong version
 # of numpy
-#
   - pip install --no-deps javabridge
   - pip install --requirement requirements.txt
   - pip install --editable git+https://github.com/h5py/h5py.git#egg=h5py

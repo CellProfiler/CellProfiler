@@ -9,8 +9,6 @@ import cellprofiler.utilities.version
 
 setuptools.dist.Distribution({
     "setup_requires": [
-        "clint",
-        "requests",
         "pytest"
     ]
 })
@@ -18,50 +16,8 @@ setuptools.dist.Distribution({
 
 class Install(setuptools.command.install.install):
     def run(self):
-        try:
-            import clint.textui
-            import requests
-        except ImportError:
-            raise ImportError
-
         with open("cellprofiler/frozen_version.py", "w") as fd:
             fd.write("version_string='%s'\n" % cellprofiler.utilities.version.version_string)
-
-        version = "1.0.4"
-
-        directory = os.path.join(self.build_lib, "imagej", "jars")
-
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-        prokaryote = "{}/prokaryote-{}.jar".format(os.path.abspath(directory), version)
-
-        resource = "https://github.com/CellProfiler/prokaryote/" + "releases/download/{tag}/prokaryote-{tag}.jar".format(tag=version)
-
-        request = requests.get(resource, stream=True)
-
-        if not os.path.isfile(prokaryote):
-            with open(prokaryote, "wb") as f:
-                total_length = int(request.headers.get("content-length"))
-
-                chunks = clint.textui.progress.bar(request.iter_content(chunk_size=32768), expected_size=(total_length / 32768) + 1, hide=not self.verbose)
-
-                for chunk in chunks:
-                    if chunk:
-                        f.write(chunk)
-
-                        f.flush()
-
-        dependencies = os.path.abspath(os.path.join(
-            self.build_lib, 'imagej', 'jars', 
-            'cellprofiler-java-dependencies-classpath.txt'))
-
-        if not os.path.isfile(dependencies):
-            dependency = open(dependencies, "w")
-
-            dependency.write(prokaryote)
-
-            dependency.close()
 
         setuptools.command.install.install.run(self)
 
@@ -159,6 +115,7 @@ setuptools.setup(
         "matplotlib",
         "MySQL-python",
         "numpy",
+        "prokaryote",
         "pytest",
         "python-bioformats",
         "pyzmq==13.1.0",
@@ -177,10 +134,8 @@ setuptools.setup(
         "tests.*",
         "tests",
         "tutorial"
-    ]),
+    ])+["artwork"],
     setup_requires=[
-        "clint",
-        "requests",
         "pytest"
     ],
     url="https://github.com/CellProfiler/CellProfiler",

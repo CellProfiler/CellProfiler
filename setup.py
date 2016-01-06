@@ -39,9 +39,9 @@ setuptools.dist.Distribution({
         "matplotlib",
         "numpy",
         "pytest",
+        "pyzmq",
         "requests",
-        "scipy",
-        "pyzmq"
+        "scipy"
     ]
 })
 
@@ -186,8 +186,6 @@ if has_py2exe:
         def run(self):
             self.reinitialize_command("build_version", inplace=1)
             self.run_command("build_version")
-            self.reinitialize_command("build_java_dependencies", inplace=1)
-            self.run_command("build_java_dependencies")
             #
             # py2exe runs install_data a second time. We want to inject some
             # data files into the dist but we do it here so that if the user
@@ -196,28 +194,27 @@ if has_py2exe:
             #
             # py2exe doesn't have its own data_files or resources options.
             #
-            import javabridge
-            from cellprofiler.utilities.cpjvm import get_path_to_jars
-
             if self.distribution.data_files is None:
                 self.distribution.data_files = []
             self.distribution.data_files.append(
                 ("artwork", glob.glob("artwork/*")))
             #
+            # javabridge's jars
+            #
+            import javabridge
+            self.distribution.data_files.append(
+                ("javabridge/jars", javabridge.JARS))
+            #
+            # prokaryote's jar
+            #
+            import prokaryote
+            prokaryote_glob = os.path.dirname(prokaryote.__file__) + "/*.jar"
+            self.distribution.data_files.append(
+                ("prokaryote", glob.glob(prokaryote_glob)))
+            #
             # py2exe recipe for matplotlib
             #
             self.distribution.data_files += matplotlib.get_py2exe_datafiles()
-            #
-            # Collect the javabridge and imagej JAR files
-            #
-            self.distribution.data_files.append(
-                ("javabridge/jars", javabridge.JARS))
-            self.distribution.data_files.append(
-                ("imagej/jars",
-                 glob.glob(
-                     os.path.join(get_path_to_jars(), "prokaryote*.jar")) +
-                 [os.path.join(get_path_to_jars(),
-                               "cellprofiler-java-dependencies-classpath.txt")]))
             #
             # Support for zmq-14.0.0+
             #
@@ -350,6 +347,7 @@ if has_py2exe:
                     "Compile\\command"
 
 cmdclass = {
+    "build_version": BuildVersion,
     "install": Install,
     "test": Test
 }
@@ -430,12 +428,10 @@ setuptools.setup(
         "tests.*",
         "tests",
         "tutorial"
-    ]),
+    ])+["artwork"],
     setup_requires=[
-        "clint",
-        "pytest",
-        "requests"
+        "pytest"
     ],
     url="https://github.com/CellProfiler/CellProfiler",
-    version="2.2.0rc1"
+    version="2.2.0rc2"
 )

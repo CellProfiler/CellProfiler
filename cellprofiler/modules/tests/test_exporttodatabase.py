@@ -4915,6 +4915,33 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 if hasattr(module, "connection") and module.connection is not None:
                     module.connection.close()
                 finally_fn()
+
+    def test_12_12_write_mysql_direct_relationships(self):
+        # Regression test of #1757
+        #
+        # No relationships in relationships table and ExportToDatabase
+        # is configured to display its window
+        #
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+
+        workspace, module = self.make_workspace(
+            False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.show_window = True
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
+        finally:
+            self.drop_tables(module)
             
     def test_13_01_mysql_no_overwrite(self):
         if not self.__at_broad:

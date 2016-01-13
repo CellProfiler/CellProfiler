@@ -354,7 +354,6 @@ cmdclass = {
 
 if has_py2exe:
     cmdclass["py2exe"] = CPPy2Exe
-    cmdclass["py2exe_ilastik"] = CPPy2Exe
     cmdclass["msi"] = CellProfilerMSI
 
 setuptools.setup(
@@ -385,12 +384,6 @@ setuptools.setup(
                 (1, "artwork/CellProfilerIcon.ico")
             ],
             "script": "CellProfiler.py"
-        },
-        {
-            "icon_resources": [
-                (1, "artwork/CellProfilerIcon.ico")
-            ],
-            "script": "cellprofiler/analysis_worker.py"
         }
     ],
     description="",

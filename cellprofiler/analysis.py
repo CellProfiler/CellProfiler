@@ -737,18 +737,14 @@ class AnalysisRunner(object):
             if hasattr(sys, 'frozen'):
                 if sys.platform == 'darwin':
                     executable = os.path.join(
-                        os.path.dirname(sys.executable), "CellProfiler")
+                        os.path.dirname(sys.executable), "CellProfiler.exe")
                     args = ([executable] + aw_args)
                 elif sys.platform.startswith('linux'):
                     aw_path = os.path.join(os.path.dirname(__file__),
                                            "analysis_worker.py")
                     args = [sys.executable, aw_path] + aw_args
                 else:
-                    aw_path = os.path.join(
-                        os.path.split(
-                            os.path.abspath(sys.argv[0]))[0],
-                                           "analysis_worker")
-                    args = [aw_path] + aw_args
+                    args = [sys.executable] + aw_args
 
                 worker = subprocess.Popen(args,
                                           env=find_worker_env(idx),

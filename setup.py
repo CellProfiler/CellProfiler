@@ -1,5 +1,6 @@
 import distutils
 import glob
+import importlib
 import os
 import shlex
 import setuptools
@@ -30,17 +31,26 @@ if hasattr(sys, 'real_prefix'):
 
     assert not hasattr(site, "virtual_install_main_packages")
 
+# We need some packages in order to properly prepare for setup, but
+# setuptools.dist.Distribution seems to upgrade them willy-nilly
+# So try importing and only ask for ones that are not present.
+packages = []
+for package_name, import_name in [
+        ("clint", "clint"),
+        ("javabridge", "javabridge"),
+        ("matplotlib", "matplotlib"),
+        ("numpy", "numpy"),
+        ("pytest", "pytest"),
+        ("pyzmq", "zmq"),
+        ("requests", "requests"),
+        ("scipy", "scipy")]:
+    try:
+        importlib.import_module(import_name)
+    except ImportError:
+        packages.append(package_name)
+
 setuptools.dist.Distribution({
-    "setup_requires": [
-        "clint",
-        "javabridge",
-        "matplotlib",
-        "numpy",
-        "pytest",
-        "pyzmq",
-        "requests",
-        "scipy"
-    ]
+    "setup_requires": packages
 })
 
 try:

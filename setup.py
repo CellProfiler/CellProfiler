@@ -4,6 +4,7 @@ import os
 import shlex
 import setuptools
 import setuptools.command.build_py
+import setuptools.command.sdist
 import setuptools.dist
 import sys
 import cellprofiler.utilities.version
@@ -73,11 +74,28 @@ if sys.platform.startswith("win"):
     # Recipe needed for py2exe to package libzmq.dll
     os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
 
+def should_build_version(command):
+    '''Test to see whether we should run the "build_version" command'''
+    bv_command = command.get_finalized_command("build_version")
+    if not os.path.exists(bv_command.frozen_version_filename):
+        return True
+    return cellprofiler.utilities.version.get_git_dir() is None
 
 class BuildPy(setuptools.command.build_py.build_py):
     def run(self):
-        self.run_command("build_version")
+        bv_command = self.get_finalized_command("build_version")
+        if should_build_version(bv_command):
+            bv_command.run()
         setuptools.command.build_py.build_py.run(self)
+        
+    def get_source_files(self):
+        source_files = \
+            setuptools.command.build_py.build_py.get_source_files(self)
+        bv_command = self.get_finalized_command("build_version")
+        fv_filename = bv_command.frozen_version_filename
+        if fv_filename not in source_files:
+            source_files.append(fv_filename)
+        return sorted(source_files)
 
 class BuildVersion(setuptools.Command):
     user_options = [
@@ -85,17 +103,23 @@ class BuildVersion(setuptools.Command):
 
     def initialize_options(self):
         self.version = None
+        self.frozen_version_filename = None
 
     def finalize_options(self):
         if self.version is None:
             self.version = self.distribution.metadata.version
+        if self.frozen_version_filename is None:
+            self.frozen_version_filename = os.path.join(
+                "cellprofiler", "frozen_version.py")
 
     def run(self):
-        with open(os.path.join("cellprofiler", "frozen_version.py"),
-                  "w") as fd:
+        with open(self.frozen_version_filename, "w") as fd:
             fd.write("version_string='%s'\n" %
                      cellprofiler.utilities.version.version_string)
             fd.write("dotted_version='%s'\n" % self.version)
+
+setuptools.command.sdist.sdist.sub_commands.insert(
+    0, ("build_version", should_build_version))
 
 class Test(setuptools.Command):
     user_options = [

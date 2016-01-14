@@ -33,7 +33,11 @@ def get_version():
         try:
             cellprofiler_basedir = get_git_dir()
             if cellprofiler_basedir is None:
-                return unknown_rev
+                try:
+                    import cellprofiler.frozen_version
+                    return cellprofiler.frozen_version.version_string
+                except ImportError:
+                    return unknown_rev
             logging.debug("Traversing file system")
             while True:
                 with open(os.path.join(git_dir, "HEAD"), "r") as fd:
@@ -79,6 +83,11 @@ def get_version():
         except (OSError, subprocess.CalledProcessError, ValueError), e:
             pass
 
+        try:
+            import cellprofiler.frozen_version
+            return cellprofiler.frozen_version.version_string
+        except ImportError:
+            pass
         # Give up
         return unknown_rev
     else:
@@ -90,7 +99,11 @@ def get_dotted_version():
         try:
             cellprofiler_dir = get_git_dir()
             if cellprofiler_dir is None:
-                return "0.0.0"
+                try:
+                    import cellprofiler.frozen_version
+                    return cellprofiler.frozen_version.dotted_version
+                except ImportError:
+                    return "0.0.0"
             with open(os.devnull, "r") as devnull:
                 output = subprocess.check_output(
                     ["git", "describe", "--tags"],

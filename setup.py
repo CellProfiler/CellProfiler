@@ -3,12 +3,9 @@ import glob
 import os
 import shlex
 import setuptools
-import setuptools.command.build_ext
-import setuptools.command.develop
-import setuptools.command.install
+import setuptools.command.build_py
 import setuptools.dist
 import sys
-import setuptools.command.install
 import cellprofiler.utilities.version
 
 # Recipe needed to get real distutils if virtualenv.
@@ -77,10 +74,10 @@ if sys.platform.startswith("win"):
     os.environ["PATH"] += os.path.pathsep + os.path.split(zmq.__file__)[0]
 
 
-class Install(setuptools.command.install.install):
+class BuildPy(setuptools.command.build_py.build_py):
     def run(self):
         self.run_command("build_version")
-        setuptools.command.install.install.run(self)
+        setuptools.command.build_py.build_py.run(self)
 
 class BuildVersion(setuptools.Command):
     user_options = [
@@ -348,7 +345,7 @@ if has_py2exe:
 
 cmdclass = {
     "build_version": BuildVersion,
-    "install": Install,
+    "build_py": BuildPy,
     "test": Test
 }
 

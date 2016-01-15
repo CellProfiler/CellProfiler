@@ -744,11 +744,7 @@ class AnalysisRunner(object):
                                            "analysis_worker.py")
                     args = [sys.executable, aw_path] + aw_args
                 else:
-                    aw_path = os.path.join(
-                        os.path.split(
-                            os.path.abspath(sys.argv[0]))[0],
-                                           "analysis_worker")
-                    args = [aw_path] + aw_args
+                    args = [sys.executable] + aw_args
 
                 worker = subprocess.Popen(args,
                                           env=find_worker_env(idx),

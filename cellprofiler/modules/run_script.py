@@ -47,6 +47,10 @@ WHEN_LAST = "Last"
 IO_IMAGE = "Image measurement"
 IO_OBJECTS = "Object measurement"
 
+DT_INTEGER = "Integer"
+DT_TEXT = "Text"
+DT_DECIMAL = "Decimal"
+
 class RunScript(cpm.CPModule):
     variable_revision_number = 1
     module_name = "RunScript"
@@ -61,7 +65,7 @@ class RunScript(cpm.CPModule):
             """This setting restricts RunScript to running the script on the
             <i>%(WHEN_FIRST)s</i> or <i>%(WHEN_LAST)s</i> image set of the
             group or runs the script on <i>%(WHEN_ALL)s</i> image sets.
-            """
+            """ % globals()
         )
         self.input_images = []
         self.input_image_count = cps.HiddenCount(
@@ -158,7 +162,7 @@ class RunScript(cpm.CPModule):
         doc="""<i>(Used only when importing object measurements)</i><br>
         This setting chooses the measurement's objects.
         """))
-        def object_fn():
+        def object_fn(group=group):
             if group.measurement_type == IO_IMAGE:
                 return cpmeas.IMAGE
             return group.objects_name.value
@@ -239,6 +243,33 @@ class RunScript(cpm.CPModule):
             doc="""<i>(Used only for object measurement types)</i>
             This setting chooses the name of the objects being measured.
             The measurement will be stored with others for these objects."""))
+        def dt_choice_fn(group=group):
+            '''The allowable datatypes for the data_type choice
+            
+            Image measurements can have text datatypes, but object measurements
+            cannot.
+            '''
+            if group.measurement_type == IO_IMAGE:
+                return [DT_DECIMAL, DT_INTEGER, DT_TEXT]
+            return [DT_DECIMAL, DT_INTEGER]
+        group.append("data_type",  cps.Choice(
+            "Data type",
+            [DT_DECIMAL, DT_INTEGER, DT_TEXT],
+            choices_fn = dt_choice_fn,
+            doc="""This setting determines the data type used to store the
+            measurement. CellProfiler must know the data type before the
+            script is run in order to create an appropriate record type
+            for your measurement in databases and similar. Data type choices
+            are:<br>
+            <ul><li><i>%(DT_INTEGER)s</i>: to store the measurement as a whole
+            number, rounding down to the next lowest integer.</li>
+            <li><i>%(DT_DECIMAL)s</i>: to store the measurement as a floating-
+            point number.</li>
+            <li><i>%(DT_TEXT)s</i>: to convert the measurement to text and
+            store as a string. <i>Note: "%(DT_TEXT)s" is only available for
+            image measurements.</i></li>
+            </ul>
+            """ %globals()))
         group.append("remover", 
                      cps.RemoveSettingButton(
                          "", "Remove this measurement", self.output_objects, group))
@@ -283,7 +314,7 @@ class RunScript(cpm.CPModule):
                        group.measurement_type]
             if group.measurement_type == IO_OBJECTS:
                 result.append(group.objects_name)
-            result.append(group.remover)
+            result += [group.data_type, group.remover]
         result.append(self.add_output_measurement_button)
         return result
         
@@ -399,6 +430,18 @@ class RunScript(cpm.CPModule):
         m = workspace.measurements
         for group in self.output_measurements:
             value = ld[group.variable_name.value]
+            if group.data_type == DT_INTEGER:
+                if group.measurement_type == IO_IMAGE:
+                    value = int(value)
+                else:
+                    value = np.atleast_1d(value).astype(int)
+            elif group.data_type == DT_DECIMAL:
+                if group.measurement_type == IO_IMAGE:
+                    value = float(value)
+                else:
+                    value = np.atleast_1d(value).astype(float)
+            elif not isinstance(value, basestring):
+                value = str(value)
             measurement_name = group.measurement_name.value
             if group.measurement_type == IO_IMAGE:
                 m[cpmeas.IMAGE, measurement_name] = value
@@ -424,5 +467,34 @@ class RunScript(cpm.CPModule):
                     "Variables names can only be composed of letters, digits"
                     " and the underbar (\"_\") character and must not start with"
                     " a digit.", variable)
-            
+    
+    def get_measurement_columns(self, pipeline):
+        result = []
+        for group in self.output_measurements:
+            if group.measurement_type == IO_IMAGE:
+                object_name = cpmeas.IMAGE
+            else:
+                object_name = group.objects_name.value
+            if group.data_type == DT_TEXT:
+                data_type = cpmeas.COLTYPE_VARCHAR
+            elif group.data_type == DT_INTEGER:
+                data_type = cpmeas.COLTYPE_INTEGER
+            else:
+                data_type = cpmeas.COLTYPE_FLOAT
+            result.append((
+            object_name, group.measurement_name.value, data_type))
+        return result
+    
+    def get_categories(self, pipeline, object_name):
+        result = [
+            c[1].split("_")[0] for c in self.get_measurement_columns(pipeline)
+            if c[0] == object_name]
+        return result
+    
+    def get_measurements(self, pipeline, object_name, category):
+        result = [
+            c[1][len(category)+1:]
+            for c in self.get_measurement_columns(pipeline)
+            if c[0] == object_name and c[1].startswith(category+"_")]
+        return result
         

@@ -267,7 +267,7 @@ objects = [objects]
         module.run(workspace)
         value = workspace.measurements[cpmeas.IMAGE, "Script_foo"]
         self.assertEqual(value, "Hello")
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 1)
         self.assertEqual(columns[0][0], cpmeas.IMAGE)
         self.assertEqual(columns[0][1], "Script_foo")
@@ -287,6 +287,8 @@ measurement2 = np.array([7.3, 8.4])
         group.measurement_type.value = R.IO_OBJECTS
         group.objects_name.value = "Nuclei"
         group.data_type.value = R.DT_INTEGER
+        module.add_output_measurement()
+        group = module.output_measurements[1]
         group.measurement_name.value = "Script_foo"
         group.variable_name.value = "measurement2"
         group.measurement_type.value = R.IO_OBJECTS
@@ -297,7 +299,7 @@ measurement2 = np.array([7.3, 8.4])
         self.assertSequenceEqual(value.tolist(), [5, 6] )
         value = workspace.measurements["Cells", "Script_foo"]
         self.assertSequenceEqual(value.tolist(), [7.3, 8.4] )
-        columns = module.get_measurement_columns()
+        columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 2)
         self.assertEqual(columns[0][0], "Nuclei")
         self.assertEqual(columns[0][1], "Script_foo")

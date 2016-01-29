@@ -143,6 +143,9 @@ NONE_CHOICE = "None"
 PLATE_TYPES = [NONE_CHOICE,"6","24","96","384","1536","5600"]
 COLOR_ORDER = ["red", "green", "blue", "cyan", "magenta", "yellow", "gray", "none"]
 GROUP_COL_DEFAULT = "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
+CT_IMAGE = "Image"
+CT_OBJECT = "Object"
+CLASSIFIER_TYPE = [CT_OBJECT, CT_IMAGE]
 
 ##############################################
 #
@@ -336,7 +339,7 @@ class DBContext(object):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 26
+    variable_revision_number = 27
     category = ["File Processing","Data Tools"]
 
     def create_settings(self):
@@ -610,6 +613,23 @@ class ExportToDatabase(cpm.CPModule):
             <p>You can manually change this choice in the properties file by
             edting the <i>class_table</i> field. Leave this field blank if you are 
             not using the classifier or do not need the table written to the database</p>.""")
+        
+        self.properties_classification_type = cps.Choice(
+            "Select the classification type",
+            CLASSIFIER_TYPE, doc="""
+            <i>(Used only if creating a properties file)</i><br>
+            Choose the type of classification this properties file will be used for. This 
+            setting will create and set a field called <i>classification_type</i>.
+            Note that if you are not using the classifier tool, this setting will be ignored.
+            <ul>
+            <li><i>%(CT_OBJECT)s:</i> Object-based classification, i.e., set <i>classification_type</i>
+            to "object" (or leave it blank).</li>
+            <li><i>%(CT_IMAGE)s:</i> Image-based classification, e.g., set <i>classification_type</i> 
+            to "image".</li>
+            </ul>
+            You can manually change this choice in the properties file by
+            edting the <i>classification_type</i> field.
+            """%globals())
         
         self.create_workspace_file = cps.Binary(
             "Create a CellProfiler Analyst workspace file?", False, doc = """
@@ -1223,6 +1243,7 @@ class ExportToDatabase(cpm.CPModule):
                     result += [group.divider]
                 result += [ self.add_filter_field_button ]
                 
+            result += [self.properties_classification_type]
             result += [self.properties_class_table_name]
         
         if self.save_cpa_properties.value or self.create_workspace_file.value : # Put divider here to make things easier to read
@@ -3346,9 +3367,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             db_info += 'db_passwd    = '
         
         spot_tables = '%sPer_Image'%(self.get_table_prefix())
+        from loadimages import C_HEIGHT, C_WIDTH
+        image_height = '%d'%(workspace.measurements.get_measurement(cpmeas.IMAGE, "_".join((C_HEIGHT, default_image_names[0]))))
+        image_width = '%d'%(workspace.measurements.get_measurement(cpmeas.IMAGE, "_".join((C_WIDTH, default_image_names[0]))))
+        classification_type = "image" if self.properties_classification_type.value == CT_IMAGE else ""
         
         for object_name in object_names:
-        
             if object_name:
                 if self.objects_choice != O_NONE:
                     if self.separate_object_tables == OT_COMBINE :
@@ -3594,6 +3618,27 @@ classifier_ignore_columns  =  table_number_key_column, image_number_key_column, 
 # ==== Other ====
 # Specify the approximate diameter of your objects in pixels here.
 image_tile_size   =  50
+
+# Provides the image width and height. Used for per-image classification.
+# If not set, it will be obtained from the Image_Width and Image_Height 
+# measurements in CellProfiler.
+
+image_width  = %(image_width)s
+image_height = %(image_height)s
+
+# OPTIONAL
+# Image Gallery can use a different tile size (in pixels) to create thumbnails for images
+# If not set, it will be the same as image_tile_size
+
+image_size = 
+
+# ======== Classification type ========
+# OPTIONAL
+# CPA 2.2.0 allows image classification instead of object classification.
+# If left blank or set to "object", then Classifier will fetch objects (default).
+# If set to "image", then Classifier will fetch whole images instead of objects.
+
+classification_type  = %(classification_type)s
 
 # ======== Auto Load Training Set ========
 # OPTIONAL
@@ -4105,6 +4150,16 @@ CP version : %d\n""" % version_number
         # Added view creation to object table settings
         setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],
                                                    setting_values[OT_IDX])
+        
+        if (not from_matlab) and variable_revision_number == 26:
+            #
+            # added classification_type setting
+            #
+            setting_values = (
+                setting_values[:SETTING_FIXED_SETTING_COUNT_V26] +
+                [ CT_OBJECT ] + 
+                setting_values[SETTING_FIXED_SETTING_COUNT_V26:])            
+            variable_revision_number = 27
             
         return setting_values, variable_revision_number, from_matlab
     

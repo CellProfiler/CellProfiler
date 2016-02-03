@@ -1341,7 +1341,8 @@ class ExportToDatabase(cpm.CPModule):
                 self.workspace_measurement_count, self.experiment_name, 
                 self.location_object, self.properties_class_table_name,
                 self.wants_relationship_table_setting, self.allow_overwrite,
-                self.wants_properties_image_url_prepend]
+                self.wants_properties_image_url_prepend,
+                self.properties_classification_type]
         
         # Properties: Image groups
         for group in self.image_groups:
@@ -1662,6 +1663,7 @@ class ExportToDatabase(cpm.CPModule):
         finally:
             if needs_close:
                 self.connection.commit()
+                self.cursor.close()
                 self.connection.close()
                 self.connection = None
                 self.cursor = None
@@ -3367,9 +3369,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             db_info += 'db_passwd    = '
         
         spot_tables = '%sPer_Image'%(self.get_table_prefix())
-        from loadimages import C_HEIGHT, C_WIDTH
-        image_height = '%d'%(workspace.measurements.get_measurement(cpmeas.IMAGE, "_".join((C_HEIGHT, default_image_names[0]))))
-        image_width = '%d'%(workspace.measurements.get_measurement(cpmeas.IMAGE, "_".join((C_WIDTH, default_image_names[0]))))
         classification_type = "image" if self.properties_classification_type.value == CT_IMAGE else ""
         
         for object_name in object_names:
@@ -3623,8 +3622,8 @@ image_tile_size   =  50
 # If not set, it will be obtained from the Image_Width and Image_Height 
 # measurements in CellProfiler.
 
-image_width  = %(image_width)s
-image_height = %(image_height)s
+# image_width  = 1000
+# image_height = 1000
 
 # OPTIONAL
 # Image Gallery can use a different tile size (in pixels) to create thumbnails for images

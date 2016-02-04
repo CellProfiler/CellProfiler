@@ -817,7 +817,8 @@ class FilterObjects(cpm.CPModule):
         rules_directory = self.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
         if not os.path.isfile(path):
-            raise cps.ValidationError("No such rules file: %s"%path, rules_file)
+            raise cps.ValidationError("No such rules file: %s"%path, 
+                                      self.rules_file_name)
         else:
             rules = cprules.Rules()
             rules.parse(path)
@@ -828,7 +829,8 @@ class FilterObjects(cpm.CPModule):
         directory_ = self.rules_directory.get_absolute_path()
         path_ = os.path.join(directory_, file_)
         if not os.path.isfile(path_):
-            raise cps.ValidationError("No such rules file: %s"%path_, file_)
+            raise cps.ValidationError("No such rules file: %s" % path_, 
+                                      self.rules_file_name)
         else:
             from sklearn.externals import joblib
             classifier, bin_labels, name = joblib.load(path_)

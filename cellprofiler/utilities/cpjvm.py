@@ -67,18 +67,20 @@ def get_patcher_args(class_path):
 
 def get_jars():
     '''Get the final list of JAR files passed to javabridge'''
-    imagej_path = get_path_to_jars()
-
-    jar_files = [os.path.join(imagej_path, f)
-                 for f in os.listdir(imagej_path)
-                 if f.lower().endswith(".jar")]
-    class_path = javabridge.JARS + jar_files
-
+    
+    class_path = []
     if os.environ.has_key("CLASSPATH"):
         class_path += os.environ["CLASSPATH"].split(os.pathsep)
         logging.debug(
             "Adding Java class path from environment variable, ""CLASSPATH""")
         logging.debug("    CLASSPATH="+os.environ["CLASSPATH"])
+
+    imagej_path = get_path_to_jars()
+
+    jar_files = [os.path.join(imagej_path, f)
+                 for f in os.listdir(imagej_path)
+                 if f.lower().endswith(".jar")]
+    class_path += javabridge.JARS + jar_files
 
     plugin_directory = cpprefs.get_ij_plugin_directory()
     if (plugin_directory is not None and

@@ -1,7 +1,9 @@
 '''Classify - train or use a classifier'''
 
+import bisect
 import hashlib
 import h5py
+import logging
 import numpy as np
 import os
 import pickle
@@ -10,7 +12,14 @@ from sklearn.decomposition import RandomizedPCA
 import tempfile
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
+
+logger = logging.getLogger(__name__)
+
+USE_DOT = True
+N_ESTIMATORS = 25
+MIN_SAMPLES_PER_LEAF = 10
 
 MODE_CLASSIFY = "Classify"
 MODE_TRAIN = "Train"
@@ -73,7 +82,7 @@ class Classify(cpm.CPModule):
         self.add_output_button = cps.DoSomething(
             "Add another output", "Add", self.add_output)
     
-    def get_class_names(self):
+    def get_class_names(self, ignore=None):
         result = []
         if self.mode == MODE_TRAIN:
             if self.wants_background_class:
@@ -123,6 +132,7 @@ class Classify(cpm.CPModule):
         result = [
             self.object_class_count, self.image_count, self.output_count,
             self.mode, self.path, self.filename, 
+            self.radius, self.n_features,
             self.wants_background_class, self.background_class_name]
         for group in self.object_classes:
             result += group.pipeline_settings()
@@ -134,12 +144,16 @@ class Classify(cpm.CPModule):
             
     def visible_settings(self):
         result = [self.mode, self.path, self.filename]
+        if self.mode == MODE_TRAIN:
+            result += [self.radius, self.n_features]
         for group in self.images:
             result += group.visible_settings()
         result.append(self.add_image_button)
         if self.mode == MODE_TRAIN:
             self.filename.mode = cps.FilenameText.MODE_OVERWRITE
-            result += [self.wants_background_class, self.background_class_name]
+            result.append(self.wants_background_class)
+            if self.wants_background_class:
+                result.append(self.background_class_name)
             for group in self.object_classes:
                 result += group.visible_settings()
             result.append(self.add_objects_button)
@@ -261,28 +275,32 @@ class Classify(cpm.CPModule):
             #
             # Sample
             #
-            d = {}
-            for idx, class_name in enumerate(c.get_class_names()):
-                gt = c.get_ground_truth(class_name)
-                if name_in is not None and n_error_samples > 0:
-                    probs = c.run_pipeline(name_in, name_in, gt)[:, idx]
-                    order = np.argsort(probs)
-                    error_idx = order[:n_error_samples]
-                    other_idx = order[n_error_samples:]
-                else:
-                    error_idx = np.zeros(0, int)
-                    other_idx = np.arange(gt.shape[0])
-                if len(other_idx) > n_random_samples:
-                    r = c.random_state(str(name_in)+name_out+class_name)
-                    other_idx = r.choice(
-                        other_idx, size=n_random_samples, replace=False)
-                sample_idx = np.hstack((error_idx, other_idx))
-                d[class_name] = sample_idx
-            c.add_sampling(name_out, d)
-            c.make_filter_bank(name_out, name_out, self.n_features.value)
-            samples, classes = c.sample(sampling_name)
+            fb_sample_name = name_out + "_filter_bank"
+            classifier_sample_name = name_out + "_classifier"
+            for sample_name in fb_sample_name, classifier_sample_name:
+                d = {}
+                for idx, class_name in enumerate(c.get_class_names()):
+                    gt = c.get_ground_truth(class_name)
+                    if name_in is not None and n_error_samples > 0:
+                        probs = c.run_pipeline(name_in, name_in, gt)[:, idx]
+                        order = np.argsort(probs)
+                        error_idx = order[:n_error_samples]
+                        other_idx = order[n_error_samples:]
+                    else:
+                        error_idx = np.zeros(0, int)
+                        other_idx = np.arange(gt.shape[0])
+                    if len(other_idx) > n_random_samples:
+                        r = c.random_state(str(name_in)+name_out+class_name)
+                        other_idx = r.choice(
+                            other_idx, size=n_random_samples, replace=False)
+                    sample_idx = np.hstack((error_idx, other_idx))
+                    d[class_name] = sample_idx
+                c.add_sampling(sample_name, d)
+            samples, classes = c.sample(fb_sample_name)
+            c.make_filter_bank(samples, classes, name_out, self.n_features.value)
+            samples, classes = c.sample(classifier_sample_name)
             filtered = c.use_filter_bank(name_out, samples)
-            c.fit(classifier_name, filtered, classes)
+            c.fit(name_out, filtered, classes)
         
     def run_classify(self, workspace):
         pixels = self.get_5d_image(workspace)
@@ -310,7 +328,30 @@ class Classify(cpm.CPModule):
                         ii, jj))
                     samples = c.get_samples(pixels, coords)
                     probs = c.run_final_pipeline(samples)
-                    prob_maps[:, ii, jj] = probs[prob_idxs]
+                    prob_maps[:, i:iend, j:jend] = \
+                        probs[:, prob_idxs].reshape(iend - i, jend - j)
+        for i, group in enumerate(self.outputs):
+            image_name = group.output_image.value
+            image = cpi.Image(prob_maps[i])
+            workspace.image_set.add(image_name, image)
+        if self.show_window:
+            workspace.display_data.input_images = [
+                pixels[i].reshape(*pixels.shape[-2:]) 
+                for i in range(pixels.shape[0])]
+            workspace.display_data.output_images = [
+                prob_maps[i] for i in range(len(prob_maps))]
+            
+    def display(self, workspace, figure):
+        if self.mode == MODE_CLASSIFY:
+            figure.set_subplots((2, max(len(self.images), len(self.outputs))))
+            for i, (group, image) in enumerate(
+                zip(self.images, workspace.display_data.input_images)):
+                figure.subplot_imshow_bw(0, i, image,
+                                         title = group.image_name.value)
+            for i, (group, image) in enumerate(
+                zip(self.outputs, workspace.display_data.output_images)):
+                figure.subplot_imshow_bw(1, i, image,
+                                         title = group.output_image.value)
             
             
 #
@@ -364,6 +405,7 @@ class PixelClassifier(object):
         return self
     
     def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.f.flush()
         del self.root
         del self.g_training_set
         del self.g_filters
@@ -427,6 +469,13 @@ class PixelClassifier(object):
         '''
         return self.g_training_set[class_name]
     
+    @property
+    def gt_chunk_size(self):
+        '''The size of a chunk of ground truth that fits in memory'''
+        kernel_size = self.get_kernel().shape[0]
+        chunk_size = int(10*1000*1000 / kernel_size)
+        return chunk_size
+        
     def add_ground_truth(self, class_name, image, pixels):
         '''Add ground truth to a class
         
@@ -434,8 +483,7 @@ class PixelClassifier(object):
         image - an image whose axes are C, T, Z, Y and X
         pixels - an S x 5 matrix of S samples and 5 pixel coordinates
         '''
-        kernel_size = self.get_kernel().shape[0]
-        chunk_size = int(10*1000*1000 / kernel_size)
+        chunk_size = self.gt_chunk_size
         ds = self.get_ground_truth(class_name)
         ds_idx = ds.shape[0]
         ds.resize(ds_idx + pixels.shape[0], axis = 0)
@@ -507,15 +555,46 @@ class PixelClassifier(object):
                 sampling = g[class_name][:]
                 classes.append(np.ones(len(sampling), np.uint8) * idx)
                 gt = self.get_ground_truth(class_name)
-                samples.append(gt[sampling, :])
+                #
+                # h5py datasets are not addressable via an array of indices
+                # in the way that numpy arrays are. A mask of the array elements
+                # to be processed is handled by a loop through each selected
+                # element; it takes ~ hours to process arrays of our size. The
+                # ground truth may be too large to bring into memory as a
+                # Numpy array.
+                #
+                # We sort the sampling indices and then process in chunks.
+                #
+                if len(gt) == len(sampling):
+                    logger.debug("Extracting %d samples from %s" % 
+                                 (len(sampling), class_name))
+                    samples.append(gt[:])
+                else:
+                    chunk_size = self.gt_chunk_size
+                    sampling.sort()
+                    sindx = 0
+                    for gtidx in range(0, len(gt), chunk_size):
+                        gtidx_end = min(gtidx+chunk_size, len(gt))
+                        if sampling[sindx] >= gtidx_end:
+                            continue
+                        sindx_end = bisect.bisect_left(
+                            sampling[sindx:], gtidx_end) + sindx
+                        logger.debug(
+                            "Extracting %d samples from %s %d:%d" %
+                            (sindx_end-sindx, class_name, gtidx, gtidx_end))
+                        samples.append(gt[:][sampling[sindx:sindx_end], :])
+                        sindx = sindx_end
+                        if sindx >= len(gt):
+                            break
         return np.vstack(samples), np.hstack(classes)
     
-    def make_filter_bank(self, sampling_name, filter_bank_name, n_filters, 
+    def make_filter_bank(self, sampling, classes, filter_bank_name, n_filters, 
                          algorithm=None):
         '''Make a filter bank using PCA
         
-        sampling_name - the name of the subsampling to use (and the name of
-                        the filter bank to create)
+        sampling - a sampling of the ground truth
+        classes - a vector of the same length as the sampling giving the
+                  indexes of the classes of each sample
         filter_bank_name - the name to assign to the filter bank
         n_filters - # of filters to create
         
@@ -524,15 +603,16 @@ class PixelClassifier(object):
                     is RandomizedPCA.
         '''
         if algorithm is None:
-            r = self.random_state(sampling_name)
+            r = self.random_state(filter_bank_name)
             algorithm = RandomizedPCA(n_filters,
                                       random_state = r)
-        sampling, classes = self.sample(sampling_name)
         algorithm.fit(sampling, classes)
         if hasattr(algorithm, "components_"):
             components = algorithm.components_
             if len(components) > n_filters:
                 components = components[:n_filters]
+            if filter_bank_name in self.g_filters.keys():
+                del self.g_filters[filter_bank_name]
             ds = self.g_filters.create_dataset(filter_bank_name,
                                                data = components)
             ds.attrs[A_CLASS] = CLS_FILTER
@@ -546,11 +626,21 @@ class PixelClassifier(object):
         '''Transform a sample using a filter bank'''
         ds = self.g_filters[filter_bank_name]
         if ds.attrs[A_CLASS] == CLS_FILTER:
-            #
-            # A dot product... but cluster's np.dot is so XXXXed
-            #
-            result = np.sum(sample[:, :, np.newaxis] * 
-                            ds[np.newaxis, :, :], 1)
+            if USE_DOT:
+                result = np.dot(sample, ds[:].T)
+            else:
+                #
+                # A dot product... but cluster's np.dot is so XXXXed
+                #
+                chunk_size = self.gt_chunk_size
+                result = []
+                for idx in range(0, len(sample), chunk_size):
+                    idx_end = min(idx + chunk_size, len(sample))
+                    logger.debug("Processing dot product chunk %d:%d of %d" %
+                                 (idx, idx_end, len(sample)))
+                    result.append(np.sum(sample[idx:idx_end, :, np.newaxis] * 
+                                         ds[:].T[np.newaxis, :, :], 1))
+                result = np.vstack(result)
         else:
             algorithm = pickle.loads(ds.value)
             result = algorithm.transform(sample)
@@ -565,7 +655,9 @@ class PixelClassifier(object):
         algorithm - algorithm to use to train
         '''
         if algorithm is None:
-            algorithm = ExtraTreesClassifier()
+            algorithm = ExtraTreesClassifier(
+                n_estimators=N_ESTIMATORS,
+                min_samples_leaf = MIN_SAMPLES_PER_LEAF)
         algorithm.fit(sample, classes)
         s = pickle.dumps(algorithm)
         ds = self.g_classifiers.create_dataset(classifier_name, data = s)
@@ -589,6 +681,8 @@ class PixelClassifier(object):
                                  sample)
     
 if __name__ == "__main__":
+    logging.basicConfig()
+    logging.root.setLevel(logging.DEBUG)
     import cellprofiler.pipeline as cpp
     import cellprofiler.preferences as cpprefs
     cpprefs.set_default_output_directory("c:/temp/output/classify")
@@ -596,3 +690,5 @@ if __name__ == "__main__":
     pipeline.load("c:/temp/output/classify/classify.cpproj")
     module = pipeline.modules()[-1]
     module.post_group(None, None)
+    from cellprofiler.utilities.cpjvm import cp_stop_vm
+    cp_stop_vm()

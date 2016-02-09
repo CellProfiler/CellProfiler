@@ -18,26 +18,38 @@ import cellprofiler.settings as cps
 logger = logging.getLogger(__name__)
 
 USE_DOT = True
-N_ESTIMATORS = 25
-MIN_SAMPLES_PER_LEAF = 10
+DEFAULT_N_ESTIMATORS = 25
+DEFAULT_MIN_SAMPLES_PER_LEAF = 10
+DEFAULT_RADIUS = 9
+DEFAULT_N_FEATURES = 100
 
 MODE_CLASSIFY = "Classify"
 MODE_TRAIN = "Train"
 
+AA_ADVANCED = "Advanced"
+AA_AUTOMATIC = "Automatic"
+
 G_TRAINING_SET = "TrainingSet"
 DS_KERNEL = "Kernel"
+DS_IMAGE_NUMBER = "ImageNumber"
+DS_COORDS = "Coords"
 A_VERSION = "Version"
 A_CLASS = 'Class'
 A_DIGEST = 'MD5Digest'
 G_SAMPLING = "Sampling"
 G_FILTERS = "Filters"
 G_CLASSIFIERS = "Classifiers"
+G_IMAGES = "Images"
 
 CLS_GROUND_TRUTH = "GroundTruth"
 CLS_KERNEL = "Kernel"
 CLS_FILTER = "Filter"
 CLS_CLASSIFIER = "Classifier"
 CLS_SAMPLING = "Sampling"
+
+ROUNDS = [("initial", 100000, 0),
+          ("middle", 75000, 25000),
+          ("final", 50000, 50000)]
 
 class Classify(cpm.CPModule):
     variable_revision_number = 1
@@ -46,8 +58,48 @@ class Classify(cpm.CPModule):
     def create_settings(self):
         self.mode = cps.Choice("Classify or train?", 
                                [MODE_CLASSIFY, MODE_TRAIN])
-        self.radius = cps.Integer("Radius", 9, 1)
-        self.n_features = cps.Integer("Number of features", 100, 1)
+        self.advanced_or_automatic = cps.Choice(
+            "Configuration mode", [AA_AUTOMATIC, AA_ADVANCED],
+            doc = """Do you want to automatically choose the training parameters
+            or use the defaults?""")
+        self.radius = cps.Integer("Radius", DEFAULT_RADIUS, 1)
+        self.n_features = cps.Integer(
+            "Number of features", DEFAULT_N_FEATURES, 1,
+            doc = """The classifier runs a feature reduction set. This creates
+            <i>Eigentextures</i> which are representative texture patches
+            found throughout the image. The module scores each patch around
+            a pixel according to how much it has each of these textures and
+            those scores are fed into the final classifier. Raise the number of
+            features if some of the textures or edges of your classes are
+            misclassified. Lower the number of features to improve processing
+            time or to reduce overfitting if you have a smaller amount of
+            ground truth.
+            """)
+        self.n_estimators = cps.Integer(
+            "Number of estimators", DEFAULT_N_ESTIMATORS, 1,
+            doc = """The classifier uses a voting scheme where it trains this
+            many estimators. It purposefully does a bad job training and makes
+            up for this deficit by having many poor classification judges.
+            This protects against overfitting by not relying on having a single
+            classifier that is very good at classifying the ground truth, but
+            mistakenly uses irrelevant information to do so. Raise the number
+            of estimators if the classifier is making obvious mistakes with
+            unwarranted certainty. Lower the number of estimators to improve
+            processing speed.""")
+        self.min_samples_per_leaf = cps.Integer(
+            "Minimum samples per leaf", DEFAULT_MIN_SAMPLES_PER_LEAF, 1,
+            doc = """This setting determines the minimum number of ground truth
+            pixels that the classifier will use to split a decision tree.
+            There must be at least this number of example pixels in each branch
+            for the classifier to have confidence that the split is real and
+            not just an artifact of an irrelevant measurement.
+            
+            Lower this setting if the classifier does a good job on most of the
+            pixels but does not draw sharp distinctions between one class and
+            another at the border between the classes (e.g. at the edges of
+            cells). Raise this setting if the classifier misclassifies pixels
+            that are clearly not the right class - this is overtraining.
+            """)
         self.path = cps.DirectoryPath("Classifier folder")
         def get_directory_fn():
             '''Get the directory for the file name'''
@@ -132,7 +184,9 @@ class Classify(cpm.CPModule):
         result = [
             self.object_class_count, self.image_count, self.output_count,
             self.mode, self.path, self.filename, 
-            self.radius, self.n_features,
+            self.advanced_or_automatic,
+            self.radius, self.n_features, self.n_estimators, 
+            self.min_samples_per_leaf,
             self.wants_background_class, self.background_class_name]
         for group in self.object_classes:
             result += group.pipeline_settings()
@@ -145,7 +199,10 @@ class Classify(cpm.CPModule):
     def visible_settings(self):
         result = [self.mode, self.path, self.filename]
         if self.mode == MODE_TRAIN:
-            result += [self.radius, self.n_features]
+            result.append(self.advanced_or_automatic)
+            if self.advanced_or_automatic == AA_ADVANCED:
+                result += [self.radius, self.n_features, self.n_estimators,
+                           self.min_samples_per_leaf]
         for group in self.images:
             result += group.visible_settings()
         result.append(self.add_image_button)
@@ -172,16 +229,39 @@ class Classify(cpm.CPModule):
             del sequence[:]
             for idx in range(count):
                 add_fn()
-                
+
+    def is_aggregation_module(self):
+        return self.mode == MODE_TRAIN
+
     def get_classifier(self, mode):
         path = os.path.join(self.path.get_absolute_path(), self.filename.value)
         return PixelClassifier(path, mode)
+    
+    def get_radius(self):
+        if self.advanced_or_automatic == AA_AUTOMATIC:
+            return DEFAULT_RADIUS
+        return self.radius.value
+    
+    def get_n_features(self):
+        if self.advanced_or_automatic == AA_AUTOMATIC:
+            return DEFAULT_N_FEATURES
+        return self.n_features.value
+    
+    def get_n_estimators(self):
+        if self.advanced_or_automatic == AA_AUTOMATIC:
+            return DEFAULT_N_ESTIMATORS
+        return self.n_estimators.value
+    
+    def get_min_samples_per_leaf(self):
+        if self.advanced_or_automatic == AA_AUTOMATIC:
+            return DEFAULT_MIN_SAMPLES_PER_LEAF
+        return self.min_samples_per_leaf.value
     
     def prepare_group(self, workspace, grouping, image_numbers):
         if self.mode == MODE_TRAIN:
             with self.get_classifier("w") as c:
                 assert isinstance(c, PixelClassifier)
-                r = self.radius.value
+                r = self.get_radius()
                 i, j = np.mgrid[-r:r+1, -r:r+1]
                 kernel_mask = i*i + j*j <= r*r
                 n_features = np.sum(kernel_mask)
@@ -218,8 +298,10 @@ class Classify(cpm.CPModule):
         
     def run_train(self, workspace):
         pixels = self.get_5d_image(workspace)
+        image_number = workspace.measurements.image_number
         with self.get_classifier("a") as c:
             assert isinstance(c, PixelClassifier)
+            c.add_image(pixels, image_number)
             bg = np.ones(pixels.shape[-2:], bool)
             gt = []
             for group in self.object_classes:
@@ -235,27 +317,18 @@ class Classify(cpm.CPModule):
             for object_name, fg in gt:
                 i, j = np.where(fg)
                 c.add_ground_truth(
-                    object_name, 
-                    pixels, 
+                    object_name,
+                    image_number,
                     np.column_stack([np.zeros(len(i), int)] * 3 + [i, j]))
     
     def post_group(self, workspace, grouping):
         if self.mode == MODE_TRAIN:
-            self.do_training_round(
-                None, 
-                "initial", 
-                100000 / len(self.object_classes),
-                0)
-            self.do_training_round(
-                "initial", 
-                "middle", 
-                75000 / len(self.object_classes),
-                25000 / len(self.object_classes))
-            self.do_training_round(
-                "middle",
-                "final",
-                75000 / len(self.object_classes),
-                25000 / len(self.object_classes))
+            last_round_name = None
+            for round_name, n_random, n_error in ROUNDS:
+                self.do_training_round(
+                    last_round_name, round_name,
+                    n_random / len(self.get_class_names()),
+                    n_error / len(self.get_class_names()))
             with self.get_classifier("a") as c:
                 assert isinstance(c, PixelClassifier)
                 c.config_final_pipeline("final", "final")
@@ -297,10 +370,14 @@ class Classify(cpm.CPModule):
                     d[class_name] = sample_idx
                 c.add_sampling(sample_name, d)
             samples, classes = c.sample(fb_sample_name)
-            c.make_filter_bank(samples, classes, name_out, self.n_features.value)
+            c.make_filter_bank(
+                samples, classes, name_out, self.get_n_features())
             samples, classes = c.sample(classifier_sample_name)
             filtered = c.use_filter_bank(name_out, samples)
-            c.fit(name_out, filtered, classes)
+            algorithm = ExtraTreesClassifier(
+                n_estimators = self.get_n_estimators(),
+                min_samples_leaf=self.get_min_samples_per_leaf())
+            c.fit(name_out, filtered, classes, algorithm)
         
     def run_classify(self, workspace):
         pixels = self.get_5d_image(workspace)
@@ -395,11 +472,14 @@ class PixelClassifier(object):
             self.g_filters = self.root.create_group(G_FILTERS)
             self.g_sampling = self.root.create_group(G_SAMPLING)
             self.g_classifiers = self.root.create_group(G_CLASSIFIERS)
+            self.g_images = self.root.create_group(G_IMAGES)
         else:
             self.g_training_set = self.root[G_TRAINING_SET]
             self.g_filters = self.root[G_FILTERS]
             self.g_sampling = self.root[G_SAMPLING]
             self.g_classifiers = self.root[G_CLASSIFIERS]
+            self.g_images = self.root[G_IMAGES]
+        self.classifier_cache = {}
         
     def __enter__(self):
         return self
@@ -446,13 +526,12 @@ class PixelClassifier(object):
         return self.root[DS_KERNEL][:]
     
     def add_class(self, class_name):
-        n_features = self.get_kernel().shape[0]
         ds = self.g_training_set.create_dataset(
             class_name,
-            shape = (0, n_features),
-            dtype = np.float32,
-            chunks = (256, n_features),
-            maxshape = (None, n_features))
+            shape = (0, 6),
+            dtype = np.int32,
+            chunks = (4096, 6),
+            maxshape = (None, 6))
         ds.attrs[A_CLASS] = CLS_GROUND_TRUTH
         
     def get_class_names(self):
@@ -464,8 +543,8 @@ class PixelClassifier(object):
         
         class_name - the name of the class
         
-        returns an S X N matrix of S samples each with N pixels sampled using
-        the kernel.
+        returns an S X 6 where the first index is the image number and
+        the remaining are the coordinates of the GT pixel in C, T, Z, Y, X form
         '''
         return self.g_training_set[class_name]
     
@@ -473,26 +552,38 @@ class PixelClassifier(object):
     def gt_chunk_size(self):
         '''The size of a chunk of ground truth that fits in memory'''
         kernel_size = self.get_kernel().shape[0]
-        chunk_size = int(10*1000*1000 / kernel_size)
+        chunk_size = int(50*1000*1000 / kernel_size)
         return chunk_size
+    
+    @property
+    def pix_chunk_size(self):
+        return 1000 * 1000
+    
+    def add_image(self, image, image_number):
+        image_number = str(image_number)
+        if image_number in self.g_images.keys():
+            del self.g_images[image_number]
+        self.g_images.create_dataset(image_number, data = image)
         
-    def add_ground_truth(self, class_name, image, pixels):
+    def get_image(self, image_number):
+        image_number = str(image_number)
+        return self.g_images[image_number].value
+        
+    def add_ground_truth(self, class_name, image_number, coordinates):
         '''Add ground truth to a class
         
         class_name - name of the class
-        image - an image whose axes are C, T, Z, Y and X
+        image_number - the image number as reported in add_image
         pixels - an S x 5 matrix of S samples and 5 pixel coordinates
         '''
-        chunk_size = self.gt_chunk_size
+        coordinates = np.column_stack(
+            (np.ones(coordinates.shape[0], coordinates.dtype) * image_number,
+             coordinates))
         ds = self.get_ground_truth(class_name)
         ds_idx = ds.shape[0]
-        ds.resize(ds_idx + pixels.shape[0], axis = 0)
-        for idx in range(0, pixels.shape[0], chunk_size):
-            idx_end = min(idx + chunk_size, pixels.shape[0])
-            samples = self.get_samples(image, pixels[idx:idx_end])
-            ds_idx_end = ds_idx + samples.shape[0]
-            ds[ds_idx:ds_idx_end, :] = samples
-            ds_idx = ds_idx_end
+        ds.resize(ds_idx + coordinates.shape[0], axis = 0)
+        ds[ds_idx:] = coordinates
+        
         if A_DIGEST in self.g_training_set.attrs:
             del self.g_training_set.attrs[A_DIGEST]
         
@@ -570,7 +661,7 @@ class PixelClassifier(object):
                                  (len(sampling), class_name))
                     samples.append(gt[:])
                 else:
-                    chunk_size = self.gt_chunk_size
+                    chunk_size = self.pix_chunk_size
                     sampling.sort()
                     sindx = 0
                     for gtidx in range(0, len(gt), chunk_size):
@@ -586,7 +677,26 @@ class PixelClassifier(object):
                         sindx = sindx_end
                         if sindx >= len(gt):
                             break
-        return np.vstack(samples), np.hstack(classes)
+        samples = np.vstack(samples)
+        classes = np.hstack(classes)
+        #
+        # Order by image number.
+        #
+        order = np.lexsort(
+            [samples[:, _] for _ in reversed(range(samples.shape[1]))])
+        samples = samples[order]
+        classes = classes[order]
+        counts = np.bincount(samples[:, 0])
+        image_numbers = np.where(counts > 0)[0]
+        counts = counts[image_numbers]
+        idxs = np.hstack([[0], np.cumsum(counts)])
+        result = []
+        for image_number, idx, idx_end in zip(
+            image_numbers, idxs[:-1], idxs[1:]):
+            image = self.get_image(image_number)
+            result.append(self.get_samples(image, samples[idx:idx_end, 1:]))
+        
+        return np.vstack(result), classes
     
     def make_filter_bank(self, sampling, classes, filter_bank_name, n_filters, 
                          algorithm=None):
@@ -660,11 +770,17 @@ class PixelClassifier(object):
                 min_samples_leaf = MIN_SAMPLES_PER_LEAF)
         algorithm.fit(sample, classes)
         s = pickle.dumps(algorithm)
+        if classifier_name in self.g_classifiers.keys():
+            del self.g_classifiers[classifier_name]
         ds = self.g_classifiers.create_dataset(classifier_name, data = s)
         ds.attrs[A_CLASS] = CLS_CLASSIFIER
         
     def predict_proba(self, classifier_name, sample):
-        algorithm = pickle.loads(self.g_classifiers[classifier_name].value)
+        if classifier_name not in self.classifier_cache:
+            algorithm = pickle.loads(self.g_classifiers[classifier_name].value)
+            self.classifier_cache[classifier_name] = algorithm
+        else:
+            algorithm = self.classifier_cache[classifier_name]
         return algorithm.predict_proba(sample)
     
     def run_pipeline(self, filter_bank_name, classifier_name, sample):

@@ -38,7 +38,8 @@ import scipy.ndimage as scind
 from scipy.sparse import coo_matrix
 import traceback
 
-from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
+from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT, \
+     M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
@@ -274,8 +275,7 @@ class FilterObjects(cpm.CPModule):
     def get_class_choices(self, pipeline):
         try:
             if self.mode == MODE_CLASSIFIERS:
-                classifier = self.get_classifier()
-                return [str(i) for i in range(1, classifier.n_classes_+1)]
+                return self.get_bin_labels()
             elif self.mode == MODE_RULES:
                 rules = self.get_rules()
                 nclasses = len(rules.rules[0].weights[0])
@@ -380,6 +380,8 @@ class FilterObjects(cpm.CPModule):
         if self.mode == MODE_RULES or self.mode == MODE_CLASSIFIERS:
             result += [self.rules_file_name, self.rules_directory,
                        self.rules_class]
+            self.rules_class.text = "Class number" if self.mode == MODE_RULES \
+                else "Class name"
             try:
                 self.rules_class.test_valid(None)
             except:
@@ -824,17 +826,32 @@ class FilterObjects(cpm.CPModule):
             rules.parse(path)
             return rules
 
-    def get_classifier(self):
+    def load_classifier(self):
+        '''Load the classifier pickle if not cached
+
+        returns classifier, bin_labels, name and features
+        '''
+        d = self.get_dictionary()
         file_ = self.rules_file_name.value
         directory_ = self.rules_directory.get_absolute_path()
         path_ = os.path.join(directory_, file_)
-        if not os.path.isfile(path_):
-            raise cps.ValidationError("No such rules file: %s" % path_, 
-                                      self.rules_file_name)
-        else:
-            from sklearn.externals import joblib
-            classifier, bin_labels, name = joblib.load(path_)
-            return classifier
+        if path_ not in d:
+            if not os.path.isfile(path_):
+                raise cps.ValidationError("No such rules file: %s" % path_, 
+                                          self.rules_file_name)
+            else:
+                from sklearn.externals import joblib
+                d[path_] = joblib.load(path_)
+        return d[path_]
+    
+    def get_classifier(self):
+        return self.load_classifier()[0]
+    
+    def get_bin_labels(self):
+        return self.load_classifier()[1]
+    
+    def get_classifier_features(self):
+        return self.load_classifier()[3]
 
     def keep_by_rules(self, workspace, src_objects):
         '''Keep objects according to rules
@@ -864,20 +881,20 @@ class FilterObjects(cpm.CPModule):
         :param src_objects: filter these objects (uses measurement indexes instead)
         :return: indexes (base 1) of the objects that pass
         '''
-        import re
         classifier = self.get_classifier()
-        target_class = int(self.rules_class.value)
-        feature_names_set = [c[1] for c in workspace.pipeline.get_measurement_columns(self) if c[0] == self.object_name.value]        
-        feature_names_ordered = np.array(workspace.measurements.get_feature_names(self.object_name.value))
-        extra_features = list(set(feature_names_ordered) - set(feature_names_set))
-        mask = np.in1d(feature_names_ordered, extra_features)        
-        if mask.sum() > 0:
-            feature_names = feature_names_ordered[~mask]
-        else:
-            feature_names = feature_names_ordered
-        regex = re.compile('ImageNumber|Number|Location_Center_|Parent|Children|Metadata')
-        ignore_features = [l for l in feature_names for m in [regex.search(l)] if m]
-        feature_vector = np.column_stack([workspace.measurements[self.object_name.value, feature_name] for feature_name in feature_names if feature_name not in ignore_features])
+        target_class = self.get_bin_labels().index(self.rules_class.value)
+        features = []
+        for feature_name in self.get_classifier_features():
+            feature_name = feature_name.split("_", 1)[1]
+            if feature_name == "x_loc":
+                feature_name = M_LOCATION_CENTER_X
+            elif feature_name == "y_loc":
+                feature_name = M_LOCATION_CENTER_Y
+            features.append(feature_name)
+
+        feature_vector = np.column_stack([
+            workspace.measurements[self.object_name.value, feature_name] 
+            for feature_name in features])
         predicted_classes = classifier.predict(feature_vector)
         hits = predicted_classes == target_class
         indexes = np.argwhere(hits) + 1

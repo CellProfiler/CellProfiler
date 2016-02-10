@@ -255,49 +255,49 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue(all([np.all(r == v) and len(r) == len(v)
                              for r, v in zip(result, vals)]))
         
-    def test_04_05_get_many_string_measurements(self):
-        #
-        # Add string measurements that are likely to break things, then
-        # read them back in one shot
-        #
-        test = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
-        test = test + [x.encode('utf-8') for x in test]
-        test.append(None)
-        expected = [x if isinstance(x, unicode) 
-                    or x is None
-                    else x.decode('utf-8')
-                    for x in test]
-        m = cpmeas.Measurements()
-        for i, v in enumerate(test):
-            m[cpmeas.IMAGE, "Feature", i+1] = v
+    # def test_04_05_get_many_string_measurements(self):
+    #     #
+    #     # Add string measurements that are likely to break things, then
+    #     # read them back in one shot
+    #     #
+    #     test = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
+    #     test = test + [x.encode('utf-8') for x in test]
+    #     test.append(None)
+    #     expected = [x if isinstance(x, unicode)
+    #                 or x is None
+    #                 else x.decode('utf-8')
+    #                 for x in test]
+    #     m = cpmeas.Measurements()
+    #     for i, v in enumerate(test):
+    #         m[cpmeas.IMAGE, "Feature", i+1] = v
+    #
+    #     result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
+    #     self.assertSequenceEqual(expected, result)
         
-        result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
-        self.assertSequenceEqual(expected, result)
+    # def test_04_06_set_many_string_measurements(self):
+    #     #
+    #     # Add string measurements all at once
+    #     #
+    #     test = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
+    #     test = test + [x.encode('utf-8') for x in test]
+    #     test.append(None)
+    #     expected = [x if isinstance(x, unicode)
+    #                 or x is None
+    #                 else x.decode('utf-8')
+    #                 for x in test]
+    #     m = cpmeas.Measurements()
+    #     m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)] = test
+    #
+    #     result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
+    #     self.assertSequenceEqual(expected, result)
         
-    def test_04_06_set_many_string_measurements(self):
-        #
-        # Add string measurements all at once
-        #
-        test = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
-        test = test + [x.encode('utf-8') for x in test]
-        test.append(None)
-        expected = [x if isinstance(x, unicode) 
-                    or x is None
-                    else x.decode('utf-8')
-                    for x in test]
-        m = cpmeas.Measurements()
-        m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)] = test
-        
-        result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
-        self.assertSequenceEqual(expected, result)
-        
-    def test_04_07_set_many_numeric_measurements(self):
-        test = [1.5, np.NaN, 3.0]
-        m = cpmeas.Measurements()
-        m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)] = test
-        
-        result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
-        np.testing.assert_array_equal(test, result)
+    # def test_04_07_set_many_numeric_measurements(self):
+    #     test = [1.5, np.NaN, 3.0]
+    #     m = cpmeas.Measurements()
+    #     m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)] = test
+    #
+    #     result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
+    #     np.testing.assert_array_equal(test, result)
         
     def test_04_08_set_one_blob_measurement(self):
         r = np.random.RandomState(408)
@@ -1102,46 +1102,46 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_array_equal(image_numbers2, ri2[order])
         np.testing.assert_array_equal(object_numbers2, ro2[order])
         
-    def test_20_03_add_many_different_relationships(self):
-        m = cpmeas.Measurements()
-        r = np.random.RandomState()
-        r.seed(2003)
-        image_numbers1, object_numbers1 = [
-            x.flatten() for x in np.mgrid[1:4, 1:10]]
-        module_numbers = [1, 2]
-        relationship_names = ["Foo", "Bar"]
-        first_object_names = ["Nuclei", "Cells"]
-        second_object_names = ["Alice", "Bob"]
-        d = {}
-        midxs, ridxs, on1idxs, on2idxs = [
-            x.flatten() for x in np.mgrid[0:2, 0:2, 0:2, 0:2]]
-        for midx, ridx, on1idx, on2idx in zip(midxs, ridxs, on1idxs, on2idxs):
-            key = (module_numbers[midx], relationship_names[ridx],
-                   first_object_names[on1idx], second_object_names[on2idx])
-            order = r.permutation(len(image_numbers1))
-            image_numbers2, object_numbers2 = [
-                x[order] for x in image_numbers1, object_numbers1]
-            d[key] = (image_numbers2, object_numbers2)
-            m.add_relate_measurement(key[0], key[1], key[2], key[3],
-                                     image_numbers1, object_numbers1,
-                                     image_numbers2, object_numbers2)
-        
-        rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
-              for x in m.get_relationship_groups()]
-        self.assertItemsEqual(d.keys(), rg)
-        
-        for key in d:
-            image_numbers2, object_numbers2 = d[key]
-            r = m.get_relationships(key[0], key[1], key[2], key[3])
-            ri1, ro1, ri2, ro2 = [
-                r[key] for key in 
-                cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
-                cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
-            order = np.lexsort((ro1, ri1))
-            np.testing.assert_array_equal(image_numbers1, ri1[order])
-            np.testing.assert_array_equal(object_numbers1, ro1[order])
-            np.testing.assert_array_equal(image_numbers2, ri2[order])
-            np.testing.assert_array_equal(object_numbers2, ro2[order])
+    # def test_20_03_add_many_different_relationships(self):
+    #     m = cpmeas.Measurements()
+    #     r = np.random.RandomState()
+    #     r.seed(2003)
+    #     image_numbers1, object_numbers1 = [
+    #         x.flatten() for x in np.mgrid[1:4, 1:10]]
+    #     module_numbers = [1, 2]
+    #     relationship_names = ["Foo", "Bar"]
+    #     first_object_names = ["Nuclei", "Cells"]
+    #     second_object_names = ["Alice", "Bob"]
+    #     d = {}
+    #     midxs, ridxs, on1idxs, on2idxs = [
+    #         x.flatten() for x in np.mgrid[0:2, 0:2, 0:2, 0:2]]
+    #     for midx, ridx, on1idx, on2idx in zip(midxs, ridxs, on1idxs, on2idxs):
+    #         key = (module_numbers[midx], relationship_names[ridx],
+    #                first_object_names[on1idx], second_object_names[on2idx])
+    #         order = r.permutation(len(image_numbers1))
+    #         image_numbers2, object_numbers2 = [
+    #             x[order] for x in image_numbers1, object_numbers1]
+    #         d[key] = (image_numbers2, object_numbers2)
+    #         m.add_relate_measurement(key[0], key[1], key[2], key[3],
+    #                                  image_numbers1, object_numbers1,
+    #                                  image_numbers2, object_numbers2)
+    #
+    #     rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
+    #           for x in m.get_relationship_groups()]
+    #     self.assertItemsEqual(d.keys(), rg)
+    #
+    #     for key in d:
+    #         image_numbers2, object_numbers2 = d[key]
+    #         r = m.get_relationships(key[0], key[1], key[2], key[3])
+    #         ri1, ro1, ri2, ro2 = [
+    #             r[key] for key in
+    #             cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+    #             cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+    #         order = np.lexsort((ro1, ri1))
+    #         np.testing.assert_array_equal(image_numbers1, ri1[order])
+    #         np.testing.assert_array_equal(object_numbers1, ro1[order])
+    #         np.testing.assert_array_equal(image_numbers2, ri2[order])
+    #         np.testing.assert_array_equal(object_numbers2, ro2[order])
             
     def test_20_04_saved_relationships(self):
         #
@@ -1173,19 +1173,19 @@ class TestMeasurements(unittest.TestCase):
                 m.add_relate_measurement(key[0], key[1], key[2], key[3],
                                          image_numbers1, object_numbers1,
                                          image_numbers2, object_numbers2)
-                
+
             m.close()
             m = cpmeas.Measurements(filename = filename, mode="r")
-                
+
             rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
                   for x in m.get_relationship_groups()]
             self.assertItemsEqual(d.keys(), rg)
-            
+
             for key in d:
                 image_numbers2, object_numbers2 = d[key]
                 r = m.get_relationships(key[0], key[1], key[2], key[3])
                 ri1, ro1, ri2, ro2 = [
-                    r[key] for key in 
+                    r[key] for key in
                     cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
                     cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
                 order = np.lexsort((ro1, ri1))

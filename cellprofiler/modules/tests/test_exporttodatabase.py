@@ -1907,7 +1907,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                          "Image_Count_%s, Image_Count_%s "
                          "from %s" %
                          (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
-                          STRING_IMG_MEASUREMENT, OBJECT_NAME, 
+                          STRING_IMG_MEASUREMENT, OBJECT_NAME,
                           ALTOBJECT_NAME, image_table))
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
@@ -1922,7 +1922,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             statement = ("select ImageNumber, ObjectNumber, %s_%s, %s_%s, "
                          "%s_%s, %s_%s "
                          "from %sPer_Object order by ObjectNumber"%
-                         (OBJECT_NAME, OBJ_MEASUREMENT, 
+                         (OBJECT_NAME, OBJ_MEASUREMENT,
                           OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
                           ALTOBJECT_NAME, OBJ_MEASUREMENT,
                           ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER,
@@ -2087,7 +2087,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             long_obj_column = mappings["%s_%s"%(OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
             long_aggregate_obj_column = mappings[
                 "Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
-            
+
             self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
@@ -2098,7 +2098,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                          "from %s" %
                          (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
                           STRING_IMG_MEASUREMENT, OBJECT_NAME,
-                          long_img_column, long_aggregate_obj_column, 
+                          long_img_column, long_aggregate_obj_column,
                           image_table))
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
@@ -2981,7 +2981,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.assertEqual(row[3], STRING_VALUE)
             self.assertEqual(row[4], len(OBJ_VALUE))
             self.assertRaises(StopIteration, self.cursor.next)
-            statement = self.per_object_statement(module, OBJECT_NAME, 
+            statement = self.per_object_statement(module, OBJECT_NAME,
                                                   [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -4698,7 +4698,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     def test_12_05_write_mysql_direct_relationships(self):
         if not self.__at_broad:
             self.skipTest("Skipping actual DB work, not at the Broad.")
-            
+
         workspace, module = self.make_workspace(
             False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
             relationship_test_type=self.RTEST_SOME)

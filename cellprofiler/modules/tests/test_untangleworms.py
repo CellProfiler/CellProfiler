@@ -1,19 +1,28 @@
 '''test_untangleworms.py - test the UntangleWorms module'''
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+#
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2015 Broad Institute
+#
+# Please see the AUTHORS file for credits.
+#
+# Website: http://www.cellprofiler.org
+
 
 import StringIO
 import base64
+import bioformats
 import gc
 import os
 import tempfile
 import unittest
 import zlib
-
 import PIL.Image
 import numpy as np
 from centrosome.outline import outline
 from matplotlib.image import pil_to_array
 from scipy.ndimage import binary_dilation
-
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.untangleworms as U
@@ -156,10 +165,6 @@ A02_binary = ('eJztmHdQU+u2wL+EICWKFJOg0rsiAeGoiFKMICK9t4ChIwgEFKQlJGo4IE0Q'
               'jgt3u52I90AaIOGYiVnXaUFX4CLKZGn0FKoGwCb+Ycja//toeYuv5W0eSUNo'
               'hQdAh4mRheEDHOHyfwASV/wk')
 
-A02_image = pil_to_array(PIL.Image.open(
-        StringIO.StringIO(zlib.decompress(base64.b64decode(A02_binary)))))[:,:,0] > 0
-        
-
 PARAMS = ('eJyVVnVQFI62lu5ucWFhkUW6EVhAWroFkV1AWkpqaRBYkBAWkE7pFCRlJRbp'
           'ku5Uurvz/l7Mm9+8e++beWfOzDl/nfjON98cDVl9dVk5oAgvP1BDVp/H2s7B'
           'ihuo7WDubu3s6igB1JY3VNHkBsq7Wpm7W1kCnZ0kgIZ/RS0Ld6AgP1BATEKA'
@@ -265,14 +270,23 @@ PARAMS = ('eJyVVnVQFI62lu5ucWFhkUW6EVhAWroFkV1AWkpqaRBYkBAWkE7pFCRlJRbp'
 
 
 class TestUntangleWorms(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        handle, path = tempfile.mkstemp(suffix=".png")
+        fd = os.fdopen(handle, "wb")
+        fd.write(zlib.decompress(base64.b64decode(A02_binary)))
+        fd.close()
+
+        cls.A02_image = bioformats.load_image(path, rescale=False)[:,:,0] > 0
+
     def setUp(self):
         self.filename = tempfile.mktemp(".mat")
-    
+
     def tearDown(self):
         gc.collect()
         if os.path.exists(self.filename):
             os.remove(self.filename)
-        
+
     def test_01_01_load_v1(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -395,7 +409,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         self.assertEqual(module.mode, U.MODE_UNTANGLE)
         self.assertEqual(module.complexity, U.C_ALL)
         self.assertEqual(module.custom_complexity, 400)
-        
+
     def test_01_01_load_v2(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -464,7 +478,7 @@ UntangleWorms:[module_num:2|svn_version:\'10598\'|variable_revision_number:2|sho
     Maximum radius factor:1
     Maximum complexity:Medium
     Custom complexity:399
-    
+
 UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
     Binary image:BinaryWorms
     Overlap style\x3A:Both
@@ -577,22 +591,22 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(module.override_overlap_weight.value, 3)
         self.assertEqual(module.override_leftover_weight.value, 5)
         self.assertEqual(module.custom_complexity, 399)
-        
+
         for module, complexity in zip(pipeline.modules(),
                                       (U.C_ALL, U.C_MEDIUM, U.C_HIGH,
                                        U.C_VERY_HIGH, U.C_CUSTOM)):
             self.assertEqual(module.complexity, complexity)
-    
+
     def make_workspace(self, image, data=None, write_mode="wb"):
         '''Make a workspace to run the given image and params file
-        
+
         image - a binary image
         data - the binary of the params file to run
         '''
         if data is not None:
             with open(self.filename, "wb") as fd:
                 fd.write(data)
-            
+
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, (cpp.RunExceptionEvent, cpp.LoadExceptionEvent)))
@@ -610,15 +624,15 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.training_set_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         (module.training_set_directory.custom_path,
          module.training_set_file_name.value) = os.path.split(self.filename)
-        
+
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(), cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
-    
+
     def make_params(self, d):
         '''Make a fake params structure from a dictionary
-        
+
         e.g. x = dict(foo=dict(bar=5)) -> x.foo.bar = 5
         '''
         class X(object):
@@ -629,7 +643,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                         value = X(value)
                     setattr(self, key, value)
         return X(d)
-        
+
     def test_02_01_load_params(self):
         data = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(np.zeros((10,10), bool), data)
@@ -2121,7 +2135,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             0.013315157629, 127.475166584])
         np.testing.assert_almost_equal(expected, params.mean_angles)
         expected = np.array([
-            1.42515381896, 2.85816813675, 3.625274645, 4.0753094944, 
+            1.42515381896, 2.85816813675, 3.625274645, 4.0753094944,
             4.35612078737, 4.52117778419, 4.63350649815, 4.68616131779,
             4.72754363339, 4.7538931664, 4.74523602328, 4.73738576257,
             4.71422245337, 4.67997686977, 4.63299502256, 4.54769060478,
@@ -2130,27 +2144,27 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         np.testing.assert_almost_equal(expected, params.radii_from_training)
         expected = np.array(
             [[14.4160767437, -3.62948521476, -5.54563467306, -2.03727846881, 1.28497735663, 1.69152924813, 0.155723103489, 0.0968570278119, -0.830941512378, -0.212837030458, 0.343854099462, 0.541856348331, 0.0113083798588, -0.526926108341, 0.499035732802, -0.714281934407, 0.407365302927, 0.0412386837587, 0.399436023924, 0.0100796538444],
-             [ -3.62948521476, 28.3822272923, -5.69796350599, -12.8940771298, -3.24074903822, 6.60066559736, 4.7027587735, -0.228375351756, -0.93975886278, -0.404133419773, 0.461061138309, -0.620175812393, 0.426458145116, 0.242860102398, -1.395472436, -0.416345646399, -0.744042489471, 1.2607667493, 0.0266160618793, 0.0125632227269] , 
+             [ -3.62948521476, 28.3822272923, -5.69796350599, -12.8940771298, -3.24074903822, 6.60066559736, 4.7027587735, -0.228375351756, -0.93975886278, -0.404133419773, 0.461061138309, -0.620175812393, 0.426458145116, 0.242860102398, -1.395472436, -0.416345646399, -0.744042489471, 1.2607667493, 0.0266160618793, 0.0125632227269] ,
              [ -5.54563467306, -5.69796350599, 33.965523631, -2.5184071008, -11.9739358904, -5.55211501206, 1.54963332447, 1.51853522595, 2.94238214784, 1.58963458609, -1.09690230963, -3.03348214943, -0.499685304962, 0.0832942797245, 2.64055890507, 1.47285696771, -0.837591498704, -1.32897383529, -0.0909573472139, -0.00747385975607] ,
              [ -2.03727846881, -12.8940771298, -2.5184071008, 38.910896265, -0.501289252952, -16.9651461757, -8.5206491768, 0.599043361039, 4.0425703374, 3.46803482473, 1.5750544267, 0.828548143764, -0.468487536336, 1.18597661827, 0.798189409259, 0.862661371456, -0.14246505168, -1.3841655628, 0.236725547536, -0.0163619841363] ,
-             [ 1.28497735663,-3.24074903822, -11.9739358904, -0.501289252952, 50.690805239, -2.50730714299, -19.7892493084, -8.70870454399, 0.544130042179, 3.96597772445, 4.72570280412, 2.85472249374, -2.84084610444, -4.25238476559, -1.41656624794, 2.35443215524, 1.26857012684, -0.0117059492945, 0.193085174503, -0.0128948234117] , 
-             [ 1.69152924813, 6.60066559736, -5.55211501206, -16.9651461757, -2.50730714299, 49.7744788862, 2.21292071874, -18.9379120677, -11.6040186403, -0.650553765753, 3.61258885051, 2.19212295163, -0.250008762357, -2.6870585839, -1.82043770689, 0.109737469347, 0.560938864345, 0.219973313189, -0.590133590346, -0.00967309489576], 
-             [ 0.155723103489, 4.7027587735, 1.54963332447, -8.5206491768, -19.7892493084, 2.21292071874, 51.0843827257, 0.934339159637, -16.1389407803, -13.597573567, -1.54861446638, 3.38169064096, 4.06874131702, -0.827598209967, 0.403883540178, -2.06739129329, -2.88536104019, 1.06444751058, 0.425819183522, 0.0218279774716], 
-             [ 0.0968570278119, -0.228375351756, 1.51853522595, 0.599043361039, -8.70870454399, -18.9379120677, 0.934339159637, 53.1553410056, 3.83284330941, -21.8128767252, -12.4239738428, -0.689818407647, 4.93635164952, 4.04304737017, 1.11729234765, -0.61148362918, -1.50162558801, -1.61722109339, 0.491305564623, 0.00813673085389], 
-             [ -0.830941512378, -0.93975886278, 2.94238214784, 4.0425703374, 0.544130042179, -11.6040186403, -16.1389407803, 3.83284330941, 47.6933352778, 1.02465850736, -18.704856196, -9.30970873094, 1.7845053387, 2.83710840227, 3.85412837972, -0.420823216821, 1.56974432254, -0.212411753395, -0.638990283092, -0.00117994378546], 
-             [ -0.212837030458, -0.404133419773, 1.58963458609, 3.46803482473, 3.96597772445, -0.650553765753, -13.597573567, -21.8128767252, 1.02465850736, 55.2260388503, 4.35803059752, -17.4350070993, -9.9394563068, 0.592362874638, 4.03037893175, 0.749631051365, 0.179619159884, 1.09520337409, 0.198303530561, -0.0128674812863], 
-             [ 0.343854099462, 0.461061138309, -1.09690230963, 1.5750544267, 4.72570280412, 3.61258885051, -1.54861446638, -12.4239738428, -18.704856196, 4.35803059752, 51.04055356, 3.08936728044, -17.5902587966, -10.8714973146, -0.045009571053, 4.87264332876, 1.30470158026, -0.320349338202, 0.55323063623, -0.00361862544014], 
-             [ 0.541856348331, -0.620175812393, -3.03348214943, 0.828548143764, 2.85472249374, 2.19212295163, 3.38169064096, -0.689818407647, -9.30970873094, -17.4350070993, 3.08936728044, 47.4661853593, -1.87723439855, -15.2700084763, -7.6273108814, 4.14811581054, 1.42240471385, 0.0505728359147, -0.0106613679324, -0.000211505765068], 
-             [ 0.0113083798588, 0.426458145116, -0.499685304962, -0.468487536336, -2.84084610444, -0.250008762357, 4.06874131702, 4.93635164952, 1.7845053387, -9.9394563068, -17.5902587966, -1.87723439855, 47.8240218251, 2.57791664619, -14.5709240372, -4.78007676552, 1.87167780269, 0.359928009336, -1.18561757081, 0.014074799611], 
-             [ -0.526926108341, 0.242860102398, 0.0832942797245, 1.18597661827, -4.25238476559, -2.6870585839, -0.827598209967, 4.04304737017, 2.83710840227, 0.592362874638, -10.8714973146, -15.2700084763, 2.57791664619, 46.696159054, -4.74906899066, -15.6278488145, -4.24795289841, 2.87455853452, 3.07635737509, 0.00532906905096], 
-             [ 0.499035732802, -1.395472436, 2.64055890507, 0.798189409259, -1.41656624794, -1.82043770689, 0.403883540178, 1.11729234765, 3.85412837972, 4.03037893175, -0.045009571053, -7.6273108814, -14.5709240372, -4.74906899066, 40.1689374127, -3.67980915371, -10.3797521361, -0.841069955948, 3.27779133415, 0.0045492369767], 
-             [ -0.714281934407, -0.416345646399, 1.47285696771, 0.862661371456, 2.35443215524, 0.109737469347, -2.06739129329, -0.61148362918, -0.420823216821, 0.749631051365, 4.87264332876, 4.14811581054, -4.78007676552, -15.6278488145, -3.67980915371, 37.0559195085, -1.42897044519, -7.88598395567, -1.9964210551, -0.0047454750271], 
-             [ 0.407365302927, -0.744042489471, -0.837591498704, -0.14246505168, 1.26857012684, 0.560938864345, -2.88536104019, -1.50162558801, 1.56974432254, 0.179619159884, 1.30470158026, 1.42240471385, 1.87167780269, -4.24795289841, -10.3797521361, -1.42897044519, 31.0878364175, -3.67706594057, -7.74307062767, -0.0186367239616], 
+             [ 1.28497735663,-3.24074903822, -11.9739358904, -0.501289252952, 50.690805239, -2.50730714299, -19.7892493084, -8.70870454399, 0.544130042179, 3.96597772445, 4.72570280412, 2.85472249374, -2.84084610444, -4.25238476559, -1.41656624794, 2.35443215524, 1.26857012684, -0.0117059492945, 0.193085174503, -0.0128948234117] ,
+             [ 1.69152924813, 6.60066559736, -5.55211501206, -16.9651461757, -2.50730714299, 49.7744788862, 2.21292071874, -18.9379120677, -11.6040186403, -0.650553765753, 3.61258885051, 2.19212295163, -0.250008762357, -2.6870585839, -1.82043770689, 0.109737469347, 0.560938864345, 0.219973313189, -0.590133590346, -0.00967309489576],
+             [ 0.155723103489, 4.7027587735, 1.54963332447, -8.5206491768, -19.7892493084, 2.21292071874, 51.0843827257, 0.934339159637, -16.1389407803, -13.597573567, -1.54861446638, 3.38169064096, 4.06874131702, -0.827598209967, 0.403883540178, -2.06739129329, -2.88536104019, 1.06444751058, 0.425819183522, 0.0218279774716],
+             [ 0.0968570278119, -0.228375351756, 1.51853522595, 0.599043361039, -8.70870454399, -18.9379120677, 0.934339159637, 53.1553410056, 3.83284330941, -21.8128767252, -12.4239738428, -0.689818407647, 4.93635164952, 4.04304737017, 1.11729234765, -0.61148362918, -1.50162558801, -1.61722109339, 0.491305564623, 0.00813673085389],
+             [ -0.830941512378, -0.93975886278, 2.94238214784, 4.0425703374, 0.544130042179, -11.6040186403, -16.1389407803, 3.83284330941, 47.6933352778, 1.02465850736, -18.704856196, -9.30970873094, 1.7845053387, 2.83710840227, 3.85412837972, -0.420823216821, 1.56974432254, -0.212411753395, -0.638990283092, -0.00117994378546],
+             [ -0.212837030458, -0.404133419773, 1.58963458609, 3.46803482473, 3.96597772445, -0.650553765753, -13.597573567, -21.8128767252, 1.02465850736, 55.2260388503, 4.35803059752, -17.4350070993, -9.9394563068, 0.592362874638, 4.03037893175, 0.749631051365, 0.179619159884, 1.09520337409, 0.198303530561, -0.0128674812863],
+             [ 0.343854099462, 0.461061138309, -1.09690230963, 1.5750544267, 4.72570280412, 3.61258885051, -1.54861446638, -12.4239738428, -18.704856196, 4.35803059752, 51.04055356, 3.08936728044, -17.5902587966, -10.8714973146, -0.045009571053, 4.87264332876, 1.30470158026, -0.320349338202, 0.55323063623, -0.00361862544014],
+             [ 0.541856348331, -0.620175812393, -3.03348214943, 0.828548143764, 2.85472249374, 2.19212295163, 3.38169064096, -0.689818407647, -9.30970873094, -17.4350070993, 3.08936728044, 47.4661853593, -1.87723439855, -15.2700084763, -7.6273108814, 4.14811581054, 1.42240471385, 0.0505728359147, -0.0106613679324, -0.000211505765068],
+             [ 0.0113083798588, 0.426458145116, -0.499685304962, -0.468487536336, -2.84084610444, -0.250008762357, 4.06874131702, 4.93635164952, 1.7845053387, -9.9394563068, -17.5902587966, -1.87723439855, 47.8240218251, 2.57791664619, -14.5709240372, -4.78007676552, 1.87167780269, 0.359928009336, -1.18561757081, 0.014074799611],
+             [ -0.526926108341, 0.242860102398, 0.0832942797245, 1.18597661827, -4.25238476559, -2.6870585839, -0.827598209967, 4.04304737017, 2.83710840227, 0.592362874638, -10.8714973146, -15.2700084763, 2.57791664619, 46.696159054, -4.74906899066, -15.6278488145, -4.24795289841, 2.87455853452, 3.07635737509, 0.00532906905096],
+             [ 0.499035732802, -1.395472436, 2.64055890507, 0.798189409259, -1.41656624794, -1.82043770689, 0.403883540178, 1.11729234765, 3.85412837972, 4.03037893175, -0.045009571053, -7.6273108814, -14.5709240372, -4.74906899066, 40.1689374127, -3.67980915371, -10.3797521361, -0.841069955948, 3.27779133415, 0.0045492369767],
+             [ -0.714281934407, -0.416345646399, 1.47285696771, 0.862661371456, 2.35443215524, 0.109737469347, -2.06739129329, -0.61148362918, -0.420823216821, 0.749631051365, 4.87264332876, 4.14811581054, -4.78007676552, -15.6278488145, -3.67980915371, 37.0559195085, -1.42897044519, -7.88598395567, -1.9964210551, -0.0047454750271],
+             [ 0.407365302927, -0.744042489471, -0.837591498704, -0.14246505168, 1.26857012684, 0.560938864345, -2.88536104019, -1.50162558801, 1.56974432254, 0.179619159884, 1.30470158026, 1.42240471385, 1.87167780269, -4.24795289841, -10.3797521361, -1.42897044519, 31.0878364175, -3.67706594057, -7.74307062767, -0.0186367239616],
              [ 0.0412386837587, 1.2607667493, -1.32897383529, -1.3841655628, -0.0117059492945, 0.219973313189, 1.06444751058, -1.61722109339, -0.212411753395, 1.09520337409, -0.320349338202, 0.0505728359147, 0.359928009336, 2.87455853452, -0.841069955948, -7.88598395567, -3.67706594057, 17.6561215842, -0.53359878584, 0.00910717515256],
-             [ 0.399436023924, 0.0266160618793, -0.0909573472139, 0.236725547536, 0.193085174503, -0.590133590346, 0.425819183522, 0.491305564623, -0.638990283092, 0.198303530561, 0.55323063623, -0.0106613679324, -1.18561757081, 3.07635737509, 3.27779133415, -1.9964210551, -7.74307062767, -0.53359878584, 13.2416621872, 0.00936896857131], 
+             [ 0.399436023924, 0.0266160618793, -0.0909573472139, 0.236725547536, 0.193085174503, -0.590133590346, 0.425819183522, 0.491305564623, -0.638990283092, 0.198303530561, 0.55323063623, -0.0106613679324, -1.18561757081, 3.07635737509, 3.27779133415, -1.9964210551, -7.74307062767, -0.53359878584, 13.2416621872, 0.00936896857131],
              [ 0.0100796538444, 0.0125632227269, -0.00747385975607, -0.0163619841363, -0.0128948234117, -0.00967309489576, 0.0218279774715, 0.00813673085389, -0.00117994378545, -0.0128674812862, -0.00361862544014, -0.000211505765068, 0.014074799611, 0.00532906905096, 0.0045492369767, -0.0047454750271, -0.0186367239616, 0.00910717515256, 0.00936896857131, 0.00505367806039]])
         np.testing.assert_almost_equal(expected, params.inv_angles_covariance_matrix)
-        
+
     def test_03_00_trace_segments_none(self):
         '''Test the trace_segments function on a blank image'''
         image = np.zeros((10,20), bool)
@@ -2159,7 +2173,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(count, 0)
         for x in (i,j,label, order,distance):
             self.assertEqual(len(x), 0)
-            
+
     def test_03_01_trace_one_segment(self):
         '''Trace a single segment'''
         module = U.UntangleWorms()
@@ -2172,12 +2186,12 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(np.all(label == 1))
         for x in (i,j,order,distance):
             self.assertEqual(len(x), np.sum(image))
-        
+
         result_order = np.zeros(image.shape, int)
         result_order[i,j] = order
         self.assertTrue(np.all(image[i,j]))
         self.assertTrue(np.all(expected_order == result_order))
-        
+
     def test_03_02_trace_short_segment(self):
         '''Trace a segment of a single point'''
         module = U.UntangleWorms()
@@ -2191,7 +2205,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             self.assertTrue(np.all(label == 1))
             for x in (i,j,order,distance):
                 self.assertEqual(len(x), np.sum(image))
-            
+
             result_order = np.zeros(image.shape, int)
             result_order[i,j] = order
             self.assertTrue(np.all(image[i,j]))
@@ -2210,7 +2224,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         #
         expected_order = np.zeros(image.shape, int)
         i,j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
-        slices = ((1, slice(2,-2)), 
+        slices = ((1, slice(2,-2)),
                   (slice(2,-2), -2),
                   (-2, slice(-3,1,-1)),
                   (slice(-3,1,-1), 1))
@@ -2222,7 +2236,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         result_order = np.zeros(image.shape, int)
         result_order[i,j] = order
         self.assertTrue(np.all(expected_order == result_order))
-        
+
     def test_03_04_trace_two(self):
         '''Trace two objects'''
         module = U.UntangleWorms()
@@ -2235,15 +2249,15 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         result_order[i,j] = order
         for j in (5,15):
             self.assertTrue(np.all(result_order[1:-1,j] == np.arange(image.shape[0]-2)))
-            
+
     def test_04_00_make_incidence_matrix_of_nothing(self):
         '''Make incidence matrix with two empty labels matrices'''
-        
+
         module = U.UntangleWorms()
         result = module.make_incidence_matrix(np.zeros((10,20),int), 0,
                                               np.zeros((10,20),int), 0)
         self.assertEqual(tuple(result.shape), (0,0))
-        
+
     def test_04_01_make_incidence_matrix_of_things_that_do_not_touch(self):
         module = U.UntangleWorms()
         L1 = np.zeros((10,20), int)
@@ -2253,7 +2267,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         result = module.make_incidence_matrix(L1, 1, L2, 1)
         self.assertEqual(tuple(result.shape), (1,1))
         self.assertTrue(np.all(~result))
-        
+
     def test_04_02_make_incidence_matrix_of_things_that_touch(self):
         module = U.UntangleWorms()
         L1 = np.zeros((10,20), int)
@@ -2264,7 +2278,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             result = module.make_incidence_matrix(L1, 1, L2, 1)
             self.assertEqual(tuple(result.shape), (1,1))
             self.assertTrue(np.all(result))
-        
+
     def test_04_03_make_incidence_matrix_of_many_things(self):
         module = U.UntangleWorms()
         L1 = np.zeros((10,20), int)
@@ -2292,7 +2306,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         expected[4,0] = True
         result = module.make_incidence_matrix(L1, 5, L2, 5)
         self.assertTrue(np.all(result == expected))
-        
+
     def test_05_00_get_all_paths_recur_none(self):
         module = U.UntangleWorms()
         class Result(object):
@@ -2303,7 +2317,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                 self.segment_lengths = []
         paths_list = list(module.get_all_paths_recur(Result(), [], [], 0, 0, 1000))
         self.assertEqual(len(paths_list), 0)
-        
+
     def test_05_01_get_all_paths_recur_one(self):
         module = U.UntangleWorms()
         #
@@ -2323,7 +2337,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(isinstance(path, module.Path))
         self.assertEqual(tuple(path.segments), (0,1))
         self.assertEqual(tuple(path.branch_areas), (0,))
-        
+
     def test_05_02_get_all_paths_recur_depth_two(self):
         module = U.UntangleWorms()
         #
@@ -2345,7 +2359,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         sorted_list = tuple(sorted([(tuple(path.segments), tuple(path.branch_areas))
                                     for path in paths_list]))
         self.assertEqual(sorted_list, expected)
-        
+
     def test_05_03_get_all_paths_recur_many(self):
         module = U.UntangleWorms()
         #
@@ -2391,7 +2405,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                          for ps in permutations], [])
         expected = tuple(sorted(expected))
         self.assertEqual(sorted_list, expected)
-        
+
     def test_06_00_get_all_paths_none(self):
         module = U.UntangleWorms()
         class Result(object):
@@ -2401,7 +2415,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                 self.incidence_matrix = np.zeros((0,0), bool)
         path_list = list(module.get_all_paths(Result(), 0, 1000))
         self.assertEqual(len(path_list), 0)
-        
+
     def test_06_01_get_all_paths_one(self):
         module = U.UntangleWorms()
         class Result(object):
@@ -2416,13 +2430,13 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(isinstance(path, module.Path))
         self.assertEqual(tuple(path.segments), (0,))
         self.assertEqual(len(path.branch_areas), 0)
-        
+
     def test_06_02_get_all_paths_two_segments(self):
         module = U.UntangleWorms()
         class Result(object):
             def __init__(self):
                 self.branch_areas = [1]
-                self.segments = [[np.zeros((1,2)),np.zeros((1,2))]] * 2 
+                self.segments = [[np.zeros((1,2)),np.zeros((1,2))]] * 2
                 self.incidence_matrix = np.ones((1,2), bool)
                 self.incidence_directions = np.array([[True, False]])
         path_list = list(module.get_all_paths(Result(), 0, 1000))
@@ -2433,7 +2447,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                     ((0,1),(0,)),
                     ((1,),()))
         self.assertEqual(sorted_list, expected)
-        
+
     def test_06_03_get_all_paths_many(self):
         module = U.UntangleWorms()
         np.random.seed(63)
@@ -2443,7 +2457,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                 self.segments = [[np.zeros((1,2)),np.zeros((1,2))]] * 4
                 self.incidence_directions = np.random.uniform(size=(3,4)) > .25
                 self.incidence_matrix = (
-                    self.incidence_directions | 
+                    self.incidence_directions |
                     (np.random.uniform(size=(3,4)) > .25))
         graph = Result()
         path_list = module.get_all_paths(graph, 0, 1000)
@@ -2455,7 +2469,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                     path.segments[:-1], path.segments[1:], path.branch_areas):
                     self.assertTrue(graph.incidence_matrix[branch_area, prev])
                     self.assertTrue(graph.incidence_matrix[branch_area, next])
-    
+
     def test_07_01_sample_control_points(self):
         module = U.UntangleWorms()
         path_coords = np.random.randint(0,20, size=(11,2))
@@ -2466,7 +2480,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(tuple(path_coords[-1]), tuple(result[-1]))
         for i in range(1,5):
             self.assertEqual(tuple(path_coords[i*2]), tuple(result[i]))
-            
+
     def test_07_02_sample_non_linear_control_points(self):
         module = U.UntangleWorms()
         path_coords = np.array([np.arange(11)]*2).transpose()
@@ -2474,8 +2488,8 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         result = module.sample_control_points(path_coords, distances, 6)
         self.assertTrue(np.all(result[:,0] >= np.linspace(0.0,1.0,6)**2 * 10))
         self.assertTrue(np.all(result[:,0] < np.linspace(0.0,1.0,6)**2 * 10 + .5))
-        
-    
+
+
     def test_07_03_only_two_sample_points(self):
         module = U.UntangleWorms()
         path_coords = np.array([[0,0],[1,2]])
@@ -2491,7 +2505,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                  num_control_points = 20))
         result, _, _, _, _ = module.worm_descriptor_building([], params, (0,0))
         self.assertEqual(len(result), 0)
-        
+
     def test_08_01_worm_descriptor_building_one(self):
         module = U.UntangleWorms()
         params = self.make_params(
@@ -2509,7 +2523,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(np.all(result[:, 2] == 1))
         self.assertEqual(len(expected), len(result))
         self.assertTrue(np.all(result[rorder, :2] == expected[eorder, :]))
-        
+
     def test_08_02_worm_descriptor_building_oob(self):
         '''Test performance if part of the worm is out of bounds'''
         module = U.UntangleWorms()
@@ -2528,10 +2542,10 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertTrue(np.all(result[:,2] == 1))
         self.assertEqual(len(expected), len(result))
         self.assertTrue(np.all(result[rorder,:2] == expected[eorder,:]))
-        
+
     def test_08_03_worm_descriptor_building_two(self):
         '''Test rebuilding two worms'''
-        
+
         module = U.UntangleWorms()
         params = self.make_params(
             dict(radii_from_training=np.array([5,5,5]),
@@ -2557,7 +2571,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(len(epoints), len(result))
         self.assertTrue(np.all(result[rorder,2] == elabels[eorder]))
         self.assertTrue(np.all(result[rorder,:2] == epoints[eorder]))
-        
+
     def test_09_01_fast_selection_two(self):
         module = U.UntangleWorms()
         costs = np.array([1,1])
@@ -2568,7 +2582,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             costs, path_segment_matrix, segment_lengths, 1, 1, 10000)
         self.assertEqual(tuple(best_paths), (0,1))
         self.assertEqual(best_cost, 2)
-        
+
     def test_09_02_fast_selection_overlap(self):
         module = U.UntangleWorms()
         costs = np.array([1,1,10])
@@ -2580,7 +2594,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             costs, path_segment_matrix, segment_lengths, 2, 5, 10000)
         self.assertEqual(tuple(best_paths), (0,1))
         self.assertEqual(best_cost, 2+3*2)
-        
+
     def test_09_03_fast_selection_gap(self):
         module = U.UntangleWorms()
         costs = np.array([1,1,10])
@@ -2604,7 +2618,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             costs, path_segment_matrix, segment_lengths, 2, 5, 10000)
         self.assertEqual(tuple(best_paths), (2,))
         self.assertEqual(best_cost, 7)
-        
+
     def test_09_05_fast_selection_no_gap(self):
         module = U.UntangleWorms()
         costs = np.array([1,1,7])
@@ -2616,10 +2630,10 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
             costs, path_segment_matrix, segment_lengths, 5, 2, 10000)
         self.assertEqual(tuple(best_paths), (2,))
         self.assertEqual(best_cost, 7)
-        
+
     def test_10_01_A02(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(A02_image, params)
+        workspace, module = self.make_workspace(self.A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
@@ -2645,7 +2659,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 
     def test_10_02_nonoverlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(A02_image, params)
+        workspace, module = self.make_workspace(self.A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
@@ -2663,7 +2677,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 
     def test_10_03_overlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))
-        workspace, module = self.make_workspace(A02_image, params)
+        workspace, module = self.make_workspace(self.A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
@@ -2694,7 +2708,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.mode.value = U.MODE_TRAIN
         module.prepare_group(workspace, None, None)
         module.run(workspace)
-        
+
     def test_12_01_trace_segments(self):
         #
         # Regression test of img-1541, branch_areas_binary is not zero
@@ -2709,7 +2723,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(len(segment_order), 0)
         self.assertEqual(len(distances), 0)
         self.assertEqual(num_segments, 0)
-        
+
     def test_12_02_get_graph_from_branching_areas_and_segments(self):
         #
         # Regression test of img-1541, branch_areas_binary is not zero
@@ -2725,21 +2739,21 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(len(result.segment_counts), 0)
         self.assertEqual(len(result.segment_order), 0)
         self.assertEqual(len(result.segments), 0)
-        
+
     def test_13_01_recalculate_single_worm_control_points(self):
         i, j = np.mgrid[0:10, 0:10]
         l0 = ((i == 3) & (j >= 2) & (j <= 6)).astype(int)
         l0[(i == 7) & (j >= 3) & (j <= 7)] = 3
-        
+
         l1 = ((j == 3) & (i >= 2) & (i <= 6)).astype(int) * 2
         l1[(j == 7) & (i >= 3) & (i <= 7)] = 4
-        
+
         expected = np.array((
             ((3, 2), (3, 4), (3, 6)),
             ((2, 3), (4, 3), (6, 3)),
             ((7, 3), (7, 5), (7, 7)),
             ((3, 7), (5, 7), (7, 7))))
-        
+
         result, lengths = U.recalculate_single_worm_control_points([l0, l1], 3)
         self.assertEqual(tuple(result.shape), (4, 3, 2))
         self.assertEqual(len(lengths), 4)
@@ -2747,14 +2761,13 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         for i in range(4):
             if tuple(result[i, -1, :]) < tuple(result[i, 0, :]):
                 result[i, :, :] = result[i, ::-1, :]
-            
+
         self.assertTrue(np.all(lengths== 4))
         np.testing.assert_array_equal(expected, result)
-        
+
     def test_13_02_recalculate_single_worm_control_points_no_objects(self):
         # regression test of issue #930
         result, lengths = U.recalculate_single_worm_control_points(
             [np.zeros((10, 15), int)], 3)
         self.assertEqual(tuple(result.shape), (0, 3, 2))
         self.assertEqual(len(lengths), 0)
-        

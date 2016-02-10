@@ -493,7 +493,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
                     for image_name in ('DNA', 'Cytoplasm'):
                         pathname = measurements.get_measurement(
                             cpmeas.IMAGE, "PathName_"+image_name, i+1)
-                        self.assertEqual(pathname, 
+                        self.assertEqual(pathname,
                                          '\\imaging\\analysis' if windows_mode
                                          else '/imaging/analysis')
                 measurements.close()

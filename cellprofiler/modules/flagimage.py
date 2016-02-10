@@ -605,16 +605,19 @@ class FlagImage(cpm.CPModule):
                 self.get_bin_labels(ms).index(_)
                 for _ in ms.rules_class.get_selections()]
             features = []
+            image_features = workspace.measurements.get_feature_names(
+                cpmeas.IMAGE)
             for feature_name in self.get_classifier_features(ms):
                 feature_name = feature_name.split("_", 1)[1]
                 features.append(feature_name)
     
             feature_vector = np.array([
-                0 if feature_name in ("x_loc", "y_loc") else
+                0 if feature_name not in image_features else
                 workspace.measurements[cpmeas.IMAGE, feature_name] 
                 for feature_name in features]).reshape(1, len(features))
             predicted_class = classifier.predict(feature_vector)[0]
             fail = predicted_class not in target_classes
+            source = cpmeas.IMAGE
         else:
             raise NotImplementedError("Source choice of %s not implemented" %
                                       ms.source_choice)

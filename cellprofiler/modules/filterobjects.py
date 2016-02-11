@@ -882,7 +882,8 @@ class FilterObjects(cpm.CPModule):
         :return: indexes (base 1) of the objects that pass
         '''
         classifier = self.get_classifier()
-        target_class = self.get_bin_labels().index(self.rules_class.value)
+        target_idx = self.get_bin_labels().index(self.rules_class.value)
+        target_class = classifier.classes_[target_idx]
         features = []
         for feature_name in self.get_classifier_features():
             feature_name = feature_name.split("_", 1)[1]

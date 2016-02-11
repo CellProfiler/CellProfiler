@@ -601,7 +601,7 @@ class FlagImage(cpm.CPModule):
                 display_value = "--"
         elif ms.source_choice == S_CLASSIFIER:
             classifier = self.get_classifier(ms)
-            target_classes = [
+            target_idxs = [
                 self.get_bin_labels(ms).index(_)
                 for _ in ms.rules_class.get_selections()]
             features = []
@@ -616,19 +616,26 @@ class FlagImage(cpm.CPModule):
                 workspace.measurements[cpmeas.IMAGE, feature_name] 
                 for feature_name in features]).reshape(1, len(features))
             predicted_class = classifier.predict(feature_vector)[0]
-            fail = predicted_class not in target_classes
+            predicted_idx = \
+                np.where(classifier.classes_==predicted_class)[0][0]
+            fail = predicted_idx not in target_idxs
+            display_value = self.get_bin_labels(ms)[predicted_idx]
             source = cpmeas.IMAGE
         else:
             raise NotImplementedError("Source choice of %s not implemented" %
                                       ms.source_choice)
-        fail = ((ms.source_choice != S_RULES and (fail or
-                (ms.wants_minimum.value and 
-                 min_value < ms.minimum_value.value) or
-                (ms.wants_maximum.value and
-                 max_value > ms.maximum_value.value))) or
-                (ms.source_choice == S_RULES and fail))
+        is_rc = ms.source_choice in (S_RULES, S_CLASSIFIER)
+        is_meas = not is_rc
+        fail = (( is_meas and 
+                 (fail or (ms.wants_minimum.value and 
+                           min_value < ms.minimum_value.value) or
+                  (ms.wants_maximum.value and
+                   max_value > ms.maximum_value.value))) or
+                (is_rc and fail))
         
-        return ((not fail), (source, ms.measurement.value if ms.source_choice != S_RULES else "Rules", display_value, 
+        return ((not fail), (source, 
+                             ms.measurement.value if is_meas else "Rules", 
+                             display_value, 
                              "Fail" if fail else "Pass"))
     
     def get_measurement_columns(self, pipeline):

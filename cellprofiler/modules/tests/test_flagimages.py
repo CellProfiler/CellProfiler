@@ -2,6 +2,7 @@
 '''
 
 import base64
+import contextlib
 import os
 import tempfile
 import unittest
@@ -13,6 +14,7 @@ import numpy as np
 import scipy.ndimage
 
 from cellprofiler.preferences import set_headless
+from .test_filterobjects import make_classifier_pickle
 
 set_headless()
 
@@ -521,6 +523,38 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                                   measurements, image_set_list)
         return module, workspace
     
+    @contextlib.contextmanager
+    def make_classifier(self, module, answer,
+                        classes = None,
+                        class_names = None,
+                        rules_classes = None,
+                        name = "Classifier",
+                        n_features = 1):
+        assert isinstance(module, F.FlagImage)
+        feature_names = [image_measurement_name(i) for i in range(n_features)]
+        if classes is None:
+            classes = np.arange(1, max(3, answer+1))
+        if class_names is None:
+            class_names = ["Class%d" for _ in classes]
+        if rules_classes is None:
+            rules_classes = [class_names[0]]
+        s = make_classifier_pickle(
+            np.array([answer]), classes, class_names, name, feature_names)
+        fd, filename = tempfile.mkstemp(".model")
+        os.write(fd, s)
+        os.close(fd)
+        measurement = module.flags[0].measurement_settings[0]
+        measurement.source_choice.value = F.S_CLASSIFIER
+        measurement.rules_directory.set_custom_path(
+            os.path.dirname(filename))
+        measurement.rules_file_name.value = os.path.split(filename)[1]
+        measurement.rules_class.value = rules_classes
+        yield
+        try:
+            os.remove(filename)
+        except:
+            pass
+    
     def test_02_01_positive_image_measurement(self):
         module, workspace = self.make_workspace([1],[])
         flag = module.flags[0]
@@ -876,3 +910,37 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                     self.assertEqual(value, expected_value)
         finally:
             os.remove(rules_path)
+            
+    def test_09_01_classify_true(self):
+        module, workspace = self.make_workspace([1], [])
+        with self.make_classifier(module, 1):
+            module.run(workspace)
+            m = workspace.measurements
+            self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 0)
+        
+    def test_09_02_classify_false(self):
+        module, workspace = self.make_workspace([1], [])
+        with self.make_classifier(module, 2):
+            module.run(workspace)
+            m = workspace.measurements
+            self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 1)
+        
+    def test_09_03_classify_multiple_select_true(self):
+        module, workspace = self.make_workspace([1], [])
+        with self.make_classifier(module, 2, 
+                                  classes = [1, 2, 3],
+                                  class_names = ["Foo", "Bar", "Baz"],
+                                  rules_classes = ["Bar", "Baz"]):
+            module.run(workspace)
+            m = workspace.measurements
+            self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 0)
+        
+    def test_09_04_classify_multiple_select_false(self):
+        module, workspace = self.make_workspace([1], [])
+        with self.make_classifier(module, 2, 
+                                  classes = [1, 2, 3],
+                                  class_names = ["Foo", "Bar", "Baz"],
+                                  rules_classes = ["Foo", "Baz"]):
+            module.run(workspace)
+            m = workspace.measurements
+            self.assertEqual(m[cpmeas.IMAGE, MEASUREMENT_NAME], 1)

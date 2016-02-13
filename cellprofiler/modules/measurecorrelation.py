@@ -108,11 +108,6 @@ class MeasureCorrelation(cpm.CPModule):
             <li><i>%(M_IMAGES_AND_OBJECTS)s:</i> Calculate both measurements above.</li>
             </ul>
             All methods measure correlation on a pixel by pixel basis.'''%globals())
-
-        self.thr = cps.Float(
-            "Set threshold as percentage of maximum intensity for the images",
-            15, minval=0, maxval=99, doc='''\
-            Select the threshold as a percentage of the maximum intensity of the above image.''')
         
         self.object_groups = []
         self.add_object(can_delete = False)
@@ -121,6 +116,13 @@ class MeasureCorrelation(cpm.CPModule):
         self.spacer_2 = cps.Divider(line=True)
         
         self.add_object_button = cps.DoSomething("", 'Add another object', self.add_object)
+        
+        self.thr = cps.Float(
+            "Set threshold as percentage of maximum intensity for the images",
+            15, minval=0, maxval=99, doc='''\
+            Select the threshold as a percentage of the maximum intensity of the above image [0-99].''')
+
+
 
     def add_image(self, can_delete = True):
         '''Add an image to the image_groups collection
@@ -162,6 +164,7 @@ class MeasureCorrelation(cpm.CPModule):
         result = [self.image_count, self.object_count]
         result += [image_group.image_name for image_group in self.image_groups]
         result += [self.images_or_objects]
+        result += [self.thr]
         result += [object_group.object_name for object_group in self.object_groups]
         return result
 
@@ -184,7 +187,7 @@ class MeasureCorrelation(cpm.CPModule):
         result = []
         for image_group in self.image_groups:
             result += image_group.visible_settings()
-        result += [self.add_image_button, self.spacer_2, self.images_or_objects]
+        result += [self.add_image_button, self.spacer_2, self.images_or_objects, self.thr]
         if self.wants_objects():
             for object_group in self.object_groups:
                 result += object_group.visible_settings()

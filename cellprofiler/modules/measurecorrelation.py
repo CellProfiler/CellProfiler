@@ -316,8 +316,8 @@ class MeasureCorrelation(cpm.CPModule):
             tot_si_thr_c = si[(si > Thr_si_c)].sum()
             
             #Threshold as percentage of maximum intensity in each channel
-            thr_fi = self.thr.value * scistat.scoreatpercentile(fi,100.0) / 100
-            thr_si = self.thr.value * scistat.scoreatpercentile(si,100.0) / 100
+            thr_fi = self.thr.value * np.max(fi) / 100
+            thr_si = self.thr.value * np.max(si) / 100
             combined_thresh = (fi > thr_fi) & (si > thr_si)
             fi_thresh = fi[combined_thresh]
             si_thresh = si[combined_thresh]

@@ -97,6 +97,11 @@ class MeasureCorrelation(cpm.CPModule):
         
         self.add_image_button = cps.DoSomething("", 'Add another image', self.add_image)
         self.spacer_2 = cps.Divider()
+        self.thr = cps.Float(
+            "Set threshold as percentage of maximum intensity for the images",
+            15, minval=0, maxval=99, doc='''\
+            Select the threshold as a percentage of the maximum intensity of the above image [0-99].''')
+        
         self.images_or_objects = cps.Choice(
             'Select where to measure correlation',
             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc = '''
@@ -116,11 +121,6 @@ class MeasureCorrelation(cpm.CPModule):
         self.spacer_2 = cps.Divider(line=True)
         
         self.add_object_button = cps.DoSomething("", 'Add another object', self.add_object)
-        
-        self.thr = cps.Float(
-            "Set threshold as percentage of maximum intensity for the images",
-            15, minval=0, maxval=99, doc='''\
-            Select the threshold as a percentage of the maximum intensity of the above image [0-99].''')
 
 
 
@@ -163,8 +163,8 @@ class MeasureCorrelation(cpm.CPModule):
         '''Return the settings to be saved in the pipeline'''
         result = [self.image_count, self.object_count]
         result += [image_group.image_name for image_group in self.image_groups]
-        result += [self.images_or_objects]
         result += [self.thr]
+        result += [self.images_or_objects]
         result += [object_group.object_name for object_group in self.object_groups]
         return result
 
@@ -187,7 +187,7 @@ class MeasureCorrelation(cpm.CPModule):
         result = []
         for image_group in self.image_groups:
             result += image_group.visible_settings()
-        result += [self.add_image_button, self.spacer_2, self.images_or_objects, self.thr]
+        result += [self.add_image_button, self.spacer_2, self.thr, self.images_or_objects]
         if self.wants_objects():
             for object_group in self.object_groups:
                 result += object_group.visible_settings()

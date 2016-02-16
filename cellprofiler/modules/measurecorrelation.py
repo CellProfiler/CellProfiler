@@ -85,7 +85,7 @@ class MeasureCorrelation(cpm.CPModule):
 
     module_name = 'MeasureCorrelation'
     category = 'Measurement'
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def create_settings(self):
         '''Create the initial settings for the module'''
@@ -489,6 +489,8 @@ class MeasureCorrelation(cpm.CPModule):
         if n_objects == 0:
             corr = np.zeros((0,))
             overlap = np.zeros((0,))
+            K1 = np.zeros((0,))
+            K2 = np.zeros((0,))
             M1 = np.zeros((0,))
             M2 = np.zeros((0,))
             RWC1 = np.zeros((0,))
@@ -561,30 +563,39 @@ class MeasureCorrelation(cpm.CPModule):
                 i= i-0.003921568627
             
             # Costes' thershold for entire image is applied to each object
-            combined_thresh_c = (first_pixels > thr_fi_c) & (second_pixels > thr_si_c)
+            fi_above_thr = first_pixels > thr_fi_c
+            si_above_thr = second_pixels > thr_si_c
+            combined_thresh_c = fi_above_thr & si_above_thr
             fi_thresh_c = first_pixels[combined_thresh_c]
             si_thresh_c = second_pixels[combined_thresh_c]
-            tot_fi_thr_c = scind.sum(first_pixels[first_pixels > thr_fi_c],labels[first_pixels > thr_fi_c],lrange)
-            tot_si_thr_c = scind.sum(second_pixels[second_pixels > thr_si_c],labels[second_pixels > thr_si_c],lrange)
+            if np.any(fi_above_thr):
+                tot_fi_thr_c = scind.sum(first_pixels[first_pixels > thr_fi_c],labels[first_pixels > thr_fi_c],lrange)
+            else:
+                tot_fi_thr_c = np.zeros(len(lrange))
+            if np.any(si_above_thr):
+                tot_si_thr_c = scind.sum(second_pixels[second_pixels > thr_si_c],labels[second_pixels > thr_si_c],lrange)
+            else:
+                tot_si_thr_c = np.zeros(len(lrange))
             
             # Mander's Coefficient
-            M1 = 0
-            M2 = 0
-
-            M1 = np.array(scind.sum(fi_thresh,labels[combined_thresh],lrange)) / np.array(tot_fi_thr)
-            M2 = np.array(scind.sum(si_thresh,labels[combined_thresh],lrange)) / np.array(tot_si_thr)
-            result += [[first_image_name, second_image_name, object_name,"Mean Mander's coeff","%.3f"%np.mean(M1[M1>0])],
-                       [first_image_name, second_image_name, object_name,"Median Mander's coeff","%.3f"%np.median(M1[M1>0])],
-                       [first_image_name, second_image_name, object_name,"Min Mander's coeff","%.3f"%np.min(M1[M1>0])],
-                       [first_image_name, second_image_name, object_name,"Max Mander's coeff","%.3f"%np.max(M1[M1>0])]]
-            result += [[second_image_name, first_image_name, object_name,"Mean Mander's coeff","%.3f"%np.mean(M2[M2>0])],
-                       [second_image_name, first_image_name, object_name,"Median Mander's coeff","%.3f"%np.median(M2[M2>0])],
-                       [second_image_name, first_image_name, object_name,"Min Mander's coeff","%.3f"%np.min(M2[M2>0])],
-                       [second_image_name, first_image_name, object_name,"Max Mander's coeff","%.3f"%np.max(M2[M2>0])]]
+            M1 = np.zeros(len(lrange))
+            M2 = np.zeros(len(lrange))
+            
+            if np.any(combined_thresh):
+                M1 = np.array(scind.sum(fi_thresh,labels[combined_thresh],lrange)) / np.array(tot_fi_thr)
+                M2 = np.array(scind.sum(si_thresh,labels[combined_thresh],lrange)) / np.array(tot_si_thr)
+            result += [[first_image_name, second_image_name, object_name,"Mean Mander's coeff","%.3f"%np.mean(M1)],
+                       [first_image_name, second_image_name, object_name,"Median Mander's coeff","%.3f"%np.median(M1)],
+                       [first_image_name, second_image_name, object_name,"Min Mander's coeff","%.3f"%np.min(M1)],
+                       [first_image_name, second_image_name, object_name,"Max Mander's coeff","%.3f"%np.max(M1)]]
+            result += [[second_image_name, first_image_name, object_name,"Mean Mander's coeff","%.3f"%np.mean(M2)],
+                       [second_image_name, first_image_name, object_name,"Median Mander's coeff","%.3f"%np.median(M2)],
+                       [second_image_name, first_image_name, object_name,"Min Mander's coeff","%.3f"%np.min(M2)],
+                       [second_image_name, first_image_name, object_name,"Max Mander's coeff","%.3f"%np.max(M2)]]
             
             # RWC Coefficient
-            RWC1 = 0
-            RWC2 = 0
+            RWC1 = np.zeros(len(lrange))
+            RWC2 = np.zeros(len(lrange))
             [Rank1] = np.lexsort(([labels], [first_pixels]))
             [Rank2] = np.lexsort(([labels], [second_pixels]))
             Rank1_U = np.hstack([[False],first_pixels[Rank1[:-1]] != first_pixels[Rank1[1:]]])
@@ -600,32 +611,35 @@ class MeasureCorrelation(cpm.CPModule):
             Di = abs(Rank_im1 - Rank_im2)
             weight = (R-Di) * 1.0 / R
             weight_thresh = weight[combined_thresh]
-            RWC1 = np.array(scind.sum(fi_thresh * weight_thresh,labels[combined_thresh],lrange)) / np.array(tot_fi_thr)
-            RWC2 = np.array(scind.sum(si_thresh * weight_thresh,labels[combined_thresh],lrange)) / np.array(tot_si_thr)
-            result += [[first_image_name, second_image_name, object_name,"Mean RWC coeff","%.3f"%np.mean(RWC1[RWC1>0])],
-                       [first_image_name, second_image_name, object_name,"Median RWC coeff","%.3f"%np.median(RWC1[RWC1>0])],
-                       [first_image_name, second_image_name, object_name,"Min RWC coeff","%.3f"%np.min(RWC1[RWC1>0])],
-                       [first_image_name, second_image_name, object_name,"Max RWC coeff","%.3f"%np.max(RWC1[RWC1>0])]]
-            result += [[second_image_name, first_image_name, object_name,"Mean RWC coeff","%.3f"%np.mean(RWC2[RWC2>0])],
-                       [second_image_name, first_image_name, object_name,"Median RWC coeff","%.3f"%np.median(RWC2[RWC2>0])],
-                       [second_image_name, first_image_name, object_name,"Min RWC coeff","%.3f"%np.min(RWC2[RWC2>0])],
-                       [second_image_name, first_image_name, object_name,"Max RWC coeff","%.3f"%np.max(RWC2[RWC2>0])]]
+            if np.any(combined_thresh_c):
+                RWC1 = np.array(scind.sum(fi_thresh * weight_thresh,labels[combined_thresh],lrange)) / np.array(tot_fi_thr)
+                RWC2 = np.array(scind.sum(si_thresh * weight_thresh,labels[combined_thresh],lrange)) / np.array(tot_si_thr)
+                
+            result += [[first_image_name, second_image_name, object_name,"Mean RWC coeff","%.3f"%np.mean(RWC1)],
+                       [first_image_name, second_image_name, object_name,"Median RWC coeff","%.3f"%np.median(RWC1)],
+                       [first_image_name, second_image_name, object_name,"Min RWC coeff","%.3f"%np.min(RWC1)],
+                       [first_image_name, second_image_name, object_name,"Max RWC coeff","%.3f"%np.max(RWC1)]]
+            result += [[second_image_name, first_image_name, object_name,"Mean RWC coeff","%.3f"%np.mean(RWC2)],
+                       [second_image_name, first_image_name, object_name,"Median RWC coeff","%.3f"%np.median(RWC2)],
+                       [second_image_name, first_image_name, object_name,"Min RWC coeff","%.3f"%np.min(RWC2)],
+                       [second_image_name, first_image_name, object_name,"Max RWC coeff","%.3f"%np.max(RWC2)]]
             
             
             #Costes Automated Threshold
-            C1 = 0
-            C2 = 0
-            C1 = np.array(scind.sum(fi_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_fi_thr_c)
-            C2 = np.array(scind.sum(si_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_si_thr_c)
-            result += [[first_image_name, second_image_name, object_name,"Mean Mander's coeff (Costes)","%.3f"%np.mean(C1[C1>0])],
-                       [first_image_name, second_image_name, object_name,"Median Mander's coeff (Costes)","%.3f"%np.median(C1[C1>0])],
-                       [first_image_name, second_image_name, object_name,"Min Mander's coeff (Costes)","%.3f"%np.min(C1[C1>0])],
-                       [first_image_name, second_image_name, object_name,"Max Mander's coeff (Costes)","%.3f"%np.max(C1[C1>0])]
+            C1 = np.zeros(len(lrange))
+            C2 = np.zeros(len(lrange))
+            if np.any(combined_thresh_c):
+                C1 = np.array(scind.sum(fi_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_fi_thr_c)
+                C2 = np.array(scind.sum(si_thresh_c,labels[combined_thresh_c],lrange)) / np.array(tot_si_thr_c)
+            result += [[first_image_name, second_image_name, object_name,"Mean Mander's coeff (Costes)","%.3f"%np.mean(C1)],
+                       [first_image_name, second_image_name, object_name,"Median Mander's coeff (Costes)","%.3f"%np.median(C1)],
+                       [first_image_name, second_image_name, object_name,"Min Mander's coeff (Costes)","%.3f"%np.min(C1)],
+                       [first_image_name, second_image_name, object_name,"Max Mander's coeff (Costes)","%.3f"%np.max(C1)]
                        ]
-            result += [[second_image_name, first_image_name, object_name,"Mean Mander's coeff (Costes)","%.3f"%np.mean(C2[C2>0])],
-                       [second_image_name, first_image_name, object_name,"Median Mander's coeff (Costes)","%.3f"%np.median(C2[C2>0])],
-                       [second_image_name, first_image_name, object_name,"Min Mander's coeff (Costes)","%.3f"%np.min(C2[C2>0])],
-                       [second_image_name, first_image_name, object_name,"Max Mander's coeff (Costes)","%.3f"%np.max(C2[C2>0])]
+            result += [[second_image_name, first_image_name, object_name,"Mean Mander's coeff (Costes)","%.3f"%np.mean(C2)],
+                       [second_image_name, first_image_name, object_name,"Median Mander's coeff (Costes)","%.3f"%np.median(C2)],
+                       [second_image_name, first_image_name, object_name,"Min Mander's coeff (Costes)","%.3f"%np.min(C2)],
+                       [second_image_name, first_image_name, object_name,"Max Mander's coeff (Costes)","%.3f"%np.max(C2)]
                        ]
             
             
@@ -634,13 +648,16 @@ class MeasureCorrelation(cpm.CPModule):
             spsq = scind.sum(second_pixels[combined_thresh]**2,labels[combined_thresh],lrange)
             pdt = np.sqrt(np.array(fpsq) * np.array(spsq))
             
-            overlap = fix(scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh], labels[combined_thresh], lrange) / pdt)
-            K1 = fix((scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh], labels[combined_thresh], lrange)) / (np.array(fpsq)))
-            K2 = fix(scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh], labels[combined_thresh], lrange) / np.array(spsq))
-            result += [[first_image_name, second_image_name, object_name,"Mean Overlap coeff","%.3f"%np.mean(overlap[overlap>0])],
-                       [first_image_name, second_image_name, object_name,"Median Overlap coeff","%.3f"%np.median(overlap[overlap>0])],
-                       [first_image_name, second_image_name, object_name,"Min Overlap coeff","%.3f"%np.min(overlap[overlap>0])],
-                       [first_image_name, second_image_name, object_name,"Max Overlap coeff","%.3f"%np.max(overlap[overlap>0])]]
+            if np.any(combined_thresh):
+                overlap = fix(scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh], labels[combined_thresh], lrange) / pdt)
+                K1 = fix((scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh], labels[combined_thresh], lrange)) / (np.array(fpsq)))
+                K2 = fix(scind.sum(first_pixels[combined_thresh] * second_pixels[combined_thresh], labels[combined_thresh], lrange) / np.array(spsq))
+            else:
+                overlap = K1 = K2 = np.zeros(len(lrange))
+            result += [[first_image_name, second_image_name, object_name,"Mean Overlap coeff","%.3f"%np.mean(overlap)],
+                       [first_image_name, second_image_name, object_name,"Median Overlap coeff","%.3f"%np.median(overlap)],
+                       [first_image_name, second_image_name, object_name,"Min Overlap coeff","%.3f"%np.min(overlap)],
+                       [first_image_name, second_image_name, object_name,"Max Overlap coeff","%.3f"%np.max(overlap)]]
 
         measurement = ("Correlation_Correlation_%s_%s" %
                        (first_image_name, second_image_name))
@@ -784,17 +801,23 @@ class MeasureCorrelation(cpm.CPModule):
     def get_measurements(self, pipeline, object_name, category):
         if self.get_categories(pipeline, object_name) == [category]:
             if object_name == cpmeas.IMAGE:
-                return ["Correlation","Slope","Overlap","Manders","RWC","Costes"]
+                return ["Correlation","Slope","Overlap",
+                        "K", "Manders","RWC","Costes"]
             else:
-                return ["Correlation","Overlap","Manders","RWC","Costes"]
+                return ["Correlation","Overlap","K", "Manders","RWC","Costes"]
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, 
                                measurement):
         '''Return the joined pairs of images measured'''
+        result = []
         if measurement in self.get_measurements(pipeline, object_name, category):
-            return ["%s_%s"%x for x in self.get_image_pairs()]
-        return []
+            for i1, i2 in self.get_image_pairs():
+                result.append("%s_%s" % (i1, i2))
+                # For asymmetric, return both orderings
+                if measurement in ("K", "Manders", "RWC", "Costes"):
+                    result.append("%s_%s" % (i2, i1))
+        return result
 
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -838,5 +861,12 @@ class MeasureCorrelation(cpm.CPModule):
             setting_values = ([str(image_count), str(object_count)] +
                               image_names + [m] + object_names)
             variable_revision_number = 2
+        if variable_revision_number == 2:
+            image_count = int(setting_values[0])
+            idx_thr = image_count + 3
+            setting_values = \
+                setting_values[:idx_thr] + ["15.0"] + setting_values[idx_thr:]
+            variable_revision_number = 3
+            
         return setting_values, variable_revision_number, from_matlab
 

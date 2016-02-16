@@ -634,7 +634,7 @@ class FlagImage(cpm.CPModule):
             predicted_class = classifier.predict(feature_vector)[0]
             predicted_idx = \
                 np.where(classifier.classes_==predicted_class)[0][0]
-            fail = predicted_idx not in target_idxs
+            fail = predicted_idx in target_idxs
             display_value = self.get_bin_labels(ms)[predicted_idx]
             source = cpmeas.IMAGE
         else:

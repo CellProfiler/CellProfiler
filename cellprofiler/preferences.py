@@ -341,6 +341,7 @@ SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
 FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
 PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
 BATCHPROFILER_URL = "BatchProfilerURL"
+CHOOSE_IMAGE_SET_FRAME_SIZE = "ChooseImageSetFrameSize"
 
 '''Default URL root for BatchProfiler'''
 BATCHPROFILER_URL_DEFAULT = "http://imageweb/batchprofiler"
@@ -1489,6 +1490,24 @@ def get_image_set_file():
     loaded.
     '''
     return __image_set_filename
+
+__choose_image_set_frame_size = None
+
+def get_choose_image_set_frame_size():
+    '''Return the size (w, h) for the "Choose image set" dialog frame'''
+    global __choose_image_set_frame_size
+    if __choose_image_set_frame_size is None:
+        if config_exists(CHOOSE_IMAGE_SET_FRAME_SIZE):
+            s = config_read(CHOOSE_IMAGE_SET_FRAME_SIZE)
+            __choose_image_set_frame_size = tuple(
+            [int(_.strip()) for _ in s.split(",", 1)])
+    return __choose_image_set_frame_size
+
+def set_choose_image_set_frame_size(w, h):
+    '''Set the size of the "Choose image set" dialog frame'''
+    global __choose_image_set_frame_size
+    __choose_image_set_frame_size = (w, h)
+    config_write(CHOOSE_IMAGE_SET_FRAME_SIZE, "%d,%d" % (w,h))
 
 def add_progress_callback(callback):
     '''Add a callback function that listens to progress calls

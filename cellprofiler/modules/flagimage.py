@@ -369,6 +369,22 @@ class FlagImage(cpm.CPModule):
                     if len(undef_features) > 0:
                         raise cps.ValidationError("The rule described by %s has not been measured earlier in the pipeline."%undef_features[0],
                                                     measurement_setting.rules_file_name)
+                elif measurement_setting.source_choice == S_CLASSIFIER:
+                    try:
+                        self.get_classifier(measurement_setting)
+                        self.get_classifier_features(measurement_setting)
+                        self.get_bin_labels(measurement_setting)
+                    except IOError:
+                        raise cps.ValidationError(
+                            "Failed to load classifier file %s" % 
+                            measurement_setting.rules_file_name.value, 
+                            measurement_setting.rules_file_name)
+                    except:
+                        raise cps.ValidationError(
+                        "Unable to load %s as a classifier file" %
+                        measurement_setting.rules_file_name.value, 
+                        measurement_setting.rules_file_name)
+                
 
     def run(self, workspace):
         col_labels = ("Flag", "Source", "Measurement", "Value","Pass/Fail")

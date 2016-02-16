@@ -451,6 +451,19 @@ class FilterObjects(cpm.CPModule):
                          "measurement modules to produce the measurement.") %
                         (self.rules_file_name, r.feature, r.object_name),
                         self.rules_file_name)
+        elif self.mode == MODE_CLASSIFIERS:
+            try:
+                self.get_classifier()
+                self.get_bin_labels()
+                self.get_classifier_features()
+            except IOError:
+                raise cps.ValidationError(
+                    "Failed to load classifier file %s" % 
+                    self.rules_file_name.value, self.rules_file_name)
+            except:
+                raise cps.ValidationError(
+                "Unable to load %s as a classifier file" %
+                self.rules_file_name.value, self.rules_file_name)
 
     def run(self, workspace):
         '''Filter objects for this image set, display results'''

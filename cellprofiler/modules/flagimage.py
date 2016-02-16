@@ -650,7 +650,8 @@ class FlagImage(cpm.CPModule):
                 (is_rc and fail))
         
         return ((not fail), (source, 
-                             ms.measurement.value if is_meas else "Rules", 
+                             ms.measurement.value if is_meas 
+                             else ms.source_choice.value, 
                              display_value, 
                              "Fail" if fail else "Pass"))
     

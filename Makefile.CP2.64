@@ -151,8 +151,8 @@ WGETFLAGS				?= --continue --tries=10 --timeout=60 --no-check-certificate
 CELLPROFILERPREFIX			?= $(PREFIX)
 CELLPROFILER_CO_URL			= https://github.com/CellProfiler/CellProfiler.git
 
-PACKAGEURL                              = http://cellprofiler.org/linked_files/CPPackageHost/
-PACKAGEHOST                              = http://cellprofiler.org/linked_files/CPPackageHost/
+PACKAGEURL                              = http://d1zymp9ayga15t.cloudfront.net/linked_files/CPPackageHost/
+PACKAGEHOST                              = http://d1zymp9ayga15t.cloudfront.net/linked_files/CPPackageHost/
 
 #PYVERSION				= 2.5
 PYVERSION				= 2.7

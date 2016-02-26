@@ -1742,7 +1742,7 @@ class CPFigureFrame(wx.Frame):
             # Intercept size to make sure we redraw
             #
             plate_static_text = wx.StaticText(
-                self.ToolBar, -1, 'Plate: ',
+                self.navtoolbar, -1, 'Plate: ',
                 style = wx.TRANSPARENT_WINDOW)
             def on_paint_text(event):
                 dc = wx.PaintDC(plate_static_text)
@@ -1756,15 +1756,16 @@ class CPFigureFrame(wx.Frame):
             plate_static_text.Bind(wx.EVT_PAINT, on_paint_text)
             plate_static_text.Bind(wx.EVT_SIZE, on_size)
 
-            self.plate_choice = wx.Choice(self.ToolBar, -1, choices=plate_names)
+            self.plate_choice = wx.Choice(
+	        self.navtoolbar, -1, choices=plate_names)
             def on_plate_selected(event):
                 self.draw_platemap()
                 
             self.plate_choice.Bind(wx.EVT_CHOICE, on_plate_selected)
             self.plate_choice.SetSelection(0)
-            self.ToolBar.AddControl(plate_static_text)
-            self.ToolBar.AddControl(self.plate_choice)
-            self.ToolBar.Realize()
+            self.navtoolbar.AddControl(plate_static_text)
+            self.navtoolbar.AddControl(self.plate_choice)
+            self.navtoolbar.Realize()
             self.plate_choice.plates_dict = plates_dict
             self.plate_choice.plate_type = plate_type
             self.plate_choice.x = x

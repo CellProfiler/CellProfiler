@@ -379,7 +379,6 @@ class CPFigureFrame(wx.Frame):
     
     def create_toolbar(self):
         self.navtoolbar = CPNavigationToolbar(self.figure.canvas)
-        self.SetToolBar(self.navtoolbar)
         if wx.VERSION < (2, 9, 1, 1, ''):
             # avoid crash on latest wx 2.9
             self.navtoolbar.DeleteToolByPos(6)
@@ -472,13 +471,16 @@ class CPFigureFrame(wx.Frame):
         if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
             return
         available_width, available_height = self.GetClientSize()
-        if self.secret_panel.IsShown():
+        nbheight = self.navtoolbar.GetSize()[1]
+        self.navtoolbar.SetPosition((0, 0))
+        self.navtoolbar.SetSize((available_width, nbheight))
+	if self.secret_panel.IsShown():
             sp_width = self.secret_panel.GetVirtualSize()[0]
             canvas_width = min(max(available_width - sp_width, 250),
                                available_width - 100)
             sp_width = available_width - canvas_width
-            self.secret_panel.SetPosition((canvas_width, 0))
-            self.secret_panel.SetSize((sp_width, available_height))
+            self.secret_panel.SetPosition((canvas_width, nbheight))
+            self.secret_panel.SetSize((sp_width, available_height-nbheight))
             self.secret_panel.Layout()
             self.secret_panel.SetupScrolling()
             self.secret_panel.BackgroundColour = self.BackgroundColour
@@ -489,8 +491,8 @@ class CPFigureFrame(wx.Frame):
                 kid.Update()
         else:
             canvas_width = available_width
-        self.panel.SetPosition((0, 0))
-        self.panel.SetSize((canvas_width, available_height))
+        self.panel.SetPosition((0, nbheight))
+        self.panel.SetSize((canvas_width, available_height-nbheight))
         self.ClearBackground()
             
     def on_close(self, event):

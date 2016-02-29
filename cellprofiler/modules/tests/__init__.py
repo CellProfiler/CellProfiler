@@ -12,7 +12,8 @@ import javabridge
 import numpy as np
 import os
 import unittest
-from urllib import urlretrieve
+from urllib import urlretrieve, URLopener
+from urllib2 import HTTPError
 import tempfile
 
 import scipy.io.matlab.mio
@@ -277,7 +278,13 @@ def maybe_download_tesst_image( file_name):
     local_path = os.path.join(testimages_directory(), file_name)
     if not os.path.exists(local_path):
         url = testimages_url() + "/" + file_name
-        urlretrieve(url, local_path)
+        try:
+            URLopener().retrieve(url, local_path)
+        except IOError, e:
+            # This raises the "expected failure" exception.
+            def bad_url(e=e):
+                raise e
+            unittest.expectedFailure(bad_url)()
     return local_path
     
 def read_example_image(folder, file_name, **kwargs):

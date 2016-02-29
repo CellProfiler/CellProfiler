@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import urllib
 from cStringIO import StringIO
 
 import dateutil.parser
@@ -96,6 +97,7 @@ class TestCellProfiler(unittest.TestCase):
             #
             fly_pipe = \
                 "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
+            urllib.URLopener().open(fly_pipe).close()
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
             self.run_cellprofiler("-c", "-r", 
@@ -120,6 +122,12 @@ class TestCellProfiler(unittest.TestCase):
                                   "-p", measurements_file,
                                   m2_file)
             self.assertTrue(os.path.exists(m2_file))
+        except IOError, e:
+            if e.args[0] != 'http error':
+                raise e
+            def bad_url(e=e):
+                raise e
+            unittest.expectedFailure(bad_url)()
         finally:
             shutil.rmtree(output_directory)
             

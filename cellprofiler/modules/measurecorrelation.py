@@ -25,20 +25,20 @@ here <i>A</i> is the slope.</li>
 <li><i>Overlap coefficient:</i> The overlap coefficient is a modification of Pearson's correlation
 where average intesity values of the pixels are not subtracted from the original intesity values. For
 a pair of images R and G, the overlap coefficient is measured as
-r = sum(Ri * Gi) / sqrt (sum(Ri*Ri)*sum(Gi*Gi)).
+r = sum(Ri * Gi) / sqrt (sum(Ri*Ri)*sum(Gi*Gi)).</li>
 <li><i>Mander's coefficient:</i> The mander's coefficient for a pair of images R and G is measured as
 M1 = sum(Ri_coloc)/sum(Ri) and M2 = sum(Gi_coloc)/sum(Gi), where Ri_coloc = Ri when Gi > 0, 0 otherwise and
-Gi_coloc =  Gi when Ri >0, 0 otherwise.
+Gi_coloc =  Gi when Ri >0, 0 otherwise.</li>
 <li><i>Mander's coefficient (Costes Automated Threshold):</i> Costes' automated threshold estimates
 maximum threshold of intensity for each image based on correlation. Mander's coefficient is applied
 on thresholded images as Ri_coloc = Ri when Gi > Gthr and Gi_coloc = Gi when Ri > Rthr where
-Gthr and Rthr are thresholds calculed using Costes' authomated threshold method.
+Gthr and Rthr are thresholds calculed using Costes' authomated threshold method.</li>
 <li><i>Rank Weighted Colocalization coefficient:</i> The RWC coefficient for a pair of images R and G is measured as
 RWC1 = sum(Ri_coloc*Wi)/sum(Ri) and RWC2 = sum(Gi_coloc*Wi)/sum(Gi), where Wi is Weight defined as
 Wi = (Rmax - Di)/Rmax where Rmax is the maximum of Ranks among R and G based on the max intensity, and
 Di = abs(Rank(Ri) - Rank(Gi)) (absolute difference in ranks between R and G) and Ri_coloc = Ri when Gi > 0, 0 otherwise
 and Gi_coloc =  Gi when Ri >0, 0 otherwise. (Singan et al. 2011, BMC Bioinformatics 12:407).
-</ul>
+</li></ul>
 
 '''
 

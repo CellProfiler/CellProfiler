@@ -23,6 +23,11 @@ i.e., not necessarily a constant width across objects.</p>
 as fraction of total intensity normalized by fraction of pixels at a given radius.</li>
 <li><i>RadialCV:</i> Coefficient of variation of intensity within a ring, calculated 
 over 8 slices.</li>
+<li><i>Zernike:</i> The Zernike features characterize the distribution of
+intensity across the object. For instance, Zernike 1,1 has a high value if the 
+tensity is low on one side of the object and high on the other. The
+ZernikeMagnitude feature holds the rotationally invariant degree magnitude
+of the moment and the ZernikePhase feature gives the moment's orientation.</li>
 </ul>
 
 See also <b>MeasureObjectIntensity</b>.
@@ -30,6 +35,7 @@ See also <b>MeasureObjectIntensity</b>.
 
 import sys
 
+import centrosome.zernike as cpmz
 import matplotlib.cm
 import numpy as np
 import scipy.ndimage as scind
@@ -57,6 +63,11 @@ C_CENTERS_OF_OTHER = 'Centers of other objects'
 C_EDGES_OF_OTHER = 'Edges of other objects'
 C_ALL = [C_SELF, C_CENTERS_OF_OTHER, C_EDGES_OF_OTHER]
 
+Z_NONE = 'None'
+Z_MAGNITUDES = "Magnitudes only"
+Z_MAGNITUDES_AND_PHASE = "Magnitudes and phase"
+Z_ALL = [Z_NONE, Z_MAGNITUDES, Z_MAGNITUDES_AND_PHASE]
+
 M_CATEGORY = 'RadialDistribution'
 F_FRAC_AT_D = 'FracAtD'
 F_MEAN_FRAC = 'MeanFrac'
@@ -69,6 +80,9 @@ FF_GENERIC = '_%s_' + FF_SCALE
 FF_FRAC_AT_D = F_FRAC_AT_D + FF_GENERIC
 FF_MEAN_FRAC = F_MEAN_FRAC + FF_GENERIC
 FF_RADIAL_CV = F_RADIAL_CV + FF_GENERIC
+
+FF_ZERNIKE_MAGNITUDE = "ZernikeMagnitude"
+FF_ZERNIKE_PHASE = "ZernikePhase"
 
 MF_FRAC_AT_D = '_'.join((M_CATEGORY,FF_FRAC_AT_D))
 MF_MEAN_FRAC = '_'.join((M_CATEGORY,FF_MEAN_FRAC))
@@ -108,7 +122,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
  
     module_name = "MeasureObjectRadialDistribution"
     category = "Measurement"
-    variable_revision_number = 4
+    variable_revision_number = 5
     
     def create_settings(self):
         self.images = []
@@ -119,6 +133,25 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         self.object_count = cps.HiddenCount(self.objects)
         self.bin_counts_count = cps.HiddenCount(self.bin_counts)
         self.heatmap_count = cps.HiddenCount(self.heatmaps)
+        self.wants_zernikes = cps.Choice(
+            "Calculate intensity Zernikes?", Z_ALL,
+            doc="""This setting determines whether the intensity Zernike
+            moments are calculated. Choose <i>%(Z_NONE)s</i> to save computation
+            time by not calculating the Zernike moments. Choose
+            <i>%(Z_MAGNITUDES)s</i> to only save the magnitude information
+            and discard information related to the object's angular orientation.
+            Choose <i>%(S_MAGNITUDES_AND_PHASE)s to save the phase information
+            as well. The last option lets you recover each object's rough
+            appearance from the Zernikes but may not contribute useful
+            information if used to classify phenotypes.""" %globals())
+        self.zernike_degree = cps.Integer(
+            "Maximum zernike moment", value=9, minval=1, maxval=2,
+            doc="""(<i>Only if "%s" is %s or %s</i>)<br>
+            This is the maximum radial moment that will be calculated.
+            There are increasing numbers of azimuthal moments as you increase
+            the radial moment, so higher values are increasingly expensive
+            to calculate.""" % 
+            (self.wants_zernikes.text, Z_MAGNITUDES, Z_MAGNITUDES_AND_PHASE))
         self.add_image_button = cps.DoSomething("", "Add another image", self.add_image)
         self.spacer_1 = cps.Divider()
         self.add_object_button = cps.DoSomething("", "Add another object",
@@ -320,7 +353,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             
     def settings(self):
         result = [self.image_count, self.object_count, self.bin_counts_count,
-                  self.heatmap_count]
+                  self.heatmap_count, self.wants_zernikes, self.zernike_degree]
         for x in (self.images, self.objects, self.bin_counts, self.heatmaps):
             for settings in x:
                 temp = settings.pipeline_settings() 
@@ -328,7 +361,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         return result
     
     def visible_settings(self):
-        result = []
+        result = [self.wants_zernikes, self.zernike_degree]
         
         for settings in self.images:
             result += settings.visible_settings()
@@ -398,6 +431,11 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                                          o.center_choice.value,
                                          bin_count_settings,
                                          d)
+                    if self.wants_zernikes:
+                        self.calculate_zernikes(
+                            workspace, image.image_name.value, 
+                            o.object_name.value)
+                    
         if self.show_window:
             workspace.display_data.header = header
             workspace.display_data.stats = stats
@@ -709,10 +747,36 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                             round(np.mean(radial_cv),4))]
         return statistics
     
+    def calculate_zernikes(self, workspace, image_name, object_name):
+        image = workspace.get_image(image_name, must_be_grayscale=True)
+        pixels = image.pixel_data
+        mask = image.mask
+        
+    
+    def get_zernike_magnitude_name(self, image_name, n, m):
+        '''The feature name of the magnitude of a Zernike moment
+        
+        image_name - the name of the image being measured
+        n - the radial moment of the Zernike
+        m - the azimuthal moment of the Zernike
+        '''
+        return "_".join((M_CATEGORY, FF_ZERNIKE_MAGNITUDE, image_name, n, m))
+    
+    def get_zernike_phase_name(self, image_name, n, m):
+        '''The feature name of the phase of a Zernike moment
+        
+        image_name - the name of the image being measured
+        n - the radial moment of the Zernike
+        m - the azimuthal moment of the Zernike
+        '''
+        return "_".join((M_CATEGORY, FF_ZERNIKE_PHASE, image_name, n, m))
+
     def get_measurement_columns(self, pipeline):
         columns = []
         for image in self.images:
+            image_name = image.image_name.value
             for o in self.objects:
+                object_name = o.object_name.value
                 for bin_count_obj in self.bin_counts:
                     bin_count = bin_count_obj.bin_count.value
                     wants_scaling = bin_count_obj.wants_scaled.value
@@ -721,15 +785,25 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                         (MF_MEAN_FRAC, OF_MEAN_FRAC),
                         (MF_RADIAL_CV, OF_RADIAL_CV)):
                         for bin in range(1,bin_count+1):
-                            columns.append((o.object_name.value,
-                                            feature % (image.image_name.value,
-                                                       bin, bin_count),
-                                            cpmeas.COLTYPE_FLOAT))
+                            columns.append(
+                                (object_name,
+                                 feature % (image_name, bin, bin_count),
+                                 cpmeas.COLTYPE_FLOAT))
                         if not wants_scaling:
                             columns.append(
-                                (o.object_name.value,
+                                (object_name,
                                  ofeature % image.image_name.value,
                                  cpmeas.COLTYPE_FLOAT))
+                    if self.wants_zernikes != Z_NONE:
+                        name_fns = [self.get_zernike_magnitude_name]
+                        if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
+                            name_fns.append(self.get_zernike_phase_name)
+                        max_n = self.zernike_degree.value
+                        for name_fn in name_fns:
+                            for n, m in cpmz.get_zernike_indexes(max_n+1):
+                                ftr = name_fn(image_name, n, m)
+                                columns.append(
+                                    (object_name, ftr, cpmeas.COLTYPE_FLOAT))
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -739,7 +813,12 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
     
     def get_measurements(self, pipeline, object_name, category):
         if category in self.get_categories(pipeline, object_name):
-            return F_ALL
+            if self.wants_zernikes == Z_NONE:
+                return F_ALL
+            elif self.wants_zernikes == Z_MAGNITUDES:
+                return F_ALL + [FF_ZERNIKE_MAGNITUDE]
+            else:
+                return F_ALL + [FF_ZERNIKE_MAGNITUDE, FF_ZERNIKE_PHASE]
         return []
     
     def get_measurement_images(self, pipeline, object_name, category, feature):
@@ -751,12 +830,17 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                                image_name):
         if image_name in self.get_measurement_images(pipeline, object_name,
                                                      category, feature):
-            result = [FF_SCALE % (bin,bin_count.bin_count.value)
-                      for bin_count in self.bin_counts
-                      for bin in range(1, bin_count.bin_count.value+1)]
-            if any([not bin_count.wants_scaled.value
-                    for bin_count in self.bin_counts]):
-                result += [FF_OVERFLOW]
+            if feature in (FF_ZERNIKE_MAGNITUDE, FF_ZERNIKE_PHASE):
+                n_max = self.zernike_degree.value
+                result = ["%d_%d" % (n, m) 
+                          for n, m in cpmz.get_zernike_indexes(n_max+1)]
+            else:
+                result = [FF_SCALE % (bin,bin_count.bin_count.value)
+                          for bin_count in self.bin_counts
+                          for bin in range(1, bin_count.bin_count.value+1)]
+                if any([not bin_count.wants_scaled.value
+                        for bin_count in self.bin_counts]):
+                    result += [FF_OVERFLOW]
             return result
         return []
             
@@ -802,6 +886,14 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             #
             setting_values = setting_values[:3] + ["0"] + setting_values[3:]
             variable_revision_number = 4
+        
+        if variable_revision_number == 4:
+            #
+            # Added zernikes
+            #
+            setting_values = setting_values[:4] + [Z_NONE, "9"] +\
+                setting_values[4:]
+            variable_revision_number = 5
             
         return setting_values, variable_revision_number, from_matlab
     

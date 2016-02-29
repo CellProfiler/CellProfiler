@@ -38,13 +38,13 @@ import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.tests import \
      example_images_directory, testimages_directory, maybe_download_sbs,\
-     maybe_download_example_image, maybe_download_tesst_image, make_12_bit_image
+     maybe_download_example_image, maybe_download_tesst_image, \
+     make_12_bit_image, cp_logo_url, cp_logo_url_filename, cp_logo_url_folder, \
+     cp_logo_url_shape
+
 from bioformats.formatreader import clear_image_reader_cache
 
 OBJECTS_NAME = "objects"
-
-cp_logo_url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/master/artwork/CP_logo.png"
-cp_logo_url_folder, cp_logo_url_filename = cp_logo_url.rsplit("/", 1)
 
 class TestLoadData(unittest.TestCase):
     @classmethod
@@ -926,7 +926,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), (70, 187, 3))
+        self.assertEqual(tuple(img.pixel_data.shape), cp_logo_url_shape)
 
     def test_13_03_extra_fields(self):
         #
@@ -956,7 +956,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), (70, 187, 3))
+        self.assertEqual(tuple(img.pixel_data.shape), cp_logo_url_shape)
 
     def test_13_04_extra_lines(self):
         #

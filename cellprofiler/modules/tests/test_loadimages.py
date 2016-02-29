@@ -35,7 +35,8 @@ from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_example_images, \
      maybe_download_sbs, maybe_download_tesst_image, maybe_download_fly,\
-     example_images_url, make_12_bit_image
+     example_images_url, make_12_bit_image, \
+     cp_logo_url_folder, cp_logo_url_filename, cp_logo_url_shape
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
@@ -1391,10 +1392,10 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
     def test_05_05_load_url(self):
         lip = LI.LoadImagesImageProvider(
             "broad",
-            "http://www.cellprofiler.org/linked_files",
-            "broad-logo.gif", True)
+            cp_logo_url_folder,
+            cp_logo_url_filename, True)
         logo = lip.provide_image(None)
-        self.assertEqual(logo.pixel_data.shape, (38, 150, 3))
+        self.assertEqual(logo.pixel_data.shape, cp_logo_url_shape)
         lip.release_memory()
 
     def test_05_06_load_Nikon_tif(self):
@@ -3187,6 +3188,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                               i)
                     self.assertEqual(value, expected)
 
+    @unittest.expectedFailure # fly image URLs have moved
     def test_16_01_00_load_from_url(self):
         from bioformats.formatreader import release_image_reader
 

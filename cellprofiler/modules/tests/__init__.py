@@ -23,6 +23,10 @@ from cellprofiler.modules import builtin_modules, all_modules
 
 __temp_example_images_folder = None
 
+cp_logo_url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/master/artwork/CP_logo.png"
+cp_logo_url_folder, cp_logo_url_filename = cp_logo_url.rsplit("/", 1)
+cp_logo_url_shape = (70, 187, 3)
+
 class TestAllModules(unittest.TestCase):
     '''Test things having to do with modules'''
     optional_modules = ('classifypixels', 'ilastik_pixel_classification')

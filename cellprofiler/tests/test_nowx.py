@@ -68,7 +68,12 @@ class TestNoWX(unittest.TestCase):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
-        fd = urlopen(self.fly_url)
+        try:
+            fd = urlopen(self.fly_url)
+        except IOError, e:
+            def bad_url(e=e):
+                raise e
+            unittest.expectedFailure(bad_url)()
         pipeline.load(fd)
         fd.close()
         

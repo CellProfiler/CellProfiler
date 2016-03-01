@@ -54,20 +54,6 @@ class CPShutdownPlugin(nose.plugins.Plugin):
                 "org.cellprofiler.headlesspreferences"+
                 ".HeadlessPreferencesFactory"]
             add_logback_xml_arg(jvm_args)
-            #
-            # Find the ij1patcher
-            #
-            if hasattr(sys, 'frozen') and sys.platform == 'win32':
-                root = os.path.dirname(sys.argv[0])
-            else:
-                root = os.path.dirname(__file__)
-            jardir = os.path.join(root, "imagej", "jars")
-            patchers = sorted([
-                    x for x in os.listdir(jardir)
-                    if x.startswith("ij1-patcher") and x.endswith(".jar")])
-            if len(patchers) > 0:
-                jvm_args.append(
-                    "-javaagent:%s=init" % os.path.join(jardir, patchers[-1]))
             result = start_vm(jvm_args, *args[1:], **kwargs)
             if javabridge.get_env() is not None:
                 try:

@@ -351,12 +351,12 @@ GitHash:bd768bc
 ModuleCount:2
 HasImagePlaneDetails:False
 
-MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
     Hidden:2
     Hidden:2
     Hidden:2
     Hidden:3
-    Calculate intensity Zernikes?:Magnitudes
+    Calculate intensity Zernikes?:Magnitudes only
     Maximum zernike moment:7
     Select an image to measure:CropGreen
     Select an image to measure:CropRed
@@ -454,7 +454,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         module = pipeline.modules()[1]
         self.assertEqual(module.wants_zernikes, M.Z_MAGNITUDES_AND_PHASE)
     
-    def test_02_01_get_measurement_columns(self):
+    def test_02_01_01_get_measurement_columns(self):
         module = M.MeasureObjectIntensityDistribution()
         for i,image_name in ((0, "DNA"),(1, "Cytoplasm"),(2,"Actin")):
             if i:
@@ -499,8 +499,36 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                             self.assertTrue(column_dictionary.has_key(key))
                             del column_dictionary[key]
         self.assertEqual(len(column_dictionary), 0)
-    
-    def test_02_02_get_measurements(self):
+
+    def test_02_01_02_get_zernike_columns(self):
+        module = M.MeasureObjectIntensityDistribution()
+        for wants_zernikes, ftrs in (
+            (M.Z_MAGNITUDES, (M.FF_ZERNIKE_MAGNITUDE, )),
+            (M.Z_MAGNITUDES_AND_PHASE, 
+             (M.FF_ZERNIKE_MAGNITUDE, M.FF_ZERNIKE_PHASE))):
+            module.wants_zernikes.value = wants_zernikes
+            module.zernike_degree.value = 2
+            for i,image_name in ((0, "DNA"),(1, "Cytoplasm"),(2,"Actin")):
+                if i:
+                    module.add_image()
+                module.images[i].image_name.value = image_name
+            for i,object_name, center_name in ((0, "Nucleii", None),
+                                               (1, "Cells", "Nucleii"),
+                                               (2, "Cytoplasm", "Nucleii")):
+                if i:
+                    module.add_object()
+                module.objects[i].object_name.value = object_name
+            columns = module.get_measurement_columns(None)
+            for image_name in "DNA", "Cytoplasm", "Actin":
+                for object_name in "Nucleii", "Cells", "Cytoplasm":
+                    for n, m in ((0, 0), (1, 1), (2, 0), (2, 2)):
+                        for ftr in ftrs:
+                            name = "_".join(
+                                (M.M_CATEGORY, ftr, image_name, str(n), str(m)))
+                            col = (object_name, name, cpmeas.COLTYPE_FLOAT)
+                            self.assertIn(col, columns)
+        
+    def test_02_02_01_get_measurements(self):
         module = M.MeasureObjectIntensityDistribution()
         for i,image_name in ((0, "DNA"),(1, "Cytoplasm"),(2,"Actin")):
             if i:
@@ -543,6 +571,45 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                                 None, object_name,
                                                 M.M_CATEGORY, feature,
                                                 image_name))
+    def test_02_02_02_get_zernike_measurements(self):
+        module = M.MeasureObjectIntensityDistribution()
+        for wants_zernikes, ftrs in (
+            (M.Z_MAGNITUDES, (M.FF_ZERNIKE_MAGNITUDE, )),
+            (M.Z_MAGNITUDES_AND_PHASE, 
+             (M.FF_ZERNIKE_MAGNITUDE, M.FF_ZERNIKE_PHASE))):
+            module.wants_zernikes.value = wants_zernikes
+            module.zernike_degree.value = 2
+        
+            for i,image_name in ((0, "DNA"),(1, "Cytoplasm"),(2,"Actin")):
+                if i:
+                    module.add_image()
+                module.images[i].image_name.value = image_name
+            for i,object_name, center_name in ((0, "Nucleii", None),
+                                               (1, "Cells", "Nucleii"),
+                                               (2, "Cytoplasm", "Nucleii")):
+                if i:
+                    module.add_object()
+                module.objects[i].object_name.value = object_name
+                if center_name is None:
+                    module.objects[i].center_choice.value = M.C_SELF
+                else:
+                    module.objects[i].center_choice.value = M.C_CENTERS_OF_OTHER
+                    module.objects[i].center_object_name.value = center_name
+                    
+            for object_name in "Nucleii", "Cells", "Cytoplasm":
+                result = module.get_measurements(
+                    None, object_name, M.M_CATEGORY)
+                for ftr in ftrs:
+                    self.assertIn(ftr, result)
+                    iresult = module.get_measurement_images(
+                        None, object_name, M.M_CATEGORY, ftr)
+                    for image in "DNA", "Cytoplasm", "Actin":
+                        self.assertIn(image, iresult)
+                        sresult = module.get_measurement_scales(
+                            None, object_name, M.M_CATEGORY, ftr, image)
+                        for n, m in ((0, 0), (1, 1), (2, 0), (2, 2)):
+                            self.assertIn("%d_%d" % (n, m), sresult)
+        
     def test_02_03_default_heatmap_values(self):
         module = M.MeasureObjectIntensityDistribution()
         module.add_heatmap()
@@ -574,7 +641,9 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                    center_choice = M.C_CENTERS_OF_OTHER,
                    bin_count = 4,
                    maximum_radius = 100, wants_scaled = True, 
-                   wants_workspace=False):
+                   wants_workspace=False,
+                   wants_zernikes=M.Z_NONE,
+                   zernike_degree=2):
         '''Run the module, returning the measurements
         
         image - matrix representing the image to be analyzed
@@ -584,6 +653,8 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         bin_count - # of radial bins
         '''
         module = M.MeasureObjectIntensityDistribution()
+        module.wants_zernikes.value = wants_zernikes
+        module.zernike_degree.value = zernike_degree
         module.images[0].image_name.value = IMAGE_NAME
         module.objects[0].object_name.value = OBJECT_NAME
         object_set = cpo.ObjectSet()
@@ -631,7 +702,9 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         
     def test_03_01_zeros_self(self):
         '''Test the module on an empty labels matrix, self-labeled'''
-        m = self.run_module(np.zeros((10,10)), np.zeros((10,10),int))
+        m = self.run_module(np.zeros((10,10)), np.zeros((10,10),int),
+                            wants_zernikes=M.Z_MAGNITUDES_AND_PHASE,
+                            zernike_degree=2)
         for bin in range(1,5):
             for feature in (feature_frac_at_d(bin, 4),
                             feature_mean_frac(bin, 4),
@@ -639,13 +712,20 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 self.assertTrue(feature in m.get_feature_names(OBJECT_NAME))
                 data = m.get_current_measurement(OBJECT_NAME, feature)
                 self.assertEqual(len(data), 0)
+        for ftr in M.FF_ZERNIKE_MAGNITUDE, M.FF_ZERNIKE_PHASE:
+            for n_, m_ in ((0, 0), (1, 1), (2, 0), (2, 2)):
+                feature = "_".join(
+                    (M.M_CATEGORY, ftr, IMAGE_NAME, str(n_), str(m_)))
+                self.assertIn(feature, m.get_feature_names(OBJECT_NAME))
+                self.assertEqual(len(m[OBJECT_NAME, feature]), 0)
     
     def test_03_02_circle(self):
         '''Test the module on a uniform circle'''
         i,j = np.mgrid[-50:51,-50:51]
         labels = (np.sqrt(i*i+j*j) <= 40).astype(int)
         m, workspace = self.run_module(
-            np.ones(labels.shape), labels, wants_workspace=True)
+            np.ones(labels.shape), labels, 
+            wants_workspace=True, wants_zernikes=True, zernike_degree=2)
         assert isinstance(workspace, cpw.Workspace)
         bins = labels * (1 + (np.sqrt(i*i+j*j) / 10).astype(int))
         for bin in range(1,5):
@@ -675,8 +755,18 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 HEAT_MAP_NAME + M.F_RADIAL_CV).pixel_data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
+        module = workspace.module
+        assert isinstance(module, M.MeasureObjectIntensityDistribution)
+        data = m[OBJECT_NAME, module.get_zernike_magnitude_name(
+            IMAGE_NAME, 0, 0)]
+        self.assertEqual(len(data), 1)
+        self.assertAlmostEqual(data[0], 1, delta=.001)
+        for n_, m_ in ((1, 1), (2, 0), (2, 2)):
+            data = m[OBJECT_NAME, module.get_zernike_magnitude_name(
+                IMAGE_NAME, n_, m_)]
+            self.assertAlmostEqual(data[0], 0, delta=.001)
   
-    def test_03_03_half_circle(self):
+    def test_03_03_01_half_circle(self):
         '''Test the module on a circle and an image that's 1/2 zeros
         
         The measurements here are somewhat considerably off because
@@ -716,6 +806,35 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
             self.assertTrue(np.abs(data[0] - expected_cv) < .2*expected_cv)
+    
+    def test_03_03_02_half_circle_zernike(self):
+        i,j = np.mgrid[-50:50,-50:50]
+        ii, jj = [_.astype(float) + .5 for _ in i, j]
+        labels = (np.sqrt(ii*ii+jj*jj) <= 40).astype(int)
+        image = np.zeros(labels.shape)
+        image[ii>0] = 1
+        m = self.run_module(image, labels, 
+                            wants_zernikes=M.Z_MAGNITUDES_AND_PHASE,
+                            zernike_degree=2)
+        for n_, m_, expected, delta in (
+            (0, 0, .5, .001),
+            (1, 1, .225, .1),
+            (2, 0, 0, .01),
+            (2, 2, 0, .01)):
+            ftr = "_".join(
+                (M.M_CATEGORY, M.FF_ZERNIKE_MAGNITUDE, IMAGE_NAME, 
+                 str(n_), str(m_)))
+            self.assertAlmostEqual(m[OBJECT_NAME, ftr][0], expected, delta=delta)
+        ftr = "_".join(
+            (M.M_CATEGORY, M.FF_ZERNIKE_PHASE, IMAGE_NAME, "1", "1"))
+        phase_i_1_1 = m[OBJECT_NAME, ftr][0]
+        image = np.zeros(labels.shape)
+        image[jj>0] = 1
+        m = self.run_module(image, labels, 
+                            wants_zernikes=M.Z_MAGNITUDES_AND_PHASE,
+                            zernike_degree=1)
+        phase_j_1_1 = m[OBJECT_NAME, ftr][0]
+        self.assertAlmostEqual(abs(phase_i_1_1-phase_j_1_1), np.pi / 2, .1)
     
     def test_03_04_line(self):
         '''Test the alternate centers with a line'''

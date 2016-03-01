@@ -778,18 +778,28 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
                 image = workspace.image_set.get_image(
                     image_name, must_be_grayscale=True)
                 pixels = image.pixel_data
-                mask = image.mask[ijv[:, 0], ijv[:, 1]]
+                mask = (ijv[:, 0] < pixels.shape[0]) &\
+                    (ijv[:, 1] < pixels.shape[1])
+                mask[mask] = image.mask[ijv[mask, 0], ijv[mask, 1]]
                 yx_ = yx[mask, :]
                 l_ = l[mask]
                 z_ = z[mask, :]
+                if len(l_) == 0:
+                    for i, (n, m) in enumerate(zernike_indexes):
+                        ftr = self.get_zernike_magnitude_name(image_name, n, m)
+                        meas[object_name, ftr] = np.zeros(0)
+                        if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
+                            ftr = self.get_zernike_phase_name(image_name, n, m)
+                            meas[object_name, ftr] = np.zeros(0)
+                    continue
                 areas = scind.sum(
-                    np.ones(l.shape, int), labels=l_, index=objects.indices)
+                    np.ones(l_.shape, int), labels=l_, index=objects.indices)
                 for i, (n, m) in enumerate(zernike_indexes):
                     vr = scind.sum(
-                        pixels[ijv[:, 0], ijv[:, 1]] * z_[:, i].real,
+                        pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].real,
                         labels=l_, index = objects.indices)
                     vi = scind.sum(
-                        pixels[ijv[:, 0], ijv[:, 1]] * z_[:, i].imag,
+                        pixels[ijv[mask, 0], ijv[mask, 1]] * z_[:, i].imag,
                         labels=l_, index = objects.indices)
                     magnitude = np.sqrt(vr*vr + vi*vi) / areas
                     ftr = self.get_zernike_magnitude_name(image_name, n, m)
@@ -948,7 +958,7 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
 class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
     '''An object name subscriber limited by the objects in the objects' group'''
     def set_module(self, module):
-        assert isinstance(module, MeasureObjectRadialDistribution)
+        assert isinstance(module, MeasureObjectIntensityDistribution)
         self.__module = module
         
     def __is_valid_choice(self, choice_tuple):
@@ -975,7 +985,7 @@ class MORDObjectNameSubscriber(cps.ObjectNameSubscriber):
 class MORDImageNameSubscriber(cps.ImageNameSubscriber):
     '''An image name subscriber limited by the images in the image group'''
     def set_module(self, module):
-        assert isinstance(module, MeasureObjectRadialDistribution)
+        assert isinstance(module, MeasureObjectIntensityDistribution)
         self.__module = module
 
     def __is_valid_choice(self, choice_tuple):

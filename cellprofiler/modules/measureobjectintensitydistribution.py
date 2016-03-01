@@ -1,4 +1,4 @@
-"""<b>Measure Object Radial Distribution</b> measures the radial distribution 
+"""<b>Measure Object Intensity Distribution</b> measures the distribution 
 of intensities within each object.
 <hr>
 Given an image with objects identified, this module measures the
@@ -119,9 +119,9 @@ MEASUREMENT_ALIASES = {
     A_MEAN_FRAC: MF_MEAN_FRAC,
     A_RADIAL_CV: MF_RADIAL_CV }
 
-class MeasureObjectRadialDistribution(cpm.CPModule):
+class MeasureObjectIntensityDistribution(cpm.CPModule):
  
-    module_name = "MeasureObjectRadialDistribution"
+    module_name = "MeasureObjectIntensityDistribution"
     category = "Measurement"
     variable_revision_number = 5
     

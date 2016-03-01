@@ -19,7 +19,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.measureobjectradialdistribution as M
+import cellprofiler.modules.measureobjectintensitydistribution as M
 from scipy.stats import mode
 
 OBJECT_NAME = 'objectname'
@@ -40,10 +40,10 @@ def feature_radial_cv(bin, bin_count, image_name = IMAGE_NAME):
         return "_".join([M.M_CATEGORY, M.F_RADIAL_CV, image_name, M.FF_OVERFLOW])
     return M.M_CATEGORY + "_"+M.FF_RADIAL_CV % (image_name, bin, bin_count)
 
-class TestMeasureObjectRadialDistribution(unittest.TestCase):
+class TestMeasureObjectIntensityDistribution(unittest.TestCase):
     def test_01_00_please_implement_a_test_of_the_new_version(self):
         self.assertEqual(
-            M.MeasureObjectRadialDistribution.variable_revision_number, 4)
+            M.MeasureObjectIntensityDistribution.variable_revision_number, 5)
         
     def test_01_01_load_matlab(self):
         data = ('eJwBhAR7+01BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
@@ -84,7 +84,7 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
              (5, "DNA", "Cells", "Nuclei"),
              (6, "Cytoplasm","Cells","Nuclei")):
             module = pipeline.modules()[i]
-            self.assertTrue(isinstance(module, M.MeasureObjectRadialDistribution))
+            self.assertTrue(isinstance(module, M.MeasureObjectIntensityDistribution))
             for seq in (module.images, module.objects, module.bin_counts):
                 self.assertEqual(len(seq),1)
             self.assertEqual(module.images[0].image_name, image_name)
@@ -134,7 +134,7 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))            
         self.assertEqual(len(pipeline.modules()),4)
         module = pipeline.modules()[3]
-        self.assertTrue(isinstance(module, M.MeasureObjectRadialDistribution))
+        self.assertTrue(isinstance(module, M.MeasureObjectIntensityDistribution))
         self.assertEqual(len(module.images), 2)
         self.assertEqual(len(module.objects), 2)
         self.assertEqual(len(module.bin_counts), 1)
@@ -181,7 +181,7 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, M.MeasureObjectRadialDistribution))
+        self.assertTrue(isinstance(module, M.MeasureObjectIntensityDistribution))
         self.assertEqual(module.image_count.value, 2)
         self.assertEqual(module.object_count.value, 2)
         self.assertEqual(module.bin_counts_count.value, 2)
@@ -233,7 +233,7 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, M.MeasureObjectRadialDistribution))
+        self.assertTrue(isinstance(module, M.MeasureObjectIntensityDistribution))
         self.assertEqual(module.image_count.value, 2)
         self.assertEqual(module.object_count.value, 3)
         self.assertEqual(module.bin_counts_count.value, 2)
@@ -310,7 +310,9 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
-        self.assertTrue(isinstance(module, M.MeasureObjectRadialDistribution))
+        self.assertTrue(isinstance(module, M.MeasureObjectIntensityDistribution))
+        self.assertEqual(module.wants_zernikes, M.Z_NONE)
+        self.assertEqual(module.zernike_degree, 9)
         self.assertEqual(len(module.images), 2)
         for group, image_name in zip(module.images, ("CropGreen", "CropRed")):
             self.assertEqual(group.image_name.value, image_name)
@@ -341,8 +343,119 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             self.assertEqual(group.wants_to_save_display, wants_to_save)
             self.assertEqual(group.display_name, output_image_name)
     
+    def test_01_06_load_v5(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20160301131517
+GitHash:bd768bc
+ModuleCount:2
+HasImagePlaneDetails:False
+
+MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Hidden:2
+    Hidden:2
+    Hidden:2
+    Hidden:3
+    Calculate intensity Zernikes?:Magnitudes
+    Maximum zernike moment:7
+    Select an image to measure:CropGreen
+    Select an image to measure:CropRed
+    Select objects to measure:Nuclei
+    Object to use as center?:These objects
+    Select objects to use as centers:Ichthyosaurs
+    Select objects to measure:Cells
+    Object to use as center?:Edges of other objects
+    Select objects to use as centers:Nuclei
+    Scale the bins?:Yes
+    Number of bins:5
+    Maximum radius:100
+    Scale the bins?:No
+    Number of bins:4
+    Maximum radius:100
+    Image:CropRed
+    Objects to display:Cells
+    Number of bins:5
+    Measurement:Fraction at Distance
+    Color map:Default
+    Save display as image?:Yes
+    Output image name:Heat
+    Image:CropGreen
+    Objects to display:Nuclei
+    Number of bins:4
+    Measurement:Mean Fraction
+    Color map:Spectral
+    Save display as image?:No
+    Output image name:A
+    Image:CropRed
+    Objects to display:Nuclei
+    Number of bins:5
+    Measurement:Radial CV
+    Color map:Default
+    Save display as image?:No
+    Output image name:B
+
+    MeasureObjectRadialDistribution:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+        Hidden:2
+        Hidden:1
+        Hidden:1
+        Hidden:0
+        Calculate intensity Zernikes?:Magnitudes and phase
+        Maximum zernike moment:9
+        Select an image to measure:CorrBlue
+        Select an image to measure:CorrGreen
+        Select objects to measure:PropCells
+        Object to use as center?:These objects
+        Select objects to use as centers:None
+        Scale the bins?:Yes
+        Number of bins:4
+        Maximum radius:100
+
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, M.MeasureObjectIntensityDistribution))
+        self.assertEqual(module.wants_zernikes, M.Z_MAGNITUDES)
+        self.assertEqual(module.zernike_degree, 7)
+        self.assertEqual(len(module.images), 2)
+        for group, image_name in zip(module.images, ("CropGreen", "CropRed")):
+            self.assertEqual(group.image_name.value, image_name)
+        self.assertEqual(len(module.objects), 2)
+        for group, (object_name, center_choice, center_object_name) in zip(
+            module.objects, (("Nuclei", M.C_SELF, "Ichthyosaurs"),
+                             ("Cells", M.C_EDGES_OF_OTHER, "Nuclei"))):
+            self.assertEqual(group.object_name.value, object_name)
+            self.assertEqual(group.center_choice.value, center_choice)
+            self.assertEqual(group.center_object_name, center_object_name)
+        self.assertEqual(len(module.bin_counts), 2)
+        for group, (bin_count, scale, max_radius) in zip(
+            module.bin_counts, ((5, True, 100), (4, False, 100))):
+            self.assertEqual(group.wants_scaled, scale)
+            self.assertEqual(group.bin_count, bin_count)
+            self.assertEqual(group.maximum_radius, max_radius)
+        for group, (image_name, object_name, bin_count, measurement,
+                    colormap, wants_to_save, output_image_name) in zip(
+            module.heatmaps, 
+            (("CropRed", "Cells", 5, M.A_FRAC_AT_D, cps.DEFAULT, True, "Heat"),
+             ("CropGreen", "Nuclei", 4, M.A_MEAN_FRAC, "Spectral", False, "A"),
+             ("CropRed", "Nuclei", 5, M.A_RADIAL_CV, cps.DEFAULT, False, "B"))):
+            self.assertEqual(group.image_name.value, image_name)
+            self.assertEqual(group.object_name.value, object_name)
+            self.assertEqual(int(group.bin_count.value), bin_count)
+            self.assertEqual(group.measurement, measurement)
+            self.assertEqual(group.colormap, colormap)
+            self.assertEqual(group.wants_to_save_display, wants_to_save)
+            self.assertEqual(group.display_name, output_image_name)
+            
+        module = pipeline.modules()[1]
+        self.assertEqual(module.wants_zernikes, M.Z_MAGNITUDES_AND_PHASE)
+    
     def test_02_01_get_measurement_columns(self):
-        module = M.MeasureObjectRadialDistribution()
+        module = M.MeasureObjectIntensityDistribution()
         for i,image_name in ((0, "DNA"),(1, "Cytoplasm"),(2,"Actin")):
             if i:
                 module.add_image()
@@ -388,7 +501,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
         self.assertEqual(len(column_dictionary), 0)
     
     def test_02_02_get_measurements(self):
-        module = M.MeasureObjectRadialDistribution()
+        module = M.MeasureObjectIntensityDistribution()
         for i,image_name in ((0, "DNA"),(1, "Cytoplasm"),(2,"Actin")):
             if i:
                 module.add_image()
@@ -431,7 +544,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
                                                 M.M_CATEGORY, feature,
                                                 image_name))
     def test_02_03_default_heatmap_values(self):
-        module = M.MeasureObjectRadialDistribution()
+        module = M.MeasureObjectIntensityDistribution()
         module.add_heatmap()
         module.heatmaps[0].image_name.value = IMAGE_NAME
         module.heatmaps[0].object_name.value = OBJECT_NAME
@@ -470,7 +583,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
                         centers
         bin_count - # of radial bins
         '''
-        module = M.MeasureObjectRadialDistribution()
+        module = M.MeasureObjectIntensityDistribution()
         module.images[0].image_name.value = IMAGE_NAME
         module.objects[0].object_name.value = OBJECT_NAME
         object_set = cpo.ObjectSet()

@@ -44,6 +44,7 @@ from centrosome.cpmorphology import color_labels
 from centrosome.cpmorphology import distance_to_edge
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import maximum_position_of_labels
+from centrosome.cpmorphology import minimum_enclosing_circle
 from centrosome.propagate import propagate
 from numpy.ma import masked_array
 from scipy.sparse import coo_matrix
@@ -140,12 +141,12 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             time by not calculating the Zernike moments. Choose
             <i>%(Z_MAGNITUDES)s</i> to only save the magnitude information
             and discard information related to the object's angular orientation.
-            Choose <i>%(S_MAGNITUDES_AND_PHASE)s to save the phase information
+            Choose <i>%(Z_MAGNITUDES_AND_PHASE)s</i> to save the phase information
             as well. The last option lets you recover each object's rough
             appearance from the Zernikes but may not contribute useful
             information if used to classify phenotypes.""" %globals())
         self.zernike_degree = cps.Integer(
-            "Maximum zernike moment", value=9, minval=1, maxval=2,
+            "Maximum zernike moment", value=9, minval=1, maxval=20,
             doc="""(<i>Only if "%s" is %s or %s</i>)<br>
             This is the maximum radial moment that will be calculated.
             There are increasing numbers of azimuthal moments as you increase
@@ -361,7 +362,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         return result
     
     def visible_settings(self):
-        result = [self.wants_zernikes, self.zernike_degree]
+        result = [self.wants_zernikes]
+        if self.wants_zernikes != Z_NONE:
+            result.append(self.zernike_degree)
         
         for settings in self.images:
             result += settings.visible_settings()
@@ -431,10 +434,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                                          o.center_choice.value,
                                          bin_count_settings,
                                          d)
-                    if self.wants_zernikes:
-                        self.calculate_zernikes(
-                            workspace, image.image_name.value, 
-                            o.object_name.value)
+        if self.wants_zernikes:
+            self.calculate_zernikes(workspace)
                     
         if self.show_window:
             workspace.display_data.header = header
@@ -747,11 +748,56 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                             round(np.mean(radial_cv),4))]
         return statistics
     
-    def calculate_zernikes(self, workspace, image_name, object_name):
-        image = workspace.get_image(image_name, must_be_grayscale=True)
-        pixels = image.pixel_data
-        mask = image.mask
-        
+    def calculate_zernikes(self, workspace):
+        zernike_indexes = cpmz.get_zernike_indexes(self.zernike_degree.value+1)
+        meas = workspace.measurements
+        for o in self.objects:
+            object_name = o.object_name.value
+            objects = workspace.object_set.get_objects(object_name)
+            #
+            # First, get a table of centers and radii of minimum enclosing
+            # circles per object
+            #
+            ij = np.zeros((objects.count+1, 2))
+            r = np.zeros(objects.count+1)
+            for labels, indexes in objects.get_labels():
+                ij_, r_ = minimum_enclosing_circle(labels, indexes)
+                ij[indexes] = ij_
+                r[indexes] = r_
+            #
+            # Then compute x and y, the position of each labeled pixel
+            # within a unit circle around the object
+            #
+            ijv = objects.ijv
+            l = ijv[:, 2]
+            yx = (ijv[:, :2] - ij[l, :]) / r[l, np.newaxis]
+            z = cpmz.construct_zernike_polynomials(
+                yx[:, 1], yx[:, 0], zernike_indexes)
+            for image_group in self.images:
+                image_name = image_group.image_name.value
+                image = workspace.image_set.get_image(
+                    image_name, must_be_grayscale=True)
+                pixels = image.pixel_data
+                mask = image.mask[ijv[:, 0], ijv[:, 1]]
+                yx_ = yx[mask, :]
+                l_ = l[mask]
+                z_ = z[mask, :]
+                areas = scind.sum(
+                    np.ones(l.shape, int), labels=l_, index=objects.indices)
+                for i, (n, m) in enumerate(zernike_indexes):
+                    vr = scind.sum(
+                        pixels[ijv[:, 0], ijv[:, 1]] * z_[:, i].real,
+                        labels=l_, index = objects.indices)
+                    vi = scind.sum(
+                        pixels[ijv[:, 0], ijv[:, 1]] * z_[:, i].imag,
+                        labels=l_, index = objects.indices)
+                    magnitude = np.sqrt(vr*vr + vi*vi) / areas
+                    ftr = self.get_zernike_magnitude_name(image_name, n, m)
+                    meas[object_name, ftr] = magnitude
+                    if self.wants_zernikes == Z_MAGNITUDES_AND_PHASE:
+                        phase = np.arctan2(vr, vi)
+                        ftr = self.get_zernike_phase_name(image_name, n, m)
+                        meas[object_name, ftr] = phase
     
     def get_zernike_magnitude_name(self, image_name, n, m):
         '''The feature name of the magnitude of a Zernike moment
@@ -760,7 +806,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
         '''
-        return "_".join((M_CATEGORY, FF_ZERNIKE_MAGNITUDE, image_name, n, m))
+        return "_".join(
+            (M_CATEGORY, FF_ZERNIKE_MAGNITUDE, image_name, str(n), str(m)))
     
     def get_zernike_phase_name(self, image_name, n, m):
         '''The feature name of the phase of a Zernike moment
@@ -769,7 +816,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         n - the radial moment of the Zernike
         m - the azimuthal moment of the Zernike
         '''
-        return "_".join((M_CATEGORY, FF_ZERNIKE_PHASE, image_name, n, m))
+        return "_".join(
+            (M_CATEGORY, FF_ZERNIKE_PHASE, image_name, str(n), str(m)))
 
     def get_measurement_columns(self, pipeline):
         columns = []

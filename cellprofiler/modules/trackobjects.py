@@ -53,7 +53,7 @@ that each image sequence is handled individually. %(USING_METADATA_GROUPING_HELP
 For complete details, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.</p>
 
 <p>For an example pipeline using TrackObjects, see the CellProfiler 
-<a href="http://www.cellprofiler.org/examples.shtml#Tracking">Examples</a> webpage.</p>
+<a href="http://www.cellprofiler.org/examples.html#Tracking">Examples</a> webpage.</p>
 
 <h4>Available measurements</h4>
 <b>Object measurements</b>

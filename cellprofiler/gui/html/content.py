@@ -194,7 +194,7 @@ startup_main = '''<html>
             Online version of In-App help
             </td>
             <td align="center" width="100"><b><font size="+1">Tutorials/Demos</font></b><br><br>
-            <a href="http://www.cellprofiler.org/tutorials.shtml"><img src="memory:welcomescreen_tutorials.png"></a><br><br>
+            <a href="http://cellprofiler.org/tutorials.html"><img src="memory:welcomescreen_tutorials.png"></a><br><br>
             For written and video guidance to image analysis
             </td>
             <td align="center" width="100"><b><font size="+1">Q&A Forum</font></b><br><br>

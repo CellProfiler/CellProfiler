@@ -12,9 +12,6 @@ An open-source application for measuring phenotypes
 .. image:: https://img.shields.io/pypi/dm/cellprofiler.svg
     :target: https://pypi.python.org/pypi/cellprofiler
 
-.. image:: https://img.shields.io/twitter/follow/CellProfiler.svg?style=social
-    :target: https://twitter.com/CellProfiler
-
 Installation
 ------------
 

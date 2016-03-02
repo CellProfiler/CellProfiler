@@ -2035,7 +2035,7 @@ list of images.</p>
 
 <p>For more information on this module and how to configure it for the best performance, please see the detailed help by selecting the
 module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out 
-the Input module tutorials on our <a href="http://www.cellprofiler.org/tutorials.shtml">Tutorials</a> page.</p>
+the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
 """%globals()
 
 CONFIGURE_IMAGES_HELP = """
@@ -2069,7 +2069,7 @@ attach additional image information about the experiment, among other things.</p
 </p>
 <p>For more information on these modules and how to configure them for the best performance, please see the detailed help by selecting the
 module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out 
-the Input module tutorials on our <a href="http://www.cellprofiler.org/tutorials.shtml">Tutorials</a> page.</p>
+the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
 """%globals()
 
 LOADING_IMAGE_SEQUENCES_HELP = """

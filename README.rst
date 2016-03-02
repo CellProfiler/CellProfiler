@@ -1,7 +1,7 @@
 CellProfiler
 ============
 
-CellProfiler is an open-source application for measuring phenotypes from images.
+An open-source application for measuring phenotypes
 
 Installation
 ------------

@@ -34,7 +34,7 @@ class TestWorkspace(unittest.TestCase):
         fd, path = tempfile.mkstemp(".cpproj")
         file_list = workspace.get_file_list()
         file_list.add_files_to_filelist(
-            ["http://d1zymp9ayga15t.cloudfront.net/ExampleFlyImages/01_POS002_D.TIF"])
+            ["http://cellprofiler.org/ExampleFlyImages/01_POS002_D.TIF"])
         workspace.save(path)
         self.workspace_files.append(path)
         os.close(fd)

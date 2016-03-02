@@ -70,7 +70,7 @@ def generate_html(webpage_path = None):
 <ol>
 <li>Cite the <a href="www.cellprofiler.org">website</a>.</li>
 <li>Cite the <a href="http://cellprofiler.org/citations.shtml">publication</a>.</li>
-<li>Post the reference for your publication on the CellProfiler <a href="http://cellprofiler.org/forum/">forum</a> so that we are aware of it.</li>
+<li>Post the reference for your publication on the CellProfiler <a href="http://forum.cellprofiler.org/">forum</a> so that we are aware of it.</li>
 </ol></p>
 
 <p>These steps will help us to maintain funding for the project and continue to 

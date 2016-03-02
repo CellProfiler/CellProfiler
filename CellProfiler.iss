@@ -84,7 +84,7 @@ Message := 'This build can only run on a 32-bit operating system, but yours is 6
   else if (GetWindowsVersion < $06000000) then Begin
     Message := 'Windows XP 32-bit operation is not supported in this release. CellProfiler 2.0 '+
                'is compatible with Windows XP and is available at '+
-               'http://cellprofiler.org/previousReleases.shtml';
+               'http://cellprofiler.org/previousReleases.html';
     MsgBox(Message, mbInformation, MB_OK);
     Result := False;
   End else

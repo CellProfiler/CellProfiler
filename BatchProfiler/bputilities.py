@@ -24,15 +24,15 @@ ROOT_DIR = BATCHPROFILER_CELLPROFILER_REPO
 DATEVERSION_PATTERN="(?P<year>20\\d{2})(?P<month>\\d{2})(?P<day>\\d{2})(?P<hour>\\d{2})(?P<minute>\\d{2})(?P<second>\\d{2})"
 def get_batch_data_version_and_githash(batch_filename):
     """Get the commit's GIT hash stored in the batch file's pipeline
-    
+
     batch_filename - Batch_data.h5 file to look at
-    
+
     returns the GIT hash as stored in the file.
     """
     from cellprofiler.utilities.hdf5_dict import HDF5Dict
     import cellprofiler.measurements as cpmeas
     import cellprofiler.pipeline as cpp
-    
+
     m = HDF5Dict(batch_filename, mode="r")
     pipeline_txt = cpmeas.Measurements.unwrap_string(
         m[cpmeas.EXPERIMENT, cpp.M_PIPELINE, 0][0])
@@ -103,7 +103,7 @@ def get_version_and_githash(treeish):
             if dateversion == treeish:
                 return dateversion, githash
         else:
-            raise ValueError("Could not find commit: %s", treeish)    
+            raise ValueError("Could not find commit: %s", treeish)
     #
     # Give me another reason to hate GIT:
     #     2.1.1 preferentially matches 2.1.1-docker
@@ -111,8 +111,8 @@ def get_version_and_githash(treeish):
     tag_pattern = "[0-9]+\\.[0-9]+\\.[0-9]+"
     if re.match(tag_pattern, treeish) is not None:
         line = subprocess.check_output(
-            ["git", "log", "-n", "1", "--tags=%s" % 
-             tag_pattern.replace("\\", "\\\\"), 
+            ["git", "log", "-n", "1", "--tags=%s" %
+             tag_pattern.replace("\\", "\\\\"),
              "--pretty=%ai_%H", treeish],
             cwd=ROOT_DIR)
     else:
@@ -121,18 +121,18 @@ def get_version_and_githash(treeish):
             cwd=ROOT_DIR)
     time_str, git_hash = [x.strip() for x in line.split("_")]
     return get_version_from_timestr(time_str), git_hash
-    
+
 def get_version_from_timestr(time_str):
     '''convert ISO date to dateversion format
-    
+
     Returns the UTC time of the time string in the format
     YYYYMMDDHHMMSS
     '''
     t = dateutil.parser.parse(time_str).utctimetuple()
     return "%04d%02d%02d%02d%02d%02d" % \
-           ( t.tm_year, t.tm_mon, t.tm_mday, 
+           ( t.tm_year, t.tm_mon, t.tm_mday,
              t.tm_hour, t.tm_min, t.tm_sec)
-                           
+
 def get_versions_and_githashes():
     '''Get the versions and githashes via git-log'''
     splooge = subprocess.check_output(
@@ -145,24 +145,24 @@ def get_versions_and_githashes():
         except:
             pass
     return result
-    
+
 def get_cellprofiler_location(
     batch_filename = None, version = None, git_hash=None):
     '''Get the location of the CellProfiler source to use
 
     There are two choices - get by batch name or by version and git hash
     '''
-    
+
     if version is None or git_hash is None:
         version, git_hash = get_batch_data_version_and_githash(batch_filename)
-    path = os.path.join(BATCHPROFILER_CPCHECKOUT, 
+    path = os.path.join(BATCHPROFILER_CPCHECKOUT,
                         "%s_%s" % (version, git_hash))
     return path
 
 def get_queues():
     '''Return a list of queues'''
     try:
-        host_fd, host_scriptfile = tempfile.mkstemp(suffix=".sh") 
+        host_fd, host_scriptfile = tempfile.mkstemp(suffix=".sh")
         os.fchmod(host_fd, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
         os.write(host_fd, "#!/bin/sh\n")
         os.write(host_fd, """if [ -e "$HOME/.batchprofiler.sh" ]; then
@@ -178,7 +178,7 @@ fi
         return filter((lambda x: len(x) > 0), [x.strip() for x in stdout.split("\n")])
     finally:
         os.unlink(host_scriptfile)
-        
+
 def get_jobs():
     '''Return a list of all jobs for the webserver user'''
     script = """#!/bin/sh
@@ -203,24 +203,24 @@ qstat
     finally:
         os.rmdir(scriptfile)
     return result
-    
+
 def make_temp_script(script):
     '''Write a script to a tempfile
     '''
-    host_fd, host_scriptfile = tempfile.mkstemp(suffix=".sh") 
+    host_fd, host_scriptfile = tempfile.mkstemp(suffix=".sh")
     os.fchmod(host_fd, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
     os.write(host_fd, script)
     os.close(host_fd)
     return host_scriptfile
-    
-def run_on_tgt_os(script, 
-                  group_name, 
-                  job_name, 
-                  queue_name, 
+
+def run_on_tgt_os(script,
+                  group_name,
+                  job_name,
+                  queue_name,
                   output,
                   err_output = None,
                   priority = None,
-                  cwd=None, 
+                  cwd=None,
                   deps=None,
                   mail_before = False,
                   mail_error = True,
@@ -229,7 +229,7 @@ def run_on_tgt_os(script,
                   task_range=None,
                   memory=None):
     '''Run the given script on the target operating system
-    
+
     script - the script to be run with shebang header line
              (e.g. #!/bin/sh)
     group_name - charge to this group
@@ -263,7 +263,7 @@ def run_on_tgt_os(script,
                                                ("a", mail_after))
                                 if y])
         email_switches = "-m %(email_events)s -M %(email_address)s" % locals()
-        
+
     if err_output is None:
         err_output = output+".err"
     if queue_name is None:
@@ -310,7 +310,7 @@ qsub -N %(job_name)s \\
     finally:
         os.unlink(host_script)
         os.unlink(tgt_script)
-   
+
 def kill_job(job_id):
     host_script = make_temp_script("""#!/bin/sh
 if [ -e "$HOME/.batchprofiler.sh" ]; then
@@ -325,7 +325,7 @@ qdel %d
         return stdout, stderr
     finally:
         os.unlink(host_script)
-        
+
 def kill_jobs(job_ids):
     host_script = make_temp_script("""#!/bin/sh
 if [ -e "$HOME/.batchprofiler.sh" ]; then
@@ -340,7 +340,7 @@ qdel %s
         return stdout, stderr
     finally:
         os.unlink(host_script)
-        
+
 def kill_tasks(job_id, task_ids):
     host_script = make_temp_script("""#!/bin/sh
 if [ -e "$HOME/.batchprofiler.sh" ]; then
@@ -355,8 +355,8 @@ qdel %d -t %s
         return stdout, stderr
     finally:
         os.unlink(host_script)
-    
-    
+
+
 def python_on_tgt_os(args, group_name, job_name, queue_name, output,
                      err_output=None,
                      cwd=None, deps = None,
@@ -371,7 +371,7 @@ def python_on_tgt_os(args, group_name, job_name, queue_name, output,
         cd_command = ""
     else:
         cd_command = "cd %s" % cwd
-        
+
     if with_xvfb:
         xvfb_run = "xvfb-run"
     else:
@@ -383,20 +383,20 @@ def python_on_tgt_os(args, group_name, job_name, queue_name, output,
 export PYTHONNOUSERSITE=1
 %%(xvfb_run)s python %%(argstr)s
 """ % globals()) % locals()
-    return run_on_tgt_os(script, group_name, job_name, queue_name, output, 
-                         cwd = cwd, 
+    return run_on_tgt_os(script, group_name, job_name, queue_name, output,
+                         cwd = cwd,
                          deps=deps,
                          err_output=err_output,
                          mail_before=mail_before,
                          mail_error=mail_error,
                          mail_after=mail_after,
                          email_address=email_address)
-    
+
 def build_cellprofiler(
-    version = None, 
-    git_hash=None, 
+    version = None,
+    git_hash=None,
     queue_name=None,
-    group_name="imaging", 
+    group_name="imaging",
     email_address = None):
     '''Build/rebuild a version of CellProfiler
 
@@ -404,7 +404,7 @@ def build_cellprofiler(
     git_hash - git hash of version
     group_name - fairshare group for remote jobs
     email_address - send email notifications here
-    
+
     returns a sequence of job numbers.
     '''
     path = get_cellprofiler_location(version = version, git_hash = git_hash)
@@ -421,20 +421,20 @@ def build_cellprofiler(
     build_job = "CellProfiler-build-%s" % git_hash
     touch_job = "CellProfiler-touch-%s" % git_hash
     if version > "20120607000000":
-        python_on_tgt_os(
-            ["external_dependencies.py", "-o"],
-            group_name, 
-            mvn_job,
-            queue_name,
-            os.path.join(path, mvn_job+".log"),
-            cwd = path,
-            mail_after = False,
-            email_address=email_address)
+        # python_on_tgt_os(
+        #     ["external_dependencies.py", "-o"],
+        #     group_name,
+        #     mvn_job,
+        #     queue_name,
+        #     os.path.join(path, mvn_job+".log"),
+        #     cwd = path,
+        #     mail_after = False,
+        #     email_address=email_address)
         python_on_tgt_os(
             ["CellProfiler.py", "--build-and-exit", "--do-not-fetch"],
-            group_name, 
+            group_name,
             build_job,
-            queue_name, 
+            queue_name,
             os.path.join(path, build_job+".log"),
             cwd = path,
             deps=[mvn_job],
@@ -444,18 +444,18 @@ def build_cellprofiler(
     else:
         python_on_tgt_os(
             ["CellProfiler.py", "--build-and-exit"],
-            group_name, 
+            group_name,
             build_job,
-            queue_name, 
+            queue_name,
             os.path.join(path, build_job+".log"),
             cwd = path,
             mail_after = False,
             email_address=email_address,
             with_xvfb=True)
-    
+
     touchfile = os.path.join(path, BUILD_TOUCHFILE)
     python_on_tgt_os(
-        args = ["-c", 
+        args = ["-c",
                 ("import cellprofiler.pipeline;"
                  "open('%s', 'w').close();"
                  "from BatchProfiler.bputilities import shutdown_cellprofiler;"
@@ -474,10 +474,10 @@ def build_cellprofiler(
 def is_built(version, git_hash):
     path = get_cellprofiler_location(version=version, git_hash=git_hash)
     return os.path.isfile(os.path.join(path, BUILD_TOUCHFILE))
-        
+
 def send_mail(recipient, subject, content_type, body):
     '''Send mail to a single recipient
-    
+
     recipient - email address of recipient
     subject - subject field of email
     content_type - mime type of the message body
@@ -492,7 +492,7 @@ Content-Type: %(content_type)s; charset=UTF-8
 
 """ % locals()
     pipe.communicate(doc)
-    
+
 def send_html_mail(recipient, subject, html):
     '''Send mail that has HTML in the body
 
@@ -508,7 +508,7 @@ def send_html_mail(recipient, subject, html):
 
 class CellProfilerContext(object):
     '''Wrap CellProfiler operations in a handy context
-    
+
     Redirect stderr and stdout to prevent log printing
     On exit, shut things down
     '''
@@ -519,16 +519,16 @@ class CellProfilerContext(object):
         sys.stdout = devnull
         sys.stderr = devnull
         return self
-        
+
     def __exit__(self, exc_1, exc_2, exc_3):
         shutdown_cellprofiler()
         sys.stdout = self.stdout
         sys.stderr = self.stderr
-        
-    
+
+
 def shutdown_cellprofiler():
     '''Oh sadness and so many threads that won't die...
-    
+
     '''
     try:
         import javabridge
@@ -541,7 +541,7 @@ def shutdown_cellprofiler():
     except:
         pass
 
-    
+
 if __name__ == "__main__":
     sys.path.append(os.path.dirname(__file__))
     output = []
@@ -550,4 +550,3 @@ if __name__ == "__main__":
             output.append(get_batch_data_version_and_githash(arg))
     for line in output:
         print line
-        

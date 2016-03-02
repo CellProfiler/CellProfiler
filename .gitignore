@@ -41,3 +41,7 @@ killjavabridge.egg-info
 output
 plugins
 windows/**
+
+.cache/v/cache/lastfailed
+
+.python-version

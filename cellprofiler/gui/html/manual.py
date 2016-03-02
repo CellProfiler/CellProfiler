@@ -80,7 +80,7 @@ improve and support it.</p>
 </div>
 
 <b>This manual accompanies version %(VERSION)s of CellProfiler. The most 
-recent manual is available <a href="http://www.cellprofiler.org/CPmanual/">here</a>.</b>
+recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html">here</a>.</b>
 
 <h1><a name="table_of_contents">Table of contents</a></h1>"""%globals()
             

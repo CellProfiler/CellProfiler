@@ -59,7 +59,7 @@ class TestNoWX(unittest.TestCase):
                 print "Module %s probably imports wx" % name
                 traceback.print_exc()
                 
-    fly_url = "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
+    fly_url = "http://d1zymp9ayga15t.cloudfront.net/ExampleFlyImages/ExampleFlyURL.cppipe"
     
     def test_01_05_load_pipeline(self):
         import cellprofiler.pipeline as cpp

@@ -10,9 +10,34 @@ The `developer wiki <https://github.com/CellProfiler/CellProfiler/wiki>`_ covers
 Installation
 ------------
 
+Install from the Python Package Index (PyPI)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. code-block:: sh
 
-    $ pip install cellprofiler
+    $ pip install --pre cellprofiler
+
+Install from Source
+~~~~~~~~~~~~~~~~~~~
+
+Prerequisites
+`````````````
+
+NumPy
+^^^^^
+
+`NumPy <http://www.numpy.org/>`_ is the fundamental package for scientific computing with Python:
+
+.. code-block:: sh
+
+    $ pip install numpy
+
+Installation
+````````````
+
+.. code-block:: sh
+
+    $ pip install --editable .
 
 How to file new issues
 ----------------------

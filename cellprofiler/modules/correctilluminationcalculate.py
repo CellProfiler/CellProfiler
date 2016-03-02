@@ -10,7 +10,7 @@ function to the image to be corrected.
 
 Illumination correction is a challenge to do properly; please see the 
 <a href="http://www.cellprofiler.org/examples.shtml">examples</a> and 
-<a href="http://www.cellprofiler.org/tutorials.shtml">tutorials</a> pages 
+<a href="http://cellprofiler.org/tutorials.html">tutorials</a> pages 
 on the CellProfiler website for further advice.
 
 See also <b>CorrectIlluminationApply</b>, <b>EnhanceOrSuppressFeatures</b>.

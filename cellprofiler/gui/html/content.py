@@ -190,7 +190,7 @@ startup_main = '''<html>
             Click <b>?</b> buttons for detailed help
             </td>
             <td align="center" width="100"><b><font size="+1">Manual</font></b><br><br>
-            <a href="http://www.cellprofiler.org/CPmanual#table_of_contents" ><img src="memory:welcomescreen_manual.png"></a><br><br>
+            <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html" ><img src="memory:welcomescreen_manual.png"></a><br><br>
             Online version of In-App help
             </td>
             <td align="center" width="100"><b><font size="+1">Tutorials/Demos</font></b><br><br>

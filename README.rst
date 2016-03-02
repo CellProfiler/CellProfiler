@@ -3,8 +3,14 @@ CellProfiler
 
 An open-source application for measuring phenotypes
 
-.. image:: https://travis-ci.org/CellProfiler/CellProfiler.svg?branch=master
+.. image:: https://img.shields.io/travis/CellProfiler/CellProfiler.svg
     :target: https://travis-ci.org/CellProfiler/CellProfiler
+
+.. image:: https://img.shields.io/pypi/v/cellprofiler.svg
+    :target: https://pypi.python.org/pypi/cellprofiler
+
+.. image:: https://img.shields.io/pypi/dm/cellprofiler.svg
+    :target: https://pypi.python.org/pypi/cellprofiler
 
 Installation
 ------------

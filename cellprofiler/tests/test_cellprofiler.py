@@ -96,7 +96,7 @@ class TestCellProfiler(unittest.TestCase):
             # Run with a .cp file
             #
             fly_pipe = \
-                "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
+                "http://d1zymp9ayga15t.cloudfront.net/ExampleFlyImages/ExampleFlyURL.cppipe"
             urllib.URLopener().open(fly_pipe).close()
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")

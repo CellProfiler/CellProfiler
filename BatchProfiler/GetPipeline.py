@@ -37,5 +37,3 @@ print "Content-Disposition: attachment; filename=\"%d.cppipe\"" % batch_id
 print
 sys.stdout.write(pipeline_text)
 sys.stdout.flush()
-
-

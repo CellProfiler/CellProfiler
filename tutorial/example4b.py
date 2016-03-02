@@ -9,7 +9,7 @@ import cellprofiler.settings as cps
 
 #
 # centrosome.cpmorphology has many useful image processing algorithms.
-# 
+#
 # skeletonize_labels performs the skeletonization (medial axis transform) for
 # each labeled object in a labels matrix. It can skeletonize thousands of
 # objects in an image almost as rapidly as skeletonizing a single object
@@ -21,7 +21,7 @@ class Example4b(cpm.CPModule):
     module_name = "Example4b"
     variable_revision_number = 1
     category = "Object Processing"
-    
+
     def create_settings(self):
         #
         # The ObjectNameSubscriber is aware of all objects published by
@@ -36,10 +36,10 @@ class Example4b(cpm.CPModule):
         #
         self.output_objects_name = cps.ObjectNameProvider(
             "Output objects", "Skeletons")
-        
+
     def settings(self):
         return [self.input_objects_name, self.output_objects_name]
-    
+
     def run(self, workspace):
         #
         # This is unfortunate... sorry. example4b.py is imported during the
@@ -65,7 +65,7 @@ class Example4b(cpm.CPModule):
         #
         # You can be "nicer" by giving more information, but this is not
         # absolutely necessary. See subsequent exercises for how to be nice.
-        #     
+        #
         object_set = workspace.object_set
         input_objects = object_set.get_objects(self.input_objects_name.value)
         labels = skeletonize_labels(input_objects.segmented)
@@ -73,13 +73,13 @@ class Example4b(cpm.CPModule):
         output_objects.segmented = labels
         output_objects_name = self.output_objects_name.value
         object_set.add_objects(output_objects, output_objects_name)
-        
+
         ##measurements = workspace.measurements
         #
         # The cpo.Objects has several useful properties that are calculated
         # and remembered: count and area are the ones most frequently used.
         # count is the # of objects in the segmentation
-        # 
+        #
         ##n_objects = output_objects.count
         #
         # cellprofiler.module.identify has some helper methods for adding
@@ -101,13 +101,13 @@ class Example4b(cpm.CPModule):
         if workspace.show_frame:
             workspace.display_data.input_labels = input_objects.segmented
             workspace.display_data.output_labels = labels
-            
+
     def display(self, workspace, frame):
         frame.set_subplots((2, 1))
         frame.subplot_imshow_labels(0, 0, workspace.display_data.input_labels,
                                     title = self.input_objects_name.value)
         frame.subplot_imshow_labels(1, 0, workspace.display_data.output_labels,
-                                    title = self.output_objects_name.value)        
+                                    title = self.output_objects_name.value)
 
 #
 # get_measurement_columns is used by measurement export modules to
@@ -115,7 +115,7 @@ class Example4b(cpm.CPModule):
 #                         the first cycle has started. For instance,
 #                         ExportToDatabase creates the database tables it
 #                         needs using the output of get_measurement_columns.
-#        
+#
 ##    def get_measurement_columns(self, pipeline):
 ##        import cellprofiler.modules.identify as I
 ##        return I.get_object_measurement_columns(
@@ -123,10 +123,10 @@ class Example4b(cpm.CPModule):
 #
 # get_categories tells the measurement settings system which categories of
 #                measurements will be produced by upstream modules. Here,
-#                we tell the system that count image measurements will 
+#                we tell the system that count image measurements will
 #                be produced and location object measurements will be
 #                produced for our objects.
-#                    
+#
 ##    def get_categories(self, pipeline, object_name):
 ##        import cellprofiler.modules.identify as I
 ##        if object_name == cpmeas.IMAGE:
@@ -138,7 +138,7 @@ class Example4b(cpm.CPModule):
 # get_measurements tells the measurement settings system which feature classes
 #                  will be produced for a given object (or Images) and
 #                  category. Here, the "feature" for the Count image measurement
-#                  is our object's name. There are two features for the 
+#                  is our object's name. There are two features for the
 #                  Location category for our objects' measurements:
 #                  Center_X and Center_Y.
 #

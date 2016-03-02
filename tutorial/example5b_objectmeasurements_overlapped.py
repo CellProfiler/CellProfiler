@@ -24,16 +24,16 @@ class Example5b(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example5bOverlapped"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber("Objects name", "Nuclei")
         self.method = cps.Choice("Algorithm method",
-                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING, 
+                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING,
                                   SUPPORT_TOUCHING], SUPPORT_TOUCHING)
-        
+
     def settings(self):
         return [self.objects_name]
-    
+
     def run(self, workspace):
         #
         # Get some things we need from the workspace
@@ -75,7 +75,7 @@ class Example5b(cpm.CPModule):
         # Each outer loop iteration gets a labels matrix and the object numbers
         # represented within the labels matrix. If there are no overlaps,
         # there will only be one iteration.
-        # 
+        #
         ##for labels, indices in objects.get_labels():
             #
             # Now we use color_labels to magically produce an array in which
@@ -114,7 +114,7 @@ class Example5b(cpm.CPModule):
         if workspace.show_frame:
             workspace.display_data.ijv = objects.ijv.copy()
             workspace.display_data.values = values[1:]
-            
+
     def display(self, workspace, frame):
         frame.set_subplots((1,1))
         ax = frame.subplot_imshow_ijv(0, 0, workspace.display_data.ijv,
@@ -122,14 +122,14 @@ class Example5b(cpm.CPModule):
         indices = np.unique(workspace.display_data.ijv[:, 2])
         x = scipy.ndimage.mean(workspace.display_data.ijv[:, 1],
                                workspace.display_data.ijv[:, 2],
-                               indices)  
+                               indices)
         y = scipy.ndimage.minimum(workspace.display_data.ijv[:, 0],
                                   workspace.display_data.ijv[:, 2],
                                   indices)
-    
+
         for xi, yi, v in zip(x, y, workspace.display_data.values):
             ax.text(xi, yi, "%0.1f" % v, color="red", ha="center", va="bottom")
-            
+
     def get_measurement_columns(self, pipeline):
         return [(self.objects_name.value, M_MEAN_DISTANCE, cpmeas.COLTYPE_FLOAT)]
 
@@ -137,7 +137,7 @@ class Example5b(cpm.CPModule):
         if object_name == self.objects_name:
             return [C_EXAMPLE5]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.objects_name and category == C_EXAMPLE5:
             return [FTR_MEAN_DISTANCE]

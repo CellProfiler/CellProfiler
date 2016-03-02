@@ -18,7 +18,7 @@ class Example6b(cpm.CPModule):
     module_name = "Example6b"
     variable_revision_number = 1
     category = "File Processing"
-    
+
     def create_settings(self):
         self.image_name = cps.ImageNameProvider(
             "Input image name", "TodaysImage")
@@ -27,19 +27,19 @@ class Example6b(cpm.CPModule):
         # to be scanned.
         #
         self.folder = cps.DirectoryPath("Folder")
-        
+
     def settings(self):
         return [self.image_name, self.folder]
-    
+
     def is_load_module(self):
         '''Tell CellProfiler that this module produces image sets'''
         return True
-    
+
     def prepare_run(self, workspace):
         measurements = workspace.measurements
         image_name = self.image_name.value
         yesterday = datetime.datetime.utcnow() - datetime.timedelta(1)
-        iso_yesterday = yesterday.isoformat() 
+        iso_yesterday = yesterday.isoformat()
         M_FILE_NAME = cpmeas.C_FILE_NAME + "_" + image_name
         M_PATH_NAME = cpmeas.C_PATH_NAME + "_" + image_name
         #
@@ -56,18 +56,18 @@ class Example6b(cpm.CPModule):
             # measurements.add_measurement has an optional "image_set_number"
             # argument which you should use to store each file with the
             # correct image number
-            # 
+            #
             measurements.add_measurement(cpmeas.IMAGE, M_PATH_NAME, pathname,
                                          image_set_number = image_number)
             measurements.add_measurement(cpmeas.IMAGE, M_FILE_NAME, filename,
                                          image_set_number = image_number)
         return True
-    
+
     def run(self, workspace):
         image_name = self.image_name.value
         measurements = workspace.measurements
         image_set = workspace.image_set
-        
+
         M_FILE_NAME = cpmeas.C_FILE_NAME + "_" + image_name
         M_PATH_NAME = cpmeas.C_PATH_NAME + "_" + image_name
         #
@@ -92,12 +92,12 @@ class Example6b(cpm.CPModule):
         # call image_set.add to add the image to the image set
         #
         image_set.add(image_name, image)
-        
+
     def get_files(self, utctime):
         '''Return a list of path / filename tuples created after utctime
-        
+
         utctime - a utc datetime representing the earliest acceptable creation time
-        
+
         returns a list of two-tuples with the path in the first tuple and
                 the file in the second.
         '''

@@ -10,7 +10,7 @@ As specified in the check-tests target in build.xml.
     <xsl:apply-templates select="testcase"/>
    </testsuite>
   </xsl:template>
-  
+
   <xsl:template match="testcase">
    <xsl:apply-templates select="error"/>
    <xsl:apply-templates select="failure"/>

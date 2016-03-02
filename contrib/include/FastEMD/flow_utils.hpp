@@ -46,7 +46,7 @@ void transform_flow_to_regular(std::vector< std::vector<NUM_T> >& F,
     return_flow_from_to_transhipment_vertex(F,P,Q,
                                             flow_from_P_to_transhipment,
                                             flow_from_transhipment_to_Q);
-    
+
     NODE_T i= 0;
     NODE_T j= 0;
     while( true ) {
@@ -54,7 +54,7 @@ void transform_flow_to_regular(std::vector< std::vector<NUM_T> >& F,
         while (i<N&&flow_from_P_to_transhipment[i]==0) ++i;
         while (j<N&&flow_from_transhipment_to_Q[j]==0) ++j;
         if (i==N||j==N) break;
-        
+
         if (flow_from_P_to_transhipment[i]<flow_from_transhipment_to_Q[j]) {
             F[i][j]+= flow_from_P_to_transhipment[i];
             flow_from_transhipment_to_Q[j]-= flow_from_P_to_transhipment[i];
@@ -78,7 +78,7 @@ void transform_flow_to_regular(std::vector< std::vector<NUM_T> >& F,
 
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
-// met: 
+// met:
 //    * Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
 //    * Redistributions in binary form must reproduce the above copyright
@@ -99,4 +99,3 @@ void transform_flow_to_regular(std::vector< std::vector<NUM_T> >& F,
 // LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-

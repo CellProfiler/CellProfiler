@@ -46,17 +46,17 @@ for k, v in (("host", BATCHPROFILER_MYSQL_HOST),
              ("passwd", BATCHPROFILER_MYSQL_PASSWORD)):
     if v is not None:
         connect_params[k] = v
-        
+
 connection = MySQLdb.Connect(**connect_params)
 
 class bpcursor(object):
     '''Wrapper for connection's cursor'''
     def __init__(self):
         self.cursor = connection.cursor()
-        
+
     def __enter__(self):
         return self.cursor
-    
+
     def __exit__(self, exctype, value, traceback):
         if exctype is None:
             connection.commit()
@@ -80,13 +80,13 @@ class BPBatch(object):
         self.project = project
         self.memory_limit = memory_limit
         self.priority = priority
-        
+
     @staticmethod
-    def create(cursor, email, data_dir, queue, batch_size, 
+    def create(cursor, email, data_dir, queue, batch_size,
                write_data, timeout, cpcluster, project, memory_limit,
                priority):
         '''Create a batch in the database
-        
+
         email - mail address of owner
         data_dir - directory holding the Batch_data.h5 file
         queue - submit to this queue
@@ -99,7 +99,7 @@ class BPBatch(object):
         priority - priority of job
         '''
         cmd = """
-        insert into batch (batch_id, email, data_dir, queue, batch_size, 
+        insert into batch (batch_id, email, data_dir, queue, batch_size,
             write_data, timeout, cpcluster, project, memory_limit,
             priority)
         values (null,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
@@ -119,25 +119,25 @@ class BPBatch(object):
                        project = project,
                        memory_limit = memory_limit,
                        priority = priority)
-                
+
     @staticmethod
     def select_batch_count():
         '''Return the # of rows in the batch table'''
         with bpcursor() as cursor:
             cursor.execute("select count('x') from batch")
             return cursor.fetchone()[0]
-        
+
     @staticmethod
     def select_batch_range(start, count, desc=True):
         '''Select a range of batches from the batch table
-        
+
         start - one-based index of the first row in the table to return
         count - max # of rows to return
         desc - True to order by largest batch ID first, False for first
         '''
         desc_kwd = "desc" if desc else ""
-        cmd = """select batch_id, email, data_dir, queue, batch_size, 
-                        write_data, timeout, cpcluster, project, 
+        cmd = """select batch_id, email, data_dir, queue, batch_size,
+                        write_data, timeout, cpcluster, project,
                         memory_limit, priority
                    from (select bb.*, @rownum := @rownum + 1 as rank
                            from batch bb, (select @rownum := 0) r
@@ -163,8 +163,8 @@ class BPBatch(object):
                                 priority = priority)
                 batches.append(batch)
             return batches
-                                                    
-    @staticmethod    
+
+    @staticmethod
     def select(batch_id):
         '''Select a batch from the database'''
         with bpcursor() as cursor:
@@ -181,10 +181,10 @@ class BPBatch(object):
                 write_data, timeout, cpcluster, project,
                 memory_limit, priority)
             return batch
-        
+
     def select_runs(self):
         '''Select the associated runs from the database
-        
+
         Returns a list of BPRun records
         '''
         with bpcursor() as cursor:
@@ -196,17 +196,17 @@ class BPBatch(object):
             for run_id, bstart, bend, command in cursor:
                 result.append(BPRun(self, run_id, bstart, bend, command))
         return result
-    
+
     def select_task_count(self, run_type):
         '''Return the # of jobs with links to the batch through the run tbl'''
         cmd = """
-        select count('x') 
-          from run_job_status r 
+        select count('x')
+          from run_job_status r
          where r.batch_id = %d and r.run_type='%s'""" % (self.batch_id, run_type)
         with bpcursor() as cursor:
             cursor.execute(cmd)
             return cursor.fetchone()[0]
-        
+
     def select_task_count_by_state(self, run_type, state):
         '''Return the # of jobs in a particular state'''
         cmd = """
@@ -216,7 +216,7 @@ class BPBatch(object):
         with bpcursor() as cursor:
             cursor.execute(cmd)
             return cursor.fetchone()[0]
-        
+
     def select_task_count_group_by_state(self, run_type):
         '''Return a dictionary of state and # jobs in that state'''
         cmd = """
@@ -227,22 +227,22 @@ class BPBatch(object):
         with bpcursor() as cursor:
             cursor.execute(cmd)
             return dict([(status, count) for count, status in cursor])
-        
+
     def select_tasks(self, page_size = None, first_item = None, state=None):
         '''Get tasks for cellprofiler run records
-        
+
         page_size - return at most this many items (default all)
         first_item - the one-based index of the first item on the page
                      (default first)
         state - one of the states, for instance "RUNNING"
-        
+
         returns a sequence of BPTaskStatus records
         '''
         cmd = """
-        select rjs.run_id, rjs.bstart, rjs.bend, rjs.command, 
+        select rjs.run_id, rjs.bstart, rjs.bend, rjs.command,
                rjs.batch_array_id, rjs.batch_array_task_id, rjs.task_id,
                rjs.job_record_id, rjs.job_id, rjs.job_created,
-               rjs.job_task_id, rjs.task_status_id, rjs.status, 
+               rjs.job_task_id, rjs.task_status_id, rjs.status,
                rjs.status_updated, @rownum:=@rownum+1 as rank
         from run_job_status rjs
         join (select @rownum:=0) as ranktbl
@@ -273,7 +273,7 @@ class BPBatch(object):
                         BPBatchArray(self, batch_array_id)
                 if not job_record_id in jobs:
                     jobs[job_record_id] = \
-                        BPJob(job_record_id, job_id, 
+                        BPJob(job_record_id, job_id,
                               batch_arrays[batch_array_id], job_created)
                 batch_array_task = BPBatchArrayTask(
                     batch_array_task_id, batch_arrays[batch_array_id],
@@ -283,18 +283,18 @@ class BPBatch(object):
                 result.append(BPJobTaskStatus(
                     task_status_id, job_task, status, status_updated))
         return result
-    
+
     def select_queued_tasks(self):
         '''Get tasks that are in the running or submitted states
-        
+
         returns a sequence of BPTask records
         '''
         return self.select_tasks_by_state((JS_SUBMITTED, JS_RUNNING))
-    
+
     def select_tasks_by_state(self, states):
         cmd = """
-        select rjs.run_id, rjs.run_type, rjs.bstart, rjs.bend, 
-               rjs.sql_filename, rjs.command, 
+        select rjs.run_id, rjs.run_type, rjs.bstart, rjs.bend,
+               rjs.sql_filename, rjs.command,
                rjs.batch_array_id, rjs.batch_array_task_id, rjs.task_id,
                rjs.job_record_id, rjs.job_id, rjs.job_created,
                rjs.job_task_id
@@ -319,7 +319,7 @@ class BPBatch(object):
                         BPBatchArray(self, batch_array_id)
                 if not job_record_id in jobs:
                     jobs[job_record_id] = \
-                        BPJob(job_record_id, job_id, 
+                        BPJob(job_record_id, job_id,
                               batch_arrays[batch_array_id], created)
                 batch_array_task = BPBatchArrayTask(
                     batch_array_task_id, batch_arrays[batch_array_id],
@@ -332,8 +332,8 @@ class BPBatch(object):
     @property
     def wants_measurements_file(self):
         return int(self.write_data) == 1
-              
-        
+
+
 class BPRunBase(object):
     def __init__(self, batch, run_id, command):
         self.batch = batch
@@ -341,18 +341,18 @@ class BPRunBase(object):
         self.command = command
         # Should we put . $PREFIX/cpenv.sh into the remote script?
         self.source_cpenv = None
-        
+
     def get_file_name(self):
         raise NotImplemented("Use BPRun or BPSQLRun")
-    
+
     @staticmethod
     def select(run_id, batch = None):
         '''Select a BPRun or BPSQLRun given a run_id
-        
+
         '''
         with bpcursor() as cursor:
             cmd = """
-            select batch_id, run_type, command, bstart, bend, sql_filename 
+            select batch_id, run_type, command, bstart, bend, sql_filename
               from run where run_id=%d""" % run_id
             cursor.execute(cmd)
             batch_id, run_type, command, bstart, bend, sql_filename =\
@@ -362,7 +362,7 @@ class BPRunBase(object):
         if run_type == RT_SQL:
             return BPSQLRun(batch, run_id, sql_filename, command)
         return BPRun(batch, run_id, bstart, bend, command)
-    
+
 
 class BPRun(BPRunBase):
     def __init__(self, batch, run_id, bstart, bend, command):
@@ -371,7 +371,7 @@ class BPRun(BPRunBase):
         self.bend = bend
         self.source_cpenv = True
         self.wants_xvfb = True
-        
+
     @staticmethod
     def create(cursor, batch, bstart, bend, command):
         cmd = """
@@ -385,7 +385,7 @@ class BPRun(BPRunBase):
         values (%s, %s, %s)"""
         cursor.execute(cmd, [str(run_id), bstart, bend])
         return BPRun(batch, run_id, bstart, bend, command)
-    
+
     def get_file_name(self):
         return "%d_to_%d" % (self.bstart, self.bend)
 
@@ -395,7 +395,7 @@ class BPSQLRun(BPRunBase):
         self.sql_filename = sql_filename
         self.source_cpenv = False
         self.wants_xvfb = False
-        
+
     @staticmethod
     def create(cursor, batch, sql_filename, command):
         cursor.execute("""
@@ -406,25 +406,25 @@ class BPSQLRun(BPRunBase):
         insert into run_sql (run_id, sql_filename)
         values(last_insert_id(), %s)""", [sql_filename])
         return BPSQLRun(batch, run_id, sql_filename, command)
-        
-    @staticmethod    
+
+    @staticmethod
     def select_by_sql_filename(batch, sql_filename):
         with bpcursor() as cursor:
             cursor.execute("""
             select rb.run_id, rb.command
             from run_base rb join run_sql rs on rb.run_id = rs.run_id
-            where rs.sql_filename = %s 
+            where rs.sql_filename = %s
               and rb.run_type = 'SQL'
               and rb.batch_id = %s""", [sql_filename, batch.batch_id])
             if cursor.rowcount == 0:
                 return None
             run_id, command = cursor.fetchone()
             return BPSQLRun(batch, int(run_id), sql_filename, command)
-        
+
     def get_file_name(self):
         fnbase = os.path.splitext(self.sql_filename)[0]
         return "SQL_%s" % fnbase
-    
+
 class BPBatchArray(object):
     def __init__(self, batch, batch_array_id):
         self.batch = batch
@@ -432,38 +432,38 @@ class BPBatchArray(object):
 
     def get_job_name(self):
         '''The name to give a job for this batch array
-        
+
         e.g. "qsub -N <job-name>"
         '''
         return "CellProfiler.batch%d.%d" % \
                (self.batch.batch_id, self.batch_array_id)
-    
-        
+
+
     @staticmethod
     def select(batch_array_id):
         with bpcursor() as cursor:
             cmd = """
-            select batch_id from batch_array 
+            select batch_id from batch_array
              where batch_array_id=%d""" % batch_array_id
             cursor.execute(cmd)
             if cursor.rowcount == 0:
                 return None
             batch_id = cursor.fetchone()[0]
         return BPBatchArray(BPBatch.select(batch_id), batch_array_id)
-    
+
     @staticmethod
     def create(cursor, batch):
         cmd = "insert into batch_array (batch_id) values (%s)"
         cursor.execute(cmd, [str(batch.batch_id)])
         return BPBatchArray(batch, int(cursor.lastrowid))
-        
+
 class BPBatchArrayTask(object):
     def __init__(self, batch_array_task_id, batch_array, run, task_id):
         self.batch_array_task_id = batch_array_task_id
         self.batch_array = batch_array
         self.run = run
         self.task_id = task_id
-        
+
     @staticmethod
     def create(cursor, batch_array, run, task_id):
         cmd = """
@@ -474,7 +474,7 @@ class BPBatchArrayTask(object):
                              str(task_id), str(run.run_id)])
         batch_array_task_id = cursor.lastrowid
         return BPBatchArrayTask(batch_array_task_id, batch_array, run, task_id)
-    
+
     @staticmethod
     def select_by_batch_array_and_task_id(batch_array, task_id):
         with bpcursor() as cursor:
@@ -497,7 +497,7 @@ class BPBatchArrayTask(object):
                     command)
             return BPBatchArrayTask(
                 batch_array_task_id, batch_array, run, task_id)
-        
+
     @staticmethod
     def select_by_run(run):
         with bpcursor() as cursor:
@@ -522,7 +522,7 @@ class BPJobTask(object):
         self.job_task_id = job_task_id
         self.job = job
         self.batch_array_task = batch_array_task
-        
+
     @staticmethod
     def create(cursor, job, batch_array_task):
         cmd = """
@@ -531,12 +531,12 @@ class BPJobTask(object):
         """
         cursor.execute(cmd, [job.job_record_id, batch_array_task.batch_array_task_id])
         return BPJobTask(cursor.lastrowid, job, batch_array_task)
-    
+
     @staticmethod
     def select_by_task_id(job, task_id):
         cmd = """
             select rjs.run_id, rjs.run_type, rjs.command, rjs.bstart, rjs.bend,
-                   rjs.sql_filename, rjs.batch_array_task_id, 
+                   rjs.sql_filename, rjs.batch_array_task_id,
                    rjs.job_task_id
              from run_job_status rjs
             where rjs.task_id = %d and rjs.job_record_id = %d
@@ -555,7 +555,7 @@ class BPJobTask(object):
         bat = BPBatchArrayTask(batch_array_task_id, job.batch_array, run,
                                task_id)
         return BPJobTask(job_task_id, job, bat)
-    
+
     @staticmethod
     def select_by_run(run):
         '''Find the submitted or running tasks, if any, for a run'''
@@ -580,15 +580,15 @@ class BPJobTask(object):
                 job = BPJob(job_record_id, job_id, batch_array, created)
                 result.append(BPJobTask(job_task_id, job, bat))
             return result
-               
-        
+
+
 class BPJobTaskStatus(object):
     def __init__(self, job_task_status_id, job_task, status, created):
         self.task_status_id = job_task_status_id
         self.job_task = job_task
         self.status = status
         self.created = created
-        
+
     @staticmethod
     def create(cursor, job_task, status):
         cmd = """
@@ -597,13 +597,13 @@ class BPJobTaskStatus(object):
         """
         cursor.execute(cmd, [str(job_task.job_task_id), status])
         task_status_id = cursor.lastrowid
-       
+
         cursor.execute(
             "select created from task_status where task_status_id=%d" %
             task_status_id)
         return BPJobTaskStatus(task_status_id, job_task, status,
                                cursor.fetchone()[0])
-    
+
     @staticmethod
     def select_by_job_task(job_task):
         cmd = """
@@ -615,7 +615,7 @@ class BPJobTaskStatus(object):
                 return None
             task_status_id, status, created = cursor.fetchone()
             return BPJobTaskStatus(task_status_id, job_task, status, created)
-        
+
 class BPJob(object):
     '''A job dispatched on the cluster'''
     def __init__(self, job_record_id, job_id, batch_array, created):
@@ -623,14 +623,14 @@ class BPJob(object):
         self.job_id = job_id
         self.batch_array = batch_array
         self.created = created
-        
+
     @staticmethod
     def select_by_job_id(job_id):
         cmd = """
         select job_record_id, batch_array_id, created from job j
         where job_id = %d
           and not exists
-              (select 'x' from job j2 
+              (select 'x' from job j2
                 where j2.job_id = j.job_id and j2.created > j.created)
                 """ % job_id
         with bpcursor() as cursor:
@@ -640,7 +640,7 @@ class BPJob(object):
             job_record_id, batch_array_id, created = cursor.fetchone()
         batch_array = BPBatchArray.select(batch_array_id)
         return BPJob(job_record_id, job_id, batch_array, created)
-    
+
     @staticmethod
     def select(batch_array, job_id):
         cmd = """
@@ -653,35 +653,35 @@ class BPJob(object):
                 return None
             job_record_id, created = cursor.fetchone()
             return BPJob(job_record_id, job_id, batch_array, created)
-        
-        
+
+
     @staticmethod
     def create(cursor, batch_array, job_id):
         '''Write the job to the database
-        
+
         '''
         cmd = """
         insert into job (job_id, batch_array_id)
         select %s, %s from dual
-         where not exists 
+         where not exists
               (select 'x' from job where job_id = %s and batch_array_id = %s)
         """
         cursor.execute(
             cmd, [str(job_id), str(batch_array.batch_array_id)] * 2)
         cursor.execute(
-            """select job_record_id, created 
+            """select job_record_id, created
                  from job where job_id=%s and batch_array_id=%s""",
             (str(job_id), str(batch_array.batch_array_id)))
         job_record_id, created = cursor.fetchone()
         return BPJob(job_record_id, job_id, batch_array, created)
-    
+
     def select_queued_tasks(self):
         '''Select tasks in the submitted or running states'''
         cmd = """
-        select batch_array_task_id, task_id, 
+        select batch_array_task_id, task_id,
                run_id, run_type, command, bstart, bend, sql_filename,
                job_task_id
-          from run_job_status 
+          from run_job_status
          where job_record_id = %s
            and (status = %s or status = %s)"""
         with bpcursor() as cursor:
@@ -707,20 +707,20 @@ class BPTaskHost(object):
         self.job_task = job_task
         self.host_name = host_name
         self.xvfb_server = xvfb_server
-    
-    @staticmethod    
+
+    @staticmethod
     def create(cursor, job_task, host_name, wants_xvfb):
         if wants_xvfb:
             cmd = """
             insert into task_host (job_task_id, hostname, xvfb_server)
             select %d, '%s', ifnull(max(jh.xvfb_server)+1, 99)
               from task_host jh
-              join task_status ts 
+              join task_status ts
                 on ts.job_task_id = jh.job_task_id
              where jh.hostname = '%s'
                and ts.status = '%s'
                and not exists
-                   (select 'x' 
+                   (select 'x'
                       from task_status ts1
                      where ts1.created > ts.created
                        and ts1.job_task_id = ts.job_task_id)
@@ -737,10 +737,10 @@ class BPTaskHost(object):
             return BPTaskHost(job_task, host_name, cursor.fetchone()[0])
         else:
             return BPTaskHost(job_task, host_name, None)
-            
+
 def run(batch, runs, cwd = None):
     """Submit a job array for the given runs
-    
+
     """
     txt_output = text_file_directory(batch)
     scripts = script_file_directory(batch)
@@ -757,7 +757,7 @@ def run(batch, runs, cwd = None):
             task_id = idx+TASK_ID_START
             bats.append(
                 BPBatchArrayTask.create(cursor, batch_array, run, task_id))
-        
+
     script = "#!/bin/sh\n"
     #
     # A work-around if HOME has been defined differently on the host
@@ -777,7 +777,7 @@ fi
         # This is a REST PUT to JobStatus.py to create the job record
         #
         data = "{"+ (",".join(['"%s":"%s"' % (k, v) for k, v in (
-            (K_ACTION, A_UPDATE), (K_STATUS, JS_RUNNING))])) 
+            (K_ACTION, A_UPDATE), (K_STATUS, JS_RUNNING))]))
         data += ',"%s":\'$JOB_ID\'' % JOB_ID
         data += ',"%s":%d' % (BATCH_ARRAY_ID, batch_array.batch_array_id)
         data += ',"%s":\'$SGE_TASK_ID\'' % TASK_ID
@@ -798,7 +798,7 @@ fi
         script += "print update_status(%d, '$JOB_ID', '$SGE_TASK_ID', " % \
             batch_array.batch_array_id
         script += "\"%s\", \"'$HOSTNAME'\")'`\n" % JS_RUNNING
-                        
+
     #
     # CD to the CellProfiler root directory
     #
@@ -843,7 +843,7 @@ fi
         script += "print update_status(%d, '$JOB_ID', '$SGE_TASK_ID', " % \
             batch_array.batch_array_id
         script += "\"'$JOB_STATUS'\", \"'$HOSTNAME'\")'\n"
-        
+
     script_filename = batch_array_script_file_path(batch_array)
     with open(script_filename, "w") as fd:
         fd.write(script)
@@ -856,7 +856,7 @@ fi
     except:
         memory_limit = 2
     job_id = bputilities.run_on_tgt_os(
-        script = script, 
+        script = script,
         group_name = batch.project,
         job_name = batch_array.get_job_name(),
         queue_name = batch.queue,
@@ -897,12 +897,12 @@ def kill_run(run):
     with bpcursor() as cursor:
         for task in tasks:
             BPTaskStatus.create(cursor, task, JS_ABORTED)
-            
+
 def kill_task(task):
     bputilities.kill_task(task.job.job_id, task.batch_array_task.task_id)
     with bpcursor() as cursor:
         BPTaskStatus.create(cursor, task, JS_ABORTED)
-    
+
 def kill_job(job):
     bputilities.kill_jobs([job.job_id])
     with bpcursor() as cursor:
@@ -923,7 +923,7 @@ def kill_batch(batch_id):
 
 def run_text_file(run):
     """Return the name of the text file created by bsub
-    
+
     Return the name of the text file created by bsub
     run - instance of BPRun
     """
@@ -932,7 +932,7 @@ def run_text_file(run):
 
 def run_err_file(run):
     """Return the name of the stderr output created by bsub
-    
+
     run - instance of BPRun
     """
     assert isinstance(run, BPRunBase)
@@ -953,16 +953,16 @@ def batch_script_file(script_file):
 
 def batch_script_directory(batch):
     '''The directory housing the modded SQL files
-    
+
     batch - batch in question
     script_file - the name of the original file
-    
+
     Note: this can't be in batch.data_dir because
           it would be automagically scanned and
           picked up by sql_jobs
     '''
     return os.path.join(batch.data_dir, "sql_scripts")
-    
+
 def batch_script_path(batch, script_file):
     return os.path.join(batch_script_directory(batch),
                         batch_script_file(script_file))
@@ -982,7 +982,7 @@ def batch_array_err_file_path(batch_array):
 def batch_array_task_text_file_path(task):
     path = batch_array_text_file_path(task.batch_array)
     return path.replace("\\$TASK_ID", str(task.task_id))
-    
+
 def batch_array_task_err_file_path(task):
     path = batch_array_err_file_path(task.batch_array)
     return path.replace("\\$TASK_ID", str(task.task_id))
@@ -998,12 +998,12 @@ def run_out_file_path(batch, run=None, bstart=None, bend=None):
     if run is not None:
         bstart = run.bstart
         bend = run.bend
-    return os.path.join(batch.data_dir, 
+    return os.path.join(batch.data_dir,
                         "%d_to_%d.h5" % (bstart, bend))
 
 def GetCPUTime(batch, run):
     '''Get the CPU time in seconds for the completion time of the last job
-    
+
     batch - the batch being queried
     run - the job's last run
     '''

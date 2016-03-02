@@ -64,7 +64,7 @@ if __name__ == "__main__":
     import json
     from bpformdata import REQUEST_METHOD, RM_PUT, K_ACTION, A_CREATE, A_READ, \
          A_UPDATE, A_DELETE, JOB_ID, RUN_ID, BATCH_ARRAY_ID, TASK_ID, \
-         K_STATUS, K_HOST_NAME, K_WANTS_XVFB    
+         K_STATUS, K_HOST_NAME, K_WANTS_XVFB
 
     if REQUEST_METHOD == RM_PUT:
         data = json.load(sys.stdin)
@@ -76,7 +76,7 @@ if __name__ == "__main__":
         host_name = data.get(K_HOST_NAME, None)
         wants_xvfb = data.get(K_WANTS_XVFB, False)
         status = data.get(K_STATUS, JS_SUBMITTED)
-            
+
         if action == A_CREATE:
             batch_array = BPBatchArray.select(batch_array_id)
             with bpcursor() as cursor:
@@ -89,9 +89,8 @@ if __name__ == "__main__":
             print "Content-Type: text/plain"
             print
             print cmd
-            
+
         else:
             raise NotImplementedError("Unsupported action: %s" % action)
     else:
         raise NotImplementedError("Unsupported http method: %s" % REQUEST_METHOD)
-

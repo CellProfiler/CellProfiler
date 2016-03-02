@@ -33,13 +33,13 @@ class TestExample6b(unittest.TestCase):
             fd = open(os.path.join(cls.tempdir, name), "wb")
             fd.write(data)
             fd.close()
-        
+
     @classmethod
     def tearDownClass(cls):
         for name in (IMAGE_1_NAME, IMAGE_2_NAME):
             os.remove(os.path.join(cls.tempdir, name))
         os.rmdir(cls.tempdir)
-        
+
     def test_01_01_prepare_run(self):
         measurements = cpmeas.Measurements()
         workspace = cpw.Workspace(
@@ -49,14 +49,14 @@ class TestExample6b(unittest.TestCase):
             measurements,
             cpi.ImageSetList())
         self.assertTrue(self.module.prepare_run(workspace))
-        self.assertTrue(measurements.has_feature(cpmeas.EXPERIMENT, 
+        self.assertTrue(measurements.has_feature(cpmeas.EXPERIMENT,
                                                  "Example6b_FirstTime"))
         first_time = measurements.get_experiment_measurement("Example6b_FirstTime")
         #
         # Breaks if you put CP in a time machine
         #
         self.assertTrue(int(first_time[:4]) >= 2013)
-        self.assertEqual(measurements.image_set_count, 2, 
+        self.assertEqual(measurements.image_set_count, 2,
                          "You should have two image sets")
         M_FILE_NAME = cpmeas.C_FILE_NAME + "_" + IMAGE_NAME
         M_PATH_NAME = cpmeas.C_PATH_NAME + "_" + IMAGE_NAME
@@ -100,10 +100,10 @@ class TestExample6b(unittest.TestCase):
             image = image_set.get_image(IMAGE_NAME)
             pixel_data = (image.pixel_data * 255).astype(int)
             np.testing.assert_array_equal(pixel_data, expected)
-            
-        
-                                                 
-        
+
+
+
+
 IMAGE_1 = np.array([
     [206, 115,  84,  69, 239, 197, 189, 170,  54,   7],
     [152,   5, 131, 196, 209, 133, 162,  10,  54,   3],

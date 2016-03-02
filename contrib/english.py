@@ -337,4 +337,3 @@ def __test__():
 if __name__ == '__main__':
     raise Exception, \
         'This module is not a stand-alone script.  Import it in a program.'
-

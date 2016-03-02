@@ -17,7 +17,7 @@ CellProfilerSplash = get_builtin_image('CellProfilerSplash')
 
 class CellProfilerApp(wx.App):
     def __init__(self, *args, **kwargs):
-        # allow suppression of version checking (primarily for nosetests). 
+        # allow suppression of version checking (primarily for nosetests).
         self.check_for_new_version = kwargs.pop('check_for_new_version', False)
         self.show_splashbox = kwargs.pop('show_splashbox', False)
         self.workspace_path = kwargs.pop('workspace_path', None)
@@ -34,7 +34,7 @@ class CellProfilerApp(wx.App):
             # If the splash image has alpha, it shows up transparently on
             # windows, so we blend it into a white background.
             splashbitmap = wx.EmptyBitmapRGBA(
-                CellProfilerSplash.GetWidth(), 
+                CellProfilerSplash.GetWidth(),
                 CellProfilerSplash.GetHeight(), 255, 255, 255, 255)
             dc = wx.MemoryDC()
             dc.SelectObject(splashbitmap)
@@ -42,8 +42,8 @@ class CellProfilerApp(wx.App):
             dc.SelectObject(wx.NullBitmap)
             dc.Destroy() # necessary to avoid a crash in splashscreen
             self.splash = wx.SplashScreen(
-                splashbitmap, 
-                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 
+                splashbitmap,
+                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT,
                 2000, None, -1)
             self.splash_timer = wx.Timer()
             self.splash_timer.Bind(wx.EVT_TIMER, self.destroy_splash_screen)
@@ -85,7 +85,7 @@ class CellProfilerApp(wx.App):
         if self.splash is not None:
             self.splash.Destroy()
             self.splash = None
-        
+
     def OnExit(self):
         from imagej.imagej2 import allow_quit
         allow_quit()

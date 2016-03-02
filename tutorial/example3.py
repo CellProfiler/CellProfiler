@@ -18,13 +18,13 @@ class Example3(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example3"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.input_image_name = cps.ImageNameSubscriber("Input image")
-        
+
     def settings(self):
         return [self.input_image_name]
-    
+
     def run(self, workspace):
         image_set = workspace.image_set
         m = workspace.measurements
@@ -39,17 +39,17 @@ class Example3(cpm.CPModule):
         #
         # Use cpmeas.IMAGE as the object name
         #
-        
+
     def get_feature_name(self):
         '''Return the name to be used to store the feature
-        
+
         Returns CATEGORY_FEATURE_IMAGENAME
         where CATEGORY is Example3
               FEATURE is Variance
               IMAGENAME is the name of the input image.
         '''
         return "_".join([C_EXAMPLE3, FTR_VARIANCE, self.input_image_name.value])
-        
+
     def get_measurement_columns(self, pipeline):
         #
         # Return a list of one tuple - that tuple should have
@@ -58,5 +58,3 @@ class Example3(cpm.CPModule):
         # it's third.
         #
         return []
-        
-        

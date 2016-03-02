@@ -50,10 +50,10 @@ class Example2c(cpm.CPModule):
     def create_settings(self):
         self.input_image_name = cps.ImageNameSubscriber("Input image", "DNA")
         self.output_image_name = cps.ImageNameProvider("Output image", "Output")
-        
+
     def settings(self):
         return [self.input_image_name, self.output_image_name]
-    
+
     def run(self, workspace):
         #
         # Get the image pixels from the image set
@@ -71,7 +71,7 @@ class Example2c(cpm.CPModule):
             workspace.display_data.output = result
         output_image = cpi.Image(result)
         image_set.add(self.output_image_name.value, output_image)
-        
+
     def handle_interaction(self, pixel_data):
         #
         # This gets called in the UI thread and we're allowed to import
@@ -129,8 +129,8 @@ class Example2c(cpm.CPModule):
         # |  ----------------------------  |
         # ----------------------------------
         #
-        with wx.Dialog(None, 
-                       title="Edit image", 
+        with wx.Dialog(None,
+                       title="Edit image",
                        size=(640, 720)) as dlg:
             #
             # A wx.Sizer lets you automatically adjust the size
@@ -185,7 +185,7 @@ class Example2c(cpm.CPModule):
             # * presents feedback as you drag with the mouse
             # * draws the rectangle when you release the mouse button.
             #
-            # Also look at: 
+            # Also look at:
             # http://matplotlib.org/examples/event_handling/lasso_demo.html
             #
             # for an alternative to this.
@@ -210,7 +210,7 @@ class Example2c(cpm.CPModule):
                     # called.
                     #
                     canvas.CaptureMouse()
-             
+
             #
             # Keep track of mouse movement when drawing using a rectangle
             #
@@ -248,7 +248,7 @@ class Example2c(cpm.CPModule):
                     if d["rectangle"] is None:
                         #
                         # Create the rectangle if there is none
-                        # 
+                        #
                         # Line2D is an "artist" composed of connected line
                         # segments. Artists are axes annotations that provide
                         # the visualization that appears inside the axes.
@@ -280,7 +280,7 @@ class Example2c(cpm.CPModule):
                     # "Refresh" tells WX to redisplay the canvas.
                     #
                     canvas.Refresh()
-            
+
             #
             # When the user lifts the mouse, record the rectangle
             #
@@ -340,8 +340,7 @@ class Example2c(cpm.CPModule):
             # Return the image
             #
             return pixel_data
-        
+
     def display(self, workspace, figure):
         figure.set_subplots((1,1))
         figure.subplot_imshow_grayscale(0, 0, workspace.display_data.output)
-                    

@@ -2,11 +2,11 @@
 brightfield-looking images for printing.
 <hr>
 This module turns a single or multi-channel immunofluorescent-stained image
-into an image that resembles a brightfield image stained with similarly 
+into an image that resembles a brightfield image stained with similarly
 colored stains, which generally prints better.
 
 You can operate on up to three grayscale images (representing
-the red, green, and blue channels of a color image) or on an image that is 
+the red, green, and blue channels of a color image) or on an image that is
 already a color image. The module can produce either three grayscale
 images or one color image as output.
 
@@ -24,75 +24,75 @@ CC_GRAYSCALE = "Grayscale"
 CC_COLOR = "Color"
 CC_ALL = [CC_COLOR, CC_GRAYSCALE]
 class InvertForPrinting(cpm.CPModule):
-   
+
     module_name = "InvertForPrinting"
     category = 'Image Processing'
     variable_revision_number = 1
-    
+
     def create_settings(self):
         # Input settings
         self.input_color_choice = cps.Choice(
             "Input image type", CC_ALL, doc = """
-            Specify whether you are combining several grayscale images or 
+            Specify whether you are combining several grayscale images or
             loading a single color image.""")
-        
+
         self.wants_red_input = cps.Binary(
             "Use a red image?",True, doc = """
             Select <i>%(YES)s</i> to specify an image to use for the red channel."""%globals())
-        
+
         self.red_input_image = cps.ImageNameSubscriber(
             "Select the red image",cps.NONE)
-        
+
         self.wants_green_input = cps.Binary(
             "Use a green image?",True, doc = """
             Select <i>%(YES)s</i> to specify an image to use for the green channel."""%globals())
-        
+
         self.green_input_image = cps.ImageNameSubscriber(
             "Select the green image", cps.NONE)
-        
+
         self.wants_blue_input = cps.Binary(
             "Use a blue image?", True, doc = """
             Select <i>%(YES)s</i> to specify an image to use for the blue channel."""%globals())
-        
+
         self.blue_input_image = cps.ImageNameSubscriber(
             "Select the blue image", cps.NONE)
-        
+
         self.color_input_image = cps.ImageNameSubscriber(
             "Select the color image", cps.NONE,doc = '''
             Select the color image to use.''')
-        
+
         # Output settings
         self.output_color_choice = cps.Choice(
             "Output image type", CC_ALL, doc = """
             Specify whether you want to produce several grayscale images or one color image.""")
-        
+
         self.wants_red_output = cps.Binary(
             "Select <i>%(YES)s</i> to produce a red image."%globals(), True)
-        
+
         self.red_output_image = cps.ImageNameProvider(
             "Name the red image", "InvertedRed")
-        
+
         self.wants_green_output = cps.Binary(
             "Select <i>%(YES)s</i> to produce a green image."%globals(), True)
-        
+
         self.green_output_image = cps.ImageNameProvider(
             "Name the green image", "InvertedGreen")
-        
+
         self.wants_blue_output = cps.Binary(
             "Select <i>%(YES)s</i> to produce a blue image."%globals(), True)
-        
+
         self.blue_output_image = cps.ImageNameProvider(
             "Name the blue image", "InvertedBlue")
-        
+
         self.color_output_image = cps.ImageNameProvider(
             "Name the inverted color image",
             "InvertedColor", doc = '''
             <i>(Used only when producing a color output image)</i><br>
             Enter a name for the inverted color image.''')
-        
+
     def settings(self):
         '''Return the settings as saved in the pipeline'''
-        return [self.input_color_choice, 
+        return [self.input_color_choice,
                 self.wants_red_input, self.red_input_image,
                 self.wants_green_input, self.green_input_image,
                 self.wants_blue_input, self.blue_input_image,
@@ -103,7 +103,7 @@ class InvertForPrinting(cpm.CPModule):
                 self.wants_blue_output, self.blue_output_image,
                 self.color_output_image]
     def help_settings(self):
-        return [self.input_color_choice, 
+        return [self.input_color_choice,
                 self.wants_red_input, self.red_input_image,
                 self.wants_green_input, self.green_input_image,
                 self.wants_blue_input, self.blue_input_image,
@@ -139,7 +139,7 @@ class InvertForPrinting(cpm.CPModule):
         else:
             result += [self.color_output_image]
         return result
-    
+
     def validate_module(self, pipeline):
         '''Make sure the user has at least one of the grayscale boxes checked'''
         if (self.input_color_choice == CC_GRAYSCALE and
@@ -148,7 +148,7 @@ class InvertForPrinting(cpm.CPModule):
             (not self.wants_blue_input.value)):
             raise cps.ValidationError("You must supply at least one grayscale input",
                                       self.wants_red_input)
-        
+
     def run(self, workspace):
         image_set = workspace.image_set
         shape = None
@@ -245,6 +245,5 @@ class InvertForPrinting(cpm.CPModule):
                 'InvertedColor']
             from_matlab = False
             variable_revision_number = 1
-            
+
         return setting_values, variable_revision_number, from_matlab
-        

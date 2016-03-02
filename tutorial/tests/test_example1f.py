@@ -13,16 +13,16 @@ class TestExample1f(unittest.TestCase):
         #
         self.module = instantiate_module("Example1f")
         self.E = __import__(self.module.__class__.__module__)
-        
+
     def test_00_00(self):
         self.assertEqual(self.E.S_GAUSSIAN, "Gaussian")
-        
+
     def test_00_01(self):
-        self.assertTrue(hasattr(self.module, "sigma"), 
+        self.assertTrue(hasattr(self.module, "sigma"),
                         "Example1f does not have a sigma setting")
         self.assertTrue(isinstance(self.module.sigma, cps.Float),
                         "The sigma setting should be cps.Float")
-        
+
     def test_01_01_load_v1(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
@@ -40,7 +40,7 @@ Example1f:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_
         pipeline.load(StringIO(data))
         module = pipeline.modules()[-1]
         self.assertEqual(module.filter_choice.value, self.E.S_GAUSSIAN)
-        
+
     def test_01_02_load_v2(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2

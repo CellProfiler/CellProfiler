@@ -38,7 +38,7 @@ echo " "
 yum list installed | tee "$PREFIX/$HOSTNAME.packagelist.txt"
 echo " "
 
-if [ ! `id -u cpbuild`]; then    
+if [ ! `id -u cpbuild`]; then
     adduser cpbuild
 fi
 cp=/jenkins/CellProfiler

@@ -22,4 +22,3 @@ Example1:[module_num:1|svn_version:\'10581\'|variable_revision_number:1|show_win
         module = pipeline.modules()[-1]
         self.assertTrue(module.module_name, "Example1")
         self.assertEqual(len(module.settings()), 0)
-

@@ -50,7 +50,7 @@ IS_BUILT = "is_built"
 #
 # Integer variables
 #
-BP_INTEGER_VARIABLES = (PRIORITY, BATCH_SIZE, BATCH_ID, RUN_ID, JOB_ID, 
+BP_INTEGER_VARIABLES = (PRIORITY, BATCH_SIZE, BATCH_ID, RUN_ID, JOB_ID,
                         BATCH_ARRAY_ID, TASK_ID, PAGE_SIZE, FIRST_ITEM)
 
 #
@@ -107,19 +107,19 @@ BATCHPROFILER_MYSQL_DATABASE = os.environ.get(
 
 '''The environment variable for the maximum allowed amount of memory for a node'''
 E_BATCHPROFILER_MAX_MEMORY_LIMIT = "BATCHPROFILER_MAX_MEMORY_LIMIT"
-MAX_MEMORY_LIMIT = float(os.environ.get(E_BATCHPROFILER_MAX_MEMORY_LIMIT, 
+MAX_MEMORY_LIMIT = float(os.environ.get(E_BATCHPROFILER_MAX_MEMORY_LIMIT,
                                         256000))
 
 '''The environment variable for the minimum allowed amount of memory for a node'''
 E_BATCHPROFILER_MIN_MEMORY_LIMIT = "BATCHPROFILER_MIN_MEMORY_LIMIT"
-MIN_MEMORY_LIMIT = float(os.environ.get(E_BATCHPROFILER_MIN_MEMORY_LIMIT, 
+MIN_MEMORY_LIMIT = float(os.environ.get(E_BATCHPROFILER_MIN_MEMORY_LIMIT,
                                         1000))
 
 VARIABLE_NAMES = (
     DATA_DIR, EMAIL, QUEUE, PROJECT, PRIORITY, WRITE_DATA, BATCH_SIZE,
     MEMORY_LIMIT, REVISION, SUBMIT_BATCH, K_DELETE_ACTION, BATCH_ID,
     BATCH_ARRAY_ID, RUN_ID, JOB_ID, TASK_ID, SUBMIT_RUN, SQL_SCRIPT,
-    OUTPUT_FILE, FILE_TYPE, PAGE_SIZE, FIRST_ITEM, K_STATUS) 
+    OUTPUT_FILE, FILE_TYPE, PAGE_SIZE, FIRST_ITEM, K_STATUS)
 
 try:
     '''The location of the CellProfiler build'''
@@ -132,7 +132,7 @@ except:
 
 Defaults to $PREFIX/checkouts
 
-The naming convention for the root directory of CellProfiler is 
+The naming convention for the root directory of CellProfiler is
 $BATCHPROFILER_CPSRC/<version>_<githash>
 where <version> is the UTC time of the commit in the format,
 YYYYMMDDHHMMSS
@@ -147,7 +147,7 @@ Defaults to $PREFIX/checkouts/master
 '''
 E_BATCHPROFILER_CELLPROFILER_REPO = "BATCHPROFILER_CELLPROFILER_REPO"
 BATCHPROFILER_CELLPROFILER_REPO = os.environ.get(
-    E_BATCHPROFILER_CELLPROFILER_REPO, 
+    E_BATCHPROFILER_CELLPROFILER_REPO,
     os.path.join(BATCHPROFILER_CPCHECKOUT, "master"))
 
 RM_GET = "GET"
@@ -194,7 +194,7 @@ def __get_defaults():
             except:
                 return None
         return value
-    
+
     def lookup(key):
         if REQUEST_METHOD == RM_POST:
             value = field_storage.getvalue(key, None)
@@ -206,15 +206,15 @@ def __get_defaults():
             except:
                 return None
         return value
-    
-    
+
+
     kv += [(k, lookup_default(k)) for k in VARIABLE_NAMES]
     variables = dict(
         [(k, lookup(k)) for k in VARIABLE_NAMES])
     return dict(kv), variables
-            
+
 BATCHPROFILER_DEFAULTS, BATCHPROFILER_VARIABLES = __get_defaults()
 
 __all__ = filter(
-    (lambda k: k not in (cgi.__name__, os.__name__, BP_INTEGER_VARIABLES)), 
+    (lambda k: k not in (cgi.__name__, os.__name__, BP_INTEGER_VARIABLES)),
     globals().keys())

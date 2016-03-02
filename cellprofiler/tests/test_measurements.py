@@ -23,7 +23,7 @@ FEATURE_NAME = "feature"
 class TestMeasurements(unittest.TestCase):
     def test_00_00_init(self):
         x = cpmeas.Measurements()
-        
+
     def test_00_01_wrap_unwrap(self):
         test0 = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
         test = test0 + [x.encode("utf-8") for x in test0]
@@ -35,16 +35,16 @@ class TestMeasurements(unittest.TestCase):
             if not isinstance(case, unicode):
                 case = case.decode("utf-8")
             self.assertEqual(result, case)
-    
+
     def test_01_01_image_number_is_zero(self):
         x = cpmeas.Measurements()
         self.assertEqual(x.image_set_number,1)
-    
+
     def test_01_01_next_image(self):
         x = cpmeas.Measurements()
         x.next_image_set()
         self.assertEqual(x.image_set_number,2)
-    
+
     def test_02_01_add_image_measurement(self):
         x = cpmeas.Measurements()
         x.add_measurement("Image", "Feature","Value" )
@@ -58,7 +58,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x["Image", "Feature"], "Value")
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Image"))
-    
+
     def test_02_02_add_object_measurement(self):
         x = cpmeas.Measurements()
         np.random.seed(0)
@@ -76,7 +76,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue((x["Nuclei", "Feature"] == m).all)
         self.assertTrue("Nuclei" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Nuclei"))
-    
+
     def test_02_03_add_two_measurements(self):
         x = cpmeas.Measurements()
         x.add_measurement("Image", "Feature","Value" )
@@ -100,7 +100,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Nuclei" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Image"))
-    
+
     def test_02_04_add_two_measurements_to_object(self):
         x = cpmeas.Measurements()
         x.add_measurement("Image", "Feature1","Value1" )
@@ -120,7 +120,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Feature1" in x.get_feature_names("Image"))
         self.assertTrue("Feature2" in x.get_feature_names("Image"))
-    
+
     def test_03_03_MultipleImageSets(self):
         np.random.seed(0)
         x = cpmeas.Measurements()
@@ -154,7 +154,7 @@ class TestMeasurements(unittest.TestCase):
             self.assertEqual(a, b)
         for a, b in zip(x["Nuclei", "Feature", :], [m1, m2]):
             self.assertTrue((a == b).all())
-            
+
     def test_04_01_get_all_image_measurements_float(self):
         r = np.random.RandomState()
         m = cpmeas.Measurements()
@@ -180,7 +180,7 @@ class TestMeasurements(unittest.TestCase):
         for image_number in bad_order:
             result = m[cpmeas.IMAGE, "Feature", image_number]
             np.testing.assert_equal(result, vals[image_number - 1])
-        
+
     def test_04_02_get_all_image_measurements_string(self):
         r = np.random.RandomState()
         m = cpmeas.Measurements()
@@ -188,8 +188,8 @@ class TestMeasurements(unittest.TestCase):
         vals = r.uniform(size=100)
         bad_order = r.permutation(np.arange(1, 101))
         for image_number in bad_order:
-            m.add_measurement(cpmeas.IMAGE, "Feature", 
-                              unicode(vals[image_number-1]), 
+            m.add_measurement(cpmeas.IMAGE, "Feature",
+                              unicode(vals[image_number-1]),
                               image_set_number = image_number)
         result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
         self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
@@ -204,7 +204,7 @@ class TestMeasurements(unittest.TestCase):
             m[cpmeas.IMAGE, "Feature", image_number] = unicode(vals[image_number - 1])
         result = m[cpmeas.IMAGE, "Feature", :]
         self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
-        
+
     def test_04_03_get_all_image_measurements_unicode(self):
         r = np.random.RandomState()
         m = cpmeas.Measurements()
@@ -212,8 +212,8 @@ class TestMeasurements(unittest.TestCase):
         vals = [u"\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(np.arange(1, 101))
         for image_number in bad_order:
-            m.add_measurement(cpmeas.IMAGE, "Feature", 
-                              vals[image_number-1], 
+            m.add_measurement(cpmeas.IMAGE, "Feature",
+                              vals[image_number-1],
                               image_set_number = image_number)
         result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
         self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
@@ -236,8 +236,8 @@ class TestMeasurements(unittest.TestCase):
         vals = [r.uniform(size=r.randint(10,100)) for _ in range(100)]
         bad_order = r.permutation(np.arange(1, 101))
         for image_number in bad_order:
-            m.add_measurement(OBJECT_NAME, "Feature", 
-                              vals[image_number-1], 
+            m.add_measurement(OBJECT_NAME, "Feature",
+                              vals[image_number-1],
                               image_set_number = image_number)
         result = m.get_all_measurements(OBJECT_NAME, "Feature")
         self.assertTrue(all([np.all(r == v) and len(r) == len(v)
@@ -254,7 +254,7 @@ class TestMeasurements(unittest.TestCase):
         result = m[OBJECT_NAME, "Feature", :]
         self.assertTrue(all([np.all(r == v) and len(r) == len(v)
                              for r, v in zip(result, vals)]))
-        
+
     # def test_04_05_get_many_string_measurements(self):
     #     #
     #     # Add string measurements that are likely to break things, then
@@ -273,7 +273,7 @@ class TestMeasurements(unittest.TestCase):
     #
     #     result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
     #     self.assertSequenceEqual(expected, result)
-        
+
     # def test_04_06_set_many_string_measurements(self):
     #     #
     #     # Add string measurements all at once
@@ -290,7 +290,7 @@ class TestMeasurements(unittest.TestCase):
     #
     #     result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
     #     self.assertSequenceEqual(expected, result)
-        
+
     # def test_04_07_set_many_numeric_measurements(self):
     #     test = [1.5, np.NaN, 3.0]
     #     m = cpmeas.Measurements()
@@ -298,14 +298,14 @@ class TestMeasurements(unittest.TestCase):
     #
     #     result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
     #     np.testing.assert_array_equal(test, result)
-        
+
     def test_04_08_set_one_blob_measurement(self):
         r = np.random.RandomState(408)
         test = r.randint(0, 255, 10).astype(np.uint8)
         m = cpmeas.Measurements()
         m[cpmeas.IMAGE, "Feature", 1, np.uint8] = test
         np.testing.assert_array_equal(test, m[cpmeas.IMAGE, "Feature", 1])
-        
+
     def test_04_09_set_many_blob_measurements(self):
         #
         # This is a regression test which ran into the exception
@@ -321,11 +321,11 @@ class TestMeasurements(unittest.TestCase):
         result = m[cpmeas.IMAGE, "Feature", image_numbers]
         self.assertIsNone(result[0])
         np.testing.assert_array_equal(test[1], result[1])
-    
+
     def test_05_01_test_has_current_measurements(self):
         x = cpmeas.Measurements()
         self.assertFalse(x.has_current_measurements('Image', 'Feature'))
-                         
+
     def test_05_02_test_has_current_measurements(self):
         x = cpmeas.Measurements()
         x.add_measurement("Image", "OtherFeature","Value" )
@@ -340,12 +340,12 @@ class TestMeasurements(unittest.TestCase):
         x = cpmeas.Measurements()
         x.add_measurement("Image", "Feature","Value" )
         self.assertTrue(x.has_current_measurements('Image', 'Feature'))
-    
+
     def test_05_03b_test_has_current_measurements_arrayinterface(self):
         x = cpmeas.Measurements()
         x["Image", "Feature"] = "Value"
         self.assertTrue(x.has_current_measurements('Image', 'Feature'))
-    
+
     def test_06_00_00_dont_apply_metadata(self):
         x = cpmeas.Measurements()
         value = "P12345"
@@ -353,7 +353,7 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = "pre_post"
         self.assertEqual(x.apply_metadata(pattern), expected)
-        
+
     def test_06_00_00b_dont_apply_metadata_arrayinterface(self):
         x = cpmeas.Measurements()
         value = "P12345"
@@ -361,7 +361,7 @@ class TestMeasurements(unittest.TestCase):
         x["Image", "Metadata_Plate"] =  value
         pattern = "pre_post"
         self.assertEqual(x.apply_metadata(pattern), expected)
-        
+
     def test_06_00_01_dont_apply_metadata_with_slash(self):
         x = cpmeas.Measurements()
         value = "P12345"
@@ -369,7 +369,7 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = "pre\\\\post"
         self.assertEqual(x.apply_metadata(pattern), expected)
-        
+
     def test_06_01_apply_metadata(self):
         x = cpmeas.Measurements()
         value = "P12345"
@@ -377,7 +377,7 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = r"pre_\g<Plate>_post"
         self.assertEqual(x.apply_metadata(pattern), expected)
-        
+
     def test_06_02_apply_metadata_with_slash(self):
         x = cpmeas.Measurements()
         value = "P12345"
@@ -385,7 +385,7 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = r"\\\g<Plate>_post"
         self.assertEqual(x.apply_metadata(pattern), expected)
-        
+
     def test_06_03_apply_metadata_with_two_slashes(self):
         '''Regression test of img-1144'''
         x = cpmeas.Measurements()
@@ -396,7 +396,7 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Well", well)
         pattern = r"\\\g<Plate>\\\g<Well>"
         self.assertEqual(x.apply_metadata(pattern), expected)
-        
+
     def test_06_04_apply_metadata_when_user_messes_with_your_head(self):
         x = cpmeas.Measurements()
         value = "P12345"
@@ -404,7 +404,7 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Plate", value)
         pattern = r"\\g<Plate>"
         self.assertEqual(x.apply_metadata(pattern), expected)
-        
+
     def test_06_05_apply_metadata_twice(self):
         '''Regression test of img-1144 (second part)'''
         x = cpmeas.Measurements()
@@ -415,7 +415,7 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Metadata_Well", well)
         pattern = r"\g<Plate>_\g<Well>"
         self.assertEqual(x.apply_metadata(pattern), expected)
-        
+
     def test_06_06_apply_series_and_frame_metadata(self):
         x = cpmeas.Measurements()
         x[cpmeas.IMAGE, cpmeas.C_SERIES+"_DNA"] = 1
@@ -424,20 +424,20 @@ class TestMeasurements(unittest.TestCase):
         x[cpmeas.IMAGE, cpmeas.C_FRAME+"_DNAIllum"] = 0
         pattern = r"\g<%s>_\g<%s>" % (cpmeas.C_SERIES, cpmeas.C_FRAME)
         self.assertEqual(x.apply_metadata(pattern), "1_2")
-        
+
     def test_07_01_copy(self):
         x = cpmeas.Measurements()
         r = np.random.RandomState()
         r.seed(71)
         areas = [ r.randint(100, 200, size=r.randint(100, 200))
                   for _ in range(12)]
-                            
+
         for i in range(12):
             x.add_measurement(cpmeas.IMAGE, "Metadata_Well", "A%02d" % (i+1),
                               image_set_number = (i+1))
             x.add_measurement(OBJECT_NAME, "AreaShape_Area", areas[i],
                               image_set_number = (i+1))
-            
+
         y = cpmeas.Measurements(copy = x)
         for i in range(12):
             self.assertEqual(
@@ -485,7 +485,7 @@ class TestMeasurements(unittest.TestCase):
                 os.unlink(filename)
             except:
                 print "Failed to remove file %s" % filename
-                
+
     def test_09_01_group_by_metadata(self):
         m = cpmeas.Measurements()
         r = np.random.RandomState()
@@ -497,9 +497,9 @@ class TestMeasurements(unittest.TestCase):
             aa[image_number-1] = a
             b = "A%02d" % r.randint(1,12)
             bb[image_number-1] = b
-            m.add_measurement(cpmeas.IMAGE, "Metadata_A", a, 
+            m.add_measurement(cpmeas.IMAGE, "Metadata_A", a,
                               image_set_number = image_number)
-            m.add_measurement(cpmeas.IMAGE, "Metadata_B", b, 
+            m.add_measurement(cpmeas.IMAGE, "Metadata_B", b,
                               image_set_number = image_number)
         result = m.group_by_metadata(["A", "B"])
         for d in result:
@@ -518,16 +518,16 @@ class TestMeasurements(unittest.TestCase):
             aa[image_number-1] = a
             b = "A%02d" % r.randint(1,12)
             bb[image_number-1] = b
-            m.add_measurement(cpmeas.IMAGE, "Metadata_A", a, 
+            m.add_measurement(cpmeas.IMAGE, "Metadata_A", a,
                               image_set_number = image_number)
-            m.add_measurement(cpmeas.IMAGE, "Metadata_B", b, 
+            m.add_measurement(cpmeas.IMAGE, "Metadata_B", b,
                               image_set_number = image_number)
         result = m.get_groupings(["Metadata_A", "Metadata_B"])
         for d, image_numbers in result:
             for image_number in image_numbers:
                 self.assertEqual(d["Metadata_A"], unicode(aa[image_number - 1]))
                 self.assertEqual(d["Metadata_B"], unicode(bb[image_number - 1]))
-                
+
     def test_10_01_remove_image_measurement(self):
         m = cpmeas.Measurements()
         m.add_measurement(cpmeas.IMAGE, "M", "Hello", image_set_number = 1)
@@ -535,25 +535,25 @@ class TestMeasurements(unittest.TestCase):
         m.remove_measurement(cpmeas.IMAGE, "M", 1)
         self.assertTrue(m.get_measurement(cpmeas.IMAGE, "M", 1) is None)
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "M", 2), "World")
-        
+
     def test_10_02_remove_object_measurement(self):
         m = cpmeas.Measurements()
         m.add_measurement(OBJECT_NAME, "M", np.arange(5), image_set_number = 1)
         m.add_measurement(OBJECT_NAME, "M", np.arange(7), image_set_number = 2)
         m.remove_measurement(OBJECT_NAME, "M", 1)
         self.assertEqual(len(m.get_measurement(OBJECT_NAME, "M", 1)), 0)
-        np.testing.assert_equal(m.get_measurement(OBJECT_NAME, "M", 2), 
+        np.testing.assert_equal(m.get_measurement(OBJECT_NAME, "M", 2),
                                 np.arange(7))
-        
+
     def test_10_03_remove_image_number(self):
         m = cpmeas.Measurements()
         m.add_measurement(cpmeas.IMAGE, "M", "Hello", image_set_number = 1)
         m.add_measurement(cpmeas.IMAGE, "M", "World", image_set_number = 2)
-        np.testing.assert_equal(np.array(m.get_image_numbers()), 
+        np.testing.assert_equal(np.array(m.get_image_numbers()),
                                 np.arange(1, 3))
         m.remove_measurement(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, 1)
         np.testing.assert_equal(np.array(m.get_image_numbers()), np.array([2]))
-        
+
     def test_11_00_match_metadata_by_order_nil(self):
         m = cpmeas.Measurements()
         result = m.match_metadata(("Metadata_foo", "Metadata_bar"),
@@ -561,7 +561,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(len(result), 3)
         self.assertTrue(all([len(x) == 1 and x[0] == i + 1
                              for i, x in enumerate(result)]))
-        
+
     def test_11_01_match_metadata_by_order(self):
         m = cpmeas.Measurements()
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number = 1)
@@ -570,21 +570,21 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(len(result), 2)
         self.assertTrue(all([len(x) == 1 and x[0] == i + 1
                              for i, x in enumerate(result)]))
-        
+
     def test_11_02_match_metadata_equal_length(self):
         m = cpmeas.Measurements()
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number = 1)
         m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "World", image_set_number = 1)
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Goodbye", image_set_number = 2)
         m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "Phobos", image_set_number = 2)
-        result = m.match_metadata(("Metadata_foo", "Metadata_bar"), 
+        result = m.match_metadata(("Metadata_foo", "Metadata_bar"),
                                   (("Goodbye", "Hello"), ("Phobos", "World")))
         self.assertEqual(len(result), 2)
         self.assertEqual(len(result[0]), 1)
         self.assertEqual(result[0][0], 2)
         self.assertEqual(len(result[1]), 1)
         self.assertEqual(result[1][0], 1)
-        
+
     def test_11_03_match_metadata_different_length(self):
         m = cpmeas.Measurements()
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number = 1)
@@ -593,7 +593,7 @@ class TestMeasurements(unittest.TestCase):
         m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "Phobos", image_set_number = 2)
         m.add_measurement(cpmeas.IMAGE, "Metadata_foo", "Hello", image_set_number = 3)
         m.add_measurement(cpmeas.IMAGE, "Metadata_bar", "Phobos", image_set_number = 3)
-        result = m.match_metadata(("Metadata_foo", ), 
+        result = m.match_metadata(("Metadata_foo", ),
                                   (("Goodbye", "Hello"),))
         self.assertEqual(len(result), 2)
         self.assertEqual(len(result[0]), 1)
@@ -601,7 +601,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(len(result[1]), 2)
         self.assertEqual(result[1][0], 1)
         self.assertEqual(result[1][1], 3)
-        
+
     def test_12_00_load_version_0(self):
         data = ('eJzr9HBx4+WS4mIAAQ4OBhYGAQZk8B8KTiig8mHyCVCaEUp3QOkVTDBxRrCc'
                 'BFRcEGo+urqQIFdXkOr/aABmzwNWCM3BMApGIvBwdQwA0RFQPiw9nWBCVeeb'
@@ -630,7 +630,7 @@ class TestMeasurements(unittest.TestCase):
             if m is not None:
                 del m
             os.unlink(name)
-    
+
     def test_12_01_load_version_1(self):
         data = ('eJzt3E9sFFUcwPH3Zrft0lIpDUGCBWqiUg8124ZAQQslUqwxtkSQlAvplu7a'
                 'Ymlr/yQ9mWKIKZgoRw5GS2JMI2rqQSFeEE94MZyM8WBKwMDBIkFDMGDrzr73'
@@ -668,7 +668,7 @@ class TestMeasurements(unittest.TestCase):
                 'zi+LsB7RpfEc1iMKPi9T5pvrdbI5dV6xyUE9olPbE/2kYOoRXWqjHhEAAEAx'
                 'oR4RAAAAAAAAAAAAAAAAAAAAAAD572HrEW2lHhEAAEVn/ODcBVkpxHJr6u78'
                 '6bnLE/fs+cCV8h3zwp+07s2FS7fvTGzeGl03+7Uc/FuU3bdyU7NeeVuU/Qv/'
-                'J+C3')        
+                'J+C3')
         data = zlib.decompress(base64.b64decode(data))
         fid, name = tempfile.mkstemp(".h5")
         m = None
@@ -684,7 +684,7 @@ class TestMeasurements(unittest.TestCase):
                                                image_set_number = 2), 23456)
             for image_number, expected in ((1, np.array([234567, 123456])),
                                            (2, np.array([123456, 234567]))):
-                values = m.get_measurement("Nuclei", "bar", 
+                values = m.get_measurement("Nuclei", "bar",
                                            image_set_number = image_number)
                 self.assertEqual(len(expected), len(values))
                 self.assertTrue(np.all(expected == values))
@@ -692,7 +692,7 @@ class TestMeasurements(unittest.TestCase):
             if m is not None:
                 del m
             os.unlink(name)
-            
+
     def test_13_01_load_matlab(self):
         data = ('eJztHEtzHEd5pCghVkhi3gmVQ5NylS2XJe3KWlueCpFkSbYV9CpLsRMss+nd'
                 '6d3teF7MQ7tLTBXHcM2JOweuUFw4pfIDuFHAkRTwA3wCDqSK7+vu2XnsrPYh'
@@ -787,7 +787,7 @@ class TestMeasurements(unittest.TestCase):
             if m is not None:
                 del m
             os.unlink(name)
-    
+
     def test_15_01_get_object_names(self):
         '''Test the get_object_names() function'''
         m = cpmeas.Measurements()
@@ -799,7 +799,7 @@ class TestMeasurements(unittest.TestCase):
             self.assertTrue(cpmeas.IMAGE in object_names)
         finally:
             del m
-            
+
     def test_15_02_get_object_names_relationships(self):
         '''Regression test - don't return Relationships'''
         m = cpmeas.Measurements()
@@ -816,7 +816,7 @@ class TestMeasurements(unittest.TestCase):
             self.assertTrue(cpmeas.IMAGE in object_names)
         finally:
             del m
-            
+
     def test_15_03_relate_no_objects(self):
         # regression test of issue #886 - add_relate_measurement called
         #                                 with no objects
@@ -830,8 +830,8 @@ class TestMeasurements(unittest.TestCase):
         m.add_relate_measurement(1, "Foo", OBJECT_NAME, OBJECT_NAME,
                                  np.zeros(0), np.zeros(0),
                                  np.zeros(0), np.zeros(0))
-        
-        
+
+
     def test_16_01_get_feature_names(self):
         m = cpmeas.Measurements()
         try:
@@ -851,7 +851,7 @@ class TestMeasurements(unittest.TestCase):
             self.assertTrue("Foo" in feature_names)
         finally:
             del m
-            
+
     def test_17_01_aggregate_measurements(self):
         m = cpmeas.Measurements()
         try:
@@ -867,7 +867,7 @@ class TestMeasurements(unittest.TestCase):
                 self.assertAlmostEqual(d[feature], expected)
         finally:
             del m
-    
+
     def test_17_02_aggregate_measurements_with_relate(self):
         '''regression test of img-1554'''
         m = cpmeas.Measurements()
@@ -894,7 +894,7 @@ class TestMeasurements(unittest.TestCase):
                 self.assertAlmostEqual(d[feature], expected)
         finally:
             del m
-            
+
     def test_18_01_test_add_all_measurements_string(self):
         m = cpmeas.Measurements()
         try:
@@ -906,7 +906,7 @@ class TestMeasurements(unittest.TestCase):
                 self.assertEqual(expected, value)
         finally:
             del m
-            
+
     def test_18_02_test_add_all_measurements_unicode(self):
         m = cpmeas.Measurements()
         try:
@@ -918,7 +918,7 @@ class TestMeasurements(unittest.TestCase):
                 self.assertEqual(expected, value)
         finally:
             del m
-        
+
     def test_18_03_test_add_all_measurements_number(self):
         m = cpmeas.Measurements()
         try:
@@ -932,7 +932,7 @@ class TestMeasurements(unittest.TestCase):
                 self.assertEqual(expected, value)
         finally:
             del m
-            
+
     def test_18_04_test_add_all_measurements_nulls(self):
         m = cpmeas.Measurements()
         try:
@@ -947,7 +947,7 @@ class TestMeasurements(unittest.TestCase):
                     self.assertEqual(expected, value)
         finally:
             del m
-    
+
     def test_18_05_test_add_all_per_object_measurements(self):
         m = cpmeas.Measurements()
         try:
@@ -990,13 +990,13 @@ class TestMeasurements(unittest.TestCase):
                         cpmeas.IMAGE, feature_name, image_set_number=image_number))
         finally:
             m.close()
-    
+
     def test_19_02_write_and_load_image_sets(self):
         m = cpmeas.Measurements()
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, [1, 1, 2])
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, [1, 2, 1])
         m.add_all_measurements(
-            cpmeas.IMAGE, "URL_DNA", 
+            cpmeas.IMAGE, "URL_DNA",
             ["file://foo/bar.tif", "file://bar/foo.tif", "file://baz/foobar.tif"])
         m.add_all_measurements(
             cpmeas.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"])
@@ -1041,7 +1041,7 @@ class TestMeasurements(unittest.TestCase):
         del m
         self.assertTrue(os.path.exists(filename))
         os.unlink(filename)
-        
+
     def test_20_01_add_one_relationship_measurement(self):
         m = cpmeas.Measurements()
         r = np.random.RandomState()
@@ -1051,7 +1051,7 @@ class TestMeasurements(unittest.TestCase):
         order = r.permutation(len(image_numbers1))
         image_numbers2, object_numbers2 = [
             x[order] for x in image_numbers1, object_numbers1]
-        
+
         m.add_relate_measurement(1, "Foo", "O1", "O2",
                                  image_numbers1, object_numbers1,
                                  image_numbers2, object_numbers2)
@@ -1063,7 +1063,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(rg[0].object_name2, "O2")
         r = m.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
-            r[key] for key in 
+            r[key] for key in
             cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
             cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
         order = np.lexsort((ro1, ri1))
@@ -1071,7 +1071,7 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_array_equal(object_numbers1, ro1[order])
         np.testing.assert_array_equal(image_numbers2, ri2[order])
         np.testing.assert_array_equal(object_numbers2, ro2[order])
-        
+
     def test_20_02_add_two_sets_of_relationships(self):
         m = cpmeas.Measurements()
         r = np.random.RandomState()
@@ -1081,7 +1081,7 @@ class TestMeasurements(unittest.TestCase):
         order = r.permutation(len(image_numbers1))
         image_numbers2, object_numbers2 = [
             x[order] for x in image_numbers1, object_numbers1]
-        
+
         split = int(len(image_numbers1) / 2)
         m.add_relate_measurement(
             1, "Foo", "O1", "O2",
@@ -1093,7 +1093,7 @@ class TestMeasurements(unittest.TestCase):
             image_numbers2[split:], object_numbers2[split:])
         r = m.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
-            r[key] for key in 
+            r[key] for key in
             cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
             cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
         order = np.lexsort((ro1, ri1))
@@ -1101,7 +1101,7 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_array_equal(object_numbers1, ro1[order])
         np.testing.assert_array_equal(image_numbers2, ri2[order])
         np.testing.assert_array_equal(object_numbers2, ro2[order])
-        
+
     # def test_20_03_add_many_different_relationships(self):
     #     m = cpmeas.Measurements()
     #     r = np.random.RandomState()
@@ -1142,7 +1142,7 @@ class TestMeasurements(unittest.TestCase):
     #         np.testing.assert_array_equal(object_numbers1, ro1[order])
     #         np.testing.assert_array_equal(image_numbers2, ri2[order])
     #         np.testing.assert_array_equal(object_numbers2, ro2[order])
-            
+
     def test_20_04_saved_relationships(self):
         #
         # Test closing and reopening a measurements file with
@@ -1196,7 +1196,7 @@ class TestMeasurements(unittest.TestCase):
         finally:
             m.close()
             os.unlink(filename)
-            
+
     def test_20_05_copy_relationships(self):
         m1 = cpmeas.Measurements()
         m2 = cpmeas.Measurements()
@@ -1219,7 +1219,7 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(rg[0].object_name2, "O2")
         r = m2.get_relationships(1, "Foo", "O1", "O2")
         ri1, ro1, ri2, ro2 = [
-            r[key] for key in 
+            r[key] for key in
             cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
             cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
         order = np.lexsort((ro1, ri1))
@@ -1227,7 +1227,7 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_array_equal(object_numbers1, ro1[order])
         np.testing.assert_array_equal(image_numbers2, ri2[order])
         np.testing.assert_array_equal(object_numbers2, ro2[order])
-        
+
     def test_20_06_get_relationship_range(self):
         #
         # Test writing and reading relationships with a variety of ranges
@@ -1243,12 +1243,12 @@ class TestMeasurements(unittest.TestCase):
                 1, "Foo", "O1", "O2",
                 *[x[i:(i+500)] for x in image_numbers1, object_numbers1,
                   image_numbers2, object_numbers2])
-        
+
         for _ in range(50):
             image_numbers = r.randint(1, 1001, 3)
             result = m.get_relationships(1, "Foo", "O1", "O2", image_numbers)
             ri1, ro1, ri2, ro2 = [
-                result[key] for key in 
+                result[key] for key in
                 cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
                 cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
             rorder = np.lexsort((ro2, ri2, ro1, ri1))
@@ -1265,8 +1265,8 @@ class TestMeasurements(unittest.TestCase):
             np.testing.assert_array_equal(ri2[rorder], ei2[eorder])
             np.testing.assert_array_equal(ro1[rorder], eo1[eorder])
             np.testing.assert_array_equal(ro2[rorder], eo2[eorder])
-            
-        
+
+
     def test_21_01_load_measurements_from_buffer(self):
         r = np.random.RandomState()
         r.seed(51)
@@ -1281,7 +1281,7 @@ class TestMeasurements(unittest.TestCase):
             m_in[OBJECT_NAME, FEATURE_NAME, 1],
             m_out[OBJECT_NAME, FEATURE_NAME, 1])
 
-        
+
 IMAGE_NAME = "ImageName"
 ALT_IMAGE_NAME = "AltImageName"
 OBJECT_NAME = "ObjectName"
@@ -1296,23 +1296,23 @@ class TestImageSetCache(unittest.TestCase):
             self.f = h5py.File(self.path)
         else:
             self.f = h5py.File("foo", driver="core", backing_store=False)
-            
+
     def tearDown(self):
         self.f.close()
         if sys.platform == "darwin":
             os.unlink(self.path)
-            
+
     def test_01_01_no_cache(self):
         cache = cpmeas.ImageSetCache(self.f)
         self.assertFalse(cache.has_cache)
-        
+
     def test_02_01_one_image(self):
         cache = cpmeas.ImageSetCache(self.f)
         urls = ["file:///foo", "file:///bar"]
         cache.cache_image_set(
-            [(IMAGE_NAME, cpmeas.IMAGE)], 
+            [(IMAGE_NAME, cpmeas.IMAGE)],
             [cpmeas.ImageSetCache.ImageSetData(
-                tuple(), 
+                tuple(),
                 [cpmeas.ImageSetCache.ImageData(url, None, None, None)], [])
              for url in urls])
         for reopen in (False, True):
@@ -1331,7 +1331,7 @@ class TestImageSetCache(unittest.TestCase):
                 self.assertIsNone(ipd.series)
                 self.assertIsNone(ipd.index)
                 self.assertIsNone(ipd.channel)
-            
+
     def test_02_02_image_and_metadata(self):
         cache = cpmeas.ImageSetCache(self.f)
         metadata_column_name = "Metadata_well"
@@ -1341,7 +1341,7 @@ class TestImageSetCache(unittest.TestCase):
         channel = (1, 0)
         metadata = ["A01", "A02"]
         cache.cache_image_set(
-            [(IMAGE_NAME, cpmeas.IMAGE)], 
+            [(IMAGE_NAME, cpmeas.IMAGE)],
             [cpmeas.ImageSetCache.ImageSetData(
                 (md,), [cpmeas.ImageSetCache.ImageData(url, s, i, c)], [])
              for url, md, s, i, c in zip(urls, metadata, series, index, channel)],
@@ -1364,7 +1364,7 @@ class TestImageSetCache(unittest.TestCase):
                 self.assertEqual(image_set_data.ipds[0].series, s)
                 self.assertEqual(image_set_data.ipds[0].index, i)
                 self.assertEqual(image_set_data.ipds[0].channel, c)
-                
+
     def test_02_03_images_and_objects(self):
         cache = cpmeas.ImageSetCache(self.f)
         metadata_columns = ["%s_%d"%(cpmeas.C_METADATA, i) for i in range(1,3)]
@@ -1393,7 +1393,7 @@ class TestImageSetCache(unittest.TestCase):
                     self.assertEqual(ipd.url, eipd.url)
                     for x in (ipd.series, ipd.index, ipd.channel):
                         self.assertIsNone(x)
-    
+
     def test_03_01_errors(self):
         cache = cpmeas.ImageSetCache(self.f)
         image_names = [IMAGE_NAME, ALT_IMAGE_NAME]
@@ -1415,13 +1415,13 @@ class TestImageSetCache(unittest.TestCase):
                 idx, msg = image_set_data.errors[0]
                 self.assertEqual(idx, i)
                 self.assertEqual(msg, expected.errors[0][1])
-                
+
     def test_04_01_close_measurements(self):
         m = cpmeas.Measurements()
         image = cpi.Image(np.zeros((10, 10)))
         m.add(IMAGE_NAME, image)
         m.cache()
         m.close()
-        
+
 if __name__ == "__main__":
     unittest.main()

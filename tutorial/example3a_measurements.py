@@ -18,13 +18,13 @@ class Example3a(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example3a"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.input_image_name = cps.ImageNameSubscriber("Input image")
-        
+
     def settings(self):
         return [self.input_image_name]
-    
+
     def run(self, workspace):
         image_set = workspace.image_set
         m = workspace.measurements
@@ -49,7 +49,7 @@ class Example3a(cpm.CPModule):
             # to only take the variance of the masked region. The variance
             # will be "not a number" or np.NaN if all or all but one pixel
             # is masked out. That's OK.
-            # 
+            #
         ##    variance = np.var(pixel_data[image.mask])
         ##else:
         ##    variance = np.var(pixel_data)
@@ -68,10 +68,10 @@ class Example3a(cpm.CPModule):
         #
         if workspace.show_frame:
             workspace.display_data.variance = variance
-            
+
     def is_interactive(self):
         return True
-    
+
     def display(self, workspace, frame=None):
         if frame is not None:
             #
@@ -89,17 +89,17 @@ class Example3a(cpm.CPModule):
             frame = workspace.create_or_find_figure(subplots=(1,1))
         frame.subplot_table(
             0, 0, [[ "Value = %f" % workspace.display_data.variance]])
-        
+
     def get_feature_name(self):
         '''Return the name to be used to store the feature
-        
+
         Returns CATEGORY_FEATURE_IMAGENAME
         where CATEGORY is Example3
               FEATURE is Variance
               IMAGENAME is the name of the input image.
         '''
         return "_".join([C_EXAMPLE3, FTR_VARIANCE, self.input_image_name.value])
-        
+
     def get_measurement_columns(self, pipeline):
         #
         # Return a list of one tuple - that tuple should have
@@ -108,5 +108,3 @@ class Example3a(cpm.CPModule):
         # it's third.
         #
         ##return [(cpmeas.IMAGE, self.get_feature_name(), cpmeas.COLTYPE_FLOAT)]
-        
-        

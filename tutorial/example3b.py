@@ -21,7 +21,7 @@ should only be implemented for measurements that do make reference to
 a particular image or secondary objecct.</li>
 <li><i>get_measurement_scales()</i> gives the scale part of a measurement.
 We've broadened the concept of "Scale" to include any major parameter condition
-where a user might be expected to sample among a variety of parameter 
+where a user might be expected to sample among a variety of parameter
 configurations. An example of a measurement with a scale is the texture measurement,
 "Texture_Variance_DNA_3_90" which has a scale of "3_90", meaning "pixels offset
 by 3 in the vertical direction".
@@ -44,13 +44,13 @@ class Example3b(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example3b"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.input_image_name = cps.ImageNameSubscriber("Input image")
-        
+
     def settings(self):
         return [self.input_image_name]
-    
+
     def run(self, workspace):
         image_set = workspace.image_set
         m = workspace.measurements
@@ -68,17 +68,17 @@ class Example3b(cpm.CPModule):
         else:
             variance = np.var(pixel_data)
         m.add_measurement(cpmeas.IMAGE, self.get_feature_name(), variance)
-        
+
     def get_feature_name(self):
         '''Return the name to be used to store the feature
-        
+
         Returns CATEGORY_FEATURE_IMAGENAME
         where CATEGORY is Example3
               FEATURE is Variance
               IMAGENAME is the name of the input image.
         '''
         return "_".join([C_EXAMPLE3, FTR_VARIANCE, self.input_image_name.value])
-        
+
     def get_measurement_columns(self, pipeline):
         #
         # Return a list of one tuple - that tuple should have
@@ -113,12 +113,8 @@ class Example3b(cpm.CPModule):
     #
     ##def get_measurement_images(self, pipeline, object_name, category, measurement):
     ##    result = []
-    ##    if (object_name == cpmeas.IMAGE 
-    ##        and category == C_EXAMPLE3 
+    ##    if (object_name == cpmeas.IMAGE
+    ##        and category == C_EXAMPLE3
     ##        and measurement == FTR_VARIANCE):
     ##        result.append(self.input_image_name.value)
     ##    return result
-
-        
-        
-        

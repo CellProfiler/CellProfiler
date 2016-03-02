@@ -17,14 +17,14 @@ class Example1d(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example1d"
     category = "Other"
-    
+
     def create_settings(self):
         self.display_choice = cps.Choice("Display type",
             [D_COLOR_IMAGE, D_GRAYSCALE_IMAGE, D_TYPES_OF_PLOTS])
-        
+
     def settings(self):
         return [self.display_choice]
-    
+
     def run(self, workspace):
         #
         # The key to successful display in CellProfiler is to save all of
@@ -46,7 +46,7 @@ class Example1d(cpm.CPModule):
         #
         #
         # Put different things in the workspace depending on the display choice.
-        # 
+        #
         if self.display_choice == D_GRAYSCALE_IMAGE:
             #
             # Make up some fake data - in this case, a circle.
@@ -55,7 +55,7 @@ class Example1d(cpm.CPModule):
             # CellProfiler, an image is a 2-d array of grayscale values.
             # Here, we use something called "mgrid" to make two arrays,
             # one which has the "i" coordinate of the array index and
-            # one which has the "j" coordinate. Numpy uses "i" and "j" = 
+            # one which has the "j" coordinate. Numpy uses "i" and "j" =
             # row and column as opposed to Matplotlib which uses X and Y.
             #
             i, j = np.mgrid[-250:251, -250:251]
@@ -88,7 +88,7 @@ class Example1d(cpm.CPModule):
             # Let's pick 3 random centers + a radius for each
             #
             # 3 values between 0 and the length of i which is 300
-            i_center = np.random.randint(0, len(i), len(k)) 
+            i_center = np.random.randint(0, len(i), len(k))
             # 3 values between 0 and the length of j which is 500
             j_center = np.random.randint(0, len(j), len(k))
             # 3 values between 25 and 50
@@ -115,10 +115,10 @@ class Example1d(cpm.CPModule):
                 low = -2, high = 2, size=100)
             workspace.display_data.B = np.random.normal(size=100)
             workspace.display_data.subplots = (4, 1)
-    
+
     #
     # The signature for display will change in the next release of CellProfiler
-    # 
+    #
     # The code below works with both - if figure is defined, then it's
     # the new style.
     #
@@ -164,7 +164,7 @@ class Example1d(cpm.CPModule):
             # terms of X / Y coordinates, it looks like things are reversed:
             #
             # pixel_data[ Y, X, color]
-            # 
+            #
             # -----
             #
             # Here, I display within a 2 x 2 grid. The top-left image is
@@ -176,7 +176,7 @@ class Example1d(cpm.CPModule):
             colors = ("Red", "Green", "Blue")
             for k in range(pixel_data.shape[2]):
                 figure.subplot_imshow_grayscale(
-                    int(k / 2), k % 2, 
+                    int(k / 2), k % 2,
                     pixel_data[:, :, k],
                     title = colors[k],
                     sharex = ax11, # share(x,y) tell Matplotlib to make all
@@ -193,7 +193,7 @@ class Example1d(cpm.CPModule):
             # Scatterplot:
             #
             ax00 = figure.subplot(0, 0)
-            ax00.plot(a, b, 
+            ax00.plot(a, b,
                       'go',              # means "green circles"
                       linestyle=" ") # means "invisible lines between points"
             ax00.set_xlabel("A")
@@ -218,7 +218,7 @@ class Example1d(cpm.CPModule):
             #
             if next_release:
                 figure.subplot_table(
-                    3, 0, 
+                    3, 0,
                     [(str(a.mean()), str(b.mean())),
                      (str(a.min()), str(b.min())),
                      (str(a.max()), str(b.max())),
@@ -227,20 +227,20 @@ class Example1d(cpm.CPModule):
                     row_labels = ("mean", "min", "max", "st dev"))
             else:
                 figure.subplot_table(
-                    3, 0, 
+                    3, 0,
                     [("","A", "B"),
                      ("mean", str(a.mean()), str(b.mean())),
                      ("min", str(a.min()), str(b.min())),
                      ("max", str(a.max()), str(b.max())),
                      ("st dev", str(np.std(a)), str(np.std(b)))],
                     ratio = (.2, .4, .4))
-                                      
+
     #
     # Prior to the current release, a module had to tell CellProfiler whether
     # it interacted with the user interface inside the "run" method and by
     # default, a module was marked interactive just in case it did use the
     # user interface.
-    # 
+    #
     # CellProfiler would use the indicator to figure out whether "run" had
     # to be run in the user interface thread (CellProfiler would crash under
     # OS-X otherwise).

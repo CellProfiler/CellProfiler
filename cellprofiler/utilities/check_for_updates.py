@@ -18,7 +18,7 @@ class VersionChecker(threading.Thread):
         self.callback = callback
         self.daemon = True # if we hang it's no big deal
         self.setName("VersionChecker")
-    
+
     def run(self):
         try:
             req = urllib2.Request(self.url, None, {'User-Agent' : self.user_agent})
@@ -37,4 +37,3 @@ class VersionChecker(threading.Thread):
 def check_for_updates(url, current_version, callback, user_agent='CellProfiler_cfu'):
     vc = VersionChecker(url, current_version, callback, user_agent)
     vc.start()
-

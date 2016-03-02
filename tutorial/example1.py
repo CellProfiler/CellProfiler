@@ -50,16 +50,16 @@ class Example1(cpm.CPModule):
     # Data Tools - these will be explained in a later tutorial
     #
     # Other - if it doesn't fit into one of the above.
-    # 
+    #
     variable_revision_number = 1
     module_name = "Example1"
     category = "Other"
-    
+
     #
     # The next thing that every module must have is a create_settings method.
     # A setting is a variable that influences the behavior of your module.
     # There are settings that let you enter text and numbers, make choices
-    # off of lists (custom text and images, objects and measurements that are 
+    # off of lists (custom text and images, objects and measurements that are
     # available for your module to use) and image and object names for
     # images and objects produced by your module
     #
@@ -67,7 +67,7 @@ class Example1(cpm.CPModule):
     #
     def create_settings(self): # "self" refers to the module's class attributes
         pass # You need at least one statement, so this is a do-nothing statement
-    
+
     #
     # You need to be able to tell CellProfiler about the settings in your
     # module. The "settings" method returns the settings in the order that
@@ -90,5 +90,3 @@ class Example1(cpm.CPModule):
     #
     def run(self, workspace):
         pass
-    
-    

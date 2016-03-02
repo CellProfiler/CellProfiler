@@ -45,4 +45,3 @@ release=$BUILD_NUMBER.$(date +%Y%m%d).$commits_past_tag.$git_hash$snapshot
 su -c 'rpmbuild -ba --define="release '$release'" --define="version '$version'" '$spec build
 cp /home/build/rpmbuild/SRPMS/cellprofiler-${version}-${release}.src.rpm $cp/
 cp /home/build/rpmbuild/RPMS/x86_64/cellprofiler-${version}-${release}.x86_64.rpm $cp/
-

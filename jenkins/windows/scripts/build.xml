@@ -1,12 +1,12 @@
 <project 
-  name="build-cellprofiler" 
+  name="build-cellprofiler"
   default="build">
   <property environment="env"/>
   <property name="project-root" value="${env.WORKSPACE}"/>
   <property name="git-root" value="${project-root}/CellProfiler"/>
   <property name="test-xslt" value="${git-root}/jenkins/windows/scripts/condense-xunit.xslt"/>
   <property name="mvn-exe" value="${env.MVN_PATH}"/>
-  <condition property="compile-setup-dot-py" 
+  <condition property="compile-setup-dot-py"
              value="compile-setup-dot-py-amd64">
     <os family="windows" arch="AMD64"/>
   </condition>
@@ -35,7 +35,7 @@
      </exec>
   </target>
 
-  <target name="compile" 
+  <target name="compile"
           depends="compile-cpmath, compile-utilities, external-dependencies"/>
 
   <target name="compile-setup-dot-py-amd64">
@@ -102,15 +102,15 @@
 
   <target name="test-java" depends="external-dependencies">
       <exec executable="${mvn-exe}"
-            failonerror="true" 
+            failonerror="true"
             dir="${git-root}/java">
           <arg value="test"/>
       </exec>
   </target>
-  
+
   <!--
       run-tests
-      
+
       Parameters:
           ts-directory: directory holding the tests
           ts-pattern: search pattern for the tests
@@ -148,7 +148,7 @@
         Run tests
             output: xunit file at ../target/test-results/${ts-output-file}
     -->
-    
+
     <exec executable="${git-root}/dist/cellprofiler.exe" failonerror="true"
           dir="${git-root}/dist">
       <arg value="--with-javabridge"/>
@@ -200,14 +200,14 @@
       <param name="ts-output-file" value = "cellprofiler_utilities.xml"/>
     </antcall>
   </target>
-  
+
   <target name="test-manual" depends="windows-build">
     <antcall target="run-tests">
       <param name="ts-directory" value="cellprofiler/gui/html/tests"/>
       <param name="ts-output-file" value = "cellprofiler_manual.xml"/>
     </antcall>
   </target>
-  
+
 
   <target name="windows-redistributables" unless="windows-redistributables-exist">
     <mkdir dir="${git-root}/windows"/>
@@ -273,7 +273,7 @@
   </target>
   <target name="clean-java">
       <exec executable="${mvn-exe}"
-            failonerror="clean" 
+            failonerror="clean"
             dir="${git-root}/java">
           <arg value="test"/>
       </exec>

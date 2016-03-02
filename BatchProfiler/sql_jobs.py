@@ -18,7 +18,7 @@ import RunBatch
 
 def run_sql_file(batch_id, sql_filename):
     """Use the mysql command line to run the given SQL script
-    
+
     batch_id    - sql_file is associated with this batch
     sql_path    - path and file of the sql script
     queue       - run job on this queue
@@ -38,10 +38,10 @@ def run_sql_file(batch_id, sql_filename):
 
 def sql_file_job_and_status(batch_id, sql_file):
     """Return the latest job ID associated with the batch and sql path
-    
+
     batch_id - batch id associated with the submission
     sql_path - path to the sql script submitted
-    
+
     returns latest job or None if not submitted
     """
     batch = RunBatch.select(batch_id)
@@ -52,7 +52,7 @@ def sql_file_job_and_status(batch_id, sql_file):
     if len(result) == 0:
         return None, None, None
     return run, result[0], RunBatch.BPJobTaskStatus.select_by_job_task(job_task)
-    
+
 if __name__ == "__main__":
     import optparse
     sys.path.append(os.path.dirname(__file__))

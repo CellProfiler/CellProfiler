@@ -9,7 +9,7 @@ class TestExample1b(unittest.TestCase):
     def make_instance(self):
         '''Return an instance of example1 this way because it's not on classpath'''
         return instantiate_module("Example1b")
-    
+
     def test_01_01_off(self):
         module = self.make_instance()
         module.binary_setting.value = False
@@ -18,7 +18,7 @@ class TestExample1b(unittest.TestCase):
         self.assertEqual(id(module.text_setting), id(settings[0]))
         self.assertEqual(id(module.choice_setting), id(settings[1]))
         self.assertEqual(id(module.binary_setting), id(settings[2]))
-        
+
     def test_01_02_on(self):
         module = self.make_instance()
         module.binary_setting.value = True

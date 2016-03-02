@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `run_base` (
   PRIMARY KEY (`run_id`),
   KEY `run_batch_id_idx` (`batch_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
-  
+
 -------------------------------------------------------------
 --
 -- run_cellprofiler
@@ -92,10 +92,10 @@ SELECT rb.batch_id as batch_id,
        rc.bstart as bstart,
        rc.bend as bend,
        rs.sql_filename as sql_filename
-  FROM run_base rb 
+  FROM run_base rb
   LEFT JOIN run_cellprofiler rc ON rb.run_id = rc.run_id
   LEFT JOIN run_sql rs ON rs.run_id = rc.run_id;
- 
+
 -------------------------------------------------------------
 --
 -- batch_array
@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS `task_status` (
   PRIMARY KEY (`task_status_id`),
   KEY `task_status_job_task_fk` (`job_task_id`, `created`)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-  
+
 -------------------------------------------------------------
 --
 -- run_job_status
@@ -210,26 +210,26 @@ CREATE TABLE IF NOT EXISTS `task_status` (
 CREATE OR REPLACE VIEW run_job_status AS
 SELECT rb.batch_id as batch_id, rb.run_id as run_id, rb.run_type,
        rb.command,
-       rs.sql_filename as sql_filename, 
+       rs.sql_filename as sql_filename,
        rc.bstart as bstart, rc.bend as bend,
        bat.batch_array_task_id as batch_array_task_id,
        bat.batch_array_id as batch_array_id, bat.task_id as task_id,
        j.job_record_id as job_record_id, j.job_id as job_id,
        j.created as job_created,
-       jt.job_task_id as job_task_id, 
-       js.task_status_id as task_status_id, 
+       jt.job_task_id as job_task_id,
+       js.task_status_id as task_status_id,
        js.status as status, js.created as status_updated
   FROM run_base rb
   LEFT JOIN run_cellprofiler rc on rb.run_id = rc.run_id
   LEFT JOIN run_sql rs on rb.run_id = rs.run_id
   JOIN batch_array_task bat on bat.run_id = rb.run_id
   JOIN job j on bat.batch_array_id = j.batch_array_id
-  JOIN job_task jt 
-    ON jt.job_record_id = j.job_record_id 
+  JOIN job_task jt
+    ON jt.job_record_id = j.job_record_id
    AND jt.batch_array_task_id = bat.batch_array_task_id
   JOIN task_status js ON jt.job_task_id = js.job_task_id
- WHERE NOT EXISTS 
- (SELECT 'x' 
+ WHERE NOT EXISTS
+ (SELECT 'x'
     FROM task_status js2
     JOIN job_task jt2 on js2.job_task_id = jt2.job_task_id
     JOIN job j2 on j2.job_record_id = jt2.job_record_id

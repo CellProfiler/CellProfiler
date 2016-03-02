@@ -198,7 +198,7 @@ startup_main = '''<html>
             For written and video guidance to image analysis
             </td>
             <td align="center" width="100"><b><font size="+1">Q&A Forum</font></b><br><br>
-            <a href="http://www.cellprofiler.org/forum/"><img src="memory:welcomescreen_forum.png"></a><br><br>
+            <a href="http://forum.cellprofiler.org/"><img src="memory:welcomescreen_forum.png"></a><br><br>
             Post a question online
             </td>
         </tr>

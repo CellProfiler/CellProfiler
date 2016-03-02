@@ -16,7 +16,7 @@ from bpformdata import *
 
 def maybe_chmod(path, mode, d):
     '''Change the mode of a file if it exists and needs changing
-    
+
     path - path to file or directory
     mode - the new mode
     d - add the key/value of path:mode to the dictionary if the mode was changed
@@ -25,7 +25,7 @@ def maybe_chmod(path, mode, d):
        stat.S_IMODE(os.stat(path).st_mode) != mode:
         os.chmod(path, mode)
         d[path] = mode
-    
+
 def handle_post():
     batch_id = BATCHPROFILER_DEFAULTS[BATCH_ID]
     my_batch = RunBatch.BPBatch()
@@ -35,13 +35,13 @@ def handle_post():
     what_i_did = {}
     maybe_chmod(txt_output_dir, 0777, what_i_did)
     maybe_chmod(job_script_dir, 0777, what_i_did)
-        
+
     for run in my_batch.select_runs():
         for path in [RunBatch.run_text_file_path(my_batch, run),
                      RunBatch.run_out_file_path(my_batch, run),
                      RunBatch.run_err_file_path(my_batch, run)]:
             maybe_chmod(path, 0644, what_i_did)
-    
+
     print "Content-Type: application/json"
     print
     print json.dumps(what_i_did)
@@ -99,7 +99,7 @@ def handle_get():
                 doc.asis(FIX_PERMISSIONS_AJAX_JAVASCRIPT)
                 doc.asis("""
 function on_click_%s() {
-   fix_permissions(document.getElementById('%s')); 
+   fix_permissions(document.getElementById('%s'));
 }""" % (button_id, button_id))
         with tag("body"):
             with tag("h1"):
@@ -108,7 +108,7 @@ function on_click_%s() {
                 text("""
 This webpage fixes permission problems for the files and folders in your batch
 that were created outside BatchProfiler's control. It will grant read
-permission for the job script folder, the text output folder, the text and 
+permission for the job script folder, the text output folder, the text and
 error output files and the measurements file.""")
             with tag("div"):
                 with tag("label", **{ "for":batch_id_id }):
@@ -123,7 +123,7 @@ error output files and the measurements file.""")
           '"-//W3C//DTD XHTML 1.0 Transitional//EN"' \
           '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">'
     print yattag.indent(doc.getvalue())
-    
+
 script_filename = os.environ.get(SCRIPT_FILENAME_KEY, None)
 if script_filename is not None and \
    script_filename.endswith("FixPermissions.py"):
@@ -136,6 +136,3 @@ if script_filename is not None and \
         handle_post()
     else:
         raise ValueError("Unhandled request method: %s" % REQUEST_METHOD)
-        
-    
-            

@@ -62,16 +62,16 @@ class Example1c(cpm.CPModule):
     # Data Tools - these will be explained in a later tutorial
     #
     # Other - if it doesn't fit into one of the above.
-    # 
+    #
     variable_revision_number = 1
     module_name = "Example1c"
     category = "Other"
-    
+
     #
     # The next thing that every module must have is a create_settings method.
     # A setting is a variable that influences the behavior of your module.
     # There are settings that let you enter text and numbers, make choices
-    # off of lists (custom text and images, objects and measurements that are 
+    # off of lists (custom text and images, objects and measurements that are
     # available for your module to use) and image and object names for
     # images and objects produced by your module
     #
@@ -112,7 +112,7 @@ class Example1c(cpm.CPModule):
                 self.binary_setting,
                 self.integer_setting,
                 self.float_setting]
-    
+
     #
     # visible_settings returns what the user should see. You can use this
     #                  to only show relevant settings, for instance when
@@ -145,7 +145,7 @@ class Example1c(cpm.CPModule):
         print "%d + %f = %f" % (integer_value,
                                 float_value,
                                 integer_value + float_value)
-    
+
     #
     # We'll cover the display in Example # 1e, but here's a quick display
     # to give you something to look at when you execute the module.
@@ -177,13 +177,13 @@ class Example1c(cpm.CPModule):
             frame.subplot_table(
                 0, 0,
                 [[setting.text, setting.value_text] for setting in self.settings()])
-                
+
     #
     # Prior to the current release, a module had to tell CellProfiler whether
     # it interacted with the user interface inside the "run" method and by
     # default, a module was marked interactive just in case it did use the
     # user interface.
-    # 
+    #
     # CellProfiler would use the indicator to figure out whether "run" had
     # to be run in the user interface thread (CellProfiler would crash under
     # OS-X otherwise).
@@ -195,4 +195,4 @@ class Example1c(cpm.CPModule):
     # We'll cover the new UI interaction mechanism in example2c.
     #
     def is_interactive(self):
-        return False        
+        return False

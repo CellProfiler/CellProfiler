@@ -17,10 +17,10 @@ OUTPUT_IMAGE_NAME = "outputimage"
 class TestExample2a(unittest.TestCase):
     def make_instance(self):
         return instantiate_module("Example2a")
-    
+
     def test_00_00_can_load(self):
         self.assertFalse(self.make_instance() is None)
-        
+
     def test_01_01_can_get_settings(self):
         module = self.make_instance()
         self.assertTrue(hasattr(module, "input_image_name"),
@@ -33,7 +33,7 @@ class TestExample2a(unittest.TestCase):
         self.assertTrue(
             isinstance(module.output_image_name, cps.ImageNameProvider),
             "Your module's output_image_name should be an ImageNameProvider")
-        
+
     def test_01_02_can_load_and_save(self):
         pipeline = cpp.Pipeline()
         def callback(caller, event):
@@ -61,7 +61,7 @@ class TestExample2a(unittest.TestCase):
         module = pipeline.modules()[-1]
         self.assertEqual(module.input_image_name.value, INPUT_IMAGE_NAME)
         self.assertEqual(module.output_image_name.value, OUTPUT_IMAGE_NAME)
-        
+
     def test_02_01_run_it(self):
         # Get the same pseudo-random number generator each time
         r = np.random.RandomState()
@@ -107,7 +107,7 @@ class TestExample2a(unittest.TestCase):
         #
         module.run(workspace)
         #
-        # Get the output image. 
+        # Get the output image.
         #
         self.assertTrue(OUTPUT_IMAGE_NAME in image_set.names,
                         "Could not find the output image in the image set")

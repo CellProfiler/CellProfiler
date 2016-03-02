@@ -19,7 +19,7 @@ def main():
         do_it(batch_array_id, task_id)
     else:
         show_help()
-        
+
 def do_it(batch_array_id, task_id):
     batch_array = RunBatch.BPBatchArray.select(batch_array_id)
     bat = RunBatch.BPBatchArrayTask.select_by_batch_array_and_task_id(
@@ -47,7 +47,7 @@ def show_file(path):
     print
     print text_file.read()
     text_file.close()
-    
+
 def download_attachment(filename, path):
     length = os.stat(path).st_size
     print "Content-Type: application/octet-stream"

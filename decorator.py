@@ -1,11 +1,11 @@
 ##########################     LICENCE     ###############################
-      
-##   Redistributions of source code must retain the above copyright 
+
+##   Redistributions of source code must retain the above copyright
 ##   notice, this list of conditions and the following disclaimer.
 ##   Redistributions in bytecode form must reproduce the above copyright
 ##   notice, this list of conditions and the following disclaimer in
 ##   the documentation and/or other materials provided with the
-##   distribution. 
+##   distribution.
 
 ##   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 ##   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -48,7 +48,7 @@ class FunctionMaker(object):
             # func can also be a class or a callable, but not an instance method
             self.name = func.__name__
             if self.name == '<lambda>': # small hack for lambda functions
-                self.name = '_lambda_' 
+                self.name = '_lambda_'
             self.doc = func.__doc__
             self.module = func.__module__
             if inspect.isfunction(func):
@@ -82,7 +82,7 @@ class FunctionMaker(object):
         callermodule = sys._getframe(3).f_globals.get('__name__', '?')
         func.__module__ = getattr(self, 'module', callermodule)
         func.__dict__.update(kw)
- 
+
     def make(self, src_templ, evaldict=None, addsource=False, **attrs):
         "Make a new function from a given template and update the signature"
         src = src_templ % vars(self) # expand name and signature
@@ -151,7 +151,7 @@ def getinfo(func):
     - doc (the docstring : str)
     - module (the module name : str)
     - dict (the function __dict__ : str)
-    
+
     >>> def f(self, x=1, y=2, *args, **kw): pass
 
     >>> info = getinfo(f)
@@ -160,7 +160,7 @@ def getinfo(func):
     'f'
     >>> info["argnames"]
     ['self', 'x', 'y', 'args', 'kw']
-    
+
     >>> info["defaults"]
     (1, 2)
 
@@ -197,7 +197,7 @@ def update_wrapper(wrapper, model, infodict=None):
 def new_wrapper(wrapper, model):
     """
     An improvement over functools.update_wrapper. The wrapper is a generic
-    callable object. It works by generating a copy of the wrapper with the 
+    callable object. It works by generating a copy of the wrapper with the
     right signature and by updating the copy, not the original.
     Moreovoer, 'model' can be a dictionary with keys 'name', 'doc', 'module',
     'dict', 'defaults'.

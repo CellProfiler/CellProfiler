@@ -49,7 +49,7 @@ try:
         elif (not re_ignore_line.search(line)) and in_table_defs:
             table_lines.append(line)
 finally:
-    sql_script_file.close()    
+    sql_script_file.close()
 
 re_file_name = re.compile("^(.+?)[0-9]+_[0-9]+_(Image|Object).CSV$")
 image_files = []
@@ -57,11 +57,11 @@ object_files = []
 for file_name in os.listdir(my_batch.data_dir):
     match = re_file_name.search(file_name)
     if match:
-        if (image_prefix and match.groups(1)[0] == image_prefix 
+        if (image_prefix and match.groups(1)[0] == image_prefix
             and match.groups(1)[1] == 'Image'):
             image_files.append(file_name)
-        elif (object_prefix and 
-              match.groups(1)[0] == object_prefix and 
+        elif (object_prefix and
+              match.groups(1)[0] == object_prefix and
               match.groups(1)[1] == 'Object'):
             object_files.append(file_name)
 
@@ -94,7 +94,7 @@ print """Content-type: text/html
 <title>Upload to database</title>
 </head>
 <script type="text/javascript">
-function toggleVerboseText() 
+function toggleVerboseText()
 {
     make_visible = too_verbose.style.display == 'none';
     too_verbose.style.display = make_visible?'block':'none';
@@ -121,7 +121,7 @@ for line, index in zip(lines,range(line_count)):
         print "</div>"
 print "</tt>"
 job = sql_jobs.run_sql_file(batch_id, batch_script_file)
-    
+
 print "<h2>SQL script submitted to cluster as job # %s"%(job.job_id)
 print "</body>"
 print "</html>"

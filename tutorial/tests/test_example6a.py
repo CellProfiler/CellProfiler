@@ -23,7 +23,7 @@ class TestExample6a(unittest.TestCase):
         self.pipeline = cpp.Pipeline()
         self.pipeline.add_module(self.module)
         self.package = __import__(self.module.__class__.__module__)
-        
+
     def test_01_01_e6_state_functions(self):
         d = {}
         r = np.random.RandomState()
@@ -33,11 +33,11 @@ class TestExample6a(unittest.TestCase):
         self.package.e6_state_init(d, image_numbers)
         for image_number in image_numbers:
             self.package.e6_state_append(d, stack[:, :, (image_number-1)], 1)
-            
+
         result = self.package.e6_state_median(d)
         expected = np.median(stack, 2)
         np.testing.assert_almost_equal(result, expected)
-        
+
     def test_01_01_e6_state_functions(self):
         d = {}
         r = np.random.RandomState()
@@ -46,13 +46,13 @@ class TestExample6a(unittest.TestCase):
         image_numbers = range(1, stack.shape[2]+1)
         self.package.e6_state_init(d, image_numbers)
         for image_number in image_numbers:
-            self.package.e6_state_append(d, stack[:, :, (image_number-1)], 
+            self.package.e6_state_append(d, stack[:, :, (image_number-1)],
                                          image_number, 1)
-            
+
         result = self.package.e6_state_median(d)
         expected = np.median(stack, 2)
         np.testing.assert_almost_equal(result, expected)
-        
+
     def test_01_02_e6_state_shrink(self):
         d = {}
         r = np.random.RandomState()
@@ -72,18 +72,18 @@ class TestExample6a(unittest.TestCase):
         for image_number in image_numbers:
             image = stack[i2big, j2big, (image_number-1)]
             self.package.e6_state_append(d, image, image_number, .5)
-            
+
         result = self.package.e6_state_median(d)[i2small, j2small]
         expected = np.median(stack, 2)
         np.testing.assert_almost_equal(result, expected, decimal = 2)
-        
+
     def test_02_01_prepare_group(self):
         #
         # Just make sure prepare_group can run
         #
         measurements = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
-        workspace = cpw.Workspace(self.pipeline, 
+        workspace = cpw.Workspace(self.pipeline,
                                   self.module,
                                   None,
                                   None,
@@ -103,7 +103,7 @@ class TestExample6a(unittest.TestCase):
         image_numbers = range(1, stack.shape[2]+1)
         measurements = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
-        workspace = cpw.Workspace(self.pipeline, 
+        workspace = cpw.Workspace(self.pipeline,
                                   self.module,
                                   None,
                                   None,
@@ -119,7 +119,7 @@ class TestExample6a(unittest.TestCase):
                 image_set = measurements
             else:
                 image_set = image_set_list.get_image_set(image_number)
-            workspace = cpw.Workspace(self.pipeline, 
+            workspace = cpw.Workspace(self.pipeline,
                                       self.module,
                                       image_set,
                                       None,
@@ -131,4 +131,3 @@ class TestExample6a(unittest.TestCase):
         image = image_set.get_image(OUTPUT_IMAGE_NAME)
         expected = self.package.e6_state_median(d)
         np.testing.assert_almost_equal(image.pixel_data, expected)
-            

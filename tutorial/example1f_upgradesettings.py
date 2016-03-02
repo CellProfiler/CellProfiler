@@ -1,9 +1,9 @@
 # In Example 1f, we add a new setting to an existing module and make the new
 # version capable of loading a pipeline containing the old version.
-# 
+#
 # We've taken quite a bit of care to ensure that old, even CellProfiler 1.0,
 # pipelines can be loaded by every subsequent version, in almost all cases
-# without any modification. The key to this process is the 
+# without any modification. The key to this process is the
 # variable_revision_number. We change the variable_revision_number for the
 # module whenever we make a change to how the pipeline might be saved.
 # This happens when a setting is added or changed to a different type or when
@@ -34,9 +34,9 @@ class Example1f(cpm.CPModule):
     variable_revision_number = 1
     ##variable_revision_number = 2
     category = "Image Processing"
-    
+
     def create_settings(self):
-        self.filter_choice = cps.Choice("Filter choice", 
+        self.filter_choice = cps.Choice("Filter choice",
                                         [S_GAUSSIAN, S_SOBEL])
         self.input_image_name = cps.ImageNameSubscriber("Input image")
         self.output_image_name = cps.ImageNameProvider("Output image", "Filtered")
@@ -44,16 +44,16 @@ class Example1f(cpm.CPModule):
         # Add the new sigma setting
         #
         ##self.sigma = cps.Float("Sigma", 1)
-        
+
     def settings(self):
-        return [self.filter_choice, self.input_image_name, 
-                self.output_image_name, 
+        return [self.filter_choice, self.input_image_name,
+                self.output_image_name,
         #
         # Remember to add the new sigma setting to "settings"
         #
         ##      self.sigma
         ]
-    
+
     def run(self, workspace):
         image_set = workspace.image_set
         image = image_set.get_image(self.input_image_name.value)
@@ -67,7 +67,7 @@ class Example1f(cpm.CPModule):
         if self.show_window:
             workspace.display_data.input_image = image.pixel_data
             workspace.display_data.output_image = pixel_data
-        
+
     def display(self, workspace, figure=None):
         if figure is None:
             figure = workspace.create_or_find_figure(subplots=(2, 1))
@@ -76,16 +76,16 @@ class Example1f(cpm.CPModule):
         ax = figure.subplot_imshow(0, 0, workspace.display_data.input_image)
         figure.subplot_imshow(1, 0, workspace.display_data.output_image,
                               sharex = ax,
-                              sharey = ax)    
-    
+                              sharey = ax)
+
     #
     # upgrade_settings does most of the work of converting from version 1
     # to version 2.
     #
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Adjust setting values if they came from a previous revision
-        
+
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
         variable_revision_number - the variable revision number of the
@@ -97,7 +97,7 @@ class Example1f(cpm.CPModule):
                       that module was merged into the current module
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
-        
+
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report

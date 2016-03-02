@@ -38,7 +38,7 @@ if job_id is not None:
 """%(globals())
 elif batch_id is not None:
     RunBatch.kill_batch(batch_id)
-    
+
     url = "ViewBatch.py?batch_id=%d"%(batch_id)
     print "<html><head>"
     print "<meta http-equiv='refresh' content='0; URL=%(url)s' />"%(globals())
@@ -73,7 +73,7 @@ qstat
     columns = [i for i in range(len(header))
                if i == 0 or (header[i-1].isspace() and not header[i].isspace())]
     columns.append(len(header))
-    rows = [[line[columns[i]:columns[i+1]].strip() 
+    rows = [[line[columns[i]:columns[i+1]].strip()
              for i in range(len(columns)-1)]
             for line in lines]
     header = rows[0]
@@ -91,11 +91,11 @@ qstat
             continue
         fields[0] = """
         <form action='KillJobs.py' method='POST'>
-        Job ID: %d 
+        Job ID: %d
         <input type='hidden' name='job_id' value='%d'/>
         <input type='submit' value='Kill'/>
         </form>""" % (job_id, job_id)
-        
+
         print "<tr><td>%s</td></tr>" % "</td><td>".join(fields)
     """
     </table>

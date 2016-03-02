@@ -1,12 +1,12 @@
 Code for emd_hat
 ----------------
-Ofir Pele 
+Ofir Pele
 Contact: ofirpele@cs.huji.ac.il
 Version: 3, May 2012
 
-This directory contains the source code for computing emd_hat or Rubner's emd efficiently. 
+This directory contains the source code for computing emd_hat or Rubner's emd efficiently.
 
-See the web page at 
+See the web page at
 http://www.cs.huji.ac.il/~ofirpele/FastEMD/
 
 Please cite these papers if you use this code:
@@ -38,7 +38,7 @@ Within Matlab:
 >> demo_FastEMD3 (2d histograms)
 >> demo_FastEMD4/demo_FastEMD4 (5d sparse histograms of different size)
 >> demo_FastEMD_non_symmetric.m
->> demo_FastEMD_non_equal_size_histograms.m  
+>> demo_FastEMD_non_equal_size_histograms.m
 
 Compiling (the folder contains compiled binaries, thus you might not have to compile)
 -------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ In a linux shell:
 >> make
 
 Usage within Matlab
-------------------- 
+-------------------
 Type "help emd_hat_gd_metric_mex" or "emd_hat_mex" in Matlab.
 
 Usage within C++

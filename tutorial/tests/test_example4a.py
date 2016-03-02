@@ -21,7 +21,7 @@ class TestExample4a(unittest.TestCase):
         except:
             self.fail("CellProfiler could not create your module. "
                       "Is it named, " + MODULE_NAME + "?")
-    
+
     def test_01_02_run(self):
         module = instantiate_module(MODULE_NAME)
         module.input_objects_name.value = INPUT_OBJECTS_NAME
@@ -29,7 +29,7 @@ class TestExample4a(unittest.TestCase):
         module.module_num = 1
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        
+
         object_set = cpo.ObjectSet()
         #
         # Pick a bunch of random points, dilate them using the distance
@@ -53,7 +53,7 @@ class TestExample4a(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, None, object_set,
                                   cpmeas.Measurements(), None)
         module.run(workspace)
-        
+
         self.assertTrue(OUTPUT_OBJECTS_NAME in object_set.object_names,
                         "Could not find the output objects in the object set")
         output_objects = object_set.get_objects(OUTPUT_OBJECTS_NAME)

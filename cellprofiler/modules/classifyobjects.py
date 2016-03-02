@@ -4,11 +4,11 @@ to the value of measurements you choose.
 This module classifies objects into a number of different bins
 according to the value of a measurement (e.g., by size, intensity, shape).
 It reports how many objects fall into each class as well as the
-percentage of objects that fall into each class. The module asks you to 
+percentage of objects that fall into each class. The module asks you to
 select the measurement feature to be used to classify your objects and
-specify the bins to use. It also requires you to have run a measurement or 
+specify the bins to use. It also requires you to have run a measurement or
 <b>CalculateMath</b> previous to this module in the pipeline so that the measurement
-values can be used to classify the objects. 
+values can be used to classify the objects.
 
 <p>There are two flavors of classification:
 <ul>
@@ -22,28 +22,28 @@ resulting in four possible object classes. The module then stores one
 measurement per object, based on the object's class.</li>
 </ul>
 </p>
-<p>Note that objects without a measurement are not counted as belonging in a 
-classification bin and will not show up in the output image (shown in the 
+<p>Note that objects without a measurement are not counted as belonging in a
+classification bin and will not show up in the output image (shown in the
 module display window); in the object classification they will have a value of False
-for all bins. However, they are still counted in the total number of objects 
+for all bins. However, they are still counted in the total number of objects
 and hence are reflected in the classification percentages.</p>
 
 <h4>Available measurements</h4>
 <ul>
 <li><b>Image measurements:</b>
 <ul>
-<li><i>NumObjectsPerBin:</i> The number of objects that are classified 
+<li><i>NumObjectsPerBin:</i> The number of objects that are classified
 into each bin.</li>
-<li><i>PctObjectsPerBin:</i> The percentage of total objects that are 
+<li><i>PctObjectsPerBin:</i> The percentage of total objects that are
 classified into each bin.</li>
 </ul>
 </li>
 <li><b>Object measurements:</b>
 <ul>
-<li>Single measurement: Classification (true/false) of the N<sup>th</sup> 
+<li>Single measurement: Classification (true/false) of the N<sup>th</sup>
 bin for the M<sup>th</sup> measurement.</li>
-<li>Two measurement: Classification (true/false) of the 1<sup>st</sup> 
-measurement versus the 2<sup>nd</sup> measurement 
+<li>Two measurement: Classification (true/false) of the 1<sup>st</sup>
+measurement versus the 2<sup>nd</sup> measurement
 binned into bins above ("high") and below ("low") the cutoff.</li>
 </ul>
 </li>
@@ -80,7 +80,7 @@ class ClassifyObjects(cpm.CPModule):
     variable_revision_number = 2
     def create_settings(self):
         """Create the settings for the module
-        
+
         Create the settings for the module during initialization.
         """
         self.contrast_choice = cps.Choice(
@@ -90,10 +90,10 @@ class ClassifyObjects(cpm.CPModule):
             for each object:
             <ul>
             <li><i>%(BY_SINGLE_MEASUREMENT)s:</i> Classifies each object based on a single measurement.</li>
-            <li><i>%(BY_TWO_MEASUREMENTS)s:</i> Classifies each object based on a pair of measurements taken 
+            <li><i>%(BY_TWO_MEASUREMENTS)s:</i> Classifies each object based on a pair of measurements taken
             together (that is, an object must meet two criteria to belong to a class).</li>
             </ul>"""%globals())
-        
+
         ############### Single measurement settings ##################
         #
         # A list holding groupings for each of the single measurements
@@ -135,7 +135,7 @@ class ClassifyObjects(cpm.CPModule):
             the first of two measurements that will be contrasted together.
             The measurement should be one made on the object in a prior
             module.""")
-        
+
         self.first_threshold_method = cps.Choice(
             "Method to select the cutoff",
             [TM_MEAN, TM_MEDIAN, TM_CUSTOM],doc="""
@@ -149,19 +149,19 @@ class ClassifyObjects(cpm.CPModule):
             measurement's value for all objects in the image set.</li>
             <li><i>%(TM_CUSTOM)s</i>: You specify a custom threshold value.</li>
             </ul>"""%globals())
-        
+
         self.first_threshold = cps.Float(
             "Enter the cutoff value",0.5,doc="""
-            This is the cutoff value separating objects in the two 
+            This is the cutoff value separating objects in the two
             classes.""")
-        
+
         self.second_measurement = cps.Measurement(
             "Select the second measurement", object_fn,doc="""
             Select a measurement made on the above object. This is
             the second of two measurements that will be contrasted together.
             The measurement should be one made on the object in a prior
             module.""")
-        
+
         self.second_threshold_method = cps.Choice(
             "Method to select the cutoff",
             [TM_MEAN, TM_MEDIAN, TM_CUSTOM],doc="""
@@ -175,54 +175,54 @@ class ClassifyObjects(cpm.CPModule):
             measurement's value for all objects in the image set.</li>
             <li><i>%(TM_CUSTOM)s:</i> You specify a custom threshold value.</li>
             </ul>"""%globals())
-        
+
         self.second_threshold = cps.Float(
             "Enter the cutoff value",0.5,doc="""
-            This is the cutoff value separating objects in the two 
+            This is the cutoff value separating objects in the two
             classes.""")
-        
+
         self.wants_custom_names = cps.Binary(
             "Use custom names for the bins?", False,doc="""
-            Select <i>%(YES)s</i> if you want to specify the names of each bin 
+            Select <i>%(YES)s</i> if you want to specify the names of each bin
             measurement. <br>
-            Select <i>%(NO)s</i> to create names based on the 
+            Select <i>%(NO)s</i> to create names based on the
             measurements. For instance, for
             "Intensity_MeanIntensity_Green" and "Intensity_TotalIntensity_Blue",
             the module generates measurements such as
             "Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low"."""%globals())
-        
+
         self.low_low_custom_name = cps.AlphanumericText(
             "Enter the low-low bin name","low_low",doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects that
             fall below the threshold for both measurements.""")
-        
+
         self.low_high_custom_name = cps.AlphanumericText(
             "Enter the low-high bin name","low_high",doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects whose
             first measurement is below threshold and whose second measurement
             is above threshold.""")
-        
+
         self.high_low_custom_name = cps.AlphanumericText(
             "Enter the high-low bin name","high_low",doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects whose
             first measurement is above threshold and whose second measurement
             is below threshold.""")
-        
+
         self.high_high_custom_name = cps.AlphanumericText(
             "Enter the high-high bin name","high_high",doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects that
             are above the threshold for both measurements.""")
-        
+
         self.wants_image = cps.Binary(
             "Retain an image of the classified objects?", False,doc="""
             Select <i>%(YES)s</i> to retain the image of the objects color-coded according
             to their classification, for use later in the pipeline (for example,
             to be saved by a <b>SaveImages</b> module)."""%globals())
-        
+
         self.image_name = cps.ImageNameProvider(
             "Enter the image name",cps.NONE,doc="""
             <i>(Used only if the classified object image is to be retained for later use in the pipeline)</i> <br>
@@ -230,53 +230,53 @@ class ClassifyObjects(cpm.CPModule):
 
     def add_single_measurement(self, can_delete = True):
         '''Add a single measurement to the group of single measurements
-        
+
         can_delete - True to include a "remove" button, False if you're not
                      allowed to remove it.
         '''
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=True))
-            
+
         group.append("object_name",cps.ObjectNameSubscriber(
             "Select the object to be classified",cps.NONE,
             doc="""The name of the objects to be classified. You can
             choose from objects created by any previous module. See
             <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
             <b>IdentifyTertiaryObjects</b>."""))
-        
+
         def object_fn():
             return group.object_name.value
         group.append("measurement", cps.Measurement(
             "Select the measurement to classify by",object_fn,doc="""
             Select a measurement made by a previous module. The objects
-            will be classified according to their values for this 
+            will be classified according to their values for this
             measurement."""))
-        
+
         group.append("bin_choice", cps.Choice(
             "Select bin spacing",
             [BC_EVEN, BC_CUSTOM],doc="""
-            Select how you want to define the spacing of the bins. 
-            You have the following options:  
+            Select how you want to define the spacing of the bins.
+            You have the following options:
             <ul>
-            <li><i>%(BC_EVEN)s:</i> Choose this if you want to specify 
-            bins of equal size, bounded by upper and lower limits. If you 
-            want two bins, choose this option and then provide a single 
+            <li><i>%(BC_EVEN)s:</i> Choose this if you want to specify
+            bins of equal size, bounded by upper and lower limits. If you
+            want two bins, choose this option and then provide a single
             threshold when asked.</li>
-            <li><i>%(BC_CUSTOM)s:</i> Choose this option to create the 
-            indicated number of bins  at evenly spaced intervals between the 
+            <li><i>%(BC_CUSTOM)s:</i> Choose this option to create the
+            indicated number of bins  at evenly spaced intervals between the
             low and high threshold.
             You also have the option to create bins for objects that fall below
             or above the low and high threshold.</li>
             </ul>
             """%globals()))
-        
+
         group.append("bin_count", cps.Integer(
             "Number of bins", 3, minval= 1,doc="""
             This is the number of bins that will be created between
             the low and high threshold"""
         ))
-        
+
         group.append("low_threshold", cps.Float(
             "Lower threshold", 0,doc="""
             <i>(Used only if "%(BC_EVEN)s" selected)</i><br>
@@ -284,17 +284,17 @@ class ClassifyObjects(cpm.CPModule):
             others. The lower threshold, upper threshold, and number of bins
             define the thresholds of bins between the lowest and highest.
             """%globals()))
-        
+
         group.append("wants_low_bin",cps.Binary(
             "Use a bin for objects below the threshold?", False,doc="""
             Select <i>%(YES)s</i> if you want to create a bin for objects
             whose values fall below the low threshold. Select <i>%(NO)s</i>
             if you do not want a bin for these objects.
             """%globals()))
-        
+
         def min_upper_threshold():
             return group.low_threshold.value + np.finfo(float).eps
-        
+
         group.append("high_threshold", cps.Float(
             "Upper threshold", 1,
             minval = cps.NumberConnector(min_upper_threshold),doc="""
@@ -303,13 +303,13 @@ class ClassifyObjects(cpm.CPModule):
             the others.
             <i>Note:</i> If you would like two bins, you should select <i>%(BC_CUSTOM)s</i>.
             """%globals()))
-        
+
         group.append("wants_high_bin", cps.Binary(
             "Use a bin for objects above the threshold?", False,doc="""
             Select <i>%(YES)s</i> if you want to create a bin for objects
             whose values are above the high threshold. <br>
             Select <i>%(NO)s</i> if you do not want a bin for these objects."""%globals()))
-        
+
         group.append("custom_thresholds", cps.Text(
             "Enter the custom thresholds separating the values between bins",
             "0,1",doc="""
@@ -319,31 +319,31 @@ class ClassifyObjects(cpm.CPModule):
             thresholds with commas (for example, <i>0.3, 1.5, 2.1</i> for four bins).
             The module will create one more bin than there are thresholds.
             """%globals()))
-        
+
         group.append("wants_custom_names", cps.Binary(
             "Give each bin a name?", False,doc="""
-            Select <i>%(YES)s</i> to assign custom names to bins you have 
-            specified. 
+            Select <i>%(YES)s</i> to assign custom names to bins you have
+            specified.
             <p>Select <i>%(NO)s</i> for the module to automatically
             assign names based on the measurements and the bin number."""%globals()))
-        
+
         group.append("bin_names", cps.Text(
             "Enter the bin names separated by commas",cps.NONE,doc="""
             <i>(Used only if Give each bin a name? is checked)</i><br>
             Enter names for each of the bins, separated by commas.
             An example including three bins might be <i>First,Second,Third</i>."""))
-        
+
         group.append("wants_images", cps.Binary(
             "Retain an image of the classified objects?",False, doc="""
             Select <i>%(YES)s</i> to keep an image of the objects which is color-coded according
             to their classification, for use later in the pipeline (for example,
             to be saved by a <b>SaveImages</b> module)."""%globals()))
-        
+
         group.append("image_name", cps.ImageNameProvider(
             "Name the output image", "ClassifiedNuclei",doc="""
             Enter the name to be given to the classified object
             image."""))
-        
+
         group.can_delete = can_delete
         def number_of_bins():
             '''Return the # of bins in this classification'''
@@ -359,7 +359,7 @@ class ClassifyObjects(cpm.CPModule):
         group.number_of_bins = number_of_bins
         def measurement_name():
             '''Get the measurement name to use inside the bin name
-            
+
             Account for conflicts with previous measurements
             '''
             measurement_name = group.measurement.value
@@ -372,17 +372,17 @@ class ClassifyObjects(cpm.CPModule):
             if other_same > 0:
                 measurement_name += str(other_same)
             return measurement_name
-        
+
         def bin_feature_names():
             '''Return the feature names for each bin'''
             if group.wants_custom_names:
-                return [name.strip() 
+                return [name.strip()
                         for name in group.bin_names.value.split(",")]
             return ['_'.join((measurement_name(),
                               'Bin_%d'%(i+1)))
                     for i in range(number_of_bins())]
         group.bin_feature_names = bin_feature_names
-        
+
         def validate_group():
             bin_name_count = len(bin_feature_names())
             bin_count = number_of_bins()
@@ -402,7 +402,7 @@ class ClassifyObjects(cpm.CPModule):
                     bin_feature_name, group.bin_names, True)
             if group.bin_choice == BC_CUSTOM:
                 try:
-                    [float(x.strip()) 
+                    [float(x.strip())
                      for x in group.custom_thresholds.value.split(",")]
                 except ValueError:
                     raise cps.ValidationError(
@@ -410,17 +410,17 @@ class ClassifyObjects(cpm.CPModule):
                         'of numbers (example: "1.0, 2.3, 4.5")',
                         group.custom_thresholds)
         group.validate_group = validate_group
-        
+
         if can_delete:
             group.remove_settings_button = cps.RemoveSettingButton(
-                "", "Remove this classification", 
+                "", "Remove this classification",
                 self.single_measurements, group)
         self.single_measurements.append(group)
-    
+
     def settings(self):
         result = [self.contrast_choice, self.single_measurement_count]
         result += reduce(lambda x,y: x+y,
-                         [group.pipeline_settings() 
+                         [group.pipeline_settings()
                           for group in self.single_measurements])
         result += [self.object_name, self.first_measurement,
                    self.first_threshold_method, self.first_threshold,
@@ -430,7 +430,7 @@ class ClassifyObjects(cpm.CPModule):
                    self.high_low_custom_name, self.high_high_custom_name,
                    self.wants_image, self.image_name]
         return result
-    
+
     def visible_settings(self):
         result = [self.contrast_choice]
         if self.contrast_choice == BY_TWO_MEASUREMENTS:
@@ -463,7 +463,7 @@ class ClassifyObjects(cpm.CPModule):
                 result += [group.object_name, group.measurement,
                            group.bin_choice]
                 if group.bin_choice == BC_EVEN:
-                    result += [group.bin_count, 
+                    result += [group.bin_count,
                                group.low_threshold, group.wants_low_bin,
                                group.high_threshold, group.wants_high_bin]
                 else:
@@ -479,7 +479,7 @@ class ClassifyObjects(cpm.CPModule):
                     result += [group.remove_settings_button]
             result += [self.add_measurement_button]
         return result
-    
+
     def run(self, workspace):
         """Classify the objects in the image cycle"""
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
@@ -494,13 +494,13 @@ class ClassifyObjects(cpm.CPModule):
         else:
             raise ValueError("Invalid classification method: %s"%
                              self.contrast_choice.value)
-    
+
     def display(self, workspace, figure):
         if self.contrast_choice == BY_TWO_MEASUREMENTS:
             self.display_two_measurements(workspace, figure)
         else:
             self.display_single_measurement(workspace, figure)
-                
+
     def get_feature_name_matrix(self):
         '''Get a 2x2 matrix of feature names for two measurements'''
         if self.wants_custom_names:
@@ -513,7 +513,7 @@ class ClassifyObjects(cpm.CPModule):
             m2 = self.second_measurement.value
             return np.array([["_".join((m1,a1,m2,a2)) for a2 in ("low","high")]
                              for a1 in ("low","high")])
-        
+
     def run_two_measurements(self, workspace):
         measurements = workspace.measurements
         in_high_class = []
@@ -521,7 +521,7 @@ class ClassifyObjects(cpm.CPModule):
         objects = workspace.object_set.get_objects(self.object_name.value)
         has_nan_measurement = np.zeros(objects.count, bool)
         for feature, threshold_method, threshold in (
-            (self.first_measurement, self.first_threshold_method, 
+            (self.first_measurement, self.first_threshold_method,
              self.first_threshold),
             (self.second_measurement, self.second_threshold_method,
              self.second_threshold)):
@@ -575,12 +575,12 @@ class ClassifyObjects(cpm.CPModule):
             image = colors[labels,:3]
             image = cpi.Image(image,parent_image = objects.parent_image)
             workspace.image_set.add(self.image_name.value, image)
-            
+
         if self.show_window:
             workspace.display_data.in_high_class=in_high_class
             workspace.display_data.labels = objects.segmented,
             workspace.display_data.saved_values = saved_values
-            
+
     def display_two_measurements(self, workspace, figure):
         figure.set_subplots((2, 2))
         object_name = self.object_name.value
@@ -602,7 +602,7 @@ class ClassifyObjects(cpm.CPModule):
         nobjects = len(class_1)
         mapping = np.zeros(nobjects+1, int)
         mapping[1:] = np.arange(1, nobjects+1)
-        for i in range(2): 
+        for i in range(2):
             saved_values = workspace.display_data.saved_values[i]
             mapping[np.isnan(saved_values)] = 0
         labels = object_codes[mapping[workspace.display_data.labels]]
@@ -629,7 +629,7 @@ class ClassifyObjects(cpm.CPModule):
         #
         for i, patch in enumerate(axes.patches):
             patch.set_facecolor(colors[i+1,:])
-            
+
     def run_single_measurement(self, group, workspace):
         '''Classify objects based on one measurement'''
         object_name = group.object_name.value
@@ -651,7 +651,7 @@ class ClassifyObjects(cpm.CPModule):
                           (high_threshold - low_threshold)/float(bin_count) +
                           low_threshold)
         else:
-            thresholds = [float(x.strip()) 
+            thresholds = [float(x.strip())
                           for x in group.custom_thresholds.value.split(',')]
         #
         # Put infinities at either end of the thresholds so we can bin the
@@ -687,14 +687,14 @@ class ClassifyObjects(cpm.CPModule):
             if group.wants_images:
                 image = colors[labels,:3]
                 workspace.image_set.add(
-                    group.image_name.value, 
+                    group.image_name.value,
                     cpi.Image(image, parent_image = objects.parent_image))
-            
+
             if self.show_window:
                 workspace.display_data.bins.append(object_bins[~np.isnan(values)])
                 workspace.display_data.labels.append(labels)
                 workspace.display_data.values.append(values[~np.isnan(values)])
-    
+
     def display_single_measurement(self, workspace, figure):
         '''Display an array of single measurements'''
         figure.set_subplots((3, len(self.single_measurements)))
@@ -728,11 +728,11 @@ class ClassifyObjects(cpm.CPModule):
             #
             # The labels matrix
             #
-            figure.subplot_imshow_labels(2,i, labels, 
+            figure.subplot_imshow_labels(2,i, labels,
                                          title = group.object_name.value,
-                                         renumber=False, 
+                                         renumber=False,
                                          sharexy = figure.subplot(2,0))
-            
+
     def get_colors(self, count):
         '''Get colors used for two-measurement labels image'''
         import matplotlib.cm as cm
@@ -743,32 +743,32 @@ class ClassifyObjects(cpm.CPModule):
         sm = cm.ScalarMappable(cmap=cmap)
         colors = sm.to_rgba(np.arange(count)+1)
         return np.vstack((np.zeros(colors.shape[1]), colors))
-        
+
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
-        
+
         setting_values - the values for the settings
 
         This method allows a module to specialize itself according to
         the number of settings and their value. For instance, a module that
         takes a variable number of images or objects can increase or decrease
         the number of relevant settings so they map correctly to the values."""
-        
+
         single_measurement_count = int(setting_values[1])
         if single_measurement_count < len(self.single_measurements):
             del self.single_measurements[single_measurement_count:]
         while single_measurement_count > len(self.single_measurements):
             self.add_single_measurement(True)
-            
+
     def validate_module(self, pipeline):
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             for group in self.single_measurements:
                 group.validate_group()
-                
+
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
         '''Adjust setting values if they came from a previous revision
-        
+
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
         variable_revision_number - the variable revision number of the
@@ -780,13 +780,13 @@ class ClassifyObjects(cpm.CPModule):
                       that module was merged into the current module
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
-        
+
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
         an error.
         '''
-        if (from_matlab and 
+        if (from_matlab and
             module_name == 'ClassifyObjectsByTwoMeasurements' and
             variable_revision_number == 2):
             category = [None,None]
@@ -830,7 +830,7 @@ class ClassifyObjects(cpm.CPModule):
         if (from_matlab and module_name == 'ClassifyObjects' and
             variable_revision_number == 8):
             (object_name, category, feature_name, image_name, size_scale,
-             bin_type, bin_specifications, labels, 
+             bin_type, bin_specifications, labels,
              save_colored_objects) = setting_values
             measurement = category+'_'+feature_name
             if len(image_name) > 0:
@@ -860,7 +860,7 @@ class ClassifyObjects(cpm.CPModule):
                 custom_bins, wants_labels, labels,
                 cps.NO if save_colored_objects == cps.DO_NOT_USE else cps.YES,
                 save_colored_objects,
-                object_name, cps.NONE, TM_MEAN, ".5", cps.NONE, TM_MEAN, ".5", 
+                object_name, cps.NONE, TM_MEAN, ".5", cps.NONE, TM_MEAN, ".5",
                 cps.NO, "LowLow","HighLow","LowHigh","HighHigh", cps.NO,
                 "ClassifiedNuclei"]
             from_matlab = False
@@ -891,18 +891,18 @@ class ClassifyObjects(cpm.CPModule):
             new_setting_values += setting_values
             setting_values = new_setting_values
             variable_revision_number = 2
-            
+
         return setting_values, variable_revision_number, from_matlab
 
     def get_measurement_columns(self, pipeline):
         columns = []
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             for group in self.single_measurements:
-                columns += [(cpmeas.IMAGE, 
+                columns += [(cpmeas.IMAGE,
                                 '_'.join((M_CATEGORY,feature_name,F_NUM_PER_BIN)),
                                 cpmeas.COLTYPE_INTEGER)
                             for feature_name in group.bin_feature_names()]
-                columns += [(cpmeas.IMAGE, 
+                columns += [(cpmeas.IMAGE,
                                 '_'.join((M_CATEGORY,feature_name,F_PCT_PER_BIN)),
                                 cpmeas.COLTYPE_FLOAT)
                             for feature_name in group.bin_feature_names()]
@@ -912,11 +912,11 @@ class ClassifyObjects(cpm.CPModule):
                             for feature_name in group.bin_feature_names()]
         else:
             names = self.get_feature_name_matrix()
-            columns += [(cpmeas.IMAGE, 
+            columns += [(cpmeas.IMAGE,
                         '_'.join((M_CATEGORY, name,F_NUM_PER_BIN)),
                         cpmeas.COLTYPE_INTEGER)
                         for name in names.flatten()]
-            columns += [(cpmeas.IMAGE, 
+            columns += [(cpmeas.IMAGE,
                         '_'.join((M_CATEGORY, name,F_PCT_PER_BIN)),
                         cpmeas.COLTYPE_FLOAT)
                         for name in names.flatten()]
@@ -925,25 +925,25 @@ class ClassifyObjects(cpm.CPModule):
                          cpmeas.COLTYPE_INTEGER)
                         for name in names.flatten()]
         return columns
-    
+
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
-        
+
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        if ((object_name == cpmeas.IMAGE) or 
+        if ((object_name == cpmeas.IMAGE) or
             (self.contrast_choice == BY_SINGLE_MEASUREMENT and
-             object_name in [group.object_name.value 
+             object_name in [group.object_name.value
                              for group in self.single_measurements]) or
             (self.contrast_choice == BY_TWO_MEASUREMENTS and
              object_name == self.object_name)):
             return [ M_CATEGORY]
-                
+
         return []
-      
+
     def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
-        
+
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
         """

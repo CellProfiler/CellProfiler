@@ -1,18 +1,18 @@
 import cellprofiler.icons 
 from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
-__doc__ = '''<b>Export To Database</b> exports data directly to a database, or in 
+__doc__ = '''<b>Export To Database</b> exports data directly to a database, or in
 database readable format, including an imported file
 with column names and a CellProfiler Analyst properties file, if desired.
 <hr>
-This module exports measurements directly to a database or to a SQL-compatible format. 
+This module exports measurements directly to a database or to a SQL-compatible format.
 It allows you to create and import MySQL and associated data files into a
 database and gives you the option of creating
 a properties file for use with CellProfiler Analyst. Optionally, you can create
 an SQLite database file if you do not have a server on which to run MySQL itself.
 
-This module must be run at the end of a pipeline, or second to last if 
+This module must be run at the end of a pipeline, or second to last if
 you are using the <b>CreateBatchFiles</b> module. If you forget this module, you
-can also run the <i>ExportDatabase</i> data tool after processing is complete; 
+can also run the <i>ExportDatabase</i> data tool after processing is complete;
 its functionality is the same.
 
 The database is set up with two primary tables. These tables are the
@@ -21,7 +21,7 @@ specify):
 <ul>
 <li>The Per_Image table consists of all the per-image measurements made during the pipeline, plus
 per-image population statistics (such as mean, median, and standard deviation) of the object measurements. There is one
-per_image row for every "cycle" that CellProfiler processes (a cycle is usually a single field of view, and a single cycle 
+per_image row for every "cycle" that CellProfiler processes (a cycle is usually a single field of view, and a single cycle
 usually contains several image files, each representing a different channel of the same field of view). </li>
 <li>The Per_Object table contains all the
 measurements for individual objects. There is one row of object
@@ -30,15 +30,15 @@ primary key column <i>ImageNumber</i>, which indicates the image to which each o
 key called <i>ObjectNumber</i>, which is unique to each image. </li>
 </ul>
 
-Typically, if multiple types of objects are identified and measured in a pipeline, 
-the numbers of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row 
-of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this 
-one-to-one correspondence is <i>not</i> the case for all objects in the pipeline (for example, if dozens of speckles are identified and 
-measured for each nucleus), then you must configure <b>ExportToDatabase</b> to export only objects that maintain the one-to-one correspondence 
+Typically, if multiple types of objects are identified and measured in a pipeline,
+the numbers of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row
+of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this
+one-to-one correspondence is <i>not</i> the case for all objects in the pipeline (for example, if dozens of speckles are identified and
+measured for each nucleus), then you must configure <b>ExportToDatabase</b> to export only objects that maintain the one-to-one correspondence
 (for example, export only <i>Nucleus</i> and <i>Cytoplasm</i>, but omit <i>Speckles</i>).
 
 If you have extracted "Plate" and "Well" metadata from image filenames or loaded "Plate" and "Well" metadata via the <b>Metadata</b>
-or <b>LoadData</b> modules, you can ask CellProfiler to create a "Per_Well" table, which aggregates object measurements across wells.  
+or <b>LoadData</b> modules, you can ask CellProfiler to create a "Per_Well" table, which aggregates object measurements across wells.
 This option will output a SQL file (regardless of whether you choose to write directly to the database)
 that can be used to create the Per_Well table. At the secure shell where you normally log in to MySQL, type
 the following, replacing the italics with references to your database and files:
@@ -275,7 +275,7 @@ def get_next_result(cursor):
         raise Exception('Error retrieving next result from database: %s' % (e))
     except StopIteration, e:
         return None
-    
+
 
 def connect_mysql(host, user, pw, db):
     '''Creates and returns a db connection and cursor.'''
@@ -293,34 +293,34 @@ def connect_mysql(host, user, pw, db):
 
 def connect_sqlite(db_file):
     '''Creates and returns a db connection and cursor.'''
-    import sqlite3 
+    import sqlite3
     connection = sqlite3.connect(db_file, timeout=30)
     cursor = connection.cursor()
     return connection, cursor
 
 class DBContext(object):
     '''A database context suitable for the "with" statement
-    
+
     Usage:
-    
+
     assert isinstance(self, ExportToDatabase)
-    
+
     with DBContext(self):
-    
+
        do stuff with self.connection & self.cursor
-       
+
     # cursor and connection are closed. Changes are either committed
     # or rolled back depending on exception status
     '''
     def __init__(self, module):
         assert isinstance(module, ExportToDatabase)
         self.module = module
-        
+
     def __enter__(self):
         if self.module.db_type == DB_MYSQL:
             self.connection, self.cursor = connect_mysql(
-                self.module.db_host.value, 
-                self.module.db_user.value, 
+                self.module.db_host.value,
+                self.module.db_user.value,
                 self.module.db_passwd.value,
                 self.module.db_name.value)
         elif self.module.db_type == DB_SQLITE:
@@ -328,16 +328,16 @@ class DBContext(object):
                 self.module.sqlite_file.value)
             self.connection, self.cursor = connect_sqlite(db_file)
         return self.connection, self.cursor
-        
+
     def __exit__(self, exc_type, exc_value, traceback):
         if exc_type is None:
             self.connection.commit()
         else:
             self.connection.rollback()
         self.connection.close()
-    
+
 class ExportToDatabase(cpm.CPModule):
- 
+
     module_name = "ExportToDatabase"
     variable_revision_number = 27
     category = ["File Processing","Data Tools"]
@@ -349,11 +349,11 @@ class ExportToDatabase(cpm.CPModule):
         self.db_type = cps.Choice(
             "Database type",
             db_choices, default_db, doc = """
-            Specify the type of database you want to use: 
+            Specify the type of database you want to use:
             <ul>
-            <li><i>%(DB_MYSQL)s:</i> Writes the data directly to a MySQL 
-            database. MySQL is open-source software; you may require help from 
-            your local Information Technology group to set up a database 
+            <li><i>%(DB_MYSQL)s:</i> Writes the data directly to a MySQL
+            database. MySQL is open-source software; you may require help from
+            your local Information Technology group to set up a database
             server.</li>
             <li><i>%(DB_MYSQL_CSV)s:</i> Writes a script file that
             contains SQL statements for creating a database and uploading the
@@ -361,15 +361,15 @@ class ExportToDatabase(cpm.CPModule):
             and Per_Object table data to two CSV files; you can use these files can be
             used to import the data directly into an application
             that accepts CSV data.</li>
-            <li><i>%(DB_SQLITE)s:</i> Writes SQLite files directly. 
-            SQLite is simpler to set up than MySQL and 
-            can more readily be run on your local computer rather than requiring a 
-            database server. More information about SQLite can be found  
+            <li><i>%(DB_SQLITE)s:</i> Writes SQLite files directly.
+            SQLite is simpler to set up than MySQL and
+            can more readily be run on your local computer rather than requiring a
+            database server. More information about SQLite can be found
             <a href="http://www.sqlite.org/">here</a>. </li>
             </ul>
             <dl>
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
-            If running this module on a computing cluster, there are a few 
+            If running this module on a computing cluster, there are a few
             considerations to note:
             <ul>
             <li>The <i>%(DB_MYSQL)s</i> option is well-suited for cluster use, since
@@ -379,17 +379,17 @@ class ExportToDatabase(cpm.CPModule):
             </ul>
             </dd>
             </dl>"""%globals())
-        
+
         self.test_connection_button = cps.DoSomething(
             "Press this button to test the connection to the remote server using the current settings",
             "Test connection", self.test_connection, doc = """
             This button test the connection to MySQL server specified using
             the settings entered by the user.""")
-        
+
         self.db_name = cps.Text(
             "Database name", "DefaultDB",doc = """
             Select a name for the database you want to use""")
-        
+
         self.experiment_name = cps.Text(
             "Experiment name", "MyExpt", doc = """
             Select a name for the experiment. This name will be
@@ -397,67 +397,67 @@ class ExportToDatabase(cpm.CPModule):
             <b>ExportToDatabase</b> creates. You will be able to select the experiment
             by name in CellProfiler Analyst and will be able to find the
             experiment's tables through database queries.""")
-        
+
         self.want_table_prefix = cps.Binary(
             "Add a prefix to table names?", True, doc = """
-            Select whether you want to add a prefix to your table names. The 
-            default table names are <i>Per_Image</i> for the per-image table and 
+            Select whether you want to add a prefix to your table names. The
+            default table names are <i>Per_Image</i> for the per-image table and
             <i>Per_Object</i> for the per-object table. Adding a prefix can be useful
             for bookkeeping purposes.
             <ul>
             <li>Select <i>%(YES)s</i> to add a user-specified prefix to the default table names.
-            If you want to distinguish multiple sets of data written to the same 
+            If you want to distinguish multiple sets of data written to the same
             database, you probably want to use a prefix.</li>
-            <li>Select <i>%(NO)s</i> to use the default table names. For a one-time export of 
+            <li>Select <i>%(NO)s</i> to use the default table names. For a one-time export of
             data, this option is fine. </li>
             </ul>
-            Whether you chose to use a prefix or not, CellProfiler will warn 
+            Whether you chose to use a prefix or not, CellProfiler will warn
             you if your choice entails overwriting an existing table."""%globals())
-        
+
         self.table_prefix = cps.Text(
             "Table prefix", "MyExpt_" , doc = """
             <i>(Used if Add a prefix to table names?</i> is selected)<br>
-            Enter the table prefix you want to use. 
+            Enter the table prefix you want to use.
             <p>MySQL has a 64 character limit on the full name of the table.
             If the combination of the table name and prefix exceeds this
             limit, you will receive an error associated with this setting.</p>""")
-        
+
         self.sql_file_prefix = cps.Text(
             "SQL file prefix", "SQL_", doc = """
             <i>(Used if %(DB_MYSQL_CSV)s is selected as the database type)</i><br>
             Enter the prefix to be used to name the SQL file."""%globals())
-        
+
         self.directory = cps.DirectoryPath(
             "Output file location",
             dir_choices = [
-                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
+                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME,
                 ABSOLUTE_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
                 DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
             <i>(Used only when using a CSV or a SQLite database, and/or creating a properties or workspace file)</i><br>
             This setting determines where the CSV files or SQLite database is saved if
             you decide to write measurements to files instead of writing them
             directly to the database. If you request a CellProfiler Analyst properties file
-            or workspace file, it will also be saved to this location. %(IO_FOLDER_CHOICE_HELP_TEXT)s 
-            
+            or workspace file, it will also be saved to this location. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+
             <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s<br>
-            For instance, if you have a metadata tag named 
+            For instance, if you have a metadata tag named
             "Plate", you can create a per-plate folder by selecting one of the subfolder options
-            and then specifying the subfolder name with the "Plate" metadata tag. 
-            The module will substitute the metadata values for the last image set 
+            and then specifying the subfolder name with the "Plate" metadata tag.
+            The module will substitute the metadata values for the last image set
             processed for any metadata tags in the folder name. %(USING_METADATA_HELP_REF)s.</p>"""% globals())
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
-        
+
         self.save_cpa_properties = cps.Binary(
-            "Create a CellProfiler Analyst properties file?", 
+            "Create a CellProfiler Analyst properties file?",
             False, doc = """
-            Select <i>%(YES)s</i> to generate a template properties file that will allow you to use 
+            Select <i>%(YES)s</i> to generate a template properties file that will allow you to use
             your new database with CellProfiler Analyst (a data
             exploration tool which can also be downloaded from
-            <a href="http://www.cellprofiler.org/">http://www.cellprofiler.org/</a>). 
-            The module will attempt to fill in as many as the entries as possible 
-            based on the pipeline's settings, including the 
+            <a href="http://www.cellprofiler.org/">http://www.cellprofiler.org/</a>).
+            The module will attempt to fill in as many as the entries as possible
+            based on the pipeline's settings, including the
             server name, username and password if MySQL is used."""%globals())
-        
+
         self.location_object = cps.ObjectNameSubscriber(
             "Which objects should be used for locations?", cps.NONE, doc = """
             <i>(Used only if creating a properties file)</i><br>
@@ -470,23 +470,23 @@ class ExportToDatabase(cpm.CPModule):
             <p>You can manually change this choice in the properties file by
             edting the <i>cell_x_loc</i> and <i>cell_y_loc</i> properties.
             </p>
-            <p>Note that if there are no objects defined in the pipeline (e.g. 
-            if only using MeasureImageQuality and/or Illumination Correction modules), 
+            <p>Note that if there are no objects defined in the pipeline (e.g.
+            if only using MeasureImageQuality and/or Illumination Correction modules),
             a warning will diplay until you choose <i>'None'</i> for the subsequent setting:
             'Export measurements for all objects to the database?'.</p>
             """%globals())
-        
+
         self.wants_properties_image_url_prepend = cps.Binary(
             "Access CPA images via URL?", False,
             doc = """
             <i>(Used only if creating a properties file)</i><br>
             The image paths written to the database will be the absolute
-            path the image files on your computer. If you plan to make these 
+            path the image files on your computer. If you plan to make these
             files accessible via the web, you can have CellProfiler Analyst prepend
-            a URL to your file name. 
+            a URL to your file name.
             Eg: If an image is loaded from the path "/cellprofiler/images/" and you use
             a url prepend of "http://mysite.com/", CellProfiler Analyst will look
-            for your file at "http://mysite.com/cellprofiler/images/" 
+            for your file at "http://mysite.com/cellprofiler/images/"
             """)
         #
         # Hack: if user is on Broad IP, then plug in the imageweb url prepend
@@ -499,47 +499,47 @@ class ExportToDatabase(cpm.CPModule):
         default_prepend = ""
         if 'broadinstitute' in fqdn.lower():  # Broad
             default_prepend = "http://imageweb/images/CPALinks"
-        
+
         self.properties_image_url_prepend = cps.Text(
             "Enter an image url prepend if you plan to access your files via http",
             default_prepend, doc = """
             <i>(Used only if accessing CellProfiler Analyst images via URL)</i><br>
             The image paths written to the database will be the absolute
-            path the image files on your computer. If you plan to make these 
-            files accessible via the web, you can enter a url prefix here. Eg: 
+            path the image files on your computer. If you plan to make these
+            files accessible via the web, you can enter a url prefix here. Eg:
             If an image is loaded from the path "/cellprofiler/images/" and you use
             a url prepend of "http://mysite.com/", CellProfiler Analyst will look
-            for your file at "http://mysite.com/cellprofiler/images/" 
+            for your file at "http://mysite.com/cellprofiler/images/"
             <p>If you are not using the web to access your files (i.e., they are locally
             aceesible by your computer), leave this setting blank.""")
-        
+
         self.properties_plate_type = cps.Choice(
             "Select the plate type",
             PLATE_TYPES,doc="""
             <i>(Used only if creating a properties file)</i><br>
-            If you are using a multi-well plate or microarray, you can select the plate 
+            If you are using a multi-well plate or microarray, you can select the plate
             type here. Supported types in CellProfiler Analyst are 96- and 384-well plates,
             as well as 5600-spot microarrays. If you are not using a plate or microarray, select
             <i>None</i>.""")
-        
+
         self.properties_plate_metadata = cps.Choice(
             "Select the plate metadata",
             ["None"],choices_fn = self.get_metadata_choices,doc="""
             <i>(Used only if creating a properties file)</i><br>
             If you are using a multi-well plate or microarray, you can select the metadata corresponding
             to the plate here. If there is no plate metadata associated with the image set, select
-            <i>None</i>. 
+            <i>None</i>.
             <p>%(USING_METADATA_HELP_REF)s.</p>"""% globals())
-        
+
         self.properties_well_metadata = cps.Choice(
             "Select the well metadata",
             ["None"],choices_fn = self.get_metadata_choices,doc="""
             <i>(Used only if creating a properties file)</i><br>
             If you are using a multi-well plate or microarray, you can select the metadata corresponding
             to the well here. If there is no well metadata associated with the image set, select
-            <i>None</i>. 
+            <i>None</i>.
             <p>%(USING_METADATA_HELP_REF)s.</p>"""% globals())
-        
+
         self.properties_export_all_image_defaults = cps.Binary(
             "Include information for all images, using default values?", True,doc="""
             <i>(Used only if creating a properties file)</i><br>
@@ -551,55 +551,55 @@ class ExportToDatabase(cpm.CPModule):
             <li>A channel color listed in the <i>image_channel_colors</i> field will be assigned to the image by default order.</li>
             </ul>
             <p>Select <i>%(NO)s</i> to specify which images should be included or to override the automatic values.</p>"""%globals())
-        
+
         self.image_groups = []
         self.image_group_count = cps.HiddenCount(self.image_groups,"Properties image group count")
         self.add_image_group(False)
         self.add_image_button = cps.DoSomething("", "Add another image",
                                            self.add_image_group)
-        
+
         self.properties_wants_groups = cps.Binary(
             "Do you want to add group fields?", False,doc = """
             <i>(Used only if creating a properties file)</i><br>
-            <b>Please note that "groups" as defined by CellProfiler Analyst has nothing to do with "grouping" as defined by 
+            <b>Please note that "groups" as defined by CellProfiler Analyst has nothing to do with "grouping" as defined by
             CellProfiler in the Groups module.</b>
-            <p>Select <i>%(YES)s</i> to define a "group" for your image data (for example, when several images represent the same experimental 
-            sample), by providing column(s) that identify unique images (the <i>image key</i>) to another set of columns 
+            <p>Select <i>%(YES)s</i> to define a "group" for your image data (for example, when several images represent the same experimental
+            sample), by providing column(s) that identify unique images (the <i>image key</i>) to another set of columns
             (the <i>group key</i>).</p>
             <p>The format for a group in CPA is:<br>
             <code>group_SQL_&lt;XXX&gt; = &lt;MySQL SELECT statement that returns image-key columns followed by group-key columns&gt;</code>
-            For example, if you wanted to be able to group your data by unique plate names, you could define a group called 
+            For example, if you wanted to be able to group your data by unique plate names, you could define a group called
             <i>SQL_Plate</i> as follows:<br>
             <code>group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate FROM Per_Image</code></p>
-            <p>Grouping is useful, for example, when you want to aggregate counts for each class of object and their scores 
-            on a per-group basis (e.g., per-well) instead of on a per-image basis when scoring with Classifier. It will 
-            also provide new options in the Classifier fetch menu so you can fetch objects from images with specific 
+            <p>Grouping is useful, for example, when you want to aggregate counts for each class of object and their scores
+            on a per-group basis (e.g., per-well) instead of on a per-image basis when scoring with Classifier. It will
+            also provide new options in the Classifier fetch menu so you can fetch objects from images with specific
             values for the group columns.</p>"""%globals())
-        
+
         self.group_field_groups = []
         self.group_field_count = cps.HiddenCount(self.group_field_groups,"Properties group field count")
         self.add_group_field_group(False)
         self.add_group_field_button = cps.DoSomething("", "Add another group",
                                            self.add_group_field_group)
-        
+
         self.properties_wants_filters = cps.Binary(
-            "Do you want to add filter fields?", False,doc = 
+            "Do you want to add filter fields?", False,doc =
             """<i>(Used only if creating a properties file)</i><br>
-            Select <i>%(YES)s</i> to specify a subset of the images in your experiment by defining a <i>filter</i>. 
-            Filters are useful, for example, for fetching and scoring objects in Classifier or making graphs using the 
+            Select <i>%(YES)s</i> to specify a subset of the images in your experiment by defining a <i>filter</i>.
+            Filters are useful, for example, for fetching and scoring objects in Classifier or making graphs using the
             plotting tools that satisfy a specific metadata contraint. """%globals())
-        
+
         self.create_filters_for_plates = cps.Binary(
             "Automatically create a filter for each plate?",False, doc= """
             <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
             If you have specified a plate metadata tag, selecting <i>%(YES)s</i> to create a set of filters
             in the properties file, one for each plate."""%globals())
-        
+
         self.filter_field_groups = []
         self.filter_field_count = cps.HiddenCount(self.filter_field_groups,"Properties filter field count")
         self.add_filter_field_button = cps.DoSomething("", "Add another filter",
                                            self.add_filter_field_group)
-        
+
         self.properties_class_table_name = cps.Text(
             "Enter a phenotype class table name if using the classifier tool",
             '', doc = """
@@ -607,69 +607,69 @@ class ExportToDatabase(cpm.CPModule):
             If you are using the machine-learning tool in CellProfiler Analyst,
             you can create an additional table in your database  which contains
             the per-object phenotype labels. This table is produced after scoring
-            all the objects in your data set and will be named with the label given here. 
-            Note that the actual class table will be named by prepending the table prefix 
+            all the objects in your data set and will be named with the label given here.
+            Note that the actual class table will be named by prepending the table prefix
             (if any) to what you enter here.
             <p>You can manually change this choice in the properties file by
-            edting the <i>class_table</i> field. Leave this field blank if you are 
+            edting the <i>class_table</i> field. Leave this field blank if you are
             not using the classifier or do not need the table written to the database</p>.""")
-        
+
         self.properties_classification_type = cps.Choice(
             "Select the classification type",
             CLASSIFIER_TYPE, doc="""
             <i>(Used only if creating a properties file)</i><br>
-            Choose the type of classification this properties file will be used for. This 
+            Choose the type of classification this properties file will be used for. This
             setting will create and set a field called <i>classification_type</i>.
             Note that if you are not using the classifier tool, this setting will be ignored.
             <ul>
             <li><i>%(CT_OBJECT)s:</i> Object-based classification, i.e., set <i>classification_type</i>
             to "object" (or leave it blank).</li>
-            <li><i>%(CT_IMAGE)s:</i> Image-based classification, e.g., set <i>classification_type</i> 
+            <li><i>%(CT_IMAGE)s:</i> Image-based classification, e.g., set <i>classification_type</i>
             to "image".</li>
             </ul>
             You can manually change this choice in the properties file by
             edting the <i>classification_type</i> field.
             """%globals())
-        
+
         self.create_workspace_file = cps.Binary(
             "Create a CellProfiler Analyst workspace file?", False, doc = """
-            Select <i>%(YES)s</i> to generate a workspace file for use with 
-            CellProfiler Analyst, a data exploration tool which can 
+            Select <i>%(YES)s</i> to generate a workspace file for use with
+            CellProfiler Analyst, a data exploration tool which can
             also be downloaded from <a href="http://www.cellprofiler.org/">
-            http://www.cellprofiler.org/</a>. A workspace file allows you 
+            http://www.cellprofiler.org/</a>. A workspace file allows you
             to open a selected set of measurements with the display tools
             of your choice. This is useful, for example, if you want examine a standard
             set of quality control image measurements for outliers."""%globals())
-        
+
         self.divider = cps.Divider(line=True)
         self.divider_props = cps.Divider(line=True)
         self.divider_props_wkspace = cps.Divider(line=True)
         self.divider_wkspace = cps.Divider(line=True)
-        
+
         self.workspace_measurement_groups = []
         self.workspace_measurement_count = cps.HiddenCount(self.workspace_measurement_groups, "Workspace measurement count")
-        
+
         def add_workspace_measurement_group(can_remove = True):
             self.add_workspace_measurement_group(can_remove)
-            
+
         add_workspace_measurement_group(False)
         self.add_workspace_measurement_button = cps.DoSomething("", "Add another measurement", self.add_workspace_measurement_group)
-        
-        self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False, 
+
+        self.mysql_not_available = cps.Divider("Cannot write to MySQL directly - CSV file output only", line=False,
             doc= """The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""")
-        
+
         self.db_host = cps.Text("Database host", "")
-        
+
         self.db_user = cps.Text("Username", "")
-        
+
         self.db_passwd = cps.Text("Password", "")
-        
+
         self.sqlite_file = cps.Text(
-            "Name the SQLite database file", 
+            "Name the SQLite database file",
             "DefaultDB.db", doc = """
             <i>(Used if SQLite selected as database type)</i><br>
             Enter the name of the SQLite database filename to which you want to write.""")
-        
+
         self.wants_agg_mean = cps.Binary(
             "Calculate the per-image mean values of object measurements?", True, doc = """
             Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate population statistics over all the objects in each image
@@ -680,92 +680,92 @@ class ExportToDatabase(cpm.CPModule):
             a large number of per-object measurements; doing so might exceed database
             column limits. These columns can be created manually for selected measurements directly in MySQL.
             For instance, the following SQL command creates the Mean_Nuclei_AreaShape_Area column:
-            
+
                 <p><tt>ALTER TABLE Per_Image ADD (Mean_Nuclei_AreaShape_Area);
-                UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area = 
+                UPDATE Per_Image SET Mean_Nuclei_AreaShape_Area =
                     (SELECT AVG(Nuclei_AreaShape_Area)
                      FROM Per_Object
                      WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);</tt>"""%globals())
-        
+
         self.wants_agg_median = cps.Binary("Calculate the per-image median values of object measurements?", False)
         self.wants_agg_std_dev = cps.Binary("Calculate the per-image standard deviation values of object measurements?", False)
-        
+
         self.wants_agg_mean_well = cps.Binary(
             "Calculate the per-well mean values of object measurements?", False, doc = '''
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well 
-            and store the results as columns in a "per-well" table in the database. For instance, 
+            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
+            and store the results as columns in a "per-well" table in the database. For instance,
             if you are measuring the area of the Nuclei objects and you check the aggregate
             mean box in this module, <b>ExportToDatabase</b> will create a table in the database called
-            "Per_Well_avg", with a column called "Mean_Nuclei_AreaShape_Area". Selecting all three 
+            "Per_Well_avg", with a column called "Mean_Nuclei_AreaShape_Area". Selecting all three
             aggregate measurements will create three per-well tables, one for each of the measurements.
 
-            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be 
-            run on your Per-Image and Per-Object tables to create the desired per-well table. 
-            <p><i>Note:</i> this option is only available if you have extracted plate and well metadata 
+            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be
+            run on your Per-Image and Per-Object tables to create the desired per-well table.
+            <p><i>Note:</i> this option is only available if you have extracted plate and well metadata
             from the filename using the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
             table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s'''%globals())
-        
+
         self.wants_agg_median_well = cps.Binary(
             "Calculate the per-well median values of object measurements?", False, doc = '''
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well 
-            and store the results as columns in a "per-well" table in the database. For instance, 
+            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
+            and store the results as columns in a "per-well" table in the database. For instance,
             if you are measuring the area of the Nuclei objects and you check the aggregate
             median box in this module, <b>ExportToDatabase</b> will create a table in the database called
-            "Per_Well_median", with a column called "Median_Nuclei_AreaShape_Area". Selecting all 
+            "Per_Well_median", with a column called "Median_Nuclei_AreaShape_Area". Selecting all
             three aggregate measurements will create three per-well tables, one for each of the measurements.
 
-            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your 
-            Per-Image and Per-Object tables to create the desired per-well table. 
+            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your
+            Per-Image and Per-Object tables to create the desired per-well table.
             <p><i>Note:</i> this option is only
-            available if you have extracted plate and well metadata from the filename using 
+            available if you have extracted plate and well metadata from the filename using
             the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
             table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s'''%globals())
-        
+
         self.wants_agg_std_dev_well = cps.Binary(
             "Calculate the per-well standard deviation values of object measurements?", False, doc = '''
-            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well 
-            and store the results as columns in a "per-well" table in the database. For instance, 
+            Select <i>%(YES)s</i> for <b>ExportToDatabase</b> to calculate statistics over all the objects in each well
+            and store the results as columns in a "per-well" table in the database. For instance,
             if you are measuring the area of the Nuclei objects and you check the aggregate
             standard deviation box in this module, <b>ExportToDatabase</b> will create a table in the database called
-            "Per_Well_std", with a column called "Mean_Nuclei_AreaShape_Area".  Selecting all 
+            "Per_Well_std", with a column called "Mean_Nuclei_AreaShape_Area".  Selecting all
             three aggregate measurements will create three per-well tables, one for each of the measurements.
-            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your 
-            Per-Image and Per-Object tables to create the desired per-well table. 
+            <p>The per-well functionality will create the appropriate lines in a .SQL file, which can be run on your
+            Per-Image and Per-Object tables to create the desired per-well table.
             <p><i>Note:</i> this option is only
-            available if you have extracted plate and well metadata from the filename 
+            available if you have extracted plate and well metadata from the filename
             using the <b>Metadata</b> or <b>LoadData</b> modules.
             It will write out a .sql file with the statements necessary to create the Per_Well
             table, regardless of the option chosen above. %(USING_METADATA_HELP_REF)s'''%globals())
-        
+
         self.objects_choice = cps.Choice(
             "Export measurements for all objects to the database?",
             [O_ALL, O_NONE, O_SELECT], doc = """
-            This option lets you choose the objects whose measurements will be saved in the Per_Object and 
+            This option lets you choose the objects whose measurements will be saved in the Per_Object and
             Per_Well(s) database tables.
             <ul>
             <li><i>%(O_ALL)s:</i> Export measurements from all objects.</li>
-            <li><i>%(O_NONE)s:</i> Do not export data to a Per_Object table. Save only Per_Image or Per_Well 
+            <li><i>%(O_NONE)s:</i> Do not export data to a Per_Object table. Save only Per_Image or Per_Well
             measurements (which nonetheless include population statistics from objects).</li>
             <li><i>%(O_SELECT)s:</i> Select the objects you want to export from a list.</li>
             </ul>"""%globals())
-        
+
         self.objects_list = cps.ObjectSubscriberMultiChoice(
             "Select the objects", doc = """
             <i>(Used only if Select is chosen for adding objects)</i><br>
-            Choose one or more objects from this list (click using shift or command keys to select 
+            Choose one or more objects from this list (click using shift or command keys to select
             multiple objects). The list includes
             the objects that were created by prior modules. If you choose an
             object, its measurements will be written out to the Per_Object and/or
             Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
-        
+
         self.wants_relationship_table_setting = cps.Binary(
             "Export object relationships?", True, doc = """
             <i>(Used only for pipelines which relate objects to each other)</i><br>
             Select <i>%(YES)s</i> to export object relationships to the
-            RelationshipsView view. Only certain modules produce 
-            relationships that can be exported by this setting; see  
+            RelationshipsView view. Only certain modules produce
+            relationships that can be exported by this setting; see
             the <b>TrackObjects</b>, <b>RelateObjects</b>,
             <b>MeasureObjectNeighbors</b> and the <b>Identify</b> modules
             for more details.
@@ -773,9 +773,9 @@ class ExportToDatabase(cpm.CPModule):
             <ul><li><i>%(COL_MODULE_NUMBER)s</i>: the module number of the
             module that produced the relationship. The first module in the
             pipeline is module #1, etc.</li>
-            <li><i>%(COL_RELATIONSHIP)s</i>: the relationship between the two 
+            <li><i>%(COL_RELATIONSHIP)s</i>: the relationship between the two
             objects, for instance, "Parent".</li>
-            <li><i>%(COL_OBJECT_NAME1)s, %(COL_OBJECT_NAME2)s</i>: 
+            <li><i>%(COL_OBJECT_NAME1)s, %(COL_OBJECT_NAME2)s</i>:
             the names of the two objects being related.</li>
             <li><i>%(COL_IMAGE_NUMBER1)s, %(COL_OBJECT_NUMBER1)s</i>:
             the image number and object number of the first object in the
@@ -785,9 +785,9 @@ class ExportToDatabase(cpm.CPModule):
             relationship</li>
             </ul>
             </p>""" % globals())
-        
+
         self.max_column_size = cps.Integer(
-            "Maximum # of characters in a column name", 64, 
+            "Maximum # of characters in a column name", 64,
             minval = 10, maxval = 64,doc="""
             This setting limits the number of characters that can appear
             in the name of a field in the database. MySQL has a limit of 64
@@ -795,7 +795,7 @@ class ExportToDatabase(cpm.CPModule):
             in all of the columns of a table. <b>ExportToDatabase</b> will
             shorten all of the column names by removing characters, at the
             same time guaranteeing that no two columns have the same name.""")
-        
+
         self.separate_object_tables = cps.Choice(
             "Create one table per object, a single object table or a single object view?",
             [OT_COMBINE, OT_PER_OBJECT, OT_VIEW],doc = """
@@ -808,7 +808,7 @@ class ExportToDatabase(cpm.CPModule):
             of your objects. You can write SQL queries that join tables using
             the "Number_ObjectNumber" columns of parent objects (such as those
             created by <b>IdentifyPrimaryObjects</b>) with the corresponding
-            "Parent_... column" of the child objects. Choose 
+            "Parent_... column" of the child objects. Choose
             <i>%(OT_PER_OBJECT)s</i> if parent objects can have more than
             one child object, if you want a relational representation of
             your objects in the database,
@@ -837,7 +837,7 @@ class ExportToDatabase(cpm.CPModule):
             not related in this way.
             </li>
             </ul>""" % globals())
-        
+
         self.want_image_thumbnails = cps.Binary(
             "Write image thumbnails directly to the database?", False, doc = """
             <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type)</i><br>
@@ -845,27 +845,27 @@ class ExportToDatabase(cpm.CPModule):
             into the database. This will slow down the writing step, but will
             enable new functionality in CellProfiler Analyst such as quickly
             viewing images in the Plate Viewer tool by selecting "thumbnail"
-            from the "Well display" dropdown."""%globals()) 
-        
+            from the "Well display" dropdown."""%globals())
+
         self.thumbnail_image_names = cps.ImageNameSubscriberMultiChoice(
             "Select the images for which you want to save thumbnails", doc = """
-            <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type 
+            <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type
             and writing thumbnails is selected)</i><br>
-            Select the images that you wish to save as thumbnails to 
-            the database. Make multiple selections by using Ctrl-Click (Windows) 
+            Select the images that you wish to save as thumbnails to
+            the database. Make multiple selections by using Ctrl-Click (Windows)
             or Command-Click (Mac); """ %globals())
-        
+
         self.auto_scale_thumbnail_intensities = cps.Binary(
             "Auto-scale thumbnail pixel intensities?", True,
             doc = """
-            <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type 
+            <i>(Used only if %(DB_MYSQL)s or %(DB_SQLITE)s are selected as database type
             and writing thumbnails is selected)</i><br>
-            Select <i>%(YES)s</i> if you'd like to automatically rescale 
-            the thumbnail pixel intensities to the range 0-1, where 0 is 
+            Select <i>%(YES)s</i> if you'd like to automatically rescale
+            the thumbnail pixel intensities to the range 0-1, where 0 is
             black/unsaturated, and 1 is white/saturated."""%globals())
-        
+
         self.allow_overwrite = cps.Choice(
-            "Overwrite without warning?", 
+            "Overwrite without warning?",
             [OVERWRITE_NEVER, OVERWRITE_DATA, OVERWRITE_ALL],
             doc = """
             <b>ExportToDatabase</b> creates tables and databases at the start
@@ -896,12 +896,12 @@ class ExportToDatabase(cpm.CPModule):
             file will use the existing tables without trying to recreate them.</li>
             </ul>
             """%globals())
-        
+
     def add_image_group(self,can_remove = True):
         group = cps.SettingsGroup()
-        
+
         group.can_remove = can_remove
-        
+
         group.append(
             "image_cols", cps.Choice(
                 "Select an image to include",[cps.NONE],
@@ -914,12 +914,12 @@ class ExportToDatabase(cpm.CPModule):
                 <li>Saved with the <b>SaveImages</b> module, with the corresponding file and path information stored.</li>
                 </ul>
                 If you do not see your desired image listed, check the settings on these modules.</p>"""))
-        
+
         group.append(
             "wants_automatic_image_name", cps.Binary(
                 "Use the image name for the display?", True, doc=
                 """<i>(Used only if creating a properties file and specifiying the image information)</i><br>
-                Select <i>%(YES)s</i> to use the image name as given above for the displayed name. 
+                Select <i>%(YES)s</i> to use the image name as given above for the displayed name.
                 <p>Select <i>%(NO)s</i> to name the file yourself.</p>"""%globals()))
 
         group.append(
@@ -927,23 +927,23 @@ class ExportToDatabase(cpm.CPModule):
                 "Image name", "Channel%d"%(len(self.image_groups)+1), doc=
                 """<i>(Used only if creating a properties file, specifiying the image information and naming the image)</i><br>
                 Enter a name for the specified image"""))
-        
+
         default_color = (COLOR_ORDER[len(self.image_groups)]
                      if len(self.image_groups) < len(COLOR_ORDER)
                      else COLOR_ORDER[0])
-        
+
         group.append(
             "image_channel_colors", cps.Choice(
                 "Channel color", COLOR_ORDER, default_color, doc="""
                 <i>(Used only if creating a properties file and specifiying the image information)</i><br>
                 Enter a color to display this channel."""))
-        
+
         group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
-        
+
         group.append("divider", cps.Divider(line=False))
-        
+
         self.image_groups.append(group)
-                             
+
     def add_group_field_group(self,can_remove = True):
         group = cps.SettingsGroup()
         group.can_remove = can_remove
@@ -958,30 +958,30 @@ class ExportToDatabase(cpm.CPModule):
             <i>(Used only if creating a properties file and specifiying an image data group)</i><br>
             To define a group, enter the image key columns followed by group key columns, each separated by commas.
             <p>In CellProfiler, the image key column is always given the name as <i>ImageNumber</i>; group keys
-            are typically metadata columns which are always prefixed with <i>Image_Metadata_</i>. For example, if you 
-            wanted to be able to group your data by unique plate and well metadata tags, you could define a 
+            are typically metadata columns which are always prefixed with <i>Image_Metadata_</i>. For example, if you
+            wanted to be able to group your data by unique plate and well metadata tags, you could define a
             group with the following MySQL statement:<br>
             <code>group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate, Image_Metadata_Well FROM Per_Image</code><br>
             For this example, the columns to enter in this setting would be:<br>
             <code>ImageNumber, Image_Metadata_Plate, Image_Metadata_Well</code></p>
-            <p>Groups are specified as MySQL statements in the properties file, but please note that the full SELECT and  
+            <p>Groups are specified as MySQL statements in the properties file, but please note that the full SELECT and
             FROM clauses will be added automatically, so there is no need to enter them here.</p>"""))
         group.append("remover", cps.RemoveSettingButton("", "Remove this group", self.group_field_groups, group))
         group.append("divider", cps.Divider(line=True))
-        
+
         self.group_field_groups.append(group)
-        
+
     def add_filter_field_group(self,can_remove = True):
         group = cps.SettingsGroup()
-        
+
         group.can_remove = can_remove
-        
+
         group.append(
             "filter_name",cps.Text(
             "Enter the name of the filter",'',doc="""
             <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
             Enter a name for the filter. Only alphanumeric characters and underscores are permitted."""))
-        
+
         group.append(
             "filter_statement", cps.Text(
             "Enter the MySQL WHERE clause to define a filter",'',doc="""
@@ -991,27 +991,27 @@ class ExportToDatabase(cpm.CPModule):
             <code>Image_Metadata_Plate = '1'</code><br>
             Here is a filter returns only images from with a gene column that starts with CDK:
             <code>Image_Metadata_Gene REGEXP 'CDK.*'</code><br>
-            <p>Filters are specified as MySQL statements in the properties file, but please note that the full SELECT and  
+            <p>Filters are specified as MySQL statements in the properties file, but please note that the full SELECT and
             FROM clauses (as well as the WHERE keyword) will be added automatically, so there is no need to enter them here.</p>"""))
         group.append("remover", cps.RemoveSettingButton("", "Remove this filter", self.filter_field_groups, group))
         group.append("divider", cps.Divider(line=True))
-        
+
         self.filter_field_groups.append(group)
-        
+
     def add_workspace_measurement_group(self, can_remove = True):
         group = cps.SettingsGroup()
         self.workspace_measurement_groups.append(group)
-        
+
         group.can_remove = can_remove
-        
+
         group.append("divider", cps.Divider(line=False))
-        
+
         group.append(
             "measurement_display", cps.Choice(
             "Select the measurement display tool",
             W_DISPLAY_ALL, doc="""
             <i>(Used only if creating a workspace file)</i><br>
-            Select what display tool in CPA you want to use to open the 
+            Select what display tool in CPA you want to use to open the
             measurements.
             <ul>
             <li>%(W_SCATTERPLOT)s</li>
@@ -1020,50 +1020,50 @@ class ExportToDatabase(cpm.CPModule):
             <li>%(W_PLATEVIEWER)s</li>
             <li>%(W_BOXPLOT)s</li>
             </ul>"""%globals()))
-        
+
         def measurement_type_help():
             return """
                 <i>(Used only if creating a workspace file)</i><br>
                 You can plot two types of measurements:
                 <ul>
-                <li><i>Image:</i> For a per-image measurement, one numerical value is 
+                <li><i>Image:</i> For a per-image measurement, one numerical value is
                 recorded for each image analyzed.
                 Per-image measurements are produced by
                 many modules. Many have <b>MeasureImage</b> in the name but others do not
-                (e.g., the number of objects in each image is a per-image 
-                measurement made by <b>IdentifyObject</b> 
+                (e.g., the number of objects in each image is a per-image
+                measurement made by <b>IdentifyObject</b>
                 modules).</li>
-                <li><i>Object:</i> For a per-object measurement, each identified 
-                object is measured, so there may be none or many 
+                <li><i>Object:</i> For a per-object measurement, each identified
+                object is measured, so there may be none or many
                 numerical values recorded for each image analyzed. These are usually produced by
                 modules with <b>MeasureObject</b> in the name.</li>
                 </ul>"""%globals()
-        
+
         def object_name_help():
             return """<i>(Used only if creating a workspace file)</i><br>
                 Select the object that you want to measure from the list.
                 This should be an object created by a previous module such as
                 <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
                 <b>IdentifyTertiaryObjects</b>."""
-            
+
         def measurement_name_help():
             return """<i>(Used only if creating a workspace file)</i><br>
             Select the measurement to be plotted on the desired axis."""
-        
+
         def index_name_help():
             return """<i>(Used only if creating a workspace file and an index is plotted)</i><br>
             Select the index to be plot on the selected axis. Two options are available:
             <ul>
-            <li><i>%(C_IMAGE_NUMBER)s:</i> In CellProfiler, the unique identifier for each image 
+            <li><i>%(C_IMAGE_NUMBER)s:</i> In CellProfiler, the unique identifier for each image
             is always given this name. Selecting this option allows you to plot a single measurement
             for each image indexed by the order it was processed.</li>
             <li><i>%(GROUP_INDEX)s:</i> This identifier is used in cases where grouping is applied.
             Each image in a group is given an index indicating the order it was processed. Selecting
-            this option allows you to plot a set of measurements grouped by a common index. 
+            this option allows you to plot a set of measurements grouped by a common index.
             %(USING_METADATA_GROUPING_HELP_REF)s
             </li>
             </ul>"""%globals()
-            
+
         group.append(
             "x_measurement_type", cps.Choice(
             "Type of measurement to plot on the X-axis",
@@ -1073,7 +1073,7 @@ class ExportToDatabase(cpm.CPModule):
             "x_object_name", cps.ObjectNameSubscriber(
             "Enter the object name",cps.NONE,
             doc = object_name_help()))
-        
+
         def object_fn_x():
             if group.x_measurement_type.value in ( cpmeas.IMAGE, cpmeas.EXPERIMENT ):
                 return group.x_measurement_type.value
@@ -1082,17 +1082,17 @@ class ExportToDatabase(cpm.CPModule):
             else:
                 raise NotImplementedError("Measurement type %s is not supported"%
                                               group.x_measurement_type.value)
-                
+
         group.append(
             "x_measurement_name", cps.Measurement(
             "Select the X-axis measurement", object_fn_x,
             doc = measurement_name_help()))
-        
+
         group.append(
             "x_index_name", cps.Choice(
             "Select the X-axis index", W_INDEX_ALL,
             doc = index_name_help()))
-    
+
         group.append(
             "y_measurement_type", cps.Choice(
             "Type of measurement to plot on the Y-axis",
@@ -1102,7 +1102,7 @@ class ExportToDatabase(cpm.CPModule):
             "y_object_name", cps.ObjectNameSubscriber(
             "Enter the object name",cps.NONE,
             doc=object_name_help()))
-        
+
         def object_fn_y():
             if group.y_measurement_type.value == cpmeas.IMAGE:
                 return cpmeas.IMAGE
@@ -1111,21 +1111,21 @@ class ExportToDatabase(cpm.CPModule):
             else:
                 raise NotImplementedError("Measurement type %s is not supported"%
                                               group.y_measurement_type.value)
-            
+
         group.append(
             "y_measurement_name", cps.Measurement(
-            "Select the Y-axis measurement", object_fn_y, 
+            "Select the Y-axis measurement", object_fn_y,
             doc = measurement_name_help()))
-        
+
         group.append(
             "y_index_name", cps.Choice(
             "Select the Y-axis index", W_INDEX_ALL,
             doc = index_name_help()))
-        
+
         if can_remove:
             group.append("remove_button", cps.RemoveSettingButton(
                 "", "Remove this measurement", self.workspace_measurement_groups, group))
-            
+
     def get_metadata_choices(self,pipeline):
         columns = pipeline.get_measurement_columns()
         choices = ["None"]
@@ -1136,7 +1136,7 @@ class ExportToDatabase(cpm.CPModule):
                 feature.startswith(cpmeas.C_METADATA)):
                 choices.append(choice)
         return choices
-    
+
     def get_property_file_image_choices(self,pipeline):
         columns = pipeline.get_measurement_columns()
         image_names = []
@@ -1146,7 +1146,7 @@ class ExportToDatabase(cpm.CPModule):
             if (object_name == cpmeas.IMAGE and (feature.startswith(C_FILE_NAME))):
                 image_names.append(choice)
         return image_names
-    
+
     def prepare_settings(self, setting_values):
         # These check the groupings of settings avilable in properties and workspace file creation
         for count, sequence, fn in\
@@ -1157,7 +1157,7 @@ class ExportToDatabase(cpm.CPModule):
             del sequence[count:]
             while len(sequence) < count:
                 fn()
-            
+
     def visible_settings(self):
         needs_default_output_directory =\
             (self.db_type != DB_MYSQL or
@@ -1203,15 +1203,15 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.divider_props] # Put divider here to make things easier to read
         result += [self.save_cpa_properties]
         if self.save_cpa_properties.value:
-            if (self.objects_choice != O_NONE and 
+            if (self.objects_choice != O_NONE and
                 (self.separate_object_tables == OT_COMBINE or self.separate_object_tables == OT_VIEW)):
                 result += [self.location_object]
             result += [self.wants_properties_image_url_prepend]
             if self.wants_properties_image_url_prepend:
                 result += [self.properties_image_url_prepend]
             result += [
-                self.properties_plate_type, self.properties_plate_metadata, 
-                self.properties_well_metadata, 
+                self.properties_plate_type, self.properties_plate_metadata,
+                self.properties_well_metadata,
                 self.properties_export_all_image_defaults]
             if not self.properties_export_all_image_defaults:
                 for group in self.image_groups:
@@ -1242,13 +1242,13 @@ class ExportToDatabase(cpm.CPModule):
                         result += [group.remover]
                     result += [group.divider]
                 result += [ self.add_filter_field_button ]
-                
+
             result += [self.properties_classification_type]
             result += [self.properties_class_table_name]
-        
+
         if self.save_cpa_properties.value or self.create_workspace_file.value : # Put divider here to make things easier to read
-            result += [self.divider_props_wkspace] 
-            
+            result += [self.divider_props_wkspace]
+
         result += [self.create_workspace_file]
         if self.create_workspace_file:
             for workspace_group in self.workspace_measurement_groups:
@@ -1258,11 +1258,11 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.add_workspace_measurement_button]
 
         if self.create_workspace_file.value: # Put divider here to make things easier to read
-            result += [self.divider_wkspace] 
-            
+            result += [self.divider_wkspace]
+
         if needs_default_output_directory:
             result += [self.directory]
-            
+
         # # # # # # # # # # # # # # # # # #
         #
         # Aggregations
@@ -1272,7 +1272,7 @@ class ExportToDatabase(cpm.CPModule):
                    self.wants_agg_std_dev]
         if self.db_type != DB_SQLITE:
             # We don't write per-well tables to SQLite yet.
-            result += [self.wants_agg_mean_well, self.wants_agg_median_well, 
+            result += [self.wants_agg_mean_well, self.wants_agg_median_well,
                        self.wants_agg_std_dev_well]
         # # # # # # # # # # # # # # # # # #
         #
@@ -1291,15 +1291,15 @@ class ExportToDatabase(cpm.CPModule):
         # Misc (column size + image thumbnails)
         #
         # # # # # # # # # # # # # # # # # #
-        
+
         result += [self.max_column_size]
         if self.db_type in (DB_MYSQL, DB_MYSQL_CSV, DB_SQLITE):
             result += [self.want_image_thumbnails]
             if self.want_image_thumbnails:
-                result += [self.thumbnail_image_names, 
+                result += [self.thumbnail_image_names,
                            self.auto_scale_thumbnail_intensities]
         return result
-    
+
     def workspace_visible_settings(self, workspace_group):
         result = []
         if workspace_group.can_remove:
@@ -1321,35 +1321,35 @@ class ExportToDatabase(cpm.CPModule):
             else:
                 result += [workspace_group.y_measurement_name]
         return result
-    
+
     def settings(self):
         result = [self.db_type, self.db_name, self.want_table_prefix,
-                self.table_prefix, self.sql_file_prefix, 
+                self.table_prefix, self.sql_file_prefix,
                 self.directory,
-                self.save_cpa_properties, 
+                self.save_cpa_properties,
                 self.db_host, self.db_user, self.db_passwd, self.sqlite_file,
                 self.wants_agg_mean, self.wants_agg_median,
-                self.wants_agg_std_dev, self.wants_agg_mean_well, 
+                self.wants_agg_std_dev, self.wants_agg_mean_well,
                 self.wants_agg_median_well, self.wants_agg_std_dev_well,
                 self.objects_choice, self.objects_list, self.max_column_size,
-                self.separate_object_tables, self.properties_image_url_prepend, 
-                self.want_image_thumbnails,self.thumbnail_image_names, 
+                self.separate_object_tables, self.properties_image_url_prepend,
+                self.want_image_thumbnails,self.thumbnail_image_names,
                 self.auto_scale_thumbnail_intensities,self.properties_plate_type,
-                self.properties_plate_metadata, self.properties_well_metadata, 
+                self.properties_plate_metadata, self.properties_well_metadata,
                 self.properties_export_all_image_defaults,
                 self.image_group_count, self.group_field_count, self.filter_field_count,
-                self.workspace_measurement_count, self.experiment_name, 
+                self.workspace_measurement_count, self.experiment_name,
                 self.location_object, self.properties_class_table_name,
                 self.wants_relationship_table_setting, self.allow_overwrite,
                 self.wants_properties_image_url_prepend,
                 self.properties_classification_type]
-        
+
         # Properties: Image groups
         for group in self.image_groups:
             result += [group.image_cols, group.wants_automatic_image_name, group.image_name,
                        group.image_channel_colors]
         result += [self.properties_wants_groups]
-        
+
         # Properties: Grouping fields
         for group in self.group_field_groups:
             result += [group.group_name, group.group_statement]
@@ -1358,45 +1358,45 @@ class ExportToDatabase(cpm.CPModule):
         result += [self.properties_wants_filters, self.create_filters_for_plates]
         for group in self.filter_field_groups:
             result += [group.filter_name, group.filter_statement]
-        
+
         # Workspace settings
         result += [ self.create_workspace_file ]
         for group in self.workspace_measurement_groups:
-            result += [ group.measurement_display, 
+            result += [ group.measurement_display,
                         group.x_measurement_type, group.x_object_name, group.x_measurement_name, group.x_index_name,
                         group.y_measurement_type, group.y_object_name, group.y_measurement_name, group.y_index_name]
-        
+
         return result
-    
+
     def help_settings(self):
-        return [self.db_type, self.experiment_name, 
-                self.db_name, self.db_host, self.db_user, self.db_passwd, 
-                self.sql_file_prefix, self.sqlite_file, 
+        return [self.db_type, self.experiment_name,
+                self.db_name, self.db_host, self.db_user, self.db_passwd,
+                self.sql_file_prefix, self.sqlite_file,
                 self.allow_overwrite,
-                self.want_table_prefix, self.table_prefix, 
-                self.save_cpa_properties, self.location_object, 
+                self.want_table_prefix, self.table_prefix,
+                self.save_cpa_properties, self.location_object,
                 self.wants_properties_image_url_prepend,
-                self.properties_image_url_prepend, 
+                self.properties_image_url_prepend,
                 self.properties_plate_type, self.properties_plate_metadata, self.properties_well_metadata,
                 self.properties_export_all_image_defaults,
                 self.image_groups[0].image_cols, self.image_groups[0].wants_automatic_image_name, self.image_groups[0].image_name,
                 self.image_groups[0].image_channel_colors,
-                self.properties_wants_groups, 
+                self.properties_wants_groups,
                 self.group_field_groups[0].group_name, self.group_field_groups[0].group_statement,
                 self.properties_wants_filters, self.create_filters_for_plates,
                 self.properties_class_table_name,
                 self.directory,
-                self.create_workspace_file, 
-                self.workspace_measurement_groups[0].measurement_display, 
-                self.workspace_measurement_groups[0].x_measurement_type, self.workspace_measurement_groups[0].x_object_name, self.workspace_measurement_groups[0].x_measurement_name, 
+                self.create_workspace_file,
+                self.workspace_measurement_groups[0].measurement_display,
+                self.workspace_measurement_groups[0].x_measurement_type, self.workspace_measurement_groups[0].x_object_name, self.workspace_measurement_groups[0].x_measurement_name,
                 self.workspace_measurement_groups[0].y_measurement_type, self.workspace_measurement_groups[0].y_object_name, self.workspace_measurement_groups[0].y_measurement_name,
-                self.wants_agg_mean, self.wants_agg_median, self.wants_agg_std_dev, 
+                self.wants_agg_mean, self.wants_agg_median, self.wants_agg_std_dev,
                 self.wants_agg_mean_well, self.wants_agg_median_well, self.wants_agg_std_dev_well,
                 self.objects_choice, self.objects_list,
                 self.separate_object_tables,
                 self.max_column_size,
                 self.want_image_thumbnails,self.thumbnail_image_names, self.auto_scale_thumbnail_intensities]
-    
+
     def validate_module(self,pipeline):
         if self.want_table_prefix.value:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$",self.table_prefix.value):
@@ -1417,12 +1417,12 @@ class ExportToDatabase(cpm.CPModule):
         else:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.sql_file_prefix.value):
                 raise cps.ValidationError("Invalid SQL file prefix", self.sql_file_prefix)
-        
+
         if self.objects_choice == O_SELECT:
             self.objects_list.load_choices(pipeline)
             if len(self.objects_list.choices) == 0:
                 raise cps.ValidationError("Please choose at least one object", self.objects_choice)
-            
+
         if self.save_cpa_properties:
             if self.properties_plate_metadata == NONE_CHOICE and (self.properties_wants_filters.value and self.create_filters_for_plates.value):
                 raise cps.ValidationError("You must specify the plate metadata",self.create_filters_for_plates)
@@ -1430,9 +1430,9 @@ class ExportToDatabase(cpm.CPModule):
         if self.want_image_thumbnails:
             if not self.thumbnail_image_names.get_selections():
                 raise cps.ValidationError("Please choose at least one image", self.thumbnail_image_names)
-            
+
         if self.want_table_prefix:
-            max_char = 64   
+            max_char = 64
             table_name_lengths = [len(self.table_prefix.value + "Per_Image")]
             table_name_lengths += [len(self.table_prefix.value + "Per_Object")] if self.objects_choice != O_NONE and self.separate_object_tables.value in (OT_COMBINE, OT_VIEW) else []
             table_name_lengths += [len(self.table_prefix.value+"Per_"+x) for x in (self.objects_list.value).split(',')] if self.objects_choice != O_NONE and self.separate_object_tables == OT_PER_OBJECT else []
@@ -1440,14 +1440,14 @@ class ExportToDatabase(cpm.CPModule):
                 msg = "A table name exceeds the %d character allowed by MySQL.\n"%max_char
                 msg += "Please shorten the prefix if using a single object table,\n"
                 msg += "and/or the object name if using separate tables."
-                raise cps.ValidationError(msg,self.table_prefix)            
-            
+                raise cps.ValidationError(msg,self.table_prefix)
+
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
         if pipeline.test_mode:
             raise cps.ValidationError("ExportToDatabase does not produce output in Test Mode",
                                       self.db_type)
-        
+
         # Warn user if using SQLLite and CreateBatchFiles
         if self.db_type == DB_SQLITE and pipeline.has_create_batch_module():
             raise cps.ValidationError(
@@ -1457,7 +1457,7 @@ class ExportToDatabase(cpm.CPModule):
             "of CellProfiler if you choose to output a MySQL database.\n"
             "ExportToDatabase will work in multiprocessing mode using a\n"
             "SQLite database.", self.db_type)
-        
+
         '''Warn user that they will have to merge tables to use CPA'''
         if self.objects_choice != O_NONE and self.separate_object_tables == OT_PER_OBJECT:
             raise cps.ValidationError(
@@ -1465,18 +1465,18 @@ class ExportToDatabase(cpm.CPModule):
                  "to use CellProfiler Analyst fully, or you will be restricted\n"
                  "to only one object's data at a time in CPA. Choose\n"
                  "%s to write a single object table.") % ("'%s' or '%s'"%(OT_COMBINE,OT_VIEW)), self.separate_object_tables)
-                
+
         '''Warn user re: bad characters in object used for center, filter/group names and class_table name'''
         if self.save_cpa_properties:
             warning_string = "CellProfiler Analyst will not recogize this %s because it contains invalid characters. Allowable characters are letters, numbers and underscores."
             if not re.match("^[\w]*$",self.location_object.value):
                 raise cps.ValidationError(warning_string%"object",self.location_object)
-            
+
             if self.properties_wants_groups:
                 for group in self.group_field_groups:
                     if not re.match("^[\w]*$",group.group_name.value) or group.group_name.value == '':
                         raise cps.ValidationError(warning_string%"group name",group.group_name)
-            
+
             if self.properties_wants_filters:
                 for group in self.filter_field_groups:
                     if not re.match("^[\w]*$",group.filter_name.value) or group.filter_name.value == '':
@@ -1487,26 +1487,26 @@ class ExportToDatabase(cpm.CPModule):
             if self.properties_class_table_name:
                 if not re.match("^[\w]*$",self.properties_class_table_name.value):
                     raise cps.ValidationError(warning_string%"class table name",self.properties_class_table_name)
-            
+
         '''Warn user re: objects that are not 1:1 (i.e., primary/secondary/tertiary) if creating a view'''
         if self.objects_choice != O_NONE and self.separate_object_tables in (OT_VIEW,OT_COMBINE):
             if self.objects_choice == O_SELECT:
                 selected_objs = self.objects_list.value.rsplit(',')
             elif self.objects_choice == O_ALL:
                 selected_objs = pipeline.get_provider_dictionary(cps.OBJECT_GROUP).keys()
-            
+
             if len(selected_objs) > 1:
                 # Check whether each selected object comes from an Identify module. If it does, look for its parent.
                 d = dict.fromkeys(selected_objs,None)
                 for obj in selected_objs:
-                    for module in pipeline.modules(): 
+                    for module in pipeline.modules():
                         if module.is_object_identification_module():# and module.get_measurements(pipeline,obj,C_PARENT):
                             parent = module.get_measurements(pipeline,obj,C_PARENT)
                             if len(parent) > 0:
-                                d[obj] = parent[0] 
+                                d[obj] = parent[0]
                 # For objects with no parents (primary), use the object itself
                 d = dict(zip(d.keys(),[key if value is None else value for (key,value) in d.items()]))
-                
+
                 # Only those objects which have parents in common should be written together
                 if len(set(d.values())) > 1:
                     # Pick out the parent with the lowest representation in the selected object list
@@ -1517,15 +1517,15 @@ class ExportToDatabase(cpm.CPModule):
                     msg += "You may want to choose another object container"
                     msg += "." if self.objects_choice == O_ALL else " or de-select the object(s)."
                     raise cps.ValidationError(msg,self.separate_object_tables)
-            
+
     def test_connection(self):
         '''Check to make sure the MySQL server is remotely accessible'''
         import wx
-        
+
         error = None
         try:
-            connection = connect_mysql(self.db_host.value, 
-                                        self.db_user.value, 
+            connection = connect_mysql(self.db_host.value,
+                                        self.db_user.value,
                                         self.db_passwd.value,
                                         self.db_name.value)
         except MySQLdb.Error, error:
@@ -1534,19 +1534,19 @@ class ExportToDatabase(cpm.CPModule):
             elif error.args[0] == 1049:
                 msg = "The database does not exist."
             else:
-                msg = "A connection error to the database host was returned: %s"%error.args[1]         
-        
+                msg = "A connection error to the database host was returned: %s"%error.args[1]
+
         if not error:
             wx.MessageBox("Connection to database host successful.")
         else:
             wx.MessageBox("%s. Please check your settings."%msg)
-    
-    def make_full_filename(self, file_name, 
+
+    def make_full_filename(self, file_name,
                            workspace = None, image_set_index = None):
         """Convert a file name into an absolute path
-        
+
         We do a few things here:
-        * apply metadata from an image set to the file name if an 
+        * apply metadata from an image set to the file name if an
           image set is specified
         * change the relative path into an absolute one using the "." and "&"
           convention
@@ -1556,14 +1556,14 @@ class ExportToDatabase(cpm.CPModule):
             file_name = workspace.measurements.apply_metadata(file_name,
                                                               image_set_index)
         measurements = None if workspace is None else workspace.measurements
-        path_name = self.directory.get_absolute_path(measurements, 
+        path_name = self.directory.get_absolute_path(measurements,
                                                      image_set_index)
         file_name = os.path.join(path_name, file_name)
         path, file = os.path.split(file_name)
         if not os.path.isdir(path):
             os.makedirs(path)
         return os.path.join(path,file)
-    
+
     def prepare_run(self, workspace, as_data_tool = False):
         '''Prepare to run the pipeline
         Establish a connection to the database.'''
@@ -1572,15 +1572,15 @@ class ExportToDatabase(cpm.CPModule):
             self.get_dictionary().clear()
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
-        
+
         if pipeline.test_mode:
             return True
 
         needs_close = False
         try:
             if self.db_type==DB_MYSQL:
-                self.connection, self.cursor = connect_mysql(self.db_host.value, 
-                                                             self.db_user.value, 
+                self.connection, self.cursor = connect_mysql(self.db_host.value,
+                                                             self.db_user.value,
                                                              self.db_passwd.value,
                                                              self.db_name.value)
                 needs_close = True
@@ -1595,7 +1595,7 @@ class ExportToDatabase(cpm.CPModule):
             # fixing the column order, etc.
             #
             self.get_pipeline_measurement_columns(pipeline, image_set_list)
-            
+
             if pipeline.in_batch_mode() or not cpprefs.get_allow_schema_write():
                 return True
             if self.db_type == DB_ORACLE:
@@ -1611,7 +1611,7 @@ class ExportToDatabase(cpm.CPModule):
                 tables_that_exist = []
                 for table in tables:
                     try:
-                        r = execute(self.cursor, 
+                        r = execute(self.cursor,
                                     'SELECT * FROM %s LIMIT 1'%(table))
                         tables_that_exist.append(table)
                     except:
@@ -1621,7 +1621,7 @@ class ExportToDatabase(cpm.CPModule):
                         table_msg = "%s table" % tables_that_exist[0]
                     else:
                         table_msg = "%s and %s tables" % (
-                            ", ".join(tables_that_exist[:-1]), 
+                            ", ".join(tables_that_exist[:-1]),
                             tables_that_exist[-1])
                     if cpprefs.get_headless():
                         if self.allow_overwrite == OVERWRITE_NEVER:
@@ -1639,7 +1639,7 @@ class ExportToDatabase(cpm.CPModule):
                             'Choose "No" to keep the existing tables and '
                             'overwrite data as necessary.\n'
                             'Choose "Cancel" to stop and leave the tables intact.') % table_msg
-                        
+
                         with wx.MessageDialog(
                             workspace.frame, message,
                             style=wx.YES|wx.NO|wx.CANCEL|wx.ICON_QUESTION) as dlg:
@@ -1648,9 +1648,9 @@ class ExportToDatabase(cpm.CPModule):
                                 return False
                             elif result != wx.ID_YES:
                                 return True
-    
+
                 mappings = self.get_column_name_mappings(pipeline, image_set_list)
-                column_defs = self.get_pipeline_measurement_columns(pipeline, 
+                column_defs = self.get_pipeline_measurement_columns(pipeline,
                                                                     image_set_list)
                 if self.objects_choice != O_ALL:
                     onames = [cpmeas.EXPERIMENT, cpmeas.IMAGE, cpmeas.NEIGHBORS]
@@ -1667,7 +1667,7 @@ class ExportToDatabase(cpm.CPModule):
                 self.connection.close()
                 self.connection = None
                 self.cursor = None
-    
+
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Alter the output directory path for the remote batch host'''
         self.directory.alter_for_create_batch_files(fn_alter_path)
@@ -1677,14 +1677,14 @@ class ExportToDatabase(cpm.CPModule):
         if self.want_image_thumbnails:
             cols = []
             for name in self.thumbnail_image_names.get_selections():
-                cols += [(cpmeas.IMAGE, C_THUMBNAIL + "_" +name, 
+                cols += [(cpmeas.IMAGE, C_THUMBNAIL + "_" +name,
                           cpmeas.COLTYPE_LONGBLOB)]
             return cols
         return []
-            
+
     def run_as_data_tool(self, workspace):
         '''Run the module as a data tool
-        
+
         ExportToDatabase has two modes - writing CSVs and writing directly.
         We write CSVs in post_run. We write directly in run.
         '''
@@ -1697,18 +1697,18 @@ class ExportToDatabase(cpm.CPModule):
         d = self.get_dictionary()
         columns = m.get_measurement_columns()
         for i, (object_name, feature_name, coltype) in enumerate(columns):
-            if (object_name == cpmeas.IMAGE and 
+            if (object_name == cpmeas.IMAGE and
                 feature_name.startswith(C_THUMBNAIL)):
                 columns[i] = (object_name, feature_name, cpmeas.COLTYPE_LONGBLOB)
         columns = self.filter_measurement_columns(columns)
         d[D_MEASUREMENT_COLUMNS] = columns
-        
+
         if not self.prepare_run(workspace, as_data_tool=True):
             return
         self.prepare_group(workspace, None, None)
         if self.db_type != DB_MYSQL_CSV:
             workspace.measurements.is_first_image = True
-                    
+
             for i in range(workspace.measurements.image_set_count):
                 if i > 0:
                     workspace.measurements.next_image_set()
@@ -1717,7 +1717,7 @@ class ExportToDatabase(cpm.CPModule):
             workspace.measurements.image_set_number = \
                      workspace.measurements.image_set_count
         self.post_run(workspace)
-    
+
     def run(self, workspace):
         if self.want_image_thumbnails:
             import PIL.Image as Image
@@ -1762,8 +1762,8 @@ class ExportToDatabase(cpm.CPModule):
         if self.db_type == DB_MYSQL and not workspace.pipeline.test_mode:
             try:
                 self.connection, self.cursor = connect_mysql(
-                    self.db_host.value, 
-                    self.db_user.value, 
+                    self.db_host.value,
+                    self.db_user.value,
                     self.db_passwd.value,
                     self.db_name.value)
                 self.write_data_to_db(workspace)
@@ -1794,10 +1794,10 @@ class ExportToDatabase(cpm.CPModule):
     INTERACTION_EXECUTE = "Execute"
     INTERACTION_GET_RELATIONSHIP_TYPES = "GetRelationshipTypes"
     INTERACTION_ADD_RELATIONSHIP_TYPE = "AddRelationshipType"
-    
+
     def handle_interaction(self, command, *args, **kwargs):
         '''Handle sqllite interactions from workers'''
-        
+
         if command == self.INTERACTION_EXECUTE:
             return self.handle_interaction_execute(*args, **kwargs)
         elif command == self.INTERACTION_GET_RELATIONSHIP_TYPES:
@@ -1806,7 +1806,7 @@ class ExportToDatabase(cpm.CPModule):
             return self.handle_interaction_add_relationship_type(*args, **kwargs)
         else:
             raise ValueError("No %s interaction" % command)
-        
+
     def handle_interaction_execute(self, state):
         commands = SQLiteCommands()
         commands.set_state(state)
@@ -1821,31 +1821,31 @@ class ExportToDatabase(cpm.CPModule):
         finally:
             cursor.close()
             connection.close()
-            
+
     def handle_interaction_get_relationship_types(self):
         '''Get the relationship types from the database
 
-        returns a dictionary whose key is 
+        returns a dictionary whose key is
         (module_number, relationship name, object_name1, object_name2) and
         whose value is the relationship type ID for that relationship.
         '''
         db_file = self.make_full_filename(self.sqlite_file.value)
         with DBContext(self) as (connection, cursor):
             return self.get_relationship_types(cursor).items()
-        
+
     def grt_interaction_to_dict(self, json_struct):
         '''Handle the conversion from json mangled structure to dictionary
-        
+
         json_struct - the result from handle_interaction_get_relationship_types
                       which has been dumbed-down for json and which json
                       has likely turned tuples to lists
         '''
         return dict([(tuple(k), v) for k,v in json_struct])
-        
+
     def get_relationship_types(self, cursor):
         '''Get the relationship types from the database
 
-        returns a dictionary whose key is 
+        returns a dictionary whose key is
         (module_number, relationship name, object_name1, object_name2) and
         whose value is the relationship type ID for that relationship.
         '''
@@ -1853,32 +1853,32 @@ class ExportToDatabase(cpm.CPModule):
         statement = "SELECT %s, %s, %s, %s, %s FROM %s" % (
             COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP, COL_MODULE_NUMBER,
             COL_OBJECT_NAME1, COL_OBJECT_NAME2, relationship_type_table)
-        
+
         return dict(
-            [((int(mn), r, o1, o2), int(rt_id)) 
+            [((int(mn), r, o1, o2), int(rt_id))
              for rt_id, r, mn, o1, o2 in
               execute(cursor, statement)])
-        
+
     def handle_interaction_add_relationship_type(
         self, module_num, relationship, object_name1, object_name2):
         '''Add a relationship type to the database
-        
+
         module_num, relationship, object_name1, object_name2: the key
               to the relationship in the relationship type table
-              
+
         returns the relationship type ID
         '''
         with DBContext(self) as (connection, cursor):
             return self.add_relationship_type(
                 module_num, relationship, object_name1, object_name2, cursor)
-        
+
     def add_relationship_type(self, module_num, relationship, object_name1,
                               object_name2, cursor):
         '''Add a relationship type to the database
-        
+
         module_num, relationship, object_name1, object_name2: the key
               to the relationship in the relationship type table
-              
+
         returns the relationship type ID
         '''
         logger.info("Adding missing relationship type:")
@@ -1938,23 +1938,23 @@ class ExportToDatabase(cpm.CPModule):
         if len(result) == 0 or result[0][0] is None:
             raise ValueError(
                 "Failed to retrieve relationship_type_id for "
-                "module # %d, %s %s %s" % 
+                "module # %d, %s %s %s" %
                 (module_num, relationship, object_name1, object_name2))
         return int(result[0][0])
-        
+
     def post_group(self, workspace, grouping):
         '''Write out any columns that are only available post-group'''
         if workspace.pipeline.test_mode:
             return
-        
+
         if self.db_type not in (DB_MYSQL, DB_SQLITE):
             return
-        
+
         try:
             if self.db_type==DB_MYSQL:
                 self.connection, self.cursor = connect_mysql(
-                    self.db_host.value, 
-                    self.db_user.value, 
+                    self.db_host.value,
+                    self.db_user.value,
                     self.db_passwd.value,
                     self.db_name.value)
             elif self.db_type==DB_SQLITE:
@@ -1991,7 +1991,7 @@ class ExportToDatabase(cpm.CPModule):
             self.connection.close()
             self.connection = None
             self.cursor = None
-        
+
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
             self.write_properties_file(workspace)
@@ -2006,7 +2006,7 @@ class ExportToDatabase(cpm.CPModule):
             self.write_csv_data(workspace)
         else:
             self.write_post_run_measurements(workspace)
-    
+
     @property
     def wants_well_tables(self):
         '''Return true if user wants any well tables'''
@@ -2020,15 +2020,15 @@ class ExportToDatabase(cpm.CPModule):
     def wants_relationship_table(self):
         '''True to write relationships to the database'''
         return self.wants_relationship_table_setting.value
-    
+
     def should_stop_writing_measurements(self):
         '''All subsequent modules should not write measurements'''
         return True
 
-    
+
     def ignore_object(self,object_name, strict = False):
         """Ignore objects (other than 'Image') if this returns true
-        
+
         If strict is True, then we ignore objects based on the object selection
         """
         if object_name in (cpmeas.EXPERIMENT, cpmeas.NEIGHBORS):
@@ -2044,20 +2044,20 @@ class ExportToDatabase(cpm.CPModule):
     def ignore_feature(self, object_name, feature_name, measurements=None,
                        strict = False):
         """Return true if we should ignore a feature"""
-        if (self.ignore_object(object_name, strict) or 
-            feature_name.startswith('Description_') or 
-            feature_name.startswith('ModuleError_') or 
-            feature_name.startswith('TimeElapsed_') or 
-            feature_name.startswith('ExecutionTime_') or 
+        if (self.ignore_object(object_name, strict) or
+            feature_name.startswith('Description_') or
+            feature_name.startswith('ModuleError_') or
+            feature_name.startswith('TimeElapsed_') or
+            feature_name.startswith('ExecutionTime_') or
             (self.db_type not in (DB_MYSQL, DB_SQLITE) and feature_name.startswith('Thumbnail_'))
             ):
             return True
         return False
 
-    
+
     def get_column_name_mappings(self, pipeline, image_set_list):
         """Scan all the feature names in the measurements, creating column names"""
-        columns = self.get_pipeline_measurement_columns(pipeline, 
+        columns = self.get_pipeline_measurement_columns(pipeline,
                                                         image_set_list)
         mappings = ColumnNameMapping(self.max_column_size.value)
         mappings.add(C_IMAGE_NUMBER)
@@ -2071,44 +2071,44 @@ class ExportToDatabase(cpm.CPModule):
                 for agg_name in self.agg_names:
                     mappings.add('%s_%s_%s'%(agg_name, object_name, feature_name))
         return mappings
-    
+
     def get_aggregate_columns(self, pipeline, image_set_list, post_group = None):
         '''Get object aggregate columns for the PerImage table
-        
+
         pipeline - the pipeline being run
         image_set_list - for cacheing column data
         post_group - true if only getting aggregates available post-group,
                      false for getting aggregates available after run,
                      None to get all
-        
+
         returns a tuple:
         result[0] - object_name = name of object generating the aggregate
         result[1] - feature name
         result[2] - aggregation operation
         result[3] - column name in Image database
         '''
-        columns = self.get_pipeline_measurement_columns(pipeline, 
+        columns = self.get_pipeline_measurement_columns(pipeline,
                                                         image_set_list)
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
         ob_tables = self.get_object_names(pipeline, image_set_list)
         result = []
         for ob_table in ob_tables:
             for column in columns:
-                if ((post_group is not None) and 
+                if ((post_group is not None) and
                     not self.should_write(column, post_group)):
                     continue
                 obname, feature, ftype = column[:3]
-                if (obname==ob_table and 
+                if (obname==ob_table and
                     (not self.ignore_feature(obname, feature)) and
                     (not cpmeas.agg_ignore_feature(feature))):
                     feature_name = '%s_%s'%(obname, feature)
-                    # create per_image aggregate column defs 
+                    # create per_image aggregate column defs
                     result += [(obname, feature, aggname,
                                 '%s_%s' % (aggname, feature_name))
                                for aggname in self.agg_names ]
         return result
 
-    
+
     def get_object_names(self, pipeline, image_set_list):
         '''Get the names of the objects whose measurements are being taken'''
         column_defs = self.get_pipeline_measurement_columns(pipeline,
@@ -2120,7 +2120,7 @@ class ExportToDatabase(cpm.CPModule):
         obnames = sorted(obnames)
         return [ obname for obname in obnames
                  if not self.ignore_object(obname, True) and
-                 obname not in (cpmeas.IMAGE, cpmeas.EXPERIMENT, 
+                 obname not in (cpmeas.IMAGE, cpmeas.EXPERIMENT,
                                 cpmeas.NEIGHBORS)]
 
     @property
@@ -2133,7 +2133,7 @@ class ExportToDatabase(cpm.CPModule):
                     (cpmeas.AGG_STD_DEV, self.wants_agg_std_dev))
                 if setting.value]
 
-        
+
     @property
     def agg_well_names(self):
         '''The list of selected aggregate names'''
@@ -2143,16 +2143,16 @@ class ExportToDatabase(cpm.CPModule):
                     ('median', self.wants_agg_median_well),
                     ('std', self.wants_agg_std_dev_well))
                 if setting.value]
-        
+
     #
     # Create per_image and per_object tables in MySQL
     #
     def create_database_tables(self, cursor, workspace):
         '''Creates empty image and object tables
-        
+
         Creates the MySQL database (if MySQL), drops existing tables of the
         same name and creates the tables.
-        
+
         cursor - database cursor for creating the tables
         column_defs - column definitions as returned by get_measurement_columns
         mappings - mappings from measurement feature names to column names
@@ -2161,15 +2161,15 @@ class ExportToDatabase(cpm.CPModule):
         image_set_list = workspace.image_set_list
         # Create the database
         if self.db_type==DB_MYSQL:
-            #result = execute(cursor, "SHOW DATABASES LIKE '%s'" % 
+            #result = execute(cursor, "SHOW DATABASES LIKE '%s'" %
                              #self.db_name.value)
             #if len(result) == 0:
-            execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s' % 
+            execute(cursor, 'CREATE DATABASE IF NOT EXISTS %s' %
                     (self.db_name.value), return_result = False)
-            execute(cursor, 'USE %s'% self.db_name.value, 
+            execute(cursor, 'USE %s'% self.db_name.value,
                     return_result = False)
 
-        columns = self.get_pipeline_measurement_columns(pipeline, 
+        columns = self.get_pipeline_measurement_columns(pipeline,
                                                         image_set_list)
 
         #
@@ -2178,18 +2178,18 @@ class ExportToDatabase(cpm.CPModule):
         object_table_name = self.get_table_name(cpmeas.OBJECT)
         try:
             execute(cursor, 'DROP TABLE IF EXISTS %s' %
-                    self.get_table_name(cpmeas.OBJECT), 
+                    self.get_table_name(cpmeas.OBJECT),
                     return_result = False)
         except:
             # MySQL is fine if the table is a view, but not SQLite
             pass
         try:
             execute(cursor, 'DROP VIEW IF EXISTS %s' %
-                    self.get_table_name(cpmeas.OBJECT), 
+                    self.get_table_name(cpmeas.OBJECT),
                     return_result = False)
         except:
             pass
-        
+
         if self.objects_choice != O_NONE:
             # Object table/view
             if self.separate_object_tables == OT_COMBINE:
@@ -2197,10 +2197,10 @@ class ExportToDatabase(cpm.CPModule):
                     None, pipeline, image_set_list)
                 execute(cursor, statement, return_result = False)
             else:
-                for object_name in self.get_object_names(pipeline, 
+                for object_name in self.get_object_names(pipeline,
                                                          image_set_list):
                     execute(cursor, 'DROP TABLE IF EXISTS %s' %
-                            self.get_table_name(object_name), 
+                            self.get_table_name(object_name),
                             return_result = False)
                     statement = self.get_create_object_table_statement(
                         object_name, pipeline, image_set_list)
@@ -2209,15 +2209,15 @@ class ExportToDatabase(cpm.CPModule):
                     statement = self.get_create_object_view_statement(
                         self.get_object_names(pipeline, image_set_list), pipeline, image_set_list)
                     execute(cursor, statement, return_result=False)
-        
+
         # Image table
-        execute(cursor, 'DROP TABLE IF EXISTS %s' % 
+        execute(cursor, 'DROP TABLE IF EXISTS %s' %
                 self.get_table_name(cpmeas.IMAGE), return_result = False)
-        statement = self.get_create_image_table_statement(pipeline, 
+        statement = self.get_create_image_table_statement(pipeline,
                                                           image_set_list)
         execute(cursor, statement, return_result=False)
-        
-        execute(cursor, 'DROP TABLE IF EXISTS %s' % 
+
+        execute(cursor, 'DROP TABLE IF EXISTS %s' %
                 self.get_table_name(cpmeas.EXPERIMENT) )
         for statement in self.get_experiment_table_statements(workspace):
             execute(cursor, statement, return_result=False)
@@ -2225,7 +2225,7 @@ class ExportToDatabase(cpm.CPModule):
             for statement in self.get_create_relationships_table_statements(pipeline):
                 execute(cursor, statement, return_result=False)
         cursor.connection.commit()
-        
+
     def get_experiment_table_statements(self, workspace):
         statements = []
         if self.db_type in (DB_MYSQL_CSV, DB_MYSQL):
@@ -2246,7 +2246,7 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
     object_name text not null,
     field text not null,
     value longtext,
-    constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key 
+    constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key
     (experiment_id, object_name(200), field(200)))""" % globals()
         else:
             create_experiment_properties = """
@@ -2256,13 +2256,13 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
     field text not null,
     value longtext,
     constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name, field))""" % globals()
-        
+
         statements.append(create_experiment_properties)
         insert_into_experiment_statement = """
-INSERT INTO %s (name) values ('%s')""" % ( 
+INSERT INTO %s (name) values ('%s')""" % (
               T_EXPERIMENT, MySQLdb.escape_string(self.experiment_name.value))
         statements.append(insert_into_experiment_statement)
-        
+
         properties = self.get_property_file_text(workspace)
         for p in properties:
             for k, v in p.properties.iteritems():
@@ -2271,11 +2271,11 @@ INSERT INTO %s (name) values ('%s')""" % (
                 statement = """
 INSERT INTO %s (experiment_id, object_name, field, value)
 SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
-                       T_EXPERIMENT_PROPERTIES, p.object_name, 
+                       T_EXPERIMENT_PROPERTIES, p.object_name,
                        MySQLdb.escape_string(k),
                        MySQLdb.escape_string(v), T_EXPERIMENT)
                 statements.append(statement)
-        
+
         experiment_columns = filter(
             lambda x:x[0] == cpmeas.EXPERIMENT,
             workspace.pipeline.get_measurement_columns())
@@ -2286,7 +2286,7 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
         create_per_experiment = """
 CREATE TABLE %s (
 %s)
-""" % (self.get_table_name(cpmeas.EXPERIMENT), 
+""" % (self.get_table_name(cpmeas.EXPERIMENT),
        ",\n".join(experiment_coldefs))
         statements.append(create_per_experiment)
         column_names = []
@@ -2294,13 +2294,13 @@ CREATE TABLE %s (
         for column in experiment_columns:
             ftr = column[1]
             column_names.append(ftr)
-            if ((len(column) > 3 and 
+            if ((len(column) > 3 and
                  column[3].get(cpmeas.MCA_AVAILABLE_POST_RUN, False)) or
                 not workspace.measurements.has_feature(cpmeas.EXPERIMENT, ftr)):
                 values.append("null")
                 continue
             value = workspace.measurements.get_experiment_measurement(ftr)
-                
+
             if column[2].startswith(cpmeas.COLTYPE_VARCHAR):
                 if isinstance(value, unicode):
                     value = value.encode('utf-8')
@@ -2321,7 +2321,7 @@ CREATE TABLE %s (
             ",".join(values))
         statements.append(experiment_insert_statement)
         return statements
-    
+
     def get_create_image_table_statement(self, pipeline, image_set_list):
         '''Return a SQL statement that generates the image table'''
         statement = 'CREATE TABLE '+ self.get_table_name(cpmeas.IMAGE) +' (\n'
@@ -2338,15 +2338,15 @@ CREATE TABLE %s (
                 feature_name = '%s_%s' % (obname, feature)
                 statement += ',\n%s %s'%(mappings[feature_name], ftype)
         for column in self.get_aggregate_columns(pipeline, image_set_list):
-            statement += ',\n%s %s' % (mappings[column[3]], 
+            statement += ',\n%s %s' % (mappings[column[3]],
                                        cpmeas.COLTYPE_FLOAT)
         statement += ',\nPRIMARY KEY (%s) )'%C_IMAGE_NUMBER
         return statement
-    
-    def get_create_object_table_statement(self, object_name, pipeline, 
+
+    def get_create_object_table_statement(self, object_name, pipeline,
                                           image_set_list):
         '''Get the "CREATE TABLE" statement for the given object table
-        
+
         object_name - None = PerObject, otherwise a specific table
         '''
         if object_name is None:
@@ -2375,19 +2375,19 @@ CREATE TABLE %s (
                     statement += ',\n%s %s'%(mappings[feature_name], ftype)
         statement += ',\nPRIMARY KEY (%s, %s) )' %(C_IMAGE_NUMBER, object_pk)
         return statement
-        
-    def get_create_object_view_statement(self, object_names, pipeline, 
+
+    def get_create_object_view_statement(self, object_names, pipeline,
                                           image_set_list):
         '''Get the "CREATE VIEW" statement for the given object view
-        
+
         object_names is the list of objects to be included into the view
         '''
         object_table = self.get_table_name(cpmeas.OBJECT)
-                
+
         # Produce a list of columns from each of the separate tables
         list_of_columns = []
         all_objects = dict(zip(object_names,[self.get_table_name(object_name) for object_name in object_names]))
-        
+
         column_defs = self.get_pipeline_measurement_columns(pipeline,image_set_list)
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
         for (current_object,current_table) in all_objects.iteritems():
@@ -2398,10 +2398,10 @@ CREATE TABLE %s (
                     feature_name = '%s_%s'%(obname, feature)
                     list_of_columns[-1] += [mappings[feature_name]]
         all_columns = sum(list_of_columns,[])
-        
+
         selected_object = object_names[0]
         all_columns = ["%s.%s"%(all_objects[selected_object],C_IMAGE_NUMBER),"%s_%s AS %s"%(selected_object, M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER)] + all_columns
-        
+
         # Create the new view
         statement = "CREATE OR REPLACE VIEW " if self.db_type==DB_MYSQL else "CREATE VIEW "
         statement += "%s AS SELECT %s FROM %s"%(object_table,",".join(all_columns), all_objects[selected_object])
@@ -2411,13 +2411,13 @@ CREATE TABLE %s (
         for (current_object,current_table) in object_table_pairs:
             statement = " ".join((statement,"INNER JOIN %s ON"%current_table,\
                                   " AND ".join(("%s.%s = %s.%s"%(all_objects[selected_object], C_IMAGE_NUMBER, current_table, C_IMAGE_NUMBER),
-                                                "%s.%s_%s = %s.%s_%s"%(all_objects[selected_object], selected_object, M_NUMBER_OBJECT_NUMBER, 
+                                                "%s.%s_%s = %s.%s_%s"%(all_objects[selected_object], selected_object, M_NUMBER_OBJECT_NUMBER,
                                                                        current_table, current_object, M_NUMBER_OBJECT_NUMBER)))))
         return statement
-    
+
     def get_create_relationships_table_statements(self, pipeline):
         """Get the statements to create the relationships table
-        
+
         Returns a list of statements to execute.
         """
         statements = []
@@ -2433,7 +2433,7 @@ CREATE TABLE %s (
         relationship_type_table_name = self.get_table_name(T_RELATIONSHIP_TYPES)
         relationship_table_name = self.get_table_name(T_RELATIONSHIPS)
         statements += [
-            "DROP TABLE IF EXISTS %s" % x for x in 
+            "DROP TABLE IF EXISTS %s" % x for x in
             relationship_table_name, relationship_type_table_name]
         #
         # The relationship type table has the module #, relationship name
@@ -2442,7 +2442,7 @@ CREATE TABLE %s (
         #
         columns = [COL_RELATIONSHIP_TYPE_ID, COL_MODULE_NUMBER,
                    COL_RELATIONSHIP, COL_OBJECT_NAME1, COL_OBJECT_NAME2]
-        types = ["integer primary key", "integer", "varchar(255)", 
+        types = ["integer primary key", "integer", "varchar(255)",
                  "varchar(255)", "varchar(255)"]
         rtt_unique_name = self.get_table_name(CONSTRAINT_RT_UNIQUE)
         statement = "CREATE TABLE %s " % relationship_type_table_name
@@ -2458,7 +2458,7 @@ CREATE TABLE %s (
         if T_RELATIONSHIP_TYPES not in d:
             d[T_RELATIONSHIP_TYPES] = {}
         rd = d[T_RELATIONSHIP_TYPES]
-        
+
         for i, (module_num, relationship, o1, o2, when) in \
             enumerate(pipeline.get_object_relationships()):
             relationship_type_id = i+1
@@ -2471,15 +2471,15 @@ CREATE TABLE %s (
         #
         # Create the relationships table
         #
-        columns = [ COL_RELATIONSHIP_TYPE_ID, 
+        columns = [ COL_RELATIONSHIP_TYPE_ID,
                     COL_IMAGE_NUMBER1, COL_OBJECT_NUMBER1,
                     COL_IMAGE_NUMBER2, COL_OBJECT_NUMBER2 ]
         statement = "CREATE TABLE %s " % relationship_table_name
         statement += "( " + ", ".join(["%s integer" % c for c in columns])
         statement += " ,CONSTRAINT %s FOREIGN KEY ( %s ) " % (
-            self.get_table_name(FK_RELATIONSHIP_TYPE_ID), 
+            self.get_table_name(FK_RELATIONSHIP_TYPE_ID),
             COL_RELATIONSHIP_TYPE_ID)
-        statement += " REFERENCES %s ( %s )" % ( 
+        statement += " REFERENCES %s ( %s )" % (
             relationship_type_table_name, COL_RELATIONSHIP_TYPE_ID)
         statement += " ,CONSTRAINT %s UNIQUE" % self.get_table_name(
             CONSTRAINT_R_UNIQUE)
@@ -2502,7 +2502,7 @@ CREATE TABLE %s (
         statement = "CREATE VIEW %s AS SELECT " % relationship_view_name
         statement += ", ".join([
             "T.%s" % col for col in (
-                COL_MODULE_NUMBER, COL_RELATIONSHIP, 
+                COL_MODULE_NUMBER, COL_RELATIONSHIP,
                 COL_OBJECT_NAME1, COL_OBJECT_NAME2)]) + ", "
         statement += ", ".join([
             "R.%s" % col for col in (
@@ -2514,25 +2514,25 @@ CREATE TABLE %s (
             COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP_TYPE_ID)
         statements.append(statement)
         return statements
-    
-    def get_relationship_type_id(self, workspace, module_num, relationship, 
+
+    def get_relationship_type_id(self, workspace, module_num, relationship,
                                  object_name1, object_name2):
         '''Get the relationship_type_id for the given relationship
-        
+
         workspace - the analysis workspace
-        
+
         module_num - the module number of the module that generated the
                      record
-        
+
         relationship - the name of the relationship
-        
+
         object_name1 - the name of the first object in the relationship
-        
+
         object_name2 - the name of the second object in the relationship
-        
+
         Returns the relationship_type_id that joins to the relationship
         type record in the relationship types table.
-        
+
         NOTE: this should not be called for CSV databases.
         '''
         assert self.db_type != DB_MYSQL_CSV
@@ -2553,7 +2553,7 @@ CREATE TABLE %s (
                 d[T_RELATIONSHIP_TYPES] = \
                     self.get_relationship_types(self.cursor)
         rd = d[T_RELATIONSHIP_TYPES]
-        
+
         key = (module_num, relationship, object_name1, object_name2)
         if key not in rd:
             if self.db_type == DB_SQLITE:
@@ -2568,24 +2568,24 @@ CREATE TABLE %s (
                     module_num, relationship, object_name1, object_name2,
                     self.cursor)
         return rd[key]
-                
-            
-    
+
+
+
     def write_mysql_table_defs(self, workspace):
         """Write the table definitions to the SETUP.SQL file
-        
+
         The column order here is the same as in get_pipeline_measurement_columns
         with the aggregates following the regular image columns.
         """
-        
+
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         measurements = workspace.measurements
 
-        m_cols = self.get_pipeline_measurement_columns(pipeline, 
+        m_cols = self.get_pipeline_measurement_columns(pipeline,
                                                        image_set_list)
         mappings = self.get_column_name_mappings(pipeline, image_set_list)
-        
+
         file_name_width, path_name_width = self.get_file_path_width(workspace)
         metadata_name_width = 128
         file_name = "%sSETUP.SQL"%(self.sql_file_prefix)
@@ -2593,7 +2593,7 @@ CREATE TABLE %s (
         fid = open(path_name,"wt")
         fid.write("CREATE DATABASE IF NOT EXISTS %s;\n"%(self.db_name.value))
         fid.write("USE %s;\n"%(self.db_name.value))
-        fid.write(self.get_create_image_table_statement(pipeline, 
+        fid.write(self.get_create_image_table_statement(pipeline,
                                                         image_set_list) + ";\n")
         #
         # Write out the per-object table
@@ -2604,7 +2604,7 @@ CREATE TABLE %s (
             else:
                 data = [ (x, x) for x in self.get_object_names(
                     pipeline, image_set_list)]
-            
+
             for gcot_name, object_name in data:
                 fid.write(self.get_create_object_table_statement(
                     gcot_name, pipeline, image_set_list) + ";\n")
@@ -2614,23 +2614,23 @@ CREATE TABLE %s (
             fid.write(statement + ";\n")
         fid.write("""
 LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s
-FIELDS TERMINATED BY ',' 
+FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """ %
                   (self.base_name(workspace), cpmeas.IMAGE, self.get_table_name(cpmeas.IMAGE)))
 
         for gcot_name, object_name in data:
             fid.write("""
-LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s 
-FIELDS TERMINATED BY ',' 
+LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s
+FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """ % (self.base_name(workspace), object_name,
        self.get_table_name(object_name)))
-            
+
         if self.objects_choice != O_NONE and self.separate_object_tables == OT_VIEW:
             fid.write("\n" + self.get_create_object_view_statement(
                     [object_name for gcot_name, object_name in data], pipeline, image_set_list) + ";\n")
-        
+
         if self.wants_relationship_table:
             for statement in self.get_create_relationships_table_statements(pipeline):
                 fid.write(statement + ";\n")
@@ -2638,18 +2638,18 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s
 FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
-""" % (self.base_name(workspace), T_RELATIONSHIPS, 
+""" % (self.base_name(workspace), T_RELATIONSHIPS,
        self.get_table_name(T_RELATIONSHIPS)))
         if self.wants_well_tables:
             self.write_mysql_table_per_well(
                 workspace.pipeline, workspace.image_set_list, fid)
         fid.close()
-    
+
     def write_mysql_table_per_well(self, pipeline, image_set_list, fid=None):
         '''Write SQL statements to generate a per-well table
-        
+
         pipeline - the pipeline being run (to get feature names)
-        image_set_list - 
+        image_set_list -
         fid - file handle of file to write or None if statements
               should be written to a separate file.
         '''
@@ -2700,7 +2700,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             well_mappings.add(well_colname)
                         if do_write:
                             fid.write("%s(%s.%s) as %s,\n" %
-                                      (aggname, object_table_name, colname, 
+                                      (aggname, object_table_name, colname,
                                        well_mappings[well_colname]))
             fid.write("IT.Image_Metadata_Plate, IT.Image_Metadata_Well "
                       "FROM %sPer_Image IT\n" % table_prefix)
@@ -2726,27 +2726,27 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                            self.get_table_name(object_names[0])))
                 for object_name in object_names[1:]:
                     fid.write("UNION SELECT %s, %s_%s as %s "
-                              "FROM %s\n" % 
+                              "FROM %s\n" %
                               (C_IMAGE_NUMBER, object_name, M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER,
                                self.get_table_name(object_name)))
                 fid.write(") N_INNER) N ON IT.%s = N.%s\n"%(C_IMAGE_NUMBER, C_IMAGE_NUMBER))
                 for i, object_name in enumerate(object_names):
-                    fid.write("LEFT JOIN %s OT%d " % 
+                    fid.write("LEFT JOIN %s OT%d " %
                               (self.get_table_name(object_name), i+1))
                     fid.write("ON N.%s = OT%d.%s " % (C_IMAGE_NUMBER, i+1, C_IMAGE_NUMBER))
                     fid.write("AND N.%s = OT%d.%s_%s\n" %
                               (C_OBJECT_NUMBER, i+1, object_name, M_NUMBER_OBJECT_NUMBER))
             fid.write("GROUP BY IT.Image_Metadata_Plate, "
                       "IT.Image_Metadata_Well;\n\n""")
-                
+
         if needs_close:
             fid.close()
 
-    
+
     def write_oracle_table_defs(self, workspace):
         raise NotImplementedError("Writing to an Oracle database is not yet supported")
 
-    
+
     def base_name(self,workspace):
         """The base for the output file name"""
         m = workspace.measurements
@@ -2754,23 +2754,23 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         last = m.image_set_number
         return '%s%d_%d'%(self.sql_file_prefix, first, last)
 
-    
-        
+
+
     def write_csv_data(self, workspace):
         """Write the data in the measurements out to the csv files
         workspace - contains the measurements
         """
         if self.show_window:
             disp_header = ['Table','Filename']
-            disp_columns = []              
-        
+            disp_columns = []
+
         zeros_for_nan = False
         measurements = workspace.measurements
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         image_filename = self.make_full_filename('%s_%s.CSV'%(self.base_name(workspace),cpmeas.IMAGE),workspace)
         fid_per_image = open(image_filename,"wb")
-        columns = self.get_pipeline_measurement_columns(pipeline, 
+        columns = self.get_pipeline_measurement_columns(pipeline,
                                                         image_set_list, remove_postgroup_key = True)
         agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
         for image_number in measurements.get_image_numbers():
@@ -2798,7 +2798,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         value = '"'+MySQLdb.escape_string(value)+'"'
                 elif np.isnan(value) or np.isinf(value):
                     value = "NULL"
-                    
+
                 image_row.append(value)
             #
             # Add the aggregate measurements
@@ -2814,14 +2814,14 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         object_names = self.get_object_names(pipeline, image_set_list)
         if len(object_names) == 0:
             return
-        
+
         if self.separate_object_tables == OT_COMBINE:
             data = [(cpmeas.OBJECT, object_names)]
         else:
             data = [(object_name, [object_name])
                     for object_name in object_names]
         for file_object_name, object_list in data:
-            file_name = "%s_%s.CSV" % (self.base_name(workspace), 
+            file_name = "%s_%s.CSV" % (self.base_name(workspace),
                                        file_object_name)
             file_name = self.make_full_filename(file_name)
             fid = open(file_name, "wb")
@@ -2877,30 +2877,30 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             file_name = self.make_full_filename(file_name)
             with open(file_name, "wb") as fid:
                 csv_writer = csv.writer(fid, lineterminator='\n')
-                for i, (module_num, relationship, 
+                for i, (module_num, relationship,
                         object_number1, object_number2, when) \
                     in enumerate(pipeline.get_object_relationships()):
                     relationship_type_id = i+1
                     r = measurements.get_relationships(
-                        module_num, relationship, 
+                        module_num, relationship,
                         object_number1, object_number2)
                     for i1, o1, i2, o2 in r:
                         csv_writer.writerow((
                             relationship_type_id, i1, o1, i2, o2))
             if self.show_window:
                 disp_columns.append((T_RELATIONSHIPS,'Wrote %s'%file_name))
-        
+
         if self.show_window:
-            workspace.display_data.header = disp_header  
-            workspace.display_data.columns = disp_columns                
+            workspace.display_data.header = disp_header
+            workspace.display_data.columns = disp_columns
 
     @staticmethod
     def should_write(column, post_group):
         '''Determine if a column should be written in run or post_group
-        
+
         column - 3 or 4 tuple column from get_measurement_columns
         post_group - True if in post_group, false if in run
-        
+
         returns True if column should be written
         '''
         if len(column) == 3:
@@ -2909,11 +2909,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             return not post_group
         if not column[3].has_key(cpmeas.MCA_AVAILABLE_POST_GROUP):
             return not post_group
-        return (post_group if column[3][cpmeas.MCA_AVAILABLE_POST_GROUP] 
+        return (post_group if column[3][cpmeas.MCA_AVAILABLE_POST_GROUP]
                 else not post_group)
-    
-    def write_data_to_db(self, workspace, 
-                         post_group = False, 
+
+    def write_data_to_db(self, workspace,
+                         post_group = False,
                          image_number = None):
         """Write the data in the measurements out to the database
         workspace - contains the measurements
@@ -2922,8 +2922,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         """
         if self.show_window:
             disp_header = ["Table", "Statement"]
-            disp_columns = []         
-        try:            
+            disp_columns = []
+        try:
             zeros_for_nan = False
             measurements = workspace.measurements
             assert isinstance(measurements, cpmeas.Measurements)
@@ -2955,7 +2955,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             ###########################################
             if image_number is None:
                 image_number = measurements.image_set_number
-            
+
             image_row = []
             if not post_group:
                 image_row += [(image_number, cpmeas.COLTYPE_INTEGER, C_IMAGE_NUMBER)]
@@ -2985,13 +2985,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             #
             agg_dict = measurements.compute_aggregate_measurements(
                 image_number, self.agg_names)
-            agg_columns = self.get_aggregate_columns(pipeline, image_set_list, 
+            agg_columns = self.get_aggregate_columns(pipeline, image_set_list,
                                                      post_group)
-            image_row += [(agg_dict[agg[3]], 
-                           cpmeas.COLTYPE_FLOAT, 
+            image_row += [(agg_dict[agg[3]],
+                           cpmeas.COLTYPE_FLOAT,
                            agg[3])
                           for agg in agg_columns]
-            
+
             #
             # Delete any prior data for this image
             #
@@ -2999,7 +2999,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             #
             if not post_group:
                 stmt = ('DELETE FROM %s WHERE %s=%d'%
-                        (self.get_table_name(cpmeas.IMAGE), 
+                        (self.get_table_name(cpmeas.IMAGE),
                          C_IMAGE_NUMBER,
                          image_number))
                 execute(self.cursor, stmt, return_result=False)
@@ -3009,10 +3009,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.wants_relationship_table:
                     for col in (COL_IMAGE_NUMBER1, COL_IMAGE_NUMBER2):
                         stmt = 'DELETE FROM %s WHERE %s=%d' % (
-                            self.get_table_name(T_RELATIONSHIPS), col, 
+                            self.get_table_name(T_RELATIONSHIPS), col,
                             image_number)
                         execute(self.cursor, stmt, return_result=False)
-            
+
             ########################################
             #
             # Object tables
@@ -3043,7 +3043,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         object_name, feature, coltype = column[:3]
                         values = measurements.get_measurement(
                             object_name, feature, image_number)
-                        
+
                         if len(values) < max_count:
                             values = list(values) + [None] * (max_count - len(values))
                         values = [
@@ -3063,7 +3063,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         object_number_column = "_".join((object_name, M_NUMBER_OBJECT_NUMBER))
                         object_numbers = measurements.get_measurement(
                             object_name, M_NUMBER_OBJECT_NUMBER, image_number)
-                    
+
                     object_cols += [mapping["%s_%s" % (column[0], column[1])]
                                     for column in columns]
                     object_rows = []
@@ -3075,7 +3075,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                 object_row.append(object_numbers[j])
                         else:
                             object_row = []
-                            
+
                         for column, values in zip(columns, column_values):
                             object_name, feature, coltype = column[:3]
                             object_row.append(values[j])
@@ -3088,13 +3088,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     if not post_group:
                         stmt = ('DELETE FROM %s WHERE %s=%d'%
                                 (table_name, C_IMAGE_NUMBER, image_number))
-                        
+
                         execute(self.cursor, stmt, return_result=False)
                         #
                         # Write the object table data
                         #
                         stmt = ('INSERT INTO %s (%s) VALUES (%s)'%
-                                (table_name, 
+                                (table_name,
                                  ','.join(object_cols),
                                  ','.join(['%s']*len(object_cols))))
                     else:
@@ -3103,14 +3103,14 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             (',\n'.join(["  %s=%%s" % c for c in object_cols])) +
                             ('\nWHERE %s = %d' % (C_IMAGE_NUMBER, image_number)) +
                             ('\nAND %s = %%s' % object_number_column))
-            
+
                     if self.db_type == DB_MYSQL:
                         # Write 25 rows at a time (to get under the max_allowed_packet limit)
                         for i in range(0,len(object_rows), 25):
                             my_rows = object_rows[i:min(i+25, len(object_rows))]
                             self.cursor.executemany(stmt, my_rows)
                         if self.show_window and len(object_rows) > 0:
-                            disp_columns.append((table_name,self.truncate_string_for_display(stmt%tuple(my_rows[0]))))                            
+                            disp_columns.append((table_name,self.truncate_string_for_display(stmt%tuple(my_rows[0]))))
                     else:
                         for row in object_rows:
                             row = [ 'NULL' if x is None else x for x in row]
@@ -3120,24 +3120,24 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             disp_columns.append(
                                 (table_name,
                                  self.truncate_string_for_display(row_stmt)))
-            
+
             image_table = self.get_table_name(cpmeas.IMAGE)
             replacement = '%s' if self.db_type == DB_MYSQL else "?"
             image_row_values = [
                 None if field[0] is None
-                else None if ((field[1] == cpmeas.COLTYPE_FLOAT) and 
+                else None if ((field[1] == cpmeas.COLTYPE_FLOAT) and
                               (np.isnan(field[0]) or np.isinf(field[0])))
                 else float(field[0]) if (field[1] == cpmeas.COLTYPE_FLOAT)
                 else int(field[0]) if (field[1] == cpmeas.COLTYPE_INTEGER)
-                else buffer(field[0]) 
-                if field[1] in (cpmeas.COLTYPE_BLOB, cpmeas.COLTYPE_LONGBLOB, 
+                else buffer(field[0])
+                if field[1] in (cpmeas.COLTYPE_BLOB, cpmeas.COLTYPE_LONGBLOB,
                                 cpmeas.COLTYPE_MEDIUMBLOB)
                 else field[0] for field in image_row]
             if len(image_row) > 0:
                 if not post_group:
                     stmt = (
-                        'INSERT INTO %s (%s) VALUES (%s)' % 
-                        (image_table, 
+                        'INSERT INTO %s (%s) VALUES (%s)' %
+                        (image_table,
                          ','.join([mapping[colname] for val, dtype, colname in image_row]),
                          ','.join([replacement] * len(image_row))))
                 else:
@@ -3147,18 +3147,18 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                     for val, dtype, colname in image_row]) +
                         ('\nWHERE %s = %d' % (C_IMAGE_NUMBER, image_number)))
                 execute(self.cursor, stmt, image_row_values, return_result=False)
-                
+
             if self.show_window:
                 disp_columns.append((image_table,self.truncate_string_for_display(
-                    stmt+" VALUES(%s)"%','.join(map(str,image_row_values))) if len(image_row) > 0 else '')) 
-                    
+                    stmt+" VALUES(%s)"%','.join(map(str,image_row_values))) if len(image_row) > 0 else ''))
+
             if self.wants_relationship_table:
                 #
                 # Relationships table - for SQLite, check for previous existence
                 # but for MySQL use REPLACE INTO to do the same
                 #
                 rtbl_name = self.get_table_name(T_RELATIONSHIPS)
-                columns = [COL_RELATIONSHIP_TYPE_ID, 
+                columns = [COL_RELATIONSHIP_TYPE_ID,
                            COL_IMAGE_NUMBER1, COL_OBJECT_NUMBER1,
                            COL_IMAGE_NUMBER2, COL_OBJECT_NUMBER2]
                 if self.db_type == DB_SQLITE:
@@ -3188,7 +3188,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                       for i1, o1, i2, o2 in r]
                         self.cursor.executemany(stmt, row_values)
                         if self.show_window:
-                            disp_columns.append((rtbl_name,self.truncate_string_for_display(stmt%tuple(row_values[0]))))                        
+                            disp_columns.append((rtbl_name,self.truncate_string_for_display(stmt%tuple(row_values[0]))))
                     else:
                         for i1, o1, i2, o2 in r:
                             row = (
@@ -3196,9 +3196,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             row_stmt = stmt % tuple(row)
                             execute(self.cursor, row_stmt, return_result=False)
                         if self.show_window and len(r) > 0:
-                            disp_columns.append((rtbl_name,self.truncate_string_for_display(row_stmt)))   
-                    
-            if self.show_window: 
+                            disp_columns.append((rtbl_name,self.truncate_string_for_display(row_stmt)))
+
+            if self.show_window:
                 workspace.display_data.header = disp_header
                 workspace.display_data.columns = disp_columns
 
@@ -3215,7 +3215,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         if len(s) > field_size:
             half = int(field_size - 3) / 2
             s = s[:half] + "..." + s[-half:]
-        return s        
+        return s
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1,))
@@ -3223,13 +3223,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             figure.subplot_table(
                 0, 0, [["Data not written to database in test mode"]])
         else:
-            figure.subplot_table(0, 0, 
+            figure.subplot_table(0, 0,
                                  workspace.display_data.columns,
                                  col_labels = workspace.display_data.header)
-    
+
     def display_post_run(self, workspace, figure):
         figure.set_subplots((1, 1,))
-        figure.subplot_table(0, 0, 
+        figure.subplot_table(0, 0,
                              workspace.display_data.columns,
                              col_labels = workspace.display_data.header)
 
@@ -3237,7 +3237,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         '''Write any experiment measurements marked as post-run'''
         columns = workspace.pipeline.get_measurement_columns()
         columns = filter(
-            (lambda c: 
+            (lambda c:
              c[0] == cpmeas.EXPERIMENT and len(c) > 3 and
              c[3].get(cpmeas.MCA_AVAILABLE_POST_RUN, False)), columns)
         if len(columns) > 0:
@@ -3254,7 +3254,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 with DBContext(self) as (connection, cursor):
                     cursor.execute(statement)
                     connection.commit()
-                
+
     def write_properties_file(self, workspace):
         """Write the CellProfiler Analyst properties file"""
         all_properties = self.get_property_file_text(workspace)
@@ -3262,26 +3262,26 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             fid = open(properties.file_name, "wt")
             fid.write(properties.text)
             fid.close()
-            
+
     def get_property_file_text(self, workspace):
         '''Get the text for all property files
-        
+
         workspace - the workspace from prepare_run
-        
+
         Returns a list of Property objects which describe each property file
-        
+
         The Property object has the following attributes:
-        
+
         * object_name - the name of the object: "Object" if combining all tables,
                         otherwise the name of the relevant object.
-                        
+
         * file_name - save text in this file
-        
+
         * text - the text to save
-        
+
         * properties - a key / value dictionary of the properties
         '''
-        
+
         class Properties(object):
             def __init__(self, object_name, file_name, text):
                 self.object_name = object_name
@@ -3306,15 +3306,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     object_names = (self.objects_list.value).split(',')
                 else:
                     object_names = [
-                        object_name 
-                        for object_name in workspace.measurements.get_object_names() 
-                        if (object_name != cpmeas.IMAGE) and 
+                        object_name
+                        for object_name in workspace.measurements.get_object_names()
+                        if (object_name != cpmeas.IMAGE) and
                         (not self.ignore_object(object_name))]
             elif self.separate_object_tables == OT_VIEW:
                 object_names = [None]
         else:
             object_names = [None]
-                
+
         default_image_names = []
         # Find all images that have FileName and PathName
         image_features = [
@@ -3324,13 +3324,13 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             match = re.match('^%s_(.+)$'%C_FILE_NAME,feature)
             if match:
                 default_image_names.append(match.groups()[0])
-                
+
         if not self.properties_export_all_image_defaults:
             # Extract the user-specified images
             user_image_names = []
             for group in self.image_groups:
                 user_image_names.append(group.image_cols.value)
-        
+
         if self.db_type==DB_SQLITE:
             name = os.path.splitext(self.sqlite_file.value)[0]
         else:
@@ -3348,7 +3348,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         db_pwd  = self.db_passwd
         db_name = self.db_name
         db_user = self.db_user
-        db_sqlite_file = (self.db_type == DB_SQLITE and 
+        db_sqlite_file = (self.db_type == DB_SQLITE and
                           self.make_full_filename(self.sqlite_file.value) ) or ''
         if self.db_type == DB_MYSQL or self.db_type == DB_ORACLE:
             db_info =  'db_type      = %(db_type)s\n'%(locals())
@@ -3367,10 +3367,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             db_info += 'db_name      = %(db_name)s\n'%(locals())
             db_info += 'db_user      = \n'
             db_info += 'db_passwd    = '
-        
+
         spot_tables = '%sPer_Image'%(self.get_table_prefix())
         classification_type = "image" if self.properties_classification_type.value == CT_IMAGE else ""
-        
+
         for object_name in object_names:
             if object_name:
                 if self.objects_choice != O_NONE:
@@ -3408,18 +3408,18 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     object_count = 'Image_Count_%s'%(self.location_object.value)
                     cell_x_loc = '%s_Location_Center_X'%(self.location_object.value)
                     cell_y_loc = '%s_Location_Center_Y'%(self.location_object.value)
-                
+
             file_name = self.make_full_filename(filename, workspace)
             unique_id = C_IMAGE_NUMBER
             image_thumbnail_cols = ','.join(
-                ['%s_%s_%s'%(cpmeas.IMAGE, C_THUMBNAIL, name) 
+                ['%s_%s_%s'%(cpmeas.IMAGE, C_THUMBNAIL, name)
                  for name in self.thumbnail_image_names.get_selections()]) \
                 if self.want_image_thumbnails else ''
-            
+
             if self.properties_export_all_image_defaults:
                 image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in default_image_names])
                 image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in default_image_names])
-            
+
                 # Provide default colors
                 if len(default_image_names) == 1:
                     image_channel_colors = 'gray,'
@@ -3428,12 +3428,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     num_images = len(default_image_names)+len(set([name for name in self.thumbnail_image_names.get_selections()]).difference(default_image_names)) if self.want_image_thumbnails else 0
                     image_channel_colors = ','.join(image_channel_colors.split(',')[:num_images])
                 image_names_csl = ','.join(default_image_names) # Convert to comma-separated list
-                
+
                 if self.want_image_thumbnails:
                     selected_thumbs = [name for name in self.thumbnail_image_names.get_selections()]
                     thumb_names = [name for name in default_image_names if name in selected_thumbs] + [name for name in selected_thumbs if name not in default_image_names]
                     image_thumbnail_cols = ','.join(
-                        ['%s_%s_%s'%(cpmeas.IMAGE, C_THUMBNAIL, name) 
+                        ['%s_%s_%s'%(cpmeas.IMAGE, C_THUMBNAIL, name)
                          for name in thumb_names])
                 else:
                     image_thumbnail_cols = ''
@@ -3441,7 +3441,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             else:
                 # Extract user-specified image names and colors
                 user_image_names = [];
-                image_channel_colors = []               
+                image_channel_colors = []
                 selected_image_names = []
                 for group in self.image_groups:
                     selected_image_names += [group.image_cols.value]
@@ -3450,30 +3450,30 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     else:
                         user_image_names += [group.image_name.value]
                     image_channel_colors += [group.image_channel_colors.value]
-                            
+
                 image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in selected_image_names])
                 image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in selected_image_names])
-                
+
                 # Try to match thumbnail order to selected image order
                 if self.want_image_thumbnails:
                     selected_thumbs = [name for name in self.thumbnail_image_names.get_selections()]
                     thumb_names = [name for name in selected_image_names if name in selected_thumbs] + [name for name in selected_thumbs if name not in selected_image_names]
                     image_thumbnail_cols = ','.join(
-                        ['%s_%s_%s'%(cpmeas.IMAGE, C_THUMBNAIL, name) 
+                        ['%s_%s_%s'%(cpmeas.IMAGE, C_THUMBNAIL, name)
                          for name in thumb_names])
                 else:
                     image_thumbnail_cols = ''
                     selected_thumbs = []
-                
+
                 # Convert to comma-separated list
                 image_channel_colors = ','.join(image_channel_colors + ['none']*len(set(selected_thumbs).difference(selected_image_names)))
                 image_names_csl = ','.join(user_image_names)
-                
+
             group_statements = ''
             if self.properties_wants_groups:
                 for group in self.group_field_groups:
                     group_statements += 'group_SQL_' + group.group_name.value + ' = SELECT ' + group.group_statement.value + ' FROM ' + spot_tables + '\n'
-            
+
             filter_statements = ''
             if self.properties_wants_filters:
                 if self.create_filters_for_plates:
@@ -3486,19 +3486,19 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                             ' FROM ' + spot_tables + \
                                             ' WHERE Image_Metadata_%s' \
                                             ' = "%s"\n'%(plate_key, metadata_group.get(plate_key))
-                    
+
                 for group in self.filter_field_groups:
                     filter_statements += 'filter_SQL_' + group.filter_name.value + ' = SELECT ImageNumber'\
                                             ' FROM ' + spot_tables + \
                                             ' WHERE ' + group.filter_statement.value + '\n'
-            
+
             image_url = self.properties_image_url_prepend.value \
                 if self.wants_properties_image_url_prepend else ""
             plate_type = "" if self.properties_plate_type.value == NONE_CHOICE else self.properties_plate_type.value
             plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_plate_metadata.value)
             well_id = "" if self.properties_well_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_well_metadata.value)
             class_table = self.get_table_prefix() + self.properties_class_table_name.value
-            
+
             contents = """#%(date)s
 # ==============================================
 #
@@ -3619,7 +3619,7 @@ classifier_ignore_columns  =  table_number_key_column, image_number_key_column, 
 image_tile_size   =  50
 
 # Provides the image width and height. Used for per-image classification.
-# If not set, it will be obtained from the Image_Width and Image_Height 
+# If not set, it will be obtained from the Image_Width and Image_Height
 # measurements in CellProfiler.
 
 # image_width  = 1000
@@ -3629,7 +3629,7 @@ image_tile_size   =  50
 # Image Gallery can use a different tile size (in pixels) to create thumbnails for images
 # If not set, it will be the same as image_tile_size
 
-image_size = 
+image_size =
 
 # ======== Classification type ========
 # OPTIONAL
@@ -3644,7 +3644,7 @@ classification_type  = %(classification_type)s
 # You may enter the full path to a training set that you would like Classifier
 # to automatically load when started.
 
-training_set  = 
+training_set  =
 
 # ======== Area Based Scoring ========
 # OPTIONAL
@@ -3675,7 +3675,7 @@ check_tables = yes
                                      file_name,
                                      contents))
         return result
-        
+
     def write_workspace_file(self, workspace):
         from cellprofiler.utilities.version import version_number
         '''If requested, write a workspace file with selected measurements'''
@@ -3687,10 +3687,10 @@ check_tables = yes
         if tbl_prefix is not "":
             if tbl_prefix.endswith('_'): tbl_prefix = tbl_prefix[:-1]
             name = "_".join((name, tbl_prefix))
-            
+
         filename = '%s.workspace'%(name)
         file_name = self.make_full_filename(filename,workspace)
-            
+
         fd = open(file_name,"wb")
         header_text = """CellProfiler Analyst workflow
 version: 1
@@ -3706,7 +3706,7 @@ CP version : %d\n""" % version_number
                 display_tool = "Density"
             display_tool_text += """
 %s"""%display_tool
-            
+
             axis_text = "x-axis" if workspace_group.measurement_display.value != W_PLATEVIEWER else "measurement"
             if workspace_group.x_measurement_type.value == cpmeas.IMAGE:
                 axis_meas = "_".join((cpmeas.IMAGE, workspace_group.x_measurement_name.value))
@@ -3719,7 +3719,7 @@ CP version : %d\n""" % version_number
             display_tool_text += """
 \t%s: %s
 \t%s: %s"""%(axis_text, axis_meas, axis_table, table_name)
-            
+
             if workspace_group.measurement_display.value in (W_SCATTERPLOT, W_DENSITYPLOT):
                 if workspace_group.y_measurement_type.value == cpmeas.IMAGE:
                     axis_meas = "_".join((cpmeas.IMAGE, workspace_group.y_measurement_name.value))
@@ -3728,14 +3728,14 @@ CP version : %d\n""" % version_number
                 elif workspace_group.y_measurement_type.value == W_INDEX:
                     axis_meas = workspace_group.y_index_name.value
                 table_name = self.get_table_name(cpmeas.OBJECT if workspace_group.y_measurement_type.value == cpmeas.OBJECT else cpmeas.IMAGE)
-                display_tool_text += """ 
+                display_tool_text += """
 \ty-axis: %s
 \ty-table: %s"""%(axis_meas, table_name)
             display_tool_text += "\n"
-                
+
         fd.write(display_tool_text)
         fd.close()
-        
+
     def get_file_path_width(self, workspace):
         """Compute the file name and path name widths needed in table defs"""
         m = workspace.measurements
@@ -3747,7 +3747,7 @@ CP version : %d\n""" % version_number
         image_features = m.get_feature_names(cpmeas.IMAGE)
         for feature in image_features:
             if feature.startswith(C_FILE_NAME):
-                names = [name 
+                names = [name
                          for name in m.get_all_measurements(cpmeas.IMAGE,feature)
                          if name is not None]
                 if len(names) > 0:
@@ -3759,21 +3759,21 @@ CP version : %d\n""" % version_number
                 if len(names) > 0:
                     PathNameWidth = max(PathNameWidth, np.max(map(len,names)))
         return FileNameWidth, PathNameWidth
-    
+
     def get_table_prefix(self):
         if self.want_table_prefix.value:
             return self.table_prefix.value
         return ""
 
-    
+
     def get_table_name(self, object_name):
         '''Return the table name associated with a given object
-        
+
         object_name - name of object or "Image", "Object" or "Well"
         '''
         return self.get_table_prefix()+'Per_'+object_name
 
-    
+
     def get_pipeline_measurement_columns(self, pipeline, image_set_list, remove_postgroup_key = False):
         '''Get the measurement columns for this pipeline, possibly cached'''
         d = self.get_dictionary(image_set_list)
@@ -3781,7 +3781,7 @@ CP version : %d\n""" % version_number
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
             d[D_MEASUREMENT_COLUMNS] = self.filter_measurement_columns(
                 d[D_MEASUREMENT_COLUMNS])
-            
+
         if remove_postgroup_key:
             d[D_MEASUREMENT_COLUMNS] = [x[:3] for x in d[D_MEASUREMENT_COLUMNS]]
         return d[D_MEASUREMENT_COLUMNS]
@@ -3811,26 +3811,26 @@ CP version : %d\n""" % version_number
         #
         # Remove all but the last duplicate
         #
-        duplicate = [ 
+        duplicate = [
             c0[0] == c1[0] and c0[1] == c1[1]
-            for c0, c1 in zip(columns[:-1], 
+            for c0, c1 in zip(columns[:-1],
                               columns[1:])] + [ False ]
         columns = [x for x, y in zip(columns, duplicate) if not y]
         return columns
-        
+
     def obfuscate(self):
         '''Erase sensitive information about the database
-        
+
         This is run on a copy of the pipeline, so it's ok to erase info.
         '''
         self.db_host.value = ''.join(['*'] * len(self.db_host.value))
         self.db_user.value = ''.join(['*'] * len(self.db_user.value))
         self.db_name.value = ''.join(['*'] * len(self.db_name.value))
         self.db_passwd.value = ''.join(['*'] * len(self.db_passwd.value))
-    
+
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name, from_matlab):
-        
+
         DIR_DEFAULT_OUTPUT = "Default output folder"
         DIR_DEFAULT_IMAGE = "Default input folder"
 
@@ -3870,7 +3870,7 @@ CP version : %d\n""" % version_number
             setting_values = (setting_values[:-1] + [cpmeas.IMAGE] +
                               [cps.DO_NOT_USE] * 3 + setting_values[-1:])
             variable_revision_number = 8
-        
+
         if from_matlab and variable_revision_number == 8:
             #
             # Added more object names
@@ -3882,7 +3882,7 @@ CP version : %d\n""" % version_number
             #
             # Per-well export
             #
-            setting_values = (setting_values[:-1] + 
+            setting_values = (setting_values[:-1] +
                               [cps.NO, cps.DO_NOT_USE, cps.DO_NOT_USE] +
                               setting_values[-1:])
             variable_revision_number = 10
@@ -3947,33 +3947,33 @@ CP version : %d\n""" % version_number
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 9
-            
+
         if (not from_matlab) and variable_revision_number == 6:
-            # Append default values for store_csvs, db_host, db_user, 
-            #  db_passwd, and sqlite_file to update to revision 7 
+            # Append default values for store_csvs, db_host, db_user,
+            #  db_passwd, and sqlite_file to update to revision 7
             setting_values += [False, 'imgdb01', 'cpuser', '', 'DefaultDB.db']
             variable_revision_number = 7
-        
+
         if (not from_matlab) and variable_revision_number == 7:
             # Added ability to selectively turn on aggregate measurements
             # which were all automatically calculated in version 7
             setting_values = setting_values + [True, True, True]
             variable_revision_number = 8
-            
+
         if (not from_matlab) and variable_revision_number == 8:
             # Made it possible to choose objects to save
             #
             setting_values += [ O_ALL, ""]
             variable_revision_number = 9
-        
+
         if (not from_matlab) and variable_revision_number == 9:
             # Added aggregate per well choices
-            # 
-            setting_values = (setting_values[:-2] + 
+            #
+            setting_values = (setting_values[:-2] +
                               [False, False, False] +
                               setting_values[-2:])
             variable_revision_number = 10
-            
+
         if (not from_matlab) and variable_revision_number == 10:
             #
             # Added a directory choice instead of a checkbox
@@ -3987,7 +3987,7 @@ CP version : %d\n""" % version_number
             setting_values = (setting_values[:5] + [directory_choice] +
                               setting_values[6:])
             variable_revision_number = 11
-            
+
         if (not from_matlab) and variable_revision_number == 11:
             #
             # Added separate "database type" of CSV files and removed
@@ -4000,21 +4000,21 @@ CP version : %d\n""" % version_number
             setting_values = ([ db_type ] + setting_values[1:8] +
                               setting_values[9:])
             variable_revision_number = 12
-            
+
         if (not from_matlab) and variable_revision_number == 12:
             #
             # Added maximum column size
             #
             setting_values = setting_values + ["64"]
             variable_revision_number = 13
-            
+
         if (not from_matlab) and variable_revision_number == 13:
             #
             # Added single/multiple table choice
             #
             setting_values = setting_values + [OT_COMBINE]
             variable_revision_number = 14
-            
+
         if (not from_matlab) and variable_revision_number == 14:
             #
             # Combined directory_choice and output_folder into directory
@@ -4033,17 +4033,17 @@ CP version : %d\n""" % version_number
             setting_values = (setting_values[:5] + [directory] +
                               setting_values[7:])
             variable_revision_number = 15
-                              
+
         setting_values = list(setting_values)
         setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],
                                                    setting_values[OT_IDX])
-        
+
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 5
         directory = setting_values[SLOT_DIRCHOICE]
         directory = cps.DirectoryPath.upgrade_setting(directory)
         setting_values[SLOT_DIRCHOICE] = directory
-        
+
         if (not from_matlab) and variable_revision_number == 15:
             #
             # Added 3 new args: url_prepend and thumbnail options
@@ -4064,14 +4064,14 @@ CP version : %d\n""" % version_number
             #
             setting_values = setting_values + [NONE_CHOICE]
             variable_revision_number = 18
-            
+
         if (not from_matlab) and variable_revision_number == 18:
             #
             # Added choices for plate and well metadata in properties file
             #
             setting_values = setting_values + [NONE_CHOICE, NONE_CHOICE]
             variable_revision_number = 19
-            
+
         if (not from_matlab) and variable_revision_number == 19:
             #
             # Added configuration of image information, groups, filters in properties file
@@ -4081,7 +4081,7 @@ CP version : %d\n""" % version_number
             setting_values = setting_values + [cps.NO, "", "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"] # Group specifications
             setting_values = setting_values + [cps.NO, cps.NO] # Filter specifications
             variable_revision_number = 20
-            
+
         if (not from_matlab) and variable_revision_number == 20:
             #
             # Added configuration of workspace file
@@ -4094,47 +4094,47 @@ CP version : %d\n""" % version_number
                                 cpmeas.IMAGE, cpmeas.IMAGE, "", C_IMAGE_NUMBER, # x_measurement_type, x_object_name, x_measurement_name, x_index_name
                                 cpmeas.IMAGE, cpmeas.IMAGE, "", C_IMAGE_NUMBER] # y_measurement_type, y_object_name, y_measurement_name, y_index_name
             variable_revision_number = 21
-            
+
         if (not from_matlab) and variable_revision_number == 21:
             #
             # Added experiment name and location object
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V21] +
-                [ "MyExpt", cps.NONE ] + 
+                [ "MyExpt", cps.NONE ] +
                 setting_values[SETTING_FIXED_SETTING_COUNT_V21:])
             variable_revision_number = 22
-            
+
         if (not from_matlab) and variable_revision_number == 22:
             #
             # Added class table properties field
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V22] +
-                [ "" ] + 
+                [ "" ] +
                 setting_values[SETTING_FIXED_SETTING_COUNT_V22:])
             variable_revision_number = 23
-            
+
         if (not from_matlab) and variable_revision_number == 23:
             #
             # Added wants_relationships_table
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V23] +
-                [ cps.NO ] + 
+                [ cps.NO ] +
                 setting_values[SETTING_FIXED_SETTING_COUNT_V23:])
             variable_revision_number = 24
-            
+
         if (not from_matlab) and variable_revision_number == 24:
             #
             # Added allow_overwrite
             #
             setting_values = (
-                setting_values[:SETTING_FIXED_SETTING_COUNT_V24] + 
+                setting_values[:SETTING_FIXED_SETTING_COUNT_V24] +
                 [ OVERWRITE_DATA ] +
                 setting_values[SETTING_FIXED_SETTING_COUNT_V24:])
             variable_revision_number = 25
-            
+
         if (not from_matlab) and variable_revision_number == 25:
             #
             # added wants_properties_image_url_prepend setting
@@ -4145,51 +4145,51 @@ CP version : %d\n""" % version_number
                 [cps.YES if wants_urls else cps.NO] + \
                 setting_values[SETTING_FIXED_SETTING_COUNT_V25:]
             variable_revision_number = 26
-            
+
         # Added view creation to object table settings
         setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],
                                                    setting_values[OT_IDX])
-        
+
         if (not from_matlab) and variable_revision_number == 26:
             #
             # added classification_type setting
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V26] +
-                [ CT_OBJECT ] + 
-                setting_values[SETTING_FIXED_SETTING_COUNT_V26:])            
+                [ CT_OBJECT ] +
+                setting_values[SETTING_FIXED_SETTING_COUNT_V26:])
             variable_revision_number = 27
-            
+
         return setting_values, variable_revision_number, from_matlab
-    
+
 class ColumnNameMapping:
     """Represents a mapping of feature name to column name"""
-    
+
     def __init__(self,max_len=64):
         self.__dictionary = {}
         self.__mapped = False
         self.__max_len = max_len
-    
+
     def add(self,feature_name):
         """Add a feature name to the collection"""
-        
+
         self.__dictionary[feature_name] = feature_name
         self.__mapped = False
-    
+
     def __getitem__(self,feature_name):
         """Return the column name for a feature"""
         if not self.__mapped:
             self.do_mapping()
         return self.__dictionary[feature_name]
-    
+
     def keys(self):
         return self.__dictionary.keys()
-    
+
     def values(self):
         if not self.__mapped:
             self.do_mapping()
         return self.__dictionary.values()
-    
+
     def do_mapping(self):
         """Scan the dictionary for feature names > max_len and shorten"""
         reverse_dictionary = {}
@@ -4203,7 +4203,7 @@ class ColumnNameMapping:
                 problem_names.append(value)
             elif not re.match(valid_name_regexp, value):
                 problem_names.append(value)
-        
+
         for name in problem_names:
             key = reverse_dictionary[name]
             orig_name = name
@@ -4218,7 +4218,7 @@ class ColumnNameMapping:
             starting_positions = [x for x in [name.find("_"), 0]
                                   if x != -1]
             for pos in starting_positions:
-                # remove vowels 
+                # remove vowels
                 to_remove = len(name)-self.__max_len
                 if to_remove > 0:
                     remove_count = 0
@@ -4236,7 +4236,7 @@ class ColumnNameMapping:
                                     break
                         if remove_count == to_remove:
                             break
-                
+
                 rng = None
                 while name in reverse_dictionary.keys():
                     # if, improbably, removing the vowels hit an existing name
@@ -4257,9 +4257,9 @@ class ColumnNameMapping:
 
 def random_number_generator(seed):
     '''This is a very repeatable pseudorandom number generator
-    
+
     seed - a string to seed the generator
-    
+
     yields integers in the range 0-65535 on iteration
     '''
     m = hashlib.md5()
@@ -4268,35 +4268,35 @@ def random_number_generator(seed):
         digest = m.digest()
         m.update(digest)
         yield ord(digest[0]) + 256 * ord(digest[1])
-    
+
 class SQLiteCommands(object):
     '''This class ducktypes a connection and cursor to aggregate and bulk execute SQL'''
-    
+
     def __init__(self):
         self.commands_and_bindings = []
-        
+
     def execute(self, query, bindings = None):
         self.commands_and_bindings.append((query, bindings))
-        
+
     def commit(self):
         pass
-    
+
     def close(self):
         del self.commands_and_bindings
-    
+
     def rollback(self):
         self.commands_and_bindings = []
-        
+
     def next(self):
         raise NotImplementedError(
             "The SQLite interaction handler can only write to the database")
-    
+
     def get_state(self):
         return self.commands_and_bindings
-    
+
     def set_state(self, state):
         self.commands_and_bindings = state
-        
+
     def execute_all(self, cursor):
         for query, binding in self.commands_and_bindings:
             execute(cursor, query, binding)

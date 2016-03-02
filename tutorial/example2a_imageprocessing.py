@@ -35,7 +35,7 @@ class Example2a(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example2a"
     category = "Image Processing"
-    
+
     def create_settings(self):
         #
         # Put your ImageNameProvider and ImageNameSubscriber here
@@ -46,7 +46,7 @@ class Example2a(cpm.CPModule):
         # Those are the names that are expected by the unit tests.
         #
         ##self.input_image_name = cps.ImageNameSubscriber("Input image")
-        ##self.output_image_name = cps.ImageNameProvider("Output image", 
+        ##self.output_image_name = cps.ImageNameProvider("Output image",
         ##                                               "Sharpened")
         self.scale = cps.Float(
             "Scale", .5, 0,
@@ -60,7 +60,7 @@ class Example2a(cpm.CPModule):
             "Iterations", 10, 1,
             doc = """The number of times to iterate toward maximum likelihood
             estimate.""")
-    
+
     def settings(self):
         #
         # Add your ImageNameProvider and ImageNameSubscriber to the
@@ -69,7 +69,7 @@ class Example2a(cpm.CPModule):
         return [
                 ##self.input_image_name, self.output_image_name,
                 self.scale, self.iterations]
-    
+
     def run(self, workspace):
         ##image_set = workspace.image_set
         #
@@ -106,13 +106,13 @@ class Example2a(cpm.CPModule):
             # Put the original image and the final one into display_data
             workspace.display_data.input_image = input_pixels
             workspace.display_data.output_image = output_pixels
-            
-        
+
+
     def sharpen(self, observed):
         '''Sharpen an observed image
-        
+
         observed - 2-d numpy array of pixel values
-        
+
         Sharpens the image using the Richardson/Lucy algorithm
         '''
         #
@@ -157,7 +157,7 @@ class Example2a(cpm.CPModule):
         #
         iterations = self.iterations.value
         #
-        # This is the code borrowed from 
+        # This is the code borrowed from
         # http://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution
         #
         #function latent_est = RL_deconvolution(observed, psf, iterations)
@@ -174,12 +174,12 @@ class Example2a(cpm.CPModule):
         #   for i= 1:iterations
         for _ in range(iterations):
             #   est_conv      = conv2(latent_est,psf,'same');
-            est_conv = convolve2d(latent_est, psf, 
+            est_conv = convolve2d(latent_est, psf,
                                   mode='same', # return an array of the same size
                                   boundary='symm') # reflect the image at boundary
             #   relative_blur = observed./est_conv;
             relative_blur = observed / (est_conv + np.finfo(observed.dtype).eps)
-            #   error_est     = conv2(relative_blur,psf_hat,'same'); 
+            #   error_est     = conv2(relative_blur,psf_hat,'same');
             error_est = convolve2d(relative_blur, psf_hat, 'same', 'symm')
             #   latent_est    = latent_est.* error_est;
             latent_est = latent_est * error_est
@@ -206,4 +206,4 @@ class Example2a(cpm.CPModule):
         figure.subplot_imshow_grayscale(
             1, 0, workspace.display_data.output_image,
             title = "Sharpened image",
-            sharexy = ax0)        
+            sharexy = ax0)

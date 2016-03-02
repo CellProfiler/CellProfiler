@@ -24,7 +24,7 @@ def do_get():
         print "Content-Type: application/json\r"
         print "\r"
         print json.dumps(
-            { GIT_HASH: git_hash, 
+            { GIT_HASH: git_hash,
               DATETIME_VERSION: datetime_version,
               IS_BUILT: buildstatus
               })
@@ -40,13 +40,13 @@ Look up the GIT hash and datetime version of a revision.
 
 <revision> - a GIT treeish reference (tag, GIT hash, branch)
 
-returns a JSON-encoded dictionary: 
+returns a JSON-encoded dictionary:
 {
     %(GIT_HASH)s:"<git-hash>",
     %(DATETIME_VERSION)s:"<datetime-version>",
     %(IS_BUILT)s:<true/false>,
 }
-<git-hash> - the full GIT hash of the reference 
+<git-hash> - the full GIT hash of the reference
 <datetime-version> - the UTC time of the checkin in the format YYYYMMDDHHMMSS.
 
 The value for %(IS_BUILT)s is true if the version of CellProfiler has been
@@ -54,7 +54,7 @@ built.
 
 PUT /?revision=<revision> HTTP/1.1
 
-(optional JSON dictionary = 
+(optional JSON dictionary =
  {%(EMAIL)s:<email>:%(QUEUE)s:<queue>:%(PROJECT)s:<project>})
 
 <email> - send user email when built
@@ -63,7 +63,7 @@ PUT /?revision=<revision> HTTP/1.1
 
 returns the same JSON-encoded dictionary as for GET
 """ % globals()
-        
+
 def do_put():
     datetime_version, git_hash = get_version_and_githash(query_revision)
     buildstatus = is_built(version=datetime_version, git_hash=git_hash)
@@ -74,17 +74,17 @@ def do_put():
             assert isinstance(options, dict)
         except:
             pass
-        with CellProfilerContext() : 
+        with CellProfilerContext() :
             build_cellprofiler(version = datetime_version,
                                git_hash = git_hash,
                                queue_name = options.get(QUEUE, None),
                                group_name = options.get(PROJECT, None),
                                email_address = options.get(EMAIL, None))
-    
+
     print "Content-Type: application/json\r"
     print "\r"
     print json.dumps(
-        { GIT_HASH: git_hash, 
+        { GIT_HASH: git_hash,
           DATETIME_VERSION: datetime_version,
           IS_BUILT: buildstatus
           })
@@ -96,4 +96,3 @@ elif REQUEST_METHOD == RM_PUT:
 else:
     raise NotImplementedError(
         "Request method %s not implemented" % REQUEST_METHOD)
-

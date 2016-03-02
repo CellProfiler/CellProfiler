@@ -13,7 +13,7 @@ class Example2(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example2"
     category = "Image Processing"
-    
+
     def create_settings(self):
         #
         # The ImageNameSubscriber knows about the images that were provided
@@ -25,7 +25,7 @@ class Example2(cpm.CPModule):
         # The ImageNameProvider tells CellProfiler that this module will
         # provide an image.
         #
-        self.output_image_name = cps.ImageNameProvider("Output image", 
+        self.output_image_name = cps.ImageNameProvider("Output image",
                                                        "Sharpened")
         #
         # If you have a image processing filter, there's a good chance that
@@ -38,7 +38,7 @@ class Example2(cpm.CPModule):
         # Add your settings to the list below.
         #
         return [self.input_image_name, self.output_image_name]
-    
+
     def run(self, workspace):
         image_set = workspace.image_set
         #
@@ -89,8 +89,7 @@ class Example2(cpm.CPModule):
             title = self.input_image_name.value)
         figure.subplot_imshow_grayscale(
             1, 0, workspace.display_data.output_image,
-            title = self.output_image_name.value)        
-        
+            title = self.output_image_name.value)
+
     def is_interactive(self):
         return False
-    

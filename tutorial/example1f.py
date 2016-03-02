@@ -12,14 +12,14 @@ class Example1f(cpm.CPModule):
     variable_revision_number = 1
     category = "Image Processing"
     def create_settings(self):
-        self.filter_choice = cps.Choice("Filter choice", 
+        self.filter_choice = cps.Choice("Filter choice",
                                         [S_GAUSSIAN, S_SOBEL])
         self.input_image_name = cps.ImageNameSubscriber("Input image")
         self.output_image_name = cps.ImageNameProvider("Output image", "Filtered")
-        
+
     def settings(self):
         return [self.filter_choice, self.input_image_name, self.output_image_name]
-    
+
     def run(self, workspace):
         image_set = workspace.image_set
         image = image_set.get_image(self.input_image_name.value)
@@ -33,7 +33,7 @@ class Example1f(cpm.CPModule):
         if self.show_window:
             workspace.display_data.input_image = image.pixel_data
             workspace.display_data.output_image = pixel_data
-        
+
     def display(self, workspace, figure=None):
         if figure is None:
             figure = workspace.create_or_find_figure(subplots=(2, 1))

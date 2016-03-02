@@ -29,14 +29,14 @@ class TestExample5a(unittest.TestCase):
         # pick random points, but not near the edges
         bimg[r.randint(6, 94, 50), r.randint(6, 94, 50)] = False
         return scipy.ndimage.distance_transform_edt(bimg) <= 5
-    
+
     def run_tteesstt(self, objects, level):
         module = instantiate_module(MODULE_NAME)
         module.objects_name.value = OBJECTS_NAME
         module.module_num = 1
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        
+
         object_set = cpo.ObjectSet()
         object_set.add_objects(objects, OBJECTS_NAME)
         #
@@ -66,7 +66,7 @@ class TestExample5a(unittest.TestCase):
                         return
         if level > 1:
             print "+%d for you!" % level
-            
+
     def test_01_01_run_empty(self):
         #
         # Test on an image devoid of objects
@@ -74,7 +74,7 @@ class TestExample5a(unittest.TestCase):
         objects = cpo.Objects()
         objects.segmented = np.zeros((35, 43), int)
         self.run_tteesstt(objects, 1)
-        
+
     def test_01_02_run_simple(self):
         #
         # Make a foreground / background mask and label it. There will
@@ -90,7 +90,7 @@ class TestExample5a(unittest.TestCase):
         objects = cpo.Objects()
         objects.segmented = labels
         self.run_tteesstt(objects, 1)
-        
+
     def test_01_03_run_overlapped(self):
         planes = [self.make_fg_bg(13*(i+1)) for i in range(4)]
         i, j = np.mgrid[0:planes[0].shape[0], 0:planes[0].shape[1]]
@@ -100,7 +100,7 @@ class TestExample5a(unittest.TestCase):
         objects = cpo.Objects()
         objects.set_ijv(ijv, planes[0].shape)
         self.run_tteesstt(objects, 3)
-        
+
     def test_01_04_run_touching(self):
         fg_bg = self.make_fg_bg(14)
         labels, count = scipy.ndimage.label(fg_bg, structure = np.ones((3,3), bool))

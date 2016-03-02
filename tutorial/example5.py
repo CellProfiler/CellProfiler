@@ -16,13 +16,13 @@ class Example5(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example5"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber("Objects name", "Nuclei")
-        
+
     def settings(self):
         return [self.objects_name]
-    
+
     def run(self, workspace):
         #
         # Get some things we need from the workspace
@@ -63,4 +63,3 @@ class Example5(cpm.CPModule):
         # with an object name of "objects_name" and a measurement name
         # of M_MEAN_DISTANCE
         #
-        

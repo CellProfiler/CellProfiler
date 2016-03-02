@@ -23,17 +23,17 @@ class TestExample1a(unittest.TestCase):
     def make_instance(self):
         '''Return an instance of example1 this way because it's not on classpath'''
         return instantiate_module("Example1a")
-    
+
     def test_02_01_create_settings(self):
         module = self.make_instance()
-        self.assertTrue(hasattr(module, "text_setting"), 
+        self.assertTrue(hasattr(module, "text_setting"),
                         "Couldn't find self.text_setting")
         self.assertEqual(module.text_setting, "suggested value")
         self.assertEqual(module.choice_setting, "Choice 1")
         self.assertFalse(module.binary_setting)
         self.assertEqual(module.integer_setting, 15)
         self.assertEqual(module.float_setting, 1.5)
-        
+
     def test_02_02_settings(self):
         module = self.make_instance()
         settings = module.settings()
@@ -43,7 +43,7 @@ class TestExample1a(unittest.TestCase):
         self.assertEqual(id(settings[2]), id(module.binary_setting))
         self.assertEqual(id(settings[3]), id(module.integer_setting))
         self.assertEqual(id(settings[4]), id(module.float_setting))
-        
+
     def test_02_03_run(self):
         module = self.make_instance()
         module.integer_setting.value = 3
@@ -61,7 +61,7 @@ class TestExample1a(unittest.TestCase):
         self.assertFalse(match is None)
         fields = tuple([float(x) for x in match.groups()])
         self.assertEqual(fields, (3, 4.5, 7.5))
-        
+
 
 PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

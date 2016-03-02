@@ -190,7 +190,7 @@ try:
     numpyarray = numpy.ndarray
 except:
     numpyarray = None
-    
+
 
 __version__ = '5.12 (Apr 27, 2009)'
 __all__     = ['adict', 'asized', 'asizeof', 'asizesof',

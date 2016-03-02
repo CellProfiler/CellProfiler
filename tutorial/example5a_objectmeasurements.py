@@ -24,16 +24,16 @@ class Example5a(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example5a"
     category = "Measurement"
-    
+
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber("Objects name", "Nuclei")
         self.method = cps.Choice("Algorithm method",
-                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING, 
+                                 [SUPPORT_BASIC, SUPPORT_OVERLAPPING,
                                   SUPPORT_TOUCHING], SUPPORT_TOUCHING)
-        
+
     def settings(self):
         return [self.objects_name, self.method]
-    
+
     def run(self, workspace):
         #
         # Get some things we need from the workspace
@@ -48,7 +48,7 @@ class Example5a(cpm.CPModule):
         #
         # First, I do it the (1) way to show how that code should look.
         # Later, I do it the (3) way and that will work even if objects.has_ijv
-        # is False. 
+        # is False.
         if self.method == SUPPORT_BASIC:
             labels = objects.segmented
             #
@@ -124,7 +124,7 @@ class Example5a(cpm.CPModule):
             # is clear and readable.
             #
             from centrosome.cpmorphology import color_labels
-            
+
             values = np.zeros(objects.count+1)
             for labels, indices in objects.get_labels():
                 clabels = color_labels(labels)
@@ -156,7 +156,7 @@ class Example5a(cpm.CPModule):
             measurements.add_measurement(objects_name,
                                          M_MEAN_DISTANCE,
                                          values[1:])
-            
+
     def get_measurement_columns(self, pipeline):
         return [(self.objects_name.value, M_MEAN_DISTANCE, cpmeas.COLTYPE_FLOAT)]
 
@@ -164,7 +164,7 @@ class Example5a(cpm.CPModule):
         if object_name == self.objects_name:
             return [C_EXAMPLE5]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.objects_name and category == C_EXAMPLE5:
             return [FTR_MEAN_DISTANCE]

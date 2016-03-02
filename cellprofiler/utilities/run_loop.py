@@ -16,14 +16,14 @@ if sys.platform == "darwin":
          import mac_stop_run_loop as stop_run_loop
 else:
     import threading
-    
+
     #
     # A mutex and condition variable for a dummy run loop
     #
     run_loop_lock = threading.Lock()
     run_loop_cv = threading.Condition(run_loop_lock)
     run_loop_state = 0
-    
+
     def enter_run_loop():
 	global run_loop_state
 	with run_loop_lock:
@@ -34,7 +34,7 @@ else:
 		run_loop_cv.wait()
 	    run_loop_state = 3
 	    run_loop_cv.notify_all()
-		
+
     def stop_run_loop():
 	global run_loop_state
 	with run_loop_lock:

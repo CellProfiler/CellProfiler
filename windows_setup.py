@@ -64,13 +64,13 @@ for site_path in site.getsitepackages():
 class CellProfilerMSI(distutils.core.Command):
     description = "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
     user_options = []
-    
+
     def initialize_options(self):
         pass
-    
+
     def finalize_options(self):
         pass
-    
+
     def run(self):
         if is_2_6 and do_modify:
             self.modify_manifest("analysis_worker.exe")
@@ -106,15 +106,15 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         required_files = ["dist\\CellProfiler.exe",cell_profiler_iss]
         compile_command = self.__compile_command()
         compile_command = compile_command.replace("%1",cell_profiler_iss)
-        self.make_file(required_files, cell_profiler_setup_path, 
+        self.make_file(required_files, cell_profiler_setup_path,
                        subprocess.check_call,([compile_command]),
                        "Compiling %s" % cell_profiler_iss)
         os.remove("version.iss")
         os.remove("ilastik.iss")
-        
+
     def modify_manifest(self, resource_name):
         '''Change the manifest of a resource to match the CRT
-        
+
         resource_name - the name of the executable or DLL maybe + ;#2
                         to pick up the manifest in the assembly
         Read the manifest using "mt", hack the XML to change the version
@@ -138,7 +138,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         msvcrt_assembly = msvcrt.getElementsByTagName("assembly")[0]
         msvcrt_assembly_identity = msvcrt.getElementsByTagName("assemblyIdentity")[0]
         msvcrt_version = msvcrt_assembly_identity.getAttribute("version")
-        
+
         manifest_file_name = tempfile.mktemp()
         pipe = subprocess.Popen(
             (mt,
@@ -147,7 +147,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         pipe.communicate()
         if not os.path.exists(manifest_file_name):
             return
-        
+
         manifest = xml.dom.minidom.parse(manifest_file_name)
         manifest_assembly = manifest.getElementsByTagName("assembly")[0]
         manifest_dependencies = manifest_assembly.getElementsByTagName("dependency")
@@ -160,7 +160,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         fd = open(manifest_file_name, "wt")
         fd.write(manifest.toprettyxml())
         fd.close()
-        
+
         pipe = subprocess.Popen(
             (mt,
              "-outputresource:%s" % os.path.join(directory, resource_name),
@@ -168,12 +168,12 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
              manifest_file_name))
         pipe.communicate()
         os.remove(manifest_file_name)
-    
+
     def __compile_command(self):
         """Return the command to use to compile an .iss file
         """
         try:
-            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, 
+            key = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT,
                                    "InnoSetupScriptFile\\shell\\Compile\\command")
             result = _winreg.QueryValueEx(key,None)[0]
             key.Close()
@@ -186,13 +186,13 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
 class CellProfilerCodesign(distutils.core.Command):
     description = "Sign the .msi package"
     user_options = []
-    
+
     def initialize_options(self):
         pass
-    
+
     def finalize_options(self):
         pass
-    
+
     def run(self):
         required_files = [cell_profiler_setup_path]
         try:
@@ -216,16 +216,16 @@ class CellProfilerCodesign(distutils.core.Command):
                       "The Microsoft Windows SDK does not seem to be properly installed"
         finally:
             key.Close()
-        
+
         self.execute(
             subprocess.check_call,
-            ([signtool, "sign", "/a", "/du", "http://www.cellprofiler.org/", 
-              "/t", "http://timestamp.comodoca.com/authenticode", 
+            ([signtool, "sign", "/a", "/du", "http://www.cellprofiler.org/",
+              "/t", "http://timestamp.comodoca.com/authenticode",
               cell_profiler_setup_path], ), "Signing %s" % cell_profiler_setup)
-        
+
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
-                              "matplotlib", 
+                              "matplotlib",
                               "nose", "nose.*", "nose.plugins.*",
                               "h5py", "h5py.*", "pdb", "readline",
                               "pyreadline", "pyreadline.console",
@@ -282,14 +282,14 @@ if CP_NO_ILASTIK not in os.environ:
             dest = os.path.join('site-packages','ilastik')
             if root != il_path:
                 dest = os.path.join(dest, relative_path)
-            ilastik_files = [os.path.join(root, f) for f in files 
+            ilastik_files = [os.path.join(root, f) for f in files
                              if f.endswith(".ui") or f.endswith(".png") or
                              f.endswith(".py")]
             if len(ilastik_files) > 0:
                 data_files += [(dest, ilastik_files)]
         try:
             import OpenGL.platform.win32
-            opts['py2exe']['includes'] += ['OpenGL.platform.win32', 
+            opts['py2exe']['includes'] += ['OpenGL.platform.win32',
                                            'OpenGL.arrays.*']
             try:
                 import OpenGL_accelerate
@@ -335,7 +335,7 @@ try:
     import scipy.sparse.csgraph._validation
 except:
     pass
-opts['py2exe']['includes'] += [ 
+opts['py2exe']['includes'] += [
     "sklearn.*", "scipy.sparse.csgraph._validation",
     "sklearn.utils.*", "sklearn.neighbors", "sklearn.neighbors.*",
     "sklearn.utils.sparsetools.*"]
@@ -441,7 +441,7 @@ if do_modify:
     key.Close()
     redist = os.path.join(product_dir, r"redist\x86\Microsoft.VC90.CRT")
     data_files += [(".",[os.path.join(redist, x)
-                         for x in ("Microsoft.VC90.CRT.manifest", 
+                         for x in ("Microsoft.VC90.CRT.manifest",
                                    "msvcr90.dll",
                                    "msvcm90.dll",
                                    "msvcp90.dll")])]
@@ -451,9 +451,9 @@ else:
 data_files += [('artwork',
                ['artwork\\%s'%(x)
                 for x in os.listdir('artwork')
-                if x.endswith(".png") 
+                if x.endswith(".png")
                 or x.endswith(".psd") or x.endswith(".txt")]),
-              ('imagej\\jars', 
+              ('imagej\\jars',
                ['imagej\\jars\\%s' % x for x in os.listdir('imagej\\jars')])]
 data_files += matplotlib.get_py2exe_datafiles()
 ################################
@@ -474,7 +474,7 @@ def add_jre_files(path):
         if filename.startswith("."):
             continue
         local_file = os.path.join(jdk_dir, path, filename)
-        relative_path = os.path.join(path, filename) 
+        relative_path = os.path.join(path, filename)
         if not os.access(local_file, os.W_OK):
             # distutils can't deal so well with read-only files
             old_local_file = local_file
@@ -492,7 +492,7 @@ def add_jre_files(path):
         data_files.append([path, files])
     for subdirectory in directories:
         add_jre_files(subdirectory)
-    
+
 add_jre_files("jre")
 data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
 from javabridge import JARS
@@ -520,7 +520,7 @@ finally:
         # TODO: extra credit for finding where the distribution
         #       is and changing the files back to read-only
         os.remove(tempfile)
-        
+
     try:
         from javabridge import kill_vm
         kill_vm()

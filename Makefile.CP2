@@ -1,18 +1,6 @@
 #
 # Makefile for CellProfiler 2 prerequisites
 #
-#
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-#
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# All rights reserved.
-#
-# Please see the AUTHORS file for credits.
-#
-# Website: http://www.cellprofiler.org
-#
 # WARNING: this Makefile is unlikely to work correctly for
 # CellProfiler revisions much beyond the most recent update to the
 # Makefile itself.
@@ -89,7 +77,7 @@ unexport MAKETGTDIRCMD
 # to failed builds because of missing/wrong dependencies.
 DISABLE_PRECHECKS			?= NO
 WXUSEGTK				?= yes
-WGETFLAGS				?= --continue --tries=10 --timeout=60 --no-check-certificate 
+WGETFLAGS				?= --continue --tries=10 --timeout=60 --no-check-certificate
 
 # Versions and prefixes of packages:
 CELLPROFILERPREFIX			?= $(PREFIX)
@@ -104,7 +92,7 @@ SITEPKGPREFIX				= $(PYTHONPREFIX)/lib/python$(PYVERSION)/site-packages
 AMDVERSION				= AMD-2.2.2
 AMDURL					= $(PACKAGEHOST)
 ATLASVERSION				= atlas3.11.8
-ATLASPREFIX				?= /usr/lib64/atlas/ 
+ATLASPREFIX				?= /usr/lib64/atlas/
 ATLASURL				= http://sourceforge.net/projects/math-atlas/files/
 BIOFORMATSVERSION		= python-bioformats-1.0.4
 BIOFORMATSURL			= $(PACKAGEHOST)
@@ -210,7 +198,7 @@ SQLITEPREFIX				?= $(PREFIX)
 SQLITEURL				= $(PACKAGEHOST)
 SWIGVERSION				= swig-2.0.1
 SWIGPREFIX				?= $(PREFIX)
-SWIGURL					= $(PACKAGEHOST) 
+SWIGURL					= $(PACKAGEHOST)
 TIFFVERSION				= tiff-3.9.4
 TIFFPREFIX				?= $(PREFIX)
 UFCONFIGVERSION				= UFconfig-3.6.0
@@ -259,7 +247,7 @@ all:					precheck cellprofiler
 gtk:					precheck libgtk
 
 #Identify host type and set relevant variables
-sethost:				
+sethost:
 	@if echo $${HOSTTYPE} | grep -q 64; then \
 		echo "using 64 bit version" ; \
 	fi
@@ -366,7 +354,7 @@ precheck-success:
 
 
 precheck: $(TMPDIR)/create-dirs sethost precheck-java precheck-env precheck-svn precheck-git precheck-gcc precheck-gpp precheck-gfortran precheck-wget precheck-cmake precheck-success
-.PHONY:					precheck-java precheck-env precheck-svn precheck-git precheck-gcc precheck-gpp precheck-gfortran precheck-wget precheck-cmake precheck-success precheck clean update 
+.PHONY:					precheck-java precheck-env precheck-svn precheck-git precheck-gcc precheck-gpp precheck-gfortran precheck-wget precheck-cmake precheck-success precheck clean update
 #
 # The temporary build directories and source directories
 #
@@ -1097,7 +1085,7 @@ cellprofiler: cython wxpython h5py scipy ilastik matplotlib decorator mysqlpytho
 	export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
 	"$(PYTHON)" ./CellProfiler.py --build-and-exit && \
 	touch "$@"
-	
+
 batchprofiler: cellprofiler yattag $(PREFIX)/bin/cpenv.sh
 
 #
@@ -1682,12 +1670,12 @@ $(SRCDIR)/$(LIBICONVVERSION).tar.gz:
 	cd "$(SRCDIR)" && \
 	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
 	touch "$@"
-	
+
 $(SRCDIR)/$(LIBXML2VERSION).tar.gz:
 	cd "$(SRCDIR)" && \
 	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
 	touch "$@"
-	
+
 $(SRCDIR)/$(LIBXSLTVERSION).tar.gz:
 	cd "$(SRCDIR)" && \
 	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
@@ -1697,7 +1685,7 @@ $(SRCDIR)/mtrand.pyx.patch:
 	cd "$(SRCDIR)" && \
 	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \
 	touch "$@"
-	
+
 $(SRCDIR)/$(YATTAGVERSION).tar.gz:
 	cd "$(SRCDIR)" && \
 	wget $(WGETFLAGS) "$(PACKAGEHOST)/$(@F)" && \

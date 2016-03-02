@@ -14,7 +14,7 @@ class Example1e(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Example1e"
     category = "Other"
-    
+
     def create_settings(self):
         self.groups = []
         #
@@ -38,10 +38,10 @@ class Example1e(cpm.CPModule):
         # remove the first group
         #
         self.add_group(False)
-        
+
     def add_group(self, can_delete = True):
         '''Add a group to the list of groups
-        
+
         can_delete - if true, add a button that removes the entry
         '''
         #
@@ -75,7 +75,7 @@ class Example1e(cpm.CPModule):
         # Add the new group to the list.
         #
         self.groups.append(group)
-        
+
     def settings(self):
         result = [self.group_count]
         #
@@ -90,7 +90,7 @@ class Example1e(cpm.CPModule):
             #
             result += group.pipeline_settings()
         return result
-    
+
     def visible_settings(self):
         #
         # Don't put in the hidden count...doh it's HIDDEN!
@@ -125,7 +125,7 @@ class Example1e(cpm.CPModule):
         # or possibly on a different machine.
         #
         workspace.display_data.accumulator = accumulator
-        
+
     def display(self, workspace, figure = None):
         #
         # We added the figure argument for the FileUI version. This is
@@ -163,7 +163,7 @@ class Example1e(cpm.CPModule):
         # We use a list into the table to organize it in columns. A header
         # and then the values.
         axes.table(cellText = [["Property", "Value"],
-                               ["accumulator", str(accumulator)]], 
+                               ["accumulator", str(accumulator)]],
                    loc='center')
         #
         # You have to do this in order to get rid of the plot display
@@ -175,7 +175,7 @@ class Example1e(cpm.CPModule):
     # it interacted with the user interface inside the "run" method and by
     # default, a module was marked interactive just in case it did use the
     # user interface.
-    # 
+    #
     # CellProfiler would use the indicator to figure out whether "run" had
     # to be run in the user interface thread (CellProfiler would crash under
     # OS-X otherwise).
@@ -187,7 +187,7 @@ class Example1e(cpm.CPModule):
     # We'll cover the new UI interaction mechanism in example2c.
     #
     def is_interactive(self):
-        return False        
+        return False
     #
     # Finally, there's prepare_settings. setting_values are stored as unicode
     # strings (after a fashion) in your pipeline. Your module gets to have
@@ -197,7 +197,7 @@ class Example1e(cpm.CPModule):
     # before settings() is called so you can know how many to return.
     #
     # We thought about this a *little* and this loosey-goosey way of doing it
-    # is typically pythonic in that it gives the implementor a lot of 
+    # is typically pythonic in that it gives the implementor a lot of
     # flexibility, but there's less structure to keep things from going wrong.
     #
     def prepare_settings(self, setting_values):
@@ -213,4 +213,3 @@ class Example1e(cpm.CPModule):
         #
         for _ in range(1, count):
             self.add_group()
-            

@@ -8,7 +8,7 @@ import cellprofiler.settings as cps
 
 #
 # centrosome.cpmorphology has many useful image processing algorithms.
-# 
+#
 # skeletonize_labels performs the skeletonization (medial axis transform) for
 # each labeled object in a labels matrix. It can skeletonize thousands of
 # objects in an image almost as rapidly as skeletonizing a single object
@@ -20,7 +20,7 @@ class Example4(cpm.CPModule):
     module_name = "Example4"
     variable_revision_number = 1
     category = "Object Processing"
-    
+
     def create_settings(self):
         #
         # The ObjectNameSubscriber is aware of all objects published by
@@ -35,10 +35,10 @@ class Example4(cpm.CPModule):
         #
         self.output_objects_name = cps.ObjectNameProvider(
             "Output objects", "Skeletons")
-        
+
     def settings(self):
         return [self.input_objects_name, self.output_objects_name]
-    
+
     def run(self, workspace):
         #
         # The object_set keeps track of the objects produced during a cycle
@@ -58,7 +58,5 @@ class Example4(cpm.CPModule):
         #
         # You can be "nicer" by giving more information, but this is not
         # absolutely necessary. See subsequent exercises for how to be nice.
-        #     
+        #
         object_set = workspace.object_set
-        
-        

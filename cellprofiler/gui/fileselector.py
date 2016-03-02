@@ -48,7 +48,7 @@ def relpath(sub, parent):
     if len(tails) > 1:
         return os.path.join(*tails[1:])
     return ''
-        
+
 def default_image_name(idx):
     try:
         return default_image_names[idx]
@@ -78,7 +78,7 @@ def labeled_thing(label, thing, parent):
     sizer.AddSpacer(5)
     sizer.Add(thing, 0, wx.ALIGN_CENTER)
     return thing, sizer
-        
+
 def boxed_thing(box, thing, flag=0):
     boxsizer = wx.StaticBoxSizer(box, wx.VERTICAL)
     boxsizer.Add(thing, 1, flag=flag)
@@ -128,7 +128,7 @@ class LocationPanel(wx.Panel):
         otherdir_sizer.Add(otherdir, 1)
         otherdir_sizer.AddSpacer(5)
         otherdir_sizer.Add(otherdir_browse)
-                                                                                                
+
         self.top_sizer = top_sizer = wx.BoxSizer(wx.VERTICAL)
         top_sizer.Add(base_dir_sizer, 0, wx.ALIGN_CENTER)
         top_sizer.AddSpacer(5)
@@ -148,7 +148,7 @@ class LocationPanel(wx.Panel):
         advanced_sizer.AddSpacer(10)
         advanced_sizer.Add(exclude_sizer, 0,  wx.ALIGN_CENTER)
         advanced_sizer.AddSpacer(5)
-        advanced_sizer.Add(exclude_boxsizer, 1, wx.ALIGN_CENTER) 
+        advanced_sizer.Add(exclude_boxsizer, 1, wx.ALIGN_CENTER)
         advanced_sizer.AddSpacer(5)
         advanced_sizer.Add(descend_update_filelist, 0, wx.ALIGN_CENTER)
         advanced.SetSizer(advanced_sizer)
@@ -307,7 +307,7 @@ class NamesPanel(wx.Panel):
         # bindings
         imagebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.page_changing)
         imagebook.Bind(wx.EVT_LEFT_DOWN, self.notebook_click)
-        
+
         # default state
         self.new_page = 0
 
@@ -355,11 +355,11 @@ class CPFileSelector(wx.Frame):
         notebook.AddPage(NamesPanel(notebook, -1), "Identify Images")
         notebook.AddPage(wx.Panel(notebook, -1), "Metadata")
         notebook.AddPage(wx.Panel(notebook, -1), "Grouping")
-        
+
         # panels
         self.location = location = notebook.GetPage(0)
         self.names = names = notebook.GetPage(1)
-        
+
         border = wx.BoxSizer()
         border.Add(notebook, 1, wx.EXPAND | wx.ALL, 5)
 
@@ -448,7 +448,7 @@ class ImagePage(wx.Panel):
         pattern = self.pattern.GetValue()
         match_elements_choice = match_elements[self.fullpath.GetSelection()]
         modestr = match_modes[self.mode.GetSelection()]
-            
+
         prefix = []
         if match_elements_choice == FS_FILENAME_ONLY:
             file_string = filename
@@ -485,7 +485,7 @@ class ImagePage(wx.Panel):
     def format_file_list(self):
         flist = [self.format_file(f) for f in self.file_selector.location.get_file_list()]
         return [f for f in flist if f is not None]
-        
+
     def update_file_list(self, evt=None, keep_pos=False):
         try:
             flist = self.format_file_list()
@@ -507,14 +507,14 @@ class DirTree(CT.CustomTreeCtrl):
     def __init__(self, parent, file_selector):
         self.file_selector = file_selector
         CT.CustomTreeCtrl.__init__(self, parent, -1, style=wx.TR_DEFAULT_STYLE)
-        
+
         # folder images
         isz = (16, 16)
         il = wx.ImageList(*isz)
         self.fldridx     = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FOLDER,      wx.ART_OTHER, isz))
         self.fldropenidx = il.Add(wx.ArtProvider_GetBitmap(wx.ART_FILE_OPEN,   wx.ART_OTHER, isz))
         self.SetImageList(il)
-        
+
         self.set_directory(file_selector.get_current_directory())
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.expand)
 
@@ -528,7 +528,7 @@ class DirTree(CT.CustomTreeCtrl):
         self.SetItemImage(root, self.fldropenidx, wx.TreeItemIcon_Expanded)
         self.AppendItem(root, '...')
         self.Refresh()
-        
+
     def expand(self, evt):
         self.Freeze()
         item = evt.GetItem()

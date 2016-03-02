@@ -83,7 +83,7 @@ def show_help(message = None):
                 text("If you feel that's not the case, you can contact your ")
                 text("sysadmin and if you are the sysadmin, you can post to ")
                 text("the ")
-                with tag("a", href="http://cellprofiler.org/forum"):
+                with tag("a", href="http://forum.cellprofiler.org/"):
                     text("CellProfiler forum")
                 text(".")
     print "Content-Type: text/html"

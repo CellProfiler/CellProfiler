@@ -3,6 +3,9 @@ CellProfiler
 
 An open-source application for measuring phenotypes
 
+.. image:: https://travis-ci.org/CellProfiler/CellProfiler.svg?branch=master
+    :target: https://travis-ci.org/CellProfiler/CellProfiler
+
 Installation
 ------------
 

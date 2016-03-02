@@ -495,7 +495,7 @@ or repeating the analysis with slightly different parameters).</li>
 
 <h5>References</h5>
 <p>For a full list of references, visit our 
-<a href="http://www.cellprofiler.org/citations.shtml">citation</a> page.</p>
+<a href="http://www.cellprofiler.org/citations.html">citation</a> page.</p>
 <ul>
 <li>Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O, 
 Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM (2006) 

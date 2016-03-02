@@ -848,7 +848,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     #     old_image_dir = cpprefs.get_default_image_directory()
     #     cpprefs.set_default_image_directory(pipeline_dir)
     #     fd = urlopen(
-    #         "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe")
+    #         "http://d1zymp9ayga15t.cloudfront.net/ExampleFlyImages/ExampleFlyURL.cppipe")
     #     build_dir = os.path.join(
     #         os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
     #         "build")

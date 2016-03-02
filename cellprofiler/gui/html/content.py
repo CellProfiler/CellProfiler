@@ -155,7 +155,7 @@ startup_main = '''<html>
 <tr>
     <td>&nbsp;</td>
     <td width="100"><font size="+2">1: Start</font></td>
-    <td><a href="http://www.cellprofiler.org/examples.shtml">Download</a> a pipeline template from our website of examples. Load it with <i>File &gt; Import &gt; Pipeline from File...</i>. Run it, then modify it to suit your assay.</td>
+    <td><a href="http://www.cellprofiler.org/examples.html">Download</a> a pipeline template from our website of examples. Load it with <i>File &gt; Import &gt; Pipeline from File...</i>. Run it, then modify it to suit your assay.</td>
 </tr>
 <tr>
     <td>&nbsp;</td>

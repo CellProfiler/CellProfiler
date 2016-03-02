@@ -23,9 +23,6 @@ Install from Source
 Prerequisites
 `````````````
 
-NumPy
-^^^^^
-
 `NumPy <http://www.numpy.org/>`_ is the fundamental package for scientific computing with Python:
 
 .. code-block:: sh

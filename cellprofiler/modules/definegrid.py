@@ -2,12 +2,12 @@
 automatically based on previously identified objects.
 <hr>
 This module defines the location of a grid that can be used by modules
-downstream. You can use it in combination with <b>IdentifyObjectsInGrid</b> to measure the 
+downstream. You can use it in combination with <b>IdentifyObjectsInGrid</b> to measure the
 size, shape, intensity and texture of each
 object or location in a grid. The grid is defined by the location of marker spots
-(control spots), which are either indicated manually or 
+(control spots), which are either indicated manually or
 found automatically using previous modules in the pipeline. You can then
-use the grid to make measurements (using <b>IdentifyObjectsInGrid</b>). Text annotation of a 
+use the grid to make measurements (using <b>IdentifyObjectsInGrid</b>). Text annotation of a
 grid can be shown on top of an image using the <b>DisplayGridInfo</b> module (coming soon).
 
 If you are using images of plastic plates, it may be useful to precede
@@ -18,8 +18,8 @@ plate only. If the plates are not centered in exactly the same position
 from one image to the next, this allows the plates to be identified
 automatically and then cropped so that the interior of the plates, upon
 which the grids will be defined, are always in precise alignment with
-each other. 
-                
+each other.
+
 <h4>Available measurements</h4>
 <ul>
 <li><i>Rows, Columns</i>: The number of rows and columns in the grid</li>
@@ -30,20 +30,11 @@ each other.
 
 See also <b>IdentifyObjectsInGrid</b>.
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
 
 import logging
-import numpy as np
 import traceback
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 import cellprofiler.cpgridinfo as cpg
@@ -93,25 +84,25 @@ F_ROWS = "Rows"
 F_COLUMNS = "Columns"
 
 class DefineGrid(cpm.CPModule):
-    
+
     module_name = "DefineGrid"
     variable_revision_number = 1
     category = "Other"
-    
+
     def create_settings(self):
         """Create your settings by subclassing this function
-        
+
         create_settings is called at the end of initialization.
         """
         self.grid_image = cps.GridNameProvider(
             "Name the grid", doc="""
             This is the name of the grid. You can use this name to
             retrieve the grid in subsequent modules.""")
-        
+
         self.grid_rows = cps.Integer("Number of rows",8,1)
-        
+
         self.grid_columns = cps.Integer("Number of columns",12,1)
-        
+
         self.origin = cps.Choice(
             "Location of the first spot",
             [NUM_TOP_LEFT, NUM_BOTTOM_LEFT,
@@ -121,75 +112,75 @@ class DefineGrid(cpm.CPModule):
             For instance, if you choose <i>%(NUM_TOP_LEFT)s</i>, the top left cell is
             cell #1 and cells to the right and bottom are indexed with
             larger numbers."""%globals())
-        
+
         self.ordering = cps.Choice(
-            "Order of the spots", 
+            "Order of the spots",
             [NUM_BY_ROWS, NUM_BY_COLUMNS], doc="""
             Grid cells can either be numbered by rows, then columns or by
             columns, then rows. For instance, you might ask to start numbering
             a 96-well plate at the top left (by specifying the location of the first spot).
             <ul>
-            <li><i>%(NUM_BY_ROWS)s: </i> This option will give well A01 
+            <li><i>%(NUM_BY_ROWS)s: </i> This option will give well A01
             the index 1, B01 the index 2, and so on up to H01 which
-            receives the index 8. Well A02 will be assigned the index 
+            receives the index 8. Well A02 will be assigned the index
             9. </li>
             <li><i>%(NUM_BY_COLUMNS)s:</i> With this option, the well A02 will be assigned
             2, well A12 will be assigned 12 and well B01 will be assigned
             13.</li>
             </ul>"""%globals())
-        
+
         self.each_or_once = cps.Choice(
             "Define a grid for which cycle?",
-            [EO_EACH, EO_ONCE], doc=""" 
-            The setting allows you choose when you want to define a new grid: 
+            [EO_EACH, EO_ONCE], doc="""
+            The setting allows you choose when you want to define a new grid:
             <ul>
             <li><i>%(EO_ONCE)s: </i> If all of your images are perfectly aligned with each
-            other (due to very consistent image acquisition, consistent 
-            grid location within the plate, and/or automatic cropping 
-            precisely within each plate), you can define the location of the 
+            other (due to very consistent image acquisition, consistent
+            grid location within the plate, and/or automatic cropping
+            precisely within each plate), you can define the location of the
             marker spots once for all of the image cycles.</li>
-            <li><i>%(EO_EACH)s:</i> If the location of the grid will vary from one image cycle 
-            to the next then you should define the location of the marker spots 
+            <li><i>%(EO_EACH)s:</i> If the location of the grid will vary from one image cycle
+            to the next then you should define the location of the marker spots
             for each cycle independently.</li>
             </ul>"""%globals())
-        
+
         self.auto_or_manual = cps.Choice(
             "Select the method to define the grid",
             [AM_AUTOMATIC, AM_MANUAL], doc="""
-            Select whether you would like to define the grid automatically (based on objects 
-            you have identified in a previous module) or manually. This setting 
+            Select whether you would like to define the grid automatically (based on objects
+            you have identified in a previous module) or manually. This setting
             controls how the grid is defined:
             <ul>
             <li><i>%(AM_MANUAL)s:</i> In manual mode, you manually indicate
-            known locations of marker spots in the grid and have the rest of 
-            the positions calculated from those marks, no matter what the 
+            known locations of marker spots in the grid and have the rest of
+            the positions calculated from those marks, no matter what the
             image itself looks like. You can define the grid either by
             clicking on the image with a mouse or by entering coordinates.
             </li>
             <li><i>%(AM_AUTOMATIC)s:</i> If you would like the grid to be defined
-            automatically, an <b>IdentifyPrimaryObjects</b> module must be run prior to 
-            this module to identify the objects which will be used to define 
-            the grid. The left-most, right-most, top-most, and bottom-most 
-            object will be used to define the edges of the grid, and the rows 
-            and columns will be evenly spaced between these edges. Note that 
-            Automatic mode requires that the incoming objects are nicely 
-            defined: for example, if there is an object at the edge of the 
-            images that is not really an object that ought to be in the grid, 
-            a skewed grid will result. You might wish to use a 
-            <b>FilterObjects</b> module to clean up badly 
-            identified objects prior to defining the grid. If the spots are 
-            slightly out of alignment with each other from one image cycle to 
-            the next, this allows the identification to be a bit flexible and 
+            automatically, an <b>IdentifyPrimaryObjects</b> module must be run prior to
+            this module to identify the objects which will be used to define
+            the grid. The left-most, right-most, top-most, and bottom-most
+            object will be used to define the edges of the grid, and the rows
+            and columns will be evenly spaced between these edges. Note that
+            Automatic mode requires that the incoming objects are nicely
+            defined: for example, if there is an object at the edge of the
+            images that is not really an object that ought to be in the grid,
+            a skewed grid will result. You might wish to use a
+            <b>FilterObjects</b> module to clean up badly
+            identified objects prior to defining the grid. If the spots are
+            slightly out of alignment with each other from one image cycle to
+            the next, this allows the identification to be a bit flexible and
             adapt to the real location of the spots.</li>
             </ul>"""%globals())
-        
+
         self.object_name = cps.ObjectNameSubscriber(
             "Select the previously identified objects", cps.NONE,doc="""
             <i>(Used only if you selected %(AM_AUTOMATIC)s to define the grid)</i><br>
-            Select the previously identified objects you want to use to 
+            Select the previously identified objects you want to use to
             define the grid. Use this setting to specify the name of the objects that will
             be used to define the grid."""%globals())
-        
+
         self.manual_choice = cps.Choice(
             "Select the method to define the grid manually",
             [MAN_MOUSE, MAN_COORDINATES], doc="""
@@ -197,7 +188,7 @@ class DefineGrid(cpm.CPModule):
             Specify whether you want to define the grid using the mouse or by entering
             the coordinates of the cells.
             <ul>
-            <li><i>%(MAN_MOUSE)s:</i> The user interface displays the image you specify. 
+            <li><i>%(MAN_MOUSE)s:</i> The user interface displays the image you specify.
             You will be asked to click in the center of two of
             the grid cells and specify the row and column for each. The
             grid coordinates will be computed from this information.</li>
@@ -207,15 +198,15 @@ class DefineGrid(cpm.CPModule):
             then enter the X and Y position and cell coordinates for each
             of two cells.</li>
             </ul>"""%globals())
-        
+
         self.manual_image = cps.ImageNameSubscriber(
             "Select the image to display",
             cps.NONE, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_MOUSE)s to define the grid)</i><br>
             Specify the image you want to display when defining the grid.
-            This setting lets you choose the image to display 
+            This setting lets you choose the image to display
             in the grid definition user interface."""%globals())
-        
+
         self.first_spot_coordinates = cps.Coordinates(
             "Coordinates of the first cell",
             (0,0),doc="""
@@ -226,7 +217,7 @@ class DefineGrid(cpm.CPModule):
             the center of the cell. You can display an image of your grid
             and use the pixel coordinate display to determine the
             coordinates of the center of your cell."""%globals())
-        
+
         self.first_spot_row = cps.Integer(
             "Row number of the first cell", 1, minval=1, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_COORDINATES)s to define the grid)</i><br>
@@ -235,7 +226,7 @@ class DefineGrid(cpm.CPModule):
             <i>%(NUM_TOP_LEFT)s</i> as your origin, well A01 will be row number 1
             and H01 will be row number 8. If you chose <i>%(NUM_BOTTOM_LEFT)s</i>,
             A01 will be row number 8 and H01 will be row number 12."""%globals())
-        
+
         self.first_spot_col = cps.Integer(
             "Column number of the first cell",1, minval=1,doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_COORDINATES)s to define the grid)</i><br>
@@ -244,7 +235,7 @@ class DefineGrid(cpm.CPModule):
             <i>%(NUM_TOP_LEFT)s</i> as your origin, well A01 will be column number <i>1</i>
             and A12 will be column number <i>12</i>. If you chose <i>%(NUM_TOP_RIGHT)s</i>,
             A01 and A12 will be <i>12</i> and <i>1</i>, respectively."""%globals())
-        
+
         self.second_spot_coordinates = cps.Coordinates(
             "Coordinates of the second cell",
             (0,0),doc="""
@@ -252,9 +243,9 @@ class DefineGrid(cpm.CPModule):
             This setting defines the location of the second of
             two cells in your grid. You should enter the coordinates of
             the center of the cell. You can display an image of your grid
-            and use use the pixel coordinate display to determine the 
+            and use use the pixel coordinate display to determine the
             coordinates of the center of your cell."""%globals())
-        
+
         self.second_spot_row = cps.Integer(
             "Row number of the second cell", 1, minval=1, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_COORDINATES)s to define the grid)</i><br>
@@ -263,7 +254,7 @@ class DefineGrid(cpm.CPModule):
             <i>%(NUM_TOP_LEFT)s</i> as your origin, well A01 will be row number 1
             and H01 will be row number 8. If you chose <i>%(NUM_BOTTOM_LEFT)s</i>,
             A01 will be row number 8 and H01 will be row number 12."""%globals())
-        
+
         self.second_spot_col = cps.Integer(
             "Column number of the second cell",1, minval=1, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s  + %(MAN_COORDINATES)s to define the grid)</i><br>
@@ -272,36 +263,36 @@ class DefineGrid(cpm.CPModule):
             <i>%(NUM_TOP_LEFT)s</i> as your origin, well A01 will be column number 1
             and A12 will be column number 12. If you chose <i>%(NUM_TOP_RIGHT)s</i>,
             A01 and A12 will be 12 and 1, respectively."""%globals())
-        
+
         self.wants_image = cps.Binary(
-            "Retain an image of the grid?", 
+            "Retain an image of the grid?",
             False, doc = """
             Select <i>%(YES)s</i> to retain an image of the grid for use later in the pipeline.
             This module can create an annotated image of the grid
             that can be saved using the <b>SaveImages</b> module. """%globals())
-        
+
         self.display_image_name = cps.ImageNameSubscriber(
-            "Select the image on which to display the grid", 
+            "Select the image on which to display the grid",
             cps.LEAVE_BLANK, can_be_blank = True, doc = """
             <i>(Used only if saving an image of the grid)</i><br>
             Enter the name of the image that should be used as
             the background for annotations (grid lines and grid indexes).
             This image will be used for the figure and for the saved image.""")
-        
+
         self.save_image_name = cps.ImageNameProvider(
             "Name the output image", "Grid", doc = """
             <i>(Used only if retaining an image of the grid for use later in the pipeline)</i><br>
             Enter the name you want to use for the output image. You can
             save this image using the <b>SaveImages</b> module.""")
-        
+
         self.failed_grid_choice = cps.Choice(
-            "Use a previous grid if gridding fails?", 
+            "Use a previous grid if gridding fails?",
             [FAIL_NO, FAIL_ANY_PREVIOUS, FAIL_FIRST], doc="""
             If the gridding fails, this setting allows you to control how the module responds
-            to the error:            
+            to the error:
             <ul>
             <li><i>%(FAIL_NO)s:</i> The module will stop the pipeline if gridding fails.</li>
-            <li><i>%(FAIL_ANY_PREVIOUS)s:</i>: The module will use the 
+            <li><i>%(FAIL_ANY_PREVIOUS)s:</i>: The module will use the
             the most recent successful gridding.</li>
             <li><i>%(FAIL_FIRST)s:</i> The module will use the first gridding.</li>
             </ul>
@@ -309,22 +300,22 @@ class DefineGrid(cpm.CPModule):
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
-        
+
         These are the settings (from cellprofiler.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
         """
         return [self.grid_image, self.grid_rows, self.grid_columns,
-                self.origin, self.ordering, self.each_or_once, 
+                self.origin, self.ordering, self.each_or_once,
                 self.auto_or_manual, self.object_name, self.manual_choice,
                 self.manual_image, self.first_spot_coordinates,
                 self.first_spot_row, self.first_spot_col,
                 self.second_spot_coordinates, self.second_spot_row,
-                self.second_spot_col, self.wants_image, 
+                self.second_spot_col, self.wants_image,
                 self.save_image_name,
                 self.display_image_name, self.failed_grid_choice]
-    
+
     def visible_settings(self):
         """The settings that are visible in the UI
         """
@@ -353,10 +344,10 @@ class DefineGrid(cpm.CPModule):
             result+= [self.save_image_name]
         result += [self.display_image_name]
         return result
-    
+
     def run(self, workspace):
-        """Run the module 
-        
+        """Run the module
+
         workspace    - The workspace contains
             pipeline     - instance of cpp for this run
             image_set    - the images in the image set being processed
@@ -366,7 +357,7 @@ class DefineGrid(cpm.CPModule):
         """
         background_image = self.get_background_image(workspace, None)
 
-        if (self.each_or_once == EO_ONCE and 
+        if (self.each_or_once == EO_ONCE and
             self.get_good_gridding(workspace) is not None):
             gridding = self.get_good_gridding(workspace)
         if self.auto_or_manual == AM_AUTOMATIC:
@@ -381,7 +372,7 @@ class DefineGrid(cpm.CPModule):
         #
         # Save measurements
         #
-        self.add_measurement(workspace, F_X_LOCATION_OF_LOWEST_X_SPOT, 
+        self.add_measurement(workspace, F_X_LOCATION_OF_LOWEST_X_SPOT,
                              gridding.x_location_of_lowest_x_spot)
         self.add_measurement(workspace, F_Y_LOCATION_OF_LOWEST_Y_SPOT,
                              gridding.y_location_of_lowest_y_spot)
@@ -475,8 +466,8 @@ class DefineGrid(cpm.CPModule):
             first_y = np.min(centroids[0,:])
             second_x = np.max(centroids[1,:])
             second_y = np.max(centroids[0,:])
-            result = self.build_grid_info(first_x, first_y, first_row, 
-                                          first_column, second_x, second_y, 
+            result = self.build_grid_info(first_x, first_y, first_row,
+                                          first_column, second_x, second_y,
                                           second_row, second_column,
                                           objects.segmented.shape)
         except Exception:
@@ -487,10 +478,10 @@ class DefineGrid(cpm.CPModule):
                                        self.object_name.value)
             raise
         return result
-    
+
     def run_coordinates(self, workspace):
         '''Define a grid based on the coordinates of two points
-        
+
         Returns a CPGridInfo object
         '''
         if self.display_image_name.value in workspace.image_set.names:
@@ -507,13 +498,13 @@ class DefineGrid(cpm.CPModule):
                                     self.second_spot_row.value,
                                     self.second_spot_col.value,
                                     shape)
-    
+
     def handle_interaction(self, background_image, image_set_number):
         return self.run_mouse(background_image, image_set_number)
 
     def run_mouse(self, background_image, image_set_number):
         '''Define a grid by running the UI
-        
+
         Returns a CPGridInfo object
         '''
         import matplotlib
@@ -589,7 +580,7 @@ class DefineGrid(cpm.CPModule):
         second_sizer.Add(second_column, wx.GBPosition(0,1),flag=wx.EXPAND)
         second_sizer.Add(wx.StaticText(frame, -1, "Second cell row:"),
                         wx.GBPosition(1,0),flag = wx.EXPAND)
-        second_row = IntCtrl(frame, -1, self.grid_rows.value, 
+        second_row = IntCtrl(frame, -1, self.grid_rows.value,
                              min=1, max=self.grid_rows.value)
         second_sizer.Add(second_row, wx.GBPosition(1,1), flag=wx.EXPAND)
         second_sizer.Add(wx.StaticText(frame,-1,"X:"), wx.GBPosition(0,2))
@@ -626,7 +617,7 @@ class DefineGrid(cpm.CPModule):
         def redisplay(event):
             figure.clf()
             axes = figure.add_subplot(1,1,1)
-            
+
             if (event is not None) or (gridding[0] is None):
                 do_gridding(first_x.Value, first_y.Value,
                             second_x.Value, second_y.Value)
@@ -641,7 +632,7 @@ class DefineGrid(cpm.CPModule):
             status[0] = wx.OK
             frame.SetReturnCode(wx.OK)
             frame.Close(True)
-            
+
         def on_cell_selection(event):
             if cell_choice.Selection == 0:
                 status_bar.SetStatusText(SELECT_FIRST_CELL)
@@ -664,7 +655,7 @@ class DefineGrid(cpm.CPModule):
                 status_bar.SetStatusText(e.message)
                 return False
             return True
-            
+
         def button_release(event):
             if event.inaxes == figure.axes[0]:
                 if cell_choice.Selection == 0:
@@ -700,19 +691,19 @@ class DefineGrid(cpm.CPModule):
         if status[0] != wx.OK:
             raise RuntimeError("Pipeline aborted during grid editing")
         return gridding[0]
-    
+
     def get_feature_name(self, feature):
         return '_'.join((M_CATEGORY, self.grid_image.value, feature))
-    
+
     def add_measurement(self, workspace, feature, value):
         '''Add an image measurement using our category and grid
-        
+
         feature - the feature name of the measurement to add
         value - the value for the measurement
         '''
         feature_name = self.get_feature_name(feature)
         workspace.measurements.add_image_measurement(feature_name, value)
-        
+
     def build_grid_info(self, first_x, first_y, first_row, first_col,
                         second_x, second_y, second_row, second_col,
                         image_shape = None):
@@ -722,9 +713,9 @@ class DefineGrid(cpm.CPModule):
         second_row, second_col =\
                   self.canonical_row_and_column(second_row, second_col)
         gridding = cpg.CPGridInfo()
-        gridding.x_spacing = (float(first_x-second_x) / 
+        gridding.x_spacing = (float(first_x-second_x) /
                               float(first_col - second_col))
-        gridding.y_spacing = (float(first_y-second_y) / 
+        gridding.y_spacing = (float(first_y-second_y) /
                               float(first_row - second_row))
         gridding.x_location_of_lowest_x_spot = int(first_x - first_col *
                                                    gridding.x_spacing)
@@ -736,10 +727,10 @@ class DefineGrid(cpm.CPModule):
         gridding.top_to_bottom = (self.origin in (NUM_TOP_LEFT, NUM_TOP_RIGHT))
         gridding.total_width = int(gridding.x_spacing * gridding.columns)
         gridding.total_height = int(gridding.y_spacing * gridding.rows)
-        
-        line_left_x = int(gridding.x_location_of_lowest_x_spot - 
+
+        line_left_x = int(gridding.x_location_of_lowest_x_spot -
                           gridding.x_spacing/2)
-        line_top_y = int(gridding.y_location_of_lowest_y_spot - 
+        line_top_y = int(gridding.y_location_of_lowest_y_spot -
                          gridding.y_spacing/2)
         #
         # Make a 2 x columns array of x-coordinates of vertical lines (x0=x1)
@@ -764,10 +755,10 @@ class DefineGrid(cpm.CPModule):
             (line_left_x, line_left_x + gridding.total_width),
             (gridding.rows+1, 1))).astype(int)
         gridding.x_locations = (gridding.x_location_of_lowest_x_spot +
-                                np.arange(gridding.columns) * 
+                                np.arange(gridding.columns) *
                                 gridding.x_spacing).astype(int)
         gridding.y_locations = (gridding.y_location_of_lowest_y_spot +
-                                np.arange(gridding.rows) * 
+                                np.arange(gridding.rows) *
                                 gridding.y_spacing).astype(int)
         #
         # The spot table has the numbering for each spot in the grid
@@ -790,19 +781,19 @@ class DefineGrid(cpm.CPModule):
         else:
             # guess the image shape by adding the same border to the right
             # and bottom that we have on the left and top
-            top_edge = int(gridding.y_location_of_lowest_y_spot - 
+            top_edge = int(gridding.y_location_of_lowest_y_spot -
                            gridding.y_spacing / 2)
-            right_edge = int(gridding.x_location_of_lowest_x_spot - 
+            right_edge = int(gridding.x_location_of_lowest_x_spot -
                              gridding.x_spacing/2)
             gridding.image_height = \
                 top_edge * 2 + gridding.y_spacing * gridding.rows
             gridding.image_width = \
                 right_edge * 2 + gridding.x_spacing * gridding.columns
         return gridding
-        
+
     def canonical_row_and_column(self, row, column):
         '''Convert a row and column as entered by the user to canonical form
-        
+
         The user might select something other than the bottom left as the
         origin of their coordinate space. This method returns a row and
         column using a numbering where the top left corner is 0,0
@@ -832,7 +823,7 @@ class DefineGrid(cpm.CPModule):
     def display_grid(self, background_image, gridding, image_set_number, axes):
         '''Display the grid in a figure'''
         import matplotlib
-        
+
         axes.cla()
         assert isinstance(axes, matplotlib.axes.Axes)
         assert isinstance(gridding, cpg.CPGridInfo)
@@ -869,24 +860,24 @@ class DefineGrid(cpm.CPModule):
                                                        edgecolor = "black"))
                 axes.add_artist(text)
         axes.axis('image')
-    
+
     def get_good_gridding(self, workspace):
         '''Get either the first gridding or the most recent successful gridding'''
         d = self.get_dictionary()
         if not GOOD_GRIDDING in d:
             return None
         return d[GOOD_GRIDDING]
-    
+
     def set_good_gridding(self, workspace, gridding):
         '''Set the gridding to use upon failure'''
         d = self.get_dictionary()
         if (self.failed_grid_choice == FAIL_ANY_PREVIOUS or
             not d.has_key(GOOD_GRIDDING)):
             d[GOOD_GRIDDING] = gridding
-            
+
     def validate_module(self, pipeline):
         '''Make sure that the row and column are different'''
-        if (self.auto_or_manual == AM_MANUAL and 
+        if (self.auto_or_manual == AM_MANUAL and
             self.manual_choice == MAN_COORDINATES):
             if self.first_spot_row.value == self.second_spot_row.value:
                 raise cps.ValidationError(
@@ -898,11 +889,11 @@ class DefineGrid(cpm.CPModule):
                     "The first and second column numbers must be different "
                     "in order to calculate the distance between columns.",
                     self.second_spot_col)
-    
+
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
         '''Adjust setting values if they came from a previous revision
-        
+
         setting_values - a sequence of strings representing the settings
                          for the module as stored in the pipeline
         variable_revision_number - the variable revision number of the
@@ -914,7 +905,7 @@ class DefineGrid(cpm.CPModule):
                       that module was merged into the current module
         from_matlab - True if the settings came from a Matlab pipeline, False
                       if the settings are from a CellProfiler 2.0 pipeline.
-        
+
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
         they should leave things as-is so that the caller can report
@@ -931,7 +922,7 @@ class DefineGrid(cpm.CPModule):
             except:
                 rows, cols = (8,12)
             try:
-                x_spacing, y_spacing = [int(x.strip()) 
+                x_spacing, y_spacing = [int(x.strip())
                                         for x in horz_vert_spacing.split(',')]
             except:
                 x_spacing, y_spacing = (10,10)
@@ -947,7 +938,7 @@ class DefineGrid(cpm.CPModule):
 
             origin = top_or_bottom + " " + left_or_right.lower()
             setting_values = [
-                grid_name, 
+                grid_name,
                 str(rows),
                 str(cols),
                 origin,
@@ -966,7 +957,7 @@ class DefineGrid(cpm.CPModule):
                 image_name, failed_grid_choice]
             from_matlab = False
             variable_revision_number = 1
-            
+
         if variable_revision_number == 1 and not from_matlab:
             #
             # Some of the wording changed for the failed grid choice
@@ -976,17 +967,17 @@ class DefineGrid(cpm.CPModule):
             elif setting_values[-1] == "The First":
                 setting_values = setting_values[:-1]+[FAIL_FIRST]
         return setting_values, variable_revision_number, from_matlab
-    
+
     def get_measurement_columns(self, pipeline):
         '''Return a sequence describing the measurement columns needed by this module
-        
+
         This call should return one element per image or object measurement
         made by the module during image set analysis. The element itself
         is a 3-tuple:
         first entry: either one of the predefined measurement categories,
                      {"Image", "Experiment" or "Neighbors" or the name of one
                      of the objects.}
-        second entry: the measurement name (as would be used in a call 
+        second entry: the measurement name (as would be used in a call
                       to add_measurement)
         third entry: the column data type (for instance, "varchar(255)" or
                      "float")
@@ -1000,13 +991,13 @@ class DefineGrid(cpm.CPModule):
 
     def get_categories(self, pipeline,object_name):
         """Return the categories of measurements that this module produces
-        
+
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         if object_name == cpmeas.IMAGE:
             return [M_CATEGORY]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name == cpmeas.IMAGE and category == M_CATEGORY:
             return ['_'.join((self.grid_image.value, feature))
@@ -1014,4 +1005,3 @@ class DefineGrid(cpm.CPModule):
                                     F_Y_SPACING, F_X_LOCATION_OF_LOWEST_X_SPOT,
                                     F_Y_LOCATION_OF_LOWEST_Y_SPOT)]
         return []
-        

@@ -27,30 +27,22 @@ In the above example the pipeline "mypipeline" will be run with "1" as omero obj
 <li>University of Dundee</li>
 </ul>
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
+
 
 
 # module author: Bram Gerritsen
 # e-mail: b.gerritsen@nki.nl
 
-import numpy as np
-import wx
 import traceback
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpimage
-import cellprofiler.measurements as cpmeas
-import cellprofiler.settings as cps
-import cellprofiler.preferences as cpp
+import numpy as np
+import wx
 
+import cellprofiler.cpimage as cpimage
+import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
+import cellprofiler.preferences as cpp
+import cellprofiler.settings as cps
 #get the default cellprofiler image names for the different
 #channels of an omero image from the loadimages module
 from cellprofiler.modules.loadimages import default_cpimage_name

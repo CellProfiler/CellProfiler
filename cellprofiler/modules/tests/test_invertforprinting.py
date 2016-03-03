@@ -1,25 +1,15 @@
 '''test_invertforprinting - Test the InvertForPrinting module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
-
 import base64
-import numpy as np
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw
@@ -111,16 +101,16 @@ class TestInvertForPrinting(unittest.TestCase):
         self.assertEqual(module.color_input_image.value, "DNA")
         self.assertEqual(module.output_color_choice.value, I.CC_COLOR)
         self.assertEqual(module.color_output_image.value, "InvertedColor")
-    
-    def run_module(self, color_image = None, 
+
+    def run_module(self, color_image = None,
                    red_image = None, green_image = None, blue_image = None,
                    fn = None):
         '''Run the InvertForPrinting module
-        
+
         Call this with Numpy arrays for the images and optionally
         specify a function (fn) whose argument is an InvertForPrinting module.
         You can specialize the module inside this function.
-        
+
         Returns a dictionary of the pixel data of the images in the image set
         '''
         image_set_list = cpi.ImageSetList()
@@ -161,7 +151,7 @@ class TestInvertForPrinting(unittest.TestCase):
         for provider in image_set.providers:
             result[provider.get_name()] = provider.provide_image(image_set).pixel_data
         return result
-    
+
     def test_02_01_color_to_color(self):
         np.random.seed(0)
         color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
@@ -177,7 +167,7 @@ class TestInvertForPrinting(unittest.TestCase):
             diff = (result[:,:,o] - ((1 - color_image[:,:,i1]) *
                                      (1-color_image[:,:,i2])))
             self.assertTrue(np.all(np.abs(diff) <= np.finfo(float).eps))
-    
+
     def test_02_02_color_to_bw(self):
         np.random.seed(0)
         color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
@@ -194,7 +184,7 @@ class TestInvertForPrinting(unittest.TestCase):
             diff = (result[o] - ((1 - color_image[:,:,i1]) *
                                  (1-color_image[:,:,i2])))
             self.assertTrue(np.all(np.abs(diff) <= np.finfo(float).eps))
-    
+
     def test_02_03_bw_to_color(self):
         np.random.seed(0)
         color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
@@ -234,7 +224,7 @@ class TestInvertForPrinting(unittest.TestCase):
                 result[o],
                 ((1 - color_image[:,:,i1]) *
                  (1-color_image[:,:,i2])))
-    
+
     def test_03_01_missing_image(self):
         np.random.seed(0)
         color_image = np.random.uniform(size=(10,20,3)).astype(np.float32)
@@ -261,4 +251,3 @@ class TestInvertForPrinting(unittest.TestCase):
                     result[o],
                     ((1 - color_image[:,:,i1] if present[i1] else 1) *
                      (1-color_image[:,:,i2] if present[i2] else 1)))
-        

@@ -1,26 +1,14 @@
 '''errordialog - dialog box for reporting error.
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
+import logging
 import os
-from StringIO import StringIO
+import platform
+import sys
+import traceback
 import urllib
 import urllib2
-import traceback
-import sys
-import platform
-import logging
-
+from StringIO import StringIO
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
@@ -81,7 +69,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     continue_only - show "continue" option, only
     remote_exc_info - None (the default) for exceptions in the current process.
         For remote processes:
-            (exc_name, exc_message, traceback_text, filename, 
+            (exc_name, exc_message, traceback_text, filename,
              line_number, remote_event_queue)
 
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
@@ -314,33 +302,33 @@ def on_report(event, dialog, traceback_text, pipeline):
 
 def show_warning(title, message, get_preference, set_preference):
     '''Show a silenceable warning message to the user
-    
+
     title - title for the dialog box
-    
+
     message - message to be displayed
-    
+
     get_preference - function that gets a user preference: do you want to
                      show this warning?
-    
+
     set_preference - function that sets the user preference if they choose
                      not to see the warning again.
-                     
+
     The message is printed to the console if headless.
     '''
     from cellprofiler.preferences import get_headless
-    
+
     if get_headless():
         print message
         return
-    
+
     if not get_preference():
         return
-    
+
     import wx
     if wx.GetApp() is None:
         print message
         return
-    
+
     with wx.Dialog(None, title = title) as dlg:
         dlg.Sizer = sizer = wx.BoxSizer(wx.VERTICAL)
         subsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -351,7 +339,7 @@ def show_warning(title, message, get_preference, set_preference):
                      0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.RIGHT, 5)
         text = wx.StaticText(dlg, wx.ID_ANY, message)
         subsizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL, 5)
-        dont_show = wx.CheckBox(dlg, 
+        dont_show = wx.CheckBox(dlg,
                                 label = "Don't show this message again.")
         sizer.Add(dont_show, 0, wx.ALIGN_LEFT | wx.ALL, 5)
         buttons_sizer = wx.StdDialogButtonSizer()
@@ -366,14 +354,14 @@ def show_warning(title, message, get_preference, set_preference):
 def display_error_message(parent, message, title, buttons = None,
                           size = (300, 200)):
     '''Display an error in a scrolling message box
-    
+
     parent - parent window to the error message
     message - message to display in scrolling box
     title - title to display in frame
-    buttons - a list of buttons to put at bottom of dialog. For instance, 
+    buttons - a list of buttons to put at bottom of dialog. For instance,
               [wx.ID_YES, wx.ID_NO]. Defaults to OK button
     size - size of frame. Defaults to 300 x 200 but will fit.
-    
+
     returns the code from ShowModal.
     '''
     import wx
@@ -381,18 +369,18 @@ def display_error_message(parent, message, title, buttons = None,
         buttons = [wx.ID_OK]
     else:
         assert len(buttons) > 0
-        
-    with wx.Dialog(parent, title=title, size = size, 
+
+    with wx.Dialog(parent, title=title, size = size,
                    style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER) as dlg:
         assert isinstance(dlg, wx.Dialog)
         dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         dlg.Sizer.AddSpacer(20)
         dlg.Sizer.Add(sizer, 1, wx.EXPAND)
-        
+
         sizer.AddSpacer(10)
         icon = wx.ArtProvider.GetBitmap(wx.ART_ERROR)
-        sizer.Add(wx.StaticBitmap(dlg, bitmap=icon), 0, 
+        sizer.Add(wx.StaticBitmap(dlg, bitmap=icon), 0,
                   wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP | wx.ALL, 10)
         sizer.AddSpacer(10)
         message_ctrl = wx.TextCtrl(
@@ -408,11 +396,11 @@ def display_error_message(parent, message, title, buttons = None,
         message_ctrl.SetMinSize((width, min(height, size[1])))
         sizer.Add(message_ctrl, 1, wx.EXPAND)
         sizer.AddSpacer(10)
-        
+
         dlg.Sizer.AddSpacer(10)
         button_sizer = wx.StdDialogButtonSizer()
         dlg.Sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
-        
+
         def on_button(event):
             id2code = {
                 wx.ID_YES: wx.YES,
@@ -421,7 +409,7 @@ def display_error_message(parent, message, title, buttons = None,
                 wx.ID_OK: wx.OK }
             assert isinstance(event, wx.Event)
             dlg.EndModal(id2code[event.Id])
-            
+
         for button in buttons:
             button_ctl = wx.Button(dlg, button)
             button_sizer.AddButton(button_ctl)
@@ -430,7 +418,7 @@ def display_error_message(parent, message, title, buttons = None,
         button_sizer.Realize()
         dlg.Fit()
         return dlg.ShowModal()
-    
+
 if __name__ == "__main__":
     import wx
     import cellprofiler.pipeline

@@ -1,25 +1,16 @@
 '''test_smooth.py - test the smooth module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
-import base64
-import numpy as np
-from scipy.ndimage import gaussian_filter
 import StringIO
+import base64
 import unittest
 import zlib
 
+import numpy as np
+from scipy.ndimage import gaussian_filter
+
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw
@@ -53,7 +44,7 @@ class TestSmooth(unittest.TestCase):
         module.image_name.value = INPUT_IMAGE_NAME
         module.filtered_image_name.value = OUTPUT_IMAGE_NAME
         return workspace, module
-    
+
     def test_01_01_load_matlab(self):
         data = base64.b64decode(
             'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9u'
@@ -79,7 +70,7 @@ class TestSmooth(unittest.TestCase):
         self.assertEqual(smooth.filtered_image_name.value, 'CorrBlue')
         self.assertEqual(smooth.smoothing_method.value, S.FIT_POLYNOMIAL)
         self.assertTrue(smooth.wants_automatic_object_size)
-    
+
     def test_01_02_load_v01(self):
         data = base64.b64decode(
             'eJztWN1u0zAUdrqsbCDt5wourV0hxKJ0iGr0hnUrE5GWrqLVBHd4rdtZcuLKcaaWJ'
@@ -106,7 +97,7 @@ class TestSmooth(unittest.TestCase):
         self.assertEqual(smooth.smoothing_method.value, S.FIT_POLYNOMIAL)
         self.assertTrue(smooth.wants_automatic_object_size)
         self.assertTrue(smooth.clip)
-        
+
     def test_01_03_load_v02(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -135,7 +126,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         self.assertEqual(smooth.object_size, 19)
         self.assertEqual(smooth.smoothing_method, S.MEDIAN_FILTER)
         self.assertFalse(smooth.clip)
-        
+
     def test_02_01_fit_polynomial(self):
         '''Test the smooth module with polynomial fitting'''
         np.random.seed(0)
@@ -159,7 +150,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertFalse(result is None)
             np.testing.assert_almost_equal(result.pixel_data, expected)
-    
+
     def test_03_01_gaussian_auto_small(self):
         '''Test the smooth module with Gaussian smoothing in automatic mode'''
         sigma = 100.0/ 40.0 / 2.35
@@ -175,7 +166,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
-    
+
     def test_03_02_gaussian_auto_large(self):
         '''Test the smooth module with Gaussian smoothing in large automatic mode'''
         sigma = 30.0 / 2.35
@@ -208,7 +199,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
-        
+
     def test_04_01_median(self):
         '''test the smooth module with median filtering'''
         object_size = 100.0/ 40.0
@@ -223,7 +214,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         np.testing.assert_almost_equal(result.pixel_data, expected)
-        
+
     def test_05_01_bilateral(self):
         '''test the smooth module with bilateral filtering'''
         sigma = 16.0
@@ -241,4 +232,4 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        np.testing.assert_almost_equal(result.pixel_data, expected)        
+        np.testing.assert_almost_equal(result.pixel_data, expected)

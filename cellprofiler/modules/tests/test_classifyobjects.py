@@ -1,25 +1,15 @@
 '''test_classifyobjects - test the ClassifyObjects module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
-
 import base64
-import numpy as np
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw
@@ -63,7 +53,7 @@ class TestClassifyObjects(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))    
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, C.ClassifyObjects))
         self.assertEqual(module.contrast_choice, C.BY_SINGLE_MEASUREMENT)
@@ -79,7 +69,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertFalse(group.wants_high_bin)
         self.assertFalse(group.wants_custom_names)
         self.assertFalse(group.wants_images)
-        
+
     def test_01_02_load_matlab_classify_by_two_measurements(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylRwSU1WMDBRMDS1MrawMjRTMDIwsFQgGTAwevryMzAw/GBi'
@@ -118,7 +108,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(module.second_threshold_method, C.TM_MEAN)
         self.assertFalse(module.wants_custom_names)
         self.assertFalse(module.wants_image)
-    
+
     def test_01_03_load_v1(self):
         data = ('eJztXNtu2zYYphwna1pgSLeLFRiG6SoYCkdQTluWmymHZjEQJ8EcdO1NM0Wi'
                 'bQ4yaUhUEu9J9lh7lD7CRFu2ZEaObFmWLJdCFJs0v/8jP/48/JKg2tHNxdGx'
@@ -163,7 +153,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertTrue(isinstance(module, C.ClassifyObjects))
         self.assertEqual(module.contrast_choice.value, C.BY_SINGLE_MEASUREMENT)
         self.assertEqual(len(module.single_measurements), 2)
-        
+
         group = module.single_measurements[0]
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement.value, "Intensity_IntegratedIntensity_OrigBlue")
@@ -179,7 +169,7 @@ class TestClassifyObjects(unittest.TestCase):
             self.assertEqual(name, expected)
         self.assertTrue(group.wants_images)
         self.assertEqual(group.image_name, "ClassifiedNuclei")
-        
+
         group = module.single_measurements[1]
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement.value, "Intensity_MaxIntensity_OrigBlue")
@@ -187,7 +177,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(group.custom_thresholds, ".2,.5,.8")
         self.assertFalse(group.wants_custom_names)
         self.assertFalse(group.wants_images)
-    
+
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, C.ClassifyObjects))
         self.assertEqual(module.contrast_choice, C.BY_TWO_MEASUREMENTS)
@@ -196,7 +186,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(module.first_threshold_method, C.TM_MEDIAN)
         self.assertEqual(module.second_measurement, "Location_Center_Y")
         self.assertEqual(module.second_threshold_method, C.TM_MEDIAN)
-        
+
     def test_01_04_load_v2(self):
         data = ('eJztne9z2jYYxwUhXdPe7dJtL/qmN7/a7XrEA5bs0rwZ+VEW7kLCDa5rX6WO'
                 'LUA7I3G2nIT91fkTZoEdG8XExtgGU3EhIOHP80hfP5L1iBBax92L4xPpQK5I'
@@ -236,13 +226,13 @@ class TestClassifyObjects(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()),5)
         module = pipeline.modules()[-2]
         self.assertTrue(isinstance(module, C.ClassifyObjects))
         self.assertEqual(module.contrast_choice.value, C.BY_SINGLE_MEASUREMENT)
         self.assertEqual(len(module.single_measurements), 2)
-        
+
         group = module.single_measurements[0]
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement.value, "Intensity_IntegratedIntensity_OrigBlue")
@@ -258,7 +248,7 @@ class TestClassifyObjects(unittest.TestCase):
             self.assertEqual(name, expected)
         self.assertTrue(group.wants_images)
         self.assertEqual(group.image_name, "ClassifiedNuclei")
-        
+
         group = module.single_measurements[1]
         self.assertEqual(group.object_name, "Nuclei")
         self.assertEqual(group.measurement.value, "Intensity_MaxIntensity_OrigBlue")
@@ -276,14 +266,14 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(module.second_measurement, "Location_Center_Y")
         self.assertEqual(module.second_threshold_method, C.TM_CUSTOM)
         self.assertAlmostEqual(module.second_threshold.value, .4)
-    
+
     def make_workspace(self, labels, contrast_choice,
                        measurement1=None, measurement2=None):
         object_set = cpo.ObjectSet()
         objects = cpo.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
-        
+
         measurements = cpmeas.Measurements()
         module = C.ClassifyObjects()
         m_names = []
@@ -298,7 +288,7 @@ class TestClassifyObjects(unittest.TestCase):
             m_names.append(MEASUREMENT_NAME_2)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        
+
         module.contrast_choice.value = contrast_choice
         if module.contrast_choice == C.BY_SINGLE_MEASUREMENT:
             for i, m in enumerate(m_names):
@@ -321,7 +311,7 @@ class TestClassifyObjects(unittest.TestCase):
                                   object_set, measurements,
                                   image_set_list)
         return workspace, module
-        
+
     def test_02_01_classify_single_none(self):
         '''Make sure the single measurement mode can handle no objects'''
         workspace, module = self.make_workspace(
@@ -336,7 +326,7 @@ class TestClassifyObjects(unittest.TestCase):
             m = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                m_name)
             self.assertEqual(len(m), 0)
-    
+
     def test_02_02_classify_single_even(self):
         m = np.array((.5,0,1,.1))
         labels = np.zeros((20,10),int)
@@ -353,7 +343,7 @@ class TestClassifyObjects(unittest.TestCase):
         module.single_measurements[0].wants_low_bin.value = True
         module.single_measurements[0].wants_high_bin.value = True
         module.single_measurements[0].wants_images.value = True
-        
+
         expected_obj = dict(Classify_Measurement1_Bin_1 = (0,1,0,1),
                         Classify_Measurement1_Bin_2 = (1,0,0,0),
                         Classify_Measurement1_Bin_3 = (0,0,1,0))
@@ -373,14 +363,14 @@ class TestClassifyObjects(unittest.TestCase):
             values = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
                                                                     measurement)
             self.assertTrue(values == expected_values)
-        
+
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertTrue(np.all(pixel_data[labels==0,:] == 0))
         colors = [pixel_data[x,y,:] for x,y in ((2,3),(12,1),(6,5))]
         for i,color in enumerate(colors + [colors[1]]):
             self.assertTrue(np.all(pixel_data[labels==i+1,:] == color))
-            
+
         columns = module.get_measurement_columns(None)
         self.assertEqual(len(columns), 9)
         self.assertEqual(len(set([column[1] for column in columns])), 9) # no duplicates
@@ -393,7 +383,7 @@ class TestClassifyObjects(unittest.TestCase):
                 self.assertEqual(column[0], OBJECTS_NAME)
                 self.assertTrue(column[1] in expected_obj.keys())
                 self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
-            
+
         categories = module.get_categories(None, cpmeas.IMAGE)
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], C.M_CATEGORY)
@@ -416,7 +406,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(len(set(names)), 6)
         self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_img.keys()
                              for name in names]))
-        
+
     def test_02_03_classify_single_custom(self):
         m = np.array((.5,0,1,.1))
         labels = np.zeros((20,10),int)
@@ -434,7 +424,7 @@ class TestClassifyObjects(unittest.TestCase):
         module.single_measurements[0].wants_high_bin.value = True
         module.single_measurements[0].bin_names.value = "Three,Blind,Mice"
         module.single_measurements[0].wants_images.value = True
-        
+
         expected_img = dict(Classify_Three_NumObjectsPerBin = 2,
                             Classify_Three_PctObjectsPerBin = 50.0,
                             Classify_Blind_NumObjectsPerBin = 1,
@@ -460,7 +450,7 @@ class TestClassifyObjects(unittest.TestCase):
         colors = [pixel_data[x,y,:] for x,y in ((2,3),(12,1),(6,5))]
         for i,color in enumerate(colors + [colors[1]]):
             self.assertTrue(np.all(pixel_data[labels==i+1,:] == color))
-            
+
         columns = module.get_measurement_columns(None)
         self.assertEqual(len(columns), 9)
         self.assertEqual(len(set([column[1] for column in columns])), 9) # no duplicates
@@ -473,7 +463,7 @@ class TestClassifyObjects(unittest.TestCase):
                 self.assertEqual(column[0], OBJECTS_NAME)
                 self.assertTrue(column[1] in expected_obj.keys())
                 self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
-            
+
         categories = module.get_categories(None, cpmeas.IMAGE)
         self.assertEqual(len(categories), 1)
         categories = module.get_categories(None, OBJECTS_NAME)
@@ -493,7 +483,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertEqual(len(set(names)), 6)
         self.assertTrue(all(['_'.join((C.M_CATEGORY, name)) in expected_img.keys()
                              for name in names]))
-        
+
     def test_02_04_last_is_nan(self):
         # regression test for issue #1553
         #
@@ -520,7 +510,7 @@ class TestClassifyObjects(unittest.TestCase):
             module.single_measurements[0].wants_high_bin.value = True
             module.single_measurements[0].bin_names.value = "Three,Blind,Mice"
             module.single_measurements[0].wants_images.value = True
-        
+
             expected_img = dict(Classify_Three_NumObjectsPerBin = 1,
                                 Classify_Three_PctObjectsPerBin = 25.0,
                                 Classify_Blind_NumObjectsPerBin = 1,
@@ -543,11 +533,11 @@ class TestClassifyObjects(unittest.TestCase):
             image = workspace.image_set.get_image(IMAGE_NAME)
             pixel_data = image.pixel_data
             self.assertTrue(np.all(pixel_data[labels==0,:] == 0))
-            colors = [pixel_data[x,y,:] for x,y in 
+            colors = [pixel_data[x,y,:] for x,y in
                       ((2, 3), (12, 1), (6, 5), (16, 5))]
             for i,color in enumerate(colors + [colors[1]]):
                 self.assertTrue(np.all(pixel_data[labels==i+1,:] == color))
-        
+
     def test_03_01_two_none(self):
         workspace, module = self.make_workspace(
             np.zeros((10,10),int),
@@ -561,7 +551,7 @@ class TestClassifyObjects(unittest.TestCase):
                 m = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                    m_name)
                 self.assertEqual(len(m), 0)
-                
+
     def test_03_02_two(self):
         np.random.seed(0)
         labels = np.zeros((10,20), int)
@@ -577,7 +567,7 @@ class TestClassifyObjects(unittest.TestCase):
         for wants_custom_names in (False, True):
             for tm1 in (C.TM_MEAN, C.TM_MEDIAN, C.TM_CUSTOM):
                 for tm2 in (C.TM_MEAN, C.TM_MEDIAN, C.TM_CUSTOM):
-                    workspace, module = self.make_workspace(labels, 
+                    workspace, module = self.make_workspace(labels,
                                                             C.BY_TWO_MEASUREMENTS,
                                                             m1, m2)
                     self.assertTrue(isinstance(module, C.ClassifyObjects))
@@ -611,7 +601,7 @@ class TestClassifyObjects(unittest.TestCase):
                                    "Measurement1_high_Measurement2_high")
                     m_names = ["_".join((C.M_CATEGORY, name))
                                for name in f_names]
-                    
+
                     module.run(workspace)
                     columns = module.get_measurement_columns(None)
                     for column in columns:
@@ -621,10 +611,10 @@ class TestClassifyObjects(unittest.TestCase):
                         else:
                             self.assertEqual(column[0], OBJECTS_NAME)
                             self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
-                
+
                     self.assertEqual(len(columns), 12)
                     self.assertEqual(len(set([column[1] for column in columns])), 12) # no duplicates
-                    
+
                     categories = module.get_categories(None, cpmeas.IMAGE)
                     self.assertEqual(len(categories), 1)
                     categories = module.get_categories(None, OBJECTS_NAME)
@@ -636,7 +626,7 @@ class TestClassifyObjects(unittest.TestCase):
                     self.assertEqual(len(names), 0)
                     names = module.get_measurements(None, OBJECTS_NAME, C.M_CATEGORY)
                     self.assertEqual(len(names), 4)
-    
+
                     for m_name, expected in zip(m_names,
                                                 ((~m1_over) & (~m2_over),
                                                  (~m1_over) & m2_over,
@@ -670,13 +660,13 @@ class TestClassifyObjects(unittest.TestCase):
         labels[3:5, 6:8] = 4
         labels[6:8, 6:8] = 5
         labels[3:5, 10:12] = 2
-        
+
         m1 = np.array((1, 2, np.NaN, 1, np.NaN))
         m2 = np.array((1, 2, 1, np.NaN, np.NaN))
         for leave_last_out in (False, True):
             end = np.max(labels) - 1 if leave_last_out else np.max(labels)
             workspace, module = self.make_workspace(
-                labels, 
+                labels,
                 C.BY_TWO_MEASUREMENTS,
                 m1[:end], m2[:end])
             self.assertTrue(isinstance(module, C.ClassifyObjects))
@@ -702,17 +692,17 @@ class TestClassifyObjects(unittest.TestCase):
                  np.array((0, 1, 0, 0, 0))]):
                 values = m[OBJECTS_NAME, m_name]
                 np.testing.assert_array_equal(values, expected)
-  
+
     def test_03_05_nan_offset_by_1(self):
         # Regression test of 1636
         labels = np.zeros((10, 15), int)
         labels[3:5, 3:5] = 1
         labels[6:8, 3:5] = 2
-        
+
         m1 = np.array((4, np.NaN))
         m2 = np.array((4, 4))
         workspace, module = self.make_workspace(
-            labels, 
+            labels,
             C.BY_TWO_MEASUREMENTS,
             m1, m2)
         self.assertTrue(isinstance(module, C.ClassifyObjects))
@@ -730,9 +720,3 @@ class TestClassifyObjects(unittest.TestCase):
             reverse[
                 np.all(image == color[np.newaxis, np.newaxis, :3], 2)] = idx
         self.assertTrue(np.all(reverse[labels == 1] == 4))
-                    
-                
-            
-            
-        
-        

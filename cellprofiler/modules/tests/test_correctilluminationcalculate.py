@@ -1,25 +1,16 @@
 """test_correctilluminationcalculate.py - test the CorrectIlluminationCalculate module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
 import base64
-import numpy as np
-from StringIO import StringIO
-import unittest
 import sys
+import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp
@@ -37,7 +28,7 @@ AVERAGE_IMAGE_NAME = "Ave"
 DILATED_IMAGE_NAME = "Dilate"
 
 class TestCorrectImage_Calculate(unittest.TestCase):
-    
+
     @classmethod
     def setUpClass(cls):
         '''Backwards compatibility for Python 2.6 unittest'''
@@ -45,16 +36,16 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             cls.assertIn = lambda self, x, y: self.assertTrue(x in y)
         if not hasattr(cls, "assertNotIn"):
             cls.assertNotIn = lambda self, x, y: self.assertFalse(x in y)
-            
+
     def error_callback(self, calller, event):
         if isinstance(event, cpp.RunExceptionEvent):
             self.fail(event.error.message)
-            
+
     def make_workspaces(self, images_and_masks):
         '''Make a workspace for each image set provided
-        
+
         images_and_masks - a collection of two-tuples: image+mask
-        
+
         returns a list of workspaces + the module
         '''
         image_set_list = cpi.ImageSetList()
@@ -68,7 +59,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         measurements = cpm.Measurements()
-        
+
         for i, (image, mask) in enumerate(images_and_masks):
             image_set = image_set_list.get_image_set(i)
             if mask is None:
@@ -97,7 +88,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.illumination_image_name.value = "OutputImage"
             module.save_average_image.value = True
             module.save_dilated_image.value = True
-            
+
             for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
                 module.each_or_all.value = ea
                 for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
@@ -107,12 +98,12 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                         for rescale_option in (cps.YES, cps.NO, calc.RE_MEDIAN):
                             module.rescale_option.value = rescale_option
                             for smoothing_method \
-                             in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
-                                 calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
-                                 calc.SM_TO_AVERAGE, calc.SM_SPLINES, 
+                             in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL,
+                                 calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER,
+                                 calc.SM_TO_AVERAGE, calc.SM_SPLINES,
                                  calc.SM_CONVEX_HULL):
                                 module.smoothing_method.value = smoothing_method
-                                for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
+                                for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY,
                                            calc.FI_OBJECT_SIZE):
                                     module.automatic_object_width.value = ow
                                     measurements = cpm.Measurements()
@@ -145,7 +136,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
 
     def test_01_01_ones_image(self):
         """The illumination correction of an image of all ones should be uniform
-        
+
         """
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -159,7 +150,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.image_name.value = "MyImage"
             module.illumination_image_name.value = "OutputImage"
             module.rescale_option.value = cps.YES
-            
+
             for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
                 module.each_or_all.value = ea
                 for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
@@ -167,12 +158,12 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                     for dilate_objects in (True, False):
                         module.dilate_objects.value = dilate_objects
                         for smoothing_method \
-                         in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
-                             calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
+                         in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL,
+                             calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER,
                              calc.SM_TO_AVERAGE, calc.SM_SPLINES,
                              calc.SM_CONVEX_HULL):
                             module.smoothing_method.value = smoothing_method
-                            for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
+                            for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY,
                                        calc.FI_OBJECT_SIZE):
                                 module.automatic_object_width.value = ow
                                 measurements = cpm.Measurements()
@@ -202,13 +193,13 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                 dilate_objects         = %(dilate_objects)s
                 smoothing_method       = %(smoothing_method)s
                 automatic_object_width = %(ow)s"""%locals())
-        
+
     def test_01_02_masked_image(self):
         """A masked image should be insensitive to points outside the mask"""
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         np.random.seed(12)
-        for image in (np.random.uniform(size=(10,10)), 
+        for image in (np.random.uniform(size=(10,10)),
                       np.random.uniform(size=(10, 10, 3))):
             mask  = np.zeros((10,10),bool)
             mask[2:7,3:8] = True
@@ -223,17 +214,17 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.illumination_image_name.value = "OutputImage"
             module.rescale_option.value = cps.YES
             module.dilate_objects.value = False
-            
+
             for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
                 module.each_or_all.value = ea
                 for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
                     module.intensity_choice.value = intensity_choice
                     for smoothing_method \
-                     in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
-                         calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
+                     in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL,
+                         calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER,
                          calc.SM_TO_AVERAGE, calc.SM_CONVEX_HULL):
                         module.smoothing_method.value = smoothing_method
-                        for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
+                        for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY,
                                    calc.FI_OBJECT_SIZE):
                             module.automatic_object_width.value = ow
                             measurements = cpm.Measurements()
@@ -262,10 +253,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                 intensity_choice       = %(intensity_choice)s
                 smoothing_method       = %(smoothing_method)s
                 automatic_object_width = %(ow)s"""%locals())
-                            
+
     def test_01_03_filtered(self):
         '''Regression test of issue #310
-        
+
         post_group should add the composite image to the image set
         if CorrectIllumination_Calculate didn't run because the image
         set was filtered.
@@ -276,14 +267,14 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         i1 = r.uniform(size=(11,13))
         i2 = r.uniform(size=(11,13))
         workspaces, module = self.make_workspaces((
-            ( i0, None), 
-            (i1, None), 
+            ( i0, None),
+            (i1, None),
             (i2, None)))
         module.each_or_all.value = calc.EA_ALL_ACROSS
         module.smoothing_method.value = calc.SM_TO_AVERAGE
         module.save_average_image.value = True
         module.save_dilated_image.value = True
-        
+
         module.prepare_group(workspaces[0], None, [1, 2, 3])
         assert isinstance(module, calc.CorrectIlluminationCalculate)
         for workspace in workspaces[:-1]:
@@ -297,10 +288,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         self.assertIn(OUTPUT_IMAGE_NAME, image_set.get_names())
         self.assertIn(DILATED_IMAGE_NAME, image_set.get_names())
         self.assertIn(AVERAGE_IMAGE_NAME, image_set.get_names())
-    
+
     def test_01_04_not_filtered(self):
         '''Regression test of issue #310, negative case
-        
+
         post_group should not add the composite image to the image set
         if CorrectIllumination_Calculate did run.
         '''
@@ -310,14 +301,14 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         i1 = r.uniform(size=(11,13))
         i2 = r.uniform(size=(11,13))
         workspaces, module = self.make_workspaces((
-            ( i0, None), 
-            (i1, None), 
+            ( i0, None),
+            (i1, None),
             (i2, None)))
         module.each_or_all.value = calc.EA_ALL_ACROSS
         module.smoothing_method.value = calc.SM_TO_AVERAGE
         module.save_average_image.value = True
         module.save_dilated_image.value = True
-        
+
         module.prepare_group(workspaces[0], None, [1, 2, 3])
         assert isinstance(module, calc.CorrectIlluminationCalculate)
         for workspace in workspaces:
@@ -335,10 +326,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             OUTPUT_IMAGE_NAME, DILATED_IMAGE_NAME, AVERAGE_IMAGE_NAME):
             self.assertEqual(len(filter(lambda x: x == image_name,
                                         image_set.get_names())), 1)
-    
+
     def test_02_02_Background(self):
         """Test an image with four distinct backgrounds"""
-        
+
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
         image = np.ones((40,40))
@@ -422,10 +413,10 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         image = image_set.get_image("OutputImage")
         self.assertTrue(np.all(np.abs(image.pixel_data-input_image) < .001),
                         "Failed to fit polynomial to %s"%(image_name))
-    
+
     def test_03_01_FitPolynomial(self):
         """Test fitting a polynomial to different gradients"""
-        
+
         y,x = (np.mgrid[0:20,0:20]).astype(float)/20.0
         image_x = x
         image_y = y
@@ -472,7 +463,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             image = image_set.get_image("OutputImage")
             self.assertTrue(np.all(np.abs(image.pixel_data-input_image) < .001),
                             "Failed to fit polynomial to %s"%(image_name))
-    
+
     def test_03_02_gaussian_filter(self):
         """Test gaussian filtering a gaussian of a point"""
         input_image = np.zeros((101,101))
@@ -520,7 +511,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         self.assertTrue(np.all(np.abs(ipd / ipd.mean()-
                                       expected_image/ expected_image.mean()) <
                                       .001))
-        
+
     def test_03_03_median_filter(self):
         """Test median filtering of a point"""
         input_image = np.zeros((101,101))
@@ -566,7 +557,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.run(workspace)
         image = image_set.get_image("OutputImage")
         self.assertTrue(np.all(image.pixel_data == expected_image))
-    
+
     def test_03_04_smooth_to_average(self):
         """Test smoothing to an average value"""
         np.random.seed(0)
@@ -609,7 +600,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.run(workspace)
         image = image_set.get_image("OutputImage")
         np.testing.assert_almost_equal(image.pixel_data, expected_image)
-        
+
     def test_03_05_splines(self):
         for automatic, bg_mode, spline_points, threshold, convergence, offset, hi, lo, succeed in (
             (True, calc.MODE_AUTO, 5, 2, .001, 0, True, False, True),
@@ -618,15 +609,15 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             (False, calc.MODE_AUTO, 5, 2, .001, 0, True, False, True),
             (False, calc.MODE_AUTO, 5, 2, .001, .7, False, True, True),
             (False, calc.MODE_AUTO, 5, 2, .001, .5, True, True, True),
-            (False, calc.MODE_BRIGHT, 5, 2, .001, .7, False, True, True), 
-            (False, calc.MODE_DARK, 5, 2, .001, 0, True, False, True), 
-            (False, calc.MODE_GRAY, 5, 2, .001, .5, True, True, True), 
+            (False, calc.MODE_BRIGHT, 5, 2, .001, .7, False, True, True),
+            (False, calc.MODE_DARK, 5, 2, .001, 0, True, False, True),
+            (False, calc.MODE_GRAY, 5, 2, .001, .5, True, True, True),
             (False, calc.MODE_AUTO, 7, 2, .001, 0, True, False, True),
             (False, calc.MODE_AUTO, 4, 2, .001, 0, True, False, True),
-            (False, calc.MODE_DARK, 5, 2, .001, .7, False, True, False), 
+            (False, calc.MODE_DARK, 5, 2, .001, .7, False, True, False),
             (False, calc.MODE_BRIGHT, 5, 2, .001, 0, True, False, False)
             ):
-                
+
             #
             # Make an image with a random background
             #
@@ -644,7 +635,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                 #
                 bg = np.random.permutation(400)[:100]
                 image[bg % image.shape[0], (bg / image.shape[0]).astype(int)] -= offset
-                
+
             #
             # Make a background function
             #
@@ -652,7 +643,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
             bg *= .2
             image += bg
-            
+
             workspaces, module = self.make_workspaces(((image, None),))
             self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
             module.intensity_choice.value = calc.IC_BACKGROUND
@@ -674,7 +665,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                 self.assertTrue(np.all(diff < .05))
             else:
                 self.assertFalse(np.all(diff < .05))
-    
+
     def test_03_06_splines_scaled(self):
         #
         # Make an image with a random background
@@ -693,7 +684,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         bg = ((ii.astype(float) / 10) ** 2) * ((jj.astype(float) / 15) ** 2)
         bg *= .2
         image += bg
-        
+
         workspaces, module = self.make_workspaces(((image, None),))
         self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
         module.intensity_choice.value = calc.IC_BACKGROUND
@@ -708,7 +699,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pixel_data = img.pixel_data
         diff = pixel_data - np.min(pixel_data) - bg
         np.all(diff < .05)
-        
+
     def test_03_07_splines_masked(self):
         #
         # Make an image with a random background
@@ -730,7 +721,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         # Offset the background within the mask
         #
         image[~mask] += bg[~mask]
-        
+
         workspaces, module = self.make_workspaces(((image, mask),))
         self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
         module.intensity_choice.value = calc.IC_BACKGROUND
@@ -783,7 +774,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         # Offset the background within the mask
         #
         image[~mask] += bg[~mask]
-        
+
         workspaces, module = self.make_workspaces(((image, mask),))
         self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))
         module.intensity_choice.value = calc.IC_BACKGROUND
@@ -813,7 +804,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         pixel_data = img.pixel_data
         diff = pixel_data - np.min(pixel_data) - bg
         self.assertFalse(np.all(diff < .05))
-        
+
     def test_04_01_intermediate_images(self):
         """Make sure the average and dilated image flags work"""
         for average_flag, dilated_flag in ((False,False),
@@ -854,14 +845,14 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             if average_flag:
                 img = image_set.get_image("AverageImage")
             else:
-                self.assertRaises(AssertionError, 
-                                  image_set.get_image, 
+                self.assertRaises(AssertionError,
+                                  image_set.get_image,
                                   "AverageImage")
             if dilated_flag:
                 img = image_set.get_image("DilatedImage")
             else:
-                self.assertRaises(AssertionError, 
-                                  image_set.get_image, 
+                self.assertRaises(AssertionError,
+                                  image_set.get_image,
                                   "DilatedImage")
     def test_05_01_rescale(self):
         """Test basic rescaling of an image with two values"""
@@ -905,7 +896,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.run(workspace)
         image = image_set.get_image("OutputImage")
         self.assertTrue(np.all(image.pixel_data == expected_image))
-    
+
     def test_05_02_rescale_outlier(self):
         """Test rescaling with one low outlier"""
         input_image = np.ones((10,10))
@@ -950,7 +941,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.run(workspace)
         image = image_set.get_image("OutputImage")
         self.assertTrue(np.all(image.pixel_data == expected_image))
-        
+
     def test_06_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUvDNz1PwTSxSMDBUMDSxMrW0MrRQMDIwNFAgGTAwevryMzAwLGdk'
@@ -983,7 +974,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         self.assertEqual(module.automatic_object_width, calc.FI_AUTOMATIC)
         self.assertFalse(module.save_average_image)
         self.assertFalse(module.save_dilated_image)
-    
+
     def test_06_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -1104,25 +1095,25 @@ CorrectIlluminationCalculate:[module_num:6|svn_version:\'9401\'|variable_revisio
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 6)
-        for i, (image_name, illumination_image_name, intensity_choice, 
-                dilate_objects, object_dilation_radius, block_size, 
-                rescale_option, each_or_all, smoothing_method, 
-                automatic_object_width, object_width, size_of_smoothing_filter, 
-                save_average_image, average_image_name, save_dilated_image, 
+        for i, (image_name, illumination_image_name, intensity_choice,
+                dilate_objects, object_dilation_radius, block_size,
+                rescale_option, each_or_all, smoothing_method,
+                automatic_object_width, object_width, size_of_smoothing_filter,
+                save_average_image, average_image_name, save_dilated_image,
                 dilated_image_name) in enumerate((
-                ("Image1", "Illum1", calc.IC_REGULAR, False, 1, 60, cps.YES, 
+                ("Image1", "Illum1", calc.IC_REGULAR, False, 1, 60, cps.YES,
                  calc.EA_ALL_FIRST, calc.SM_NONE, calc.FI_AUTOMATIC, 10, 10, True,
                  "Illum1Average", True, "Illum1Dilated"),
                 ("Image2", "Illum2", calc.IC_BACKGROUND, True, 2, 65, cps.NO,
                  calc.EA_ALL_FIRST, calc.SM_MEDIAN_FILTER, calc.FI_MANUALLY, 15, 20,
                  True, "Illum2Avg", True, "Illum2Dilated"),
                 ("Image3", "Illum3", calc.IC_REGULAR, False, 1, 60,
-                 calc.RE_MEDIAN, calc.EA_ALL_ACROSS, calc.SM_MEDIAN_FILTER, 
+                 calc.RE_MEDIAN, calc.EA_ALL_ACROSS, calc.SM_MEDIAN_FILTER,
                  calc.FI_AUTOMATIC, 10, 10, False, "Illum3Avg", True,
                  "Illum3Dilated"),
                 ("Image4","Illum4",calc.IC_REGULAR, cps.NO, 1, 60,
                  calc.RE_MEDIAN, calc.EA_EACH, calc.SM_GAUSSIAN_FILTER,
-                 calc.FI_OBJECT_SIZE, 15, 10, False, "Illum4Avg", True, 
+                 calc.FI_OBJECT_SIZE, 15, 10, False, "Illum4Avg", True,
                  "Illum4Dilated"),
                 ("Image5", "Illum5", calc.IC_REGULAR, cps.NO, 1, 60,
                  calc.RE_MEDIAN, calc.EA_ALL_ACROSS, calc.SM_TO_AVERAGE,
@@ -1146,7 +1137,7 @@ CorrectIlluminationCalculate:[module_num:6|svn_version:\'9401\'|variable_revisio
             self.assertEqual(module.average_image_name, average_image_name)
             self.assertEqual(module.save_dilated_image, save_dilated_image)
             self.assertEqual(module.dilated_image_name, dilated_image_name)
-            
+
     def test_06_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -1308,9 +1299,9 @@ CorrectIlluminationCalculate:[module_num:5|svn_version:\'10063\'|variable_revisi
         self.assertEqual(module.spline_rescale, 2)
         self.assertEqual(module.spline_maximum_iterations, 40)
         self.assertAlmostEqual(module.spline_convergence.value, 0.001)
-        
+
         self.assertTrue(pipeline.modules()[1].automatic_splines)
-        
+
         for module, spline_bg_mode in zip(pipeline.modules()[1:4], (
             calc.MODE_AUTO, calc.MODE_DARK, calc.MODE_GRAY)):
             self.assertTrue(isinstance(module, calc.CorrectIlluminationCalculate))

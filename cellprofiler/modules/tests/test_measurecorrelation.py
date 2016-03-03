@@ -1,23 +1,14 @@
-'''test_measurecorrelation - test the MeasureCorrelation module
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-'''
+'''test_measurecorrelation - test the MeasureCorrelation module'''
 
 import base64
-import numpy as np
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp
@@ -42,7 +33,7 @@ class TestMeasureCorrelation(unittest.TestCase):
                                            (IMAGE1_NAME,IMAGE2_NAME),
                                            (image1, image2)):
             image_group.image_name.value = name
-            image_set.add(name, image) 
+            image_set.add(name, image)
         object_set = cpo.ObjectSet()
         if objects is None:
             module.images_or_objects.value = M.M_IMAGES
@@ -106,11 +97,11 @@ class TestMeasureCorrelation(unittest.TestCase):
         self.assertEqual(module.image_count.value, 2)
         for name in [x.image_name.value for x in module.image_groups]:
             self.assertTrue(name in ["DNA","Cytoplasm"])
-        
+
         self.assertEqual(module.object_count.value, 2)
         for name in [x.object_name.value for x in module.object_groups]:
             self.assertTrue(name in ["Nuclei","Cells"])
-        
+
     def test_01_02_load_v1(self):
         '''Load a version-1 MeasureCorrelation module'''
         data = ('eJztW++O2kYQXzju2muk6FKpatR82Y+59kCG5NoLqi5Q6B/ag6AcTRRFabs'
@@ -164,11 +155,11 @@ class TestMeasureCorrelation(unittest.TestCase):
         self.assertEqual(module.image_count.value, 2)
         for name in [x.image_name.value for x in module.image_groups]:
             self.assertTrue(name in ["DNA","Cytoplasm"])
-        
+
         self.assertEqual(module.object_count.value, 2)
         for name in [x.object_name.value for x in module.object_groups]:
             self.assertTrue(name in ["Nuclei","Cells"])
-    
+
     def test_01_03_load_v2(self):
         data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -271,13 +262,58 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module = pipeline.modules()[-1]
         self.assertEqual(module.images_or_objects.value, M.M_IMAGES_AND_OBJECTS)
         self.assertEqual(module.image_count.value, 2)
+        self.assertEqual(module.thr, 15.0)
         for name in [x.image_name.value for x in module.image_groups]:
             self.assertTrue(name in ["DNA","Cytoplasm"])
-        
+
         self.assertEqual(module.object_count.value, 2)
         for name in [x.object_name.value for x in module.object_groups]:
             self.assertTrue(name in ["Nuclei","Cells"])
-        
+
+    def test_01_04_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20160216135025
+GitHash:e55aeba
+ModuleCount:1
+HasImagePlaneDetails:False
+
+MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Hidden:2
+    Hidden:2
+    Select an image to measure:DNA
+    Select an image to measure:Cytoplasm
+    Set threshold as percentage of maximum intensity for the images:25.0
+    Select where to measure correlation:Both
+    Select an object to measure:Nuclei
+    Select an object to measure:Cells
+"""
+        fd = StringIO(data)
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(fd)
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertEqual(module.images_or_objects.value, M.M_IMAGES_AND_OBJECTS)
+        self.assertEqual(module.image_count.value, 2)
+        self.assertEqual(module.thr, 25.0)
+        for name in [x.image_name.value for x in module.image_groups]:
+            self.assertTrue(name in ["DNA","Cytoplasm"])
+
+        self.assertEqual(module.object_count.value, 2)
+        for name in [x.object_name.value for x in module.object_groups]:
+            self.assertTrue(name in ["Nuclei","Cells"])
+
+    all_object_measurement_formats = [
+        M.F_CORRELATION_FORMAT, M.F_COSTES_FORMAT, M.F_K_FORMAT,
+        M.F_MANDERS_FORMAT, M.F_OVERLAP_FORMAT, M.F_RWC_FORMAT]
+    all_image_measurement_formats = all_object_measurement_formats + [
+        M.F_SLOPE_FORMAT]
+    asymmetrical_measurement_formats = [
+        M.F_COSTES_FORMAT, M.F_K_FORMAT, M.F_MANDERS_FORMAT, M.F_RWC_FORMAT ]
+
     def test_02_01_get_categories(self):
         '''Test the get_categories function for some different cases'''
         module = M.MeasureCorrelation()
@@ -295,7 +331,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
         self.assertTrue(cat("Image"))
         self.assertTrue(cat(OBJECTS_NAME))
-    
+
     def test_02_02_get_measurements(self):
         '''Test the get_measurements function for some different cases'''
         module = M.MeasureCorrelation()
@@ -304,11 +340,14 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects.value = M.M_IMAGES
         def meas(name):
+            ans = list(module.get_measurements(None,name,"Correlation"))
+            ans.sort()
             if name == "Image":
-                ans = list(module.get_measurements(None,name,"Correlation"))
-                ans.sort()
-                return ans == ["Correlation", "Slope"]
-            return module.get_measurements(None, name, "Correlation") == ["Correlation"]
+                mf = self.all_image_measurement_formats
+            else:
+                mf = self.all_object_measurement_formats
+            expected = sorted([_.split("_")[1] for _ in mf])
+            return ans == expected
         self.assertTrue(meas("Image"))
         self.assertFalse(meas(OBJECTS_NAME))
         module.images_or_objects.value = M.M_OBJECTS
@@ -317,31 +356,34 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
         self.assertTrue(meas("Image"))
         self.assertTrue(meas(OBJECTS_NAME))
-    
+
     def test_02_03_get_measurement_images(self):
         '''Test the get_measurment_images function for some different cases'''
-        module = M.MeasureCorrelation()
-        module.image_groups[0].image_name.value = IMAGE1_NAME
-        module.image_groups[1].image_name.value = IMAGE2_NAME
-        module.object_groups[0].object_name.value = OBJECTS_NAME
-        module.images_or_objects.value = M.M_IMAGES
-        def meas(name):
-            ans = module.get_measurement_images(None, name, "Correlation",
-                                                "Correlation")
-            if len(ans) == 0:
-                return False
-            self.assertTrue(ans[0] in ["%s_%s"% x for x in ((IMAGE1_NAME,IMAGE2_NAME),
-                                                            (IMAGE2_NAME,IMAGE1_NAME))])
-            return True
-        self.assertTrue(meas("Image"))
-        self.assertFalse(meas(OBJECTS_NAME))
-        module.images_or_objects.value = M.M_OBJECTS
-        self.assertFalse(meas("Image"))
-        self.assertTrue(meas(OBJECTS_NAME))
-        module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
-        self.assertTrue(meas("Image"))
-        self.assertTrue(meas(OBJECTS_NAME))
-    
+        for iocase, names in (
+            (M.M_IMAGES, [cpmeas.IMAGE]),
+            (M.M_OBJECTS, [OBJECTS_NAME]),
+            (M.M_IMAGES_AND_OBJECTS, [cpmeas.IMAGE, OBJECTS_NAME])):
+            module = M.MeasureCorrelation()
+            module.image_groups[0].image_name.value = IMAGE1_NAME
+            module.image_groups[1].image_name.value = IMAGE2_NAME
+            module.object_groups[0].object_name.value = OBJECTS_NAME
+            module.images_or_objects.value = iocase
+            for name, mfs in ((cpmeas.IMAGE, self.all_image_measurement_formats),
+                              (OBJECTS_NAME, self.all_object_measurement_formats)):
+                if name not in names:
+                    continue
+                for mf in mfs:
+                    ftr = mf.split("_")[1]
+                    ans = module.get_measurement_images(
+                        None, name, "Correlation", ftr)
+                    expected = ["%s_%s" % (i1, i2) for i1, i2 in
+                                ((IMAGE1_NAME, IMAGE2_NAME),
+                                 (IMAGE2_NAME, IMAGE1_NAME))]
+                    if mf in self.asymmetrical_measurement_formats:
+                        self.assertTrue(all([e in ans for e in expected]))
+                    else:
+                        self.assertTrue(any([e in ans for e in expected]))
+
     def test_02_04_01_get_measurement_columns_images(self):
         module = M.MeasureCorrelation()
         module.image_groups[0].image_name.value = IMAGE1_NAME
@@ -349,17 +391,20 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects.value = M.M_IMAGES
         columns = module.get_measurement_columns(None)
-        expected = ((cpmeas.IMAGE, 
-                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT),
-                    (cpmeas.IMAGE, 
-                     M.F_SLOPE_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT))
+        expected = [
+            (cpmeas.IMAGE,
+             ftr % (IMAGE1_NAME, IMAGE2_NAME),
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.all_image_measurement_formats] + [
+            (cpmeas.IMAGE,
+             ftr % (IMAGE2_NAME, IMAGE1_NAME),
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.asymmetrical_measurement_formats]
         self.assertEqual(len(columns), len(expected))
         for column in columns:
             self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])
                                  for ex in expected]))
-    
+
     def test_02_04_02_get_measurement_columns_objects(self):
         module = M.MeasureCorrelation()
         module.image_groups[0].image_name.value = IMAGE1_NAME
@@ -367,9 +412,15 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects.value = M.M_OBJECTS
         columns = module.get_measurement_columns(None)
-        expected = ((OBJECTS_NAME, 
-                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT),)
+        expected = [
+            (OBJECTS_NAME,
+             ftr % (IMAGE1_NAME, IMAGE2_NAME),
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.all_object_measurement_formats] + [
+            (OBJECTS_NAME,
+             ftr % (IMAGE2_NAME, IMAGE1_NAME),
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.asymmetrical_measurement_formats]
         self.assertEqual(len(columns), len(expected))
         for column in columns:
             self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])
@@ -382,20 +433,29 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
         columns = module.get_measurement_columns(None)
-        expected = ((cpmeas.IMAGE, 
-                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT),
-                    (cpmeas.IMAGE, 
-                     M.F_SLOPE_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT),
-                    (OBJECTS_NAME, 
-                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT))
+        expected = [
+            (cpmeas.IMAGE,
+             ftr % (IMAGE1_NAME, IMAGE2_NAME),
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.all_image_measurement_formats] + [
+            (cpmeas.IMAGE,
+             ftr % (IMAGE2_NAME, IMAGE1_NAME),
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.asymmetrical_measurement_formats] + [
+            (OBJECTS_NAME,
+             ftr % (IMAGE1_NAME, IMAGE2_NAME),
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.all_object_measurement_formats] + [
+            (OBJECTS_NAME,
+             ftr % (IMAGE2_NAME, IMAGE1_NAME),
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.asymmetrical_measurement_formats]
+
         self.assertEqual(len(columns), len(expected))
         for column in columns:
             self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])
                                  for ex in expected]))
-            
+
     def test_03_01_correlated(self):
         np.random.seed(0)
         image = np.random.uniform(size = (10,10))
@@ -407,7 +467,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         mi = module.get_measurement_images(None,cpmeas.IMAGE, "Correlation","Correlation")
         corr = m.get_current_measurement(cpmeas.IMAGE, "Correlation_Correlation_%s"%mi[0])
         self.assertAlmostEqual(corr,1)
-        
+
         self.assertEqual(len(m.get_object_names()),1)
         self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
         columns = module.get_measurement_columns(None)
@@ -415,7 +475,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertEqual(len(columns),len(features))
         for column in columns:
             self.assertTrue(column[1] in features)
-    
+
     def test_03_02_anticorrelated(self):
         '''Test two anticorrelated images'''
         #
@@ -432,7 +492,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         mi = module.get_measurement_images(None,cpmeas.IMAGE, "Correlation","Correlation")
         corr = m.get_current_measurement(cpmeas.IMAGE, "Correlation_Correlation_%s"%mi[0])
         self.assertAlmostEqual(corr,-1)
-    
+
     def test_04_01_slope(self):
         '''Test the slope measurement'''
         np.random.seed(0)
@@ -449,7 +509,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertAlmostEqual(slope, .5, 5)
         else:
             self.assertAlmostEqual(slope, 2)
-            
+
     def test_05_01_crop(self):
         '''Test similarly cropping one image to another'''
         np.random.seed(0)
@@ -464,7 +524,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         mi = module.get_measurement_images(None,cpmeas.IMAGE, "Correlation","Correlation")
         corr = m.get_current_measurement(cpmeas.IMAGE, "Correlation_Correlation_%s"%mi[0])
         self.assertAlmostEqual(corr,1)
-    
+
     def test_05_02_mask(self):
         '''Test images with two different masks'''
         np.random.seed(0)
@@ -487,7 +547,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         mi = module.get_measurement_images(None,cpmeas.IMAGE, "Correlation","Correlation")
         corr = m.get_current_measurement(cpmeas.IMAGE, "Correlation_Correlation_%s"%mi[0])
         self.assertAlmostEqual(corr,1)
-    
+
     def test_06_01_objects(self):
         '''Test images with two objects'''
         labels = np.zeros((10,10), int)
@@ -507,13 +567,13 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         workspace, module = self.make_workspace(i1, i2, o)
         module.run(workspace)
         m = workspace.measurements
-        mi = module.get_measurement_images(None,OBJECTS_NAME, 
+        mi = module.get_measurement_images(None,OBJECTS_NAME,
                                            "Correlation","Correlation")
         corr = m.get_current_measurement(OBJECTS_NAME, "Correlation_Correlation_%s"%mi[0])
         self.assertEqual(len(corr), 2)
         self.assertAlmostEqual(corr[0],1)
         self.assertAlmostEqual(corr[1],-1)
-        
+
         self.assertEqual(len(m.get_object_names()),2)
         self.assertTrue(OBJECTS_NAME in m.get_object_names())
         columns = module.get_measurement_columns(None)
@@ -526,7 +586,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
             else:
                 self.assertEqual(column[0],OBJECTS_NAME)
                 self.assertTrue(column[1] in object_features)
-            
+
     def test_06_02_cropped_objects(self):
         '''Test images and objects with a cropping mask'''
         np.random.seed(0)
@@ -551,7 +611,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         corr = m.get_current_measurement(OBJECTS_NAME, "Correlation_Correlation_%s"%mi[0])
         self.assertAlmostEqual(corr[0],1)
         self.assertAlmostEqual(corr[1],1)
-        
+
 
     def test_06_03_no_objects(self):
         '''Test images with no objects'''
@@ -566,7 +626,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         workspace, module = self.make_workspace(i1, i2, o)
         module.run(workspace)
         m = workspace.measurements
-        mi = module.get_measurement_images(None,OBJECTS_NAME, 
+        mi = module.get_measurement_images(None,OBJECTS_NAME,
                                            "Correlation","Correlation")
         corr = m.get_current_measurement(OBJECTS_NAME, "Correlation_Correlation_%s"%mi[0])
         self.assertEqual(len(corr), 0)
@@ -582,7 +642,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
             else:
                 self.assertEqual(column[0],OBJECTS_NAME)
                 self.assertTrue(column[1] in object_features)
-                
+
     def test_06_04_wrong_size(self):
         '''Regression test of IMG-961 - objects and images of different sizes'''
         np.random.seed(0)
@@ -600,7 +660,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         corr = m.get_current_measurement(OBJECTS_NAME, "Correlation_Correlation_%s"%mi[0])
         self.assertAlmostEqual(corr[0],1)
         self.assertAlmostEqual(corr[1],1)
-        
+
     def test_06_05_last_object_masked(self):
         # Regression test of issue #1553
         # MeasureCorrelation was truncating the measurements
@@ -616,7 +676,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         mask = labels != 2
         objects = cpo.Objects()
         objects.segmented = labels
-        
+
         for mask1, mask2 in ((mask, None), (None, mask), (mask, mask)):
             workspace, module = self.make_workspace(
                 cpi.Image(image1, mask=mask1),

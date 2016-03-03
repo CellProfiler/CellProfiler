@@ -1,28 +1,19 @@
 '''test_makeprojection - Test the MakeProjection module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
 import base64
-from matplotlib.image import pil_to_array
-import numpy as np
 import os
-import PIL.Image as PILImage
-import scipy.ndimage
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import PIL.Image as PILImage
+import numpy as np
+import scipy.ndimage
+from matplotlib.image import pil_to_array
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp
@@ -58,7 +49,7 @@ class TestMakeProjection(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         #
         # Module 2 - image name = DNA, projection_image_name = AverageDNA
@@ -73,10 +64,10 @@ class TestMakeProjection(unittest.TestCase):
             module = pipeline.modules()[i]
             self.assertTrue(isinstance(module, M.MakeProjection))
             self.assertEqual(module.image_name.value, "DNA")
-            self.assertEqual(module.projection_image_name.value, 
+            self.assertEqual(module.projection_image_name.value,
                              projection_image_name)
             self.assertEqual(module.projection_type, projection_type)
-    
+
     def test_01_02_load_v1(self):
         data = ('eJztWd1OGkEUHn60WtuGXrVJb+ZSWtgsaBskjYLStLSiRImNMbYdYYBpd3fI'
                 'MGuljUkfq5d9lD5CH6EzuAvsCiwgupqwyQTP2fPNN+c7O7szYyFb2s5uwpeK'
@@ -106,9 +97,9 @@ class TestMakeProjection(unittest.TestCase):
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, M.MakeProjection))
         self.assertEqual(module.image_name.value, "OrigRed")
-        self.assertEqual(module.projection_image_name.value, "ProjectionRed") 
+        self.assertEqual(module.projection_image_name.value, "ProjectionRed")
         self.assertEqual(module.projection_type, M.P_AVERAGE)
-        
+
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -169,8 +160,8 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             self.assertEqual(module.projection_type, method)
             self.assertEqual(module.projection_image_name, "ProjectionCh00Scale6")
             self.assertEqual(module.frequency, 6)
-    
-    def run_image_set(self, projection_type, images_and_masks, 
+
+    def run_image_set(self, projection_type, images_and_masks,
                       frequency=9, run_last = True):
         image_set_list = cpi.ImageSetList()
         image_count = len(images_and_masks)
@@ -186,7 +177,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         #
         bogus_image = cpi.Image(np.zeros((10,20)))
         image_set_list.get_image_set(image_count).add(IMAGE_NAME, bogus_image)
-        
+
         pipeline = cpp.Pipeline()
         module = M.MakeProjection()
         module.module_num = 1
@@ -202,7 +193,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         for i in range(image_count):
             if i > 0:
                 image_set_list.purge_image_set(i-1)
-            w = cpw.Workspace(pipeline, module, 
+            w = cpw.Workspace(pipeline, module,
                               image_set_list.get_image_set(i),
                               cpo.ObjectSet(),
                               m,
@@ -216,7 +207,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         #
         module.prepare_group(workspace, {}, [image_count+1])
         image_set = image_set_list.get_image_set(image_count)
-        w = cpw.Workspace(pipeline, module, 
+        w = cpw.Workspace(pipeline, module,
                           image_set,
                           cpo.ObjectSet(),
                           m,
@@ -237,12 +228,12 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         expected = expected / len(images_and_masks)
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
+        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
                                np.finfo(float).eps))
-    
+
     def test_02_02_average_mask(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(100,100)).astype(np.float32), 
+        images_and_masks = [(np.random.uniform(size=(100,100)).astype(np.float32),
                              np.random.uniform(size=(100,100)) > .3)
                              for i in range(3)]
         expected = np.zeros((100,100), np.float32)
@@ -258,7 +249,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         self.assertTrue(np.all(expected_mask == image.mask))
         np.testing.assert_almost_equal(image.pixel_data[image.mask],
                                        expected[expected_mask])
-    
+
     def test_02_03_average_color(self):
         np.random.seed(0)
         images_and_masks = [(np.random.uniform(size=(10,10,3)).astype(np.float32), None)
@@ -269,12 +260,12 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         expected = expected / len(images_and_masks)
         image = self.run_image_set(M.P_AVERAGE, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
+        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
                                np.finfo(float).eps))
-        
+
     def test_02_04_average_masked_color(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10,10,3)).astype(np.float32), 
+        images_and_masks = [(np.random.uniform(size=(10,10,3)).astype(np.float32),
                              np.random.uniform(size=(10,10)) > .3)
                              for i in range(3)]
         expected = np.zeros((10, 10, 3))
@@ -290,7 +281,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         np.testing.assert_equal(image.mask, expected_mask)
         np.testing.assert_almost_equal(image.pixel_data[expected_mask],
                                        expected[expected_mask])
-    
+
     def test_03_01_maximum(self):
         np.random.seed(0)
         images_and_masks = [(np.random.uniform(size=(10,10)).astype(np.float32), None)
@@ -300,12 +291,12 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             expected = np.maximum(expected,image)
         image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
+        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
                                np.finfo(float).eps))
-    
+
     def test_03_02_maximum_mask(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(100,100)).astype(np.float32), 
+        images_and_masks = [(np.random.uniform(size=(100,100)).astype(np.float32),
                              np.random.uniform(size=(100,100)) > .3)
                              for i in range(3)]
         expected = np.zeros((100,100), np.float32)
@@ -317,9 +308,9 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         self.assertTrue(image.has_mask)
         self.assertTrue(np.all(expected_mask == image.mask))
         self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] -
-                                      expected[expected_mask]) < 
+                                      expected[expected_mask]) <
                                np.finfo(float).eps))
-    
+
     def test_03_03_maximum_color(self):
         np.random.seed(0)
         images_and_masks = [(np.random.uniform(size=(10,10,3)).astype(np.float32), None)
@@ -329,9 +320,9 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             expected = np.maximum(expected, image)
         image = self.run_image_set(M.P_MAXIMUM, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
+        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
                                np.finfo(float).eps))
-    
+
     def test_04_01_variance(self):
         np.random.seed(41)
         images_and_masks = [(np.random.uniform(size=(20,10)).astype(np.float32), None)
@@ -342,7 +333,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         x2 = np.sum(images**2, 0)
         expected = x2 / 10.0 - x**2 / 100.0
         np.testing.assert_almost_equal(image.pixel_data, expected, 4)
-        
+
     def test_05_01_power(self):
         image = np.ones((20,10))
         images_and_masks = [(image.copy(), None) for i in range(9)]
@@ -352,7 +343,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         i,j=np.mgrid[:image.shape[0],:image.shape[1]]
         np.testing.assert_almost_equal(image_out.pixel_data[(i != 5) & (j != 5)], 0)
         self.assertTrue(image_out.pixel_data[5,5] > 1)
-        
+
     def test_06_01_brightfield(self):
         image = np.ones((20,10))
         images_and_masks = [(image.copy(), None) for i in range(9)]
@@ -375,12 +366,12 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             expected = np.minimum(expected,image)
         image = self.run_image_set(M.P_MINIMUM, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
+        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
                                np.finfo(float).eps))
-    
+
     def test_07_02_minimum_mask(self):
         np.random.seed(72)
-        images_and_masks = [(np.random.uniform(size=(100,100)).astype(np.float32), 
+        images_and_masks = [(np.random.uniform(size=(100,100)).astype(np.float32),
                              np.random.uniform(size=(100,100)) > .3)
                              for i in range(3)]
         expected = np.ones((100,100), np.float32)
@@ -393,10 +384,10 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         self.assertTrue(np.any(image.mask == False))
         self.assertTrue(np.all(expected_mask == image.mask))
         self.assertTrue(np.all(np.abs(image.pixel_data[image.mask] -
-                                      expected[expected_mask]) < 
+                                      expected[expected_mask]) <
                                np.finfo(float).eps))
         self.assertTrue(np.all(image.pixel_data[~image.mask] == 0))
-    
+
     def test_07_03_minimum_color(self):
         np.random.seed(0)
         images_and_masks = [(np.random.uniform(size=(10,10,3)).astype(np.float32), None)
@@ -406,9 +397,9 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             expected = np.minimum(expected, image)
         image = self.run_image_set(M.P_MINIMUM, images_and_masks)
         self.assertFalse(image.has_mask)
-        self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
+        self.assertTrue(np.all(np.abs(image.pixel_data - expected) <
                                np.finfo(float).eps))
-    
+
     def test_08_01_mask_unmasked(self):
         np.random.seed (81)
         images_and_masks = [ (np.random.uniform(size=(10,10)), None)
@@ -417,10 +408,10 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         self.assertEqual(tuple(image.pixel_data.shape), (10,10))
         self.assertTrue(np.all(image.pixel_data == True))
         self.assertFalse(image.has_mask)
-        
+
     def test_08_02_mask(self):
         np.random.seed (81)
-        images_and_masks = [ (np.random.uniform(size=(10,10)), 
+        images_and_masks = [ (np.random.uniform(size=(10,10)),
                               np.random.uniform(size=(10,10)) > .3)
                              for i in range(3)]
         expected = np.ones((10,10), bool)
@@ -428,10 +419,10 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             expected = expected & mask
         image = self.run_image_set(M.P_MASK, images_and_masks)
         self.assertTrue(np.all(image.pixel_data == expected))
-        
+
     def test_09_02_filtered(self):
         '''Make sure the image shows up in the image set even if filtered
-        
+
         This is similar to issue # 310 - the last image may be filtered before
         the projection is done and the aggregate image is then missing
         from the image set.
@@ -439,7 +430,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         np.random.seed (81)
         images_and_masks = [ (np.random.uniform(size=(10,10)), None)
                              for i in range(3)]
-        image = self.run_image_set(M.P_AVERAGE, images_and_masks, 
+        image = self.run_image_set(M.P_AVERAGE, images_and_masks,
                                    run_last=False)
         np.testing.assert_array_almost_equal(
             image.pixel_data,

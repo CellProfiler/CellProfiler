@@ -1,6 +1,6 @@
 from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
 __doc__ = '''
-<b>Make Projection</b> combines several two-dimensional images of 
+<b>Make Projection</b> combines several two-dimensional images of
 the same field of view together, either by performing a mathematical operation
 upon the pixel values at each pixel position.
 <hr>
@@ -11,7 +11,7 @@ operations. The process of averaging or summing a Z-stack (3D image stack) is kn
 <p>This module will create a projection of all images specified in the Input modules. For more
 information on loading image stacks and movies, see <i>%(LOADING_IMAGE_SEQ_HELP_REF)s</i>.
 To achieve per-folder projections
-i.e., creating a projection for each set of images in a folder, for all input folders, 
+i.e., creating a projection for each set of images in a folder, for all input folders,
 make the following setting specifications:
 <ol>
 <li>In the <b>Images</b> module, drag-and-drop the parent folder containing the sub-folders.</li>
@@ -22,22 +22,11 @@ by using a regular expression to capture the subfolder name, e.g., <code>.*[\\\\
 the sub-folder name as the metadata category.</li>
 </ol>
 Keep in mind that the projection image is not immediately available in subsequent modules because the
-output of this module is not complete until all image processing cycles have completed. Therefore, 
+output of this module is not complete until all image processing cycles have completed. Therefore,
 the projection should be created with a dedicated pipeline.</p>
 
 See also the help for the <b>Input</b> modules.
 '''%globals()
-
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
 
 import numpy as np
 
@@ -53,13 +42,13 @@ P_VARIANCE = 'Variance'
 P_POWER = 'Power'
 P_BRIGHTFIELD = 'Brightfield'
 P_MASK = 'Mask'
-P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM, P_VARIANCE, P_POWER, 
+P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM, P_VARIANCE, P_POWER,
          P_BRIGHTFIELD, P_MASK]
 
 K_PROVIDER = "Provider"
 
 class MakeProjection(cpm.CPModule):
-    
+
     module_name = 'MakeProjection'
     category = 'Image Processing'
     variable_revision_number = 2
@@ -67,7 +56,7 @@ class MakeProjection(cpm.CPModule):
         self.image_name = cps.ImageNameSubscriber(
             'Select the input image',cps.NONE, doc = '''
             Select the image to be made into a projection.''')
-        
+
         self.projection_type = cps.Choice(
             'Type of projection',
             P_ALL, doc = '''
@@ -96,7 +85,7 @@ class MakeProjection(cpm.CPModule):
             method scores these as zero since the dark appears in the early z-stacks.
             These pixels have a high score for the variance method but have a reduced
             score when using the brightfield method.</li>
-            <li><i>%(P_MASK)s:</i> Compute a binary image of the pixels that are 
+            <li><i>%(P_MASK)s:</i> Compute a binary image of the pixels that are
             masked in any of the input images.<br>
             The mask method operates on any masks that might have been applied to the
             images in a group. The output is a binary image where the "1" pixels are
@@ -104,20 +93,20 @@ class MakeProjection(cpm.CPModule):
             that are masked in one or more of the images.<br>
             You can use the output of the mask method to mask or crop all of the
             images in a group similarly. Use the mask method to combine all of the
-            masks in a group, save the image and then use <b>Crop</b>, <b>MaskImage</b> or 
+            masks in a group, save the image and then use <b>Crop</b>, <b>MaskImage</b> or
             <b>MaskObjects</b> in another pipeline to mask all images or objects in the
             group similarly.</li>
             </ul>
             <p>
             <b>References</b>
             <ul>
-            <li>Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al. (2009) 
-            "Bright field microscopy as an alternative to whole cell fluorescence in 
-            automated analysis of macrophage images", <i>PLoS ONE</i> 4(10): e7497 
+            <li>Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al. (2009)
+            "Bright field microscopy as an alternative to whole cell fluorescence in
+            automated analysis of macrophage images", <i>PLoS ONE</i> 4(10): e7497
             <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.</li>
             </ul>
             </p>''' % globals())
-        
+
         self.projection_image_name = cps.ImageNameProvider(
             'Name the output image',
             'ProjectionBlue', doc = '''
@@ -134,9 +123,9 @@ class MakeProjection(cpm.CPModule):
             to pixels whose brightness cycle every N slices.""" % globals())
 
     def settings(self):
-        return [self.image_name, self.projection_type, 
+        return [self.image_name, self.projection_type,
                 self.projection_image_name, self.frequency]
-    
+
     def visible_settings(self):
         result = [self.image_name, self.projection_type,
                   self.projection_image_name]
@@ -152,7 +141,7 @@ class MakeProjection(cpm.CPModule):
                                      self.frequency.value)
             provider.save_state(self.get_dictionary())
         return True
-    
+
     def run(self, workspace):
         provider = ImageProvider.restore_from_state(self.get_dictionary())
         workspace.image_set.providers.append(provider)
@@ -171,7 +160,7 @@ class MakeProjection(cpm.CPModule):
     def is_aggregation_module(self):
         '''Return True because we aggregate over all images in a group'''
         return True
-    
+
     def post_group(self, workspace, grouping):
         '''Handle processing that takes place at the end of a group
 
@@ -200,15 +189,15 @@ class MakeProjection(cpm.CPModule):
                                      self.projection_image_name.value,
                                      sharexy = figure.subplot(0, 0))
 
-    def upgrade_settings(self, setting_values, 
-                         variable_revision_number, 
+    def upgrade_settings(self, setting_values,
+                         variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and module_name == 'Average':
             setting_values = setting_values[:2] + P_AVERAGE
             from_matlab = False
             module_name = self.module_name
             variable_revision_number = 1
-        if (from_matlab and module_name == 'MakeProjection' and 
+        if (from_matlab and module_name == 'MakeProjection' and
             variable_revision_number == 3):
             setting_values = setting_values[:3]
             from_matlab = False
@@ -223,7 +212,7 @@ class ImageProvider(cpi.AbstractImageProvider):
     """Provide the image after averaging but before dilation and smoothing"""
     def __init__(self, name, how_to_accumulate, frequency = 6):
         """Construct using a parent provider that does the real work
-        
+
         name - name of the image provided
         """
         super(ImageProvider, self).__init__()
@@ -251,7 +240,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         self.__bright_max = None
         self.__bright_min = None
         self.__norm0 = None
-        
+
     D_NAME = "name"
     D_FREQUENCY = "frequency"
     D_IMAGE = "image"
@@ -265,10 +254,10 @@ class ImageProvider(cpi.AbstractImageProvider):
     D_BRIGHT_MAX = "brightmax"
     D_BRIGHT_MIN = "brightmin"
     D_NORM0 = "norm0"
-    
+
     def save_state(self, d):
         '''Save the provider state to a dictionary
-        
+
         d - store state in this dictionary
         '''
         d[self.D_NAME] = self.__name
@@ -284,13 +273,13 @@ class ImageProvider(cpi.AbstractImageProvider):
         d[self.D_BRIGHT_MIN] = self.__bright_min
         d[self.D_BRIGHT_MAX] = self.__bright_max
         d[self.D_NORM0] = self.__norm0
-        
+
     @staticmethod
     def restore_from_state(d):
         '''Create a provider from the state stored in the dictionary
-        
+
         d - dictionary from call to save_state
-        
+
         returns a new ImageProvider built from the saved state
         '''
         name = d[ImageProvider.D_NAME]
@@ -308,7 +297,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         image_provider.__bright_max = d[ImageProvider.D_BRIGHT_MAX]
         image_provider.__norm0 = d[ImageProvider.D_NORM0]
         return image_provider
-    
+
     def reset(self):
         '''Reset accumulator at start of groups'''
         self.__image_count = None
@@ -321,7 +310,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         self.__stack_number = 0
         self.__bright_max = None
         self.__bright_min = None
-        
+
     @property
     def has_image(self):
         return self.__image_count is not None
@@ -336,14 +325,14 @@ class ImageProvider(cpi.AbstractImageProvider):
             self.__image_count = image.mask.astype(int)
         else:
             self.__image_count = np.ones(image.pixel_data.shape[:2], int)
-        
+
         if self.__how_to_accumulate == P_VARIANCE:
             self.__vsum = image.pixel_data.copy()
             self.__vsum[~ image.mask] = 0
             self.__image_count = image.mask.astype(int)
             self.__vsquared = self.__vsum.astype(np.float64) ** 2.0
             return
-        
+
         if self.__how_to_accumulate == P_POWER:
             self.__vsum = image.pixel_data.copy()
             self.__vsum[~ image.mask] = 0
@@ -364,12 +353,12 @@ class ImageProvider(cpi.AbstractImageProvider):
         if self.__how_to_accumulate == P_MASK:
             self.__image = image.mask
             return
-        
+
         self.__image = image.pixel_data.copy()
         if image.has_mask:
             nan_value = 1 if self.__how_to_accumulate == P_MINIMUM else 0
             self.__image[~image.mask] = nan_value
-    
+
     def accumulate_image(self, image):
         self.__cached_image = None
         if image.has_mask:
@@ -419,7 +408,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         else:
             raise NotImplementedError("No such accumulation method: %s"%
                                       self.__how_to_accumulate)
-    
+
     def provide_image(self, image_set):
         image_count = self.__image_count
         mask_2d = image_count > 0
@@ -466,9 +455,7 @@ class ImageProvider(cpi.AbstractImageProvider):
 
     def get_name(self):
         return self.__name
-    
+
     def release_memory(self):
         '''Don't discard the image at end of image set'''
         pass
-
-

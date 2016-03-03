@@ -1,16 +1,3 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
 '''<b>ImageTemplate</b> - an example image processing module
 <hr>
 This is an example of a module that takes one image as an input and
@@ -82,7 +69,7 @@ class ImageTemplate(cpm.CPModule):
     module_name = "ImageTemplate"
     category = "Image Processing"
     variable_revision_number = 1
-    
+
     ###############################################
     #
     # create_settings is where you declare the user interface elements
@@ -92,10 +79,10 @@ class ImageTemplate(cpm.CPModule):
     # settings you can use.
     #
     ################################################
-    
+
     def create_settings(self):
         #
-        # The ImageNameSubscriber "subscribes" to all ImageNameProviders in 
+        # The ImageNameSubscriber "subscribes" to all ImageNameProviders in
         # prior modules. Modules before yours will put images into CellProfiler.
         # The ImageSubscriber gives your user a list of these images
         # which can then be used as inputs in your module.
@@ -149,7 +136,7 @@ class ImageTemplate(cpm.CPModule):
             <li><i>%(GRADIENT_DIRECTION_Y)s</i> to get the relative
             contribution of the gradient in the Y direction.</li></ul>
             """ % globals()
-                                                                          
+
         )
         #
         # A binary setting displays a checkbox.
@@ -158,7 +145,7 @@ class ImageTemplate(cpm.CPModule):
             "Automatically choose the smoothing scale?",
             # The default value is to choose automatically
             True,
-            doc = """The module will automatically choose a 
+            doc = """The module will automatically choose a
             smoothing scale for you if you leave this checked.""")
         #
         # We do a little smoothing which supplies a scale to the gradient.
@@ -180,7 +167,7 @@ class ImageTemplate(cpm.CPModule):
             calculated on the smoothed image, so large scales will give
             you long-range gradients and small scales will give you
             short-range gradients""")
-        
+
     #
     # The "settings" method tells CellProfiler about the settings you
     # have in your module. CellProfiler uses the list for saving
@@ -191,7 +178,7 @@ class ImageTemplate(cpm.CPModule):
         return [self.input_image_name, self.output_image_name,
                 self.gradient_choice, self.automatic_smoothing,
                 self.scale]
-    
+
     #
     # visible_settings tells CellProfiler which settings should be
     # displayed and in what order.
@@ -279,7 +266,7 @@ class ImageTemplate(cpm.CPModule):
             workspace.display_data.output_pixels = output_pixels
 
     #
-    # display lets you use matplotlib to display your results. 
+    # display lets you use matplotlib to display your results.
     #
     def display(self, workspace):
         #
@@ -303,7 +290,7 @@ class ImageTemplate(cpm.CPModule):
         figure.subplot_imshow_grayscale(
             1, 0, # show the image in the first row and second column
             workspace.display_data.gradient,
-            title = "Gradient", 
+            title = "Gradient",
             sharex = lead_subplot, sharey = lead_subplot)
         #
         # Show the user the final image
@@ -313,4 +300,3 @@ class ImageTemplate(cpm.CPModule):
             workspace.display_data.output_pixels,
             title = self.output_image_name.value,
             sharex = lead_subplot, sharey = lead_subplot)
-        

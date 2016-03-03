@@ -1,17 +1,5 @@
 """ an htmldialog with an ok button
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
-
 
 long_text = """\
 This is a very important parameter which tells the module what you are
@@ -31,14 +19,17 @@ non-round objects, the diameter here is actually the 'equivalent
 diameter', meaning the diameter of a circle with the same area as the
 object."""
 
-import wx
-from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 import webbrowser
+
+import wx
+
+from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
+
 
 class HTMLDialog(wx.Dialog):
     def __init__(self, parent, title, contents):
-        super(HTMLDialog, self).__init__(parent, -1, title, 
-                                         style=(wx.DEFAULT_DIALOG_STYLE | 
+        super(HTMLDialog, self).__init__(parent, -1, title,
+                                         style=(wx.DEFAULT_DIALOG_STYLE |
                                                 wx.RESIZE_BORDER))
         html = HtmlClickableWindow(parent=self)
         html.SetPage(contents)
@@ -54,5 +45,3 @@ if __name__ == "__main__":
     dialog = HTMLDialog(None, "Title", long_text)
     choice =  dialog.Show()
     app.MainLoop()
-
-    

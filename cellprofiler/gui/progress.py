@@ -1,25 +1,15 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
 import cStringIO
-import numpy as np
-import time
-import wx
 import sys
+import time
+
+import numpy as np
+import wx
+
 import cellprofiler
-from cellprofiler.icons import get_builtin_image
 import cellprofiler.utilities.version as version
 from cellprofiler.gui import get_cp_icon, get_cp_bitmap
+from cellprofiler.icons import get_builtin_image
+
 
 def module_label(module):
     if module:
@@ -77,11 +67,11 @@ class ProgressFrame(wx.Frame):
         self.panel = wx.Panel(self, wx.ID_ANY)
         sizer = wx.BoxSizer(wx.VERTICAL)
         times_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.elapsed_control = wx.StaticText(self.panel, -1, 
-                                             label=self.elapsed_label(), 
+        self.elapsed_control = wx.StaticText(self.panel, -1,
+                                             label=self.elapsed_label(),
                                              style=wx.ALIGN_LEFT)
-        self.remaining_control = wx.StaticText(self.panel, -1, 
-                                               label=self.remaining_label(), 
+        self.remaining_control = wx.StaticText(self.panel, -1,
+                                               label=self.remaining_label(),
                                                style=wx.ALIGN_RIGHT)
         times_sizer.Add(self.elapsed_control, 1, wx.ALIGN_LEFT | wx.ALL, 5)
         times_sizer.Add(self.remaining_control, 1, wx.ALIGN_RIGHT | wx.ALL, 5)
@@ -95,7 +85,7 @@ class ProgressFrame(wx.Frame):
         self.current_module_control = wx.StaticText(self.panel, -1, label=module_label(None))
         sizer.Add(self.current_module_control, 0, wx.LEFT | wx.RIGHT | wx.BOTTOM, 5)
         buttons_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.play_pause_button = wx.BitmapButton(self.panel, -1, 
+        self.play_pause_button = wx.BitmapButton(self.panel, -1,
                                                  bitmap=wx.BitmapFromImage(get_builtin_image('pause')))
         self.play_pause_button.SetToolTipString("Pause")
         buttons_sizer.Add(self.play_pause_button, 0, wx.ALL, 5)
@@ -103,7 +93,7 @@ class ProgressFrame(wx.Frame):
         self.stop_button.SetToolTipString("Stop")
         buttons_sizer.Add(self.stop_button, 0, wx.ALL, 5)
         save_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FILE_SAVE,
-                                               wx.ART_CMN_DIALOG, 
+                                               wx.ART_CMN_DIALOG,
                                                (16,16))
         self.save_button = wx.BitmapButton(self.panel, -1, bitmap = save_bitmap)
         self.save_button.SetToolTipString("Save measurements")
@@ -120,7 +110,7 @@ class ProgressFrame(wx.Frame):
 
     def elapsed_label(self):
         return "Elapsed: " + duration_label(self.elapsed_time())
-    
+
     def elapsed_time(self):
         '''Return the number of seconds that have elapsed since start
            as a float.  Pauses are taken into account.
@@ -134,14 +124,14 @@ class ProgressFrame(wx.Frame):
         else:
             s = duration_label(remaining)
         return "Remaining: " + s
-        
+
     def pause(self):
         self.play_pause_button.SetBitmapLabel(
             wx.BitmapFromImage(get_builtin_image('play')))
         self.play_pause_button.SetToolTipString("Resume")
         self.pause_start_time = time.time()
         self.paused = True
-        
+
     def play(self):
         self.play_pause_button.SetBitmapLabel(
             wx.BitmapFromImage(get_builtin_image('pause')))
@@ -149,7 +139,7 @@ class ProgressFrame(wx.Frame):
         self.previous_pauses_duration += time.time() - self.pause_start_time
         self.pause_start_time = None
         self.paused = False
-        
+
     def on_timer(self, event):
         self.elapsed_control.SetLabel(self.elapsed_label())
         self.remaining_control.SetLabel(self.remaining_label())
@@ -169,7 +159,7 @@ class ProgressFrame(wx.Frame):
             pauses_duration += time.time() - self.pause_start_time
         return time.time() - pauses_duration
 
-    def start_module(self, module, num_modules, image_set_index, 
+    def start_module(self, module, num_modules, image_set_index,
                      num_image_sets):
         """
         Update the historical execution times, which are used as the
@@ -225,10 +215,9 @@ class ProgressFrame(wx.Frame):
             per_module_estimates[module_index:] *= self.num_image_sets - self.image_set_index
             per_module_estimates[module_index] -= current_module_so_far
             return per_module_estimates.sum()
-        
+
 
 if __name__ == '__main__':
     app = wx.PySimpleApp()
     frame = ProgressFrame(None).Show()
     app.MainLoop()
-    

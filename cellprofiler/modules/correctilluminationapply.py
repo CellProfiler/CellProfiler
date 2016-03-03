@@ -5,26 +5,15 @@ illumination (uneven shading).
 
 This module applies a previously created illumination correction function,
 either loaded by <b>LoadSingleImage</b> or created by <b>CorrectIlluminationCalculate</b>.
-This module corrects each image in the pipeline using the function specified. 
+This module corrects each image in the pipeline using the function specified.
 
 See also <b>CorrectIlluminationCalculate</b>.'''
 
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
-
 import numpy as np
 
+import cellprofiler.cpimage  as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-import cellprofiler.cpimage  as cpi
 from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
 
 ######################################
@@ -79,24 +68,24 @@ class CorrectIlluminationApply(cpm.CPModule):
         illum_correct_function_image_name = cps.ImageNameSubscriber(
             "Select the illumination function",
             cps.NONE, doc = '''
-            Select the illumination correction function image that will be used to 
-            carry out the correction. This image is usually produced by another module 
-            or loaded as a .mat format image using the <b>Images</b> module or 
+            Select the illumination correction function image that will be used to
+            carry out the correction. This image is usually produced by another module
+            or loaded as a .mat format image using the <b>Images</b> module or
             <b>LoadSingleImage</b>.''')
 
         divide_or_subtract = cps.Choice(
             "Select how the illumination function is applied",
             [DOS_DIVIDE, DOS_SUBTRACT], doc = '''
             This choice depends on how the illumination function was calculated
-            and on your physical model of the way illumination variation affects the 
-            background of images relative to the objects in images; it is also somewhat empirical. 
+            and on your physical model of the way illumination variation affects the
+            background of images relative to the objects in images; it is also somewhat empirical.
             <ul>
-            <li><i>%(DOS_SUBTRACT)s:</i> Use this option if the background signal is significant 
-            relative to the real signal coming from the cells.  If you created the illumination 
+            <li><i>%(DOS_SUBTRACT)s:</i> Use this option if the background signal is significant
+            relative to the real signal coming from the cells.  If you created the illumination
             correction function using <i>%(IC_BACKGROUND)s</i>,
             then you will want to choose <i>%(DOS_SUBTRACT)s</i> here.</li>
-            <li><i>%(DOS_DIVIDE)s:</i> Choose this option if the signal to background ratio 
-            is high (the cells are stained very strongly). If you created the illumination correction 
+            <li><i>%(DOS_DIVIDE)s:</i> Choose this option if the signal to background ratio
+            is high (the cells are stained very strongly). If you created the illumination correction
             function using <i>%(IC_REGULAR)s</i>,
             then you will want to choose <i>%(DOS_DIVIDE)s</i> here.</li>
             </ul>'''%globals())
@@ -104,11 +93,11 @@ class CorrectIlluminationApply(cpm.CPModule):
         image_settings = cps.SettingsGroup()
         image_settings.append("image_name", image_name)
         image_settings.append("corrected_image_name", corrected_image_name)
-        image_settings.append("illum_correct_function_image_name", 
+        image_settings.append("illum_correct_function_image_name",
                               illum_correct_function_image_name)
         image_settings.append("divide_or_subtract", divide_or_subtract)
         image_settings.append("rescale_option",RE_NONE)
-        
+
         if can_delete:
             image_settings.append("remover",
                                   cps.RemoveSettingButton("","Remove this image",
@@ -128,7 +117,7 @@ class CorrectIlluminationApply(cpm.CPModule):
         result = []
         for image in self.images:
             result += [image.image_name, image.corrected_image_name,
-                       image.illum_correct_function_image_name, 
+                       image.illum_correct_function_image_name,
                        image.divide_or_subtract]
         return result
 
@@ -138,7 +127,7 @@ class CorrectIlluminationApply(cpm.CPModule):
         result = []
         for image in self.images:
             result += [image.image_name, image.corrected_image_name,
-                       image.illum_correct_function_image_name, 
+                       image.illum_correct_function_image_name,
                        image.divide_or_subtract]
             #
             # Get the "remover" button if there is one
@@ -219,7 +208,7 @@ class CorrectIlluminationApply(cpm.CPModule):
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.
         #
-        output_image = cpi.Image(output_pixels, parent_image = orig_image) 
+        output_image = cpi.Image(output_pixels, parent_image = orig_image)
         workspace.image_set.add(corrected_image_name, output_image)
         #
         # Save images for display
@@ -274,7 +263,7 @@ class CorrectIlluminationApply(cpm.CPModule):
                                           "pipeline to get rid of this warning.")%(image.rescale_option),
                                           image.divide_or_subtract)
 
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         """Adjust settings based on revision # of save file
 
@@ -304,15 +293,13 @@ class CorrectIlluminationApply(cpm.CPModule):
             SETTINGS_PER_IMAGE_V2 = 5
             rescale_option = setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
             for i,image in enumerate(self.images):
-                image.rescale_option = rescale_option[i] 
+                image.rescale_option = rescale_option[i]
             del setting_values[SLOT_RESCALE_OPTION::SETTINGS_PER_IMAGE_V2]
-            
+
             variable_revision_number = 3
         else:
-            # If revision >= 2, initalize rescaling option for validation warning 
+            # If revision >= 2, initalize rescaling option for validation warning
             for i,image in enumerate(self.images):
                 image.rescale_option = RE_NONE
-        
+
         return setting_values, variable_revision_number, from_matlab
-
-

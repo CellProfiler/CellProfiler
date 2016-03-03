@@ -1,23 +1,14 @@
 '''test_measureimageintensity.py Test the MeasureImageIntensity module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
-import base64
-import numpy as np
-import unittest
 import StringIO
+import base64
+import unittest
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.cpmodule as cpm
@@ -49,7 +40,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
         return workspace, module
-    
+
     def test_00_00_zeros(self):
         '''Test operation on a completely-masked image'''
         workspace, module = self.make_workspace({},
@@ -60,7 +51,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         module.run(workspace)
         m = workspace.measurements
         self.assertEqual(m.get_current_measurement(cpmeas.IMAGE, "Intensity_TotalArea_my_image"), 0)
-        
+
         self.assertEqual(len(m.get_object_names()),1)
         self.assertEqual(m.get_object_names()[0], cpmeas.IMAGE)
         columns = module.get_measurement_columns(workspace.pipeline)
@@ -68,8 +59,8 @@ class TestMeasureImageIntensity(unittest.TestCase):
         self.assertEqual(len(columns),len(features))
         for column in columns:
             self.assertTrue(column[1] in features)
-        
-    
+
+
     def test_01_01_image(self):
         '''Test operation on a single unmasked image'''
         np.random.seed(0)
@@ -92,8 +83,8 @@ class TestMeasureImageIntensity(unittest.TestCase):
                          np.max(pixels))
         self.assertEqual(m.get_current_image_measurement(
             'Intensity_PercentMaximal_my_image'), 4.0)
-                         
-    
+
+
     def test_01_02_image_and_mask(self):
         '''Test operation on a masked image'''
         np.random.seed(0)
@@ -115,8 +106,8 @@ class TestMeasureImageIntensity(unittest.TestCase):
                          np.sum(pixels[1:9,1:9])/64.0)
         self.assertAlmostEqual(m.get_current_measurement(
             cpmeas.IMAGE, "Intensity_PercentMaximal_my_image"), 400. / 64.)
-                                                         
-        
+
+
     def test_01_03_image_and_objects(self):
         '''Test operation on an image masked by objects'''
         np.random.seed(0)
@@ -161,7 +152,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
                                                 {"my_image": pixels})
         image = workspace.image_set.get_image("my_image")
         image.mask = mask
-        
+
         module.images[0].image_name.value = "my_image"
         module.images[0].wants_objects.value = True
         module.images[0].object_name.value = "my_objects"
@@ -201,7 +192,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
         self.assertEqual(len(module.images), 1)
         self.assertEqual(module.images[0].image_name.value, 'OrigBlue')
         self.assertFalse(module.images[0].wants_objects.value)
-    
+
     def test_02_01_load_v1(self):
         '''Test loading an measure image intensity module saved in V1'''
         data = ('TUFUTEFCIDUuMCBNQVQtZmlsZSBQbGF0Zm9ybTogbnQsIENyZWF0ZWQg'
@@ -318,7 +309,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
                 'AAAGAAAACAAAAAEAAAAAAAAABQAAAAgAAAAAAAAAAQAAAAEAAAAAAAAA'
                 'DgAAACgAAAAGAAAACAAAAAEAAAAAAAAABQAAAAgAAAAAAAAAAQAAAAEA'
                 'AAAAAAAA')
-        
+
         fd = StringIO.StringIO(base64.b64decode(data))
         p = cpp.Pipeline()
         def error_handler(caller, event):

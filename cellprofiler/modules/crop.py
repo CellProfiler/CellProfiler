@@ -1,7 +1,7 @@
 '''<b>Crop</b> crops or masks an image.
 <hr>
 This module crops images into a rectangle, ellipse, an arbitrary shape provided by
-you, the shape of object(s) identified by an <b>Identify</b> module, or a shape created 
+you, the shape of object(s) identified by an <b>Identify</b> module, or a shape created
 using a previous <b>Crop</b> module in the pipeline.
 
 <p>Keep in mind that cropping changes the size of your images, which may
@@ -16,36 +16,26 @@ size.</p>
 <li><i>OriginalImageArea:</i> The area of the original input image.</li>
 </ul>
 
-<i>Special note on saving images:</i> You can save the cropping shape that you have 
+<i>Special note on saving images:</i> You can save the cropping shape that you have
 defined in this module (e.g., an ellipse
 you drew) so that you can use the <i>Image</i> option in future analyses. To do
-this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImages</b> 
+this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImages</b>
 module help for more information on saving cropping shapes.
 '''
 
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
-
 import logging
 import math
-import numpy as np
 import sys
 
+import numpy as np
+from centrosome.filter import stretch
+
 import cellprofiler.cpimage as cpi
-import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
-from centrosome.filter import stretch
+import cellprofiler.settings as cps
+from cellprofiler.settings import YES, NO
 
 logger = logging.getLogger(__name__)
 
@@ -103,37 +93,37 @@ class Crop(cpm.CPModule):
     module_name = "Crop"
     variable_revision_number = 2
     category = "Image Processing"
-    
+
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",cps.NONE,doc = """
             Choose the image to be cropped.""")
-        
+
         self.cropped_image_name = cps.CroppingNameProvider(
             "Name the output image","CropBlue",doc = """
             Enter the name to be given to cropped image.""")
-        
+
         self.shape = cps.Choice(
             "Select the cropping shape",
             [SH_RECTANGLE, SH_ELLIPSE, SH_IMAGE,
              SH_OBJECTS, SH_CROPPING],
             SH_RECTANGLE,doc = """
-            Select the shape into which you would like to crop: 
+            Select the shape into which you would like to crop:
             <ul>
             <li><i>%(SH_RECTANGLE)s:</i> Self-explanatory.</li>
             <li><i>%(SH_ELLIPSE)s:</i> Self-explanatory.</li>
-            <li><i>%(SH_IMAGE)s:</i> Cropping will occur based on a binary image you specify. A choice box 
-            with available images will appear from which 
-            you can select an image. To crop into an arbitrary shape that you define, choose 
-            <i>%(SH_IMAGE)s</i> and use the <b>LoadSingleImage</b> module to load a black and white image 
-            that you have already prepared from a file. If you have created this image in a 
+            <li><i>%(SH_IMAGE)s:</i> Cropping will occur based on a binary image you specify. A choice box
+            with available images will appear from which
+            you can select an image. To crop into an arbitrary shape that you define, choose
+            <i>%(SH_IMAGE)s</i> and use the <b>LoadSingleImage</b> module to load a black and white image
+            that you have already prepared from a file. If you have created this image in a
             program such as Photoshop, this binary image should contain only the values 0 and 255,
             with zeros (black) for the parts you want to remove and 255 (white) for
             the parts you want to retain. Alternately, you may have previously generated a
             binary image using this module (e.g., using the <i>%(SH_ELLIPSE)s</i> option) and saved
             it using the <b>SaveImages</b> module.<br>
             In any case, the image must be exactly the same starting size as your image
-            and should contain a contiguous block of white pixels, because 
+            and should contain a contiguous block of white pixels, because
             the cropping module may remove rows and columns that are
             completely blank.</li>
             <li><i>%(SH_OBJECTS)s:</i> Crop based on labeled objects identified by a previous
@@ -143,15 +133,15 @@ class Crop(cpm.CPModule):
             This <b>Crop</b> module will use the same cropping that was used to generate whichever image
             you choose.</li>
             </ul>"""%globals())
-        
+
         self.crop_method = cps.Choice(
             "Select the cropping method",
-            [CM_COORDINATES, CM_MOUSE], CM_COORDINATES, doc = """                                      
+            [CM_COORDINATES, CM_MOUSE], CM_COORDINATES, doc = """
             Choose whether you would like to crop by typing in pixel coordinates or clicking with the mouse.
             <ul>
             <li><i>%(CM_COORDINATES)s:</i> For <i>%(SH_ELLIPSE)s</i>, you will be asked to enter the geometric
             parameters of the ellipse. For <i>%(SH_RECTANGLE)s</i>, you will be asked to specify
-            the coordinates of the corners.</li> 
+            the coordinates of the corners.</li>
             <li><i>%(CM_MOUSE)s:</i> For <i>%(SH_ELLIPSE)s</i>, you will be asked to click five or more
             points to define an ellipse around the part of the image you want to
             analyze.  Keep in mind that the more points you click, the longer it will
@@ -159,11 +149,11 @@ class Crop(cpm.CPModule):
             points as you like that are in the interior of the region you wish to
             retain.</li>
             </ul>"""%globals())
-        
+
         self.individual_or_once = cps.Choice(
             "Apply which cycle's cropping pattern?",
             [IO_INDIVIDUALLY, IO_FIRST], IO_INDIVIDUALLY, doc = """
-            Specify how a given cropping pattern should be 
+            Specify how a given cropping pattern should be
             applied to other image cycles:
             <ul>
             <li><i>%(IO_FIRST)s:</i> The cropping pattern from the first image cycle is applied to all
@@ -171,7 +161,7 @@ class Crop(cpm.CPModule):
             in some fashion.</li>
             <li><i>%(IO_INDIVIDUALLY)s:</i> Every image cycle is cropped individually.</li>
             </ul>"""%globals())
-        
+
         self.horizontal_limits = cps.IntegerOrUnboundedRange(
             "Left and right rectangle positions",
             minval=0, doc = """
@@ -182,12 +172,12 @@ class Crop(cpm.CPModule):
             coordinates in the original image. For instance, you might enter
             "25", "225", and "Absolute" to create a 200&times;200 pixel image that is
             25 pixels from the top-left corner.</li>
-            <li><i>%(FROM_EDGE)s:</i> Specify the position relative to the image 
+            <li><i>%(FROM_EDGE)s:</i> Specify the position relative to the image
             edge. For instance, you might enter "25", "25", and "Edge" to
             crop 25 pixels from both the left and right edges of the image, irrespective
             of the image's original size.</li>
             </ul>"""%globals())
-        
+
         self.vertical_limits = cps.IntegerOrUnboundedRange(
             "Top and bottom rectangle positions",
             minval=0, doc = """
@@ -195,46 +185,46 @@ class Crop(cpm.CPModule):
             Specify the top and bottom positions for the bounding rectangle by selecting one of the following:<br>
             <ul>
             <li><i>%(ABSOLUTE)s:</i> Specify these values as absolute pixel coordinates.
-            For instance, you might enter "25", "225", and "Absolute" 
-            to create a 200&times;200 pixel image that's 25 pixels 
+            For instance, you might enter "25", "225", and "Absolute"
+            to create a 200&times;200 pixel image that's 25 pixels
             from the top-left corner.</li>
             <li><i>%(FROM_EDGE)s:</i> Specify position relative to the image edge.
             For instance, you might enter "25", "25", and "Edge" to
             crop 25 pixels from the edges of your images irrespective
             of their size.</li>
             </ul>"""%globals())
-        
+
         self.ellipse_center = cps.Coordinates(
             "Coordinates of ellipse center",
             (500,500),doc = """
             <i>(Used only if %(SH_ELLIPSE)s selected as cropping shape)</i><br>
             Specify the center pixel position of the ellipse."""%globals())
-            
+
         self.ellipse_x_radius = cps.Integer(
             "Ellipse radius, X direction",400, doc = """
             <i>(Used only if %(SH_ELLIPSE)s selected as cropping shape)</i><br>
             Specify the radius of the ellipse in the X direction."""%globals())
-        
+
         self.ellipse_y_radius = cps.Integer(
             "Ellipse radius, Y direction",200, doc = """
             <i>(Used only if %(SH_ELLIPSE)s selected as cropping shape)</i><br>
             Specify the radius of the ellipse in the Y direction."""%globals())
-        
+
         self.image_mask_source = cps.ImageNameSubscriber(
             "Select the masking image",cps.NONE,doc = """
             <i>(Used only if %(SH_IMAGE)s selected as cropping shape)</i><br>
             Select the image to be use as a cropping mask."""%globals())
-        
+
         self.cropping_mask_source = cps.CroppingNameSubscriber(
             "Select the image with a cropping mask",cps.NONE, doc = """
             <i>(Used only if %(SH_CROPPING)s selected as cropping shape)</i><br>
             Select the image associated with the cropping mask that you want to use."""%globals())
-        
+
         self.objects_source = cps.ObjectNameSubscriber(
             "Select the objects",cps.NONE, doc="""
             <i>(Used only if %(SH_OBJECTS)s selected as cropping shape)</i><br>
             Select the objects that are to be used as a cropping mask."""%globals())
-        
+
         self.use_plate_fix = cps.Binary(
             "Use Plate Fix?",False,doc = """
             <i>(Used only if %(SH_IMAGE)s selected as cropping shape)</i><br>
@@ -260,32 +250,32 @@ class Crop(cpm.CPModule):
             is done because in the majority of plate identifications you do not want
             to include the sides of the plate. If you would like the entire plate to
             be shown, you should enter "1:end" for both coordinates. If, for example, you would like
-            to crop 80 pixels from each edge of the plate, you could enter Top, Left and Bottom, 
-            Right values of 80 and select <i>%(FROM_EDGE)s</i>.</p>"""%globals()) 
-        
+            to crop 80 pixels from each edge of the plate, you could enter Top, Left and Bottom,
+            Right values of 80 and select <i>%(FROM_EDGE)s</i>.</p>"""%globals())
+
         self.remove_rows_and_columns = cps.Choice(
             "Remove empty rows and columns?",
             [RM_NO, RM_EDGES, RM_ALL],
             RM_ALL, doc = """
             Use this option to choose whether to remove rows and columns that lack objects:
             <ul>
-            <li><i>%(RM_NO)s:</i> Leave the image the same size. The cropped areas will be set  
+            <li><i>%(RM_NO)s:</i> Leave the image the same size. The cropped areas will be set
             to zeroes, and will appear as black.</li>
             <li><i>%(RM_EDGES)s:</i> Crop the image so that its top, bottom, left and right are at
             the first non-blank pixel for that edge.</li>
             <li><i>%(RM_ALL)s:</i> Remove any row or column of all-blank pixels, even from the
             internal portion of the image.</li>
             </ul>"""%globals())
-    
+
     def settings(self):
         return [self.image_name, self.cropped_image_name, self.shape,
                 self.crop_method, self.individual_or_once,
                 self.horizontal_limits, self.vertical_limits,
-                self.ellipse_center, self.ellipse_x_radius, 
+                self.ellipse_center, self.ellipse_x_radius,
                 self.ellipse_y_radius, self.use_plate_fix,
                 self.remove_rows_and_columns, self.image_mask_source,
                 self.cropping_mask_source, self.objects_source]
-    
+
     def visible_settings(self):
         result = [self.image_name, self.cropped_image_name, self.shape]
         if self.shape.value in ( SH_RECTANGLE, SH_ELLIPSE):
@@ -308,7 +298,7 @@ class Crop(cpm.CPModule):
             raise NotImplementedError("Unimplemented shape type: %s"%(self.shape.value))
         result += [self.remove_rows_and_columns]
         return result
-   
+
     def run(self,workspace):
         first_image_set = workspace.measurements.get_current_image_measurement(
             cpmeas.GROUP_INDEX) == 1
@@ -324,7 +314,7 @@ class Crop(cpm.CPModule):
             if d[D_FIRST_CROPPING].shape != orig_image.pixel_data.shape[:2]:
                 recalculate_flag = True
                 logger.warning("""Image, "%s", size changed from %s to %s during cycle %d, recalculating""",
-                               self.image_name.value, 
+                               self.image_name.value,
                                str(d[D_FIRST_CROPPING].shape),
                                str(orig_image.pixel_data.shape[:2]),
                                workspace.image_set.image_number)
@@ -376,7 +366,7 @@ class Crop(cpm.CPModule):
                     orig_image.get_mask(), cropping, internal_cropping) & mask
             else:
                 image_mask = mask
-            
+
             if cropped_pixel_data.ndim == 3:
                 cropped_pixel_data[~mask,:] = 0
             else:
@@ -411,7 +401,7 @@ class Crop(cpm.CPModule):
         # Save the old and new image sizes
         #
         original_image_area = np.product(orig_image.pixel_data.shape[:2])
-        area_retained_after_cropping = np.sum(cropping) 
+        area_retained_after_cropping = np.sum(cropping)
         feature = FF_AREA_RETAINED%(self.cropped_image_name.value)
         m = workspace.measurements
         m.add_measurement('Image', feature,
@@ -436,8 +426,8 @@ class Crop(cpm.CPModule):
         return [(cpmeas.IMAGE,
                  x % self.cropped_image_name.value,
                  cpmeas.COLTYPE_INTEGER)
-                for x in (FF_AREA_RETAINED, FF_ORIGINAL_AREA)]                                        
-    
+                for x in (FF_AREA_RETAINED, FF_ORIGINAL_AREA)]
+
     def ui_crop(self, workspace, orig_image):
         """Crop into a rectangle or ellipse, guided by UI"""
         d = self.get_dictionary(workspace.image_set_list)
@@ -491,7 +481,7 @@ class Crop(cpm.CPModule):
             x = mouse_event.xdata
             y = mouse_event.ydata
             return (x,y)
-        
+
         class handle(M.patches.Rectangle):
             dm = max((10,min(pixel_data.shape)/50))
             height, width = (dm,dm)
@@ -507,38 +497,38 @@ class Crop(cpm.CPModule):
                                              edgecolor = self.__color,
                                              facecolor = "none")
                 self.set_picker(True)
-                
+
             def move(self, x, y):
                 self.set_xy((x-self.width/2, y-self.height/2))
                 self.__on_move(x, y)
-                
+
             def select(self, on):
                 self.__selected = on
                 if on:
                     current_handle[0] = self
                     self.set_facecolor(self.__color)
-                    
+
                 else:
                     self.set_facecolor("none")
                     if current_handle[0] == self:
                         current_handle[0] = None
                 figure.canvas.draw()
                 dialog_box.Update()
-                
+
             @property
             def is_selected(self):
                 return self.__selected
-            
+
             @property
             def center_x(self):
                 '''The handle's notion of its x coordinate'''
                 return self.get_x() + self.get_width() / 2
-            
+
             @property
             def center_y(self):
                 '''The handle's notion of its y coordinate'''
                 return self.get_y() + self.get_height() / 2
-            
+
             def handle_pick(self, event):
                 mouse_event = event.mouseevent
                 x, y = data_xy(mouse_event)
@@ -548,7 +538,7 @@ class Crop(cpm.CPModule):
                     self.orig_y = self.center_y
                     self.first_x = x
                     self.first_y = y
-                    
+
             def handle_mouse_move_event(self, event):
                 x,y = data_xy(event)
                 if x is None or y is None:
@@ -564,7 +554,7 @@ class Crop(cpm.CPModule):
                 if y >= pixel_data.shape[0]:
                     y = pixel_data.shape[0] -1
                 self.move(x, y)
-            
+
         class crop_rectangle(object):
             def __init__(self, top_left, bottom_right):
                 self.__left, self.__top = top_left
@@ -572,7 +562,7 @@ class Crop(cpm.CPModule):
                 color = cpprefs.get_primary_outline_color()
                 color = np.hstack((color,[255])).astype(float) / 255.0
                 self.rectangle = M.patches.Rectangle(
-                    (min(self.__left, self.__right), 
+                    (min(self.__left, self.__right),
                      min(self.__bottom, self.__top)),
                     abs(self.__right - self.__left),
                     abs(self.__top - self.__bottom),
@@ -581,49 +571,49 @@ class Crop(cpm.CPModule):
                 )
                 self.top_left_handle = handle(top_left[0], top_left[1],
                                               self.handle_top_left)
-                self.bottom_right_handle = handle(bottom_right[0], 
-                                                  bottom_right[1], 
+                self.bottom_right_handle = handle(bottom_right[0],
+                                                  bottom_right[1],
                                                   self.handle_bottom_right)
-                
+
             def handle_top_left(self, x, y):
                 self.__left = x
                 self.__top = y
                 self.__reshape()
-                
+
             def handle_bottom_right(self, x, y):
                 self.__right = x
                 self.__bottom = y
                 self.__reshape()
-                
+
             def __reshape(self):
-                self.rectangle.set_xy((min(self.__left, self.__right), 
+                self.rectangle.set_xy((min(self.__left, self.__right),
                                        min(self.__bottom,self.__top)))
                 self.rectangle.set_width(abs(self.__right - self.__left))
                 self.rectangle.set_height(abs(self.__bottom - self.__top))
                 self.rectangle.figure.canvas.draw()
                 dialog_box.Update()
-                
+
             @property
             def patches(self):
-                return [self.rectangle, self.top_left_handle, 
+                return [self.rectangle, self.top_left_handle,
                         self.bottom_right_handle]
-            
+
             @property
             def handles(self):
                 return [self.top_left_handle, self.bottom_right_handle]
-            
+
             @property
             def left(self):
                 return min(self.__left, self.__right)
-            
+
             @property
             def right(self):
                 return max(self.__left, self.__right)
-            
+
             @property
             def top(self):
                 return min(self.__top, self.__bottom)
-            
+
             @property
             def bottom(self):
                 return max(self.__top, self.__bottom)
@@ -644,40 +634,40 @@ class Crop(cpm.CPModule):
                                             self.move_center)
                 self.radius_handle = handle(self.radius_x, self.radius_y,
                                             self.move_radius)
-                
+
             def move_center(self, x, y):
                 self.center_x = x
                 self.center_y = y
                 self.redraw()
-                
+
             def move_radius(self, x, y):
                 self.radius_x = x
                 self.radius_y = y
                 self.redraw()
-                
+
             @property
             def width(self):
                 return abs(self.center_x - self.radius_x) * 4
-            
+
             @property
             def height(self):
                 return abs(self.center_y - self.radius_y) * 4
-            
+
             def redraw(self):
                 self.ellipse.center = (self.center_x, self.center_y)
                 self.ellipse.width = self.width
                 self.ellipse.height = self.height
                 self.ellipse.figure.canvas.draw()
                 dialog_box.Update()
-                
+
             @property
             def patches(self):
-                return [self.ellipse, self.center_handle, self.radius_handle] 
-            
+                return [self.ellipse, self.center_handle, self.radius_handle]
+
             @property
             def handles(self):
                 return [self.center_handle, self.radius_handle]
-            
+
         if self.shape == SH_ELLIPSE:
             if current_shape is None:
                 current_shape = {
@@ -702,28 +692,28 @@ class Crop(cpm.CPModule):
                                    (rectangle[RE_RIGHT], rectangle[RE_BOTTOM]))
         for patch in shape.patches:
             axes.add_artist(patch)
-            
+
         def on_mouse_down_event(event):
             axes.pick(event)
-            
+
         def on_mouse_move_event(event):
             if current_handle[0] is not None:
                 current_handle[0].handle_mouse_move_event(event)
-                
+
         def on_mouse_up_event(event):
             if current_handle[0] is not None:
                 current_handle[0].select(False)
-            
+
         def on_pick_event(event):
             for h in shape.handles:
                 if id(h) == id(event.artist):
                     h.handle_pick(event)
-                    
+
         figure.canvas.mpl_connect('button_press_event', on_mouse_down_event)
         figure.canvas.mpl_connect('button_release_event', on_mouse_up_event)
         figure.canvas.mpl_connect('motion_notify_event', on_mouse_move_event)
         figure.canvas.mpl_connect('pick_event', on_pick_event)
-        
+
         try:
             if dialog_box.ShowModal() != wx.ID_OK:
                 raise ValueError("Cancelled by user")
@@ -758,7 +748,7 @@ class Crop(cpm.CPModule):
             EL_YRADIUS: y_radius
             }
         return self.apply_ellipse_cropping(workspace, orig_image)
-        
+
     def apply_ellipse_cropping(self, workspace, orig_image):
         d = self.get_dictionary(workspace.image_set_list)
         ellipse = d[SH_ELLIPSE]
@@ -775,7 +765,7 @@ class Crop(cpm.CPModule):
             dist_x = 0
             dist_y = math.sqrt(y_radius**2-x_radius**2)
             major_radius = y_radius
-        
+
         focus_1_x,focus_1_y = (x_center-dist_x,y_center-dist_y)
         focus_2_x,focus_2_y = (x_center+dist_x,y_center+dist_y)
         y,x = np.mgrid[0:y_max,0:x_max]
@@ -783,7 +773,7 @@ class Crop(cpm.CPModule):
         d2 = np.sqrt((x-focus_2_x)**2+(y-focus_2_y)**2)
         cropping = d1+d2 <= major_radius*2
         return cropping
-    
+
     def get_rectangle_cropping(self, workspace,orig_image):
         """Crop into a rectangle using user-specified coordinates"""
         cropping = np.ones(orig_image.pixel_data.shape[:2],bool)
@@ -796,7 +786,7 @@ class Crop(cpm.CPModule):
         if not self.vertical_limits.unbounded_max:
             cropping[self.vertical_limits.max:,:]=False
         return cropping
-    
+
     def apply_rectangle_cropping(self, workspace, orig_image):
         cropping = np.ones(orig_image.pixel_data.shape[:2],bool)
         d = self.get_dictionary(workspace.image_set_list)
@@ -812,14 +802,14 @@ class Crop(cpm.CPModule):
         if bottom < cropping.shape[0]:
             cropping[bottom:, :] = False
         return cropping
-        
+
     def plate_fixup(self,pixel_data):
         """Fix up the cropping image based on the plate fixup rules
-        
+
         The rules:
         * Trim rows and columns off of the edges if less than 50%
         * Use the horizontal and vertical trim to trim the image further
-        """ 
+        """
         pixel_data = pixel_data.copy()
         i_histogram = pixel_data.sum(axis=1)
         i_cumsum    = np.cumsum(i_histogram > pixel_data.shape[0]/2)
@@ -846,7 +836,7 @@ class Crop(cpm.CPModule):
                 pixel_data[:i_first,:] = 0
         if i_end < pixel_data.shape[0]:
             if pixel_data.ndim == 3:
-                pixel_data[i_end:,:,:] = 0                
+                pixel_data[i_end:,:,:] = 0
             else:
                 pixel_data[i_end:,:] = 0
         if j_first > 0:
@@ -860,7 +850,7 @@ class Crop(cpm.CPModule):
             else:
                 pixel_data[:,j_end:] = 0
         return pixel_data
-        
+
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
         if from_matlab and variable_revision_number==4:
@@ -890,13 +880,13 @@ class Crop(cpm.CPModule):
             setting_values = new_setting_values
             variable_revision_number = 2
             from_matlab = False
-        
+
         if (not from_matlab) and variable_revision_number == 1:
             # Added ability to crop objects
             new_setting_values = list(setting_values)
             new_setting_values.append(cps.NONE)
             variable_revision_number = 2
-        
+
         if variable_revision_number == 2 and not from_matlab:
             # minor - "Cropping" changed to "Previous cropping"
             setting_values = list(setting_values)
@@ -908,4 +898,3 @@ class Crop(cpm.CPModule):
             if setting_values[OFF_INDIVIDUAL_OR_ONCE] == "Individually":
                 setting_values[OFF_INDIVIDUAL_OR_ONCE] = IO_INDIVIDUALLY
         return setting_values, variable_revision_number, from_matlab
-    

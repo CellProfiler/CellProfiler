@@ -1,25 +1,15 @@
 """test_identifysecondary - test the IdentifySecondary module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
-
-import base64
-import numpy as np
-import unittest
 import StringIO
+import base64
+import unittest
 import zlib
 
+import numpy as np
+
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.modules.identifysecondaryobjects as cpmi2
@@ -58,7 +48,7 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         self.assertEqual(module.distance_to_dilate.value, 10)
         self.assertEqual(module.regularization_factor.value, 0.05)
         self.assertEqual(module.threshold_smoothing_choice, cpmi.TSM_NONE)
-    
+
     def test_01_02_load_v2(self):
         data = ('eJztWt1u2zYUlh0nSFZ0a9OLDugNL5suNiQ3xtJgSO3G/fEWu0bjtS'
                 'iKbmMk2uZAk4ZEpXGLAnuUPUYv+zi97CNUdCRLZpVIkeM/QAQI+Rzx'
@@ -99,7 +89,7 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
                          cpmi.O_WEIGHTED_VARIANCE)
         self.assertFalse(module.wants_discard_edge)
         self.assertFalse(module.wants_discard_primary)
-    
+
     def test_01_03_load_v3(self):
         data = ('eJztW+Fv2kYUPxKSLauUZdK0TtMq3Yd+aKLENbRR02hroaHZkBqCCmo3pVnr'
                 '2Afcau4s+5zCpv0f+xP3sX/CfGCwOTmxMQac1lYs8o77vd+7d++9Oxv7pNx8'
@@ -142,7 +132,7 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         self.assertTrue(module.wants_discard_edge)
         self.assertTrue(module.wants_discard_primary)
         self.assertEqual(module.new_primary_objects_name, "FilteredNuclei")
-        
+
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -205,7 +195,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertTrue(module.wants_primary_outlines)
         self.assertEqual(module.new_primary_outlines_name, "FilteredPrimaryOutlines")
         self.assertTrue(module.fill_holes)
-        
+
     def test_01_07_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -268,9 +258,9 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertFalse(module.wants_discard_primary)
         self.assertEqual(module.new_primary_objects_name, "FilteredNuclei")
         self.assertFalse(module.wants_primary_outlines)
-        self.assertEqual(module.new_primary_outlines_name, "FilteredNucleiOutlines")        
+        self.assertEqual(module.new_primary_outlines_name, "FilteredNucleiOutlines")
         self.assertFalse(module.fill_holes)
-        
+
     def test_01_09_load_v9(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -384,7 +374,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(module.assign_middle_to_foreground, cpmi.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_method, cpmi.FI_IMAGE_SIZE)
         self.assertEqual(module.adaptive_window_size, 9)
-        
+
     def make_workspace(self, image, segmented, unedited_segmented = None,
                        small_removed_segmented = None):
         p = cpp.Pipeline()
@@ -414,7 +404,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         return workspace, module
-        
+
     def test_02_01_zeros_propagation(self):
         workspace, module = self.make_workspace(np.zeros((10,10)),
                                                 np.zeros((10,10), int))
@@ -434,7 +424,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             self.assertEqual(len(ocolumns), len(features))
             self.assertTrue(all([column[1] in features for column in ocolumns]))
         self.assertTrue("my_outlines" not in workspace.get_outline_names())
-    
+
     def test_02_02_one_object_propagation(self):
         img = np.zeros((10,10))
         img[2:7,2:7] = .5
@@ -456,7 +446,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         expected = np.zeros((10,10),int)
         expected[2:7,2:7] = 1
         self.assertTrue(np.all(objects_out.segmented==expected))
-        child_counts = m.get_current_measurement(INPUT_OBJECTS_NAME, 
+        child_counts = m.get_current_measurement(INPUT_OBJECTS_NAME,
                                                  "Children_%s_Count" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(child_counts),1)
         self.assertEqual(child_counts[0],1)
@@ -504,7 +494,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         labels = np.zeros((10,20),int)
         labels[3:6,3:6] = 1
         labels[3:6,13:16] = 2
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -536,7 +526,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         mask = np.ones((10,20),bool)
         mask[:,9:11] = False
         self.assertTrue(np.all(objects_out.segmented[mask]==expected[mask]))
-        
+
     def test_02_05_propagation_wrong_size(self):
         '''Regression test of img-961: different image / object sizes'''
         img = np.zeros((10,20))
@@ -565,8 +555,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         parents = m.get_current_measurement(OUTPUT_OBJECTS_NAME,"Parent_%s" % INPUT_OBJECTS_NAME)
         self.assertEqual(len(parents),1)
         self.assertEqual(parents[0],1)
-        
-    
+
+
     def test_03_01_zeros_watershed_gradient(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
@@ -595,7 +585,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts, 0)
-    
+
     def test_03_02_one_object_watershed_gradient(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
@@ -606,7 +596,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         objects = cpo.Objects()
         labels = np.zeros((10,10),int)
         labels[3:6,3:6] = 1
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -657,7 +647,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         labels = np.zeros((10,20),int)
         labels[3:6,3:6] = 1
         labels[3:6,13:16] = 2
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -688,7 +678,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         mask = np.ones((10,20),bool)
         mask[:,7:9] = False
         self.assertTrue(np.all(objects_out.segmented[mask]==expected[mask]))
-    
+
     def test_03_04_watershed_gradient_wrong_size(self):
         img = np.zeros((20,10))
         img[2:7,2:7] = .5
@@ -747,7 +737,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts, 0)
-    
+
     def test_04_02_one_object_watershed_image(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
@@ -758,7 +748,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         objects = cpo.Objects()
         labels = np.zeros((10,10),int)
         labels[3:6,3:6] = 1
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -802,7 +792,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         labels = np.zeros((10,20),int)
         labels[3:6,3:6] = 1
         labels[3:6,13:16] = 2
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -833,7 +823,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         mask = np.ones((10,20),bool)
         mask[:,7] = False
         self.assertTrue(np.all(objects_out.segmented[mask]==expected[mask]))
-    
+
     def test_04_04_watershed_image_wrong_size(self):
         img = np.zeros((20,10))
         img[2:7,2:7] = .5
@@ -884,7 +874,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts, 0)
-    
+
     def test_05_02_one_object_distance_n(self):
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
@@ -894,7 +884,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         objects = cpo.Objects()
         labels = np.zeros((10,10),int)
         labels[3:6,3:6] = 1
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -935,7 +925,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         labels = np.zeros((10,20),int)
         labels[3:6,3:6] = 1
         labels[3:6,13:16] = 2
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -963,7 +953,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         expected[:,:10] = 1
         expected[:,10:] = 2
         self.assertTrue(np.all(objects_out.segmented==expected))
-    
+
     def test_05_04_distance_n_wrong_size(self):
         img = np.zeros((20,10))
         labels = np.zeros((10,20),int)
@@ -998,7 +988,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         objects = cpo.Objects()
         labels = np.zeros((10,10),int)
         labels[3:6,3:6] = 1
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -1045,7 +1035,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         objects = cpo.Objects()
         labels = np.zeros((10,10),int)
         labels[3:6,3:6] = 1
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -1093,7 +1083,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             module.primary_objects.value = INPUT_OBJECTS_NAME
             module.objects_name.value = OUTPUT_OBJECTS_NAME
             module.new_primary_objects_name.value = NEW_OBJECTS_NAME
-            
+
             categories = module.get_categories(None, cpm.IMAGE)
             self.assertEqual(len(categories), 2)
             self.assertTrue(all([any([x == y for x in categories])
@@ -1105,14 +1095,14 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             categories = module.get_categories(None, INPUT_OBJECTS_NAME)
             self.assertEqual(len(categories), 1)
             self.assertEqual(categories[0], "Children")
-            
+
             categories = module.get_categories(None, NEW_OBJECTS_NAME)
             self.assertEqual(len(categories), 0)
-            
+
             features = module.get_measurements(None, cpm.IMAGE, "Count")
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0], OUTPUT_OBJECTS_NAME)
-            
+
             features = module.get_measurements(None, cpm.IMAGE, "Threshold")
             threshold_features = ("OrigThreshold", "FinalThreshold",
                                   "WeightedVariance", "SumOfEntropies")
@@ -1125,15 +1115,15 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                                                          threshold_feature)
                 self.assertEqual(len(objects), 1)
                 self.assertEqual(objects[0], OUTPUT_OBJECTS_NAME)
-                
+
             features = module.get_measurements(None, INPUT_OBJECTS_NAME,"Children")
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0], OUTPUT_OBJECTS_NAME + "_Count")
-            
+
             features = module.get_measurements(None,OUTPUT_OBJECTS_NAME,"Parent")
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0], INPUT_OBJECTS_NAME)
-            
+
             features = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Location")
             self.assertEqual(len(features), 2)
             self.assertTrue(all([any([x==y for x in features])
@@ -1141,27 +1131,27 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             features = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Number")
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0], "Object_Number")
-            
+
             columns = module.get_measurement_columns(None)
-            expected_columns = [ (cpm.IMAGE, 
-                                  "Threshold_%s_%s" % (f, OUTPUT_OBJECTS_NAME), 
+            expected_columns = [ (cpm.IMAGE,
+                                  "Threshold_%s_%s" % (f, OUTPUT_OBJECTS_NAME),
                                   cpm.COLTYPE_FLOAT)
                                  for f in threshold_features]
-            expected_columns += [(cpm.IMAGE, "Count_%s" % OUTPUT_OBJECTS_NAME, 
+            expected_columns += [(cpm.IMAGE, "Count_%s" % OUTPUT_OBJECTS_NAME,
                                   cpm.COLTYPE_INTEGER),
-                                 (INPUT_OBJECTS_NAME, 
+                                 (INPUT_OBJECTS_NAME,
                                   "Children_%s_Count" % OUTPUT_OBJECTS_NAME,
                                   cpm.COLTYPE_INTEGER),
                                  (OUTPUT_OBJECTS_NAME, "Location_Center_X", cpm.COLTYPE_FLOAT),
                                  (OUTPUT_OBJECTS_NAME, "Location_Center_Y", cpm.COLTYPE_FLOAT),
                                  (OUTPUT_OBJECTS_NAME, "Number_Object_Number", cpm.COLTYPE_INTEGER),
-                                 (OUTPUT_OBJECTS_NAME, 
-                                  "Parent_%s" % INPUT_OBJECTS_NAME, 
+                                 (OUTPUT_OBJECTS_NAME,
+                                  "Parent_%s" % INPUT_OBJECTS_NAME,
                                   cpm.COLTYPE_INTEGER)]
             self.assertEqual(len(columns), len(expected_columns))
             for column in expected_columns:
-                self.assertTrue(any([all([fa == fb 
-                                          for fa,fb 
+                self.assertTrue(any([all([fa == fb
+                                          for fa,fb
                                           in zip(column, expected_column)])
                                      for expected_column in expected_columns]))
 
@@ -1172,7 +1162,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.primary_objects.value = INPUT_OBJECTS_NAME
         module.objects_name.value = OUTPUT_OBJECTS_NAME
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
-        
+
         categories = module.get_categories(None, cpm.IMAGE)
         self.assertEqual(len(categories), 2)
         self.assertTrue(all([any([x == y for x in categories])
@@ -1184,17 +1174,17 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         categories = module.get_categories(None, INPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
         self.assertEqual(categories[0], "Children")
-        
+
         categories = module.get_categories(None, NEW_OBJECTS_NAME)
         self.assertEqual(len(categories), 4)
         self.assertTrue(all([any([x == y for x in categories])
                              for y in ("Location","Parent","Children","Number")]))
-        
+
         features = module.get_measurements(None, cpm.IMAGE, "Count")
         self.assertEqual(len(features), 2)
         self.assertTrue(OUTPUT_OBJECTS_NAME in features)
         self.assertTrue(NEW_OBJECTS_NAME in features)
-        
+
         features = module.get_measurements(None, cpm.IMAGE, "Threshold")
         threshold_features = ("OrigThreshold", "FinalThreshold",
                               "WeightedVariance", "SumOfEntropies")
@@ -1207,27 +1197,27 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                                                      threshold_feature)
             self.assertEqual(len(objects), 1)
             self.assertEqual(objects[0], OUTPUT_OBJECTS_NAME)
-            
+
         features = module.get_measurements(None, INPUT_OBJECTS_NAME,"Children")
         self.assertEqual(len(features), 2)
         self.assertTrue(all([any([x==y for x in features])
                             for y in ("%s_Count" % OUTPUT_OBJECTS_NAME,
                                       "%s_Count" % NEW_OBJECTS_NAME )]))
-        
+
         features = module.get_measurements(None,OUTPUT_OBJECTS_NAME,"Parent")
         self.assertEqual(len(features), 2)
         self.assertTrue(all([any([x==y for x in features])
                              for y in (INPUT_OBJECTS_NAME, NEW_OBJECTS_NAME)]))
-        
+
         for oname in (OUTPUT_OBJECTS_NAME, NEW_OBJECTS_NAME):
             features = module.get_measurements(None, oname, "Location")
             self.assertEqual(len(features), 2)
             self.assertTrue(all([any([x==y for x in features])
                                  for y in ("Center_X","Center_Y")]))
-        
+
         columns = module.get_measurement_columns(None)
-        expected_columns = [ (cpm.IMAGE, 
-                              "Threshold_%s_%s" % (f, OUTPUT_OBJECTS_NAME), 
+        expected_columns = [ (cpm.IMAGE,
+                              "Threshold_%s_%s" % (f, OUTPUT_OBJECTS_NAME),
                               cpm.COLTYPE_FLOAT)
                              for f in threshold_features]
         for oname in (NEW_OBJECTS_NAME, OUTPUT_OBJECTS_NAME):
@@ -1237,19 +1227,19 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                                  (oname, "Location_Center_Y", cpm.COLTYPE_FLOAT),
                                  (oname, "Number_Object_Number", cpm.COLTYPE_INTEGER),
                                  (oname, "Parent_Primary", cpm.COLTYPE_INTEGER)]
-        expected_columns += [(NEW_OBJECTS_NAME, 
-                              "Children_%s_Count" % OUTPUT_OBJECTS_NAME, 
+        expected_columns += [(NEW_OBJECTS_NAME,
+                              "Children_%s_Count" % OUTPUT_OBJECTS_NAME,
                               cpm.COLTYPE_INTEGER),
-                             (OUTPUT_OBJECTS_NAME, 
-                              "Parent_%s" % NEW_OBJECTS_NAME, 
+                             (OUTPUT_OBJECTS_NAME,
+                              "Parent_%s" % NEW_OBJECTS_NAME,
                               cpm.COLTYPE_INTEGER)]
         self.assertEqual(len(columns), len(expected_columns))
         for column in expected_columns:
-            self.assertTrue(any([all([fa == fb 
-                                      for fa,fb 
+            self.assertTrue(any([all([fa == fb
+                                      for fa,fb
                                       in zip(column, expected_column)])
                                  for expected_column in expected_columns]))
-        
+
     def test_08_01_filter_edge(self):
         labels = np.array([[0,0,0,0,0],
                            [0,0,0,0,0],
@@ -1266,13 +1256,13 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                                       [0,1,1,1,0],
                                       [0,1,1,1,0],
                                       [0,0,0,0,0]])
-        
+
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
         objects = cpo.Objects()
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.segmented = labels
         o_s.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -1296,7 +1286,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == 0))
         self.assertTrue(np.all(object_out.unedited_segmented == expected_unedited))
-        
+
         object_out = workspace.object_set.get_objects(NEW_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == 0))
         self.assertTrue(np.all(object_out.unedited_segmented == labels))
@@ -1327,13 +1317,13 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                                       [0,2,2,2,0],
                                       [0,2,2,2,0],
                                       [0,0,0,0,0]])
-        
+
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
         objects = cpo.Objects()
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
         objects.segmented = labels
@@ -1358,14 +1348,14 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == expected))
         self.assertTrue(np.all(object_out.unedited_segmented == expected_unedited))
-        
+
         object_out = workspace.object_set.get_objects(NEW_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == labels))
         self.assertTrue(np.all(object_out.unedited_segmented == labels_unedited))
-        
+
     def test_08_03_small(self):
         '''Regression test of IMG-791
-        
+
         A small object in the seed mask should not attract any of the
         secondary object.
         '''
@@ -1375,14 +1365,14 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                            [ 0,0,0,0,0,0 ],
                            [ 0,0,0,0,0,0 ],
                            [ 0,0,0,0,0,0 ]])
-        
+
         labels_unedited = np.array([[ 0,0,0,0,0,0 ],
                                     [ 0,0,1,0,0,0 ],
                                     [ 0,0,0,0,0,0 ],
                                     [ 0,0,0,0,0,0 ],
                                     [ 0,0,2,0,0,0 ],
                                     [ 0,0,0,0,0,0 ]])
-        
+
         image = np.array([[ 0,0,0,0,0,0 ],
                           [ 0,1,1,1,1,0 ],
                           [ 0,1,1,1,1,0 ],
@@ -1390,13 +1380,13 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                           [ 0,1,1,1,1,0 ],
                           [ 0,0,0,0,0,0 ]], float)
         expected = image.astype(int)
-        
+
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
         objects = cpo.Objects()
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
         objects.segmented = labels
@@ -1417,10 +1407,10 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.run(workspace)
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == expected))
-        
+
     def test_08_04_small_touching(self):
         '''Test of logic added for IMG-791
-        
+
         A small object in the seed mask touching the edge should attract
         some of the secondary object
         '''
@@ -1430,27 +1420,27 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                            [ 0,0,0,0,0,0 ],
                            [ 0,0,0,0,0,0 ],
                            [ 0,0,0,0,0,0 ]])
-        
+
         labels_unedited = np.array([[ 0,0,0,0,0,0 ],
                                     [ 0,0,1,0,0,0 ],
                                     [ 0,0,0,0,0,0 ],
                                     [ 0,0,0,0,0,0 ],
                                     [ 0,0,0,0,0,0 ],
                                     [ 0,0,2,0,0,0 ]])
-        
+
         image = np.array([[ 0,0,0,0,0,0 ],
                           [ 0,1,1,1,1,0 ],
                           [ 0,1,1,1,1,0 ],
                           [ 0,1,1,1,1,0 ],
                           [ 0,1,1,1,1,0 ],
                           [ 0,1,1,1,1,0 ]], float)
-        
+
         p = cpp.Pipeline()
         o_s = cpo.ObjectSet()
         i_l = cpi.ImageSetList()
         image = cpi.Image(image)
         objects = cpo.Objects()
-        objects.unedited_segmented = labels 
+        objects.unedited_segmented = labels
         objects.small_removed_segmented = labels
         objects.unedited_segmented = labels_unedited
         objects.segmented = labels
@@ -1474,7 +1464,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertTrue(np.all(object_out.segmented[i-1:,j-1:j+2] == 0))
         self.assertEqual(len(np.unique(object_out.unedited_segmented)), 3)
         self.assertEqual(len(np.unique(object_out.unedited_segmented[i-1:,j-1:j+2])), 1)
-        
+
     def test_09_01_binary_threshold(self):
         '''Test segmentation using a binary image for thresholding'''
         np.random.seed(91)
@@ -1488,7 +1478,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         expected = np.zeros((20,10), int)
         expected[4:7,4:7] = 1
         expected[14:17,4:7] = 2
-        
+
         workspace, module = self.make_workspace(image, labels)
         self.assertTrue(isinstance(module, cpmi2.IdentifySecondaryObjects))
         module.threshold_scope.value = cpmi.TS_BINARY_IMAGE
@@ -1496,7 +1486,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         image_set = workspace.image_set
         self.assertTrue(isinstance(image_set, cpi.ImageSet))
         image_set.add("threshold", cpi.Image(threshold, convert=False))
-        
+
         module.run(workspace)
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         labels_out = object_out.segmented
@@ -1505,7 +1495,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(len(indexes), 2)
         indexes = np.hstack(([0], indexes))
         self.assertTrue(np.all(indexes[labels_out] == expected))
-        
+
     def test_10_01_holes_no_holes(self):
         np.random.seed(92)
         for wants_fill_holes in (True, False):
@@ -1536,7 +1526,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                 image_set = workspace.image_set
                 self.assertTrue(isinstance(image_set, cpi.ImageSet))
                 image_set.add("threshold", cpi.Image(threshold, convert=False))
-                
+
                 module.run(workspace)
                 object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
                 labels_out = object_out.segmented
@@ -1545,7 +1535,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                 self.assertEqual(len(indexes), 2)
                 indexes = np.hstack(([0], indexes))
                 self.assertTrue(np.all(indexes[labels_out] == expected))
-                
+
     def test_11_00_relationships_zero(self):
         workspace, module = self.make_workspace(
             np.zeros((10, 10)), np.zeros((10, 10), int))
@@ -1557,7 +1547,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
             module.module_num, cpmi2.R_PARENT,
             module.primary_objects.value, module.objects_name.value)
         self.assertEqual(len(result), 0)
-        
+
     def test_11_01_relationships_one(self):
         img = np.zeros((10,10))
         img[2:7,2:7] = .5
@@ -1613,5 +1603,5 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                 self.assertEqual(result[cpm.R_SECOND_IMAGE_NUMBER][i], 1)
                 self.assertEqual(result[cpm.R_FIRST_OBJECT_NUMBER][i],
                                  object_number)
-                self.assertEqual(result[cpm.R_SECOND_OBJECT_NUMBER][i], 
+                self.assertEqual(result[cpm.R_SECOND_OBJECT_NUMBER][i],
                                  object_number)

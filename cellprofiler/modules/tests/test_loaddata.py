@@ -12,7 +12,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
-from bioformats import load_image
+from bioformats import load_image, write_image, PT_UINT8
 import base64
 import numpy as np
 import os
@@ -21,7 +21,6 @@ from StringIO import StringIO
 import tempfile
 import unittest
 import zlib
-import PIL.Image
 import hashlib
 
 from cellprofiler.preferences import set_headless
@@ -39,7 +38,10 @@ import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.tests import \
      example_images_directory, testimages_directory, maybe_download_sbs,\
-     maybe_download_example_image, maybe_download_tesst_image, make_12_bit_image
+     maybe_download_example_image, maybe_download_tesst_image, \
+     make_12_bit_image, cp_logo_url, cp_logo_url_filename, cp_logo_url_folder, \
+     cp_logo_url_shape
+
 from bioformats.formatreader import clear_image_reader_cache
 
 OBJECTS_NAME = "objects"
@@ -53,12 +55,12 @@ class TestLoadData(unittest.TestCase):
             example_images_directory(), cls.test_folder)
         cls.test_filename = "image.tif"
         cls.test_shape = (13, 15)
-        path = maybe_download_example_image([cls.test_folder], 
+        path = maybe_download_example_image([cls.test_folder],
                                             cls.test_filename,
                                             shape=cls.test_shape)
         with open(path, "rb") as fd:
             cls.test_md5 = hashlib.md5(fd.read()).hexdigest()
-        
+
     def make_pipeline(self, csv_text, name = None):
         if name is None:
             handle, name = tempfile.mkstemp(".csv")
@@ -67,7 +69,7 @@ class TestLoadData(unittest.TestCase):
             fd = open(name, "w")
         fd.write(csv_text)
         fd.close()
-        csv_path, csv_file = os.path.split(name) 
+        csv_path, csv_file = os.path.split(name)
         module = L.LoadText()
         module.csv_directory.dir_choice = L.ABSOLUTE_FOLDER_NAME
         module.csv_directory.custom_path = csv_path
@@ -79,11 +81,11 @@ class TestLoadData(unittest.TestCase):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(error_callback)
         return pipeline, module, name
-    
+
     def test_01_00_revision(self):
         '''Remember to update this and write another test on new revision'''
         self.assertEqual(L.LoadData().variable_revision_number, 6)
-        
+
     def test_01_01_load_v1(self):
         data = ('eJztV01v2jAYdvgabBPith59mnrootANqeWyMtAEU6EVRdV2qlwwzJITR46'
                 'DYL9gP2nHHfdz9hNm06QkHiUQsXXSsGQlr/0+z/tlJ3a3MThvvIM104Ldxu'
@@ -106,15 +108,15 @@ class TestLoadData(unittest.TestCase):
         self.assertEqual(len(pipeline.modules()),3)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module,L.LoadText))
-        self.assertEqual(module.csv_directory.dir_choice, 
+        self.assertEqual(module.csv_directory.dir_choice,
                          L.DEFAULT_INPUT_FOLDER_NAME)
         self.assertEqual(module.csv_file_name, "1049.csv")
         self.assertTrue(module.wants_images.value)
         self.assertFalse(module.wants_image_groupings.value)
-        self.assertEqual(module.image_directory.dir_choice, 
+        self.assertEqual(module.image_directory.dir_choice,
                          L.DEFAULT_INPUT_FOLDER_NAME)
         self.assertFalse(module.wants_rows.value)
-    
+
     def test_01_02_load_v2(self):
         data = ('eJztVd1KwzAUTuv82QTxTi9zJV5oycTf3eimiAM3xQ3RK4lbOgJpM9J0bD6B'
                 'j+Jj+Cg+go9gMtKtrWOdeiPogZCc5PvOyfk4bWrl5mW5AvccBGvl5rZLGYHX'
@@ -140,10 +142,10 @@ class TestLoadData(unittest.TestCase):
         self.assertTrue(module.wants_image_groupings.value)
         self.assertEqual(len(module.metadata_fields.selections),1)
         self.assertEqual(module.metadata_fields.selections[0], "SBS_doses")
-        self.assertEqual(module.image_directory.dir_choice, 
+        self.assertEqual(module.image_directory.dir_choice,
                          L.DEFAULT_INPUT_FOLDER_NAME)
         self.assertFalse(module.wants_rows.value)
-    
+
     def test_01_03_load_v3(self):
         data = ('eJztVUtPg0AQXihtfCTGgwePezIelICv2F5MqzE2kWqE+Dhu28WSLGwDS338'
                 'An+CP9Of4FKX8pAUbT2Y6AQyO7PzzTczLGA0rfNmC+6rGjSa1rbtEAwvCWI2'
@@ -167,7 +169,7 @@ class TestLoadData(unittest.TestCase):
         self.assertEqual(module.csv_file_name, "1049.csv")
         self.assertTrue(module.wants_images.value)
         self.assertFalse(module.wants_image_groupings.value)
-        
+
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -192,7 +194,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, L.LoadData))
         self.assertEqual(module.csv_file_name, "1049_Metadata.csv")
-        self.assertEqual(module.csv_directory.dir_choice, 
+        self.assertEqual(module.csv_directory.dir_choice,
                          cps.DEFAULT_INPUT_FOLDER_NAME)
         self.assertTrue(module.wants_images)
         self.assertTrue(module.rescale)
@@ -202,7 +204,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_w
         self.assertEqual(module.row_range.max, 36)
         self.assertEqual(len(module.metadata_fields.selections), 1)
         self.assertEqual(module.metadata_fields.selections[0], "Well")
-        
+
     def test_01_05_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -227,7 +229,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_w
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, L.LoadData))
         self.assertEqual(module.csv_file_name, "1049_Metadata.csv")
-        self.assertEqual(module.csv_directory.dir_choice, 
+        self.assertEqual(module.csv_directory.dir_choice,
                          cps.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.csv_directory.custom_path,
                          r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages")
@@ -242,7 +244,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5|show_w
         self.assertEqual(len(module.metadata_fields.selections), 2)
         self.assertEqual(module.metadata_fields.selections[0], "Column")
         self.assertEqual(module.metadata_fields.selections[1], "Row")
-        
+
     def test_01_06_load_v6(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -268,7 +270,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, L.LoadData))
         self.assertEqual(module.csv_file_name, "1049_Metadata.csv")
-        self.assertEqual(module.csv_directory.dir_choice, 
+        self.assertEqual(module.csv_directory.dir_choice,
                          cps.ABSOLUTE_FOLDER_NAME)
         self.assertEqual(module.csv_directory.custom_path,
                          r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages")
@@ -283,7 +285,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         self.assertEqual(len(module.metadata_fields.selections), 2)
         self.assertEqual(module.metadata_fields.selections[0], "Column")
         self.assertEqual(module.metadata_fields.selections[1], "Row")
-        
+
     def test_02_01_string_image_measurement(self):
         csv_text = '''"Test_Measurement"
 "Hello, world"
@@ -294,7 +296,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         self.assertFalse(np.isreal(data))
         self.assertEqual(data, "Hello, world")
         os.remove(filename)
-    
+
     def test_02_02_float_image_measurement(self):
         csv_text = '''"Test_Measurement"
 1.5
@@ -305,7 +307,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         self.assertTrue(np.isreal(data))
         self.assertAlmostEqual(data, 1.5)
         os.remove(filename)
-    
+
     def test_02_03_int_image_measurement(self):
         csv_text = '''"Test_Measurement"
 1
@@ -316,7 +318,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         self.assertTrue(isinstance(data, np.int), "data is type %s, not np.int" % (type(data)))
         self.assertEqual(data, 1)
         os.remove(filename)
-    
+
     def test_02_04_long_int_image_measurement(self):
         csv_text = '''"Test_Measurement"
 1234567890123
@@ -327,7 +329,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         self.assertTrue(isinstance(data, unicode), "Expected <type 'unicode'> got %s" %type(data))
         self.assertEqual(data, "1234567890123")
         os.remove(filename)
-    
+
     def test_03_01_metadata(self):
         csv_text = '''"Metadata_Plate"
 "P-12345"
@@ -337,7 +339,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         data = m.get_current_image_measurement("Metadata_Plate")
         self.assertEqual(data, "P-12345")
         os.remove(filename)
-        
+
     def test_03_02_metadata_row_and_column(self):
         csv_text = '''"Metadata_Row","Metadata_Column"
 "C","03"
@@ -354,7 +356,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
                              c[1] == "Metadata_Well" and
                              c[2] == "varchar(3)" for c in columns]))
         m = pipeline.run()
-        features = module.get_measurements(pipeline, cpmeas.IMAGE, 
+        features = module.get_measurements(pipeline, cpmeas.IMAGE,
                                            cpmeas.C_METADATA)
         for feature, expected in (("Row", "C"),
                                   ("Column", "03"),
@@ -379,7 +381,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
                              c[1] == "Metadata_Well" and
                              c[2] == "varchar(3)" for c in columns]))
         m = pipeline.run()
-        features = module.get_measurements(pipeline, cpmeas.IMAGE, 
+        features = module.get_measurements(pipeline, cpmeas.IMAGE,
                                            cpmeas.C_METADATA)
         for feature, expected in (("Row", "C"),
                                   ("Column", "03"),
@@ -400,12 +402,12 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             pixels = image.pixel_data
             self.assertEqual(pixels.shape[0], self.test_shape[0])
             c0_ran[0] = True
-            
+
         c0 = C0()
         c0.callback = callback
         c0.module_num = 2
         pipeline.add_module(c0)
-                
+
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -420,7 +422,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
                              self.test_filename)
         finally:
             os.remove(filename)
-    
+
     def test_04_02_dont_load_file(self):
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
@@ -441,7 +443,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             self.assertTrue(c0_ran[0])
         finally:
             os.remove(filename)
-            
+
     def test_04_03_load_planes(self):
         file_name = "RLM1 SSN3 300308 008015000.flex"
         maybe_download_tesst_image(file_name)
@@ -452,7 +454,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         channels = ("Channel1", "Channel2")
         header = ",".join([",".join(["_".join((ftr, channel)) for ftr in ftrs])
                            for channel in channels])
-                                     
+
         csv_lines = [header]
         for series in range(4):
             csv_lines.append(",".join(['"%s","%d","%d"' % (url, series, frame)
@@ -463,7 +465,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         m = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
         try:
-            workspace = cpw.Workspace(pipeline, module, m, None, m, 
+            workspace = cpw.Workspace(pipeline, module, m, None, m,
                                       image_set_list)
             self.assertTrue(module.prepare_run(workspace))
             pixel_hashes = []
@@ -484,7 +486,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
                 pixel_hashes.append(chashes)
         finally:
             os.remove(filename)
-    
+
     def test_05_01_some_rows(self):
         csv_text = '''"Test_Measurement"
 1
@@ -507,7 +509,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         data = m.get_all_measurements(cpmeas.IMAGE, "Test_Measurement")
         self.assertTrue(np.all(data == np.arange(4,7)))
         os.remove(filename)
-    
+
     def test_05_02_img_717(self):
         '''Regression test of img-717, column without underbar'''
         csv_text = '''"Image","Test_Measurement"
@@ -550,7 +552,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         data = m.get_all_measurements(cpmeas.IMAGE, "Metadata_Measurement")
         self.assertTrue(all([data[i-2] == i for i in range(2,11)]))
         os.remove(filename)
-    
+
     def test_07_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
         colnames = ('Integer_Measurement','Float_Measurement','String_Measurement')
@@ -574,10 +576,10 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
                                   column[2] == coltype) for column in columns]),
                             'Failed to find %s'%colname)
         os.remove(filename)
-    
+
     def test_07_02_file_name_measurement_columns(self):
         '''Regression test bug IMG-315
-        
+
         A csv header of Image_FileName_Foo or Image_PathName_Foo should
         yield column names of FileName_Foo and PathName_Foo
         '''
@@ -593,7 +595,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             self.assertTrue('PathName_Foo' in [c[1] for c in columns])
         finally:
             os.remove(filename)
-        
+
     def test_07_03_long_integer_column(self):
         '''This is a regression test of IMG-644 where a 13-digit number got turned into an int'''
         colnames = ('Long_Integer_Measurement','Float_Measurement','String_Measurement')
@@ -621,11 +623,11 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
                                   column[2] == coltype) for column in columns]),
                             'Failed to find %s'%colname)
         os.remove(filename)
-  
+
     def test_07_04_objects_measurement_columns(self):
         csv_text = """%s_%s,%s_%s
 Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
-""" % (L.C_OBJECTS_FILE_NAME, OBJECTS_NAME, 
+""" % (L.C_OBJECTS_FILE_NAME, OBJECTS_NAME,
        L.C_OBJECTS_PATH_NAME, OBJECTS_NAME)
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
@@ -645,7 +647,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
             self.assertTrue(any([
                 True for column in columns
                 if object_name == column[0] and feature == column[1]]))
-            
+
     def test_08_01_get_groupings(self):
         '''Test the get_groupings method'''
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")
@@ -655,7 +657,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
             match = re.match(pattern, filename)
             if match:
                 csv_text += ('"%s","%s","%s","%s"\n' %
-                             (filename, dir, match.group("ROW"), 
+                             (filename, dir, match.group("ROW"),
                               match.group("COL")))
         pipeline, module, filename = self.make_pipeline(csv_text)
         self.assertTrue(isinstance(module, L.LoadText))
@@ -677,7 +679,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         for grouping in groupings:
             row = grouping[0]["Metadata_ROW"]
             module.prepare_group(cpw.Workspace(
-                pipeline, module, None, None, measurements, image_set_list), 
+                pipeline, module, None, None, measurements, image_set_list),
                                  grouping[0], grouping[1])
             for image_number in grouping[1]:
                 image_set = image_set_list.get_image_set(image_number-1)
@@ -690,7 +692,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                 match = re.search(pattern, provider.get_filename())
                 self.assertTrue(match)
                 self.assertEqual(row, match.group("ROW"))
-                
+
     def test_09_01_load_bcb_file(self):
 
         csv_text = '''ELN_RUN_ID,CBIP_RUN_ID,ASSAY_PLATE_BARCODE,\
@@ -711,12 +713,12 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             image = imgset.get_image("DAPI")
             pixels = image.pixel_data
             self.assertEqual(pixels.shape[0], self.test_shape[0])
-            c0_ran[0] = True    
+            c0_ran[0] = True
         c0 = C0()
         c0.callback = callback
         c0.module_num = 2
         pipeline.add_module(c0)
-                
+
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -731,7 +733,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                              self.test_filename)
         finally:
             os.remove(filename)
-            
+
     def test_10_01_scaling(self):
         '''Test loading an image scaled and unscaled'''
         folder = "loaddata"
@@ -758,23 +760,21 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                 os.remove(filename)
         unscaled, scaled = c0_image
         np.testing.assert_almost_equal(unscaled * 65535. / 4095., scaled)
-        
+
     def test_11_01_load_objects(self):
         r = np.random.RandomState()
         r.seed(1101)
         labels = r.randint(0,10, size=(30,20)).astype(np.uint8)
         handle, name = tempfile.mkstemp(".png")
-        fd = os.fdopen(handle, "wb")
-        img = PIL.Image.fromarray(labels, "L")
-        img.save(fd, "PNG")
-        fd.close()
+        write_image(name, labels, PT_UINT8)
+        os.close(handle)
         png_path, png_file = os.path.split(name)
         sbs_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         csv_text = """%s_%s,%s_%s,%s_DNA,%s_DNA
 %s,%s,Channel2-01-A-01.tif,%s
-""" % (L.C_OBJECTS_FILE_NAME, OBJECTS_NAME, 
-       L.C_OBJECTS_PATH_NAME, OBJECTS_NAME, 
-       L.C_FILE_NAME, L.C_PATH_NAME, 
+""" % (L.C_OBJECTS_FILE_NAME, OBJECTS_NAME,
+       L.C_OBJECTS_PATH_NAME, OBJECTS_NAME,
+       L.C_FILE_NAME, L.C_PATH_NAME,
        png_file, png_path, sbs_dir)
         pipeline, module, csv_name = self.make_pipeline(csv_text)
         assert isinstance(pipeline, cpp.Pipeline)
@@ -798,8 +798,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertTrue(np.all(objects.segmented == labels))
             self.assertEqual(measurements.get_current_image_measurement(
                 L.I.FF_COUNT % OBJECTS_NAME), 9)
-            for feature in (L.I.M_LOCATION_CENTER_X, 
-                            L.I.M_LOCATION_CENTER_Y, 
+            for feature in (L.I.M_LOCATION_CENTER_X,
+                            L.I.M_LOCATION_CENTER_Y,
                             L.I.M_NUMBER_OBJECT_NUMBER):
                 value = measurements.get_current_measurement(
                     OBJECTS_NAME, feature)
@@ -808,7 +808,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             clear_image_reader_cache()
             os.remove(name)
             os.remove(csv_name)
-            
+
     def test_12_01_load_unicode(self):
         base_directory = tempfile.mkdtemp()
         directory = u"\u2211\u03B1"
@@ -823,10 +823,9 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             r = np.random.RandomState()
             r.seed(1101)
             labels = r.randint(0,10, size=(30,20)).astype(np.uint8)
-            img = PIL.Image.fromarray(labels, "L")
-            img.save(path, "PNG")
+            write_image(path, labels, PT_UINT8)
             csv_text = ("Image_FileName_MyFile,Image_PathName_MyFile,Metadata_Unicode\n"
-                        "%s,%s,%s\n" % 
+                        "%s,%s,%s\n" %
                         (filename.encode('utf8'), base_path.encode('utf8'),
                          unicode_value.encode('utf8')))
             pipeline, module, _ = self.make_pipeline(csv_text, csv_path)
@@ -856,7 +855,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                     os.unlink(path)
                 except:
                     pass
-                
+
             if os.path.exists(csv_path):
                 try:
                     os.unlink(csv_path)
@@ -872,7 +871,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                     os.rmdir(base_directory)
                 except:
                     pass
-            
+
     def test_13_01_load_filename(self):
         #
         # Load a file, only specifying the FileName in the CSV
@@ -899,16 +898,16 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
         self.assertEqual(tuple(img.pixel_data.shape), self.test_shape)
-        
+
     def test_13_02_load_url(self):
         #
         # Load, only specifying URL
         #
         csv_text = '''"Image_URL_DNA"
-"http://cellprofiler.org/images/cp_logo_smaller.png"
-"http:cp_logo_smaller.png"
+"%(cp_logo_url)s"
+"http:%(cp_logo_url_filename)s"
 "bogusurl.png"
-'''
+''' % globals()
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
         m = cpmeas.Measurements()
@@ -916,29 +915,28 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                                   m, cpi.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
-                         "cp_logo_smaller.png")
+                         cp_logo_url_filename)
         path = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
-        self.assertEqual(path, "http://cellprofiler.org/images")
-        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
-                         "http://cellprofiler.org/images/cp_logo_smaller.png")
-        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 2], "cp_logo_smaller.png")
+        self.assertEqual(path, cp_logo_url_folder)
+        self.assertEqual(m[cpmeas.IMAGE, "URL_DNA", 1], cp_logo_url)
+        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 2], cp_logo_url_filename)
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 2], "http:")
         self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 3], "bogusurl.png")
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), (157, 400, 3))
-        
+        self.assertEqual(tuple(img.pixel_data.shape), cp_logo_url_shape)
+
     def test_13_03_extra_fields(self):
         #
         # Regression test of issue #853, extra fields
         #
         csv_text = '''"Image_URL_DNA"
-"http://cellprofiler.org/images/cp_logo_smaller.png", "foo"
-"http:cp_logo_smaller.png"
+"%(cp_logo_url)s", "foo"
+"http:%(cp_logo_url_filename)s"
 "bogusurl.png"
-'''
+''' % globals()
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
         m = cpmeas.Measurements()
@@ -946,27 +944,27 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                                   m, cpi.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
-                         "cp_logo_smaller.png")
+                         cp_logo_url_filename)
         path = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
-        self.assertEqual(path, "http://cellprofiler.org/images")
+        self.assertEqual(path, cp_logo_url_folder)
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
-                         "http://cellprofiler.org/images/cp_logo_smaller.png")
-        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 2], "cp_logo_smaller.png")
+                         cp_logo_url)
+        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 2], cp_logo_url_filename)
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 2], "http:")
         self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 3], "bogusurl.png")
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), (157, 400, 3))
-        
+        self.assertEqual(tuple(img.pixel_data.shape), cp_logo_url_shape)
+
     def test_13_04_extra_lines(self):
         #
         # Regression test of issue #1211 - extra line at end / blank lines
         #
         dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         file_name = 'Channel2-01-A-01.tif'
-        
+
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
 "%s","%s"
 
@@ -984,7 +982,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertEqual(m[cpmeas.IMAGE, 'FileName_DNA', 1], file_name)
         finally:
             os.remove(filename)
-            
+
     def test_13_05_extra_lines_skip_rows(self):
         #
         # Regression test of issue #1211 - extra line at end / blank lines
@@ -993,9 +991,9 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         path = os.path.join(example_images_directory(), "ExampleSBSImages")
         file_names = ['Channel2-01-A-01.tif',
                       'Channel2-02-A-02.tif']
-        
+
         csv_text = '''"Image_FileName_DNA","Image_PathName_DNA"
-        
+
 "%s","%s"
 
 "%s","%s"
@@ -1017,7 +1015,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertEqual(m[cpmeas.IMAGE, 'FileName_DNA', 1], file_names[0])
         finally:
             os.remove(filename)
-            
+
     def test_13_06_load_default_input_folder(self):
         # Regression test of issue #1365 - load a file from the default
         # input folder and check that PathName_xxx is absolute
@@ -1045,16 +1043,16 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertEqual(tuple(img.pixel_data.shape), self.test_shape)
         finally:
             os.remove(filename)
-        
-    
+
+
 class C0(cpm.CPModule):
     module_name = 'C0'
     variable_revision_number = 1
     def create_settings(self):
         self.callback = None
-        
+
     def settings(self):
         return []
-        
+
     def run(self, workspace):
-        self.callback(workspace)       
+        self.callback(workspace)

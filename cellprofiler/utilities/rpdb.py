@@ -1,24 +1,13 @@
 '''Remote debugger class, useful for multiprocess and distributed debugging.
-
-CellProfiler is distributed under the GNU General Public License,
-but this file is licensed under the more permissive BSD license.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
 # modified version of http://snippets.dzone.com/posts/show/7248
 
+import hashlib
 import pdb
 import socket
 import sys
-import hashlib
+
 import readline  # otherwise, pdb.Pdb.__init__ hangs
 
 

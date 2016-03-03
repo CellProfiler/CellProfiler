@@ -1,17 +1,5 @@
 '''Check for new versions on a web page, in a separate thread, and
 call a callback with the new version information if there is one.
-
-CellProfiler is distributed under the GNU General Public License,
-but this file is licensed under the more permissive BSD license.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
 
@@ -30,7 +18,7 @@ class VersionChecker(threading.Thread):
         self.callback = callback
         self.daemon = True # if we hang it's no big deal
         self.setName("VersionChecker")
-    
+
     def run(self):
         try:
             req = urllib2.Request(self.url, None, {'User-Agent' : self.user_agent})
@@ -49,4 +37,3 @@ class VersionChecker(threading.Thread):
 def check_for_updates(url, current_version, callback, user_agent='CellProfiler_cfu'):
     vc = VersionChecker(url, current_version, callback, user_agent)
     vc.start()
-

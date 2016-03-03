@@ -2,31 +2,20 @@
 <hr>
 
 This module allows you to take previously identified objects and convert
-them into an image according to a colormap you select, which can then be saved 
+them into an image according to a colormap you select, which can then be saved
 with the <b>SaveImages</b> modules.
 
 <p>If you would like to save your objects but do not need a colormap,
-you can by bypass this module and use the <b>SaveImages</b> module directly 
+you can by bypass this module and use the <b>SaveImages</b> module directly
 by specifying "Objects" as the type of image to save.
 '''
 
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
-
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
 import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
 
 DEFAULT_COLORMAP = "Default"
 COLORCUBE = "colorcube"
@@ -47,16 +36,16 @@ class ConvertObjectsToImage(cpm.CPModule):
     module_name = "ConvertObjectsToImage"
     category = "Object Processing"
     variable_revision_number = 1
-    
+
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
             "Select the input objects",cps.NONE,doc="""
             Choose the name of the objects you want to convert to an image.""")
-        
+
         self.image_name = cps.ImageNameProvider(
             "Name the output image", "CellImage",doc="""
             Enter the name of the resulting image.""")
-        
+
         self.image_mode = cps.Choice(
             "Select the color format",
             IM_ALL,doc="""
@@ -82,24 +71,24 @@ class ConvertObjectsToImage(cpm.CPModule):
             </ul>
             You can choose <i>%(IM_COLOR)s</i> with a <i>Gray</i> colormap to produce
             jumbled gray objects."""%globals())
-        
+
         self.colormap = cps.Colormap(
             "Select the colormap",doc="""
             <i>(Used only if "<i>%(IM_COLOR)s</i>" output image selected)</i><br>
-            Choose the colormap to be used, which affects how the objects are colored. 
+            Choose the colormap to be used, which affects how the objects are colored.
             You can look up your default colormap under <i>File > Preferences</i>.
             """%globals())
 
     def settings(self):
-        return [self.object_name, self.image_name, self.image_mode, 
+        return [self.object_name, self.image_name, self.image_mode,
                 self.colormap]
 
     def visible_settings(self):
         if self.image_mode == IM_COLOR:
-            return [self.object_name, self.image_name, self.image_mode, 
+            return [self.object_name, self.image_name, self.image_mode,
                     self.colormap]
         else:
-            return [self.object_name, self.image_name, self.image_mode] 
+            return [self.object_name, self.image_name, self.image_mode]
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)

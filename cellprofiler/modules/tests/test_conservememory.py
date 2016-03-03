@@ -1,29 +1,19 @@
 '''test_conservememory - Test the ConserveMemory module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
-
 import base64
-from matplotlib.image import pil_to_array
-import numpy as np
 import os
-import PIL.Image as PILImage
-import scipy.ndimage
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import PIL.Image as PILImage
+import numpy as np
+import scipy.ndimage
+from matplotlib.image import pil_to_array
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp
@@ -63,7 +53,7 @@ class TestConserveMemory(unittest.TestCase):
         self.assertEqual(module.how_to_remove, S.C_REMOVE)
         self.assertEqual(len(module.image_names), 1)
         self.assertEqual(module.image_names[0].image_name, "OrigBlue")
-        
+
     def test_01_02_load_v1(self):
         data = ('eJztWdtO20AQXYeAuEgVfWrVp30kLYlMKBJECJKSVo1K0oikIIRou8QbspLt'
                 'tXyB0Aqpj/2cfk4/o5/QXbCxvTVxLlzkyo4sM7Nz5syMZzfLpl5p71bewLWC'
@@ -95,7 +85,7 @@ class TestConserveMemory(unittest.TestCase):
         self.assertEqual(len(module.image_names), 2)
         self.assertEqual(module.image_names[0].image_name, "DNA")
         self.assertEqual(module.image_names[1].image_name, "Actin")
-        
+
     def test_02_01_erase_remove(self):
         module = S.SpeedUpCellProfiler()
         module.how_to_remove.value = S.C_REMOVE
@@ -111,14 +101,14 @@ class TestConserveMemory(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set,
-                                  cpo.ObjectSet(), cpmeas.Measurements(), 
+                                  cpo.ObjectSet(), cpmeas.Measurements(),
                                   image_set_list)
         module.run(workspace)
         image = image_set.get_image("Image1")
         self.assertFalse(isinstance(image, cpi.Image))
         image = image_set.get_image("Image2")
         self.assertTrue(isinstance(image, cpi.Image))
-        
+
     def test_02_02_erase_keep(self):
         module = S.SpeedUpCellProfiler()
         module.how_to_remove.value = S.C_KEEP

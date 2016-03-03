@@ -1,25 +1,15 @@
 '''test_definegrid - test the DefineGrid module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
-
 import base64
-import numpy as np
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw
@@ -46,7 +36,7 @@ class TestDefineGrid(unittest.TestCase):
         #Would you like to count across first (by rows) or up/down first (by columns)?    Columns
         #Would you like to define a new grid for each image cycle, or define a grid once and use it for all images?    Once
         #Would you like to define the grid automatically, based on objects you have identified in a previous module?    Manual
-        #For AUTOMATIC, what are the previously identified objects you want to use to define the grid?    
+        #For AUTOMATIC, what are the previously identified objects you want to use to define the grid?
         #For MANUAL, how would you like to specify where the control spot is?    Coordinates
         #For MANUAL or if you are saving an RGB image, what is the original image on which to mark/display the grid?    OrigBlue
         #For MANUAL + MOUSE, what is the distance from the control spot to the top left spot in the grid? (X,Y: specify spot units or pixels below)    0,0
@@ -141,7 +131,7 @@ class TestDefineGrid(unittest.TestCase):
         self.assertEqual(module.display_image_name, "GridImage")
         self.assertEqual(module.manual_image, "GridImage")
         self.assertEqual(module.save_image_name, "Grid")
-    
+
     def make_workspace(self, image, labels):
         module = D.DefineGrid()
         module.module_num = 1
@@ -168,7 +158,7 @@ class TestDefineGrid(unittest.TestCase):
                                   object_set, measurements,
                                   image_set_list)
         return workspace, module
-    
+
     def test_02_01_grid_automatic(self):
         image = np.zeros((50,100))
         labels = np.zeros((50,100), int)
@@ -209,7 +199,7 @@ class TestDefineGrid(unittest.TestCase):
         spot_table = np.arange(rows*columns)+1
         spot_table.shape = (rows, columns)
         self.assertTrue(np.all(gridding.spot_table == spot_table))
-        
+
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for feature, value in ((D.F_COLUMNS, columns),
@@ -221,10 +211,10 @@ class TestDefineGrid(unittest.TestCase):
             measurement = '_'.join((D.M_CATEGORY,GRID_NAME, feature))
             self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
             self.assertEqual(m.get_current_image_measurement(measurement), value)
-        
+
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(image is not None)
-    
+
     def test_02_02_fail(self):
         image = np.zeros((50,100))
         labels = np.zeros((50,100), int)
@@ -277,7 +267,7 @@ class TestDefineGrid(unittest.TestCase):
         spot_table = np.arange(rows*columns)+1
         spot_table.shape = (rows, columns)
         self.assertTrue(np.all(gridding.spot_table == spot_table))
-        
+
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for feature, value in ((D.F_COLUMNS, columns),
@@ -289,10 +279,9 @@ class TestDefineGrid(unittest.TestCase):
             measurement = '_'.join((D.M_CATEGORY,GRID_NAME, feature))
             self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
             self.assertEqual(m.get_current_image_measurement(measurement), value)
-        
+
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(image is not None)
         shape = image.pixel_data.shape
         self.assertEqual(shape[0], 50)
         self.assertEqual(shape[1], 100)
-        

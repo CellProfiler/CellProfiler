@@ -1,36 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
 
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
-import wx
-from cellprofiler.icons import get_builtin_image
 import cStringIO
-import cellprofiler.preferences as cpp
-from cellprofiler.gui.errordialog import display_error_dialog
 import sys
 
+import wx
+
+import cellprofiler.preferences as cpp
+from cellprofiler.gui.errordialog import display_error_dialog
+from cellprofiler.icons import get_builtin_image
 # Make sure sys.excepthook is called for any uncaught exceptions, even in threads.
 import cellprofiler.utilities.thread_excepthook
 cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
 
-CellProfilerSplash = get_builtin_image('CellProfilerSplash')
 
 class CellProfilerApp(wx.App):
     def __init__(self, *args, **kwargs):
-        # allow suppression of version checking (primarily for nosetests). 
+        # allow suppression of version checking (primarily for nosetests).
         self.check_for_new_version = kwargs.pop('check_for_new_version', False)
-        self.show_splashbox = kwargs.pop('show_splashbox', False)
         self.workspace_path = kwargs.pop('workspace_path', None)
         self.pipeline_path = kwargs.pop('pipeline_path', None)
         self.abort_initialization = False
@@ -41,33 +28,11 @@ class CellProfilerApp(wx.App):
         from cellprofiler.utilities.version import dotted_version
         self.SetAppName('CellProfiler%s' % dotted_version)
 
-        if self.show_splashbox:
-            # If the splash image has alpha, it shows up transparently on
-            # windows, so we blend it into a white background.
-            splashbitmap = wx.EmptyBitmapRGBA(
-                CellProfilerSplash.GetWidth(), 
-                CellProfilerSplash.GetHeight(), 255, 255, 255, 255)
-            dc = wx.MemoryDC()
-            dc.SelectObject(splashbitmap)
-            dc.DrawBitmap(wx.BitmapFromImage(CellProfilerSplash), 0, 0)
-            dc.SelectObject(wx.NullBitmap)
-            dc.Destroy() # necessary to avoid a crash in splashscreen
-            self.splash = wx.SplashScreen(
-                splashbitmap, 
-                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 
-                2000, None, -1)
-            self.splash_timer = wx.Timer()
-            self.splash_timer.Bind(wx.EVT_TIMER, self.destroy_splash_screen)
-            self.splash_timer.Start(milliseconds = 2000, oneShot=True)
-        else:
-            self.splash = None
-
         if self.check_for_new_version:
             self.new_version_check()
 
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")
-        self.destroy_splash_screen()
         try:
             self.frame.start(self.workspace_path, self.pipeline_path)
         except:
@@ -92,11 +57,6 @@ class CellProfilerApp(wx.App):
             self.frame.startup_blurb_frame.Raise()
         return 1
 
-    def destroy_splash_screen(self, event = None):
-        if self.splash is not None:
-            self.splash.Destroy()
-            self.splash = None
-        
     def OnExit(self):
         from imagej.imagej2 import allow_quit
         allow_quit()
@@ -126,8 +86,6 @@ class CellProfilerApp(wx.App):
 
             def skip_this_version():
                 cpp.set_skip_version(new_version)
-
-            self.destroy_splash_screen()
 
             if new_version <= self.version:
                 # special case: force must have been set in new_version_check, so give feedback to the user.

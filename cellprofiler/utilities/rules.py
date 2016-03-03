@@ -1,23 +1,12 @@
 '''rules - code for parsing and applying rules from CPA
-
-CellProfiler is distributed under the GNU General Public License,
-but this file is licensed under the more permissive BSD license.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
-
-import numpy as np
 import re
 
+import numpy as np
+
 import cellprofiler.measurements as cpmeas
+
 
 class Rules(object):
     '''Represents a set of CPA rules'''
@@ -25,7 +14,7 @@ class Rules(object):
         '''Represents a single rule'''
         def __init__(self, object_name, feature, comparitor, threshold, weights):
             '''Create a rule
-            
+
             object_name - the name of the object in the measurements
             feature - the name of the measurement (for instance,
                       "AreaShape_Area")
@@ -41,11 +30,11 @@ class Rules(object):
             self.threshold = threshold
             self.feature = feature
             self.weights = weights
-        
+
         def score(self, measurements):
             '''Score a rule
-            
-            measurements - a measurements structure 
+
+            measurements - a measurements structure
                            (cellprofiler.measurements.Measurements). Look
                            up this rule's measurement in the structure to
                            get the testing value.
@@ -62,7 +51,7 @@ class Rules(object):
             score = np.zeros((len(values),self.weights.shape[1]),float)
             if len(values) == 0:
                 return score
-            mask = ~np.isnan(values)
+            mask = ~(np.isnan(values) | np.isinf(values))
             if self.comparitor == "<":
                 hits = values[mask] < self.threshold
             elif self.comparitor == "<=":
@@ -74,20 +63,20 @@ class Rules(object):
             else:
                 raise NotImplementedError('Unknown comparitor, "%s".'%self.comparitor)
             score[mask,:] = self.weights[1-hits.astype(int),:]
-            score[~mask,:] = np.NaN
+            score[~mask,:] = self.weights[np.newaxis, 1]
             return score
-            
+
     def __init__(self):
         '''Create an empty set of rules.
-        
+
         Use "parse" to read in the rules file or add rules programatically
         to self.rules.
         '''
         self.rules = []
-        
+
     def parse(self, fd_or_file):
         '''Parse a rules file
-        
+
         fd_or_file - either a filename or a file descriptor. Parse assumes
                      that fd_or_file is a file name if it's a string or
                      unicode, otherwise it assumes that it's a file descriptor.
@@ -124,7 +113,7 @@ class Rules(object):
         finally:
             if needs_close:
                 fd.close()
-    
+
     def score(self, measurements):
         '''Score the measurements according to the rules list'''
         if len(self.rules) == 0:
@@ -141,5 +130,3 @@ class Rules(object):
             if score.shape[0] > partial_score.shape[0]:
                 score[score_len:,:] = np.NAN
         return score
-
-        

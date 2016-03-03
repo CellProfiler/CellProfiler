@@ -1,20 +1,10 @@
 #!/usr/bin/env python
 """ test_haralick -- tests for centrosome.haralick
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 import unittest
-import numpy as np
+
 import centrosome.haralick as haralick
+import numpy as np
 
 gray4 = np.array([[0,0,1,1],[0,0,1,1],[0,2,2,2],[2,2,3,3]])
 gray = gray4 / (1.0 * gray4.max())
@@ -86,7 +76,7 @@ class TestHaralick(unittest.TestCase):
         h = haralick.Haralick(gray, labels, 0, 1, nlevels=4)
         fv = h.all()
         self.assertTrue((np.array(map(len, fv)) == 1).all())
-    
+
     def test_01_01_regression_edge(self):
         '''Test coocurrence with an object smaller than the scal near the edge.
 
@@ -101,7 +91,7 @@ class TestHaralick(unittest.TestCase):
         image = (np.random.uniform(size=(100,100))*8).astype(int)
         c, nlevels = haralick.cooccurrence(image, labels, 0, 30)
         self.assertTrue(np.all(c==0))
-        
+
     def test_01_02_mask(self):
         '''Test with a masked image'''
         labels = np.ones((10,20), int)
@@ -116,10 +106,10 @@ class TestHaralick(unittest.TestCase):
         he = haralick.Haralick(image[:,:10], labels[:,:10], 0, 1)
         for measured, expected in zip(hm.all(), he.all()):
             self.assertEqual(measured, expected)
-            
+
     def test_02_01_angles(self):
         '''Test that measurements are stable on i,j swap'''
-        
+
         labels = np.ones((10,20), int)
         np.random.seed(12)
         image = np.random.uniform(size=(10,20)).astype(np.float32)
@@ -127,8 +117,7 @@ class TestHaralick(unittest.TestCase):
         hj = haralick.Haralick(image.transpose(), labels.transpose(), 0, 1)
         for him, hjm in zip(hi.all(), hj.all()):
             self.assertEqual(him, hjm)
-        
-        
+
+
 if __name__ == "__main__":
     unittest.main()
-

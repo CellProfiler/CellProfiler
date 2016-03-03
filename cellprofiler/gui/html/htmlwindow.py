@@ -1,27 +1,16 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
 import os
 import sys
-import wx
-import wx.html
-import content
-import webbrowser
 import urllib
 import urllib2
+import webbrowser
+
+import wx
+import wx.html
+
 import cellprofiler.preferences as cpprefs
-from cellprofiler.icons import get_builtin_images_path
+import content
 from cellprofiler.gui.html.content import WELCOME_HELP
+from cellprofiler.icons import get_builtin_images_path
 
 MEMORY_SCHEME = "memory:"
 WELCOME_SCREEN_FRAME = "WelcomeScreenFrame"
@@ -60,7 +49,15 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         elif href.startswith('load:'):
             pipeline_filename = href[5:]
             try:
-                wx.CallAfter(wx.GetApp().frame.pipeline.load, urllib2.urlopen(pipeline_filename))
+                fd = urllib2.urlopen(pipeline_filename)
+                if fd.code < 200 or fd.code > 299:
+                    wx.MessageBox(
+                    "Sorry, the link, \"%s\" is broken, please contact the webmaster" %
+                    pipeline_filename,
+                    caption = "Unable to access pipeline via internet",
+                    style = wx.OK | wx.ICON_INFORMATION)
+                    return
+                wx.CallAfter(wx.GetApp().frame.pipeline.load, fd)
             except:
                 wx.MessageBox(
                     'CellProfiler was unable to load %s' %
@@ -69,10 +66,17 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         elif href.startswith('loadexample:'):
             # Same as "Load", but specific for example pipelines so the user can be directed as to what to do next.
             pipeline_filename = href[12:]
-            
+
             try:
                 import cellprofiler.modules.loaddata
                 fd = urllib.urlopen(pipeline_filename)
+                if fd.code < 200 or fd.code > 299:
+                    wx.MessageBox(
+                    "Sorry, the link, \"%s\" is broken, please contact the webmaster" %
+                    pipeline_filename,
+                    caption = "Unable to access pipeline via internet",
+                    style = wx.OK | wx.ICON_INFORMATION)
+                    return
                 def fn(fd=fd):
                     pipeline = wx.GetApp().frame.pipeline
                     pipeline.load(fd)
@@ -86,7 +90,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                             except:
                                 pass
                     wx.MessageBox('Now that you have loaded an example pipeline, press the "Analyze images" button to access and process a small image set from the CellProfiler website so you can see how CellProfiler works.', '', wx.ICON_INFORMATION)
-                wx.CallAfter(fn)             
+                wx.CallAfter(fn)
             #try:
                 #wx.CallAfter(wx.GetApp().frame.pipeline.load, urllib2.urlopen(pipeline_filename))
                 #wx.CallAfter(wx.MessageBox,

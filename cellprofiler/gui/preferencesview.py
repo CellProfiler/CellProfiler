@@ -1,28 +1,19 @@
 """PreferencesView.py - displays the default preferences in the lower right corner
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
 import os
 import string
 import time
+
 import numpy as np
 import wx
+
+import cellprofiler.analysis as cpanalysis
 import cellprofiler.preferences as cpprefs
-from cellprofiler.icons import get_builtin_image
-from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
      DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, USING_THE_OUTPUT_FILE_HELP
-import cellprofiler.analysis as cpanalysis
+from cellprofiler.gui.htmldialog import HTMLDialog
+from cellprofiler.icons import get_builtin_image
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
 
@@ -37,7 +28,7 @@ DO_NOT_WRITE_MEASUREMENTS_TEXT = "Do not write MATLAB or HDF5 files"
 
 class PreferencesView:
     """View / controller for the preferences that get displayed in the main window
-    
+
     """
     def __init__(self, parent_sizer, panel, progress_panel, status_panel):
         self.__panel = panel
@@ -87,7 +78,7 @@ class PreferencesView:
         self.__errors = set()
         self.__pipeline_list_view = None
         self.__progress_watcher = None
-        
+
     def show_default_image_folder(self, show):
         if self.__sizer.IsShown(self.__image_folder_panel) == show:
             return
@@ -98,27 +89,27 @@ class PreferencesView:
             if parent == self.__image_folder_panel.GetTopLevelParent():
                 break
             parent = parent.GetParent()
-        
+
     def show_progress_panel(self):
         '''Show the pipeline progress panel and hide the status text'''
         self.__parent_sizer.Hide(self.__status_panel)
         self.__parent_sizer.Show(self.__progress_panel)
         self.__parent_sizer.Layout()
         self.__progress_panel.Layout()
-        
+
     def show_status_text(self):
         '''Show the status text and hide the pipeline progress panel'''
         self.__parent_sizer.Show(self.__status_panel)
         self.__parent_sizer.Hide(self.__progress_panel)
         self.__parent_sizer.Layout()
         self.__status_panel.Layout()
-        
+
     def close(self):
         cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
         cpprefs.remove_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.remove_output_directory_listener(self.__on_preferences_output_directory_event)
-        
-    def __make_folder_panel(self, panel, value, list_fn, text, help_text, 
+
+    def __make_folder_panel(self, panel, value, list_fn, text, help_text,
                             actions, refresh_action = None):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         help_button = wx.Button(panel, label='?', style=wx.BU_EXACTFIT)
@@ -139,7 +130,7 @@ class PreferencesView:
         browse_button.SetToolTipString("Browse for %s folder" % text)
         sizer.Add(browse_button, 0, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
-        
+
         new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW_DIR,
                                            wx.ART_CMN_DIALOG,
                                            (16,16))
@@ -167,11 +158,11 @@ class PreferencesView:
                              edit_box.Value,style=wx.YES_NO) == wx.YES:
                 os.makedirs(edit_box.Value)
                 self.__on_edit_box_change(event, edit_box, text, actions)
-            
+
         def on_edit_box_change(event):
             if os.path.isdir(edit_box.Value):
                 new_button.Disable()
-                new_button.SetToolTipString("%s is a directory" % 
+                new_button.SetToolTipString("%s is a directory" %
                                             edit_box.Value)
             else:
                 new_button.Enable()
@@ -179,7 +170,7 @@ class PreferencesView:
                                             edit_box.Value)
             self.__on_edit_box_change(event, edit_box, text, actions)
             event.Skip()
-            
+
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_help(event, help_text),
                    help_button)
         panel.Bind(wx.EVT_BUTTON, lambda event: self.__on_browse(event, edit_box, text), browse_button)
@@ -199,7 +190,7 @@ class PreferencesView:
         allow_output_filename_overwrite_check_box.Value = \
             cpprefs.get_allow_output_file_overwrite()
         write_measurements_combo_box = wx.Choice(
-            panel, choices = 
+            panel, choices =
             [WRITE_HDF_FILE_TEXT, WRITE_MAT_FILE_TEXT,
              DO_NOT_WRITE_MEASUREMENTS_TEXT])
         # set measurements mode, then fake an event to update output
@@ -210,7 +201,7 @@ class PreferencesView:
         output_filename_help_button = wx.Button(
             panel, label = '?', style=wx.BU_EXACTFIT)
         output_file_format_text = wx.StaticText(
-            panel, label = "Output file format:") 
+            panel, label = "Output file format:")
         cpprefs.add_output_file_name_listener(
             self.__on_preferences_output_filename_event)
         cpprefs.add_image_directory_listener(
@@ -220,14 +211,14 @@ class PreferencesView:
         self.__hold_a_reference_to_progress_callback = self.progress_callback
         cpprefs.add_progress_callback(
             self.__hold_a_reference_to_progress_callback)
-        
+
         def on_output_filename_changed(event):
             cpprefs.set_output_file_name(output_filename_edit_box.Value)
-    
+
         def on_allow_checkbox(event):
             cpprefs.set_allow_output_file_overwrite(
                 allow_output_filename_overwrite_check_box.Value)
-            
+
         def on_write_MAT_files_combo_box(event):
             #
             # Update the state to reflect the new measurement choice
@@ -244,7 +235,7 @@ class PreferencesView:
                     output_filename = output_filename[:-3] + u".mat"
             else:
                 cpprefs.set_write_MAT_files(False)
-                
+
             if output_filename != output_filename_edit_box.Value:
                 output_filename_edit_box.Value = output_filename
                 cpprefs.set_output_file_name(
@@ -268,25 +259,25 @@ class PreferencesView:
                     output_filename_edit_box, 1 , wx.EXPAND)
                 output_filename_edit_box_sizer.AddSpacer(2)
                 output_filename_edit_box_sizer.Add(
-                    allow_output_filename_overwrite_check_box, 0, 
+                    allow_output_filename_overwrite_check_box, 0,
                     wx.ALIGN_CENTER)
                 output_sizer.Add(output_filename_help_button, 0, wx.EXPAND)
                 output_sizer.Add(output_filename_text, 0, wx.ALIGN_RIGHT)
                 output_sizer.Add(output_filename_edit_box_sizer, 1, wx.EXPAND)
-                
+
                 output_sizer.Add(wx.BoxSizer(), 0, wx.EXPAND)
                 output_sizer.Add(output_file_format_text, 0, wx.ALIGN_RIGHT)
                 output_sizer.Add(write_measurements_combo_box, 0, wx.ALIGN_LEFT)
-                
+
             panel.SetSizer(output_sizer)
             for ctrl in (output_filename_text,
                          output_filename_edit_box,
                          allow_output_filename_overwrite_check_box):
                 ctrl.Show(show)
-                
+
             panel.Parent.Layout()
             panel.Layout()
-            
+
         write_measurements_combo_box.Bind(
             wx.EVT_CHOICE, on_write_MAT_files_combo_box)
         allow_output_filename_overwrite_check_box.Bind(
@@ -297,10 +288,10 @@ class PreferencesView:
         output_filename_edit_box.Bind(wx.EVT_TEXT, on_output_filename_changed)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
         on_write_MAT_files_combo_box(None)
-    
+
     def update_worker_count_info(self, n_workers):
         '''Update the # of running workers in the progress UI
-        
+
         n_workers - # of workers running
         '''
         if n_workers == 1:
@@ -308,7 +299,7 @@ class PreferencesView:
         else:
             label = "Running %d workers." % n_workers
         self.__worker_count_ctrl.Label = label
-        
+
     def __make_progress_panel(self):
         panel = self.__progress_panel
         self.__progress_msg_ctrl = wx.StaticText(panel)
@@ -338,10 +329,10 @@ class PreferencesView:
         self.__progress_stack = []
         self.__progress_dictionary = {}
         self.__progress_dialog = None
-        
+
     def progress_callback(self, operation_id, progress, message):
         '''Monitor progress events in the UI thread
-        
+
         operation_id - a unique id identifying an instance of an operation
         progress - a number from 0 to 1 where 0 is the start of the operation
                    and 1 is its end.
@@ -352,7 +343,7 @@ class PreferencesView:
                 message = WELCOME_MESSAGE
             self.set_message_text(message)
             return
-        def reset_progress(): 
+        def reset_progress():
             self.__progress_stack = []
             self.__progress_dictionary = {}
             if self.__progress_dialog is not None:
@@ -361,11 +352,11 @@ class PreferencesView:
             wx.SetCursor(wx.NullCursor)
             self.set_message_text(WELCOME_MESSAGE)
             wx.SafeYield(None, True)
-        
+
         if operation_id is None:
             reset_progress()
             return
-        
+
         if operation_id not in self.__progress_stack:
             self.__progress_stack.append(operation_id)
         else:
@@ -393,7 +384,7 @@ class PreferencesView:
         if not os.path.isdir(path):
             if wx.MessageBox(('The Default Input Folder is "%s", but '
                               'the directory does not exist. Do you want to '
-                              'create it?') % path, 
+                              'create it?') % path,
                              "Warning, cannot run pipeline",
                              style = wx.YES_NO) == wx.NO:
                 return False, "Image directory does not exist"
@@ -403,14 +394,14 @@ class PreferencesView:
         if not os.path.isdir(path):
             if wx.MessageBox(('The Default Output Folder is "%s", but '
                               'the directory does not exist. Do you want to '
-                              'create it?') % path, 
+                              'create it?') % path,
                              "Warning, cannot run pipeline",
                              style = wx.YES_NO) == wx.NO:
                 return False, "Output directory does not exist"
             os.makedirs(path)
             cpprefs.set_default_output_directory(path)
         return True, "OK"
-                          
+
     def __on_destroy(self, event):
         cpprefs.remove_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.remove_output_directory_listener(self.__on_preferences_output_directory_event)
@@ -418,7 +409,7 @@ class PreferencesView:
 
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view
-    
+
     def on_analyze_images(self):
         # begin tracking progress
         self.__progress_watcher = ProgressWatcher(
@@ -426,7 +417,7 @@ class PreferencesView:
             self.update_progress,
             multiprocessing=cpanalysis.use_analysis)
         self.show_progress_panel()
-        
+
     def on_pipeline_progress(self, *args):
         if self.__progress_watcher is not None:
             self.__progress_watcher.on_pipeline_progress(*args)
@@ -457,27 +448,27 @@ class PreferencesView:
             self.__progress_bar.Value = \
                 (100 * elapsed_time) / (elapsed_time + remaining_time + .00001)
             timestr = 'Time %s/%s' % (
-                secs_to_timestr(elapsed_time), 
+                secs_to_timestr(elapsed_time),
                 secs_to_timestr(elapsed_time + remaining_time))
         else:
             self.__progress_bar.Pulse()
             timestr = "Elapsed time: %s" % secs_to_timestr(elapsed_time)
         self.__timer.SetLabel(timestr)
         self.__progress_panel.Layout()
-    
+
     def on_stop_analysis(self):
         if self.__progress_watcher is not None:
             self.__progress_watcher.stop()
         self.__progress_watcher = None
         self.show_status_text()
-        
+
     def set_message_text(self, text):
         if self.__status_text.Label != text:
             saved_size = self.__status_text.GetSize()
             self.__status_text.SetLabel(text)
             self.__status_text.SetSize(saved_size)
             self.__status_text.Update()
-    
+
     def pop_error_text(self,error_text):
         if error_text in self.__errors:
             self.__errors.remove(error_text)
@@ -486,15 +477,15 @@ class PreferencesView:
                 self.set_message_text(WELCOME_MESSAGE)
             else:
                 self.set_message_text(self.__errors.__iter__().next())
-        
+
     def set_message_color(self,color):
         self.__status_text.SetForegroundColour(color)
-    
+
     def set_error_text(self,error_text):
         self.set_message_text(error_text)
         self.set_message_color(wx.Colour(255,0,0))
         self.__errors.add(error_text)
-        
+
     def __on_browse(self, event, edit_box, text):
         dir_dialog = wx.DirDialog(self.__panel,string.capitalize(text), edit_box.GetValue())
         if dir_dialog.ShowModal() == wx.ID_OK:
@@ -523,11 +514,11 @@ class PreferencesView:
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)
-    
+
     def __on_help(self,event, help_text):
         dlg = HTMLDialog(self.__panel, "Help", help_text)
         dlg.Show()
-    
+
     def __on_pixel_size_changed(self,event):
         error_text = 'Pixel size must be a number'
         text = self.__pixel_size_edit_box.Value
@@ -536,16 +527,16 @@ class PreferencesView:
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)
-    
+
     def __on_preferences_output_filename_event(self,event):
         if self.__output_filename_edit_box.Value != cpprefs.get_output_file_name():
             self.__output_filename_edit_box.Value = cpprefs.get_output_file_name()
-        
+
     def __on_preferences_output_directory_event(self,event):
         old_selection = self.__output_edit_box.Selection
         if self.__output_edit_box.Value != cpprefs.get_default_output_directory():
             self.__output_edit_box.Value = cpprefs.get_default_output_directory()
-    
+
     def __on_preferences_image_directory_event(self, event):
         if self.__image_edit_box.Value != cpprefs.get_default_image_directory():
             self.__image_edit_box.Value = cpprefs.get_default_image_directory()
@@ -615,7 +606,7 @@ class ProgressWatcher:
         else:
             self.on_receive_work(*args)
 
-    def on_start_module(self, module, num_modules, image_set_index, 
+    def on_start_module(self, module, num_modules, image_set_index,
                         num_image_sets):
         """
         Update the historical execution times, which are used as the
@@ -655,7 +646,7 @@ class ProgressWatcher:
         else:
             self.previous_pauses_duration += time.time() - self.pause_start_time
             self.pause_start_time = None
-        
+
     def adjusted_time(self):
         """Current time minus the duration spent in pauses."""
         pauses_duration = self.previous_pauses_duration
@@ -714,4 +705,3 @@ def secs_to_timestr(duration):
     hours = "%d:"%(hours,) if hours > 0 else ""
     seconds = "%02d"%(seconds)
     return hours + minutes + seconds
-            

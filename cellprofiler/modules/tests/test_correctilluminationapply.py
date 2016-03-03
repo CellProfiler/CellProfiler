@@ -1,28 +1,18 @@
 """test_correctilluminationapply.py
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
-
 import base64
-import numpy as np
 import os
 import sys
 import tempfile
 import unittest
-from StringIO import StringIO
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.modules.correctilluminationapply as cpmcia
@@ -60,7 +50,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))    
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
@@ -70,7 +60,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         self.assertEqual(image.illum_correct_function_image_name, "IllumPhase")
         self.assertEqual(image.corrected_image_name, "CorrPhase")
         self.assertEqual(image.divide_or_subtract, "Subtract")
-        
+
     def test_00_01_load_v1(self):
         data = ('eJztWd1O2zAUdkph/EwTu2LalS/pRqu2YxpUE9C1Q1SjpaIVE0KMmdallty4'
                 'chJoNyHtco/IY+wRZpeEpCaQ/kARUlJF6Tn2d77j43Pc2C1mq7vZL/BjIgmL'
@@ -95,7 +85,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, cpmcia.CorrectIlluminationApply))
@@ -237,7 +227,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
         self.assertTrue(np.all(output_image.pixel_data == expected))
-    
+
     def test_02_01_color_by_bw(self):
         '''Correct a color image with a black & white illumination fn'''
         np.random.seed(0)
@@ -331,4 +321,3 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image("OutputImage")
         self.assertTrue(np.all(output_image.pixel_data == expected))
-        

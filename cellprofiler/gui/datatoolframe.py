@@ -1,34 +1,22 @@
 '''datatoolframe.py - Holder for a data tool
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
-
 
 import h5py
 import numpy as np
-from scipy.io.matlab.mio import loadmat
 import wx
 import wx.lib.scrolledpanel
+from scipy.io.matlab.mio import loadmat
 
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.pipeline as cpp
-import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
 import cellprofiler.gui.cpfigure as cpf
+import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
+import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
+import cellprofiler.workspace as cpw
+from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.modules import instantiate_module
-from cellprofiler.gui import get_cp_icon
 
 ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
 ID_FILE_SAVE_MEASUREMENTS = wx.NewId()
@@ -39,7 +27,7 @@ ID_IMAGE_CHOOSE = wx.NewId()
 class DataToolFrame(wx.Frame):
     def __init__(self, *args, **kwds):
         '''Instantiate a data tool frame
-        
+
         module_name: name of module to instantiate
         measurements_file_name: name of measurements file
         '''
@@ -66,7 +54,7 @@ class DataToolFrame(wx.Frame):
             self.load_measurements(measurements_file_name)
             self.workspace = cpw.Workspace(self.pipeline, self.module, None, None,
                                            self.measurements, None)
-        
+
         self.module.module_num = len(self.pipeline.modules())+1
         self.pipeline.add_module(self.module)
 
@@ -126,7 +114,7 @@ class DataToolFrame(wx.Frame):
         image_menu.Append(ID_IMAGE_CHOOSE, "&Choose")
         self.MenuBar.Append(image_menu, "&Image")
         self.Bind(wx.EVT_MENU, self.on_image_choose, id=ID_IMAGE_CHOOSE)
-        
+
         self.SetSizer(self.sizer)
         self.Size = (self.module_view.get_max_width(), self.Size[1])
         module_panel.Layout()
@@ -134,16 +122,16 @@ class DataToolFrame(wx.Frame):
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
         self.SetIcon(get_cp_icon())
-    
+
     def on_load_measurements(self, event):
         dlg = wx.FileDialog(self, "Load a measurements file",
                             wildcard = "Measurements file (*.mat,*.h5)|*.mat;*.h5",
                             style = wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.load_measurements(dlg.GetPath())
-    
+
     def on_save_measurements(self, event):
-        with wx.FileDialog(self, "Save measurements file", wildcard = 
+        with wx.FileDialog(self, "Save measurements file", wildcard =
                            "CellProfiler measurements file (*.h5)|*.h5|"
                            "Matlab measurements file (*.mat)|*.mat",
                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
@@ -158,10 +146,10 @@ class DataToolFrame(wx.Frame):
                 else:
                     self.pipeline.save_measurements(dlg.GetPath(),
                                                     self.measurements)
-    
+
     def on_exit(self, event):
         self.Close()
-        
+
     def on_image_choose(self, event):
         '''Choose an image from the image set'''
         dlg = wx.Dialog(self)
@@ -173,13 +161,13 @@ class DataToolFrame(wx.Frame):
         choose_sizer.Add(wx.StaticText(dlg, -1, label="Image set:"),
                          0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
         metadata_db = {}
-        metadata_features = [ 
+        metadata_features = [
             x for x in self.measurements.get_feature_names(cpmeas.IMAGE)
             if x.startswith('Metadata')]
         sel = None
         for i in self.measurements.get_image_numbers():
             metadata_key = ','.join(['%s=%s' % (
-                feature, 
+                feature,
                 self.measurements.get_measurement(cpmeas.IMAGE, feature, i))
                                      for feature in metadata_features])
             metadata_db[i] = metadata_key
@@ -197,7 +185,7 @@ class DataToolFrame(wx.Frame):
         ok_button.SetDefault()
         ok_button.SetHelpText("Press the OK button to change the current image to the one selected above")
         button_sizer.AddButton(ok_button)
-        
+
         cancel_button = wx.Button(dlg, wx.ID_CANCEL)
         cancel_button.SetHelpText("Press the cancel button if you do not want to change the current image")
         button_sizer.AddButton(cancel_button)
@@ -207,13 +195,13 @@ class DataToolFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             index = choice_ctl.GetSelection()
             self.measurements.image_set_number = index+1
-        
+
     def load_measurements(self, measurements_file_name):
         self.measurements = cpmeas.load_measurements(
             measurements_file_name, can_overwrite = True)
         # Start on the first image
         self.measurements.next_image_set(1)
-        
+
     def on_run(self, event):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)

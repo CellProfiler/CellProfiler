@@ -1,24 +1,15 @@
 '''test_applythreshold - test the ApplyThreshold module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
 import base64
-import numpy as np
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp
@@ -52,14 +43,14 @@ class TestApplyThreshold(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        image_set.add(INPUT_IMAGE_NAME, 
-                      cpi.Image(image) if mask is None 
+        image_set.add(INPUT_IMAGE_NAME,
+                      cpi.Image(image) if mask is None
                       else cpi.Image(image,mask))
         return workspace, module
 
     def test_01_00_write_a_test_for_the_new_variable_revision_please(self):
         self.assertEqual(A.ApplyThreshold.variable_revision_number, 7)
-        
+
     def test_01_01_load_matlab(self):
         '''Load a matlab pipeline containing ApplyThreshold'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUX'
@@ -98,7 +89,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.threshold_scope, T.TM_MANUAL)
         self.assertAlmostEqual(module.manual_threshold.value, .1)
         self.assertEqual(module.threshold_smoothing_choice, A.TSM_NONE)
-    
+
     def test_01_02_load_v2(self):
         '''Load a variable_revision_number = 2 pipeline'''
         data = ('eJztWOFP2kAUPxCNzGRzH8z8eB9lE9J2uihZVIRlYwMkylyM0e2AQ7'
@@ -143,7 +134,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.threshold_range.min,0)
         self.assertEqual(module.threshold_range.max,1)
         self.assertEqual(module.threshold_correction_factor.value, 1)
-    
+
     def test_01_03_load_v3(self):
         #
         # image_name = DNA
@@ -189,19 +180,19 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.two_class_otsu.value, A.O_THREE_CLASS)
         self.assertEqual(module.use_weighted_variance.value, A.O_ENTROPY)
         self.assertEqual(module.assign_middle_to_foreground.value, A.O_BACKGROUND)
-    
+
     def test_01_07_load_v7(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
         Version:3
         DateRevision:20130226215424
         ModuleCount:5
         HasImagePlaneDetails:False
-        
+
         Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
             :
             Filter based on rules:No
             Filter:or (file does contain "")
-        
+
         Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
             Extract metadata?:Yes
             Extraction method count:1
@@ -214,7 +205,7 @@ class TestApplyThreshold(unittest.TestCase):
             Metadata file location\x3A:
             Match file and image metadata:\x5B\x5D
             Case insensitive matching:No
-        
+
         NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
             Assignment method:Assign images matching rules
             Load as:Grayscale image
@@ -230,12 +221,12 @@ class TestApplyThreshold(unittest.TestCase):
             Image name:DNA
             Objects name:Nucleus
             Load as:Grayscale image
-        
+
         Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
             Do you want to group your images?:No
             grouping metadata count:1
             Metadata category:None
-        
+
         ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
             Select the input image:RainbowPony
             Name the output image:GrayscalePony
@@ -289,7 +280,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.assign_middle_to_foreground, I.O_FOREGROUND)
         self.assertEqual(module.adaptive_window_method, I.FI_IMAGE_SIZE)
         self.assertEqual(module.adaptive_window_size, 13)
-        
+
     def test_02_01_grayscale_low_threshold(self):
         '''Apply a low threshold, no shift'''
         np.random.seed(0)
@@ -306,7 +297,7 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-        
+
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         image_features = m.get_feature_names(cpmeas.IMAGE)
@@ -330,26 +321,26 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(categories[0], I.C_THRESHOLD)
         self.assertEqual(len(module.get_categories(pipeline, "FOO")), 0)
         measurements = module.get_measurements(pipeline, cpmeas.IMAGE, I.C_THRESHOLD)
-        features = (I.FTR_ORIG_THRESHOLD, I.FTR_FINAL_THRESHOLD, 
+        features = (I.FTR_ORIG_THRESHOLD, I.FTR_FINAL_THRESHOLD,
                     I.FTR_WEIGHTED_VARIANCE, I.FTR_SUM_OF_ENTROPIES)
         self.assertEqual(len(measurements), len(features))
         self.assertEqual(len(set(measurements)), len(features))
         self.assertTrue(all([measurement in features for measurement in measurements]))
         self.assertEqual(len(module.get_measurements(pipeline, cpmeas.IMAGE, I.C_COUNT)), 0)
-        
+
         for measurement in measurements:
             image_names = module.get_measurement_images(pipeline, cpmeas.IMAGE,
                                                         I.C_THRESHOLD, measurement)
             self.assertEqual(len(image_names), 1)
             self.assertEqual(image_names[0], OUTPUT_IMAGE_NAME)
-            
+
         for ff, expected in ((I.FF_ORIG_THRESHOLD, .5),
                              (I.FF_FINAL_THRESHOLD, .5),
                              (I.FF_WEIGHTED_VARIANCE, .93),
                              (I.FF_SUM_OF_ENTROPIES, -11.35)):
             value = m.get_current_image_measurement(ff%OUTPUT_IMAGE_NAME)
             self.assertAlmostEqual(value, expected, 1)
-    
+
     def test_02_02_grayscale_low_threshold_shift(self):
         '''Apply a low threshold, with shift'''
         np.random.seed(0)
@@ -367,7 +358,7 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-    
+
     def test_03_01_grayscale_high_threshold(self):
         '''Apply a high threshold, no dilation'''
         np.random.seed(0)
@@ -400,7 +391,7 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-    
+
     def test_04_01_binary_manual(self):
         '''Test a binary threshold with manual threshold value'''
         np.random.seed(0)
@@ -427,7 +418,7 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-    
+
     def test_04_03_binary_correction(self):
         '''Test a binary threshold with a correction factor'''
         np.random.seed(0)
@@ -442,10 +433,10 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-    
+
     def test_04_04_low_bounds(self):
         '''Test a binary threshold with a low bound'''
-        
+
         np.random.seed(0)
         image = np.random.uniform(size=(20,20))
         image[(image > .4) & (image <.6)] = .5
@@ -458,10 +449,10 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-    
+
     def test_04_05_high_bounds(self):
         '''Test a binary threshold with a high bound'''
-        
+
         np.random.seed(0)
         image = np.random.uniform(size=(40,40))
         expected = image > .1
@@ -473,7 +464,7 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-    
+
     def test_04_06_per_object(self):
         '''Test that per-object thresholding works'''
         np.random.seed(0)
@@ -512,7 +503,7 @@ class TestApplyThreshold(unittest.TestCase):
         module2.threshold_scope.value = T.TM_MEASUREMENT
         module2.thresholding_measurement.value = 'Threshold_FinalThreshold_' + OUTPUT_IMAGE_NAME
         module2.run(workspace)
-    
+
     def test_05_01_otsu_wv(self):
         '''Test the weighted variance version of Otsu'''
         np.random.seed(0)
@@ -533,7 +524,7 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-        
+
     def test_05_02_otsu_entropy(self):
         '''Test the entropy version of Otsu'''
         np.random.seed(0)
@@ -554,7 +545,7 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-        
+
     def test_05_03_otsu3_wv_low(self):
         '''Test the three-class otsu, weighted variance middle = background'''
         np.random.seed(0)
@@ -577,7 +568,7 @@ class TestApplyThreshold(unittest.TestCase):
         m = workspace.measurements
         m_threshold = m[cpmeas.IMAGE, I.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
         self.assertAlmostEqual(m_threshold, threshold)
-        
+
     def test_05_04_otsu3_wv_high(self):
         '''Test the three-class otsu, weighted variance middle = foreground'''
         np.random.seed(0)
@@ -600,7 +591,7 @@ class TestApplyThreshold(unittest.TestCase):
         m = workspace.measurements
         m_threshold = m[cpmeas.IMAGE, I.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
         self.assertAlmostEqual(m_threshold, threshold)
-        
+
     def test_05_05_otsu3_entropy_low(self):
         '''Test the three-class otsu, entropy, middle = background'''
         np.random.seed(0)
@@ -624,7 +615,7 @@ class TestApplyThreshold(unittest.TestCase):
         m = workspace.measurements
         m_threshold = m[cpmeas.IMAGE, I.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
         self.assertAlmostEqual(m_threshold, threshold)
-        
+
     def test_05_06_otsu3_entropy_high(self):
         '''Test the three-class otsu, entropy, middle = background'''
         np.random.seed(0)
@@ -647,5 +638,3 @@ class TestApplyThreshold(unittest.TestCase):
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
-    
-        

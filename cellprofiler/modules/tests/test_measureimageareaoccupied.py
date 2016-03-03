@@ -1,24 +1,15 @@
 """test_measureimagearea.py - test the MeasureImageArea module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
 import base64
-import numpy as np
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.pipeline as cpp
@@ -38,20 +29,20 @@ class TestMeasureImageArea(unittest.TestCase):
         objects.segmented = labels
         objects.parent_image = parent_image
         object_set.add_objects(objects, OBJECTS_NAME)
-        
+
         pipeline = cpp.Pipeline()
         module = mia.MeasureImageAreaOccupied()
         module.module_num = 1
         module.operands[0].operand_objects.value = OBJECTS_NAME
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
-        workspace = cpw.Workspace(pipeline, module, 
+        workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   object_set,
                                   cpmm.Measurements(),
                                   image_set_list)
         return workspace
-        
+
     def test_00_00_zeros(self):
         workspace = self.make_workspace(np.zeros((10,10),int))
         module = workspace.module
@@ -60,16 +51,16 @@ class TestMeasureImageArea(unittest.TestCase):
         m = workspace.measurements
         def mn(x):
             return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
-        
+
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), 0)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), 100)
-        
+
         columns = module.get_measurement_columns(workspace.pipeline)
         features = m.get_feature_names(cpmm.IMAGE)
         self.assertEqual(len(columns), len(features))
         for column in columns:
             self.assertTrue(column[1] in features)
-    
+
     def test_01_01_one_object(self):
         labels = np.zeros((10,10),int)
         labels[2:7,3:8] = 1
@@ -81,10 +72,10 @@ class TestMeasureImageArea(unittest.TestCase):
         m = workspace.measurements
         def mn(x):
             return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
-        
+
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), area_occupied)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), 100)
-    
+
     def test_01_02_object_with_cropping(self):
         labels = np.zeros((10,10),int)
         labels[0:7,3:8] = 1
@@ -101,11 +92,11 @@ class TestMeasureImageArea(unittest.TestCase):
         m = workspace.measurements
         def mn(x):
             return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
-        
+
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), area_occupied)
         self.assertEqual(m.get_current_measurement("Image",mn("Perimeter")), perimeter)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), total_area)
-        
+
     def test_02_01_get_measurement_columns(self):
         module = mia.MeasureImageAreaOccupied()
         module.operands[0].operand_objects.value = OBJECTS_NAME

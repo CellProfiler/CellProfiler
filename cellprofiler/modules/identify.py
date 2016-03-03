@@ -1,39 +1,28 @@
 """identify.py - a base class for common functionality for identify modules
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
-
 import math
+
+import centrosome.outline
+import numpy as np
 import scipy.ndimage
 import scipy.sparse
-import numpy as np
 import scipy.stats
+from centrosome.smooth import smooth_with_function_and_mask
+from centrosome.smooth import smooth_with_noise
+from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_BINARY_IMAGE
+from centrosome.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS, get_threshold
+from centrosome.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_BACKGROUND, TM_KAPUR, TM_ROBUST_BACKGROUND, TM_RIDLER_CALVARD
+from centrosome.threshold import mad, binned_mode
+from centrosome.threshold import weighted_variance, sum_of_entropies
 
 import cellprofiler.cpmodule
-import cellprofiler.settings as cps
+import cellprofiler.icons
 import cellprofiler.measurements as cpmeas
-import centrosome.outline
 import cellprofiler.objects
-from centrosome.smooth import smooth_with_noise
-from centrosome.smooth import smooth_with_function_and_mask
-from centrosome.threshold import TM_MANUAL, TM_MEASUREMENT, TM_METHODS, get_threshold
-from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_BINARY_IMAGE
-from centrosome.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_BACKGROUND, TM_KAPUR, TM_ROBUST_BACKGROUND, TM_RIDLER_CALVARD
-from centrosome.threshold import weighted_variance, sum_of_entropies
-from centrosome.threshold import mad, binned_mode
+import cellprofiler.settings as cps
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
-import cellprofiler.icons 
-        
+
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
 
@@ -140,7 +129,7 @@ TS_BINARY_IMAGE = "Binary image"
 '''Threshold scope = measurement - use a measurement value as the threshold'''
 TS_MEASUREMENT = "Measurement"
 
-TS_ALL = [TS_AUTOMATIC, TS_GLOBAL, TS_ADAPTIVE, TS_PER_OBJECT, TS_MANUAL, 
+TS_ALL = [TS_AUTOMATIC, TS_GLOBAL, TS_ADAPTIVE, TS_PER_OBJECT, TS_MANUAL,
           TS_BINARY_IMAGE, TS_MEASUREMENT]
 
 '''The legacy choice of object in per-object measurements
@@ -167,13 +156,13 @@ TECH_NOTE_ICON = "gear.png"
 class Identify(cellprofiler.cpmodule.CPModule):
     threshold_setting_version = 2
     def create_threshold_settings(self, methods = TM_METHODS):
-        
+
         '''Create settings related to thresholding'''
         # The threshold setting version is invisible to the user
         self.threshold_setting_version = cps.Integer(
-            "Threshold setting version", 
+            "Threshold setting version",
             value = self.threshold_setting_version)
-        
+
         self.threshold_scope = cps.Choice(
             'Threshold strategy',
             TS_ALL, doc = """
@@ -183,10 +172,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <li>The pixel intensities of the input image (this is the most common).</li>
             <li>A single value manually provided by the user.</li>
             <li>A single value produced by a prior module measurement.</li>
-            <li>A binary image (called a <i>mask</i>) where some of the pixel intensity 
+            <li>A binary image (called a <i>mask</i>) where some of the pixel intensity
             values are set to 0, and others are set to 1.</li>
             </ul>
-            These options allow you to calculate a threshold based on the whole 
+            These options allow you to calculate a threshold based on the whole
             image or based on image sub-regions such as user-defined masks or
             objects supplied by a prior module.
             <br>
@@ -194,7 +183,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <br><ul>
             <li><i>%(TS_AUTOMATIC)s:</i> Use the default settings for
             thresholding. This strategy calculates the threshold using the %(TM_MCT)s method
-            on the whole image (see below for details on this method) and applies the 
+            on the whole image (see below for details on this method) and applies the
             threshold to the image, smoothed with a Gaussian with sigma of 1.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
@@ -202,7 +191,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             algorithm and does not allow you to apply additional corrections to the
             threshold.</dd>
             </dl></li>
-            
+
             <li><i>%(TS_GLOBAL)s:</i> Calculate a single threshold value based on
             the unmasked pixels of the input image and use that value
             to classify pixels above the threshold as foreground and below
@@ -212,7 +201,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             This strategy is fast and robust, especially if
             the background is uniformly illuminated.</dd>
             </dl></li>
-            
+
             <li><i>%(TS_ADAPTIVE)s:</i> Partition the input image into tiles
             and calculate thresholds for each tile. For each tile, the calculated
             threshold is applied only to the pixels within that tile. <br>
@@ -222,19 +211,19 @@ class Identify(cellprofiler.cpmodule.CPModule):
             However, for signifcant illumination variation, using the <b>CorrectIllumination</b>
             modules is preferable.</dd>
             </dl></li>
-            
+
             <li><i>%(TS_PER_OBJECT)s:</i> Use objects from a prior module
             such as <b>IdentifyPrimaryObjects</b> to define the region of interest
-            to be thresholded. Calculate a separate threshold for each object and 
-            then apply that threshold to pixels within the object. The pixels outside 
+            to be thresholded. Calculate a separate threshold for each object and
+            then apply that threshold to pixels within the object. The pixels outside
             the objects are classified as background.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            This method can be useful for identifying sub-cellular particles or 
+            This method can be useful for identifying sub-cellular particles or
             single-molecule probes if the background intensity varies from cell to cell
             (e.g., autofluorescence or other mechanisms).</dd>
             </dl></li>
-            
+
             <li><i>%(TS_MANUAL)s:</i> Enter a single value between zero and
             one that applies to all cycles and is independent of the input
             image.
@@ -244,53 +233,53 @@ class Identify(cellprofiler.cpmodule.CPModule):
             negligible background, or if the input image is the probability
             map output of the <b>ClassifyPixels</b> module (in which case, a value
             of 0.5 should be chosen). If the input image is already binary (i.e.,
-            where the foreground is 1 and the background is 0), a manual value 
+            where the foreground is 1 and the background is 0), a manual value
             of 0.5 will identify the objects.</dd>
             </dl></li>
-            
+
             <li><i>%(TS_BINARY_IMAGE)s:</i> Use a binary image to classify
             pixels as foreground or background. Pixel values other than zero
             will be foreground and pixel values that are zero will be
-            background. This method can be used to import a ground-truth segmentation created 
-            by CellProfiler or another program. 
+            background. This method can be used to import a ground-truth segmentation created
+            by CellProfiler or another program.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            The most typical approach to produce a 
-            binary image is to use the <b>ApplyThreshold</b> module (image as input, 
-            image as output) or the <b>ConvertObjectsToImage</b> module (objects as input, 
-            image as output); both have options to produce a binary image. It can also be 
-            used to create objects from an image mask produced by other CellProfiler 
-            modules, such as <b>Morph</b>. Note that even though no algorithm is actually 
-            used to find the threshold in this case, the final threshold value is reported 
+            The most typical approach to produce a
+            binary image is to use the <b>ApplyThreshold</b> module (image as input,
+            image as output) or the <b>ConvertObjectsToImage</b> module (objects as input,
+            image as output); both have options to produce a binary image. It can also be
+            used to create objects from an image mask produced by other CellProfiler
+            modules, such as <b>Morph</b>. Note that even though no algorithm is actually
+            used to find the threshold in this case, the final threshold value is reported
             as the <i>%(TM_OTSU)s</i> threshold calculated for the foreground region.</dd>
             </dl></li>
-            
+
             <li><i>%(TS_MEASUREMENT)s:</i> Use a prior image measurement as the
             threshold. The measurement should have values between zero and one.
-            This strategy can be used to apply a pre-calculated threshold imported 
+            This strategy can be used to apply a pre-calculated threshold imported
             as per-image metadata via the <b>Metadata</b> module.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            Like manual thresholding, this approach can be useful when you are certain what 
-            the cutoff should be. The difference in this case is that the desired threshold does 
+            Like manual thresholding, this approach can be useful when you are certain what
+            the cutoff should be. The difference in this case is that the desired threshold does
             vary from image to image in the experiment but can be measured using another module,
             such as one of the <b>Measure</b> modules, <b>ApplyThreshold</b> or
             an <b>Identify</b> module.</dd>
             </dl></li>
             </ul>
 	    """ % globals())
-        
+
         self.threshold_method = cps.Choice(
             'Thresholding method',
             methods, doc="""
             The intensity threshold affects the decision of whether each pixel
             will be considered foreground (region(s) of interest) or background.
-            A higher threshold value will result in only the brightest regions being identified, 
-            whereas a lower threshold value will include dim regions. You can have the threshold 
-            automatically calculated from a choice of several methods, 
+            A higher threshold value will result in only the brightest regions being identified,
+            whereas a lower threshold value will include dim regions. You can have the threshold
+            automatically calculated from a choice of several methods,
             or you can enter a number manually between 0 and 1 for the threshold.
-            
-            <p>Both the automatic and manual options have advantages and disadvantages. 
+
+            <p>Both the automatic and manual options have advantages and disadvantages.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
             An automatically-calculated threshold adapts to changes in
@@ -301,122 +290,122 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <dd>In contrast, an advantage of a manually-entered number is that it treats every image identically,
             so use this option when you have a good sense for what the threshold should be
             across all images. To help determine the choice of threshold manually, you
-            can inspect the pixel intensities in an image of your choice. 
+            can inspect the pixel intensities in an image of your choice.
             %(HELP_ON_PIXEL_INTENSITIES)s. </dd>
             <dd><img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;
-            The manual method is not robust with regard to slight changes in lighting/staining 
+            The manual method is not robust with regard to slight changes in lighting/staining
             conditions between images. </dd>
-            <dd>The automatic methods may ocasionally produce a poor 
+            <dd>The automatic methods may ocasionally produce a poor
             threshold for unusual or artifactual images. It also takes a small amount of time to
             calculate, which can add to processing time for analysis runs on a large
             number of images.</dd>
             </dl></p>
-            
-            <p>The threshold that is used for each image is recorded as a per-image 
+
+            <p>The threshold that is used for each image is recorded as a per-image
             measurement, so if you are surprised by unusual measurements from
             one of your images, you might check whether the automatically calculated
             threshold was unusually high or low compared to the other images. See the
             <b>FlagImage</b> module if you would like to flag an image based on the threshold
             value.</p>
-            
+
             <p>There are a number of methods for finding thresholds automatically:
             <ul>
             <li><i>%(TM_OTSU)s:</i> This approach calculates the threshold separating the
-            two classes of pixels (foreground and background) by minimizing the variance within the 
+            two classes of pixels (foreground and background) by minimizing the variance within the
             each class.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
             This method is a good initial approach if you do not know much about
-            the image characteristics of all the images in your experiment, 
-            especially if the percentage of the image covered by foreground varies 
+            the image characteristics of all the images in your experiment,
+            especially if the percentage of the image covered by foreground varies
             substantially from image to image. </dd>
             </dl>
             <dl>
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
             Our implementation of Otsu's method allows for assigning the threshold value based on
-            splitting the image into either two classes (foreground and background) or three classes 
+            splitting the image into either two classes (foreground and background) or three classes
             (foreground, mid-level, and background). See the help below for more details.</dd>
             </dl>
             </li>
-            
-            <li><i>Mixture of Gaussian (%(TM_MOG)s):</i>This function assumes that the 
+
+            <li><i>Mixture of Gaussian (%(TM_MOG)s):</i>This function assumes that the
             pixels in the image belong to either a background class or a foreground
-            class, using an initial guess of the fraction of the image that is 
-            covered by foreground. 
+            class, using an initial guess of the fraction of the image that is
+            covered by foreground.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            If you know that the percentage of each image that is foreground does not 
-            vary much from image to image, the %(TM_MOG)s method can be better, especially if the 
+            If you know that the percentage of each image that is foreground does not
+            vary much from image to image, the %(TM_MOG)s method can be better, especially if the
             foreground percentage is not near 50%%.</dd>
             </dl>
             <dl>
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
             This method is our own version of a Mixture of Gaussians
             algorithm (<i>O. Friman, unpublished</i>). Essentially, there are two steps:
-            <ol><li>First, a number of Gaussian distributions are estimated to 
-            match the distribution of pixel intensities in the image. Currently 
-            three Gaussian distributions are fitted, one corresponding to a 
-            background class, one corresponding to a foreground class, and one 
+            <ol><li>First, a number of Gaussian distributions are estimated to
+            match the distribution of pixel intensities in the image. Currently
+            three Gaussian distributions are fitted, one corresponding to a
+            background class, one corresponding to a foreground class, and one
             distribution for an intermediate class. The distributions are fitted
-            using the Expectation-Maximization algorithm, a procedure referred 
+            using the Expectation-Maximization algorithm, a procedure referred
             to as Mixture of Gaussians modeling. </li>
-            <li>When the three Gaussian distributions have been fitted, a decision 
-            is made whether the intermediate class more closely models the background pixels 
+            <li>When the three Gaussian distributions have been fitted, a decision
+            is made whether the intermediate class more closely models the background pixels
             or foreground pixels, based on the estimated fraction provided by the user.</li></ol></dd>
             </dl>
             </li>
-            
-            <li><i>%(TM_BACKGROUND)s:</i> This method simply finds the mode of the 
-            histogram of the image, which is assumed to be the background of the 
-            image, and chooses a threshold at twice that value (which you can 
-            adjust with a Threshold Correction Factor; see below).  The calculation 
-	    includes those pixels between 2%% and 98%% of the intensity range. 
+
+            <li><i>%(TM_BACKGROUND)s:</i> This method simply finds the mode of the
+            histogram of the image, which is assumed to be the background of the
+            image, and chooses a threshold at twice that value (which you can
+            adjust with a Threshold Correction Factor; see below).  The calculation
+	    includes those pixels between 2%% and 98%% of the intensity range.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            This thresholding method is appropriate for images in which most of the image is background. 
-	    It can also be helpful if your images vary in overall brightness, but the objects of 
+            This thresholding method is appropriate for images in which most of the image is background.
+	    It can also be helpful if your images vary in overall brightness, but the objects of
             interest are consistently <i>N</i> times brighter than the background level of the image.</dd>
             </dl></li>
-            
-            <li><i>%(TM_ROBUST_BACKGROUND)s:</i> Much like the %(TM_BACKGROUND)s: method, this method is 
+
+            <li><i>%(TM_ROBUST_BACKGROUND)s:</i> Much like the %(TM_BACKGROUND)s: method, this method is
 	    also simple and assumes that the background distribution
-	    approximates a Gaussian by trimming the brightest and dimmest 5%% of pixel 
-	    intensities. It then calculates the mean and standard deviation of the 
-            remaining pixels and calculates the threshold as the mean + 2 times 
-            the standard deviation. 
+	    approximates a Gaussian by trimming the brightest and dimmest 5%% of pixel
+	    intensities. It then calculates the mean and standard deviation of the
+            remaining pixels and calculates the threshold as the mean + 2 times
+            the standard deviation.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
             This thresholding method can be helpful if the majority
 	    of the image is background, and the results are often comparable or better than the
 	    <i>%(TM_BACKGROUND)s</i> method.</dd></dl></li>
-            
+
             <li><i>%(TM_RIDLER_CALVARD)s:</i> This method is simple and its results are
-            often very similar to <i>%(TM_OTSU)s</i>. 
-            <i>%(TM_RIDLER_CALVARD)s</i> chooses an initial threshold and then iteratively 
-            calculates the next one by taking the mean of the average intensities of 
-            the background and foreground pixels determined by the first threshold. 
+            often very similar to <i>%(TM_OTSU)s</i>.
+            <i>%(TM_RIDLER_CALVARD)s</i> chooses an initial threshold and then iteratively
+            calculates the next one by taking the mean of the average intensities of
+            the background and foreground pixels determined by the first threshold.
             The algorithm then repeats this process until the threshold converges to a single value.
             <dl>
             <dd></dd>
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
-            This is an implementation of the method described in Ridler and Calvard, 1978. 
-            According to Sezgin and Sankur 2004, Otsu's 
-            overall quality on testing 40 nondestructive testing images is slightly 
+            This is an implementation of the method described in Ridler and Calvard, 1978.
+            According to Sezgin and Sankur 2004, Otsu's
+            overall quality on testing 40 nondestructive testing images is slightly
             better than Ridler's (average error: Otsu, 0.318; Ridler, 0.401).</dd>
             </dl>
             </li>
-            
-            <li><i>%(TM_KAPUR)s:</i> This method computes the threshold of an image by 
-            searching for the threshold that maximizes the sum of entropies of the foreground 
+
+            <li><i>%(TM_KAPUR)s:</i> This method computes the threshold of an image by
+            searching for the threshold that maximizes the sum of entropies of the foreground
             and background pixel values, when treated as separate distributions.
             <dl>
             <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
             This is an implementation of the method described in Kapur <i>et al</i>, 1985.</dd>
             </dl></li>
-            
-            <li><i>Maximum correlation thresholding (%(TM_MCT)s):</i> This method computes 
+
+            <li><i>Maximum correlation thresholding (%(TM_MCT)s):</i> This method computes
             the maximum correlation between the binary mask created by thresholding and
-            the thresholded image and is somewhat similar mathematically to <i>%(TM_OTSU)s</i>. 
+            the thresholded image and is somewhat similar mathematically to <i>%(TM_OTSU)s</i>.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
             The authors of this method claim superior results when thresholding images
@@ -427,33 +416,33 @@ class Identify(cellprofiler.cpmodule.CPModule):
             This is an implementation of the method described in Padmanabhan <i>et al</i>, 2010.</dd>
             </dl></li>
             </ul>
-            
+
             <p><b>References</b>
             <ul>
-            <li>Sezgin M, Sankur B (2004) "Survey over image thresholding techniques and quantitative 
+            <li>Sezgin M, Sankur B (2004) "Survey over image thresholding techniques and quantitative
             performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165.
             (<a href="http://dx.doi.org/10.1117/1.1631315">link</a>)</li>
             <li>Padmanabhan K, Eddy WF, Crowley JC (2010) "A novel algorithm for
-            optimal image thresholding of biological data" <i>Journal of 
+            optimal image thresholding of biological data" <i>Journal of
             Neuroscience Methods</i> 193, 380-384.
             (<a href="http://dx.doi.org/10.1016/j.jneumeth.2010.08.031">link</a>)</li>
             <li>Ridler T, Calvard S (1978) "Picture thresholding using an iterative selection method",
             <i>IEEE Transactions on Systems, Man and Cybernetics</i>, 8(8), 630-632.</li>
-            <li>Kapur JN, Sahoo PK, Wong AKC (1985) "A new method of gray level picture thresholding 
-            using the entropy of the histogram." <i>Computer Vision, Graphics and Image Processing</i>, 
+            <li>Kapur JN, Sahoo PK, Wong AKC (1985) "A new method of gray level picture thresholding
+            using the entropy of the histogram." <i>Computer Vision, Graphics and Image Processing</i>,
             29, 273-285.</li>
             </ul></p>
             """%globals())
-        
+
         self.threshold_smoothing_choice = cps.Choice(
-            "Select the smoothing method for thresholding", 
+            "Select the smoothing method for thresholding",
             [TSM_AUTOMATIC, TSM_MANUAL, TSM_NONE], doc = """
             <i>(Only used for strategies other than %(TS_AUTOMATIC)s and
             %(TS_BINARY_IMAGE)s)</i><br>
             The input image can be optionally smoothed before being thresholded.
-            Smoothing can improve the uniformity of the resulting objects, by 
-            removing holes and jagged edges caused by noise in the acquired image. 
-            Smoothing is most likely <i>not</i> appropriate if the input image is 
+            Smoothing can improve the uniformity of the resulting objects, by
+            removing holes and jagged edges caused by noise in the acquired image.
+            Smoothing is most likely <i>not</i> appropriate if the input image is
             binary, if it has already been smoothed or if it is an output of the
             <i>ClassifyPixels</i> module.<br>
             The choices are:
@@ -463,10 +452,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
             for most analysis applications.</li>
             <li><i>%(TSM_MANUAL)s</i>: Smooth the image with a Gaussian with
             user-controlled scale.</li>
-            <li><i>%(TSM_NONE)s</i>: Do not apply any smoothing prior to 
+            <li><i>%(TSM_NONE)s</i>: Do not apply any smoothing prior to
             thresholding.</li>
             </ul>""" % globals())
-        
+
         self.threshold_smoothing_scale = cps.Float(
             "Threshold smoothing scale", 1.0, minval = 0,doc ="""
             <i>(Only used if smoothing for threshold is %(TSM_MANUAL)s)</i><br>
@@ -480,27 +469,27 @@ class Identify(cellprofiler.cpmodule.CPModule):
         self.threshold_correction_factor = cps.Float(
             "Threshold correction factor", 1, doc ="""
             This setting allows you to adjust the threshold as calculated by the
-            above method. The value entered here adjusts the threshold either 
-            upwards or downwards, by multiplying it by this value. 
-            A value of 1 means no adjustment, 0 to 1 makes the threshold more 
-            lenient and &gt; 1 makes the threshold more stringent. 
+            above method. The value entered here adjusts the threshold either
+            upwards or downwards, by multiplying it by this value.
+            A value of 1 means no adjustment, 0 to 1 makes the threshold more
+            lenient and &gt; 1 makes the threshold more stringent.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            When the threshold is calculated automatically, you may find that 
+            When the threshold is calculated automatically, you may find that
             the value is consistently too stringent or too lenient across all
             images. This setting
-            is helpful for adjusting the threshold to a value that you empirically 
+            is helpful for adjusting the threshold to a value that you empirically
             determine is more suitable. For example, the
             %(TM_OTSU)s automatic thresholding inherently assumes that 50%% of the image is
             covered by objects. If a larger percentage of the image is covered, the
             Otsu method will give a slightly biased threshold that may have to be
             corrected using this setting.</dd>
             </dl>"""%globals())
-        
+
         self.threshold_range = cps.FloatRange(
             'Lower and upper bounds on threshold', (0,1), minval=0,
             maxval=1, doc="""
-            Enter the minimum and maximum allowable threshold, a value from 0 to 1.  
+            Enter the minimum and maximum allowable threshold, a value from 0 to 1.
             This is helpful as a safety precaution when the threshold is calculated
             automatically, by overriding the automatic threshold.
             <dl>
@@ -513,30 +502,30 @@ class Identify(cellprofiler.cpmodule.CPModule):
             bound according to this empirically-determined value. </dd>
             <dd>%(HELP_ON_PIXEL_INTENSITIES)s</dd>
             </dl>"""%globals())
-        
+
         self.object_fraction = cps.CustomChoice(
-            'Approximate fraction of image covered by objects?', 
+            'Approximate fraction of image covered by objects?',
             ['0.01','0.1','0.2','0.3', '0.4','0.5','0.6','0.7', '0.8','0.9','0.99'], doc="""
             <i>(Used only when applying the %(TM_MOG)s thresholding method)</i><br>
             Enter an estimate of how much of the image is covered with objects, which
             is used to estimate the distribution of pixel intensities."""%globals())
-        
+
         self.manual_threshold = cps.Float(
-            "Manual threshold", 
+            "Manual threshold",
              value=0.0, minval=0.0, maxval=1.0,doc="""
             <i>(Used only if Manual selected for thresholding method)</i><br>
             Enter the value that will act as an absolute threshold for the images, a value from 0 to 1.""")
-        
+
         self.thresholding_measurement = cps.Measurement("Select the measurement to threshold with",
             lambda : cpmeas.IMAGE, doc = """
             <i>(Used only if Measurement is selected for thresholding method)</i><br>
             Choose the image measurement that will act as an absolute threshold for the images.""")
-        
+
         self.binary_image = cps.ImageNameSubscriber(
             "Select binary image", cps.NONE, doc = """
             <i>(Used only if Binary image selected for thresholding method)</i><br>
             Select the binary image to be used for thresholding.""")
-        
+
         self.masking_objects = MaskObjectNameSubscriber(
             "Masking objects", cps.NONE,doc = """
             <i>(Used only if %(TS_PER_OBJECT)s is selected for the
@@ -545,50 +534,50 @@ class Identify(cellprofiler.cpmodule.CPModule):
             outside of any object will be assigned to the background.
             You can either select a prior object or if you select <i>%(O_FROM_IMAGE)s,</i>
             the input image's mask will be used.</p>"""%globals())
-        
+
         self.two_class_otsu = cps.Choice(
             'Two-class or three-class thresholding?',
             [O_TWO_CLASS, O_THREE_CLASS],doc="""
             <i>(Used only for the Otsu thresholding method)</i> <br>
             <ul>
-            <li><i>%(O_TWO_CLASS)s:</i> Select this option if the grayscale levels are readily 
-            distinguishable into only two classes: foreground (i.e., regions of interest) 
+            <li><i>%(O_TWO_CLASS)s:</i> Select this option if the grayscale levels are readily
+            distinguishable into only two classes: foreground (i.e., regions of interest)
             and background.</li>
-            <li><i>%(O_THREE_CLASS)s</i>: Choose this option if the grayscale 
+            <li><i>%(O_THREE_CLASS)s</i>: Choose this option if the grayscale
             levels fall instead into three classes: foreground, background and a middle intensity
-            between the two. You will then be asked whether 
-            the middle intensity class should be added to the foreground or background 
+            between the two. You will then be asked whether
+            the middle intensity class should be added to the foreground or background
             class in order to generate the final two-class output. </li>
             </ul>
-            Note that whether 
-            two- or three-class thresholding is chosen, the image pixels are always 
+            Note that whether
+            two- or three-class thresholding is chosen, the image pixels are always
             finally assigned two classes: foreground and background.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
-            Three-class thresholding may be useful for images in which you have nuclear staining along with 
+            Three-class thresholding may be useful for images in which you have nuclear staining along with
             low-intensity non-specific cell staining. Where two-class thresholding
-            might incorrectly assign this intermediate staining to the nuclei 
-            objects for some cells, three-class thresholding allows you to assign it to the 
+            might incorrectly assign this intermediate staining to the nuclei
+            objects for some cells, three-class thresholding allows you to assign it to the
             foreground or background as desired. </dd>
             </dl>
             <dl>
             <dd><img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;
-            However, in extreme cases where either 
-            there are almost no objects or the entire field of view is covered with 
+            However, in extreme cases where either
+            there are almost no objects or the entire field of view is covered with
             objects, three-class thresholding may perform worse than two-class.</dd>
             </dl>"""%globals())
-        
+
         self.use_weighted_variance = cps.Choice(
             'Minimize the weighted variance or the entropy?',
             [O_WEIGHTED_VARIANCE, O_ENTROPY])
-        
+
         self.assign_middle_to_foreground = cps.Choice(
             'Assign pixels in the middle intensity class to the foreground '
             'or the background?', [O_FOREGROUND, O_BACKGROUND],doc="""
             <i>(Used only for three-class thresholding)</i><br>
-            Choose whether you want the pixels with middle grayscale intensities to be assigned 
+            Choose whether you want the pixels with middle grayscale intensities to be assigned
             to the foreground class or the background class.""")
-        
+
         self.rb_custom_choice = cps.Choice(
             "Use default parameters?", [RB_DEFAULT, RB_CUSTOM],
             doc = """
@@ -613,7 +602,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             Discard this fraction of the pixels in the image starting with
             those of the lowest intensity.
             """%globals())
-        
+
         self.upper_outlier_fraction = cps.Float(
             "Upper outlier fraction", .05,
             minval = 0,
@@ -623,7 +612,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             Discard this fraction of the pixels in the image starting with
             those of the highest intensity.
             """%globals())
-        
+
         self.averaging_method = cps.Choice(
             "Averaging method",
             [RB_MEAN, RB_MEDIAN, RB_MODE],
@@ -655,7 +644,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             (the median of the absolute difference of the pixel intensities
             from their median).
             """%globals())
-        
+
         self.number_of_deviations = cps.Float(
             "# of deviations", 2,
             doc = """
@@ -666,36 +655,36 @@ class Identify(cellprofiler.cpmodule.CPModule):
             which should be close to the average background, excluding most
             background pixels. Use a larger number to exclude more background
             pixels. Use a smaller number to include more low-intensity
-            foreground pixels. It's possible to use a negative number 
+            foreground pixels. It's possible to use a negative number
             to lower the threshold if the averaging method picks a threshold
             that is within the range of foreground pixel intensities.
             """%globals())
-            
+
         self.adaptive_window_method = cps.Choice(
             "Method to calculate adaptive window size",
             [FI_IMAGE_SIZE, FI_CUSTOM], doc="""
             <i>(Used only if an adaptive thresholding method is used)</i><br>
-            The adaptive method breaks the image into blocks, computing the threshold 
+            The adaptive method breaks the image into blocks, computing the threshold
             for each block. There are two ways to compute the block size:
             <ul>
             <li><i>%(FI_IMAGE_SIZE)s:</i> The block size is one-tenth of the image dimensions,
             or 50 &times; 50 pixels, whichever is bigger.</li>
             <li><i>%(FI_CUSTOM)s:</i> The block size is specified by the user.</li>
             </ul>"""%globals())
-                                            
+
         self.adaptive_window_size = cps.Integer(
             'Size of adaptive window', 10, doc="""
-            <i>(Used only if an adaptive thresholding method with a %(FI_CUSTOM)s window size 
+            <i>(Used only if an adaptive thresholding method with a %(FI_CUSTOM)s window size
             are selected)</i><br>
             Enter the window for the adaptive method. For example,
             you may want to use a multiple of the largest expected object size."""%globals())
-        
+
     def get_threshold_settings(self):
         '''Return the threshold settings to be saved in the pipeline'''
         return [self.threshold_setting_version,
-                self.threshold_scope, self.threshold_method, 
-                self.threshold_smoothing_choice, 
-                self.threshold_smoothing_scale, 
+                self.threshold_scope, self.threshold_method,
+                self.threshold_smoothing_choice,
+                self.threshold_smoothing_scale,
                 self.threshold_correction_factor,
                 self.threshold_range,
                 self.object_fraction,
@@ -714,7 +703,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 self.averaging_method,
                 self.variance_method,
                 self.number_of_deviations]
-    
+
     def get_threshold_help_settings(self):
         '''Return the threshold settings to be displayed in help'''
         return [self.threshold_scope,
@@ -731,27 +720,27 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 self.upper_outlier_fraction,
                 self.averaging_method,
                 self.variance_method,
-                self.number_of_deviations,                
+                self.number_of_deviations,
                 self.adaptive_window_method,
                 self.adaptive_window_size,
                 self.threshold_correction_factor,
                 self.threshold_range,
                 self.threshold_smoothing_choice,
                 self.threshold_smoothing_scale]
-    
+
     def upgrade_legacy_threshold_settings(
         self, threshold_method, threshold_smoothing_choice, threshold_correction_factor,
         threshold_range, object_fraction, manual_threshold,
-        thresholding_measurement, binary_image, 
+        thresholding_measurement, binary_image,
         two_class_otsu, use_weighted_variance, assign_middle_to_foreground,
         adaptive_window_method, adaptive_window_size,
         masking_objects = O_FROM_IMAGE):
         '''Return threshold setting strings built from the legacy elements
-        
+
         IdentifyPrimaryObjects, IdentifySecondaryObjects and ApplyThreshold
         used to store their settings independently. This method creates the
         unified settings block from the values in their separate arrangements.
-        
+
         All parameters should be self-explanatory except for
         threshold_smoothing_choice which should be TSM_AUTOMATIC if
         smoothing was applied to the image before thresholding or TSM_NONE
@@ -773,18 +762,18 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 threshold_scope = TS_PER_OBJECT
             elif threshold_scope == TM_ADAPTIVE:
                 threshold_scope = TS_ADAPTIVE
-        setting_values = [ 
+        setting_values = [
             "1", threshold_scope, threshold_method, threshold_smoothing_choice,
             "1", threshold_correction_factor, threshold_range,
-            object_fraction, manual_threshold, thresholding_measurement, 
+            object_fraction, manual_threshold, thresholding_measurement,
             binary_image, masking_objects, two_class_otsu,
-            use_weighted_variance, assign_middle_to_foreground, 
+            use_weighted_variance, assign_middle_to_foreground,
             adaptive_window_method, adaptive_window_size]
         return setting_values
-        
+
     def upgrade_threshold_settings(self, setting_values):
         '''Upgrade the threshold settings to the current version
-        
+
         use the first setting which is the version to determine the
         threshold settings version and upgrade as appropriate
         '''
@@ -802,7 +791,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         if version > self.threshold_setting_version:
             raise ValueError("Unsupported pipeline version: threshold setting version = %d" % version)
         return setting_values
-    
+
     def get_threshold_visible_settings(self):
         '''Return visible settings related to thresholding'''
         vv = [self.threshold_scope]
@@ -827,7 +816,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             elif self.threshold_method == TM_ROBUST_BACKGROUND:
                 vv += [self.rb_custom_choice]
                 if self.rb_custom_choice == RB_CUSTOM:
-                    vv += [self.lower_outlier_fraction, 
+                    vv += [self.lower_outlier_fraction,
                            self.upper_outlier_fraction,
                            self.averaging_method,
                            self.variance_method,
@@ -843,17 +832,17 @@ class Identify(cellprofiler.cpmodule.CPModule):
             vv += [ self.adaptive_window_method ]
             if self.adaptive_window_method == FI_CUSTOM:
                 vv += [ self.adaptive_window_size ]
-            
+
         return vv
-        
-    def threshold_image(self, image_name, workspace, 
+
+    def threshold_image(self, image_name, workspace,
                         wants_local_threshold=False):
         """Compute the threshold using whichever algorithm was selected by the user
-        
+
         image_name - name of the image to use for thresholding
-        
+
         workspace - get any measurements / objects / images from the workspace
-        
+
         returns: thresholded binary image
         """
         #
@@ -873,7 +862,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             return binary_image
         local_threshold, global_threshold = self.get_threshold(
             image, mask, workspace)
-    
+
         if self.threshold_smoothing_choice == TSM_NONE or\
            self.threshold_scope in (TS_MEASUREMENT, TS_MANUAL):
             blurred_image = img
@@ -892,22 +881,22 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     img, sigma, mode='constant', cval=0)
             blurred_image = smooth_with_function_and_mask(img, fn, mask)
         if hasattr(workspace,"display_data"):
-            workspace.display_data.threshold_sigma = sigma          
-            
+            workspace.display_data.threshold_sigma = sigma
+
         binary_image = (blurred_image >= local_threshold) & mask
         self.add_fg_bg_measurements(
             workspace.measurements, img, mask, binary_image)
         if wants_local_threshold:
             return binary_image, local_threshold
         return binary_image
-        
+
     def get_threshold(self, image, mask, workspace):
         '''Calculate a local and global threshold
-        
+
         img - base the threshold on this image's intensity
-        
+
         mask - use this mask to define the pixels of interest
-        
+
         workspace - get objects and measurements from this workspace and
                     add threshold measurements to this workspace's measurements.
         '''
@@ -942,7 +931,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                             # For overlaps, we arbitrarily assign a pixel to
                             # the first label it appears in. Alternate would be
                             # to average, seems like it's too fine a point
-                            # to deal with it. A third possibility would be to 
+                            # to deal with it. A third possibility would be to
                             # treat overlaps as distinct entities since the overlapping
                             # areas will likely be different than either object.
                             labels = np.zeros(label_planes[0][0].shape,
@@ -1005,16 +994,16 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     kwparams['average_fn'] = {
                         RB_MEAN: np.mean,
                         RB_MEDIAN: np.median,
-                        RB_MODE: binned_mode 
+                        RB_MODE: binned_mode
                         }.get(self.averaging_method.value, np.mean)
                     kwparams['variance_fn'] = {
                         RB_SD: np.std,
                         RB_MAD: mad }.get(self.variance_method.value, np.std)
-                    
+
                 local_threshold, global_threshold = get_threshold(
                     self.threshold_algorithm,
                     self.threshold_modifier,
-                    img, 
+                    img,
                     mask = mask,
                     labels = labels,
                     adaptive_window_size = block_size,
@@ -1024,25 +1013,25 @@ class Identify(cellprofiler.cpmodule.CPModule):
         if hasattr(workspace.display_data, "statistics"):
             workspace.display_data.statistics.append(
                 ["Threshold","%0.3g"%(global_threshold)])
-            
+
         return local_threshold, global_threshold
-    
+
     def get_measurement_objects_name(self):
         '''Return the name of the measurement objects
-        
+
         Identify modules and ApplyThreshold store measurements in the Image
         table and append an object name or, for ApplyThreshold, an image
         name to distinguish between different thresholds in the same pipeline.
         '''
         raise NotImplementedError(
             "Please implement get_measurement_objects_name() for this module")
-    
+
     def add_threshold_measurements(self, measurements,
                                    local_threshold, global_threshold):
-        '''Compute and add threshold statistics measurements 
-        
+        '''Compute and add threshold statistics measurements
+
         measurements - add the measurements here
-        local_threshold - either a per-pixel threshold (a matrix) or a 
+        local_threshold - either a per-pixel threshold (a matrix) or a
                           copy of the global threshold (a scalar)
         global_threshold - the globally-calculated threshold
         '''
@@ -1054,16 +1043,16 @@ class Identify(cellprofiler.cpmodule.CPModule):
         measurements.add_measurement(cpmeas.IMAGE,
                                      FF_ORIG_THRESHOLD%(objname),
                                      global_threshold)
-        
+
     def add_fg_bg_measurements(self, measurements, image, mask, binary_image):
         '''Add statistical measures of the within class variance and entropy
-        
+
         measurements - store measurements here
-        
+
         image - assess the variance and entropy on this intensity image
-        
+
         mask - mask of pixels to be considered
-        
+
         binary_image - the foreground / background segmentation of the image
         '''
         objname = self.get_measurement_objects_name()
@@ -1075,7 +1064,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         measurements.add_measurement(cpmeas.IMAGE,
                                      FF_SUM_OF_ENTROPIES%(objname),
                                      np.array([entropies],dtype=float))
-        
+
     def validate_module(self, pipeline):
         if not hasattr(self, "threshold_scope"):
             # derived class does not have thresholding settings
@@ -1102,49 +1091,49 @@ class Identify(cellprofiler.cpmodule.CPModule):
                              self.lower_outlier_fraction.value,
                              self.upper_outlier_fraction.value),
                         self.upper_outlier_fraction)
-                
+
     def get_threshold_modifier(self):
         """The threshold algorithm modifier
-        
+
         TM_GLOBAL                       = "Global"
         TM_ADAPTIVE                     = "Adaptive"
         TM_PER_OBJECT                   = "PerObject"
         """
         if self.threshold_scope.value in (TS_AUTOMATIC,
             TS_GLOBAL, TS_BINARY_IMAGE, TS_MANUAL, TS_MEASUREMENT):
-            return TM_GLOBAL 
+            return TM_GLOBAL
         elif self.threshold_scope.value == TS_PER_OBJECT:
             return TM_PER_OBJECT
         return TM_ADAPTIVE
-    
+
     threshold_modifier = property(get_threshold_modifier)
-    
+
     def get_threshold_algorithm(self):
         """The thresholding algorithm, for instance TM_OTSU"""
         if self.threshold_scope == TS_AUTOMATIC:
             return TM_MCT
         return self.threshold_method.value
-    
+
     threshold_algorithm = property(get_threshold_algorithm)
-    
+
     def get_threshold_measurement_columns(self, pipeline):
         '''Return the measurement columns for the threshold measurements'''
         features = [FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE]
         if self.threshold_scope != TS_BINARY_IMAGE:
             features += [FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD]
-        return [(cpmeas.IMAGE, 
+        return [(cpmeas.IMAGE,
                  ftr % self.get_measurement_objects_name(),
                  cpmeas.COLTYPE_FLOAT) for ftr in features]
-    
+
     def get_threshold_categories(self, pipeline, object_name):
         '''Get categories related to thresholding'''
         if object_name == cpmeas.IMAGE:
             return [C_THRESHOLD]
         return []
-    
+
     def get_threshold_measurements(self, pipeline, object_name, category):
         '''Return a list of threshold measurements for a given category
-        
+
         object_name - either "Image" or an object name
         category - must be "Threshold" to get anything back
         '''
@@ -1154,11 +1143,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             return [FTR_ORIG_THRESHOLD, FTR_FINAL_THRESHOLD,
                     FTR_SUM_OF_ENTROPIES, FTR_WEIGHTED_VARIANCE]
         return []
-    
-    def get_threshold_measurement_objects(self, pipeline, object_name, category, 
+
+    def get_threshold_measurement_objects(self, pipeline, object_name, category,
                                           measurement):
         '''Get the measurement objects for a threshold measurement
-        
+
         pipeline - not used
         object_name - either "Image" or an object name. (must be "Image")
         category - the measurement category. (must be "Threshold")
@@ -1169,11 +1158,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
             return [self.get_measurement_objects_name()]
         else:
             return []
-        
-    def get_object_categories(self, pipeline, object_name, 
+
+    def get_object_categories(self, pipeline, object_name,
                               object_dictionary):
         '''Get categories related to creating new children
-        
+
         pipeline - the pipeline being run (not used)
         object_name - the base object of the measurement: "Image" or an object
         object_dictionary - a dictionary where each key is the name of
@@ -1190,20 +1179,20 @@ class Identify(cellprofiler.cpmodule.CPModule):
         if object_name in reduce(lambda x,y: x+y, object_dictionary.values()):
             result += [C_CHILDREN]
         return result
-    
+
     def get_object_measurements(self, pipleline, object_name, category,
                                 object_dictionary):
         '''Get measurements related to creating new children
-        
+
         pipeline - the pipeline being run (not used)
         object_name - the base object of the measurement: "Image" or an object
-        object_dictionary - a dictionary where each key is the name of 
+        object_dictionary - a dictionary where each key is the name of
                             an object created by this module and each
                             value is a list of names of parents.
         '''
         if object_name == cpmeas.IMAGE and category == C_COUNT:
             return list(object_dictionary.keys())
-        
+
         if object_dictionary.has_key(object_name):
             if category == C_LOCATION:
                 return [FTR_CENTER_X, FTR_CENTER_Y]
@@ -1218,12 +1207,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     result += ["%s_Count" % child_object_name]
             return result
         return []
-    
-def add_object_location_measurements(measurements, 
+
+def add_object_location_measurements(measurements,
                                      object_name,
                                      labels, object_count = None):
     """Add the X and Y centers of mass to the measurements
-    
+
     measurements - the measurements container
     object_name  - the name of the objects being measured
     labels       - the label matrix
@@ -1237,8 +1226,8 @@ def add_object_location_measurements(measurements,
     # Get the centers of each object - center_of_mass <- list of two-tuples.
     #
     if object_count:
-        centers = scipy.ndimage.center_of_mass(np.ones(labels.shape), 
-                                               labels, 
+        centers = scipy.ndimage.center_of_mass(np.ones(labels.shape),
+                                               labels,
                                                range(1,object_count+1))
         centers = np.array(centers)
         centers = centers.reshape((object_count,2))
@@ -1254,7 +1243,7 @@ def add_object_location_measurements(measurements,
     measurements.add_measurement(object_name, M_LOCATION_CENTER_Y,
                                  location_center_y)
     measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, number)
-    
+
 def add_object_location_measurements_ijv(measurements,
                                          object_name,
                                          ijv, object_count = None):
@@ -1272,9 +1261,9 @@ def add_object_location_measurements_ijv(measurements,
         center_y = np.bincount(ijv[:, 2], ijv[:, 0])[1:] / areas
     measurements.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
     measurements.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
-    measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, 
+    measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER,
                                  np.arange(1, object_count+1))
-    
+
 
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
@@ -1285,7 +1274,7 @@ def add_object_count_measurements(measurements, object_name, object_count):
 
 def get_object_measurement_columns(object_name):
     '''Get the column definitions for measurements made by identify modules
-    
+
     Identify modules can use this call when implementing
     CPModule.get_measurement_columns to get the column definitions for
     the measurements made by add_object_location_measurements and
@@ -1298,7 +1287,7 @@ def get_object_measurement_columns(object_name):
 
 def get_threshold_measurement_columns(image_name):
     '''Get the column definitions for threshold measurements, if made
-    
+
     image_name - name of the image
     '''
     return [(cpmeas.IMAGE, FF_FINAL_THRESHOLD%image_name, cpmeas.COLTYPE_FLOAT),
@@ -1314,12 +1303,12 @@ def draw_outline(img, outline, color):
     img[outline != 0, 0] = red
     img[outline != 0, 1] = green
     img[outline != 0, 2] = blue
-                
+
 class MaskObjectNameSubscriber(cps.ObjectNameSubscriber):
     '''This class allows the legacy "From Image" choice'''
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
-        
+
     def test_valid(self, pipeline):
         if self.value == O_FROM_IMAGE:
             return

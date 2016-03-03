@@ -1,20 +1,11 @@
 """cpgrid.py - wx.grid helpers for cellprofiler
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
 import StringIO
+
 import wx
 import wx.grid
+
 from cellprofiler.gui import draw_bevel, BV_UP, BV_DOWN
 
 BU_NORMAL = "normal"
@@ -22,19 +13,19 @@ BU_PRESSED = "pressed"
 
 class GridButtonRenderer(wx.grid.PyGridCellRenderer):
     """Render a cell as a button
-    
+
     The value of a cell should be organized like this: "key:state"
     where "key" is the key for the image to paint and "state" is the
     state of the button: "normal" or "pressed"
     GridButtonRenderer takes a dictionary organized as key: bitmap. This
     dictionary holds the images to render per key.
     """
-    
+
     def __init__(self, bitmap_dictionary, bevel_width=2):
         super(GridButtonRenderer,self).__init__()
         self.__bitmap_dictionary = bitmap_dictionary
         self.__bevel_width = bevel_width
-    
+
     def Draw(self, grid, attr, dc, rect, row, col, isSelected):
         dc.SetClippingRect(rect)
         dc.Clear()
@@ -52,7 +43,7 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         if bitmap:
             dc.DrawBitmap(bitmap, rect.Left, rect.Top,True)
         dc.DestroyClippingRegion()
-    
+
     def GetBestSize(self, grid, attr, dc, row, col):
         """Return the size of the cell's button"""
         bitmap = self.get_bitmap(grid, attr, dc, row, col)
@@ -65,25 +56,25 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
 
     def Clone(self):
         return GridButtonRenderer(self.__bitmap_dictionary, self.__bevel_width)
-    
+
     def get_bitmap(self, grid, attr, dc, row, col):
         """Get a cell's bitmap
-        
+
         grid - the parent wx.grid
         attr - an instance of wx.grid.GriddCellAttr which provides rendering info
         dc   - the device context to be used for printing
         row,col - the coordinates of the cell to be rendered
-        """ 
+        """
         value = grid.GetCellValue(row,col)
         key = value.split(':')[0]
         if self.__bitmap_dictionary.has_key(key):
             bitmap = self.__bitmap_dictionary[key]
             return bitmap
         return None
-    
+
     def get_state(self, grid, row, col):
         """Get a cell's press-state
-        
+
         grid - the grid control
         row,col - the row and column of the cell
         """
@@ -92,10 +83,10 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         if len(values) < 2:
             return None
         return values[1]
-    
+
     def set_cell_value(self, grid, row, col, key, state):
         """Set a cell's value in a grid
-        
+
         grid    - the grid control
         row,col - the cell coordinates
         key     - the keyword for the bitmap
@@ -104,7 +95,7 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         value = "%s:%s"%(key,state)
         grid.SetCellValue(row,col,value)
         grid.ForceRefresh()
-    
+
     def set_cell_state(self, grid, row, col, state):
         key = grid.GetCellValue(row,col).split(':')[0]
         self.set_cell_value(grid, row,col,key,state)
@@ -121,22 +112,22 @@ class GridButtonClickedEvent(wx.PyCommandEvent):
         self.SetEventType(EVT_GRID_BUTTON_TYPE)
         self.__row = row
         self.__col = col
-    
+
     def get_col(self):
         """Column of clicked cell"""
         return self.__col
-    
+
     def get_row(self):
         """Row of clicked cell"""
         return self.__row
-    
+
     col = property(get_col)
     row = property(get_row)
 
-def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2, 
+def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
                             hook_events=True):
     """Attach hooks to a grid to make a column display grid buttons
-    
+
     grid - the grid in question
     col  - the index of the column to modify
     bitmap_dictionary - a dictionary of bitmaps suitable for GridButtonRenderer
@@ -164,9 +155,9 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
         else:
             if event_handler.NextHandler:
                 event_handler.NextHandler.ProcessEvent(event)
-            
+
     def on_mouse_move(event):
-        if (ui_dictionary["selected_row"] is not None and 
+        if (ui_dictionary["selected_row"] is not None and
             grid.GridWindow.HasCapture()):
             x = event.GetX()
             y = event.GetY()
@@ -176,7 +167,7 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
             if coords and coords.Col == col and coords.Row == row:
                 selection_state = BU_PRESSED
             if renderer.get_state(grid, row, col) != selection_state:
-                renderer.set_cell_state(grid, row, col, selection_state) 
+                renderer.set_cell_state(grid, row, col, selection_state)
         if event_handler.NextHandler:
             event_handler.NextHandler.ProcessEvent(event)
 
@@ -188,9 +179,9 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
         else:
             if event_handler.NextHandler:
                 event_handler.NextHandler.ProcessEvent(event)
-    
+
     def on_left_up(event):
-        if (ui_dictionary["selected_row"] is not None and 
+        if (ui_dictionary["selected_row"] is not None and
             grid.GridWindow.HasCapture()):
             row = ui_dictionary["selected_row"]
             if renderer.get_state(grid, row, col) == BU_PRESSED:
@@ -202,7 +193,7 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
         else:
             if event_handler.NextHandler:
                 event_handler.NextHandler.ProcessEvent(event)
-    
+
     col_attr = wx.grid.GridCellAttr()
     col_attr.SetReadOnly(True)
     col_attr.SetRenderer(renderer)
@@ -226,7 +217,7 @@ if __name__ == "__main__":
                               style=wx.DEFAULT_FRAME_STYLE)
             sizer = wx.BoxSizer()
             self.SetSizer(sizer)
-            bmp_rabbit,bmp_carrot = [wx.BitmapFromImage(wx.ImageFromStream(StringIO.StringIO(x))) 
+            bmp_rabbit,bmp_carrot = [wx.BitmapFromImage(wx.ImageFromStream(StringIO.StringIO(x)))
                                      for x in (IMG_RABBIT, IMG_CARROT)]
             d = {"rabbit":bmp_rabbit, "carrot":bmp_carrot}
             grid = wx.grid.Grid(self)
@@ -244,7 +235,7 @@ if __name__ == "__main__":
             grid.SetRowLabelSize(0)
             self.Bind(EVT_GRID_BUTTON, self.on_grid_button, grid)
             self.Bind(wx.grid.EVT_GRID_CELL_LEFT_CLICK,self.on_left_click, grid)
-            
+
         def on_grid_button(self, event):
             value = self.grid.GetCellValue(event.row, event.col)
             wx.MessageBox("%d,%d: %s"%(event.row, event.col, value))
@@ -262,4 +253,3 @@ if __name__ == "__main__":
             return 1
     app = MyApp(0)
     app.MainLoop()
-    

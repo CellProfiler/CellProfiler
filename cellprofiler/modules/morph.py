@@ -14,7 +14,7 @@ The following operations are available:<br><br>
 <td><b>Input image type allowed</b></td></tr>
 <tr>
 <td><i>Bothat</i></td>
-<td>Bottom-hat filter: A bottom-hat filter enhances black spots in a white background. 
+<td>Bottom-hat filter: A bottom-hat filter enhances black spots in a white background.
 It subtracts the morphological <i>Close</i> of the image from the image. See below for a description of <i>Close</i>.</td>
 <td>Binary, grayscale</td>
 </tr>
@@ -24,33 +24,33 @@ This operation should be applied to an image after skeletonizing. It leaves
 only those pixels that are at the intersection of branches.<br>
 <table>
 <tr><td><table border="1">
-<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>      
-<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>    
+<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
 </table></td>
 <td>&rarr;</td>
 <td><table border="1">
-<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>      
-<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>?</td></tr>    
+<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>?</td><td>0</td><td>0</td><td>0</td><td>?</td></tr>
 </table></td></tr>
 </table></td>
 <td>Binary
 </td></tr>
 <tr>
 <td><i>Bridge</i></td>
-<td>Sets a pixel to 1 if it has two non-zero neighbors that are on opposite 
+<td>Sets a pixel to 1 if it has two non-zero neighbors that are on opposite
 sides of this pixel:<br>
-<table> 
+<table>
 <tr>
 <td><table border="1">
-<tr><td>1</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>0</td><td>1</td></tr>      
+<tr><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td></tr>
 </table></td>
 <td>&rarr;</td>
 <td><table border="1">
@@ -66,12 +66,12 @@ sides of this pixel:<br>
 <tr>
 <td><i>Clean</i></td>
 <td>Removes isolated pixels:<br>
-<table> 
+<table>
 <tr>
 <td><table border=1>
-<tr><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>1</td><td>0</td></tr>  
-<tr><td>0</td><td>0</td><td>0</td></tr>      
+<tr><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
 </table></td>
 <td>&rarr;</td>
 <td><table border=1>
@@ -101,7 +101,7 @@ single object in an image, for instance, the edge of a well.</td>
 <td>Binary</td></tr>
 <tr>
 <td><i>Diag</i></td>
-<td>Fills in pixels whose neighbors are diagnonally connected to 4-connect 
+<td>Fills in pixels whose neighbors are diagnonally connected to 4-connect
 pixels that are 8-connected:<br>
 <table>
 <tr>
@@ -131,7 +131,7 @@ pixels that are 8-connected:<br>
 </tr>
 <tr>
 <td><i>Dilate</i></td>
-<td>For binary, replaces any 0 pixel by 1 if any of its neighbors is 1. 
+<td>For binary, replaces any 0 pixel by 1 if any of its neighbors is 1.
 For grayscale, each pixel is replaced by the maximum of its neighbors and itself.</td>
 <td>Binary, grayscale</td>
 </tr>
@@ -142,9 +142,9 @@ foreground pixel is computed to the nearest background pixel. The resulting
 image is then scaled so that the largest distance is 1.</td>
 <td>Binary</td>
 </tr>
-<tr>        
+<tr>
 <td><i>Erode</i></td>
-<td>For binary, replaces any 1 pixel by 0 if any of its neighbors is 0. 
+<td>For binary, replaces any 1 pixel by 0 if any of its neighbors is 0.
 For grayscale, each pixel is replaced by the minimum of its neighbors and itself.</td>
 <td>Binary, grayscale</td>
 </tr>
@@ -154,19 +154,19 @@ For grayscale, each pixel is replaced by the minimum of its neighbors and itself
 <table>
 <tr>
 <td><table border=1>
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>      
-<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>    
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>
 </table></td>
 <td>&rarr;</td>
 <td><table border="1">
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>    
-<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>    
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>  
-<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>      
-<tr><td>0</td><td>?</td><td>0</td><td>0</td><td>?</td></tr>    
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>?</td><td>0</td><td>0</td><td>?</td></tr>
 </table></td>
 </tr>
 </table>
@@ -232,7 +232,7 @@ For a grayscale image, invert its intensity.
 </tr>
 <tr>
 <td><i>Majority</i></td>
-<td>Each pixel takes on the value of the majority that surround it 
+<td>Each pixel takes on the value of the majority that surround it
 (keep pixel value to break ties):<br>
 <table>
 <tr>
@@ -253,8 +253,8 @@ For a grayscale image, invert its intensity.
 <td>Binary</td>
 </tr>
 <tr>
-<td><i>Life</i></td><td>Applies the interaction rules from the 
-<a href="http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game of Life</a>, 
+<td><i>Life</i></td><td>Applies the interaction rules from the
+<a href="http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life">Game of Life</a>,
 an example of a cellular automaton.</td>
 <td>Binary</td>
 </tr>
@@ -270,7 +270,7 @@ The effect is to return parts of the image that have a linear intensity distribu
 </tr>
 <tr>
 <td><i>Remove</i></td>
-<td>Removes pixels that are otherwise surrounded by others (4 connected). 
+<td>Removes pixels that are otherwise surrounded by others (4 connected).
 The effect is to leave the perimeter of a solid object:<br>
 <table>
 <tr>
@@ -293,13 +293,13 @@ The effect is to leave the perimeter of a solid object:<br>
 <tr>
 <td><i>Shrink</i></td>
 <td>Performs a thinning operation that erodes unless that operation
-would change the image's Euler number. This means that blobs are reduced to single 
+would change the image's Euler number. This means that blobs are reduced to single
 points and blobs with holes are reduced to rings if shrunken indefinitely.</td>
 <td>Binary</td>
 </tr>
 <tr>
 <td><i>Skel</i></td>
-<td>Performs a skeletonizing operation (medial axis transform). Preserves 
+<td>Performs a skeletonizing operation (medial axis transform). Preserves
 the points at the edges of objects but erodes everything else to lines that connect those edges.
 See <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm">here</a> for a description.</td>
 <td>Binary</td>
@@ -307,12 +307,12 @@ See <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm">here</a> for 
 <tr>
 <td><i>SkelPE</i></td>
 <td>Performs a skeletonizing operation using the metric, PE * D to
-control the erosion order. PE is the Poisson Equation (see Gorelick, 
-"Shape representation and classification using the Poisson Equation", 
+control the erosion order. PE is the Poisson Equation (see Gorelick,
+"Shape representation and classification using the Poisson Equation",
 IEEE Transactions on Pattern Analysis and Machine Intelligence V28, # 12, 2006)
 evaluated within the foreground with the boundary condition that the background
 is zero. D is the distance transform (distance of a pixel to the nearest edge).
-The resulting skeleton has fewer spurs but some bit of erosion at the endpoints 
+The resulting skeleton has fewer spurs but some bit of erosion at the endpoints
 in the binary image.</td>
 <td>Binary</td>
 </tr>
@@ -343,22 +343,22 @@ operation essentially removes the endpoints of lines.<br>
 <tr>
 <td><i>Thicken</i></td>
 <td>Dilates the exteriors of objects where that dilation does not
-8-connect the object with another. The image is labeled and the labeled objects are filled. 
+8-connect the object with another. The image is labeled and the labeled objects are filled.
 Unlabeled points adjacent to uniquely labeled points change from background to foreground.</td>
 <td>Binary</td>
 </tr>
 <tr>
 <td><i>Thin</i></td>
-<td>Thin lines preserving the Euler number using the thinning algorithm # 1 described in 
-Guo, "Parallel Thinning with Two Subiteration Algorithms", <i>Communications of the ACM,</i> Vol 32 #3, 
+<td>Thin lines preserving the Euler number using the thinning algorithm # 1 described in
+Guo, "Parallel Thinning with Two Subiteration Algorithms", <i>Communications of the ACM,</i> Vol 32 #3,
 page 359. The result generally preserves the lines in an image while eroding their thickness.</td>
 <td>Binary</td>
 </tr>
 <tr>
 <td><i>Tophat</i></td>
-<td>Subtracts the morphological opening of the image from the image. This enhances white spots 
+<td>Subtracts the morphological opening of the image from the image. This enhances white spots
 in a black background. Note that this tophat operation is slightly different than that in the
-<b>EnhanceOrSupressFeatures</b> module, in that you would need to subtract 1 from the diameter 
+<b>EnhanceOrSupressFeatures</b> module, in that you would need to subtract 1 from the diameter
 in <b>Morph</b> to achieve the same result.</td>
 <td>Binary, grayscale</td>
 </tr>
@@ -385,21 +385,11 @@ in <b>Morph</b> to achieve the same result.</td>
 </table>
 '''
 
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
-
 import logging
+import sys
+
 import numpy as np
 import scipy.ndimage as scind
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -439,7 +429,7 @@ F_THIN   = 'thin'
 F_TOPHAT = 'tophat'
 F_VBREAK = 'vbreak'
 F_ALL = [F_BOTHAT, F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_CONVEX_HULL,
-         F_DIAG, F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE, F_FILL, 
+         F_DIAG, F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE, F_FILL,
          F_FILL_SMALL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_OPENLINES, F_REMOVE,
          F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
@@ -457,8 +447,8 @@ SE_RECTANGLE = "Rectangle"
 SE_SQUARE = "Square"
 SE_PAIR = "Pair"
 SE_ARBITRARY = "Custom"
-SE_ALL = sorted([ SE_DISK, SE_DIAMOND, SE_LINE, SE_OCTAGON, 
-                  SE_PERIODIC_LINE, SE_RECTANGLE, SE_SQUARE, SE_PAIR, 
+SE_ALL = sorted([ SE_DISK, SE_DIAMOND, SE_LINE, SE_OCTAGON,
+                  SE_PERIODIC_LINE, SE_RECTANGLE, SE_SQUARE, SE_PAIR,
                   SE_ARBITRARY])
 
 F_NEED_SE = [F_BOTHAT, F_CLOSE, F_DILATE, F_ERODE, F_OPEN, F_TOPHAT]
@@ -476,7 +466,7 @@ class Morph(cpm.CPModule):
     module_name = "Morph"
     category="Image Processing"
     variable_revision_number = 4
-    
+
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",cps.NONE,doc="""
@@ -484,23 +474,23 @@ class Morph(cpm.CPModule):
             A grayscale image can be
             converted to binary using the <b>ApplyThreshold</b> module. Objects can be
             converted to binary using the <b>ConvertToImage</b> module.""")
-        
+
         self.output_image_name = cps.ImageNameProvider(
             "Name the output image","MorphBlue",doc="""
             Enter the name for the output image It will be of the same type as the
             input image.""")
-        
-        self.add_button = cps.DoSomething("", 
+
+        self.add_button = cps.DoSomething("",
             "Add another operation",
-            self.add_function,doc="""                                    
+            self.add_function,doc="""
             Press this button to add an operation that will be applied to the
             image resulting from the previous operation(s). The module repeats
-            the previous operation the number of times you select before applying 
+            the previous operation the number of times you select before applying
             the operation added by this button.""")
-        
+
         self.functions = []
         self.add_function(can_remove = False)
-    
+
     CUSTOM_REPEATS_TEXT = "Repetition number"
     CUSTOM_REPEATS_DOC = "<i>(Used only if Custom selected)</i><br>Enter the number of times to repeat the operation"
     def add_function(self, can_remove = True):
@@ -512,7 +502,7 @@ class Morph(cpm.CPModule):
             "Select the operation to perform",
             F_ALL, F_OPEN,doc="""
             Choose one of the operations described in this module's help."""))
-        
+
         group.append("repeats_choice", cps.Choice(
             "Number of times to repeat operation",
             R_ALL,doc="""
@@ -524,21 +514,21 @@ class Morph(cpm.CPModule):
             iterations yield the same image.</li>
             <li><i>%(R_CUSTOM)s:</i> Perform the operation a custom number of times.</li>
             </ul>"""%globals()))
-        
+
         group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT,2,1,
                      doc=self.CUSTOM_REPEATS_DOC))
-        
+
         group.append("structuring_element", cps.Choice(
             "Structuring element", SE_ALL, SE_DISK,doc = """
             <i>(Used only for %(SE_F_TEXT)s)</i><br>
-            The structuring element controls which neighboring pixels participate 
-            in the operation. For instance, for the %(F_ERODE)s operation, all 
-            pixels in the neighborhood of the pixel must be in the foreground for 
+            The structuring element controls which neighboring pixels participate
+            in the operation. For instance, for the %(F_ERODE)s operation, all
+            pixels in the neighborhood of the pixel must be in the foreground for
             the pixel to be in the foreground in the output image. If a circular
             structuring element is used, then a pixel will be in the foreground
             only if all neighborhood pixels within a circle surrounding the
             pixel are in the foreground in the input image.
-            
+
             <p>The structuring elements are:<br>
             <ul>
             <li><i>%(SE_DISK)s</i>: A disk centered on the pixel. The diameter
@@ -546,7 +536,7 @@ class Morph(cpm.CPModule):
             at or closer than that diameter will be in the neighborhood.</li>
             <li><i>%(SE_ARBITRARY)s</i>: A structuring element which lets
             the user choose the exact neighborhood pixels to use.</li>
-            <li><i>%(SE_DIAMOND)s</i>: A diamond centered on the pixel. The 
+            <li><i>%(SE_DIAMOND)s</i>: A diamond centered on the pixel. The
             diameter setting determines the distance between the top and bottom
             and left and right corners of the diamond.</li>
             <li><i>%(SE_LINE)s</i>: A line centered on the pixel. The line
@@ -565,7 +555,7 @@ class Morph(cpm.CPModule):
             composed of the pixel itself and the pixel at the x and y offsets
             given by the settings.</li>
             <li><i>%(SE_PERIODIC_LINE)s</i>: The points along a line described
-            by an offset, centered on the pixel. The periodic line has three 
+            by an offset, centered on the pixel. The periodic line has three
             settings. The neighborhood pixels are all within a circle whose
             diameter is the diameter setting. Within the circle, pixels are
             chosen at N times the x and y offset from the center for positive
@@ -575,53 +565,53 @@ class Morph(cpm.CPModule):
             <li><i>%(SE_SQUARE)s</i>: a square centered on the pixel. The
             diameter setting determines the length of the square's side.</li>
             </ul></p>""" % globals()))
-        
+
         group.append("scale", cps.Float(
             "Diameter",3, minval=3,doc="""
             Morphological open, close, erode and dialate are performed
             with structuring elements which determine the diameter of the
             circle enclosing the pixels to consider when applying the operation.
             This setting controls the diameter of the structuring element."""))
-        
+
         group.append("x_offset", cps.Float(
             "X offset", 1, doc = """
             <i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
             settings)</i>. The X offset to the first neighborhood pixel in
             the structuring element.
             """ % globals()))
-        
+
         group.append("y_offset", cps.Float(
             "Y offset", 1, doc = """
             <i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
             structuring elements)</i>. The Y offset to the first neighborhood
             pixel in the structuring element.
             """ % globals()))
-        
+
         group.append("angle", cps.Float(
             "Angle", 0, minval = -180, maxval = 180,doc = """
             <i>(Used only for the %(SE_LINE)s structuring element).</i>
             The angle, in degrees counter-clockwise from the horizontal,
             of the line.
             """ % globals()))
-        
+
         group.append("width", cps.Float(
             "Width", 3, minval = 1,doc = """
             <i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
             The width of the rectangle in pixels.
             """ % globals()))
-        
+
         group.append("height", cps.Float(
             "Height", 3, minval = 1,doc = """
             <i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
             The height of the rectangle in pixels.
             """ % globals()))
-        
+
         group.append("strel", cps.BinaryMatrix(
             "Custom",doc = """
             <i>(Used only for the %(SE_ARBITRARY)s structuring element).</i>
             This control lets you specify a custom structuring element.
             """ % globals()))
-        
+
         group.append("rescale_values", cps.Binary(
             "Rescale values from 0 to 1?", True,doc = """
             <i>(Used only for the %(F_DISTANCE)s operation).</i>
@@ -632,8 +622,8 @@ class Morph(cpm.CPModule):
             <p>Select <i>%(NO)s</i> to leave the values in absolute pixel units.
             This useful in cases where the actual pixel distances are to be used
             downstream as input for a measurement module.</p>
-            """ % globals()))        
-                                        
+            """ % globals()))
+
         if can_remove:
             group.append("remove", cps.RemoveSettingButton("", "Remove this operation", self.functions, group))
         self.functions.append(group)
@@ -650,7 +640,7 @@ class Morph(cpm.CPModule):
         '''Return the settings as saved in the pipeline file'''
         result = [self.image_name, self.output_image_name]
         for function in self.functions:
-            result += [function.function, function.repeats_choice, 
+            result += [function.function, function.repeats_choice,
                        function.custom_repeats, function.scale,
                        function.structuring_element,
                        function.x_offset, function.y_offset,
@@ -658,7 +648,7 @@ class Morph(cpm.CPModule):
                        function.strel,
                        function.rescale_values]
         return result
-    
+
     def visible_settings(self):
         '''Return the settings as displayed to the user'''
         result = [self.image_name, self.output_image_name]
@@ -668,8 +658,8 @@ class Morph(cpm.CPModule):
             result.append(function.function)
             if function.function in F_NO_REPEATS:
                 # Iterating open/close, erode/dilate can be handled by
-                # 
-                pass 
+                #
+                pass
             elif function.function == F_DISTANCE:
                 result.append(function.rescale_values)
             elif function.function == F_FILL_SMALL:
@@ -722,7 +712,7 @@ class Morph(cpm.CPModule):
             pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
             pixel_data = self.run_function(function, pixel_data, mask)
-        new_image = cpi.Image(pixel_data, parent_image = image) 
+        new_image = cpi.Image(pixel_data, parent_image = image)
         workspace.image_set.add(self.output_image_name.value, new_image)
         if self.show_window:
             workspace.display_data.image = image.pixel_data
@@ -753,7 +743,7 @@ class Morph(cpm.CPModule):
         function_name = function.function.value
         scale = function.scale.value
         custom_repeats = function.custom_repeats.value
-        
+
         is_binary =  pixel_data.dtype.kind == 'b'
         if function.structuring_element == SE_ARBITRARY:
             strel = np.array(function.strel.get_matrix())
@@ -779,24 +769,24 @@ class Morph(cpm.CPModule):
                 function.width.value, function.height.value)
         else:
             strel = morph.strel_square(scale)
-        
-        if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
+
+        if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
-                              F_FILL_SMALL, F_HBREAK, F_LIFE, F_MAJORITY, 
-                              F_REMOVE, F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, 
-                              F_THICKEN, F_THIN, F_VBREAK) 
+                              F_FILL_SMALL, F_HBREAK, F_LIFE, F_MAJORITY,
+                              F_REMOVE, F_SHRINK, F_SKEL, F_SKELPE, F_SPUR,
+                              F_THICKEN, F_THIN, F_VBREAK)
             and not is_binary):
             # Apply a very crude threshold to the image for binary algorithms
             logger.warning("Warning: converting image to binary for %s\n"%
                            function_name)
             pixel_data = pixel_data != 0
 
-        if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
+        if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG,
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
                               F_FILL_SMALL,
                               F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_REMOVE,
                               F_SHRINK,
-                              F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, 
+                              F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN,
                               F_VBREAK, F_OPENLINES) or
             (is_binary and
              function_name in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN))):
@@ -814,7 +804,7 @@ class Morph(cpm.CPModule):
                                                 strel,
                                                 iterations = count)
                 else:
-                    return (scind.binary_closing(pixel_data & mask, 
+                    return (scind.binary_closing(pixel_data & mask,
                                                  strel,
                                                  iterations = count) |
                             (pixel_data & ~ mask))
@@ -826,7 +816,7 @@ class Morph(cpm.CPModule):
             elif function_name == F_DIAG:
                 return morph.diag(pixel_data, mask, count)
             elif function_name == F_DILATE:
-                return scind.binary_dilation(pixel_data, 
+                return scind.binary_dilation(pixel_data,
                                              strel,
                                              iterations=count,
                                              mask=mask)
@@ -872,7 +862,7 @@ class Morph(cpm.CPModule):
                                                 strel,
                                                 iterations = count)
                 else:
-                    return (scind.binary_opening(pixel_data & mask, 
+                    return (scind.binary_opening(pixel_data & mask,
                                                  strel,
                                                  iterations = count) |
                             (pixel_data & ~ mask))
@@ -906,7 +896,7 @@ class Morph(cpm.CPModule):
                     new_pixel_data = morph.black_tophat(pixel_data, mask=mask,
                                                         footprint=strel)
                 elif function_name == F_CLOSE:
-                                                         
+
                     new_pixel_data = morph.closing(pixel_data, mask=mask,
                                                    footprint=strel)
                 elif function_name == F_DILATE:
@@ -928,9 +918,9 @@ class Morph(cpm.CPModule):
                     break;
                 pixel_data = new_pixel_data
             return pixel_data
-    
-    def upgrade_settings(self, setting_values, 
-                         variable_revision_number, module_name, 
+
+    def upgrade_settings(self, setting_values,
+                         variable_revision_number, module_name,
                          from_matlab):
         '''Adjust the setting_values of previous revisions to match this one'''
         if from_matlab and variable_revision_number in (1,2):
@@ -942,7 +932,7 @@ class Morph(cpm.CPModule):
             for i in range(6):
                 if setting_values[i*2+2] != cps.DO_NOT_USE:
                     new_setting_values.append(setting_values[i*2+2])
-                    if (setting_values[i*2+3].isdigit() and  
+                    if (setting_values[i*2+3].isdigit() and
                         int(setting_values[i*2+3])== 1):
                         new_setting_values += [R_ONCE, "1"]
                     elif setting_values[i*2+3].lower() == "inf":
@@ -959,12 +949,12 @@ class Morph(cpm.CPModule):
             # a convex hull operation
             #
             image_name, output_name = setting_values
-            setting_values = [image_name, output_name, 
+            setting_values = [image_name, output_name,
                               F_INVERT, R_ONCE, "1",
                               F_CONVEX_HULL, R_ONCE, "1"]
             module_name = self.module_name
             variable_revision_number = 1
-            
+
         if (not from_matlab) and variable_revision_number == 1:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V1):
@@ -972,7 +962,7 @@ class Morph(cpm.CPModule):
                 new_setting_values += [ "3" ]
             setting_values = new_setting_values
             variable_revision_number = 2
-            
+
         if (not from_matlab) and variable_revision_number == 2:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V2):
@@ -981,7 +971,7 @@ class Morph(cpm.CPModule):
                                        "3,3,111111111"]
             setting_values = new_setting_values
             variable_revision_number = 3
-            
+
         if (not from_matlab) and variable_revision_number == 3:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V3):
@@ -989,9 +979,9 @@ class Morph(cpm.CPModule):
                 new_setting_values += [cps.YES]
             setting_values = new_setting_values
             variable_revision_number = 4
-                        
+
         return setting_values, variable_revision_number, from_matlab
-                        
+
 
 
 class MorphSettingsGroup(cps.SettingsGroup):

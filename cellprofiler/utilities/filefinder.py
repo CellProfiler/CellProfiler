@@ -1,25 +1,14 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
 from __future__ import with_statement
-import threading
+
 import Queue
-import uuid
-import os
-import time
-import stat
-import traceback
 import errno
+import os
+import stat
+import threading
+import time
+import traceback
+import uuid
+
 
 class TimeOutException(Exception):
     pass

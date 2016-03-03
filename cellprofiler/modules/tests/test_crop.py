@@ -1,24 +1,15 @@
 """test_crop.py - test the Crop module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
-import base64
-import numpy as np
-import unittest
 import StringIO
+import base64
+import unittest
 import zlib
 
+import numpy as np
+
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw
@@ -36,7 +27,7 @@ CROPPING = "cropping"
 OUTPUT_IMAGE = "output_image"
 
 class TestCrop(unittest.TestCase):
-    def make_workspace(self, 
+    def make_workspace(self,
                        input_pixels,
                        crop_image = None,
                        cropping = None,
@@ -48,7 +39,7 @@ class TestCrop(unittest.TestCase):
         module.module_num = 1
         image_set.add(INPUT_IMAGE, cpi.Image(input_pixels))
         module.image_name.value = INPUT_IMAGE
-        module.cropped_image_name.value = OUTPUT_IMAGE 
+        module.cropped_image_name.value = OUTPUT_IMAGE
         if crop_image is not None:
             image_set.add(CROP_IMAGE, cpi.Image(crop_image))
             module.image_mask_source.value = CROP_IMAGE
@@ -61,7 +52,7 @@ class TestCrop(unittest.TestCase):
             objects = cpo.Objects()
             objects.segmented = crop_objects
             object_set.add_objects(objects, CROP_OBJECTS)
-        
+
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
@@ -77,7 +68,7 @@ class TestCrop(unittest.TestCase):
         m.add_measurement(cpm.IMAGE, cpm.GROUP_INDEX, 0, image_set_number = 1)
         m.add_measurement(cpm.IMAGE, cpm.GROUP_NUMBER, 1, image_set_number = 1)
         return workspace, module
-    
+
     def test_00_00_zeros(self):
         """Test cropping an image with a mask of all zeros"""
         workspace, module = self.make_workspace(np.zeros((10,10)),
@@ -105,7 +96,7 @@ class TestCrop(unittest.TestCase):
         self.assertTrue(feature in m.get_feature_names('Image'))
         values = m.get_current_measurement('Image',feature)
         self.assertEqual(values,0)
-    
+
     def test_00_01_zeros_and_remove_all(self):
         """Test cropping and removing rows and columns on a blank image"""
         workspace, module = self.make_workspace(np.zeros((10,10)),
@@ -115,7 +106,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertEqual(np.product(output_image.pixel_data.shape),0)
-    
+
     def test_01_01_crop_edges_with_image(self):
         """Test cropping and removing rows and columns with an image"""
         x,y = np.mgrid[0:10,0:10]
@@ -123,7 +114,7 @@ class TestCrop(unittest.TestCase):
         crop_image = np.zeros((10,10),bool)
         crop_image[2,3] = True
         crop_image[7,5] = True
-        expected_image = np.zeros((6,3), np.float32) 
+        expected_image = np.zeros((6,3), np.float32)
         expected_image[0,0]=input_image[2,3]
         expected_image[5,2]=input_image[7,5]
         workspace, module = self.make_workspace(input_image,
@@ -151,7 +142,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
-    
+
     def test_02_01_crop_edges_with_cropping(self):
         """Test cropping and removing rows and columns with an image cropping"""
         x,y = np.mgrid[0:10,0:10]
@@ -159,7 +150,7 @@ class TestCrop(unittest.TestCase):
         crop_image = np.zeros((10,10),bool)
         crop_image[2,3] = True
         crop_image[7,5] = True
-        expected_image = np.zeros((6,3)) 
+        expected_image = np.zeros((6,3))
         expected_image[0,0]=input_image[2,3]
         expected_image[5,2]=input_image[7,5]
         workspace, module = self.make_workspace(input_image,
@@ -169,7 +160,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
-    
+
     def test_03_01_crop_with_ellipse_x_major(self):
         """Crop with an ellipse that has its major axis in the X direction"""
         x,y = np.mgrid[0:10,0:10]
@@ -189,7 +180,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
-    
+
     def test_03_02_crop_with_ellipse_y_major(self):
         x,y = np.mgrid[0:10,0:10]
         input_image = (x/100.0 + y/10.0).astype(np.float32)
@@ -208,7 +199,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
-        
+
     def test_04_01_crop_with_rectangle(self):
         x,y = np.mgrid[0:10,0:10]
         input_image = (x/100.0 + y/10.0).astype(np.float32)
@@ -247,7 +238,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
-        
+
     def test_04_04_crop_with_rectangle_unbounded_ymin(self):
         x,y = np.mgrid[0:10,0:10]
         input_image = (x/100.0 + y/10.0).astype(np.float32)
@@ -273,7 +264,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
-    
+
     def test_04_06_crop_color_with_rectangle(self):
         '''Regression test: make sure cropping works with a color image'''
         i,j,k = np.mgrid[0:10,0:10,0:3]
@@ -287,7 +278,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
-        
+
     def test_05_01_crop_image_plate_fixup(self):
         x,y = np.mgrid[0:10,0:10]
         input_image = (x/100.0 + y/10.0).astype(np.float32)
@@ -305,7 +296,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
-    
+
     def test_05_02_crop_image_plate_fixup_with_rectangle(self):
         x,y = np.mgrid[0:10,0:10]
         input_image = (x/100.0 + y/10.0).astype(np.float32)
@@ -322,7 +313,7 @@ class TestCrop(unittest.TestCase):
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.pixel_data == expected_image))
-    
+
     def test_05_03_crop_color_image_plate_fixup(self):
         x,y,z = np.mgrid[0:10,0:10,0:3]
         input_image = (x/100.0 + y/10.0 + z/1000.0).astype(np.float32)
@@ -396,7 +387,7 @@ class TestCrop(unittest.TestCase):
         self.assertEqual(module.ellipse_x_radius.value,400)
         self.assertEqual(module.ellipse_y_radius.value,200)
         self.assertTrue(module.remove_rows_and_columns)
-        
+
         module = pipeline.modules()[2]
         self.assertEqual(module.image_name.value,"OrigGreen")
         self.assertEqual(module.cropped_image_name.value,"CropGreen")
@@ -412,7 +403,7 @@ class TestCrop(unittest.TestCase):
         self.assertEqual(module.cropping_mask_source.value,"CropBlue")
         self.assertFalse(module.use_plate_fix.value)
         self.assertTrue(module.remove_rows_and_columns.value)
-                
+
     def test_07_02_load_v2(self):
         data = ('eJztm9Fu2jAUQB2armWV1k7aw7SplR+niaJAy9axh9GWsiGVFhXU56XEUE8h'
                 'Rknoun3JPmGfsc/ZYz9hdpuQxGIEArRJcSQrXMfnXt/ra2NIUttvHu8fwEJW'
@@ -453,7 +444,7 @@ class TestCrop(unittest.TestCase):
         self.assertEqual(module.ellipse_x_radius.value,400)
         self.assertEqual(module.ellipse_y_radius.value,200)
         self.assertTrue(module.remove_rows_and_columns)
-        
+
         module = pipeline.modules()[2]
         self.assertEqual(module.image_name.value,"OrigGreen")
         self.assertEqual(module.cropped_image_name.value,"CropGreen")
@@ -469,4 +460,3 @@ class TestCrop(unittest.TestCase):
         self.assertEqual(module.cropping_mask_source.value,"CropBlue")
         self.assertFalse(module.use_plate_fix.value)
         self.assertTrue(module.remove_rows_and_columns.value)
-        

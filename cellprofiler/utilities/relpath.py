@@ -45,4 +45,3 @@ if hasattr(os.path, 'relpath'):
     relpath = os.path.relpath
 else:
     relpath = _relpath
-

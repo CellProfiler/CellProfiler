@@ -2,7 +2,7 @@
 <hr>
 The interface will show the image that you selected as the
 guiding image, overlaid with colored outlines of the selected objects (or filled
-objects if you choose). This module allows you to remove or edit specific objects 
+objects if you choose). This module allows you to remove or edit specific objects
 by pointing and clicking to select objects for removal or editing. Once
 editing is complete, the module displays the objects as originally identified (left)
 and the objects that remain after this module (right).
@@ -25,23 +25,6 @@ and continue the pipeline.
 
 See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>ConvertToImage</b>.
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-#
-# Some matplotlib interactive editing code is derived from the sample:
-#
-# http://matplotlib.sourceforge.net/examples/event_handling/poly_editor.html
-#
-# Copyright 2008, John Hunter, Darren Dale, Michael Droettboom
-# 
-
 
 import logging
 logger = logging.getLogger(__name__)
@@ -76,12 +59,12 @@ class EditObjectsManually(I.Identify):
     category = "Object Processing"
     variable_revision_number = 3
     module_name = 'EditObjectsManually'
-    
+
     def create_settings(self):
         """Create your settings by subclassing this function
-        
+
         create_settings is called at the end of initialization.
-        
+
         You should create the setting variables for your module here:
             # Ask the user for the input image
             self.image_name = cellprofiler.settings.ImageNameSubscriber(...)
@@ -95,13 +78,13 @@ class EditObjectsManually(I.Identify):
             Choose a set of previously identified objects
             for editing, such as those produced by one of the
             <b>Identify</b> modules.""")
-        
+
         self.filtered_objects = cps.ObjectNameProvider(
             "Name the edited objects","EditedObjects",doc="""
             Enter the name for the objects that remain
             after editing. These objects will be available for use by
             subsequent modules.""")
-        
+
         self.allow_overlap = cps.Binary(
             "Allow overlapping objects?", False,doc = """
             <b>EditObjectsManually</b> can allow you to edit an
@@ -110,70 +93,70 @@ class EditObjectsManually(I.Identify):
             the neurites of neurons may cross each other and might need to
             be edited with overlapping allowed, whereas a monolayer of cells
             might be best edited with overlapping off. <br>
-            Select <i>%(YES)s</i> to allow overlaps or select <i>%(NO)s</i> 
-            to prevent them."""%globals()) 
-        
+            Select <i>%(YES)s</i> to allow overlaps or select <i>%(NO)s</i>
+            to prevent them."""%globals())
+
         self.wants_outlines = cps.Binary(
             "Retain outlines of the edited objects?", False,doc="""
             Select <i>%(YES)s</i> if you want to keep images of the outlines
             of the objects that remain after editing. This image
             can be saved by downstream modules or overlayed on other images
             using the <b>OverlayOutlines</b> module."""%globals())
-        
+
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outline image", "EditedObjectOutlines", doc="""
             <i>(Used only if you have selected to retain outlines of edited objects)</i><br>
             Enter a name for the outline image.""")
-        
+
         self.renumber_choice = cps.Choice(
             "Numbering of the edited objects",
             [R_RENUMBER, R_RETAIN],doc="""
-            Choose how to number the objects that 
+            Choose how to number the objects that
             remain after editing, which controls how edited objects are associated with their predecessors:
             <ul>
-            <li><i>%(R_RENUMBER)s:</i> The module will number the objects that remain 
+            <li><i>%(R_RENUMBER)s:</i> The module will number the objects that remain
             using consecutive numbers. This
             is a good choice if you do not plan to use measurements from the
             original objects and you only want to use the edited objects in downstream modules; the
             objects that remain after editing will not have gaps in numbering
             where removed objects are missing.</li>
-            <li><i>%(R_RETAIN)s:</i> This option will retain each object's original number so that the 
-            edited object's number matches its original number. This allows any measurements you make from 
-            the edited objects to be directly aligned with measurements you might 
-            have made of the original, unedited objects (or objects directly 
+            <li><i>%(R_RETAIN)s:</i> This option will retain each object's original number so that the
+            edited object's number matches its original number. This allows any measurements you make from
+            the edited objects to be directly aligned with measurements you might
+            have made of the original, unedited objects (or objects directly
             associated with them).</li>
             </ul>"""%globals())
-        
+
         self.wants_image_display = cps.Binary(
             "Display a guiding image?", True,doc = """
             Select <i>%(YES)s</i> to display an image and outlines of the objects. <br>
             Select <i>%(NO)s</i> if you do not want a guide image while editing"""%globals())
-        
+
         self.image_name = cps.ImageNameSubscriber(
             "Select the guiding image", cps.NONE,doc = """
             <i>(Used only if a guiding image is desired)</i><br>
             This is the image that will appear when editing objects.
             Choose an image supplied by a previous module.""")
-    
+
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
-        
+
         These are the settings (from cellprofiler.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
         """
         return [self.object_name, self.filtered_objects, self.wants_outlines,
-                self.outlines_name, self.renumber_choice, 
+                self.outlines_name, self.renumber_choice,
                 self.wants_image_display, self.image_name, self.allow_overlap]
-    
+
     def visible_settings(self):
         """The settings that are visible in the UI
         """
         #
         # Only display the outlines_name if wants_outlines is true
         #
-        result = [self.object_name, self.filtered_objects, 
+        result = [self.object_name, self.filtered_objects,
                   self.allow_overlap, self.wants_outlines]
         if self.wants_outlines:
             result.append(self.outlines_name)
@@ -181,10 +164,10 @@ class EditObjectsManually(I.Identify):
         if self.wants_image_display:
             result += [self.image_name]
         return result
-    
+
     def run(self, workspace):
         """Run the module
-        
+
         workspace    - The workspace contains
             pipeline     - instance of cpp for this run
             image_set    - the images in the image set being processed
@@ -194,7 +177,7 @@ class EditObjectsManually(I.Identify):
         """
         orig_objects_name = self.object_name.value
         filtered_objects_name = self.filtered_objects.value
-        
+
         orig_objects = workspace.object_set.get_objects(orig_objects_name)
         assert isinstance(orig_objects, cpo.Objects)
         orig_labels = [l for l, c in orig_objects.get_labels()]
@@ -240,7 +223,7 @@ class EditObjectsManually(I.Identify):
             filtered_objects.unedited_segmented = orig_objects.unedited_segmented
         if orig_objects.parent_image is not None:
             filtered_objects.parent_image = orig_objects.parent_image
-        workspace.object_set.add_objects(filtered_objects, 
+        workspace.object_set.add_objects(filtered_objects,
                                          filtered_objects_name)
         #
         # Add parent/child & other measurements
@@ -288,14 +271,14 @@ class EditObjectsManually(I.Identify):
                                   title = self.filtered_objects.value,
                                   sharex = ax0,
                                   sharey = ax0)
-    
+
     def run_as_data_tool(self):
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
         from cellprofiler.modules.namesandtypes import ObjectsImageProvider
         from bioformats import load_image
-        
+
         with wx.Dialog(None) as dlg:
             dlg.Title = "Choose files for editing"
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -316,18 +299,18 @@ class EditObjectsManually(I.Identify):
             def on_radiobox(event):
                 objects_file_fbb.Enable(new_or_existing_rb.GetSelection() == 1)
             new_or_existing_rb.Bind(wx.EVT_RADIOBOX, on_radiobox)
-            
+
             image_file_fbb = FileBrowseButton(
                 dlg, size=(300, -1),
                 fileMask="Objects file (*.tif, *.tiff, *.png, *.bmp, *.jpg)|*.tif;*.tiff;*.png;*.bmp;*.jpg",
                 dialogTitle="Select guide image file",
                 labelText="Guide image:")
             dlg.Sizer.Add(image_file_fbb, 0, wx.EXPAND | wx.ALL, 5)
-            
+
             allow_overlap_checkbox = wx.CheckBox(dlg, -1, "Allow objects to overlap")
             allow_overlap_checkbox.Value = True
             dlg.Sizer.Add(allow_overlap_checkbox, 0, wx.EXPAND | wx.ALL, 5)
-            
+
             buttons = wx.StdDialogButtonSizer()
             dlg.Sizer.Add(buttons, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.ALL, 5)
             buttons.Add(wx.Button(dlg, wx.ID_OK))
@@ -357,7 +340,7 @@ class EditObjectsManually(I.Identify):
         #
         guide_image = load_image(guidename)
         if np.min(guide_image) != np.max(guide_image):
-            guide_image = ((guide_image - np.min(guide_image)) / 
+            guide_image = ((guide_image - np.min(guide_image)) /
                            (np.max(guide_image)  - np.min(guide_image)))
         if labels is None:
             shape = guide_image.shape[:2]
@@ -372,7 +355,7 @@ class EditObjectsManually(I.Identify):
         n_frames = len(labels)
         with wx.FileDialog(None,
                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
-        
+
             dlg.Path = fullname
             dlg.Wildcard = ("Object image file (*.tif,*.tiff)|*.tif;*.tiff|"
                             "Ilastik project file (*.ilp)|*.ilp")
@@ -440,7 +423,7 @@ class EditObjectsManually(I.Identify):
                             mask_copy[i[bad], j[bad]] = n+1
                 mask = mask_copy
             project_labels[0, 0, :, :, 0] = mask
-            
+
     def handle_interaction(self, orig_labels, guide_image, image_set_number):
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         from wx import OK
@@ -450,13 +433,13 @@ class EditObjectsManually(I.Identify):
         title += "Create, remove and edit %s. Click Help for full instructions"%self.object_name.value
         with EditObjectsDialog(
             guide_image, orig_labels,
-            self.allow_overlap, 
+            self.allow_overlap,
             title) as dialog_box:
             result = dialog_box.ShowModal()
             if result != OK:
                 return None
             return dialog_box.labels
-    
+
     def get_measurement_columns(self, pipeline):
         '''Return information to use when creating database columns'''
         orig_image_name = self.object_name.value
@@ -469,24 +452,24 @@ class EditObjectsManually(I.Identify):
                      I.FF_PARENT %  orig_image_name,
                      cpmeas.COLTYPE_INTEGER)]
         return columns
-    
+
     def get_object_dictionary(self):
         '''Return the dictionary that's used by identify.get_object_*'''
         return { self.filtered_objects.value: [ self.object_name.value ] }
-    
+
     def get_categories(self, pipeline, object_name):
         '''Get the measurement categories produced by this module
-        
+
         pipeline - pipeline being run
         object_name - fetch categories for this object
         '''
         categories = self.get_object_categories(pipeline, object_name,
                                                 self.get_object_dictionary())
         return categories
-    
+
     def get_measurements(self, pipeline, object_name, category):
         '''Get the measurement features produced by this module
-      
+
         pipeline - pipeline being run
         object_name - fetch features for this object
         category - fetch features for this category
@@ -494,46 +477,46 @@ class EditObjectsManually(I.Identify):
         measurements = self.get_object_measurements(
             pipeline, object_name, category, self.get_object_dictionary())
         return measurements
-    
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Upgrade the settings written by a prior version of this module
-        
+
         setting_values - array of string values for the module's settings
         variable_revision_number - revision number of module at time of saving
         module_name - name of module that saved settings
         from_matlab - was a pipeline saved by CP 1.0
-        
+
         returns upgraded settings, new variable revision number and matlab flag
         '''
         if from_matlab and variable_revision_number == 2:
             object_name, filtered_object_name, outlines_name, \
             renumber_or_retain = setting_values
-            
+
             if renumber_or_retain == "Renumber":
                 renumber_or_retain = R_RENUMBER
             else:
                 renumber_or_retain = R_RETAIN
-            
+
             if outlines_name == cps.DO_NOT_USE:
                 wants_outlines = cps.NO
             else:
                 wants_outlines = cps.YES
-            
+
             setting_values = [object_name, filtered_object_name,
                               wants_outlines, outlines_name, renumber_or_retain]
             variable_revision_number = 1
             from_matlab = False
             module_name = self.module_name
-            
+
         if (not from_matlab) and variable_revision_number == 1:
             # Added wants image + image
             setting_values = setting_values + [ cps.NO, cps.NONE]
             variable_revision_number = 2
-            
+
         if (not from_matlab) and variable_revision_number == 2:
             # Added allow overlap, default = False
             setting_values = setting_values + [ cps.NO ]
             variable_revision_number = 3
-        
+
         return setting_values, variable_revision_number, from_matlab

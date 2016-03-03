@@ -1,22 +1,13 @@
 # imagej.imageprocessor.py - utilities for image processors
-#
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-#
-# Developed by the Broad Institute
-# Copyright 2003-2010
-# 
-# Please see the AUTHORS file for credits.
-#
-# Website: http://www.cellprofiler.org
-#
-import numpy as np
+
 import bioformats
 import javabridge as J
+import numpy as np
+
 
 def get_image(imageprocessor_obj, do_scaling = False):
     '''Retrieve the image from an ImageProcessor
-    
+
     Returns the image as a numpy float array.
     '''
     #
@@ -41,10 +32,10 @@ def get_image(imageprocessor_obj, do_scaling = False):
 
 def make_image_processor(array):
     '''Create an image processor from the given image
-    
+
     array - an array that will be cast to double. Values should be
             between 0 and 255
     '''
     return J.make_instance(
-        'ij/process/FloatProcessor', '(II[D)V', 
+        'ij/process/FloatProcessor', '(II[D)V',
         array.shape[1], array.shape[0], array)

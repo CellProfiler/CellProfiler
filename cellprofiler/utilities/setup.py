@@ -1,23 +1,11 @@
 """cellprofiler.utilities.setup - compiling files in the utilities module
-
-CellProfiler is distributed under the GNU General Public License,
-but this file is licensed under the more permissive BSD license.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 __test__=False
 
 import logging
 import os
-import sys
 import subprocess
+import sys
 import traceback
 
 logger = logging.getLogger(__name__)
@@ -46,7 +34,7 @@ if not hasattr(sys, 'frozen'):
                                      sources=["get_proper_case_filename.c"],
                                      libraries=["shlwapi", "shell32", "ole32"],
                                      extra_link_args=extra_link_args)]
-            
+
         dict = { "name":"utilities",
                  "description":"utility module for CellProfiler",
                  "maintainer":"Lee Kamentsky",
@@ -60,5 +48,3 @@ if __name__ == '__main__':
     if '/' in __file__:
         os.chdir(os.path.dirname(__file__))
     setup(**configuration())
-    
-

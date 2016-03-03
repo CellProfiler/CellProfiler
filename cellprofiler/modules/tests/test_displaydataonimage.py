@@ -1,25 +1,15 @@
 ''' test_displaydataonimage - test the DisplayDataOnImage module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
-
 import base64
-import numpy as np
-from StringIO import StringIO
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.workspace as cpw
@@ -69,7 +59,7 @@ class TestDisplayDataOnImage(unittest.TestCase):
         self.assertEqual(module.objects_or_image, D.OI_IMAGE)
         self.assertEqual(module.display_image, "OrigDataDisp")
         self.assertEqual(module.saved_image_contents, "Image")
-        
+
     def test_01_01_load_v1(self):
         data = ('eJztWt1u2zYUphInS1Zga7EC7U0BXg5FIshds7a+qZJ6WQ0kdrAY7XbV0RLt'
                 'cKBFQ6LSuFe97KPsEfpYfYSRshRJhBLJsuOfQQIE+1D8zvfx8BxGoXl62D05'
@@ -110,7 +100,7 @@ class TestDisplayDataOnImage(unittest.TestCase):
         self.assertEqual(module.text_color, "blue")
         self.assertEqual(module.display_image, "Display")
         self.assertEqual(module.saved_image_contents, "Figure")
-        
+
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -201,7 +191,7 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
                          D.CMS_USE_MEASUREMENT_RANGE)
         self.assertEqual(module.color_map_scale.min, 0)
         self.assertEqual(module.color_map_scale.max, 1)
-        
+
     def test_01_06_load_v6(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -272,7 +262,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module = pipeline.modules()[1]
         self.assertEqual(module.color_map_scale_choice,
                          D.CMS_USE_MEASUREMENT_RANGE)
-        
+
     def make_workspace(self, measurement, labels = None, image = None):
         object_set = cpo.ObjectSet()
         module = D.DisplayDataOnImage()
@@ -281,7 +271,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.display_image.value = OUTPUT_IMAGE_NAME
         module.objects_name.value = OBJECTS_NAME
         m = cpmeas.Measurements()
-        
+
         if labels is None:
             module.objects_or_image.value = D.OI_IMAGE
             m.add_image_measurement(MEASUREMENT_NAME, measurement)
@@ -299,28 +289,28 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             if image is None:
                 image = np.zeros(labels.shape)
         module.measurement.value = MEASUREMENT_NAME
-        
+
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
-        
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(INPUT_IMAGE_NAME,cpi.Image(image))
-        
+
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
                                   m, image_set_list)
         return workspace, module
-        
+
     def test_02_01_display_image(self):
         for display in (D.E_AXES, D.E_FIGURE, D.E_IMAGE):
             workspace, module = self.make_workspace(0)
             module.saved_image_contents.value = display
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    
+
     def test_02_02_display_objects(self):
         labels = np.zeros((50,120),int)
         labels[10:20,20:27] = 1
@@ -331,12 +321,12 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             module.saved_image_contents.value = display
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-    
+
     def test_02_03_display_no_objects(self):
         workspace, module = self.make_workspace([], np.zeros((50,120)))
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        
+
     def test_02_04_display_nan_objects(self):
         labels = np.zeros((50,120),int)
         labels[10:20,20:27] = 1
@@ -346,7 +336,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             workspace, module = self.make_workspace(measurements, labels)
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        
+
     def test_02_05_display_objects_wrong_size(self):
         labels = np.zeros((50,120),int)
         labels[10:20,20:27] = 1
@@ -358,7 +348,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             module.saved_image_contents.value = display
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            
+
     def test_02_06_display_colors(self):
         labels = np.zeros((50,120),int)
         labels[10:20,20:27] = 1
@@ -369,7 +359,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.color_or_text.value = D.CT_COLOR
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        
+
     def test_02_07_display_colors_missing_measurement(self):
         #
         # Regression test of issue 1084
@@ -383,7 +373,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.color_or_text.value = D.CT_COLOR
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        
+
     def test_02_08_display_colors_nan_measurement(self):
         #
         # Regression test of issue 1084
@@ -397,7 +387,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.color_or_text.value = D.CT_COLOR
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        
+
     def test_02_09_display_colors_manual(self):
         #
         # Just run the code path for manual color map scale
@@ -414,4 +404,3 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.color_map_scale.max = 3.0
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        

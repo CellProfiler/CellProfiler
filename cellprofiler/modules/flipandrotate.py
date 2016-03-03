@@ -5,15 +5,6 @@
 <li><i>Rotation:</i> Angle of rotation for the input image.</li>
 </ul>
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
 
 import numpy as np
 import scipy.ndimage as scind
@@ -52,55 +43,55 @@ M_ROTATION_CATEGORY = "Rotation"
 M_ROTATION_F = "%s_%%s"% M_ROTATION_CATEGORY
 
 class FlipAndRotate(cpm.CPModule):
- 
+
     category = 'Image Processing'
     variable_revision_number = 2
     module_name = 'FlipAndRotate'
-    
+
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image", cps.NONE)
-        
+
         self.output_name = cps.ImageNameProvider(
-            "Name the output image", 
+            "Name the output image",
             "FlippedOrigBlue")
-        
+
         self.flip_choice = cps.Choice(
             "Select method to flip image",
             FLIP_ALL, doc = """
             Select how the image is to be flipped.""")
-        
+
         self.rotate_choice = cps.Choice(
             "Select method to rotate image",
             ROTATE_ALL, doc='''
             <ul>
             <li><i>%(ROTATE_NONE)s:</i> Leave the image unrotated. This should be used
             if you want to flip the image only.</li>
-            <li><i>%(ROTATE_ANGLE)s:</i> Provide the numerical angle by which the 
+            <li><i>%(ROTATE_ANGLE)s:</i> Provide the numerical angle by which the
             image should be rotated.</li>
-            <li><i>%(ROTATE_COORDINATES)s:</i> Provide the X,Y pixel locations of 
-            two points in the image that should be aligned horizontally or 
-            vertically.</li> 
-            <li><i>%(ROTATE_MOUSE)s:</i> CellProfiler will pause so you can select the 
-            rotation interactively. When prompted during the analysis run, grab the image by 
-            clicking the left mouse button, rotate the image by 
-            dragging with the mouse, then release the mouse button. Press the <i>Done</i> button on the image 
+            <li><i>%(ROTATE_COORDINATES)s:</i> Provide the X,Y pixel locations of
+            two points in the image that should be aligned horizontally or
+            vertically.</li>
+            <li><i>%(ROTATE_MOUSE)s:</i> CellProfiler will pause so you can select the
+            rotation interactively. When prompted during the analysis run, grab the image by
+            clicking the left mouse button, rotate the image by
+            dragging with the mouse, then release the mouse button. Press the <i>Done</i> button on the image
             after rotating the image appropriately.</li>
             </ul>'''%globals())
-        
+
         self.wants_crop = cps.Binary(
             "Crop away the rotated edges?", True, doc='''
-            <i>(Used only when rotating images)</i> <br> 
-            When an image is rotated, there will be black space at the 
-            corners/edges; select <i>%(YES)s</i> to crop away the incomplete rows 
+            <i>(Used only when rotating images)</i> <br>
+            When an image is rotated, there will be black space at the
+            corners/edges; select <i>%(YES)s</i> to crop away the incomplete rows
             and columns of the image, or select <i>%(NO)s</i> to leave it as-is.
-            <p>This cropping will produce an image that 
-            is not exactly the same size as the original, which may affect 
+            <p>This cropping will produce an image that
+            is not exactly the same size as the original, which may affect
             downstream modules.</p>'''%globals())
-                
+
         self.how_often = cps.Choice("Calculate rotation",
             IO_ALL, doc = '''
-            <i>(Used only when using "%(ROTATE_MOUSE)s" to rotate images)</i> <br> 
+            <i>(Used only when using "%(ROTATE_MOUSE)s" to rotate images)</i> <br>
             Select the cycle(s) at which the calculation is requested and calculated.
             <ul>
             <li><i>%(IO_INDIVIDUALLY)s:</i> Determine the amount of rotation for each image
@@ -108,34 +99,34 @@ class FlipAndRotate(cpm.CPModule):
             <li><i>%(IO_ONCE)s:</i> Define the rotation only once (on the first image), then
             then apply it to all images.</li>
             </ul>'''%globals())
-        
+
         self.first_pixel = cps.Coordinates(
             "Enter coordinates of the top or left pixel", (0,0))
-        
+
         self.second_pixel = cps.Coordinates(
             "Enter the coordinates of the bottom or right pixel", (0,100))
-        
+
         self.horiz_or_vert = cps.Choice(
             "Select how the specified points should be aligned",
             C_ALL, doc = """
             <i>(Used only when using "%(ROTATE_COORDINATES)s" to rotate images)</i><br>
-            Specify whether you would like the coordinate points that 
-            you entered to be horizontally or 
+            Specify whether you would like the coordinate points that
+            you entered to be horizontally or
             vertically aligned after the rotation is complete."""%globals())
-        
+
         self.angle = cps.Float(
             "Enter angle of rotation", 0, doc = """
-            <i>(Used only when using "%(ROTATE_ANGLE)s" to rotate images)</i> <br> 
-            Enter the angle you would like to rotate the image. 
-            This setting is in degrees, with positive angles corresponding 
+            <i>(Used only when using "%(ROTATE_ANGLE)s" to rotate images)</i> <br>
+            Enter the angle you would like to rotate the image.
+            This setting is in degrees, with positive angles corresponding
             to counterclockwise and negative as clockwise."""%globals())
-    
+
     def settings(self):
         return [self.image_name, self.output_name, self.flip_choice,
                 self.rotate_choice, self.wants_crop, self.how_often,
                 self.first_pixel, self.second_pixel, self.horiz_or_vert,
                 self.angle]
-    
+
     def visible_settings(self):
         result = [self.image_name, self.output_name, self.flip_choice,
                   self.rotate_choice]
@@ -152,22 +143,22 @@ class FlipAndRotate(cpm.CPModule):
             raise NotImplementedError("Unimplemented rotation choice: %s"%
                                       self.rotate_choice.value)
         return result
-    
+
     def prepare_group(self, workspace, grouping,
                       image_numbers):
         '''Initialize the angle if appropriate'''
         if self.rotate_choice == ROTATE_MOUSE and self.how_often == IO_ONCE:
             self.get_dictionary(workspace.image_set_list)[D_ANGLE] = None
-        
+
     def run(self, workspace):
         image_set = workspace.image_set
         image = image_set.get_image(self.image_name.value)
         pixel_data = image.pixel_data.copy()
         mask = image.mask
-        
+
         if self.flip_choice != FLIP_NONE:
             if self.flip_choice == FLIP_LEFT_TO_RIGHT:
-                i,j = np.mgrid[0:pixel_data.shape[0], 
+                i,j = np.mgrid[0:pixel_data.shape[0],
                                pixel_data.shape[1]-1:-1:-1]
             elif self.flip_choice == FLIP_TOP_TO_BOTTOM:
                 i,j = np.mgrid[pixel_data.shape[0]-1:-1:-1,
@@ -183,7 +174,7 @@ class FlipAndRotate(cpm.CPModule):
                 pixel_data = pixel_data[i,j]
             else:
                 pixel_data = pixel_data[i,j,:]
-                
+
         if self.rotate_choice != ROTATE_NONE:
             if self.rotate_choice == ROTATE_ANGLE:
                 angle = self.angle.value
@@ -199,7 +190,7 @@ class FlipAndRotate(cpm.CPModule):
                                               self.horiz_or_vert.value)
             elif self.rotate_choice == ROTATE_MOUSE:
                 d = self.get_dictionary()
-                if (self.how_often == IO_ONCE and d.has_key(D_ANGLE) and 
+                if (self.how_often == IO_ONCE and d.has_key(D_ANGLE) and
                     d[D_ANGLE] is not None):
                         angle = d[D_ANGLE]
                 else:
@@ -211,7 +202,7 @@ class FlipAndRotate(cpm.CPModule):
                 raise NotImplementedError("Unknown rotation method: %s" %
                                           self.rotate_choice.value)
             rangle = angle * np.pi / 180.0
-            mask = scind.rotate(mask.astype(float), angle, 
+            mask = scind.rotate(mask.astype(float), angle,
                                 reshape = True) > .50
             crop = scind.rotate(np.ones(pixel_data.shape[:2]), angle,
                                 reshape = True) > .50
@@ -356,9 +347,9 @@ class FlipAndRotate(cpm.CPModule):
             offset = affine_offset(pixel_data.shape, transform)
             x = np.dstack((scind.affine_transform(pixel_data[:,:,0], transform,
                                                   offset, order=0),
-                           scind.affine_transform(pixel_data[:,:,1], transform, 
+                           scind.affine_transform(pixel_data[:,:,1], transform,
                                                   offset, order=0),
-                           scind.affine_transform(pixel_data[:,:,2], transform, 
+                           scind.affine_transform(pixel_data[:,:,2], transform,
                                                   offset, order=0)))
             buff = x.astype(np.uint8).tostring()
             bitmap = wx.BitmapFromBuffer(x.shape[1],
@@ -378,7 +369,7 @@ class FlipAndRotate(cpm.CPModule):
             point = np.array(event.GetPositionTuple())
             offset = point - center
             return -np.arctan2(offset[1],offset[0]) * 180.0 / np.pi
-        
+
         def on_mouse_down(event):
             canvas.Cursor = hand_cursor
             dragging[0] = True
@@ -405,7 +396,7 @@ class FlipAndRotate(cpm.CPModule):
         # Put the OK and Cancel buttons on the bottom
         #
         btnsizer = wx.StdDialogButtonSizer()
-        
+
         btn = wx.Button(dialog, wx.ID_OK)
         btn.SetDefault()
         btnsizer.AddButton(btn)
@@ -421,21 +412,21 @@ class FlipAndRotate(cpm.CPModule):
         if result == wx.ID_OK:
             return angle[0]
         raise ValueError("Canceled by user in FlipAndRotate")
-    
+
     def get_measurement_columns(self, pipeline):
         return [(cpmeas.IMAGE, M_ROTATION_F % self.output_name.value,
                  cpmeas.COLTYPE_FLOAT)]
-    
+
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
             return [ M_ROTATION_CATEGORY ]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name != cpmeas.IMAGE or category != M_ROTATION_CATEGORY:
             return []
         return [self.output_name.value]
-        
+
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
         if (from_matlab and variable_revision_number == 2 and
@@ -478,12 +469,12 @@ class FlipAndRotate(cpm.CPModule):
             else:
                 flip_choice = FLIP_NONE
             setting_values = [image_name, output_name, flip_choice,
-                              ROTATE_NONE, cps.NO, "10,10", 
+                              ROTATE_NONE, cps.NO, "10,10",
                               "100,100", C_VERTICALLY, "0"]
             from_matlab = False
             module_name = self.module_name
             variable_revision_number = 2
-        if (from_matlab and variable_revision_number == 1 and 
+        if (from_matlab and variable_revision_number == 1 and
             module_name == self.module_name):
             if setting_values[2] == cps.YES:
                 if setting_values[3] == cps.YES:
@@ -522,14 +513,13 @@ class FlipAndRotate(cpm.CPModule):
 
 def affine_offset(shape, transform):
     '''Calculate an offset given an array's shape and an affine transform
-    
+
     shape - the shape of the array to be transformed
     transform - the transform to be performed
-    
+
     Return an offset for scipy.ndimage.affine_transform that does not
     transform the location of the center of the image (the image rotates
     or is flipped about the center).
     '''
     c = (np.array(shape[:2])-1).astype(float)/2.0
     return -np.dot(transform - np.identity(2), c)
-    

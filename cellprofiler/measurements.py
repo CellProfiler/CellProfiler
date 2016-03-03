@@ -1,22 +1,11 @@
 """Measurements.py - storage for image and object measurements
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 from __future__ import with_statement
 
-
-import h5py
 import json
 import logging
+
+import h5py
 logger = logging.getLogger(__name__)
 import numpy as np
 import re
@@ -219,7 +208,7 @@ def get_length_from_varchar(x):
 
 def make_temporary_file():
     '''Make a temporary file to use for backing measurements data
-    
+
     returns a file descriptor (that should be closed when done) and a
     file name.
     '''
@@ -228,7 +217,7 @@ def make_temporary_file():
         dir = None
     return tempfile.mkstemp(
         prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
-    
+
 class Measurements(object):
     """Represents measurements made on images and objects
     """
@@ -248,9 +237,9 @@ class Measurements(object):
         filename - store the measurement in an HDF5 file with this name
         copy - initialize by copying measurements from here, either an HDF5Dict
                or an H5py group or file.
-        mode - open mode for the HDF5 file. 
-               "r" for read-only access to an existing measurements file, 
-               "w" to open a new file or truncate an old file, 
+        mode - open mode for the HDF5 file.
+               "r" for read-only access to an existing measurements file,
+               "w" to open a new file or truncate an old file,
                "w-" to open a new file and fail if the file exists,
                "w+" to create a new measurements instance in an existing file,
                "a" to create a new file or open an existing file as read/write
@@ -281,7 +270,7 @@ class Measurements(object):
         if isinstance(copy, Measurements):
             with copy.hdf5_dict.lock:
                 self.hdf5_dict = HDF5Dict(
-                    filename, 
+                    filename,
                     is_temporary = is_temporary,
                     copy = copy.hdf5_dict.top_group,
                     mode = mode,
@@ -298,7 +287,7 @@ class Measurements(object):
         elif copy is not None:
             raise ValueError('Copy source for measurments is neither a Measurements or HDF5 group.')
         else:
-            self.hdf5_dict = HDF5Dict(filename, 
+            self.hdf5_dict = HDF5Dict(filename,
                                       is_temporary = is_temporary,
                                       mode = mode)
         if is_temporary:
@@ -365,10 +354,10 @@ class Measurements(object):
                 logger.warn("So sorry: Failed to delete temporary file, %s" %
                             self.__image_cache_path, exc_info=True)
             del self.__image_cache_path
-        
+
     def __getitem__(self, key):
         # we support slicing the last dimension for the limited case of [..., :]
-        if (len(key) == 3 and 
+        if (len(key) == 3 and
             isinstance(key[2], slice) and
             key[2] == slice(None, None, None)):
             return self.get_all_measurements(*key[:2])
@@ -481,7 +470,7 @@ class Measurements(object):
             object_counts = np.zeros(0, int)
             for feature_name in omeas.dtype.fields.keys():
                 if object_name == IMAGE:
-                    values = [None if len(x) == 0 else x.flatten()[0] 
+                    values = [None if len(x) == 0 else x.flatten()[0]
                               for x in omeas[feature_name][0]]
                 elif object_name == EXPERIMENT:
                     value = omeas[feature_name][0, 0].flatten()[0]
@@ -498,7 +487,7 @@ class Measurements(object):
                         if len(temp) > 0:
                             object_counts[:len(temp)] = temp
                     object_counts[:len(values)] = np.maximum(
-                        object_counts[:len(values)], 
+                        object_counts[:len(values)],
                         np.array([len(x) for x in values]))
                 self.add_all_measurements(object_name,
                                           feature_name,
@@ -545,14 +534,14 @@ class Measurements(object):
         self.add_image_measurement(GROUP_INDEX, group_index)
 
     group_index = property(get_group_index, set_group_index)
-    
+
     def get_groupings(self, features):
         '''Return groupings of image sets based on feature values
-        
+
         features - a sequence of feature names
-                   
+
         returns groupings suitable for return from CPModule.get_groupings.
-        
+
         group_list - a sequence composed of two-tuples.
                      the first element of the tuple is a dictionary giving
                      the metadata values for the metadata keys
@@ -573,7 +562,7 @@ class Measurements(object):
                 d[key] = []
             d[key].append(image_number)
         return [ (dict(k), d[k]) for k in sorted(d.keys()) ]
-            
+
 
     def get_relationship_hdf5_group(self, module_number, relationship,
                                     object_name1, object_name2):
@@ -584,7 +573,7 @@ class Measurements(object):
                 .require_group(relationship) \
                 .require_group(object_name1) \
                 .require_group(object_name2)
-    
+
     def add_relate_measurement(
         self, module_number,
         relationship,
@@ -611,13 +600,13 @@ class Measurements(object):
         object name for object_name1 and object_name2 and the same group
         index - that of the current image. Relating would have different object
         names and TrackObjects would have different group indices.
-        
+
         The structure in the HDF file:
         Measurements / <date> / Relationship / <module #> /
            <relationship-name> / <object-name-1> / <object-name-2> /
-           [ImageNumber_First, ObjectNumber_First, 
+           [ImageNumber_First, ObjectNumber_First,
             ImageNumber_Second, ObjectNumber_Second]
-        
+
         The leaves are vector datasets.
         '''
         if len(image_numbers1) == 0:
@@ -625,22 +614,22 @@ class Measurements(object):
         with self.hdf5_dict.lock:
             rgroup = self.get_relationship_hdf5_group(
                 module_number, relationship, object_name1, object_name2)
-            
+
             for name, values in ((R_FIRST_IMAGE_NUMBER, image_numbers1),
                                  (R_FIRST_OBJECT_NUMBER, object_numbers1),
                                  (R_SECOND_IMAGE_NUMBER, image_numbers2),
                                  (R_SECOND_OBJECT_NUMBER, object_numbers2)):
                 if name not in rgroup:
                     current_size = 0
-                    rgroup.create_dataset(name, data=values, 
-                                          dtype='int32', chunks=(1024,), 
+                    rgroup.create_dataset(name, data=values,
+                                          dtype='int32', chunks=(1024,),
                                           maxshape=(None,))
                 else:
                     dset = rgroup[name]
                     current_size = dset.shape[0]
                     dset.resize((current_size + len(values),))
                     dset[current_size:] = values
-            key = (module_number, relationship, 
+            key = (module_number, relationship,
                    object_name1, object_name2)
             self.__relationships.add(key)
             if key not in self.__image_number_relationships:
@@ -666,21 +655,21 @@ class Measurements(object):
         return [RelationshipKey(module_number, relationship, obj1, obj2) for
                 (module_number, relationship, obj1, obj2) in self.__relationships]
 
-    def get_relationships(self, module_number, relationship, 
+    def get_relationships(self, module_number, relationship,
                           object_name1, object_name2,
                           image_numbers = None):
         '''Get the relationships recorded by a particular module
-        
+
         module_number - # of module recording the relationship
-        
+
         relationship - the name of the relationship, e.g. "Parent" for
                        object # 1 is parent of object # 2
-                       
+
         object_name1, object_name2 - the names of the two objects
-        
+
         image_numbers - if defined, only return relationships with first or
                         second objects in these image numbers.
-        
+
         returns a recarray with the following fields:
         R_FIRST_IMAGE_NUMBER, R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
         R_SECOND_OBJECT_NUMBER
@@ -741,38 +730,38 @@ class Measurements(object):
                 for feature in features:
                     temp[feature] = grp[feature][t_min:t_max][mask]
             return temp.view(np.recarray)
-    
-    @staticmethod    
+
+    @staticmethod
     def init_image_number_relationships(grp):
         '''Create a dictionary of where to find image numbers in a relationship
-        
+
         grp - the HDF5 group of the relationship
-        
+
         returns a dictionary whose key is image number and whose value
         is a pair of the minimum and maximum position in the array of that
         image number.
         '''
         d = {}
         chunk_size = 1000000
-        for imgnums in (grp[R_FIRST_IMAGE_NUMBER], 
+        for imgnums in (grp[R_FIRST_IMAGE_NUMBER],
                         grp[R_SECOND_IMAGE_NUMBER]):
             for i in range(0, imgnums.shape[0], chunk_size):
                 limit = min(imgnums.shape[0], i+chunk_size)
                 Measurements.update_image_number_relationships(
                     imgnums[i:limit], i, d)
         return d
-    
+
     @staticmethod
     def update_image_number_relationships(imgnums, offset, d):
         '''Update an image number indexing dictionary with new image numbers
-        
+
         imgnums - a vector of image numbers
-        
+
         offset - the offset of this chunk within the relationships records
-        
+
         d - the dictionary to update
         '''
-    
+
         offsets = offset+np.arange(len(imgnums))
         order = np.lexsort((offsets, imgnums))
         imgnums = imgnums[order]
@@ -783,23 +772,23 @@ class Measurements(object):
             imgnums[firsts], offsets[firsts], offsets[lasts]):
             old_f, old_l = d.get(i, (sys.maxint, 0))
             d[i] = (min(old_f, f), max(old_l, l))
-        
+
     def copy_relationships(self, src):
         '''Copy the relationships from another measurements file
-        
+
         src - a Measurements possibly having relationships.
         '''
         for rk in src.get_relationship_groups():
             r = src.get_relationships(
-                rk.module_number, rk.relationship, 
+                rk.module_number, rk.relationship,
                 rk.object_name1, rk.object_name2)
             self.add_relate_measurement(
-                rk.module_number, rk.relationship, 
+                rk.module_number, rk.relationship,
                 rk.object_name1, rk.object_name2,
                 r[R_FIRST_IMAGE_NUMBER], r[R_FIRST_OBJECT_NUMBER],
                 r[R_SECOND_IMAGE_NUMBER], r[R_SECOND_OBJECT_NUMBER])
 
-    def add_measurement(self, object_name, feature_name, data, 
+    def add_measurement(self, object_name, feature_name, data,
                         can_overwrite=False, image_set_number=None,
                         data_type =  None):
         """Add a measurement or, for objects, an array of measurements to the set
@@ -849,15 +838,15 @@ class Measurements(object):
                 if not self.hdf5_dict.has_data(IMAGE, IMAGE_NUMBER, n):
                     self.hdf5_dict[IMAGE, IMAGE_NUMBER, n] = n
                 if ((not self.hdf5_dict.has_data(
-                    object_name, OBJECT_NUMBER, n)) and 
+                    object_name, OBJECT_NUMBER, n)) and
                     (d is not None)):
                     self.hdf5_dict[object_name, IMAGE_NUMBER, n] = [n] * len(d)
                 self.hdf5_dict[object_name, OBJECT_NUMBER, n] =\
                     np.arange(1, len(d) + 1)
-                
+
     def remove_measurement(self, object_name, feature_name, image_number=None):
         '''Remove the measurement for the given image number
-        
+
         object_name - the measurement's object. If other than Image or Experiment,
                       will remove measurements for all objects
         feature_name - name of the measurement feature
@@ -867,7 +856,7 @@ class Measurements(object):
             del self.hdf5_dict[object_name, feature_name]
         else:
             del self.hdf5_dict[object_name, feature_name, image_number]
-        
+
     def clear(self):
         '''Remove all measurements'''
         self.hdf5_dict.clear()
@@ -884,23 +873,23 @@ class Measurements(object):
         """The list of feature names (measurements) for an object
         """
         return [name for name in self.hdf5_dict.second_level_names(object_name) if name not in ('ImageNumber', 'ObjectNumber')]
-    
+
     def get_image_numbers(self):
         '''Return the image numbers from the Image table'''
         image_numbers = np.array(
             self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER).keys(), int)
         image_numbers.sort()
         return image_numbers
-    
+
     def reorder_image_measurements(self, new_image_numbers):
         '''Assign all image measurements to new image numbers
-        
+
         new_image_numbers - a zero-based array that maps old image number
-                            to new image number, e.g. if 
+                            to new image number, e.g. if
                             new_image_numbers = [ 0, 3, 1, 2], then
                             the measurements for old image number 1 will
                             be the measurements for new image number 3, etc.
-                            
+
         Note that this does not handle any image numbers that might be stored
         in the measurements themselves. It is intended for use in
         prepare_run when it is necessary to reorder image numbers because
@@ -934,7 +923,7 @@ class Measurements(object):
             return v.encode('unicode_escape')
         return v
 
-        
+
     @staticmethod
     def unwrap_string(v):
         # hdf5 returns string columns as a wrapped type
@@ -946,16 +935,16 @@ class Measurements(object):
         if getattr(v, "__class__") == str:
             return v.decode('unicode_escape')
         return v
-    
+
     def get_measurement(self, object_name, feature_name, image_set_number=None):
         """Return the value for the named measurement and indicated image set
-        
+
         object_name - the name of one of the objects or one of the generic
                       names such as Image or Experiment
-                      
-        feature_name - the name of the feature to retrieve 
-        
-        image_set_number - the current image set by default, a single 
+
+        feature_name - the name of the feature to retrieve
+
+        image_set_number - the current image set by default, a single
                            image set number to get measurements for one
                            image set or a sequence of image numbers to
                            return measurements for each of the image sets
@@ -974,13 +963,13 @@ class Measurements(object):
                 if vals is None or len(vals) == 0:
                     return None
                 if len(vals) == 1:
-                    return Measurements.unwrap_string(vals[0]) 
+                    return Measurements.unwrap_string(vals[0])
                 return vals
             else:
                 measurement_dtype = self.hdf5_dict.get_feature_dtype(
                     object_name, feature_name)
                 if h5py.check_dtype(vlen = measurement_dtype) == str:
-                    result = [ Measurements.unwrap_string(v[0]) 
+                    result = [ Measurements.unwrap_string(v[0])
                                if v is not None else None
                                for v in vals]
                 elif measurement_dtype == np.uint8:
@@ -1003,15 +992,15 @@ class Measurements(object):
         if np.isscalar(image_set_number):
             return np.array([]) if vals is None else vals.flatten()
         return [np.array([]) if v is None else v.flatten() for v in vals]
-    
+
     def get_measurement_columns(self):
         '''Return the measurement columns for the current measurements
-        
+
         This returns the measurement columns in the style of
         pipeline.get_measurement_columns. It can be used for cases where
         the measurements are loaded from a file and do not reflect
         current module functionality.
-        
+
         Note that this doesn't correctly differentiate string data and blob
         data.
         '''
@@ -1061,7 +1050,7 @@ class Measurements(object):
                 IMAGE, IMAGE_NUMBER, image_numbers)
         else:
             image_numbers = self.get_image_numbers()
-        self.hdf5_dict.add_all(object_name, feature_name, values, 
+        self.hdf5_dict.add_all(object_name, feature_name, values,
                                image_numbers, data_type=data_type)
 
     def get_experiment_measurement(self, feature_name):
@@ -1069,7 +1058,7 @@ class Measurements(object):
         """
         result = self.get_measurement(EXPERIMENT, feature_name)
         return 'N/A' if result is None else result
-    
+
     def apply_metadata(self, pattern, image_set_number=None):
         """Apply metadata from the current measurements to a pattern
 
@@ -1081,13 +1070,13 @@ class Measurements(object):
                      if metadata is not associated with an image)
         image_set_number - # of image set to use to retrieve data.
                            None for current.
-        
+
         C_SERIES and C_FRAME are special cases. We look at the series/frame
         values for all images in the image set and take the one that's the
         highest - assuming that there may be a stack + a single image like
         one used for background subtraction. Admittedly a heuristic, but
         there it is.
-        
+
         returns a string with the metadata tags replaced by the metadata
         """
         if image_set_number is None:
@@ -1126,7 +1115,7 @@ class Measurements(object):
 
     def has_groups(self):
         '''Return True if there is more than one group in the image sets
-        
+
         Note - this works the dumb way now: it fetches all of the group numbers
                and sees if there is a single unique group number. It involves
                fetching the whole column and it doesn't cache, so it could
@@ -1173,23 +1162,23 @@ class Measurements(object):
             tag_dictionary = dict(row)
             result.append(MetadataGroup(tag_dictionary, flat_dictionary[row]))
         return result
-    
+
     def match_metadata(self, features, values):
         '''Match vectors of metadata values to existing measurements
-        
+
         This method finds the image sets that match each row in a vector
         of metadata values. Imagine being given an image set with metadata
         values of plate, well and site and annotations for each well
         with metadata values of plate and well and annotation. You'd like
         to match each annotation with all of the sites for it's well. This
         method will return the image numbers that match.
-        
+
         The method can also be used to match images, for instance when
         different illumination correction functions need to be matched
         against plates or sites.
-        
+
         features - the measurement names for the incoming metadata
-        
+
         values - a sequence of vectors, one per feature, giving the
                  metadata values to be matched.
 
@@ -1208,7 +1197,7 @@ class Measurements(object):
         by_order = [[i+1] for i in range(len(values[0]))]
         if image_set_count == 0:
             return by_order
-        
+
         image_features = self.get_feature_names(IMAGE)
         metadata_features = [x for x in image_features
                              if x.startswith(C_METADATA + "_")]
@@ -1227,10 +1216,10 @@ class Measurements(object):
             if isinstance(x,basestring) and x.isdigit():
                 return int(x)
             return x
-        
+
         common_tags = [f[(len(C_METADATA)+1):] for f in common_features]
         groupings = self.group_by_metadata(common_tags)
-        groupings = dict([(tuple([cast(d[f]) for f in common_tags]), 
+        groupings = dict([(tuple([cast(d[f]) for f in common_tags]),
                            d.image_numbers)
                           for d in groupings])
         if image_set_count == len(values[0]):
@@ -1258,7 +1247,7 @@ class Measurements(object):
                                for k,v in zip(common_features, key)]))
             result.append(groupings[key])
         return result
-        
+
     def agg_ignore_object(self, object_name):
         """Ignore objects (other than 'Image') if this returns true"""
         if object_name in (EXPERIMENT, NEIGHBORS):
@@ -1313,16 +1302,16 @@ class Measurements(object):
                     stdev = values.std() if values is not None else np.NaN
                     d[stdev_feature_name] = stdev
         return d
-    
+
     def load_image_sets(self, fd_or_file, start=None, stop=None):
         '''Load image sets from a .csv file into a measurements file
-        
+
         fd_or_file - either the path name of the .csv file or a file-like object
-        
+
         start - the 1-based image set number to start the loading. For instance,
                 for start = 2, we skip the first line and write image
                 measurements starting at line 2 into image set # 2
-                
+
         stop - stop loading when this line is reached.
         '''
         if isinstance(fd_or_file, basestring):
@@ -1367,24 +1356,24 @@ class Measurements(object):
                         column = column.astype(float)
                     except:
                         column = np.array(
-                            [Measurements.wrap_string(x) for x in column], 
+                            [Measurements.wrap_string(x) for x in column],
                             object)
                 self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
-                
+
     def write_image_sets(self, fd_or_file, start = None, stop = None):
         if isinstance(fd_or_file, basestring):
             with open(fd_or_file, "w") as fd:
                 return self.write_image_sets(fd, start, stop)
-        
+
         fd = fd_or_file
-        
+
         to_save = [ GROUP_NUMBER, GROUP_INDEX]
         to_save_prefixes = [
             C_URL, C_PATH_NAME, C_FILE_NAME, C_SERIES, C_FRAME,
             C_CHANNEL, C_OBJECTS_URL, C_OBJECTS_PATH_NAME,
             C_OBJECTS_FILE_NAME, C_OBJECTS_SERIES, C_OBJECTS_FRAME,
             C_OBJECTS_CHANNEL, C_METADATA]
-        
+
         keys = []
         image_features = self.get_feature_names(IMAGE)
         for feature in to_save:
@@ -1401,11 +1390,11 @@ class Measurements(object):
             image_numbers = [x for x in image_numbers if x >= start]
         if stop is not None:
             image_numbers = [x for x in image_numbers if x <= stop]
-            
+
         if len(image_numbers) == 0:
             return
-        
-        columns = [self.get_measurement(IMAGE, feature_name, 
+
+        columns = [self.get_measurement(IMAGE, feature_name,
                                         image_set_number = image_numbers)
                    for feature_name in keys]
         for i, image_number in enumerate(image_numbers):
@@ -1424,10 +1413,10 @@ class Measurements(object):
                 else:
                     fd.write(field)
             fd.write("\n")
-            
+
     def alter_path_for_create_batch(self, name, is_image, fn_alter_path):
         '''Alter the path of image location measurements for CreateBatchFiles
-        
+
         name - name of the image or objects
         is_image - True to load as an image, False to load as objects
         fn_later_path - call this function to alter the path for batch processing
@@ -1444,9 +1433,9 @@ class Measurements(object):
         path_feature, file_feature, url_feature = [
             "_".join((f, name))
             for f in (path_feature, file_feature, url_feature)]
-        
+
         all_image_numbers = self.get_image_numbers()
-        urls = self.get_measurement(IMAGE, url_feature, 
+        urls = self.get_measurement(IMAGE, url_feature,
                                     image_set_number=all_image_numbers)
 
         new_urls = []
@@ -1460,26 +1449,26 @@ class Measurements(object):
             new_urls.append(new_url)
         if any([url != new_url for url, new_url in zip(urls, new_urls)]):
             self.add_all_measurements(IMAGE, url_feature, new_urls)
-            
+
         paths = self.get_measurement(IMAGE, path_feature,
                                      image_set_number = all_image_numbers)
         new_paths = [fn_alter_path(path) for path in paths]
         if any([path != new_path for path, new_path in zip(paths, new_paths)]):
             self.add_all_measurements(IMAGE, path_feature, new_paths)
-            
+
         filenames = self.get_measurement(IMAGE, file_feature,
                                          image_set_number = all_image_numbers)
         new_filenames = [fn_alter_path(filename) for filename in filenames]
         if any([filename != new_filename
                 for filename, new_filename in zip(filenames, new_filenames)]):
             self.add_all_measurements(IMAGE, file_feature, new_filenames)
-    
+
     def write_path_mappings(self, mappings):
         '''Write the mappings of local/remote dirs as an experiment measurement
-        
+
         This records the mappings of local and remote directories entered
         by the CreateBatchFiles module.
-        
+
         mappings - a sequence of two-tuples. The first tuple is the local
                    path and the second is the remote path (on the target
                    machine for the run)
@@ -1492,16 +1481,16 @@ class Measurements(object):
             }
         s = json.dumps(d)
         self.add_experiment_measurement(M_PATH_MAPPINGS, s)
-        
+
     def alter_url_post_create_batch(self, url):
         '''Apply CreateBatchFiles path mappings to an unmapped URL
-        
+
         This method can be run on the measurements output by CreateBatchFiles
         to map the paths of any URL that wasn't mapped by the alter-paths
         mechanism (e.g. URLs encoded in blobs)
-        
+
         url - the url to map
-        
+
         returns - a possibly mapped URL
         '''
         if not url.lower().startswith("file:"):
@@ -1527,22 +1516,22 @@ class Measurements(object):
         if isinstance(url, unicode):
             url = url.encode("utf-8")
         return url
-        
+
     ###########################################################
     #
     # Ducktyping measurements as image sets
     #
     ###########################################################
-    
+
     @property
     def image_number(self):
         '''The image number of the current image'''
         return self.image_set_number
-    
+
     @property
     def get_keys(self):
         '''The keys that uniquely identify the image set
-        
+
         Return key/value pairs for the metadata that specifies the site
         for the image set, for instance, plate / well / site. If image set
         was created by matching images by order, the image number will be
@@ -1554,30 +1543,30 @@ class Measurements(object):
         #              and cache.
         #
         return { IMAGE_NUMBER: str(self.image_number) }
-    
+
     def get_grouping_keys(self):
         '''Get a key, value dictionary that uniquely defines the group
-        
+
         returns a dictionary for the current image set's group where the
         key is the image feature name and the value is the value to match
         in the image measurements.
-        
+
         Note: this is somewhat legacy, from before GROUP_NUMBER was defined
               and the only way to determine which images were in a group
               was to get the metadata colums used to define groups and scan
               them for matches. Now, we just return { GROUP_NUMBER: value }
         '''
-        return { GROUP_NUMBER: 
+        return { GROUP_NUMBER:
                  self.get_current_image_measurement(GROUP_NUMBER) }
-    
-    def get_image(self, name, 
+
+    def get_image(self, name,
                   must_be_binary = False,
                   must_be_color = False,
                   must_be_grayscale = False,
                   must_be_rgb = False,
                   cache = True):
         """Return the image associated with the given name
-        
+
         name - name of the image within the image_set
         must_be_color - raise an exception if not a color image
         must_be_grayscale - raise an exception if not a grayscale image
@@ -1614,7 +1603,7 @@ class Measurements(object):
                 else:
                     index = None
                 #
-                # XXX (leek): Rescale needs to be bubbled up into 
+                # XXX (leek): Rescale needs to be bubbled up into
                 #             NamesAndTypes and needs to be harvested
                 #             from LoadImages etc.
                 #             and stored in the measurements.
@@ -1633,7 +1622,7 @@ class Measurements(object):
             raise ValueError("Image was not binary")
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
-        if (must_be_grayscale and 
+        if (must_be_grayscale and
             (image.pixel_data.ndim != 2)):
             pd = image.pixel_data
             if pd.shape[2] >= 3 and\
@@ -1653,40 +1642,40 @@ class Measurements(object):
                 logger.warning("Discarding alpha channel.")
                 return RGBImage(image)
         return image
-    
+
     def get_providers(self):
         """The list of providers (populated during the image discovery phase)"""
         return self.__image_providers
-    
+
     providers = property(get_providers)
-    
+
     def get_image_provider(self, name):
         """Get a named image provider
-        
+
         name - return the image provider with this name
         """
         providers = filter(lambda x: x.name == name, self.__image_providers)
         assert len(providers)>0, "No provider of the %s image"%(name)
         assert len(providers)==1, "More than one provider of the %s image"%(name)
         return providers[0]
-    
+
     def remove_image_provider(self, name):
         """Remove a named image provider
-        
+
         name - the name of the provider to remove
         """
-        self.__image_providers = filter(lambda x: x.name != name, 
+        self.__image_providers = filter(lambda x: x.name != name,
                                         self.__image_providers)
-        
+
     def clear_image(self, name):
         '''Remove the image memory associated with a provider
-        
+
         name - the name of the provider
         '''
         self.get_image_provider(name).release_memory()
         if self.__images.has_key(name):
             del self.__images[name]
-            
+
     def __ensure_cache_file(self):
         if self.__image_cache_file is None:
             path = cpprefs.get_temporary_directory()
@@ -1695,34 +1684,34 @@ class Measurements(object):
                 path = None
             h, self.__image_cache_path = tempfile.mkstemp(
                 dir = path,
-                suffix=".h5", 
+                suffix=".h5",
                 prefix="CellProfilerImageCache")
             self.__image_cache_file = h5py.File(
                 self.__image_cache_path, "w")
             self.__hdf5_object_set = HDF5ObjectSet(self.__image_cache_file)
             os.close(h)
-        
+
     def cache(self):
         '''Move all uncached images to an HDF5 backing-store'''
         self.__ensure_cache_file()
         for name, image in self.__images.items():
             image.cache(name, self.__image_cache_file)
-            
+
     def cache_object_set(self, object_set):
         self.__ensure_cache_file()
         object_set.cache(self.__hdf5_object_set)
-            
+
     def clear_cache(self):
         '''Remove all of the cached images'''
         self.__images.clear()
-    
+
     def get_names(self):
         """Get the image provider names
         """
         return [provider.name for provider in self.providers]
-    
+
     names = property(get_names)
-    
+
     def add(self, name, image):
         from .cpimage import VanillaImageProvider
         old_providers = [provider for provider in self.providers
@@ -1734,20 +1723,20 @@ class Measurements(object):
         provider = VanillaImageProvider(name, image)
         self.providers.append(provider)
         self.__images[name] = image
-        
+
     def set_channel_descriptors(self, channel_descriptors):
         '''Write the names and data types of the channel descriptors
-        
+
         channel_descriptors - pipeline channel descriptors describing the
                               channels in the image set.
         '''
         for iscd in channel_descriptors:
             feature = "_".join((C_CHANNEL_TYPE, iscd.name))
             self.add_experiment_measurement(feature, iscd.channel_type)
-        
+
     def get_channel_descriptors(self):
         '''Read the channel descriptors
-        
+
         Returns pipeline.ImageSetChannelDescriptor instances for each
         channel descriptor specified in the experiment measurements.
         '''
@@ -1766,49 +1755,49 @@ class Measurements(object):
                     continue
                 iscds.append(ImageSetChannelDescriptor(channel_name, channel_type))
         return iscds
-    
+
     def get_channel_descriptor(self, name):
         '''Return the channel descriptor with the given name'''
         for iscd in self.get_channel_descriptors():
             if iscd.name == name:
                 return iscd
         return None
-    
+
     def set_metadata_tags(self, metadata_tags):
         '''Write the metadata tags that are used to make an image set
-        
+
         metadata_tags - image feature names of the metadata tags that uniquely
                         define an image set. If metadata matching wasn't used,
                         write the image number feature name.
         '''
         data = json.dumps(metadata_tags)
         self.add_experiment_measurement(M_METADATA_TAGS, data)
-        
+
     def get_metadata_tags(self):
         '''Read the metadata tags that are used to make an image set
-        
+
         returns a list of metadata tags
         '''
         if M_METADATA_TAGS not in self.get_feature_names(EXPERIMENT):
             return [ IMAGE_NUMBER ]
         return json.loads(self.get_experiment_measurement(M_METADATA_TAGS))
-    
+
     def set_grouping_tags(self, grouping_tags):
         '''Write the metadata tags that are used to group an image set
-        
+
         grouping_tags - image feature names of the metadata tags that
                         uniquely define a group.
         '''
         data = json.dumps(grouping_tags)
         self.add_experiment_measurement(M_GROUPING_TAGS, data)
-        
+
     def get_grouping_tags(self):
         '''Get the metadata tags that were used to group the image set
-        
+
         '''
         if not self.has_feature(EXPERIMENT, M_GROUPING_TAGS):
             return self.get_metadata_tags()
-        
+
         return json.loads(self.get_experiment_measurement(M_GROUPING_TAGS))
 
 def load_measurements_from_buffer(buf):
@@ -1831,19 +1820,19 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
                       run_name = None,
                       image_numbers = None):
     '''Load measurements from an HDF5 file
-    
+
     filename - path to file containing the measurements or file-like object
                if .mat
-    
+
     dest_file - path to file to be created. This file is used as the backing
                 store for the measurements.
-                
+
     can_overwrite - True to allow overwriting of existing measurements (not
                     supported any longer)
-                    
+
     run_name - name of the run (an HDF file can contain measurements
                from multiple runs). By default, takes the last.
-    
+
     returns a Measurements object
     '''
     HDF5_HEADER = (chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) +
@@ -1870,8 +1859,6 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
             m = Measurements(filename=dest_file, copy = top_level,
                              image_numbers = image_numbers)
             return m
-        except:
-            logger.error("Error loading HDF5 %s", filename, exc_info=True)
         finally:
             f.close()
     else:
@@ -1983,19 +1970,19 @@ class RelationshipKey:
 
 class ImageSetCache(object):
     '''An ImageSetCache holds the computed results from an image set calculation
-    
+
     The cache remembers the following things:
-    
+
     * Metadata key names used to match images/objects in the image set.
-    
+
     * Image / object names in the image sets.
-    
+
     * Metadata values used in matching.
-    
+
     * URLs, series #, frame #, channel # for each image
-    
+
     * Rows that have errors: the row, image or object name in error.
-    
+
     The image set cache holds the same sort of information as the image
     URL and metadata measurements. It's purpose is to be a more informal
     collection of image set results for cases where the configuration is
@@ -2055,12 +2042,12 @@ class ImageSetCache(object):
                 self.image_set_cache_group[self.ERROR_ROW_AND_COLUMN_DATASET]
             self.error_messages = \
                 VStringArray(self.image_set_cache_group[self.ERROR_MESSAGES])
-        
+
     def store_strings_attr(self, name, strings):
         '''Store a list of unicode strings in an attribute of the top group
-        
+
         name - name of the attribute
-        
+
         strings - a sequence of strings or unicode strings
         '''
         if len(strings) > 0:
@@ -2068,30 +2055,30 @@ class ImageSetCache(object):
             self.image_set_cache_group.attrs.create(name, strings)
         elif name in self.image_set_cache_group.attrs:
             del self.image_set_cache_group.attrs[name]
-        
+
     def load_strings_attr(self, name):
         '''Load a list of unicode strings from an attribute in the top group
-        
+
         name - name of attribute
-        
+
         returns a sequence of strings if the attribute exists, otherwise
         an empty sequence
         '''
-        return [x.decode("utf-8") 
+        return [x.decode("utf-8")
                 for x in self.image_set_cache_group.attrs.get(name, [])]
-    
+
     @property
     def has_cache(self):
         '''True if there are image sets in the cache'''
         return self.__has_cache
-    
+
     class ImageSetData(object):
         '''Represents the information in one image set:
-        
+
         key - the unique metadata values that distinguish this image set
-        
+
         ipds - the image plane descriptors of the images in the set.
-        
+
         errors - a sequence of errors, each of which is a two-tuple
                  of the index of the column causing the error and
                  the error message.
@@ -2100,7 +2087,7 @@ class ImageSetCache(object):
             self.key = key
             self.ipds = ipds
             self.errors = errors
-            
+
     class ImageData(object):
         '''An alternative ducktype to IPDs'''
         def __init__(self, url, series, index, channel):
@@ -2108,19 +2095,19 @@ class ImageSetCache(object):
             self.series = series
             self.index = index
             self.channel = channel
-            
-    def cache_image_set(self, 
+
+    def cache_image_set(self,
                         image_names,
                         image_set_data,
                         metadata_keys = None):
         '''Cache the current image set
-        
+
         image_names - a sequence two tuples of the image or object name and
                       either IMAGE or OBJECT to distinguish between the
                       two uses.
-        
+
         image_set_data - a sequence of ImageSetData objects
-        
+
         metadata_keys - the names of the columns that provide the unique keys
                         for each image set. Index by order if None.
         '''
@@ -2155,10 +2142,10 @@ class ImageSetCache(object):
                 (C_FRAME, [isd.ipds[i].index for isd in image_set_data]),
                 (C_CHANNEL, [isd.ipds[i].channel for isd in image_set_data])):
                 self.image_set_table.add_column(
-                    feature + "_" + name, 
-                    [str(value) if value is not None else "" 
+                    feature + "_" + name,
+                    [str(value) if value is not None else ""
                      for value in values])
-        
+
         errors = sum(
             [[(i, idx, msg) for idx, msg in isd.errors]
              for i, isd in enumerate(image_set_data)], [])
@@ -2177,31 +2164,31 @@ class ImageSetCache(object):
                     maxshape = (None, ))
             self.error_messages = VStringArray(
                 self.image_set_cache_group.require_group(self.ERROR_MESSAGES))
-                    
+
         for i, (image_set_row_number, index, msg) in enumerate(errors):
             self.error_row_and_column_dataset[i] = (
                 image_set_row_number, index)
             self.error_messages[i] = msg
         self.image_set_count = len(image_set_data)
         self.image_set_cache_group.attrs[self.IMAGE_SET_COUNT] = \
-            self.image_set_count        
+            self.image_set_count
         self.__has_cache = True
-            
+
     def get_error_rows(self):
         '''Return the indices of rows with errors
-        
+
         Precondition: some image set must be cached.
         '''
         if self.error_row_and_column_dataset.shape[0] == 0:
             return np.zeros(0, int)
         return np.unique(
             self.error_row_and_column_dataset[self.ROW_INDEX])
-            
+
     def get_errors(self, idx):
         '''Get errors in the idx'th row of a data set
-        
+
         idx - the index of the data set that might have an error
-        
+
         returns a list of two tuples of the form:
         image_index - index of the name of the image in self.image_names
         msg - descriptive error message
@@ -2211,15 +2198,15 @@ class ImageSetCache(object):
         errors = np.where(
             self.error_row_and_column_dataset[self.ROW_INDEX] == idx)
         idxs = self.error_row_and_column_dataset[self.IO_INDEX][:]
-        return [ (idxs[i], 
+        return [ (idxs[i],
                   self.error_messages[i])
                  for i in errors]
-    
+
     def get_image_set_data(self, idx):
         '''Get an ImageSetData item for the indexed image set'''
         errors = self.get_errors(idx)
         if self.metadata_keys is not None:
-            key = tuple([self.image_set_table[k][idx] 
+            key = tuple([self.image_set_table[k][idx]
                          for k in self.metadata_keys])
         else:
             key = []
@@ -2232,5 +2219,3 @@ class ImageSetCache(object):
                               for ftr in (C_SERIES, C_FRAME, C_CHANNEL)]]
             ipds.append(self.ImageData(url, series, index, channel))
         return self.ImageSetData(key, ipds, errors)
-            
-            

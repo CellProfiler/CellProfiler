@@ -1,18 +1,8 @@
 """regexp_editor - give a user feedback on their regular expression
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
 import re
+
 import wx
 import wx.stc
 
@@ -42,7 +32,7 @@ RE_FILENAME_GUESSES = [
     # GE InCell Analyzer
     '^(?P<Row>[A-H]*) - (?P<Column>[0-9]*)\(fld (?P<Site>[0-9]*) wv (?P<Wavelength>.*) - (?P<Filter>.*)\)'
     # Please add more guesses below
-    
+
     ]
 
 RE_FOLDER_GUESSES = [
@@ -70,7 +60,7 @@ class RegexpDialog(wx.Dialog):
         self.__value = "Not initialized"
         self.__test_text = "Not initialized"
         self.__guesses = RE_FILENAME_GUESSES
-        self.font = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT) 
+        self.font = wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT)
         self.error_font = wx.SystemSettings.GetFont(wx.SYS_ANSI_VAR_FONT)
         temp = wx.ClientDC(self)
         temp.Font = self.font
@@ -81,7 +71,7 @@ class RegexpDialog(wx.Dialog):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(hsizer,0,wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
         hsizer.Add(wx.StaticText(self,label="Regex:"),0,wx.ALIGN_CENTER|wx.ALL, 5)
-        
+
         self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style = wx.BORDER_SIMPLE)
         self.regexp_display.SetBufferedDraw(True)
         w, h = self.regexp_display.ClientToWindowSize(
@@ -100,7 +90,7 @@ class RegexpDialog(wx.Dialog):
         color_db = self.get_color_db()
         for i in range(1,16):
             self.regexp_display.StyleSetForeground(TOK_DEFINITION-1+i,color_db[i % len(color_db)])
-        
+
         self.regexp_display.StyleSetForeground(STYLE_ERROR,wx.Colour(255,64,128,255))
         self.regexp_display.StyleSetFont(34, self.font)
         self.regexp_display.StyleSetForeground(34, wx.Colour(0,0,255,255))
@@ -131,7 +121,7 @@ class RegexpDialog(wx.Dialog):
         for i in range(16):
             self.test_display.StyleSetFont(STYLE_FIRST_LABEL-1+i, self.font)
             self.test_display.StyleSetForeground(STYLE_FIRST_LABEL-1+i,color_db[i % len(color_db)])
-        
+
         self.test_display.StyleSetFont(STYLE_ERROR,self.error_font)
         self.test_display.StyleSetForeground(STYLE_ERROR,wx.Colour(255,0,0,255))
         self.test_display.Text = self.__test_text
@@ -144,7 +134,7 @@ class RegexpDialog(wx.Dialog):
         self.test_display.SetSizeHints(100,text_extent[1],maxH = text_extent[1])
         sizer.Add(self.test_display,0,wx.EXPAND | wx.ALL, 5)
 
-      
+
         line = wx.StaticLine(self, -1, size=(20,-1), style=wx.LI_HORIZONTAL)
         sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.LEFT, 5)
 
@@ -158,7 +148,7 @@ class RegexpDialog(wx.Dialog):
         hsizer.Add(cancel_button,0,wx.ALIGN_RIGHT|wx.LEFT,5)
         hsizer.Realize()
         sizer.Add(hsizer,0,wx.ALIGN_RIGHT|wx.ALL,5)
-        
+
         self.Bind(wx.EVT_BUTTON, self.on_guess, guess_button)
         self.Bind(wx.EVT_BUTTON,self.on_ok_button, ok_button)
         self.Bind(wx.EVT_BUTTON,self.on_cancel_button, cancel_button)
@@ -168,7 +158,7 @@ class RegexpDialog(wx.Dialog):
         self.regexp_display.Bind(wx.EVT_KEY_DOWN, self.on_regexp_key)
         self.SetSizer(sizer)
         self.Fit()
-    
+
     def on_regexp_key(self, event):
         #
         # On Mac, very bad things (infinite recursion through OnPaint
@@ -176,12 +166,12 @@ class RegexpDialog(wx.Dialog):
         #
         if event.GetKeyCode() != wx.stc.STC_KEY_RETURN:
             event.Skip()
-            
+
     def get_color_db(self):
         color_db = ["BLACK", "RED", "GREEN", "BLUE", "CYAN","MAGENTA","SIENNA","PURPLE"]
         color_db = [wx.TheColourDatabase.FindColour(x) for x in color_db]
         return color_db
-    
+
     def on_guess(self, event):
         sample = self.test_text_ctl.Value
         for guess in self.guesses:
@@ -195,25 +185,25 @@ class RegexpDialog(wx.Dialog):
                 caption = "No matching guesses",
                 style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
                 parent = self)
-    
+
     def on_ok_button(self, event):
         self.EndModal(1)
-    
+
     def on_cancel_button(self, event):
         self.__value = None
-        self.EndModal(0)  
-          
+        self.EndModal(0)
+
     def on_editor_text_change(self, event):
         self.__value = self.regexp_display.Text
         self.refresh_text()
-    
+
     def on_style_needed(self, event):
         self.refresh_regexp()
-    
+
     def on_test_text_text_change(self, event):
         self.__test_text = self.test_text_ctl.Value
         self.refresh_text()
-    
+
     def refresh_regexp(self):
         state = RegexpState()
         regexp_text = self.__value
@@ -222,7 +212,7 @@ class RegexpDialog(wx.Dialog):
         try:
             parse(regexp_text, state)
         except:
-            pass 
+            pass
         for i in range(state.position):
             self.regexp_display.StartStyling(i,0xff)
             self.regexp_display.SetStyling(1, state.token_labels[i])
@@ -232,15 +222,15 @@ class RegexpDialog(wx.Dialog):
         elif (pos > 0 and
               pos < len(state.matching_braces) and
               state.matching_braces[pos-1] is not None):
-            self.regexp_display.BraceHighlight(state.matching_braces[pos-1], 
+            self.regexp_display.BraceHighlight(state.matching_braces[pos-1],
                                                pos-1)
         else:
             self.regexp_display.BraceHighlight(wx.stc.STC_INVALID_POSITION,
                                                wx.stc.STC_INVALID_POSITION)
-            
+
     def refresh_text(self):
         self.test_display.ReadOnly = False
-        self.test_display.Text = self.__test_text 
+        self.test_display.Text = self.__test_text
         try:
             parse(self.__value, RegexpState())
         except ValueError,e:
@@ -268,14 +258,14 @@ class RegexpDialog(wx.Dialog):
             self.test_display.SetStyling(len(self.test_display.Text),
                                          STYLE_ERROR)
         self.test_display.ReadOnly = True
-        
+
     def refresh_bitmap(self):
         self.feedback.SetBitmap(self.get_bitmap())
         self.Refresh()
-        
+
     def get_value(self):
         return self.__value
-    
+
     def set_value(self, value):
         self.__value = value
         self.regexp_display.Text = value
@@ -283,10 +273,10 @@ class RegexpDialog(wx.Dialog):
         self.refresh_text()
 
     value = property(get_value, set_value)
-    
+
     def get_test_text(self):
         return self.__test_text
-    
+
     def set_test_text(self, test_text):
         self.__test_text = test_text
         self.test_text_ctl.Value = test_text
@@ -294,14 +284,14 @@ class RegexpDialog(wx.Dialog):
         self.refresh_text()
 
     test_text = property(get_test_text, set_test_text)
-    
+
     def get_guesses(self):
         '''The guess regexps used when the user presses the "guess" button'''
         return self.__guesses
-    
+
     def set_guesses(self, value):
         self.__guesses = value
-        
+
     guesses = property(get_guesses, set_guesses)
 
 ####################
@@ -318,8 +308,8 @@ TOK_REPEAT = 4
 TOK_SPECIAL = 5
 TOK_DEFINITION = 6
 
-HARDCODE_ESCAPES = set([r"\\", r"\a", r"\b", r"\d", r"\f", r"\n", r"\r", 
-                        r"\s", r"\t", r"\v", r"\w", 
+HARDCODE_ESCAPES = set([r"\\", r"\a", r"\b", r"\d", r"\f", r"\n", r"\r",
+                        r"\s", r"\t", r"\v", r"\w",
                         r"\A", r"\B", r"\D", r"\S", r"\W", r"\Z"] )
 OCTAL_DIGITS = set("01234567")
 DECIMAL_DIGITS = set("0123456789")
@@ -344,7 +334,7 @@ class RegexpState:
         self.position = 0
         self.token_labels = []
         self.matching_braces = []
-    
+
     def mark_tokens(self, length, label):
         self.token_labels += [label] * length
         self.matching_braces += [None] * length
@@ -359,7 +349,7 @@ class RegexpState:
         self.__any_tokens = False
         self.mark_tokens(length, TOK_GROUP)
         self.position += length
-        
+
     def close_group(self):
         '''Close a grouping expression returning the matching position'''
         if self.__group_depth == 0:
@@ -376,15 +366,15 @@ class RegexpState:
         self.position += 1
         self.__any_tokens = True
         return matching_brace
-    
+
     @property
     def group_count(self):
         return self.__group_count
-    
+
     def get_in_brackets(self):
         '''True if the state is within [] brackets'''
         return self.__in_brackets
-    
+
     in_brackets = property(get_in_brackets)
 
     def open_brackets(self):
@@ -393,7 +383,7 @@ class RegexpState:
         self.mark_tokens(1, TOK_BRACKET_EXP)
         self.position += 1
         self.__any_tokens = True
-    
+
     def close_brackets(self):
         if not self.in_brackets:
             raise ValueError("Unmatched closing brackets")
@@ -408,26 +398,26 @@ class RegexpState:
         self.__any_tokens = True
         self.mark_tokens(length, label)
         self.position += length
-    
+
     def parsed_special(self, length=1, label = TOK_SPECIAL):
         '''Parse a token that's not repeatable'''
         self.__any_tokens = False
         self.mark_tokens(length, label)
         self.position += length
-    
+
     def parsed_repeat(self, length):
         self.__any_tokens = False
         self.mark_tokens(length, TOK_REPEAT)
         self.position += length
-    
+
     def is_group_name(self, x):
         return x in self.__group_names
-    
+
     def group_name_index(self, x):
         if x == self.__group_name:
             return len(self.__group_names)
         return self.__group_names.index(x)
-    
+
     @property
     def open_expression_start(self):
         '''Return the start of the innermost open expression or None'''
@@ -435,17 +425,17 @@ class RegexpState:
             return self.__bracket_start
         elif self.__group_depth:
             return self.__group_starts[-1]
-        
+
     @property
     def any_tokens(self):
         return self.__any_tokens
 
 def looking_at_escape(s, state):
     '''Return # of characters in an escape
-    
+
     s - string to look at
     state - the current search state
-    
+
     returns either None or the # of characters in the escape
     '''
     if s[0] != "\\":
@@ -482,7 +472,7 @@ def looking_at_escape(s, state):
             return 4
         raise ValueError("Hexidecimal escapes are two digits long: eg. \\x1F")
     # The escape is needless, but harmless
-    return 2 
+    return 2
 
 def looking_at_repeat(s, state):
     if s[0] not in REPEAT_STARTS:

@@ -13,27 +13,17 @@ display to within that rectangle.</li>
 <li><i>Erase:</i> Erases an object if you click on it.</li></ul>
 '''
 
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
 import numpy as np
-
-import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
-import cellprofiler.preferences as cpprefs
-import identify as I
-import cellprofiler.settings as cps
-from centrosome.outline import outline
 from centrosome.cpmorphology import draw_line
 from centrosome.cpmorphology import fill_labeled_holes
+from centrosome.outline import outline
+
+import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
+import cellprofiler.objects as cpo
+import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
+import identify as I
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 TOOL_OUTLINE = "Outline"
@@ -41,54 +31,54 @@ TOOL_ZOOM_IN = "Zoom in"
 TOOL_ERASE = "Erase"
 
 class IdentifyObjectsManually(I.Identify):
-    
+
     category = "Object Processing"
     module_name = "IdentifyObjectsManually"
     variable_revision_number = 1
-    
+
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image", cps.NONE,doc = """
             Choose the name of the image to display in the object
             selection user interface.""")
-        
+
         self.objects_name = cps.ObjectNameProvider(
             "Name the objects to be identified", "Cells",doc = """
             What do you want to call the objects
             that you identify using this module? You can use this name to
             refer to your objects in subsequent modules.""")
-        
+
         self.wants_outlines = cps.Binary(
             "Retain outlines of the identified objects?", False,doc = """
             %(RETAINING_OUTLINES_HELP)s"""%globals())
-        
+
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outlines", "CellOutlines",doc = """
             %(NAMING_OUTLINES_HELP)s"""%globals())
-        
+
     def settings(self):
         '''The settings as saved in the pipeline'''
         return [ self.image_name, self.objects_name, self.wants_outlines,
                  self.outlines_name]
-    
+
     def visible_settings(self):
         '''The settings as displayed in the UI'''
         result = [ self.image_name, self.objects_name, self.wants_outlines]
         if self.wants_outlines:
             result += [ self.outlines_name ]
         return result
-    
+
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''This module cannot be used in a batch context'''
         raise ValueError("The IdentifyObjectsManually module cannot be run in batch mode")
-    
+
     def run(self, workspace):
         image_name    = self.image_name.value
         objects_name  = self.objects_name.value
         outlines_name = self.outlines_name.value
         image         = workspace.image_set.get_image(image_name)
         pixel_data    = image.pixel_data
-        
+
         labels = workspace.interaction_request(
             self, pixel_data, workspace.measurements.image_set_number)
         if labels is None:
@@ -141,18 +131,18 @@ class IdentifyObjectsManually(I.Identify):
 
     def draw_outlines(self, pixel_data, labels):
         '''Draw a color image that shows the objects
-        
+
         pixel_data - image, either b & w or color
         labels - labels for image
-        
+
         returns - color image of same size as pixel_data
         '''
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         import matplotlib
-        
+
         labels = renumber_labels_for_display(labels)
         outlines = outline(labels)
-        
+
         if pixel_data.ndim == 3:
             image = pixel_data.copy()
         else:
@@ -163,10 +153,10 @@ class IdentifyObjectsManually(I.Identify):
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         sm = matplotlib.cm.ScalarMappable(cmap = cm)
         labels_image = sm.to_rgba(labels)[:,:,:3]
-        
+
         lmask = labels > 0
         gray = (image[lmask,0] + image[lmask,1] + image[lmask,2]) / 3
-        
+
         for i in range(3):
             image[lmask,i] = gray * labels_image[lmask, i]
         #
@@ -175,7 +165,7 @@ class IdentifyObjectsManually(I.Identify):
         outlines_image = sm.to_rgba(outlines)[:,:,:3]
         image[outlines > 0,:] = outlines_image[outlines > 0,:]
         return image
-        
+
     def handle_interaction(self, pixel_data, image_set_number):
         '''Display a UI for editing'''
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
@@ -193,25 +183,25 @@ class IdentifyObjectsManually(I.Identify):
             if result != OK:
                 return None
             return dialog_box.labels[0]
-        
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 2:
             image_name, object_name, max_resolution, save_outlines = setting_values
             wants_outlines = \
-                    (cps.YES if save_outlines.lower() == cps.DO_NOT_USE.lower() 
+                    (cps.YES if save_outlines.lower() == cps.DO_NOT_USE.lower()
                      else cps.NO)
             setting_values = [ image_name, object_name, wants_outlines,
                                save_outlines]
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab
-            
+
     def get_measurement_columns(self, pipeline):
         '''Return database info on measurements made in module
-        
+
         pipeline - pipeline being run
-        
+
         Return a list of tuples of object name, measurement name and data type
         '''
         result = I.get_object_measurement_columns(self.objects_name.value)
@@ -220,26 +210,26 @@ class IdentifyObjectsManually(I.Identify):
     @property
     def measurement_dictionary(self):
         '''Return the dictionary to be used in get_object_categories/measurements
-        
+
         Identify.get_object_categories and Identify.get_object_measurements
         use a dictionary to match against the objects produced. We
         return a dictionary whose only key is the object name and
         whose value (the parents) is an empty list.
         '''
         return { self.objects_name.value: [] }
-    
+
     def get_categories(self, pipeline, object_name):
         '''Return a list of categories of measurements made by this module
-        
+
         pipeline - pipeline being run
         object_name - find categories of measurements made on this object
         '''
-        return self.get_object_categories(pipeline, object_name, 
+        return self.get_object_categories(pipeline, object_name,
                                           self.measurement_dictionary)
-    
+
     def get_measurements(self, pipeline, object_name, category):
         '''Return a list of features measured on object & category
-        
+
         pipeline - pipeline being run
         object_name - name of object being measured
         category - category of measurement being queried

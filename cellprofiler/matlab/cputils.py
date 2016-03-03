@@ -1,50 +1,41 @@
 """Utils.py - utility functions for manipulating the Matlab blackboard
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 
-import numpy
-import tempfile
-import scipy.io.matlab.mio
 import os
+import tempfile
+
+import numpy
+import scipy.io.matlab.mio
+
 
 def new_string_cell_array(shape):
     """Return a numpy.ndarray that looks like {NxM cell} to Matlab
-    
+
     Return a numpy.ndarray that looks like {NxM cell} to Matlab.
     Each of the cells looks empty.
     shape - the shape of the array that's generated, e.g. (5,19) for a 5x19 cell array.
             Currently, this must be a 2-d shape.
     The object returned is a numpy.ndarray with dtype=dtype('object') and the given shape
-    with each cell in the array filled with a numpy.ndarray with shape = (1,0) 
+    with each cell in the array filled with a numpy.ndarray with shape = (1,0)
     and dtype=dtype('float64'). This appears to be the form that's created in matlab
-    for this sort of object. 
+    for this sort of object.
     """
     result = numpy.ndarray(shape,dtype=numpy.dtype('object'))
     for i in range(0,shape[0]):
         for j in range(0,shape[1]):
-            result[i,j] = numpy.empty((0,0)) 
+            result[i,j] = numpy.empty((0,0))
     return result
 
 def make_cell_struct_dtype(fields):
     """Makes the dtype of a struct composed of cells
-    
+
     fields - the names of the fields in the struct
     """
     return numpy.dtype([(str(x),'|O4') for x in fields])
 
 def encapsulate_strings_in_arrays(handles):
     """Recursively descend through the handles structure, replacing strings as arrays packed with strings
-    
+
     This function makes the handles structure loaded through the sandwich compatible with loadmat. It operates on the array in-place.
     """
     if handles.dtype.kind == 'O':
@@ -72,4 +63,3 @@ def encapsulate_string(s):
         result = numpy.ndarray((1,),'<U%d'%(len(s)))
     result[0]=s
     return result;
-

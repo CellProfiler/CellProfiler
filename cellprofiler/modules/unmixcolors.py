@@ -32,30 +32,21 @@ written by A.C. Ruifrok, whose paper forms the basis for this code.
 
 <h4>References</h4>
 <ul>
-<li>Ruifrok AC, Johnston DA. (2001) "Quantification of histochemical staining by color 
+<li>Ruifrok AC, Johnston DA. (2001) "Quantification of histochemical staining by color
 deconvolution." <i>Analytical & Quantitative Cytology & Histology</i>, 23: 291-299.</li>
 </ul>
 
 See also <b>ColorToGray</b>.
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
 
 import numpy as np
 from scipy.linalg import lstsq
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
 import cellprofiler.preferences as cpprefs
+import cellprofiler.settings as cps
+
 
 def html_color(rgb):
     '''Return an HTML color for a given stain'''
@@ -65,7 +56,7 @@ def html_color(rgb):
     if color.endswith("L"):
         color = color[:-1]
     return "#"+color[2:]
-    
+
 CHOICE_HEMATOXYLIN = "Hematoxylin"
 ST_HEMATOXYLIN = (0.644, 0.717, 0.267)
 COLOR_HEMATOXYLIN = html_color(ST_HEMATOXYLIN)
@@ -131,7 +122,7 @@ ST_ORANGE_G  = ( 0.107, 0.368, 0.923)
 COLOR_ORANGE_G  = html_color(ST_ORANGE_G)
 
 CHOICE_PONCEAU_FUCHSIN = "Ponceau-fuchsin"
-ST_PONCEAU_FUCHSIN  = ( 0.107, 0.368, 0.923)
+ST_PONCEAU_FUCHSIN  = ( 0.100,  0.737,  0.668)
 COLOR_PONCEAU_FUCHSIN  = html_color(ST_PONCEAU_FUCHSIN)
 
 CHOICE_CUSTOM = "Custom"
@@ -155,12 +146,12 @@ STAIN_DICTIONARY = {
     CHOICE_PAS: ST_PAS,
     CHOICE_PONCEAU_FUCHSIN: ST_PONCEAU_FUCHSIN}
 
-STAINS_BY_POPULARITY = ( 
+STAINS_BY_POPULARITY = (
     CHOICE_HEMATOXYLIN, CHOICE_EOSIN, CHOICE_DAB,
     CHOICE_PAS, CHOICE_AEC, CHOICE_ALICAN_BLUE, CHOICE_ANILINE_BLUE,
     CHOICE_AZOCARMINE, CHOICE_FAST_BLUE, CHOICE_FAST_RED,
     CHOICE_HEMATOXYLIN_AND_PAS, CHOICE_METHYL_GREEN, CHOICE_METHYLENE_BLUE,
-    CHOICE_ORANGE_G, CHOICE_METHYL_BLUE, CHOICE_PONCEAU_FUCHSIN, 
+    CHOICE_ORANGE_G, CHOICE_METHYL_BLUE, CHOICE_PONCEAU_FUCHSIN,
     CHOICE_METHYL_BLUE, CHOICE_FEULGEN)
 
 FIXED_SETTING_COUNT = 2
@@ -170,25 +161,25 @@ class UnmixColors(cpm.CPModule):
     module_name = "UnmixColors"
     category = "Image Processing"
     variable_revision_number = 2
-    
+
     def create_settings(self):
         self.outputs = []
         self.stain_count = cps.HiddenCount(self.outputs, "Stain count")
-        
+
         self.input_image_name = cps.ImageNameSubscriber(
             "Select the input color image", cps.NONE, doc = """
             Choose the name of the histologically stained color image
             loaded or created by some prior module.""")
-        
+
         self.add_image(False)
-        
+
         self.add_image_button = cps.DoSomething(
             "", "Add another stain", self.add_image,doc = """
             Press this button to add another stain to the list.
             You will be able to name the image produced and to either pick
             the stain from a list of precalibrated stains or to enter
             custom values for the stain's red, green and blue absorbance.""")
-        
+
     def add_image(self, can_remove = True):
         group = cps.SettingsGroup()
         group.can_remove = can_remove
@@ -197,15 +188,15 @@ class UnmixColors(cpm.CPModule):
         idx = len(self.outputs)
         default_name = STAINS_BY_POPULARITY[idx % len(STAINS_BY_POPULARITY)]
         default_name = default_name.replace(" ","")
-        
+
         group.append("image_name", cps.ImageNameProvider(
             "Name the output name", default_name,doc = """
             Use this setting to name one of the images produced by the
             module for a particular stain. The image can be used in
             subsequent modules in the pipeline."""))
-        
+
         choices = list(sorted(STAIN_DICTIONARY.keys())) + [ CHOICE_CUSTOM ]
-        
+
         group.append("stain_choice", cps.Choice(
             "Stain", choices = choices,doc = """
             Use this setting to choose the absorbance values for a
@@ -235,11 +226,11 @@ class UnmixColors(cpm.CPModule):
             <a href="http://en.wikipedia.org/wiki/Staining">here</a>, and
             <a href="http://stainsfile.info">here</a>.)
             <br>
-            You can choose <i>%(CHOICE_CUSTOM)s</i> and enter your custom 
-            values for the absorbance (or use the estimator to determine values 
+            You can choose <i>%(CHOICE_CUSTOM)s</i> and enter your custom
+            values for the absorbance (or use the estimator to determine values
             from a single-stain image).
             """ % globals()))
-        
+
         group.append("red_absorbance", cps.Float(
             "Red absorbance", 0.5, 0, 1,doc = """
             <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
@@ -248,7 +239,7 @@ class UnmixColors(cpm.CPModule):
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
             value automatically."""%globals()))
-        
+
         group.append("green_absorbance", cps.Float(
             "Green absorbance", 0.5, 0, 1,doc = """
             <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
@@ -257,7 +248,7 @@ class UnmixColors(cpm.CPModule):
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
             value automatically."""%globals()))
-        
+
         group.append("blue_absorbance", cps.Float(
             "Blue absorbance", 0.5, 0, 1,doc = """
             <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
@@ -266,27 +257,27 @@ class UnmixColors(cpm.CPModule):
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
             value automatically."""%globals()))
-        
+
         def on_estimate():
             result = self.estimate_absorbance()
             if result is not None:
                 (group.red_absorbance.value,
                  group.green_absorbance.value,
                  group.blue_absorbance.value) = result
-                
+
         group.append("estimator_button", cps.DoSomething(
-            "Estimate absorbance from image", 
+            "Estimate absorbance from image",
             "Estimate", on_estimate,doc = """
             Press this button to load an image of a sample stained
             only with the dye of interest. <b>UnmixColors</b> will estimate
             appropriate red, green and blue absorbance values from the
             image."""))
-        
+
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(
                 "", "Remove this image", self.outputs, group))
         self.outputs.append(group)
-    
+
     def settings(self):
         '''The settings as saved to or loaded from the pipeline'''
         result = [ self.stain_count, self.input_image_name]
@@ -295,7 +286,7 @@ class UnmixColors(cpm.CPModule):
                        output.red_absorbance, output.green_absorbance,
                        output.blue_absorbance]
         return result
-    
+
     def visible_settings(self):
         '''The settings visible to the user'''
         result = [ self.input_image_name ]
@@ -310,7 +301,7 @@ class UnmixColors(cpm.CPModule):
                 result += [output.remover]
         result += [self.add_image_button]
         return result
-    
+
     def run(self, workspace):
         '''Unmix the colors on an image in the image set'''
         input_image_name = self.input_image_name.value
@@ -322,7 +313,7 @@ class UnmixColors(cpm.CPModule):
             workspace.display_data.outputs = {}
         for output in self.outputs:
             self.run_on_output(workspace, input_image, output)
-            
+
     def run_on_output(self, workspace, input_image, output):
         '''Produce one image - storing it in the image set'''
         input_pixels = input_image.pixel_data
@@ -358,7 +349,7 @@ class UnmixColors(cpm.CPModule):
         workspace.image_set.add(image_name, output_image)
         if self.show_window:
             workspace.display_data.outputs[image_name] = image
-        
+
     def display(self, workspace, figure):
         '''Display all of the images in a figure'''
         figure.set_subplots((len(self.outputs)+1, 1))
@@ -375,7 +366,7 @@ class UnmixColors(cpm.CPModule):
 
     def get_absorbances(self, output):
         '''Given one of the outputs, return the red, green and blue absorbance'''
-        
+
         if output.stain_choice == CHOICE_CUSTOM:
             result = np.array(
                 (output.red_absorbance.value,
@@ -386,12 +377,12 @@ class UnmixColors(cpm.CPModule):
         result = np.array(result)
         result = result / np.sqrt(np.sum(result**2))
         return result
-    
+
     def get_inverse_absorbances(self, output):
         '''Get the inverse of the absorbance matrix corresponding to the output
-        
+
         output - one of the rows of self.output
-        
+
         returns a 3-tuple which is the column of the inverse of the matrix
         of absorbances corresponding to the entered row.
         '''
@@ -400,13 +391,13 @@ class UnmixColors(cpm.CPModule):
                                      for o in self.outputs])
         absorbance_matrix = np.matrix(absorbance_array)
         return np.array(absorbance_matrix.I[:,idx]).flatten()
-    
+
     def estimate_absorbance(self):
         '''Load an image and use it to estimate the absorbance of a stain
-        
+
         Returns a 3-tuple of the R/G/B absorbances
         '''
-        
+
         from cellprofiler.modules.loadimages import LoadImagesImageProvider
         import wx
 
@@ -454,7 +445,7 @@ class UnmixColors(cpm.CPModule):
             del self.outputs[stain_count:]
         while len(self.outputs) < stain_count:
             self.add_image()
-            
+
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 0: # If coming from DifferentiateStains, no variable revision number
             setting_values = list(setting_values)
@@ -475,6 +466,5 @@ class UnmixColors(cpm.CPModule):
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 2
-            
+
         return setting_values, variable_revision_number, from_matlab
-    

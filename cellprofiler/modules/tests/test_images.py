@@ -1,30 +1,21 @@
 '''test_images.py - test the Images module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
 import csv
-import numpy as np
 import os
-from cStringIO import StringIO
 import tempfile
 import unittest
 import urllib
+from cStringIO import StringIO
+
+import numpy as np
 
 import cellprofiler.measurements as cpmeas
+import cellprofiler.modules.images as I
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.images as I
+
 
 class TestImages(unittest.TestCase):
     def setUp(self):
@@ -35,12 +26,12 @@ class TestImages(unittest.TestCase):
         self.measurements = cpmeas.Measurements(
             filename = self.temp_filename)
         os.close(self.temp_fd)
-        
+
     def tearDown(self):
         self.measurements.close()
         os.unlink(self.temp_filename)
         self.assertFalse(os.path.exists(self.temp_filename))
-        
+
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -63,7 +54,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
         self.assertTrue(isinstance(module, I.Images))
         self.assertEqual(module.filter_choice, I.FILTER_CHOICE_CUSTOM)
         self.assertEqual(module.filter.value, 'or (directory does startwith "foo") (file does contain "bar")')
-        
+
     def test_01_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -89,7 +80,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             self.assertTrue(isinstance(module, I.Images))
             self.assertEqual(module.filter_choice, fc)
             self.assertEqual(module.filter.value, 'or (directory does startwith "foo") (file does contain "bar")')
-        
+
     def test_02_04_filter_url(self):
         module = I.Images()
         module.filter_choice.value = I.FILTER_CHOICE_CUSTOM
@@ -104,7 +95,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
              'or (directory doesnot endwith "ges") (directory does contain "foo")', False)):
             module.filter.value = filter_value
             self.check(module, url, expected)
-            
+
     def check(self, module, url, expected):
         '''Check filtering of one URL using the module as configured'''
         pipeline = cpp.Pipeline()
@@ -119,7 +110,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             self.assertEqual(file_list[0], url)
         else:
             self.assertEqual(len(file_list), 0)
-            
+
     def test_02_05_filter_standard(self):
         module = I.Images()
         module.filter_choice.value = I.FILTER_CHOICE_IMAGES
@@ -128,6 +119,3 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             ("file:/foo/.bar/baz.tif", False),
             ("file:/TestImages/foo.bar", False)):
             self.check(module, url, expected)
-
-        
-        

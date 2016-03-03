@@ -1,16 +1,3 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
 import wx
 import wx.lib.scrolledpanel as scrolledpanel
 
@@ -63,7 +50,7 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
     def resize(self, evt):
         DC = wx.ClientDC(self)
         DC.SetFont(self.font)
-        
+
         # find line width and  height
         extent = DC.GetFullTextExtent('X'*self.longest_line)
         lineheight = extent[1]

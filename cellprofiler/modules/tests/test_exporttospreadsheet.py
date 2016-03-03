@@ -1,28 +1,18 @@
 '''test_ExportToSpreadsheet.py - test the ExportToSpreadsheet module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
-
 
 import base64
 import csv
 import os
-import numpy as np
-from StringIO import StringIO
 import tempfile
 import unittest
 import zlib
+from StringIO import StringIO
+
+import numpy as np
 
 from cellprofiler.preferences import set_headless
+
 set_headless()
 
 import cellprofiler.cpimage as cpi
@@ -31,7 +21,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
-import cellprofiler.modules.exporttospreadsheet as E 
+import cellprofiler.modules.exporttospreadsheet as E
 from cellprofiler.modules import identifyprimaryobjects
 from cellprofiler.modules.identify import \
      C_COUNT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
@@ -58,7 +48,7 @@ class TestExportToSpreadsheet(unittest.TestCase):
                 os.remove(path)
         os.rmdir(self.output_dir)
         self.output_dir = None
-        
+
     def test_000_01_load_mat_pipe(self):
         '''Load a matlab pipeline'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -87,7 +77,7 @@ class TestExportToSpreadsheet(unittest.TestCase):
         og = module.object_groups[0]
         self.assertEqual(og.name, "Image")
         self.assertEqual(og.file_name, "Image.csv")
-    
+
     def test_000_02_load_v1(self):
         '''Load a version 1 pipeline'''
         data = ('eJztWnFv0zgUd7ZuusHpNMRJ8A+S/2R3a5SMTQcTGi103FVHu4pVIISAc1N3'
@@ -129,7 +119,7 @@ class TestExportToSpreadsheet(unittest.TestCase):
         og = module.object_groups[1]
         self.assertEqual(og.name, "Nuclei")
         self.assertEqual(og.file_name, "Nuclei.csv")
-        
+
     def test_000_03_load_v2(self):
         '''Load a version 2 pipeline'''
         data = ('eJztVtFOwjAU7SYQCMT46GMffdBlmJAILzoVExIHRBaibw7oYGZbSdch+hV+'
@@ -156,7 +146,7 @@ class TestExportToSpreadsheet(unittest.TestCase):
         self.assertTrue(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertTrue(module.wants_aggregate_std)
-        
+
     def test_000_04_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -196,7 +186,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
         self.assertFalse(module.wants_aggregate_means)
         self.assertTrue(module.wants_aggregate_medians)
         self.assertFalse(module.wants_aggregate_std)
-        self.assertEqual(module.directory.dir_choice, 
+        self.assertEqual(module.directory.dir_choice,
                          E.DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(module.directory.custom_path, r"./\<?Plate>")
         self.assertEqual(len(module.object_groups), 2)
@@ -206,7 +196,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'8947\'|variable_revision_number:
             self.assertEqual(group.name, object_name)
             self.assertEqual(group.file_name, file_name)
             self.assertFalse(group.wants_automatic_file_name)
-            
+
     def test_000_05_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -265,7 +255,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
         self.assertFalse(module.wants_aggregate_means)
         self.assertFalse(module.wants_aggregate_medians)
         self.assertFalse(module.wants_aggregate_std)
-        self.assertEqual(module.directory.dir_choice, 
+        self.assertEqual(module.directory.dir_choice,
                          E.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertFalse(module.wants_everything)
         for group, object_name in zip(module.object_groups,
@@ -276,7 +266,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9144\'|variable_revision_number:
             self.assertEqual(group.file_name, "%s.csv" % object_name)
             self.assertFalse(group.previous_file)
             self.assertTrue(group.wants_automatic_file_name)
-    
+
     def test_000_06_load_v5(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -326,9 +316,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_TAB)
-        self.assertEqual(module.directory.dir_choice, 
+        self.assertEqual(module.directory.dir_choice,
                          E.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertEqual(module.directory.custom_path, 
+        self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
@@ -359,7 +349,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'9434\'|variable_revision_number:
             self.assertFalse(group.wants_automatic_file_name)
             self.assertEqual(group.name, object_name)
             self.assertEqual(group.file_name, file_name)
-        
+
     def test_000_07_load_v6(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -475,9 +465,9 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_TAB)
-        self.assertEqual(module.directory.dir_choice, 
+        self.assertEqual(module.directory.dir_choice,
                          E.DEFAULT_OUTPUT_FOLDER_NAME)
-        self.assertEqual(module.directory.custom_path, 
+        self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertFalse(module.add_metadata)
         self.assertFalse(module.excel_limits)
@@ -512,9 +502,9 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
         self.assertEqual(module.delimiter, E.DELIMITER_COMMA)
-        self.assertEqual(module.directory.dir_choice, 
+        self.assertEqual(module.directory.dir_choice,
                          E.DEFAULT_INPUT_FOLDER_NAME)
-        self.assertEqual(module.directory.custom_path, 
+        self.assertEqual(module.directory.custom_path,
                          "//iodine/imaging_analysis/People/Lee")
         self.assertTrue(module.add_metadata)
         self.assertTrue(module.excel_limits)
@@ -526,7 +516,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         group = module.object_groups[0]
         self.assertTrue(group.previous_file)
         self.assertTrue(group.wants_automatic_file_name)
-        
+
         for module, dir_choice in zip(pipeline.modules()[2:],
                                       (E.DEFAULT_INPUT_SUBFOLDER_NAME,
                                        E.DEFAULT_OUTPUT_SUBFOLDER_NAME,
@@ -534,7 +524,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertTrue(isinstance(module,E.ExportToSpreadsheet))
             self.assertEqual(module.directory.dir_choice, dir_choice)
         self.assertEqual(module.nan_representation, E.NANS_AS_NANS)
-            
+
     def test_000_08_load_v8(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -582,7 +572,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.directory.custom_path,
                          "/imaging/analysis/2005Projects")
         self.assertFalse(module.wants_genepattern_file)
-        self.assertEqual(module.how_to_specify_gene_name, 
+        self.assertEqual(module.how_to_specify_gene_name,
                          E.GP_NAME_FILENAME)
         self.assertEqual(module.use_which_image_for_gene_name, "GFP")
         self.assertEqual(module.gene_name_column, "Metadata_GeneName")
@@ -639,7 +629,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.directory.custom_path,
                          "/imaging/analysis/2005Projects")
         self.assertFalse(module.wants_genepattern_file)
-        self.assertEqual(module.how_to_specify_gene_name, 
+        self.assertEqual(module.how_to_specify_gene_name,
                          E.GP_NAME_FILENAME)
         self.assertEqual(module.use_which_image_for_gene_name, "GFP")
         self.assertEqual(module.gene_name_column, "Metadata_GeneName")
@@ -651,7 +641,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(module.object_groups[0].wants_automatic_file_name)
         self.assertFalse(module.wants_prefix)
         self.assertEqual(module.prefix, "MyExpt_")
-        
+
     def test_000_10_load_v10(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -700,7 +690,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.directory.custom_path,
                          "/imaging/analysis/2005Projects")
         self.assertFalse(module.wants_genepattern_file)
-        self.assertEqual(module.how_to_specify_gene_name, 
+        self.assertEqual(module.how_to_specify_gene_name,
                          E.GP_NAME_FILENAME)
         self.assertEqual(module.use_which_image_for_gene_name, "GFP")
         self.assertEqual(module.gene_name_column, "Metadata_GeneName")
@@ -763,7 +753,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertEqual(module.directory.custom_path,
                          "/imaging/analysis/2005Projects")
         self.assertFalse(module.wants_genepattern_file)
-        self.assertEqual(module.how_to_specify_gene_name, 
+        self.assertEqual(module.how_to_specify_gene_name,
                          E.GP_NAME_FILENAME)
         self.assertEqual(module.use_which_image_for_gene_name, "GFP")
         self.assertEqual(module.gene_name_column, "Metadata_GeneName")
@@ -776,7 +766,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertTrue(module.wants_prefix)
         self.assertEqual(module.prefix, "Fred")
         self.assertFalse(module.wants_overwrite_without_warning)
-    
+
     def test_00_00_no_measurements(self):
         '''Test an image set with objects but no measurements'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -811,7 +801,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             fd.close()
             del m
-    
+
     def test_01_01_experiment_measurement(self):
         '''Test writing one experiment measurement'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -849,7 +839,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             del m
             fd.close()
-            
+
     def test_01_02_two_experiment_measurements(self):
         '''Test writing two experiment measurements'''
         path = os.path.join(self.output_dir, "%s.csv" % cpmeas.EXPERIMENT)
@@ -890,10 +880,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-        
+
     def test_01_04_img_887_no_experiment_file(self):
         '''Regression test of IMG-887: spirious experiment file
-        
+
         ExportToSpreadsheet shouldn't generate an experiment file if
         the only measurements are Exit_Status or Complete.
         '''
@@ -923,7 +913,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         self.assertFalse(os.path.exists(path))
         path = os.path.join(self.output_dir, "Image.csv")
         self.assertTrue(os.path.exists(path))
-        
+
     def test_01_05_prefix(self):
         # Use a prefix, check that file name exists
         prefix = "Foo_"
@@ -951,8 +941,8 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.post_run(workspace)
         path = os.path.join(self.output_dir, prefix + "Image.csv")
         self.assertTrue(os.path.exists(path))
-        
-        
+
+
     def test_02_01_image_measurement(self):
         '''Test writing an image measurement'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1032,7 +1022,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-    
+
     def test_03_01_object_measurement(self):
         '''Test getting a single object measurement'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1120,7 +1110,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-    
+
     def test_03_03_get_measurements_from_two_objects(self):
         '''Get three measurements from four cells and two objects'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1184,7 +1174,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-            
+
     def test_03_04_nan_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
@@ -1229,7 +1219,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-        
+
     def test_03_05_null_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
@@ -1274,7 +1264,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-            
+
     def test_03_06_nan_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
@@ -1291,7 +1281,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
             data_type=np.float64)
         mvalues = np.array([np.NaN, np.NaN])
-        m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues, 
+        m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues,
                           image_set_number=1, data_type = np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
                           image_set_number = 1)
@@ -1322,7 +1312,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = row[d[agg_meas]]
             self.assertEqual(
                 value, str(np.NaN),
-                msg = "Expected nan %s measurement, got %s" % 
+                msg = "Expected nan %s measurement, got %s" %
                 (agg_meas, value))
             self.assertEqual(float(row[d[IMG_MEAS]]), 13)
             row = reader.next()
@@ -1330,7 +1320,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 value = row[d[meas]]
                 self.assertEqual(
                     value, str(np.NaN),
-                    msg = "Expected nan %s measurement, got %s" % 
+                    msg = "Expected nan %s measurement, got %s" %
                     (meas, value))
             self.assertRaises(StopIteration,reader.next)
 
@@ -1350,7 +1340,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             cpmeas.IMAGE, "my_image_measurement", 13, image_set_number=1,
             data_type=np.float64)
         mvalues = np.array([np.NaN, np.NaN])
-        m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues, 
+        m.add_measurement(OBJECTS_NAME, OBJ_MEAS, mvalues,
                           image_set_number=1, data_type = np.float64)
         m.add_measurement(cpmeas.IMAGE, "Count_%s" % OBJECTS_NAME, 2,
                           image_set_number = 1)
@@ -1381,7 +1371,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             value = row[d[agg_meas]]
             self.assertEqual(
                 len(value), 0,
-                msg = "Expected null %s measurement, got %s" % 
+                msg = "Expected null %s measurement, got %s" %
                 (agg_meas, value))
             self.assertEqual(float(row[d[IMG_MEAS]]), 13)
             row = reader.next()
@@ -1389,10 +1379,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 value = row[d[meas]]
                 self.assertEqual(
                     len(value), 0,
-                    msg = "Expected null %s measurement, got %s" % 
+                    msg = "Expected null %s measurement, got %s" %
                     (meas, value))
             self.assertRaises(StopIteration,reader.next)
-            
+
     def test_03_08_blob_image_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
@@ -1429,7 +1419,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             data = base64.b64decode(row[d[IMG_MEAS]])
             value = np.frombuffer(data, np.uint8)
             np.testing.assert_array_equal(value, my_blob)
-    
+
     def test_03_09_blob_experiment_measurements(self):
         path = os.path.join(self.output_dir, "my_file.csv")
         module = E.ExportToSpreadsheet()
@@ -1461,14 +1451,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             reader = csv.reader(fd, delimiter=module.delimiter_char)
             header = reader.next()
             for feature, value in reader:
-                if feature == IMG_MEAS: 
+                if feature == IMG_MEAS:
                     data = base64.b64decode(value)
                     value = np.frombuffer(data, np.uint8)
                     np.testing.assert_array_equal(value, my_blob)
                     break
             else:
                 self.fail("Could not find %s in experiment CSV" % IMG_MEAS)
-        
+
     def test_04_01_01_object_with_metadata(self):
         '''Test writing objects with 2 pairs of 2 image sets w same metadata'''
         # +++backslash+++ here because Windows and join don't do well
@@ -1525,7 +1515,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.assertRaises(StopIteration,reader.next)
             finally:
                 fd.close()
-        
+
     def test_04_01_02_object_with_path_metadata(self):
         #
         # Regression test of issue #1142
@@ -1582,7 +1572,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.assertRaises(StopIteration,reader.next)
             finally:
                 fd.close()
-        
+
     def test_04_02_image_with_metadata(self):
         '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>.csv")
@@ -1637,7 +1627,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.assertRaises(StopIteration,reader.next)
             finally:
                 fd.close()
-        
+
     def test_04_03_image_with_path_metadata(self):
         '''Test writing image data with 2 pairs of 2 image sets w same metadata'''
         path = os.path.join(self.output_dir, "+++backslash+++g<tag>")
@@ -1695,7 +1685,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 self.assertRaises(StopIteration,reader.next)
             finally:
                 fd.close()
-                
+
     def test_04_04_image_measurement_custom_directory(self):
         '''Test writing an image measurement'''
         path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
@@ -1735,7 +1725,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-            
+
     def test_04_05_unicode_image_metadata(self):
         '''Write image measurements containing unicode characters'''
         path = os.path.join(self.output_dir, "my_dir", "my_file.csv")
@@ -1776,7 +1766,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-            
+
     def test_04_06_overwrite_files_everything(self):
         m = self.make_measurements()
         pipeline = self.make_measurements_pipeline(m)
@@ -1787,14 +1777,14 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         idp.module_num = 1
         idp.object_name.value = OBJECTS_NAME
         pipeline.add_module(idp)
-        
+
         module = E.ExportToSpreadsheet()
         module.wants_everything.value = True
         module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = self.output_dir
         module.module_num = 2
         pipeline.add_module(module)
-        
+
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
         for object_name in (cpmeas.EXPERIMENT, cpmeas.IMAGE, OBJECTS_NAME):
             file_name = module.make_objects_file_name(
@@ -1807,7 +1797,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertFalse(module.prepare_run(workspace))
             os.remove(file_name)
             self.assertTrue(module.prepare_run(workspace))
-            
+
     def test_04_07_overwrite_files_group(self):
         m = self.make_measurements(dict(Metadata_tag=["foo", "bar"]))
         pipeline = self.make_measurements_pipeline(m)
@@ -1818,7 +1808,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         idp.module_num = 1
         idp.object_name.value = OBJECTS_NAME
         pipeline.add_module(idp)
-        
+
         module = E.ExportToSpreadsheet()
         module.wants_everything.value = False
         module.directory.dir_choice = E.cps.ABSOLUTE_FOLDER_NAME
@@ -1829,7 +1819,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         g.file_name.value = "\\g<tag>.csv"
         module.module_num = 2
         pipeline.add_module(module)
-        
+
         workspace = cpw.Workspace(pipeline, module, m, None, m, None)
 
         for image_number in m.get_image_numbers():
@@ -1843,7 +1833,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertFalse(module.prepare_run(workspace))
             os.remove(file_name)
             self.assertTrue(module.prepare_run(workspace))
-            
+
     def test_05_01_aggregate_image_columns(self):
         """Test output of aggregate object data for images"""
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1881,7 +1871,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             d = {}
             for index, caption in enumerate(header):
                 d[caption]=index
-            
+
             row = reader.next()
             self.assertEqual(row[d["Count_my_objects"]],"6")
             for agg in cpmeas.AGG_NAMES:
@@ -1893,7 +1883,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-    
+
     def test_05_02_no_aggregate_image_columns(self):
         """Test output of aggregate object data for images"""
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -1937,10 +1927,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             del m
             fd.close()
-            
+
     def test_05_03_aggregate_and_filtered(self):
         '''Regression test of IMG-987
-        
+
         A bug in ExportToSpreadsheet caused it to fail to write any
         aggregate object measurements if measurements were filtered by
         pick_columns.
@@ -1972,7 +1962,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                        ("my_objects", "Number_Object_Number")
                    )]
         module.columns.value = module.columns.get_value_string(columns)
-        
+
         m = cpmeas.Measurements()
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
@@ -1981,7 +1971,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         m.add_image_measurement("another_measurement", 43.2)
         m.add_measurement("my_objects","Number_Object_Number", np.arange(1,7))
         m.add_measurement("my_objects","my_measurement",data)
-        m.add_measurement("my_objects","my_filtered_measurement", 
+        m.add_measurement("my_objects","my_filtered_measurement",
                           np.random.uniform(size=(6,)))
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -2010,7 +2000,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertEqual(row[d["ImageNumber"]], "1")
             self.assertEqual(row[d["Count_my_objects"]],"6")
             self.assertAlmostEqual(float(row[d["first_measurement"]]), np.sum(data))
-            self.assertAlmostEqual(float(row[d["Mean_my_objects_my_measurement"]]), 
+            self.assertAlmostEqual(float(row[d["Mean_my_objects_my_measurement"]]),
                                    np.mean(data))
             self.assertRaises(StopIteration,reader.next)
         finally:
@@ -2021,7 +2011,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             header = reader.next()
             self.assertEqual(len(header),4)
             expected_object_columns = (
-                "ImageNumber", "ObjectNumber", "Number_Object_Number", 
+                "ImageNumber", "ObjectNumber", "Number_Object_Number",
                 "my_measurement")
             d = {}
             for index, caption in enumerate(header):
@@ -2036,11 +2026,11 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                                        data[index])
         finally:
             fd.close()
-                
+
     def test_05_04_image_number(self):
         # Regression test of issue #1139
         # Always output the ImageNumber column in Image.csv
-        
+
         image_path = os.path.join(self.output_dir, "my_image_file.csv")
         module = E.ExportToSpreadsheet()
         module.module_num = 1
@@ -2058,7 +2048,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                        (cpmeas.IMAGE, "first_measurement"),
                    )]
         module.columns.value = module.columns.get_value_string(columns)
-        
+
         m = cpmeas.Measurements()
         np.random.seed(0)
         data = np.random.uniform(size=(6,))
@@ -2086,7 +2076,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 d[caption]=index
         finally:
             fd.close()
-                
+
     def test_06_01_image_index_columns(self):
         '''Test presence of index column'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -2130,7 +2120,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-        
+
     def test_06_02_object_index_columns(self):
         '''Test presence of image and object index columns'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -2180,7 +2170,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-    
+
     def test_06_03_object_metadata_columns(self):
         '''Test addition of image metadata columns to an object metadata file'''
         path = os.path.join(self.output_dir, "my_file.csv")
@@ -2236,10 +2226,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-    
+
     def test_07_01_missing_measurements(self):
         '''Make sure ExportToSpreadsheet can continue when measurements are missing
-        
+
         Regression test of IMG-361
         Take measurements for 3 image sets, some measurements missing
         from the middle one.
@@ -2296,7 +2286,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-            
+
     def test_07_02_missing_column_measurements(self):
         # Regression test of issue 1293:
         # pipeline.get_column_measurements reports a measurement
@@ -2355,16 +2345,16 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
-        
-        
+
+
     def make_pipeline(self, csv_text):
         import cellprofiler.modules.loaddata as L
-        
+
         handle, name = tempfile.mkstemp("csv")
         fd = os.fdopen(handle, 'w')
         fd.write(csv_text)
         fd.close()
-        csv_path, csv_file = os.path.split(name) 
+        csv_path, csv_file = os.path.split(name)
         module = L.LoadText()
         module.csv_directory.dir_choice = L.ABSOLUTE_FOLDER_NAME
         module.csv_directory.custom_path = csv_path
@@ -2376,7 +2366,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(error_callback)
         return pipeline, module, name
-    
+
     def make_measurements_pipeline(self, m):
         '''Pipeline reports measurements via get_measurement_columns'''
         assert isinstance(m, cpmeas.Measurements)
@@ -2398,15 +2388,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                     else:
                         columns.append(
                             (object_name, feature, cpmeas.COLTYPE_FLOAT))
-        
+
         class MPipeline(cpp.Pipeline):
             def get_measurement_columns(self, terminating_module=None):
                 return columns
         return MPipeline()
-            
+
     def make_measurements(self, d = None):
         '''Make a measurements object
-        
+
         d - a dictionary whose keywords are the measurement names and whose
             values are sequences of measurement values per image set
         '''
@@ -2424,7 +2414,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers] = \
                 np.arange(len(image_numbers))
         return m
-    
+
     def add_gct_settings(self,output_csv_filename):
         module = E.ExportToSpreadsheet()
         module.module_num = 2
@@ -2438,7 +2428,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         module.wants_aggregate_std.value = False
         module.wants_genepattern_file.value = True
         return module
-    
+
     def test_08_01_basic_gct_check(self):
     # LoadData with data
         maybe_download_sbs()
@@ -2454,15 +2444,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 "Channel1-02-A-02.tif","%s","Hello"
 '''%info
         pipeline, module, input_filename = self.make_pipeline(csv_text)
-        
+
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
-            
+
         # ExportToSpreadsheet
         module = self.add_gct_settings(output_csv_filename)
         module.how_to_specify_gene_name.value = "Image filename"
         module.use_which_image_for_gene_name.value = "Foo"
         pipeline.add_module(module)
-        
+
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -2490,7 +2480,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
                 os.remove(output_csv_filename)
             except:
                 print("Failed to clean up files")
-            
+
     def test_08_02_make_gct_file_with_filename(self):
         maybe_download_sbs()
         # LoadData with data
@@ -2502,15 +2492,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 "Channel1-02-A-02.tif","%s","Hello"
 '''%info
         pipeline, module, input_filename = self.make_pipeline(csv_text)
-        
+
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
-            
+
         # ExportToSpreadsheet
         module = self.add_gct_settings(output_csv_filename)
         module.how_to_specify_gene_name.value = "Image filename"
         module.use_which_image_for_gene_name.value = "Foo"
         pipeline.add_module(module)
-        
+
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -2529,10 +2519,10 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             os.remove(input_filename)
             os.remove(output_csv_filename)
-              
+
     def test_08_03_make_gct_file_with_metadata(self):
         maybe_download_sbs()
-            
+
         # LoadData with data
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
@@ -2542,15 +2532,15 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
 "Channel1-02-A-02.tif","%s","Hello"
 '''%info
         pipeline, module, input_filename = self.make_pipeline(csv_text)
-        
+
         output_csv_filename = os.path.join(tempfile.mkdtemp(), "my_file.csv")
-            
+
         # ExportToSpreadsheet
         module = self.add_gct_settings(output_csv_filename)
         module.how_to_specify_gene_name.value = "Metadata"
         module.gene_name_column.value = "Metadata_Bar"
         pipeline.add_module(module)
-        
+
         try:
             m = pipeline.run()
             self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -2569,7 +2559,7 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         finally:
             os.remove(input_filename)
             os.remove(output_csv_filename)
-            
+
     def test_08_04_test_overwrite_gct_file(self):
         output_csv_filename = os.path.join(
             self.output_dir, "%s.gct" % cpmeas.IMAGE)
@@ -2619,9 +2609,9 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
         my_object_numbers1 = r.randint(1,10, size=10)
         my_image_numbers2 = r.randint(1,10, size=10)
         my_object_numbers2 = r.randint(1,10, size=10)
-        m.add_relate_measurement(1, my_relationship, 
+        m.add_relate_measurement(1, my_relationship,
                                  my_object_name1, my_object_name2,
-                                 my_image_numbers1, my_object_numbers1, 
+                                 my_image_numbers1, my_object_numbers1,
                                  my_image_numbers2, my_object_numbers2)
         pipeline = self.make_measurements_pipeline(m)
         pipeline.add_module(module)
@@ -2636,13 +2626,13 @@ ExportToSpreadsheet:[module_num:1|svn_version:\'Unknown\'|variable_revision_numb
             header = rdr.next()
             for heading, expected in zip(
                 header, ["Module", "Module Number", "Relationship",
-                         "First Object Name", "First Image Number", 
+                         "First Object Name", "First Image Number",
                          "First Object Number", "Second Object Name",
                          "Second Image Number", "Second Object Number"]):
                 self.assertEqual(heading, expected)
             for i in range(len(my_image_numbers1)):
-                (module_name, module_number, relationship, 
-                 object_name_1, image_number_1, object_number_1, 
+                (module_name, module_number, relationship,
+                 object_name_1, image_number_1, object_number_1,
                  object_name_2, image_number_2, object_number_2) = rdr.next()
                 self.assertEqual(module_name, module.module_name)
                 self.assertEqual(int(module_number), module.module_num)

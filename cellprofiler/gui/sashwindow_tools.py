@@ -1,21 +1,11 @@
 '''sashwindow_tools.py - custom painting of sashwindows
 
 This module takes over painting the sash window to make it a little more obvious
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 '''
 
 import wx
 from wx.aui import PyAuiDockArt
+
 from cellprofiler.preferences import get_background_color
 
 '''The size of the gripper the long way. This is about 5 dots worth.'''
@@ -25,7 +15,7 @@ GRIPPER_HEIGHT = 8
 
 def sw_bind_to_evt_paint(window):
     '''Bind to wx.EVT_PAINT to take over the painting
-    
+
     window - a wx.SashWindow
     '''
     window.Bind(wx.EVT_PAINT, on_sashwindow_paint)
@@ -93,7 +83,7 @@ def on_sashwindow_paint(event):
 def sp_bind_to_evt_paint(window):
     '''Take over painting the splitter of a splitter window'''
     window.Bind(wx.EVT_PAINT, on_splitter_paint)
-    
+
 def on_splitter_paint(event):
     assert isinstance(event, wx.PaintEvent)
     window = event.EventObject

@@ -1,5 +1,3 @@
-# No CellProfiler copyright notice here.
-
 # From http://bugs.python.org/issue1230540 - The threading module uses its own
 # exception handler by default, preventing sys.excepthook from being called for
 # uncaught exceptions.  This function overrides that behavior.

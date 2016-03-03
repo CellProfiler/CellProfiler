@@ -8,13 +8,13 @@ unmasked pixels will be measured.
 
 <p>Note that for publication purposes, the units of
 intensity from microscopy images are usually described as "Intensity
-units" or "Arbitrary intensity units" since microscopes are not 
-calibrated to an absolute scale. Also, it is important to note whether 
+units" or "Arbitrary intensity units" since microscopes are not
+calibrated to an absolute scale. Also, it is important to note whether
 you are reporting either the mean or the integrated intensity, so specify
 "Mean intensity units" or "Integrated intensity units" accordingly.</p>
 
-<p>Keep in mind that the default behavior in CellProfiler is to rescale the 
-image intensity from 0 to 1 by dividing all pixels in the image by the 
+<p>Keep in mind that the default behavior in CellProfiler is to rescale the
+image intensity from 0 to 1 by dividing all pixels in the image by the
 maximum possible intensity value. This "maximum possible" value
 is defined by the "Set intensity range from" setting in <b>NamesAndTypes</b>;
 see the help for that setting for more details.</p>
@@ -23,10 +23,10 @@ see the help for that setting for more details.</p>
 <ul>
 <li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
 <li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
-<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation 
+<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation
 (MAD) of pixel intensity values. The MAD is defined as the median(|x<sub>i</sub> - median(x)|).</li>
 <li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
-<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25% 
+<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%
 of the pixels in the object have lower values.</li>
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
 of the pixels in the object have lower values.</li>
@@ -35,23 +35,13 @@ of the pixels in the object have lower values.</li>
 
 See also <b>MeasureObjectIntensity</b>, <b>MaskImage</b>.
 '''
-# CellProfiler is distributed under the GNU General Public License.
-# See the accompanying file LICENSE for details.
-# 
-# Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2015 Broad Institute
-# 
-# Please see the AUTHORS file for credits.
-# 
-# Website: http://www.cellprofiler.org
-
 
 import numpy as np
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import cellprofiler.measurements as cpmeas
 
 '''Number of settings saved/loaded per image measured'''
 SETTINGS_PER_IMAGE = 3
@@ -88,7 +78,7 @@ F_UPPER_QUARTILE = 'Intensity_UpperQuartileIntensity_%s'
 F_LOWER_QUARTILE = 'Intensity_LowerQuartileIntensity_%s'
 
 ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "StdIntensity", "MADIntensity", "MedianIntensity",
-                    "MinIntensity",  "MaxIntensity", "TotalArea", "PercentMaximal", 
+                    "MinIntensity",  "MaxIntensity", "TotalArea", "PercentMaximal",
                     "LowerQuartileIntensity","UpperQuartileIntensity"]
 
 class MeasureImageIntensity(cpm.CPModule):
@@ -96,7 +86,7 @@ class MeasureImageIntensity(cpm.CPModule):
     module_name = 'MeasureImageIntensity'
     category = "Measurement"
     variable_revision_number = 2
-    
+
     def create_settings(self):
         '''Create the settings & name the module'''
         self.divider_top = cps.Divider(line=False)
@@ -105,12 +95,12 @@ class MeasureImageIntensity(cpm.CPModule):
         self.add_button = cps.DoSomething("", "Add another image",
                                           self.add_image_measurement)
         self.divider_bottom = cps.Divider(line=False)
-    
+
     def add_image_measurement(self, can_remove = True):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider())
-        
+
         group.append("image_name", cps.ImageNameSubscriber(
             "Select the image to measure",
             cps.NONE, doc = '''
@@ -118,23 +108,23 @@ class MeasureImageIntensity(cpm.CPModule):
             image. Use the <i>Add another image</i> button below to add additional images which will be
             measured. You can add the same image multiple times if you want to measure
             the intensity within several different objects.'''))
-        
+
         group.append("wants_objects", cps.Binary(
             "Measure the intensity only from areas enclosed by objects?",
             False, doc = """
             Select <i>%(YES)s</i> to measure only those pixels within an object of choice."""%globals()))
-        
+
         group.append("object_name",cps.ObjectNameSubscriber(
             "Select the input objects",cps.NONE, doc = '''
             <i>(Used only when measuring intensity from area enclosed by objects)</i><br>
-            Select the objects that the intensity will be aggregated within. The intensity measurement will be 
+            Select the objects that the intensity will be aggregated within. The intensity measurement will be
             restricted to the pixels within these objects.'''))
-        
+
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton("", 
+            group.append("remover", cps.RemoveSettingButton("",
                                                             "Remove this image", self.images, group))
         self.images.append(group)
-                    
+
     def validate_module(self, pipeline):
         """Make sure chosen objects and images are selected only once"""
         settings = {}
@@ -149,13 +139,13 @@ class MeasureImageIntensity(cpm.CPModule):
                         "%s has already been selected with %s" %(group.object_name.value, group.image_name.value),
                         group.object_name)
             settings[(group.image_name.value, group.wants_objects.value, group.object_name.value)] = True
-            
+
     def settings(self):
         result = []
         for image in self.images:
             result += [image.image_name, image.wants_objects, image.object_name]
         return result
-            
+
     def visible_settings(self):
         result = []
         for index, image in enumerate(self.images):
@@ -165,7 +155,7 @@ class MeasureImageIntensity(cpm.CPModule):
             result += temp
         result += [self.add_button]
         return result
-    
+
     def prepare_settings(self, setting_values):
         assert len(setting_values) % SETTINGS_PER_IMAGE == 0
         image_count = len(setting_values) / SETTINGS_PER_IMAGE
@@ -182,7 +172,7 @@ class MeasureImageIntensity(cpm.CPModule):
                    else (im.image_name,))
             dict[key] = im
         return dict.values()
-        
+
     def run(self, workspace):
         '''Perform the measurements on the imageset'''
         #
@@ -197,13 +187,13 @@ class MeasureImageIntensity(cpm.CPModule):
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, 
-                             workspace.display_data.statistics, 
+        figure.subplot_table(0, 0,
+                             workspace.display_data.statistics,
                              col_labels = workspace.display_data.col_labels)
-    
+
     def measure(self, im, workspace):
         '''Perform measurements according to the image measurement in im
-        
+
         im - image measurement info (see ImageMeasurement class above)
         workspace - has all the details for current image set
         '''
@@ -240,7 +230,7 @@ class MeasureImageIntensity(cpm.CPModule):
             pixels = pixels.flatten()
             pixels = pixels[np.nonzero(np.isfinite(pixels))[0]] # Ignore NaNs, Infs
             pixel_count = np.product(pixels.shape)
-            
+
             pixel_sum = np.sum(pixels)
             pixel_mean = pixel_sum/float(pixel_count)
             pixel_std = np.std(pixels)
@@ -253,7 +243,7 @@ class MeasureImageIntensity(cpm.CPModule):
             sorted_pixel_data = sorted(pixels)
             pixel_lower_qrt = sorted_pixel_data[int(len(sorted_pixel_data)* 0.25)]
             pixel_upper_qrt = sorted_pixel_data[int(len(sorted_pixel_data)* 0.75)]
-            
+
         m = workspace.measurements
         m.add_image_measurement(F_TOTAL_INTENSITY%(measurement_name), pixel_sum)
         m.add_image_measurement(F_MEAN_INTENSITY%(measurement_name), pixel_mean)
@@ -266,7 +256,7 @@ class MeasureImageIntensity(cpm.CPModule):
         m.add_image_measurement(F_PERCENT_MAXIMAL % (measurement_name), pixel_pct_max)
         m.add_image_measurement(F_LOWER_QUARTILE % (measurement_name), pixel_lower_qrt)
         m.add_image_measurement(F_UPPER_QUARTILE % (measurement_name), pixel_upper_qrt)
-        return [[im.image_name.value, 
+        return [[im.image_name.value,
                  im.object_name.value if im.wants_objects.value else "",
                  feature_name, str(value)]
                 for feature_name, value in (('Total intensity', pixel_sum),
@@ -280,7 +270,7 @@ class MeasureImageIntensity(cpm.CPModule):
                                             ('Lower quartile', pixel_lower_qrt),
                                             ('Upper quartile', pixel_upper_qrt),
                                             ('Total area', pixel_count))]
-    
+
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         columns = []
@@ -299,7 +289,7 @@ class MeasureImageIntensity(cpm.CPModule):
                 measurement_name = im.image_name.value + (("_" + im.object_name.value) if im.wants_objects.value else "")
                 columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
         return columns
-                        
+
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
             return ["Intensity"]
@@ -312,25 +302,25 @@ class MeasureImageIntensity(cpm.CPModule):
             return ALL_MEASUREMENTS
         return []
 
-    def get_measurement_images(self, pipeline, object_name, 
+    def get_measurement_images(self, pipeline, object_name,
                                category, measurement):
         if (object_name == cpmeas.IMAGE and
             category == "Intensity" and
             measurement in ALL_MEASUREMENTS):
             result = []
             for im in self.images:
-                image_name = im.image_name.value 
+                image_name = im.image_name.value
                 if im.wants_objects:
                     image_name += "_" + im.object_name.value
                 result += [image_name]
             return result
         return []
-    
-    def upgrade_settings(self, setting_values, 
-                         variable_revision_number, 
+
+    def upgrade_settings(self, setting_values,
+                         variable_revision_number,
                          module_name, from_matlab):
         '''Account for prior versions when loading
-        
+
         We handle Matlab revision # 2 here. We don't support thresholding
         because it was generally unused. The first setting is the image name.
         '''
@@ -343,5 +333,3 @@ class MeasureImageIntensity(cpm.CPModule):
         if variable_revision_number == 1:
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
-
-

@@ -2,10 +2,8 @@
 '''
 
 import base64
-
+import gc
 import numpy as np
-
-np.random.seed(9804)
 import os
 import PIL.Image as PILImage
 import scipy.ndimage
@@ -35,6 +33,9 @@ import cellprofiler.measurements as cpmeas
 
 import cellprofiler.modules.exporttodatabase as E
 import cellprofiler.modules.identify as I
+import cellprofiler.modules.loadimages as LI
+
+np.random.seed(9804)
 
 M_CATEGORY = "my"
 OBJ_FEATURE = 'objmeasurement'
@@ -134,6 +135,13 @@ class TestExportToDatabase(unittest.TestCase):
         cursor = connection.cursor()
         return cursor, connection
     
+    def test_01_00_00_write_load_test(self):
+        #
+        # If this fails, you need to write a test for your variable revision
+        # number change.
+        #
+        self.assertEqual(E.ExportToDatabase.variable_revision_number, 27)
+        
     def test_01_00_01_load_matlab_4(self):
         data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -1424,6 +1432,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertTrue(module.create_workspace_file)
         self.assertEqual(module.properties_class_table_name, "Hoopla")
         self.assertTrue(module.wants_relationship_table)
+        self.assertEqual(module.properties_classification_type, E.CT_OBJECT)
         self.assertEqual(len(module.image_groups), 2)
         for image_group, input_image_name, output_image_name, color in (
             (module.image_groups[0], "DNA", "NucleicAcid", "green"),
@@ -1464,6 +1473,84 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         self.assertEqual(g.filter_name, "Site1Filter")
         self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
         self.assertEqual(module.allow_overwrite, E.OVERWRITE_NEVER)
+        
+    def test_01_27_load_v27(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20160129211738
+GitHash:cd1cb4e
+ModuleCount:1
+HasImagePlaneDetails:False
+
+ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:27|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Database type:MySQL
+    Database name:DefaultDB
+    Add a prefix to table names?:Yes
+    Table prefix:MyExpt_
+    SQL file prefix:SQL_
+    Output file location:Default Output Folder\x7C
+    Create a CellProfiler Analyst properties file?:No
+    Database host:
+    Username:
+    Password:
+    Name the SQLite database file:DefaultDB.db
+    Calculate the per-image mean values of object measurements?:Yes
+    Calculate the per-image median values of object measurements?:No
+    Calculate the per-image standard deviation values of object measurements?:No
+    Calculate the per-well mean values of object measurements?:No
+    Calculate the per-well median values of object measurements?:No
+    Calculate the per-well standard deviation values of object measurements?:No
+    Export measurements for all objects to the database?:All
+    Select the objects:
+    Maximum # of characters in a column name:64
+    Create one table per object, a single object table or a single object view?:Single object table
+    Enter an image url prepend if you plan to access your files via http:
+    Write image thumbnails directly to the database?:No
+    Select the images for which you want to save thumbnails:
+    Auto-scale thumbnail pixel intensities?:Yes
+    Select the plate type:None
+    Select the plate metadata:None
+    Select the well metadata:None
+    Include information for all images, using default values?:Yes
+    Properties image group count:1
+    Properties group field count:1
+    Properties filter field count:0
+    Workspace measurement count:1
+    Experiment name:MyExpt
+    Which objects should be used for locations?:None
+    Enter a phenotype class table name if using the classifier tool:
+    Export object relationships?:Yes
+    Overwrite without warning?:Never
+    Access CPA images via URL?:No
+    Select the classification type:Image
+    Select an image to include:None
+    Use the image name for the display?:Yes
+    Image name:Channel1
+    Channel color:red
+    Do you want to add group fields?:No
+    Enter the name of the group:
+    Enter the per-image columns which define the group, separated by commas:ImageNumber, Image_Metadata_Plate, Image_Metadata_Well
+    Do you want to add filter fields?:No
+    Automatically create a filter for each plate?:No
+    Create a CellProfiler Analyst workspace file?:No
+    Select the measurement display tool:ScatterPlot
+    Type of measurement to plot on the X-axis:Image
+    Enter the object name:None
+    Select the X-axis measurement:None
+    Select the X-axis index:ImageNumber
+    Type of measurement to plot on the Y-axis:Image
+    Enter the object name:MyObjects
+    Select the Y-axis measurement:None
+    Select the Y-axis index:ImageNumber
+"""
+        pipeline = cpp.Pipeline()
+        pipeline.load(StringIO(data))
+        module = pipeline.modules()[0]
+        assert isinstance(module, E.ExportToDatabase)
+        self.assertEqual(module.properties_classification_type, E.CT_IMAGE)
+        self.assertEqual(len(module.workspace_measurement_groups), 1)
+        g = module.workspace_measurement_groups[0]
+        self.assertEqual(g.y_object_name, "MyObjects")
 
     RTEST_NONE = 0
     RTEST_SOME = 1
@@ -1659,6 +1746,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             def finally_fn():
+                gc.collect()
                 for filename in os.listdir(output_dir):
                     os.remove(os.path.join(output_dir, filename))
             return workspace, module, output_dir, finally_fn

@@ -48,7 +48,7 @@ def aw_parse_args():
     global work_announce_address
     global knime_bridge_address
     set_headless()
-    set_awt_headless(False)
+    set_awt_headless(True)
     parser = optparse.OptionParser()
     parser.add_option("--work-announce",
                       dest="work_announce_address",

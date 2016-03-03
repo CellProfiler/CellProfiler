@@ -102,10 +102,11 @@ class FlagImage(cpm.CPModule):
         
         group.append("combination_choice", 
                      cps.Choice(
-                        "Flag if any, or all, measurement(s) fails to meet the criteria?",
+                        "How should measurements be linked?",
                         [ C_ANY, C_ALL], doc = '''
+                        For combinations of measurements, you can set the criteria under which an image set is flagged:
                         <ul>
-                        <li><i>%(C_ANY)s:</i> An image will be flagged if any of its measurements fail. This can be useful
+                        <li><i>%(C_ANY)s:</i> An image set will be flagged if any of its measurements fail. This can be useful
                         for flagging images possessing multiple QC flaws; for example, you can flag all bright images 
                         and all out of focus images with one flag.</li>
                         <li><i>%(C_ALL)s:</i> A flag will only be assigned if all measurements fail.  This can be useful 

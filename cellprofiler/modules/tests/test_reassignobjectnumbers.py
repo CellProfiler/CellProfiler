@@ -30,7 +30,7 @@ OUTLINE_NAME = 'outlines'
 class TestReassignObjectNumbers(unittest.TestCase):
     def test_01_00_implement_load_v5_please(self):
         assert(R.ReassignObjectNumbers.variable_revision_number == 4)
-        
+
     def test_01_000_load_split(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -52,7 +52,7 @@ SplitIntoContiguousObjects:[module_num:1|svn_version:\'8913\'|variable_revision_
         self.assertEqual(module.objects_name, "MyObjects")
         self.assertEqual(module.output_objects_name, "MySplitObjects")
         self.assertEqual(module.relabel_option, R.OPTION_SPLIT)
-        
+
     def test_01_001_load_unify(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -78,7 +78,7 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         self.assertEqual(module.relabel_option, R.OPTION_UNIFY)
         self.assertEqual(module.distance_threshold, 10)
         self.assertEqual(module.image_name, "MyImage")
-        
+
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUvDNz1NwSU1WMDRRMDSzMjaxMjJWMDIwsFQgGTAwevryMzAwbGBi'
@@ -115,7 +115,7 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         self.assertAlmostEqual(module.minimum_intensity_fraction.value, .9)
         self.assertTrue(module.wants_image)
         self.assertEqual(module.image_name, "OrigRGB")
-        
+
     def test_01_02_load_v1(self):
         data = ('eJztWt1u2zYUphInbVqsa9EC7U0BXg5DIshp3Z/cVE6NrgZqO0i8DrubIh07'
                 'LGhSkKg03lPscXa5R+ojTIylWOKcSLbln6wSIDiH4ne+80spBFv17qf6Ia7p'
@@ -156,7 +156,7 @@ UnifyObjects:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_
         self.assertEqual(module.where_algorithm, R.CA_CLOSEST_POINT)
         self.assertTrue(module.wants_image)
         self.assertEqual(module.image_name, "OrigRGB")
-        
+
     def test_01_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -216,7 +216,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(module.unify_option, R.UNIFY_PARENT)
         self.assertEqual(module.parent_object, "Nuclei")
         self.assertEqual(module.unification_method, R.UM_CONVEX_HULL)
-        
+
         module = pipeline.modules()[1]
         self.assertEqual(module.relabel_option, R.OPTION_SPLIT)
         self.assertTrue(module.wants_image)
@@ -225,7 +225,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(module.unify_option, R.UNIFY_DISTANCE)
         self.assertEqual(module.unification_method, R.UM_DISCONNECTED)
 
-    def rruunn(self, input_labels, relabel_option, 
+    def rruunn(self, input_labels, relabel_option,
                unify_option = R.UNIFY_DISTANCE,
                unify_method = R.UM_DISCONNECTED,
                distance_threshold = 5,
@@ -237,7 +237,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                parent_object = "Parent_object",
                parents_of = None):
         '''Run the RelabelObjects module
-        
+
         returns the labels matrix and the workspace.
         '''
         module = R.RelabelObjects()
@@ -254,25 +254,25 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.where_algorithm.value = where_algorithm
         module.wants_outlines.value = wants_outlines
         module.outlines_name.value = outline_name
-        
+
         pipeline = cpp.Pipeline()
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        
+
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         if image is not None:
             img = cpi.Image(image)
             image_set.add(IMAGE_NAME, img)
             module.image_name.value = IMAGE_NAME
-        
+
         object_set = cpo.ObjectSet()
         o = cpo.Objects()
         o.segmented = input_labels
         object_set.add_objects(o, INPUT_OBJECTS_NAME)
-        
+
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
                                   cpmeas.Measurements(), image_set_list)
         if parents_of is not None:
@@ -282,14 +282,14 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.run(workspace)
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         return output_objects.segmented, workspace
-        
+
     def test_02_01_split_zero(self):
         labels, workspace = self.rruunn(np.zeros((10,20),int),
                                         R.OPTION_SPLIT)
         self.assertTrue(np.all(labels == 0))
         self.assertEqual(labels.shape[0],10)
         self.assertEqual(labels.shape[1],20)
-        
+
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -299,7 +299,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 0)
-        
+
         module = workspace.module
         self.assertTrue(isinstance(module, R.RelabelObjects))
         columns = module.get_measurement_columns(workspace.pipeline)
@@ -330,7 +330,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         f = module.get_measurements(workspace.pipeline, cpmeas.IMAGE, "Count")
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0], OUTPUT_OBJECTS_NAME)
-        f = module.get_measurements(workspace.pipeline, OUTPUT_OBJECTS_NAME, 
+        f = module.get_measurements(workspace.pipeline, OUTPUT_OBJECTS_NAME,
                                     "Location")
         self.assertEqual(len(f), 2)
         self.assertTrue(all([any([x==y for y in f])
@@ -339,42 +339,42 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                     "Parent")
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0], INPUT_OBJECTS_NAME)
-        
+
         f=module.get_measurements(workspace.pipeline, OUTPUT_OBJECTS_NAME,
                                   "Number")
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0],'Object_Number')
-        
+
         f = module.get_measurements(workspace.pipeline, INPUT_OBJECTS_NAME,
                                     "Children")
         self.assertEqual(len(f), 1)
         self.assertEqual(f[0], "%s_Count"%OUTPUT_OBJECTS_NAME)
 
-    
+
     def test_02_02_split_one(self):
         labels = np.zeros((10,20), int)
         labels[2:5,3:8] = 1
         labels_out, workspace = self.rruunn(labels, R.OPTION_SPLIT)
         self.assertTrue(np.all(labels == labels_out))
-        
+
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         count = m.get_current_image_measurement(I.FF_COUNT%OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, 1)
-        for feature_name, value in ((I.M_LOCATION_CENTER_X, 5), 
+        for feature_name, value in ((I.M_LOCATION_CENTER_X, 5),
                                     (I.M_LOCATION_CENTER_Y, 3),
                                     (I.FF_PARENT%INPUT_OBJECTS_NAME, 1)):
             values = m.get_current_measurement(OUTPUT_OBJECTS_NAME,
                                                feature_name)
             self.assertEqual(len(values), 1)
             self.assertAlmostEqual(values[0], value)
-            
+
         values = m.get_current_measurement(INPUT_OBJECTS_NAME,
                                            I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(values), 1)
         self.assertEqual(values[0], 1)
-    
+
     def test_02_03_split_one_into_two(self):
         labels = np.zeros((10,20), int)
         labels[2:5,3:8] = 1
@@ -396,14 +396,14 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                            I.FF_CHILDREN_COUNT% OUTPUT_OBJECTS_NAME)
         self.assertEqual(len(values),1)
         self.assertEqual(values[0], 2)
-    
+
     def test_03_01_unify_zero(self):
         labels, workspace = self.rruunn(np.zeros((10,20),int),
                                         R.OPTION_UNIFY)
         self.assertTrue(np.all(labels == 0))
         self.assertEqual(labels.shape[0],10)
         self.assertEqual(labels.shape[1],20)
-    
+
     def test_03_02_unify_one(self):
         labels = np.zeros((10,20),int)
         labels[2:5,3:8] = 1
@@ -418,7 +418,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                             distance_threshold = 6)
         self.assertTrue(np.all(labels_out[labels != 0] == 1))
         self.assertTrue(np.all(labels_out[labels == 0] == 0))
-        
+
     def test_03_04_unify_two_stays_two(self):
         labels = np.zeros((10,20), int)
         labels[2:5, 3:8] = 1
@@ -426,7 +426,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
                                             distance_threshold = 4)
         self.assertTrue(np.all(labels_out == labels))
-        
+
     def test_03_05_unify_image_centroids(self):
         labels = np.zeros((10,20), int)
         labels[2:5, 3:8] = 1
@@ -441,7 +441,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                             where_algorithm = R.CA_CENTROIDS)
         self.assertTrue(np.all(labels_out[labels != 0] == 1))
         self.assertTrue(np.all(labels_out[labels == 0] == 0))
-        
+
     def test_03_06_dont_unify_image_centroids(self):
         labels = np.zeros((10,20), int)
         labels[2:5, 3:8] = 1
@@ -456,7 +456,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                             minimum_intensity_fraction = .8,
                                             where_algorithm = R.CA_CENTROIDS)
         self.assertTrue(np.all(labels_out == labels))
-        
+
     def test_03_07_unify_image_closest_point(self):
         labels = np.zeros((10,20), int)
         labels[2:5, 3:8] = 1
@@ -472,7 +472,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                             where_algorithm = R.CA_CLOSEST_POINT)
         self.assertTrue(np.all(labels_out[labels != 0] == 1))
         self.assertTrue(np.all(labels_out[labels == 0] == 0))
-        
+
     def test_03_08_dont_unify_image_closest_point(self):
         labels = np.zeros((10,20), int)
         labels[2:5, 3:8] = 1
@@ -486,43 +486,43 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                             minimum_intensity_fraction = .8,
                                             where_algorithm = R.CA_CLOSEST_POINT)
         self.assertTrue(np.all(labels_out == labels))
-                
-        
+
+
     def test_04_00_save_outlines(self):
         labels = np.zeros((10,20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
         labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
-                                            distance_threshold = 6, 
+                                            distance_threshold = 6,
                                             wants_outlines = True, outline_name = OUTLINE_NAME)
         self.assertTrue(np.all(labels_out[labels != 0] == 1))
         self.assertTrue(np.all(labels_out[labels == 0] == 0))
-        
+
     def test_05_00_unify_per_parent(self):
         labels = np.zeros((10,20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY, 
+
+        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
                                             unify_option = R.UNIFY_PARENT,
                                             parent_object = "Parent_object",
                                             parents_of = np.array([1, 1]))
         self.assertTrue(np.all(labels_out[labels != 0] == 1))
-        
+
     def test_05_01_unify_convex_hull(self):
         labels = np.zeros((10,20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
         expected = np.zeros(labels.shape, int)
         expected[2:5, 3:18] = 1
-    
-        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY, 
+
+        labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY,
                                             unify_option = R.UNIFY_PARENT,
                                             unify_method = R.UM_CONVEX_HULL,
                                             parent_object = "Parent_object",
                                             parents_of = np.array([1, 1]))
         self.assertTrue(np.all(labels_out == expected))
-        
+
     def test_05_02_unify_nothing(self):
         labels = np.zeros((10, 20), int)
         for um in R.UM_DISCONNECTED, R.UM_CONVEX_HULL:

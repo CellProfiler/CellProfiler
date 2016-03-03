@@ -16,7 +16,7 @@ desired, retrieves images you want to process further in CellProfiler.
 <p>ImageJ runs using Java, and as such, relies on proper handling of the Java memory requirements.
 When ImageJ starts, the Java Virtual Machine (JVM) allocates a portion of memory for its
 own use from the operating system; this memory is called the <i>java heap memory</i>. If you
-encounter JVM memory errors, you can tell CellProfiler to increase the size of the Java heap memory 
+encounter JVM memory errors, you can tell CellProfiler to increase the size of the Java heap memory
 on startup.</p>
 <p>To do this, run CellProfiler from the command line with the following argument:
 <code>--jvm-heap-size=JVM_HEAP_SIZE</code><br>
@@ -74,13 +74,13 @@ class RunImageJ(cpm.CPModule):
     variable_revision_number = 5
     category = "Image Processing"
     do_not_check=True
-    
+
     def create_settings(self):
         '''Create the settings for the module'''
         logger.debug("Creating RunImageJ module settings")
-        
+
         self.command_or_macro = cps.Choice(
-            "Run an ImageJ command or macro?", 
+            "Run an ImageJ command or macro?",
             [CM_COMMAND, CM_SCRIPT, CM_MACRO],doc = """
             This setting determines whether <b>RunImageJ</b> runs either a:
             <ul>
@@ -100,7 +100,7 @@ class RunImageJ(cpm.CPModule):
             "Command",doc = """
             <i>(Used only if running a %(CM_COMMAND)s)</i><br>
             The command to execute when the module runs."""%globals())
-                                                
+
         self.command_settings_dictionary = {}
         self.command_settings = []
         self.command_settings_count = cps.HiddenCount(
@@ -115,7 +115,7 @@ class RunImageJ(cpm.CPModule):
             self.post_command_settings, "Post-group command settings count")
 
         self.macro = cps.Text(
-            "Macro", 
+            "Macro",
             """import imagej.command.CommandService;
 cmdSvcClass = CommandService.class;
 cmdSvc = ImageJ.getService(cmdSvcClass);
@@ -127,22 +127,22 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             We suggest that you use the Beanshell scripting language
             <a href="http://www.beanshell.org/manual/contents.html">
             (Beanshell documentation)</a>."""%globals())
-        
+
         self.populate_language_dictionary()
-            
+
         self.macro_language = cps.Choice(
             "Macro language",
             choices = self.language_dictionary.keys(),doc = """
             This setting chooses the scripting language used to execute
             any macros in this module""")
-        
+
         self.run_group_divider = cps.Divider()
         self.wants_to_set_current_image = cps.Binary(
             "Input the currently active image in ImageJ?", True,doc="""
-            Select <i>%(YES)s</i> if you want to set the currently 
-            active ImageJ image using an image from a 
+            Select <i>%(YES)s</i> if you want to set the currently
+            active ImageJ image using an image from a
             prior CellProfiler module.
-            <p>Select <i>%(NO)s</i> to use the currently 
+            <p>Select <i>%(NO)s</i> to use the currently
             active image in ImageJ. You may want to do this if you
             have an output image from a prior <b>RunImageJ</b>
             that you want to perform further operations upon
@@ -151,20 +151,20 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         self.current_input_image_name = cps.ImageNameSubscriber(
             "Select the input image",doc="""
             <i>(Used only if setting the currently active image)</i><br>
-            This is the CellProfiler image that will become 
+            This is the CellProfiler image that will become
             ImageJ's currently active image.
-            The ImageJ commands and macros in this module will perform 
+            The ImageJ commands and macros in this module will perform
             their operations on this image. You may choose any image produced
             by a prior CellProfiler module.""")
 
         self.wants_to_get_current_image = cps.Binary(
             "Retrieve the currently active image from ImageJ?", True,doc="""
             Select <i>%(YES)s</i> if you want to retrieve ImageJ's
-            currently active image after running the command or macro. 
+            currently active image after running the command or macro.
             <p>Select <i>%(NO)s</i> if the pipeline does not need to access
             the current ImageJ image. For example, you might want to run
             further ImageJ operations with additional <b>RunImageJ</b>
-            upon the current image prior to retrieving the final image 
+            upon the current image prior to retrieving the final image
             back to CellProfiler.</p>"""%globals())
 
         self.current_output_image_name = cps.ImageNameProvider(
@@ -174,13 +174,13 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             processing by the command or macro. The image will be a
             snapshot of the current image after the command has run, and
             will be available for processing by subsequent CellProfiler modules.""")
-        
+
         self.prepare_group_choice = cps.Choice(
-            "Function to run before each group of images?", 
+            "Function to run before each group of images?",
             [CM_NOTHING, CM_COMMAND, CM_SCRIPT, CM_MACRO],doc="""
             You can run an ImageJ 2.0 script, an ImageJ 1.x macro or a command <i>before</i> each group of
             images. This can be useful in order to set up ImageJ before
-            processing a stack of images. 
+            processing a stack of images.
             <ul>
             <li><i>%(CM_NOTHING)s:</i> Choose this option if
             you do not want to run a command or macro.</li>
@@ -189,9 +189,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             <li><i>%(CM_MACRO)s</i> Run an ImageJ 1.x macro in ImageJ 1.x compatibility mode.</li>
             </ul>
             """ % globals())
-        
+
         logger.debug("Finding ImageJ commands")
-        
+
         self.prepare_group_command = self.make_command_choice(
             "Command", doc = """
             <i>(Used only if running a command before an image group)</i><br>
@@ -202,13 +202,13 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             multiline = True,doc="""
             <i>(Used only if running a macro before an image group)</i><br>
             This is the ImageJ macro to be executed before processing
-            a group of images. For help on writing macros, see 
+            a group of images. For help on writing macros, see
             <a href="http://rsb.info.nih.gov/ij/developer/macro/macros.html">here</a>.""")
-        
+
         self.prepare_group_divider = cps.Divider()
-        
+
         self.post_group_choice = cps.Choice(
-            "Function to run after each group of images?", 
+            "Function to run after each group of images?",
             [CM_NOTHING, CM_COMMAND, CM_SCRIPT, CM_MACRO],doc="""
             You can run an ImageJ 2.0 script, an ImageJ macro or a command <i>after</i> each group of
             images. This can be used to do some sort of operation on a whole
@@ -221,32 +221,32 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             <li><i>%(CM_MACRO)s</i> Run an ImageJ 1.x macro in ImageJ 1.x compatibility mode.</li>
             </ul>
             """ % globals())
-        
+
         self.post_group_command = self.make_command_choice(
             "Command", doc = """
             <i>(Used only if running a command after an image group)</i><br>
             The command to execute after processing a group of images.""")
-        
+
         self.post_group_macro = cps.Text(
             "Macro", 'run("Invert");',
             multiline = True,doc="""
             <i>(Used only if running a macro after an image group)</i><br>
             This is the ImageJ macro to be executed after processing
-            a group of images. For help on writing macros, see 
+            a group of images. For help on writing macros, see
             <a href="http://rsb.info.nih.gov/ij/developer/macro/macros.html">here</a>.""")
-        
+
         self.post_group_divider = cps.Divider()
-        
+
         self.wants_post_group_image = cps.Binary(
             "Retrieve the image output by the group operation?", False,doc="""
             You can retrieve the image that is currently active in ImageJ
             at the end of macro processing and use it later in CellProfiler.
             The image will only be available during the last cycle of the
-            image group. 
+            image group.
             <p>Select <i>%(YES)s</i> to retrieve the active image for use in CellProfiler.
             Select <i>%(NO)s</i> if you do not want to retrieve the active image.</p>
             """%globals())
-        
+
         self.post_group_output_image = cps.ImageNameProvider(
             "Name the group output image", "ImageJGroupImage",doc="""
             <i>(Used only if retrieving an image after an image group operation)</i><br>
@@ -256,32 +256,32 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             last cycle in the group""",
             provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
                                  cps.AVAILABLE_ON_LAST_ATTRIBUTE: True } )
-           
+
         logger.debug("Finished creating settings")
 
     def populate_language_dictionary(self):
         all_engines = ij2.get_script_service(get_context()).getLanguages()
         self.language_dictionary = dict(
             [(engine.getLanguageName(), engine) for engine in all_engines])
-        
+
     @staticmethod
     def is_leaf(node):
         '''Return True if a tree node holds a command'''
         return len(node) >= 2 and node[2] is not None
-    
+
     def make_command_choice(self, label, doc):
         '''Make a version-appropriate command chooser setting
-        
+
         label - the label text for the setting
         doc - its documentation
         '''
         return cps.TreeChoice(
-            label, "None", self.get_choice_tree, 
+            label, "None", self.get_choice_tree,
             fn_is_leaf=self.is_leaf, doc = doc)
-        
+
     def get_choice_tree(self):
         '''Get the ImageJ command choices for the TreeChoice control
-        
+
         The menu items are augmented with a third tuple entry which is
         the ModuleInfo for the command.
         '''
@@ -292,7 +292,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         tree = []
         context = get_context()
         module_service = ij2.get_module_service(context)
-        
+
         for module_info in module_service.getModules():
             if module_info.getMenuRoot() != "app":
                 continue
@@ -318,7 +318,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 current_tree = current_node[1]
             # mark the leaf.
             current_node[2] = module_info
-            
+
         def sort_tree(tree):
             '''Recursively sort a tree in-place'''
             for node in tree:
@@ -328,7 +328,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         sort_tree(tree)
         cached_choice_tree = tree
         return cached_choice_tree
-    
+
     @staticmethod
     def __get_module_info_from_command(command):
         leaf = command.get_selected_leaf()
@@ -336,7 +336,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         if leaf[4] is None:
             # Initialize the module at this point
             module = module_info.createModule()
-            J.call(get_context().getContext(), "inject", 
+            J.call(get_context().getContext(), "inject",
                    "(Ljava/lang/Object;)V", module.o)
             try:
                 module.initialize()
@@ -347,10 +347,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         else:
             module = leaf[4]
         return ij2.wrap_module_info(module.getInfo())
-        
+
     def get_command_settings(self, command, d):
         '''Get the settings associated with the current command
-        
+
         d - the dictionary that persists the setting. None = regular
         '''
         key = command.get_unicode_value()
@@ -400,7 +400,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     minimum, maximum = [
                         None if x is None else J.call(x, "intValue", "()I")
                         for x in minimum, maximum]
-                               
+
                     if J.is_instance_of(default, 'java/lang/Number'):
                         value = J.call(default, "intValue", "()I")
                     elif minimum is not None:
@@ -518,10 +518,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         undocumented. Please see ImageJ's documentation for
                         further information.
                         """
-                    klass = J.call(module_item.o, "getType", 
+                    klass = J.call(module_item.o, "getType",
                                    "()Ljava/lang/Class;")
                     choices = [
-                        J.to_string(x) for x in 
+                        J.to_string(x) for x in
                         ij2.get_object_service(get_context()).getObjects(klass)]
                     if len(choices) < 2:
                         continue
@@ -557,16 +557,16 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         else:
             result = d[key]
         return [setting for setting, module_info in result]
-        
+
     def is_advanced(self, command, d):
         '''A command is an advanced command if there are settings for it'''
         return True
-    
+
     def is_aggregation_module(self):
         '''RunImageJ is an aggregation module if it performs a prepare or post group command'''
         return self.prepare_group_choice != CM_NOTHING and \
                self.post_group_choice != CM_NOTHING
-    
+
     def settings(self):
         '''The settings as loaded or stored in the pipeline'''
         return ([
@@ -576,41 +576,41 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             self.current_input_image_name,
             self.wants_to_get_current_image, self.current_output_image_name,
             self.prepare_group_choice, self.prepare_group_command,
-            self.prepare_group_macro, 
+            self.prepare_group_macro,
             self.post_group_choice, self.post_group_command,
-            self.post_group_macro, 
+            self.post_group_macro,
             self.wants_post_group_image, self.post_group_output_image,
             self.command_settings_count, self.pre_command_settings_count,
             self.post_command_settings_count] + self.command_settings +
                 self.pre_command_settings + self.post_command_settings)
-    
+
     def on_setting_changed(self, setting, pipeline):
         '''Respond to a setting change
-        
+
         We have to update the ImageJ module settings in response to a
         new choice.
         '''
         for command_choice, command_setting, module_settings, d in (
-            (self.command_or_macro, 
-             self.command, 
-             self.command_settings, 
+            (self.command_or_macro,
+             self.command,
+             self.command_settings,
              self.command_settings_dictionary),
             (self.prepare_group_choice,
-             self.prepare_group_command, 
-             self.pre_command_settings, 
+             self.prepare_group_command,
+             self.pre_command_settings,
              self.pre_command_settings_dictionary),
-            (self.post_group_choice, 
-             self.post_group_command, 
-             self.post_command_settings, 
+            (self.post_group_choice,
+             self.post_group_command,
+             self.post_command_settings,
              self.post_command_settings_dictionary)):
             if ((id(setting) == id(command_setting)) or
-                (id(setting) == id(command_choice) and 
+                (id(setting) == id(command_choice) and
                  command_choice == CM_COMMAND)):
                 del module_settings[:]
                 module_settings.extend(self.get_command_settings(command_setting, d))
             elif id(setting) == id(command_choice):
                 del module_settings[:]
-                
+
     def visible_settings(self):
         '''The settings as seen by the user'''
         uses_macros = ((self.command_or_macro == CM_SCRIPT) or
@@ -649,17 +649,17 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             if self.wants_post_group_image:
                 result += [self.post_group_output_image]
         return result
-    
+
     def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to run a group
-        
+
         RunImageJ remembers the image number of the first and last image
         for later processing.
         '''
         d = self.get_dictionary(workspace.image_set_list)
         d[D_FIRST_IMAGE_SET] = image_numbers[0]
         d[D_LAST_IMAGE_SET] = image_numbers[-1]
-        
+
     def run(self, workspace):
         '''Run the imageJ command'''
         image_set = workspace.image_set
@@ -685,7 +685,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         if img is not None:
             ijpixels = img.pixel_data * IMAGEJ_SCALE
             if not ij1_mode:
-                dataset = ij2.create_dataset(get_context(), 
+                dataset = ij2.create_dataset(get_context(),
                                              ijpixels,
                                              input_image_name)
                 display = display_service.createDisplay(
@@ -729,10 +729,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 else:
                     display = display_service.getActiveImageDisplay()
                     self.save_display_as_image(workspace, display, output_image_name)
-                
+
     def save_display_as_image(self, workspace, display, image_name):
         '''Convert an ImageJ display to an image and save in the image set
-        
+
         workspace - current workspace
         display - an ImageJ Display
         image_name - save the image in the image set using this name.
@@ -747,7 +747,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
     def save_dataset_as_image(self, workspace, dataset, image_name):
         '''Convert an ImageJ dataset to an image and save in the image set
-        
+
         workspace - current workspace
         dataset - an ImageJ dataset
         image_name - save the image in the image set using this name.
@@ -773,7 +773,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             command = self.command
             macro  = self.macro.value
             d = self.command_settings_dictionary
-            
+
         if choice == CM_COMMAND:
             self.execute_advanced_command(workspace, command, d)
         elif choice == CM_SCRIPT:
@@ -812,7 +812,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         workspace.display_data.image_acquired_from_ij = pixels
             else:
                 ijmacros.execute_macro(macro)
-   
+
     def execute_advanced_command(self, workspace, command, d):
         '''Execute an advanced command
 
@@ -827,7 +827,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             workspace.display_data.output_images = output_images = []
         key = command.get_unicode_value()
         module_info = RunImageJ.__get_module_info_from_command(command)
-        
+
         input_dictionary = J.get_map_wrapper(
             J.make_instance('java/util/HashMap', "()V"))
         display_dictionary = {}
@@ -852,7 +852,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 image_name = setting.value
                 image = workspace.image_set.get_image(image_name)
                 pixel_data = image.pixel_data * IMAGEJ_SCALE
-                
+
                 dataset = ij2.create_dataset(
                     context, pixel_data, image_name)
                 if J.call(data_class, "isAssignableFrom",
@@ -861,7 +861,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     o = dataset.o
                 else:
                     display = display_service.createDisplay(image_name, dataset)
-                    display_dictionary[module_item.getName()] = display 
+                    display_dictionary[module_item.getName()] = display
                     if image.has_mask:
                         #overlay_name = "X" + uuid.uuid4().get_hex()
                         #image_dictionary[overlay_name] = image.mask
@@ -889,9 +889,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     "java/io/File", "(Ljava/lang/String;)V", setting.value)
                 input_dictionary.put(field_name, jfile)
             elif field_type == ij2.FT_PLUGIN:
-                klass = J.call(module_item.o, "getType", 
+                klass = J.call(module_item.o, "getType",
                                "()Ljava/lang/Class;")
-                
+
                 oo = ij2.get_object_service(get_context()).getObjects(klass)
                 if len(oo) == 0:
                     input_dictionary.put(field_name, None)
@@ -907,9 +907,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         input_dictionary.put(field_name, None)
             elif module_item.isRequired():
                 input_dictionary.put(field_name, None)
-                
+
         module = module_info.createModule()
-        J.call(get_context().getContext(), "inject", 
+        J.call(get_context().getContext(), "inject",
                "(Ljava/lang/Object;)V", module.o)
         try:
             module.initialize()
@@ -923,7 +923,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         #
         pluginService = context.getService("org.scijava.plugin.PluginService")
         preprocessors, postprocessors = [
-            J.call(pluginService, "createInstancesOfType", 
+            J.call(pluginService, "createInstancesOfType",
                    "(Ljava/lang/Class;)Ljava/util/List;",
                    J.class_for_name(x))
             for x in ("org.scijava.module.process.PreprocessorPlugin",
@@ -939,10 +939,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         # Now run the module
         #
         jfuture = J.call(
-            module_service.o, "run", 
+            module_service.o, "run",
             "(Lorg/scijava/module/Module;Ljava/util/List;Ljava/util/List;Ljava/util/Map;)Ljava/util/concurrent/Future;",
             module.o, preprocessors, postprocessors, input_dictionary.o)
-        
+
         module = J.JWrapper(jfuture).get()
         for setting, module_item in d[key]:
             if isinstance(setting, cps.ImageNameProvider):
@@ -967,15 +967,15 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         # Assume it's a dataset.
                         pixel_data = self.save_dataset_as_image(
                             workspace, ij2.wrap_dataset(o), output_name)
-                
+
                 if wants_display:
                     output_images.append((output_name, pixel_data))
         # Close any displays that we created.
         for display in display_dictionary.values():
             display.close()
-                
+
     def display(self, workspace, figure):
-        if (self.command_or_macro == CM_COMMAND and 
+        if (self.command_or_macro == CM_COMMAND and
               self.is_advanced(self.command,
                                self.command_settings_dictionary)):
             input_images = workspace.display_data.input_images
@@ -989,31 +989,31 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     return
                 else:
                     nrows = 1
-                    output_images = [ 
-                        (name, img, i, 0) 
+                    output_images = [
+                        (name, img, i, 0)
                         for i, (name, img) in enumerate(output_images)]
                     ncols = len(output_images)
             else:
-                input_images = [ 
-                    (name, img, i, 0) 
+                input_images = [
+                    (name, img, i, 0)
                     for i, (name, img) in enumerate(input_images)]
                 ncols = len(input_images)
                 if len(output_images) == 0:
                     nrows = 1
                 else:
                     nrows = 2
-                    output_images = [ 
-                        (name, img, i, 1) 
+                    output_images = [
+                        (name, img, i, 1)
                         for i, (name, img) in enumerate(output_images)]
                     ncols = max(ncols, len(output_images))
             figure.set_subplots((ncols, nrows))
             for title, pixel_data, x, y in input_images + output_images:
                 if pixel_data.ndim == 3:
-                    mimg = figure.subplot_imshow_color(x, y, pixel_data, 
-                                                       title=title, 
+                    mimg = figure.subplot_imshow_color(x, y, pixel_data,
+                                                       title=title,
                                                        sharexy = primary)
                 else:
-                    mimg = figure.subplot_imshow_bw(x, y, pixel_data, 
+                    mimg = figure.subplot_imshow_bw(x, y, pixel_data,
                                                     title=title,
                                                     sharexy = primary)
                 if primary is None:
@@ -1032,7 +1032,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             figure.figure.text(.25, .5, "No input image",
                                verticalalignment='center',
                                horizontalalignment='center')
-        
+
         if self.wants_to_get_current_image:
             output_image_name = self.current_output_image_name.value
             pixel_data = workspace.display_data.image_acquired_from_ij
@@ -1050,15 +1050,15 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
     def prepare_settings(self, setting_values):
         '''Prepare the settings for loading
-        
+
         set up the advanced settings for the commands
         '''
         for command_settings, idx_choice, idx_cmd, idx_count, d in (
             (self.command_settings, IDX_COMMAND_CHOICE, IDX_COMMAND,
              IDX_COMMAND_COUNT, self.command_settings_dictionary),
-            (self.pre_command_settings, IDX_PRE_COMMAND_CHOICE, IDX_PRE_COMMAND, 
+            (self.pre_command_settings, IDX_PRE_COMMAND_CHOICE, IDX_PRE_COMMAND,
              IDX_PRE_COMMAND_COUNT, self.pre_command_settings_dictionary),
-            (self.post_command_settings, IDX_POST_COMMAND_CHOICE, 
+            (self.post_command_settings, IDX_POST_COMMAND_CHOICE,
              IDX_POST_COMMAND, IDX_POST_COMMAND_COUNT,
              self.post_command_settings_dictionary)):
             del command_settings[:]
@@ -1067,8 +1067,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 command.set_value_text(setting_values[idx_cmd])
                 command_settings += self.get_command_settings(
                     command, d)
-        
-            
+
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1:
@@ -1094,55 +1094,55 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
              prepare_group_macro, prepare_group_options,
              post_group_choice, post_group_command,
              post_group_macro, post_group_options,
-             wants_post_group_image, 
+             wants_post_group_image,
              post_group_output_image) = setting_values[:19]
             command_or_macro, command, macro = self.upgrade_settings_from_v3(
                 command_or_macro, command, macro)
             prepare_group_choice, prepare_group_command, prepare_group_macro = \
                 self.upgrade_settings_from_v3(
-                    prepare_group_choice, prepare_group_command, 
+                    prepare_group_choice, prepare_group_command,
                     prepare_group_macro)
             post_group_choice, post_group_command, post_group_macro = \
                 self.upgrade_settings_from_v3(
-                    post_group_choice, post_group_command, 
+                    post_group_choice, post_group_command,
                     post_group_macro)
             setting_values = [
                 command_or_macro, command, macro, "ECMAScript",
                 wants_to_set_current_image, current_input_image_name,
                 wants_to_get_current_image, current_output_image_name,
                 pause_before_proceeding, prepare_group_choice,
-                prepare_group_command, prepare_group_macro, 
+                prepare_group_command, prepare_group_macro,
                 post_group_choice, post_group_command,
-                post_group_macro, wants_post_group_image, 
+                post_group_macro, wants_post_group_image,
                 post_group_output_image] + setting_values[19:]
             variable_revision_number = 4
-            
+
         if variable_revision_number == 4:
             #
             # Removed pause_before setting
             #
             setting_values = setting_values[:8] + setting_values[9:]
             variable_revision_number = 5
-            
+
         return setting_values, variable_revision_number, from_matlab
-    
+
     def upgrade_settings_from_v3(self, command_or_macro, command, macro):
         '''Upgrade settings from ImageJ 1.x to ImageJ 2.x
-        
+
         command_or_macro: either CM_COMMAND or CM_MACRO
-        
+
         command: the ImageJ 1.x menu command to execute
-        
+
         macro: the ImageJ 1.x macro to execute
-        
+
         Returns adjusted command_or_macro, command and macro
         '''
         if command_or_macro == CM_COMMAND:
             command_or_macro = CM_MACRO
             macro = 'run("%s");' % command
         return command_or_macro, command, macro
-        
-        
+
+
 IJ_TABLE_SETTING_GROUP = "ijtable"
 IJ_TABLE_TYPE = "net.imagej.table.TableDisplay"
 
@@ -1151,10 +1151,9 @@ class IJTableProvider(cps.NameProvider):
     def __init__(self, text, *args, **kwargs):
         super(IJTableProvider, self).__init__(
             text, IJ_TABLE_SETTING_GROUP, *args, **kwargs)
-        
+
 class IJTableSubscriber(cps.NameSubscriber):
     '''A setting subscriber to ImageJ table names'''
     def __init__(self, text, *args, **kwargs):
         super(IJTableSubscriber, self).__init__(
             text, IJ_TABLE_SETTING_GROUP, *args, **kwargs)
-        

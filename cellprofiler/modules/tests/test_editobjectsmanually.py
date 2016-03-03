@@ -54,7 +54,7 @@ class TestEditObjectsManually(unittest.TestCase):
         self.assertEqual(module.filtered_objects, "FilteredNuclei")
         self.assertFalse(module.wants_outlines)
         self.assertEqual(module.renumber_choice, E.R_RENUMBER)
-    
+
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -81,7 +81,7 @@ EditObjectsManually:[module_num:1|svn_version:\'1\'|variable_revision_number:1|s
         self.assertEqual(module.outlines_name, "EditedNucleiOutlines")
         self.assertEqual(module.renumber_choice, E.R_RENUMBER)
         self.assertFalse(module.wants_image_display)
- 
+
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -111,7 +111,7 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
         self.assertTrue(module.wants_image_display)
         self.assertEqual(module.image_name, "DNA")
         self.assertFalse(module.allow_overlap)
-        
+
     def test_01_04_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -142,13 +142,13 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
         self.assertTrue(module.wants_image_display)
         self.assertEqual(module.image_name, "DNA")
         self.assertTrue(module.allow_overlap)
-        
-        
+
+
     def test_02_02_measurements(self):
         module = E.EditObjectsManually()
         module.object_name.value = INPUT_OBJECTS_NAME
         module.filtered_objects.value = OUTPUT_OBJECTS_NAME
-        
+
         columns = module.get_measurement_columns(None)
         expected_columns = [
             ( cpmeas.IMAGE, E.I.FF_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER ),
@@ -157,20 +157,20 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
             ( OUTPUT_OBJECTS_NAME, E.I.M_LOCATION_CENTER_Y, cpmeas.COLTYPE_FLOAT ),
             ( OUTPUT_OBJECTS_NAME, E.I.FF_PARENT % INPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER),
             ( INPUT_OBJECTS_NAME, E.I.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME, cpmeas.COLTYPE_INTEGER) ]
-        
+
         for column in columns:
             self.assertTrue(any([ all([column[i] == expected[i] for i in range(3)])
                                   for expected in expected_columns]),
                             "Unexpected column: %s, %s, %s" % column)
             # Make sure no duplicates
-            self.assertEqual(len(['x' for c in columns 
-                                  if all([column[i] == c[i] 
+            self.assertEqual(len(['x' for c in columns
+                                  if all([column[i] == c[i]
                                           for i in range(3)])]), 1)
         for expected in expected_columns:
             self.assertTrue(any([ all([column[i] == expected[i] for i in range(3)])
                                   for column in columns]),
                             "Missing column: %s, %s, %s" % expected)
-            
+
         #
         # Check the measurement features
         #
@@ -185,7 +185,7 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
                   "Foo": [] },
               "Foo": {}
               }
-        
+
         for object_name, category_d in d.iteritems():
             #
             # Check get_categories for the object
@@ -198,7 +198,7 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
             for category in category_d.keys():
                 if category != "Foo":
                     self.assertTrue(category in categories)
-            
+
             for category, expected_features in category_d.iteritems():
                 #
                 # check get_measurements for each category
@@ -207,9 +207,8 @@ EditObjectsManually:[module_num:1|svn_version:\'10039\'|variable_revision_number
                                                    category)
                 self.assertEqual(len(features), len(expected_features))
                 for feature in features:
-                    self.assertTrue(feature in expected_features, 
+                    self.assertTrue(feature in expected_features,
                                     "Unexpected feature: %s" % feature)
                 for feature in expected_features:
                     self.assertTrue(feature in features,
                                     "Missing feature: %s" % feature)
-                                    

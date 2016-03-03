@@ -750,7 +750,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
             def bad_url(e=e):
                 raise e
             unittest.expectedFailure(bad_url)()
-            
+
         self.run_create_webpage(filenames, alter_fn = alter_fn)
         zpath = os.path.join(cpprefs.get_default_image_directory(),
                              ZIPFILE_NAME)
@@ -768,5 +768,3 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
                             udata, data[offset:(offset + len(udata))])
                         offset += len(udata)
                 svn_fd.close()
-
-

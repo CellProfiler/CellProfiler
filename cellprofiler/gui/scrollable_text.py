@@ -50,7 +50,7 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
     def resize(self, evt):
         DC = wx.ClientDC(self)
         DC.SetFont(self.font)
-        
+
         # find line width and  height
         extent = DC.GetFullTextExtent('X'*self.longest_line)
         lineheight = extent[1]

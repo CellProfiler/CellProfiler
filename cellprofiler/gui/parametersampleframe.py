@@ -95,14 +95,14 @@ class ParameterSampleFrame(wx.Frame):
         self.__within_group_index = None
         self.__outlines = None
         self.__grids = None
-        
+
         frame_title = 'Sampling settings for module, ' + self.__module.module_name
         wx.Frame.__init__(self, self.__frame, id, frame_title, pos, size, style, name)
         self.__frame_sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSize(wx.Size(700, 350))
         self.SetSizer(self.__frame_sizer)
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
-        
+
         # Get parameters
         self.__parameters_list = self.get_parameters_list()
         if len(self.__parameters_list) == 0:
@@ -113,7 +113,7 @@ class ParameterSampleFrame(wx.Frame):
                 style=wx.OK)
             dialog.ShowModal()
             self.Close(True)
-        
+
         # Init settings panel
         self.__settings_panel = wx.Panel(self, -1)
         self.__settings_panel_sizer = wx.StaticBoxSizer(
@@ -153,7 +153,7 @@ class ParameterSampleFrame(wx.Frame):
         # Init dynamic widgets based on parameters
         self.__parameters_to_widgets_list = self.get_parameters_to_widgets_list(
             self.__parameters_list)
-        
+
         self.__check_box_list = []
         self.__current_static_text_list =[]
         self.__lower_bound_spin_ctrl_list = []
@@ -166,7 +166,7 @@ class ParameterSampleFrame(wx.Frame):
 
             for j in range(len(self.__parameters_to_widgets_list[i])):
                 # Checkbox & label
-                if j == 0:    
+                if j == 0:
                     check_box = wx.CheckBox(self.__settings_scrolled_window, -1, label)
                     check_box.Bind(wx.EVT_CHECKBOX, self.on_check_box)
                     self.__settings_scrolled_window_sizer.Add(
@@ -208,7 +208,7 @@ class ParameterSampleFrame(wx.Frame):
 
                     interval = DEFAULT_NUMBER_SAMPLES-1 # Used later to set upper bound
                 elif self.is_parameter_float(setting):
-                    # Float                
+                    # Float
                     lower_spin_ctrl = fs.FloatSpin(
                         self.__settings_scrolled_window, wx.NewId(),
                         size=wx.DefaultSize) # NB: if not set, spin buttons are hidden
@@ -226,7 +226,7 @@ class ParameterSampleFrame(wx.Frame):
                     upper_spin_ctrl.Bind(fs.EVT_FLOATSPIN, self.on_upper_float_spin)
 
                     interval = upper_spin_ctrl.GetIncrement() # Used later to set upper bound
-                    
+
                 if self.get_parameter_input_size(setting) == 1:
                     lower_spin_ctrl.SetValue(value) # Set value after range to avoid rounding
                     upper_spin_ctrl.SetValue(value+interval)
@@ -265,7 +265,7 @@ class ParameterSampleFrame(wx.Frame):
         self.__frame_sizer.Add(self.sample_button, 0, wx.ALIGN_RIGHT|wx.ALL, 5)
 
         self.__initialized = True
-        
+
     def get_parameters_list(self):
         """Get and return the list of unbounded parameters.
 
@@ -310,7 +310,7 @@ class ParameterSampleFrame(wx.Frame):
                 index_count += 1
             parameters_to_widgets_list.append(widget_indices)
         return parameters_to_widgets_list
-    
+
     def get_parameter_type(self, setting):
         """Get parameter type of 'setting' by considering its class."""
         if isinstance(setting, settings.Binary):
@@ -499,7 +499,7 @@ class ParameterSampleFrame(wx.Frame):
                     else:
                         number *= self.__number_spin_ctrl_list[j].GetValue()
         return number
-        
+
     def compute_samples(self, lower_bound, upper_bound, number_samples, is_int):
         """Computes samples in the range [lower_bound, upper_bound].
 
@@ -680,8 +680,8 @@ class ParameterSampleFrame(wx.Frame):
             #    #path = \
             #    #    os.path.join(directory_path, 'tootie')
             #    #self.save_image(image, path)
-                
-            #for object_name in self.__measurements.get_object_names(): 
+
+            #for object_name in self.__measurements.get_object_names():
             #    print object_name
             #    for feature_name in self.__measurements.get_feature_names(object_name):
             #        print '\t' + str(feature_name)
@@ -692,8 +692,8 @@ class ParameterSampleFrame(wx.Frame):
 
     def save_image(self, image, path):
         """TODO: add comments"""
-        
-        import PIL.Image as PILImage        
+
+        import PIL.Image as PILImage
         pixels = image.pixel_data
         if np.max(pixels) > 1 or np.min(pixels) < 0:
             pixels = pixels.copy()
@@ -739,7 +739,7 @@ class ParameterSampleFrame(wx.Frame):
                         if upper_bound < lower_bound+increment:
                             self.__upper_bound_spin_ctrl_list[j].SetValue(
                                 lower_bound+increment)
-                            
+
     def on_upper_spin_ctrl(self, event):
         if self.__initialized:
             for i in range(len(self.__parameters_to_widgets_list)):
@@ -751,7 +751,7 @@ class ParameterSampleFrame(wx.Frame):
                         if upper_bound < lower_bound+increment:
                             self.__lower_bound_spin_ctrl_list[j].SetValue(
                                 upper_bound-increment)
-        
+
     def on_lower_float_spin(self, event):
         if self.__initialized:
             for i in range(len(self.__parameters_to_widgets_list)):
@@ -842,10 +842,10 @@ class ParameterSampleFrame(wx.Frame):
                     size.SetWidth(2*size.GetWidth())
                     progressDialog.SetSize(size)
                     # ~^~
-                    
+
                     for i, l in enumerate(self.__sample_list):
                         #print '\nStarting run ' + str(i+1) + '...'
-                        
+
                         for j, value in enumerate(l):
                             if value is not None:
                                 setting_nr = self.__parameters_list[j][1]
@@ -869,7 +869,7 @@ class ParameterSampleFrame(wx.Frame):
                         # for every different configuration of the last module,
                         # I get the images generated by the first run for every
                         # run.
-                        
+
                         # 4.1 Prepare to run pipeline
                         self.prepare_for_run()
                         # 4.2 Run modules
@@ -886,7 +886,7 @@ class ParameterSampleFrame(wx.Frame):
                         #    status_callback=self.status_callback)
                         #while not self.stop_now:
                         #    measurements = running_pipeline.next()
-                        
+
                         #print '...run completed.'
                     # 5. Close output file
                     output_file.close()
@@ -894,7 +894,7 @@ class ParameterSampleFrame(wx.Frame):
                     # ~*~
                     progressDialog.Destroy()
                     # ~^~
-                    
+
                     # 6. Set parameters back to original values and close window
                     for i, setting in enumerate(self.__module.visible_settings()):
                         setting.set_value(original_values[i])

@@ -60,7 +60,7 @@ class TestFlagImages(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data)))) 
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, F.FlagImage))
@@ -93,7 +93,7 @@ class TestFlagImages(unittest.TestCase):
         self.assertEqual(ms.maximum_value.value, 500)
         self.assertEqual(flag.category, "Metadata")
         self.assertEqual(flag.feature_name, "QCFlag")
-        
+
     def test_01_01_02_load_matlab_v2(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUvDNz1PwSsxTMDBRMLC0MjW0MjJVMDIwNFAgGTAwevryMzAw5DAx'
@@ -131,7 +131,7 @@ class TestFlagImages(unittest.TestCase):
         self.assertEqual(ms.minimum_value.value, .5)
         self.assertEqual(flags.category, "Metadata")
         self.assertEqual(flags.feature_name, "MyQCFlag")
-    
+
     def test_01_02_load_v1(self):
         data = ('eJztW0Fv2zYUphInaFZgyC5r1124Q4FkqwXJXVAnGFJ59ooYqzOvCboVRdcx'
                 'Nm1zoCRDorp4Q4H+rB33k3bccaIiWxIrW7IrK3YmAYT9KH7vfXx8fKREqFU7'
@@ -205,7 +205,7 @@ class TestFlagImages(unittest.TestCase):
                 if measurement.wants_maximum.value:
                     self.assertAlmostEqual(measurement.maximum_value.value,
                                            max_value)
-    
+
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -482,10 +482,10 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                                            max_value)
                 self.assertEqual(measurement.rules_file_name, rules_file)
                 self.assertEqual(measurement.rules_class, rules_class)
-                
+
     def make_workspace(self, image_measurements, object_measurements):
         '''Make a workspace with a FlagImage module and the given measurements
-        
+
         image_measurements - a sequence of single image measurements. Use
                              image_measurement_name(i) to get the name of
                              the i th measurement
@@ -493,7 +493,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                               These are stored under object, OBJECT_NAME with
                               measurement name object_measurement_name(i) for
                               the i th measurement.
-        
+
         returns module, workspace
         '''
         module = F.FlagImage()
@@ -520,7 +520,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   measurements, image_set_list)
         return module, workspace
-    
+
     def test_02_01_positive_image_measurement(self):
         module, workspace = self.make_workspace([1],[])
         flag = module.flags[0]
@@ -537,7 +537,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
         self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
         self.assertEqual(workspace.disposition, cpw.DISPOSITION_CONTINUE)
-    
+
     def test_02_02_negative_image_measurement(self):
         module, workspace = self.make_workspace([1],[])
         flag = module.flags[0]
@@ -553,7 +553,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
         self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
-    
+
     def test_03_00_no_ave_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([],[[]])
@@ -577,7 +577,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
-        
+
     def test_03_01_positive_ave_object_measurement(self):
         for case in ("minimum", "maximum"):
             module, workspace = self.make_workspace([],[[.1,.2,.3,.4]])
@@ -649,7 +649,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
-        
+
     def test_04_01_positive_object_measurement(self):
         for case in ("minimum","maximum"):
             module, workspace = self.make_workspace([],[[.1,.2,.3,.4]])
@@ -697,7 +697,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
-    
+
     def test_05_01_two_measurements_any(self):
         for measurements, expected in (((0,0),0),
                                        ((0,1),1),
@@ -721,7 +721,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME),
                              expected)
-        
+
     def test_05_02_two_measurements_all(self):
         for measurements, expected in (((0,0),0),
                                        ((0,1),0),
@@ -745,7 +745,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME),
                              expected)
-    
+
     def test_06_01_get_measurement_columns(self):
         module = F.FlagImage()
         module.add_flag()
@@ -771,7 +771,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
             features = module.get_measurements(None, cpmeas.IMAGE, category)
             self.assertEqual(len(features), 1)
             self.assertEqual(features[0], feature)
-                             
+
     def test_07_01_skip(self):
         module, workspace = self.make_workspace([1],[])
         flag = module.flags[0]
@@ -807,7 +807,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
         self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
         self.assertEqual(workspace.disposition, cpw.DISPOSITION_CONTINUE)
-        
+
     def test_08_01_filter_by_rule(self):
         rules_file_contents = "IF (%s > 2.0, [1.0,-1.0], [-1.0,1.0])\n"%('_'.join((cpmeas.IMAGE,image_measurement_name(0))))
         rules_path = tempfile.mktemp()
@@ -866,7 +866,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                     measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
                     measurement.rules_directory.custom_path = rules_dir
                     measurement.rules_class.set_value(rules_classes)
-                    
+
                     m = workspace.measurements
                     self.assertTrue(isinstance(m, cpmeas.Measurements))
                     module.run(workspace)

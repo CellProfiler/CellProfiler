@@ -117,7 +117,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
                 self.assertEqual(module.outlines_name,"ExpandedNucleiOutlines")
         for module in modules[4:6]:
             self.assertEqual(module.iterations, 1)
-    
+
     def test_01_02_load_v1(self):
         '''Load ExpandOrShrink modules, v1'''
         data = ('eJztW91u2zYUlhMnbVasSHezYr3hZbPFguS2aBMUqb24W73VjlEbDYqiP7RF'
@@ -159,17 +159,17 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertEqual(module.operation, E.O_EXPAND)
         self.assertEqual(module.iterations, 3)
         self.assertFalse(module.wants_outlines.value)
-        
+
         module = pipeline.modules()[3]
         self.assertTrue(isinstance(module,E.ExpandOrShrink))
         self.assertEqual(module.object_name, "ShrunkenNuclei")
         self.assertEqual(module.output_object_name, "DividedNuclei")
         self.assertEqual(module.operation, E.O_DIVIDE)
 
-    def make_workspace(self, 
-                       labels, 
-                       operation, 
-                       iterations = 1, 
+    def make_workspace(self,
+                       labels,
+                       operation,
+                       iterations = 1,
                        wants_outlines = False,
                        wants_fill_holes = False):
         object_set = cpo.ObjectSet()
@@ -188,14 +188,14 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
-        workspace = cpw.Workspace(pipeline, 
-                                  module, 
+        workspace = cpw.Workspace(pipeline,
+                                  module,
                                   image_set_list.get_image_set(0),
-                                  object_set, 
+                                  object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
-    
+
     def test_02_01_expand(self):
         '''Expand an object once'''
         labels = np.zeros((10,10), int)
@@ -219,7 +219,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         location_y = m.get_current_measurement(OUTPUT_NAME, "Location_Center_Y")
         self.assertEqual(len(location_y), 1)
         self.assertEqual(location_y[0], 4)
-    
+
     def test_02_02_expand_twice(self):
         '''Expand an object "twice"'''
         labels = np.zeros((10,10), int)
@@ -230,7 +230,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-    
+
     def test_02_03_expand_two(self):
         '''Expand two objects once'''
         labels = np.zeros((10,10), int)
@@ -243,7 +243,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-    
+
     def test_03_01_expand_inf(self):
         '''Expand two objects infinitely'''
         labels = np.zeros((10,10), int)
@@ -257,7 +257,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented[distance < 0]==1))
         self.assertTrue(np.all(objects.segmented[distance > 0]==2))
-    
+
     def test_04_01_divide(self):
         '''Divide two touching objects'''
         labels = np.ones((10,10), int)
@@ -268,7 +268,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-        
+
     def test_04_02_dont_divide(self):
         '''Don't divide an object that would disappear'''
         labels = np.ones((10,10), int)
@@ -281,7 +281,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-        
+
 
     def test_05_01_shrink(self):
         '''Shrink once'''
@@ -303,7 +303,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-    
+
     def test_06_02_shrink_inf_fill_holes(self):
         '''Shrink infinitely after filling a hole'''
         labels = np.zeros((10,10), int)
@@ -322,7 +322,7 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_NAME)
         self.assertTrue(np.all(objects.segmented == expected))
-    
+
     def test_07_01_outlines(self):
         '''Create an outline of the resulting objects'''
         labels = np.zeros((10,10), int)
@@ -338,4 +338,3 @@ class TestExpandOrShrinkObjects(unittest.TestCase):
         self.assertTrue(OUTLINES_NAME in workspace.image_set.get_names())
         outlines = workspace.image_set.get_image(OUTLINES_NAME).pixel_data
         self.assertTrue(np.all(outlines == expected_outlines))
-        

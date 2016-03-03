@@ -44,7 +44,7 @@ class TestMeasureObjectIntensityDistribution(unittest.TestCase):
     def test_01_00_please_implement_a_test_of_the_new_version(self):
         self.assertEqual(
             M.MeasureObjectIntensityDistribution.variable_revision_number, 5)
-        
+
     def test_01_01_load_matlab(self):
         data = ('eJwBhAR7+01BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
                 'Q3JlYXRlZCBvbjogVHVlIEF1ZyAxOCAxNTozODowMiAyMDA5ICAgICAgICAg'
@@ -92,7 +92,7 @@ class TestMeasureObjectIntensityDistribution(unittest.TestCase):
             if center_name is None:
                 self.assertEqual(module.objects[0].center_choice, M.C_SELF)
             else:
-                self.assertEqual(module.objects[0].center_choice, 
+                self.assertEqual(module.objects[0].center_choice,
                                  M.C_CENTERS_OF_OTHER)
                 self.assertEqual(module.objects[0].center_object_name, center_name)
             self.assertEqual(module.bin_counts[0].bin_count, 4)
@@ -131,7 +131,7 @@ class TestMeasureObjectIntensityDistribution(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))            
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()),4)
         module = pipeline.modules()[3]
         self.assertTrue(isinstance(module, M.MeasureObjectIntensityDistribution))
@@ -149,7 +149,7 @@ class TestMeasureObjectIntensityDistribution(unittest.TestCase):
                 self.assertEqual(o.center_choice, M.C_CENTERS_OF_OTHER)
                 self.assertEqual(o.center_object_name, center_name)
         self.assertEqual(module.bin_counts[0].bin_count, 4)
-        
+
     def test_01_03_load_v2(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
@@ -198,7 +198,7 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         self.assertEqual(module.bin_counts[1].bin_count, 5)
         self.assertTrue(module.bin_counts[1].wants_scaled)
         self.assertEqual(module.bin_counts[1].maximum_radius, 50)
-    
+
     def test_01_04_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:2
@@ -253,7 +253,7 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         self.assertTrue(module.bin_counts[1].wants_scaled)
         self.assertEqual(module.bin_counts[1].maximum_radius, 50)
         self.assertEqual(len(module.heatmaps), 0)
-        
+
     def test_01_05_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -331,7 +331,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             self.assertEqual(group.maximum_radius, max_radius)
         for group, (image_name, object_name, bin_count, measurement,
                     colormap, wants_to_save, output_image_name) in zip(
-            module.heatmaps, 
+            module.heatmaps,
             (("CropRed", "Cells", 5, M.A_FRAC_AT_D, cps.DEFAULT, True, "Heat"),
              ("CropGreen", "Nuclei", 4, M.A_MEAN_FRAC, "Spectral", False, "A"),
              ("CropRed", "Nuclei", 5, M.A_RADIAL_CV, cps.DEFAULT, False, "B"))):
@@ -342,7 +342,7 @@ MeasureObjectRadialDistribution:[module_num:1|svn_version:\'Unknown\'|variable_r
             self.assertEqual(group.colormap, colormap)
             self.assertEqual(group.wants_to_save_display, wants_to_save)
             self.assertEqual(group.display_name, output_image_name)
-    
+
     def test_01_06_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -439,7 +439,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertEqual(group.maximum_radius, max_radius)
         for group, (image_name, object_name, bin_count, measurement,
                     colormap, wants_to_save, output_image_name) in zip(
-            module.heatmaps, 
+            module.heatmaps,
             (("CropRed", "Cells", 5, M.A_FRAC_AT_D, cps.DEFAULT, True, "Heat"),
              ("CropGreen", "Nuclei", 4, M.A_MEAN_FRAC, "Spectral", False, "A"),
              ("CropRed", "Nuclei", 5, M.A_RADIAL_CV, cps.DEFAULT, False, "B"))):
@@ -450,10 +450,10 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertEqual(group.colormap, colormap)
             self.assertEqual(group.wants_to_save_display, wants_to_save)
             self.assertEqual(group.display_name, output_image_name)
-            
+
         module = pipeline.modules()[1]
         self.assertEqual(module.wants_zernikes, M.Z_MAGNITUDES_AND_PHASE)
-    
+
     def test_02_01_01_get_measurement_columns(self):
         module = M.MeasureObjectIntensityDistribution()
         for i,image_name in ((0, "DNA"),(1, "Cytoplasm"),(2,"Actin")):
@@ -476,7 +476,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 module.add_bin_count()
             module.bin_counts[i].bin_count.value = bin_count
         module.bin_counts[2].wants_scaled.value = False
-        
+
         columns = module.get_measurement_columns(None)
         column_dictionary = {}
         for object_name, feature, coltype in columns:
@@ -484,15 +484,15 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             self.assertFalse(column_dictionary.has_key(key))
             self.assertEqual(coltype, cpmeas.COLTYPE_FLOAT)
             column_dictionary[key] = (object_name, feature, coltype)
-        
+
         for object_name in [x.object_name.value for x in module.objects]:
             for image_name in [x.image_name.value for x in module.images]:
                 for bin_count, wants_scaled in [
                     (x.bin_count.value, x.wants_scaled.value)
                     for x in module.bin_counts]:
                     for bin in range(1, bin_count + (1 if wants_scaled else 2)):
-                        for feature_fn in (feature_frac_at_d, 
-                                           feature_mean_frac, 
+                        for feature_fn in (feature_frac_at_d,
+                                           feature_mean_frac,
                                            feature_radial_cv):
                             measurement = feature_fn(bin, bin_count, image_name)
                             key = (object_name, measurement)
@@ -504,7 +504,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         module = M.MeasureObjectIntensityDistribution()
         for wants_zernikes, ftrs in (
             (M.Z_MAGNITUDES, (M.FF_ZERNIKE_MAGNITUDE, )),
-            (M.Z_MAGNITUDES_AND_PHASE, 
+            (M.Z_MAGNITUDES_AND_PHASE,
              (M.FF_ZERNIKE_MAGNITUDE, M.FF_ZERNIKE_PHASE))):
             module.wants_zernikes.value = wants_zernikes
             module.zernike_degree.value = 2
@@ -527,7 +527,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                 (M.M_CATEGORY, ftr, image_name, str(n), str(m)))
                             col = (object_name, name, cpmeas.COLTYPE_FLOAT)
                             self.assertIn(col, columns)
-        
+
     def test_02_02_01_get_measurements(self):
         module = M.MeasureObjectIntensityDistribution()
         for i,image_name in ((0, "DNA"),(1, "Cytoplasm"),(2,"Actin")):
@@ -549,7 +549,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             if i:
                 module.add_bin_count()
             module.bin_counts[i].bin_count.value = bin_count
-        
+
         for object_name in [x.object_name.value for x in module.objects]:
             self.assertEqual(tuple(module.get_categories(None, object_name)),
                              (M.M_CATEGORY,))
@@ -558,10 +558,10 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                     None, object_name, M.M_CATEGORY))
             for image_name in [x.image_name.value for x in module.images]:
                 for feature in M.F_ALL:
-                    self.assertTrue(image_name in 
-                                    module.get_measurement_images(None, 
-                                                                  object_name, 
-                                                                  M.M_CATEGORY, 
+                    self.assertTrue(image_name in
+                                    module.get_measurement_images(None,
+                                                                  object_name,
+                                                                  M.M_CATEGORY,
                                                                   feature))
                 for bin_count in [x.bin_count.value for x in module.bin_counts]:
                     for bin in range(1,bin_count+1):
@@ -575,11 +575,11 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         module = M.MeasureObjectIntensityDistribution()
         for wants_zernikes, ftrs in (
             (M.Z_MAGNITUDES, (M.FF_ZERNIKE_MAGNITUDE, )),
-            (M.Z_MAGNITUDES_AND_PHASE, 
+            (M.Z_MAGNITUDES_AND_PHASE,
              (M.FF_ZERNIKE_MAGNITUDE, M.FF_ZERNIKE_PHASE))):
             module.wants_zernikes.value = wants_zernikes
             module.zernike_degree.value = 2
-        
+
             for i,image_name in ((0, "DNA"),(1, "Cytoplasm"),(2,"Actin")):
                 if i:
                     module.add_image()
@@ -595,7 +595,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                 else:
                     module.objects[i].center_choice.value = M.C_CENTERS_OF_OTHER
                     module.objects[i].center_object_name.value = center_name
-                    
+
             for object_name in "Nucleii", "Cells", "Cytoplasm":
                 result = module.get_measurements(
                     None, object_name, M.M_CATEGORY)
@@ -609,7 +609,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                             None, object_name, M.M_CATEGORY, ftr, image)
                         for n, m in ((0, 0), (1, 1), (2, 0), (2, 2)):
                             self.assertIn("%d_%d" % (n, m), sresult)
-        
+
     def test_02_03_default_heatmap_values(self):
         module = M.MeasureObjectIntensityDistribution()
         module.add_heatmap()
@@ -637,15 +637,15 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         self.assertEqual(
             module.heatmaps[0].get_number_of_bins(), 10)
 
-    def run_module(self, image, labels, center_labels = None, 
+    def run_module(self, image, labels, center_labels = None,
                    center_choice = M.C_CENTERS_OF_OTHER,
                    bin_count = 4,
-                   maximum_radius = 100, wants_scaled = True, 
+                   maximum_radius = 100, wants_scaled = True,
                    wants_workspace=False,
                    wants_zernikes=M.Z_NONE,
                    zernike_degree=2):
         '''Run the module, returning the measurements
-        
+
         image - matrix representing the image to be analyzed
         labels - labels matrix of objects to be analyzed
         center_labels - labels matrix of alternate centers or None for self
@@ -699,7 +699,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         if wants_workspace:
             return measurements, workspace
         return measurements
-        
+
     def test_03_01_zeros_self(self):
         '''Test the module on an empty labels matrix, self-labeled'''
         m = self.run_module(np.zeros((10,10)), np.zeros((10,10),int),
@@ -718,18 +718,18 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                     (M.M_CATEGORY, ftr, IMAGE_NAME, str(n_), str(m_)))
                 self.assertIn(feature, m.get_feature_names(OBJECT_NAME))
                 self.assertEqual(len(m[OBJECT_NAME, feature]), 0)
-    
+
     def test_03_02_circle(self):
         '''Test the module on a uniform circle'''
         i,j = np.mgrid[-50:51,-50:51]
         labels = (np.sqrt(i*i+j*j) <= 40).astype(int)
         m, workspace = self.run_module(
-            np.ones(labels.shape), labels, 
+            np.ones(labels.shape), labels,
             wants_workspace=True, wants_zernikes=True, zernike_degree=2)
         assert isinstance(workspace, cpw.Workspace)
         bins = labels * (1 + (np.sqrt(i*i+j*j) / 10).astype(int))
         for bin in range(1,5):
-            data = m.get_current_measurement(OBJECT_NAME, 
+            data = m.get_current_measurement(OBJECT_NAME,
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 1)
             area = (float(bin) * 2.0 - 1.0)/16.0
@@ -765,10 +765,10 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             data = m[OBJECT_NAME, module.get_zernike_magnitude_name(
                 IMAGE_NAME, n_, m_)]
             self.assertAlmostEqual(data[0], 0, delta=.001)
-  
+
     def test_03_03_01_half_circle(self):
         '''Test the module on a circle and an image that's 1/2 zeros
-        
+
         The measurements here are somewhat considerably off because
         the propagate function uses a Manhattan distance with jaywalking
         allowed instead of the Euclidean distance.
@@ -789,7 +789,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         mask = i*i+j*j <=40*40
         total_intensity = np.sum(image[mask])
         for bin in range(1,5):
-            data = m.get_current_measurement(OBJECT_NAME, 
+            data = m.get_current_measurement(OBJECT_NAME,
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 1)
             bin_count = np.sum(bin_labels[mask] == bin-1)
@@ -806,14 +806,14 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
             self.assertTrue(np.abs(data[0] - expected_cv) < .2*expected_cv)
-    
+
     def test_03_03_02_half_circle_zernike(self):
         i,j = np.mgrid[-50:50,-50:50]
         ii, jj = [_.astype(float) + .5 for _ in i, j]
         labels = (np.sqrt(ii*ii+jj*jj) <= 40).astype(int)
         image = np.zeros(labels.shape)
         image[ii>0] = 1
-        m = self.run_module(image, labels, 
+        m = self.run_module(image, labels,
                             wants_zernikes=M.Z_MAGNITUDES_AND_PHASE,
                             zernike_degree=2)
         for n_, m_, expected, delta in (
@@ -822,7 +822,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             (2, 0, 0, .01),
             (2, 2, 0, .01)):
             ftr = "_".join(
-                (M.M_CATEGORY, M.FF_ZERNIKE_MAGNITUDE, IMAGE_NAME, 
+                (M.M_CATEGORY, M.FF_ZERNIKE_MAGNITUDE, IMAGE_NAME,
                  str(n_), str(m_)))
             self.assertAlmostEqual(m[OBJECT_NAME, ftr][0], expected, delta=delta)
         ftr = "_".join(
@@ -830,12 +830,12 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         phase_i_1_1 = m[OBJECT_NAME, ftr][0]
         image = np.zeros(labels.shape)
         image[jj>0] = 1
-        m = self.run_module(image, labels, 
+        m = self.run_module(image, labels,
                             wants_zernikes=M.Z_MAGNITUDES_AND_PHASE,
                             zernike_degree=1)
         phase_j_1_1 = m[OBJECT_NAME, ftr][0]
         self.assertAlmostEqual(abs(phase_i_1_1-phase_j_1_1), np.pi / 2, .1)
-    
+
     def test_03_04_line(self):
         '''Test the alternate centers with a line'''
         labels = np.array([[0,0,0,0,0,0,0,0,0,0],
@@ -862,10 +862,10 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         normalized_distance = distance_to_center / (distance_to_center + distance_to_edge + .001)
         bin_labels = (normalized_distance * 4).astype(int)
         for bin in range(1,5):
-            data = m.get_current_measurement(OBJECT_NAME, 
+            data = m.get_current_measurement(OBJECT_NAME,
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 1)
-            bin_intensity = np.sum(image[(labels==1) & 
+            bin_intensity = np.sum(image[(labels==1) &
                                          (bin_labels == bin-1)])
             expected = bin_intensity / total_intensity
             self.assertTrue(np.abs(expected-data[0]) < .1 * expected)
@@ -877,7 +877,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
-            
+
     def test_03_05_no_scaling(self):
         i, j = np.mgrid[-40:40, -40:40]
         #
@@ -894,13 +894,13 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         total_intensity = np.sum(image[labels==1])
         bin_labels = (distance / 5).astype(int)
         bin_labels[bin_labels > 4] = 4
-        m = self.run_module(image, labels, bin_count = 4, 
+        m = self.run_module(image, labels, bin_count = 4,
                             maximum_radius = 20, wants_scaled = False)
         for bin in range(1,6):
-            data = m.get_current_measurement(OBJECT_NAME, 
+            data = m.get_current_measurement(OBJECT_NAME,
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 1)
-            bin_intensity = np.sum(image[(labels==1) & 
+            bin_intensity = np.sum(image[(labels==1) &
                                          (bin_labels == bin-1)])
             expected = bin_intensity / total_intensity
             self.assertAlmostEqual(expected, data[0], 4)
@@ -912,7 +912,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
-            
+
     def test_03_06_edges_of_objects(self):
         r = np.random.RandomState()
         r.seed(36)
@@ -921,13 +921,13 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         centers = np.zeros(labels.shape, int)
         centers[(i > -5) * (i < 5) & (j > -5) & (j < 5)] = 1
         image = r.uniform(size=labels.shape)
-        m = self.run_module(image, labels, 
+        m = self.run_module(image, labels,
                             center_labels=centers,
                             center_choice = M.C_EDGES_OF_OTHER,
                             bin_count = 4,
                             maximum_radius = 8,
                             wants_scaled=False)
-        
+
         _, d_from_center = M.propagate(np.zeros(labels.shape),
                                        centers,
                                        (labels > 0), 1)
@@ -943,7 +943,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_frac_at_d(i, 4))
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], frac_at_d[i-1])
-            
+
     def test_03_07_two_circles(self):
         i,j = np.mgrid[-50:51,-50:51]
         i, j = [np.hstack((x,x)) for x in i, j]
@@ -958,7 +958,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         assert isinstance(workspace, cpw.Workspace)
         bins = (labels != 0) * (1 + (np.sqrt(i*i+j*j) / 10).astype(int))
         for bin in range(1,5):
-            data = m.get_current_measurement(OBJECT_NAME, 
+            data = m.get_current_measurement(OBJECT_NAME,
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 2)
             area = (float(bin) * 2.0 - 1.0)/16.0
@@ -994,7 +994,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
 
     def test_04_01_img_607(self):
         '''Regression test of bug IMG-607
-        
+
         MeasureObjectRadialDistribution fails if there are no pixels for
         some of the objects.
         '''
@@ -1004,18 +1004,18 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                            [ 0, 1, 1, 1, 0, 0, 3, 3, 3, 0 ],
                            [ 0, 1, 1, 1, 0, 0, 3, 3, 3, 0 ],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]])
-        
+
         image = np.random.uniform(size=labels.shape)
         for center_labels in (labels, None):
-            m = self.run_module(image, labels, 
-                                center_labels = center_labels, 
+            m = self.run_module(image, labels,
+                                center_labels = center_labels,
                                 bin_count = 4)
             for bin in range(1,5):
-                data = m.get_current_measurement(OBJECT_NAME, 
+                data = m.get_current_measurement(OBJECT_NAME,
                                                  feature_frac_at_d(bin, 4))
                 self.assertEqual(len(data), 3)
                 self.assertTrue(np.isnan(data[1]))
-                
+
     def test_04_02_center_outside_of_object(self):
         '''Make sure MeasureObjectRadialDistribution can handle oddly shaped objects'''
         np.random.seed(42)
@@ -1027,31 +1027,31 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                            [ 0, 1, 0, 0, 0, 0, 0, 0, 1, 0 ],
                            [ 0, 1, 0, 0, 0, 0, 0, 0, 1, 0 ],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]])
-        
+
         center_labels = np.zeros(labels.shape, int)
         center_labels[int(center_labels.shape[0]/2),
                       int(center_labels.shape[1]/2)] = 1
-        
+
         image = np.random.uniform(size=labels.shape)
         for center_choice in (M.C_CENTERS_OF_OTHER, M.C_EDGES_OF_OTHER):
-            m = self.run_module(image, labels, 
-                                center_labels = center_labels, 
+            m = self.run_module(image, labels,
+                                center_labels = center_labels,
                                 center_choice = center_choice,
                                 bin_count = 4)
             for bin in range(1,5):
-                data = m.get_current_measurement(OBJECT_NAME, 
+                data = m.get_current_measurement(OBJECT_NAME,
                                                  feature_frac_at_d(bin, 4))
                 self.assertEqual(len(data), 1)
 
         m = self.run_module(image, labels, bin_count = 4)
         for bin in range(1,5):
-            data = m.get_current_measurement(OBJECT_NAME, 
+            data = m.get_current_measurement(OBJECT_NAME,
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 1)
-    
+
     def test_04_03_wrong_size(self):
         '''Regression test for IMG-961: objects & image of different sizes
-        
+
         Make sure that the module executes without exception with and
         without centers and with similarly and differently shaped centers
         '''
@@ -1075,10 +1075,10 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         il = (i / 10).astype(int)
         jl = (j / 10).astype(int)
         ll = il + jl * 10 + 1
-        
+
         center_labels = np.zeros((100,100), int)
         center_labels[ir**2 + jr**2 < 25] = ll[ir**2 + jr**2 < 25]
-        
+
         labels = np.zeros((100,100), int)
         i = np.random.randint(1,98, 2000)
         j = np.random.randint(1,98, 2000)
@@ -1094,7 +1094,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         # Crash here prior to fix
         #
         m = self.run_module(image, labels, center_labels)
-        
+
     def test_05_02_more_centers_than_labels(self):
         '''Regression test of img-1463'''
         np.random.seed(51)
@@ -1104,10 +1104,10 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         il = (i / 10).astype(int)
         jl = (j / 10).astype(int)
         ll = il + jl * 10 + 1
-        
+
         labels = np.zeros((100,100), int)
         labels[ir**2 + jr**2 < 25] = ll[ir**2 + jr**2 < 25]
-        
+
         center_labels = np.zeros((100,100), int)
         i = np.random.randint(1,98, 2000)
         j = np.random.randint(1,98, 2000)
@@ -1123,4 +1123,3 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         # Crash here prior to fix
         #
         m = self.run_module(image, labels, center_labels)
-        

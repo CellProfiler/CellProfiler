@@ -67,7 +67,7 @@ def get_patcher_args(class_path):
 
 def get_jars():
     '''Get the final list of JAR files passed to javabridge'''
-    
+
     class_path = []
     if os.environ.has_key("CLASSPATH"):
         class_path += os.environ["CLASSPATH"].split(os.pathsep)

@@ -42,9 +42,9 @@ class TestAllModules(unittest.TestCase):
             filter((lambda x:x not in self.optional_modules), builtin_modules):
             self.assertTrue(
                 module_name in found_modules,
-                "%s is missing from the list of available modules" % 
+                "%s is missing from the list of available modules" %
                 module_name)
-            
+
 def example_images_directory():
     global __temp_example_images_folder
     if os.environ.has_key('CP_EXAMPLEIMAGES'):
@@ -68,11 +68,11 @@ def example_images_directory():
 
 def svn_mirror_url():
     '''Return the URL for the SVN mirror
-    
+
     Use the value of the environment variable, "CP_SVNMIRROR_URL" with
     a default of http://cellprofiler.org/svnmirror.
     '''
-    return os.environ.get("CP_SVNMIRROR_URL", 
+    return os.environ.get("CP_SVNMIRROR_URL",
                           "http://cellprofiler.org/svnmirror")
 
 def example_images_url():
@@ -101,14 +101,14 @@ def testimages_directory():
 
 def testimages_url():
     return svn_mirror_url() + "/" + "TestImages"
-    
+
 class testExampleImagesDirectory(unittest.TestCase):
     def test_00_00_got_something(self):
         self.assertTrue(example_images_directory(), "You need to have the example images checked out to run these tests")
 
 def load_pipeline(test_case, encoded_data):
     """Load a pipeline from base-64 encoded data
-    
+
     test_case - an instance of unittest.TestCase
     encoded_data - a pipeline encoded using base-64
     The magic incantation to do the above is the following:
@@ -131,7 +131,7 @@ def load_pipeline(test_case, encoded_data):
     finally:
         matfh.close()
     def blowup(pipeline,event):
-        if isinstance(event, (cellprofiler.pipeline.RunExceptionEvent, 
+        if isinstance(event, (cellprofiler.pipeline.RunExceptionEvent,
                               cellprofiler.pipeline.LoadExceptionEvent)):
             test_case.assertFalse(event.error.message)
     pipeline.add_listener(blowup)
@@ -140,12 +140,12 @@ def load_pipeline(test_case, encoded_data):
 
 def maybe_download_example_image(folders, file_name, shape=None):
     '''Download the given ExampleImages file if not in the directory
-    
+
     folders - sequence of subfolders starting at ExampleImages
     file_name - name of file to fetch
-    
+
     Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
-    
+
     Returns the local path to the file which is often useful.
     '''
     if shape is None:
@@ -167,7 +167,7 @@ def maybe_download_example_image(folders, file_name, shape=None):
 
 def make_12_bit_image(folder, filename, shape):
     '''Create a 12-bit image of the desired shape
-    
+
     folder - subfolder of example images directory
     filename - filename for image file
     shape - 2-tuple or 3-tuple of the dimensions of the image. The axis order
@@ -181,7 +181,7 @@ def make_12_bit_image(folder, filename, shape):
     path = os.path.join(example_images_directory(), folder, filename)
     if not os.path.isdir(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
-    
+
     write_image(path, img, PT_UINT16)
     #
     # Now go through the file and find the TIF bits per sample IFD (#258) and
@@ -200,7 +200,7 @@ def make_12_bit_image(folder, filename, shape):
             ifds.append(ifd)
     ifds += [
         # 12 bits/sample
-        np.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], np.uint8 ), 
+        np.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], np.uint8 ),
         # max value = 4095
         np.array([25, 1, 3, 0, 1, 0, 0, 0, 255, 15, 0, 0], np.uint8)]
     ifds = sorted(ifds, cmp = (lambda a, b: cmp(a.tolist(), b.tolist())))
@@ -224,24 +224,24 @@ def make_12_bit_image(folder, filename, shape):
     for idx, ifd in enumerate(ifds):
         new_data[offset+2+idx*12:offset+14+idx*12] = ifd
     new_data[new_end:] = data[old_end:]
-        
+
     with open(path, "wb") as fd:
         fd.write(new_data.data)
     return path
 
 def maybe_download_example_images(folders, file_names):
     '''Download multiple files to the example images directory
-    
+
     folders - sequence of subfolders of ExampleImages
     file_names - sequence of file names to be fetched from the single directory
                 described by the list of folders
-    
+
     Returns the local directory containing the images.
     '''
     for file_name in file_names:
         maybe_download_example_image(folders, file_name)
     return os.path.join(example_images_directory(), *folders)
-        
+
 def maybe_download_sbs():
     '''Download the SBS dataset to its expected location if necessary'''
     files = []
@@ -252,7 +252,7 @@ def maybe_download_sbs():
                 files.append("Channel%d-%02d-%s-%02d.tif" % (
                     channel, idx, row, col))
                 idx += 1
-    
+
     path = maybe_download_example_images(["ExampleSBSImages"], files)
     #
     # Create the matlab files
@@ -263,20 +263,20 @@ def maybe_download_sbs():
         scipy.io.matlab.mio.savemat(
             os.path.join(path, filename), {"Image":pixels}, format='5')
     return path
-    
+
 def maybe_download_fly():
     '''Download the fly example directory'''
     return maybe_download_example_images(
         ["ExampleFlyImages"],
-        ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF", 
+        ["01_POS002_D.TIF", "01_POS002_F.TIF", "01_POS002_R.TIF",
          "01_POS076_D.TIF", "01_POS076_F.TIF", "01_POS076_R.TIF",
          "01_POS218_D.TIF", "01_POS218_F.TIF", "01_POS218_R.TIF"])
 
 def maybe_download_tesst_image( file_name):
     '''Download the given TestImages file if not in the directory
-    
+
     file_name - name of file to fetch
-    
+
     Image will be downloaded if not present to CP_EXAMPLEIMAGES directory.
     '''
     local_path = os.path.join(testimages_directory(), file_name)
@@ -290,14 +290,14 @@ def maybe_download_tesst_image( file_name):
                 raise e
             unittest.expectedFailure(bad_url)()
     return local_path
-    
+
 def read_example_image(folder, file_name, **kwargs):
     '''Read an example image from one of the example image directories
-    
+
     folder - folder containing images, e.g. "ExampleFlyImages"
-    
+
     file_name - the name of the file within the folder
-    
+
     **kwargs - any keyword arguments are passed onto load_image
     '''
     from bioformats import load_image
@@ -319,4 +319,3 @@ png_8_2 = 'iVBORw0KGgoAAAANSUhEUgAAACAAAAAwCAAAAABVxyezAAADMklEQVR4nGL8/+c3OkThA
 gif_8_2 = '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'
 
 github_url = "https://github.com/CellProfiler/CellProfiler/raw/master"
-

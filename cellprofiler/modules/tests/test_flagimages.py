@@ -876,3 +876,15 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                     self.assertEqual(value, expected_value)
         finally:
             os.remove(rules_path)
+
+    def test_09_01_batch(self):
+        orig_path = '/foo/bar'
+        def fn_alter_path(path, **varargs):
+            self.assertEqual(path, orig_path)
+            return '/imaging/analysis'
+        module = F.FlagImage()
+        rd = module.flags[0].measurement_settings[0].rules_directory
+        rd.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        rd.custom_path = orig_path
+        module.prepare_to_create_batch(None, fn_alter_path)
+        self.assertEqual(rd.custom_path, '/imaging/analysis')

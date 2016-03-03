@@ -3187,7 +3187,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         row_values = [(rt_id, i1, o1, i2, o2)
                                       for i1, o1, i2, o2 in r]
                         self.cursor.executemany(stmt, row_values)
-                        if self.show_window:
+                        if self.show_window and len(r) > 0:
                             disp_columns.append((rtbl_name,self.truncate_string_for_display(stmt%tuple(row_values[0]))))                        
                     else:
                         for i1, o1, i2, o2 in r:

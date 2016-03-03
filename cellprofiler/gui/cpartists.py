@@ -681,6 +681,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         np.clip(target, 0, 1, target)
         if flip_lr:
             target = np.fliplr(target)
+        if self.axes.viewLim.height < 0:
+            target = np.flipud(target)
         im = matplotlib.image.fromarray(target[:, :, :3], 0)
         im.is_grayscale = False
         im.set_interpolation(self.mp_interpolation)
@@ -698,7 +700,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         # which is from the bottom of the screen
         #
         if self.axes.viewLim.height < 0:
-            ty = (view_ymin - self.axes.viewLim.y1) - .5
+            #ty = (view_ymin - self.axes.viewLim.y1) - .5
+            ty = self.axes.viewLim.y0 - view_ymax + .5
         else:
             ty = view_ymin - self.axes.viewLim.y0 - .5
         im.apply_translation(tx, ty)
@@ -714,8 +717,6 @@ class CPImageArtist(matplotlib.artist.Artist):
         im.apply_scaling(sx, sy)
         im.resize(widthDisplay, heightDisplay,
                   norm=1, radius = self.filterrad)
-        if flip_ud:
-            im.flipud_out()
         bbox = self.axes.bbox.frozen()
         
         # Two ways to do this, try by version

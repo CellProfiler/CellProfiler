@@ -28,17 +28,9 @@ import cellprofiler.preferences as cpprefs
 logger = logging.getLogger(__name__)
 
 def get_path_to_jars():
-    '''Return the path to CellProfiler's jars directory'''
-    # Starting path is base/cellprofiler/utilities/cpjvm.py
-    # Split 3 times.
-    start_path = __file__
-    split_count = 3
-    root_path = os.path.abspath(start_path)
-    for _ in range(split_count):
-        root_path = os.path.split(root_path)[0]
+    import prokaryote
 
-    imagej_path = os.path.join(root_path, 'imagej','jars')
-    return imagej_path
+    return os.path.dirname(prokaryote.__file__)
 
 def get_patcher_args(class_path):
     '''Return the JVM args needed to patch ij1 classes
@@ -67,7 +59,7 @@ def get_patcher_args(class_path):
 
     patchers = filter(
         (lambda x:os.path.split(x)[1].startswith("prokaryote")), class_path)
-    if len(patchers) > 0 and False:
+    if len(patchers) > 0:
         patcher = patchers[0]
         return ["-javaagent:%s=init" % patcher]
     logger.warn("Did not find prokaryote in %s" % repr(class_path))
@@ -75,18 +67,20 @@ def get_patcher_args(class_path):
 
 def get_jars():
     '''Get the final list of JAR files passed to javabridge'''
-    imagej_path = get_path_to_jars()
-
-    jar_files = [os.path.join(imagej_path, f)
-                 for f in os.listdir(imagej_path)
-                 if f.lower().endswith(".jar")]
-    class_path = javabridge.JARS + jar_files
-
+    
+    class_path = []
     if os.environ.has_key("CLASSPATH"):
         class_path += os.environ["CLASSPATH"].split(os.pathsep)
         logging.debug(
             "Adding Java class path from environment variable, ""CLASSPATH""")
         logging.debug("    CLASSPATH="+os.environ["CLASSPATH"])
+
+    imagej_path = get_path_to_jars()
+
+    jar_files = [os.path.join(imagej_path, f)
+                 for f in os.listdir(imagej_path)
+                 if f.lower().endswith(".jar")]
+    class_path += javabridge.JARS + jar_files
 
     plugin_directory = cpprefs.get_ij_plugin_directory()
     if (plugin_directory is not None and

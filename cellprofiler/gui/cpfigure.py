@@ -379,7 +379,6 @@ class CPFigureFrame(wx.Frame):
     
     def create_toolbar(self):
         self.navtoolbar = CPNavigationToolbar(self.figure.canvas)
-        self.SetToolBar(self.navtoolbar)
         if wx.VERSION < (2, 9, 1, 1, ''):
             # avoid crash on latest wx 2.9
             self.navtoolbar.DeleteToolByPos(6)
@@ -472,13 +471,16 @@ class CPFigureFrame(wx.Frame):
         if any([not hasattr(self, bar) for bar in "navtoolbar", "status_bar"]):
             return
         available_width, available_height = self.GetClientSize()
-        if self.secret_panel.IsShown():
+        nbheight = self.navtoolbar.GetSize()[1]
+        self.navtoolbar.SetPosition((0, 0))
+        self.navtoolbar.SetSize((available_width, nbheight))
+	if self.secret_panel.IsShown():
             sp_width = self.secret_panel.GetVirtualSize()[0]
             canvas_width = min(max(available_width - sp_width, 250),
                                available_width - 100)
             sp_width = available_width - canvas_width
-            self.secret_panel.SetPosition((canvas_width, 0))
-            self.secret_panel.SetSize((sp_width, available_height))
+            self.secret_panel.SetPosition((canvas_width, nbheight))
+            self.secret_panel.SetSize((sp_width, available_height-nbheight))
             self.secret_panel.Layout()
             self.secret_panel.SetupScrolling()
             self.secret_panel.BackgroundColour = self.BackgroundColour
@@ -489,8 +491,8 @@ class CPFigureFrame(wx.Frame):
                 kid.Update()
         else:
             canvas_width = available_width
-        self.panel.SetPosition((0, 0))
-        self.panel.SetSize((canvas_width, available_height))
+        self.panel.SetPosition((0, nbheight))
+        self.panel.SetSize((canvas_width, available_height-nbheight))
         self.ClearBackground()
             
     def on_close(self, event):
@@ -1740,7 +1742,7 @@ class CPFigureFrame(wx.Frame):
             # Intercept size to make sure we redraw
             #
             plate_static_text = wx.StaticText(
-                self.ToolBar, -1, 'Plate: ',
+                self.navtoolbar, -1, 'Plate: ',
                 style = wx.TRANSPARENT_WINDOW)
             def on_paint_text(event):
                 dc = wx.PaintDC(plate_static_text)
@@ -1754,15 +1756,16 @@ class CPFigureFrame(wx.Frame):
             plate_static_text.Bind(wx.EVT_PAINT, on_paint_text)
             plate_static_text.Bind(wx.EVT_SIZE, on_size)
 
-            self.plate_choice = wx.Choice(self.ToolBar, -1, choices=plate_names)
+            self.plate_choice = wx.Choice(
+	        self.navtoolbar, -1, choices=plate_names)
             def on_plate_selected(event):
                 self.draw_platemap()
                 
             self.plate_choice.Bind(wx.EVT_CHOICE, on_plate_selected)
             self.plate_choice.SetSelection(0)
-            self.ToolBar.AddControl(plate_static_text)
-            self.ToolBar.AddControl(self.plate_choice)
-            self.ToolBar.Realize()
+            self.navtoolbar.AddControl(plate_static_text)
+            self.navtoolbar.AddControl(self.plate_choice)
+            self.navtoolbar.Realize()
             self.plate_choice.plates_dict = plates_dict
             self.plate_choice.plate_type = plate_type
             self.plate_choice.x = x

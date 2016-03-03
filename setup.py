@@ -97,7 +97,7 @@ class BuildPy(setuptools.command.build_py.build_py):
         if should_build_version(bv_command):
             bv_command.run()
         setuptools.command.build_py.build_py.run(self)
-        
+
     def get_source_files(self):
         source_files = \
             setuptools.command.build_py.build_py.get_source_files(self)
@@ -426,8 +426,9 @@ setuptools.setup(
     include_package_data=True,
     install_requires=[
         "cellh5",
-        "centrosome",
+        "centrosome>=1.0.4",
         "h5py",
+        "inflect",
         "javabridge",
         "libtiff",
         "matplotlib",

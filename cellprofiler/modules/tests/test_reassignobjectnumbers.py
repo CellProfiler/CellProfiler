@@ -235,7 +235,7 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                wants_outlines = False,
                outline_name = "None",
                parent_object = "Parent_object",
-               parent_labels = np.zeros((10,20), int)):
+               parents_of = None):
         '''Run the RelabelObjects module
         
         returns the labels matrix and the workspace.
@@ -273,13 +273,12 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         o.segmented = input_labels
         object_set.add_objects(o, INPUT_OBJECTS_NAME)
         
-        parent_object_set = cpo.ObjectSet()
-        p = cpo.Objects()
-        p.segmented = parent_labels
-        object_set.add_objects(p, parent_object)
-        
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
                                   cpmeas.Measurements(), image_set_list)
+        if parents_of is not None:
+            m = workspace.measurements
+            ftr = R.FF_PARENT % parent_object
+            m[INPUT_OBJECTS_NAME, ftr] = parents_of
         module.run(workspace)
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         return output_objects.segmented, workspace
@@ -503,13 +502,11 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         labels = np.zeros((10,20), int)
         labels[2:5, 3:8] = 1
         labels[2:5, 13:18] = 2
-        parent_labels = np.zeros(labels.shape,int)
-        parent_labels[1:6,2:19] = 1;
         
         labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY, 
                                             unify_option = R.UNIFY_PARENT,
                                             parent_object = "Parent_object",
-                                            parent_labels = parent_labels)
+                                            parents_of = np.array([1, 1]))
         self.assertTrue(np.all(labels_out[labels != 0] == 1))
         
     def test_05_01_unify_convex_hull(self):
@@ -518,12 +515,21 @@ ReassignObjectNumbers:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         labels[2:5, 13:18] = 2
         expected = np.zeros(labels.shape, int)
         expected[2:5, 3:18] = 1
-        parent_labels = np.zeros(labels.shape,int)
-        parent_labels[1:6,2:19] = 1;
     
         labels_out, workspace = self.rruunn(labels, R.OPTION_UNIFY, 
                                             unify_option = R.UNIFY_PARENT,
                                             unify_method = R.UM_CONVEX_HULL,
                                             parent_object = "Parent_object",
-                                            parent_labels = parent_labels)
+                                            parents_of = np.array([1, 1]))
         self.assertTrue(np.all(labels_out == expected))
+        
+    def test_05_02_unify_nothing(self):
+        labels = np.zeros((10, 20), int)
+        for um in R.UM_DISCONNECTED, R.UM_CONVEX_HULL:
+            labels_out, workspace = self.rruunn(
+                labels, R.OPTION_UNIFY,
+                unify_option = R.UNIFY_PARENT,
+                unify_method = R.UM_CONVEX_HULL,
+                parent_object = "Parent_object",
+                parents_of = np.zeros(0, int))
+            self.assertTrue(np.all(labels_out == 0))

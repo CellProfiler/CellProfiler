@@ -495,7 +495,7 @@ or repeating the analysis with slightly different parameters).</li>
 
 <h5>References</h5>
 <p>For a full list of references, visit our 
-<a href="http://www.cellprofiler.org/citations.shtml">citation</a> page.</p>
+<a href="http://www.cellprofiler.org/citations.html">citation</a> page.</p>
 <ul>
 <li>Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O, 
 Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM (2006) 
@@ -2035,7 +2035,7 @@ list of images.</p>
 
 <p>For more information on this module and how to configure it for the best performance, please see the detailed help by selecting the
 module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out 
-the Input module tutorials on our <a href="http://www.cellprofiler.org/tutorials.shtml">Tutorials</a> page.</p>
+the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
 """%globals()
 
 CONFIGURE_IMAGES_HELP = """
@@ -2069,7 +2069,7 @@ attach additional image information about the experiment, among other things.</p
 </p>
 <p>For more information on these modules and how to configure them for the best performance, please see the detailed help by selecting the
 module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;button at the bottom of the pipeline panel, or check out 
-the Input module tutorials on our <a href="http://www.cellprofiler.org/tutorials.shtml">Tutorials</a> page.</p>
+the Input module tutorials on our <a href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
 """%globals()
 
 LOADING_IMAGE_SEQUENCES_HELP = """

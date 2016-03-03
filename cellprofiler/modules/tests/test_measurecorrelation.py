@@ -262,12 +262,57 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module = pipeline.modules()[-1]
         self.assertEqual(module.images_or_objects.value, M.M_IMAGES_AND_OBJECTS)
         self.assertEqual(module.image_count.value, 2)
+        self.assertEqual(module.thr, 15.0)
         for name in [x.image_name.value for x in module.image_groups]:
             self.assertTrue(name in ["DNA","Cytoplasm"])
         
         self.assertEqual(module.object_count.value, 2)
         for name in [x.object_name.value for x in module.object_groups]:
             self.assertTrue(name in ["Nuclei","Cells"])
+            
+    def test_01_04_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20160216135025
+GitHash:e55aeba
+ModuleCount:1
+HasImagePlaneDetails:False
+
+MeasureCorrelation:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Hidden:2
+    Hidden:2
+    Select an image to measure:DNA
+    Select an image to measure:Cytoplasm
+    Set threshold as percentage of maximum intensity for the images:25.0
+    Select where to measure correlation:Both
+    Select an object to measure:Nuclei
+    Select an object to measure:Cells
+"""
+        fd = StringIO(data)
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(fd)
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertEqual(module.images_or_objects.value, M.M_IMAGES_AND_OBJECTS)
+        self.assertEqual(module.image_count.value, 2)
+        self.assertEqual(module.thr, 25.0)
+        for name in [x.image_name.value for x in module.image_groups]:
+            self.assertTrue(name in ["DNA","Cytoplasm"])
+        
+        self.assertEqual(module.object_count.value, 2)
+        for name in [x.object_name.value for x in module.object_groups]:
+            self.assertTrue(name in ["Nuclei","Cells"])
+    
+    all_object_measurement_formats = [ 
+        M.F_CORRELATION_FORMAT, M.F_COSTES_FORMAT, M.F_K_FORMAT,
+        M.F_MANDERS_FORMAT, M.F_OVERLAP_FORMAT, M.F_RWC_FORMAT]
+    all_image_measurement_formats = all_object_measurement_formats + [
+        M.F_SLOPE_FORMAT]
+    asymmetrical_measurement_formats = [
+        M.F_COSTES_FORMAT, M.F_K_FORMAT, M.F_MANDERS_FORMAT, M.F_RWC_FORMAT ]
         
     def test_02_01_get_categories(self):
         '''Test the get_categories function for some different cases'''
@@ -295,11 +340,14 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects.value = M.M_IMAGES
         def meas(name):
+            ans = list(module.get_measurements(None,name,"Correlation"))
+            ans.sort()
             if name == "Image":
-                ans = list(module.get_measurements(None,name,"Correlation"))
-                ans.sort()
-                return ans == ["Correlation", "Slope"]
-            return module.get_measurements(None, name, "Correlation") == ["Correlation"]
+                mf = self.all_image_measurement_formats
+            else:
+                mf = self.all_object_measurement_formats
+            expected = sorted([_.split("_")[1] for _ in mf])
+            return ans == expected
         self.assertTrue(meas("Image"))
         self.assertFalse(meas(OBJECTS_NAME))
         module.images_or_objects.value = M.M_OBJECTS
@@ -311,27 +359,30 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
     
     def test_02_03_get_measurement_images(self):
         '''Test the get_measurment_images function for some different cases'''
-        module = M.MeasureCorrelation()
-        module.image_groups[0].image_name.value = IMAGE1_NAME
-        module.image_groups[1].image_name.value = IMAGE2_NAME
-        module.object_groups[0].object_name.value = OBJECTS_NAME
-        module.images_or_objects.value = M.M_IMAGES
-        def meas(name):
-            ans = module.get_measurement_images(None, name, "Correlation",
-                                                "Correlation")
-            if len(ans) == 0:
-                return False
-            self.assertTrue(ans[0] in ["%s_%s"% x for x in ((IMAGE1_NAME,IMAGE2_NAME),
-                                                            (IMAGE2_NAME,IMAGE1_NAME))])
-            return True
-        self.assertTrue(meas("Image"))
-        self.assertFalse(meas(OBJECTS_NAME))
-        module.images_or_objects.value = M.M_OBJECTS
-        self.assertFalse(meas("Image"))
-        self.assertTrue(meas(OBJECTS_NAME))
-        module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
-        self.assertTrue(meas("Image"))
-        self.assertTrue(meas(OBJECTS_NAME))
+        for iocase, names in (
+            (M.M_IMAGES, [cpmeas.IMAGE]),
+            (M.M_OBJECTS, [OBJECTS_NAME]),
+            (M.M_IMAGES_AND_OBJECTS, [cpmeas.IMAGE, OBJECTS_NAME])):
+            module = M.MeasureCorrelation()
+            module.image_groups[0].image_name.value = IMAGE1_NAME
+            module.image_groups[1].image_name.value = IMAGE2_NAME
+            module.object_groups[0].object_name.value = OBJECTS_NAME
+            module.images_or_objects.value = iocase
+            for name, mfs in ((cpmeas.IMAGE, self.all_image_measurement_formats),
+                              (OBJECTS_NAME, self.all_object_measurement_formats)):
+                if name not in names:
+                    continue
+                for mf in mfs:
+                    ftr = mf.split("_")[1]
+                    ans = module.get_measurement_images(
+                        None, name, "Correlation", ftr)
+                    expected = ["%s_%s" % (i1, i2) for i1, i2 in 
+                                ((IMAGE1_NAME, IMAGE2_NAME), 
+                                 (IMAGE2_NAME, IMAGE1_NAME))]
+                    if mf in self.asymmetrical_measurement_formats:
+                        self.assertTrue(all([e in ans for e in expected]))
+                    else:
+                        self.assertTrue(any([e in ans for e in expected]))
     
     def test_02_04_01_get_measurement_columns_images(self):
         module = M.MeasureCorrelation()
@@ -340,12 +391,15 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects.value = M.M_IMAGES
         columns = module.get_measurement_columns(None)
-        expected = ((cpmeas.IMAGE, 
-                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT),
-                    (cpmeas.IMAGE, 
-                     M.F_SLOPE_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT))
+        expected = [
+            (cpmeas.IMAGE,
+             ftr % (IMAGE1_NAME, IMAGE2_NAME), 
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.all_image_measurement_formats] + [
+            (cpmeas.IMAGE, 
+             ftr % (IMAGE2_NAME, IMAGE1_NAME), 
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.asymmetrical_measurement_formats]
         self.assertEqual(len(columns), len(expected))
         for column in columns:
             self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])
@@ -358,9 +412,15 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects.value = M.M_OBJECTS
         columns = module.get_measurement_columns(None)
-        expected = ((OBJECTS_NAME, 
-                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT),)
+        expected = [
+            (OBJECTS_NAME,
+             ftr % (IMAGE1_NAME, IMAGE2_NAME), 
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.all_object_measurement_formats] + [
+            (OBJECTS_NAME, 
+             ftr % (IMAGE2_NAME, IMAGE1_NAME), 
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.asymmetrical_measurement_formats]
         self.assertEqual(len(columns), len(expected))
         for column in columns:
             self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])
@@ -373,15 +433,24 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.object_groups[0].object_name.value = OBJECTS_NAME
         module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
         columns = module.get_measurement_columns(None)
-        expected = ((cpmeas.IMAGE, 
-                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT),
-                    (cpmeas.IMAGE, 
-                     M.F_SLOPE_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT),
-                    (OBJECTS_NAME, 
-                     M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
-                     cpmeas.COLTYPE_FLOAT))
+        expected = [
+            (cpmeas.IMAGE,
+             ftr % (IMAGE1_NAME, IMAGE2_NAME), 
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.all_image_measurement_formats] + [
+            (cpmeas.IMAGE, 
+             ftr % (IMAGE2_NAME, IMAGE1_NAME), 
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.asymmetrical_measurement_formats] + [
+            (OBJECTS_NAME,
+             ftr % (IMAGE1_NAME, IMAGE2_NAME), 
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.all_object_measurement_formats] + [
+            (OBJECTS_NAME, 
+             ftr % (IMAGE2_NAME, IMAGE1_NAME), 
+             cpmeas.COLTYPE_FLOAT)
+            for ftr in self.asymmetrical_measurement_formats]
+
         self.assertEqual(len(columns), len(expected))
         for column in columns:
             self.assertTrue(any([all([cf==ef for cf,ef in zip(column,ex)])

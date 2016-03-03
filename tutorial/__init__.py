@@ -1,1 +1,0 @@
-'''CellProfiler tutorial package'''

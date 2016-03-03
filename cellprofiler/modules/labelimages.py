@@ -63,7 +63,7 @@ class LabelImages(cpm.CPModule):
             each column in consecutive order.</li>
             </ul>
             <p>For instance, the SBS Bioimage example (available 
-            <a href="http://www.cellprofiler.org/examples.shtml#SBS_Bioimage_CNT">here</a>)
+            <a href="http://cellprofiler.org/examples.html#SBS_Bioimage_CNT">here</a>)
             has files that are named:<br>
             Channel1-01-A01.tif<br>
             Channel1-02-A02.tif<br>

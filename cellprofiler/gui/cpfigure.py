@@ -4,6 +4,7 @@
 import logging
 logger = logging.getLogger(__name__)
 import csv
+import javabridge
 import numpy as np
 import os
 import sys
@@ -1891,6 +1892,16 @@ def show_image(url, parent = None, needs_raise_after = True):
         else:
             from bioformats import load_image_url
             image = load_image_url(url)
+    except IOError:
+        wx.MessageBox('Failed to open file, "%s"' % filename,
+                      caption = "File open error")
+        return
+    except javabridge.JavaException, je:
+        wx.MessageBox(
+            'Could not open "%s" as an image.' % filename,
+            caption = "File format error")
+        return
+
     except Exception, e:
         from cellprofiler.gui.errordialog import display_error_dialog
         display_error_dialog(None, e, None,
@@ -1907,7 +1918,6 @@ def show_image(url, parent = None, needs_raise_after = True):
     frame.panel.draw()
     if needs_raise_after:
         #%$@ hack hack hack
-        import wx
         wx.CallAfter(lambda: frame.Raise())
     return True
 

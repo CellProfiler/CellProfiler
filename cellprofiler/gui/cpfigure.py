@@ -1901,7 +1901,7 @@ def show_image(url, parent = None, needs_raise_after = True):
             'Could not open "%s" as an image.' % filename,
             caption = "File format error")
         return
-        
+
     except Exception, e:
         from cellprofiler.gui.errordialog import display_error_dialog
         display_error_dialog(None, e, None,

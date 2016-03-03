@@ -3,24 +3,24 @@ that you specify, for example, quality control measurements.
 <hr>
 
 This module allows you to assign a flag if
-an image meets certain measurement criteria that you specify (for 
+an image meets certain measurement criteria that you specify (for
 example, if the image fails a quality control measurement).  The
-value of the flag is 1 if the image meets the selected criteria (for 
-example, if it fails QC), and 0 if it does not meet the criteria (if 
-it passes QC). The flag can be used in post-processing to filter out 
-images you do not want to analyze, e.g., in CellProfiler Analyst. In 
-addition, you can use <b>ExportToSpreadsheet</b> to generate a file 
-that includes the flag as a metadata measurement associated with the 
-images. The <b>Metadata</b> module can then use this flag 
-to put images that pass QC into one group and images that fail 
+value of the flag is 1 if the image meets the selected criteria (for
+example, if it fails QC), and 0 if it does not meet the criteria (if
+it passes QC). The flag can be used in post-processing to filter out
+images you do not want to analyze, e.g., in CellProfiler Analyst. In
+addition, you can use <b>ExportToSpreadsheet</b> to generate a file
+that includes the flag as a metadata measurement associated with the
+images. The <b>Metadata</b> module can then use this flag
+to put images that pass QC into one group and images that fail
 into another.
 
-A flag can be based on one or more measurements. If you create a flag 
+A flag can be based on one or more measurements. If you create a flag
 based on more than one measurement, you can choose between setting the
-flag if all measurements are outside the bounds or if one of the 
+flag if all measurements are outside the bounds or if one of the
 measurements is outside of the bounds.
 
-This module must be placed in the pipeline after the relevant measurement 
+This module must be placed in the pipeline after the relevant measurement
 modules upon which the flags are based.
 '''
 
@@ -61,11 +61,11 @@ N_SETTINGS_PER_MEASUREMENT_V3 = 9
 N_SETTINGS_PER_MEASUREMENT = 10
 
 class FlagImage(cpm.CPModule):
-   
+
     category = "Data Tools"
     variable_revision_number = 4
     module_name = "FlagImage"
-    
+
     def create_settings(self):
         self.flags = []
         self.flag_count = cps.HiddenCount(self.flags)
@@ -73,63 +73,63 @@ class FlagImage(cpm.CPModule):
                                                self.add_flag)
         self.spacer_1 = cps.Divider()
         self.add_flag(can_delete = False)
-        
+
     def add_flag(self, can_delete=True):
         group = cps.SettingsGroup()
         group.append("divider1", cps.Divider(line=False))
         group.append("measurement_settings", [])
         group.append("measurement_count", cps.HiddenCount(group.measurement_settings))
-        group.append("category", 
+        group.append("category",
                      cps.Text(
                         "Name the flag's category","Metadata", doc = '''
-                        Name a measurement category by which to categorize the flag. The <i>Metadata</i> 
-                        category is the default used in CellProfiler to store information about 
+                        Name a measurement category by which to categorize the flag. The <i>Metadata</i>
+                        category is the default used in CellProfiler to store information about
                         images (referred to as <i>metadata</i>).</p>
                         <p>The flag is stored as a per-image measurement whose name is a combination of the
-                        flag's category and feature name, underscore delimited. 
+                        flag's category and feature name, underscore delimited.
                         For instance, if the measurement category is
                         <i>Metadata</i> and the feature name is <i>QCFlag</i>, then the default
                         measurement name would be <i>Metadata_QCFlag</i>. %s</p>'''%USING_METADATA_HELP_REF))
-        
-        group.append("feature_name", 
+
+        group.append("feature_name",
                      cps.Text(
                         "Name the flag","QCFlag", doc = '''
                         The flag is stored as a per-image measurement whose name is a combination of the
-                        flag's category and feature name, separated by underscores. 
+                        flag's category and feature name, separated by underscores.
                         For instance, if the measurement category is
                         <i>Metadata</i> and the feature name is <i>QCFlag</i>, then the default
                         measurement name would be <i>Metadata_QCFlag</i>.'''))
-        
-        group.append("combination_choice", 
+
+        group.append("combination_choice",
                      cps.Choice(
                         "How should measurements be linked?",
                         [ C_ANY, C_ALL], doc = '''
                         For combinations of measurements, you can set the criteria under which an image set is flagged:
                         <ul>
                         <li><i>%(C_ANY)s:</i> An image set will be flagged if any of its measurements fail. This can be useful
-                        for flagging images possessing multiple QC flaws; for example, you can flag all bright images 
+                        for flagging images possessing multiple QC flaws; for example, you can flag all bright images
                         and all out of focus images with one flag.</li>
-                        <li><i>%(C_ALL)s:</i> A flag will only be assigned if all measurements fail.  This can be useful 
+                        <li><i>%(C_ALL)s:</i> A flag will only be assigned if all measurements fail.  This can be useful
                         for flagging images that possess only a combination
                         of QC flaws; for example, you can flag only images that are both bright and out of focus.</li>
                         </ul>'''%globals()))
-        
-        group.append("wants_skip", 
+
+        group.append("wants_skip",
                      cps.Binary(
                         "Skip image set if flagged?", False, doc = """
                         <p>Select <i>%(YES)s</i> to skip the remainder of the pipeline for image sets
                         that are flagged. CellProfiler will not run subsequent modules in the
-                        pipeline on the images in any image set that is flagged. 
+                        pipeline on the images in any image set that is flagged.
                         Select <i>%(NO)s</i> for CellProfiler to continue to process the pipeline regardless
                         of flagging.</p>
                         <p>You may want to skip processing in order to filter out
                         unwanted images. For instance, you may want
-                        to exclude out of focus images when running 
+                        to exclude out of focus images when running
                         <b>CorrectIllumination_Calculate</b>. You can do this with a
                         pipeline that measures image quality and flags inappropriate
                         images before it runs <b>CorrectIllumination_Calculate</b>.</p>"""%globals()))
-            
-        group.append("add_measurement_button", 
+
+        group.append("add_measurement_button",
                      cps.DoSomething("",
                                      "Add another measurement",
                                      self.add_measurement, group))
@@ -148,19 +148,19 @@ class FlagImage(cpm.CPModule):
                      cps.Choice(
                         "Flag is based on", S_ALL, doc = '''
                         <ul>
-                        <li><i>%(S_IMAGE)s:</i> A per-image measurement, such as intensity or 
+                        <li><i>%(S_IMAGE)s:</i> A per-image measurement, such as intensity or
                         granularity.</li>
-                        <li><i>%(S_AVERAGE_OBJECT)s:</i> The average of all 
+                        <li><i>%(S_AVERAGE_OBJECT)s:</i> The average of all
                         object measurements in the image.</li>
-                        <li><i>%(S_ALL_OBJECTS)s:</i> All the 
-                        object measurements in an image, without averaging. In other words, if <i>any</i> 
+                        <li><i>%(S_ALL_OBJECTS)s:</i> All the
+                        object measurements in an image, without averaging. In other words, if <i>any</i>
                         of the objects meet the criteria, the image will be flagged.</li>
                         <li><i>%(S_RULES)s:</i> Use a text file of rules produced by CellProfiler Analyst. With this
-                        option, you will have to ensure that this pipeline produces every measurement 
+                        option, you will have to ensure that this pipeline produces every measurement
                         in the rules file upstream of this module.</li>
                         </ul>
                         '''%globals()))
-        
+
         group.append("object_name",
                      cps.ObjectNameSubscriber(
                         "Select the object to be used for flagging",
@@ -179,16 +179,16 @@ class FlagImage(cpm.CPModule):
                         <i>(Used only when flagging using %(S_RULES)s)</i><br>
                         Select the location of the rules file that will be used for filtering.
                         %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals()))
-         
+
         def get_directory_fn():
             '''Get the directory for the rules file name'''
             return group.rules_directory.get_absolute_path()
-                
+
         def set_directory_fn(path):
             dir_choice, custom_path = group.rules_directory.get_parts_from_path(path)
             group.rules_directory.join_parts(dir_choice, custom_path)
-        
-        group.append("rules_file_name", 
+
+        group.append("rules_file_name",
                      cps.FilenameText(
                         "Rules file name","rules.txt",
                         get_directory_fn = get_directory_fn,
@@ -205,7 +205,7 @@ class FlagImage(cpm.CPModule):
                         pixels and will score the opposite for images whose slope is larger.
                         The filter adds positive and negative and flags the images whose
                         positive score is higher than the negative score.</p>"""%globals()))
-        
+
         def get_rules_class_choices(group=group):
             '''Get the available choices from the rules file'''
             try:
@@ -214,65 +214,65 @@ class FlagImage(cpm.CPModule):
                 return [str(i) for i in range(1, nclasses+1)]
             except:
                 return [str(i) for i in range(1, 3)]
-        
-        group.append("rules_class", 
+
+        group.append("rules_class",
                      cps.MultiChoice(
                         "Class number",
                         choices = ["1", "2"],doc = """
                         <i>(Used only when flagging using %(S_RULES)s)</i><br>
                         Select which classes to flag when filtering. The
-                        CellProfiler Analyst classifier user interface lists the names of 
+                        CellProfiler Analyst classifier user interface lists the names of
                         the classes in order. By default, these are the positive (class 1)
                         and negative (class 2) classes. <b>FlagImage</b> uses the
-                        first class from CellProfiler Analyst if you choose "1", etc. 
+                        first class from CellProfiler Analyst if you choose "1", etc.
                         <p>Please note the following:
                         <ul>
                         <li>The flag is set if the image falls into the selected class.</li>
                         <li>You can make multiple class selections. If you do so, the module
                         will set the flag if the image falls into any of the selected classes.</li>
                         </ul></p>"""%globals()))
-        
+
         group.rules_class.get_choices = get_rules_class_choices
 
-        group.append("measurement", 
+        group.append("measurement",
                      cps.Measurement("Which measurement?",object_fn))
-        
+
         group.append("wants_minimum",
                      cps.Binary(
                          "Flag images based on low values?",True, doc = '''
                          Select <i>%(YES)s</i> to flag images with measurements below the specified cutoff.
                          If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.'''%globals()))
-        
+
         group.append("minimum_value", cps.Float("Minimum value", 0))
-        
+
         group.append("wants_maximum",
                      cps.Binary(
                          "Flag images based on high values?",True, doc = '''
                          Select <i>%(YES)s</i> to flag images with measurements above the specified cutoff.
                          If the measurement evaluates to Not-A-Number (NaN), then the image is not flagged.'''%globals()))
-        
+
         group.append("maximum_value", cps.Float("Maximum value", 1))
-        
+
         if can_delete:
             group.append("remover", cps.RemoveSettingButton("", "Remove this measurement", measurement_settings, group))
-            
+
         group.append("divider2", cps.Divider(line=True))
         measurement_settings.append(group)
 
-    
+
     def settings(self):
         result = [self.flag_count]
         for flag in self.flags:
-            result += [flag.measurement_count, flag.category, flag.feature_name, 
+            result += [flag.measurement_count, flag.category, flag.feature_name,
                        flag.combination_choice, flag.wants_skip]
             for mg in flag.measurement_settings:
                 result += [mg.source_choice, mg.object_name, mg.measurement,
                            mg.wants_minimum, mg.minimum_value,
-                           mg.wants_maximum, mg.maximum_value, 
+                           mg.wants_maximum, mg.maximum_value,
                            mg.rules_directory, mg.rules_file_name,
                            mg.rules_class]
         return result
-    
+
     def prepare_settings(self, setting_values):
         '''Construct the correct number of flags'''
         flag_count = int(setting_values[0])
@@ -280,7 +280,7 @@ class FlagImage(cpm.CPModule):
         self.add_flag(can_delete=False)
         while len(self.flags) < flag_count:
             self.add_flag()
-            
+
         setting_values = setting_values[N_FIXED_SETTINGS:]
         for flag in self.flags:
             count = int(setting_values[0])
@@ -289,7 +289,7 @@ class FlagImage(cpm.CPModule):
                 self.add_measurement(flag, can_delete=True)
             setting_values = setting_values[N_FIXED_SETTINGS_PER_FLAG +
                                             count * N_SETTINGS_PER_MEASUREMENT:]
-    
+
     def visible_settings(self):
         def measurement_visibles(m_g):
             if hasattr(m_g, "remover"):
@@ -297,7 +297,7 @@ class FlagImage(cpm.CPModule):
             else:
                 result = []
             result += [m_g.source_choice]
-            
+
             if m_g.source_choice == S_ALL_OBJECTS or m_g.source_choice == S_AVERAGE_OBJECT:
                 result += [m_g.object_name]
             if m_g.source_choice == S_RULES:
@@ -371,7 +371,7 @@ class FlagImage(cpm.CPModule):
         if self.show_window:
             workspace.display_data.statistics = statistics
             workspace.display_data.col_labels = col_labels
-        
+
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0, workspace.display_data.statistics,
@@ -405,7 +405,7 @@ class FlagImage(cpm.CPModule):
             import wx
             from wx.grid import Grid, PyGridTableBase, EVT_GRID_LABEL_LEFT_CLICK
             from cellprofiler.gui import get_cp_icon
-            
+
             frame = wx.Frame(workspace.frame, -1, "Flag image results")
             sizer = wx.BoxSizer(wx.VERTICAL)
             frame.SetSizer(sizer)
@@ -435,16 +435,16 @@ class FlagImage(cpm.CPModule):
                 else:
                     sort_order[::-1] = np.lexsort((data,))
                 grid.ForceRefresh()
-                
+
             grid.Bind(EVT_GRID_LABEL_LEFT_CLICK, on_label_clicked)
-            
+
             class FlagTable(PyGridTableBase):
                 def __init__(self):
                     PyGridTableBase.__init__(self)
                 def GetColLabelValue(self, col):
                     if col == sort_col[0]:
                         if sort_ascending[0]:
-                            
+
                             return statistics[0][col]+" v"
                         else:
                             return statistics[0][col]+" ^"
@@ -462,8 +462,8 @@ class FlagImage(cpm.CPModule):
                 frame.SetSize((frame.Size[0], max_size))
             frame.SetIcon(get_cp_icon())
             frame.Show()
-            
-        
+
+
     def measurement_name(self, flag):
         return "_".join((flag.category.value, flag.feature_name.value))
 
@@ -480,7 +480,7 @@ class FlagImage(cpm.CPModule):
             return rules
 
     def run_flag(self, workspace, flag):
-        ok, stats = self.eval_measurement(workspace, 
+        ok, stats = self.eval_measurement(workspace,
                                           flag.measurement_settings[0])
         statistics = [tuple([self.measurement_name(flag)] + list(stats))]
         for measurement_setting in flag.measurement_settings[1:]:
@@ -499,13 +499,13 @@ class FlagImage(cpm.CPModule):
         if (not ok) and flag.wants_skip:
             workspace.disposition = cpw.DISPOSITION_SKIP
         return statistics
-        
+
     def eval_measurement(self, workspace, ms):
         '''Evaluate a measurement
-        
+
         workspace - holds the measurements to be evaluated
         ms - the measurement settings indicating how to evaluate
-        
+
         returns a tuple
            first tuple element is True = pass, False = Fail
            second tuple element has all of the statistics except for the
@@ -569,25 +569,25 @@ class FlagImage(cpm.CPModule):
             raise NotImplementedError("Source choice of %s not implemented" %
                                       ms.source_choice)
         fail = ((ms.source_choice != S_RULES and (fail or
-                (ms.wants_minimum.value and 
+                (ms.wants_minimum.value and
                  min_value < ms.minimum_value.value) or
                 (ms.wants_maximum.value and
                  max_value > ms.maximum_value.value))) or
                 (ms.source_choice == S_RULES and fail))
-        
-        return ((not fail), (source, ms.measurement.value if ms.source_choice != S_RULES else "Rules", display_value, 
+
+        return ((not fail), (source, ms.measurement.value if ms.source_choice != S_RULES else "Rules", display_value,
                              "Fail" if fail else "Pass"))
-    
+
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for each flag mesurment in the module'''
         return [(cpmeas.IMAGE, self.measurement_name(flag), cpmeas.COLTYPE_INTEGER)
                 for flag in self.flags]
-    
+
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
             return [flag.category.value for flag in self.flags]
         return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         if object_name != cpmeas.IMAGE:
             return []
@@ -597,7 +597,7 @@ class FlagImage(cpm.CPModule):
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and (variable_revision_number == 1 or variable_revision_number == 2):
-            
+
             if variable_revision_number == 1:
                 image_name, category, feature_num_or_name, min_value, max_value, \
                       new_or_append, new_name, old_name = setting_values
@@ -606,7 +606,7 @@ class FlagImage(cpm.CPModule):
             elif variable_revision_number == 2:
                 image_name, category, feature_num_or_name, scale, min_value, max_value, \
                       new_or_append, new_name, old_name = setting_values
-                 
+
                 measurement_name = '_'.join((category, feature_num_or_name,
                                              image_name, scale))
             if min_value == 'No minimum':
@@ -621,7 +621,7 @@ class FlagImage(cpm.CPModule):
                 wants_maximum = cps.YES
             if new_or_append == "Append existing flag":
                 logger.warning("CellProfiler 2.0 can't combine flags from multiple FlagImageForQC modules imported from version 1.0")
-            
+
             new_name_split = new_name.find('_')
             if new_name_split == -1:
                 flag_category = 'Metadata'
@@ -643,7 +643,7 @@ class FlagImage(cpm.CPModule):
                               max_value]
             from_matlab = False
             variable_revision_number = 1
-            
+
         if (not from_matlab) and variable_revision_number == 1:
             new_setting_values = [setting_values[0]]
             idx = 1
@@ -660,12 +660,12 @@ class FlagImage(cpm.CPModule):
                         measurement_source = S_AVERAGE_OBJECT
                     elif measurement_source=="Image":
                         measurement_source = S_IMAGE
-                    new_setting_values += [measurement_source] 
+                    new_setting_values += [measurement_source]
                     new_setting_values += setting_values[(idx+1):(idx+7)]
                     idx += 7
             setting_values = new_setting_values
             variable_revision_number = 2
-        
+
         if (not from_matlab) and variable_revision_number == 2:
             # Added rules
             new_setting_values = [setting_values[0]]
@@ -681,9 +681,9 @@ class FlagImage(cpm.CPModule):
                         [cps.DirectoryPath.static_join_string(cps.DEFAULT_INPUT_FOLDER_NAME,cps.NONE), "rules.txt"]
                     idx += N_SETTINGS_PER_MEASUREMENT_V2
             setting_values = new_setting_values
-            
+
             variable_revision_number = 3
-            
+
         if (not from_matlab) and variable_revision_number == 3:
             # Added rules_class
             new_setting_values = setting_values[:1]
@@ -700,6 +700,5 @@ class FlagImage(cpm.CPModule):
                     idx += N_SETTINGS_PER_MEASUREMENT_V3
             setting_values = new_setting_values
             variable_revision_number = 4
-            
+
         return setting_values, variable_revision_number, from_matlab
-    

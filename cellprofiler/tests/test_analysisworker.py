@@ -61,7 +61,7 @@ class TestAnalysisWorker(unittest.TestCase):
             pass
         FlipAndRotate.display_post_group = bogus_display_post_group
         maybe_download_sbs()
-        
+
     @classmethod
     def tearDownClass(cls):
         try:
@@ -70,10 +70,10 @@ class TestAnalysisWorker(unittest.TestCase):
         except:
             pass
         cls.notify_pub_socket.close()
-        
+
     def cancel(self):
         self.notify_pub_socket.send(cpaw.NOTIFY_STOP)
-            
+
     def setUp(self):
         self.out_dir = tempfile.mkdtemp()
         cpprefs.set_default_output_directory(self.out_dir)
@@ -84,7 +84,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.work_socket = self.zmq_context.socket(zmq.REP)
         self.work_socket.bind(self.work_addr)
         self.awthread = None
-        
+
     def tearDown(self):
         if self.awthread:
             self.cancel()
@@ -98,16 +98,16 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         h5_files = [f for f in os.listdir(self.out_dir)
                     if f.endswith(".h5")]
-        self.assertEqual(len(h5_files), 0, 
+        self.assertEqual(len(h5_files), 0,
                          msg = "Left the following files: " + str(h5_files))
-        
+
     class AWThread(threading.Thread):
-        
+
         def __init__(self, announce_addr, *args, **kwargs):
             threading.Thread.__init__(self, *args, **kwargs)
             self.announce_addr = announce_addr
             self.cancelled = False
-            
+
         def start(self):
             self.setDaemon(True)
             self.setName("Analysis worker thread")
@@ -119,7 +119,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.down_queue = Queue.Queue()
             threading.Thread.start(self)
             self.up_queue.get()
-            
+
         def run(self):
             up_queue_send_socket = cpaw.the_zmq_context.socket(zmq.PUB)
             up_queue_send_socket.connect(self.notify_addr)
@@ -141,15 +141,15 @@ class TestAnalysisWorker(unittest.TestCase):
                         self.up_queue.put((None, e))
                         up_queue_send_socket.send("EXCEPTION")
                 aw.exit_thread()
-                        
+
         def recv(self, work_socket, timeout=None):
             '''Receive a request from the worker
-            
+
             work_socket - receive a request on this socket
-            
+
             timeout - if request isn't received by the timeout, raise Queue.Empty
                       default = blocks forever
-                      
+
             This polls on both the worker and up_queue sockets and
             will throw an exception if there is anything available on
             the up-queue as this indicates that nothing is running.
@@ -167,25 +167,25 @@ class TestAnalysisWorker(unittest.TestCase):
                 if socket == work_socket and state == zmq.POLLIN:
                     return cpzmq.Communicable.recv(work_socket)
             raise Queue.Empty
-                    
+
         def join(self, timeout=None):
             if self.isAlive():
                 def cancel_me():
                     self.aw.cancelled = True
                 self.down_queue.put(cancel_me)
                 threading.Thread.join(self, timeout)
-            
+
         def execute(self, fn, *args, **kwargs):
             '''Execute a closure on the AnalysisWorker thread
-            
+
             fn - closure to execute
-            
+
             Returns the function's result or throws whatever exception
             was thrown by the function.
             '''
             self.ex(fn, *args, **kwargs)
             return self.ecute()
-        
+
         def ex(self, fn, *args, **kwargs):
             '''Do the first part of a functional execution'''
             if len(args) == 0 and len(kwargs) == 0:
@@ -194,7 +194,7 @@ class TestAnalysisWorker(unittest.TestCase):
                 def closure():
                     return fn(*args, **kwargs)
                 self.down_queue.put(closure)
-            
+
         def ecute(self):
             '''Retrieve the results of self.ex()'''
             msg = self.up_queue_recv_socket.recv()
@@ -202,11 +202,11 @@ class TestAnalysisWorker(unittest.TestCase):
             if e is not None:
                 raise e
             return result
-        
-        
+
+
     def set_work_socket(self):
         '''Artificially set up the worker's work socket
-        
+
         This sets self.aw.work_socket so that methods other than "run"
         can be tested in the worker.
         '''
@@ -217,7 +217,7 @@ class TestAnalysisWorker(unittest.TestCase):
             aw.work_request_address = self.work_addr
             aw.current_analysis_id = self.analysis_id
         self.awthread.execute(do_set_work_socket, self.awthread.aw)
-            
+
     def send_announcement_get_work_request(self):
         '''Announce the work address until we get some sort of a request'''
         self.analysis_id = uuid.uuid4().hex
@@ -240,10 +240,10 @@ class TestAnalysisWorker(unittest.TestCase):
                 break
             except Queue.Empty:
                 continue
-        
+
         self.assertIsNone(exception)
         self.assertSequenceEqual(result, ("foo", "bar"))
-        
+
     # def test_01_02_announcement_cancellation(self):
     #     #
     #     # Call AnalysisWorker.get_announcement, then notify the worker
@@ -254,7 +254,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     self.awthread.ex(self.awthread.aw.get_announcement)
     #     self.cancel()
     #     self.assertRaises(cpp.CancelledException, self.awthread.ecute)
-        
+
     # def test_02_01_send(self):
     #     self.awthread = self.AWThread(self.announce_addr)
     #     self.awthread.start()
@@ -270,7 +270,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     reply = self.awthread.ecute()
     #     self.assertIsInstance(reply, cpanalysis.WorkReply)
     #     self.assertEqual(reply.foo, "bar")
-        
+
     # def test_02_02_send_cancellation(self):
     #     self.awthread = self.AWThread(self.announce_addr)
     #     self.awthread.start()
@@ -293,7 +293,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     req = self.awthread.recv(self.work_socket)
     #     req.reply(cpanalysis.ServerExited())
     #     self.assertRaises(cpp.CancelledException, self.awthread.ecute)
-        
+
     # def test_03_01_work_request(self):
     #     #
     #     # Walk the worker through the connect sequence through
@@ -307,7 +307,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     #
     #     req = self.send_announcement_get_work_request()
     #     self.assertEqual(self.analysis_id, req.analysis_id)
-        
+
     # def test_03_02_pipeline_preferences(self):
     #     #
     #     # Walk the worker up through pipelines and preferences.
@@ -368,7 +368,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     #
     #     req.reply(cpanalysis.ServerExited())
     #     self.assertRaises(cpp.CancelledException, self.awthread.ecute)
-        
+
     # def test_03_03_initial_measurements(self):
     #     #
     #     # Walk to the initial measurements
@@ -430,7 +430,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #         self.assertRaises(cpp.CancelledException, self.awthread.ecute)
     #     finally:
     #         m.close()
-        
+
     # def test_03_04_shared_dictionary_request(self):
     #     #
     #     # The SharedDictionaryRequest
@@ -492,7 +492,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     #
     #     self.cancel()
     #     self.awthread.ecute()
-                                 
+
     # def test_03_05_the_happy_path_chapter_1(self):
     #     #
     #     # Run the worker clear through to the end
@@ -579,7 +579,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
     #     req.reply(cpanalysis.Ack())
     #     self.awthread.ecute()
-        
+
     # def test_03_06_the_happy_path_chapter_2(self):
     #     #
     #     # Give the worker image sets # 2 and 3 and tell it to run post_group
@@ -659,7 +659,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
     #     req.reply(cpanalysis.Ack())
     #     self.awthread.ecute()
-    
+
     # @unittest.skipIf(not has_rpdb(), "rpdb functionality is disabled")
     # def test_03_07_a_sad_ending(self):
     #     #
@@ -742,7 +742,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     req = self.awthread.recv(self.work_socket)
     #     self.assertIsInstance(req, cpanalysis.DebugComplete)
     #     req.reply(cpanalysis.ExceptionPleaseDebugReply(disposition = ED_STOP))
-        
+
     # def test_03_08_a_sad_moment(self):
     #     #
     #     # Run using the good pipeline, but change one of the URLs so
@@ -837,7 +837,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #     self.assertEqual(count, len(center_x))
     #     req.reply(cpanalysis.Ack())
     #     self.awthread.ecute()
-        
+
 #     def test_03_09_flag_image_abort(self):
 #         #
 #         # Regression test of issue #1210
@@ -971,8 +971,8 @@ class TestAnalysisWorker(unittest.TestCase):
 #         req = self.awthread.recv(self.work_socket)
 #         self.assertFalse(isinstance(req, cpanalysis.DisplayRequest))
 #         self.assertFalse(isinstance(req, cpanalysis.ExceptionReport))
-        
-        
+
+
 GOOD_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120712182756
@@ -1075,7 +1075,7 @@ DISPLAY_PIPELINE = GOOD_PIPELINE.replace(
     r"[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False",
     r"[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True")
 
-def get_measurements_for_good_pipeline(nimages = 1, 
+def get_measurements_for_good_pipeline(nimages = 1,
                                        group_numbers = None):
     '''Get an appropriately initialized measurements structure for the good pipeline'''
     path = os.path.join(example_images_directory(), "ExampleSBSImages")
@@ -1092,7 +1092,7 @@ def get_measurements_for_good_pipeline(nimages = 1,
             group_index = 1
         group_indexes.append(group_index)
     for i in range(1, nimages+1):
-        filename = ("Channel2-%02d-%s-%02d.tif" % 
+        filename = ("Channel2-%02d-%s-%02d.tif" %
                     (i, "ABCDEFGH"[int((i-1) / 12)], ((i-1) % 12) + 1))
         url = pathname2url(os.path.join(path, filename))
         m[cpmeas.IMAGE, cpmeas.C_FILE_NAME + "_DNA", i] = filename
@@ -1121,4 +1121,3 @@ def get_measurements_for_good_pipeline(nimages = 1,
     pipeline.loadtxt(StringIO(GOOD_PIPELINE))
     pipeline.write_pipeline_measurement(m)
     return m
-        

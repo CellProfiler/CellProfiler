@@ -16,27 +16,27 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(a.shape == (1,))
         self.assertTrue(a.dtype.kind == 'S')
         self.assertTrue(a[0] == 'Hello')
-        
+
     def test_02_001_EncapsulateUnicode(self):
         a = u.encapsulate_string(u'Hello')
         self.assertTrue(a.shape == (1,))
         self.assertTrue(a.dtype.kind == 'U')
         self.assertTrue(a[0] == u'Hello')
-        
+
     def test_02_01_EncapsulateCell(self):
         cell = numpy.ndarray((1,1),dtype=object)
         cell[0,0] = u'Hello, world'
         u.encapsulate_strings_in_arrays(cell)
         self.assertTrue(isinstance(cell[0,0],numpy.ndarray))
         self.assertTrue(cell[0,0][0] == u'Hello, world')
-    
+
     def test_02_02_EncapsulateStruct(self):
         struct = numpy.ndarray((1,1),dtype=[('foo',object)])
         struct['foo'][0,0] = u'Hello, world'
         u.encapsulate_strings_in_arrays(struct)
         self.assertTrue(isinstance(struct['foo'][0,0],numpy.ndarray))
         self.assertTrue(struct['foo'][0,0][0] == u'Hello, world')
-    
+
     def test_02_03_EncapsulateCellInStruct(self):
         struct = numpy.ndarray((1,1),dtype=[('foo',object)])
         cell = numpy.ndarray((1,1),dtype=object)
@@ -57,4 +57,3 @@ class TestUtils(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-        

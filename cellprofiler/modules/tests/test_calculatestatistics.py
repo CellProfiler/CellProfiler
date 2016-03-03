@@ -58,9 +58,9 @@ class TestCalculateStatistics(unittest.TestCase):
         self.assertFalse(module.dose_values[0].log_transform)
         self.assertTrue(module.dose_values[0].wants_save_figure)
         self.assertEqual(module.dose_values[0].figure_name, "DOSE")
-        self.assertEqual(module.dose_values[0].pathname.dir_choice, 
+        self.assertEqual(module.dose_values[0].pathname.dir_choice,
                          cps.DEFAULT_OUTPUT_FOLDER_NAME)
-    
+
     def test_01_02_load_v1(self):
         data = ('eJztWNFu2jAUdWhA7SYmtJfx6KdpD12Wom5qUaUN6KohAasW1G5PlZuYNpKD'
                 'Uewwui/Y5+1xn9FPmN0mJHGhIQX2RFCU3Ot7zrn32kpiuo1+p9GE7w0Tdhv9'
@@ -107,15 +107,15 @@ class TestCalculateStatistics(unittest.TestCase):
         self.assertEqual(dose_value.measurement, "Metadata_SBS_doses")
         self.assertFalse(dose_value.log_transform)
         self.assertFalse(dose_value.wants_save_figure)
-        
+
         dose_value = module.dose_values[1]
         self.assertEqual(dose_value.measurement, "Metadata_Well")
         self.assertTrue(dose_value.log_transform)
         self.assertTrue(dose_value.wants_save_figure)
-        self.assertEqual(dose_value.pathname.dir_choice, 
+        self.assertEqual(dose_value.pathname.dir_choice,
                          cps.DEFAULT_OUTPUT_SUBFOLDER_NAME)
         self.assertEqual(dose_value.pathname.custom_path, './WELL')
-        
+
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -146,7 +146,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         self.assertEqual(dv.figure_name, "DoseResponsePlot")
         self.assertEqual(dv.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(dv.pathname.custom_path, "Test")
-        
+
     def test_02_01_compare_to_matlab(self):
         expected = {
             'EC50_DistCytoplasm_Correlation_Correlation_CorrGreenCorrBlue':3.982812,
@@ -398,7 +398,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
             'Zfactor_ThresholdedCells_Texture_SumVariance_CorrGreen_1':0.599000,
             'Zfactor_ThresholdedCells_Texture_Variance_CorrBlue_1':0.361424,
             'Zfactor_ThresholdedCells_Texture_Variance_CorrGreen_1':0.481393
-        }            
+        }
         temp_dir = tempfile.mkdtemp()
         m = None
         try:
@@ -477,10 +477,10 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                 path = os.path.join(temp_dir, filename)
                 os.remove(path)
             os.rmdir(temp_dir)
-        
+
     def make_workspace(self, mdict, controls_measurement, dose_measurements = []):
         '''Make a workspace and module for running CalculateStatistics
-        
+
         mdict - a two-level dictionary that mimics the measurements structure
                 for instance:
                 mdict = { cpmeas.Image: { "M1": [ 1,2,3] }}
@@ -490,10 +490,10 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
         module = C.CalculateStatistics()
         module.module_num = 1
         module.grouping_values.value = controls_measurement
-        
+
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        
+
         m = cpmeas.Measurements()
         nimages = None
         for object_name in mdict.keys():
@@ -509,21 +509,21 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                         module.add_dose_value()
                     dv = module.dose_values[-1]
                     dv.measurement.value = feature
-        m.image_set_number = nimages        
+        m.image_set_number = nimages
         image_set_list = cpi.ImageSetList()
         for i in range(nimages):
             image_set = image_set_list.get_image_set(i)
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(), m, image_set_list)
         return workspace, module
-    
+
     def test_02_02_NAN(self):
         '''Regression test of IMG-762
-        
+
         If objects have NAN values, the means are NAN and the
         z-factors are NAN too.
         '''
-        mdict = { 
+        mdict = {
             cpmeas.IMAGE: {
                 "Metadata_Controls": [ 1,0,-1],
                 "Metadata_Doses": [ 0, .5, 1 ] },
@@ -542,12 +542,12 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
             feature = '_'.join((category, INPUT_OBJECTS, TEST_FTR))
             value = m.get_experiment_measurement(feature)
             self.assertFalse(np.isnan(value))
-            
+
     def test_02_03_make_path(self):
         # regression test of issue #1478
         # If the figure directory doesn't exist, it should be created
         #
-        mdict = { 
+        mdict = {
             cpmeas.IMAGE: {
                 "Metadata_Controls": [ 1,0,-1],
                 "Metadata_Doses": [ 0, .5, 1 ] },
@@ -578,4 +578,3 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
             if os.path.exists(my_subdir):
                 os.rmdir(my_subdir)
             os.rmdir(my_dir)
-            

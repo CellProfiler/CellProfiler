@@ -7,12 +7,12 @@ import wx.html
 
 class NewVersionDialog(wx.Dialog):
     def __init__(self, parent, title, contents, url, check_pref, check_pref_callback, skip_callback):
-        super(NewVersionDialog, self).__init__(parent, -1, title, 
-                                               style=(wx.DEFAULT_DIALOG_STYLE | 
+        super(NewVersionDialog, self).__init__(parent, -1, title,
+                                               style=(wx.DEFAULT_DIALOG_STYLE |
                                                       wx.RESIZE_BORDER))
         html = wx.html.HtmlWindow(parent=self)
         html.SetPage(contents)
-        
+
         self.url = url
         self.check_pref_callback = check_pref_callback
         self.check_pref = check_pref
@@ -63,22 +63,20 @@ class NewVersionDialog(wx.Dialog):
     def go_to_url(self, evt):
         if not wx.LaunchDefaultBrowser(self.url):
             wx.MessageBox("Could not open default browser (%s)"%(self.url), "Can't open browser", wx.ICON_EXCLAMATION)
-            
+
 
 if __name__ == "__main__":
     def cb(new_pref):
         print "Pref changed to", new_pref
-        
+
     def sk():
         print "skip this version"
 
     app = wx.PySimpleApp()
-    dialog = NewVersionDialog(None, "New version available", 
-                              "<h1>NEW REVISION: TEH AWESOME</h1>awesome new features!<br>get it now!", 
-                              "http://cellprofiler.org/", 
+    dialog = NewVersionDialog(None, "New version available",
+                              "<h1>NEW REVISION: TEH AWESOME</h1>awesome new features!<br>get it now!",
+                              "http://cellprofiler.org/",
                               True, cb, sk)
     dialog.ShowModal()
     dialog.Destroy()
     app.MainLoop()
-
-    

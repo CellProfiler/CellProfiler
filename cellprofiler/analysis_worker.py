@@ -9,10 +9,10 @@ the analysis worker runs three threads:
                 The UI is needed by ImageJ 1.0 which starts AWT. The main thread
                 issues a stop notification to the worker thread after exiting
                 the run loop.
-                
+
 * Worker thread - listens for jobs and processes them until it receives a stop
                   notification from the main thread.
-                  
+
 * Monitor thread - reads from STDIN. If the parent process closes STDIN,
                    the read call throws an exception and the monitor thread
                    stops the main thread's run loop.

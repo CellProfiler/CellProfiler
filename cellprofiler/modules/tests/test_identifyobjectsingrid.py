@@ -68,7 +68,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertEqual(module.diameter_choice, I.AM_AUTOMATIC)
         self.assertTrue(module.wants_outlines)
         self.assertEqual(module.outlines_name, "MyOutlines")
-        
+
     def test_01_02_load_v1(self):
         data = ('eJztW1tv2zYUplInTdZhS4EBGzYU4OMwpIKcxMOSPUxOsrYGYjtYjBZ7myLR'
                 'DgeZNCTKjfeL95ifMNKWLJmTo4vlREYkgLAPxe8cngsPSUlsN3uXzTPYUDXY'
@@ -112,7 +112,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertEqual(module.diameter_choice, I.AM_AUTOMATIC)
         self.assertTrue(module.wants_outlines)
         self.assertEqual(module.outlines_name, "MyOutlines")
-    
+
     def make_workspace(self, gridding, labels=None):
         module = I.IdentifyObjectsInGrid()
         module.module_num = 1
@@ -131,13 +131,13 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        workspace = cpw.Workspace(pipeline, module, 
+        workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   object_set, cpmeas.Measurements(),
                                   image_set_list)
         workspace.set_grid(GRID_NAME, gridding)
         return (workspace, module)
-    
+
     def make_rectangular_grid(self, gridding):
         self.assertTrue(isinstance(gridding, cpg.CPGridInfo))
         i0 = gridding.y_location_of_lowest_y_spot
@@ -154,7 +154,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         g = grid[:i.shape[0],:i.shape[1]]
         g[mask[:g.shape[0], :g.shape[1]]] = gridding.spot_table[i[mask],j[mask]]
         return grid
-        
+
     def test_02_01_forced_location(self):
         d = D.DefineGrid()
         d.ordering.value = D.NUM_BY_COLUMNS
@@ -195,7 +195,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertTrue(np.all(ym == y_locations[1:]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, gridding.rows * gridding.columns)
-        
+
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 4)
         count_feature = 'Count_%s'%OUTPUT_OBJECTS_NAME
@@ -233,8 +233,8 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         measurements = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Number")
         self.assertEqual(len(measurements),1)
         self.assertEqual(measurements[0], "Object_Number")
-        
-    
+
+
     def test_02_02_forced_location_auto(self):
         #
         # Automatic diameter
@@ -278,7 +278,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME).segmented
         self.assertTrue(np.all(labels[mask] ==
                                expected[0:labels.shape[0],0:labels.shape[1]][mask]))
-    
+
     def test_03_01_natural_circle(self):
         d = D.DefineGrid()
         d.ordering.value = D.NUM_BY_COLUMNS
@@ -442,7 +442,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertTrue(np.all(ym[:-1] == y_locations[1:-1]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, gridding.rows * gridding.columns)
-        
+
     def test_04_01_natural(self):
         # Use natural objects.
         #
@@ -521,6 +521,3 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         self.assertTrue(np.all(ym == y_locations[1:]))
         count = m.get_current_image_measurement('Count_%s'%OUTPUT_OBJECTS_NAME)
         self.assertEqual(count, gridding.rows * gridding.columns)
-        
-    
-

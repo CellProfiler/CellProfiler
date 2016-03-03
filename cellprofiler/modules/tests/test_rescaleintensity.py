@@ -65,7 +65,7 @@ RescaleIntensity:[module_num:2|svn_version:\'8913\'|variable_revision_number:2|s
         self.assertEqual(module.image_name, "MyImage")
         self.assertEqual(module.rescaled_image_name, "MyRescaledImage")
         self.assertEqual(module.rescale_method, R.M_STRETCH)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
         self.assertEqual(module.image_name, "MyImage")
@@ -75,7 +75,7 @@ RescaleIntensity:[module_num:2|svn_version:\'8913\'|variable_revision_number:2|s
         self.assertEqual(module.wants_automatic_high, R.HIGH_ALL_IMAGES)
         self.assertAlmostEqual(module.dest_scale.min, 0.2)
         self.assertAlmostEqual(module.dest_scale.max, 0.9)
-        
+
     def test_01_000_load_matlab_v3(self):
         data=r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -111,7 +111,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertAlmostEqual(module.dest_scale.max, 0.9)
         self.assertAlmostEqual(module.custom_low_truncation.value, 0.01)
         self.assertAlmostEqual(module.custom_high_truncation.value, 0.99)
-        
+
     def test_01_01_load_matlab_stretch(self):
         '''Load a pipeline with RescaleIntensity set up to stretch'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -136,7 +136,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.image_name.value, "RescaledBlue")
         self.assertEqual(module.rescaled_image_name.value, "RescaledBlue")
         self.assertEqual(module.rescale_method, R.M_STRETCH)
-    
+
     def test_01_02_load_matlab_enter_auto_low(self):
         '''Load a pipeline with automatic low manual scaling'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -155,7 +155,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))                
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -169,7 +169,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertAlmostEqual(module.custom_high_truncation.value, 0.875)
         self.assertEqual(module.low_truncation_choice.value, R.R_SET_TO_CUSTOM)
         self.assertEqual(module.high_truncation_choice.value, R.R_SET_TO_CUSTOM)
-    
+
     def test_01_03_load_matlab_enter_auto_high(self):
         '''Load a pipeline with automatic high manual scaling'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -188,14 +188,14 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))        
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
         self.assertEqual(module.wants_automatic_low.value, R.CUSTOM_VALUE)
         self.assertEqual(module.wants_automatic_high.value, R.HIGH_ALL_IMAGES)
         self.assertAlmostEqual(module.source_low.value, .5)
-    
+
     def test_01_04_load_matlab_enter_manual(self):
         '''Load a pipeline with manual low and high scaling'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -214,7 +214,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))        
+        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -245,9 +245,9 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
-        self.assertEqual(module.rescale_method.value, 
+        self.assertEqual(module.rescale_method.value,
                          R.M_DIVIDE_BY_IMAGE_MINIMUM)
-    
+
     def test_01_06_load_matlab_match(self):
         '''Load a pipeline, matching to another image'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -274,7 +274,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.rescaled_image_name.value, "RescaledBlue")
         self.assertEqual(module.rescale_method, R.M_SCALE_BY_IMAGE_MAXIMUM)
         self.assertEqual(module.matching_image_name, "ReferenceBlue")
-    
+
     def test_01_07_load_matlab_convert(self):
         '''Load a matlab pipeline with convert to 8-bit'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -298,7 +298,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
         self.assertEqual(module.rescale_method, R.M_CONVERT_TO_8_BIT)
-                
+
     def test_01_08_load_matlab_measurement(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUnArylTwKs1RMDRQMDS0MjCzMjBUMDIwsFQgGTAwevryMzAwLGJk'
@@ -322,7 +322,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertTrue(isinstance(module, R.RescaleIntensity))
         self.assertEqual(module.rescale_method, R.M_DIVIDE_BY_MEASUREMENT)
         self.assertEqual(module.divisor_measurement, "Metadata_ImageDivisor")
-    
+
     def test_01_09_load_v1(self):
         data = ('eJztWl9P2zAQd2lhMKSNaRKbtBc/7AE2GqXlj6CaoB3dtG6UVYA2IcSYaV3w'
                 '5MRV4rB2ExIfa498pH2ExW3SpKYlbSm0aIlkNXfx737ns++SOM1n9rYyb+Gy'
@@ -386,7 +386,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.matching_image_name.value, "Cytoplasm")
         self.assertAlmostEqual(module.divisor_value.value, 2)
         self.assertEqual(module.divisor_measurement.value, "Intensity_MeanIntensity_DNA")
-        
+
     def test_01_10_img_787(self):
         data = ('eJyVk/s7E4oDxkeJU5xJhJPLcr91rEMuyxR6ODqZ+yS5Lmm5bC5z35Rrclml'
                 'EqYdB5PIDuUyxhzRYpg7oWJhmNvcRmM7Pef7F3zfH97f3ud5n8/zvg5Wbtes'
@@ -449,7 +449,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertEqual(module.rescale_method, R.M_MANUAL_INPUT_RANGE)
         self.assertEqual(module.wants_automatic_low, R.LOW_EACH_IMAGE)
         self.assertEqual(module.wants_automatic_high, R.HIGH_EACH_IMAGE)
-    
+
     def make_workspace(self, input_image, input_mask = None,
                        reference_image=None, reference_mask = None,
                        measurement=None):
@@ -505,7 +505,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                                   measurements,
                                   image_set_list)
         return workspace,module
-        
+
     def test_03_01_stretch(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -516,7 +516,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
-    
+
     def test_03_02_stretch_mask(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -530,7 +530,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
-    
+
     def test_04_01_manual_input_range(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10))
@@ -543,7 +543,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
-    
+
     def test_04_02_00_manual_input_range_auto_low(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -557,7 +557,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
-        
+
     def test_04_02_01_manual_input_range_auto_low_all(self):
         np.random.seed(421)
         image1 = np.random.uniform(size=(10,20)).astype(np.float32) * .5 + .5
@@ -588,7 +588,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
-        
+
     def test_04_03_01_manual_input_range_auto_high_all(self):
         np.random.seed(421)
         image1 = np.random.uniform(size=(10,20)).astype(np.float32) * .5
@@ -607,7 +607,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
-    
+
     def test_04_03_02_manual_input_range_auto_low_and_high(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -636,7 +636,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
-    
+
     def test_04_05_manual_input_range_truncate(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -647,7 +647,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         expected_high_mask[6:8,5:7] = True
         expected[expected_high_mask] = 1.05
         mask = ~(expected_low_mask | expected_high_mask)
-        for low_truncate_method in (R.R_MASK, R.R_SCALE, R.R_SET_TO_CUSTOM, 
+        for low_truncate_method in (R.R_MASK, R.R_SCALE, R.R_SET_TO_CUSTOM,
                                     R.R_SET_TO_ZERO):
             for high_truncate_method in (R.R_MASK, R.R_SCALE, R.R_SET_TO_CUSTOM,
                                          R.R_SET_TO_ONE):
@@ -690,10 +690,10 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                         high_value = 1
                     np.testing.assert_almost_equal(
                         pixels[expected_high_mask], high_value)
-    
+
     def test_04_06_color_mask(self):
         '''Regression test - color image + truncate with mask
-        
+
         The bug: color image yielded a 3-d mask
         '''
         np.random.seed(0)
@@ -712,7 +712,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         image = workspace.image_set.get_image(OUTPUT_NAME)
         self.assertEqual(image.mask.ndim, 2)
         self.assertTrue(np.all(image.mask == expected_mask))
-                
+
     def test_05_01_manual_io_range(self):
         np.random.seed(0)
         expected = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -728,7 +728,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
-    
+
     def test_06_01_divide_by_image_minimum(self):
         np.random.seed(0)
         image = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -795,7 +795,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
-    
+
     def test_09_01_divide_by_measurement(self):
         np.random.seed(0)
         image = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -807,7 +807,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
-    
+
     def test_10_01_scale_by_image_maximum(self):
         np.random.seed(0)
         image = np.random.uniform(size=(10,10)).astype(np.float32)
@@ -816,7 +816,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         reference = np.random.uniform(size=(10,10)).astype(np.float32) * .75
         reference[0,0] = .75
         expected = image * .75 / .60
-        workspace, module = self.make_workspace(image, 
+        workspace, module = self.make_workspace(image,
                                                 reference_image = reference)
         module.rescale_method.value = R.M_SCALE_BY_IMAGE_MAXIMUM
         module.run(workspace)
@@ -845,8 +845,8 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
-        
-    
+
+
     def test_11_01_convert_to_8_bit(self):
         np.random.seed(0)
         image = np.random.uniform(size=(10,10))

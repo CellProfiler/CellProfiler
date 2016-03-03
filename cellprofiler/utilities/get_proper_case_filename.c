@@ -28,7 +28,7 @@ get_proper_case_filename(PyObject *self, PyObject *args)
     ULONG chEaten;
     HRESULT hr;
     DWORD dwAttributes;
-    
+
     if (PyTuple_Size(args) < 1) {
         Py_RETURN_NONE;
     }
@@ -67,7 +67,7 @@ get_proper_case_filename(PyObject *self, PyObject *args)
     nchars = wcslen(filename_out);
     return PyUnicode_FromWideChar(filename_out,nchars);
 }
-        
+
 static PyObject *
 set_file_attributes(PyObject *self, PyObject *args)
 {
@@ -77,7 +77,7 @@ set_file_attributes(PyObject *self, PyObject *args)
     DWORD nchars;
     DWORD attributes;
     BOOL result;
-    
+
     if (PyTuple_Size(args) < 2) {
         Py_RETURN_NONE;
     }
@@ -110,7 +110,7 @@ get_file_attributes(PyObject *self, PyObject *args)
     wchar_t filename_in[4096];
     DWORD nchars;
     DWORD attributes;
-    
+
     if (PyTuple_Size(args) < 1) {
         Py_RETURN_NONE;
     }
@@ -130,8 +130,8 @@ get_file_attributes(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef methods[] = {
-    {"get_proper_case_filename", (PyCFunction)get_proper_case_filename, 
-     METH_VARARGS, 
+    {"get_proper_case_filename", (PyCFunction)get_proper_case_filename,
+     METH_VARARGS,
      "Adjust the file name's case to the case recorded in the file system\n\n"
      "For instance, get_proper_case_filename(""c:\\program files"") returns "
      """c:\\Program Files""."},
@@ -159,18 +159,18 @@ PyMODINIT_FUNC init_get_proper_case_filename(void)
     PyObject *module;
     PyObject *module_dictionary;
     PyObject *tmp;
-    
+
     module = Py_InitModule("_get_proper_case_filename", methods);
-    
+
     module_dictionary = PyModule_GetDict(module);
     tmp = PyInt_FromLong(FILE_ATTRIBUTE_ARCHIVE);
     PyDict_SetItemString(module_dictionary, "FILE_ATTRIBUTE_ARCHIVE", tmp);
     Py_DECREF(tmp);
-    
+
     tmp = PyInt_FromLong(FILE_ATTRIBUTE_HIDDEN);
     PyDict_SetItemString(module_dictionary, "FILE_ATTRIBUTE_HIDDEN", tmp);
     Py_DECREF(tmp);
-    
+
     tmp = PyInt_FromLong(FILE_ATTRIBUTE_NOT_CONTENT_INDEXED);
     PyDict_SetItemString(module_dictionary, "FILE_ATTRIBUTE_NOT_CONTENT_INDEXED", tmp);
     Py_DECREF(tmp);
@@ -191,4 +191,3 @@ PyMODINIT_FUNC init_get_proper_case_filename(void)
     PyDict_SetItemString(module_dictionary, "FILE_ATTRIBUTE_TEMPORARY", tmp);
     Py_DECREF(tmp);
 }
-

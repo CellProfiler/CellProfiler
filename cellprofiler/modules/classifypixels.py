@@ -2,30 +2,30 @@
 classes using the machine-learning tool, ilastik 0.5.
 <hr>
 
-<b>This module is based on ilastik 0.5. It will be removed 
-in future releases. Please switch to newer ilastik versions >= 1.0 
+<b>This module is based on ilastik 0.5. It will be removed
+in future releases. Please switch to newer ilastik versions >= 1.0
 and the use the <i>IlastikPixelClassification</i> module.</b>
 
-ClassifyPixels performs per-pixel classification using the 
+ClassifyPixels performs per-pixel classification using the
 <a href="http://www.ilastik.org/">ilastik 0.5</a> application.
 Ilastik is now bundled with the CellProfiler distribution; it applies
 supervised machine learning techniques to images to learn their features.
 A user trains a classifier with Ilastik and then saves the classifier.
 The user then uses the ClassifyPixels module to classify the pixels in an
-image. 
+image.
 
 ClassifyPixels produces an "image" consisting of probabilities that
 the pixel belongs to the chosen class; this image is similar to
 an intensity image that would be produced by fluorescence imaging.
 Provided that the classifier is sufficiently accurate, the image is
 well-suited for input into one of the <b>Identify</b> modules for
-object detection. More instructions on using the interface may be found 
+object detection. More instructions on using the interface may be found
 <a href="http://ilastik.org/index.php?cat=20_Documentation&page=03_Cellprofiler">here</a>.
 Please note that you must use the same image format for classification
 as for the initial learning phase.
 
 Currently, ilastik is only available for Windows, and is accessible from
-in the CellProfiler folder under the Start Menu. A 64-bit system is 
+in the CellProfiler folder under the Start Menu. A 64-bit system is
 recommended for running ilastik.
 '''
 
@@ -50,7 +50,7 @@ try:
     import vigra
     has_ilastik = True
 except ImportError, vigraImport:
-    logger.warning("""vigra import: failed to import the vigra library. Please follow the instructions on 
+    logger.warning("""vigra import: failed to import the vigra library. Please follow the instructions on
 "http://hci.iwr.uni-heidelberg.de/vigra/" to install vigra""", exc_info=True)
     has_ilastik = False
 
@@ -58,11 +58,11 @@ except ImportError, vigraImport:
 try:
     import h5py
 except ImportError, h5pyImport:
-    logger.warning("""h5py import: failed to import the h5py library.""", 
+    logger.warning("""h5py import: failed to import the h5py library.""",
                    exc_info=True)
     raise h5pyImport
-    
-# Import ilastik 
+
+# Import ilastik
 
 old_stdout = sys.stdout
 if has_ilastik:
@@ -76,10 +76,10 @@ if has_ilastik:
         from ilastik.modules.classification.core.classificationMgr import ClassifierPredictThread
         from ilastik.core.volume import DataAccessor
         sys.stdout = old_stdout
-        
+
     except ImportError, ilastikImport:
         sys.stdout = old_stdout
-        logger.warning("""ilastik import: failed to import the ilastik. Please follow the instructions on 
+        logger.warning("""ilastik import: failed to import the ilastik. Please follow the instructions on
     "http://www.ilastik.org" to install ilastik""", exc_info=True)
         has_ilastik = False
 
@@ -98,45 +98,45 @@ class ClassifyPixels(cpm.CPModule):
     module_name = 'ClassifyPixels'
     variable_revision_number = 2
     category = "Image Processing"
-    
+
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image", cps.NONE)
-        
+
         self.probability_maps = []
-        
+
         self.probability_map_count = cps.HiddenCount(
             self.probability_maps, "Probability map count")
-        
+
         self.add_probability_map(False)
-        
+
         self.add_probability_button = cps.DoSomething(
-            "", "Add another probability map", 
+            "", "Add another probability map",
             self.add_probability_map,doc = """
             Press this button to output another
             probability map image from the classifier. Ilastik can be trained
             to recognize any number of classes of pixels. You can generate
             probability maps for any or all of them simultaneously by adding
             more images.""")
-        
+
         self.h5_directory = cps.DirectoryPath(
             "Classifier file location",
             dir_choices = [
-                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
+                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME,
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
-                DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME], 
+                DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME],
             allow_metadata = False,doc ="""
-                Select the folder containing the classifier file to be loaded. 
+                Select the folder containing the classifier file to be loaded.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
-        
+
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
             return self.h5_directory.get_absolute_path()
-        
+
         def set_directory_fn(path):
             dir_choice, custom_path = self.h5_directory.get_parts_from_path(path)
             self.h5_directory.join_parts(dir_choice, custom_path)
-                
+
         self.classifier_file_name = cps.FilenameText(
             "Classfier file name",
             cps.NONE,
@@ -153,37 +153,37 @@ class ClassifyPixels(cpm.CPModule):
             the necessary libraries are not available. ClassifyPixels is
             supported on 64-bit versions of Windows Vista, Windows 7 and
             Windows 8 and on Linux.""", size=(-1, 50))
-        
+
     def add_probability_map(self, can_remove=True):
         group = cps.SettingsGroup()
         group.can_remove = can_remove
         self.probability_maps.append(group)
-        
+
         # The following settings are used for the combine option
         group.output_image = cps.ImageNameProvider(
             "Name the output probability map", "ProbabilityMap")
-        
+
         group.class_sel = cps.Integer(
-            "Select the class", 
+            "Select the class",
             0, 0, 42, doc=
-            '''Select the class you want to use. The class number 
+            '''Select the class you want to use. The class number
             corresponds to the label-class in ilastik''')
-        
+
         if can_remove:
             group.remover = cps.RemoveSettingButton(
-                "", "Remove this probability map", 
+                "", "Remove this probability map",
                 self.probability_maps, group,doc = """
                 Press this button to remove the
                 probability map image from the list of images produced by this
                 module.""")
-        
+
     def settings(self):
         result = [self.image_name, self.h5_directory, self.classifier_file_name,
                   self.probability_map_count]
         for group in self.probability_maps:
             result += [group.output_image, group.class_sel]
         return result
-    
+
     def visible_settings(self):
         if has_ilastik:
             result = [self.image_name]
@@ -196,13 +196,13 @@ class ClassifyPixels(cpm.CPModule):
             return result
         else:
             return [self.no_ilastik_msg]
-        
+
     def run(self, workspace):
         if not has_ilastik:
             raise ImportError("The Vigra and Ilastik packages are not available or installed on this platform")
         # get input image
-        image = workspace.image_set.get_image(self.image_name.value, must_be_color=False) 
-        
+        image = workspace.image_set.get_image(self.image_name.value, must_be_color=False)
+
         # recover raw image domain
         image_ = image.pixel_data
         if image.get_scale() is not None:
@@ -216,20 +216,20 @@ class ClassifyPixels(cpm.CPModule):
         image_max = np.max(image_)
         if (image_max > 255) and (image_max < 4096):
             image_ = image_ / 4095. * 255.0
-        
+
         # Create ilastik dataMgr
         dataMgr = DataMgr()
-        
+
         # Transform input image to ilastik convention s
-        # 3D = (time,x,y,z,channel) 
+        # 3D = (time,x,y,z,channel)
         # 2D = (time,1,x,y,channel)
         # Note, this work for 2D images right now. Is there a need for 3D
         image_.shape = (1,1) + image_.shape
-        
+
         # Check if image_ has channels, if not add singelton dimension
         if len(image_.shape) == 4:
             image_.shape = image_.shape + (1,)
-        
+
         # Add data item di to dataMgr
         di = DataItemImage('')
         di.setDataVol(DataAccessor(image_))
@@ -239,19 +239,19 @@ class ClassifyPixels(cpm.CPModule):
 
         # Create FeatureMgr
         fm = FeatureMgr(dataMgr, self.get_feature_items(workspace))
-        
+
         # Compute features
 
         fm.prepareCompute(dataMgr)
         fm.triggerCompute()
         fm.joinCompute(dataMgr)
-        
+
         # Predict with loaded classifier
-        
+
         classificationPredict = ClassifierPredictThread(dataMgr)
         classificationPredict.start()
         classificationPredict.wait()
-        
+
         workspace.display_data.source_image = image.pixel_data
         workspace.display_data.dest_images = []
         for group in self.probability_maps:
@@ -265,11 +265,11 @@ class ClassifyPixels(cpm.CPModule):
     def get_classifiers(self, workspace):
         d = self.parse_classifier_file(workspace)
         return d[CLASSIFIERS_KEY]
-    
+
     def get_feature_items(self, workspace):
         d = self.parse_classifier_file(workspace)
         return d[FEATURE_ITEMS_KEY]
-        
+
     def parse_classifier_file(self, workspace):
         global classifier_dict
         # Load classifier from hdf5
@@ -287,7 +287,7 @@ class ClassifyPixels(cpm.CPModule):
                 os.remove(filename)
         else:
             fileName = os.path.join(
-                self.h5_directory.get_absolute_path(), 
+                self.h5_directory.get_absolute_path(),
                 self.classifier_file_name.value).encode("utf-8")
             modtime = os.stat(fileName).st_mtime
             if fileName in classifier_dict:
@@ -297,12 +297,12 @@ class ClassifyPixels(cpm.CPModule):
             d = self.parse_classifier_hdf5(fileName)
             classifier_dict[fileName] = (modtime, d)
         return d
-    
+
     def parse_classifier_hdf5(self, filename):
         '''Parse the classifiers out of the HDF5 file
-        
+
         filename - name of classifier file
-        
+
         returns a dictionary
            CLASSIFIERS_KEY - the random forest classifiers
            FEATURE_ITEMS_KEY - the features needed by the classifier
@@ -315,7 +315,7 @@ class ClassifyPixels(cpm.CPModule):
         # If hf is not closed this leads to an error in win64 and mac os x
         hf.close()
         del hf
-        
+
         classifiers = []
         for cid in temp:
             if isinstance(cid, unicode):
@@ -329,7 +329,7 @@ class ClassifyPixels(cpm.CPModule):
                     ClassifierRandomForest.loadRFfromFile(filename, cidpath))
 
         d[CLASSIFIERS_KEY] = classifiers
-        
+
         # Restore user selection of feature items from hdf5
         featureItems = []
         f = h5py.File(filename,'r')
@@ -357,7 +357,7 @@ class ClassifyPixels(cpm.CPModule):
 
     def validate_module(self, pipeline):
         '''Mark ClassifyPixels as invalid if Ilastik is not properly installed
-        
+
         '''
         if not has_ilastik:
             raise cps.ValidationError(
@@ -365,7 +365,7 @@ class ClassifyPixels(cpm.CPModule):
                 self.no_ilastik_msg)
         if self.h5_directory.dir_choice != URL_FOLDER_NAME:
             fileName = os.path.join(
-                self.h5_directory.get_absolute_path(), 
+                self.h5_directory.get_absolute_path(),
                 self.classifier_file_name.value)
             if not os.path.isfile(fileName):
                 if len(self.classifier_file_name.value) == 0:
@@ -373,9 +373,9 @@ class ClassifyPixels(cpm.CPModule):
                 else:
                     msg = "Could not find the classifier file, \"%s\"." %\
                         fileName
-                    
+
                 raise cps.ValidationError(msg, self.classifier_file_name)
-        
+
     def prepare_settings(self, setting_values):
         '''Prepare the module to receive the settings'''
         n_maps = int(setting_values[SI_PROBABILITY_MAP_COUNT])
@@ -387,9 +387,9 @@ class ClassifyPixels(cpm.CPModule):
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare the module's settings for the batch target environment
-        
+
         workspace - workspace / measurements / pipeline for batch file
-        
+
         fn_alter_path - call this to alter any file path to target the
                         batch environment.
         '''
@@ -399,7 +399,7 @@ class ClassifyPixels(cpm.CPModule):
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Upgrade settings to maintain backwards compatibility
-        
+
         setting_values - list of setting strings
         variable_revision_number - version number used to save the settings
         module_name - original module name used to save the settings
@@ -415,4 +415,3 @@ class ClassifyPixels(cpm.CPModule):
                 setting_values[2]] # class_sel
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
-

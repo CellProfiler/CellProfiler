@@ -27,7 +27,7 @@ IMAGE_NAME = 'myimage'
 class TestRenameOrRenumberFiles(unittest.TestCase):
     def setUp(self):
         self.path = tempfile.mkdtemp()
-        
+
     def tearDown(self):
         for file_name in os.listdir(self.path):
             try:
@@ -38,7 +38,7 @@ class TestRenameOrRenumberFiles(unittest.TestCase):
             os.removedirs(self.path)
         except:
             pass
-        
+
     def test_01_01_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggpTVXwSsxTMDJTMDSyMjSzMrZQMDIwNFAgGTAwevryMzAwvGNk'
@@ -60,7 +60,7 @@ class TestRenameOrRenumberFiles(unittest.TestCase):
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "orig")
@@ -68,7 +68,7 @@ class TestRenameOrRenumberFiles(unittest.TestCase):
         self.assertEqual(module.number_characters_suffix, 4)
         self.assertEqual(module.action, R.A_DELETE)
         self.assertFalse(module.wants_text)
-        
+
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "orig")
@@ -77,7 +77,7 @@ class TestRenameOrRenumberFiles(unittest.TestCase):
         self.assertEqual(module.action, R.A_RENUMBER)
         self.assertTrue(module.wants_text)
         self.assertEqual(module.number_digits, 5)
-        
+
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -107,7 +107,7 @@ RenameOrRenumberFiles:[module_num:2|svn_version:\'1\'|variable_revision_number:1
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
-        
+
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "orig")
@@ -116,7 +116,7 @@ RenameOrRenumberFiles:[module_num:2|svn_version:\'1\'|variable_revision_number:1
         self.assertEqual(module.action, R.A_DELETE)
         self.assertFalse(module.wants_text)
         self.assertFalse(module.wants_to_replace_spaces)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "other")
@@ -125,7 +125,7 @@ RenameOrRenumberFiles:[module_num:2|svn_version:\'1\'|variable_revision_number:1
         self.assertEqual(module.action, R.A_RENUMBER)
         self.assertTrue(module.wants_text)
         self.assertEqual(module.number_digits, 5)
-        
+
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -148,7 +148,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
-        
+
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         self.assertEqual(module.image_name, "orig")
@@ -158,7 +158,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         self.assertFalse(module.wants_text)
         self.assertTrue(module.wants_to_replace_spaces)
         self.assertEqual(module.space_replacement, "+")
-        
+
     def make_workspace(self, file_name):
         fd = open(os.path.join(self.path, file_name), 'w')
         fd.write("As the poet said, 'Only God can make a tree' -- probably "
@@ -168,22 +168,22 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         module = R.RenameOrRenumberFiles()
         module.image_name.value = IMAGE_NAME
         module.module_num = 1
-        
+
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        
+
         m = cpmeas.Measurements()
         m.add_image_measurement("FileName_%s" % IMAGE_NAME,
                                 file_name)
         m.add_image_measurement("PathName_%s" % IMAGE_NAME,
                                 self.path)
-        
+
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        
+
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(), m, image_set_list)
         return workspace, module
@@ -191,23 +191,23 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
     def test_02_01_rename_delete(self):
         file_name = "myfile.txt"
         expected_name = "my.txt"
-        
+
         workspace, module = self.make_workspace(file_name)
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         module.action.value = R.A_DELETE
         module.number_characters_prefix.value = 2
         module.number_characters_suffix.value = 4
         module.wants_text.value = False
-        
+
         self.assertTrue(os.path.exists(os.path.join(self.path, file_name)))
         module.run(workspace)
         self.assertFalse(os.path.exists(os.path.join(self.path, file_name)))
         self.assertTrue(os.path.exists(os.path.join(self.path, expected_name)))
-        
+
     def test_02_02_rename_replace(self):
         file_name = "myfile.txt"
         expected_name = "myfiche.txt"
-        
+
         workspace, module = self.make_workspace(file_name)
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         module.action.value = R.A_DELETE
@@ -215,16 +215,16 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         module.number_characters_suffix.value = 4
         module.wants_text.value = True
         module.text_to_add.value = "fiche"
-        
+
         self.assertTrue(os.path.exists(os.path.join(self.path, file_name)))
         module.run(workspace)
         self.assertFalse(os.path.exists(os.path.join(self.path, file_name)))
         self.assertTrue(os.path.exists(os.path.join(self.path, expected_name)))
-        
+
     def test_02_03_renumber(self):
         file_name = "myfile1.txt"
         expected_name = "myfile01.txt"
-        
+
         workspace, module = self.make_workspace(file_name)
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         module.action.value = R.A_RENUMBER
@@ -232,16 +232,16 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         module.number_characters_suffix.value = 4
         module.wants_text.value = False
         module.number_digits.value = 2
-        
+
         self.assertTrue(os.path.exists(os.path.join(self.path, file_name)))
         module.run(workspace)
         self.assertFalse(os.path.exists(os.path.join(self.path, file_name)))
         self.assertTrue(os.path.exists(os.path.join(self.path, expected_name)))
-        
+
     def test_02_04_renumber_append(self):
         file_name = "myfile1.txt"
         expected_name = "myfile001_eek.txt"
-        
+
         workspace, module = self.make_workspace(file_name)
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         module.action.value = R.A_RENUMBER
@@ -250,16 +250,16 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         module.wants_text.value = True
         module.number_digits.value = 3
         module.text_to_add.value = '_eek'
-        
+
         self.assertTrue(os.path.exists(os.path.join(self.path, file_name)))
         module.run(workspace)
         self.assertFalse(os.path.exists(os.path.join(self.path, file_name)))
         self.assertTrue(os.path.exists(os.path.join(self.path, expected_name)))
-        
+
     def test_02_05_replace_spaces(self):
         file_name = "my file.txt"
         expected_name = "my+file.txt"
-        
+
         workspace, module = self.make_workspace(file_name)
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
         #
@@ -273,4 +273,3 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         module.run(workspace)
         self.assertFalse(os.path.exists(os.path.join(self.path, file_name)))
         self.assertTrue(os.path.exists(os.path.join(self.path, expected_name)))
-

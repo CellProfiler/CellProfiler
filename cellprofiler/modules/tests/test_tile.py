@@ -59,7 +59,7 @@ class TestTile(unittest.TestCase):
         self.assertFalse(module.meander)
         self.assertTrue(module.wants_automatic_rows)
         self.assertTrue(module.wants_automatic_columns)
-        
+
     def test_01_02_load_matlab_place_adjacent(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggH0l6JeQpGBgqGxlYGZlYmZkC2oYECyYCB0dOXn4GB4QcjA0PF'
@@ -79,7 +79,7 @@ class TestTile(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))        
+        pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, T.Tile))
@@ -94,7 +94,7 @@ class TestTile(unittest.TestCase):
         self.assertFalse(module.wants_automatic_rows)
         self.assertEqual(module.rows, 2)
         self.assertEqual(module.columns, 1)
-        
+
     def test_01_03_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -114,7 +114,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
     Select an additional image\x3A:Cytoplasm
     Select an additional image\x3A:ColorImage
     Select an additional image\x3A:DNA
-"""        
+"""
         pipeline = cpp.Pipeline()
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
@@ -137,32 +137,32 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for g, expected in zip(module.additional_images,
                                ("Cytoplasm", "ColorImage", "DNA")):
             self.assertEqual(g.input_image_name, expected)
-    
+
     def make_tile_workspace(self, images):
         module = T.Tile()
         module.module_num = 1
         module.tile_method.value = T.T_ACROSS_CYCLES
         module.input_image.value = INPUT_IMAGE_NAME
         module.output_image.value = OUTPUT_IMAGE_NAME
-        
+
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
-        
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
         for i, image in enumerate(images):
             image_set = image_set_list.get_image_set(i)
             image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
-            
-        workspace = cpw.Workspace(pipeline, module, 
+
+        workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
-                                  cpo.ObjectSet(), 
+                                  cpo.ObjectSet(),
                                   cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
-    
+
     def test_02_01_manual_rows_and_columns(self):
         np.random.seed(0)
         images = [np.random.uniform(size=(20,10)).astype(np.float32) for i in range(96)]
@@ -174,9 +174,9 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.rows.value = 6
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
-        
+
         module.prepare_group(workspace, (), np.arange(1,97))
-        
+
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -191,7 +191,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             self.assertTrue(np.all(pixel_data[iii:(iii+20), jjj:(jjj+10)] ==
                                    image))
-            
+
     def test_02_02_automatic_rows(self):
         np.random.seed(1)
         images = [np.random.uniform(size=(20,10)).astype(np.float32) for i in range(96)]
@@ -203,38 +203,9 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.rows.value = 8
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
-        
+
         module.prepare_group(workspace, (), np.arange(1,97))
-        
-        for i in range(96):
-            workspace.set_image_set_for_testing_only(i)
-            module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = image.pixel_data
-        self.assertEqual(pixel_data.shape[0], 6 * 20)
-        self.assertEqual(pixel_data.shape[1], 16 * 10)
-        for i, image in enumerate(images):
-            ii = int(i / 16)
-            jj = i % 16
-            iii = ii * 20
-            jjj = jj * 10
-            self.assertTrue(np.all(pixel_data[iii:(iii+20), jjj:(jjj+10)] ==
-                                   image))            
-            
-    def test_02_03_automatic_columns(self):
-        np.random.seed(2)
-        images = [np.random.uniform(size=(20,10)).astype(np.float32) for i in range(96)]
-        workspace, module = self.make_tile_workspace(images)
-        self.assertTrue(isinstance(module, T.Tile))
-        self.assertTrue(isinstance(workspace, cpw.Workspace))
-        module.wants_automatic_columns.value = True
-        module.wants_automatic_rows.value = False
-        module.rows.value = 6
-        module.columns.value = 365
-        module.tile_style.value = T.S_ROW
-        
-        module.prepare_group(workspace, (), np.arange(1,97))
-        
+
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -249,7 +220,36 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             self.assertTrue(np.all(pixel_data[iii:(iii+20), jjj:(jjj+10)] ==
                                    image))
-            
+
+    def test_02_03_automatic_columns(self):
+        np.random.seed(2)
+        images = [np.random.uniform(size=(20,10)).astype(np.float32) for i in range(96)]
+        workspace, module = self.make_tile_workspace(images)
+        self.assertTrue(isinstance(module, T.Tile))
+        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        module.wants_automatic_columns.value = True
+        module.wants_automatic_rows.value = False
+        module.rows.value = 6
+        module.columns.value = 365
+        module.tile_style.value = T.S_ROW
+
+        module.prepare_group(workspace, (), np.arange(1,97))
+
+        for i in range(96):
+            workspace.set_image_set_for_testing_only(i)
+            module.run(workspace)
+        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = image.pixel_data
+        self.assertEqual(pixel_data.shape[0], 6 * 20)
+        self.assertEqual(pixel_data.shape[1], 16 * 10)
+        for i, image in enumerate(images):
+            ii = int(i / 16)
+            jj = i % 16
+            iii = ii * 20
+            jjj = jj * 10
+            self.assertTrue(np.all(pixel_data[iii:(iii+20), jjj:(jjj+10)] ==
+                                   image))
+
     def test_02_04_automatic_rows_and_columns(self):
         np.random.seed(3)
         images = [np.random.uniform(size=(20,10)).astype(np.float32) for i in range(96)]
@@ -261,7 +261,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.rows.value = 365
         module.columns.value = 24
         module.tile_style.value = T.S_ROW
-        
+
         module.prepare_group(workspace, (), np.arange(1,97))
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -277,7 +277,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             self.assertTrue(np.all(pixel_data[iii:(iii+20), jjj:(jjj+10)] ==
                                    image))
-            
+
     def test_02_05_color(self):
         np.random.seed(4)
         images = [np.random.uniform(size=(20,10,3)).astype(np.float32) for i in range(96)]
@@ -289,9 +289,9 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.rows.value = 6
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
-        
+
         module.prepare_group(workspace, (), np.arange(1,97))
-        
+
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -318,9 +318,9 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.rows.value = 6
         module.columns.value = 16
         module.tile_style.value = T.S_COL
-        
+
         module.prepare_group(workspace, (), np.arange(1,97))
-        
+
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -349,9 +349,9 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
         module.place_first.value = T.P_TOP_RIGHT
-        
+
         module.prepare_group(workspace, (), np.arange(1,97))
-        
+
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -380,9 +380,9 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
         module.place_first.value = T.P_BOTTOM_LEFT
-        
+
         module.prepare_group(workspace, (), np.arange(1,97))
-        
+
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -411,9 +411,9 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
         module.place_first.value = T.P_BOTTOM_RIGHT
-        
+
         module.prepare_group(workspace, (), np.arange(1,97))
-        
+
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -429,7 +429,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             self.assertTrue(np.all(pixel_data[iii:(iii+20), jjj:(jjj+10)] ==
                                    image))
-            
+
     def test_02_10_different_sizes(self):
         np.random.seed(10)
         images = [np.random.uniform(size=(20,10)).astype(np.float32),
@@ -445,7 +445,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 4
         module.tile_style.value = T.S_ROW
         module.prepare_group(workspace, (), np.arange(1,4))
-        
+
         for i in range(4):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -472,9 +472,9 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
         module.place_first.value = T.P_BOTTOM_RIGHT
-        
+
         module.prepare_group(workspace, (), np.arange(1,97))
-        
+
         for i in range(95):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -491,7 +491,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             jjj = jj * 10
             self.assertTrue(np.all(pixel_data[iii:(iii+20), jjj:(jjj+10)] ==
                                    image))
-            
+
     def make_place_workspace(self, images):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -511,17 +511,17 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
                     module.add_image()
                 module.additional_images[i-1].input_image_name.value = image_name
             image_set.add(image_name, cpi.Image(image))
-        
+
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
-        
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-            
-        workspace = cpw.Workspace(pipeline, module, 
+
+        workspace = cpw.Workspace(pipeline, module,
                                   image_set,
-                                  cpo.ObjectSet(), 
+                                  cpo.ObjectSet(),
                                   cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
@@ -533,14 +533,14 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             workspace, module = self.make_place_workspace(images)
             self.assertTrue(isinstance(module, T.Tile))
             self.assertTrue(isinstance(workspace, cpw.Workspace))
-            
+
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             pixel_data = image.pixel_data
             for j, p in enumerate(images):
                 jj = 10 * j
                 self.assertTrue(np.all(pixel_data[:,jj:(jj+10)] == p))
-                
+
     def test_03_02_mix_color_bw(self):
         np.random.seed(32)
         for color in range(3):
@@ -550,7 +550,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             module.run(workspace)
             image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             pixel_data = image.pixel_data
-            
+
             for j, p in enumerate(images):
                 jj = 10 * j
                 if j == color:
@@ -558,7 +558,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
                 else:
                     for k in range(3):
                         self.assertTrue(np.all(pixel_data[:,jj:(jj+10),k] == p))
-            
+
     def test_03_03_different_sizes(self):
         np.random.seed(33)
         images = [np.random.uniform(size=(20,10)).astype(np.float32),
@@ -581,5 +581,3 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertTrue(np.all(pixel_data[:,60:] == images[3]))
         mask[:,60:] = False
         self.assertTrue(np.all(pixel_data[mask] == 0))
-        
-                        

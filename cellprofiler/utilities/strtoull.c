@@ -4,7 +4,7 @@
 extern unsigned long long int strtoull(const char *s, char **endptr, int base)
 {
   unsigned long long int value = 0;
-  
+
   while (isspace(*s)){
     s++;
   }

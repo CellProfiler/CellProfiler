@@ -888,4 +888,3 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         rd.custom_path = orig_path
         module.prepare_to_create_batch(None, fn_alter_path)
         self.assertEqual(rd.custom_path, '/imaging/analysis')
-        

@@ -1,4 +1,4 @@
-'''<b>Flag Image</b> allows you to flag an image based on properties 
+'''<b>Flag Image</b> allows you to flag an image based on properties
 that you specify, for example, quality control measurements.
 <hr>
 

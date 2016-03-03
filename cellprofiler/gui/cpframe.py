@@ -940,7 +940,7 @@ class CPFrame(wx.Frame):
     
     def __on_help_online_manual(self, event):
         import webbrowser
-        webbrowser.open("http://cellprofiler.org/CPmanual/")
+        webbrowser.open("http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html")
 
     def __on_help_developers_guide(self, event):
         import webbrowser

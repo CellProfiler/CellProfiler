@@ -20,6 +20,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.enhanceedges as F
 import centrosome.filter as FIL
+from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
 
 INPUT_IMAGE_NAME = 'inputimage'
@@ -285,5 +286,15 @@ class TestEnhanceEdges(unittest.TestCase):
         t1,t2 = otsu3(FIL.sobel(image))
         result = FIL.canny(image, np.ones(image.shape,bool), 1.0, t1, t2)
         self.assertTrue(np.all(output.pixel_data == result))
-
         
+    def test_07_01_kirsch(self):
+        r = np.random.RandomState([ord(_) for _ in "test_07_01_kirsch"])
+        i,j = np.mgrid[-20:20,-20:20]
+        image = (np.sqrt(i*i + j*j) <= 10).astype(float) * .5
+        image = image + r.uniform(size=image.shape) * .1
+        workspace, module = self.make_workspace(image)
+        module.method.value = F.M_KIRSCH
+        module.run(workspace)
+        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = kirsch(image)
+        np.testing.assert_almost_equal(output.pixel_data, result, decimal=4)

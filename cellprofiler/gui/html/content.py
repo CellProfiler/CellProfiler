@@ -155,7 +155,7 @@ startup_main = '''<html>
 <tr>
     <td>&nbsp;</td>
     <td width="100"><font size="+2">1: Start</font></td>
-    <td><a href="http://www.cellprofiler.org/examples.shtml">Download</a> a pipeline template from our website of examples. Load it with <i>File &gt; Import &gt; Pipeline from File...</i>. Run it, then modify it to suit your assay.</td>
+    <td><a href="http://www.cellprofiler.org/examples.html">Download</a> a pipeline template from our website of examples. Load it with <i>File &gt; Import &gt; Pipeline from File...</i>. Run it, then modify it to suit your assay.</td>
 </tr>
 <tr>
     <td>&nbsp;</td>
@@ -190,15 +190,15 @@ startup_main = '''<html>
             Click <b>?</b> buttons for detailed help
             </td>
             <td align="center" width="100"><b><font size="+1">Manual</font></b><br><br>
-            <a href="http://www.cellprofiler.org/CPmanual#table_of_contents" ><img src="memory:welcomescreen_manual.png"></a><br><br>
+            <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html" ><img src="memory:welcomescreen_manual.png"></a><br><br>
             Online version of In-App help
             </td>
             <td align="center" width="100"><b><font size="+1">Tutorials/Demos</font></b><br><br>
-            <a href="http://www.cellprofiler.org/tutorials.shtml"><img src="memory:welcomescreen_tutorials.png"></a><br><br>
+            <a href="http://cellprofiler.org/tutorials.html"><img src="memory:welcomescreen_tutorials.png"></a><br><br>
             For written and video guidance to image analysis
             </td>
             <td align="center" width="100"><b><font size="+1">Q&A Forum</font></b><br><br>
-            <a href="http://www.cellprofiler.org/forum/"><img src="memory:welcomescreen_forum.png"></a><br><br>
+            <a href="http://forum.cellprofiler.org/"><img src="memory:welcomescreen_forum.png"></a><br><br>
             Post a question online
             </td>
         </tr>

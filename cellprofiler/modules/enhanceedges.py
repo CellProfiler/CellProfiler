@@ -13,6 +13,7 @@ import numpy as np
 from centrosome.filter import laplacian_of_gaussian
 from centrosome.filter import prewitt, hprewitt, vprewitt, stretch
 from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
+from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
 from scipy.ndimage import convolve
 
@@ -26,6 +27,7 @@ M_PREWITT = "Prewitt"
 M_ROBERTS = "Roberts"
 M_LOG = "LoG"
 M_CANNY = "Canny"
+M_KIRSCH = "Kirsch"
 
 O_BINARY = "Binary"
 O_GRAYSCALE = "Grayscale"
@@ -73,7 +75,7 @@ class EnhanceEdges(cpm.CPModule):
         
         self.method = cps.Choice(
             "Select an edge-finding method",
-            [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY], doc = '''
+            [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY, M_KIRSCH], doc = '''
             There are several methods that can be used to enhance edges:
             <ul>
             <li><i>%(M_SOBEL)s:</i> Finds edges using the %(M_SOBEL)s approximation to the derivative. 
@@ -93,6 +95,9 @@ class EnhanceEdges(cpm.CPModule):
             edges, and includes the weak edges in the output only if they are connected to 
             strong edges. This method is therefore less likely than the others to be fooled 
             by noise, and more likely to detect true weak edges.</li>
+            <li><i>%(M_KIRSCH)s:</i> Finds edges by calculating the gradient
+            among the 8 compass points (North, North-east, etc.) and selecting
+            the maximum as the pixel's value.</li>
             </ul>'''%globals())
         
         self.direction = cps.Choice(
@@ -195,6 +200,8 @@ class EnhanceEdges(cpm.CPModule):
                                   high_threshold)
         elif self.method == M_ROBERTS:
             output_pixels = roberts(orig_pixels, mask)
+        elif self.method == M_KIRSCH:
+            output_pixels = kirsch(orig_pixels)
         else:
             raise NotImplementedError("Unimplemented edge detection method: %s"%
                                       self.method.value)

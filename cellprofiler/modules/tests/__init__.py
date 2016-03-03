@@ -12,7 +12,8 @@ import javabridge
 import numpy as np
 import os
 import unittest
-from urllib import urlretrieve
+from urllib import urlretrieve, URLopener
+from urllib2 import HTTPError
 import tempfile
 
 import scipy.io.matlab.mio
@@ -21,6 +22,10 @@ set_headless()
 from cellprofiler.modules import builtin_modules, all_modules
 
 __temp_example_images_folder = None
+
+cp_logo_url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/master/artwork/CP_logo.png"
+cp_logo_url_folder, cp_logo_url_filename = cp_logo_url.rsplit("/", 1)
+cp_logo_url_shape = (70, 187, 3)
 
 class TestAllModules(unittest.TestCase):
     '''Test things having to do with modules'''
@@ -277,7 +282,13 @@ def maybe_download_tesst_image( file_name):
     local_path = os.path.join(testimages_directory(), file_name)
     if not os.path.exists(local_path):
         url = testimages_url() + "/" + file_name
-        urlretrieve(url, local_path)
+        try:
+            URLopener().retrieve(url, local_path)
+        except IOError, e:
+            # This raises the "expected failure" exception.
+            def bad_url(e=e):
+                raise e
+            unittest.expectedFailure(bad_url)()
     return local_path
     
 def read_example_image(folder, file_name, **kwargs):

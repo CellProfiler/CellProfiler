@@ -260,7 +260,8 @@ class ReassignObjectNumbers(cpm.CPModule):
         return result
     
     def run(self, workspace):
-        objects = workspace.object_set.get_objects(self.objects_name.value)
+        objects_name = self.objects_name.value
+        objects = workspace.object_set.get_objects(objects_name)
         assert isinstance(objects, cpo.Objects)
         labels = objects.segmented
         if self.relabel_option == OPTION_SPLIT:
@@ -281,16 +282,15 @@ class ReassignObjectNumbers(cpm.CPModule):
                 if self.wants_image:
                     output_labels = self.filter_using_image(workspace, mask)
             elif self.unify_option == UNIFY_PARENT:
-                parent_objects = workspace.object_set.get_objects(self.parent_object.value)
-                parent_labels = parent_objects.segmented
-                output_labels = parent_labels.copy()
-                output_labels[labels == 0] = 0
+                parents_name = self.parent_object.value
+                parents_of = workspace.measurements[
+                    objects_name, "_".join((C_PARENT, parents_name))]
+                output_labels = labels.copy()
+                output_labels[labels > 0] = parents_of[labels[labels > 0]-1]
                 if self.unification_method == UM_CONVEX_HULL:
                     ch_pts, n_pts = morph.convex_hull(output_labels)
                     ijv = morph.fill_convex_hulls(ch_pts, n_pts)
-                    include = parent_labels[ijv[:, 0], ijv[:, 1]] == ijv[:, 2]
-                    output_labels[ijv[include, 0], ijv[include, 1]] = \
-                        ijv[include, 2]
+                    output_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
             
         output_objects = cpo.Objects()
         output_objects.segmented = output_labels

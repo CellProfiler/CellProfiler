@@ -69,8 +69,8 @@ def generate_html(webpage_path = None):
 <p>If you find it useful, please credit CellProfiler in publications
 <ol>
 <li>Cite the <a href="www.cellprofiler.org">website</a>.</li>
-<li>Cite the <a href="http://cellprofiler.org/citations.shtml">publication</a>.</li>
-<li>Post the reference for your publication on the CellProfiler <a href="http://cellprofiler.org/forum/">forum</a> so that we are aware of it.</li>
+<li>Cite the <a href="http://cellprofiler.org/citations.html">publication</a>.</li>
+<li>Post the reference for your publication on the CellProfiler <a href="http://forum.cellprofiler.org/">forum</a> so that we are aware of it.</li>
 </ol></p>
 
 <p>These steps will help us to maintain funding for the project and continue to 
@@ -80,7 +80,7 @@ improve and support it.</p>
 </div>
 
 <b>This manual accompanies version %(VERSION)s of CellProfiler. The most 
-recent manual is available <a href="http://www.cellprofiler.org/CPmanual/">here</a>.</b>
+recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html">here</a>.</b>
 
 <h1><a name="table_of_contents">Table of contents</a></h1>"""%globals()
             

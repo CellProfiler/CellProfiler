@@ -9,6 +9,7 @@
 *.so
 *\#
 *~
+*.egg
 .eggs/
 .idea/
 BatchProfiler/PrintEnv.py
@@ -40,3 +41,4 @@ killjavabridge.egg-info
 output
 plugins
 windows/**
+.python-version

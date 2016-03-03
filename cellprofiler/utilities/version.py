@@ -116,7 +116,7 @@ def get_dotted_version():
     else:
         import cellprofiler.frozen_version
         return cellprofiler.frozen_version.dotted_version
-    
+
 '''Code version'''
 version_string = get_version()
 version_number = int(datetime_from_isoformat(version_string.split(' ')[0]).strftime('%Y%m%d%H%M%S'))

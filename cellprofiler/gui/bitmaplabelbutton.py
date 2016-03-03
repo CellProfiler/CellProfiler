@@ -18,10 +18,10 @@ class BitmapLabelButton(GenBitmapTextButton):
             flags += wx.CONTROL_PRESSED
         if self.hasFocus:
             flags += wx.CONTROL_FOCUSED
-        
+
         wx.RendererNative.Get().DrawPushButton(
             self, dc, wx.Rect(0, 0, width, height), flags)
-        
+
         bmp = self.bmpLabel
         if self.bmpDisabled and not self.IsEnabled():
             bmp = self.bmpDisabled
@@ -37,7 +37,7 @@ class BitmapLabelButton(GenBitmapTextButton):
         hasMask = bmp.GetMask() is not None
         bitmap_y = (height-bh)/2+dy
         dc.DrawBitmap(bmp, self.LEFT_MARGIN+dx, bitmap_y, hasMask)
-        
+
         dc.SetFont(self.GetFont())
         if self.IsEnabled():
             dc.SetTextForeground(self.GetForegroundColour())
@@ -54,4 +54,3 @@ class BitmapLabelButton(GenBitmapTextButton):
         text_width, text_height = dc.GetTextExtent(label)
 
         dc.DrawText(label, pos_x, (height - text_height)/2)
-        

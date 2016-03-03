@@ -63,7 +63,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertEqual(module.operands[0].operand_measurement, "AreaShape_Perimeter")
         self.assertEqual(module.operands[1].operand_measurement, "Texture_Fuzziness_MyImage_10")
         self.assertFalse(module.wants_log)
-        
+
     def test_01_01_load_matlab(self):
         data = ('eJwBTgSx+01BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
                 'Q3JlYXRlZCBvbjogRnJpIEp1bCAxNyAxNjoxNzoxNyAyMDA5ICAgICAgICAg'
@@ -97,7 +97,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         #
         # 6 modules: last two are CalculateMath
-        #        
+        #
         # 1) Image: Intensity_TotalIntensity_OrigBlue
         #    Image: Intensity_TotalArea_OrigBlue
         #    Divide
@@ -119,7 +119,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                          "Intensity_TotalIntensity_OrigBlue")
         self.assertEqual(module.operands[1].operand_measurement.value,
                          "Intensity_TotalArea_OrigBlue")
-        
+
         module = pipeline.modules()[5]
         self.assertTrue(isinstance(module, C.CalculateMath))
         self.assertEqual(module.output_feature_name.value, "ObjectMeas")
@@ -134,7 +134,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                          "Intensity_MaxIntensityEdge_OrigBlue")
         self.assertEqual(module.final_exponent.value, 2)
         self.assertEqual(module.final_multiplicand.value, .5)
-    
+
     def test_01_02_load_v1(self):
         data = ('eJztnN1u2zYUgCnnB806tO52sWG90cUGNFtiyGmyNsGQ2km2xVudGk3Qoii6'
                 'jLHpmIMkGhKVxhsK7HKPtUfYY+xyjzBRliyJUSJZlpXIoQDBOjQ/Hp6jQ1LU'
@@ -201,12 +201,12 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertEqual(module.operands[1].object, "Nuclei")
         self.assertEqual(module.operands[0].operand_measurement, "AreaShape_Area")
         self.assertEqual(module.operands[1].operand_measurement, "AreaShape_Perimeter")
-    
+
     def run_workspace(self, operation, m1_is_image_measurement, m1_data,
                       m2_is_image_measurement, m2_data,
                       setup_fn = None):
         '''Create and run a workspace, returning the measurements
-        
+
         m<n>_is_image_measurement - true for an image measurement, false
                                     for object
         m<n>_data - either a single value or an array
@@ -240,7 +240,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
             setup_fn(module, workspace)
         module.run(workspace)
         return measurements
-    
+
     def test_02_01_add_image_image(self):
         measurements = self.run_workspace(C.O_ADD, True, 2, True, 2)
         self.assertTrue(measurements.has_feature(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS))
@@ -248,7 +248,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
             self.assertFalse(measurements.has_feature(OBJECT[i], MATH_OUTPUT_MEASUREMENTS))
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         self.assertAlmostEqual(data, 4)
-    
+
     def test_02_02_add_image_object(self):
         '''Add an image measurement to each of several object measurements'''
         measurements = self.run_workspace(C.O_ADD, True, 2, False, np.array([1,4,9]))
@@ -256,7 +256,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertTrue(measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS))
         data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
         self.assertTrue(np.all(data == np.array([3,6,11])))
-    
+
     def test_02_03_add_object_image(self):
         '''Add an image measurement to each of several object measurements (reverse)'''
         measurements = self.run_workspace(C.O_ADD, False, np.array([1,4,9]), True, 2)
@@ -264,12 +264,12 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertTrue(measurements.has_feature(OBJECT[0], MATH_OUTPUT_MEASUREMENTS))
         data = measurements.get_current_measurement(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
         self.assertTrue(np.all(data == np.array([3,6,11])))
-    
+
     def test_02_04_add_premultiply(self):
         def fn(module, workspace):
             module.operands[0].multiplicand.value = 2
             module.operands[1].multiplicand.value = 3
-        
+
         measurements = self.run_workspace(C.O_ADD, True, 5, True, 7, fn)
         expected = 2 * 5 + 3 * 7
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
@@ -279,12 +279,12 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         def fn(module, workspace):
             module.operands[0].exponent.value = 2
             module.operands[1].exponent.value = 3
-        
+
         measurements = self.run_workspace(C.O_ADD, True, 5, True, 7, fn)
         expected = 5 ** 2 + 7 ** 3
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         self.assertAlmostEqual(data, expected)
-    
+
     def test_02_06_add_postmultiply(self):
         def fn(module, workspace):
             module.final_multiplicand.value = 3
@@ -292,7 +292,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         expected = (5 + 7) * 3
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         self.assertAlmostEqual(data, expected)
-        
+
     def test_02_07_add_postexponentiate(self):
         def fn(module, workspace):
             module.final_exponent.value = 3
@@ -300,7 +300,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         expected = (5 + 7) ** 3
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         self.assertAlmostEqual(data, expected)
-    
+
     def test_02_08_add_log(self):
         def fn(module, workspace):
             module.wants_log.value = True
@@ -308,7 +308,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         expected = np.log10(5 + 7)
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         self.assertAlmostEqual(data, expected)
-    
+
     def test_02_09_add_object_object(self):
         measurements = self.run_workspace(C.O_ADD, False, np.array([1,2,3]),
                                           False, np.array([1,4,9]))
@@ -317,7 +317,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
             self.assertTrue(measurements.has_feature(OBJECT[i], MATH_OUTPUT_MEASUREMENTS))
             data = measurements.get_current_measurement(OBJECT[i], MATH_OUTPUT_MEASUREMENTS)
             self.assertTrue(np.all(data == np.array([2,6,12])))
-    
+
     def test_03_01_subtract(self):
         measurements = self.run_workspace(C.O_SUBTRACT, True, 7, True, 5)
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
@@ -327,12 +327,12 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         measurements = self.run_workspace(C.O_MULTIPLY, True, 7, True, 5)
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         self.assertAlmostEqual(data, 35)
-    
+
     def test_04_01_divide(self):
         measurements = self.run_workspace(C.O_DIVIDE, True, 35, True, 5)
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         self.assertAlmostEqual(data, 7)
-    
+
     def test_05_01_measurement_columns_image(self):
         module = C.CalculateMath()
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
@@ -344,7 +344,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertEqual(columns[0][1], MATH_OUTPUT_MEASUREMENTS)
         self.assertEqual(columns[0][2], cpmeas.COLTYPE_FLOAT)
         self.assertEqual(module.get_categories(None,cpmeas.IMAGE)[0], "Math")
-        self.assertEqual(module.get_measurements(None, cpmeas.IMAGE, "Math")[0], 
+        self.assertEqual(module.get_measurements(None, cpmeas.IMAGE, "Math")[0],
                          OUTPUT_MEASUREMENTS)
 
     def test_05_02_measurement_columns_image_object(self):
@@ -359,10 +359,10 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertEqual(columns[0][1], MATH_OUTPUT_MEASUREMENTS)
         self.assertEqual(columns[0][2], cpmeas.COLTYPE_FLOAT)
         self.assertEqual(module.get_categories(None,OBJECT[1])[0], "Math")
-        self.assertEqual(module.get_measurements(None, OBJECT[1], "Math")[0], 
+        self.assertEqual(module.get_measurements(None, OBJECT[1], "Math")[0],
                          OUTPUT_MEASUREMENTS)
         self.assertEqual(len(module.get_categories(None,cpmeas.IMAGE)), 0)
-    
+
     def test_05_03_measurement_columns_object_image(self):
         module = C.CalculateMath()
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
@@ -375,7 +375,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertEqual(columns[0][1], MATH_OUTPUT_MEASUREMENTS)
         self.assertEqual(columns[0][2], cpmeas.COLTYPE_FLOAT)
         self.assertEqual(module.get_categories(None,OBJECT[0])[0], "Math")
-        self.assertEqual(module.get_measurements(None, OBJECT[0], "Math")[0], 
+        self.assertEqual(module.get_measurements(None, OBJECT[0], "Math")[0],
                          OUTPUT_MEASUREMENTS)
         self.assertEqual(len(module.get_categories(None,cpmeas.IMAGE)), 0)
 
@@ -395,43 +395,43 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
             self.assertEqual(columns[i][1], MATH_OUTPUT_MEASUREMENTS)
             self.assertEqual(columns[i][2], cpmeas.COLTYPE_FLOAT)
             self.assertEqual(module.get_categories(None,OBJECT[i])[0], "Math")
-            self.assertEqual(module.get_measurements(None, OBJECT[i],"Math")[0], 
+            self.assertEqual(module.get_measurements(None, OBJECT[i],"Math")[0],
                              OUTPUT_MEASUREMENTS)
         self.assertEqual(len(module.get_categories(None,cpmeas.IMAGE)), 0)
 
     def test_06_01_add_object_object_same(self):
         '''Regression test: add two measurements from the same object
-        
+
         The bug was that the measurement gets added twice
         '''
         def fn(module, workspace):
             module.operands[1].operand_objects.value = OBJECT[0]
             module.operands[1].operand_measurement.value = "measurement0"
-        
+
         measurements = self.run_workspace(C.O_ADD, False, np.array([5,6]),
                                           False, np.array([-1,-1]), fn)
-        data = measurements.get_current_measurement(OBJECT[0], 
+        data = measurements.get_current_measurement(OBJECT[0],
                                                     MATH_OUTPUT_MEASUREMENTS)
         self.assertEqual(len(data),2)
         self.assertAlmostEqual(data[0], 10)
         self.assertAlmostEqual(data[1], 12)
-    
+
     def test_07_01_img_379(self):
         '''Regression test for IMG-379, divide by zero'''
-        
+
         measurements = self.run_workspace(C.O_DIVIDE, True, 35, True, 0)
-        data = measurements.get_current_measurement(cpmeas.IMAGE, 
+        data = measurements.get_current_measurement(cpmeas.IMAGE,
                                                     MATH_OUTPUT_MEASUREMENTS)
         self.assertTrue(np.isnan(data))
-        
-        measurements = self.run_workspace(C.O_DIVIDE, 
-                                          False, np.array([1.0]), 
+
+        measurements = self.run_workspace(C.O_DIVIDE,
+                                          False, np.array([1.0]),
                                           False, np.array([0.0]))
-        data = measurements.get_current_measurement(OBJECT[0], 
+        data = measurements.get_current_measurement(OBJECT[0],
                                                     MATH_OUTPUT_MEASUREMENTS)
         self.assertEqual(len(data), 1)
         self.assertTrue(np.isnan(data[0]))
-        
+
     def test_08_01_none_operation(self):
         # In this case, just multiply the array by a constant
         def fn(module, workspace):
@@ -448,10 +448,10 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertAlmostEqual(data[0], 2)
         self.assertAlmostEqual(data[1], 4)
         self.assertAlmostEqual(data[2], 6)
-        
+
     def test_09_01_img_919(self):
         '''Regression test: one measurement, but both operands are from same object
-        
+
         The bug was that the measurement gets added twice. It was fixed in run
         but not in get_measurement_columns
         '''
@@ -468,11 +468,11 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         columns = module.get_measurement_columns(None)
         self.assertEqual(columns[0][0],OBJECT[0])
         self.assertEqual(len(columns),1)
-        
+
     def test_10_1_img_1566(self):
         '''Regression test: different numbers of objects'''
         r = np.random.RandomState(1566)
-        o0 = [ np.array([1,2,3,4,5]), np.array([1,1,2,2,3]), 
+        o0 = [ np.array([1,2,3,4,5]), np.array([1,1,2,2,3]),
                np.array([1,2,4,5]), np.array([1,1,1,1])]
         o1 = [ np.array([1,1,2,2,3]), np.array([1,2,3,4,5]),
                np.array([1,1,1,1]), np.array([1,2,4,5])]
@@ -512,14 +512,14 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                 data = measurements.get_current_measurement(
                     OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
                 np.testing.assert_almost_equal(e1, data)
-                
+
     def test_10_01_02_different_image_sets(self):
         #
         # Relationship code was matching object numbers from any object
         # set to any other
         #
         r = np.random.RandomState(100102)
-        o0 = [ np.array([1,2,3,4,5]), np.array([1,1,2,2,3]), 
+        o0 = [ np.array([1,2,3,4,5]), np.array([1,1,2,2,3]),
                np.array([1,2,4,5]), np.array([1,1,1,1])]
         o1 = [ np.array([1,1,2,2,3]), np.array([1,2,3,4,5]),
                np.array([1,1,1,1]), np.array([1,2,4,5])]
@@ -549,7 +549,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                         1, C.R_PARENT, OBJECT[0], OBJECT[1],
                         np.ones(len(oo0), int) * i1, r.permutation(oo0),
                         np.ones(len(oo1), int) * i2, oo1)
-                
+
             measurements = self.run_workspace(C.O_ADD, False, ii0,
                                               False, ii1, setup_fn)
             data = measurements.get_current_measurement(
@@ -558,7 +558,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
             data = measurements.get_current_measurement(
                 OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
             np.testing.assert_almost_equal(e1, data)
-        
+
 
     def test_10_01_issue_422(self):
         # Regression test of issue # 422
@@ -574,15 +574,15 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         module.operands[0].operand_choice.value = C.MC_OBJECT
         module.operands[1].operand_choice.value = C.MC_OBJECT
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
-        
+
         c = module.get_measurement_columns(None)
         self.assertEqual(len(c), 1)
         self.assertEqual(c[0][0], OBJECT[0])
         self.assertEqual(c[0][1], MATH_OUTPUT_MEASUREMENTS)
-        
+
         self.assertEqual(len(module.get_categories(None, OBJECT[0])), 1)
         self.assertEqual(len(module.get_categories(None, OBJECT[1])), 0)
-        
+
         self.assertEqual(
             len(module.get_measurements(None, OBJECT[0], C.C_MATH)), 1)
         self.assertEqual(
@@ -606,7 +606,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         expected = 0
         data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
         self.assertAlmostEqual(data, expected)
-        
+
     def test_11_03_constrain_upper(self):
         '''Test whether the upper bound option works'''
         def fn(module, workspace):

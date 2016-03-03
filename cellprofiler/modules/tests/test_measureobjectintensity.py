@@ -34,7 +34,7 @@ class TestMeasureObjects(unittest.TestCase):
     def error_callback(self, calller, event):
         if isinstance(event, P.RunExceptionEvent):
             self.fail(event.error.message)
-    
+
     def test_01_01_load(self):
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
@@ -46,7 +46,7 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertEqual(len(module.objects),1)
         self.assertEqual(module.objects[0].name.value,'Nuclei')
         self.assertEqual(module.images[0].name.value,'DNA')
-        
+
     def test_01_02_load_v2(self):
         data = ('eJztW0Fv2zYUpl0nWFagS08dhhXgoYckiDXZq9E0KFo78boZqB2jNtoNadYx'
                 'Mm1zkEVDotK4Re/9qTvmuONEW7IlTolkS4qdVAIE+VH8+L33+PhIyVS90n5V'
@@ -90,16 +90,16 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertEqual(len(module.objects), 2)
         for expected, actual in zip(("Cells","Nuclei"), [obj.name for obj in module.objects]):
             self.assertEqual(expected, actual)
-        
+
     def test_02_01_supplied_measurements(self):
         """Test the get_category / get_measurements, get_measurement_images functions"""
-        
+
         moi = MOI.MeasureObjectIntensity()
         moi.images[0].name.value='MyImage'
         moi.add_object()
         moi.objects[0].name.value = 'MyObjects1'
         moi.objects[1].name.value = 'MyObjects2'
-        
+
         self.assertEqual(tuple(sorted(moi.get_categories(None, 'MyObjects1'))), tuple(sorted([MOI.INTENSITY, MOI.C_LOCATION])))
         self.assertEqual(moi.get_categories(None, 'Foo'),[])
         measurements = moi.get_measurements(None,'MyObjects1',MOI.INTENSITY)
@@ -111,7 +111,7 @@ class TestMeasureObjects(unittest.TestCase):
                                                    MOI.INTENSITY,
                                                    MOI.MAX_INTENSITY),
                         ['MyImage'])
-    
+
     def test_02_02_get_measurement_columns(self):
         '''test the get_measurement_columns method'''
         moi = MOI.MeasureObjectIntensity()
@@ -127,10 +127,10 @@ class TestMeasureObjects(unittest.TestCase):
             category = column[1].split('_')[0]
             self.assertTrue(category in (MOI.INTENSITY, MOI.C_LOCATION))
             if category == MOI.INTENSITY:
-                self.assertTrue(column[1][column[1].find('_')+1:] in 
+                self.assertTrue(column[1][column[1].find('_')+1:] in
                                 [m+'_MyImage' for m in MOI.ALL_MEASUREMENTS])
             else:
-                self.assertTrue(column[1][column[1].find('_')+1:] in 
+                self.assertTrue(column[1][column[1].find('_')+1:] in
                                 [m+'_MyImage' for m in MOI.ALL_LOCATION_MEASUREMENTS])
 
     def features_and_columns_match(self, measurements, module):
@@ -145,7 +145,7 @@ class TestMeasureObjects(unittest.TestCase):
             index = object_names.index(column[0])
             self.assertTrue(column[1] in features[index])
             self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT)
-        
+
     def make_workspace(self, labels, pixel_data, mask=None):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -168,7 +168,7 @@ class TestMeasureObjects(unittest.TestCase):
                                   object_set, cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
-        
+
     def test_03_01_00_zero(self):
         """Make sure we can process a blank image"""
         ii = II.InjectImage('MyImage',np.zeros((10,10)))
@@ -192,13 +192,13 @@ class TestMeasureObjects(unittest.TestCase):
                 data = m.get_current_measurement('MyObjects',feature_name)
                 self.assertEqual(np.product(data.shape),0,"Got data for feature %s"%(feature_name))
             self.features_and_columns_match(m, moi)
-        
+
     def test_03_01_01_masked(self):
         """Make sure we can process a completely masked image
-        
+
         Regression test of IMG-971
         """
-        ii = II.InjectImage('MyImage',np.zeros((10,10)), 
+        ii = II.InjectImage('MyImage',np.zeros((10,10)),
                             np.zeros((10,10), bool))
         ii.module_num = 1
         io = II.InjectObjects('MyObjects',np.ones((10,10),int))
@@ -219,8 +219,8 @@ class TestMeasureObjects(unittest.TestCase):
             self.assertEqual(np.product(data.shape),1)
             self.assertTrue(np.all(np.isnan(data) | (data == 0)))
         self.features_and_columns_match(m, moi)
-        
-        
+
+
     def test_03_02_00_one(self):
         """Check measurements on a 3x3 square of 1's"""
         img = np.array([[0,0,0,0,0,0,0],
@@ -263,7 +263,7 @@ class TestMeasureObjects(unittest.TestCase):
             data = m.get_current_measurement('MyObjects',feature_name)
             self.assertEqual(np.product(data.shape),1)
             self.assertEqual(data[0],value,"%s expected %f != actual %f"%(meas_name, value, data[0]))
-        
+
     def test_03_02_01_one_masked(self):
         """Check measurements on a 3x3 square of 1's"""
         img = np.array([[0,0,0,0,0,0,0],
@@ -325,10 +325,10 @@ class TestMeasureObjects(unittest.TestCase):
                 OBJECT_NAME, feature_name)
             self.assertEqual(len(values), 1)
             self.assertEqual(values[0], value)
-            
+
     def test_03_03_00_mass_displacement(self):
         """Check the mass displacement of three squares"""
-        
+
         labels = np.array([[0,0,0,0,0,0,0],
                               [0,1,1,1,1,1,0],
                               [0,1,1,1,1,1,0],
@@ -381,10 +381,10 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertAlmostEqual(mass_displacement[0],math.sqrt(8.0))
         self.assertAlmostEqual(mass_displacement[1],2.0)
         self.assertAlmostEqual(mass_displacement[2],2.0)
-        
+
     def test_03_03_01_mass_displacement_masked(self):
         """Regression test IMG-766 - mass displacement of a masked image"""
-        
+
         labels = np.array([[0,0,0,0,0,0,0],
                               [0,1,1,1,1,1,0],
                               [0,1,1,1,1,1,0],
@@ -471,7 +471,7 @@ class TestMeasureObjects(unittest.TestCase):
         feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.UPPER_QUARTILE_INTENSITY,'MyImage')
         data = m.get_current_measurement('MyObjects',feature_name)
         self.assertAlmostEqual(data[0],.75,2)
-        
+
     def test_03_05_quartiles(self):
         """Regression test a bug that occurs in an image with one pixel"""
         labels = np.zeros((10,20))
@@ -540,12 +540,12 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertAlmostEqual(data[3],3.0/16.0,2)
         feature_name = '%s_%s_%s'%(MOI.INTENSITY,MOI.MAD_INTENSITY,'MyImage')
         data = m.get_current_measurement('MyObjects',feature_name)
-        
+
         self.assertAlmostEqual(data[0], 1.0/4.0, 2)
         self.assertAlmostEqual(data[1], 1.0/8.0, 2)
         self.assertAlmostEqual(data[2], 1.0/12.0, 2)
         self.assertAlmostEqual(data[3], 1.0/16.0, 2)
-        
+
     def test_03_07_median_intensity_masked(self):
         np.random.seed(37)
         labels = np.ones((10,10), int)
@@ -563,7 +563,7 @@ class TestMeasureObjects(unittest.TestCase):
             OBJECT_NAME, '_'.join((MOI.INTENSITY, MOI.MEDIAN_INTENSITY, IMAGE_NAME)))
         self.assertEqual(len(values), 1)
         self.assertEqual(expected, values[0])
-        
+
     def test_03_08_std_intensity(self):
         np.random.seed(38)
         labels = np.ones((40, 30), int)
@@ -579,7 +579,7 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertEqual(len(values), 4)
         for i in range(1,5):
             self.assertAlmostEqual(values[i-1], np.std(image[labels==i]))
-            
+
     def test_03_09_std_intensity_edge(self):
         np.random.seed(39)
         labels = np.ones((40, 30), int)
@@ -602,7 +602,7 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertEqual(len(values), 4)
         for i in range(1,5):
             self.assertAlmostEqual(values[i-1], np.std(image[elabels==i]))
-            
+
     def test_03_10_ijv(self):
         #
         # Test the module on overlapping objects
@@ -636,9 +636,9 @@ class TestMeasureObjects(unittest.TestCase):
                     self.assertEqual(len(m1), 1)
                     self.assertEqual(m0[i], m1[0])
 
-            
-        
-        
+
+
+
 
     def test_04_01_wrong_image_size(self):
         '''Regression test of IMG-961 - object and image size differ'''
@@ -668,7 +668,7 @@ class TestMeasureObjects(unittest.TestCase):
         m = workspace.measurements.get_current_measurement("MyObjects", feature_name)
         self.assertEqual(len(m), 1)
         self.assertAlmostEqual(m[0], np.sum(image[:20,:40]),4)
-        
+
     def test_04_02_masked_edge(self):
         # Regression test of issue #1115
         labels = np.zeros((20,50), int)
@@ -696,5 +696,3 @@ class TestMeasureObjects(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, m, object_set,
                                   m, None)
         module.run(workspace)
-        
-    

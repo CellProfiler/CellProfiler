@@ -19,7 +19,7 @@ def output_image_name(idx):
     return "outputimage%d" % idx
 
 class TestUnmixColors(unittest.TestCase):
-    
+
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -115,10 +115,10 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         self.assertAlmostEqual(module.outputs[-1].red_absorbance.value, .1)
         self.assertAlmostEqual(module.outputs[-1].green_absorbance.value, .2)
         self.assertAlmostEqual(module.outputs[-1].blue_absorbance.value, .3)
-        
+
     def make_workspace(self, pixels, choices):
         '''Make a workspace for running UnmixColors
-        
+
         pixels - input image
         choices - a list of choice strings for the images desired
         '''
@@ -126,7 +126,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(callback)
-        
+
         module = U.UnmixColors()
         module.input_image_name.value = INPUT_IMAGE
         module.outputs[0].image_name.value = output_image_name(0)
@@ -135,19 +135,19 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
             module.add_image()
             module.outputs[i+1].image_name.value = output_image_name(i+1)
             module.outputs[i+1].stain_choice.value = choice
-        
+
         module.module_num = 1
         pipeline.add_module(module)
-        
+
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image = cpi.Image(pixels)
         image_set.add(INPUT_IMAGE, image)
-        
+
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   cpmeas.Measurements(), image_set_list)
         return workspace, module
-    
+
     @staticmethod
     def make_image(expected, absorbances):
         eps = 1.0/256.0/2.0
@@ -158,7 +158,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         log_absorbance = log_absorbance[:,:,np.newaxis] * absorbances[np.newaxis, np.newaxis, :]
         image = np.exp(log_absorbance) - eps
         return image
-    
+
     def test_02_01_zeros(self):
         '''Test on an image of all zeros'''
         workspace, module = self.make_workspace(np.zeros((10,20,3)),
@@ -169,7 +169,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         # All zeros in brightfield should be all 1 in stain
         #
         np.testing.assert_almost_equal(image.pixel_data, 1, 2)
-        
+
     def test_02_02_ones(self):
         '''Test on an image of all ones'''
         workspace, module = self.make_workspace(np.ones((10,20,3)),
@@ -180,10 +180,10 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         # All ones in brightfield should be no stain
         #
         np.testing.assert_almost_equal(image.pixel_data, 0, 2)
-        
+
     def test_02_03_one_stain(self):
         '''Test on a single stain'''
-        
+
         np.random.seed(23)
         expected = np.random.uniform(size=(10,20))
         image = self.make_image(expected, U.ST_HEMATOXYLIN)
@@ -191,7 +191,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         module.run(workspace)
         image = workspace.image_set.get_image(output_image_name(0))
         np.testing.assert_almost_equal(image.pixel_data, expected, 2)
-        
+
     def test_02_04_two_stains(self):
         '''Test on two stains mixed together'''
         np.random.seed(24)
@@ -210,7 +210,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         np.testing.assert_almost_equal(image_1.pixel_data, expected_1, 2)
         image_2 = workspace.image_set.get_image(output_image_name(1))
         np.testing.assert_almost_equal(image_2.pixel_data, expected_2, 2)
-        
+
     def test_02_05_custom_stain(self):
         '''Test on a custom value for the stains'''
         np.random.seed(25)
@@ -224,5 +224,3 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         module.run(workspace)
         image = workspace.image_set.get_image(output_image_name(0))
         np.testing.assert_almost_equal(image.pixel_data, expected, 2)
-        
-        

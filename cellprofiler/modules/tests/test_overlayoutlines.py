@@ -50,12 +50,12 @@ class TestOverlayOutlines(unittest.TestCase):
             object_set.add_objects(objects, OBJECTS_NAME)
             module.outlines[0].outline_choice.value = O.FROM_OBJECTS
             module.outlines[0].objects_name.value = OBJECTS_NAME
-            
+
         pipeline = cpp.Pipeline()
         workspace = cpw.Workspace(pipeline, module, m, object_set, m, None)
         m.add(INPUT_IMAGE_NAME, cpi.Image(image))
         return workspace, module
-    
+
     def test_01_00_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUX'
                 'AuSk0sSU1RyM+zUvDNz1PwKs1TMLBQMDS1MjayMjJTMDIwsFQgGTAw'
@@ -134,7 +134,7 @@ class TestOverlayOutlines(unittest.TestCase):
         self.assertEqual(module.outlines[0].outline_name.value, "NucleiOutlines")
         self.assertEqual(module.outlines[0].color.value, "Green")
         self.assertEqual(module.max_type.value, O.MAX_IMAGE)
-        
+
     def test_01_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -169,7 +169,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
                                         ("Red", "Green")):
             self.assertEqual(outline.outline_name, name)
             self.assertEqual(outline.color, color)
-            
+
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -208,9 +208,9 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         self.assertAlmostEqual(module.line_width.value, 1.5)
         self.assertEqual(len(module.outlines), 2)
         for outline, name, color, choice, objects_name in (
-            (module.outlines[0], "PrimaryOutlines", "Red", 
+            (module.outlines[0], "PrimaryOutlines", "Red",
              O.FROM_IMAGES, "Nuclei"),
-            (module.outlines[1], "SecondaryOutlines", "Green", 
+            (module.outlines[1], "SecondaryOutlines", "Green",
              O.FROM_OBJECTS, "Cells")):
             self.assertEqual(outline.outline_name, name)
             self.assertEqual(outline.color, color)
@@ -234,7 +234,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             else:
                 workspace, module = self.make_workspace(
                     image, labels=[outline.astype(int)])
-                
+
             module.wants_color.value = O.WANTS_COLOR
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
@@ -267,7 +267,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.run(workspace)
             output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.pixel_data == expected))
-    
+
     def test_02_03_blank_to_color_outlines(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50,3))
@@ -293,7 +293,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.run(workspace)
             output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.pixel_data == expected))
-        
+
     def test_02_04_wrong_size_gray_to_color(self):
         '''Regression test of img-961'''
         np.random.seed(24)
@@ -319,7 +319,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.run(workspace)
             output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.pixel_data == expected))
-        
+
     def test_02_05_wrong_size_color_to_color(self):
         np.random.seed(25)
         image = np.random.uniform(size=(50,50,3)).astype(np.float32)
@@ -345,7 +345,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.run(workspace)
             output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.pixel_data == expected))
-    
+
     def test_03_01_blank_to_gray(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50))
@@ -367,7 +367,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.run(workspace)
             output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.pixel_data == expected))
-    
+
     def test_03_02_gray_max_image(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50)).astype(np.float32) * .5
@@ -419,7 +419,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.run(workspace)
         output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.pixel_data == expected))
-        
+
     def test_04_01_ijv(self):
         np.random.seed(0)
         image = np.random.uniform(size=(50,50,3)).astype(np.float32)

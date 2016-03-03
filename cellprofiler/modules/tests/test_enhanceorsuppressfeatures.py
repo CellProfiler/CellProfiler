@@ -41,7 +41,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         module.image_name.value = INPUT_IMAGE_NAME
         module.filtered_image_name.value = OUTPUT_IMAGE_NAME
         return workspace, module
-    
+
     def test_00_00_enhance_zero(self):
         '''Test enhance of an image of all zeros'''
         workspace, module = self.make_workspace(np.zeros((10,10)), None)
@@ -50,7 +50,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         self.assertTrue(np.all(result.pixel_data == 0))
-        
+
     def test_00_01_suppress_zero(self):
         '''Test suppress of an image of all zeros'''
         workspace, module = self.make_workspace(np.zeros((10,10)), None)
@@ -59,12 +59,12 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         self.assertTrue(np.all(result.pixel_data == 0))
-        
+
     def test_01_00_check_version(self):
         '''Make sure the test covers the latest revision number'''
         # Create a new test and update this one after changing settings
         self.assertEqual(E.EnhanceOrSuppressFeatures.variable_revision_number, 5)
-        
+
     def test_01_01_load_v1(self):
         data = ( 'eJztWNFO2zAUdUqBsUkr28v26Ee60aotQ4NqKu0oEtUIVLRiQohtpnXba'
                  'EkcOQlrNyHtcZ+0x33OHvcJs4NDUhMIbccmpqay2nt9zz3Xx0lsV600dy'
@@ -96,7 +96,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         self.assertEqual(module.filtered_image_name.value, 'MyEnhancedImage')
         self.assertEqual(module.method.value, E.ENHANCE)
         self.assertEqual(module.object_size, 17)
-        
+
     def test_01_02_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -148,7 +148,7 @@ EnhanceOrSuppressFeatures:[module_num:5|svn_version:\'10300\'|variable_revision_
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()),5)
-        for module, (input_name, output_name, operation, feature_size, 
+        for module, (input_name, output_name, operation, feature_size,
                      feature_type, min_range, max_range) in zip(
                          pipeline.modules(), (
             ("Initial", "EnhancedSpeckles", E.ENHANCE, 11, E.E_SPECKLES, 1,10),
@@ -165,7 +165,7 @@ EnhanceOrSuppressFeatures:[module_num:5|svn_version:\'10300\'|variable_revision_
             self.assertEqual(module.object_size, feature_size)
             self.assertEqual(module.hole_size.min, min_range)
             self.assertEqual(module.hole_size.max, max_range)
-            
+
     def test_01_03_test_load_v3(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -212,11 +212,11 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_
         self.assertEqual(module.angle, 45)
         self.assertEqual(module.decay, .9)
         self.assertEqual(module.speckle_accuracy, E.S_SLOW)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
         self.assertEqual(module.enhance_method, E.E_DIC)
-        
+
     def test_01_05_load_v5(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -271,7 +271,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         self.assertEqual(module.decay, .95)
         self.assertEqual(module.neurite_choice, E.N_TUBENESS)
         self.assertEqual(module.speckle_accuracy, E.S_SLOW)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
         self.assertEqual(module.speckle_accuracy, E.S_FAST)
@@ -292,7 +292,7 @@ EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'Unknown\'|variable_revisio
     Shear angle:0
     Decay:0.95
     Enhancement method:Tubeness
-    
+
 EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
     Select the input image:Axon
     Name the output image:EnhancedAxon
@@ -324,18 +324,18 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         self.assertEqual(module.angle, 0)
         self.assertEqual(module.decay, .95)
         self.assertEqual(module.neurite_choice, E.N_TUBENESS)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
         self.assertEqual(module.neurite_choice, E.N_GRADIENT)
 
-    
+
     def test_02_01_enhance(self):
         '''Enhance an image composed of two circles of different diameters'''
         #
         # Make an image which has circles of diameters 10 and 7. We should
         # keep the smaller circle and erase the larger
-        # 
+        #
         image = np.zeros((11,20))
         expected = np.zeros((11,20))
         i,j = np.mgrid[-5:6,-5:16]
@@ -352,7 +352,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         self.assertTrue(np.all(result.pixel_data == expected))
-        
+
     def test_02_02_suppress(self):
         '''Suppress a speckle in an image composed of two circles'''
         image = np.zeros((11,20))
@@ -369,7 +369,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         self.assertTrue(np.all(result.pixel_data == expected))
-    
+
     def test_03_01_enhancemask(self):
         '''Enhance a speckles image, masking a portion'''
         image = np.zeros((10,10))
@@ -438,7 +438,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         self.assertTrue(np.all(result.pixel_data == image))
-    
+
     def test_04_01_enhance_neurites(self):
         '''Check enhance neurites against Matlab'''
         data = np.array([[7,9,5,6,3,3,6,4,1,6,4,4,3,3,9,6,2,8,7,2,7,7,7,3,7,5,4,7,4,4,4,4,6,3,4,6,4,5,4,1,4,10,4,8,8,3,9,5,3,5,4,7,4,7,8,12,8,7,7,5,6,8,6,4,6,8,3,4,4,4,4,3,6,10,10,8,11,4,4,4,10,3,10,4,4,4,3,10,8,7,3,8,7,10,10,2,7,8,7,7,5,3,3,8,4,7,7,6,4,4,9,6,2,2,5,4,3,8,8,5,7,5,5,6,4,3,0,5,3,1,6,2,6,6,7,2,6,8,3,5,5,6,6,6,3,5,9,10,4,2,5,6,8,8,4,8,6,6,6,5,5,6,7,5,5,2,5,1,5,7,5,2,5,5,3,5,5,7,3,7,2,8,9,6,8,0,9,7,5,4,6,6,1,2,2,6,9,10,8,5,3],
@@ -678,7 +678,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(np.abs(result.pixel_data - expected) < .002))
-        
+
     def test_04_02_enhance_neurites_tubeness_positive(self):
         image = np.zeros((20, 30))
         image[5:15, 10:20] = np.identity(10)
@@ -691,7 +691,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = result.pixel_data
         self.assertTrue(np.all(pixel_data[image > 0] > 0))
-        
+
     def test_04_03_enhance_neurites_tubeness_negative(self):
         image = np.ones((20, 30))
         image[5:15, 10:20] -= np.identity(10)
@@ -704,7 +704,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = result.pixel_data
         np.testing.assert_array_almost_equal(pixel_data, 0)
-        
+
     def test_05_01_enhance_dark_holes(self):
         '''Check enhancement of dark holes'''
         #
@@ -724,7 +724,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
             module.run(workspace)
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(result.pixel_data == expected))
-            
+
     def test_06_01_enhance_circles(self):
         i,j = np.mgrid[-15:16,-15:16]
         circle = np.abs(np.sqrt(i*i+j*j) - 6) <= 1.5
@@ -736,7 +736,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertEqual(img[15,15], 1)
         self.assertTrue(np.all(img[np.abs(np.sqrt(i*i+j*j) - 6) < 1.5] < .25))
-        
+
     def test_06_02_enhance_masked_circles(self):
         img = np.zeros((31,62))
         mask = np.ones((31,62), bool)
@@ -755,7 +755,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertEqual(result[15,15], 1)
         self.assertEqual(result[15,15+31], 0)
-        
+
     def test_07_01_enhance_dic(self):
         img = np.ones((21,43)) * .5
         img[5:15, 10] = 1
@@ -774,17 +774,17 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         expected[5:15,11:15] = 1
         expected[5:15,15] = .5
         np.testing.assert_almost_equal(result, expected)
-        
+
         module.decay.value = .9
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertTrue(np.all(result[5:15,12:14] < 1))
-        
+
         module.decay.value = 1
         module.smoothing.value = 1
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertTrue(np.all(result[4,11:15] > .1))
-        
+
     def test_08_01_enhance_variance(self):
         r = np.random.RandomState()
         r.seed(81)
@@ -799,7 +799,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         expected = E.variance_transform(img, sigma)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         np.testing.assert_almost_equal(result, expected)
-        
+
     def test_08_02_enhance_variance_masked(self):
         r = np.random.RandomState()
         r.seed(81)
@@ -815,4 +815,3 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         expected = E.variance_transform(img, sigma, mask)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         np.testing.assert_almost_equal(result[mask], expected[mask])
-        

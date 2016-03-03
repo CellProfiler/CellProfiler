@@ -25,10 +25,10 @@ try:
     import vigra
     vigra.arraytypes._VigraArray # throws on latest version of Vigra
     has_ilastik = True
-    
+
 except:
     has_ilastik = False
-    
+
 INPUT_IMAGE_NAME = "inputimage"
 def get_output_image_name(index):
     return "outputimage%d" % index
@@ -43,17 +43,17 @@ if has_ilastik:
             f.write(binary_data)
             f.flush()
             f.close()
-            
+
         @classmethod
         def tearDownClass(cls):
             #os.remove(cls.classifier_file)
             pass
-        
+
         def test_01_01_load_v1(self):
             data = """CellProfiler Pipeline: http://www.cellprofiler.org
     Version:1
     SVNRevision:11710
-    
+
     ClassifyPixels:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
         Select the input image:Color
         Name of the output probability map:WhiteColonies
@@ -70,17 +70,17 @@ if has_ilastik:
             module = pipeline.modules()[0]
             self.assertTrue(isinstance(module, C.ClassifyPixels))
             self.assertEqual(len(module.probability_maps), 1)
-            self.assertEqual(module.h5_directory.dir_choice, 
+            self.assertEqual(module.h5_directory.dir_choice,
                              C.DEFAULT_INPUT_FOLDER_NAME)
             self.assertEqual(module.classifier_file_name, "classifier.h5")
             self.assertEqual(module.probability_maps[0].output_image, "WhiteColonies")
             self.assertEqual(module.probability_maps[0].class_sel, 2)
-            
+
         def test_01_02_load_v2(self):
             data = """CellProfiler Pipeline: http://www.cellprofiler.org
     Version:1
     SVNRevision:11710
-    
+
     ClassifyPixels:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D]
         Select the input image:Color
         Input classifier file location:Default Input Folder\x7CNone
@@ -100,14 +100,14 @@ if has_ilastik:
             module = pipeline.modules()[0]
             self.assertTrue(isinstance(module, C.ClassifyPixels))
             self.assertEqual(len(module.probability_maps), 2)
-            self.assertEqual(module.h5_directory.dir_choice, 
+            self.assertEqual(module.h5_directory.dir_choice,
                              C.DEFAULT_INPUT_FOLDER_NAME)
             self.assertEqual(module.classifier_file_name, "classifier.h5")
             self.assertEqual(module.probability_maps[0].output_image, "BlueColonies")
             self.assertEqual(module.probability_maps[0].class_sel, 1)
             self.assertEqual(module.probability_maps[1].output_image, "WhiteColonies")
             self.assertEqual(module.probability_maps[1].class_sel, 2)
-            
+
         def make_workspace(self, classes, scale=255):
             module = C.ClassifyPixels()
             module.module_num = 1
@@ -141,7 +141,7 @@ if has_ilastik:
                 cpmeas.Measurements(),
                 image_set_list)
             return workspace, module
-        
+
         def test_02_01_run_one(self):
             workspace, module = self.make_workspace([1])
             module.run(workspace)
@@ -149,7 +149,7 @@ if has_ilastik:
             pixels = image.pixel_data
             self.assertEqual(pixels.shape[0], 64)
             self.assertEqual(pixels.shape[1], 72)
-            
+
         def test_02_02_run_two(self):
             workspace, module = self.make_workspace([1, 2])
             module.run(workspace)
@@ -158,7 +158,7 @@ if has_ilastik:
                 pixels = image.pixel_data
                 self.assertEqual(pixels.shape[0], 64)
                 self.assertEqual(pixels.shape[1], 72)
-        
+
         def test_02_03_run_no_scale(self):
             #
             # Handle missing scale (e.g. derived image) gracefully

@@ -1,11 +1,11 @@
 '''<b>Measure Granularity</b> outputs spectra of size measurements 
 of the textures in the image.
 <hr>
-Image granularity is a texture measurement that tries a series of structure elements 
-of increasing size and outputs a spectrum of measures of how well these structure 
-elements fit in the texture of the image. Granularity is measured as described by 
-Ilya Ravkin (references below). The size of the starting structure element as well 
-as the range of the spectrum is given as input. 
+Image granularity is a texture measurement that tries a series of structure elements
+of increasing size and outputs a spectrum of measures of how well these structure
+elements fit in the texture of the image. Granularity is measured as described by
+Ilya Ravkin (references below). The size of the starting structure element as well
+as the range of the spectrum is given as input.
 
 <h4>Available measurements</h4>
 <ul>
@@ -62,27 +62,27 @@ class MeasureGranularity(cpm.CPModule):
         self.add_image(can_remove = False)
         self.add_button = cps.DoSomething("", "Add another image", self.add_image)
         self.divider_bottom = cps.Divider(line=False)
-        
-    def add_image(self, can_remove = True):    
+
+    def add_image(self, can_remove = True):
         group = GranularitySettingsGroup()
         group.can_remove = can_remove
         if can_remove:
             group.append("divider", cps.Divider(line=True))
-        
+
         group.append("image_name",cps.ImageNameSubscriber(
             "Select an image to measure",cps.NONE,doc="""
             Select the grayscale images whose granularity you want to measure."""))
-        
+
         group.append("subsample_size",cps.Float(
             "Subsampling factor for granularity measurements",
             0.25, minval = np.finfo(float).eps, maxval = 1,doc='''
-            If the textures of 
-            interest are larger than a few pixels, we recommend you subsample the image with a factor 
-            &lt;1 to speed up the processing. Down sampling the image will let you detect larger 
-            structures with a smaller sized structure element. A factor &gt;1 might increase the accuracy 
-            but also require more processing time. Images are typically of higher resolution than is 
-            required for granularity measurements, so the default value is 0.25. For low-resolution images, 
-            increase the subsampling fraction; for high-resolution images, decrease the subsampling 
+            If the textures of
+            interest are larger than a few pixels, we recommend you subsample the image with a factor
+            &lt;1 to speed up the processing. Down sampling the image will let you detect larger
+            structures with a smaller sized structure element. A factor &gt;1 might increase the accuracy
+            but also require more processing time. Images are typically of higher resolution than is
+            required for granularity measurements, so the default value is 0.25. For low-resolution images,
+            increase the subsampling fraction; for high-resolution images, decrease the subsampling
             fraction. Subsampling by 1/4 reduces computation time by (1/4)<sup>3</sup> because the size
             of the image is (1/4)<sup>2</sup> of original and the range of granular spectrum can
             be 1/4 of original. Moreover, the results are sometimes actually a little better
@@ -94,52 +94,52 @@ class MeasureGranularity(cpm.CPModule):
             required before running the whole set.
             See this <a href="http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf">
             pdf</a>, slides 27-31, 49-50.'''))
-        
+
         group.append("image_sample_size",cps.Float(
             "Subsampling factor for background reduction",
             .25, minval = np.finfo(float).eps, maxval = 1,doc='''
-            It is important to 
-            remove low frequency image background variations as they will affect the final granularity 
-            measurement. Any method can be used as a pre-processing step prior to this module; 
-            we have chosen to simply subtract a highly open image. To do it quickly, we subsample the image 
-            first. The subsampling factor for background reduction is usually [0.125 &ndash; 0.25].  This is 
-            highly empirical, but a small factor should be used if the structures of interest are large. The 
-            significance of background removal in the context of granulometry is that image 
-            volume at certain granular size is normalized by total image volume, which depends on 
+            It is important to
+            remove low frequency image background variations as they will affect the final granularity
+            measurement. Any method can be used as a pre-processing step prior to this module;
+            we have chosen to simply subtract a highly open image. To do it quickly, we subsample the image
+            first. The subsampling factor for background reduction is usually [0.125 &ndash; 0.25].  This is
+            highly empirical, but a small factor should be used if the structures of interest are large. The
+            significance of background removal in the context of granulometry is that image
+            volume at certain granular size is normalized by total image volume, which depends on
             how the background was removed.'''))
-        
+
         group.append("element_size", cps.Integer(
             "Radius of structuring element",
             10, minval = 1,doc='''
-            This radius should correspond to the radius of the textures of interest <i>after</i> 
-            subsampling; i.e., if textures in the original image scale have a radius of 40 
+            This radius should correspond to the radius of the textures of interest <i>after</i>
+            subsampling; i.e., if textures in the original image scale have a radius of 40
             pixels, and a subsampling factor of 0.25 is used, the structuring element size should be
             10 or slightly smaller, and the range of the spectrum defined below will cover more sizes.'''))
-        
+
         group.append("granular_spectrum_length", cps.Integer(
             "Range of the granular spectrum",
             16, minval = 1,doc='''
-            You may need a trial run to see which granular 
-            spectrum range yields informative measurements. Start by using a wide spectrum and 
+            You may need a trial run to see which granular
+            spectrum range yields informative measurements. Start by using a wide spectrum and
             narrow it down to the informative range to save time.'''))
-        
+
         group.append("add_objects_button", cps.DoSomething(
             "", "Add another object", group.add_objects, doc = """
             Press this button to add granularity measurements for
-            objects, such as those identified by a prior 
+            objects, such as those identified by a prior
             <b>IdentifyPrimaryObjects</b> module. <b>MeasureGranularity</b>
             will measure the image's granularity within each object at the
             requested scales."""))
-        
+
         group.objects = []
-        
+
         group.object_count = cps.HiddenCount(group.objects, "Object count")
-        
+
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
         return group
-        
+
     def validate_module(self, pipeline):
         '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
         measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
@@ -148,17 +148,17 @@ class MeasureGranularity(cpm.CPModule):
             if m in d:
                 raise cps.ValidationError("Measurement %s made twice."%(m[1]), s[0])
             d[m] = True
-            
+
     def settings(self):
         result = [ self.image_count]
         for image in self.images:
             result += [
-                image.object_count, image.image_name, image.subsample_size, 
-                image.image_sample_size, image.element_size, 
+                image.object_count, image.image_name, image.subsample_size,
+                image.image_sample_size, image.element_size,
                 image.granular_spectrum_length ]
             result += [ ob.objects_name for ob in image.objects]
         return result
-    
+
     def prepare_settings(self, setting_values):
         '''Adjust self.images to account for the expected # of images'''
         image_count = int(setting_values[0])
@@ -171,18 +171,18 @@ class MeasureGranularity(cpm.CPModule):
             for i in range(object_count):
                 image.add_objects()
                 idx += OBJECTS_SETTING_COUNT
-    
+
     def visible_settings(self):
         result = []
         for index, image in enumerate(self.images):
             result += image.visible_settings()
         result += [self.add_button]
-        return result 
-    
+        return result
+
     def run(self, workspace):
         max_scale = np.max([image.granular_spectrum_length.value
                             for image in self.images])
-        col_labels = ([ "Image name" ] + 
+        col_labels = ([ "Image name" ] +
                       [ "GS%d"%n for n in range(1,max_scale+1)])
         statistics = []
         for image in self.images:
@@ -285,7 +285,7 @@ class MeasureGranularity(cpm.CPModule):
         ero[~mask] = 0
         currentmean = startmean
         startmean = max(startmean, np.finfo(float).eps)
-        
+
         footprint = np.array([[False,True,False],
                               [True ,True,True],
                               [False,True,False]])
@@ -312,37 +312,37 @@ class MeasureGranularity(cpm.CPModule):
             i *= float(new_shape[0]-1)/float(orig_shape[0]-1)
             j *= float(new_shape[1]-1)/float(orig_shape[1]-1)
             rec = scind.map_coordinates(rec,(i,j), order=1)
-            
+
             #
             # Calculate the means for the objects
             #
             for object_record in object_records:
                 assert isinstance(object_record, ObjectRecord)
                 if object_record.nobjects > 0:
-                    new_mean = fix(scind.mean(rec, object_record.labels, 
+                    new_mean = fix(scind.mean(rec, object_record.labels,
                                               object_record.range))
-                    gss = ((object_record.current_mean - new_mean) * 100 / 
+                    gss = ((object_record.current_mean - new_mean) * 100 /
                            object_record.start_mean)
                     object_record.current_mean = new_mean
                 else:
                     gss = np.zeros((0,))
                 measurements.add_measurement(object_record.name, feature, gss)
         return statistics
-    
+
     def get_measurement_columns(self, pipeline, return_sources=False):
         result = []
         sources = []
         for image in self.images:
             gslength = image.granular_spectrum_length.value
             for i in range(1, gslength+1):
-                result += [(cpmeas.IMAGE, 
-                            image.granularity_feature(i), 
+                result += [(cpmeas.IMAGE,
+                            image.granularity_feature(i),
                             cpmeas.COLTYPE_FLOAT)]
                 sources += [(image.image_name, image.granularity_feature(i))]
             for ob in image.objects:
                 for i in range(1, gslength+1):
-                    result += [(ob.objects_name.value, 
-                                image.granularity_feature(i), 
+                    result += [(ob.objects_name.value,
+                                image.granularity_feature(i),
                                 cpmeas.COLTYPE_FLOAT)]
                     sources += [(ob.objects_name.value, image.granularity_feature(i))]
 
@@ -350,31 +350,31 @@ class MeasureGranularity(cpm.CPModule):
             return result, sources
         else:
             return result
-    
+
     def get_matching_images(self, object_name):
         """Return all image records that match the given object name
-        
+
         object_name - name of an object or IMAGE to match all
         """
         if object_name == cpmeas.IMAGE:
             return self.images
         return [image for image in self.images
-                if object_name in [ob.objects_name.value 
+                if object_name in [ob.objects_name.value
                                    for ob in image.objects]]
-    
+
     def get_categories(self, pipeline, object_name):
         if len(self.get_matching_images(object_name)) > 0:
             return [ 'Granularity']
         else:
             return []
-    
+
     def get_measurements(self, pipeline, object_name, category):
         max_length = 0
         if category == 'Granularity':
             for image in self.get_matching_images(object_name):
                 max_length = max(max_length, image.granular_spectrum_length.value)
         return [str(i) for i in range(1,max_length+1)]
-    
+
     def get_measurement_images(self, pipeline, object_name, category,
                                measurement):
         result = []
@@ -389,7 +389,7 @@ class MeasureGranularity(cpm.CPModule):
                 if image.granular_spectrum_length.value >= length:
                     result.append(image.image_name.value)
         return result
-        
+
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 1:
@@ -397,7 +397,7 @@ class MeasureGranularity(cpm.CPModule):
             from_matlab = False
             variable_revision_number = 1
         if variable_revision_number == 1:
-            # changed to use cps.SettingsGroup() but did not change the 
+            # changed to use cps.SettingsGroup() but did not change the
             # ordering of any of the settings
             variable_revision_number = 2
         if variable_revision_number == 2:
@@ -423,17 +423,17 @@ class GranularitySettingsGroup(cps.SettingsGroup):
             "Select objects to measure", cps.NONE,
             doc = """Select the objects whose granualarity
             will be measured. You can select objects from prior modules
-            that identify objects, such as <b>IdentifyPrimaryObjects</b>. If you only want to measure the granularity 
+            that identify objects, such as <b>IdentifyPrimaryObjects</b>. If you only want to measure the granularity
             for the image overall, you can remove all objects using the "Remove this object" button."""))
         og.append("remover", cps.RemoveSettingButton(
             "", "Remove this object", self.objects, og))
         self.objects.append(og)
-            
+
     def visible_settings(self):
         result = []
         if self.can_remove:
             result += [ self.divider ]
-        result += [ self.image_name, self.subsample_size, self.image_sample_size, 
+        result += [ self.image_name, self.subsample_size, self.image_sample_size,
                     self.element_size, self.granular_spectrum_length ]
         for ob in self.objects:
             result += [ob.objects_name, ob.remover]

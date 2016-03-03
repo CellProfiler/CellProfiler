@@ -34,7 +34,7 @@ if not hasattr(sys, 'frozen'):
                                      sources=["get_proper_case_filename.c"],
                                      libraries=["shlwapi", "shell32", "ole32"],
                                      extra_link_args=extra_link_args)]
-            
+
         dict = { "name":"utilities",
                  "description":"utility module for CellProfiler",
                  "maintainer":"Lee Kamentsky",
@@ -48,5 +48,3 @@ if __name__ == '__main__':
     if '/' in __file__:
         os.chdir(os.path.dirname(__file__))
     setup(**configuration())
-    
-

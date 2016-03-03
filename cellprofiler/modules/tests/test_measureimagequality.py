@@ -50,7 +50,7 @@ class TestMeasureImageQuality(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),image_set_list)
         return workspace
-    
+
     def test_00_00_zeros(self):
         workspace = self.make_workspace(np.zeros((100,100)))
         q = workspace.module
@@ -82,18 +82,18 @@ class TestMeasureImageQuality(unittest.TestCase):
                                  "Measured value, %f, for feature %s was not %f" %
                                 (m_value, feature_name, value))
         self.features_and_columns_match(m, q)
-                
-    def features_and_columns_match(self, measurements, module, 
+
+    def features_and_columns_match(self, measurements, module,
                                    object_name=cpmeas.IMAGE):
         self.assertTrue(object_name in measurements.get_object_names())
         features = measurements.get_feature_names(object_name)
-        columns = filter((lambda x: x[0] == object_name), 
+        columns = filter((lambda x: x[0] == object_name),
                          module.get_measurement_columns(None))
         self.assertEqual(len(features), len(columns))
         for column in columns:
             self.assertTrue(column[1] in features, 'features_and_columns_match, %s not in %s'%(column[1], features))
             self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT, 'features_and_columns_match, %s type not %s'%(column[2], cpmeas.COLTYPE_FLOAT))
-    
+
     def test_00_01_zeros_and_mask(self):
         workspace = self.make_workspace(np.zeros((100,100)),
                                         np.zeros((100,100),bool))
@@ -118,18 +118,18 @@ class TestMeasureImageQuality(unittest.TestCase):
                                    ("ImageQuality_MADIntensity_my_image", 0),
                                    ("ImageQuality_MaxIntensity_my_image", 0),
                                    ("ImageQuality_MinIntensity_my_image", 0)):
-            self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,feature_name), 
+            self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,feature_name),
                             "Missing feature %s"%feature_name)
             m_value = m.get_current_measurement(cpmeas.IMAGE, feature_name)
             self.assertEqual(m_value, value, "Measured value, %f, for feature %s was not %f"%(m_value, feature_name, value))
-    
+
     def test_01_01_image_blur(self):
         '''Test the focus scores of a random image
-        
+
         The expected variance of a uniform distribution is 1/12 of the
         difference of the extents (=(0,1)). We divide this by the mean
         and the focus_score should be 1/6
-        
+
         The local focus score is the variance among the 25 focus scores
         divided by the median focus score. This should be low.
         '''
@@ -148,21 +148,21 @@ class TestMeasureImageQuality(unittest.TestCase):
                                     ("ImageQuality_PercentSaturation_my_image", None),
                                     ("ImageQuality_PercentMaximal_my_image", None)):
             if value is None:
-                self.assertFalse(m.has_current_measurements(cpmeas.IMAGE,feature_name), 
+                self.assertFalse(m.has_current_measurements(cpmeas.IMAGE,feature_name),
                                  "Feature %s should not be present"%feature_name)
             else:
-                self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,feature_name), 
+                self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,feature_name),
                                  "Missing feature %s"%feature_name)
-                
+
                 m_value = m.get_current_measurement(cpmeas.IMAGE, feature_name)
-                self.assertAlmostEqual(m_value, value, 2, 
+                self.assertAlmostEqual(m_value, value, 2,
                                        "Measured value, %f, for feature %s was not %f"%(m_value, feature_name, value))
         self.features_and_columns_match(m, q)
 
     def test_01_02_local_focus_score(self):
         '''Test the local focus score by creating one deviant grid block
-        
-        Create one grid block out of four that has a uniform value. That one 
+
+        Create one grid block out of four that has a uniform value. That one
         should have a focus score of zero. The others have a focus score of
         1/6, so the local focus score should be the variance of (1/6,1/6,1/6,0)
         divided by the median local norm variance (=1/6)
@@ -182,7 +182,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         m = workspace.measurements
         value = m.get_current_measurement(cpmeas.IMAGE, "ImageQuality_LocalFocusScore_my_image_500")
         self.assertAlmostEqual(value, expected_value,3)
-    
+
     def test_01_03_focus_score_with_mask(self):
         '''Test focus score with a mask to block out an aberrant part of the image'''
         np.random.seed(0)
@@ -202,7 +202,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         m = workspace.measurements
         value = m.get_current_measurement(cpmeas.IMAGE, "ImageQuality_FocusScore_my_image")
         self.assertAlmostEqual(value, expected_value,3)
-        
+
     def test_01_04_local_focus_score_with_mask(self):
         '''Test local focus score and mask'''
         np.random.seed(0)
@@ -223,7 +223,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         m = workspace.measurements
         value = m.get_current_measurement(cpmeas.IMAGE, "ImageQuality_LocalFocusScore_my_image_500")
         self.assertAlmostEqual(value, expected_value,3)
-    
+
     def test_02_01_saturation(self):
         '''Test percent saturation'''
         image = np.zeros((10,10))
@@ -246,11 +246,11 @@ class TestMeasureImageQuality(unittest.TestCase):
                                                ("ImageQuality_PercentMinimal_my_image", 75)):
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,
                                                         feature_name))
-            self.assertAlmostEqual(m.get_current_measurement(cpmeas.IMAGE, 
+            self.assertAlmostEqual(m.get_current_measurement(cpmeas.IMAGE,
                                                              feature_name),
                                    expected_value)
         self.features_and_columns_match(m, q)
-    
+
     def test_02_02_maximal(self):
         '''Test percent maximal'''
         image = np.zeros((10,10))
@@ -265,7 +265,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         q.run(workspace)
         m = workspace.measurements
         self.assertAlmostEqual(expected_value, m.get_current_measurement(cpmeas.IMAGE, "ImageQuality_PercentMaximal_my_image"))
-        
+
     def test_02_03_saturation_mask(self):
         '''Test percent saturation with mask'''
         image = np.zeros((10,10))
@@ -280,7 +280,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         q.image_groups[0].check_saturation.value = True
         q.image_groups[0].check_intensity.value = False
         q.image_groups[0].calculate_threshold.value = False
-        
+
         q.run(workspace)
         m = workspace.measurements
         for feature_name in ("ImageQuality_ThresholdOtsu_my_image",
@@ -293,12 +293,12 @@ class TestMeasureImageQuality(unittest.TestCase):
                                                ("ImageQuality_PercentMinimal_my_image", 200.0/3)):
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,
                                                         feature_name))
-            print feature_name, expected_value, m.get_current_measurement(cpmeas.IMAGE, 
+            print feature_name, expected_value, m.get_current_measurement(cpmeas.IMAGE,
                                                              feature_name)
-            self.assertAlmostEqual(m.get_current_measurement(cpmeas.IMAGE, 
+            self.assertAlmostEqual(m.get_current_measurement(cpmeas.IMAGE,
                                                              feature_name),
                                    expected_value)
-    
+
     def test_02_04_maximal_mask(self):
         '''Test percent maximal with mask'''
         image = np.zeros((10,10))
@@ -318,7 +318,7 @@ class TestMeasureImageQuality(unittest.TestCase):
 
     def test_03_01_threshold(self):
         '''Test all thresholding methods
-        
+
         Use an image that has 1/5 of "foreground" pixels to make MOG
         happy and set the object fraction to 1/5 to test this.
         '''
@@ -332,7 +332,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         # Kapur needs to be quantized
         #
         image = np.around(image, 2)
-        
+
         workspace = self.make_workspace(image)
         q = workspace.module
 
@@ -360,7 +360,7 @@ class TestMeasureImageQuality(unittest.TestCase):
                              "ImageQuality_PercentSaturation_my_image",
                              "ImageQuality_PercentMaximal_my_image"):
             self.assertFalse(m.has_current_measurements(cpmeas.IMAGE,
-                                                        feature_name)) 
+                                                        feature_name))
         for tm,idx in zip(cpthresh.TM_GLOBAL_METHODS,
                           range(len(cpthresh.TM_GLOBAL_METHODS))):
             if tm == cpthresh.TM_OTSU_GLOBAL:
@@ -370,9 +370,9 @@ class TestMeasureImageQuality(unittest.TestCase):
             else:
                 feature_name = "ImageQuality_Threshold%s_my_image"%tm.split(' ')[0]
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,
-                                                       feature_name)) 
+                                                       feature_name))
         self.features_and_columns_match(m, q)
-        
+
     def test_03_02_experiment_threshold(self):
         '''Test experiment-wide thresholds'''
         np.random.seed(32)
@@ -387,7 +387,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         data = np.random.uniform(size=100)
         m.add_all_measurements(cpmeas.IMAGE, feature, data.tolist())
         module.post_run(workspace)
-            
+
         # Check threshold algorithms
         threshold_group = module.image_groups[0].threshold_groups[0]
         threshold_algorithm = threshold_group.threshold_algorithm
@@ -401,10 +401,10 @@ class TestMeasureImageQuality(unittest.TestCase):
         for feature, expected_value in expected:
             value = m.get_experiment_measurement(feature)
             self.assertAlmostEqual(value, expected_value)
-    
+
     def test_03_03_experiment_threshold_cycle_skipping(self):
         """Regression test of IMG-970: can you handle nulls in measurements?"""
-        
+
         np.random.seed(33)
         workspace = self.make_workspace(np.zeros((10,10)))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
@@ -424,11 +424,11 @@ class TestMeasureImageQuality(unittest.TestCase):
         mask[eraser] = False
         for e in eraser:
             dlist[e] = None
-            
+
         m.add_all_measurements(cpmeas.IMAGE, feature, dlist)
         module.post_run(workspace)
         self.features_and_columns_match(m, module, cpmeas.EXPERIMENT)
-            
+
         # Check threshold algorithms
         threshold_group = module.image_groups[0].threshold_groups[0]
         threshold_algorithm = threshold_group.threshold_algorithm
@@ -454,24 +454,24 @@ class TestMeasureImageQuality(unittest.TestCase):
         q.image_groups[0].use_all_threshold_methods.value = True
         q.run(workspace)
         m = workspace.measurements
-        for feature_name in ['ImageQuality_ThresholdOtsu_my_image_2S', 
+        for feature_name in ['ImageQuality_ThresholdOtsu_my_image_2S',
                              'ImageQuality_ThresholdOtsu_my_image_2W',
-                             'ImageQuality_ThresholdOtsu_my_image_3BW', 
+                             'ImageQuality_ThresholdOtsu_my_image_3BW',
                              'ImageQuality_ThresholdOtsu_my_image_3BS',
-                             'ImageQuality_ThresholdOtsu_my_image_3FS', 
-                             'ImageQuality_ThresholdOtsu_my_image_3FW', 
-                             'ImageQuality_ThresholdMoG_my_image_5', 
-                             'ImageQuality_ThresholdMoG_my_image_75', 
-                             'ImageQuality_ThresholdMoG_my_image_95', 
-                             'ImageQuality_ThresholdMoG_my_image_25', 
-                             'ImageQuality_ThresholdBackground_my_image', 
-                             'ImageQuality_ThresholdRobustBackground_my_image', 
-                             'ImageQuality_ThresholdKapur_my_image', 
+                             'ImageQuality_ThresholdOtsu_my_image_3FS',
+                             'ImageQuality_ThresholdOtsu_my_image_3FW',
+                             'ImageQuality_ThresholdMoG_my_image_5',
+                             'ImageQuality_ThresholdMoG_my_image_75',
+                             'ImageQuality_ThresholdMoG_my_image_95',
+                             'ImageQuality_ThresholdMoG_my_image_25',
+                             'ImageQuality_ThresholdBackground_my_image',
+                             'ImageQuality_ThresholdRobustBackground_my_image',
+                             'ImageQuality_ThresholdKapur_my_image',
                              'ImageQuality_ThresholdRidlerCalvard_my_image']:
             self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,
                                                         feature_name))
         self.features_and_columns_match(m, q)
-        
+
     def check_error(self, caller, event):
         self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 
@@ -492,7 +492,7 @@ class TestMeasureImageQuality(unittest.TestCase):
         self.assertTrue(ig.check_saturation.value)
         self.assertTrue(ig.calculate_threshold.value)
         self.assertEqual(tg.threshold_algorithm, cpthresh.TM_MOG)
-        
+
     def test_04_02_load_saturation_blur(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -525,7 +525,7 @@ MeasureImageSaturationBlur:[module_num:1|svn_version:\'8913\'|variable_revision_
             self.assertEqual(group.scale_groups[0].scale, 25)
             self.assertTrue(group.check_saturation)
             self.assertFalse(group.calculate_threshold)
-            
+
     def test_04_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -564,7 +564,7 @@ MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, miq.MeasureImageQuality))
         self.assertEqual(len(module.image_groups),2)
-        
+
         group = module.image_groups[0]
         thr = group.threshold_groups[0]
         self.assertEqual(group.image_names, "Alpha")
@@ -577,7 +577,7 @@ MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:
         self.assertEqual(thr.two_class_otsu, miq.O_THREE_CLASS)
         self.assertEqual(thr.use_weighted_variance, miq.O_WEIGHTED_VARIANCE)
         self.assertEqual(thr.assign_middle_to_foreground, miq.O_FOREGROUND)
-        
+
         group = module.image_groups[1]
         thr = group.threshold_groups[0]
         self.assertEqual(group.image_names, "Beta")
@@ -590,7 +590,7 @@ MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:
         self.assertEqual(thr.two_class_otsu, miq.O_TWO_CLASS)
         self.assertEqual(thr.use_weighted_variance, miq.O_ENTROPY)
         self.assertEqual(thr.assign_middle_to_foreground, miq.O_BACKGROUND)
-        
+
 
     def test_04_04_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
@@ -716,7 +716,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         self.assertEqual(len(pipeline.modules()), 5)
         for module in pipeline.modules():
             self.assertTrue(isinstance(module, miq.MeasureImageQuality))
-        
+
         module = pipeline.modules()[0]
         self.assertEqual(len(module.image_groups),1)
         group = module.image_groups[0]
@@ -728,19 +728,19 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         self.assertTrue(group.check_intensity)
         self.assertTrue(group.calculate_threshold)
         self.assertTrue(group.use_all_threshold_methods)
-        
+
         module = pipeline.modules()[1]
         self.assertEqual(len(module.image_groups),1)
         group = module.image_groups[0]
         self.assertEqual(module.images_choice, miq.O_SELECT)
         self.assertEqual(group.image_names, "Alpha")
-        
+
         module = pipeline.modules()[2]
         self.assertEqual(len(module.image_groups),1)
         group = module.image_groups[0]
         self.assertEqual(module.images_choice, miq.O_SELECT)
         self.assertEqual(group.image_names, "Delta,Beta")
-        
+
         module = pipeline.modules()[3]
         self.assertEqual(len(module.image_groups),2)
         group = module.image_groups[0]
@@ -754,7 +754,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         self.assertEqual(thr.two_class_otsu, miq.O_TWO_CLASS)
         group = module.image_groups[1]
         self.assertEqual(group.image_names, "Epsilon")
-        
+
         module = pipeline.modules()[4]
         self.assertEqual(len(module.image_groups),1)
         group = module.image_groups[0]
@@ -770,7 +770,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         self.assertEqual(thr.use_weighted_variance, miq.O_WEIGHTED_VARIANCE)
         self.assertEqual(thr.two_class_otsu, miq.O_THREE_CLASS)
         self.assertEqual(thr.assign_middle_to_foreground, miq.O_FOREGROUND)
-            
+
     def test_05_01_intensity_image(self):
         '''Test operation on a single unmasked image'''
         np.random.seed(0)
@@ -792,14 +792,14 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
                          np.min(pixels))
         self.assertEqual(m.get_current_image_measurement('ImageQuality_MaxIntensity_my_image'),
                          np.max(pixels))
-        
+
     def test_06_01_check_image_groups(self):
         workspace = self.make_workspace(np.zeros((100,100)))
         image_set_list = workspace.image_set_list
         image_set = image_set_list.get_image_set(0)
         for i in range(1,5):
             image_set.add("my_image%s"%(i), cpi.Image(np.zeros((100,100))))
-        
+
         q = workspace.module
         # Set my_image1 and my_image2 settings: Saturation only
         q.image_groups[0].image_names.value = "my_image1,my_image2"
@@ -808,7 +808,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         q.image_groups[0].check_saturation.value = True
         q.image_groups[0].check_intensity.value = False
         q.image_groups[0].calculate_threshold.value = False
-        
+
         # Set my_image3 and my_image4's settings: Blur only
         q.add_image_group()
         q.image_groups[1].image_names.value = "my_image3,my_image4"
@@ -819,14 +819,14 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         q.image_groups[1].calculate_threshold.value = False
         q.run(workspace)
         m = workspace.measurements
-        
+
         # Make sure each group of settings has (and *doesn't* have) the correct measures
         for i in [1,2]:
             for feature_name in (("ImageQuality_PercentMaximal_my_image%s"%i),
                                 ("ImageQuality_PercentMinimal_my_image%s"%i)):
                 self.assertTrue(m.has_current_measurements(cpmeas.IMAGE,feature_name),
                             "Missing feature %s"%feature_name)
-                
+
             for feature_name in (("ImageQuality_FocusScore_my_image%s"%i),
                             ("ImageQuality_LocalFocusScore_my_image%s_20"%i),
                             ("ImageQuality_PowerLogLogSlope_my_image%s"%i)):
@@ -842,7 +842,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
                                 ("ImageQuality_PercentMinimal_my_image%s"%i)):
                 self.assertFalse(m.has_current_measurements(cpmeas.IMAGE,feature_name),
                             "Erroneously present feature %s"%feature_name)
-    
+
     def test_06_01_images_to_process(self):
         #
         # Test MeasureImageQuality.images_to_process on a pipeline with a
@@ -870,13 +870,13 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         module1.assignments[2].load_as_choice.value =\
             cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
         pipeline.add_module(module1)
-        
+
         module2 = cellprofiler.modules.smooth.Smooth()
         module2.module_num = 2
         module2.image_name.value = expected_names[0]
         module2.filtered_image_name.value = "henry"
         pipeline.add_module(module2)
-        
+
         miq_module = miq.MeasureImageQuality()
         miq_module.module_num = 3
         miq_module.images_choice.value = miq.O_ALL_LOADED

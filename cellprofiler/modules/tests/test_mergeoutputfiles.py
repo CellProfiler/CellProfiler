@@ -21,12 +21,12 @@ class TestMergeOutputFiles(unittest.TestCase):
         li = LoadImages()
         li.module_num = 1
         pipeline.add_module(li)
-        
+
         for m in mm:
             input_fd, input_file = tempfile.mkstemp(".mat")
             pipeline.save_measurements(input_file, m)
             input_files.append((input_fd, input_file))
-            
+
         M.MergeOutputFiles.merge_files(output_file, [ x[1] for x in input_files])
         m = cpmeas.load_measurements(output_file)
         gc.collect()
@@ -43,22 +43,22 @@ class TestMergeOutputFiles(unittest.TestCase):
             if i > 0:
                 m.next_image_set(i+1)
             m.add_image_measurement(feature, np.random.uniform())
-            
+
     def write_object_measurements(self, m, object_name, feature, object_counts):
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for i, count in enumerate(object_counts):
             object_measurements = np.random.uniform(size = i)
             m.add_measurement(object_name, feature, object_measurements,
                               image_set_number = i+1)
-            
+
     def write_experiment_measurement(self, m, feature):
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         m.add_experiment_measurement(feature, np.random.uniform())
-        
+
     def test_00_00_nothing(self):
         '''Make sure merge_files doesn't crash if no inputs'''
         M.MergeOutputFiles.merge_files("nope", [])
-        
+
     def test_01_01_one(self):
         '''Test "merging" one file'''
         np.random.seed(11)
@@ -77,7 +77,7 @@ class TestMergeOutputFiles(unittest.TestCase):
                 m.get_all_measurements(cpmeas.IMAGE, "foo")[i])
             self.assertEqual(len(ro[i]), len(mo[i]))
             np.testing.assert_almost_equal(ro[i], mo[i])
-            
+
     def test_01_02_two(self):
         np.random.seed(12)
         mm = []
@@ -99,7 +99,7 @@ class TestMergeOutputFiles(unittest.TestCase):
                     moo[j][i])
             self.assertEqual(len(ro[i+j*5]), len(moo[j][i]))
             np.testing.assert_almost_equal(ro[i+j*5], moo[j][i])
-        
+
     def test_01_03_different_measurements(self):
         np.random.seed(13)
         mm = []

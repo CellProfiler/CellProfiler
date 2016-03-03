@@ -22,7 +22,7 @@ def well_row_name(x):
 
 class PlateData(object):
     '''The plate data is the data store for the image files
-    
+
     plate_well_site is a 3-level dictionary where the first level
     dictionary has keys that are plate names and whose values are
     dictionaries of wells.
@@ -35,13 +35,13 @@ class PlateData(object):
     D_CHANNEL = "channel"
     D_Z = "z"
     D_T = "t"
-    def __init__(self, 
+    def __init__(self,
                  plate_layout = (16, 24),
                  well_layout = None):
         '''Initialize the plate model
-        
+
         plate_layout - the layout of wells on the plate (rows, columns)
-        
+
         well_layout - the layout of sites within a well. Each site should
         have a row and column position. The format is a sequence of two-tuples.
         '''
@@ -53,10 +53,10 @@ class PlateData(object):
         self.has_t_indexes = False
         self.registrants = []
         self.max_per_well = 0
-        
+
     def register_for_updates(self, fn):
         self.registrants.append(fn)
-        
+
     def on_update(self):
         #
         # Calculate maximum # of planes per well
@@ -69,14 +69,14 @@ class PlateData(object):
                     self.max_per_well = nplanes
         for registrant in self.registrants:
             registrant()
-        
-    def add_files(self, filenames, platenames, wellnames, sites, 
+
+    def add_files(self, filenames, platenames, wellnames, sites,
                   plane_indexes = None,
                   channel_names = None,
                   z_indexes = None,
                   t_indexes = None):
         '''Add files to the plate model
-        
+
         filenames - a sequence of image file names
         platenames - a sequence of plate names, one per file
         wellnames - a sequence of well names, one per file
@@ -113,10 +113,10 @@ class PlateData(object):
                     fd[self.D_T] = t_indexes[i]
                 sd.append(fd)
         self.on_update()
-        
+
     def get_plate_names(self):
         return filter((lambda x:x is not None), self.plate_well_site.keys())
-    
+
     def get_plate(self, name):
         pd = self.plate_well_site[name]
         n_rows = 8
@@ -142,10 +142,10 @@ class PlateData(object):
             a[row, col] = wd
         self.plate_layout = (n_rows, n_cols)
         return a
-                
+
 class PlateViewer(object):
     '''The PlateViewer class lets the user view the files associated with plates
-    
+
     The idea here is that the PlateViewer is given a list of image files
     with plate, well and site metadata. The plate viewer organizes the
     files and lets the user browse individual plates.
@@ -179,9 +179,9 @@ class PlateViewer(object):
         self.site_grid.CreateGrid(1,2)
         self.site_grid.SetColLabelValue(0, "X")
         self.site_grid.SetColLabelValue(1, "Y")
-        control_sizer.Add(self.site_grid, 0, 
+        control_sizer.Add(self.site_grid, 0,
                           wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL, 5)
-        
+
         self.channel_grid = wx.grid.Grid(self.canvas_panel)
         self.channel_grid.CreateGrid(1,4)
         self.channel_grid.SetColLabelValue(0, "Red")
@@ -228,23 +228,23 @@ class PlateViewer(object):
         self.subcanvaspanel.Bind(wx.EVT_SIZE, self.on_subcanvaspanel_size)
         self.on_update()
         self.frame.Layout()
-        
+
     def get_border_height(self):
         '''The border along the top of the plate'''
         return 20
-    
+
     def get_border_width(self):
         return 30
-    
+
     def on_close(self, event):
         self.frame.Hide()
-        
+
     def on_plate_choice_evt(self, event):
         self.on_update()
-        
+
     def on_plate_size(self, event):
         self.draw_plate()
-        
+
     def on_subcanvaspanel_size(self, event):
         assert isinstance(event, wx.SizeEvent)
         tw, th = self.navtoolbar.GetSizeTuple()
@@ -254,7 +254,7 @@ class PlateViewer(object):
         self.canvas.Move(wx.Point(0, 0))
         self.navtoolbar.SetSize(wx.Size(scw, th))
         self.navtoolbar.Move(wx.Point(0, ch))
-        
+
     def on_plate_click(self, event):
         assert isinstance(event, wx.MouseEvent)
         x, y = event.GetPositionTuple()
@@ -265,7 +265,7 @@ class PlateViewer(object):
         if self.plate_data[row, col] is None:
             return
         self.set_display_well(self.plate_data[row, col])
-            
+
     def on_plate_motion(self, event):
         assert isinstance(event, wx.MouseEvent)
         x, y = event.GetPositionTuple()
@@ -283,7 +283,7 @@ class PlateViewer(object):
                     well_name,
                     sum([len(v) for v in well.values()]))
                 self.plate_panel.SetToolTipString(text)
-        
+
     def on_update(self):
         if (tuple(sorted(self.plate_choice.GetItems())) !=
             tuple(sorted(self.data.get_plate_names()))):
@@ -311,7 +311,7 @@ class PlateViewer(object):
                     site_names.update(well.keys())
                     for sd in well.values():
                         channel_names.update(
-                            [fd[PlateData.D_CHANNEL] 
+                            [fd[PlateData.D_CHANNEL]
                              if PlateData.D_CHANNEL in fd else str(i+1)
                              for i, fd in enumerate(sd)])
             if len(site_names) > 1 or None not in site_names:
@@ -346,9 +346,9 @@ class PlateViewer(object):
                     if update_values or not \
                        self.channel_grid.GetCellValue(i, j).isdigit():
                         self.channel_grid.SetCellValue(
-                            i, j, 
+                            i, j,
                             str(255 if j == 3 or i == j else 0))
-        
+
     def get_well_side(self):
         size = self.plate_panel.GetClientSizeTuple()
         size = (size[0] - self.get_border_width(),
@@ -356,20 +356,20 @@ class PlateViewer(object):
         w = size[0] / self.data.plate_layout[1]
         h = size[1] / self.data.plate_layout[0]
         return min(w, h)
-    
+
     def get_center(self, row, column, side = None):
         if side is None:
             side = self.get_well_side()
         return (side * column + side / 2 + self.get_border_width(),
                 side * row + side / 2 + self.get_border_height())
-    
+
     def get_fill(self, well):
         n_files = sum([len(x) for x in well.values()])
         color = self.palette(float(n_files)/float(max(self.data.max_per_well, 1)),
                              bytes = True)
         color = wx.Colour(*color)
         return color
-        
+
     def on_paint_plate(self, evt):
         assert isinstance(evt, wx.PaintEvent)
         if self.plate_bitmap is None:
@@ -377,16 +377,16 @@ class PlateViewer(object):
             return
         else:
             dc = wx.BufferedPaintDC(self.plate_panel, self.plate_bitmap)
-            
+
     def on_erase_background(self, evt):
         pass
-    
+
     def get_radius(self):
         return max(self.get_well_side() / 2 - 1, 1)
-    
+
     def plate_hit_test(self, x, y):
         '''Return the row and column of the well or None if not hit
-        
+
         x, y - coordinates of pixel on plate panel surface
         '''
         side = self.get_well_side()
@@ -400,7 +400,7 @@ class PlateViewer(object):
             icol < 0 or icol >= self.data.plate_layout[1]):
             return None
         return irow, icol
-            
+
     def draw_plate(self):
         if self.plate_bitmap is not None:
             self.plate_bitmap.Destroy()
@@ -423,13 +423,13 @@ class PlateViewer(object):
             w, h = gc.GetTextExtent(text)
             y = self.get_center(row, 0, side)[1] - int(h / 2)
             gc.DrawText(text, 3, y)
-            
+
         for col in range(self.data.plate_layout[1]):
             text = "%02d" % (col + 1)
             w, h, descent, leading = gc.GetFullTextExtent(text)
             x = self.get_center(0, col, side)[0] - w / 2
             gc.DrawText(text, x, 3)
-            
+
         for row in range(self.data.plate_layout[0]):
             for col in range(self.data.plate_layout[1]):
                 x, y = self.get_center(row, col, side)
@@ -448,7 +448,7 @@ class PlateViewer(object):
         with self.image_dict_lock:
             self.image_dict = {}
             self.image_dict_generation += 1
-        
+
         def fn():
             from bioformats import load_image_url
             import javabridge
@@ -458,7 +458,7 @@ class PlateViewer(object):
             javabridge.attach()
             with self.image_dict_lock:
                 generation = self.image_dict_generation
-                
+
             for k, v in well.iteritems():
                 sd = {}
                 with self.image_dict_lock:
@@ -474,7 +474,7 @@ class PlateViewer(object):
                     try:
                         if url.lower().endswith(".mat"):
                             img = loadmat(
-                                url2pathname(url), 
+                                url2pathname(url),
                                 struct_as_record=True)["Image"]
                         else:
                             img = load_image_url(url)
@@ -492,7 +492,7 @@ class PlateViewer(object):
         t = threading.Thread(target = fn)
         t.setDaemon(True)
         t.start()
-                
+
     def update_figure(self):
         if self.image_dict is None:
             return
@@ -506,7 +506,7 @@ class PlateViewer(object):
                 int(self.channel_grid.GetCellValue(i, j))
                 for j in range(4)], float)
             totals += channel_dict[channel_name]
-            
+
         site_dict = {}
         tile_dims = [0, 0]
         if self.use_site_grid:
@@ -544,7 +544,7 @@ class PlateViewer(object):
                 image = image * a / scale
                 if image.ndim < 3:
                     image = image[:, :, np.newaxis] * rgb[np.newaxis, np.newaxis, :]
-                
+
                 if image.shape[0] + offs[0] > megapicture.shape[0]:
                     image = image[:(megapicture.shape[0] - offs[0]), :, :]
                 if image.shape[1] + offs[1] > megapicture.shape[1]:
@@ -564,7 +564,7 @@ if __name__=="__main__":
     from cellprofiler.utilities.cpjvm import cp_start_vm
     cp_start_vm()
     app = wx.PySimpleApp(True)
-    dlg = wx.Dialog(None, size=(1024, 768), 
+    dlg = wx.Dialog(None, size=(1024, 768),
                     style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.THICK_FRAME)
     data = PlateData()
     root = r"\\iodine-cifs\imaging_analysis\2007_09_24_BBBC_ImagingPlatform\Fibroblasts"
@@ -595,4 +595,3 @@ if __name__=="__main__":
     from javabridge import kill_vm
     kill_vm()
     os._exit(0)
-    

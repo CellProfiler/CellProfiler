@@ -9,7 +9,6 @@ addons:
       - python-imaging
       - python-lxml
       - python-matplotlib
-      - python-mysqldb
       - python-networkx
       - python-numpy
       - python-pandas

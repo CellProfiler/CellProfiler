@@ -3090,9 +3090,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         
         class ChooseImageSetDialog(wx.Dialog, ColumnSorterMixin):
             def __init__(self, parent):
+                dlg_size = cpprefs.get_choose_image_set_frame_size()
+                if dlg_size is None:
+                    dlg_size = wx.DefaultSize
                 wx.Dialog.__init__(
                     self, parent, 
                     title="Choose an image cycle", 
+                    size = dlg_size,
                     style=wx.RESIZE_BORDER|wx.DEFAULT_DIALOG_STYLE)
                 super_sizer = wx.BoxSizer(wx.VERTICAL)
                 self.SetSizer(super_sizer)
@@ -3145,8 +3149,15 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 btnsizer.Realize()
                 super_sizer.Add(btnsizer)
                 super_sizer.Add((2,2))
-                self.Fit()
+                self.Layout()
                 self.CenterOnParent()
+                self.Bind(wx.EVT_SIZE, self.on_size)
+                
+            def on_size(self, event):
+                assert isinstance(event, wx.SizeEvent)
+                cpprefs.set_choose_image_set_frame_size(
+                    event.m_size.width, event.m_size.height)
+                event.Skip(True)
                 
             def GetListCtrl(self):
                 return self.list_ctrl

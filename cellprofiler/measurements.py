@@ -1859,8 +1859,6 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
             m = Measurements(filename=dest_file, copy = top_level,
                              image_numbers = image_numbers)
             return m
-        except:
-            logger.error("Error loading HDF5 %s", filename, exc_info=True)
         finally:
             f.close()
     else:

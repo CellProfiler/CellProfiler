@@ -15,7 +15,7 @@ An open-source application for measuring phenotypes
 Installation
 ------------
 
-Compiled releases are available from `cellprofiler.org/releases <http://cellprofiler.org/releases/>`_.
+Compiled releases for Linux, OS X, and Windows are available from `cellprofiler.org/releases <http://cellprofiler.org/releases/>`_.
 
 Install from the Python Package Index (PyPI)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

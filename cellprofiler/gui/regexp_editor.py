@@ -30,7 +30,9 @@ RE_FILENAME_GUESSES = [
     # BD Pathway
     '^(?P<Wavelength>.*) - n(?P<StackSlice>[0-9]{6})',
     # GE InCell Analyzer
-    '^(?P<Row>[A-H]*) - (?P<Column>[0-9]*)\(fld (?P<Site>[0-9]*) wv (?P<Wavelength>.*) - (?P<Filter>.*)\)'
+    r'^(?P<Row>[A-H]*) - (?P<Column>[0-9]*)\(fld (?P<Site>[0-9]*) wv (?P<Wavelength>.*) - (?P<Filter>.*)\)',
+    # Phenix
+    r'^r(?P<WellRow>\d{2})c(?P<WellColumn>\d{2})f(?P<Site>\d{2})p\d{2}-ch(?P<ChannelNumber>\d)'
     # Please add more guesses below
 
     ]

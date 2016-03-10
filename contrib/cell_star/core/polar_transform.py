@@ -129,7 +129,8 @@ class PolarTransform(object):
         py = self.center + self.y
 
         # Utwórz listę par współrzędnych (x,y) punktów na sprawdzanym konturze
-        index = np.array(zip(map(lambda p: int(round(p-1)), py.T.flat), map(lambda p: int(round(p-1)), px.T.flat)))
+        index = np.column_stack(((py - .5).astype(int).T.flat, (px - .5).astype(int).T.flat))
+
         # Utwórz listę kolejnych identyfikatorów dla w/w punktów
         cont = np.arange(1, px.size+1)
 

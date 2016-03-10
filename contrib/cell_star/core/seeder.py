@@ -8,7 +8,6 @@ from copy import copy
 # Objects
 from contrib.cell_star.core.seed import Seed
 # Utils
-from contrib.cell_star.utils.cluster_util import *
 from contrib.cell_star.utils.calc_util import *
 from contrib.cell_star.utils.image_util import *
 
@@ -276,6 +275,10 @@ def seed_is_new(_seed, all_seeds, distance):
             return False
 
     return True
+
+
+def point_list_as_seeds(points, origin):
+    return [Seed(point[0], point[1], origin) for point in points]
 
 
 class SeedGrid(object):

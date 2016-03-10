@@ -14,10 +14,10 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.filters import *
 from numpy import argwhere
 
-debug_image_path = ""
+debug_image_path = "debug"
 
 SHOW = False
-SILENCE = True
+SILENCE = False
 
 def prepare_debug_folder():
     if not exists(debug_image_path):
@@ -28,10 +28,11 @@ def convolve2d(img, kernel, mode='same'):
 
 
 def extend_slices(my_slices, extension):
-    def extend_slice(my_slice, extension):
-        ind = (my_slice.indices(100000)[0] - extension, my_slice.indices(100000)[1] + extension)
+    def extend_slice(my_slice, extend):
+        ind = (max(0, my_slice.indices(100000)[0] - extend), my_slice.indices(100000)[1] + extend)
         return slice(*ind)
-    return (extend_slice(my_slices[0],extension), extend_slice(my_slices[1],extension))
+
+    return extend_slice(my_slices[0], extension), extend_slice(my_slices[1], extension)
 
 
 def get_bounding_box(image_mask):
@@ -134,7 +135,7 @@ def fill_holes(mask, kernel_size, minimal_hole_size):
         components, num_components = sp.ndimage.label(np.logical_not(new_mask), np.ones((3, 3)))
         slices = sp.ndimage.find_objects(components)
         for label, slice in zip(range(1, num_components + 1), slices):
-            slice = extend_slices(slice,kernel_size+1000)
+            slice = extend_slices(slice,kernel_size * 2)
             components_slice = components[slice] == label
             # filter small components
             if np.count_nonzero(components_slice) < minimal_hole_size:

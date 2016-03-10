@@ -28,40 +28,46 @@ class Seeder(object):
         origin = 'cluster'
         if len(seeds) > 0:
             origin = seeds[0].origin
-        seeds = map(lambda s: (s.x, s.y), seeds)
-        # Distance matrix
-        distance_matrix = square_form(pdist(seeds, 'euclidean'))
-        # print "Seeds to cluster: " + str(len(seeds))
-        while np.count_nonzero((distance_matrix > 0) & (distance_matrix < self.cluster_min_distance)) > 0:
-            # Find nonzero values in distance_matrix
-            ind = np.nonzero(distance_matrix)
-            # Find minimum of nonzero values in distance_matrix
-            minimal_distance = min(distance_matrix[ind])
-            # Find pair of arrays with indices of elements from distance_matrix equal to minimum
-            k = np.nonzero(distance_matrix * (distance_matrix == minimal_distance))
-            # First index of first array -> indicating seed 1
-            i = k[0][0]
-            seed1 = seeds[i]
-            # First index of second array -> indicating seed 2
-            j = k[1][0]
-            seed2 = seeds[j]
-            # Create new seed as arithmetic mean of seed 1 and seed 2
-            # (two first seeds found with minimal distance below threshold)
-            new_seed = (float(seed1[0] + seed2[0]) / 2.0, float(seed1[1] + seed2[1]) / 2.0)
-            # Replace seed 1 with new seed
-            seeds[i] = new_seed
-            # Remove seed 2 """
-            seeds = seeds[:j] + seeds[j + 1:]
-            distance_matrix = np.delete(distance_matrix, j, 0)
-            distance_matrix = np.delete(distance_matrix, j, 1)
-            # Recalculate distance matrix
-            for k in xrange(0, len(seeds)):
-                if k != i:
-                    dist = euclidean_norm(seeds[i], seeds[k])
-                    distance_matrix[i][k] = dist
-                    distance_matrix[k][i] = dist
-                    # everything connected to seeds[j] is to die
-                    # distance_matrix = squareform(pdist(seeds, 'euclidean'))
+        seeds = np.array(map(lambda s: (s.x, s.y), seeds))
+        my_inf =\
+            np.inf if seeds.dtype.kind == 'f' else np.iinfo(seeds.dtype).max
+        while len(seeds) > 1:
+            #
+            # find p1 and p2 closest to each other - p1 is closest to p2
+            # and p2 is closest to p1
+            #
+            p1 = np.arange(seeds.shape[0])
+            d = seeds[:, np.newaxis, :] - seeds[np.newaxis, :, :]
+            d2 = np.sum(d * d, 2)
+            d2[p1, p1] = my_inf
+            p2 = np.argmin(d2, 0)
+            #
+            # Eliminate p1 / p2 if p1 is closest to p2 and p2 is closest to
+            # someone else
+            #
+            good = p1 == p2[p2]
+            p1, p2 = p1[good], p2[good]
+            #
+            # Eliminate p1 / p2 if p1 > p2 (get rid of (2, 1) since there is
+            # a (1, 2)
+            #
+            good = p1 < p2
+            p1, p2 = p1[good], p2[good]
+            #
+            # Eliminate p1 / p2 if < self.cluster_min_distance
+            #
+            good = d2[p1, p2] < self.cluster_min_distance
+            p1, p2 = p1[good], p2[good]
+            if len(p1) == 0:
+                break
+            #
+            # coalesce
+            #
+            new_seeds = (seeds[p1, :] + seeds[p2, :]) / 2.0
+            to_keep = np.ones(seeds.shape[0], bool)
+            to_keep[p1] = False
+            to_keep[p2] = False
+            seeds = np.vstack((seeds[to_keep, :], new_seeds))
 
         seed_points = point_list_as_seeds(seeds, origin)
         return seed_points

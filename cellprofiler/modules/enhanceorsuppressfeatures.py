@@ -231,6 +231,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                   self.method]
         if self.method == ENHANCE:
             result += [self.enhance_method]
+            self.object_size.min_value = 2
             if self.enhance_method == E_DARK_HOLES:
                 result += [self.hole_size]
             elif self.enhance_method == E_TEXTURE:
@@ -245,6 +246,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                     result += [self.smoothing]
             elif self.enhance_method == E_SPECKLES:
                 result += [self.object_size, self.speckle_accuracy]
+                self.object_size.min_value = 3
             else:
                 result += [self.object_size]
         else:

@@ -262,7 +262,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         pixel_data = image.pixel_data
         if self.method == ENHANCE:
             if self.enhance_method == E_SPECKLES:
-                if self.speckle_accuracy == S_SLOW:
+                if self.speckle_accuracy == S_SLOW or radius <= 3:
                     result = white_tophat(pixel_data, radius, mask)
                 else:
                     #

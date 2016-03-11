@@ -119,7 +119,8 @@ def get_dotted_version():
 
 '''Code version'''
 version_string = get_version()
-version_number = int(datetime_from_isoformat(version_string.split(' ')[0]).strftime('%Y%m%d%H%M%S'))
+version_date = datetime_from_isoformat(version_string.split(' ')[0])
+version_number = int(version_date.strftime('%Y%m%d%H%M%S'))
 dotted_version = get_dotted_version()
 git_hash = version_string.split(' ', 1)[1]
 title_string = '%s (rev %s)' % (dotted_version, git_hash)

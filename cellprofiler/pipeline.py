@@ -979,6 +979,18 @@ class Pipeline(object):
             else:
                 print line
 
+        if pipeline_version > 20080101000000 and\
+           pipeline_version < 30080101000000:
+            # being optomistic... a millenium should be OK, no?
+            second, minute, hour, day, month = [
+                int(pipeline_version / (100 ** i)) % 100
+                for i in range(5)]
+            year = int(pipeline_version / (100 ** 5))
+            pipeline_date = datetime.datetime(
+                year, month, day, hour, minute, second).strftime(" @ %c")
+        else:
+            pipeline_date = ""
+            
         if CURRENT_VERSION is None:
             pass
         elif git_hash is None or git_hash != cpversion.git_hash:
@@ -991,12 +1003,14 @@ class Pipeline(object):
                         'unpredictable results.') % (
                             pipeline_version, CURRENT_VERSION)
                 else:
+                    
                     message = (
                         'Your pipeline was saved by a more recent version '
-                        'of CellProfiler (rev %s) but you are running '
-                        'CellProfiler rev %s. Loading this pipeline may fail or '
+                        'of CellProfiler (rev %s%s) but you are running '
+                        'CellProfiler rev %s @ %s. Loading this pipeline may fail or '
                         'have unpredictable results.') % (
-                            git_hash, cpversion.git_hash)
+                            git_hash, pipeline_date, cpversion.git_hash, 
+                            cpversion.version_date.strftime("%c"))
 
                 if cpprefs.get_headless():
                     logging.warning(message)
@@ -1021,7 +1035,7 @@ class Pipeline(object):
                     if git_hash is not None:
                         message = (
         "Your pipeline was saved using an old version\n"
-        "of CellProfiler (rev %s).\n"
+        "of CellProfiler (rev %s%s).\n"
         "The current version of CellProfiler can load\n"
         "and run this pipeline, but if you make changes\n"
         "to it and save, the older version of CellProfiler\n"
@@ -1029,7 +1043,7 @@ class Pipeline(object):
         "not be able to load it.\n\n"
         "You can ignore this warning if you do not plan to save\n"
         "this pipeline or if you will only use it with this or\n"
-        "later versions of CellProfiler.") % (git_hash)
+        "later versions of CellProfiler.") % (git_hash, pipeline_date)
                     else:
                         message = (
         "Your pipeline was saved using an old version\n"

@@ -379,7 +379,7 @@ class Metadata(cpm.CPModule):
             tool that will allow you to check the accuracy of your regular
             expression. The regular expression syntax can be used to
             name different parts of your expression. The syntax
-            <i>(?&lt;fieldname&gt;expr)</i> will extract whatever matches
+            <i>(?P&lt;fieldname&gt;expr)</i> will extract whatever matches
             <i>expr</i> and assign it to the image's <i>fieldname</i> measurement.
 
             <p>For instance, a researcher uses folder names with the date and

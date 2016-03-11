@@ -130,12 +130,7 @@ def sub2ind(dim, (x, y)):
 
 
 def index(px, py):
-    return np.array(zip(py.flat, px.flat), dtype=np.int64)
-
-
-def index_decr(px, py):
-    return np.array(zip(map(lambda p: int(round(p-1)), py.T.flat), map(lambda p: int(round(p-1)), px.T.flat)))
-
+    return np.column_stack((py.flat, px.flat)).astype(np.int64)
 
 def get_gradient(im, index, border_thickness_steps):
     """
@@ -196,25 +191,6 @@ def get_gradient(im, index, border_thickness_steps):
         gradients_for_steps[intersect_start:intersect_end, :, border_thickness_step-1] = current_step_gradient
 
     return gradients_for_steps.max(axis=max_gradient_along_axis)
-
-
-def index_from_polar_transform(polar_transform, centroid_x, centroid_y, image_shape):
-    px = float(centroid_x) + polar_transform.x
-    px = np.maximum(px, 0)
-    px = np.minimum(px, image_shape[1] - 1)
-
-    py = float(centroid_y) + polar_transform.y
-    py = np.maximum(py, 0)
-    py = np.minimum(py, image_shape[0] - 1)
-
-    # index goes for each angle, for each radius from min to max
-    # PL: indeks idzie kolejno dla każdego kąta wzdłuż promienia od najmniejszego do największego
-    # for angle:
-    #   for radius:
-    zipped = np.array(zip(py.flat, px.flat), dtype=np.int64)
-    zipped = zipped.reshape((polar_transform.x.shape[0], polar_transform.x.shape[1], 2))
-    im_index = zipped.reshape(polar_transform.x.size, 2)
-    return im_index
 
 
 def get_polygon_path(polygon_x, polygon_y):

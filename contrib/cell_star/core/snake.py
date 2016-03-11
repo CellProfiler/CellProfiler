@@ -160,7 +160,6 @@ class Snake(object):
         # indeks idzie kolejno dla każdego kąta wzdłuż promienia od najmniejszego do największego
         # for angle:
         #   for radius:
-        # OPT line below takes half of the total runtime of star_multi_vec
         index = calc_util.index(px.round(), py.round()).reshape((polar_transform.x.shape[0], polar_transform.x.shape[1], 2))
         im_index = index.reshape(polar_transform.x.size, 2)
 

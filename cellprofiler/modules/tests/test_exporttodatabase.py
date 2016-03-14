@@ -122,6 +122,14 @@ class TestExportToDatabase(unittest.TestCase):
                 local_infile=1)
         return self.__connection
 
+    def close_connection(self):
+        if self.__test_mysql and self.__connection is not None:
+            if self.__cursor is not None:
+                self.__cursor.close()
+            self.__connection.close()
+            self.__connection = None
+            self.__cursor = None
+
     @property
     def cursor(self):
         if not self.__test_mysql:
@@ -149,7 +157,7 @@ class TestExportToDatabase(unittest.TestCase):
             except:
                 self.__has_median = False
         return self.__has_median
-    
+
     def get_sqlite_cursor(self, module):
         import sqlite3
 
@@ -3824,7 +3832,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     (OBJECT_NAME, OBJ_MEASUREMENT))
             m = workspace.measurements
             image_numbers = m.get_image_numbers()
-            
+
             for aggname, aggfn in aggs:
                 fields = ["%s_%s" % (object_name, feature)
                           for object_name, feature in meas]
@@ -4033,6 +4041,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4122,6 +4131,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4208,6 +4218,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4291,6 +4302,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4477,6 +4489,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4902,7 +4915,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             # Get rid of the module dictionary entry and the table row
             #
             module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
-            self.cursor.execute("delete from %s" % module.get_table_name(E.T_RELATIONSHIP_TYPES))
+            self.cursor.execute("delete from %s" %
+                                module.get_table_name(E.T_RELATIONSHIP_TYPES))
+            self.close_connection()
             module.run(workspace)
             self.tteesstt_relate(workspace.measurements, module, self.cursor)
         finally:
@@ -5075,6 +5090,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.get_table_name(cpmeas.IMAGE)
             self.cursor.execute(how_many)
             self.assertEqual(self.cursor.fetchall()[0][0], 0)
+            self.close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
@@ -5113,6 +5129,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.get_table_name(cpmeas.IMAGE)
             self.cursor.execute(how_many)
             self.assertEqual(self.cursor.fetchall()[0][0], 0)
+            self.close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
@@ -5120,6 +5137,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             self.cursor.execute(how_many)
             self.assertEqual(self.cursor.fetchall()[0][0], 1)
+            self.close_connection()
             self.assertTrue(module.prepare_run(workspace))
             #
             # The row should not be there after the second prepare_run
@@ -5284,6 +5302,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 (STRING_IMG_MEASUREMENT, module.get_table_name(cpmeas.EXPERIMENT)))
             result = self.cursor.fetchall()[0][0]
             self.assertTrue(result is None)
+            self.close_connection()
             module.post_run(workspace)
             self.cursor.execute(
                 "select %s from %s" %

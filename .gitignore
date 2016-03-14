@@ -27,6 +27,7 @@ cellprofiler/tests/test.db
 cellprofiler/utilities/build
 cellprofiler/utilities/javabridge.c
 contrib/LAP.c
+cpnose.py
 dist
 imagej/*.zip
 imagej/.checksums

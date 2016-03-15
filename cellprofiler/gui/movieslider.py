@@ -11,7 +11,7 @@ import math
 import wx
 
 import cellprofiler.preferences as cpprefs
-from cellprofiler.gui import draw_bevel, BV_DOWN
+from cellprofiler.gui import BV_DOWN
 
 MOVIE_SLIDER_NAME_STR = u"movie_slider"
 SLIDER_CTL_STR = u"slider_ctl"
@@ -274,7 +274,6 @@ class SliderCtl(wx.Panel):
         dc.Brush = wx.WHITE_BRUSH
         dc.DrawRectangle(rect.Left,rect.Top,rect.width,rect.height)
         rect.Deflate(1,1)
-        rect = draw_bevel(dc,rect,2,BV_DOWN)
         sep_y = self.get_mark_y(self.value)
         rtop = wx.Rect(rect.Left,rect.Top,rect.width,sep_y-rect.Top)
         dc.Pen = wx.BLACK_PEN

@@ -13,7 +13,6 @@ from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from cellprofiler.gui import draw_item_selection_rect
 from cellprofiler.gui.cornerbuttonmixin import CornerButtonMixin
 from cellprofiler.modules.images import Images
 
@@ -1019,8 +1018,6 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
                 grid, grid.GetGridWindow(), grid.GetGridColLabelWindow(),
                 grid.GetGridRowLabelWindow(), grid.GetGridCornerLabelWindow()):
                 flags += wx.CONTROL_FOCUSED
-            draw_item_selection_rect(
-                grid.GetGridWindow(), dc, rect, flags)
             dc.SetBackgroundMode(wx.TRANSPARENT)
             if attr.HasTextColour():
                 dc.SetTextForeground(attr.TextColour)

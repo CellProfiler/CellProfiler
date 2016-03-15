@@ -22,7 +22,6 @@ if __name__ == "__main__":
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
-from cellprofiler.gui import draw_item_selection_rect
 import cellprofiler.gui.movieslider as cpgmov
 from cellprofiler.gui.cpfigure import window_name, find_fig
 from cellprofiler.icons import get_builtin_image
@@ -1521,7 +1520,6 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     if (self.always_draw_current_as_if_selected and
                         not item.selected):
                         flags |= wx.CONTROL_SELECTED
-                draw_item_selection_rect(self, dc, r, flags)
                 if (flags & wx.CONTROL_SELECTED + wx.CONTROL_FOCUSED) == \
                    wx.CONTROL_SELECTED+wx.CONTROL_FOCUSED:
                     text_clr = clr_selected

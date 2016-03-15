@@ -13,7 +13,6 @@ import urllib2
 import uuid
 
 import cellprofiler.preferences as cpprefs
-from cellprofiler.gui import draw_item_selection_rect
 OMERO_SCHEME = "omero:"
 
 EVT_PLC_SELECTION_CHANGED = wx.PyEventBinder(wx.NewEventType())
@@ -642,11 +641,6 @@ class PathListCtrl(wx.PyScrolledWindow):
                         flags += wx.CONTROL_SELECTED
                     if idx == self.focus_item:
                         flags += wx.CONTROL_CURRENT
-                    draw_item_selection_rect(
-                        self, paint_dc,
-                        wx.Rect(self.TREEITEM_WIDTH - x, yy,
-                                sel_width + 2 * self.TREEITEM_GAP, line_height),
-                        flags)
                     if selected:
                         paint_dc.SetTextForeground(selected_text)
                     else:

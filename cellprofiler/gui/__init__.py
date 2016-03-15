@@ -70,6 +70,3 @@ def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
         dc.DrawLine(rect.Right,rect.Bottom, rect.Right, rect.Top)
         rect = wx.Rect(rect.Left+1, rect.Top+1, rect.width-2, rect.height-2)
     return rect
-
-def draw_item_selection_rect(window, dc, rect, flags):
-    pass

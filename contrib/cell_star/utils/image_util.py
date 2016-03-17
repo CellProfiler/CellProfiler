@@ -2,17 +2,17 @@
 __author__ = 'Adam Kaczmarek, Filip Mróz'
 
 # External imports
-from os.path import  exists
 import os
 from os import makedirs
+from os.path import  exists
 
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
-import scipy.ndimage
 import scipy.misc
-import matplotlib.pyplot as plt
-from scipy.ndimage.filters import *
+import scipy.ndimage
 from numpy import argwhere
+from scipy.ndimage.filters import *
 
 debug_image_path = "debug"
 
@@ -52,8 +52,7 @@ def get_circle_kernel(radius):
     Creates radius x radius bool image of the circle.
     @param radius: radius of the circle
     """
-    epsilon = 0.00000001
-    y, x = np.ogrid[-radius:radius + epsilon, -radius:radius + epsilon]
+    y, x = np.ogrid[np.floor(-radius):np.ceil(radius) + 1, np.floor(-radius):np.ceil(radius) + 1]
     return x ** 2 + y ** 2 <= radius ** 2
 
 
@@ -173,6 +172,8 @@ def draw_seeds(seeds, background, title="some_source"):
         plt.imshow(background, cmap=plt.cm.gray)
         plt.plot([s.x for s in seeds], [s.y for s in seeds], 'bo', markersize=3)
         plt.savefig(os.path.join(debug_image_path, "seeds_"+title+".png"), pad_inches=0.0)
+        fig.clf()
+        plt.close()
 
 
 def contain_pixel(shape, pixel):
@@ -295,7 +296,7 @@ def image_show(image, title):
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
         if SHOW:
             plt.show()
-        pass
+        plt.close()
 
 
 def draw_overlay(image, x, y):
@@ -306,6 +307,7 @@ def draw_overlay(image, x, y):
         plt.plot(x, y)
         if SHOW:
             plt.show()
+        plt.close()
 
 
 def draw_snakes(image, snakes, outliers=.1, it=0):
@@ -333,6 +335,7 @@ def draw_snakes(image, snakes, outliers=.1, it=0):
         plt.savefig(os.path.join(debug_image_path, "snakes_rainbow_"+str(it)+".png"), pad_inches=0.0)
         if SHOW:
             plt.show()
+        plt.close()
 
 
 def tiff16_to_float(image):

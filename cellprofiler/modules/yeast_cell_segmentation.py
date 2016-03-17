@@ -707,15 +707,15 @@ class YeastCellSegmentation(cpmi.Identify):
         #                                     image_set_number)
         
         ### opening file dialog
-        dlg = wx.FileDialog(None,
+        with wx.FileDialog(None,
                             message = "Open an image file",
                             wildcard = "Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
-                            style = wx.FD_OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            from bioformats import load_image
-            image = load_image( dlg.Path) #lip.provide_image(None).pixel_data
-        else:
-            return
+                            style = wx.FD_OPEN) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                from bioformats import load_image
+                image = load_image( dlg.Path) #lip.provide_image(None).pixel_data
+            else:
+                return
 
         ### opening GT editor
         title = "Please mark few representative cells to allow for autoadapting parameters. \n"

@@ -161,7 +161,6 @@ class Snake(object):
         # for angle:
         #   for radius:
         index = calc_util.index(px.round(), py.round()).reshape((polar_transform.x.shape[0], polar_transform.x.shape[1], 2))
-        im_index = index.reshape(polar_transform.x.size, 2)
 
         #
         #  pre_f - składowa funkcji oceny jakości konturu

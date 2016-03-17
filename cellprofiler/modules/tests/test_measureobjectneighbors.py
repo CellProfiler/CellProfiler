@@ -93,7 +93,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         self.assertEqual(module.distance_method, M.D_EXPAND)
         self.assertFalse(module.wants_count_image.value)
         self.assertFalse(module.wants_percent_touching_image.value)
-    
+
     def test_01_02_load_v1(self):
         '''Load a pipeline with a v1 MeasureObjectNeighbors module'''
         data = ('eJztWt1u2zYUph0naFpg7VoMG9AbXjZdLMhusqbBkNqJu85b7RiN0aAo2o6'
@@ -136,7 +136,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         self.assertTrue(module.wants_percent_touching_image.value)
         self.assertEqual(module.touching_image_name.value, "PercentTouching")
         self.assertEqual(module.touching_colormap.value, "Blues")
-    
+
     def test_01_03_load_v2(self):
         data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -172,7 +172,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertFalse(module.wants_percent_touching_image)
         self.assertEqual(module.touching_image_name, "touchingimage")
         self.assertEqual(module.touching_colormap, "purple")
-                         
+
     def test_02_02_empty(self):
         '''Test a labels matrix with no objects'''
         workspace, module = self.make_workspace(np.zeros((10,10),int),
@@ -187,10 +187,10 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         for column in columns:
             self.assertEqual(column[0],OBJECTS_NAME)
             self.assertTrue(column[1] in features)
-            self.assertTrue(column[2] == (cpmeas.COLTYPE_INTEGER 
+            self.assertTrue(column[2] == (cpmeas.COLTYPE_INTEGER
                                           if column[1].find('Number') != -1
                                           else cpmeas.COLTYPE_FLOAT))
-    
+
     def test_02_03_one(self):
         '''Test a labels matrix with a single object'''
         labels = np.zeros((10,10),int)
@@ -207,7 +207,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                                         "Neighbors_PercentTouching_Expanded")
         self.assertEqual(len(pct),1)
         self.assertEqual(pct[0],0)
-    
+
     def test_02_04_two_expand(self):
         '''Test a labels matrix with two objects'''
         labels = np.zeros((10,10),int)
@@ -362,7 +362,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertEqual(len(fo),2)
         self.assertEqual(fo[0],2)
         self.assertEqual(fo[1],1)
-    
+
     def test_02_08_three(self):
         '''Test the angles between three objects'''
         labels = np.zeros((10,10),int)
@@ -391,17 +391,17 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertAlmostEqual(d[0],4)
         self.assertAlmostEqual(d[1],5)
         self.assertAlmostEqual(d[2],5)
-        
+
         angle = m.get_current_measurement(OBJECTS_NAME,
                                           "Neighbors_AngleBetweenNeighbors_5")
         self.assertEqual(len(angle),3)
         self.assertAlmostEqual(angle[0],90)
         self.assertAlmostEqual(angle[1],np.arccos(3.0/5.0) * 180.0 / np.pi)
         self.assertAlmostEqual(angle[2],np.arccos(4.0/5.0) * 180.0 / np.pi)
-        
+
     def test_02_09_touching_discarded(self):
         '''Make sure that we count edge-touching discarded objects
-        
+
         Regression test of IMG-1012.
         '''
         labels = np.zeros((10,10),int)
@@ -412,7 +412,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         objects = object_set.get_objects(OBJECTS_NAME)
         self.assertTrue(isinstance(objects, cpo.Objects))
-        
+
         sm_labels = labels.copy() * 3
         sm_labels[-1,-1] = 1
         sm_labels[0:2,3] = 2
@@ -431,15 +431,15 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                                        "Neighbors_FirstClosestObjectNumber_Adjacent")
         self.assertEqual(len(fo),1)
         self.assertEqual(fo[0],0)
-        
+
         angle = m.get_current_measurement(OBJECTS_NAME,
                                           "Neighbors_AngleBetweenNeighbors_Adjacent")
         self.assertEqual(len(angle), 1)
         self.assertFalse(np.isnan(angle)[0])
-        
+
     def test_02_10_all_discarded(self):
         '''Test the case where all objects touch the edge
-        
+
         Regression test of a follow-on bug to IMG-1012
         '''
         labels = np.zeros((10,10),int)
@@ -449,7 +449,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         objects = object_set.get_objects(OBJECTS_NAME)
         self.assertTrue(isinstance(objects, cpo.Objects))
-        
+
         # Needs 2 objects to trigger the bug
         sm_labels = np.zeros((10,10), int)
         sm_labels[0:2,3] = 1
@@ -466,7 +466,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_Adjacent")
         self.assertEqual(len(fo),0)
-    
+
     def test_03_01_NeighborCountImage(self):
         '''Test production of a neighbor-count image'''
         labels = np.zeros((10,10),int)
@@ -491,7 +491,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
     def test_04_01_PercentTouchingImage(self):
         '''Test production of a percent touching image'''
         labels = np.zeros((10,10),int)
-        labels[2,2] = 1 
+        labels[2,2] = 1
         labels[2,5] = 2
         labels[6,2] = 3
         labels[7,2] = 3
@@ -509,7 +509,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         self.assertTrue(np.all(image[2,2,:]==image[2,5,:]))
         # 3 is at 50% and should have a different color
         self.assertFalse(np.all(image[2,2,:]==image[6,2,:]))
-    
+
     def test_05_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
         module = M.MeasureObjectNeighbors()
@@ -544,12 +544,12 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             for column in columns:
                 self.assertTrue(column[1] in features,"Unexpected column name: %s"%column[1])
 
-                
+
     def test_06_01_neighbors_zeros(self):
         blank_labels = np.zeros((20,10), int)
         one_object = np.zeros((20,10), int)
         one_object[2:-2,2:-2] = 1
-        
+
         cases = ((blank_labels, blank_labels, 0, 0),
                  (blank_labels, one_object, 0, 1),
                  (one_object, blank_labels, 1, 0))
@@ -565,7 +565,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                     v = m.get_current_measurement(
                         OBJECTS_NAME, module.get_measurement_name(feature))
                     self.assertEqual(len(v), ocount)
-                    
+
     def test_06_02_one_neighbor(self):
         olabels = np.zeros((20,10), int)
         olabels[2,2] = 1
@@ -579,26 +579,26 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             m = workspace.measurements
             self.assertTrue(isinstance(m, cpmeas.Measurements))
             v = m.get_current_measurement(
-                OBJECTS_NAME, 
+                OBJECTS_NAME,
                 module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
             self.assertEqual(len(v), 1)
             self.assertEqual(v[0], 1)
             v = m.get_current_measurement(
-                OBJECTS_NAME, 
+                OBJECTS_NAME,
                 module.get_measurement_name(M.M_SECOND_CLOSEST_OBJECT_NUMBER))
             self.assertEqual(len(v), 1)
             self.assertEqual(v[0], 0)
             v = m.get_current_measurement(
-                OBJECTS_NAME, 
+                OBJECTS_NAME,
                 module.get_measurement_name(M.M_FIRST_CLOSEST_DISTANCE))
             self.assertEqual(len(v), 1)
             self.assertAlmostEqual(v[0], np.sqrt(16**2 + 6**2))
             v = m.get_current_measurement(
-                OBJECTS_NAME, 
+                OBJECTS_NAME,
                 module.get_measurement_name(M.M_NUMBER_OF_NEIGHBORS))
             self.assertEqual(len(v), 1)
             self.assertEqual(v[0], 0 if mode == M.D_ADJACENT else 1)
-            
+
     def test_06_03_two_neighbors(self):
         olabels = np.zeros((20,10), int)
         olabels[2, 2] = 1
@@ -612,31 +612,31 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         v = m.get_current_measurement(
-            OBJECTS_NAME, 
+            OBJECTS_NAME,
             module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER))
         self.assertEqual(len(v), 1)
         self.assertEqual(v[0], 2)
         v = m.get_current_measurement(
-            OBJECTS_NAME, 
+            OBJECTS_NAME,
             module.get_measurement_name(M.M_SECOND_CLOSEST_OBJECT_NUMBER))
         self.assertEqual(len(v), 1)
         self.assertEqual(v[0], 1)
         v = m.get_current_measurement(
-            OBJECTS_NAME, 
+            OBJECTS_NAME,
             module.get_measurement_name(M.M_FIRST_CLOSEST_DISTANCE))
         self.assertEqual(len(v), 1)
         self.assertAlmostEqual(v[0], 3)
         v = m.get_current_measurement(
-            OBJECTS_NAME, 
+            OBJECTS_NAME,
             module.get_measurement_name(M.M_SECOND_CLOSEST_DISTANCE))
         self.assertEqual(len(v), 1)
         self.assertAlmostEqual(v[0], 4)
         v = m.get_current_measurement(
-            OBJECTS_NAME, 
+            OBJECTS_NAME,
             module.get_measurement_name(M.M_ANGLE_BETWEEN_NEIGHBORS))
         self.assertEqual(len(v), 1)
         self.assertAlmostEqual(v[0], 90)
-        
+
     def test_07_01_relationships(self):
         labels = np.array([
             [ 0,0,0,0,0,0,0,0,0,0 ],
@@ -650,7 +650,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             [ 0,4,4,4,0,0,0,5,5,5 ],
             [ 0,4,4,4,0,0,0,5,5,5 ],
             [ 0,0,0,0,0,0,0,0,0,0 ]])
-            
+
         workspace, module = self.make_workspace(
             labels, M.D_WITHIN, 2)
         module.run(workspace)
@@ -676,7 +676,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
                                       np.array([1,2,4,5]))
         np.testing.assert_array_equal(np.unique(ro2[ro1==3]),
                                       np.array([1,2,4,5]))
-        
+
     def test_07_02_neighbors(self):
         labels = np.array([
             [ 0,0,0,0,0,0,0,0,0,0 ],
@@ -690,7 +690,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             [ 0,4,4,4,0,0,0,5,5,5 ],
             [ 0,4,4,4,0,0,0,5,5,5 ],
             [ 0,0,0,0,0,0,0,0,0,0 ]])
-        
+
         nlabels = np.array([
             [ 0,0,0,0,0,0,0,0,0,0 ],
             [ 0,0,0,0,0,0,0,0,0,0 ],
@@ -703,7 +703,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             [ 0,0,0,0,0,0,0,0,0,0 ],
             [ 0,0,0,0,0,0,0,0,0,0 ],
             [ 0,0,0,0,0,0,0,0,0,0 ]])
-            
+
         workspace, module = self.make_workspace(
             labels, M.D_WITHIN, 2, nlabels)
         module.run(workspace)
@@ -727,7 +727,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         ro2 = r[cpmeas.R_SECOND_OBJECT_NUMBER]
         self.assertTrue(np.all(ro2 == 1))
         np.testing.assert_array_equal(np.unique(ro1), np.array([1,3,4]))
-        
+
     def test_08_01_missing_object(self):
         # Regression test of issue 434
         #
@@ -761,10 +761,10 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         neighbors_unedited = np.zeros((11,13), int)
         neighbors_unedited[5:7, 4:8] = 1
         neighbors_unedited[0:4, 4:8] = 2
-        
+
         objects = np.zeros((11, 13), int)
         objects[1:6, 5:7] = 1
-        
+
         workspace, module = self.make_workspace(
             objects, M.D_WITHIN, neighbors_labels=neighbors)
         no = workspace.object_set.get_objects(NEIGHBORS_NAME)
@@ -772,11 +772,11 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         no.small_removed_segmented = neighbors
         module.run(workspace)
         m = workspace.measurements
-        v = m[OBJECTS_NAME, 
+        v = m[OBJECTS_NAME,
               module.get_measurement_name(M.M_NUMBER_OF_NEIGHBORS), 1]
         self.assertEqual(len(v), 1)
         self.assertEqual(v[0], 2)
-        
+
     def test_08_03_object_is_missing(self):
         # regression test of #1639
         #
@@ -797,7 +797,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         ftr = module.get_measurement_name(M.M_FIRST_CLOSEST_OBJECT_NUMBER)
         values = m[OBJECTS_NAME, ftr]
         self.assertEqual(values[1], 1)
-        
+
     def test_08_04_small_removed_same(self):
         # Regression test of issue #1672
         #
@@ -808,7 +808,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         objects[6:8, 5:7] = 2
         objects_unedited = objects.copy()
         objects_unedited[0:2, 0:2] = 3
-        
+
         workspace, module = self.make_workspace(
             objects, M.D_EXPAND, distance = 1)
         no = workspace.object_set.get_objects(OBJECTS_NAME)
@@ -816,8 +816,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         no.small_removed_segmented = objects
         module.run(workspace)
         m = workspace.measurements
-        v = m[OBJECTS_NAME, 
+        v = m[OBJECTS_NAME,
               module.get_measurement_name(M.M_NUMBER_OF_NEIGHBORS), 1]
         self.assertEqual(len(v), 2)
         self.assertEqual(v[0], 1)
-        

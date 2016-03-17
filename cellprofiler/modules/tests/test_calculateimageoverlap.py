@@ -59,7 +59,7 @@ class TestCalculateImageOverlap(unittest.TestCase):
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         self.assertEqual(module.ground_truth, "groundtruth")
         self.assertEqual(module.test_img, "orig")
-        
+
     def test_01_02_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -79,7 +79,7 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         self.assertEqual(module.ground_truth, "GroundTruth")
         self.assertEqual(module.test_img, "Segmentation")
-        
+
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -120,7 +120,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(module.max_distance, 250)
         self.assertEqual(module.max_points, 250)
         self.assertFalse(module.penalize_missing)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         self.assertEqual(module.obj_or_img, C.O_IMG)
@@ -129,7 +129,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(module.object_name_GT, "Cell2_0")
         self.assertEqual(module.object_name_ID, "Cell2_1")
         self.assertFalse(module.wants_emd)
-        
+
     def test_01_04_load_v4(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -180,7 +180,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(module.max_distance, 202)
         self.assertEqual(module.max_points, 201)
         self.assertFalse(module.penalize_missing)
-        
+
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         self.assertEqual(module.obj_or_img, C.O_IMG)
@@ -193,16 +193,16 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(module.max_distance, 102)
         self.assertEqual(module.max_points, 101)
         self.assertTrue(module.penalize_missing)
-        
+
 
     def make_workspace(self, ground_truth, test):
         '''Make a workspace with a ground-truth image and a test image
-        
+
         ground_truth and test are dictionaries with the following keys:
         image     - the pixel data
         mask      - (optional) the mask data
         crop_mask - (optional) a cropping mask
-        
+
         returns a workspace and module
         '''
         module = C.CalculateImageOverlap()
@@ -211,28 +211,28 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.ground_truth.value = GROUND_TRUTH_IMAGE_NAME
         module.test_img.value = TEST_IMAGE_NAME
         module.wants_emd.value = True
-        
+
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        
+
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        
+
         for name, d in ((GROUND_TRUTH_IMAGE_NAME, ground_truth),
                         (TEST_IMAGE_NAME, test)):
             image = cpi.Image(d["image"],
                               mask = d.get("mask"),
                               crop_mask = d.get("crop_mask"))
             image_set.add(name, image)
-            
+
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(), cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
-    
+
     def make_obj_workspace(self, ground_truth_obj, id_obj, ground_truth, id):
         '''make a workspace to test comparing objects'''
         ''' ground truth object and ID object  are dictionaires w/ the following keys'''
@@ -253,7 +253,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        
+
         for name, d in ((GROUND_TRUTH_OBJ_IMAGE_NAME, ground_truth),
                         (ID_OBJ_IMAGE_NAME, id)):
             image = cpi.Image(d["image"],
@@ -275,14 +275,14 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         return workspace, module
 
 
-    
+
     def test_03_01_zeros(self):
         '''Test ground-truth of zeros and image of zeros'''
-        
+
         workspace, module = self.make_workspace(
             dict(image = np.ones((20,10), bool)),
             dict(image = np.ones((20,10), bool)))
-        
+
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         module.run(workspace)
         measurements = workspace.measurements
@@ -293,18 +293,18 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         features = measurements.get_feature_names(cpmeas.IMAGE)
         for feature in C.FTR_ALL + [C.FTR_EARTH_MOVERS_DISTANCE]:
             field = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
-            self.assertTrue(field in features, 
+            self.assertTrue(field in features,
                             "Missing feature: %s" % feature)
         ftr_emd = module.measurement_name(C.FTR_EARTH_MOVERS_DISTANCE)
         self.assertEqual(measurements[cpmeas.IMAGE, ftr_emd], 0)
-            
+
     def test_03_02_ones(self):
         '''Test ground-truth of ones and image of ones'''
-        
+
         workspace, module = self.make_workspace(
             dict(image = np.zeros((20,10), bool)),
             dict(image = np.zeros((20,10), bool)))
-        
+
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         module.run(workspace)
         measurements = workspace.measurements
@@ -325,15 +325,15 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                           TEST_IMAGE_NAME))
         self.assertTrue(np.isnan(measurements.get_current_image_measurement(
             mname)))
-            
+
     def test_03_03_masked(self):
         '''Test ground-truth of a masked image'''
-        
+
         workspace, module = self.make_workspace(
             dict(image = np.zeros((20,10), bool)),
             dict(image = np.zeros((20,10), bool),
                  mask = np.zeros((20,10), bool)))
-        
+
         self.assertTrue(isinstance(module, C.CalculateImageOverlap))
         module.run(workspace)
         measurements = workspace.measurements
@@ -353,7 +353,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertTrue(np.isnan(value))
-            
+
     def test_03_04_all_right(self):
         np.random.seed(34)
         image = np.random.uniform(size=(10,20)) > .5
@@ -375,7 +375,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertEqual(expected, value)
-            
+
     def test_03_05_one_false_positive(self):
         i,j = np.mgrid[0:10,0:20]
         ground_truth = ((i+j) % 2) == 0
@@ -397,9 +397,9 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                   (C.FTR_EARTH_MOVERS_DISTANCE, 0)):
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
-            self.assertAlmostEqual(expected, value, 
+            self.assertAlmostEqual(expected, value,
                                    msg = "%s is wrong" % feature)
-        
+
     def test_03_05_one_false_negative(self):
         i,j = np.mgrid[0:10,0:20]
         ground_truth = ((i+j) % 2) == 0
@@ -421,9 +421,9 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                   (C.FTR_EARTH_MOVERS_DISTANCE, 0)):
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
-            self.assertAlmostEqual(expected, value, 
+            self.assertAlmostEqual(expected, value,
                                    msg = "%s is wrong" % feature)
-            
+
     def test_03_06_one_false_positive_and_mask(self):
         i,j = np.mgrid[0:10,0:20]
         ground_truth = ((i+j) % 2) == 0
@@ -445,9 +445,9 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                   (C.FTR_F_FACTOR, f_factor)):
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
-            self.assertAlmostEqual(expected, value, 
+            self.assertAlmostEqual(expected, value,
                                    msg = "%s is wrong" % feature)
-        
+
     def test_03_07_one_false_negative_and_mask(self):
         i,j = np.mgrid[0:10,0:20]
         ground_truth = ((i+j) % 2) == 0
@@ -469,7 +469,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                   (C.FTR_F_FACTOR, f_factor)):
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
-            self.assertAlmostEqual(expected, value, 
+            self.assertAlmostEqual(expected, value,
                                    msg = "%s is wrong" % feature)
 
     def test_03_08_masked_errors(self):
@@ -491,9 +491,9 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                   (C.FTR_F_FACTOR, 1)):
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
-            self.assertAlmostEqual(expected, value, 
+            self.assertAlmostEqual(expected, value,
                                    msg = "%s is wrong" % feature)
-            
+
     def test_03_09_cropped(self):
         np.random.seed(39)
         i,j = np.mgrid[0:10,0:20]
@@ -505,7 +505,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         big_ground_truth = np.random.uniform(size=(20,40)) > .5
         big_ground_truth[10:20, 10:30] = ground_truth
         workspace, module = self.make_workspace(
-            dict(image=big_ground_truth), 
+            dict(image=big_ground_truth),
             dict(image=test, crop_mask = cropping))
         module.run(workspace)
         measurements = workspace.measurements
@@ -520,10 +520,10 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                   (C.FTR_F_FACTOR, f_factor)):
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
-            self.assertAlmostEqual(expected, value, 
-                                   msg = "%s is wrong. Expected %f, got %f" % 
+            self.assertAlmostEqual(expected, value,
+                                   msg = "%s is wrong. Expected %f, got %f" %
                                    (feature, expected, value))
-            
+
     def test_03_10_rand_index(self):
         np.random.seed(310)
         i, j = np.mgrid[0:10, 0:20]
@@ -550,7 +550,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         expected_rand_index = 0.9469347
         expected_adj_rand_index = 0.8830027
         workspace, module = self.make_workspace(
-            dict(image=ground_truth), 
+            dict(image=ground_truth),
             dict(image=test))
         module.run(workspace)
         measurements = workspace.measurements
@@ -563,7 +563,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertAlmostEqual(
             measurements.get_current_image_measurement(mname),
             expected_adj_rand_index, 6)
-        
+
     def test_03_11_masked_rand_index(self):
         np.random.seed(310)
         i, j = np.mgrid[0:10, 0:20]
@@ -589,11 +589,11 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         expected_rand_index = 0.9503666
         expected_adj_rand_index = 0.8907784
         workspace, module = self.make_workspace(
-            dict(image=ground_truth, mask=mask), 
+            dict(image=ground_truth, mask=mask),
             dict(image=test, mask = mask))
         module.run(workspace)
         measurements = workspace.measurements
-        
+
         mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, TEST_IMAGE_NAME))
         self.assertAlmostEqual(
             measurements.get_current_image_measurement(mname),
@@ -603,12 +603,12 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertAlmostEqual(
             measurements.get_current_image_measurement(mname),
             expected_adj_rand_index, 6)
-        
+
     def test_04_01_get_measurement_columns(self):
         workspace, module = self.make_workspace(
             dict(image = np.zeros((20,10), bool)),
             dict(image = np.zeros((20,10), bool)))
-        
+
         assert isinstance(module, C.CalculateImageOverlap)
         module.object_name_GT.value = GROUND_TRUTH_OBJ
         module.object_name_ID.value = ID_OBJ
@@ -643,7 +643,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             (True, list(C.FTR_ALL) + [C.FTR_EARTH_MOVERS_DISTANCE]),
             (False, C.FTR_ALL)):
             module.wants_emd.value = wants_emd
-            mnames = module.get_measurements(workspace.pipeline, 
+            mnames = module.get_measurements(workspace.pipeline,
                                              cpmeas.IMAGE, C.C_IMAGE_OVERLAP)
             self.assertEqual(len(mnames), len(features))
             self.assertTrue(all(n in features for n in mnames))
@@ -654,12 +654,12 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             mnames = module.get_measurements(workspace.pipeline, cpmeas.IMAGE,
                                              "Foo")
             self.assertEqual(len(mnames), 0)
-        
+
     def test_04_04_get_measurement_images(self):
         workspace, module = self.make_workspace(
             dict(image = np.zeros((20,10), bool)),
             dict(image = np.zeros((20,10), bool)))
-        
+
         for feature in C.FTR_ALL:
             imnames = module.get_measurement_images(workspace.pipeline,
                                                     cpmeas.IMAGE,
@@ -682,7 +682,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                                                 C.C_IMAGE_OVERLAP,
                                                 C.FTR_FALSE_NEG_RATE)
         self.assertEqual(len(imnames), 0)
-        
+
     def test_04_05_get_measurement_scales(self):
         workspace, module = self.make_workspace(
             dict(image = np.zeros((20,10), bool)),
@@ -690,19 +690,19 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         module.obj_or_img.value = C.O_OBJ
         module.object_name_GT.value = GROUND_TRUTH_OBJ
         module.object_name_ID.value = ID_OBJ
-        
+
         scales = module.get_measurement_scales(
             workspace.pipeline, cpmeas.IMAGE, C.C_IMAGE_OVERLAP,
             C.FTR_RAND_INDEX, None)
         self.assertEqual(len(scales), 1)
         self.assertEqual(scales[0], "_".join((GROUND_TRUTH_OBJ, ID_OBJ)))
-        
+
         module.obj_or_img.value = C.O_IMG
         scales = module.get_measurement_scales(
             workspace.pipeline, cpmeas.IMAGE, C.C_IMAGE_OVERLAP,
             C.FTR_RAND_INDEX, None)
         self.assertEqual(len(scales), 0)
-        
+
     def test_05_00_test_measure_overlap_no_objects(self):
         # Regression test of issue #934 - no objects
         workspace, module = self.make_obj_workspace(
@@ -737,11 +737,11 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             dict(image = np.zeros((20, 10), bool)),
             dict(image = np.zeros((20, 10), bool)))
         module.run(workspace)
-            
+
     def test_05_01_test_measure_overlap_objects(self):
         r = np.random.RandomState()
         r.seed(51)
-        
+
         workspace, module = self.make_obj_workspace(
             np.column_stack([r.randint(0, 20, 150),
                              r.randint(0, 10, 150),
@@ -775,26 +775,26 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             dict(image = test))
         module.wants_emd.value = False
         module.run(workspace)
-        
+
         measurements = workspace.measurements
-        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, 
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX,
                           TEST_IMAGE_NAME))
         expected_rand_index = measurements.get_current_image_measurement(mname)
         mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_ADJUSTED_RAND_INDEX,
                           TEST_IMAGE_NAME))
         expected_adjusted_rand_index = \
             measurements.get_current_image_measurement(mname)
-        
+
         gt_labels, _ = ndimage.label(gt, np.ones((3,3),bool))
         test_labels, _ = ndimage.label(test, np.ones((3,3), bool))
-        
+
         workspace, module = self.make_obj_workspace(
             gt_labels, test_labels,
             dict(image=np.ones(gt_labels.shape)),
             dict(image=np.ones(test_labels.shape)))
         module.run(workspace)
         measurements = workspace.measurements
-        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, 
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX,
                           GROUND_TRUTH_OBJ, ID_OBJ))
         rand_index = measurements.get_current_image_measurement(mname)
         self.assertAlmostEqual(rand_index, expected_rand_index)
@@ -803,7 +803,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         adjusted_rand_index = \
             measurements.get_current_image_measurement(mname)
         self.assertAlmostEqual(adjusted_rand_index, expected_adjusted_rand_index)
-        
+
     def test_06_00_no_emd(self):
         workspace, module = self.make_workspace(
             dict(image = np.ones((20,10), bool)),
@@ -828,7 +828,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(workspace.measurements[
             cpmeas.IMAGE,
             module.measurement_name(C.FTR_EARTH_MOVERS_DISTANCE)], 5)
-        
+
     def test_06_02_missing_penalty(self):
         #
         # Test that the missing penalty works
@@ -847,7 +847,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(workspace.measurements[
             cpmeas.IMAGE,
             module.measurement_name(C.FTR_EARTH_MOVERS_DISTANCE)], 16)
-        
+
     def test_06_03_max_distance(self):
         src = np.zeros((20, 10), bool)
         dest = np.zeros((20, 10), bool)
@@ -862,7 +862,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
         self.assertEqual(workspace.measurements[
             cpmeas.IMAGE,
             module.measurement_name(C.FTR_EARTH_MOVERS_DISTANCE)], 11)
-        
+
     def test_06_04_decimate_k_means(self):
         r = np.random.RandomState()
         r.seed(64)
@@ -903,7 +903,7 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
             module.measurement_name(C.FTR_EARTH_MOVERS_DISTANCE)]
         self.assertLess(decimated_emd, emd * 2)
         self.assertGreater(decimated_emd, emd / 2)
-        
+
     def test_06_05_decimate_skel(self):
         #
         # Mostly, this is to check that the skeleton method doesn't crash
@@ -922,6 +922,3 @@ CalculateImageOverlap:[module_num:2|svn_version:\'Unknown\'|variable_revision_nu
                     module.measurement_name(C.FTR_EARTH_MOVERS_DISTANCE)]
         self.assertGreater(emd, np.sum(image1) * 3)
         self.assertLess(emd, np.sum(image1) * 6)
-
-        
-        

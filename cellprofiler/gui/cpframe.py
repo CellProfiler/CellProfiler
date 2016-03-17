@@ -167,7 +167,7 @@ class CPFrame(wx.Frame):
         #            path_list_ctrl
         #            path_list_filter_checkbox
         #            path_list_help_button
-        #        
+        #
         #        module_panel
         #        image_set_list_sash
         #            image_set_list_ctrl
@@ -182,14 +182,14 @@ class CPFrame(wx.Frame):
         self.__pmi_layout_in_progress = False
         self.__path_module_imageset_panel.Bind(
             wx.EVT_SIZE, self.__on_path_module_imageset_panel_size)
-        
+
         ########################################################################
         #
         # The path list control that holds all of the files being dealt with
         # by the pipeline
         #
         ########################################################################
-        
+
         #
         # Path list sash controls path list sizing
         #
@@ -246,7 +246,7 @@ class CPFrame(wx.Frame):
             self.__path_list_sash, label="?", style=wx.BU_EXACTFIT)
         self.__path_list_help_button.Bind(wx.EVT_BUTTON, self.__on_help_path_list)
         hsizer.Add(self.__path_list_help_button, 0, wx.EXPAND)
-        
+
         ######################################################################
         #
         # Module view panel
@@ -255,7 +255,7 @@ class CPFrame(wx.Frame):
 
         self.__module_panel = wx.Panel(self.__path_module_imageset_panel)
         self.__module_panel.BackgroundColour = cpprefs.get_background_color()
-        
+
         ######################################################################
         #
         # The imageset panel
@@ -315,15 +315,15 @@ class CPFrame(wx.Frame):
         if cpprefs.get_startup_blurb():
             self.show_welcome_screen(True)
         self.show_module_ui(True)
-        
+
     def start(self, workspace_path, pipeline_path):
         '''Handle resource loading after the GUI has been constructed
-        
+
         workspace_path - one of the following: a pathname to the workspace
                          to load, False to ask the user for a new workspace
                          or None to leave the decision to the user's
                          preference.
-                         
+
         pipeline_path - the pipeline to load after the workspace has been
                         loaded or None for the workspace's pipeline.
         '''
@@ -347,7 +347,7 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.Show(show)
         self.layout_pmi_panel()
         self.__path_list_sash.Layout()
-        
+
     def show_imageset_sash(self, show):
         '''Show or hide the imageset control
 
@@ -358,7 +358,7 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.Show(show)
         self.layout_pmi_panel()
         self.__imageset_sash.Layout()
-        
+
     def show_imageset_ctrl(self):
         sizer = self.__imageset_panel.Sizer
         assert isinstance(sizer, wx.Sizer)
@@ -368,7 +368,7 @@ class CPFrame(wx.Frame):
             sizer.Show(self.__grid_ctrl, False)
             self.show_imageset_sash(True)
             self.__imageset_panel.Layout()
-        
+
     def show_grid_ctrl(self, table = None):
         if table is not None:
             self.__grid_ctrl.SetTable(table)
@@ -381,7 +381,7 @@ class CPFrame(wx.Frame):
             self.__imageset_sash.Layout()
             self.__imageset_panel.Layout()
             self.__grid_ctrl.Layout()
-        
+
     def get_grid_ctrl(self):
         return self.__grid_ctrl
 
@@ -410,20 +410,20 @@ class CPFrame(wx.Frame):
                 scroll_y=True,
                 scrollToTop=False)
             self.__imageset_sash.Layout()
-      
+
     def show_welcome_screen(self, show):
         '''Show or hide the welcome screen
-        
-        show - If True, show the welcome screen and hide the preferences 
+
+        show - If True, show the welcome screen and hide the preferences
                and module UI, otherwise hide the welcome screen.
         '''
         self.startup_blurb_frame.Show(show)
         if (show):
             self.startup_blurb_frame.Raise()
-            
+
     def show_preferences(self, show):
         '''Show or hide the preferences panel
-        
+
         show - if True, show the preferences panel and hide the welcome
                and module UI. If false, just hide the preferences.
         '''
@@ -488,13 +488,13 @@ class CPFrame(wx.Frame):
 
     def enable_edit_commands(self, ids):
         '''Enable the edit commands that are supported by the focused window
-        
+
         ids - a list of the IDs supported by the window that has the focus.
-        
+
         This should be called when a window receives an EVT_SET_FOCUS or
         when its state has changed to the point where it needs to enable
         different sets of commands.
-        
+
         Commands that can be passed through here:
         wx.ID_COPY
         wx.ID_CUT
@@ -508,7 +508,7 @@ class CPFrame(wx.Frame):
             d[eyedee] = True
         for k, v in d.iteritems():
             self.menu_edit.Enable(k, v)
-        
+
     def __add_menu(self):
         """Add the menu to the frame
 
@@ -524,7 +524,7 @@ class CPFrame(wx.Frame):
             help='Open a project from a .%s project file' % cpprefs.EXT_PROJECT)
         self.recent_workspace_files = wx.Menu()
         self.__menu_file.AppendSubMenu(
-            self.recent_workspace_files, 
+            self.recent_workspace_files,
             "Open Recent")
         self.__menu_file.Append(
             wx.ID_SAVE,
@@ -542,18 +542,18 @@ class CPFrame(wx.Frame):
         submenu.Append(
             ID_FILE_LOAD_PIPELINE,
             'Pipeline from File...',
-            'Import a pipeline into the project from a .%s file' % 
+            'Import a pipeline into the project from a .%s file' %
             cpprefs.EXT_PIPELINE)
         submenu.Append(
-            ID_FILE_URL_LOAD_PIPELINE, 
-            'Pipeline from URL...', 
+            ID_FILE_URL_LOAD_PIPELINE,
+            'Pipeline from URL...',
             'Load a pipeline from the web')
         submenu.Append(
             ID_FILE_IMPORT_FILE_LIST,
             "File List...",
             "Add files or URLs to the Images module file list")
         self.__menu_file.AppendSubMenu(submenu, "Import")
-        
+
         submenu = wx.Menu()
         submenu.Append(
             ID_FILE_SAVE_PIPELINE,
@@ -594,12 +594,12 @@ class CPFrame(wx.Frame):
         self.menu_edit = wx.Menu()
         self.menu_edit.Append(wx.ID_UNDO, help="Undo last action")
         self.menu_edit.AppendSeparator()
-        
+
         self.menu_edit.Append(wx.ID_CUT)
         self.menu_edit.Append(wx.ID_COPY)
         self.menu_edit.Append(wx.ID_PASTE)
         self.menu_edit.Append(wx.ID_SELECTALL)
-        
+
         self.menu_edit.AppendSeparator()
         self.menu_edit.Append(ID_EDIT_MOVE_UP, "Move Module &Up", "Move module toward the start of the pipeline")
         self.menu_edit.Append(ID_EDIT_MOVE_DOWN, "Move Module &Down", "Move module toward the end of the pipeline")
@@ -626,7 +626,7 @@ class CPFrame(wx.Frame):
                               "Select images to add to the file list using a file browser")
         self.menu_edit.Append(ID_EDIT_CLEAR_FILE_LIST, "Clear File List",
                               "Remove all files from the file list")
-        self.menu_edit.Append(ID_EDIT_EXPAND_ALL, "Expand All Folders", 
+        self.menu_edit.Append(ID_EDIT_EXPAND_ALL, "Expand All Folders",
                               "Expand all folders in the file list and show all file names")
         self.menu_edit.Append(ID_EDIT_COLLAPSE_ALL, "Collapse All Folders",
                               "Collapse all folders in the file list, hiding all file names")
@@ -657,14 +657,14 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Enable(ID_DEBUG_VIEW_WORKSPACE, False)
 
         self.__menu_window = wx.Menu()
-        self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &All Open Windows\tctrl+L", 
+        self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &All Open Windows\tctrl+L",
                                   "Close all open module display windows")
         self.__menu_window.Append(ID_WINDOW_SHOW_ALL_WINDOWS,"Show All Windows On Run",
                                   "Show all module display windows for all modules during analysis")
         self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide All Windows On Run",
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
-        
+
         self.__menu_help = wx.Menu()
         # We must add a non-submenu menu item before
         # make_help_menu adds submenus, otherwise the submenus
@@ -712,7 +712,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self, ID_FILE_NEW_CP,self.__on_new_cp)
-        
+
         wx.EVT_MENU(self, wx.ID_CUT, self.on_cut)
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_cut_ui, id=wx.ID_CUT)
         wx.EVT_MENU(self, wx.ID_COPY, self.on_copy)
@@ -720,9 +720,9 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self, wx.ID_PASTE, self.on_paste)
         self.Bind(wx.EVT_UPDATE_UI, self.on_update_paste_ui, id=wx.ID_PASTE)
         wx.EVT_MENU(self, wx.ID_SELECTALL, self.on_select_all)
-        self.Bind(wx.EVT_UPDATE_UI, self.on_update_select_all_ui, 
+        self.Bind(wx.EVT_UPDATE_UI, self.on_update_select_all_ui,
                   id=wx.ID_SELECTALL)
-        
+
         wx.EVT_MENU(self, ID_HELP_WELCOME, self.__on_help_welcome)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_BUTTON(self,ID_HELP_MODULE,self.__on_help_module)
@@ -767,7 +767,7 @@ class CPFrame(wx.Frame):
             new_id = wx.NewId()
             self.__menu_data_tools_help_menu.Append(new_id, "Plate viewer")
             wx.EVT_MENU(self, new_id, on_plate_viewer_help)
-                
+
             for data_tool_name in get_data_tool_names():
                 new_id = wx.NewId()
                 self.__menu_data_tools_help_menu.Append(new_id, data_tool_name)
@@ -782,25 +782,25 @@ class CPFrame(wx.Frame):
 
         if not hasattr(self, "__data_tools_menu"):
             self.__data_tools_menu = wx.Menu()
-            
+
             def on_data_tool_overview(event):
                 import htmldialog
                 from cellprofiler.gui.help import MENU_BAR_DATATOOLS_HELP
                 dlg = htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
-                dlg.Show()            
+                dlg.Show()
             new_id = wx.NewId()
             self.__data_tools_menu.Append(
-                new_id, 'Data Tool Overview', 'Overview of the Data Tools') 
+                new_id, 'Data Tool Overview', 'Overview of the Data Tools')
             wx.EVT_MENU(self,new_id,on_data_tool_overview)
-            
+
             self.__data_tools_menu.AppendSeparator()
-            
+
             self.__data_tools_menu.Append(
-                ID_FILE_PLATEVIEWER, 'Plate Viewer', 
+                ID_FILE_PLATEVIEWER, 'Plate Viewer',
                 'Open the plate viewer to inspect the images in the current workspace')
-            
+
             self.__data_tools_menu.AppendSeparator()
-            
+
             for data_tool_name in get_data_tool_names():
                 new_id = wx.NewId()
                 self.__data_tools_menu.Append(new_id, data_tool_name)
@@ -809,7 +809,7 @@ class CPFrame(wx.Frame):
                 wx.EVT_MENU(self, new_id, on_data_tool)
 
             self.__data_tools_menu.AppendSeparator()
-            
+
             self.__data_tools_menu.AppendSubMenu(self.data_tools_help(), '&Help')
 
         return self.__data_tools_menu
@@ -824,24 +824,24 @@ class CPFrame(wx.Frame):
     def on_cut(self, event):
         '''Handle ID_CUT'''
         focus = wx.Window.FindFocus()
-        if (focus is not None and hasattr(focus, "Cut") 
+        if (focus is not None and hasattr(focus, "Cut")
             and hasattr(focus, 'CanCut') and focus.CanCut()):
             focus.Cut()
-            
+
     def on_update_cut_ui(self, event):
-        focus = wx.Window.FindFocus() 
+        focus = wx.Window.FindFocus()
         event.Enable(bool(
             focus and hasattr(focus, 'CanCut') and focus.CanCut()))
-       
+
     def on_copy(self, event):
         '''Handle ID_COPY'''
         focus = wx.Window.FindFocus()
         if focus is not None and hasattr(focus, "Copy") and\
            hasattr(focus, 'CanCopy') and focus.CanCopy():
             focus.Copy()
-            
+
     def on_update_copy_ui(self, event):
-        focus = wx.Window.FindFocus() 
+        focus = wx.Window.FindFocus()
         event.Enable(bool(
             focus and hasattr(focus, 'CanCopy') and focus.CanCopy()))
 
@@ -851,12 +851,12 @@ class CPFrame(wx.Frame):
         if focus is not None and hasattr(focus, "Paste") and\
            hasattr(focus, "CanPaste") and focus.CanPaste():
             focus.Paste()
-            
+
     def on_update_paste_ui(self, event):
-        focus = wx.Window.FindFocus() 
+        focus = wx.Window.FindFocus()
         event.Enable(bool(
             focus and hasattr(focus, 'CanPaste') and focus.CanPaste()))
-        
+
     def on_select_all(self, event):
         focus = wx.Window.FindFocus()
         if (focus and hasattr(focus, "SelectAll")):
@@ -871,7 +871,7 @@ class CPFrame(wx.Frame):
 
     debug_commands = (ID_DEBUG_STEP, ID_DEBUG_NEXT_IMAGE_SET,
                       ID_DEBUG_NEXT_GROUP, ID_DEBUG_CHOOSE_GROUP,
-                      ID_DEBUG_CHOOSE_IMAGE_SET, 
+                      ID_DEBUG_CHOOSE_IMAGE_SET,
                       ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,
                       ID_DEBUG_VIEW_WORKSPACE)
     def enable_debug_commands(self):
@@ -931,25 +931,25 @@ class CPFrame(wx.Frame):
         import os
         if not hasattr(sys, 'frozen'):
             os.system('open CellProfiler_python.command')
-        else:       
+        else:
             os.system('open -na CellProfiler.app')
 
     def __on_help_release_notes(self, event):
             import webbrowser
-            webbrowser.open("http://github.com/CellProfiler/CellProfiler/wiki/CellProfiler-release-notes")    
-    
+            webbrowser.open("http://github.com/CellProfiler/CellProfiler/wiki/CellProfiler-release-notes")
+
     def __on_help_online_manual(self, event):
         import webbrowser
-        webbrowser.open("http://cellprofiler.org/CPmanual/")
+        webbrowser.open("http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html")
 
     def __on_help_developers_guide(self, event):
         import webbrowser
         webbrowser.open("http://www.cellprofiler.org/wiki/index.php/Main_Page")
-        
+
     def __on_help_source_code(self, event):
         import webbrowser
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
-        
+
     def __on_help_path_list(self, event):
         import htmldialog
         dlg = htmldialog.HTMLDialog(self, "Help on file list", HELP_ON_FILE_LIST)
@@ -971,17 +971,17 @@ class CPFrame(wx.Frame):
                 wx.StaticBitmap(panel, -1, splashbitmap), 0, wx.EXPAND | wx.ALL, 5)
             tcstyle = wx.TE_READONLY | wx.BORDER_NONE
             sizer.Add(wx.TextCtrl(
-                panel, 
+                panel,
                 value="Version: %s" % version.dotted_version,
                 style = tcstyle), 0, wx.EXPAND | wx.ALL, 5)
             sizer.Add(wx.TextCtrl(
                 panel, value="GIT hash: %s" % version.git_hash, style=tcstyle),
                       0, wx.EXPAND | wx.ALL, 5)
             sizer.Add(wx.TextCtrl(
-                panel, 
+                panel,
                 value="Revision author timestamp: %d" % version.version_number,
                 style = tcstyle), 0, wx.EXPAND | wx.ALL, 5)
-    
+
             cellprofiler_copyright = u"""
     CellProfiler (BI-2013-070) is cell image analysis software that was
     developed with funding from the U.S. National Institutes of Health and
@@ -992,13 +992,13 @@ class CPFrame(wx.Frame):
     All rights reserved."""
             copyright_ctl = wx.StaticText(panel, -1, cellprofiler_copyright)
             sizer.Add(copyright_ctl, 0, wx.EXPAND | wx.ALL, 5)
-    
+
             license_ctl = wx.StaticText(panel, -1, cellprofiler_license)
             sizer.Add(license_ctl, 0, wx.EXPAND | wx.ALL, 5)
-            
+
             button_list = [("GPL License", gpl_license),
                            ("BSD License", bsd_license)]
-            
+
             additional_copyrights = u""" (a) h5py © 2008 Andrew Collette, et al.; ilastik © 2012 C. Sommer,
     et al.,; ImageJ2 © 2009-2013 Board of Regents of the University of
     Wisconsin-Madison, Max Planck Institute of Molecular Cell Biology and
@@ -1034,26 +1034,26 @@ class CPFrame(wx.Frame):
     Resdistributables © 2013 Intel Corporation under the End User License
     Agreement for the Intel Software Development Products; and
     (i) FastEMD © Copyright (c) 2009-2012, Ofir Pele. under BSD licenses
-    
+
     """
-    
+
             icon_copyrights = get_icon_copyrights()
             if additional_copyrights is not None:
                 additional_copyrights += icon_copyrights
-            button_list.append(("Additional licenses and attributions", 
+            button_list.append(("Additional licenses and attributions",
                                 additional_copyrights))
-    
+
             for button_text, license_text in button_list:
                 sub_sizer = wx.BoxSizer(wx.VERTICAL)
                 sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 5)
                 license_button = wx.Button(panel, -1, button_text + " >>")
                 sub_sizer.Add(license_button, 0, wx.ALIGN_LEFT | wx.RIGHT, 3)
-    
+
                 license_ctl = wx.StaticText(panel, -1, license_text)
-                sub_sizer.Add(license_ctl, 0, 
+                sub_sizer.Add(license_ctl, 0,
                           wx.EXPAND | wx.ALL, 2)
                 license_ctl.Hide()
-    
+
                 def on_license(event, license_ctl = license_ctl):
                     if license_ctl.IsShown():
                         license_ctl.Hide()
@@ -1064,8 +1064,8 @@ class CPFrame(wx.Frame):
                     panel.ScrollChildIntoView(license_ctl)
                     panel.Refresh()
                 license_button.Bind(wx.EVT_BUTTON, on_license)
-    
-            sizer.Add(dlg.CreateStdDialogButtonSizer(wx.OK), 0, 
+
+            sizer.Add(dlg.CreateStdDialogButtonSizer(wx.OK), 0,
                       wx.ALIGN_RIGHT | wx.ALL, 5)
             panel.Layout()
             panel.SetupScrolling()
@@ -1074,17 +1074,17 @@ class CPFrame(wx.Frame):
 
     def __on_help_welcome(self, event):
         self.show_welcome_screen(True)
-        
+
     def __on_help_module(self, event):
         modules = self.__pipeline_list_view.get_selected_modules()
         active_module = self.__pipeline_list_view.get_active_module()
         if len(modules) > 0:
             self.do_help_modules(modules)
         elif active_module is not None:
-            self.do_help_module(active_module.module_name, 
+            self.do_help_module(active_module.module_name,
                                 active_module.get_help())
         else:
-            wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED, 
+            wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED,
                           "No module selected",
                           style=wx.OK|wx.ICON_INFORMATION)
 
@@ -1233,7 +1233,7 @@ class CPFrame(wx.Frame):
                 frame.subplot_imshow_color(0, 0, image, title = dlg.Path)
             else:
                 frame.subplot_imshow_grayscale(0, 0, image, title=dlg.Path)
-            frame.panel.draw()    
+            frame.panel.draw()
 
     def __attach_views(self):
         self.__pipeline_list_view = PipelineListView(self.__module_list_panel, self)
@@ -1242,7 +1242,7 @@ class CPFrame(wx.Frame):
         self.__pipeline_controller.attach_to_test_controls_panel(self.__pipeline_test_panel)
         self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
         self.__pipeline_controller.attach_to_path_list_ctrl(
-            self.__path_list_ctrl, 
+            self.__path_list_ctrl,
             self.__path_list_filter_checkbox)
         self.__module_view = ModuleView(
             self.__module_panel,
@@ -1253,8 +1253,8 @@ class CPFrame(wx.Frame):
         self.__pipeline_list_view.attach_to_module_view((self.__module_view))
         self.__preferences_view = PreferencesView(
             self.__right_win.Sizer,
-            self.__preferences_panel, 
-            self.__progress_panel, 
+            self.__preferences_panel,
+            self.__progress_panel,
             self.__status_panel)
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
 
@@ -1355,7 +1355,7 @@ class CPFrame(wx.Frame):
         if self.search_frame is not None:
             self.search_frame.Show()
             self.search_frame.Raise()
-            
+
     def __make_startup_blurb_frame(self):
         '''Make the frame surrounding the startup blurb panel'''
         background_color = cpprefs.get_background_color()
@@ -1369,12 +1369,12 @@ class CPFrame(wx.Frame):
         content.load_startup_blurb()
         frame.Sizer.Add(content, 1, wx.EXPAND)
         frame.SetIcon(get_cp_icon())
-        
+
         def on_close(event):
             assert isinstance(event, wx.CloseEvent)
             event.EventObject.Hide()
             event.Veto()
-        
+
         frame.Bind(wx.EVT_CLOSE, on_close)
         frame.Layout()
 
@@ -1392,7 +1392,7 @@ class CPFrame(wx.Frame):
             tool_name, wildcard = "Measurements file(*.mat,*.h5)|*.mat;*.h5",
             style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))
         if dlg.ShowModal() == wx.ID_OK:
-            DataToolFrame(self, 
+            DataToolFrame(self,
                           module_name=tool_name,
                           measurements_file_name = dlg.Path)
 
@@ -1509,7 +1509,7 @@ class CPSizer(wx.PySizer):
         return (row_heights,col_widths)
 
     def RecalcSizes(self):
-        """Recalculate the sizes of our items, distributing leftovers among them  
+        """Recalculate the sizes of our items, distributing leftovers among them
         """
         (row_heights, col_widths) = self.__get_min_sizes()
         size = self.GetSize()
@@ -1526,23 +1526,48 @@ class CPSizer(wx.PySizer):
             idx+=1
 
 cellprofiler_license = """
-CellProfiler is licensed under the terms of the GNU General Public
-License (GPL) version 2. The files in the "CellProfiler/cpmath" and
-"CellProfiler/utilities" subdirectories are licensed under the more
-permissive BSD license. CellProfiler is distributed, in part, under
-the provisions of the additional licenses and attributions below.
+The BSD 3-Clause License
 
-CELLPROFILER IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
-LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF CELLPROFILER, EVEN
-IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.  """
+Copyright © 2003 - 2015 Broad Institute, Inc. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+    1.  Redistributions of source code must retain the above copyright notice,
+        this list of conditions and the following disclaimer.
+
+    2.  Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+
+    3.  Neither the name of the Broad Institute, Inc. nor the names of its
+        contributors may be used to endorse or promote products derived from
+        this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED “AS IS.”  BROAD MAKES NO EXPRESS OR IMPLIED
+REPRESENTATIONS OR WARRANTIES OF ANY KIND REGARDING THE SOFTWARE AND
+COPYRIGHT, INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, CONFORMITY WITH ANY DOCUMENTATION,
+NON-INFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, WHETHER OR NOT
+DISCOVERABLE. IN NO EVENT SHALL BROAD, THE COPYRIGHT HOLDERS, OR CONTRIBUTORS
+BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF, HAVE REASON TO KNOW, OR IN
+FACT SHALL KNOW OF THE POSSIBILITY OF SUCH DAMAGE.
+
+If, by operation of law or otherwise, any of the aforementioned warranty
+disclaimers are determined inapplicable, your sole remedy, regardless of the
+form of action, including, but not limited to, negligence and strict
+liability, shall be replacement of the software with an updated version if one
+exists.
+
+Development of CellProfiler has been funded in whole or in part with federal
+funds from the National Institutes of Health, the National Science Foundation,
+and the Human Frontier Science Program.
+"""
 
 gpl_license = """
 		    GNU GENERAL PUBLIC LICENSE

@@ -12,8 +12,8 @@ from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_sbs, maybe_download_fly
 
 
-def import_all_but_wx(name, 
-                      globals = __builtin__.globals(), 
+def import_all_but_wx(name,
+                      globals = __builtin__.globals(),
                       locals = __builtin__.locals(),
                       fromlist=[], level=-1,
                       default_import = __builtin__.__import__):
@@ -35,20 +35,20 @@ class TestNoWX(unittest.TestCase):
 
     def example_dir(self):
         return example_images_directory()
-    
+
     def test_01_01_can_import(self):
         import os
         self.assertTrue(hasattr(os, "environ"))
-        
+
     def test_01_02_throws_on_wx_import(self):
         def import_wx():
             import wx
         self.assertRaises(ImportError, import_wx)
-        
+
     def test_01_03_import_modules(self):
         '''Import cellprofiler.modules and make sure it doesn't import wx'''
         import cellprofiler.modules
-        
+
     def test_01_04_instantiate_all(self):
         '''Instantiate each module and make sure none import wx'''
         import cellprofiler.modules as M
@@ -58,9 +58,9 @@ class TestNoWX(unittest.TestCase):
             except:
                 print "Module %s probably imports wx" % name
                 traceback.print_exc()
-                
+
     fly_url = "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
-    
+
     def test_01_05_load_pipeline(self):
         import cellprofiler.pipeline as cpp
         import os
@@ -68,10 +68,15 @@ class TestNoWX(unittest.TestCase):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
-        fd = urlopen(self.fly_url)
+        try:
+            fd = urlopen(self.fly_url)
+        except IOError, e:
+            def bad_url(e=e):
+                raise e
+            unittest.expectedFailure(bad_url)()
         pipeline.load(fd)
         fd.close()
-        
+
     # def test_01_06_run_pipeline(self):
     #     import cellprofiler.pipeline as cpp
     #     import cellprofiler.cpmodule as cpm
@@ -101,4 +106,3 @@ class TestNoWX(unittest.TestCase):
     #     for module in pipeline.modules():
     #         module.show_window = False
     #     m = pipeline.run(image_set_end = 1)
-        

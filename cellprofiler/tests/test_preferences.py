@@ -23,7 +23,7 @@ class TestPreferences(unittest.TestCase):
             (cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME, 'Default output directory sub-folder')):
             self.assertTrue(value in cpprefs.FOLDER_CHOICE_TRANSLATIONS.keys(), "%s not in dictionary" % value)
             self.assertEqual(expected, cpprefs.FOLDER_CHOICE_TRANSLATIONS[value])
-            
+
     def test_01_02_slot_translations(self):
         for expected, value in (
             (cpprefs.ABSOLUTE_FOLDER_NAME, cpprefs.ABSOLUTE_FOLDER_NAME),
@@ -47,14 +47,14 @@ class TestPreferences(unittest.TestCase):
 
     def test_01_03_unicode_directory(self):
         old = cpprefs.get_default_image_directory()
-        unicode_dir = u'P125 à 144 Crible Chimiothèque HBEC'
+        unicode_dir = u'P125 ï¿½ 144 Crible Chimiothï¿½que HBEC'
         unicode_dir = tempfile.mkdtemp(prefix=unicode_dir)
         cpprefs.set_default_image_directory(unicode_dir)
         self.assertEqual(cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY),
                          unicode_dir)
         self.assertEqual(cpprefs.get_default_image_directory(), unicode_dir)
         cpprefs.set_default_image_directory(old)
-        
+
     def test_01_04_old_users_directory(self):
         gotcha = "c:\\users\\default"
         cpprefs.set_preferences_from_dict({}) # clear cache
@@ -78,7 +78,7 @@ class TestPreferences_02(unittest.TestCase):
         self.old_headless_config = cpprefs.__dict__['__headless_config']
         cpprefs.__dict__['__is_headless'] = True
         cpprefs.__dict__['__headless_config'] = FakeConfig()
-        
+
     def tearDown(self):
         cpprefs.__dict__['__is_headless'] = self.old_headless
         cpprefs.__dict__['__headless_config'] = self.old_headless_config

@@ -22,26 +22,26 @@ THREAD_RESUME = "Resume"
 class InterruptException(Exception):
     def __init__(self, *args):
         super(self.__class__, self).__init__(*args)
-        
+
 class Checkpoint(object):
     '''A class that manages pausing and stopping'''
     def __init__(self):
         self.state = THREAD_RUNNING
-        
+
     def set_state(self, state):
         with pause_lock:
             if state == THREAD_RESUME:
                 state = THREAD_RUNNING
             self.state = state
             pause_condition.notify_all()
-        
+
     def wait(self):
         with pause_lock:
             if self.state == THREAD_STOP:
                 raise InterruptException()
             while self.state == THREAD_PAUSE:
                 pause_condition.wait()
-                
+
 #
 # Some file types won't open with BioFormats unless BioFormats is allowed
 # to look at the file contents while determining the appropriate file reader.
@@ -49,15 +49,15 @@ class Checkpoint(object):
 # the grouping option turned off. So here's the list of those that
 # absolutely need it.
 #
-exts_that_need_allow_open_files = ( ".jpg", ".jpeg", ".jpe", 
+exts_that_need_allow_open_files = ( ".jpg", ".jpeg", ".jpe",
                                     ".jp2", ".j2k", ".jpf",
-                                    ".jpx", ".dic", ".dcm", ".dicom", 
+                                    ".jpx", ".dic", ".dcm", ".dicom",
                                     ".j2ki", ".j2kr", ".ome.tif", ".ome.tiff" )
 
 def get_metadata(path):
     import subimager.client as C
     import subimager.omexml as O
-    
+
     if path.lower().endswith(exts_that_need_allow_open_files):
         result = C.get_metadata(path, allowopenfiles="yes")
     else:
@@ -68,9 +68,9 @@ def get_metadata(path):
 
 def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
     '''Walk a directory tree in the background
-    
+
     path - path to walk
-    
+
     callback_fn - a function that's called in the UI thread and incrementally
                   reports results. The callback is called with the
                   dirpath, dirnames and filenames for each iteration of walk.
@@ -78,15 +78,15 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
     metadata_fn - if present, call back with metadata. The signature is
                   metadata_fn(path, OMEXML) or metadata_fn(path, None) if
                   the webserver did not find metadata.
-                  
+
     Returns a function that can be called to interrupt the operation.
     To stop, call it like this: fn(THREAD_STOP)
     To pause, call it with THREAD_PAUSE, to resume, call it with
     THREAD_RESUME
     '''
-        
+
     checkpoint = Checkpoint()
-        
+
     def report(dirpath, dirnames, filenames):
         if checkpoint.state != THREAD_STOP:
             callback_fn(dirpath, dirnames, filenames)
@@ -94,11 +94,11 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
     def metadata_report(path, metadata):
         if checkpoint.state != THREAD_STOP:
             metadata_fn(path, metadata)
-            
+
     def complete():
         if checkpoint.state != THREAD_STOP:
             completed_fn()
-            
+
     def fn():
         try:
             path_list = []
@@ -134,7 +134,7 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
 
 def get_metadata_in_background(pathnames, fn_callback, fn_completed = None):
     '''Get image metadata for each path
-    
+
     pathnames - list of pathnames
     fn_callback - callback with signature fn_callback(pathname, metadata)
     fn_completed - called when operation is complete
@@ -142,15 +142,15 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed = None):
     Returns a function that can be called to interrupt the operation.
     '''
     checkpoint = Checkpoint()
-    
+
     def metadata_fn(path, metadata):
         if checkpoint.state != THREAD_STOP:
             fn_callback(path, metadata)
-            
+
     def completion_fn():
         if checkpoint.state != THREAD_STOP:
             fn_completed()
-            
+
     def fn():
         try:
             for path in pathnames:
@@ -178,7 +178,7 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed = None):
 
 class WalkCollection(object):
     '''A collection of all walks in progress
-    
+
     This class manages a group of walks that are in progress so that they
     can be paused, resumed and stopped in unison.
     '''
@@ -187,14 +187,14 @@ class WalkCollection(object):
         self.stop_functions = {}
         self.paused_tasks = []
         self.state = THREAD_STOP
-        
+
     def on_complete(self, uid):
         if self.stop_functions.has_key(uid):
             del self.stop_functions[uid]
             if len(self.stop_functions) == 0:
                 self.state = THREAD_STOP
                 self.fn_on_completed()
-            
+
     def walk_in_background(self, path, callback_fn, metadata_fn = None):
         if self.state == THREAD_PAUSE:
             self.paused_tasks.append(
@@ -207,27 +207,27 @@ class WalkCollection(object):
                 path, callback_fn, fn_on_complete, metadata_fn)
             if self.state == THREAD_STOP:
                 self.state = THREAD_RUNNING
-        
+
     def get_metadata_in_background(self, pathnames, fn_callback):
         if self.state == THREAD_PAUSE:
             self.paused_tasks.append(
-                lambda pathnames, fn_callback: 
+                lambda pathnames, fn_callback:
                 self.get_metadata_in_background(pathnames, fn_callback))
         else:
             key = uuid.uuid4()
             fn_on_complete = lambda key=key: self.on_complete(key)
             self.stop_functions[key] = get_metadata_in_background(
                 pathnames, fn_callback, fn_on_complete)
-        
+
     def get_state(self):
         return self.state
-    
+
     def pause(self):
         if self.state == THREAD_RUNNING:
             for stop_fn in self.stop_functions.values():
                 stop_fn(THREAD_PAUSE)
             self.state = THREAD_PAUSE
-            
+
     def resume(self):
         if self.state == THREAD_PAUSE:
             for stop_fn in self.stop_functions.values():
@@ -236,7 +236,7 @@ class WalkCollection(object):
                 fn_task()
             self.paused_tasks = []
             self.state = THREAD_RUNNING
-    
+
     def stop(self):
         if self.state in (THREAD_RUNNING, THREAD_PAUSE):
             for stop_fn in self.stop_functions.values():

@@ -36,28 +36,28 @@ __cp_root = os.path.split(__python_root)[0]
 class HeadlessConfig(object):
     def __init__(self):
         self.__preferences = {}
-    
+
     def Read(self, kwd):
         return self.__preferences[kwd]
-    
+
     def ReadInt(self, kwd, default=0):
         return int(self.__preferences.get(kwd, default))
-    
+
     def ReadBool(self, kwd, default=False):
         return bool(self.__preferences.get(kwd, default))
-    
+
     def Write(self, kwd, value):
         self.__preferences[kwd] = value
-        
+
     WriteInt = Write
     WriteBool = Write
-    
+
     def Exists(self, kwd):
         return self.__preferences.has_key(kwd)
-    
+
     def GetEntryType(self, kwd):
         '''Get the data type of the registry key.
-        
+
         Returns wx.Config.Type_String = 1
         '''
         return 1
@@ -68,26 +68,26 @@ __headless_config = HeadlessConfig()
 def set_headless():
     global __is_headless
     __is_headless = True
-    
+
 def get_headless():
     return __is_headless
 
 __awt_headless = None
 def set_awt_headless(value):
     '''Tell the Javabridge to start Java with AWT headless or not
-    
+
     value - True to always start Java headless, regardless of headless
             setting or other factors. False to always start Java with
             AWT enabled, despite other factors. None to use the
             default logic.
-            
+
     If this is not called, Java is started with AWT headless if
     we are headless and the environment variable, CELLPROFILER_USE_XVFB,
     is not present.
     '''
     global __awt_headless
     __awt_headless = value
-    
+
 def get_awt_headless():
     '''Return True if Java is to be started with AWT headless, False to use AWT'''
     global __awt_headless
@@ -125,7 +125,7 @@ def get_config():
                 logger.warning(
                     "Preferences version was %s, not a number. Resetting to current version" % preferences_version_number)
                 config_write(PREFERENCES_VERSION, str(PREFERENCES_VERSION))
-            
+
     return config
 
 def preferences_as_dict():
@@ -144,8 +144,8 @@ def set_preferences_from_dict(d):
         "__default_colormap", "__default_image_directory",
         "__default_output_directory", "__allow_output_file_overwrite",
         "__current_pipeline_path", "__has_reported_jvm_error",
-        "__ij_plugin_directory", "__ij_version", "__output_filename",
-        "__plugin_directory", "__show_analysis_complete_dlg",
+        "__ij_version", "__output_filename",
+        "__show_analysis_complete_dlg",
         "__show_exiting_test_mode_dlg", "__show_report_bad_sizes_dlg",
         "__show_sampling", "__show_workspace_choice_dlg",
         "__use_more_figure_space",
@@ -157,11 +157,11 @@ def set_preferences_from_dict(d):
 __cached_values = {}
 def config_read(key):
     '''Read the given configuration value
-    
+
     Only read from the registry once. This is both technically efficient
     and keeps parallel running instances of CellProfiler from overwriting
     each other's values for things like the current output directory.
-    
+
     Decode escaped config sequences too.
     '''
     global __cached_values
@@ -199,7 +199,7 @@ def config_read(key):
 
 def config_write(key, value):
     '''Write the given configuration value
-    
+
     Encode escaped config sequences.
     '''
     if not __is_headless:
@@ -212,7 +212,7 @@ def config_write(key, value):
     if value is not None:
         value = utf16encode(value)
     get_config().Write(key, value)
-    
+
 def config_exists(key):
     '''Return True if the key is defined in the configuration'''
     global __cached_values
@@ -223,7 +223,7 @@ def config_exists(key):
     if get_config().GetEntryType(key) == 1:
         return get_config().Read(key) is not None
     return True
-    
+
 def cell_profiler_root_directory():
     if __cp_root:
         return __cp_root
@@ -240,7 +240,7 @@ def resources_root_directory():
     else:
         return __python_root
 
-    
+
 DEFAULT_INPUT_FOLDER_NAME = 'Default Input Folder'
 DEFAULT_OUTPUT_FOLDER_NAME = 'Default Output Folder'
 ABSOLUTE_FOLDER_NAME = 'Elsewhere...'
@@ -264,33 +264,33 @@ FOLDER_CHOICE_TRANSLATIONS = {
     }
 
 IO_FOLDER_CHOICE_HELP_TEXT = """
-You can choose among the following options which are common to all file input/output 
+You can choose among the following options which are common to all file input/output
 modules:
 <ul>
 <li><i>Default Input Folder</i>: Use the default input folder.</li>
 <li><i>Default Output Folder:</i> Use from the default output folder.</li>
 <li><i>Elsewhere...</i>: Use a particular folder you specify.</li>
-<li><i>Default input directory sub-folder</i>: Enter the name of a subfolder of 
+<li><i>Default input directory sub-folder</i>: Enter the name of a subfolder of
 the default input folder or a path that starts from the default input folder.</li>
-<li><i>Default output directory sub-folder</i>: Enter the name of a subfolder of 
+<li><i>Default output directory sub-folder</i>: Enter the name of a subfolder of
 the default output folder or a path that starts from the default output folder.</li>
 </ul>
-<p><i>Elsewhere</i> and the two sub-folder options all require you to enter an additional 
-path name. You can use an <i>absolute path</i> (such as "C:\imagedir\image.tif" on a PC) or a 
+<p><i>Elsewhere</i> and the two sub-folder options all require you to enter an additional
+path name. You can use an <i>absolute path</i> (such as "C:\imagedir\image.tif" on a PC) or a
 <i>relative path</i> to specify the file location relative to a directory):
 <ul>
-<li>Use one period to represent the current directory. For example, if you choose 
-<i>Default Input Folder sub-folder</i>, you can enter "./MyFiles" to look in a 
+<li>Use one period to represent the current directory. For example, if you choose
+<i>Default Input Folder sub-folder</i>, you can enter "./MyFiles" to look in a
 folder called "MyFiles" that is contained within the Default Input Folder.</li>
-<li>Use two periods ".." to move up one folder level. For example, if you choose 
-<i>Default Input Folder sub-folder</i>, you can enter "../MyFolder" to look in a 
+<li>Use two periods ".." to move up one folder level. For example, if you choose
+<i>Default Input Folder sub-folder</i>, you can enter "../MyFolder" to look in a
 folder called "MyFolder" at the same level as the Default Input Folder.</li>
 </ul></p>
 """
 
 IO_WITH_METADATA_HELP_TEXT = """
-For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i> and 
-<i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>, if you have metadata associated with your 
+For <i>%(ABSOLUTE_FOLDER_NAME)s</i>, <i>%(DEFAULT_INPUT_SUBFOLDER_NAME)s</i> and
+<i>%(DEFAULT_OUTPUT_SUBFOLDER_NAME)s</i>, if you have metadata associated with your
 images via <b>Metadata</b> module, you can name the folder using metadata
 tags."""%globals()
 
@@ -341,6 +341,7 @@ SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
 FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
 PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
 BATCHPROFILER_URL = "BatchProfilerURL"
+CHOOSE_IMAGE_SET_FRAME_SIZE = "ChooseImageSetFrameSize"
 
 '''Default URL root for BatchProfiler'''
 BATCHPROFILER_URL_DEFAULT = "http://imageweb/batchprofiler"
@@ -388,7 +389,7 @@ SPP_NEITHER = "Neither"
 SPP_PIPELINE_ONLY = "Pipeline"
 SPP_FILE_LIST_ONLY = "File list"
 SPP_PIPELINE_AND_FILE_LIST = "Pipeline and file list"
-SPP_ALL = [SPP_NEITHER, SPP_PIPELINE_ONLY, SPP_FILE_LIST_ONLY, 
+SPP_ALL = [SPP_NEITHER, SPP_PIPELINE_ONLY, SPP_FILE_LIST_ONLY,
            SPP_PIPELINE_AND_FILE_LIST]
 
 def recent_file(index, category=""):
@@ -399,16 +400,16 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              COLORMAP, DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY,
              IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
              PRIMARY_OUTLINE_COLOR, SECONDARY_OUTLINE_COLOR,
-             SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG, 
+             SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG,
              SHOW_EXITING_TEST_MODE_DLG, WORKSPACE_CHOICE,
              SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
              WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE,
-             OMERO_SERVER, OMERO_PORT, OMERO_USER, SAVE_PIPELINE_WITH_PROJECT] + 
+             OMERO_SERVER, OMERO_PORT, OMERO_USER, SAVE_PIPELINE_WITH_PROJECT] +
             [recent_file(n, category) for n in range(RECENT_FILE_COUNT)
-             for category in ("", 
-                              DEFAULT_IMAGE_DIRECTORY, 
+             for category in ("",
+                              DEFAULT_IMAGE_DIRECTORY,
                               DEFAULT_OUTPUT_DIRECTORY,
                               WORKSPACE_FILE)])
 
@@ -453,7 +454,7 @@ def set_default_image_directory(path):
     config_write(DEFAULT_IMAGE_DIRECTORY,path)
     add_recent_file(path, DEFAULT_IMAGE_DIRECTORY)
     fire_image_directory_changed_event()
-    
+
 def fire_image_directory_changed_event():
     '''Notify listeners of a image directory change'''
     global __default_image_directory
@@ -464,13 +465,13 @@ __image_directory_listeners = []
 
 def add_image_directory_listener(listener):
     """Add a listener that will be notified when the image directory changes
-    
+
     """
     __image_directory_listeners.append(listener)
-    
+
 def remove_image_directory_listener(listener):
     """Remove a previously-added image directory listener
-    
+
     """
     if listener in __image_directory_listeners:
         __image_directory_listeners.remove(listener)
@@ -516,13 +517,13 @@ __output_directory_listeners = []
 
 def add_output_directory_listener(listener):
     """Add a listener that will be notified when the output directory changes
-    
+
     """
     __output_directory_listeners.append(listener)
-    
+
 def remove_output_directory_listener(listener):
     """Remove a previously-added image directory listener
-    
+
     """
     if listener in __output_directory_listeners:
         __output_directory_listeners.remove(listener)
@@ -551,7 +552,7 @@ def get_table_font_name():
 
 def set_table_font_name(title_font_name):
     config_write(TABLE_FONT_NAME, title_font_name)
-    
+
 def get_table_font_size():
     if not config_exists(TABLE_FONT_SIZE):
         return 9
@@ -568,10 +569,10 @@ def tuple_to_color(t, default = (0,0,0)):
     except IndexError, ValueError:
         return tuple_to_color(default)
 
-__background_color = None    
+__background_color = None
 def get_background_color():
     '''Get the color to be used for window backgrounds
-    
+
     Return wx.Colour that will be applied as
     the background for all frames and dialogs
     '''
@@ -593,19 +594,19 @@ def get_background_color():
 
 def set_background_color(color):
     '''Set the color to be used for window backgrounds
-    
+
     '''
     global __background_color
     config_write(BACKGROUND_COLOR,
                  ','.join([str(x) for x in color.Get()]))
     __background_color = color
-    
+
 __error_color = None
 def get_error_color():
     '''Get the color to be used for error text'''
     global __error_color
     #
-    # Red found here: 
+    # Red found here:
     # http://www.jankoatwarpspeed.com/css-message-boxes-for-different-message-types/
     # but seems to be widely used.
     #
@@ -625,14 +626,14 @@ def get_error_color():
 
 def set_error_color(color):
     '''Set the color to be used for error text
-    
+
     color - a WX color or ducktyped
     '''
     global __error_color
     config_write(ERROR_COLOR,
                  ','.join([str(x) for x in color.Get()]))
     __error_color = tuple_to_color(color.Get())
-            
+
 
 def get_pixel_size():
     """The size of a pixel in microns"""
@@ -669,7 +670,7 @@ def remove_output_file_name_listener(listener):
 
 def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     """Convert a path into an absolute path using the path conventions
-    
+
     If a path starts with http:, https: or ftp:, leave it unchanged.
     If a path starts with "./", then make the path relative to the
     Default Output Folder.
@@ -738,7 +739,7 @@ def get_check_new_versions():
         # should this check for whether we can actually save preferences?
         return True
     return get_config().ReadBool(CHECKFORNEWVERSIONS)
-    
+
 def set_check_new_versions(val):
     old_val = get_check_new_versions()
     get_config().WriteBool(CHECKFORNEWVERSIONS, bool(val))
@@ -746,7 +747,7 @@ def set_check_new_versions(val):
     # to skip versions anymore.
     if val and (not old_val):
         set_skip_version(0)
-    
+
 
 def get_skip_version():
     if not config_exists(SKIPVERSION):
@@ -755,7 +756,7 @@ def get_skip_version():
 
 def set_skip_version(ver):
     get_config().Write(SKIPVERSION, str(ver))
-    
+
 
 __show_sampling = None
 def get_show_sampling():
@@ -781,7 +782,7 @@ def get_recent_files(category=""):
             key = recent_file(i, category)
             try:
                 if config_exists(key):
-                    __recent_files[category].append(config_read(key)) 
+                    __recent_files[category].append(config_read(key))
             except:
                 pass
     return __recent_files[category]
@@ -800,10 +801,10 @@ def add_recent_file(filename, category=""):
 __plugin_directory = None
 def get_plugin_directory():
     global __plugin_directory
-    
+
     if __plugin_directory is not None:
         return __plugin_directory
-    
+
     if config_exists(PLUGIN_DIRECTORY):
         __plugin_directory = config_read(PLUGIN_DIRECTORY)
     elif get_headless():
@@ -816,7 +817,7 @@ def get_plugin_directory():
 
 def set_plugin_directory(value, globally=True):
     global __plugin_directory
-    
+
     __plugin_directory = value
     if globally:
         config_write(PLUGIN_DIRECTORY, value)
@@ -824,10 +825,10 @@ def set_plugin_directory(value, globally=True):
 __ij_plugin_directory = None
 def get_ij_plugin_directory():
     global __ij_plugin_directory
-    
+
     if __ij_plugin_directory is not None:
         return __ij_plugin_directory
-    
+
     if config_exists(IJ_PLUGIN_DIRECTORY):
         __ij_plugin_directory = config_read(IJ_PLUGIN_DIRECTORY)
     else:
@@ -837,7 +838,7 @@ def get_ij_plugin_directory():
 
 def set_ij_plugin_directory(value, globally=True):
     global __ij_plugin_directory
-    
+
     __ij_plugin_directory = value
     if globally:
         config_write(IJ_PLUGIN_DIRECTORY, value)
@@ -856,8 +857,8 @@ def set_data_file(path):
 def standardize_default_folder_names(setting_values,slot):
     if setting_values[slot] in FOLDER_CHOICE_TRANSLATIONS.keys():
         replacement = FOLDER_CHOICE_TRANSLATIONS[setting_values[slot]]
-    elif (setting_values[slot].startswith("Default Image") or 
-          setting_values[slot].startswith("Default image") or 
+    elif (setting_values[slot].startswith("Default Image") or
+          setting_values[slot].startswith("Default image") or
           setting_values[slot].startswith("Default input")):
         replacement = DEFAULT_INPUT_FOLDER_NAME
     elif setting_values[slot].startswith("Default output"):
@@ -880,9 +881,9 @@ def get_next_cpfigure_position(update_next_position=True):
 def reset_cpfigure_position():
     global __cpfigure_position
     __cpfigure_position = (-1,-1)
-    
+
 def update_cpfigure_position():
-    '''Called by get_next_cpfigure_position to update the screen position at 
+    '''Called by get_next_cpfigure_position to update the screen position at
     which the next figure frame will be drawn.
     '''
     global __cpfigure_position
@@ -900,7 +901,7 @@ def update_cpfigure_position():
         # These offsets could be set in the preferences UI
         __cpfigure_position = (__cpfigure_position[0] + 120,
                                __cpfigure_position[1] + 24)
-    
+
 def get_startup_blurb():
     if not config_exists(STARTUPBLURB):
         return True
@@ -956,12 +957,12 @@ def set_has_reported_jvm_error():
     '''Call this to remember that we showed the user the JVM error'''
     global __has_reported_jvm_error
     __has_reported_jvm_error = True
-    
+
 __allow_output_file_overwrite = None
 
 def get_allow_output_file_overwrite():
     '''Return true if the user wants to allow CP to overwrite the output file
-    
+
     This is the .MAT output file, typically Default_OUT.mat
     '''
     global __allow_output_file_overwrite
@@ -975,7 +976,7 @@ def set_allow_output_file_overwrite(value):
     '''Allow overwrite of .MAT file if true, warn user if false'''
     global __allow_output_file_overwrite
     __allow_output_file_overwrite = value
-    config_write(ALLOW_OUTPUT_FILE_OVERWRITE, 
+    config_write(ALLOW_OUTPUT_FILE_OVERWRITE,
                        "True" if value else "False")
 
 # "Analysis complete" preference
@@ -994,7 +995,7 @@ def set_show_analysis_complete_dlg(value):
     '''Set the "show analysis complete" flag'''
     global __show_analysis_complete_dlg
     __show_analysis_complete_dlg = value
-    config_write(SHOW_ANALYSIS_COMPLETE_DLG, 
+    config_write(SHOW_ANALYSIS_COMPLETE_DLG,
                        "True" if value else "False")
 
 # "Existing test mode" preference
@@ -1013,7 +1014,7 @@ def set_show_exiting_test_mode_dlg(value):
     '''Set the "exiting test mode" flag'''
     global __show_exiting_test_mode_dlg
     __show_exiting_test_mode_dlg = value
-    config_write(SHOW_EXITING_TEST_MODE_DLG, 
+    config_write(SHOW_EXITING_TEST_MODE_DLG,
                        "True" if value else "False")
 
 # "Report bad sizes" preference
@@ -1032,7 +1033,7 @@ def set_show_report_bad_sizes_dlg(value):
     '''Set the "exiting test mode" flag'''
     global __show_report_bad_sizes_dlg
     __show_report_bad_sizes_dlg = value
-    config_write(SHOW_BAD_SIZES_DLG, 
+    config_write(SHOW_BAD_SIZES_DLG,
                        "True" if value else "False")
 
 # Write .MAT files on output
@@ -1100,9 +1101,9 @@ def set_use_more_figure_space(value):
 __ij_version = None
 def get_ij_version():
     '''Return an indicator of which version of ImageJ to use
-    
+
     returns one of IJ_1 or IJ_2.
-    
+
     This determines whether to use the ImageJ 1.44 version, enhanced
     with the @parameter decoration or to use the new and experimental
     ImageJ 2.0 codebase.
@@ -1117,7 +1118,7 @@ def get_ij_version():
 
 def set_ij_version(value):
     '''Set the ImageJ version to use
-    
+
     value: one of IJ_1 or IJ_2
     '''
     global __ij_version
@@ -1140,7 +1141,7 @@ def set_workspace_file(path, permanently = True):
     '''Set the path to the workspace file
 
     path - path to the file
-    
+
     permanently - True to write it to the configuration, False if the file
                   should only be set for the running instance (e.g. as a
                   command-line parameter for a scripted run)
@@ -1177,7 +1178,7 @@ def set_omero_server(omero_server, globally=True):
     __omero_server = omero_server
     if globally:
         config_write(OMERO_SERVER, omero_server)
-    
+
 def get_omero_port():
     '''Get the port used to connect to the Omero server'''
     global __omero_port
@@ -1196,7 +1197,7 @@ def set_omero_port(omero_port, globally=True):
     __omero_port = omero_port
     if globally:
         config_write(OMERO_PORT, str(omero_port))
-    
+
 def get_omero_user():
     '''Get the Omero user name'''
     global __omero_user
@@ -1212,7 +1213,7 @@ def set_omero_user(omero_user, globally=True):
     __omero_user = omero_user
     if globally:
         config_write(OMERO_USER, omero_user)
-    
+
 def get_omero_session_id():
     '''Get the session ID to use to communicate to Omero'''
     global __omero_session_id
@@ -1234,7 +1235,7 @@ def default_max_workers():
         return multiprocessing.cpu_count()
     except:
         return 4
-    
+
 __max_workers = None
 def get_max_workers():
     '''Get the maximum number of worker processes allowed during analysis'''
@@ -1256,7 +1257,7 @@ def set_max_workers(value):
 __temp_dir = None
 def get_temporary_directory():
     '''Get the directory to be used for temporary files
-    
+
     The default is whatever is returned by tempfile.gettempdir()
     (see http://docs.python.org/2/library/tempfile.html#tempfile.gettempdir)
     '''
@@ -1273,7 +1274,7 @@ def get_temporary_directory():
 
 def set_temporary_directory(tempdir, globally=False):
     '''Set the directory to be used for temporary files
-    
+
     tempdir - pathname of the directory
     '''
     global __temp_dir
@@ -1288,7 +1289,7 @@ __progress_data.callbacks = None
 __interpolation_mode = None
 def get_interpolation_mode():
     '''Get the interpolation mode for matplotlib
-    
+
     Returns one of IM_NEAREST, IM_BILINEAR or IM_BICUBIC
     '''
     global __interpolation_mode
@@ -1304,11 +1305,11 @@ def set_interpolation_mode(value):
     global __interpolation_mode
     __interpolation_mode = value
     config_write(INTERPOLATION_MODE, value)
-    
+
 __intensity_mode = None
 def get_intensity_mode():
     '''Get the intensity scaling mode for matplotlib
-    
+
     Returns one of INTENSITY_MODE_RAW, INTENSITY_MODE_NORMAL, INTENSITY_MODE_LOG
     '''
     global __intensity_mode
@@ -1325,7 +1326,7 @@ def set_intensity_mode(value):
     global __intensity_mode
     __intensity_mode = value
     config_write(INTENSITY_MODE, value)
-    
+
 __jvm_heap_mb = None
 def get_jvm_heap_mb():
     '''Get the JVM heap size'''
@@ -1344,7 +1345,7 @@ def get_jvm_heap_mb():
 
 def set_jvm_heap_mb(value, save_config=True):
     '''Set the JVM heap size
-    
+
     value - value in megabytes or as a string with a K/ M or G postifx
     save_config - True to save the value in the configuration, False to set locally
     '''
@@ -1363,7 +1364,7 @@ def set_jvm_heap_mb(value, save_config=True):
     __jvm_heap_mb = value_mb
     if save_config:
         config_write(JVM_HEAP_MB, str(value_mb))
-        
+
 __save_pipeline_with_project = None
 def get_save_pipeline_with_project():
     global __save_pipeline_with_project
@@ -1379,11 +1380,11 @@ def set_save_pipeline_with_project(value):
     global __save_pipeline_with_project
     __save_pipeline_with_project = value
     config_write(SAVE_PIPELINE_WITH_PROJECT, value)
-    
+
 __allow_schema_write = True
 def get_allow_schema_write():
     '''Returns True if ExportToDatabase is allowed to write the MySQL schema
-    
+
     For cluster operation without CreateBatchFiles, it's inappropriate to
     have multiple processes overwrite the database schema. Although
     CreateBatchFiles is suggested for this scenario, we put this switch in
@@ -1393,10 +1394,10 @@ def get_allow_schema_write():
 
 def set_allow_schema_write(value):
     '''Allow or disallow database schema writes
-    
+
     value - True to allow writes (the default) or False to prevent
             ExportToDatabase from writing the schema.
-    
+
     For cluster operation without CreateBatchFiles, it's inappropriate to
     have multiple processes overwrite the database schema. Although
     CreateBatchFiles is suggested for this scenario, we put this switch in
@@ -1404,7 +1405,7 @@ def set_allow_schema_write(value):
     '''
     global __allow_schema_write
     __allow_schema_write = value
-    
+
 __filename_re_guess_file = None
 def get_filename_re_guess_file():
     '''The path to the file that contains filename regular expression guesses
@@ -1447,9 +1448,9 @@ __batchprofiler_url = None
 
 def get_batchprofiler_url():
     '''Get the URL base for BatchProfiler
-    
+
     For example: "http://<dns-name>/BatchProfiler/cgi-bin"
-    
+
     Append /NewBatch.py?data_dir=... to get the URL for the batch
     '''
     global __batchprofiler_url
@@ -1464,25 +1465,25 @@ def set_batchprofiler_url(value):
     global __batchprofiler_url
     __batchprofiler_url = value
     config_write(BATCHPROFILER_URL, value)
-    
+
 __image_set_filename = None
 def set_image_set_file(filename):
     '''Record the name of the image set that should be loaded upon startup'''
     global __image_set_filename
     __image_set_filename = filename
-    
+
 def clear_image_set_file():
     '''Remove the recorded image set file name
-    
+
     Call this after loading the image set file to cancel reloading of the
     file during subsequent operations.
     '''
     global __image_set_filename
     __image_set_filename = None
-    
+
 def get_image_set_file():
     '''Recover the name of the image set file to use to populate the file list
-    
+
     Returns either None or the name of the file to use. For the UI, the
     file list should be loaded and clear_image_set_file() should be called,
     for headless, the file list should be loaded after the pipeline has been
@@ -1490,61 +1491,79 @@ def get_image_set_file():
     '''
     return __image_set_filename
 
+__choose_image_set_frame_size = None
+
+def get_choose_image_set_frame_size():
+    '''Return the size (w, h) for the "Choose image set" dialog frame'''
+    global __choose_image_set_frame_size
+    if __choose_image_set_frame_size is None:
+        if config_exists(CHOOSE_IMAGE_SET_FRAME_SIZE):
+            s = config_read(CHOOSE_IMAGE_SET_FRAME_SIZE)
+            __choose_image_set_frame_size = tuple(
+            [int(_.strip()) for _ in s.split(",", 1)])
+    return __choose_image_set_frame_size
+
+def set_choose_image_set_frame_size(w, h):
+    '''Set the size of the "Choose image set" dialog frame'''
+    global __choose_image_set_frame_size
+    __choose_image_set_frame_size = (w, h)
+    config_write(CHOOSE_IMAGE_SET_FRAME_SIZE, "%d,%d" % (w,h))
+
 def add_progress_callback(callback):
     '''Add a callback function that listens to progress calls
-    
+
     The progress indicator is designed to monitor progress of operations
     on the user interface thread. The model is that operations are nested
     so that both an operation and sub-operation can report their progress.
     An operation reports its initial progress and is pushed onto the
     stack at that point. When it reports 100% progress, it's popped from
     the stack.
-    
-    callback - callback function with signature of 
+
+    callback - callback function with signature of
                fn(operation_id, progress, message)
                where operation_id names the instance of the operation being
                performed (e.g. a UUID), progress is a number between 0 and 1
                where 1 indicates that the operation has completed and
                message is the message to show.
-               
+
                Call the callback with operation_id = None to pop the operation
                stack after an exception.
-               
+
     Note that the callback must remain in-scope. For example:
-    
+
     class Foo():
        def callback(operation_id, progress, message):
           ...
-          
+
     works but
-    
+
     class Bar():
         def __init__(self):
             def callback(operation_id, progress, message):
                 ...
-            
+
     does not work because the reference is lost when __init__ returns.
     '''
     global __progress_data
     if __progress_data.callbacks is None:
         __progress_data.callbacks = weakref.WeakSet()
     __progress_data.callbacks.add(callback)
-    
+
 def remove_progress_callback(callback):
     global __progress_data
-    if (__progress_data.callbacks is not None and 
+    if (__progress_data.callbacks is not None and
         callback in __progress_data.callbacks):
         __progress_data.callbacks.remove(callback)
-    
+
 def report_progress(operation_id, progress, message):
     '''Report progress to all callbacks registered on the caller's thread
-    
+
     operation_id - ID of operation being performed
-    
+
     progress - a number between 0 and 1 indicating the extent of progress.
                None indicates indeterminate operation duration. 0 should be
                reported at the outset and 1 at the end.
-               
+
     message - an informative message.
     '''
     global __progress_data
@@ -1555,15 +1574,15 @@ def report_progress(operation_id, progress, message):
         for callback in __progress_data.callbacks:
             callback(operation_id, progress, message)
         __progress_data.last_report = time.time()
-        
+
 def map_report_progress(fn_map, fn_report, sequence, freq=None):
     '''Apply a mapping function to a sequence, reporting progress
-    
+
     fn_map - function that maps members of the sequence to members of the output
-    
+
     fn_report - function that takes a sequence member and generates an
                 informative string
-                
+
     freq - report on mapping every N items. Default is to report 100 or less
            times.
     '''
@@ -1582,10 +1601,10 @@ def map_report_progress(fn_map, fn_report, sequence, freq=None):
         output += map(fn_map, sequence[i:i+freq])
     report_progress(uuid, 1, "Done")
     return output
-        
+
 def cancel_progress():
     '''Cancel all progress indicators
-    
+
     for instance, after an exception is thrown that bubbles to the top.
     '''
     report_progress(None, None, None)

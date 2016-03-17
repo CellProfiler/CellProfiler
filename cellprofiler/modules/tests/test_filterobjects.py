@@ -53,7 +53,7 @@ class TestFilterObjects(unittest.TestCase):
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
         return workspace, module
-        
+
     def test_00_01_zeros_single(self):
         '''Test keep single object on an empty labels matrix'''
         workspace, module = self.make_workspace({ INPUT_OBJECTS: np.zeros((10,10),int) })
@@ -66,10 +66,10 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==0))
-    
+
     def test_00_02_zeros_per_object(self):
         '''Test keep per object filtering on an empty labels matrix'''
-        workspace, module = self.make_workspace(  
+        workspace, module = self.make_workspace(
             {INPUT_OBJECTS: np.zeros((10,10),int),
              ENCLOSING_OBJECTS: np.zeros((10,10),int)})
         module.object_name.value = INPUT_OBJECTS
@@ -82,7 +82,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==0))
-    
+
     def test_00_03_zeros_filter(self):
         '''Test object filtering on an empty labels matrix'''
         workspace, module = self.make_workspace({ INPUT_OBJECTS: np.zeros((10,10),int) })
@@ -97,7 +97,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==0))
-    
+
     def test_01_01_keep_single_min(self):
         '''Keep a single object (min) from among two'''
         labels = np.zeros((10,10), int)
@@ -146,7 +146,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
-        
+
     def test_02_01_keep_one_min(self):
         '''Keep two sub-objects (min) from among four enclosed by two'''
         sub_labels = np.zeros((20,20), int)
@@ -169,7 +169,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
-    
+
     def test_02_02_keep_one_max(self):
         '''Keep two sub-objects (max) from among four enclosed by two'''
         sub_labels = np.zeros((20,20), int)
@@ -192,7 +192,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
-    
+
     def test_02_03_keep_maximal_most_overlap(self):
         labels = np.zeros((10, 20), int)
         labels[:, :10] = 1
@@ -215,7 +215,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
-    
+
     def test_02_04_keep_minimal_most_overlap(self):
         labels = np.zeros((10, 20), int)
         labels[:, :10] = 1
@@ -238,7 +238,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
-    
+
     def test_03_01_filter(self):
         '''Filter objects by limits'''
         n = 40
@@ -254,7 +254,7 @@ class TestFilterObjects(unittest.TestCase):
         for i, value in zip(range(n), values):
             if value >= my_min and value <= my_max:
                 expected[labels == i+1] = idx
-                idx += 1 
+                idx += 1
         workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
         module.object_name.value = INPUT_OBJECTS
         module.target_name.value = OUTPUT_OBJECTS
@@ -269,7 +269,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
-    
+
     def test_03_02_filter(self):
         '''Filter objects by min limits'''
         n = 40
@@ -284,7 +284,7 @@ class TestFilterObjects(unittest.TestCase):
         for i, value in zip(range(n), values):
             if value >= my_min:
                 expected[labels == i+1] = idx
-                idx += 1 
+                idx += 1
         workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
         module.object_name.value = INPUT_OBJECTS
         module.target_name.value = OUTPUT_OBJECTS
@@ -313,7 +313,7 @@ class TestFilterObjects(unittest.TestCase):
         for i, value in zip(range(n), values):
             if value <= my_max:
                 expected[labels == i+1] = idx
-                idx += 1 
+                idx += 1
         workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
         module.object_name.value = INPUT_OBJECTS
         module.target_name.value = OUTPUT_OBJECTS
@@ -327,7 +327,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
-        
+
     def test_03_04_filter_two(self):
         '''Filter objects by two measurements'''
         n = 40
@@ -343,7 +343,7 @@ class TestFilterObjects(unittest.TestCase):
         for i, v1,v2 in zip(range(n), values[:,0],values[:,1]):
             if v1 <= my_max[0] and v2 <= my_max[1]:
                 expected[labels == i+1] = idx
-                idx += 1 
+                idx += 1
         workspace, module = self.make_workspace({ INPUT_OBJECTS: labels })
         module.object_name.value = INPUT_OBJECTS
         module.target_name.value = OUTPUT_OBJECTS
@@ -360,7 +360,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(labels.segmented==expected))
-    
+
     def test_04_01_renumber_other(self):
         '''Renumber an associated object'''
         n = 40
@@ -380,7 +380,7 @@ class TestFilterObjects(unittest.TestCase):
             if value >= my_min and value <= my_max:
                 expected[labels == i+1] = idx
                 expected_alternates[alternates == i+1] = idx
-                idx += 1 
+                idx += 1
         workspace, module = self.make_workspace({ INPUT_OBJECTS: labels,
                                                  "my_alternates": alternates })
         module.object_name.value = INPUT_OBJECTS
@@ -399,7 +399,7 @@ class TestFilterObjects(unittest.TestCase):
         alternates = workspace.object_set.get_objects("my_additional_result")
         self.assertTrue(np.all(labels.segmented==expected))
         self.assertTrue(np.all(alternates.segmented==expected_alternates))
-    
+
     def test_05_00_load_matlab_v5(self):
         data = """CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -434,7 +434,7 @@ FilterByObjectMeasurement:[module_num:1|svn_version:\'8913\'|variable_revision_n
 
     def test_05_01_load_matlab(self):
         '''Test loading a Matlab pipeline
-        
+
 Saved Pipeline, in file fbom_pipe.txt, Saved on 22-Apr-2009
 
 SVN version number: 7297
@@ -455,7 +455,7 @@ Module #2: FilterByObjectMeasurement revision - 6
      Which object would you like to filter by, or if using a Ratio, what is the numerator object?    LargestObjects
      Which category of measurements would you want to filter by?    AreaShape
      Which feature do you want to use? (Enter the feature number or name - see help for details)    Perimeter
-     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?    
+     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
      For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?    1
      Minimum value required:    200
      Maximum value allowed:    No maximum
@@ -466,7 +466,7 @@ Module #3: FilterByObjectMeasurement revision - 6
      Which object would you like to filter by, or if using a Ratio, what is the numerator object?    TargetObjects
      Which category of measurements would you want to filter by?    Intensity
      Which feature do you want to use? (Enter the feature number or name - see help for details)    MeanIntensity
-     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?    
+     For INTENSITY, AREAOCCUPIED or TEXTURE features, which image's measurements do you want to use (for other measurements, this will only affect the display)?
      For TEXTURE, RADIAL DISTRIBUTION, OR NEIGHBORS features, what previously measured size scale (TEXTURE OR NEIGHBORS) or previously used number of bins (RADIALDISTRIBUTION) do you want to use?    1
      Minimum value required:    No minimum
      Maximum value allowed:    .25
@@ -493,11 +493,11 @@ Module #3: FilterByObjectMeasurement revision - 6
         def handle_error(caller, event):
             if isinstance(event, cpp.LoadExceptionEvent):
                 self.fail(event.error.message)
-                
+
         pipeline.add_listener(handle_error)
         fd = StringIO.StringIO(base64.b64decode(data))
         pipeline.load(fd)
-        
+
         self.assertEqual(len(pipeline.modules()), 3)
         klo, fbom1, fbom2 = pipeline.modules()
         self.assertEqual(klo.object_name.value, 'TargetObjects')
@@ -506,7 +506,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(klo.filter_choice.value, F.FI_MAXIMAL_PER_OBJECT)
         self.assertEqual(klo.measurements[0].measurement.value, 'AreaShape_Area')
         self.assertFalse(klo.wants_outlines.value)
-        
+
         self.assertEqual(fbom1.object_name.value,'LargestObjects')
         self.assertEqual(fbom1.target_name.value,'FilteredNuclei')
         self.assertEqual(fbom1.filter_choice.value, F.FI_LIMITS)
@@ -515,7 +515,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(fbom1.measurements[0].min_limit.value, 200)
         self.assertFalse(fbom1.measurements[0].wants_maximum.value)
         self.assertFalse(fbom1.wants_outlines.value)
-        
+
         self.assertEqual(fbom2.object_name.value,'TargetObjects')
         self.assertEqual(fbom2.target_name.value,'FilteredNuclei')
         self.assertEqual(fbom2.filter_choice.value, F.FI_LIMITS)
@@ -525,7 +525,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(fbom2.measurements[0].max_limit.value, .25)
         self.assertTrue(fbom2.wants_outlines.value)
         self.assertEqual(fbom2.outlines_name.value, 'OutlineObjects')
-        
+
     def test_05_02_load(self):
         '''Load a pipeline saved by pyCP'''
         data = ('TUFUTEFCIDUuMCBNQVQtZmlsZSBQbGF0Zm9ybTogbnQsIENyZWF0ZW' +
@@ -906,7 +906,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         def handle_error(caller, event):
             if isinstance(event, cpp.LoadExceptionEvent):
                 self.fail(event.error.message)
-                
+
         pipeline.add_listener(handle_error)
         fd = StringIO.StringIO(base64.b64decode(data))
         pipeline.load(fd)
@@ -963,10 +963,10 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(module.object_name.value, 'Nuclei')
         self.assertEqual(module.mode, F.MODE_RULES)
         self.assertEqual(module.rules_file_name, 'rules.txt')
-        self.assertEqual(module.rules_directory.dir_choice, 
+        self.assertEqual(module.rules_directory.dir_choice,
                          cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME )
         self.assertEqual(module.rules_directory.custom_path, "./")
-        
+
     def test_05_04_load_matlab_v7(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggH0l6JeQoGZgqGhlbGllZGhgpGBoYGCiQDBkZPX34GBoafTAwM'
@@ -1000,11 +1000,11 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertEqual(module.object_name, "Nucs")
         self.assertEqual(module.target_name, "FilteredNuclei")
         self.assertEqual(module.mode, F.MODE_RULES)
-        self.assertEqual(module.rules_directory.dir_choice, 
+        self.assertEqual(module.rules_directory.dir_choice,
                          cpprefs.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.measurements[0].measurement, "Intensity_MeanIntensity_DNA_1")
-    
+
     def test_05_05_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -1038,12 +1038,12 @@ FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show
         self.assertEqual(module.object_name, "Things")
         self.assertEqual(module.target_name, "FilteredThings")
         self.assertEqual(module.mode, F.MODE_MEASUREMENTS)
-        self.assertEqual(module.rules_directory.dir_choice, 
+        self.assertEqual(module.rules_directory.dir_choice,
                          cpprefs.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.measurements[0].measurement, "Intensity_MeanIntensity_DNA")
         self.assertEqual(module.filter_choice, F.FI_MINIMAL)
-    
+
     def test_05_06_load_v4(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -1184,7 +1184,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show
         self.assertEqual(module.rules_file_name, "myrules.txt")
         self.assertEqual(module.measurement_count.value, 2)
         self.assertEqual(module.additional_object_count.value, 2)
-        self.assertEqual(module.measurements[0].measurement, 
+        self.assertEqual(module.measurements[0].measurement,
                          "Intensity_LowerQuartileIntensity_DNA")
         self.assertTrue(module.measurements[0].wants_minimum)
         self.assertFalse(module.measurements[0].wants_maximum)
@@ -1201,7 +1201,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show
             self.assertEqual(group.target_name, "Filtered%s" % name)
             self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
             self.assertFalse(group.wants_outlines)
-        
+
     def test_05_07_load_v5(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -1256,7 +1256,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         self.assertEqual(module.rules_class, "1")
         self.assertEqual(module.measurement_count.value, 2)
         self.assertEqual(module.additional_object_count.value, 2)
-        self.assertEqual(module.measurements[0].measurement, 
+        self.assertEqual(module.measurements[0].measurement,
                          "Intensity_LowerQuartileIntensity_DNA")
         self.assertTrue(module.measurements[0].wants_minimum)
         self.assertFalse(module.measurements[0].wants_maximum)
@@ -1273,12 +1273,12 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertEqual(group.target_name, "Filtered%s" % name)
             self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
             self.assertFalse(group.wants_outlines)
-        
+
     def test_05_08_load_v6(self):
             data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
     Version:1
     SVNRevision:9025
-    
+
     FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D]
         Name the output objects:MyFilteredObjects
         Select the object to filter:MyObjects
@@ -1330,7 +1330,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertEqual(module.rules_class, "1")
             self.assertEqual(module.measurement_count.value, 2)
             self.assertEqual(module.additional_object_count.value, 2)
-            self.assertEqual(module.measurements[0].measurement, 
+            self.assertEqual(module.measurements[0].measurement,
                              "Intensity_LowerQuartileIntensity_DNA")
             self.assertTrue(module.measurements[0].wants_minimum)
             self.assertFalse(module.measurements[0].wants_maximum)
@@ -1346,13 +1346,13 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 self.assertEqual(group.object_name, name)
                 self.assertEqual(group.target_name, "Filtered%s" % name)
                 self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
-                self.assertFalse(group.wants_outlines) 
-                
+                self.assertFalse(group.wants_outlines)
+
     def test_05_09_load_v7(self):
             data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
     Version:1
     SVNRevision:9025
-    
+
     FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D]
         Name the output objects:MyFilteredObjects
         Select the object to filter:MyObjects
@@ -1405,7 +1405,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertEqual(module.rules_class, "1")
             self.assertEqual(module.measurement_count.value, 2)
             self.assertEqual(module.additional_object_count.value, 2)
-            self.assertEqual(module.measurements[0].measurement, 
+            self.assertEqual(module.measurements[0].measurement,
                              "Intensity_LowerQuartileIntensity_DNA")
             self.assertTrue(module.measurements[0].wants_minimum)
             self.assertFalse(module.measurements[0].wants_maximum)
@@ -1421,8 +1421,8 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 self.assertEqual(group.object_name, name)
                 self.assertEqual(group.target_name, "Filtered%s" % name)
                 self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
-                self.assertFalse(group.wants_outlines) 
-                
+                self.assertFalse(group.wants_outlines)
+
     def test_06_01_get_measurement_columns(self):
         '''Test the get_measurement_columns function'''
         workspace, module = self.make_workspace({ INPUT_OBJECTS: np.zeros((10,10),int) })
@@ -1439,7 +1439,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         columns = module.get_measurement_columns(workspace.pipeline)
         self.assertEqual(len(columns), 6)
         for feature in image_features:
-            self.assertTrue(any([(column[0] == cpm.IMAGE and 
+            self.assertTrue(any([(column[0] == cpm.IMAGE and
                                   column[1] == feature)
                                  for column in columns]))
         for feature in result_features:
@@ -1451,14 +1451,14 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 self.assertTrue(any([(column[0] == INPUT_OBJECTS and
                                       column[1] == feature)
                                      for column in columns]))
-        
+
         for column in columns:
             self.assertTrue(column[0] in (cpm.IMAGE, OUTPUT_OBJECTS, INPUT_OBJECTS))
             if column[0] == cpm.IMAGE:
                 self.assertTrue(column[1] in image_features)
             elif column[0] == OUTPUT_OBJECTS:
                 self.assertTrue(column[1] in result_features)
-        
+
         for feature, coltype in (
             (M_LOCATION_CENTER_X, cpm.COLTYPE_FLOAT),
             (M_LOCATION_CENTER_Y, cpm.COLTYPE_FLOAT),
@@ -1470,7 +1470,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertEqual(
                 len(fcolumns), 1, "Missing or duplicate column: %s"%feature)
             self.assertEqual(fcolumns[0][2], coltype)
-            
+
         m_output_objects_count = \
             (FF_CHILDREN_COUNT % OUTPUT_OBJECTS).partition("_")[-1]
         for object_name, category in (
@@ -1486,7 +1486,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 ff = module.get_measurements(None, object_name, c)
                 for f in ff:
                     self.assertTrue(f in category[c])
-                                            
+
     def test_08_01_filter_by_rule(self):
         labels = np.zeros((10,20),int)
         labels[3:5,4:9] = 1
@@ -1495,7 +1495,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         workspace, module = self.make_workspace({ "MyObjects": labels })
         self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
         m = workspace.measurements
-        m.add_measurement("MyObjects","MyMeasurement", 
+        m.add_measurement("MyObjects","MyMeasurement",
                           np.array([ 1.5, 2.3,1.8]))
         rules_file_contents = "IF (MyObjects_MyMeasurement > 2.0, [1.0,-1.0], [-1.0,1.0])\n"
         rules_path = tempfile.mktemp()
@@ -1517,7 +1517,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertTrue(np.all(target_labels[labels != 2] == 0))
         finally:
             os.remove(rules_path)
-            
+
     def test_08_02_filter_by_3_class_rule(self):
         rules_file_contents = (
             "IF (MyObjects_MyMeasurement > 2.0, [1.0,-1.0,-1.0], [-0.5,0.5,0.5])\n"
@@ -1536,7 +1536,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 workspace, module = self.make_workspace({ "MyObjects": labels })
                 self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
                 m = workspace.measurements
-                m.add_measurement("MyObjects","MyMeasurement", 
+                m.add_measurement("MyObjects","MyMeasurement",
                                   np.array([ 1.5, 2.3,1.8]))
                 rules_dir, rules_file = os.path.split(rules_path)
                 module.object_name.value = "MyObjects"
@@ -1554,7 +1554,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 self.assertTrue(np.all(target_labels[labels != kept] == 0))
         finally:
             os.remove(rules_path)
-        
+
     def test_09_01_discard_border_objects(self):
         '''Test the mode to discard border objects'''
         labels = np.zeros((10,10), int)
@@ -1582,28 +1582,28 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         labels[5:8, 5:8] = 2
         expected = labels.copy()
         expected[expected==2] = 0
-        
+
         workspace, module = self.make_workspace({})
         parent_image = cpi.Image(np.zeros((10, 10)), mask=mask)
         workspace.image_set.add(INPUT_IMAGE, parent_image)
-        
+
         input_objects = cpo.Objects()
         input_objects.segmented = labels
         input_objects.parent_image = parent_image
-        
+
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
-        
+
         module.object_name.value = INPUT_OBJECTS
         module.target_name.value = OUTPUT_OBJECTS
         module.mode.value = F.MODE_BORDER
         module.run(workspace)
         output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(expected == output_objects.segmented))
-        
+
     def test_10_01_unedited_segmented(self):
         # Test transferral of unedited segmented segmentation
         # from source to target
-        
+
         unedited = np.zeros((10, 10), dtype=int)
         unedited[0:4, 0:4] = 1
         unedited[6:8, 0:4] = 2
@@ -1611,7 +1611,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         segmented = np.zeros((10, 10), dtype=int)
         segmented[6:8, 6:8] = 1
         segmented[6:8, 0:4] = 2
-        
+
         workspace, module = self.make_workspace({})
         input_objects = cpo.Objects()
         workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
@@ -1633,7 +1633,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         #
         # It should be the small_removed_segmented of the
         # source minus the filtered
-        
+
         unedited = np.zeros((10, 10), dtype=int)
         unedited[0:4, 0:4] = 1
         unedited[6:8, 0:4] = 2
@@ -1641,7 +1641,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         segmented = np.zeros((10, 10), dtype=int)
         segmented[6:8, 6:8] = 1
         segmented[6:8, 0:4] = 2
-        
+
         workspace, module = self.make_workspace({})
         input_objects = cpo.Objects()
         input_objects.segmented = segmented

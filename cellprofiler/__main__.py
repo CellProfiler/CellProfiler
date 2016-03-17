@@ -1,12 +1,13 @@
-import h5py
 import logging
 import logging.config
+import os
 import re
 import sys
-import os
-import numpy as np
 import tempfile
 from cStringIO import StringIO
+
+import h5py
+import numpy as np
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -26,7 +27,6 @@ if sys.platform.startswith('win'):
         libzmq = os.path.join(here, 'libzmq.dll')
         if os.path.exists(libzmq):
             ctypes.cdll.LoadLibrary(libzmq)
-import zmq
 #
 # CellProfiler expects NaN as a result during calculation
 #
@@ -203,7 +203,7 @@ def main(args = None):
         if options.show_gui:
             import wx
             wx.Log.EnableLogging(False)
-            from cellprofiler.app import App
+            from cellprofiler.gui.app import App
             from cellprofiler.workspace import is_workspace_file
 
             if options.pipeline_filename:
@@ -825,7 +825,6 @@ def run_pipeline_headless(options, args):
 
     if sys.platform == 'darwin':
         if options.start_awt:
-            import bioformats
             from javabridge import activate_awt
             activate_awt()
 

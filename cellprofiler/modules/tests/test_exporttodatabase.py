@@ -81,49 +81,82 @@ DB_HOST = "MyHost"
 DB_USER = "MyUser"
 DB_PASSWORD = "MyPassword"
 
-BROAD_HOST = 'imgdb02.broadinstitute.org'
+MYSQL_HOST = os.environ.get("CP_MYSQL_TEST_HOST", 'imgdb02.broadinstitute.org')
+MYSQL_DATABASE = os.environ.get("CP_MYSQL_TEST_DB", "CPUnitTest")
+MYSQL_PASSWORD = os.environ.get("CP_MYSQL_TEST_PASSWORD", "cPus3r")
+if MYSQL_PASSWORD == "None":
+    MYSQL_PASSWORD = ""
+MYSQL_USER = os.environ.get("CP_MYSQL_TEST_USER", "cpuser")
 
 class TestExportToDatabase(unittest.TestCase):
     def setUp(self):
         self.__cursor = None
         self.__connection = None
+        self.__has_median = None
         try:
-            fqdn = socket.getfqdn().lower()
-            if (('broadinstitute' in fqdn) or
-                fqdn.endswith("broad.mit.edu") or
-                fqdn.endswith("broad")):
-                self.__at_broad = True
-            elif (socket.gethostbyaddr(
-                socket.gethostname())[-1][0].startswith('69.173')):
-                self.__at_broad = True
-            else:
-                self.__at_broad = False
+            if MYSQL_HOST.endswith("broadinstitute.org"):
+                fqdn = socket.getfqdn().lower()
+                if (('broadinstitute' in fqdn) or
+                    fqdn.endswith("broad.mit.edu") or
+                    fqdn.endswith("broad")):
+                    self.__test_mysql = True
+                elif (socket.gethostbyaddr(
+                    socket.gethostname())[-1][0].startswith('69.173')):
+                    self.__test_mysql = True
+                else:
+                    self.__test_mysql = False
+            self.__test_mysql = True
         except:
-            self.__at_broad = False
+            self.__test_mysql = False
 
     @property
     def connection(self):
-        if not self.__at_broad:
-            print "FOO"
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+        if not self.__test_mysql:
+            self.skipTest("Skipping actual DB work, no DB configured.")
         if self.__connection is None:
             import MySQLdb
-            from MySQLdb.cursors import SSCursor
-            self.__connection = MySQLdb.connect(host=BROAD_HOST,
-                                                user='cpuser',
-                                                passwd='cPus3r',
-                                                local_infile=1)
+            self.__connection = MySQLdb.connect(
+                host=MYSQL_HOST,
+                user=MYSQL_USER,
+                passwd=MYSQL_PASSWORD,
+                local_infile=1)
         return self.__connection
+
+    def close_connection(self):
+        if self.__test_mysql and self.__connection is not None:
+            if self.__cursor is not None:
+                self.__cursor.close()
+            self.__connection.close()
+            self.__connection = None
+            self.__cursor = None
 
     @property
     def cursor(self):
-        if not self.__at_broad:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+        if not self.__test_mysql:
+            self.skipTest("Skipping actual DB work, database not configured.")
         if self.__cursor is None:
             import MySQLdb
             from MySQLdb.cursors import SSCursor
             self.__cursor = SSCursor(self.connection)
+            try:
+                self.__cursor.execute("use " + MYSQL_DATABASE)
+            except:
+                self.__cursor.execute("create database " + MYSQL_DATABASE)
+                self.__cursor.execute("use " + MYSQL_DATABASE)
         return self.__cursor
+
+    @property
+    def mysql_has_median(self):
+        '''True if MySQL database has a median function'''
+        if self.__has_median is None:
+            try:
+                cursor = self.connection.cursor()
+                cursor.execute("select median(1)")
+                cursor.close()
+                self.__has_median = True
+            except:
+                self.__has_median = False
+        return self.__has_median
 
     def get_sqlite_cursor(self, module):
         import sqlite3
@@ -1727,10 +1760,10 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         table_prefix = "T_%s"%str(uuid.uuid4()).replace('-','')
         module.table_prefix.value = table_prefix
         module.want_table_prefix.value = True
-        module.db_host.value = 'imgdb02'
-        module.db_user.value = 'cpuser'
-        module.db_passwd.value = 'cPus3r'
-        module.db_name.value ='CPUnitTest'
+        module.db_host.value = MYSQL_HOST
+        module.db_user.value = MYSQL_USER
+        module.db_passwd.value = MYSQL_PASSWORD
+        module.db_name.value = MYSQL_DATABASE
         module.wants_relationship_table_setting.value = (relationship_type is not None)
         pipeline.add_module(module)
         pipeline.write_experiment_measurements(m)
@@ -1781,16 +1814,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             os.chdir(curdir)
 
     def tteesstt_no_relationships(self, module, cursor):
-        if module.db_type in (E.DB_MYSQL, E.DB_MYSQL_CSV):
-            cursor.execute("use CPUnitTest")
         for t in (E.T_RELATIONSHIPS, E.V_RELATIONSHIPS):
             statement = "select count('x') from %s" % module.get_table_name(t)
             cursor.execute(statement)
             self.assertEqual(cursor.fetchall()[0][0], 0)
 
     def tteesstt_relate(self, measurements, module, cursor):
-        if module.db_type in (E.DB_MYSQL, E.DB_MYSQL_CSV):
-            self.cursor.execute("use CPUnitTest")
         v_name = module.get_table_name(E.V_RELATIONSHIPS)
         statement = ("select count('x') from %s "
             "where %s=%d and %s='%s' and %s='%%s' and %s='%%s' "
@@ -1813,24 +1842,33 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
     def drop_tables(self, module, table_suffixes=None):
         '''Drop all tables and views  that match the prefix'''
-        for info_table, thing in (("VIEWS", "view"), ("TABLES", "table")):
-            statement = (
-                "select table_name from INFORMATION_SCHEMA.%s "
-                "where table_schema='%s' "
-                "and table_name like '%s%%'") % (
-                    info_table, module.db_name.value, module.table_prefix.value)
-            self.cursor.execute(statement)
-            for (table_name, ) in self.cursor.fetchall():
-                self.assertTrue(table_name.startswith(module.table_prefix.value))
-                statement = "drop %s %s.%s" % (
-                    thing, module.db_name.value, table_name)
-                try:
-                    self.cursor.execute(statement)
-                except SkipTestException:
-                    raise
-                except Exception:
-                    traceback.print_exc()
-                    print "Failed to drop table %s"%table_name
+        cursor = self.connection.cursor()
+        try:
+            for info_table, thing in (("VIEWS", "view"), ("TABLES", "table")):
+                statement = (
+                    "select table_name from INFORMATION_SCHEMA.%s "
+                    "where table_schema='%s' "
+                    "and table_name like '%s%%'") % (
+                        info_table, module.db_name.value, module.table_prefix.value)
+                cursor.execute(statement)
+                for (table_name, ) in cursor.fetchall():
+                    self.assertTrue(table_name.startswith(module.table_prefix.value))
+                    statement = "drop %s %s.%s" % (
+                        thing, module.db_name.value, table_name)
+                    try:
+                        cursor.execute(statement)
+                    except Exception:
+                        traceback.print_exc()
+                        print "Failed to drop table %s"%table_name
+        except:
+            traceback.print_exc()
+            print "Failed to drop all tables"
+        finally:
+            try:
+                cursor.nextset()
+                cursor.close()
+            except:
+                pass
 
     def drop_views(self, module, table_suffixes=None):
         self.drop_tables(module)
@@ -2049,12 +2087,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
-            if not self.__at_broad:
+            if not self.__test_mysql:
                 self.skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -2110,7 +2147,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             long_aggregate_obj_column = mappings[
                 "Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
 
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -2176,7 +2212,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             long_aggregate_obj_column = mappings[
                 "Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
 
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -2397,7 +2432,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -2451,7 +2485,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             wierd_img_column = mappings["Image_%s"%WIERD_IMG_MEASUREMENT]
             wierd_obj_column = mappings["%s_%s"%(OBJECT_NAME, WIERD_OBJ_MEASUREMENT)]
 
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -2509,7 +2542,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             long_obj_column = mappings["%s_%s"%(OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
             self.assertTrue(len(long_img_column) <= 50)
             self.assertTrue(len(long_obj_column) <= 50)
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -2563,7 +2595,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             statement = "select Image_%s from %sPer_Image" % (
                 STRING_IMG_MEASUREMENT, module.table_prefix.value)
             self.cursor.execute(statement)
@@ -2589,7 +2620,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run_as_data_tool(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -3050,7 +3080,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             self.check_experiment_table(self.cursor, module, workspace.measurements)
             #
             # Now read the image file from the database
@@ -3101,7 +3130,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             long_img_column = mappings["Image_%s"%LONG_IMG_MEASUREMENT]
             long_obj_column = mappings["%s_%s"%(OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
 
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -3236,7 +3264,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -3294,7 +3321,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -3347,7 +3373,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             wierd_img_column = mappings["Image_%s"%WIERD_IMG_MEASUREMENT]
             wierd_obj_column = mappings["%s_%s"%(OBJECT_NAME, WIERD_OBJ_MEASUREMENT)]
 
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -3403,7 +3428,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             long_obj_column = mappings["%s_%s"%(OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
             self.assertTrue(len(long_img_column) <= 50)
             self.assertTrue(len(long_obj_column) <= 50)
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -3457,9 +3481,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             # Read from one object table
             #
-            self.cursor.execute("use CPUnitTest")
-            statement = self.per_object_statement(module, OBJECT_NAME,
-                                                  [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
@@ -3508,9 +3530,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             # Read from one object table
             #
-            self.cursor.execute("use CPUnitTest")
-            statement = self.per_object_statement(module, OBJECT_NAME,
-                                                  [OBJ_MEASUREMENT])
+
+            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = self.cursor.fetchone()
@@ -3604,7 +3625,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
             module.run_as_data_tool(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -3664,7 +3684,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 workspace.pipeline, workspace.image_set_list)
             long_mean_col = mappings["Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
             long_obj_col = mappings["%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
-            self.cursor.execute("use CPUnitTest")
             #
             # Now read the image file from the database
             #
@@ -3788,6 +3807,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
     def test_07_01_well_single_objtable(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(
             False, well_metadata = True, image_set_count=3)
+        aggs = [("avg", np.mean), ("std", np.std)]
+        if self.mysql_has_median:
+            aggs.append(("median", np.median))
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type.value = E.DB_MYSQL
@@ -3798,7 +3820,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_COMBINE
             module.wants_agg_mean_well.value = True
-            module.wants_agg_median_well.value = True
+            module.wants_agg_median_well.value = self.mysql_has_median
             module.wants_agg_std_dev_well.value = True
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
@@ -3810,9 +3832,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     (OBJECT_NAME, OBJ_MEASUREMENT))
             m = workspace.measurements
             image_numbers = m.get_image_numbers()
-            for aggname, aggfn in (("avg", np.mean),
-                                   ("median", np.median),
-                                   ("std", np.std)):
+
+            for aggname, aggfn in aggs:
                 fields = ["%s_%s" % (object_name, feature)
                           for object_name, feature in meas]
                 statement = self.select_well_agg(module, aggname, fields)
@@ -3834,12 +3855,15 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(
                 module,
                 ["Per_Image", "Per_Object"] +
-                ["Per_Well_" + x for x in ("avg", "median", "std")])
+                ["Per_Well_" + x for x, _ in aggs])
             finally_fn()
 
     def test_07_02_well_two_objtables(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(
             False, well_metadata = True, alt_object = True, image_set_count=3)
+        aggs = [("avg", np.mean), ("std", np.std)]
+        if self.mysql_has_median:
+            aggs.append(("median", np.median))
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type.value = E.DB_MYSQL
@@ -3850,7 +3874,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.wants_agg_mean_well.value = True
-            module.wants_agg_median_well.value = True
+            module.wants_agg_median_well.value = self.mysql_has_median
             module.wants_agg_std_dev_well.value = True
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1, 2, 3])
@@ -3863,9 +3887,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     (ALTOBJECT_NAME, OBJ_MEASUREMENT))
             m = workspace.measurements
             image_numbers = m.get_image_numbers()
-            for aggname, aggfn in (("avg", np.mean),
-                                   ("median", np.median),
-                                   ("std", np.std)):
+            for aggname, aggfn in aggs:
                 fields = ["%s_%s" % (object_name, feature)
                           for object_name, feature in meas]
                 statement = self.select_well_agg(module, aggname, fields)
@@ -3887,7 +3909,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(
                 module,
                 ["Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME] +
-                ["Per_Well_" + x for x in ("avg", "median", "std")])
+                ["Per_Well_" + x for x, _ in aggs])
             finally_fn()
 
     def test_08_01_image_thumbnails(self):
@@ -3915,8 +3937,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
-            self.cursor.execute("use CPUnitTest")
-
             image_table = module.table_prefix.value + "Per_Image"
             stmt = "select Image_%s from %s" % (expected_thumbnail_column, image_table)
             self.cursor.execute(stmt)
@@ -3990,7 +4010,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 workspace.set_image_set_for_testing_only(i+1)
                 measurements.next_image_set(i + 1)
                 module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Read the image data after the run but before group.
             # It should be null.
@@ -4022,6 +4041,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4076,7 +4096,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 workspace.set_image_set_for_testing_only(i+1)
                 measurements.next_image_set(i+1)
                 module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Read the image data after the run but before group.
             # It should be null.
@@ -4112,6 +4131,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4170,7 +4190,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 workspace.set_image_set_for_testing_only(i+1)
                 measurements.next_image_set(i+1)
                 module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Read the image data after the run but before group.
             # It should be null.
@@ -4199,6 +4218,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4250,7 +4270,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 workspace.set_image_set_for_testing_only(i+1)
                 measurements.next_image_set(i+1)
                 module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Read the image data after the run but before group.
             # It should be null.
@@ -4283,6 +4302,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4438,7 +4458,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 workspace.set_image_set_for_testing_only(i+1)
                 measurements.next_image_set(i + 1)
                 module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Read the image data after the run but before group.
             # It should be null.
@@ -4470,6 +4489,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                     self.assertEqual(row[1], j+1)
                     self.assertTrue(row[2] is None)
             self.assertRaises(StopIteration, self.cursor.next)
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4608,12 +4628,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
             module.location_object.value = OBJECT_NAME
-            if not self.__at_broad:
+            if not self.__test_mysql:
                 self.skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Find the experiment ID by looking for the image table in
             # the properties.
@@ -4649,12 +4668,11 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            if not self.__at_broad:
+            if not self.__test_mysql:
                 self.skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.cursor.execute("use CPUnitTest")
             #
             # Find the experiment ID by looking for the image table in
             # the properties.
@@ -4682,7 +4700,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 "Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME))
 
     def test_12_01_write_no_mysql_relationships(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE)
@@ -4705,7 +4723,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
 
     def test_12_02_write_no_mysql_direct_relationships(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(
@@ -4727,7 +4745,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module)
 
     def test_12_03_write_sqlite_no_relationships(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module, output_dir, finally_fn = self.make_workspace(
@@ -4760,7 +4778,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
 
 
     def test_12_04_write_mysql_relationships(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
@@ -4784,7 +4802,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             finally_fn()
 
     def test_12_05_write_mysql_direct_relationships(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(
@@ -4841,7 +4859,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 finally_fn()
 
     def test_12_07_write_sqlite_duplicates(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module, output_dir, finally_fn = self.make_workspace(
@@ -4877,7 +4895,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         #
         # Add a missing relationship ID
         #
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(
@@ -4897,9 +4915,9 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             # Get rid of the module dictionary entry and the table row
             #
             module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
-            self.cursor.execute("use CPUnitTest")
             self.cursor.execute("delete from %s" %
                                 module.get_table_name(E.T_RELATIONSHIP_TYPES))
+            self.close_connection()
             module.run(workspace)
             self.tteesstt_relate(workspace.measurements, module, self.cursor)
         finally:
@@ -4909,7 +4927,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         #
         # Get a missing relationship ID (e.g. worker # 2 gets worker # 1's row)
         #
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(
@@ -5010,8 +5028,8 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
         # No relationships in relationships table and ExportToDatabase
         # is configured to display its window
         #
-        if not self.__at_broad:
-            self.skipTest("Skipping actual DB work, not at the Broad.")
+        if not self.__test_mysql:
+            self.skipTest("Skipping actual DB work, no database configured.")
 
         workspace, module = self.make_workspace(
             False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE)
@@ -5032,7 +5050,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module)
 
     def test_13_01_mysql_no_overwrite(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(False)
@@ -5051,7 +5069,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module)
 
     def test_13_02_mysql_keep_schema(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(False)
@@ -5065,7 +5083,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
             self.assertTrue(module.prepare_run(workspace))
-            self.cursor.execute("use CPUnitTest")
             #
             # There should be no rows in the image table after prepare_run
             #
@@ -5073,6 +5090,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.get_table_name(cpmeas.IMAGE)
             self.cursor.execute(how_many)
             self.assertEqual(self.cursor.fetchall()[0][0], 0)
+            self.close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
@@ -5090,7 +5108,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module)
 
     def test_13_03_mysql_drop_schema(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module= self.make_workspace(False)
@@ -5104,7 +5122,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
             self.assertTrue(module.prepare_run(workspace))
-            self.cursor.execute("use CPUnitTest")
             #
             # There should be no rows in the image table after prepare_run
             #
@@ -5112,6 +5129,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 module.get_table_name(cpmeas.IMAGE)
             self.cursor.execute(how_many)
             self.assertEqual(self.cursor.fetchall()[0][0], 0)
+            self.close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
@@ -5119,6 +5137,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             self.cursor.execute(how_many)
             self.assertEqual(self.cursor.fetchall()[0][0], 1)
+            self.close_connection()
             self.assertTrue(module.prepare_run(workspace))
             #
             # The row should not be there after the second prepare_run
@@ -5228,15 +5247,14 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             self.drop_tables(module)
 
     def test_14_01_dbcontext_mysql(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         module = E.ExportToDatabase()
         module.db_type.value = E.DB_MYSQL
-        module.db_host.value = 'imgdb02'
-        module.db_user.value = 'cpuser'
-        module.db_passwd.value = 'cPus3r'
-        module.db_name.value ='CPUnitTest'
-
+        module.db_host.value = MYSQL_HOST
+        module.db_user.value = MYSQL_USER
+        module.db_passwd.value = MYSQL_PASSWORD
+        module.db_name.value =MYSQL_DATABASE
         with E.DBContext(module) as (connection, cursor):
             cursor.execute("select 1")
             result = cursor.fetchall()
@@ -5264,7 +5282,7 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 print "Failed to remove %s" % output_dir
 
     def test_15_01_post_run_experiment_measurement_mysql(self):
-        if not self.__at_broad:
+        if not self.__test_mysql:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         workspace, module= self.make_workspace(False, post_run_test=True)
         try:
@@ -5279,12 +5297,12 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             workspace.measurements[cpmeas.EXPERIMENT,
                                    STRING_IMG_MEASUREMENT] = STRING_VALUE
             self.assertTrue(module.prepare_run(workspace))
-            self.cursor.execute("use CPUnitTest")
             self.cursor.execute(
                 "select %s from %s" %
                 (STRING_IMG_MEASUREMENT, module.get_table_name(cpmeas.EXPERIMENT)))
             result = self.cursor.fetchall()[0][0]
             self.assertTrue(result is None)
+            self.close_connection()
             module.post_run(workspace)
             self.cursor.execute(
                 "select %s from %s" %

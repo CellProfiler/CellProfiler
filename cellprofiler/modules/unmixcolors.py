@@ -97,9 +97,9 @@ CHOICE_AZOCARMINE = "Azocarmine"
 ST_AZOCARMINE = ( 0.071, 0.977, 0.198)
 COLOR_AZOCARMINE = html_color(ST_AZOCARMINE)
 
-CHOICE_ALICAN_BLUE = "Alican blue"
-ST_ALICAN_BLUE = ( 0.875, 0.458, 0.158)
-COLOR_ALICAN_BLUE = html_color(ST_ALICAN_BLUE)
+CHOICE_ALCIAN_BLUE = "Alcian blue"
+ST_ALCIAN_BLUE = ( 0.875, 0.458, 0.158)
+COLOR_ALCIAN_BLUE = html_color(ST_ALCIAN_BLUE)
 
 CHOICE_PAS = "PAS"
 ST_PAS = ( 0.175, 0.972, 0.155)
@@ -129,7 +129,7 @@ CHOICE_CUSTOM = "Custom"
 
 STAIN_DICTIONARY = {
     CHOICE_AEC: ST_AEC,
-    CHOICE_ALICAN_BLUE: ST_ALICAN_BLUE,
+    CHOICE_ALCIAN_BLUE: ST_ALCIAN_BLUE,
     CHOICE_ANILINE_BLUE: ST_ANILINE_BLUE,
     CHOICE_AZOCARMINE: ST_AZOCARMINE,
     CHOICE_DAB: ST_DAB,
@@ -148,7 +148,7 @@ STAIN_DICTIONARY = {
 
 STAINS_BY_POPULARITY = (
     CHOICE_HEMATOXYLIN, CHOICE_EOSIN, CHOICE_DAB,
-    CHOICE_PAS, CHOICE_AEC, CHOICE_ALICAN_BLUE, CHOICE_ANILINE_BLUE,
+    CHOICE_PAS, CHOICE_AEC, CHOICE_ALCIAN_BLUE, CHOICE_ANILINE_BLUE,
     CHOICE_AZOCARMINE, CHOICE_FAST_BLUE, CHOICE_FAST_RED,
     CHOICE_HEMATOXYLIN_AND_PAS, CHOICE_METHYL_GREEN, CHOICE_METHYLENE_BLUE,
     CHOICE_ORANGE_G, CHOICE_METHYL_BLUE, CHOICE_PONCEAU_FUCHSIN,
@@ -204,7 +204,7 @@ class UnmixColors(cpm.CPModule):
             <br>
             <table><tr><th>Stain</th><th>Color</th><th>Specific to</th></tr>
             <tr><td>%(CHOICE_AEC)s (3-Amino-9-ethylcarbazole)</td><td bgcolor="%(COLOR_AEC)s">&nbsp;</td><td>Peroxidase</td></tr>
-            <tr><td>%(CHOICE_ALICAN_BLUE)s</td><td bgcolor="%(COLOR_ALICAN_BLUE)s">&nbsp;</td><td>Mucopolysaccharides</td></tr>
+            <tr><td>%(CHOICE_ALCIAN_BLUE)s</td><td bgcolor="%(COLOR_ALCIAN_BLUE)s">&nbsp;</td><td>Mucopolysaccharides</td></tr>
             <tr><td>%(CHOICE_ANILINE_BLUE)s</td><td bgcolor="%(COLOR_ANILINE_BLUE)s">&nbsp;</td><td>Pollen tubes</td></tr>
             <tr><td>%(CHOICE_AZOCARMINE)s</td><td bgcolor="%(COLOR_AZOCARMINE)s">&nbsp;</td><td>Plasma</td></tr>
             <tr><td>%(CHOICE_DAB)s</td><td bgcolor="%(COLOR_DAB)s">&nbsp;</td><td>Peroxisomes, mitochondria</td></tr>

@@ -107,9 +107,9 @@ class TestExportToDatabase(unittest.TestCase):
             print "FOO"
             self.skipTest("Skipping actual DB work, not at the Broad.")
         if self.__connection is None:
-            import MySQLdb
-            from MySQLdb.cursors import SSCursor
-            self.__connection = MySQLdb.connect(host=BROAD_HOST,
+            import pymysql
+            from pymysql.cursors import SSCursor
+            self.__connection = pymysql.connect(host=BROAD_HOST,
                                                 user='cpuser',
                                                 passwd='cPus3r',
                                                 local_infile=1)
@@ -120,8 +120,8 @@ class TestExportToDatabase(unittest.TestCase):
         if not self.__at_broad:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         if self.__cursor is None:
-            import MySQLdb
-            from MySQLdb.cursors import SSCursor
+            import pymysql
+            from pymysql.cursors import SSCursor
             self.__cursor = SSCursor(self.connection)
         return self.__cursor
 

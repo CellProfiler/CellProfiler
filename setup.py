@@ -432,7 +432,7 @@ setuptools.setup(
         "javabridge",
         "libtiff",
         "matplotlib",
-        "MySQL-python",
+        "PyMySQL",
         "numpy",
         "prokaryote",
         "pytest",

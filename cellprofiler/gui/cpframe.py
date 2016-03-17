@@ -1022,8 +1022,8 @@ class CPFrame(wx.Frame):
     License Agreement for the Java SE Platform Products and JavaFX found
     at http://www.oracle.com/technetwork/java/javase/terms/license/
     index.html; (f) Bioformats © 2000-2013 University of Dundee & Open
-    Microscopy Environment; ice © 2013 ZeroC, Inc.; mySQLdb © 2013 Andy
-    Dustman; omero © 2002-2013 Open Microscopy Environment; and ZeroMQ ©
+    Microscopy Environment; ice © 2013 ZeroC, Inc.; pymysql © 2016 PyMySQL
+    contributors; omero © 2002-2013 Open Microscopy Environment; and ZeroMQ ©
     2007-2012 iMatix Corporation and Contributors; (g) wxWidgets ©
     1999-2005 Julian Smart, et al.; and wxPython © 1992-2006 Julian Smart,
     et al. and © 1996 Artificial Intelligence Applications Institute under

@@ -1,8 +1,8 @@
 '''<b>Overlay Outlines</b> places outlines produced by an 
 <b>Identify</b> module over a desired image.
 <hr>
-This module places outlines (in a special format produced by an <b>Identify</b> module) 
-on any desired image (grayscale, color, or blank). The 
+This module places outlines (in a special format produced by an <b>Identify</b> module)
+on any desired image (grayscale, color, or blank). The
 resulting image can be saved using the <b>SaveImages</b> module.
 
 See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects, IdentifyTertiaryObjects</b>.
@@ -49,33 +49,33 @@ class OverlayOutlines(cpm.CPModule):
     module_name = 'OverlayOutlines'
     variable_revision_number = 3
     category = "Image Processing"
-    
+
     def create_settings(self):
         self.blank_image = cps.Binary(
             "Display outlines on a blank image?",
             False, doc="""
             Select <i>%(YES)s</i> to produce an
-            image of the outlines on a black background. 
-            <p>Select <i>%(NO)s</i>, the module will overlay the 
+            image of the outlines on a black background.
+            <p>Select <i>%(NO)s</i>, the module will overlay the
             outlines on an image of your choosing.</p>"""%globals())
-        
+
         self.image_name = cps.ImageNameSubscriber(
             "Select image on which to display outlines",cps.NONE, doc="""
             <i>(Used only when a blank image has not been selected)</i> <br>
             Choose the image to serve as the background for the outlines.
             You can choose from images that were loaded or created by modules
             previous to this one.""")
-        
+
         self.line_width = cps.Float(
             "Width of outlines", "1",doc = """
             Enter the width, in pixels, of the
             outlines to be displayed on the image.""")
-        
+
         self.output_image_name = cps.ImageNameProvider(
             "Name the output image", "OrigOverlay",doc="""
-            Enter the name of the output image with the outlines overlaid. 
+            Enter the name of the output image with the outlines overlaid.
             This image can be selected in later modules (for instance, <b>SaveImages</b>).""")
-        
+
         self.wants_color = cps.Choice(
             "Outline display mode",
             [WANTS_COLOR, WANTS_GRAYSCALE], doc="""
@@ -85,26 +85,26 @@ class OverlayOutlines(cpm.CPModule):
             up more space in memory. Grayscale outlines are displayed with
             either the highest possible intensity or the same intensity
             as the brightest pixel in the image.""")
-        
+
         self.spacer = cps.Divider(line=False)
-        
+
         self.max_type = cps.Choice(
             "Select method to determine brightness of outlines",
             [MAX_IMAGE, MAX_POSSIBLE], doc = """
             <i>(Used only when outline display mode is grayscale)</i> <br>
-            The following options are possible for setting the intensity 
+            The following options are possible for setting the intensity
             (brightness) of the outlines:
             <ul>
-            <li><i>%(MAX_IMAGE)s:</i> Set the brighness to the 
+            <li><i>%(MAX_IMAGE)s:</i> Set the brighness to the
             the same as the brightest point in the image.</li>
-            <li><i>%(MAX_POSSIBLE)s:</i> Set to the maximum 
+            <li><i>%(MAX_POSSIBLE)s:</i> Set to the maximum
             possible value for this image format.</li>
             </ul>
             If your image is quite dim, then putting bright white lines
             onto it may not be useful. It may be preferable to make the
-            outlines equal to the maximal brightness already occurring 
+            outlines equal to the maximal brightness already occurring
             in the image."""%globals())
-        
+
         self.outlines = []
         self.add_outline(can_remove = False)
         self.add_outline_button = cps.DoSomething("", "Add another outline", self.add_outline)
@@ -129,7 +129,7 @@ class OverlayOutlines(cpm.CPModule):
             images instead of objects, choose this option.</li>
             </ul>
             """ % globals()))
-        
+
         group.append("objects_name", cps.ObjectNameSubscriber(
             "Select objects to display", cps.NONE,
         doc = """Choose the objects whose outlines you would like
@@ -143,7 +143,7 @@ class OverlayOutlines(cpm.CPModule):
             you were asked to supply a name for the outline; you
             can then select that name here.
             """))
-        
+
         default_color = (COLOR_ORDER[len(self.outlines)]
                          if len(self.outlines) < len(COLOR_ORDER)
                          else COLOR_ORDER[0])
@@ -151,7 +151,7 @@ class OverlayOutlines(cpm.CPModule):
                 "Select outline color", default_color))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this outline", self.outlines, group))
-        
+
         self.outlines.append(group)
 
     def prepare_settings(self, setting_values):
@@ -169,7 +169,7 @@ class OverlayOutlines(cpm.CPModule):
         result = [self.blank_image, self.image_name, self.output_image_name,
                   self.wants_color, self.max_type, self.line_width]
         for outline in self.outlines:
-            result += [outline.outline_name, outline.color, 
+            result += [outline.outline_name, outline.color,
                        outline.outline_choice, outline.objects_name]
         return result
 
@@ -177,7 +177,7 @@ class OverlayOutlines(cpm.CPModule):
         result = [self.blank_image]
         if not self.blank_image.value:
             result += [self.image_name]
-        result += [self.output_image_name, self.wants_color, 
+        result += [self.output_image_name, self.wants_color,
                    self.line_width, self.spacer]
         if (self.wants_color.value == WANTS_GRAYSCALE and not
             self.blank_image.value):
@@ -215,7 +215,7 @@ class OverlayOutlines(cpm.CPModule):
                 objects = workspace.object_set.get_objects(name)
                 workspace.display_data.labels[name] = \
                     [labels for labels, indexes in objects.get_labels()]
-            
+
         workspace.display_data.pixel_data = pixel_data
 
     def __can_composite_objects(self):
@@ -224,12 +224,12 @@ class OverlayOutlines(cpm.CPModule):
             if outline.outline_choice == FROM_IMAGES:
                 return False
         return True
-    
+
     def display(self, workspace, figure):
         from cellprofiler.gui.cpfigure import CPLD_LABELS, CPLD_NAME,\
              CPLD_OUTLINE_COLOR, CPLD_MODE, CPLDM_OUTLINES, CPLDM_ALPHA, \
              CPLDM_NONE, CPLD_LINE_WIDTH, CPLD_ALPHA_COLORMAP, CPLD_ALPHA_VALUE
-           
+
         figure.set_subplots((1, 1))
 
         if self.__can_composite_objects():
@@ -309,7 +309,7 @@ class OverlayOutlines(cpm.CPModule):
             mask = mask[:i_max, :j_max]
             pixel_data[:i_max, :j_max][mask] = maximum
         return pixel_data
-    
+
     def run_color(self, workspace):
         image_set = workspace.image_set
         if self.blank_image.value:
@@ -336,7 +336,7 @@ class OverlayOutlines(cpm.CPModule):
             # Original:
             #   alpha = outline_img[:,:,3]
             #   pixel_data[:i_max, :j_max, :] = (
-            #       window * (1 - alpha[:,:,np.newaxis]) + 
+            #       window * (1 - alpha[:,:,np.newaxis]) +
             #       outline_img[:,:,:3] * alpha[:,:,np.newaxis] * pdmax)
             #
             # Memory reduced:
@@ -348,7 +348,7 @@ class OverlayOutlines(cpm.CPModule):
             window += outline_img[:, :, :3]
 
         return pixel_data
-    
+
     def get_outline(self, workspace, outline):
         '''Get outline, with aliasing and taking widths into account'''
         if outline.outline_choice == FROM_IMAGES:
@@ -378,22 +378,22 @@ class OverlayOutlines(cpm.CPModule):
             output_image = output_image.astype(np.float16)
         if self.line_width.value > 1:
             half_line_width = float(self.line_width.value) / 2
-            d, (i,j) = distance_transform_edt(output_image[:,:,3] == 0, 
+            d, (i,j) = distance_transform_edt(output_image[:,:,3] == 0,
                                               return_indices = True)
             mask = (d > 0) & (d <= half_line_width - .5)
             output_image[mask,:] = output_image[i[mask], j[mask],:]
             #
             # Do a little aliasing here using an alpha channel
             #
-            mask = ((d > max(0, half_line_width - .5)) & 
+            mask = ((d > max(0, half_line_width - .5)) &
                      (d < half_line_width + .5))
             d = half_line_width + .5 - d
             output_image[mask,:3] = output_image[i[mask], j[mask],:3]
             output_image[mask, 3] = d[mask]
-            
+
         return output_image
-    
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 2:
             # Order is
@@ -418,7 +418,7 @@ class OverlayOutlines(cpm.CPModule):
             setting_values = setting_values[:NUM_FIXED_SETTINGS_V1] +\
                 ["1"] + setting_values[NUM_FIXED_SETTINGS_V1:]
             variable_revision_number = 2
-            
+
         if (not from_matlab) and variable_revision_number == 2:
             #
             # Added overlay image / objects choice
@@ -432,4 +432,3 @@ class OverlayOutlines(cpm.CPModule):
             setting_values = new_setting_values
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
-

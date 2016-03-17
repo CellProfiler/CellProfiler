@@ -121,7 +121,7 @@ class TestMorph(unittest.TestCase):
         self.assertEqual(module.functions[1].custom_repeats.value, 2)
         self.assertEqual(module.functions[2].function, morph.F_FILL)
         self.assertEqual(module.functions[2].repeats_choice.value, morph.R_FOREVER)
-        
+
     def test_01_03_load_v2(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -245,8 +245,8 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
                morph.F_DIAG, morph.F_DILATE, morph.F_DISTANCE,
                morph.F_ENDPOINTS, morph.F_ERODE, morph.F_FILL,
                morph.F_FILL_SMALL, morph.F_HBREAK, morph.F_INVERT,
-               morph.F_MAJORITY, morph.F_OPEN, morph.F_REMOVE, 
-               morph.F_SHRINK, morph.F_SKEL, morph.F_SKELPE, morph.F_SPUR, 
+               morph.F_MAJORITY, morph.F_OPEN, morph.F_REMOVE,
+               morph.F_SHRINK, morph.F_SKEL, morph.F_SKELPE, morph.F_SPUR,
                morph.F_THICKEN, morph.F_THIN, morph.F_TOPHAT, morph.F_VBREAK]
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
@@ -275,7 +275,7 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         self.assertEqual(strel.shape[0], 3)
         self.assertEqual(strel.shape[1], 3)
         self.assertTrue(np.all(strel))
-            
+
     def test_01_04_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -410,7 +410,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
                 self.assertEqual(f.width, 5)
                 self.assertEqual(f.height, 8)
 
-    def execute(self, image, function, mask=None, custom_repeats=None, 
+    def execute(self, image, function, mask=None, custom_repeats=None,
                 scale=None, module=None):
         '''Run the morph module on an input and return the resulting image'''
         INPUT_IMAGE_NAME = 'input'
@@ -443,7 +443,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         module.run(workspace)
         output = image_set.get_image(OUTPUT_IMAGE_NAME)
         return output.pixel_data
-    
+
     def binary_tteesstt(self, function_name, function,
                         gray_out=False, scale=None, custom_repeats=None):
         np.random.seed(map(ord,function_name))
@@ -459,38 +459,38 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
             self.assertTrue(np.all(output==expected))
         else:
             self.assertTrue(np.all(np.abs(output-expected) < np.finfo(np.float32).eps))
-        
+
     def test_02_01_binary_bothat(self):
         self.binary_tteesstt('bothat',cpmorph.black_tophat, scale = 5)
-        
+
     def test_02_015_binary_branchpoints(self):
         self.binary_tteesstt('branchpoints', cpmorph.branchpoints)
-        
+
     def test_02_02_binary_bridge(self):
         self.binary_tteesstt('bridge', cpmorph.bridge)
-    
+
     def test_02_03_binary_clean(self):
         self.binary_tteesstt('clean', cpmorph.clean)
-    
+
     def test_02_04_binary_close(self):
         self.binary_tteesstt(
             'close', lambda x, footprint:scind.binary_closing(x,footprint),
             scale=4)
-    
+
     def test_02_05_binary_diag(self):
         self.binary_tteesstt('diag', cpmorph.diag)
-    
+
     def test_02_06_binary_dilate(self):
         self.binary_tteesstt(
             'dilate', lambda x, footprint: scind.binary_dilation(x, footprint),
             scale=7)
-    
+
     def test_02_065_binary_endpoints(self):
         self.binary_tteesstt('endpoints', cpmorph.endpoints)
-    
+
     def test_02_07_binary_erode(self):
         self.binary_tteesstt('erode', lambda x: scind.binary_erosion(x, np.ones((3,3),bool)))
-    
+
     def test_02_08_binary_fill(self):
         self.binary_tteesstt('fill', cpmorph.fill)
 
@@ -500,42 +500,42 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         def fun(im, footprint=None):
             return cpmorph.fill_labeled_holes(im, size_fn=small_hole_fn)
         self.binary_tteesstt('fill small holes', fun, custom_repeats=2)
-    
+
     def test_02_09_binary_hbreak(self):
         self.binary_tteesstt('hbreak', cpmorph.hbreak)
-    
+
     def test_02_10_binary_majority(self):
         self.binary_tteesstt('majority', cpmorph.majority)
-    
+
     def test_02_11_binary_open(self):
         self.binary_tteesstt(
             'open', lambda x, footprint: scind.binary_opening(x, footprint),
             scale=5)
-    
+
     def test_02_12_binary_remove(self):
         self.binary_tteesstt('remove', cpmorph.remove)
-    
+
     def test_02_13_binary_shrink(self):
         self.binary_tteesstt('shrink', lambda x:cpmorph.binary_shrink(x,1))
-    
+
     def test_02_14_binary_skel(self):
         self.binary_tteesstt('skel', cpmorph.skeletonize)
-    
+
     def test_02_15_binary_spur(self):
         self.binary_tteesstt('spur', cpmorph.spur)
-    
+
     def test_02_16_binary_thicken(self):
         self.binary_tteesstt('thicken', cpmorph.thicken)
-    
+
     def test_02_17_binary_thin(self):
         self.binary_tteesstt('thin', cpmorph.thin)
-    
+
     def test_02_18_binary_tophat(self):
         self.binary_tteesstt('tophat', cpmorph.white_tophat)
-    
+
     def test_02_19_binary_vbreak(self):
         self.binary_tteesstt('vbreak', cpmorph.vbreak)
-        
+
     def test_02_20_binary_distance(self):
         def distance(x):
             y = scind.distance_transform_edt(x)
@@ -544,7 +544,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
             else:
                 return y / np.max(y)
         self.binary_tteesstt('distance', distance, True)
-        
+
     def test_02_21_binary_convex_hull(self):
         #
         # Set the four points of a square to True
@@ -558,12 +558,12 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         expected[2:18,3:13] = True
         result = self.execute(image, 'convex hull')
         self.assertTrue(np.all(result == expected))
-        
+
     def test_02_22_binary_invert(self):
         def invert(x):
             return ~ x
         self.binary_tteesstt('invert', invert, True)
-        
+
     def test_02_23_gray_invert(self):
         np.random.seed(0)
         image = np.random.uniform(size=(20,15)).astype(np.float32)
@@ -579,23 +579,23 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         image = np.random.uniform(size=(20,15)).astype(np.float32)
         result = self.execute(image, 'close', mask=np.ones(image.shape, np.bool))
         self.assertTrue(np.all(result >= image))
-        
+
     def test_02_26_binary_skelpe(self):
         def fn(x):
             d = scind.distance_transform_edt(x)
             pe = cpfilter.poisson_equation(x)
             return cpmorph.skeletonize(x, ordering = pe * d)
         self.binary_tteesstt('skelpe', fn)
-        
+
     def test_03_01_color(self):
         # Regression test for issue # 324
         np.random.seed(0)
         image = np.random.uniform(size=(20, 15)).astype(np.float32)
         image = image[:, :, np.newaxis] * np.ones(3)[np.newaxis, np.newaxis, :]
-        result = self.execute(image, morph.F_ERODE, 
+        result = self.execute(image, morph.F_ERODE,
                               mask=np.ones(image.shape[:2], np.bool))
         self.assertTrue(np.all(result < image[:, :, 0] + np.finfo(np.float32).eps))
-        
+
     def test_04_01_strel_arbitrary(self):
         r = np.random.RandomState()
         r.seed(41)
@@ -607,7 +607,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         expected = scind.binary_dilation(pixel_data, strel)
         result = self.execute(pixel_data, morph.F_DILATE, module = module)
         np.testing.assert_array_equal(expected, result)
-        
+
     def test_04_02_strel_diamond(self):
         r = np.random.RandomState()
         r.seed(42)
@@ -616,10 +616,10 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         strel = cpmorph.strel_diamond(3.5)
         pixel_data = r.uniform(size=(20, 30)) > .5
         expected = scind.binary_dilation(pixel_data, strel)
-        result = self.execute(pixel_data, morph.F_DILATE, scale = 7, 
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 7,
                               module = module)
         np.testing.assert_array_equal(expected, result)
-        
+
     def test_04_03_strel_disk(self):
         r = np.random.RandomState()
         r.seed(43)
@@ -628,10 +628,10 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         strel = cpmorph.strel_disk(3.5)
         pixel_data = r.uniform(size=(20, 30)) > .5
         expected = scind.binary_dilation(pixel_data, strel)
-        result = self.execute(pixel_data, morph.F_DILATE, scale = 7, 
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 7,
                               module = module)
         np.testing.assert_array_equal(expected, result)
-        
+
     def test_04_04_strel_line(self):
         r = np.random.RandomState()
         r.seed(44)
@@ -641,10 +641,10 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         strel = cpmorph.strel_line(15, 75)
         pixel_data = r.uniform(size=(20, 30)) > .5
         expected = scind.binary_dilation(pixel_data, strel)
-        result = self.execute(pixel_data, morph.F_DILATE, scale = 15, 
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 15,
                               module = module)
         np.testing.assert_array_equal(expected, result)
-        
+
     def test_04_05_strel_octagon(self):
         r = np.random.RandomState()
         r.seed(45)
@@ -653,10 +653,10 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         strel = cpmorph.strel_octagon(7.5)
         pixel_data = r.uniform(size=(20, 30)) > .5
         expected = scind.binary_dilation(pixel_data, strel)
-        result = self.execute(pixel_data, morph.F_DILATE, scale = 15, 
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 15,
                               module = module)
         np.testing.assert_array_equal(expected, result)
-        
+
     def test_04_06_strel_pair(self):
         r = np.random.RandomState()
         r.seed(46)
@@ -669,7 +669,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         expected = scind.binary_dilation(pixel_data, strel)
         result = self.execute(pixel_data, morph.F_DILATE, module = module)
         np.testing.assert_array_equal(expected, result)
-    
+
     def test_04_07_strel_periodicline(self):
         r = np.random.RandomState()
         r.seed(43)
@@ -680,10 +680,10 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         strel = cpmorph.strel_periodicline(4, -3, 3)
         pixel_data = r.uniform(size=(20, 30)) > .5
         expected = scind.binary_dilation(pixel_data, strel)
-        result = self.execute(pixel_data, morph.F_DILATE, scale = 30, 
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 30,
                               module = module)
         np.testing.assert_array_equal(expected, result)
-        
+
     def test_04_08_strel_disk(self):
         r = np.random.RandomState()
         r.seed(48)
@@ -696,7 +696,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         expected = scind.binary_dilation(pixel_data, strel)
         result = self.execute(pixel_data, morph.F_DILATE, module = module)
         np.testing.assert_array_equal(expected, result)
-        
+
     def test_04_09_strel_square(self):
         r = np.random.RandomState()
         r.seed(49)
@@ -705,6 +705,6 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         strel = cpmorph.strel_square(7)
         pixel_data = r.uniform(size=(20, 30)) > .5
         expected = scind.binary_dilation(pixel_data, strel)
-        result = self.execute(pixel_data, morph.F_DILATE, scale = 7, 
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 7,
                               module = module)
         np.testing.assert_array_equal(expected, result)

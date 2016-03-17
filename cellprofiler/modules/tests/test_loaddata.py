@@ -1,16 +1,4 @@
-'''test_loaddata - Test the LoadData (formerly LoadText) module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-'''
+'''test_loaddata - Test the LoadData (formerly LoadText) module'''
 
 from bioformats import load_image, write_image, PT_UINT8
 import base64
@@ -38,7 +26,10 @@ import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.tests import \
      example_images_directory, testimages_directory, maybe_download_sbs,\
-     maybe_download_example_image, maybe_download_tesst_image, make_12_bit_image
+     maybe_download_example_image, maybe_download_tesst_image, \
+     make_12_bit_image, cp_logo_url, cp_logo_url_filename, cp_logo_url_folder, \
+     cp_logo_url_shape
+
 from bioformats.formatreader import clear_image_reader_cache
 
 OBJECTS_NAME = "objects"
@@ -901,10 +892,10 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         # Load, only specifying URL
         #
         csv_text = '''"Image_URL_DNA"
-"http://cellprofiler.org/images/cp_logo_smaller.png"
-"http:cp_logo_smaller.png"
+"%(cp_logo_url)s"
+"http:%(cp_logo_url_filename)s"
 "bogusurl.png"
-'''
+''' % globals()
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
         m = cpmeas.Measurements()
@@ -912,29 +903,28 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                                   m, cpi.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
-                         "cp_logo_smaller.png")
+                         cp_logo_url_filename)
         path = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
-        self.assertEqual(path, "http://cellprofiler.org/images")
-        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
-                         "http://cellprofiler.org/images/cp_logo_smaller.png")
-        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 2], "cp_logo_smaller.png")
+        self.assertEqual(path, cp_logo_url_folder)
+        self.assertEqual(m[cpmeas.IMAGE, "URL_DNA", 1], cp_logo_url)
+        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 2], cp_logo_url_filename)
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 2], "http:")
         self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 3], "bogusurl.png")
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), (157, 400, 3))
+        self.assertEqual(tuple(img.pixel_data.shape), cp_logo_url_shape)
 
     def test_13_03_extra_fields(self):
         #
         # Regression test of issue #853, extra fields
         #
         csv_text = '''"Image_URL_DNA"
-"http://cellprofiler.org/images/cp_logo_smaller.png", "foo"
-"http:cp_logo_smaller.png"
+"%(cp_logo_url)s", "foo"
+"http:%(cp_logo_url_filename)s"
 "bogusurl.png"
-'''
+''' % globals()
         pipeline, module, filename = self.make_pipeline(csv_text)
         assert isinstance(module, L.LoadData)
         m = cpmeas.Measurements()
@@ -942,19 +932,19 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                                   m, cpi.ImageSetList())
         self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
-                         "cp_logo_smaller.png")
+                         cp_logo_url_filename)
         path = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
-        self.assertEqual(path, "http://cellprofiler.org/images")
+        self.assertEqual(path, cp_logo_url_folder)
         self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
-                         "http://cellprofiler.org/images/cp_logo_smaller.png")
-        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 2], "cp_logo_smaller.png")
+                         cp_logo_url)
+        self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 2], cp_logo_url_filename)
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 2], "http:")
         self.assertEqual(m[cpmeas.IMAGE, "FileName_DNA", 3], "bogusurl.png")
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
         img = workspace.image_set.get_image("DNA", must_be_color=True)
-        self.assertEqual(tuple(img.pixel_data.shape), (157, 400, 3))
+        self.assertEqual(tuple(img.pixel_data.shape), cp_logo_url_shape)
 
     def test_13_04_extra_lines(self):
         #

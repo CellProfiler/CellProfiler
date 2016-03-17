@@ -12,7 +12,7 @@ if sys.platform.startswith("win"):
          FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, FILE_ATTRIBUTE_OFFLINE, \
          FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM, \
          FILE_ATTRIBUTE_TEMPORARY
-    
+
     def get_proper_case_filename(path):
         if False:
             result = _get_proper_case_filename.get_proper_case_filename(unicode(path))

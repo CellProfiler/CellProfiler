@@ -1,16 +1,4 @@
-"""test_Pipeline.py - test the CellProfiler.Pipeline module
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
+"""test_Pipeline.py - test the CellProfiler.Pipeline module"""
 
 import base64
 import cProfile
@@ -1177,7 +1165,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertIn(url, p.file_list)
 
     def test_19_04_read_http_file_list(self):
-        url = "http://cellprofiler.org/linked_files/unit_test_data/"\
+        url = "https://raw.githubusercontent.com/CellProfiler/CellProfiler/master/cellprofiler/tests/"\
             "url_file_list.txt"
         urls = ["http://cellprofiler.org/foo.tif",
                 "https://github.com/foo.tif",

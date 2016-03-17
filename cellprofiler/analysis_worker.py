@@ -9,24 +9,13 @@ the analysis worker runs three threads:
                 The UI is needed by ImageJ 1.0 which starts AWT. The main thread
                 issues a stop notification to the worker thread after exiting
                 the run loop.
-                
+
 * Worker thread - listens for jobs and processes them until it receives a stop
                   notification from the main thread.
-                  
+
 * Monitor thread - reads from STDIN. If the parent process closes STDIN,
                    the read call throws an exception and the monitor thread
                    stops the main thread's run loop.
-
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2015 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
 """
 import logging
 import os
@@ -48,7 +37,7 @@ def aw_parse_args():
     global work_announce_address
     global knime_bridge_address
     set_headless()
-    set_awt_headless(False)
+    set_awt_headless(True)
     parser = optparse.OptionParser()
     parser.add_option("--work-announce",
                       dest="work_announce_address",

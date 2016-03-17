@@ -14,7 +14,7 @@ class Rules(object):
         '''Represents a single rule'''
         def __init__(self, object_name, feature, comparitor, threshold, weights):
             '''Create a rule
-            
+
             object_name - the name of the object in the measurements
             feature - the name of the measurement (for instance,
                       "AreaShape_Area")
@@ -30,11 +30,11 @@ class Rules(object):
             self.threshold = threshold
             self.feature = feature
             self.weights = weights
-        
+
         def score(self, measurements):
             '''Score a rule
-            
-            measurements - a measurements structure 
+
+            measurements - a measurements structure
                            (cellprofiler.measurements.Measurements). Look
                            up this rule's measurement in the structure to
                            get the testing value.
@@ -65,18 +65,18 @@ class Rules(object):
             score[mask,:] = self.weights[1-hits.astype(int),:]
             score[~mask,:] = self.weights[np.newaxis, 1]
             return score
-            
+
     def __init__(self):
         '''Create an empty set of rules.
-        
+
         Use "parse" to read in the rules file or add rules programatically
         to self.rules.
         '''
         self.rules = []
-        
+
     def parse(self, fd_or_file):
         '''Parse a rules file
-        
+
         fd_or_file - either a filename or a file descriptor. Parse assumes
                      that fd_or_file is a file name if it's a string or
                      unicode, otherwise it assumes that it's a file descriptor.
@@ -113,7 +113,7 @@ class Rules(object):
         finally:
             if needs_close:
                 fd.close()
-    
+
     def score(self, measurements):
         '''Score the measurements according to the rules list'''
         if len(self.rules) == 0:
@@ -130,5 +130,3 @@ class Rules(object):
             if score.shape[0] > partial_score.shape[0]:
                 score[score_len:,:] = np.NAN
         return score
-
-        

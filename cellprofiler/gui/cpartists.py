@@ -42,26 +42,26 @@ class ColorMixin(object):
         self._alpha = 1
         self._color = None
         self._colormap = None
-        
+
     def _set_alpha(self, alpha):
         self._alpha = alpha
         self._on_alpha_changed()
-        
+
     def _get_alpha(self):
         return self._alpha
-    
+
     def get_alpha(self):
         return self._get_alpha()
-    
+
     def set_alpha(self, alpha):
         self._set_alpha(alpha)
-    
+
     alpha = property(get_alpha, set_alpha)
-    
+
     def _on_alpha_changed(self):
         '''Called when the alpha value is modified, default = do nothing'''
         pass
-    
+
     def _get_color(self):
         '''Get the color - default is the matplotlib foreground color'''
         if self._color is None:
@@ -69,82 +69,82 @@ class ColorMixin(object):
         else:
             color = self._color
         return np.atleast_1d(matplotlib.colors.colorConverter.to_rgb(color))
-    
+
     def _set_color(self, color):
         '''Set the color'''
         self._color = color
         self._on_color_changed()
-    
+
     def get_color(self):
         return ColorMixin._get_color(self)
-    
+
     def set_color(self, color):
         ColorMixin._set_color(self, color)
-        
+
     color = property(get_color, set_color)
-    
+
     @property
     def color3(self):
         '''Return the color as a 3D array'''
         return self.color[np.newaxis, np.newaxis, :]
-    
+
     def _on_color_changed(self):
         '''Called when the color changed, default = do nothing'''
         pass
-    
+
     def _get_colormap(self):
         '''Override to get the colormap'''
         if self._colormap is None:
             return matplotlib.rcParams.get('image.cmap', 'jet')
         return self._colormap
-    
+
     def _set_colormap(self, colormap):
         '''Override to set the colormap'''
         self._colormap = colormap
         self._on_colormap_changed()
-        
+
     def get_colormap(self):
         return self._get_colormap()
-    
+
     def set_colormap(self, colormap):
         self._set_colormap(colormap)
-        
+
     colormap = property(get_colormap, set_colormap)
-        
+
     def _on_colormap_changed(self):
         '''Called when the colormap changed, default = do nothing'''
         pass
-    
+
     @property
     def using_alpha(self):
         '''True if this data's configuration will use the alpha setting'''
         return self._using_alpha()
-    
+
     def _using_alpha(self):
         '''Override if we ever don't use the alpha setting'''
         return True
-    
+
     @property
     def using_color(self):
         '''True if this data's configuration will use the color setting'''
         return self._using_color()
-    
+
     def _using_color(self):
         '''Override this to tell the world that the data will use the color setting'''
         return False
-    
+
     @property
     def using_colormap(self):
         '''True if this data's configuration will use the colormap setting'''
         return self._using_colormap()
-    
+
     def _using_colormap(self):
         '''Override this to tell the world that the data will use the colormap setting'''
         return False
-    
+
 class ImageData(ColorMixin):
     '''The data and metadata needed to display an image
-    
+
              name - the name of the channel
              pixel_data - a 2D or 2D * n-channel array of values
              mode - MODE_GRAYSCALE
@@ -157,7 +157,7 @@ class ImageData(ColorMixin):
              vmin - the floor of the image range in raw mode - default is 0
              vmax - the ceiling of the image range in raw mode - default is 1
     '''
-    def __init__(self, name, pixel_data, 
+    def __init__(self, name, pixel_data,
                  mode = None,
                  color = (1.0, 1.0, 1.0),
                  colormap = None,
@@ -175,10 +175,10 @@ class ImageData(ColorMixin):
         self.normalization = normalization
         self.vmin = vmin
         self.vmax = vmax
-        
+
     def set_mode(self, mode):
         self.__mode = mode
-    
+
     def get_mode(self):
         if self.__mode == MODE_HIDE:
             return MODE_HIDE
@@ -188,22 +188,22 @@ class ImageData(ColorMixin):
             return MODE_GRAYSCALE
         else:
             return self.__mode
-        
+
     def get_raw_mode(self):
         '''Get the mode as set by set_mode or in the constructor'''
         return self.__mode
-        
+
     mode = property(get_mode, set_mode)
-    
+
     def _using_color(self):
         return self.mode == MODE_COLORIZE
-    
+
     def _using_colormap(self):
         return self.mode == MODE_COLORMAP
-        
+
 class OutlinesMixin(ColorMixin):
     '''Provides rendering of "labels" as outlines
-    
+
     Needs self.labels to return a sequence of labels matrices and needs
     self._flush_outlines to be called when parameters change.
     '''
@@ -212,25 +212,25 @@ class OutlinesMixin(ColorMixin):
         self._flush_outlines()
         self.color = outline_color
         self._line_width = line_width
-        
+
     def _flush_outlines(self):
         self._outlines = None
         self._points = None
-        
+
     def _on_color_changed(self):
         if self._points is not None:
             self._points.set_color(self.color)
-            
+
     def get_line_width(self):
         return self._line_width
-    
+
     def set_line_width(self, line_width):
         self._line_width = line_width
         self._outlines = None
         if self._points is not None:
             self._points.set_linewidth(line_width)
     line_width = property(get_line_width, set_line_width)
-    
+
     @property
     def outlines(self):
         '''Get a mask of all the points on the border of objects'''
@@ -246,9 +246,9 @@ class OutlinesMixin(ColorMixin):
                 dti, dtj = np.where((d < hw+.5) & ~self._outlines)
                 self._outlines = self._outlines.astype(np.float32)
                 self._outlines[dti, dtj] = np.minimum(1, hw + .5 - d[dti, dtj])
-      
+
         return self._outlines.astype(np.float32)
-    
+
     @property
     def points(self):
         '''Return an artist for drawing the points'''
@@ -257,13 +257,13 @@ class OutlinesMixin(ColorMixin):
                 self.name, self.labels, linewidth = self.line_width,
                 color = self.color)
         return self._points
-    
+
 class ObjectsData(OutlinesMixin):
     '''The data needed to display objects
 
     name - the name of the objects
     labels - a sequence of label matrices
-    outline_color - render outlines in this color. Default is 
+    outline_color - render outlines in this color. Default is
     primary color.
     line_width - the width of the line in pixels for outlines
     colormap - render overlaid labels using this colormap
@@ -272,7 +272,7 @@ class ObjectsData(OutlinesMixin):
     scramble - True (default) to scramble the colors. False to use
                          the labels to pick from the colormap.
     '''
-    def __init__(self, name, labels, 
+    def __init__(self, name, labels,
                  outline_color = None,
                  line_width = None,
                  colormap = None,
@@ -289,31 +289,31 @@ class ObjectsData(OutlinesMixin):
         self.scramble = scramble
         self.__overlay = None
         self.__mask = None
-        
+
     def get_labels(self):
         return self.__labels
-    
+
     def set_labels(self, labels):
         self.__labels = labels
         self._flush_outlines()
         self.__overlay = None
         self.__mask = None
-        
+
     def get_raw_mode(self):
         return self.mode
-    
+
     labels = property(get_labels, set_labels)
-    
+
     def _on_colormap_changed(self):
         super(ObjectsData, self)._on_colormap_changed()
         self.__overlay = None
-        
+
     def _using_color(self):
         return self.mode in (MODE_LINES, MODE_OUTLINES)
-        
+
     def _using_colormap(self):
         return self.mode == MODE_OVERLAY
-        
+
     @property
     def overlay(self):
         '''Return a color image of the segmentation as an overlay
@@ -339,7 +339,7 @@ class ObjectsData(OutlinesMixin):
                 img[l!=0, :] = sm.to_rgba(l[l!=0])
         self.__overlay = img
         return img
-    
+
     @property
     def mask(self):
         """Return a mask of the labeled portion of the field of view"""
@@ -348,16 +348,16 @@ class ObjectsData(OutlinesMixin):
             for l in self.labels[1:]:
                 self.__mask[l != 0] = True
         return self.__mask
-        
+
 class MaskData(OutlinesMixin):
     '''The data needed to display masks
-    
+
     name - name of the mask
     mask - the binary mask
     mode - the display mode: outline, lines, overlay or inverted
     color - color of outline or line or overlay
     alpha - alpha of the outline or overlay
-    
+
     MODE_OVERLAY colors the part of the mask that covers the part of the
     image that the user cares about. Ironically, the user almost certainly
     wants to see that part and MODE_INVERTED with an alpha of 1 masks the
@@ -374,37 +374,37 @@ class MaskData(OutlinesMixin):
         self.mode = mode
         if alpha is not None:
             self.alpha = alpha
-        
+
     @property
     def labels(self):
         '''Return the mask as a sequence of labels matrices'''
         return [self.mask.astype(np.uint8)]
-    
+
     def _using_color(self):
         return True
 
     def get_raw_mode(self):
         return self.mode
-    
+
 class CPImageArtist(matplotlib.artist.Artist):
     '''An artist that displays multiple images and objects
-    
+
     The image artist maintains each image and object set separately as
     well as separate rendering colors, interpolation, intensity normalization
     and display styles.
-    
+
     The keyword arguments:
-    
-    images - a sequence of ImageData objects to be composited. 
-             
-    objects - a sequence of ObjectsData to be composited. 
-              
-                         
+
+    images - a sequence of ImageData objects to be composited.
+
+    objects - a sequence of ObjectsData to be composited.
+
+
     masks - a sequence of masks
             name - the name of the mask
             mask - the binary matrix for the mask
     '''
-    
+
     MI_IMAGES = "Images"
     MI_OBJECTS = "Objects"
     MI_MASKS = "Masks"
@@ -426,7 +426,7 @@ class CPImageArtist(matplotlib.artist.Artist):
     MI_INVERTED = "Inverted mask"
     MI_COLORMAP = "Color map"
     MI_NORMALIZATION = "Intensity normalization"
-    def __init__(self, images = None, objects = None, masks = None, 
+    def __init__(self, images = None, objects = None, masks = None,
                  interpolation = None):
         '''Initialize the artist with the images and objects'''
         super(CPImageArtist, self).__init__()
@@ -438,18 +438,18 @@ class CPImageArtist(matplotlib.artist.Artist):
 
     def set_interpolation(self, interpolation):
         self.__interpolation = interpolation
-        
+
     def get_interpolation(self, rcparams=None):
         return self.__interpolation or \
                (rcparams or matplotlib.rcParams)['image.interpolation']
-    
+
     interpolation = property(
         get_interpolation, set_interpolation,
         "The interpolation to use when stretching intensities")
-    
+
     def add(self, data):
         '''Add an image, objects or mask to the artist
-        
+
         data - ImageData, ObjectsData or MaskData to be added
         '''
         assert isinstance(data, (ImageData, ObjectsData, MaskData))
@@ -459,10 +459,10 @@ class CPImageArtist(matplotlib.artist.Artist):
             self.__objects.append(data)
         else:
             self.__masks.append(data)
-            
+
     def remove(self, data):
         '''Remove an image, object or mask from the artist
-        
+
         data - an ImageData, ObjectData or MaskData previously
                added (via constructor or add)
         '''
@@ -473,7 +473,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             self.__objects.remove(data)
         else:
             self.__masks.remove(data)
-            
+
     def remove_image_by_name(self, name):
         '''Remove an image via the name given to it in its data'''
         for data in self.__images:
@@ -481,7 +481,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                 return self.remove(data)
         else:
             raise ValueError("Could not find image named %s" % name)
-        
+
     def remove_objects_by_name(self, name):
         '''Remove objects via their name given to it in its data'''
         for data in self.__objects:
@@ -497,7 +497,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                 return self.remove(data)
         else:
             raise ValueError("Could not find mask named %s" % name)
-        
+
     def get_border_count(self):
         '''# of pixels needed for interpolation'''
         if self.interpolation == INTERPOLATION_NEAREST:
@@ -517,7 +517,7 @@ class CPImageArtist(matplotlib.artist.Artist):
 
     def get_channel_values(self, x, y):
         '''Return a map of channel name to intensity at the given location
-        
+
         x, y - coordinate location
         '''
         if x < 0 or y < 0:
@@ -534,7 +534,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                     value = pixel_data[y, x]
                 result[image.name] = value
         return result
-    
+
     def draw(self, renderer):
         magnification = renderer.get_image_magnification()
         shape = [0, 0]
@@ -546,7 +546,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         if any([x==0 for x in shape]):
             return
         border = self.get_border_count()
-            
+
         vl = self.axes.viewLim
         view_xmin = int(max(0, min(vl.x0, vl.x1) - self.filterrad))
         view_ymin = int(max(0, min(vl.y0, vl.y1) - self.filterrad))
@@ -558,10 +558,10 @@ class CPImageArtist(matplotlib.artist.Artist):
             return
         if shape[0] <= view_ymin or shape[0] <= - view_ymin or view_ymax <= 0:
             return
-        
+
         # First 3 color indices are intensities
         # Last is the alpha
-        
+
         target = np.zeros(
             (view_ymax - view_ymin, view_xmax - view_xmin, 4), np.float32)
         def get_tile_and_target(pixel_data):
@@ -576,8 +576,8 @@ class CPImageArtist(matplotlib.artist.Artist):
                 pixel_data = pixel_data[ymin:ymax, xmin:xmax]
             target_view = target[:(ymax - view_ymin), :(xmax - view_xmin), :]
             return pixel_data, target_view
-        
-        max_color_in = np.zeros(3)    
+
+        max_color_in = np.zeros(3)
         for image in self.__images:
             assert isinstance(image, ImageData)
             if image.mode == MODE_HIDE:
@@ -621,7 +621,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             tv_alpha[:] = \
                 tv_alpha + imalpha - tv_alpha * imalpha
             tv_image[tv_alpha != 0, :] /= tv_alpha[tv_alpha != 0][:, np.newaxis]
-        
+
         #
         # Normalize the image intensity
         #
@@ -634,7 +634,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         else:
             multiplier = 1
         target[:, :, :3] *= multiplier
-        
+
         for om in list(self.__objects) + list(self.__masks):
             assert isinstance(om, OutlinesMixin)
             if om.mode in (MODE_LINES, MODE_HIDE):
@@ -676,18 +676,20 @@ class CPImageArtist(matplotlib.artist.Artist):
                 tv_image * tv_alpha3 * (1 - oalpha3) + ocolor * oalpha3
             tv_alpha[:] = tv_alpha + oalpha - tv_alpha * oalpha
             tv_image[tv_alpha != 0, :] /= tv_alpha[tv_alpha != 0][:, np.newaxis]
-       
+
         target = target[:, :, :3]
         np.clip(target, 0, 1, target)
         if flip_lr:
             target = np.fliplr(target)
+        if self.axes.viewLim.height < 0:
+            target = np.flipud(target)
         im = matplotlib.image.fromarray(target[:, :, :3], 0)
         im.is_grayscale = False
         im.set_interpolation(self.mp_interpolation)
         fc = matplotlib.rcParams['axes.facecolor']
         bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
         im.set_bg( *bg)
-        
+
         # image input dimensions
         im.reset_matrix()
 
@@ -698,7 +700,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         # which is from the bottom of the screen
         #
         if self.axes.viewLim.height < 0:
-            ty = (view_ymin - self.axes.viewLim.y1) - .5
+            #ty = (view_ymin - self.axes.viewLim.y1) - .5
+            ty = self.axes.viewLim.y0 - view_ymax + .5
         else:
             ty = view_ymin - self.axes.viewLim.y0 - .5
         im.apply_translation(tx, ty)
@@ -714,10 +717,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         im.apply_scaling(sx, sy)
         im.resize(widthDisplay, heightDisplay,
                   norm=1, radius = self.filterrad)
-        if flip_ud:
-            im.flipud_out()
         bbox = self.axes.bbox.frozen()
-        
+
         # Two ways to do this, try by version
         mplib_version = matplotlib.__version__.split(".")
         if mplib_version[0] == '0':
@@ -733,10 +734,10 @@ class CPImageArtist(matplotlib.artist.Artist):
                 om.points.set_transform(self.axes.transData)
                 om.points.set_clip_path(self.axes.patch)
                 om.points.draw(renderer)
-    
+
     def add_to_menu(self, target, menu):
         '''Add to a context menu for a WX ui
-        
+
         target - target window that will receive menu events.
         '''
         import wx
@@ -752,28 +753,28 @@ class CPImageArtist(matplotlib.artist.Artist):
             my_id = wx.NewId()
             submenu_item = interpolation_menu.AppendRadioItem(my_id, label)
             target.Bind(
-                wx.EVT_MENU, 
+                wx.EVT_MENU,
                 (lambda event, target=state:
                  self.on_interpolation_menu_event(event, target)),
                 id=my_id)
             target.Bind(
                 wx.EVT_UPDATE_UI,
-                (lambda event, target=state: 
+                (lambda event, target=state:
                  self.on_interpolation_update_event(event, target)),
                 id = my_id)
             if state == self.interpolation:
                 submenu_item.Check(True)
         menu.AppendSeparator()
-            
+
     def on_interpolation_menu_event(self, event, target):
         self.interpolation = target
         self.refresh()
-            
+
     def on_interpolation_update_event(self, event, target):
         import wx
         assert isinstance(event, wx.UpdateUIEvent)
         event.Check(self.interpolation == target)
-        
+
     def on_update_menu(self, event, menu):
         import wx
         assert isinstance(menu, wx.Menu)
@@ -834,7 +835,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             while len(menu_items) < idx and menu_items[idx].IsEnabled():
                 menu.RemoveItem(item)
                 del menu_items[idx]
-    
+
     def __initialize_sub_menu(self, event, sub_menu, data):
         import wx
         assert isinstance(sub_menu, wx.Menu)
@@ -844,7 +845,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             self.__initialize_objects_sub_menu(event, sub_menu, data)
         elif isinstance(data, MaskData):
             self.__initialize_mask_sub_menu(event, sub_menu, data)
-            
+
     def __initialize_image_sub_menu(self, event, sub_menu, data):
         import wx
         item = sub_menu.Append(wx.NewId(), self.MI_NORMALIZATION)
@@ -890,10 +891,10 @@ class CPImageArtist(matplotlib.artist.Artist):
             window.Bind(wx.EVT_UPDATE_UI, update_mode, id=my_id)
         sub_menu.AppendSeparator()
         self.__add_color_item(
-            event, sub_menu, data, 
+            event, sub_menu, data,
             "Set image color", "Set image colormap")
         self.__add_alpha_item(event, sub_menu, data, "Set image transparency")
-           
+
     def __on_set_normalization(self, data, target):
         assert isinstance(data, ImageData)
         data.normalization = target
@@ -905,8 +906,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         my_id = wx.NewId()
         item = sub_menu.Append(my_id, self.MI_COLOR)
         window = self.__get_window_from_event(event)
-            
-        def on_color(event, 
+
+        def on_color(event,
                      data = data,
                      color_msg = color_msg,
                      colormap_msg = colormap_msg):
@@ -914,7 +915,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                 self.__on_color_dlg(event, color_msg, data)
             elif data.using_colormap:
                 self.__on_colormap_dlg(event, colormap_msg, data)
-                
+
         def on_update(event_or_item, data=data):
             assert isinstance(data, ColorMixin)
             event_or_item.Enable(data.using_color or data.using_colormap)
@@ -923,7 +924,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         window.Bind(
             wx.EVT_UPDATE_UI, on_update, id= my_id)
         on_update(item)
-        
+
     def __add_alpha_item(self, event, sub_menu, data, msg):
         import wx
         my_id = wx.NewId()
@@ -932,36 +933,36 @@ class CPImageArtist(matplotlib.artist.Artist):
         def set_alpha(alpha, data=data):
             data.alpha = alpha
             self.refresh()
-            
+
         def on_alpha(event, data=data, msg=msg):
             self.__on_alpha_dlg(event, msg, data)
-            
+
         def update_alpha(event_or_item, data=data):
             assert isinstance(data, ColorMixin)
             event_or_item.Enable(data.using_alpha)
-        
+
         window.Bind(wx.EVT_MENU, on_alpha, id=my_id)
         window.Bind(wx.EVT_UPDATE_UI, update_alpha, id= my_id)
         update_alpha(item)
-        
+
     def refresh(self):
         if self.figure is not None and self.figure.canvas is not None:
             self.figure.canvas.draw_idle()
-        
+
     def __get_window_from_event(self, event):
         import wx
         o = event.EventObject
         if isinstance(o, wx.Menu):
             return o.GetInvokingWindow()
         return o
-    
+
     def __on_update_normalization(self, event, data, target):
         assert isinstance(data, ImageData)
         event.Check(data.normalization == target)
-        
+
     def __on_update_image_color_item(self, event, data):
         event.Enable(data.mode != MODE_RGB)
-        
+
     def __initialize_objects_sub_menu(self, event, sub_menu, data):
         import wx
         assert isinstance(data, ObjectsData)
@@ -988,14 +989,14 @@ class CPImageArtist(matplotlib.artist.Artist):
         self.__add_color_item(
             event, sub_menu, data, "Set objects color", "Set objects colormap")
         self.__add_alpha_item(event, sub_menu, data, "Set objects' transparency")
-            
+
     def __on_set_objects_mode(self, event, data, mode):
         data.mode = mode
         self.refresh()
-        
+
     def __on_update_objects_mode(self, event, data, mode):
         event.Check(mode == data.mode)
-        
+
     def __initialize_mask_sub_menu(self, event, sub_menu, data):
         import wx
         assert isinstance(data, MaskData)
@@ -1015,31 +1016,31 @@ class CPImageArtist(matplotlib.artist.Artist):
             self.__on_update_mask_mode(item, data, target)
             window.Bind(wx.EVT_MENU, set_fn, id=my_id)
             window.Bind(
-                wx.EVT_UPDATE_UI, 
+                wx.EVT_UPDATE_UI,
                 (lambda event, data=data, target=target:
                  self.__on_update_mask_mode(event, data, target)),
                 id = my_id)
         sub_menu.AppendSeparator()
         self.__add_color_item(event, sub_menu, data, "Set mask color", None)
         self.__add_alpha_item(event, sub_menu, data, "Set mask transparency")
-        
+
     def __on_mask_mode(self, event, data, mode):
         data.mode = mode
         self.refresh()
-        
+
     def __on_update_mask_mode(self, event_or_item, data, target):
         '''Update the menu item or UpdateUIEvent's check status
-        
+
         event_or_item - either an UpdateUIEvent or MenuItem or other
               thing that has a Check method
         data - a MaskData whose mode will be checked
         target - the target state
-        
+
         Either checks or unchecks the item or event, depending on whether
         the data and target matches.
         '''
         event_or_item.Check(target == data.mode)
-                
+
     def __on_color_dlg(self, event, msg, data):
         import wx
         assert isinstance(data, ColorMixin)
@@ -1085,7 +1086,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             if dlg.ShowModal() != wx.ID_OK:
                 data.colormap = old_colormap
                 self.refresh()
-            
+
     def __on_alpha_dlg(self, event, msg, data):
         import wx
         assert isinstance(data, ColorMixin)
@@ -1115,25 +1116,25 @@ class CPImageArtist(matplotlib.artist.Artist):
             if dlg.ShowModal() != wx.ID_OK:
                 data = old_alpha
                 self.refresh()
-            
-            
+
+
     def __update_sub_menu(self, event, sub_menu, data):
         event.Enable(data.mode != MODE_HIDE)
         event.Text = data.name if len(data.name) > 0 else " "
 
 class CPOutlineArtist(matplotlib.collections.LineCollection):
     '''An artist that is a plot of the outline around an object
-    
+
     This class is here so that we can add and remove artists for certain
     outlines.
     '''
     def __init__(self, name, labels, *args, **kwargs):
         '''Draw outlines for objects
-        
+
         name - the name of the outline
-        
+
         labels - a sequence of labels matrices
-        
+
         kwargs - further arguments for Line2D
         '''
         # get_outline_pts has its faults:
@@ -1162,7 +1163,7 @@ class CPOutlineArtist(matplotlib.collections.LineCollection):
                 lines.append(np.vstack((pts[off:off+count], pts[off:off+1])))
         matplotlib.collections.LineCollection.__init__(
             self, lines, *args, **kwargs)
-        
+
     def get_outline_name(self):
         return self.__outline_name
 
@@ -1177,7 +1178,7 @@ if __name__ == "__main__":
     import matplotlib.pyplot
     from scipy.ndimage import label
     from centrosome.otsu import otsu
-    
+
     javabridge.start_vm(class_path=bioformats.JARS)
     try:
         app = wx.PySimpleApp()
@@ -1195,17 +1196,17 @@ if __name__ == "__main__":
             l, _ = label(img >= thresh, np.ones((3,3), bool))
             outline_color = tuple([int(idx == i) for idx in range(3)])
             objects.append(ObjectsData(
-                "Objects %d" % (i+1), [l], 
+                "Objects %d" % (i+1), [l],
                 outline_color = outline_color,
                 mode = MODE_LINES))
             ii = np.linspace(-1, 1, num = img.shape[0])[:, np.newaxis]
             jj = np.linspace(-1, 1, num = img.shape[1])[np.newaxis, :]
             mask = (ii ** (2*i+2) + jj ** (2*i+2)) ** (1.0 / (2*i+2)) < .75
-            masks.append(MaskData("Mask %d" % (i+1), mask, 
+            masks.append(MaskData("Mask %d" % (i+1), mask,
                                   mode = MODE_LINES,
                                   color = outline_color))
-            
-        
+
+
         artist = CPImageArtist(images = images, objects=objects, masks = masks)
         figure = matplotlib.pyplot.figure()
         ax = figure.add_axes((0.05, 0.05, .9, .9))
@@ -1237,6 +1238,6 @@ if __name__ == "__main__":
         frame.SetMenuBar(menu_bar)
         artist.add_to_menu(frame, item)
         matplotlib.pyplot.show()
-        
+
     finally:
         javabridge.kill_vm()

@@ -23,7 +23,7 @@ import cellprofiler.modules.convertobjectstoimage as C
 
 OBJECTS_NAME = "inputobjects"
 IMAGE_NAME = "outputimage"
- 
+
 class TestConvertObjectsToImage(unittest.TestCase):
     def make_workspace(self):
         module = C.ConvertToImage()
@@ -44,7 +44,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         module.image_name.value = IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
         return (workspace,module)
-    
+
     def test_01_01_load_matlab(self):
         '''load a matlab pipeline with ConvertToImage in it'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0'
@@ -76,7 +76,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertEqual(module.image_name.value, "NucleiImage")
         self.assertEqual(module.image_mode.value, "Color")
         self.assertEqual(module.colormap.value, "flag")
-            
+
     def test_01_02_load_v1(self):
         '''load a pipeline with a variable_revision_number=1 ConvertToImage'''
         data = ('eJztWltv2jAUNpeidpW6rnvYpL74cZvaKKFF2ngZFNaNqVy0ok57WxoM9WR'
@@ -111,7 +111,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertEqual(module.image_name.value, "CellImage")
         self.assertEqual(module.image_mode.value, "Color")
         self.assertEqual(module.colormap.value, "winter")
-    
+
     def test_02_01_bw(self):
         '''Test conversion of labels to black and white'''
         workspace, module = self.make_workspace()
@@ -121,7 +121,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertFalse(pixel_data[0,0])
         i,j = np.mgrid[0:16,0:16]
         self.assertTrue(np.all(pixel_data[i*j > 0]))
-    
+
     def test_02_02_gray(self):
         '''Test conversion of labels to grayscale'''
         workspace, module = self.make_workspace()
@@ -130,7 +130,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
         expected = np.reshape(np.arange(256).astype(np.float32)/255,(16,16))
         self.assertTrue(np.all(pixel_data == expected))
-    
+
     def test_02_03_color(self):
         '''Test conversion of labels to color'''
         for color in C.COLORMAPS:
@@ -140,7 +140,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
             module.run(workspace)
             pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
             self.assertEqual(np.product(pixel_data.shape),256*3)
-    
+
     def test_02_04_uint16(self):
         workspace, module = self.make_workspace()
         module.image_mode.value = C.IM_UINT16
@@ -148,7 +148,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
         expected = np.reshape(np.arange(256),(16,16))
         self.assertTrue(np.all(pixel_data== expected))
-        
+
     def make_workspace_ijv(self):
         module = C.ConvertToImage()
         shape = (14, 16)
@@ -180,7 +180,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         module.image_name.value = IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
         return (workspace, module, ijv)
-        
+
     def test_03_01_binary_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
         self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
@@ -190,28 +190,28 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertEqual(len(np.unique(ijv[:, 0] + ijv[:, 1] * pixel_data.shape[0])),
                          np.sum(pixel_data))
         self.assertTrue(np.all(pixel_data[ijv[:, 0],ijv[:, 1]]))
-        
+
     def test_03_02_gray_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
         self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
         module.image_mode.value = C.IM_GRAYSCALE
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-        
+
         counts = coo_matrix((np.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))).toarray()
         self.assertTrue(np.all(pixel_data[counts == 0] == 0))
         pd_values = np.unique(pixel_data)
         pd_labels = np.zeros(pixel_data.shape, int)
         for i in range(1, len(pd_values)):
             pd_labels[pixel_data == pd_values[i]] = i
-        
+
         dest_v = np.zeros(np.max(ijv[:, 2] + 1), int)
         dest_v[ijv[:, 2]] = pd_labels[ijv[:, 0], ijv[:, 1]]
         pd_ok = np.zeros(pixel_data.shape, bool)
         ok = pd_labels[ijv[:, 0], ijv[:, 1]] == dest_v[ijv[:, 2]]
         pd_ok[ijv[ok, 0], ijv[ok, 1]] = True
         self.assertTrue(np.all(pd_ok[counts > 0]))
-        
+
     def test_03_03_color_ijv(self):
         workspace, module, ijv = self.make_workspace_ijv()
         self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
@@ -229,6 +229,5 @@ class TestConvertObjectsToImage(unittest.TestCase):
         # Get some color for every represented bit combo
         #
         vbit_color[bits[ijv[:, 0], ijv[:,1]], :] = pixel_data[ijv[:, 0], ijv[:,1], :]
-        
+
         self.assertTrue(np.all(pixel_data == vbit_color[bits, :]))
-                

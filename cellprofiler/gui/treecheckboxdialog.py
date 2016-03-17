@@ -5,10 +5,10 @@ import wx
 
 class TreeCheckboxDialog(wx.Dialog):
     '''A dialog for "selecting" items on a tree by checking them'''
-    
+
     def __init__(self, parent, d, *args, **kwargs):
         '''Initialize the dialog
-        
+
         d - dictionary representing the tree.
             Keys form the dictionary labels, values are dictionaries of subtrees
             A leaf is marked with a dictionary entry whose key is None and
@@ -22,10 +22,10 @@ class TreeCheckboxDialog(wx.Dialog):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         tree_style = wx.TR_DEFAULT_STYLE
-        self.tree_ctrl = wx.TreeCtrl(self, 
+        self.tree_ctrl = wx.TreeCtrl(self,
                                      style = tree_style)
         sizer.Add(self.tree_ctrl, 1, wx.EXPAND | wx.ALL, 5)
-        
+
         image_list = wx.ImageList(16, 16)
         for i, state_flag in enumerate(
             (0, wx.CONTROL_CHECKED, wx.CONTROL_UNDETERMINED)):
@@ -36,16 +36,16 @@ class TreeCheckboxDialog(wx.Dialog):
         self.tree_ctrl.SetImageList(image_list)
         self.image_list = image_list
         image_index, selected_image_index = self.img_idx(d)
-        root_id = self.tree_ctrl.AddRoot("All", image_index, 
-                                         selected_image_index, 
+        root_id = self.tree_ctrl.AddRoot("All", image_index,
+                                         selected_image_index,
                                          wx.TreeItemData(d))
         self.tree_ctrl.SetItemImage(root_id, image_index,
                                     wx.TreeItemIcon_Normal)
-        self.tree_ctrl.SetItemImage(root_id, selected_image_index, 
+        self.tree_ctrl.SetItemImage(root_id, selected_image_index,
                                     wx.TreeItemIcon_Selected)
-        self.tree_ctrl.SetItemImage(root_id, image_index, 
+        self.tree_ctrl.SetItemImage(root_id, image_index,
                                     wx.TreeItemIcon_Expanded)
-        self.tree_ctrl.SetItemImage(root_id, image_index, 
+        self.tree_ctrl.SetItemImage(root_id, image_index,
                                     wx.TreeItemIcon_SelectedExpanded)
         self.root_id = root_id
         self.tree_ctrl.SetItemHasChildren(root_id, len(d) > 1)
@@ -64,13 +64,13 @@ class TreeCheckboxDialog(wx.Dialog):
             table_sizer.Add(bitmap_ctrl, (i, 1), flag=wx.RIGHT, border=5)
             table_sizer.Add(wx.StaticText(self, label=description), (i, 2))
         table_sizer.AddGrowableCol(2)
-        sizer.Add(self.CreateStdDialogButtonSizer(wx.CANCEL | wx.OK), 
+        sizer.Add(self.CreateStdDialogButtonSizer(wx.CANCEL | wx.OK),
                   flag=wx.CENTER)
         self.Layout()
-        
+
     def set_parent_reflects_child(self, value):
         '''Set the "parent_reflects_child" flag
-        
+
         If you uncheck all of a parent's children, maybe that means
         that the parent should be unchecked too. But imagine the case
         where the user is checking and unchecking subdirectories. Perhaps
@@ -79,7 +79,7 @@ class TreeCheckboxDialog(wx.Dialog):
         This drives the parent to None instead of False, indicating that
         files should be picked up from the currenet directory, but not kids.'''
         self.parent_reflects_child = value
-        
+
     def img_idx(self, d):
         if d[None] is False:
             return (0, 1)
@@ -87,7 +87,7 @@ class TreeCheckboxDialog(wx.Dialog):
             return (2, 3)
         else:
             return (4, 5)
-        
+
     def get_item_data(self, item_id):
         x = self.tree_ctrl.GetItemData(item_id)
         d = x.GetData()
@@ -99,7 +99,7 @@ class TreeCheckboxDialog(wx.Dialog):
         d = self.get_item_data(item_id)
         if len(d) > 1:
             self.populate(item_id)
-        
+
     def populate(self, item_id):
         '''Populate the subitems of a tree'''
         try:
@@ -115,20 +115,20 @@ class TreeCheckboxDialog(wx.Dialog):
                         d[key] = d1
                     image_index, selected_index = self.img_idx(d1)
                     sub_id = self.tree_ctrl.AppendItem(item_id, key, image_index,
-                                                       selected_index, 
+                                                       selected_index,
                                                        wx.TreeItemData(d1))
                     self.tree_ctrl.SetItemImage(sub_id, image_index,
                                                 wx.TreeItemIcon_Normal)
-                    self.tree_ctrl.SetItemImage(sub_id, selected_index, 
+                    self.tree_ctrl.SetItemImage(sub_id, selected_index,
                                                 wx.TreeItemIcon_Selected)
                     self.tree_ctrl.SetItemImage(sub_id, image_index,
                                                 wx.TreeItemIcon_Expanded)
-                    self.tree_ctrl.SetItemImage(sub_id, selected_index, 
+                    self.tree_ctrl.SetItemImage(sub_id, selected_index,
                                                 wx.TreeItemIcon_SelectedExpanded)
                     self.tree_ctrl.SetItemHasChildren(sub_id, len(d1) > 1)
         finally:
             self.SetCursor(wx.NullCursor)
-                
+
     def on_left_down(self, event):
         item_id, where = self.tree_ctrl.HitTest(event.Position)
         if where & wx.TREE_HITTEST_ONITEMICON == 0:
@@ -142,7 +142,7 @@ class TreeCheckboxDialog(wx.Dialog):
             state = False
         self.set_item_state(item_id, state)
         self.set_parent_state(item_id)
-        
+
     def set_parent_state(self, item_id):
         if item_id != self.root_id:
             parent_id = self.tree_ctrl.GetItemParent(item_id)
@@ -157,7 +157,7 @@ class TreeCheckboxDialog(wx.Dialog):
                 if next_state != state:
                     state = None
                     break
-                
+
             if d_parent[None] is not state:
                 if state is False and not self.parent_reflects_child:
                     state = None
@@ -168,7 +168,7 @@ class TreeCheckboxDialog(wx.Dialog):
                 self.tree_ctrl.SetItemImage(parent_id, image_index, wx.TreeItemIcon_Expanded)
                 self.tree_ctrl.SetItemImage(parent_id, selected_index, wx.TreeItemIcon_SelectedExpanded)
                 self.set_parent_state(parent_id)
-        
+
     def set_item_state(self, item_id, state):
         d = self.get_item_data(item_id)
         d[None] = state
@@ -188,10 +188,10 @@ class TreeCheckboxDialog(wx.Dialog):
                 if child_id == self.tree_ctrl.GetLastChild(item_id):
                     break
                 child_id = self.tree_ctrl.GetNextSibling(child_id)
-        
+
     def get_checkbox_bitmap(self, flags, width, height):
         '''Return a bitmap with a checkbox drawn into it
-        
+
         flags - rendering flags including CONTROL_CHECKED and CONTROL_UNDETERMINED
         width, height - size of bitmap to return
         '''
@@ -221,16 +221,16 @@ if __name__ == "__main__":
                     for k in range(5):
                         d2[str(k)] = { None: (k & 1) != 0}
             def fn():
-                return { 
-                    "Hello":{ 
-                        "There": {None:False}, 
+                return {
+                    "Hello":{
+                        "There": {None:False},
                         "Kitty":{None:True},
                         None:None },
                     None:None }
             d["KittenKiller"] = fn
-                        
-            dlg = TreeCheckboxDialog(None, d, size=(640,480), 
-                                     style = wx.DEFAULT_DIALOG_STYLE | 
+
+            dlg = TreeCheckboxDialog(None, d, size=(640,480),
+                                     style = wx.DEFAULT_DIALOG_STYLE |
                                      wx.RESIZE_BORDER)
             dlg.ShowModal()
             print "{"
@@ -238,7 +238,7 @@ if __name__ == "__main__":
                 d1 = d[str(i)]
                 print "   %d: { None=%s," % (i, repr(d1[None]))
                 for j in range(5):
-                    d2 = d1[str(j)] 
+                    d2 = d1[str(j)]
                     print "       %d: { None=%s" % (j, repr(d2[None]))
                     for k in range(5):
                         d3 = d2[str(k)]
@@ -250,4 +250,3 @@ if __name__ == "__main__":
     my_app = MyApp(False)
     my_app.MainLoop()
     pass
-    

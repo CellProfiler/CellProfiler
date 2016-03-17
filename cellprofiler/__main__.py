@@ -203,7 +203,7 @@ def main(args = None):
         if options.show_gui:
             import wx
             wx.Log.EnableLogging(False)
-            from cellprofiler.cellprofilerapp import CellProfilerApp
+            from cellprofiler.app import App
             from cellprofiler.workspace import is_workspace_file
 
             if options.pipeline_filename:
@@ -219,7 +219,7 @@ def main(args = None):
             else:
                 workspace_path = None
                 pipeline_path = None
-            App = CellProfilerApp(
+            App = App(
                 0,
                 check_for_new_version = (options.pipeline_filename is None),
                 workspace_path = workspace_path,

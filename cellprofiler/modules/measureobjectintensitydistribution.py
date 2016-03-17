@@ -25,7 +25,7 @@ as fraction of total intensity normalized by fraction of pixels at a given radiu
 over 8 slices.</li>
 <li><i>Zernike:</i> The Zernike features characterize the distribution of
 intensity across the object. For instance, Zernike 1,1 has a high value if the
-tensity is low on one side of the object and high on the other. The
+intensity is low on one side of the object and high on the other. The
 ZernikeMagnitude feature holds the rotationally invariant degree magnitude
 of the moment and the ZernikePhase feature gives the moment's orientation.</li>
 </ul>

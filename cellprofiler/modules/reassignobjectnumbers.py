@@ -285,7 +285,7 @@ class ReassignObjectNumbers(cpm.CPModule):
                 parents_name = self.parent_object.value
                 parents_of = workspace.measurements[
                     objects_name, "_".join((C_PARENT, parents_name))]
-                output_labels = labels.copy()
+                output_labels = labels.copy().astype(np.uint32)
                 output_labels[labels > 0] = parents_of[labels[labels > 0]-1]
                 if self.unification_method == UM_CONVEX_HULL:
                     ch_pts, n_pts = morph.convex_hull(output_labels)

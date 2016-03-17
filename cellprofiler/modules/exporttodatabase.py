@@ -3528,6 +3528,9 @@ image_id      = %(unique_id)s
 object_id     = %(object_id)s
 plate_id      = %(plate_id)s
 well_id       = %(well_id)s
+series_id     = Image_Group_Number
+group_id      = Image_Group_Number
+timepoint_id  = Image_Group_Index
 
 # Also specify the column names that contain X and Y coordinates for each
 # object within an image.

@@ -219,11 +219,8 @@ def main(args = None):
             else:
                 workspace_path = None
                 pipeline_path = None
-            App = App(
-                0,
-                check_for_new_version = (options.pipeline_filename is None),
-                workspace_path = workspace_path,
-                pipeline_path = pipeline_path)
+
+            app = App(0, workspace_path=workspace_path, pipeline_path=pipeline_path)
 
         if options.data_file is not None:
             cpprefs.set_data_file(os.path.abspath(options.data_file))
@@ -244,8 +241,8 @@ def main(args = None):
 
         if options.show_gui:
             if options.run_pipeline:
-                App.frame.pipeline_controller.do_analyze_images()
-            App.MainLoop()
+                app.frame.pipeline_controller.do_analyze_images()
+            app.MainLoop()
             return
 
         elif options.run_pipeline:

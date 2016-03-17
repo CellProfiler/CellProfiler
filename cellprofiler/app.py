@@ -4,38 +4,33 @@ import cellprofiler.preferences
 import cellprofiler.gui.errordialog
 import cellprofiler.utilities.thread_excepthook
 
+
 cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
 
 
 class App(wx.App):
     def __init__(self, *args, **kwargs):
-        self.original_excepthook = sys.excepthook
-        self.check_for_new_version = kwargs.pop('check_for_new_version', False)
+        self.abort_initialization = False
 
-        self.workspace_path = kwargs.pop('workspace_path', None)
+        self.frame = None
+
+        self.original_excepthook = sys.excepthook
 
         self.pipeline_path = kwargs.pop('pipeline_path', None)
 
-        self.abort_initialization = False
+        self.workspace_path = kwargs.pop('workspace_path', None)
 
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):
-        # The wx.StandardPaths aren't available until this is set.
-        from cellprofiler.utilities.version import dotted_version
-        self.SetAppName('CellProfiler%s' % dotted_version)
-
-        if self.check_for_new_version:
-            self.new_version_check()
-
         import cellprofiler.gui.cpframe
+        import cellprofiler.utilities.version
+
+        self.SetAppName("CellProfiler{0:s}".format(cellprofiler.utilities.version.dotted_version))
 
         self.frame = cellprofiler.gui.cpframe.CPFrame(None, -1, "Cell Profiler")
 
-        try:
-            self.frame.start(self.workspace_path, self.pipeline_path)
-        except:
-            return 0
+        self.frame.start(self.workspace_path, self.pipeline_path)
 
         if self.abort_initialization:
             return 0
@@ -66,11 +61,6 @@ class App(wx.App):
 
         sys.excepthook = self.original_excepthook
 
-    def new_version_check(self, force=False):
-        pass
-
-    def new_version_cb(self, new_version, new_version_info):
-        pass
 
 if __name__ == "__main__":
     CellProfilerApp = App(0)

@@ -684,10 +684,6 @@ class CPFrame(wx.Frame):
                                 "Launch the developer's guide webpage")
         self.__menu_help.Append(ID_HELP_SOURCE_CODE, "Source Code",
                                 "Visit CellProfiler's Github repository")
-        self.__menu_help.Append(
-            ID_CHECK_NEW_VERSION,
-            "Check for Updates...",
-            "Check for a new version of CellProfiler")
         self.__menu_help.Append(ID_HELP_ABOUT, "&About...",
                                 "About CellProfiler")
 
@@ -733,7 +729,6 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self, ID_HELP_SEARCH, self.__on_search_help)
         wx.EVT_MENU(self, ID_HELP_ABOUT, self.__on_help_about)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
-        wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         wx.EVT_MENU(self, ID_DEBUG_PDB, self.__debug_pdb)
         accelerator_table = wx.AcceleratorTable(
@@ -920,9 +915,6 @@ class CPFrame(wx.Frame):
     def __on_preferences(self, event):
         dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
         dlg.Show()
-
-    def __on_check_new_version(self, event):
-        wx.GetApp().new_version_check(force=True)
 
     def __on_close_all(self, event):
         close_all(self)

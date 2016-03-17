@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import pkg_resources
 import wx
 
 
@@ -11,4 +12,4 @@ class AboutDialogInfo(wx.AboutDialogInfo):
 
         self.Name = "CellProfiler"
 
-        self.Version = "2.3.0"
+        self.Version = pkg_resources.get_distribution("cellprofiler").version

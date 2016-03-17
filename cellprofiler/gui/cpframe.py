@@ -27,7 +27,7 @@ from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
 from cellprofiler.gui.datatoolframe import DataToolFrame
 from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow, WELCOME_SCREEN_FRAME
-from cellprofiler.gui.errordialog import display_error_message
+from cellprofiler.gui.dialog import display_error_message
 from cellprofiler.gui.pathlist import PathListCtrl
 from cellprofiler.gui.imagesetctrl import ImageSetCtrl
 from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint, sp_bind_to_evt_paint

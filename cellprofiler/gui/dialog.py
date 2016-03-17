@@ -419,16 +419,91 @@ def display_error_message(parent, message, title, buttons = None,
         dlg.Fit()
         return dlg.ShowModal()
 
+# if __name__ == "__main__":
+#     import wx
+#     import cellprofiler.pipeline
+#     import cellprofiler.modules.loadimages
+#     try:
+#         float("my boat")
+#     except Exception, e:
+#         app = wx.PySimpleApp()
+#         pipeline = cellprofiler.pipeline.Pipeline()
+#         module = cellprofiler.modules.loadimages.LoadImages()
+#         module.module_num = 1
+#         pipeline.add_module(module)
+#         display_error_dialog(None, e, pipeline)
+
+import raven
+import sys
+import wx
+
+
+class Client(raven.Client):
+    def __init__(self):
+        dsn = "https://3d53494dbaaf4e858afd79f56506a749:8a7a767a1924423f89c1fdfd69717fd5@app.getsentry.com/70887"
+
+        super(Client, self).__init__(dsn)
+
+
+class Frame(wx.Frame):
+    def __init__(self):
+        super(Frame, self).__init__(parent=None, title="Exceptions")
+
+        sys.excepthook = self.excepthook
+
+        self.preferences = Preferences()
+
+        self.client = Client()
+
+        Panel(self)
+
+        self.Show()
+
+    def excepthook(self, *exc_info):
+        if self.preferences.telemetry:
+            self.client.captureException(exc_info)
+
+        message = "Morbi vitae viverra ex"
+
+        extended_message = "Aliquam fringilla interdum nunc, vitae efficitur arcu bibendum ac. Vestibulum non risus."
+
+        dialog = MessageDialog(message, extended_message)
+
+        dialog.ShowModal()
+
+        dialog.Destroy()
+
+
+class MessageDialog(wx.MessageDialog):
+    def __init__(self, message, extended_message):
+        super(MessageDialog, self).__init__(parent=None, message=message, style=wx.CANCEL | wx.ICON_EXCLAMATION)
+
+        self.SetExtendedMessage(extended_message)
+
+        self.SetOKLabel("Continue Processing")
+
+
+class Panel(wx.Panel):
+    def __init__(self, parent):
+        super(Panel, self).__init__(parent)
+
+        button = wx.Button(self, label="Raise Exception")
+
+        button.Bind(wx.EVT_BUTTON, self.throw)
+
+    @staticmethod
+    def throw(event):
+        return 1 / 0
+
+
+class Preferences:
+    def __init__(self):
+        self.telemetry = True
+
+
 if __name__ == "__main__":
-    import wx
-    import cellprofiler.pipeline
-    import cellprofiler.modules.loadimages
-    try:
-        float("my boat")
-    except Exception, e:
-        app = wx.PySimpleApp()
-        pipeline = cellprofiler.pipeline.Pipeline()
-        module = cellprofiler.modules.loadimages.LoadImages()
-        module.module_num = 1
-        pipeline.add_module(module)
-        display_error_dialog(None, e, pipeline)
+    application = wx.App(False)
+
+    frame = Frame()
+
+    application.MainLoop()

@@ -229,6 +229,20 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_default_output_directory,
                  cpprefs.set_default_output_directory,
                  DIRBROWSE, cphelp.DEFAULT_OUTPUT_FOLDER_HELP],
+                [
+                    "Share crash data with CellProfiler developers",
+                    cpprefs.get_telemetry_enabled,
+                    cpprefs.set_telemetry_enabled,
+                    CHOICE,
+                    cphelp.SHOW_REPORT_BAD_SIZES_DLG_HELP
+                ],
+                # [
+                #     "Share crash data with CellProfiler developers",
+                #     cpprefs.get_telemetry_enabled,
+                #     cpprefs.set_telemetry_enabled,
+                #     CHOICE,
+                #     cphelp.REPORT_JVM_ERROR_HELP
+                # ],
                 [ "Title font",
                   self.get_title_font,
                   self.set_title_font,

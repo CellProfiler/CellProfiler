@@ -79,7 +79,7 @@ from cellprofiler.preferences import \
      get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
      get_headless
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, REGEXP_HELP_REF
-from cellprofiler.gui.errordialog import show_warning
+from cellprofiler.gui.dialog import show_warning
 
 from cellprofiler.measurements import \
      C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,\

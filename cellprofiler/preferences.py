@@ -320,6 +320,7 @@ PLUGIN_DIRECTORY = 'PluginDirectory'
 IJ_PLUGIN_DIRECTORY = 'IJPluginDirectory'
 SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
+TELEMETRY_ENABLED = "TelemetryEnabled"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
 SHOW_SAMPLING = "ShowSampling"
 WRITE_MAT = "WriteMAT"
@@ -709,6 +710,30 @@ def is_url_path(path):
         if path.lower().startswith('%s:' % protocol):
             return True
     return False
+
+
+__telemetry_enabled = None
+
+
+def get_telemetry_enabled():
+    global __telemetry_enabled
+
+    if __telemetry_enabled is not None:
+        return __telemetry_enabled
+
+    if not config_exists(TELEMETRY_ENABLED):
+        return True
+
+    return config_read(TELEMETRY_ENABLED) == "True"
+
+
+def set_telemetry_enabled(value):
+    global __telemetry_enabled
+
+    __telemetry_enabled = value
+
+    config_write(TELEMETRY_ENABLED, "True" if value else "False")
+
 
 __default_colormap = None
 def get_default_colormap():

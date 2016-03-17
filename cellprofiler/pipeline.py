@@ -736,8 +736,8 @@ class Pipeline(object):
 
         """
         # clear previously seen errors on reload
-        import cellprofiler.gui.errordialog
-        cellprofiler.gui.errordialog.clear_old_errors()
+        import cellprofiler.gui.dialog
+        cellprofiler.gui.dialog.clear_old_errors()
         import cellprofiler.modules
         reload(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
@@ -1017,7 +1017,7 @@ class Pipeline(object):
             else:
                 if ((not cpprefs.get_headless()) and
                     pipeline_version < CURRENT_VERSION):
-                    from cellprofiler.gui.errordialog import show_warning
+                    from cellprofiler.gui.dialog import show_warning
                     if git_hash is not None:
                         message = (
         "Your pipeline was saved using an old version\n"

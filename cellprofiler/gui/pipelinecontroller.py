@@ -50,8 +50,8 @@ from cellprofiler.gui.viewworkspace import \
 from cellprofiler.icons import get_builtin_image
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 from cellprofiler.modules.loadimages import pathname2url
-from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
-from errordialog import display_error_message
+from dialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
+from dialog import display_error_message
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 
 logger = logging.getLogger(__name__)
@@ -926,7 +926,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         except cpp.PipelineLoadCancelledException:
             self.__pipeline.clear()
         except Exception,instance:
-            from cellprofiler.gui.errordialog import display_error_dialog
+            from cellprofiler.gui.dialog import display_error_dialog
             display_error_dialog(self.__frame, instance, self.__pipeline,
                                  continue_only=True)
 

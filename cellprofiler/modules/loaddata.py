@@ -1110,7 +1110,7 @@ class LoadData(cpm.CPModule):
 
     def display(self, workspace, figure):
         if hasattr(workspace.display_data, "warning"):
-            from cellprofiler.gui.errordialog import show_warning
+            from cellprofiler.gui.dialog import show_warning
             show_warning("Images have different sizes",
                          workspace.display_data.warning,
                          cpprefs.get_show_report_bad_sizes_dlg,

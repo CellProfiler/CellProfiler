@@ -1,12 +1,13 @@
-import h5py
 import logging
 import logging.config
+import os
 import re
 import sys
-import os
-import numpy as np
 import tempfile
 from cStringIO import StringIO
+
+import h5py
+import numpy as np
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -26,7 +27,6 @@ if sys.platform.startswith('win'):
         libzmq = os.path.join(here, 'libzmq.dll')
         if os.path.exists(libzmq):
             ctypes.cdll.LoadLibrary(libzmq)
-import zmq
 #
 # CellProfiler expects NaN as a result during calculation
 #
@@ -203,7 +203,7 @@ def main(args = None):
         if options.show_gui:
             import wx
             wx.Log.EnableLogging(False)
-            from cellprofiler.cellprofilerapp import CellProfilerApp
+            from cellprofiler.gui.app import App
             from cellprofiler.workspace import is_workspace_file
 
             if options.pipeline_filename:
@@ -219,11 +219,8 @@ def main(args = None):
             else:
                 workspace_path = None
                 pipeline_path = None
-            App = CellProfilerApp(
-                0,
-                check_for_new_version = (options.pipeline_filename is None),
-                workspace_path = workspace_path,
-                pipeline_path = pipeline_path)
+
+            app = App(0, workspace_path=workspace_path, pipeline_path=pipeline_path)
 
         if options.data_file is not None:
             cpprefs.set_data_file(os.path.abspath(options.data_file))
@@ -244,8 +241,8 @@ def main(args = None):
 
         if options.show_gui:
             if options.run_pipeline:
-                App.frame.pipeline_controller.do_analyze_images()
-            App.MainLoop()
+                app.frame.pipeline_controller.do_analyze_images()
+            app.MainLoop()
             return
 
         elif options.run_pipeline:
@@ -828,7 +825,6 @@ def run_pipeline_headless(options, args):
 
     if sys.platform == 'darwin':
         if options.start_awt:
-            import bioformats
             from javabridge import activate_awt
             activate_awt()
 

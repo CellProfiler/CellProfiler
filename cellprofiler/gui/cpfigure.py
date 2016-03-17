@@ -1903,7 +1903,7 @@ def show_image(url, parent = None, needs_raise_after = True):
         return
 
     except Exception, e:
-        from cellprofiler.gui.errordialog import display_error_dialog
+        from cellprofiler.gui.dialog import display_error_dialog
         display_error_dialog(None, e, None,
                              "Failed to load %s" % url,
                              continue_only=True)

@@ -26,7 +26,7 @@ def get_cp_bitmap(size=None):
     if size is not None:
         img.Rescale(size, size, wx.IMAGE_QUALITY_HIGH)
     return wx.BitmapFromImage(img)
-    
+
 def get_cp_icon(size=None):
     """The CellProfiler icon as a wx.Icon"""
     import wx
@@ -43,7 +43,7 @@ BV_DOWN = "down"
 BV_UP   = "up"
 def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
     """Draw a bevel within the rectangle so the inside looks raised or lowered
-    
+
     dc - device context for drawing
     rect - draw the bevel within this rectangle
     width - the width of the bevel in pixels
@@ -51,7 +51,7 @@ def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
             for raised appearance
     shadow_pen - pen to use for drawing the shadow portion of the bevel
     highlight_pen - pen to use for drawing the light portion of the bevel
-    
+
     returns the coordinates of the inside rectangle
     """
     import wx
@@ -73,16 +73,16 @@ def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
 
 def draw_item_selection_rect(window, dc, rect, flags):
     '''Replacement for RendererNative.DrawItemSelectionRect
-    
+
     window - draw in this window
-    
+
     dc - device context to use for drawing
-    
+
     rect - draw selection UI inside this rectangle
-    
+
     flags - a combination of wx.CONTROL_SELECTED, wx.CONTROL_CURRENT and
             wx.CONTROL_FOCUSED
-            
+
     This function fixes a bug in the Carbon implementation for drawing
     with wx.CONTROL_CURRENT and not wx.CONTROL_SELECTED.
     '''

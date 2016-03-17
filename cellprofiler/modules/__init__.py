@@ -33,7 +33,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'displaydensityplot' : 'DisplayDensityPlot',
                         'displaydataonimage' : 'DisplayDataOnImage',
                         'displayhistogram' : 'DisplayHistogram',
-                        'displayplatemap' : 'DisplayPlatemap', 
+                        'displayplatemap' : 'DisplayPlatemap',
                         'displayscatterplot' : 'DisplayScatterPlot',
                         'editobjectsmanually' : 'EditObjectsManually',
                         'enhanceedges' : 'EnhanceEdges',
@@ -75,7 +75,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'measureobjectintensity' : 'MeasureObjectIntensity',
                         'measureobjectsizeshape' : 'MeasureObjectSizeShape',
                         'measureobjectneighbors' : 'MeasureObjectNeighbors',
-                        'measureobjectradialdistribution' : 'MeasureObjectRadialDistribution',
+                        'measureobjectintensitydistribution' : 'MeasureObjectIntensityDistribution',
                         'measureneurons': 'MeasureNeurons',
                         'measuretexture' : 'MeasureTexture',
                         'mergeoutputfiles' : 'MergeOutputFiles',
@@ -122,7 +122,7 @@ builtin_modules = ['align',
                    'displaydataonimage',
                    'displaydensityplot',
                    'displayhistogram',
-                   'displayplatemap', 
+                   'displayplatemap',
                    'displayscatterplot',
                    'editobjectsmanually',
                    'enhanceedges',
@@ -164,7 +164,7 @@ builtin_modules = ['align',
                    'measureobjectintensity',
                    'measureobjectsizeshape',
                    'measureobjectneighbors',
-                   'measureobjectradialdistribution',
+                   'measureobjectintensitydistribution',
                    'measureneurons',
                    'measuretexture',
                    'mergeoutputfiles',
@@ -230,7 +230,9 @@ substitutions = {'Average': 'MakeProjection',
                  'cellprofiler.modules.measureobjectareashape.MeasureObjectAreaShape':'MeasureObjectSizeShape',
                  'MeasureObjectAreaShape':'MeasureObjectSizeShape',
                  'MeasureImageSaturationBlur': 'MeasureImageQuality',
-                 'MeasureRadialDistribution' : 'MeasureObjectRadialDistribution',
+                 'MeasureRadialDistribution' : 'MeasureObjectIntensityDistribution',
+                 'MeasureObjectRadialDistribution': 'MeasureObjectIntensityDistribution',
+                 'cellprofiler.modules.measureobjectradialdistribution.MeasureObjectRadialDistribution': 'MeasureObjectIntensityDistribution',
                  'Multiply': 'ImageMath',
                  'PlaceAdjacent': 'Tile',
                  'cellprofiler.modules.relabelobjects.RelabelObjects':'ReassignObjectNumbers',
@@ -268,13 +270,13 @@ def check_module(module, name):
         assert getattr(module, method_name) == getattr(cpm.CPModule, method_name), "Module %s should not override method %s"%(name, method_name)
     for method_name in should_override:
         assert getattr(module, method_name) != getattr(cpm.CPModule, method_name), "Module %s should override method %s"%(name, method_name)
-    
+
 
 def find_cpmodule(m):
     '''Returns the CPModule from within the loaded Python module
-    
+
     m - an imported module
-    
+
     returns the CPModule class
     '''
     for v, val in m.__dict__.iteritems():
@@ -303,8 +305,8 @@ def fill_modules():
             pymodules.append(m)
             if name in all_modules:
                 logger.warning(
-                    "Multiple definitions of module %s\n\told in %s\n\tnew in %s", 
-                    name, sys.modules[all_modules[name].__module__].__file__, 
+                    "Multiple definitions of module %s\n\told in %s\n\tnew in %s",
+                    name, sys.modules[all_modules[name].__module__].__file__,
                     m.__file__)
             all_modules[name] = cp_module
             check_module(cp_module, name)
@@ -344,14 +346,14 @@ def fill_modules():
 
     datatools.sort()
     if len(badmodules) > 0:
-        logger.warning("could not load these modules: %s", 
+        logger.warning("could not load these modules: %s",
                        ",".join([x[0] for x in badmodules]))
 def add_module_for_tst(module_class):
     all_modules[module_class.module_name] = module_class
 
-fill_modules()        
-    
-__all__ = ['instantiate_module', 'get_module_names', 'reload_modules', 
+fill_modules()
+
+__all__ = ['instantiate_module', 'get_module_names', 'reload_modules',
            'output_module_html', 'add_module_for_tst', 'builtin_modules']
 
 replaced_modules = {
@@ -368,7 +370,7 @@ unimplemented_modules = [
     'LabelImages', 'Restart', 'SplitOrSpliceMovie'
     ]
 def get_module_class(module_name):
-    if module_name in substitutions: 
+    if module_name in substitutions:
         module_name = substitutions[module_name]
     module_class = module_name.split('.')[-1]
     if not all_modules.has_key(module_class):

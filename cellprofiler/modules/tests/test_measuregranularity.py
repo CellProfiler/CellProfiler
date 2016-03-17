@@ -60,7 +60,7 @@ class TestMeasureGranularity(unittest.TestCase):
         self.assertAlmostEqual(image_setting.image_sample_size.value, .166)
         self.assertEqual(image_setting.element_size.value, 12)
         self.assertEqual(image_setting.granular_spectrum_length.value , 20)
-    
+
     def test_01_02_load_v1(self):
         '''Load a variable_revision_number=1 pipeline'''
         data = ('eJztWc1u2kAQXhNSNYlUpae0tz2GNljG+WmCqgQaVy1qoCigRFGUthtYwkq2'
@@ -101,7 +101,7 @@ class TestMeasureGranularity(unittest.TestCase):
             self.assertEqual(image_setting.granular_spectrum_length.value, glen)
             self.assertEqual(len(image_setting.objects), 0)
             self.assertEqual(image_setting.object_count.value, 0)
-            
+
     def test_01_03_load_v3(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -149,12 +149,12 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertEqual(image_setting.object_count.value, len(objs))
             self.assertTrue(all([ob.objects_name.value in objs
                                  for ob in image_setting.objects]))
-    
-    def make_pipeline(self, image, mask, subsample_size, image_sample_size, 
+
+    def make_pipeline(self, image, mask, subsample_size, image_sample_size,
                       element_size, granular_spectrum_length,
                       labels = None):
         '''Make a pipeline with a MeasureGranularity module
-        
+
         image - measure granularity on this image
         mask - exclude / include pixels from measurement. None = no mask
         subsample_size, etc. - values for corresponding settings in the module
@@ -185,14 +185,14 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             object_set.add_objects(objects, OBJECTS_NAME)
             image_setting.add_objects()
             image_setting.objects[0].objects_name.value = OBJECTS_NAME
-        workspace = cpw.Workspace(pipeline, module, image_set, 
+        workspace = cpw.Workspace(pipeline, module, image_set,
                                   object_set, cpmeas.Measurements(),
                                   image_set_list)
         return module, workspace
-    
+
     def test_02_00_all_masked(self):
         '''Run on a totally masked image'''
-        module, workspace = self.make_pipeline(np.zeros((40,40)), 
+        module, workspace = self.make_pipeline(np.zeros((40,40)),
                                                np.zeros((40,40), bool),
                                                .25, .25, 10, 16)
         self.assertTrue(isinstance(module, M.MeasureGranularity))
@@ -204,7 +204,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertTrue(np.isnan(value))
-    
+
     def test_02_01_zeros(self):
         '''Run on an image of all zeros'''
         module, workspace = self.make_pipeline(np.zeros((40,40)), None,
@@ -218,7 +218,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, 0)
-    
+
     def test_03_01_no_scaling(self):
         '''Run on an image without subsampling or background scaling'''
         #
@@ -238,7 +238,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, expected[i-1])
-        
+
     def test_03_02_subsampling(self):
         '''Run on an image with subsampling'''
         #
@@ -262,7 +262,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, expected[i-1])
-        
+
     def test_03_03_background_sampling(self):
         '''Run on an image with background subsampling'''
         #
@@ -293,7 +293,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
 
     def test_04_01_filter_background(self):
         '''Run on an image, filtering out the background
-        
+
         This test makes sure that the grey_closing happens correctly
         over the user-specified radius.
         '''
@@ -335,12 +335,12 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             self.assertTrue(feature in m.get_feature_names(cpmeas.IMAGE))
             value = m.get_current_image_measurement(feature)
             self.assertAlmostEqual(value, expected[i-1])
-            
+
     def test_05_01_all_masked(self):
         '''Run on objects and a totally masked image'''
         labels = np.ones((40,40), int)
         labels[20:,:] = 2
-        module, workspace = self.make_pipeline(np.zeros((40,40)), 
+        module, workspace = self.make_pipeline(np.zeros((40,40)),
                                                np.zeros((40,40), bool),
                                                .25, .25, 10, 16,
                                                labels)
@@ -357,10 +357,10 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
                                                feature)
             self.assertEqual(len(values), 2)
             self.assertTrue(np.all(np.isnan(values)) or np.all(values == 0))
-            
+
     def test_05_02_no_objects(self):
         '''Run on a labels matrix with no objects'''
-        module, workspace = self.make_pipeline(np.zeros((40,40)), 
+        module, workspace = self.make_pipeline(np.zeros((40,40)),
                                                None,
                                                .25, .25, 10, 16,
                                                np.zeros((40,40), int))
@@ -376,7 +376,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             values = m.get_current_measurement(OBJECTS_NAME,
                                                feature)
             self.assertEqual(len(values), 0)
-    
+
     def test_05_03_zeros(self):
         '''Run on an image of all zeros'''
         labels = np.ones((40,40), int)
@@ -395,7 +395,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             values = m.get_current_measurement(OBJECTS_NAME, feature)
             self.assertEqual(len(values), 2)
             np.testing.assert_almost_equal(values, 0)
-    
+
     def test_06_01_no_scaling(self):
         '''Run on an image without subsampling or background scaling'''
         #
@@ -420,7 +420,7 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             values = m.get_current_measurement(OBJECTS_NAME, feature)
             self.assertEqual(len(values), 2)
             np.testing.assert_almost_equal(values, expected[i-1])
-        
+
     def test_06_02_subsampling(self):
         '''Run on an image with subsampling'''
         #
@@ -453,4 +453,3 @@ MeasureGranularity:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
             # and this throws the images off during interpolation
             #
             np.testing.assert_almost_equal(values, expected[i-1], 0)
-        

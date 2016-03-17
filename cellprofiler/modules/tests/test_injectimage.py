@@ -19,7 +19,7 @@ class testInjectImage(unittest.TestCase):
     def test_00_00_init(self):
         image = numpy.zeros((10,10),dtype=float)
         x = InjectImage("my_image", image)
-    
+
     def test_01_01_get_from_image_set(self):
         image = numpy.zeros((10,10),dtype=float)
         ii = InjectImage("my_image", image)
@@ -39,4 +39,3 @@ class testInjectImage(unittest.TestCase):
 
 if __name__=="main":
     unittest.main()
-        

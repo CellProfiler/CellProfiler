@@ -35,7 +35,7 @@ class PluginImporter(object):
         if os.path.exists(os.path.join(cpprefs.get_plugin_directory(), modname + '.py')):
             return self
         return None
- 
+
     def load_module(self, fullname):
         if fullname in sys.modules:
             return sys.modules[fullname]

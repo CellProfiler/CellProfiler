@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:SPW="http://www.openmicroscopy.org/Schemas/SPW/2012-06"
 	xsi:schemaLocation="http://www.openmicroscopy.org/Schemas/OME/2012-06 http://www.openmicroscopy.org/Schemas/OME/2012-06/ome.xsd">
-	<SPW:Plate 
+	<SPW:Plate
 		ColumnNamingConvention="number" ExternalIdentifier="136570140804" ID="Plate:0"
 		Name="136570140804 96_Greiner" RowNamingConvention="letter">
 		<SPW:Well Column="0" ID="Well:0:0" Row="0" />

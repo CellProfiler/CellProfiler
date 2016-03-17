@@ -3,17 +3,17 @@
 
 def utf16encode(x):
     '''Encode a unicode string in 7-bit US ascii
-    
+
     x - unicode string to be encoded
-    
+
     returns utf8-escape-encoded string
-    
+
     The escapes:
 
     \ (backslash) -> \\
-    
+
     0x20 <= c < 0xff -> c
-    
+
     all others -> \u####
     '''
     y = ''

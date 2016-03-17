@@ -9,6 +9,7 @@
 *.so
 *\#
 *~
+*.egg
 .eggs/
 .idea/
 BatchProfiler/PrintEnv.py
@@ -26,6 +27,7 @@ cellprofiler/tests/test.db
 cellprofiler/utilities/build
 cellprofiler/utilities/javabridge.c
 contrib/LAP.c
+cpnose.py
 dist
 imagej/*.zip
 imagej/.checksums
@@ -40,3 +42,4 @@ killjavabridge.egg-info
 output
 plugins
 windows/**
+.python-version

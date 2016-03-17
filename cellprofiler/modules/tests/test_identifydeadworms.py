@@ -50,7 +50,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertEqual(module.worm_length, 114)
         self.assertEqual(module.angle_count, 180)
         self.assertTrue(module.wants_automatic_distance)
-        
+
     def test_01_01_load_v2(self):
         data = '''CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
@@ -81,32 +81,32 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertFalse(module.wants_automatic_distance)
         self.assertEqual(module.space_distance, 6)
         self.assertEqual(module.angular_distance, 45)
-        
+
     def make_workspace(self, pixel_data, mask = None):
         image = cpi.Image(pixel_data, mask)
         image_set_list = cpi.ImageSetList()
-        
+
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, image)
-        
+
         module = ID.IdentifyDeadWorms()
         module.module_num = 1
         module.image_name.value = IMAGE_NAME
         module.object_name.value = OBJECTS_NAME
-        
+
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        
+
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   cpo.ObjectSet(),
                                   cpmeas.Measurements(),
                                   image_set_list)
         return workspace, module
-    
+
     def test_02_01_zeros(self):
         '''Run the module with an image of all zeros'''
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
@@ -114,7 +114,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         count = workspace.measurements.get_current_image_measurement(
             '_'.join((ID.I.C_COUNT, OBJECTS_NAME)))
         self.assertEqual(count, 0)
-        
+
     def test_02_02_one_worm(self):
         '''Find a single worm'''
         image = np.zeros((20, 20), bool)
@@ -147,7 +147,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
                                       ID.M_ANGLE)
         self.assertEqual(len(a), 1)
         self.assertAlmostEqual(a[0], 135, 0)
-        
+
     def test_02_03_crossing_worms(self):
         '''Find two worms that cross'''
         image = np.zeros((20, 20), bool)
@@ -214,17 +214,17 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
     def test_04_01_find_adjacent_by_distance_empty(self):
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
         self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
-        
+
         first, second = module.find_adjacent_by_distance(np.zeros(0),
                                                          np.zeros(0),
                                                          np.zeros(0))
         self.assertEqual(len(first), 0)
         self.assertEqual(len(second), 0)
-        
+
     def test_04_02_find_adjacent_by_distance_one(self):
         workspace, module = self.make_workspace(np.zeros((20, 10), bool))
         self.assertTrue(isinstance(module, ID.IdentifyDeadWorms))
-        
+
         first, second = module.find_adjacent_by_distance(np.zeros(1),
                                                          np.zeros(1),
                                                          np.zeros(1))
@@ -232,7 +232,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         self.assertEqual(first[0], 0)
         self.assertEqual(len(second), 1)
         self.assertEqual(second[0], 0)
-        
+
     def test_04_03_find_adjacent_by_distance_easy(self):
         #
         # Feed "find_adjacent_by_distance" points whose "i" are all
@@ -260,7 +260,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
         for i in range(25):
             self.assertEqual(second[i], i % 5)
             self.assertEqual(second[i+25], (i % 5) + 5)
-            
+
     def test_04_04_find_adjacent_by_distance_hard(self):
         #
         # Feed "find_adjacent_by_distance" points whose "i" are not all

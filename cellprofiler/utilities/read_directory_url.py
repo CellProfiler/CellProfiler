@@ -12,7 +12,7 @@ IS_FILE = 2
 IS_UNKNOWN = 0
 def read_directory_url(url):
     '''Given a URL representing a directory, return a list of subdirectories and files
-    
+
     Returns a list of two-tuples:
     * First entry is the file name
     * Second entry is either IS_DIRECTORY, IS_FILE or IS_UNKNOWN depending
@@ -66,7 +66,7 @@ def walk_url(url, topdown = False):
             yield result
     if not topdown:
         yield (url, directories, files)
-        
+
 if __name__ == "__main__":
     result = read_directory_url("http://www.broadinstitute.org/~leek/tracking")
     print "\n".join(["%s\t%s" % ( f, "f" if d == IS_FILE else "d")
@@ -75,6 +75,3 @@ if __name__ == "__main__":
         print path
         for filename in files:
             print "\t"+filename
-            
-    
-    

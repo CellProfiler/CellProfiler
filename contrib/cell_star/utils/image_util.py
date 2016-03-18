@@ -167,13 +167,13 @@ def fill_holes(mask, kernel_size, minimal_hole_size):
 def draw_seeds(seeds, background, title="some_source"):
     if not SILENCE:
         prepare_debug_folder()
-        fig = plt.figure()
+        fig = plt.figure("draw_seeds")
         fig.frameon = False
         plt.imshow(background, cmap=plt.cm.gray)
         plt.plot([s.x for s in seeds], [s.y for s in seeds], 'bo', markersize=3)
         plt.savefig(os.path.join(debug_image_path, "seeds_"+title+".png"), pad_inches=0.0)
         fig.clf()
-        plt.close()
+        plt.close(fig)
 
 
 def contain_pixel(shape, pixel):
@@ -247,7 +247,6 @@ def image_smooth(image, radius):
     @param image: image to be blurred (assumed as numpy.array of values from 0 to 1)
     @param radius: radius of the kernel
     """
-    # TODO update padarray symmetric
     kernel = get_circle_kernel(radius).astype(float)
     kernel /= np.sum(kernel)
     image = np.array(image, dtype=float)
@@ -290,31 +289,31 @@ def image_show(image, title):
     @param image:
     @param title:
     """
-    if not SILENCE:
+    if not SILENCE and SHOW:
         prepare_debug_folder()
-        plt.figure(title)
+        fig = plt.figure(title)
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
-        if SHOW:
-            plt.show()
-        plt.close()
+        plt.show()
+        fig.clf()
+        plt.close(fig)
 
 
 def draw_overlay(image, x, y):
-    if not SILENCE:
+    if not SILENCE and SHOW:
         prepare_debug_folder()
-        plt.figure()
+        fig = plt.figure()
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
         plt.plot(x, y)
-        if SHOW:
-            plt.show()
-        plt.close()
+        plt.show()
+        fig.clf()
+        plt.close(fig)
 
 
 def draw_snakes(image, snakes, outliers=.1, it=0):
     if not SILENCE and len(snakes) > 1:
         prepare_debug_folder()
         snakes = sorted(snakes, key=lambda ss: ss.rank)
-        plt.figure()
+        fig = plt.figure("draw_snakes")
         plt.imshow(image, cmap=plt.cm.gray, interpolation='none')
 
         snakes_tc = snakes[:int(len(snakes) * (1 - outliers))]
@@ -335,7 +334,9 @@ def draw_snakes(image, snakes, outliers=.1, it=0):
         plt.savefig(os.path.join(debug_image_path, "snakes_rainbow_"+str(it)+".png"), pad_inches=0.0)
         if SHOW:
             plt.show()
-        plt.close()
+
+        fig.clf()
+        plt.close(fig)
 
 
 def tiff16_to_float(image):

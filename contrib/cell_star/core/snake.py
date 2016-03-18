@@ -11,7 +11,7 @@ import math
 from contrib.cell_star.utils import calc_util, image_util
 from contrib.cell_star.core.point import Point
 from contrib.cell_star.utils.index import Index
-
+from contrib.cell_star.utils.python_util import *
 
 class Snake(object):
     epsilon = 0.00000001
@@ -359,6 +359,7 @@ class Snake(object):
         self.segment_rank -= ranking_params["avgInnerDarknessWeight"] * self.avg_inner_darkness
         self.segment_rank -= float(ranking_params["logAreaBonus"]) * math.log(self.area**(1.0 / avg_cell_diameter))
 
+    @speed_profile
     def calculate_properties_vec(self, polar_transform):
         # Potentially prevent unnecessary calculations
         if self.rank is not None:

@@ -5,7 +5,7 @@ __author__ = 'Adam Kaczmarek, Filip Mróz'
 import math
 # Internal imports
 from contrib.cell_star.utils.image_util import *
-
+from contrib.cell_star.utils.python_util import *
 
 class ImageRepo(object):
 
@@ -219,14 +219,14 @@ class ImageRepo(object):
 
         self._cell_border_mask = self.foreground_mask & np.logical_not(self.cell_content_mask)
 
-    def get_blurred(self, image, blur_param):
-        #hash_image = image.sum()
+    def get_blurred(self, image, blur_param, cache_result = False):
         kesz = [c for a, b, c in self._blurred if a is image and b == blur_param]
         if kesz:
             return kesz[0]
         else:
             blurred = image_blur(image, blur_param)
-            self._blurred.append((image, blur_param, blurred))
+            if(cache_result):
+                self._blurred.append((image, blur_param, blurred))
             return blurred
 
     # Obrazy 256-kolorowe

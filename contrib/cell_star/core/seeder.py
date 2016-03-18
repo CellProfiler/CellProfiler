@@ -123,7 +123,7 @@ class Seeder(object):
 
             origin = im_name + origin
 
-            blurred = self.images.get_blurred(image, blur)
+            blurred = self.images.get_blurred(image, blur, cache_result=not excl)
 
             if mode == 'border':
                 blurred = 1 - blurred
@@ -174,7 +174,7 @@ class Seeder(object):
 
             seeds += new_seeds
 
-        # Jeśli są już jakieś snake'i - todo
+        # If there are already snakes - todo
         if len(snakes) > 0 and self.parameters["segmentation"]["seeding"]["from"]["cellBorderRemovingCurrSegments"]:
             new_seeds = self.find_seeds_from_border_or_content(self.images.brighter, self.images.foreground_mask,
                                                                self.images.segmentation, 'border', True)
@@ -186,7 +186,7 @@ class Seeder(object):
 
             seeds += new_seeds
 
-        # Jeśli są już jakieś snake'i - todo
+        #  If there are already snakes - todo
         if len(snakes) > 0 and self.parameters["segmentation"]["seeding"]["from"]["cellContentRemovingCurrSegments"]:
             new_seeds = self.find_seeds_from_border_or_content(self.images.darker, self.images.foreground_mask,
                                                                self.images.segmentation, 'content', True)
@@ -198,7 +198,7 @@ class Seeder(object):
 
             seeds += new_seeds
 
-        # Jeśli są już jakieś snake'i - todo
+        #  If there are already snakes - todo
         if self.parameters["segmentation"]["seeding"]["from"]["snakesCentroids"]:
             new_seeds = self.find_seeds_from_snakes(snakes)
             new_seeds += self.rand_seeds(

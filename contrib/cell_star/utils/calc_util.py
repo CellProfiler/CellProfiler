@@ -238,6 +238,6 @@ def star_in_polygon((max_y, max_x), polar_coordinate_boundary, seed_x, seed_y, p
     boolean_mask = np.zeros((max_y, max_x), dtype=bool)
     boolean_mask[y1:y2, x1:x2] = small_boolean_mask
 
-    xy = [y1, x1]
+    yx = [y1, x1]
 
-    return boolean_mask, small_boolean_mask, xy
+    return boolean_mask, small_boolean_mask, yx

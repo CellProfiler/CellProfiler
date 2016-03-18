@@ -28,31 +28,35 @@ except:
 def speed_profile(func):
     def profiled_func(*args, **kwargs):
         try:
-            if PROFILE_SPEED:
-                profiler = line_profiler.LineProfiler()
-                profiler.add_function(func)
-                profiler.enable_by_count()
+            profiler = line_profiler.LineProfiler()
+            profiler.add_function(func)
+            profiler.enable_by_count()
             return func(*args, **kwargs)
         finally:
-            if PROFILE_SPEED:
-                profiler.print_stats()
-    return profiled_func
+            profiler.print_stats()
+    if PROFILE_SPEED:
+        return profiled_func
+    else:
+        return func
 
 
 
 def memory_profile(func):
-    if func is not None:
-        def wrapper(*args, **kwargs):
-            if PROFILE_MEMORY:
-                prof = memory_profiler.LineProfiler()
-                val = prof(func)(*args, **kwargs)
-                memory_profiler.show_results(prof)
-            else:
-                val = func(*args, **kwargs)
-            return val
-        return wrapper
+    if not PROFILE_MEMORY:
+        return func
     else:
-        def inner_wrapper(f):
-            return memory_profiler.profile(f)
-        return inner_wrapper
+        if func is not None:
+            def wrapper(*args, **kwargs):
+                if PROFILE_MEMORY:
+                    prof = memory_profiler.LineProfiler()
+                    val = prof(func)(*args, **kwargs)
+                    memory_profiler.show_results(prof)
+                else:
+                    val = func(*args, **kwargs)
+                return val
+            return wrapper
+        else:
+            def inner_wrapper(f):
+                return memory_profiler.profile(f)
+            return inner_wrapper
 

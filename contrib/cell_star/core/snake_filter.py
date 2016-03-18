@@ -49,11 +49,11 @@ class SnakeFilter(object):
                     #  filtering by rank can be done by user in another module we only export it as a measurement
                     logger.debug(log_message.format(snakes_indices[i], 'too high rank', curr_snake.rank))
                 else:
-                    xy = curr_snake.in_polygon_xy
+                    yx = curr_snake.in_polygon_yx
                     in_polygon = curr_snake.in_polygon
-                    xy = np.array([xy, np.array(xy) + in_polygon.shape]).flatten()
+                    yx = np.array([yx, np.array(yx) + in_polygon.shape]).flatten()
 
-                    dilated_segments = segments[xy[0]:xy[2], xy[1]:xy[3]]
+                    dilated_segments = segments[yx[0]:yx[2], yx[1]:yx[3]]
                     overlap_area = np.count_nonzero(dilated_segments[in_polygon])
                     overlap = float(overlap_area) / curr_snake.area
 
@@ -61,7 +61,7 @@ class SnakeFilter(object):
                         logger.debug(log_message.format(snakes_indices[i], 'too much overlapping', overlap))
                     else:
                         in2 = np.logical_and(in_polygon, dilated_segments == 0)
-                        tmp = in2[self.images.cell_content_mask[xy[0]:xy[2], xy[1]:xy[3]]]
+                        tmp = in2[self.images.cell_content_mask[yx[0]:yx[2], yx[1]:yx[3]]]
                         curr_snake.area = in2.sum() + Snake.epsilon
                         avg_inner_darkness = float(np.count_nonzero(tmp)) / float(curr_snake.area)
                         if avg_inner_darkness < self.parameters["segmentation"]["minAvgInnerDarkness"]:
@@ -81,7 +81,7 @@ class SnakeFilter(object):
                                                                         'over' + str(max_free_border)))
                                     else:
                                         dilated_segments[[in2]] = current_accepted_snake_index
-                                        segments[xy[0]:xy[2], xy[1]:xy[3]] = dilated_segments
+                                        segments[yx[0]:yx[2], yx[1]:yx[3]] = dilated_segments
                                         new_snakes.append(curr_snake)
                                         current_accepted_snake_index += 1
 

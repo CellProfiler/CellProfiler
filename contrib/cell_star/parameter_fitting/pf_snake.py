@@ -68,9 +68,9 @@ class PFSnake(object):
 
     @staticmethod
     def extract_total_mask_of_snake(snake, tot_shape):
-        xy = snake.in_polygon_xy
+        yx = snake.in_polygon_yx
         in_polygon = snake.in_polygon
-        xy = np.array([xy, np.array(xy) + in_polygon.shape]).flatten()
+        xy = np.array([yx, np.array(yx) + in_polygon.shape]).flatten()
 
         mask = np.zeros(tot_shape, dtype=bool)
         mask[xy[0]:xy[2], xy[1]:xy[3]] = in_polygon

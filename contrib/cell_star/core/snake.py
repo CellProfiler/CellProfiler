@@ -43,7 +43,7 @@ class Snake(object):
         self.free_border_entropy = 0.0
         self.in_snake = None
         self.in_polygon = None
-        self.in_polygon_xy = None
+        self.in_polygon_yx = None
         self.segment_props = {}
         self.area = 0.0
         self.avg_out_border_brightness = 0.0
@@ -80,7 +80,7 @@ class Snake(object):
         self.free_border_entropy = 0.0
         self.in_snake = None
         self.in_polygon = None
-        self.in_polygon_xy = None
+        self.in_polygon_yx = None
         self.segment_props = {}
         self.area = 0.0
         self.avg_out_border_brightness = 0.0
@@ -100,6 +100,7 @@ class Snake(object):
         image_out = maska + (1-maska) * self.images.image
         image_util.image_show_and_save(image_out, name, False)
 
+    @speed_profile
     def star_multi_vec(self, size_weight, polar_transform):
         """
 
@@ -371,7 +372,7 @@ class Snake(object):
 
         epsilon = 10 ** -8
 
-        segment, self.in_polygon, self.in_polygon_xy = calc_util.star_in_polygon(self.images.brighter.shape,
+        segment, self.in_polygon, self.in_polygon_yx = calc_util.star_in_polygon(self.images.brighter.shape,
                                                                                  self.polar_coordinate_boundary,
                                                                                  self.seed.x, self.seed.y,
                                                                                  polar_transform)
@@ -393,13 +394,12 @@ class Snake(object):
         eroded, _, _ = calc_util.star_in_polygon(self.images.brighter.shape, eroded_boundary,
                                                  self.seed.x, self.seed.y, polar_transform)
 
-        out_border = dilated - segment
-        in_border = segment - eroded
+        out_border = dilated ^ segment
+        in_border = segment ^ eroded
 
         out_border_area = np.count_nonzero(out_border) + self.epsilon
         in_border_area = np.count_nonzero(in_border) + self.epsilon
 
-        # this block takes 0.227 s
         # Calculate outer border brightness
         tmp = original_clean[out_border]
         self.avg_out_border_brightness = tmp.sum() / out_border_area
@@ -418,13 +418,13 @@ class Snake(object):
         tmp = cell_content_mask[segment]
         self.avg_inner_darkness = tmp.sum() / self.area
 
-        # end of block
-
         # Calculate snake centroid
         if self.area > 2*self.epsilon:
             area2 = float(self.area - self.epsilon)
-            self.centroid_x = (segment.sum(0) * np.arange(1, segment.shape[1] + 1)).sum() / area2
-            self.centroid_y = (segment.sum(1) * np.arange(1, segment.shape[0] + 1)).sum() / area2
+            self.centroid_x = (self.in_polygon.sum(0) * np.arange(1, self.in_polygon.shape[1] + 1)).sum() / area2
+            self.centroid_y = (self.in_polygon.sum(1) * np.arange(1, self.in_polygon.shape[0] + 1)).sum() / area2
+            self.centroid_x += self.in_polygon_yx[1]
+            self.centroid_y += self.in_polygon_yx[0]
         else:
             self.centroid_x = self.xs[0]
             self.centroid_y = self.ys[0]

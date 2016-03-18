@@ -173,6 +173,7 @@ try:
     from contrib.cell_star.process.segmentation import Segmentation
     from contrib.cell_star.parameter_fitting.test_pf import run_pf
     from contrib.cell_star.parameter_fitting.test_rank_pf import run_rank_pf
+    from contrib.cell_star.utils.python_util import memory_profile, speed_profile
 
 except ImportError as e: 
     # in new version 2.12 all the errors are properly shown in console (Windows)
@@ -532,7 +533,7 @@ class YeastCellSegmentation(cpmi.Identify):
                                              {self.object_name.value: [] })
         result += [C_OBJECT_FEATURES]
         return result
-      
+
     def get_measurements(self, pipeline, object_name, category):
         """Return the measurements that this module produces
         
@@ -545,7 +546,8 @@ class YeastCellSegmentation(cpmi.Identify):
         if category == C_OBJECT_FEATURES:
             result += [FTR_OBJECT_QUALITY]
         return result
-    
+
+    @memory_profile
     def run(self, workspace):
         input_image_name = self.input_image_name.value
         self.current_workspace = workspace

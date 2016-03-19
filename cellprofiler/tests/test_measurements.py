@@ -1280,6 +1280,23 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_array_almost_equal(
             m_in[OBJECT_NAME, FEATURE_NAME, 1],
             m_out[OBJECT_NAME, FEATURE_NAME, 1])
+        
+    def test_22_01_is_first_in_group(self):
+        m = cpmeas.Measurements()
+        for i in range(10):
+            m[cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, i+1] = i+1
+            m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, i+1] = i % 5
+            m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i+1] = int(i / 5)+1
+        for i in range(10):
+            m.next_image_set(i+1)
+            if i in (0, 5):
+                self.assertTrue(m.is_first_in_group)
+            else:
+                self.assertFalse(m.is_first_in_group)
+            if i in (4, 9):
+                self.assertTrue(m.is_last_in_group)
+            else:
+                self.assertFalse(m.is_last_in_group)
 
 
 IMAGE_NAME = "ImageName"

@@ -456,6 +456,17 @@ class Measurements(object):
     def has_image_set_start(self):
         '''True if the image set has an explicit start'''
         return self.image_set_start is not None
+    
+    @property
+    def is_first_in_group(self):
+        '''True if current image set is first in its group'''
+        return self[IMAGE, GROUP_INDEX] == 0
+    
+    @property
+    def is_last_in_group(self):
+        '''True if current image set is last in its group'''
+        next_group_index = self[IMAGE, GROUP_INDEX, self.image_number+1]
+        return (next_group_index is None) or (next_group_index == 0)
 
     def load(self, measurements_file_name):
         '''Load measurements from a matlab file'''

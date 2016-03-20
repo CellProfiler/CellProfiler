@@ -79,7 +79,7 @@ class DirectoryView(object):
             files = [x
                      for x in os.listdir(cellprofiler.preferences.get_default_image_directory())
                      if is_image(x) or x.endswith(".cp")]
-        except Exception, e:
+        except Exception as e:
             logger.warning(
                 "Warning: Could not refresh default image directory %s.\n" %
                 (cellprofiler.preferences.get_default_image_directory()),
@@ -105,13 +105,13 @@ class DirectoryView(object):
             elif os.path.splitext(selection)[1].lower() == '.mat':
                 # A matlab file might be an image or a pipeline
                 handles=scipy.io.matlab.mio.loadmat(filename, struct_as_record=True)
-                if handles.has_key('Image'):
+                if 'Image' in handles:
                     self.__display_matlab_image(handles, filename)
                 else:
                     self.notify_pipeline_listeners(LoadPipelineRequestEvent(filename))
             else:
                 self.__display_image(filename)
-        except Exception, x:
+        except Exception as x:
             logger.error("Failed to display image", exc_info=True)
             wx.MessageBox("Unable to display %s.\n%s"%
                           (selection, str(x)),"Failed to display image")

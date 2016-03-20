@@ -10,8 +10,8 @@ import shutil
 import sys
 import uuid
 import zipfile
-from cStringIO import StringIO
-from urllib2 import urlopen
+from io import StringIO
+from urllib.request import urlopen
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -333,7 +333,7 @@ class CreateWebPage(cpm.CPModule):
                 zipfiles[zip_file_path].append((abs_image_path_name,
                                                 image_url,
                                                 image_file_name))
-            if not file_path in d.keys():
+            if not file_path in list(d.keys()):
                 #
                 # Here, we make a new file, including HTML header
                 #
@@ -405,7 +405,7 @@ class CreateWebPage(cpm.CPModule):
                 real_file.write(fd.getvalue())
         workspace.display_data.wrote_html = True
 
-        for zip_file_path, filenames in zipfiles.iteritems():
+        for zip_file_path, filenames in zipfiles.items():
             with zipfile.ZipFile(zip_file_path, "w") as z:
                 for abs_path_name, url, filename  in filenames:
                     if url is not None and not url.lower().startswith("file"):

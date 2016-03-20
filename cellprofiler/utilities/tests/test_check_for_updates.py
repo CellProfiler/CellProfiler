@@ -4,7 +4,7 @@
 import os
 import tempfile
 import unittest
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import cellprofiler.utilities.check_for_updates as cfu
 
@@ -26,7 +26,7 @@ class TestCheckForUpdates(unittest.TestCase):
         os.remove(self.name)
 
     def test_01_01_dont_update(self):
-        url = "file:" + urllib.pathname2url(self.name)
+        url = "file:" + urllib.request.pathname2url(self.name)
         def fn(new_version, info):
             self.fail("We should not update")
         vc = cfu.VersionChecker(url, FAKE_VERSION + 1, fn,
@@ -35,7 +35,7 @@ class TestCheckForUpdates(unittest.TestCase):
         vc.join()
 
     def test_01_02_update(self):
-        url = "file:" + urllib.pathname2url(self.name)
+        url = "file:" + urllib.request.pathname2url(self.name)
         we_updated = [False]
         def fn(new_version, info, we_updated = we_updated):
             self.assertEqual(new_version, FAKE_VERSION)

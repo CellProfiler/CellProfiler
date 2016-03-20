@@ -1,14 +1,14 @@
 import os
 import sys
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import webbrowser
 
 import wx
 import wx.html
 
 import cellprofiler.preferences as cpprefs
-import content
+from . import content
 from cellprofiler.gui.html.content import WELCOME_HELP
 from cellprofiler.icons import get_builtin_images_path
 
@@ -49,7 +49,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         elif href.startswith('load:'):
             pipeline_filename = href[5:]
             try:
-                fd = urllib2.urlopen(pipeline_filename)
+                fd = urllib.request.urlopen(pipeline_filename)
                 if fd.code < 200 or fd.code > 299:
                     wx.MessageBox(
                     "Sorry, the link, \"%s\" is broken, please contact the webmaster" %
@@ -69,7 +69,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
 
             try:
                 import cellprofiler.modules.loaddata
-                fd = urllib.urlopen(pipeline_filename)
+                fd = urllib.request.urlopen(pipeline_filename)
                 if fd.code < 200 or fd.code > 299:
                     wx.MessageBox(
                     "Sorry, the link, \"%s\" is broken, please contact the webmaster" %
@@ -116,7 +116,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                 if sys.platform.startswith("win"):
                     my_url = full_path
                 else:
-                    my_url = "file:" + urllib.pathname2url(full_path)
+                    my_url = "file:" + urllib.request.pathname2url(full_path)
                 return my_url
         return wx.html.HTML_OPEN
 

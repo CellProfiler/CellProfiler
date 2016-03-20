@@ -5,11 +5,11 @@ from exceptions import DeprecationWarning
 
 class TestCPMath(unittest.TestCase):
     def setUp(self):
-        modules_to_remove = filter(
+        modules_to_remove = list(filter(
             (lambda k:
              k.startswith('cellprofiler.cpmath') and not
              k.startswith('cellprofiler.cpmath.tests')),
-            sys.modules.keys())
+            list(sys.modules.keys())))
         for module_name in modules_to_remove:
             del sys.modules[module_name]
 

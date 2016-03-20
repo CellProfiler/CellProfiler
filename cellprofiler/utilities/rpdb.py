@@ -87,8 +87,8 @@ if __name__ == '__main__':
         a[0] = 1
     except:
         def pc(x):
-            print x
+            print(x)
         rpdb = Rpdb(verification_hash=hashlib.sha1("testing").hexdigest(), port_callback=pc)
-        print "debugger listing on port", rpdb.port
+        print("debugger listing on port", rpdb.port)
         rpdb.verify()
         rpdb.post_mortem()

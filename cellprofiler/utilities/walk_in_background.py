@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 import os
 import threading
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import uuid
 
 pause_lock = threading.Lock()
@@ -114,7 +114,7 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
             for subpath in sorted(path_list):
                 checkpoint.wait()
                 try:
-                    metadata = get_metadata("file:" + urllib.pathname2url(subpath))
+                    metadata = get_metadata("file:" + urllib.request.pathname2url(subpath))
                     import wx
                     wx.CallAfter(metadata_report, subpath, metadata)
                 except:
@@ -157,7 +157,7 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed = None):
                 checkpoint.wait()
                 try:
                     if not path.startswith("file:"):
-                        url = "file:" + urllib.pathname2url(path)
+                        url = "file:" + urllib.request.pathname2url(path)
                     else:
                         url = path
                     metadata = get_metadata(url)
@@ -189,7 +189,7 @@ class WalkCollection(object):
         self.state = THREAD_STOP
 
     def on_complete(self, uid):
-        if self.stop_functions.has_key(uid):
+        if uid in self.stop_functions:
             del self.stop_functions[uid]
             if len(self.stop_functions) == 0:
                 self.state = THREAD_STOP
@@ -224,13 +224,13 @@ class WalkCollection(object):
 
     def pause(self):
         if self.state == THREAD_RUNNING:
-            for stop_fn in self.stop_functions.values():
+            for stop_fn in list(self.stop_functions.values()):
                 stop_fn(THREAD_PAUSE)
             self.state = THREAD_PAUSE
 
     def resume(self):
         if self.state == THREAD_PAUSE:
-            for stop_fn in self.stop_functions.values():
+            for stop_fn in list(self.stop_functions.values()):
                 stop_fn(THREAD_RESUME)
             for fn_task in self.paused_tasks:
                 fn_task()
@@ -239,7 +239,7 @@ class WalkCollection(object):
 
     def stop(self):
         if self.state in (THREAD_RUNNING, THREAD_PAUSE):
-            for stop_fn in self.stop_functions.values():
+            for stop_fn in list(self.stop_functions.values()):
                 stop_fn(THREAD_STOP)
             self.paused_tasks = []
             self.state = THREAD_STOPPING

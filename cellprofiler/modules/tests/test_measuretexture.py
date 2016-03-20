@@ -6,9 +6,9 @@ import os
 import shutil
 import tempfile
 import unittest
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 import scipy.ndimage as scind

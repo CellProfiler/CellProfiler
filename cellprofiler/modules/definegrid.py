@@ -650,7 +650,7 @@ class DefineGrid(cpm.CPModule):
                                                    int(second_row.Value),
                                                    int(second_column.Value),
                                                    image_shape)
-            except Exception, e:
+            except Exception as e:
                 logger.error(e.message, exc_info=True)
                 status_bar.SetStatusText(e.message)
                 return False
@@ -872,7 +872,7 @@ class DefineGrid(cpm.CPModule):
         '''Set the gridding to use upon failure'''
         d = self.get_dictionary()
         if (self.failed_grid_choice == FAIL_ANY_PREVIOUS or
-            not d.has_key(GOOD_GRIDDING)):
+            GOOD_GRIDDING not in d):
             d[GOOD_GRIDDING] = gridding
 
     def validate_module(self, pipeline):

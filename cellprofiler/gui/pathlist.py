@@ -1,6 +1,7 @@
 """PathList - the PathListCtrl displays folders and paths in a scalable way
 """
 import logging
+from functools import reduce
 logger = logging.getLogger(__name__)
 import bisect
 import numpy as np
@@ -8,8 +9,8 @@ import wx
 import wx.lib.scrolledpanel
 import os
 import sys
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import uuid
 
 import cellprofiler.preferences as cpprefs
@@ -325,7 +326,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         For files, the user expects to see a path, not a URL
         '''
         if folder.startswith("file:"):
-            return urllib.url2pathname(folder[5:]).decode("utf8")
+            return urllib.request.url2pathname(folder[5:]).decode("utf8")
         return folder
 
     def recalc(self):
@@ -930,14 +931,14 @@ if __name__ == "__main__":
 
     disabled = []
     for root, directories, filenames in os.walk(sys.argv[1]):
-        urls = ["file:" + urllib.pathname2url(os.path.join(root, f))
+        urls = ["file:" + urllib.request.pathname2url(os.path.join(root, f))
                 for f in filenames]
-        disabled += filter((lambda x: not x.lower().endswith(".tif")), urls)
+        disabled += list(filter((lambda x: not x.lower().endswith(".tif")), urls))
         ctrl.add_paths(urls)
     ctrl.enable_paths(disabled, False)
     d = { 0: "Delete me", 1: "Hello", 2: "Goodbye", 3: "Show / hide disabled" }
     def fn_context(paths):
-        return d.items()
+        return list(d.items())
 
     def fn_cmd(paths, cmd):
         if cmd == 0:

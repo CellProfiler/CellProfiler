@@ -3,8 +3,8 @@
 
 
 import os
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import xml.dom.minidom as dom
 
 IS_DIRECTORY = 1
@@ -24,7 +24,7 @@ def read_directory_url(url):
     #     F=0 is simple list
     #
     for urll in (url, url+"?F=0"):
-        fd = urllib2.urlopen(urll)
+        fd = urllib.request.urlopen(urll)
         data = ""
         discard = True
         for line in fd:
@@ -49,9 +49,9 @@ def read_directory_url(url):
                 elif href in ("./", "../"):
                     continue
                 elif href.endswith("/"):
-                    result.append((urllib.unquote(href[:-1]), IS_DIRECTORY))
+                    result.append((urllib.parse.unquote(href[:-1]), IS_DIRECTORY))
                 else:
-                    result.append((urllib.unquote(href), IS_FILE))
+                    result.append((urllib.parse.unquote(href), IS_FILE))
         return result
     raise RuntimeError("Unable to get directory listing from %s" % url)
 
@@ -69,9 +69,9 @@ def walk_url(url, topdown = False):
 
 if __name__ == "__main__":
     result = read_directory_url("http://www.broadinstitute.org/~leek/tracking")
-    print "\n".join(["%s\t%s" % ( f, "f" if d == IS_FILE else "d")
-                     for f, d in result])
+    print("\n".join(["%s\t%s" % ( f, "f" if d == IS_FILE else "d")
+                     for f, d in result]))
     for path, files, directories in walk_url("https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages", True):
-        print path
+        print(path)
         for filename in files:
-            print "\t"+filename
+            print("\t"+filename)

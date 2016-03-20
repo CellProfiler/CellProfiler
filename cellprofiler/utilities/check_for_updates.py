@@ -5,7 +5,7 @@ call a callback with the new version information if there is one.
 
 import logging
 import threading
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +21,8 @@ class VersionChecker(threading.Thread):
 
     def run(self):
         try:
-            req = urllib2.Request(self.url, None, {'User-Agent' : self.user_agent})
-            response = urllib2.urlopen(req)
+            req = urllib.request.Request(self.url, None, {'User-Agent' : self.user_agent})
+            response = urllib.request.urlopen(req)
             html = response.read()
             response.close()
             # format should be version number in first line followed by html
@@ -30,7 +30,7 @@ class VersionChecker(threading.Thread):
             new_version = int(new_version)
             if new_version > self.current_version:
                 self.callback(new_version, info)
-        except Exception, e:
+        except Exception as e:
             logger.warning("Exception fetching new version information from %s: %s"%(self.url, e))
             pass # no worries
 

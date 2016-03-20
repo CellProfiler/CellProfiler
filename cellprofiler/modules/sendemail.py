@@ -326,7 +326,7 @@ class SendEmail(cpm.CPModule):
         try:
             if self.use_authentication.value:
                 server.login(self.username.value, self.password.value)
-        except Exception, instance:
+        except Exception as instance:
             logger.error("Failed to send mail: %s", str(instance), exc_info=True)
             return "Failed to send mail: Authentication failed"
 
@@ -398,7 +398,7 @@ class SendEmail(cpm.CPModule):
         event_count = int(setting_values[1])
         event_idx = len(setting_values) - EVENT_SETTING_COUNT * event_count
         for i in range(event_idx,len(setting_values), EVENT_SETTING_COUNT):
-            if S_DICTIONARY.has_key(setting_values[i]):
+            if setting_values[i] in S_DICTIONARY:
                 setting_values[i] = S_DICTIONARY[setting_values[i]]
 
         if not from_matlab and variable_revision_number == 1:

@@ -7,11 +7,11 @@ import os
 from bioformats.formatwriter import write_image
 from bioformats import PT_UINT8
 import shutil
-from StringIO import StringIO
+from io import StringIO
 import tempfile
 import unittest
-from urllib import URLopener
-from urllib2 import urlopen
+from urllib.request import URLopener
+from urllib.request import urlopen
 import xml.dom.minidom as DOM
 import zipfile
 import zlib
@@ -320,7 +320,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         for i in range(len(image_paths)):
             image_number = i+1
             if metadata is not None:
-                for key in metadata.keys():
+                for key in list(metadata.keys()):
                     values = metadata[key]
                     feature = cpmeas.C_METADATA + "_" + key
                     measurements[cpmeas.IMAGE, feature, image_number] = values[i]
@@ -746,7 +746,7 @@ CreateWebPage:[module_num:1|svn_version:\'9401\'|variable_revision_number:2|show
         try:
             for filename in filenames:
                 URLopener().open("".join(filename)).close()
-        except IOError, e:
+        except IOError as e:
             def bad_url(e=e):
                 raise e
             unittest.expectedFailure(bad_url)()

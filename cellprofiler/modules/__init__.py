@@ -277,7 +277,7 @@ def find_cpmodule(m):
 
     returns the CPModule class
     '''
-    for v, val in m.__dict__.iteritems():
+    for v, val in m.__dict__.items():
         if isinstance(val, type) and issubclass(val, cpm.CPModule):
             return val
     raise "Could not find cpm.CPModule class in %s"%(m.__file__)
@@ -294,7 +294,7 @@ def fill_modules():
             m = __import__(mod, globals(), locals(), ['__all__'], 0)
             cp_module = find_cpmodule(m)
             name = cp_module.module_name
-        except Exception, e:
+        except Exception as e:
             logger.warning("Could not load %s", mod, exc_info=True)
             badmodules.append((mod, e))
             return
@@ -321,7 +321,7 @@ def fill_modules():
                 # No settings = pure data tool
                 pure_datatools[name] = all_modules[name]
                 del all_modules[name]
-        except Exception, e:
+        except Exception as e:
             logger.warning("Failed to load %s", name, exc_info=True)
             badmodules.append((mod, e))
             if name in all_modules:
@@ -371,8 +371,8 @@ def get_module_class(module_name):
     if module_name in substitutions:
         module_name = substitutions[module_name]
     module_class = module_name.split('.')[-1]
-    if not all_modules.has_key(module_class):
-        if pure_datatools.has_key(module_class):
+    if module_class not in all_modules:
+        if module_class in pure_datatools:
             return pure_datatools[module_class]
         if module_class in unimplemented_modules:
             raise ValueError(("The %s module has not yet been implemented. "
@@ -382,7 +382,7 @@ def get_module_class(module_name):
             raise ValueError(("The %s module has been depricated and will "
                               "not be implemented in CellProfiler 2.0.") %
                              module_class)
-        if replaced_modules.has_key(module_class):
+        if module_class in replaced_modules:
             raise ValueError(("The %s module no longer exists. You can find "
                               "similar functionality in: %s") %
                              (module_class, ", ".join(replaced_modules[module_class])))
@@ -391,12 +391,12 @@ def get_module_class(module_name):
 
 def instantiate_module(module_name):
     module = get_module_class(module_name)()
-    if svn_revisions.has_key(module_name):
+    if module_name in svn_revisions:
         module.svn_version = svn_revisions[module_name]
     return module
 
 def get_module_names():
-    return all_modules.keys()
+    return list(all_modules.keys())
 
 def get_data_tool_names():
     return datatools

@@ -24,9 +24,9 @@ def memoize_method(function, *args):
     if not d:
         d = {}
         setattr(sself,"memoize_method_dictionary",d)
-    if not d.has_key(function):
+    if function not in d:
         d[function] = {}
-    if not d[function].has_key(args[1:]):
+    if args[1:] not in d[function]:
         d[function][args[1:]] = function(*args)
     return d[function][args[1:]]
 
@@ -109,8 +109,8 @@ class Objects(object):
         sparse = self.__segmented.get_sparse()
         return np.column_stack(
             [sparse[axis] for axis in
-             HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X,
-             HDF5ObjectSet.AXIS_LABELS])
+             (HDF5ObjectSet.AXIS_Y, HDF5ObjectSet.AXIS_X,
+             HDF5ObjectSet.AXIS_LABELS)])
 
     ijv = property(get_ijv, set_ijv)
 
@@ -547,7 +547,7 @@ class Segmentation(object):
                 from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
                 self.__shape = tuple(
                     [np.max(sparse[axis])+2
-                     if axis in sparse.dtype.fields.keys() else 1
+                     if axis in list(sparse.dtype.fields.keys()) else 1
                      for axis in HDF5ObjectSet.AXES])
         return self.__shape
 
@@ -634,7 +634,7 @@ class Segmentation(object):
         axes = list(HDF5ObjectSet.AXES)
         axes, shape = [
             [a for a, s in zip(aa, self.shape) if s > 1]
-            for aa in axes, self.shape]
+            for aa in (axes, self.shape)]
         #
         # dense.shape[0] is the overlap-axis - it's usually 1
         # except if there are multiply-labeled pixels and overlapping
@@ -698,7 +698,7 @@ class Segmentation(object):
         available_columns = []
         lexsort_columns = []
         for axis in HDF5ObjectSet.AXES:
-            if axis in sparse.dtype.fields.keys():
+            if axis in list(sparse.dtype.fields.keys()):
                 positional_columns.append(sparse[axis])
                 available_columns.append(sparse[axis])
                 lexsort_columns.insert(0, sparse[axis])
@@ -865,14 +865,14 @@ class ObjectSet(object):
 
     def add_objects(self, objects, name):
         assert isinstance(objects,Objects), "objects must be an instance of CellProfiler.Objects"
-        assert ((not self.__objects_by_name.has_key(name)) or
+        assert ((name not in self.__objects_by_name) or
                 self.__can_overwrite), "The object, %s, is already in the object set"%(name)
         self.__objects_by_name[name] = objects
 
     def get_object_names(self):
         """Return the names of all of the objects
         """
-        return self.__objects_by_name.keys()
+        return list(self.__objects_by_name.keys())
 
     object_names = property(get_object_names)
 
@@ -884,7 +884,7 @@ class ObjectSet(object):
     def get_all_objects(self):
         """Return a list of name / objects tuples
         """
-        return self.__objects_by_name.items()
+        return list(self.__objects_by_name.items())
 
     all_objects = property(get_all_objects)
 
@@ -895,7 +895,7 @@ class ObjectSet(object):
         for instance ImageJ data tables. This function returns the thing types
         defined in the object set at this stage of the pipeline.
         '''
-        return self.__types_and_instances.keys()
+        return list(self.__types_and_instances.keys())
 
     def add_type_instance(self, type_name, instance_name, instance):
         '''Add a named instance of a type

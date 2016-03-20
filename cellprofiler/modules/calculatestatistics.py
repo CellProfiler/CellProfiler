@@ -125,6 +125,7 @@ from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.settings import YES, NO
+from functools import reduce
 
 '''# of settings aside from the dose measurements'''
 FIXED_SETTING_COUNT = 1
@@ -401,7 +402,7 @@ class CalculateStatistics(cpm.CPModule):
                               dose_group.log_transform.value)
 
         for i, (object_name, feature_name) in enumerate(feature_set):
-            for statistic, value in expt_measurements.iteritems():
+            for statistic, value in expt_measurements.items():
                 sfeature_name = '_'.join((statistic, object_name, feature_name))
                 measurements.add_experiment_measurement(sfeature_name, value[i])
         if self.show_window:
@@ -447,7 +448,7 @@ class CalculateStatistics(cpm.CPModule):
         else:
             return False
         if np.isscalar(v):
-            return not (isinstance(v, (str, unicode)))
+            return not (isinstance(v, str))
         #
         # Make sure the measurement isn't a string or other oddity
         #

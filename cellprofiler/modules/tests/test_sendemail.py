@@ -1,12 +1,12 @@
 '''test_sendemail - test the SendEmail module
 '''
 
-import Queue
+import queue
 import asyncore
 import smtpd
 import threading
 import unittest
-from cStringIO import StringIO
+from io import StringIO
 
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.sendemail as SE
@@ -29,7 +29,7 @@ class MockSMTPServer(smtpd.SMTPServer):
 class TestSendEmail(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.queue = Queue.Queue()
+        cls.queue = queue.Queue()
         cls.server = MockSMTPServer(cls.queue)
         cls.port = cls.server.socket.getsockname()[1]
         cls.thread = threading.Thread(target = cls.threadFn)
@@ -51,13 +51,13 @@ class TestSendEmail(unittest.TestCase):
         '''Receive an email from the daemon and validate'''
         try:
             peer, mailfrom, rcpttos, data = self.queue.get(timeout=10)
-        except Queue.Empty:
+        except queue.Empty:
             self.fail("Mail daemon timeout")
         self.assertEqual(mailfrom, module.from_address)
         self.assertEqual(len(rcpttos), len(module.recipients))
         self.assertSetEqual(
             set(rcpttos),
-            set(map(lambda x: x.recipient.value, module.recipients)))
+            set([x.recipient.value for x in module.recipients]))
         lines = data.split("\n")
         sep = lines.index("")
         header = lines[:sep]
@@ -75,7 +75,7 @@ class TestSendEmail(unittest.TestCase):
     def poll(self):
         try:
             peer, mailfrom, rcpttos, data = self.queue.get(timeout=1)
-        except Queue.Empty:
+        except queue.Empty:
             return
         self.fail("Received unexpected email")
 
@@ -86,7 +86,7 @@ class TestSendEmail(unittest.TestCase):
         m = cpmeas.Measurements()
         if group_numbers is None:
             group_numbers = [1] * len(image_numbers)
-            group_indexes = range(1, len(image_numbers)+1)
+            group_indexes = list(range(1, len(image_numbers)+1))
         for image_number, group_number, group_index in zip(
             image_numbers, group_numbers, group_indexes):
             m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number] = group_number

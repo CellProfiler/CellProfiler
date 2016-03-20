@@ -1,7 +1,7 @@
 '''filefinderdlg.py - tree checkbox dialog wrapping the cellprofiler file finder
 '''
 
-import Queue
+import queue
 import os.path
 
 import wx
@@ -37,7 +37,7 @@ class FileFinderDialog(wx.Dialog):
         self.tree_ctrl.SetItemHasChildren(self.root_id, True)
 
         # for throbbers
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
         self.progress = {}
         self.Bind(wx.EVT_TIMER, self.on_timer)
         self.timer = wx.Timer(self)
@@ -169,14 +169,14 @@ class FileFinderDialog(wx.Dialog):
             message = self.queue.get()
             self.update(*message)
             count += 1
-        print "Processed", count
+        print("Processed", count)
 
         # then update any items
         item = self.tree_ctrl.GetFirstVisibleItem()
         while item.IsOk():
             try:
                 _, key, path = self.get_item_data(item)
-                print path, self.progress[key]
+                print(path, self.progress[key])
             except:
                 pass
             item = self.tree_ctrl.GetNextVisible(item)

@@ -5,8 +5,8 @@ import csv
 import os
 import tempfile
 import unittest
-import urllib
-from cStringIO import StringIO
+import urllib.request, urllib.parse, urllib.error
+from io import StringIO
 
 import numpy as np
 

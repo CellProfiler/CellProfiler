@@ -1,7 +1,7 @@
 '''test_measureimageintensity.py Test the MeasureImageIntensity module
 '''
 
-import StringIO
+import io
 import base64
 import unittest
 
@@ -33,9 +33,9 @@ class TestMeasureImageIntensity(unittest.TestCase):
                                   object_set,
                                   cpmeas.Measurements(),
                                   image_set_list)
-        for key in image_dict.keys():
+        for key in list(image_dict.keys()):
             image_set.add(key, cpi.Image(image_dict[key]))
-        for key in object_dict.keys():
+        for key in list(object_dict.keys()):
             o = cpo.Objects()
             o.segmented = object_dict[key]
             object_set.add_objects(o, key)
@@ -181,7 +181,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
                 'hWFTtz/PF5c36h6a8eq8BXE/infHH80/hr/3X+6/Vff9iaJOKXAgxDl'
                 'fjiQeEZcxclwbT6hKFsOWQ9gI5v+DzJJ1qPwpaKudJ/79nbReWk2O0/'
                 'jzWvwqCtwnJNunkwX5vq2a/wMdg65H')
-        fd = StringIO.StringIO(base64.b64decode(data))
+        fd = io.StringIO(base64.b64decode(data))
         p = cpp.Pipeline()
         def error_handler(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
@@ -310,7 +310,7 @@ class TestMeasureImageIntensity(unittest.TestCase):
                 'DgAAACgAAAAGAAAACAAAAAEAAAAAAAAABQAAAAgAAAAAAAAAAQAAAAEA'
                 'AAAAAAAA')
 
-        fd = StringIO.StringIO(base64.b64decode(data))
+        fd = io.StringIO(base64.b64decode(data))
         p = cpp.Pipeline()
         def error_handler(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))

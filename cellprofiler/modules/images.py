@@ -95,7 +95,7 @@ import cellprofiler.utilities.walk_in_background as W
 import javabridge as J
 import os
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import uuid
 
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
@@ -179,7 +179,7 @@ class Images(cpm.CPModule):
                 return modpath[0] + ":" + modpath[1]
             else:
                 return modpath[0] + ":" + modpath[1] + "/" + "/".join(
-                    [urllib.quote(part) for part in modpath[2:]])
+                    [urllib.parse.quote(part) for part in modpath[2:]])
         path = os.path.join(*modpath)
         return pathname2url(path)
 
@@ -187,8 +187,8 @@ class Images(cpm.CPModule):
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
             schema, rest = HDF5FileList.split_url(url)
-            return [schema] + rest[0:1] + [urllib.unquote(part) for part in rest[1:]]
-        path = urllib.url2pathname(url[5:])
+            return [schema] + rest[0:1] + [urllib.parse.unquote(part) for part in rest[1:]]
+        path = urllib.request.url2pathname(url[5:])
         parts = []
         while True:
             new_path, part = os.path.split(path)
@@ -256,7 +256,7 @@ class Images(cpm.CPModule):
                 expression, ifcls)
             file_array = env.make_object_array(len(file_list), scls)
             for i, url in enumerate(file_list):
-                if isinstance(url, unicode):
+                if isinstance(url, str):
                     ourl = env.new_string(url)
                 else:
                     ourl = env.new_string_utf(url)
@@ -312,7 +312,7 @@ class DirectoryPredicate(cps.Filter.FilterPredicate):
             'directory', "Directory", self.fn_filter,
             predicates, doc = "Apply the rule to directories")
 
-    def fn_filter(self, (node_type, modpath, module), *args):
+    def fn_filter(self, xxx_todo_changeme, *args):
         '''The DirectoryPredicate filter function
 
         The arg slot expects a tuple of node_type and modpath.
@@ -321,6 +321,7 @@ class DirectoryPredicate(cps.Filter.FilterPredicate):
         modpath into a file path and applies it to the rest of
         the args.
         '''
+        (node_type, modpath, module) = xxx_todo_changeme
         if isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             path = os.path.join(*modpath[:-2])
         else:
@@ -346,7 +347,7 @@ class FilePredicate(cps.Filter.FilterPredicate):
             'file', "File", self.fn_filter, predicates,
             doc = "Apply the rule to files")
 
-    def fn_filter(self, (node_type, modpath, module), *args):
+    def fn_filter(self, xxx_todo_changeme1, *args):
         '''The FilePredicate filter function
 
         The arg slot expects a tuple of node_type and modpath.
@@ -355,6 +356,7 @@ class FilePredicate(cps.Filter.FilterPredicate):
         modpath into a file path and applies it to the rest of
         the args
         '''
+        (node_type, modpath, module) = xxx_todo_changeme1
         if node_type == cps.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
@@ -414,12 +416,13 @@ class ExtensionPredicate(cps.Filter.FilterPredicate):
             'extension', "Extension", self.fn_filter, predicates,
             doc="The rule applies to the file extension")
 
-    def fn_filter(self, (node_type, modpath, module), *args):
+    def fn_filter(self, xxx_todo_changeme2, *args):
         '''The ExtensionPredicate filter function
 
         If the element is a file, try the different predicates on
         all possible extension parsings.
         '''
+        (node_type, modpath, module) = xxx_todo_changeme2
         if node_type == cps.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
@@ -445,7 +448,7 @@ class ImagePredicate(cps.Filter.FilterPredicate):
     IS_COLOR_PREDICATE = cps.Filter.FilterPredicate(
         "iscolor", "Color",
         lambda x: (
-            x.metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
+            cpp.ImagePlaneDetails.MD_COLOR_FORMAT in x.metadata and
             x.metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] ==
             cpp.ImagePlaneDetails.MD_RGB), [],
         doc = "The image is an interleaved color image (for example, a PNG image)")
@@ -453,17 +456,17 @@ class ImagePredicate(cps.Filter.FilterPredicate):
     IS_MONOCHROME_PREDICATE = cps.Filter.FilterPredicate(
         "ismonochrome", "Monochrome",
         lambda x: (
-            x.metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
+            cpp.ImagePlaneDetails.MD_COLOR_FORMAT in x.metadata and
             x.metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] ==
             cpp.ImagePlaneDetails.MD_MONOCHROME), [],
         doc = "The image is monochrome")
 
     @staticmethod
     def is_stack(x):
-        if (x.metadata.has_key(cpp.ImagePlaneDetails.MD_SIZE_T) and
+        if (cpp.ImagePlaneDetails.MD_SIZE_T in x.metadata and
               x.metadata[cpp.ImagePlaneDetails.MD_SIZE_T] > 1):
             return True
-        if (x.metadata.has_key(cpp.ImagePlaneDetails.MD_SIZE_Z) and
+        if (cpp.ImagePlaneDetails.MD_SIZE_Z in x.metadata and
             x.metadata[cpp.ImagePlaneDetails.MD_SIZE_Z] > 1):
             return True
         return False
@@ -490,7 +493,8 @@ class ImagePredicate(cps.Filter.FilterPredicate):
             predicates,
             doc = "Filter based on image characteristics")
 
-    def fn_filter(self, (node_type, modpath, module), *args):
+    def fn_filter(self, xxx_todo_changeme3, *args):
+        (node_type, modpath, module) = xxx_todo_changeme3
         if node_type == cps.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         ipd = module.get_image_plane_details(modpath)

@@ -41,7 +41,7 @@ See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>S
 
 import cgi
 import hashlib
-import httplib
+import http.client
 import logging
 import os
 import re
@@ -49,8 +49,8 @@ import stat
 import sys
 import tempfile
 import traceback
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
 import numpy as np
 
@@ -69,7 +69,7 @@ import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import centrosome.outline
-import identify as I
+from . import identify as I
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
@@ -1482,7 +1482,7 @@ class LoadImages(cpmodule.CPModule):
                 parent = d[i]
                 for tag in tags[:-1]:
                     value = metadata.get(tag)
-                    if parent.has_key(value):
+                    if value in parent:
                         child = parent[value]
                     else:
                         child = {}
@@ -1491,7 +1491,7 @@ class LoadImages(cpmodule.CPModule):
                     last_value = value
                 tag = tags[-1]
                 value = metadata.get(tag)
-                if parent.has_key(value):
+                if value in parent:
                     # There's already a match to this metadata
                     conflict = [fd, parent[value], (path,filename)]
                     conflicts.append(conflict)
@@ -1593,11 +1593,11 @@ class LoadImages(cpmodule.CPModule):
                         None,
                         image_number,
                         self.images[i], full_path)
-                    for k, v in d.iteritems():
-                        if not features.has_key(k):
+                    for k, v in d.items():
+                        if k not in features:
                             features[k] = [None] * n_image_sets
                         features[k][image_number-1] = v
-        for k, v in features.iteritems():
+        for k, v in features.items():
             workspace.measurements.add_all_measurements(cpmeas.IMAGE, k, v)
 
         return True
@@ -1621,10 +1621,10 @@ class LoadImages(cpmodule.CPModule):
         values = set()
         for dd in d:
             if not dd is None:
-                values.update([x for x in dd.keys() if x is not None])
+                values.update([x for x in list(dd.keys()) if x is not None])
         result = []
         for value in sorted(values):
-            subgroup = tuple((dd and dd.has_key(None) and dd[None]) or # wildcard metadata
+            subgroup = tuple((dd and None in dd and dd[None]) or # wildcard metadata
                              (dd and dd.get(value)) or                 # fetch subvalue or None if missing
                              None                                      # metadata is missing
                              for dd in d)
@@ -1666,7 +1666,7 @@ class LoadImages(cpmodule.CPModule):
             keys = tuple([measurements.get_measurement(
                 cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, tag)), i)
                           for tag in tags])
-            if md_dict.has_key(keys):
+            if keys in md_dict:
                 md_dict.append(i)
             else:
                 md_dict[keys] = [i]
@@ -1708,7 +1708,7 @@ class LoadImages(cpmodule.CPModule):
             table = wx.ListCtrl(panel,style=wx.LC_REPORT)
             tables.append(table)
             sizer.Add(table, 1, wx.EXPAND|wx.ALL,3)
-            for tag, index in zip(tags,range(tag_ct)):
+            for tag, index in zip(tags,list(range(tag_ct))):
                 table.InsertColumn(index,tag)
             table.InsertColumn(index+1,"First path")
             table.InsertColumn(index+2,"First file name")
@@ -1732,9 +1732,9 @@ class LoadImages(cpmodule.CPModule):
             tables.append(table)
             sizer.Add(table, 1, wx.EXPAND|wx.ALL,3)
             if self.do_group_by_metadata:
-                for tag, index in zip(tags,range(tag_ct)):
+                for tag, index in zip(tags,list(range(tag_ct))):
                     table.InsertColumn(index,tag)
-            for fd,index in zip(self.images,range(len(self.images))):
+            for fd,index in zip(self.images,list(range(len(self.images)))):
                 table.InsertColumn(index*2+tag_ct,
                                    "%s path"%(fd.channels[0].image_name.value))
                 table.InsertColumn(index*2+1+tag_ct,
@@ -1839,7 +1839,7 @@ class LoadImages(cpmodule.CPModule):
                     pixels = omemetadata.image(i).Pixels
                     channel_count = pixels.SizeC
                     stack_count = pixels.SizeZ
-                    if not d[i].has_key("Z"):
+                    if "Z" not in d[i]:
                         d[i]["Z"] = stack_count
                     elif stack_count != d[i]["Z"]:
                         message = (
@@ -1850,7 +1850,7 @@ class LoadImages(cpmodule.CPModule):
                         pipeline.report_prepare_run_error(self, message)
                         return False
                     timepoint_count = pixels.SizeT
-                    if not d[i].has_key("T"):
+                    if "T" not in d[i]:
                         d[i]["T"] = timepoint_count
                     elif timepoint_count != d[i]["T"]:
                         message = (
@@ -1892,11 +1892,11 @@ class LoadImages(cpmodule.CPModule):
                             image_numbers = [image_set_count + 1]
                             if match_metadata:
                                 key = dict([(k, str(v))
-                                            for k,v in frame_metadata.items()])
-                                if not md_dict.has_key(key):
+                                            for k,v in list(frame_metadata.items())])
+                                if key not in md_dict:
                                     message = (
                                         "Could not find a matching image set for " %
-                                        ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                        ", ".join(["%s=%s%" % kv for kv in list(frame_metadata.items())]))
                                     pipeline.report_prepare_run_error(self, message)
                                     return False
                                 image_numbers = md_dict[key]
@@ -1934,7 +1934,7 @@ class LoadImages(cpmodule.CPModule):
                                         cpmeas.IMAGE,
                                         "_".join((C_FRAME, image_name)), cidx,
                                         image_set_number = image_number)
-                                for k in frame_metadata.keys():
+                                for k in list(frame_metadata.keys()):
                                     m.add_measurement(
                                         cpmeas.IMAGE,
                                         "_".join((cpmeas.C_METADATA, k)),
@@ -1962,11 +1962,11 @@ class LoadImages(cpmodule.CPModule):
                                 image_numbers = [image_set_count + 1]
                                 if match_metadata:
                                     key = dict([(k, str(v))
-                                                for k,v in frame_metadata.items()])
-                                    if not md_dict.has_key(key):
+                                                for k,v in list(frame_metadata.items())])
+                                    if key not in md_dict:
                                         message = (
                                             "Could not find a matching image set for " %
-                                            ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                            ", ".join(["%s=%s%" % kv for kv in list(frame_metadata.items())]))
                                         pipeline.report_prepare_run_error(
                                             self, message)
                                         return False
@@ -2008,7 +2008,7 @@ class LoadImages(cpmodule.CPModule):
                                             "_".join((C_FRAME, image_name)),
                                             index,
                                             image_set_number = image_number)
-                                    for k in frame_metadata.keys():
+                                    for k in list(frame_metadata.keys()):
                                         m.add_measurement(
                                             cpmeas.IMAGE,
                                             "_".join((cpmeas.C_METADATA, k)),
@@ -2039,7 +2039,7 @@ class LoadImages(cpmodule.CPModule):
             pathname = os.path.join(self.image_directory(), pathname)
             frame_count = self.get_frame_count(pathname)
             if frame_count == 0:
-                print "Warning - no frame count detected"
+                print("Warning - no frame count detected")
                 frame_count = 256
             #
             # 3 choices here:
@@ -2208,7 +2208,7 @@ class LoadImages(cpmodule.CPModule):
                         warning = bad_sizes_warning(image_size, first_image_filename,
                                                     pixel_data.shape[:2], filename)
                         if get_headless():
-                            print warning
+                            print(warning)
                         elif self.show_window:
                             workspace.display_data.warning = warning
                 else:
@@ -2269,9 +2269,9 @@ class LoadImages(cpmodule.CPModule):
                         workspace.image_set.add(channel.outlines_name.value, outline_image)
 
                 for tag in tags:
-                    if metadata.has_key(tag):
+                    if tag in metadata:
                         row.append(metadata[tag])
-                    elif image_set_metadata.has_key(tag):
+                    elif tag in image_set_metadata:
                         row.append(image_set_metadata[tag])
                     else:
                         row.append("")
@@ -2307,8 +2307,8 @@ class LoadImages(cpmodule.CPModule):
             path = os.path.abspath(os.path.join(self.image_directory(), path))
             metadata.update(cpmeas.extract_metadata(fd.path_metadata.value,
                                                  path))
-        if needs_well_metadata(metadata.keys()):
-            well_row_token, well_column_token = well_metadata_tokens(metadata.keys())
+        if needs_well_metadata(list(metadata.keys())):
+            well_row_token, well_column_token = well_metadata_tokens(list(metadata.keys()))
             metadata[cpmeas.FTR_WELL] = (metadata[well_row_token] +
                                       metadata[well_column_token])
         return metadata
@@ -2369,7 +2369,7 @@ class LoadImages(cpmodule.CPModule):
                 image_data.append((C_FRAME, frame))
             for category, value in image_data:
                 add_fn("_".join((category, channel.get_image_name())), value)
-        for key in metadata.keys():
+        for key in list(metadata.keys()):
             add_fn("_".join((cpmeas.C_METADATA, key)), metadata[key])
         if measurements is None:
             return d
@@ -2515,7 +2515,7 @@ class LoadImages(cpmodule.CPModule):
         frame = workspace.frame
         root = self.image_directory()
         use_cached = False
-        if can_cache and frame is not None and cached_file_lists.has_key(root):
+        if can_cache and frame is not None and root in cached_file_lists:
             how_long, files = cached_file_lists[root]
             if how_long > 3:
                 import wx
@@ -2938,7 +2938,7 @@ class LoadImages(cpmodule.CPModule):
                     # Add our metadata tags to the joiner
                     current = namesandtypes.join.parse()
                     for d in current:
-                        for v in d.values():
+                        for v in list(d.values()):
                             if v in my_tags:
                                 d[name] = v
                                 my_tags.remove(v)
@@ -3075,14 +3075,14 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             filename = self.get_filename()
             if os.path.exists(filename):
                 return False
-            parsed_path = urlparse.urlparse(filename)
+            parsed_path = urllib.parse.urlparse(filename)
             url = filename
             if len(parsed_path.scheme) < 2:
                 raise IOError("Test for access to file failed. File: %s" % filename)
         elif os.path.exists(path):
             return False
         else:
-            parsed_path = urlparse.urlparse(path)
+            parsed_path = urllib.parse.urlparse(path)
             url = '/'.join((path, self.get_filename()))
             #
             # Scheme length == 0 means no scheme
@@ -3101,7 +3101,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             tempfd, temppath = tempfile.mkstemp(suffix=".mat", dir = temp_dir)
             self.__cached_file = temppath
             try:
-                self.__cached_file, headers = urllib.urlretrieve(
+                self.__cached_file, headers = urllib.request.urlretrieve(
                     url, filename=temppath)
             finally:
                 os.close(tempfd)
@@ -3124,7 +3124,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 
     def is_matlab_file(self):
         '''Return True if the file name ends with .mat (no Bio-formats)'''
-        path = urlparse.urlparse(self.get_url())[2]
+        path = urllib.parse.urlparse(self.get_url())[2]
         return path.lower().endswith(".mat")
 
     def get_md5_hash(self, measurements):
@@ -3366,19 +3366,19 @@ def pathname2url(path):
     utf8_path = path.encode('utf-8')
     if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
-    return FILE_SCHEME + urllib.pathname2url(utf8_path)
+    return FILE_SCHEME + urllib.request.pathname2url(utf8_path)
 
 def is_file_url(url):
     return url.lower().startswith(FILE_SCHEME)
 
 def url2pathname(url):
-    if isinstance(url, unicode):
+    if isinstance(url, str):
         url = url.encode("utf-8")
     if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
     assert is_file_url(url)
-    utf8_url = urllib.url2pathname(url[len(FILE_SCHEME):])
-    return unicode(utf8_url, 'utf-8')
+    utf8_url = urllib.request.url2pathname(url[len(FILE_SCHEME):])
+    return str(utf8_url, 'utf-8')
 
 def urlfilename(url):
     '''Return just the file part of a URL
@@ -3388,11 +3388,11 @@ def urlfilename(url):
     '''
     if is_file_url(url):
         return os.path.split(url2pathname(url))[1]
-    path = urlparse.urlparse(url)[2]
+    path = urllib.parse.urlparse(url)[2]
     if "/" in path:
-        return urllib.unquote(path.rsplit("/", 1)[1])
+        return urllib.parse.unquote(path.rsplit("/", 1)[1])
     else:
-        return urllib.unquote(path)
+        return urllib.parse.unquote(path)
 
 def urlpathname(url):
     '''Return the path part of a URL
@@ -3404,9 +3404,9 @@ def urlpathname(url):
     '''
     if is_file_url(url):
         return os.path.split(url2pathname(url))[0]
-    scheme, netloc, path = urlparse.urlparse(url)[:3]
-    path = urlparse.urlunparse([scheme, netloc, path, "", "", ""])
+    scheme, netloc, path = urllib.parse.urlparse(url)[:3]
+    path = urllib.parse.urlunparse([scheme, netloc, path, "", "", ""])
     if "/" in path:
-        return urllib.unquote(path.rsplit("/", 1)[0])
+        return urllib.parse.unquote(path.rsplit("/", 1)[0])
     else:
-        return urllib.unquote(path)
+        return urllib.parse.unquote(path)

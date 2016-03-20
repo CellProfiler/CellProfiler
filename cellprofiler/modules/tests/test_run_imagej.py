@@ -3,7 +3,7 @@
 import os
 import sys
 import unittest
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from scipy.ndimage import grey_erosion
@@ -359,7 +359,7 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertTrue(isinstance(module, R.RunImageJ))
         self.assertEqual(module.command_or_macro, R.CM_COMMAND)
         self.assertEqual(module.command, "Edit|Invert...")
-        self.assertEqual(module.macro, u"var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\u000avar uiService=ImageJ.getService(svcClass);\u000auiService.createUI();")
+        self.assertEqual(module.macro, "var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\u000avar uiService=ImageJ.getService(svcClass);\u000auiService.createUI();")
         self.assertEqual(module.macro_language, "Beanshell")
         self.assertFalse(module.wants_to_set_current_image)
         self.assertEqual(module.current_input_image_name, "GFP")
@@ -458,7 +458,7 @@ RunImageJ:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:5|show_
         self.assertTrue(isinstance(module, R.RunImageJ))
         self.assertEqual(module.command_or_macro, R.CM_COMMAND)
         self.assertEqual(module.command, "Edit|Invert...")
-        self.assertEqual(module.macro, u"var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\u000avar uiService=ImageJ.getService(svcClass);\u000auiService.createUI();")
+        self.assertEqual(module.macro, "var svcClass=java.lang.ClassLoader.getSystemClassLoader().loadClass('imagej.ui.UIService');\u000avar uiService=ImageJ.getService(svcClass);\u000auiService.createUI();")
         self.assertEqual(module.macro_language, "Beanshell")
         self.assertFalse(module.wants_to_set_current_image)
         self.assertEqual(module.current_input_image_name, "GFP")

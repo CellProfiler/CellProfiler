@@ -14,12 +14,12 @@ from cellprofiler import cpimage
 from cellprofiler.cpmodule import CPModule
 from cellprofiler.modules.identify import get_threshold_measurement_columns
 from cellprofiler.settings import YES, NO
-from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
-from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
-from identify import FI_IMAGE_SIZE, TSM_NONE
-from identify import Identify, O_BACKGROUND, O_ENTROPY
-from identify import O_FOREGROUND, O_THREE_CLASS
-from identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
+from .identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
+from .identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
+from .identify import FI_IMAGE_SIZE, TSM_NONE
+from .identify import Identify, O_BACKGROUND, O_ENTROPY
+from .identify import O_FOREGROUND, O_THREE_CLASS
+from .identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
 
 RETAIN = "Retain"
 SHIFT = "Shift"
@@ -208,7 +208,7 @@ class ApplyThreshold(Identify):
                          variable_revision_number, module_name,
                          from_matlab):
         if from_matlab and variable_revision_number < 4:
-            raise NotImplementedError, ("TODO: Handle Matlab CP pipelines for "
+            raise NotImplementedError("TODO: Handle Matlab CP pipelines for "
                                         "ApplyThreshold with revision < 4")
         if from_matlab and variable_revision_number == 4:
             setting_values = [ setting_values[0],  # ImageName

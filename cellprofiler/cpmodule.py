@@ -14,7 +14,7 @@ import cellprofiler.cpimage
 import cellprofiler.measurements
 import cellprofiler.objects
 import cellprofiler.settings as cps
-import pipeline as cpp
+from . import pipeline as cpp
 
 
 class CPModule(object):
@@ -114,7 +114,7 @@ class CPModule(object):
         settings = handles[cpp.SETTINGS][0,0]
         setting_values = []
         self.__notes = []
-        if (settings.dtype.fields.has_key(cpp.MODULE_NOTES) and
+        if (cpp.MODULE_NOTES in settings.dtype.fields and
             settings[cpp.MODULE_NOTES].shape[1] > idx):
             n=settings[cpp.MODULE_NOTES][0,idx].flatten()
             for x in n:
@@ -124,9 +124,9 @@ class CPModule(object):
                     else:
                         x = x[0]
                 self.__notes.append(x)
-        if settings.dtype.fields.has_key(cpp.SHOW_WINDOW):
+        if cpp.SHOW_WINDOW in settings.dtype.fields:
             self.__show_window = settings[cpp.SHOW_WINDOW][0,idx] != 0
-        if settings.dtype.fields.has_key(cpp.BATCH_STATE):
+        if cpp.BATCH_STATE in settings.dtype.fields:
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
             self.batch_state = np.array(settings[cpp.BATCH_STATE][0,idx].tostring())
@@ -243,7 +243,7 @@ class CPModule(object):
     def save_to_handles(self,handles):
         module_idx = self.module_num-1
         setting = handles[cpp.SETTINGS][0,0]
-        setting[cpp.MODULE_NAMES][0,module_idx] = unicode(self.module_class())
+        setting[cpp.MODULE_NAMES][0,module_idx] = str(self.module_class())
         setting[cpp.MODULE_NOTES][0,module_idx] = np.ndarray(shape=(len(self.notes),1),dtype='object')
         for i in range(0,len(self.notes)):
             setting[cpp.MODULE_NOTES][0,module_idx][i,0]=self.notes[i]
@@ -253,9 +253,9 @@ class CPModule(object):
             if len(str(variable)) > 0:
                 setting[cpp.VARIABLE_VALUES][module_idx,i] = variable.get_unicode_value()
             if isinstance(variable,cps.NameProvider):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode("%s indep"%(variable.group))
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = str("%s indep"%(variable.group))
             elif isinstance(variable,cps.NameSubscriber):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = unicode(variable.group)
+                setting[cpp.VARIABLE_INFO_TYPES][module_idx,i] = str(variable.group)
         setting[cpp.VARIABLE_REVISION_NUMBERS][0,module_idx] = self.variable_revision_number
         setting[cpp.MODULE_REVISION_NUMBERS][0,module_idx] = 0
         setting[cpp.SHOW_WINDOW][0,module_idx] = 1 if self.show_window else 0
@@ -300,9 +300,9 @@ class CPModule(object):
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 
@@ -317,9 +317,9 @@ class CPModule(object):
             for setting in self.visible_settings():
                 setting.test_setting_warnings(pipeline)
             self.validate_module_warnings(pipeline)
-        except cps.ValidationError, instance:
+        except cps.ValidationError as instance:
             raise instance
-        except Exception, e:
+        except Exception as e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
                                       self.visible_settings()[0])
 
@@ -365,7 +365,7 @@ class CPModule(object):
         those modules create) previous to a given module.
         """
         if self.__module_num == -1:
-            raise(Exception('Module has not been created'))
+            raise Exception
         return self.__module_num
 
     def set_module_num(self,module_num):

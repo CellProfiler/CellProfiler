@@ -64,7 +64,7 @@ except ImportError:
     pass
 
 if sys.platform.startswith("win"):
-    import _winreg
+    import winreg
 
     try:
         import py2exe
@@ -203,11 +203,11 @@ if has_py2exe:
             py2exe.build_exe.py2exe.finalize_options(self)
             if self.msvcrt_redist is None:
                 try:
-                    key = _winreg.OpenKey(
-                        _winreg.HKEY_LOCAL_MACHINE,
+                    key = winreg.OpenKey(
+                        winreg.HKEY_LOCAL_MACHINE,
                         r"SOFTWARE\Wow6432Node\Microsoft\VisualStudio\9.0" +
                         r"\Setup\VC")
-                    product_dir = _winreg.QueryValueEx(key, "ProductDir")[0]
+                    product_dir = winreg.QueryValueEx(key, "ProductDir")[0]
                     self.msvcrt_redist = os.path.join(
                         product_dir, "redist", "amd64", "Microsoft.VC90.CRT")
                 except WindowsError:
@@ -276,7 +276,7 @@ if has_py2exe:
                     ui_filenames = [
                         os.path.join(root, f) for f in filenames
                         if any([f.lower().endswith(ext)
-                                for ext in ".ui", ".png"])]
+                                for ext in (".ui", ".png")])]
                     if len(ui_filenames) > 0:
                         self.distribution.data_files.append(
                             (relpath, ui_filenames))
@@ -362,20 +362,19 @@ if has_py2exe:
             """Return the command to use to compile an .iss file
             """
             try:
-                key = _winreg.OpenKey(
-                    _winreg.HKEY_CLASSES_ROOT,
+                key = winreg.OpenKey(
+                    winreg.HKEY_CLASSES_ROOT,
                     "InnoSetupScriptFile\\shell\\Compile\\command")
-                result = _winreg.QueryValueEx(key, None)[0]
+                result = winreg.QueryValueEx(key, None)[0]
                 key.Close()
                 return result
             except WindowsError:
                 if key:
                     key.Close()
-                raise distutils.errors.DistutilsFileError, \
-                    "Inno Setup does not seem to be installed properly. " + \
+                raise distutils.errors.DistutilsFileError("Inno Setup does not seem to be installed properly. " + \
                     "Specifically, there is no entry in the " + \
                     "HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\" + \
-                    "Compile\\command"
+                    "Compile\\command")
 
 cmdclass = {
     "build_version": BuildVersion,

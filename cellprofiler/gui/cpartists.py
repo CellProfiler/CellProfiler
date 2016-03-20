@@ -1216,7 +1216,7 @@ if __name__ == "__main__":
         ax.set_ylim(0, images[0].pixel_data.shape[0])
         ax.add_artist(artist)
         inspector = InspectionTool()
-        my_locals = dict([(k, v) for k, v in globals().items() if k.isupper()])
+        my_locals = dict([(k, v) for k, v in list(globals().items()) if k.isupper()])
         my_locals['images'] = images
         my_locals['objects'] = objects
         my_locals['masks'] = masks

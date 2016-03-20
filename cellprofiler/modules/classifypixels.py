@@ -30,7 +30,7 @@ recommended for running ilastik.
 '''
 
 import logging
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import cellprofiler.cpimage  as cpi
 import cellprofiler.cpmodule as cpm
@@ -49,7 +49,7 @@ import sys, os
 try:
     import vigra
     has_ilastik = True
-except ImportError, vigraImport:
+except ImportError as vigraImport:
     logger.warning("""vigra import: failed to import the vigra library. Please follow the instructions on
 "http://hci.iwr.uni-heidelberg.de/vigra/" to install vigra""", exc_info=True)
     has_ilastik = False
@@ -57,7 +57,7 @@ except ImportError, vigraImport:
 # Import h5py
 try:
     import h5py
-except ImportError, h5pyImport:
+except ImportError as h5pyImport:
     logger.warning("""h5py import: failed to import the h5py library.""",
                    exc_info=True)
     raise h5pyImport
@@ -77,7 +77,7 @@ if has_ilastik:
         from ilastik.core.volume import DataAccessor
         sys.stdout = old_stdout
 
-    except ImportError, ilastikImport:
+    except ImportError as ilastikImport:
         sys.stdout = old_stdout
         logger.warning("""ilastik import: failed to import the ilastik. Please follow the instructions on
     "http://www.ilastik.org" to install ilastik""", exc_info=True)
@@ -278,7 +278,7 @@ class ClassifyPixels(cpm.CPModule):
             if url in classifier_dict:
                 last_modtime, d = classifier_dict[url]
                 return d
-            filename, headers = urllib.urlretrieve(url)
+            filename, headers = urllib.request.urlretrieve(url)
             try:
                 modtime = os.stat(filename).st_mtime
                 d = self.parse_classifier_hdf5(filename)
@@ -311,14 +311,14 @@ class ClassifyPixels(cpm.CPModule):
         if not isinstance(filename, str):
             filename = filename.encode('utf-8')
         hf = h5py.File(filename,'r')
-        temp = hf['classifiers'].keys()
+        temp = list(hf['classifiers'].keys())
         # If hf is not closed this leads to an error in win64 and mac os x
         hf.close()
         del hf
 
         classifiers = []
         for cid in temp:
-            if isinstance(cid, unicode):
+            if isinstance(cid, str):
                 cid = cid.encode('utf-8')
             cidpath = 'classifiers/' + cid
             try:
@@ -333,7 +333,7 @@ class ClassifyPixels(cpm.CPModule):
         # Restore user selection of feature items from hdf5
         featureItems = []
         f = h5py.File(filename,'r')
-        for fgrp in f['features'].values():
+        for fgrp in list(f['features'].values()):
             featureItems.append(FeatureBase.deserialize(fgrp))
         d[FEATURE_ITEMS_KEY] = featureItems
         f.close()

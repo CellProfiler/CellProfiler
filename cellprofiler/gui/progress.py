@@ -1,4 +1,4 @@
-import cStringIO
+import io
 import sys
 import time
 
@@ -50,7 +50,7 @@ class ProgressFrame(wx.Frame):
                 nsw = NSWindow.alloc().initWithWindowRef_(window_ref)
                 nsw.setLevel_(NSFloatingWindowLevel)
             except ImportError:
-                print "No AppKit module => can't make progress window stay on top."
+                print("No AppKit module => can't make progress window stay on top.")
 
         self.start_time = time.time()
         self.end_times = None
@@ -206,11 +206,11 @@ class ProgressFrame(wx.Frame):
                 per_module_estimates[module_index] = current_module_so_far
                 per_module_estimates[module_index:] = per_module_estimates[:module_index+1].max()
             if False:
-                print "current_module_so_far =", current_module_so_far, "; adjusted_time =", self.adjusted_time(), "; end_times =", self.end_times
-                print "durations:"
-                print durations
-                print "per_module_estimates:"
-                print per_module_estimates
+                print("current_module_so_far =", current_module_so_far, "; adjusted_time =", self.adjusted_time(), "; end_times =", self.end_times)
+                print("durations:")
+                print(durations)
+                print("per_module_estimates:")
+                print(per_module_estimates)
             per_module_estimates[:module_index] *= self.num_image_sets - self.image_set_index - 1
             per_module_estimates[module_index:] *= self.num_image_sets - self.image_set_index
             per_module_estimates[module_index] -= current_module_so_far

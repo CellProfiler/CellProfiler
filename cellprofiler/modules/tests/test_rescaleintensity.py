@@ -1,7 +1,7 @@
 '''test_rescaleintensity.py - test the RescaleIntensity module
 '''
 
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -58,7 +58,7 @@ RescaleIntensity:[module_num:2|svn_version:\'8913\'|variable_revision_number:2|s
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 2)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -98,7 +98,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -129,7 +129,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -155,7 +155,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -188,7 +188,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -214,7 +214,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -241,7 +241,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -266,7 +266,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -293,7 +293,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -316,7 +316,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -350,7 +350,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
@@ -441,7 +441,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, R.RescaleIntensity))
         self.assertEqual(module.image_name, "OrigGreen")

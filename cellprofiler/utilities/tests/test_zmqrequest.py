@@ -3,7 +3,7 @@
 import logging
 import logging.handlers
 logger = logging.getLogger(__name__)
-import Queue
+import queue
 import os
 import threading
 import tempfile
@@ -43,8 +43,8 @@ class TestZMQRequest(unittest.TestCase):
             threading.Thread.__init__(self, name = name)
             self.notify_addr = "inproc://" + uuid.uuid4().hex
             self.setDaemon(True)
-            self.queue = Queue.Queue()
-            self.response_queue = Queue.Queue()
+            self.queue = queue.Queue()
+            self.response_queue = queue.Queue()
             self.start_signal = threading.Semaphore(0)
             self.keep_going = True
             self.analysis_id = analysis_id
@@ -94,7 +94,7 @@ class TestZMQRequest(unittest.TestCase):
                                 req = self.queue.get_nowait()
                                 req.send_only(self.work_socket)
                                 logger.info("Client message sent")
-            except Exception, e:
+            except Exception as e:
                 self.response_queue.put((e, None))
             finally:
                 logger.info("Client thread exiting")
@@ -119,7 +119,7 @@ class TestZMQRequest(unittest.TestCase):
     class ZMQServer(object):
         def __enter__(self):
             self.analysis_id = uuid.uuid4().hex
-            self.upq = Queue.Queue()
+            self.upq = queue.Queue()
             logger.info("Server registering")
             self.boundary = Z.register_analysis(self.analysis_id,
                                                 self.upq)
@@ -131,7 +131,7 @@ class TestZMQRequest(unittest.TestCase):
             try:
                 req = self.upq.get(timeout)
                 return req
-            except Queue.Empty:
+            except queue.Empty:
                 raise AssertionError("Failed to receive message within timeout of %f sec" % timeout)
 
         def __exit__(self, type, value, traceback):
@@ -231,7 +231,7 @@ class TestZMQRequest(unittest.TestCase):
             { "k":"v" },
             { "k":(1, 2, 3) },
             { (1, 2, 3): "k" },
-            { 1: { u"k":"v" } },
+            { 1: { "k":"v" } },
             { "k": [ { 1:2 }, { 3:4}] },
             { "k": ( (1, 2 ,{ "k1":"v1" }), )},
             { "k": r.uniform(size=(5, 8)) },
@@ -264,9 +264,9 @@ class TestZMQRequest(unittest.TestCase):
 
     def same(self, a, b):
         if isinstance(a, (float, int)):
-            self.assertAlmostEquals(a, b)
-        elif isinstance(a, basestring):
-            self.assertEquals(a, b)
+            self.assertAlmostEqual(a, b)
+        elif isinstance(a, str):
+            self.assertEqual(a, b)
         elif isinstance(a, dict):
             self.assertTrue(isinstance(b, dict))
             for k in a:

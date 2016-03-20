@@ -1,6 +1,6 @@
 """test_identifyprimautomatic.py: test the IdentifyPrimAutomatic module
 """
-import StringIO
+import io
 import base64
 import os
 import tempfile
@@ -854,7 +854,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
             self.assertFalse(isinstance(event, (cellprofiler.pipeline.RunExceptionEvent,
                                                 cellprofiler.pipeline.LoadExceptionEvent)))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         x = pipeline.modules()[0]
         self.assertTrue(isinstance(x, ID.IdentifyPrimaryObjects))
 
@@ -1007,7 +1007,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                 'afyW88ka9/zdp9/max52+Z//9VH5gW7l+6b8veb+e/Fd2NT9hcW7/P'
                 'zT67fOl/9tZZsgEA6Ux4DA==')
         pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()),3)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
@@ -1049,7 +1049,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                 'LoRcQoQ0dCbO7/R43T5kMuKEwfL5KU88Y/1Muw587PMmD55NiWfzKh'
                 '5cRpTjSrOhW2wmZ3XIcSmedrR5S5tsaeU6Tl3C665H2Pp7OHd9/eW6'
                 'd9rj70YQvvDYRb5pD1zEqaDA/VZu1t7z19i3cgtq/w8+vUjz')
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        fd = io.StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cellprofiler.pipeline.Pipeline()
         pipeline.add_listener(self.load_error_handler)
         pipeline.load(fd)
@@ -1090,7 +1090,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                 isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.load(
-            StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+            io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()),2)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module,ID.IdentifyPrimaryObjects))
@@ -1197,7 +1197,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
             self.assertFalse(
                 isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()),3)
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
@@ -1618,7 +1618,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
             self.assertFalse(
                 isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         module = pipeline.modules()[4]
         self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
         self.assertEqual(module.image_name, "Channel0")
@@ -1877,7 +1877,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
             self.assertFalse(
                 isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         for module, averaging_method, variance_method in zip(
             pipeline.modules(),
             (I.RB_MEAN, I.RB_MEDIAN, I.RB_MODE),
@@ -2900,7 +2900,7 @@ class TestWeightedVariance(unittest.TestCase):
         mask = np.array([[False,True,True],[False,True,True]])
         binary_image = np.array([[False, False, False], [True, True, True]])
         output = T.weighted_variance(img, mask, binary_image)
-        self.assertAlmostEquals(output,.25)
+        self.assertAlmostEqual(output,.25)
 
 class TestSumOfEntropies(unittest.TestCase):
     def test_01_all_masked(self):

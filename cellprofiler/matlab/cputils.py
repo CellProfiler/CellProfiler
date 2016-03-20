@@ -42,14 +42,14 @@ def encapsulate_strings_in_arrays(handles):
         # cells - descend recursively
         flat = handles.flat
         for i in range(0,len(flat)):
-            if isinstance(flat[i],str) or isinstance(flat[i],unicode):
+            if isinstance(flat[i],str) or isinstance(flat[i],str):
                 flat[i] = encapsulate_string(flat[i])
             elif isinstance(flat[i],numpy.ndarray):
                 encapsulate_strings_in_arrays(flat[i])
     elif handles.dtype.fields:
         # A structure: iterate over all structure elements.
-        for field in handles.dtype.fields.keys():
-            if isinstance(handles[field],str) or isinstance(handles[field],unicode):
+        for field in list(handles.dtype.fields.keys()):
+            if isinstance(handles[field],str) or isinstance(handles[field],str):
                 handles[field] = encapsulate_string(handles[field])
             elif isinstance(handles[field],numpy.ndarray):
                 encapsulate_strings_in_arrays(handles[field])

@@ -172,7 +172,7 @@ import numpy as np
 import re
 import scipy.stats
 
-import identify as cpmi
+from . import identify as cpmi
 import cellprofiler.cpmodule
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
@@ -191,9 +191,9 @@ import centrosome.outline
 import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
 import centrosome.threshold as cpthresh
-from identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
-from identify import draw_outline
-from identify import FI_IMAGE_SIZE
+from .identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
+from .identify import draw_outline
+from .identify import FI_IMAGE_SIZE
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 #################################################
@@ -1285,7 +1285,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if self.exclude_size.value and object_count > 0:
             areas = scipy.ndimage.measurements.sum(np.ones(labeled_image.shape),
                                                    labeled_image,
-                                                   np.array(range(0,object_count+1),dtype=np.int32))
+                                                   np.array(list(range(0,object_count+1)),dtype=np.int32))
             areas = np.array(areas,dtype=int)
             min_allowed_area = np.pi * (self.size_range.min * self.size_range.min)/4
             max_allowed_area = np.pi * (self.size_range.max * self.size_range.max)/4

@@ -5,7 +5,7 @@ import base64
 import numpy as np
 import os
 import re
-from StringIO import StringIO
+from io import StringIO
 import tempfile
 import unittest
 import zlib
@@ -314,7 +314,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
-        self.assertTrue(isinstance(data, unicode), "Expected <type 'unicode'> got %s" %type(data))
+        self.assertTrue(isinstance(data, str), "Expected <type 'unicode'> got %s" %type(data))
         self.assertEqual(data, "1234567890123")
         os.remove(filename)
 
@@ -602,9 +602,9 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         fmt = "%15s %30s %20s"
-        print fmt % ("Object", "Feature", "Type")
+        print(fmt % ("Object", "Feature", "Type"))
         for object_name, feature, coltype in columns:
-            print fmt % (object_name, feature, coltype)
+            print(fmt % (object_name, feature, coltype))
         for colname, coltype in zip(colnames, coltypes):
             self.assertTrue(any([(column[0] == cpmeas.IMAGE and
                                   column[1] == colname and
@@ -799,14 +799,14 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 
     def test_12_01_load_unicode(self):
         base_directory = tempfile.mkdtemp()
-        directory = u"\u2211\u03B1"
-        filename = u"\u03B2.jpg"
+        directory = "\u2211\u03B1"
+        filename = "\u03B2.jpg"
         base_path = os.path.join(base_directory, directory)
         os.mkdir(base_path)
         path = os.path.join(base_path, filename)
-        csv_filename = u"\u03b3.csv"
+        csv_filename = "\u03b3.csv"
         csv_path = os.path.join(base_path, csv_filename)
-        unicode_value = u"\u03b4.csv"
+        unicode_value = "\u03b4.csv"
         try:
             r = np.random.RandomState()
             r.seed(1101)

@@ -12,8 +12,8 @@ import javabridge
 import numpy as np
 import os
 import unittest
-from urllib import urlretrieve, URLopener
-from urllib2 import HTTPError
+from urllib.request import urlretrieve, URLopener
+from urllib.error import HTTPError
 import tempfile
 
 import scipy.io.matlab.mio
@@ -36,8 +36,8 @@ class TestAllModules(unittest.TestCase):
         # Tests have a habit of importing the module they test and then,
         # they are not included in the test suite because they don't import
         #
-        found_modules = map(
-            (lambda x:x.__module__.rsplit(".", 1)[-1]), all_modules.values())
+        found_modules = list(map(
+            (lambda x:x.__module__.rsplit(".", 1)[-1]), list(all_modules.values())))
         for module_name in \
             filter((lambda x:x not in self.optional_modules), builtin_modules):
             self.assertTrue(
@@ -47,7 +47,7 @@ class TestAllModules(unittest.TestCase):
 
 def example_images_directory():
     global __temp_example_images_folder
-    if os.environ.has_key('CP_EXAMPLEIMAGES'):
+    if 'CP_EXAMPLEIMAGES' in os.environ:
         return os.environ['CP_EXAMPLEIMAGES']
     fyle = os.path.abspath(__file__)
     d = os.path.split(fyle)[0]   # trunk.CellProfiler.cellprofiler.modules.tests
@@ -81,7 +81,7 @@ def example_images_url():
 __temp_test_images_folder = None
 def testimages_directory():
     global __temp_test_images_folder
-    if os.environ.has_key('CP_TESTIMAGES'):
+    if 'CP_TESTIMAGES' in os.environ:
         return os.environ['CP_TESTIMAGES']
     fyle = os.path.abspath(__file__)
     d = os.path.split(fyle)[0]   # trunk.CellProfiler.cellprofiler.modules.tests
@@ -284,7 +284,7 @@ def maybe_download_tesst_image( file_name):
         url = testimages_url() + "/" + file_name
         try:
             URLopener().retrieve(url, local_path)
-        except IOError, e:
+        except IOError as e:
             # This raises the "expected failure" exception.
             def bad_url(e=e):
                 raise e

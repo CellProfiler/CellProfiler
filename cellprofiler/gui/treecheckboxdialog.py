@@ -106,7 +106,7 @@ class TreeCheckboxDialog(wx.Dialog):
             d = self.get_item_data(item_id)
             assert len(d) > 1
             if self.tree_ctrl.GetChildrenCount(item_id, False) == 0:
-                for key in sorted([x for x in d.keys() if x is not None]):
+                for key in sorted([x for x in list(d.keys()) if x is not None]):
                     d1 = d[key]
                     if hasattr(d1, "__call__"):
                         # call function to get real value
@@ -233,19 +233,19 @@ if __name__ == "__main__":
                                      style = wx.DEFAULT_DIALOG_STYLE |
                                      wx.RESIZE_BORDER)
             dlg.ShowModal()
-            print "{"
+            print("{")
             for i in range(5):
                 d1 = d[str(i)]
-                print "   %d: { None=%s," % (i, repr(d1[None]))
+                print("   %d: { None=%s," % (i, repr(d1[None])))
                 for j in range(5):
                     d2 = d1[str(j)]
-                    print "       %d: { None=%s" % (j, repr(d2[None]))
+                    print("       %d: { None=%s" % (j, repr(d2[None])))
                     for k in range(5):
                         d3 = d2[str(k)]
-                        print "           %d: { None=%s }, " % (k, repr(d3[None]))
-                    print "           },"
-                print "        },"
-            print "}"
+                        print("           %d: { None=%s }, " % (k, repr(d3[None])))
+                    print("           },")
+                print("        },")
+            print("}")
             return False
     my_app = MyApp(False)
     my_app.MainLoop()

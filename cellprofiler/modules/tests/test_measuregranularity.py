@@ -4,7 +4,7 @@
 import base64
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 
@@ -22,7 +22,7 @@ import cellprofiler.modules.measuregranularity as M
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 import sys
-print sys.path
+print(sys.path)
 
 IMAGE_NAME = 'myimage'
 OBJECTS_NAME = 'myobjects'

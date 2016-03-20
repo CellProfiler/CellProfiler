@@ -2,7 +2,7 @@
 
 import itertools
 import unittest
-from StringIO import StringIO
+from io import StringIO
 
 import centrosome.cpmorphology as morph
 import numpy as np

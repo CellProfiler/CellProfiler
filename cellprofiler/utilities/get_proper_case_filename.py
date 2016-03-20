@@ -15,7 +15,7 @@ if sys.platform.startswith("win"):
 
     def get_proper_case_filename(path):
         if False:
-            result = _get_proper_case_filename.get_proper_case_filename(unicode(path))
+            result = _get_proper_case_filename.get_proper_case_filename(str(path))
             if result is None:
                 return path
             if (len(result) and len(path) and

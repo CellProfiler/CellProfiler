@@ -1,7 +1,7 @@
 """test_measureobjectsizeshape.py - test the MeasureObjectSizeShape module
 """
 
-import StringIO
+import io
 import base64
 import unittest
 
@@ -49,7 +49,7 @@ class TestMeasureObjectSizeShape(unittest.TestCase):
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()),9)
         module = pipeline.modules()[7]
         self.assertTrue(isinstance(module, cpmoas.MeasureObjectAreaShape))
@@ -73,7 +73,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cpmoas.MeasureObjectSizeShape))

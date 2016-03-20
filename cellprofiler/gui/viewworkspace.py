@@ -604,7 +604,7 @@ class ViewWorkspace(object):
             else:
                 if object_name not in object_values:
                     if any([not m.has_feature(object_name, lf) for lf in
-                            M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y]):
+                            (M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y)]):
                         continue
                     object_values[object_name] = []
                 object_values[object_name].append(
@@ -613,11 +613,11 @@ class ViewWorkspace(object):
             self.axes.set_title("\n".join(title_lines))
         else:
             self.axes.set_title("Image set # %d" % m.image_number)
-        for object_name, value_rows in object_values.items():
+        for object_name, value_rows in list(object_values.items()):
             values = [vr[0] for vr in value_rows]
             measurement_rows = [vr[1] for vr in value_rows]
             x, y = [m[object_name, ftr] for ftr in
-                    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y]
+                    (M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y)]
             for i in range(len(x)):
                 xi, yi = x[i], y[i]
                 if np.isnan(xi) or np.isnan(yi):
@@ -635,8 +635,8 @@ class ViewWorkspace(object):
                     color = measurement_row.foreground_color
                     fontcolor, backgroundcolor = [
                         tuple([float(c)/255 for c in color][:3]) for color in
-                        measurement_row.foreground_color,
-                        measurement_row.background_color]
+                        (measurement_row.foreground_color,
+                        measurement_row.background_color)]
 
                     fmt = "%%.%df" % measurement_row.precision
                     a = self.axes.annotate(

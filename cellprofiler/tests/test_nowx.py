@@ -1,22 +1,22 @@
 """test_nowx.py - ensure that there's no dependency on wx when headless
 """
-import __builtin__
+import builtins
 import os
 import sys
 import tempfile
 import traceback
 import unittest
-from urllib2 import urlopen
+from urllib.request import urlopen
 
 from cellprofiler.modules.tests import \
      example_images_directory, maybe_download_sbs, maybe_download_fly
 
 
 def import_all_but_wx(name,
-                      globals = __builtin__.globals(),
-                      locals = __builtin__.locals(),
+                      globals = builtins.globals(),
+                      locals = builtins.locals(),
                       fromlist=[], level=-1,
-                      default_import = __builtin__.__import__):
+                      default_import = builtins.__import__):
     if name == "wx" or name.startswith("wx."):
         raise ImportError("Not allowed to import wx!")
     return default_import(name, globals, locals, fromlist, level)
@@ -27,11 +27,11 @@ class TestNoWX(unittest.TestCase):
         from cellprofiler.preferences import set_headless, set_temporary_directory
         set_headless()
         set_temporary_directory(tempfile.gettempdir())
-        self.old_import = __builtin__.__import__
-        __builtin__.__import__ = import_all_but_wx
+        self.old_import = builtins.__import__
+        builtins.__import__ = import_all_but_wx
 
     def tearDown(self):
-        __builtin__.__import__ = self.old_import
+        builtins.__import__ = self.old_import
 
     def example_dir(self):
         return example_images_directory()
@@ -56,7 +56,7 @@ class TestNoWX(unittest.TestCase):
             try:
                 M.instantiate_module(name)
             except:
-                print "Module %s probably imports wx" % name
+                print("Module %s probably imports wx" % name)
                 traceback.print_exc()
 
     fly_url = "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
@@ -70,7 +70,7 @@ class TestNoWX(unittest.TestCase):
         pipeline.add_listener(callback)
         try:
             fd = urlopen(self.fly_url)
-        except IOError, e:
+        except IOError as e:
             def bad_url(e=e):
                 raise e
             unittest.expectedFailure(bad_url)()

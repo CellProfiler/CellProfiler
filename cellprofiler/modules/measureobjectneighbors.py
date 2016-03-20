@@ -610,7 +610,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         if self.neighbors_are_objects:
             return M_ALL
         else:
-            return filter(lambda x: x != M_PERCENT_TOUCHING, M_ALL)
+            return [x for x in M_ALL if x != M_PERCENT_TOUCHING]
 
     def get_measurement_name(self, feature):
         if self.distance_method == D_EXPAND:
@@ -657,8 +657,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.object_name and category == C_NEIGHBORS:
-            return filter(lambda x: (x is not M_PERCENT_TOUCHING
-                                     or self.neighbors_are_objects), M_ALL)
+            return [x for x in M_ALL if (x is not M_PERCENT_TOUCHING
+                                     or self.neighbors_are_objects)]
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category,

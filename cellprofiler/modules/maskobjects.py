@@ -37,7 +37,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-import identify as I
+from . import identify as I
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.settings import YES, NO
 

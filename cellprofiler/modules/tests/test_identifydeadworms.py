@@ -2,7 +2,7 @@
 '''
 
 import unittest
-from StringIO import StringIO
+from io import StringIO
 
 import numpy as np
 from scipy.ndimage import binary_fill_holes

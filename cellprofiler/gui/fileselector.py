@@ -8,7 +8,7 @@ import wx
 import wx.html
 import wx.lib.agw.customtreectrl as CT
 
-import scrollable_text
+from . import scrollable_text
 
 default_input = '/tmp'
 default_output = '/Users/thouis'

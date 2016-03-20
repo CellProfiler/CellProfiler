@@ -3,7 +3,7 @@
 
 import logging
 logger = logging.getLogger(__name__)
-from cStringIO import StringIO
+from io import StringIO
 import numpy as np
 import h5py
 import os
@@ -182,7 +182,7 @@ class Workspace(object):
 
     def get_grid(self, grid_name):
         '''Return a grid with the given name'''
-        if not self.__grid.has_key(grid_name):
+        if grid_name not in self.__grid:
             raise ValueError("Could not find grid %s"%grid_name)
         return self.__grid[grid_name]
 
@@ -296,7 +296,7 @@ class Workspace(object):
 
     def get_outline_names(self):
         """The names of outlines of objects"""
-        return self.__outlines.keys()
+        return list(self.__outlines.keys())
 
     def add_outline(self, name, outline):
         """Add an object outline to the workspace"""

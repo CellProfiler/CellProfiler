@@ -7,8 +7,8 @@ ImageSetList - Represents the list of image filenames that make up a pipeline ru
 import logging
 import math
 import sys
-from StringIO import StringIO
-from cPickle import dump, Unpickler
+from io import StringIO
+from pickle import dump, Unpickler
 from struct import unpack
 from zlib import decompress
 
@@ -625,7 +625,7 @@ class ImageSet(object):
                       discard alpha channel.
         """
         name = str(name)
-        if not self.__images.has_key(name):
+        if name not in self.__images:
             image = self.get_image_provider(name).provide_image(self)
             if cache:
                 self.__images[name] = image
@@ -669,7 +669,7 @@ class ImageSet(object):
 
         name - return the image provider with this name
         """
-        providers = filter(lambda x: x.name == name, self.__image_providers)
+        providers = [x for x in self.__image_providers if x.name == name]
         assert len(providers)>0, "No provider of the %s image"%(name)
         assert len(providers)==1, "More than one provider of the %s image"%(name)
         return providers[0]
@@ -679,8 +679,7 @@ class ImageSet(object):
 
         name - the name of the provider to remove
         """
-        self.__image_providers = filter(lambda x: x.name != name,
-                                        self.__image_providers)
+        self.__image_providers = [x for x in self.__image_providers if x.name != name]
 
     def clear_image(self, name):
         '''Remove the image memory associated with a provider
@@ -688,7 +687,7 @@ class ImageSet(object):
         name - the name of the provider
         '''
         self.get_image_provider(name).release_memory()
-        if self.__images.has_key(name):
+        if name in self.__images:
             del self.__images[name]
 
     def clear_cache(self):
@@ -750,7 +749,7 @@ class ImageSetList(object):
         else:
             keys = keys_or_number
             k = make_dictionary_key(keys)
-            if self.__image_sets_by_key.has_key(k):
+            if k in self.__image_sets_by_key:
                 number = self.__image_sets_by_key[k].get_number()
             else:
                 number = len(self.__image_sets)
@@ -833,11 +832,11 @@ class ImageSetList(object):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             key_values = tuple([str(image_set.keys[key]) for key in keys])
-            if not d.has_key(key_values):
+            if key_values not in d:
                 d[key_values] = []
                 sort_order.append(key_values)
             d[key_values].append(i+1)
-        return (keys, [(dict(zip(keys,k)),d[k]) for k in sort_order])
+        return (keys, [(dict(list(zip(keys,k))),d[k]) for k in sort_order])
 
     def save_state(self):
         '''Return a string that can be used to load the image_set_list's state
@@ -889,8 +888,8 @@ class ImageSetList(object):
 
 def make_dictionary_key(key):
     '''Make a dictionary into a stable key for another dictionary'''
-    return u", ".join([u":".join([unicode(y) for y in x])
-                       for x in sorted(key.iteritems())])
+    return ", ".join([":".join([str(y) for y in x])
+                       for x in sorted(key.items())])
 
 def readc01(fname):
     '''Read a Cellomics file into an array

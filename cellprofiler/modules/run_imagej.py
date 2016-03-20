@@ -132,7 +132,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
 
         self.macro_language = cps.Choice(
             "Macro language",
-            choices = self.language_dictionary.keys(),doc = """
+            choices = list(self.language_dictionary.keys()),doc = """
             This setting chooses the scripting language used to execute
             any macros in this module""")
 
@@ -354,7 +354,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         d - the dictionary that persists the setting. None = regular
         '''
         key = command.get_unicode_value()
-        if not d.has_key(key):
+        if key not in d:
             try:
                 module_info = RunImageJ.__get_module_info_from_command(command)
             except cps.ValidationError:
@@ -399,7 +399,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         """
                     minimum, maximum = [
                         None if x is None else J.call(x, "intValue", "()I")
-                        for x in minimum, maximum]
+                        for x in (minimum, maximum)]
 
                     if J.is_instance_of(default, 'java/lang/Number'):
                         value = J.call(default, "intValue", "()I")
@@ -426,7 +426,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         """
                     minimum, maximum = [
                         None if x is None else J.call(x, "doubleValue", "()D")
-                        for x in minimum, maximum]
+                        for x in (minimum, maximum)]
                     if J.is_instance_of(default, 'java/lang/Number'):
                         value = J.call(default, "doubleValue", "()D")
                     elif minimum is not None:
@@ -505,7 +505,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         """
                     if default is None:
                         default = ""
-                    elif not isinstance(default, basestring):
+                    elif not isinstance(default, str):
                         default = J.to_string(default)
                     setting = cps.Pathname(
                         label, default, doc = description)
@@ -948,7 +948,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             if isinstance(setting, cps.ImageNameProvider):
                 name = module_item.getName()
                 output_name = setting.value
-                if display_dictionary.has_key(name):
+                if name in display_dictionary:
                     display = display_dictionary[name]
                     pixel_data = self.save_display_as_image(
                         workspace, display, output_name)
@@ -971,7 +971,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 if wants_display:
                     output_images.append((output_name, pixel_data))
         # Close any displays that we created.
-        for display in display_dictionary.values():
+        for display in list(display_dictionary.values()):
             display.close()
 
     def display(self, workspace, figure):

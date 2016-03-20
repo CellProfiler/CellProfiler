@@ -1,6 +1,6 @@
 """test_analysisworker.py - test the analysis client framework"""
 
-import Queue
+import queue
 import hashlib
 import os
 import socket
@@ -9,7 +9,7 @@ import threading
 import traceback
 import unittest
 import uuid
-from cStringIO import StringIO
+from io import StringIO
 
 import javabridge as J
 import numpy as np
@@ -99,12 +99,12 @@ class TestAnalysisWorker(unittest.TestCase):
         def start(self):
             self.setDaemon(True)
             self.setName("Analysis worker thread")
-            self.up_queue = Queue.Queue()
+            self.up_queue = queue.Queue()
             self.notify_addr = "inproc://"+uuid.uuid4().hex
             self.up_queue_recv_socket = cpaw.the_zmq_context.socket(zmq.SUB)
             self.up_queue_recv_socket.setsockopt(zmq.SUBSCRIBE, "")
             self.up_queue_recv_socket.bind(self.notify_addr)
-            self.down_queue = Queue.Queue()
+            self.down_queue = queue.Queue()
             threading.Thread.start(self)
             self.up_queue.get()
 
@@ -124,7 +124,7 @@ class TestAnalysisWorker(unittest.TestCase):
                         result = fn()
                         self.up_queue.put((result, None))
                         up_queue_send_socket.send("OK")
-                    except Exception, e:
+                    except Exception as e:
                         traceback.print_exc()
                         self.up_queue.put((None, e))
                         up_queue_send_socket.send("EXCEPTION")
@@ -154,7 +154,7 @@ class TestAnalysisWorker(unittest.TestCase):
                         raise cpp.CancelledException("Unexpected exit during recv")
                 if socket == work_socket and state == zmq.POLLIN:
                     return cpzmq.Communicable.recv(work_socket)
-            raise Queue.Empty
+            raise queue.Empty
 
         def join(self, timeout=None):
             if self.isAlive():
@@ -214,7 +214,7 @@ class TestAnalysisWorker(unittest.TestCase):
                 ((self.analysis_id, self.work_addr),))
             try:
                 return self.awthread.recv(self.work_socket, 250)
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
     def test_01_01_get_announcement(self):
@@ -226,7 +226,7 @@ class TestAnalysisWorker(unittest.TestCase):
             try:
                 result, exception = self.awthread.up_queue.get_nowait()
                 break
-            except Queue.Empty:
+            except queue.Empty:
                 continue
 
         self.assertIsNone(exception)

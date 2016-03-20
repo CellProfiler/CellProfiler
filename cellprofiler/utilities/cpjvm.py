@@ -45,8 +45,8 @@ def get_patcher_args(class_path):
     returns a sequence of arguments to add to the JVM args
     '''
 
-    patchers = filter(
-        (lambda x:os.path.split(x)[1].startswith("prokaryote")), class_path)
+    patchers = list(filter(
+        (lambda x:os.path.split(x)[1].startswith("prokaryote")), class_path))
     if len(patchers) > 0:
         patcher = patchers[0]
         return ["-javaagent:%s=init" % patcher]
@@ -57,7 +57,7 @@ def get_jars():
     '''Get the final list of JAR files passed to javabridge'''
 
     class_path = []
-    if os.environ.has_key("CLASSPATH"):
+    if "CLASSPATH" in os.environ:
         class_path += os.environ["CLASSPATH"].split(os.pathsep)
         logging.debug(
             "Adding Java class path from environment variable, ""CLASSPATH""")
@@ -158,7 +158,7 @@ def cp_start_vm():
         args.append("-Djava.awt.headless=true")
 
     heap_size = str(cpprefs.get_jvm_heap_mb())+"m"
-    if os.environ.has_key("CP_JDWP_PORT"):
+    if "CP_JDWP_PORT" in os.environ:
         args.append(
             ("-agentlib:jdwp=transport=dt_socket,address=127.0.0.1:%s"
              ",server=y,suspend=n") % os.environ["CP_JDWP_PORT"])

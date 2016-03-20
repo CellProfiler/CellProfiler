@@ -6,7 +6,7 @@ import sys
 import os
 import numpy as np
 import tempfile
-from cStringIO import StringIO
+from io import StringIO
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -83,10 +83,10 @@ def main(args = None):
     if options.print_version:
         from cellprofiler.utilities.version import \
              dotted_version, version_string, git_hash, version_number
-        print "CellProfiler %s" % dotted_version
-        print "Git %s" % git_hash
-        print "Version %s" % version_number
-        print "Built %s" % version_string.split(" ")[0]
+        print("CellProfiler %s" % dotted_version)
+        print("Git %s" % git_hash)
+        print("Version %s" % version_number)
+        print("Built %s" % version_string.split(" ")[0])
         sys.exit(0)
     #
     # Important to go headless ASAP
@@ -147,7 +147,7 @@ def main(args = None):
         else:
             with open(path, "w") as fd:
                 fd.write(pipeline_text)
-        print "Message added to %s" % path
+        print("Message added to %s" % path)
         return
 
     # necessary to prevent matplotlib trying to use Tkinter as its backend.
@@ -250,7 +250,7 @@ def main(args = None):
 
         elif options.run_pipeline:
             run_pipeline_headless(options, args)
-    except Exception, e:
+    except Exception as e:
         logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
         raise
 
@@ -596,10 +596,10 @@ def print_code_statistics():
     '''
     from cellprofiler.modules import builtin_modules, all_modules, instantiate_module
     import subprocess
-    print "\n\n\n**** CellProfiler code statistics ****"
-    print "# of built-in modules: %d" % len(builtin_modules)
+    print("\n\n\n**** CellProfiler code statistics ****")
+    print("# of built-in modules: %d" % len(builtin_modules))
     setting_count = 0
-    for module in all_modules.values():
+    for module in list(all_modules.values()):
         if module.__module__.find(".") < 0:
             continue
         mn = module.__module__.rsplit(".", 1)[1]
@@ -620,13 +620,13 @@ def print_code_statistics():
     linecount = 0
     for filename in filelist:
         if (os.path.exists(filename) and
-            any([filename.endswith(x) for x in ".py", ".c", ".pyx", ".java"])):
+            any([filename.endswith(x) for x in (".py", ".c", ".pyx", ".java")])):
             if filename.endswith(".c") and os.path.exists(filename[:-1]+"pyx"):
                 continue
             with open(filename, "r") as fd:
                 linecount += len(fd.readlines())
-    print "# of settings: %d" % setting_count
-    print "# of lines of code: %d" % linecount
+    print("# of settings: %d" % setting_count)
+    print("# of lines of code: %d" % linecount)
 
 def print_measurements(options):
     '''Print the measurements that would be output by a pipeline
@@ -650,12 +650,12 @@ def print_measurements(options):
     pipeline.add_listener(callback)
     pipeline.load(os.path.expanduser(options.pipeline_filename))
     columns = pipeline.get_measurement_columns()
-    print "--- begin measurements ---"
-    print "Object,Feature,Type"
+    print("--- begin measurements ---")
+    print("Object,Feature,Type")
     for column in columns:
         object_name, feature, data_type = column[:3]
-        print "%s,%s,%s" % (object_name, feature, data_type)
-    print "--- end measurements ---"
+        print("%s,%s,%s" % (object_name, feature, data_type))
+    print("--- end measurements ---")
 
 def print_groups(filename):
     '''Print the image set groups for this pipeline
@@ -710,8 +710,8 @@ def get_batch_commands(filename):
             for i, off in enumerate(cumsums):
                 if off == prev:
                     continue
-                print "CellProfiler -c -r -b -p %s -f %d -l %d" % (
-                    filename, prev+1, off)
+                print("CellProfiler -c -r -b -p %s -f %d -l %d" % (
+                    filename, prev+1, off))
                 prev = off
             return
 
@@ -719,9 +719,9 @@ def get_batch_commands(filename):
     groupings = m.get_groupings(metadata_tags)
     for grouping in groupings:
         group_string = ",".join(
-            ["%s=%s" % (k,v) for k, v in grouping[0].iteritems()])
-        print "CellProfiler -c -r -b -p %s -g %s" % (
-            filename, group_string)
+            ["%s=%s" % (k,v) for k, v in grouping[0].items()])
+        print("CellProfiler -c -r -b -p %s -g %s" % (
+            filename, group_string))
 
 def write_schema(pipeline_filename):
     if pipeline_filename is None:
@@ -784,9 +784,9 @@ def build_extensions():
                  sys.version_info[1] <= 5)
     for key in list(env.keys()):
         value = env[key]
-        if isinstance(key, unicode):
+        if isinstance(key, str):
             key = key.encode("utf-8")
-        if isinstance(value, unicode):
+        if isinstance(value, str):
             value = value.encode("utf-8")
         env[key] = value
     for compile_script, my_module in compile_scripts:

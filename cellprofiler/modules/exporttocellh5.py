@@ -443,7 +443,7 @@ class ExportToCellH5(cpm.CPModule):
                     for s in self.measurements.selections])
                 def keep(column):
                     return (column[0], column[1]) in to_keep
-                columns = filter(keep, columns)
+                columns = list(filter(keep, columns))
             #
             # I'm breaking the data up into the most granular form so that
             # it's clearer how it's organized. I'm expecting that you would
@@ -457,9 +457,8 @@ class ExportToCellH5(cpm.CPModule):
             ### 4) Don't see the point of features extracted on "Image" the only real and useful feature there is "Count" which can be deduced from single cell information
 
             ### 0) and 1) filter columns for cellular features
-            feature_cols = filter(
-                lambda xxx: (xxx[0] not in (cpmeas.EXPERIMENT, cpmeas.IMAGE)) and
-                            m.has_feature(xxx[0], xxx[1]), columns)
+            feature_cols = [xxx for xxx in columns if (xxx[0] not in (cpmeas.EXPERIMENT, cpmeas.IMAGE)) and
+                            m.has_feature(xxx[0], xxx[1])]
 
             ### iterate over objects to export
             for ch_idx, object_group in enumerate(self.objects_to_export):
@@ -467,7 +466,7 @@ class ExportToCellH5(cpm.CPModule):
                 objects = object_set.get_objects(objects_name)
 
                 ### find features for that object
-                feature_cols_per_object = filter(lambda xxx: xxx[0] == objects_name, feature_cols)
+                feature_cols_per_object = [xxx for xxx in feature_cols if xxx[0] == objects_name]
 
                 c5_object_writer = c5_pos.add_region_object(objects_name)
                 object_labels = objects.indices

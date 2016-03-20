@@ -5,9 +5,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except:
-    from StringIO import StringIO
+    from io import StringIO
 import logging
 import numpy as np
 import time
@@ -93,7 +93,7 @@ image_index_dictionary = {}
 def get_image_index(name):
     '''Return the index of an image in the image list'''
     global image_index_dictionary
-    if not image_index_dictionary.has_key(name):
+    if name not in image_index_dictionary:
         image_index_dictionary[name] = len(image_index_dictionary)
     return image_index_dictionary[name]
 
@@ -327,8 +327,8 @@ class PipelineListView(object):
 
     def set_debug_mode(self, mode):
         if (mode == True) and (self.__pipeline is not None):
-            modules = filter((lambda m:not m.is_input_module()),
-                             self.__pipeline.modules())
+            modules = list(filter((lambda m:not m.is_input_module()),
+                             self.__pipeline.modules()))
             if len(modules) > 0:
                 self.select_one_module(modules[0].module_num)
         self.list_ctrl.set_test_mode(mode)

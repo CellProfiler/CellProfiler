@@ -4,7 +4,7 @@ import base64
 import os
 import unittest
 import zlib
-from StringIO import StringIO
+from io import StringIO
 
 import PIL.Image as PILImage
 import numpy as np
@@ -12,6 +12,7 @@ import scipy.ndimage
 from matplotlib.image import pil_to_array
 
 from cellprofiler.preferences import set_headless
+from functools import reduce
 
 set_headless()
 

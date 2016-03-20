@@ -544,8 +544,8 @@ class MeasurementTemplate(cpm.CPModule):
         i, j = np.mgrid[-radius:(radius+1), -radius:(radius+1)].astype(float) / radius
         mask = (i*i + j*j) <= 1
 
-        zernike_indexes = np.array(feature_dictionary.keys())
-        zernike_features = np.array(feature_dictionary.values())
+        zernike_indexes = np.array(list(feature_dictionary.keys()))
+        zernike_features = np.array(list(feature_dictionary.values()))
 
         z = construct_zernike_polynomials(
             j, i, np.abs(zernike_indexes), mask=mask)

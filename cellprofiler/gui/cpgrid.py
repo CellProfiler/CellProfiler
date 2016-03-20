@@ -1,7 +1,7 @@
 """cpgrid.py - wx.grid helpers for cellprofiler
 """
 
-import StringIO
+import io
 
 import wx
 import wx.grid
@@ -67,7 +67,7 @@ class GridButtonRenderer(wx.grid.PyGridCellRenderer):
         """
         value = grid.GetCellValue(row,col)
         key = value.split(':')[0]
-        if self.__bitmap_dictionary.has_key(key):
+        if key in self.__bitmap_dictionary:
             bitmap = self.__bitmap_dictionary[key]
             return bitmap
         return None
@@ -136,7 +136,7 @@ def hook_grid_button_column(grid, col, bitmap_dictionary, bevel_width=2,
     ui_dictionary = { "selected_row":None }
     event_handler = wx.EvtHandler()
     width = 0
-    for bitmap in bitmap_dictionary.values():
+    for bitmap in list(bitmap_dictionary.values()):
         width = max(bitmap.Width,width)
     width += bevel_width * 2
     grid.SetColSize(col, width)
@@ -217,7 +217,7 @@ if __name__ == "__main__":
                               style=wx.DEFAULT_FRAME_STYLE)
             sizer = wx.BoxSizer()
             self.SetSizer(sizer)
-            bmp_rabbit,bmp_carrot = [wx.BitmapFromImage(wx.ImageFromStream(StringIO.StringIO(x)))
+            bmp_rabbit,bmp_carrot = [wx.BitmapFromImage(wx.ImageFromStream(io.StringIO(x)))
                                      for x in (IMG_RABBIT, IMG_CARROT)]
             d = {"rabbit":bmp_rabbit, "carrot":bmp_carrot}
             grid = wx.grid.Grid(self)

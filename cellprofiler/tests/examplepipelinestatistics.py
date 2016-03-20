@@ -68,8 +68,8 @@ def test_files(test_name, test_file, reference_file, output_file,
         statistics += test_deviations(test_measurements, reference_measurements,
                                       max_deviation, max_nan_deviation,
                                       max_obj_deviation)
-        if (test_measurements.has_key("ObjectNumber") and
-            reference_measurements.has_key("ObjectNumber")):
+        if ("ObjectNumber" in test_measurements and
+            "ObjectNumber" in reference_measurements):
             image_numbers = np.unique(np.hstack((
                 test_measurements["ImageNumber"],
                 reference_measurements["ImageNumber"])))
@@ -77,7 +77,7 @@ def test_files(test_name, test_file, reference_file, output_file,
                                                             image_numbers)
             reference_measurements_per_image = collect_per_image(
                 reference_measurements, image_numbers)
-            for feature in test_measurements_per_image.keys():
+            for feature in list(test_measurements_per_image.keys()):
                 test_measurement = test_measurements_per_image[feature]
                 reference_measurement = reference_measurements_per_image[feature]
                 fs_all = None
@@ -97,7 +97,7 @@ def test_files(test_name, test_file, reference_file, output_file,
                         for i in range(len(fs)):
                             fs_all[i][1].append(fs[i][1])
                 statistics += fs_all
-    except Exception, e:
+    except Exception as e:
         stacktrace = traceback.format_exc()
         message = e.message
         output_fd.write("""            errors="0"
@@ -145,11 +145,11 @@ def write_statistic(output_fd, statistic):
         for attribute in attributes:
             output_fd.write("    <success %s />\n" %
                             " ".join(['%s="%s"' % (key, str(value))
-                                      for key, value in attribute.iteritems()]))
+                                      for key, value in attribute.items()]))
         output_fd.write("  </testcase>\n")
     elif error_type is None:
         output_fd.write(' '.join(['%s="%s"' % (key, str(value))
-                                  for key, value in attributes.iteritems()]))
+                                  for key, value in attributes.items()]))
         output_fd.write('/>\n')
     else:
         output_fd.write('>\n')
@@ -171,7 +171,7 @@ def collect_measurements(rdr):
 
     rdr - a csv reader
     '''
-    header = rdr.next()
+    header = next(rdr)
     d = {}
     for field in header:
         ignore = False
@@ -188,17 +188,17 @@ def collect_measurements(rdr):
             raise ValueError("Row size (%d) doesn't match header size (%d) at line %d" %
                              (len(row), len(header), i+1))
         for value, field in zip(row, header):
-            if d.has_key(field):
+            if field in d:
                 d[field].append(value)
     #
     # Make Numpy arrays
     #
-    for field in d.keys():
+    for field in list(d.keys()):
         d[field] = np.array(d[field])
     #
     # Try float casts
     #
-    for field in d.keys():
+    for field in list(d.keys()):
         try:
             tmp = d[field]
             tmp_not_nan = tmp[tmp != 'nan'].astype(np.float32)
@@ -221,7 +221,7 @@ def collect_measurements(rdr):
 def collect_per_image(measurements, image_numbers):
     image_indexes = measurements["ImageNumber"]
     result = {}
-    for key in measurements.keys():
+    for key in list(measurements.keys()):
         result[key] = [measurements[key][image_indexes == i]
                        for i in image_numbers]
     return result
@@ -237,11 +237,11 @@ def test_matching_columns(test_measurements, reference_measurements):
     assert isinstance(reference_measurements, dict)
     missing_in_test = []
     missing_in_reference = []
-    for feature in test_measurements.keys():
-        if not reference_measurements.has_key(feature):
+    for feature in list(test_measurements.keys()):
+        if feature not in reference_measurements:
             missing_in_reference.append(feature)
-    for feature in reference_measurements.keys():
-        if not test_measurements.has_key(feature):
+    for feature in list(reference_measurements.keys()):
+        if feature not in test_measurements:
             missing_in_test.append(feature)
 
     for feature in missing_in_test:
@@ -272,7 +272,7 @@ def test_deviations(test_measurements, reference_measurements,
                     max_deviation, max_nan_deviation, max_obj_deviation,
                     per_image = False):
     statistics = []
-    feature = test_measurements.keys()[0]
+    feature = list(test_measurements.keys())[0]
     tm_len = len(test_measurements[feature])
     rm_len = len(reference_measurements[feature])
     if tm_len+rm_len > 0:
@@ -285,7 +285,7 @@ def test_deviations(test_measurements, reference_measurements,
                                      ERROR_TYPE_QUANTITY, message, "",
                                      per_image)
             statistics += [s]
-    for feature in test_measurements.keys():
+    for feature in list(test_measurements.keys()):
         statistics += test_deviation(feature,
                                      test_measurements[feature],
                                      reference_measurements[feature],

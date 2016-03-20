@@ -2,6 +2,7 @@
 """
 
 import logging
+from functools import reduce
 logger = logging.getLogger(__name__)
 import json
 import matplotlib.cm
@@ -147,7 +148,7 @@ class Setting(object):
         override this to do things like compare whether an integer
         setting's value matches a given number
         '''
-        return self.value == unicode(x)
+        return self.value == str(x)
 
     def __ne__(self, x):
         return not self.__eq__(x)
@@ -187,7 +188,7 @@ class Setting(object):
 
         NOTE: strings are deprecated, use unicode_value instead.
         '''
-        if isinstance(self.__value, unicode):
+        if isinstance(self.__value, str):
             return str(utf16encode(self.__value))
         if not isinstance(self.__value,str):
             raise ValidationError("%s was not a string"%(self.__value),self)
@@ -198,7 +199,7 @@ class Setting(object):
         return self.get_unicode_value()
 
     def get_unicode_value(self):
-        return unicode(self.value_text)
+        return str(self.value_text)
 
 class HiddenCount(Setting):
     """A setting meant only for saving an item count
@@ -231,7 +232,7 @@ class HiddenCount(Setting):
         return str(len(self.__sequence))
 
     def get_unicode_value(self):
-        return unicode(len(self.__sequence))
+        return str(len(self.__sequence))
 
 class Text(Setting):
     """A setting that displays as an edit box, accepting a string
@@ -270,7 +271,7 @@ class RegexpText(Setting):
             # Convert Matlab to Python
             pattern = re.sub('(\\(\\?)([<][^)>]+?[>])','\\1P\\2',self.value)
             re.search('(|(%s))'%(pattern), '')
-        except re.error, v:
+        except re.error as v:
             raise ValidationError("Invalid regexp: %s"%(v), self)
 
 class DirectoryPath(Text):
@@ -506,7 +507,7 @@ class Pathname(Text):
     """
     def __init__(self, text, value="", *args, **kwargs):
         kwargs = kwargs.copy()
-        if kwargs.has_key("wildcard"):
+        if "wildcard" in kwargs:
             self.wildcard = kwargs["wildcard"]
             del kwargs["wildcard"]
         else:
@@ -579,7 +580,7 @@ class ImagePlane(Setting):
                 "URLs should not contain spaces. %s is the offending URL" % url)
             url = url.replace(" ", "%20")
         return " ".join([str(x) if x is not None else ""
-                         for x in url, series, index, channel])
+                         for x in (url, series, index, channel)])
 
     def __get_field(self, index):
         f = self.value_text.split(" ")[index]
@@ -678,7 +679,7 @@ class Number(Text):
     """
     def __init__(self, text, value=0, minval=None, maxval=None, *args,
                  **kwargs):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             text_value = value
             value = self.str_to_value(value)
         else:
@@ -706,7 +707,7 @@ class Number(Text):
     def set_value(self, value):
         """Convert integer to string
         """
-        str_value = unicode(value) if isinstance(value, basestring) \
+        str_value = str(value) if isinstance(value, str) \
             else self.value_to_str(value)
         self.set_value_text(str_value)
 
@@ -756,7 +757,7 @@ class Integer(Number):
         return int(str_value)
 
     def value_to_str(self, value):
-        return u"%d" % value
+        return "%d" % value
 
 class Range(Setting):
     """A setting representing a range between two values"""
@@ -794,7 +795,7 @@ class Range(Setting):
 
     def set_value(self, value):
         '''Set the value of this range using either a string or a two-tuple'''
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             self.set_value_text(value)
         elif hasattr(value, "__getitem__") and len(value) == 2:
             self.set_value_text(",".join([self.value_to_str(v) for v in value]))
@@ -1113,7 +1114,7 @@ class Float(Number):
         return float(str_value)
 
     def value_to_str(self, value):
-        text_value = (u"%f" % value).rstrip("0")
+        text_value = ("%f" % value).rstrip("0")
         if text_value.endswith("."):
             text_value += "0"
         return text_value
@@ -1132,9 +1133,9 @@ class FloatRange(Range):
         minval - the minimum acceptable value of either
         maxval - the maximum acceptable value of either
         """
-        smin, smax = [(u"%f" % v).rstrip("0") for v in value]
+        smin, smax = [("%f" % v).rstrip("0") for v in value]
         text_value = ",".join([x+"0" if x.endswith(".") else ""
-                               for x in smin, smax])
+                               for x in (smin, smax)])
         super(FloatRange,self).__init__(text, text_value, *args, **kwargs)
 
     def str_to_value(self, value_str):
@@ -1190,7 +1191,7 @@ class NameProvider(AlphanumericText):
     def __init__(self, text, group, value=DO_NOT_USE, *args, **kwargs):
         self.__provided_attributes = { "group":group }
         kwargs = kwargs.copy()
-        if kwargs.has_key("provided_attributes"):
+        if "provided_attributes" in kwargs:
             self.__provided_attributes.update(kwargs["provided_attributes"])
             del kwargs[PROVIDED_ATTRIBUTES]
         kwargs["first_must_be_alpha"] = True
@@ -1227,7 +1228,7 @@ class FileImageNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has an associated file"""
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+        if PROVIDED_ATTRIBUTES not in kwargs:
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
         super(FileImageNameProvider,self).__init__(text, value, *args,
@@ -1238,7 +1239,7 @@ class ExternalImageNameProvider(ImageNameProvider):
     externally. (eg: from Java)"""
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+        if PROVIDED_ATTRIBUTES not in kwargs:
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][EXTERNAL_IMAGE_ATTRIBUTE] = True
         super(ExternalImageNameProvider,self).__init__(text, value, *args,
@@ -1248,7 +1249,7 @@ class CroppingNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has a cropping mask"""
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(PROVIDED_ATTRIBUTES):
+        if PROVIDED_ATTRIBUTES not in kwargs:
             kwargs[PROVIDED_ATTRIBUTES] = {}
         kwargs[PROVIDED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
         super(CroppingNameProvider,self).__init__(text, value, *args, **kwargs)
@@ -1289,7 +1290,7 @@ class NameSubscriber(Setting):
         if value is None:
             value = (can_be_blank and blank_text) or "None"
         self.__required_attributes = { "group":group }
-        if kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES in kwargs:
             self.__required_attributes.update(kwargs[REQUIRED_ATTRIBUTES])
             kwargs = kwargs.copy()
             del kwargs[REQUIRED_ATTRIBUTES]
@@ -1322,7 +1323,7 @@ class NameSubscriber(Setting):
         """Return true if this subscriber matches the category of the provider"""
         return all([setting.provided_attributes.get(key, None) ==
                     self.__required_attributes[key]
-                    for key in self.__required_attributes.keys()])
+                    for key in list(self.__required_attributes.keys())])
 
     def test_valid(self,pipeline):
         choices = self.get_choices(pipeline)
@@ -1333,7 +1334,7 @@ class NameSubscriber(Setting):
 
 def filter_duplicate_names(name_list):
     '''remove any repeated names from a list of (name, ...) keeping the last occurrence.'''
-    name_dict = dict(zip((n[0] for n in name_list), name_list))
+    name_dict = dict(list(zip((n[0] for n in name_list), name_list)))
     return [name_dict[n[0]] for n in name_list]
 
 def get_name_provider_choices(pipeline, last_setting, group):
@@ -1400,7 +1401,7 @@ class FileImageNameSubscriber(ImageNameSubscriber):
     def __init__(self, text, value=DO_NOT_USE, can_be_blank = False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES not in kwargs:
             kwargs[REQUIRED_ATTRIBUTES] = {}
         kwargs[REQUIRED_ATTRIBUTES][FILE_IMAGE_ATTRIBUTE] = True
         super(FileImageNameSubscriber,self).__init__(text, value, can_be_blank,
@@ -1412,7 +1413,7 @@ class CroppingNameSubscriber(ImageNameSubscriber):
     def __init__(self, text, value=DO_NOT_USE, can_be_blank=False,
                  blank_text=LEAVE_BLANK, *args, **kwargs):
         kwargs = kwargs.copy()
-        if not kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES not in kwargs:
             kwargs[REQUIRED_ATTRIBUTES] = {}
         kwargs[REQUIRED_ATTRIBUTES][CROPPING_ATTRIBUTE] = True
         super(CroppingNameSubscriber,self).__init__(text, value, can_be_blank,
@@ -1489,7 +1490,7 @@ class Binary(Setting):
     def set_value(self,value):
         """When setting, translate true and false into yes and no"""
         if value == YES or value == NO or\
-           isinstance(value,str) or isinstance(value,unicode):
+           isinstance(value,str) or isinstance(value,str):
             super(Binary,self).set_value(value)
         else:
             str_value = (value and YES) or NO
@@ -1505,7 +1506,7 @@ class Binary(Setting):
             x = False
         return (self.value and x) or ((not self.value) and (not x))
 
-    def __nonzero__(self):
+    def __bool__(self):
         '''Return the value when testing for True / False'''
         return self.value
 
@@ -1597,7 +1598,7 @@ class MultiChoice(Setting):
     def parse_value(self, value):
         if value is None:
             return ''
-        elif isinstance(value, str) or isinstance(value, unicode):
+        elif isinstance(value, str) or isinstance(value, str):
             return value
         elif hasattr(value, "__getitem__"):
             return ','.join(value)
@@ -1661,7 +1662,7 @@ class SubscriberMultiChoice(MultiChoice):
     '''
     def __init__(self, text, group, value=None, *args, **kwargs):
         self.__required_attributes = { "group":group }
-        if kwargs.has_key(REQUIRED_ATTRIBUTES):
+        if REQUIRED_ATTRIBUTES in kwargs:
             self.__required_attributes.update(kwargs[REQUIRED_ATTRIBUTES])
             kwargs = kwargs.copy()
             del kwargs[REQUIRED_ATTRIBUTES]
@@ -1770,7 +1771,7 @@ class MeasurementMultiChoice(MultiChoice):
         columns = pipeline.get_measurement_columns(module)
         def valid_mc(c):
             '''Disallow any measurement column with "," or "|" in its names'''
-            return not any([any([bad in f for f in c[:2]]) for bad in ",", "|"])
+            return not any([any([bad in f for f in c[:2]]) for bad in (",", "|")])
 
         self.set_choices([self.make_measurement_choice(c[0], c[1])
                           for c in columns if valid_mc(c)])
@@ -2359,7 +2360,7 @@ class Color(Setting):
             return (int(value[1:3], 16),
                     int(value[3:5], 16),
                     int(value[5:7], 16))
-        elif self.colortable.has_key(value.lower()):
+        elif value.lower() in self.colortable:
             return self.colortable[value.lower()]
         else:
             raise ValueError("Unknown color: " + self.value)
@@ -2828,12 +2829,12 @@ class Filter(Setting):
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
                 s.append(
-                    cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
-            elif isinstance(element, basestring):
-                s.append(u'"'+cls.encode_literal(element)+u'"')
+                    cls.FilterPredicate.encode_symbol(str(element.symbol)))
+            elif isinstance(element, str):
+                s.append('"'+cls.encode_literal(element)+'"')
             else:
-                s.append(u"("+cls.build_string(element)+")")
-        return u" ".join(s)
+                s.append("("+cls.build_string(element)+")")
+        return " ".join(s)
 
     def test_valid(self, pipeline):
         try:
@@ -2844,7 +2845,7 @@ class Filter(Setting):
             """, dict(expr = self.value_text,
                       klass = J.class_for_name(
                           "org.cellprofiler.imageset.ImagePlaneDetailsStack")))
-        except Exception, e:
+        except Exception as e:
             raise ValidationError(str(e), self)
 
     def test_setting_warnings(self, pipeline):
@@ -3028,14 +3029,14 @@ class FileCollectionDisplay(Setting):
         or 3-tuples representing image planes within an image file. Branches
         are two-tuples composed of a path part and more branches / leaves
         '''
-        return len(mod) != 2 or not isinstance(mod[0], basestring)
+        return len(mod) != 2 or not isinstance(mod[0], str)
 
     def node_count(self, file_tree = None):
         '''Count the # of nodes (leaves + directories) in the tree'''
         if file_tree is None:
             file_tree = self.file_tree
         count = 0
-        for key in file_tree.keys():
+        for key in list(file_tree.keys()):
             if key is None:
                 pass
             elif isinstance(file_tree[key], dict):
@@ -3069,7 +3070,7 @@ class FileCollectionDisplay(Setting):
     def get_all_modpaths(self, tree):
         '''Get all sub-modpaths from the branches of the given tree'''
         result = []
-        for key in tree.keys():
+        for key in list(tree.keys()):
             if key is None:
                 continue
             elif not isinstance(tree[key], dict):
@@ -3081,10 +3082,10 @@ class FileCollectionDisplay(Setting):
     def add_subtree(self, mods, tree):
         for mod in mods:
             if self.is_leaf(mod):
-                if not tree.has_key(mod):
+                if mod not in tree:
                     tree[mod] = True
             else:
-                if tree.has_key(mod[0]) and isinstance(tree[mod[0]], dict):
+                if mod[0] in tree and isinstance(tree[mod[0]], dict):
                     subtree = tree[mod[0]]
                 else:
                     subtree = tree[mod[0]] = {}
@@ -3109,19 +3110,19 @@ class FileCollectionDisplay(Setting):
 
     def remove_subtree(self, mod, tree):
         if not (isinstance(mod, tuple) and len(mod) == 2):
-            if tree.has_key(mod):
+            if mod in tree:
                 subtree = tree[mod]
                 if isinstance(subtree, dict):
                     #
                     # Remove whole tree
                     #
-                    for key in subtree.keys():
+                    for key in list(subtree.keys()):
                         if key is None:
                             continue
                         if isinstance(subtree[key], dict):
                             self.remove_subtree(key, subtree)
                 del tree[mod]
-        elif tree.has_key(mod[0]):
+        elif mod[0] in tree:
             root_mod = mod[0]
             subtree = tree[root_mod]
             if isinstance(subtree, dict):
@@ -3131,7 +3132,7 @@ class FileCollectionDisplay(Setting):
                 # Delete the subtree if the subtree is emptied
                 #
                 if len(subtree) == 0 or (
-                    len(subtree) == 1 and subtree.has_key(None)):
+                    len(subtree) == 1 and None in subtree):
                     del tree[root_mod]
             else:
                 del tree[root_mod]
@@ -3149,17 +3150,17 @@ class FileCollectionDisplay(Setting):
     def mark_subtree(self, mods, keep, tree):
         for mod in mods:
             if self.is_leaf(mod):
-                if tree.has_key(mod):
+                if mod in tree:
                     if isinstance(tree[mod], dict):
                         tree[mod][None] = keep
                     else:
                         tree[mod] = keep
             else:
-                if tree.has_key(mod[0]):
+                if mod[0] in tree:
                     self.mark_subtree(mod[1], keep, tree[mod[0]])
         kept = [tree[k][None] if isinstance(tree[k], dict)
                 else tree[k]
-                for k in tree.keys() if k is not None]
+                for k in list(tree.keys()) if k is not None]
         tree[None] = any(kept)
 
     def get_node_info(self, path):
@@ -3331,12 +3332,12 @@ class Table(Setting):
         set_attribute - True to set, False to clear
         '''
         if set_attribute:
-            if self.row_attributes.has_key(row_index):
+            if row_index in self.row_attributes:
                 self.row_attributes[row_index].add(attribute)
             else:
                 self.row_attributes[row_index] = set([attribute])
         else:
-            if self.row_attributes.has_key(row_index):
+            if row_index in self.row_attributes:
                 s = self.row_attributes[row_index]
                 s.remove(attribute)
                 if len(s) == 0:
@@ -3365,12 +3366,12 @@ class Table(Setting):
         '''
         key = (row_index, self.column_names.index(column_name))
         if set_attribute:
-            if self.cell_attributes.has_key(key):
+            if key in self.cell_attributes:
                 self.cell_attributes[key].add(attribute)
             else:
                 self.cell_attributes[key] = set([attribute])
         else:
-            if self.cell_attributes.has_key(key):
+            if key in self.cell_attributes:
                 s = self.cell_attributes[key]
                 s.remove(attribute)
                 if len(s) == 0:
@@ -3450,9 +3451,9 @@ class Joiner(Setting):
         all_names = {}
         best_name = None
         best_count = 0
-        for value_list in self.entities.values():
+        for value_list in list(self.entities.values()):
             for value in value_list:
-                if all_names.has_key(value):
+                if value in all_names:
                     all_names[value] += 1
                 else:
                     all_names[value] = 1
@@ -3463,7 +3464,7 @@ class Joiner(Setting):
             return []
         else:
             return [ dict([(k, best_name if best_name in self.entities[k]
-                            else None) for k in self.entities.keys()])]
+                            else None) for k in list(self.entities.keys())])]
 
 
     def build(self, dictionary_list):
@@ -3484,7 +3485,7 @@ class Joiner(Setting):
                 "This setting needs to be initialized by choosing items from each column",
                 self)
         for d in join:
-            for column_name, value in d.items():
+            for column_name, value in list(d.items()):
                 if column_name in self.entities and \
                    (value not in self.entities[column_name] and
                     value is not None):
@@ -3586,7 +3587,7 @@ class NumberConnector(object):
         return int(self.__fn())
 
     def __long__(self):
-        return long(self.__fn())
+        return int(self.__fn())
 
     def __float__(self):
         return float(self.__fn())

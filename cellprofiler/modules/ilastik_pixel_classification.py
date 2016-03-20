@@ -27,7 +27,7 @@ recommended for running ilastik.
 '''
 
 import logging
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import cellprofiler.cpimage  as cpi
 import cellprofiler.cpmodule as cpm
@@ -47,7 +47,7 @@ try:
     import vigra
     has_ilastik = True
     # TODO Version check
-except ImportError, vigraImport:
+except ImportError as vigraImport:
     logger.warning("""vigra import: failed to import the vigra library. Please follow the instructions on
 "http://hci.iwr.uni-heidelberg.de/vigra/" to install vigra""", exc_info=True)
     has_ilastik = False
@@ -55,7 +55,7 @@ except ImportError, vigraImport:
 # Import h5py
 try:
     import h5py
-except ImportError, h5pyImport:
+except ImportError as h5pyImport:
     logger.warning("""h5py import: failed to import the h5py library.""",
                    exc_info=True)
     raise h5pyImport
@@ -69,11 +69,11 @@ if has_ilastik:
         sys.stdout = sys.stderr = open(os.devnull, "w")
         import ilastik_main
         import ilastik
-        print ilastik.__file__
+        print(ilastik.__file__)
         from ilastik.workflows.pixelClassification import PixelClassificationWorkflow
         sys.stdout = old_stdout
 
-    except ImportError, ilastikImport:
+    except ImportError as ilastikImport:
         sys.stdout = old_stdout
         logger.warning("""ilastik import: failed to import the ilastik. Please follow the instructions on
                           "http://www.ilastik.org" to install ilastik""", exc_info=True)
@@ -228,7 +228,7 @@ class IlastikPixelClassification(cpm.CPModule):
                         self.classifier_file_name.value).encode("utf-8")
 
         input_data = image
-        print input_data.shape
+        print(input_data.shape)
         input_data = vigra.taggedView( input_data, 'yxc' )
 
         shell = ilastik_main.main( args )
@@ -247,7 +247,7 @@ class IlastikPixelClassification(cpm.CPModule):
         label_colors = opPixelClassification.LabelColors.value
         probability_colors = opPixelClassification.PmapColors.value
 
-        print label_names, label_colors, probability_colors
+        print(label_names, label_colors, probability_colors)
 
         # Change the connections of the batch prediction pipeline so we can supply our own data.
         opBatchFeatures = shell.workflow.opBatchFeatures

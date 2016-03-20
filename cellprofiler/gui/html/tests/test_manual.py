@@ -49,11 +49,11 @@ class TestManual(unittest.TestCase):
             except:
                 module = instantiate_module(module_name)
                 location = os.path.split(
-                    module.create_settings.im_func.func_code.co_filename)[0]
+                    module.create_settings.__func__.__code__.co_filename)[0]
                 if location == cpprefs.get_plugin_directory():
                     continue
                 traceback.print_exc()
-                self.assert_("Failed to open %s.html" %module_name)
+                self.assertTrue("Failed to open %s.html" %module_name)
             data = fd.read()
             fd.close()
 
@@ -81,7 +81,7 @@ class TestManual(unittest.TestCase):
                         break
                     tag = m.groups()[0].lower()
                     pos = pos + m.start(1)+1
-                    if dd.has_key(tag):
+                    if tag in dd:
                         dd[tag][COUNT] += 1
                         dd[tag][LIST].append(pos)
             #
@@ -208,7 +208,7 @@ class TestManual(unittest.TestCase):
                 top_state, start_pos = (S_INIT,0) if len(state) == 0 else state[-1]
 
                 self.assertTrue(
-                    state_transitions[top_state].has_key(token),
+                    token in state_transitions[top_state],
                     "Nesting error in %s near position %d (%s)" %
                     (module_name, pos, data[max(0,pos - 50):pos]+"^^^"+
                      data[pos:min(pos + 50, len(data))]))
@@ -227,8 +227,8 @@ class TestManual(unittest.TestCase):
             # Check begin/end tag counts
             #
             for tag in tags_we_care_about:
-                if d.has_key(tag):
-                    self.assertTrue(anti_d.has_key(tag),
+                if tag in d:
+                    self.assertTrue(tag in anti_d,
                                     "Missing closing </%s> tag in %s" %
                                     (tag, module_name))
                     self.assertEqual(
@@ -237,6 +237,6 @@ class TestManual(unittest.TestCase):
                         (d[tag][COUNT], tag,
                          anti_d[tag][COUNT], tag, module_name))
                 else:
-                    self.assertFalse(anti_d.has_key(tag),
+                    self.assertFalse(tag in anti_d,
                                      "Missing opening <%s> tag in %s" %
                                      (tag, module_name))

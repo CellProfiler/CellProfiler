@@ -6,7 +6,7 @@ import os
 import tempfile
 import unittest
 import zlib
-from cStringIO import StringIO
+from io import StringIO
 
 import numpy as np
 

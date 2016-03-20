@@ -2,7 +2,7 @@
 
 import base64
 import cProfile
-import cStringIO
+import io
 import csv
 import os
 import pstats
@@ -12,7 +12,7 @@ import tempfile
 import traceback
 import unittest
 import zlib
-from urllib2 import urlopen
+from urllib.request import urlopen
 
 import numpy as np
 import numpy.lib.index_tricks
@@ -106,7 +106,7 @@ class TestPipeline(unittest.TestCase):
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(zlib.decompress(base64.b64decode(img_942_data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(img_942_data))))
         module = pipeline.modules()[0]
         self.assertEqual(len(module.notes), 1)
         self.assertEqual(
@@ -131,7 +131,7 @@ HasImagePlaneDetails:False"""
         for text, expected in ((sensible, True),
                                (proofpoint, True),
                                (not_txt, False)):
-            fd = cStringIO.StringIO(text)
+            fd = io.StringIO(text)
             self.assertEqual(cpp.Pipeline.is_pipeline_txt_fd(fd), expected)
 
     def test_02_01_copy_nothing(self):
@@ -166,7 +166,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         external_inputs = pipeline.find_external_input_images()
         external_inputs.sort()
         self.assertEqual(len(external_inputs), 2)
@@ -190,7 +190,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         external_outputs = pipeline.find_external_output_images()
 ##        self.assertEqual(len(external_outputs), 2)
         external_outputs.sort()
@@ -214,13 +214,13 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(cStringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         np.random.seed(73)
         d = dict(Hi = np.random.uniform(size=(20,10)),
                  Ho = np.random.uniform(size=(20,10)))
         d_out = pipeline.run_external(d)
-        for key in d.keys():
-            self.assertTrue(d_out.has_key(key))
+        for key in list(d.keys()):
+            self.assertTrue(key in d_out)
             np.testing.assert_array_almost_equal(d[key],d_out[key])
 
     def test_09_01_get_measurement_columns(self):
@@ -327,7 +327,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
             for key in keys:
-                self.assertTrue(grouping.has_key(key))
+                self.assertTrue(key in grouping)
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             if expects_grouping == 0:
@@ -383,7 +383,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
             for key in keys:
-                self.assertTrue(grouping.has_key(key))
+                self.assertTrue(key in grouping)
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             self.assertEqual(expects_grouping, 1)
@@ -406,7 +406,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PostGroup')
             for key in keys:
-                self.assertTrue(grouping.has_key(key))
+                self.assertTrue(key in grouping)
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             expects[0],expects[1] = ('PostRun', 0)
@@ -547,7 +547,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             try:
                 v.module_name
             except:
-                print "%s needs to define module_name as a class variable"%k
+                print("%s needs to define module_name as a class variable"%k)
                 success = False
         self.assertTrue(success)
 
@@ -557,7 +557,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         module = cellprofiler.modules.instantiate_module("Align")
         module.module_num = 1
         pipeline.add_module(module)
-        fd = cStringIO.StringIO()
+        fd = io.StringIO()
         pipeline.save(fd)
         fd.seek(0)
 
@@ -590,7 +590,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             measurements.add_measurement("Foo","Bar", my_measurement[i])
             measurements.add_image_measurement(
                 "img", my_image_measurement[i])
-        fd = cStringIO.StringIO()
+        fd = io.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
         measurements = cpmeas.load_measurements(fd)
@@ -640,13 +640,13 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         measurements.add_all_measurements("Foo",m1_name, my_measurement)
         measurements.add_all_measurements("Foo",m2_name, my_other_measurement)
         measurements.add_all_measurements("Foo",m3_name, my_final_measurement)
-        fd = cStringIO.StringIO()
+        fd = io.StringIO()
         pipeline.save_measurements(fd, measurements)
         fd.seek(0)
         measurements = cpmeas.load_measurements(fd)
         reverse_mapping = cpp.map_feature_names([m1_name, m2_name, m3_name])
         mapping = {}
-        for key in reverse_mapping.keys():
+        for key in list(reverse_mapping.keys()):
             mapping[reverse_mapping[key]] = key
         for name, expected in ((m1_name, my_measurement),
                                (m2_name, my_other_measurement),
@@ -737,11 +737,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     def test_14_01_unicode_save(self):
         pipeline = get_empty_pipeline()
         module = MyClassForTest0801()
-        module.my_variable.value = u"\\\u2211"
+        module.my_variable.value = "\\\u2211"
         module.module_num = 1
-        module.notes = u"\u03B1\\\u03B2"
+        module.notes = "\u03B1\\\u03B2"
         pipeline.add_module(module)
-        fd = cStringIO.StringIO()
+        fd = io.StringIO()
         pipeline.savetxt(fd, save_image_plane_details=False)
         result = fd.getvalue()
         lines = result.split("\n")
@@ -780,11 +780,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
         module = MyClassForTest0801()
-        module.my_variable.value = u"\\\u2211"
+        module.my_variable.value = "\\\u2211"
         module.module_num = 1
-        module.notes = u"\u03B1\\\u03B2"
+        module.notes = "\u03B1\\\u03B2"
         pipeline.add_module(module)
-        fd = cStringIO.StringIO()
+        fd = io.StringIO()
         pipeline.savetxt(fd)
         fd.seek(0)
         pipeline.loadtxt(fd)
@@ -863,7 +863,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertEqual(d.keys()[0], IMAGE_NAME)
+        self.assertEqual(list(d.keys())[0], IMAGE_NAME)
         providers = d[IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -880,7 +880,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.OBJECT_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertEqual(d.keys()[0], OBJECT_NAME)
+        self.assertEqual(list(d.keys())[0], OBJECT_NAME)
         providers = d[OBJECT_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -897,7 +897,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.MEASUREMENTS_GROUP)
         self.assertEqual(len(d), 1)
-        key = d.keys()[0]
+        key = list(d.keys())[0]
         self.assertEqual(len(key), 2)
         self.assertEqual(key[0], OBJECT_NAME)
         self.assertEqual(key[1], FEATURE_NAME)
@@ -915,7 +915,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertEqual(d.keys()[0], IMAGE_NAME)
+        self.assertEqual(list(d.keys())[0], IMAGE_NAME)
         providers = d[IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -936,13 +936,13 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
         self.assertEqual(len(d), 2)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         providers = d[IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
         self.assertEqual(provider[0], module)
         self.assertEqual(provider[1], image_setting)
-        self.assertTrue(d.has_key(ALT_IMAGE_NAME))
+        self.assertTrue(ALT_IMAGE_NAME in d)
         providers = d[ALT_IMAGE_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -951,7 +951,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
         d = pipeline.get_provider_dictionary(cps.OBJECT_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(OBJECT_NAME))
+        self.assertTrue(OBJECT_NAME in d)
         providers = d[OBJECT_NAME]
         self.assertEqual(len(providers), 1)
         provider = providers[0]
@@ -961,7 +961,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
         d = pipeline.get_provider_dictionary(cps.MEASUREMENTS_GROUP)
         self.assertEqual(len(d), 1)
-        key = d.keys()[0]
+        key = list(d.keys())[0]
         self.assertEqual(len(key), 2)
         self.assertEqual(key[0], OBJECT_NAME)
         self.assertEqual(key[1], FEATURE_NAME)
@@ -992,7 +992,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             pipeline.add_module(module)
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         self.assertEqual(len(d[IMAGE_NAME]), 2)
         for module in (module1, module3):
             self.assertTrue(any([x[0] == module for x in d[IMAGE_NAME]]))
@@ -1002,12 +1002,12 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP, module2)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         self.assertEqual(d[IMAGE_NAME][0][0], module1)
 
         d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP, module4)
         self.assertEqual(len(d), 1)
-        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertTrue(IMAGE_NAME in d)
         self.assertEqual(len(d[IMAGE_NAME]), 1)
         self.assertEqual(d[IMAGE_NAME][0][0], module3)
 
@@ -1092,7 +1092,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
               ("baz", 7, 8, None, {"Well":"A03"}))),
             (["Well"],
              ['"foo","1","2","3","\\xce\\xb1\\xce\\xb2"'],
-             [("foo", 1,2,3,{"Well":u"\u03b1\u03b2"})]),
+             [("foo", 1,2,3,{"Well":"\u03b1\u03b2"})]),
             ([],
              [r'"\\foo\"bar","4","5","6"'],
              [(r'\foo"bar', 4, 5, 6)]))
@@ -1104,7 +1104,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 cpp.H_URL, cpp.H_SERIES, cpp.H_INDEX, cpp.H_CHANNEL] +
                                 metadata_columns) + '"\n'
             s += "\n".join(body_lines)+"\n"
-            fd = cStringIO.StringIO(s)
+            fd = io.StringIO(s)
             result = cpp.read_file_list(fd)
             self.assertEqual(len(result), len(expected))
             for r, e in zip(result, expected):
@@ -1112,21 +1112,21 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
     def test_18_02_write_image_plane_details(self):
         test_data = (
-            "foo", u"\u03b1\u03b2",
+            "foo", "\u03b1\u03b2",
             "".join([chr(i) for i in range(128)]))
-        fd = cStringIO.StringIO()
+        fd = io.StringIO()
         cpp.write_file_list(fd, test_data)
         fd.seek(0)
         result = cpp.read_file_list(fd)
         for rr, tt in zip(result, test_data):
-            if isinstance(tt, unicode):
+            if isinstance(tt, str):
                 tt = tt.encode("utf-8")
-            self.assertEquals(rr, tt)
+            self.assertEqual(rr, tt)
 
     def test_19_01_read_file_list_pathnames(self):
         root = os.path.split(__file__)[0]
-        paths = [os.path.join(root, x) for x in "foo.tif", "bar.tif"]
-        fd = cStringIO.StringIO("\n".join([
+        paths = [os.path.join(root, x) for x in ("foo.tif", "bar.tif")]
+        fd = io.StringIO("\n".join([
             paths[0], "", paths[1]]))
         p = cpp.Pipeline()
         p.read_file_list(fd)
@@ -1141,7 +1141,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 file_url,
                 "https://github.com/foo.tif",
                 "ftp://example.com/foo.tif"]
-        fd = cStringIO.StringIO("\n".join(urls))
+        fd = io.StringIO("\n".join(urls))
         p = cpp.Pipeline()
         p.read_file_list(fd)
         self.assertEqual(len(p.file_list), len(urls))
@@ -1295,7 +1295,7 @@ def profile_pipeline(pipeline_filename,
         output_filename = os.path.join(cpprefs.get_default_output_directory(), pipeline_name + '_profile')
 
     if(not os.path.exists(output_filename) or always_run):
-        print 'Profiling %s' % (pipeline_filename)
+        print('Profiling %s' % (pipeline_filename))
         cProfile.runctx('run_pipeline(pipeline_filename)', globals(), locals(), output_filename)
 
     p = pstats.Stats(output_filename)
@@ -1317,7 +1317,7 @@ class ATestModule(cpm.CPModule):
     def get_measurement_columns(self, pipeline):
         return self.__measurement_columns
     def other_providers(self, group):
-        if group not in self.__other_providers.keys():
+        if group not in list(self.__other_providers.keys()):
             return []
         return self.__other_providers[group]
     def get_categories(self, pipeline, object_name):

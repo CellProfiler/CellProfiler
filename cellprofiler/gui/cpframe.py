@@ -506,7 +506,7 @@ class CPFrame(wx.Frame):
                   (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_SELECTALL)])
         for eyedee in ids:
             d[eyedee] = True
-        for k, v in d.iteritems():
+        for k, v in d.items():
             self.menu_edit.Enable(k, v)
 
     def __add_menu(self):
@@ -760,7 +760,7 @@ class CPFrame(wx.Frame):
         if not hasattr(self, "__data_tools_help_menu"):
             self.__menu_data_tools_help_menu = wx.Menu()
             def on_plate_viewer_help(event):
-                import htmldialog
+                from . import htmldialog
                 dlg = htmldialog.HTMLDialog(
                     self, "Help on plate viewer", PLATEVIEWER_HELP)
                 dlg.Show()
@@ -784,7 +784,7 @@ class CPFrame(wx.Frame):
             self.__data_tools_menu = wx.Menu()
 
             def on_data_tool_overview(event):
-                import htmldialog
+                from . import htmldialog
                 from cellprofiler.gui.help import MENU_BAR_DATATOOLS_HELP
                 dlg = htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
                 dlg.Show()
@@ -951,7 +951,7 @@ class CPFrame(wx.Frame):
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
     def __on_help_path_list(self, event):
-        import htmldialog
+        from . import htmldialog
         dlg = htmldialog.HTMLDialog(self, "Help on file list", HELP_ON_FILE_LIST)
         dlg.Show()
 
@@ -982,7 +982,7 @@ class CPFrame(wx.Frame):
                 value="Revision author timestamp: %d" % version.version_number,
                 style = tcstyle), 0, wx.EXPAND | wx.ALL, 5)
 
-            cellprofiler_copyright = u"""
+            cellprofiler_copyright = """
     CellProfiler (BI-2013-070) is cell image analysis software that was
     developed with funding from the U.S. National Institutes of Health and
     National Science Foundation and is made available through the
@@ -999,7 +999,7 @@ class CPFrame(wx.Frame):
             button_list = [("GPL License", gpl_license),
                            ("BSD License", bsd_license)]
 
-            additional_copyrights = u""" (a) h5py © 2008 Andrew Collette, et al.; ilastik © 2012 C. Sommer,
+            additional_copyrights = """ (a) h5py © 2008 Andrew Collette, et al.; ilastik © 2012 C. Sommer,
     et al.,; ImageJ2 © 2009-2013 Board of Regents of the University of
     Wisconsin-Madison, Max Planck Institute of Molecular Cell Biology and
     Genetics; libhdf5 © 2006-2013 HDF Group; libtiff © 1988-1997 Sam

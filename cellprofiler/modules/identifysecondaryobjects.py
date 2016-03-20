@@ -135,8 +135,8 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
-import identify as cpmi
-from identify import FI_IMAGE_SIZE
+from . import identify as cpmi
+from .identify import FI_IMAGE_SIZE
 import centrosome.threshold as cpthresh
 import centrosome.otsu
 from centrosome.propagate import propagate
@@ -619,7 +619,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             #
             lookup = scind.maximum(segmented_out,
                                    objects.segmented,
-                                   range(np.max(objects.segmented)+1))
+                                   list(range(np.max(objects.segmented)+1)))
             lookup = fix(lookup)
             lookup[0] = 0
             lookup[lookup != 0] = np.arange(np.sum(lookup != 0)) + 1
@@ -721,7 +721,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             workspace.display_data.object_count = object_count
 
     def display(self, workspace, figure):
-        from identify import TS_BINARY_IMAGE
+        from .identify import TS_BINARY_IMAGE
 
         object_pct = workspace.display_data.object_pct
         img = workspace.display_data.img
@@ -789,7 +789,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmented_labels, m1 = cpo.size_similarly(labels_out, segmented_labels)
             segmented_labels[~m1] = 0
             lookup = scind.maximum(segmented_labels,labels_out,
-                                   range(max_out+1))
+                                   list(range(max_out+1)))
             lookup = np.array(lookup, int)
             lookup[0] = 0
             segmented_labels_out = lookup[labels_out]

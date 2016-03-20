@@ -60,6 +60,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
+from functools import reduce
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"

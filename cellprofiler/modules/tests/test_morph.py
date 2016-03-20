@@ -1,7 +1,7 @@
 '''test_morph - test the morphology module
 '''
 
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -55,7 +55,7 @@ class TestMorph(unittest.TestCase):
                 'P6x/+b7j5dfG1/Gu7dqaeWOnFHnft94kPdRz23309J28'
                 '/Of+sV93zNzYfu9yq5hydv3zu29jG6vaS15u+d/9fkfr'
                 '1P9NGrROuAE1uKvg=')
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        fd = io.StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
@@ -102,7 +102,7 @@ class TestMorph(unittest.TestCase):
                 'zHom48S6P02aF8HfbuJgqXiGKTxY48GP8djqkGcujnq6TrU1cZP5lo'
                 'Lf/t5mfXVdY73/nuThKxkP+fZScOVQIYX7hZ42n282+Ee55fX/B9HP'
                 '158=')
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        fd = io.StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
@@ -239,7 +239,7 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         ops = [morph.F_BOTHAT, morph.F_BRANCHPOINTS, morph.F_BRIDGE,
                morph.F_CLEAN, morph.F_CLOSE, morph.F_CONVEX_HULL,
                morph.F_DIAG, morph.F_DILATE, morph.F_DISTANCE,
@@ -379,7 +379,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         module = pipeline.modules()[0]
         assert isinstance(module, morph.Morph)
         self.assertEqual(module.image_name, "Thresh")
@@ -446,7 +446,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
 
     def binary_tteesstt(self, function_name, function,
                         gray_out=False, scale=None, custom_repeats=None):
-        np.random.seed(map(ord,function_name))
+        np.random.seed(list(map(ord,function_name)))
         input = np.random.uniform(size=(20,20)) > .7
         output = self.execute(input, function_name, scale=scale, custom_repeats=custom_repeats)
         if scale is None:

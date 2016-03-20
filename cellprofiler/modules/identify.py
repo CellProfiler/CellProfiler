@@ -22,6 +22,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
 import cellprofiler.settings as cps
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
+from functools import reduce
 
 O_TWO_CLASS = 'Two classes'
 O_THREE_CLASS = 'Three classes'
@@ -1172,11 +1173,11 @@ class Identify(cellprofiler.cpmodule.CPModule):
         if object_name == cpmeas.IMAGE:
             return [C_COUNT]
         result = []
-        if object_dictionary.has_key(object_name):
+        if object_name in object_dictionary:
             result += [C_LOCATION, C_NUMBER]
             if len(object_dictionary[object_name]) > 0:
                 result += [C_PARENT]
-        if object_name in reduce(lambda x,y: x+y, object_dictionary.values()):
+        if object_name in reduce(lambda x,y: x+y, list(object_dictionary.values())):
             result += [C_CHILDREN]
         return result
 
@@ -1193,7 +1194,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
         if object_name == cpmeas.IMAGE and category == C_COUNT:
             return list(object_dictionary.keys())
 
-        if object_dictionary.has_key(object_name):
+        if object_name in object_dictionary:
             if category == C_LOCATION:
                 return [FTR_CENTER_X, FTR_CENTER_Y]
             elif category == C_NUMBER:
@@ -1202,7 +1203,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 return list(object_dictionary[object_name])
         if category == C_CHILDREN:
             result = []
-            for child_object_name in object_dictionary.keys():
+            for child_object_name in list(object_dictionary.keys()):
                 if object_name in object_dictionary[child_object_name]:
                     result += ["%s_Count" % child_object_name]
             return result
@@ -1228,7 +1229,7 @@ def add_object_location_measurements(measurements,
     if object_count:
         centers = scipy.ndimage.center_of_mass(np.ones(labels.shape),
                                                labels,
-                                               range(1,object_count+1))
+                                               list(range(1,object_count+1)))
         centers = np.array(centers)
         centers = centers.reshape((object_count,2))
         location_center_y = centers[:,0]

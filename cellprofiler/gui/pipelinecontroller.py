@@ -1,7 +1,7 @@
 """PipelineController.py - controls (modifies) a pipeline
 """
 
-import Queue
+import queue
 import csv
 import datetime
 import exceptions
@@ -15,8 +15,8 @@ import shutil
 import string
 import sys
 import threading
-import urllib
-from cStringIO import StringIO
+import urllib.request, urllib.parse, urllib.error
+from io import StringIO
 
 import h5py
 import numpy as np
@@ -36,7 +36,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.utilities.version as version
 import cellprofiler.utilities.walk_in_background as W
 import cellprofiler.workspace as cpw
-import cpframe
+from . import cpframe
 from cellprofiler.gui import get_cp_bitmap
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
@@ -50,9 +50,10 @@ from cellprofiler.gui.viewworkspace import \
 from cellprofiler.icons import get_builtin_image
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 from cellprofiler.modules.loadimages import pathname2url
-from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
-from errordialog import display_error_message
-from runmultiplepipelinesdialog import RunMultplePipelinesDialog
+from .errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
+from .errordialog import display_error_message
+from .runmultiplepipelinesdialog import RunMultplePipelinesDialog
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -91,7 +92,7 @@ class PipelineController:
         cpprefs.add_output_directory_listener(self.__on_output_directory_change)
 
         # interaction/display requests and exceptions from an Analysis
-        self.interaction_request_queue = Queue.PriorityQueue()
+        self.interaction_request_queue = queue.PriorityQueue()
         self.interaction_pending = False
         self.debug_request_queue = None
 
@@ -741,8 +742,8 @@ class PipelineController:
                                  "ExampleSBSImages/ExampleSBS.cppipe",
                                  "Load pipeline via URL")
         if dlg.ShowModal() == wx.ID_OK:
-            import urllib2
-            filename, headers = urllib.urlretrieve(dlg.Value)
+            import urllib.request, urllib.error, urllib.parse
+            filename, headers = urllib.request.urlretrieve(dlg.Value)
             try:
                 self.do_load_pipeline(filename)
             finally:
@@ -805,7 +806,7 @@ class PipelineController:
         """
         with open(path, mode="w") as fd:
             for url in self.__workspace.file_list.get_filelist():
-                if isinstance(url, unicode):
+                if isinstance(url, str):
                     url = url.encode("utf-8")
                 fd.write(url+"\n")
 
@@ -839,15 +840,15 @@ class PipelineController:
                 text = (
 "Your pipeline contains the legacy module LoadImages, and legacy references\n"
 "to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
-u"\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
-u"\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
+"\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
+"\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
 "If you choose to convert the pipeline, you should then make sure of the \n"
 "following:\n"
-u"\u2022 Images module: Provide your original images and/or folders as input.\n"
-u"\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
-u"\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
+"\u2022 Images module: Provide your original images and/or folders as input.\n"
+"\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
+"\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
 "   color images under the 'Select the image type' setting.\n"
-u"\u2022 Groups: Confirm that that the expected number of images per group are present.")
+"\u2022 Groups: Confirm that that the expected number of images per group are present.")
                 CONVERT = 1
                 DONT_CONVERT = 2
 
@@ -925,7 +926,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         except cpp.PipelineLoadCancelledException:
             self.__pipeline.clear()
-        except Exception,instance:
+        except Exception as instance:
             from cellprofiler.gui.errordialog import display_error_dialog
             display_error_dialog(self.__frame, instance, self.__pipeline,
                                  continue_only=True)
@@ -994,14 +995,14 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         return True
 
     def __clear_errors(self):
-        for key,error in self.__setting_errors.iteritems():
+        for key,error in self.__setting_errors.items():
             self.__frame.preferences_view.pop_error_text(error)
         self.__setting_errors = {}
 
     def __on_save_as_pipeline(self, event):
         try:
             self.do_save_pipeline()
-        except Exception, e:
+        except Exception as e:
             wx.MessageBox('Exception:\n%s'%(e), 'Could not save pipeline...', wx.ICON_ERROR|wx.OK, self.__frame)
 
     def do_save_pipeline(self):
@@ -1054,7 +1055,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 try:
                     self.__workspace.refresh_image_set()
                     self.__workspace.measurements.write_image_sets(dlg.Path)
-                except Exception, e:
+                except Exception as e:
                     display_error_dialog(self.__frame, e, self.__pipeline,
                                          "Failed to export image sets",
                                          continue_only=True)
@@ -1136,7 +1137,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         data = pv.PlateData()
         try:
             self.__workspace.refresh_image_set()
-        except Exception, e:
+        except Exception as e:
             display_error_dialog(self.__frame, e, self.__pipeline,
                                  "Failed to make image sets",
                                  continue_only=True)
@@ -1532,7 +1533,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             if len(paths) == 0 or not paths[0].startswith("file:"):
                 self.on_pathlist_browse(None)
             else:
-                path = urllib.url2pathname(paths[0][5:])
+                path = urllib.request.url2pathname(paths[0][5:])
                 path = os.path.split(path)[0]
                 self.on_pathlist_browse(
                     None,
@@ -1566,7 +1567,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.on_pathlist_refresh(paths)
         elif cmd == self.PATHLIST_CMD_BROWSE:
             if path.startswith("file:"):
-                path = urllib.url2pathname(path[5:])
+                path = urllib.request.url2pathname(path[5:])
                 self.on_pathlist_browse(None, default_dir=path)
             else:
                 self.on_pathlist_browse(None)
@@ -1608,7 +1609,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             from scipy.io.matlab.mio import loadmat
             try:
                 maybe_image = loadmat(os.path.abspath(path))
-                if "Image" in maybe_image.keys():
+                if "Image" in list(maybe_image.keys()):
                     show_image(paths[0], self.__frame)
                     return
             except:
@@ -1644,7 +1645,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def on_pathlist_refresh(self, urls):
         """Refresh the pathlist by checking for existence of file URLs"""
 
-        urls = filter((lambda url: url.startswith("file:")), urls)
+        urls = list(filter((lambda url: url.startswith("file:")), urls))
         def refresh_msg(idx):
             return "Checked %d of %d" % (idx, len(urls))
         with wx.ProgressDialog(
@@ -1656,7 +1657,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             assert isinstance(dlg, wx.ProgressDialog)
             to_remove = []
             for idx, url in enumerate(urls):
-                path = urllib.url2pathname(url[5:])
+                path = urllib.request.url2pathname(url[5:])
                 if not os.path.isfile(path):
                     to_remove.append(url)
                 if idx % 100 == 0:
@@ -1696,7 +1697,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             h, w = dlg.GetSizeTuple()
             if w < 480:
                 dlg.SetSize((max(w, 480), h))
-            queue = Queue.Queue()
+            queue = queue.Queue()
             interrupt = [False]
             message = ["Initializing"]
             def fn(filenames=filenames,
@@ -1905,12 +1906,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 if module.is_input_module():
                     continue
                 category = module.category
-                if isinstance(category, (str,unicode)):
+                if isinstance(category, str):
                     categories = [category, "All"]
                 else:
                     categories = list(category) + ["All"]
                 for category in categories:
-                    if not d.has_key(category):
+                    if category not in d:
                         d[category] = []
                     d[category].append(module_name)
             except:
@@ -1920,7 +1921,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         for category in sorted(d.keys()):
             sub_menu = wx.Menu()
             for module_name in sorted(d[category]):
-                if self.module_name_to_menu_id.has_key(module_name):
+                if module_name in self.module_name_to_menu_id:
                     menu_id = self.module_name_to_menu_id[module_name]
                 else:
                     menu_id = wx.NewId()
@@ -1962,7 +1963,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         from cellprofiler.modules import instantiate_module
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
         assert isinstance(event, wx.CommandEvent)
-        if self.menu_id_to_module_name.has_key(event.Id):
+        if event.Id in self.menu_id_to_module_name:
             module_name = self.menu_id_to_module_name[event.Id]
             def loader(module_num, module_name=module_name):
                 module = instantiate_module(module_name)
@@ -1977,8 +1978,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
     def __get_selected_modules(self):
         '''Get the modules selected in the GUI, but not input modules'''
-        return filter(lambda x: not x.is_input_module(),
-                      self.__pipeline_list_view.get_selected_modules())
+        return [x for x in self.__pipeline_list_view.get_selected_modules() if not x.is_input_module()]
 
     def ok_to_edit_pipeline(self):
         '''Return True if ok to edit pipeline
@@ -2005,7 +2005,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             selected_modules = self.__get_selected_modules()
             for module in selected_modules:
                 for setting in module.settings():
-                    if self.__setting_errors.has_key(setting.key()):
+                    if setting.key() in self.__setting_errors:
                         self.__frame.preferences_view.pop_error_text(self.__setting_errors.pop(setting.key()))
                 self.__pipeline.remove_module(module.module_num)
             has_input_modules = any([m.is_input_module()
@@ -2259,7 +2259,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         if ok:
             try:
                 self.__pipeline.test_valid()
-            except cellprofiler.settings.ValidationError, v:
+            except cellprofiler.settings.ValidationError as v:
                 ok = False
                 reason = v.message
         if not ok:
@@ -2299,7 +2299,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.enable_module_controls_panel_buttons()
             self.populate_goto_menu()
 
-        except Exception, e:
+        except Exception as e:
             # Catastrophic failure
             display_error_dialog(self.__frame,
                                  e,
@@ -2334,12 +2334,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 style = wx.ICON_ERROR | wx.OK)
 
     def analysis_event_handler(self, evt):
-        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
+        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = list(range(3))
 
         if isinstance(evt, cpanalysis.AnalysisStarted):
             wx.CallAfter(self.show_analysis_controls)
         elif isinstance(evt, cpanalysis.AnalysisProgress):
-            print "Progress", evt.counts
+            print("Progress", evt.counts)
             total_jobs = sum(evt.counts.values())
             completed = sum(map(
                 (lambda status: evt.counts.get(status, 0)),
@@ -2348,12 +2348,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress,
                          total_jobs, completed)
         elif isinstance(evt, cpanalysis.AnalysisFinished):
-            print ("Cancelled!" if evt.cancelled else "Finished!")
+            print(("Cancelled!" if evt.cancelled else "Finished!"))
             # drop any interaction/display requests or exceptions
             while True:
                 try:
                     self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
-                except Queue.Empty:
+                except queue.Empty:
                     break
             if evt.cancelled:
                 self.pipeline_list = []
@@ -2408,7 +2408,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         try:
             pri_func_args = self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
-        except Queue.Empty:
+        except queue.Empty:
             return
 
         self.interaction_pending = True
@@ -2532,7 +2532,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
 
-        self.debug_request_queue = Queue.Queue()
+        self.debug_request_queue = queue.Queue()
 
         evtlist = [evt]
         def remote_debug(evtlist = evtlist):
@@ -2565,7 +2565,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     try:
                         evtlist[0] = self.debug_request_queue.get(timeout = .25)
                         return True
-                    except Queue.Empty:
+                    except queue.Empty:
                         keep_going, skip = dlg.UpdatePulse(
                             "Debugging remotely, Cancel to abandon")
                         if not keep_going:
@@ -2630,7 +2630,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.__analysis.start(self.analysis_event_handler,
                                   overwrite = False)
 
-        except Exception, e:
+        except Exception as e:
             # Catastrophic failure
             display_error_dialog(self.__frame,
                                  e,
@@ -2840,7 +2840,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 self.__pipeline_list_view.select_one_module(module.module_num+1)
             failure=0
             update_workspace_viewer(workspace)
-        except Exception,instance:
+        except Exception as instance:
             logger.error("Failed to run module %s", module.module_name,
                          exc_info=True)
             event = cpp.RunExceptionEvent(instance,module)
@@ -3002,7 +3002,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         choices = []
 
         for grouping, image_numbers in self.__groupings:
-            text = ["%s=%s"%(k,v) for k,v in grouping.iteritems()]
+            text = ["%s=%s"%(k,v) for k,v in grouping.items()]
             text = ', '.join(text)
             choices.append(text)
         lb = wx.ListBox(dialog, choices=choices)
@@ -3076,7 +3076,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         if len(choices) > 1:
             # Get rid of columns with redundant info
             useless_columns = []
-            cvalues = choices.values()
+            cvalues = list(choices.values())
             for i, f in enumerate(features):
                 if all([cv[i] == cvalues[0][i] for cv in cvalues[1:]]):
                     useless_columns.insert(0, i)
@@ -3120,8 +3120,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                         name = f[(len(cpm.C_PATH_NAME) + 1):] + " folder"
                     self.list_ctrl.InsertColumn(i+1, name)
                     width = 0
-                    for row in choices.values():
-                        w, h = self.list_ctrl.GetTextExtent(unicode(row[i]))
+                    for row in list(choices.values()):
+                        w, h = self.list_ctrl.GetTextExtent(str(row[i]))
                         if w > width:
                             width = w
                     self.list_ctrl.SetColumnWidth(i+1, width+15)
@@ -3131,13 +3131,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     wx.Size(min(total_width, 640), self.list_ctrl.GetMinHeight()))
                 self.itemDataMap = dict([
                     (k,
-                     [u"%06d" % v if isinstance(v, int) else
-                      u"%020.10f" % v if isinstance(v, float) else
-                      unicode(v) for v in [k] + choices[k]]) for k in choices])
+                     ["%06d" % v if isinstance(v, int) else
+                      "%020.10f" % v if isinstance(v, float) else
+                      str(v) for v in [k] + choices[k]]) for k in choices])
 
                 for image_number in sorted(choices.keys()):
-                    row = [unicode(image_number)] + \
-                        [unicode(x) for x in choices[image_number]]
+                    row = [str(image_number)] + \
+                        [str(x) for x in choices[image_number]]
                     pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
                 ColumnSorterMixin.__init__(self, self.list_ctrl.ColumnCount)
@@ -3189,8 +3189,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             if module.is_input_module():
                 if not self.do_step(module, False):
                     return False
-        modules = filter((lambda m:not m.is_input_module()),
-                         self.__pipeline.modules())
+        modules = list(filter((lambda m:not m.is_input_module()),
+                         self.__pipeline.modules()))
         #
         # Select the first executable module
         #
@@ -3228,7 +3228,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 self.show_parameter_sample_options(
                     self.__module_view.get_current_module().get_module_num(), event)
             else:
-                print "No current module"
+                print("No current module")
 
     def show_parameter_sample_options(self, module_num, event):
         if self.__parameter_sample_frame is None:

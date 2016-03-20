@@ -1,4 +1,4 @@
 """cellprofiler.matlab.__init__.py
 """
 
-import cputils
+from . import cputils

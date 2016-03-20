@@ -1,6 +1,6 @@
-from __future__ import with_statement
 
-import Queue
+
+import queue
 import errno
 import os
 import stat
@@ -22,7 +22,7 @@ class TimeOutFunction(object):
         def do_call(temp):
             try:
                 temp['value'] = self.func(*args)
-            except Exception, e:
+            except Exception as e:
                 temp['exception'] = e
         retval = {}
         t = threading.Thread(target=do_call, args=(retval,))
@@ -129,7 +129,7 @@ class Locator(object):
         self._info_lock = threading.RLock()
         self._active_cv = threading.Condition()
         # priorities are (priority, depth) to do a breadth-first search
-        self._queue = Queue.PriorityQueue()
+        self._queue = queue.PriorityQueue()
         for tidx in range(num_threads):
             t = threading.Thread(target=self.search, name='Searcher %d' % tidx)
             t.daemon = True
@@ -297,16 +297,16 @@ class Locator(object):
                         f_info.status = FINISHED
                 else:
                     raise ValueError('unknown status %d' % status)
-            except TimeOutException, e:
+            except TimeOutException as e:
                 with self._info_lock:
                     f_info.error = True
                     f_info.data = e
                     f_info.num_timeouts += 1
-            except (IOError, OSError), e:
+            except (IOError, OSError) as e:
                 if e.errno in (errno.EACCES, errno.ENOENT):
                     # XXX - should we requeue these errors with a low priority?
                     unreadable = True
-            except Exception, e:
+            except Exception as e:
                 with self._info_lock:
                     f_info.error = True
                     f_info.data = e
@@ -347,16 +347,16 @@ if __name__ == '__main__':
         return None
     loc = Locator(cb, metadata_cb)
     loc.queue(sys.argv[1])
-    print '%010s' % 'THREADS',
+    print('%010s' % 'THREADS', end=' ')
     for idx, n in enumerate('FOUND, STAT, LISTING, METADATA, REMOVED, ERROR, FINISHED, TIMEOUT'.split(', ')):
-        print '%010s' % n,
-    print
+        print('%010s' % n, end=' ')
+    print()
     st = time.time()
     while True:
         time.sleep(3)
-        print '%010s' % threading.active_count(),
+        print('%010s' % threading.active_count(), end=' ')
         for idx, n in enumerate('FOUND, STAT, LISTING, METADATA, REMOVED, ERROR, FINISHED, TIMEOUT'.split(', ')):
-            print '%010s' % counts.get(idx, 0),
-        print time.time() - st, "secs", loc.hipri_count
+            print('%010s' % counts.get(idx, 0), end=' ')
+        print(time.time() - st, "secs", loc.hipri_count)
         if counts.get(FOUND, 0) == counts.get(FINISHED, -1):
             break

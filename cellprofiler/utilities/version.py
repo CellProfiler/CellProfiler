@@ -80,7 +80,7 @@ def get_version():
                     stdin = devnull,
                     cwd = cellprofiler_basedir).strip().split(' ')
             return '%s %s' % (datetime.datetime.utcfromtimestamp(float(timestamp)).isoformat('T'), hash)
-        except (OSError, subprocess.CalledProcessError, ValueError), e:
+        except (OSError, subprocess.CalledProcessError, ValueError) as e:
             pass
 
         try:
@@ -125,4 +125,4 @@ git_hash = version_string.split(' ', 1)[1]
 title_string = '%s (rev %s)' % (dotted_version, git_hash)
 
 if __name__ == '__main__':
-    print version_string
+    print(version_string)

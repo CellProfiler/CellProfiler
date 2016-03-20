@@ -1,7 +1,7 @@
 """test_identifysecondary - test the IdentifySecondary module
 """
 
-import StringIO
+import io
 import base64
 import unittest
 import zlib
@@ -31,7 +31,7 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         u64data = 'TUFUTEFCIDUuMCBNQVQtZmlsZSwgUGxhdGZvcm06IFBDV0lOLCBDcmVhdGVkIG9uOiBUaHUgRmViIDE5IDE1OjQyOjQyIDIwMDkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAABSU0PAAAAyAIAAHic7VjLjtMwFHWfGqAalRmBYFZZshiGRIDEkqegErQVHY3E0k3cYOTEVeIMLV/DZ7BgMWu+iQVOm7SuJ2ncJM1ssGRF1/U5vvf4+sbpIQBAvw9Amz8PeK+DZWtFdk3ooT1CjGHX9lugCR5E41e8X0APwzFBF5AEyAerFo/33Ak9n09XP32iVkBQHzriZN76gTNGnj+YxMDo5yGeITLCPxDYbPG0z+gS+5i6ET7il0dX61ImrXvI+8/OWoeapEOD92NhPJz/EqznNxN06wrzu1E/RzP2+N0MmkxzIDO/hjwvMngOJJ7QHnjYfs2lVsG3JXx7obNJEF7GoWfg6xv4OvhuLHFF183CtyR8aL9BhPhADV9Ut6T1Df30mQ7U9v+OhA/toUen0IaMJ+ViXIXntsQT2m+p5lKmBX50IFT2sbHB0wBf+BkoQ8eq/JfzsE/z78OA+YH2ntAxJKv1q4ojbR+ycLUNXA0YJftdlo67xq+fGpXqn6ZjFq65gWsC/Uw3bjJvYt12PTeGnk+npwV1yoF7XmV+35J4QrvnMuT6mM2BOo+qPx8yeO5KPKGNXQtfYiuARMMOtFe3mDLjy1uH91W/k/x+FTDKL1DYFPxW9V/O67MC+m3zIw+f7cG5b0KCBJ6875Oi+Cz/VfNc1Y+8+VG2H7Ie7hNYyj4U1SHGX7W2f6eIdWOXfEzScVFkbI8GU3WepHsCHX9DJlsTiX7lqYMCn8ZrIprukS8r3qTvvLVuS7q0/W9LfHGL+eoCTn5m+VXWft5UfHl5/sdTTTxpz6zzdyT5G9o0YAS76NoB3GXdfT33FU+3ll7H5fdJ3vP+kUKrJ1wUVeK5J/GEds9CLsOT+dDDjnjnyVtvY74RMqlrQS/t/innp6xLnVtHx53SvvtU1mt1Gtf+N8nCNaM5f09+n/x5uFz3F9ht/x9tmR+3qub/A5FILLM='
         data = base64.b64decode(u64data)
         p = cpp.Pipeline()
-        fd = StringIO.StringIO(data)
+        fd = io.StringIO(data)
         p.load(fd)
         self.assertTrue(len(p.modules())==3)
         module = p.modules()[2]
@@ -78,7 +78,7 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
                 'RfMP5Zh/rpzs0L51ueZ3/+vz5Moi+7kh3qC37fcS0ClwvYJJrAf1Iu'
                 't87uXjDe83FW478B0PjACw==')
         p = cpp.Pipeline()
-        fd = StringIO.StringIO(zlib.decompress(base64.b64decode(data)))
+        fd = io.StringIO(zlib.decompress(base64.b64decode(data)))
         p.load(fd)
         self.assertTrue(len(p.modules())==3)
         module = p.modules()[2]
@@ -125,7 +125,7 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
+        pipeline.load(io.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[2]
         self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
@@ -166,7 +166,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
@@ -231,7 +231,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
@@ -340,7 +340,7 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         def callback(caller,event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
-        pipeline.load(StringIO.StringIO(data))
+        pipeline.load(io.StringIO(data))
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
         self.assertEqual(module.primary_objects, "ChocolateChips")

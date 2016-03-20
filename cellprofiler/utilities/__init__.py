@@ -9,6 +9,7 @@
 ########################
 
 import sys as _sys
+from functools import reduce
 if _sys.version_info[0] > 2 or _sys.version_info[1] >= 6:
     from itertools import product
 else:

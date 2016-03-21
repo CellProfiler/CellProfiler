@@ -51,15 +51,15 @@ class TestNoWX(unittest.TestCase):
         '''Import cellprofiler.modules and make sure it doesn't import wx'''
         import cellprofiler.modules
 
-    def test_01_04_instantiate_all(self):
-        '''Instantiate each module and make sure none import wx'''
-        import cellprofiler.modules as M
-        for name in M.get_module_names():
-            try:
-                M.instantiate_module(name)
-            except:
-                print "Module %s probably imports wx" % name
-                traceback.print_exc()
+    # def test_01_04_instantiate_all(self):
+    #     '''Instantiate each module and make sure none import wx'''
+    #     import cellprofiler.modules as M
+    #     for name in M.get_module_names():
+    #         try:
+    #             M.instantiate_module(name)
+    #         except:
+    #             print "Module %s probably imports wx" % name
+    #             traceback.print_exc()
 
     fly_url = "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
 

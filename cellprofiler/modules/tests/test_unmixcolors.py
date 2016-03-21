@@ -7,7 +7,6 @@ from StringIO import StringIO
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.unmixcolors as U
 import cellprofiler.objects as cpo

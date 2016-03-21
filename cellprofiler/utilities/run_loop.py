@@ -11,10 +11,7 @@ else.
 import sys
 
 if sys.platform == "darwin":
-    from javabridge \
-        import mac_enter_run_loop as enter_run_loop
-    from javabridge \
-        import mac_stop_run_loop as stop_run_loop
+    pass
 else:
     import threading
 

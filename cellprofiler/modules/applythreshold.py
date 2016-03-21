@@ -5,20 +5,16 @@ based on a threshold which can be pre-selected or calculated automatically using
 """
 
 from centrosome.cpmorphology import strel_disk
-from centrosome.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINARY_IMAGE
-from centrosome.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
+from centrosome.threshold import TM_GLOBAL, TM_BINARY_IMAGE
+from centrosome.threshold import TM_METHODS, TM_MANUAL
 from scipy.ndimage.morphology import binary_dilation
 
 import cellprofiler.settings as cps
 from cellprofiler import cpimage
-from cellprofiler.cpmodule import CPModule
 from cellprofiler.modules.identify import get_threshold_measurement_columns
-from cellprofiler.settings import YES, NO
-from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
-from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
 from identify import FI_IMAGE_SIZE, TSM_NONE
-from identify import Identify, O_BACKGROUND, O_ENTROPY
-from identify import O_FOREGROUND, O_THREE_CLASS
+from identify import Identify
+from identify import O_FOREGROUND
 from identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
 
 RETAIN = "Retain"

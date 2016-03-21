@@ -2,9 +2,6 @@
 """
 
 import base64
-import os
-import sys
-import tempfile
 import unittest
 import zlib
 from StringIO import StringIO
@@ -17,7 +14,6 @@ set_headless()
 
 import cellprofiler.modules.correctilluminationapply as cpmcia
 import cellprofiler.modules.injectimage as inj
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw

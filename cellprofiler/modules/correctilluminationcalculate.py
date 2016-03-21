@@ -18,7 +18,6 @@ See also <b>CorrectIlluminationApply</b>, <b>EnhanceOrSuppressFeatures</b>.
 
 import centrosome.cpmorphology as cpmm
 import numpy as np
-import scipy.linalg
 import scipy.ndimage as scind
 from centrosome.bg_compensate import MODE_DARK, MODE_GRAY
 from centrosome.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
@@ -32,11 +31,8 @@ from centrosome.smooth import smooth_with_function_and_mask
 import cellprofiler.cpimage  as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
-import cellprofiler.workspace as cpw
-from cellprofiler.settings import YES, NO
 
 IC_REGULAR = "Regular"
 IC_BACKGROUND = "Background"

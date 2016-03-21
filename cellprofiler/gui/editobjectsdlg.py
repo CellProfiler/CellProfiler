@@ -6,7 +6,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-import os
 import matplotlib
 import matplotlib.figure
 from matplotlib.lines import Line2D
@@ -15,17 +14,16 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 import matplotlib.backend_bases
 import numpy as np
 import scipy.ndimage
-from scipy.ndimage import gaussian_filter, binary_dilation, grey_dilation
+from scipy.ndimage import gaussian_filter
 import sys
 import wx
 import wx.html
 
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
-from centrosome.outline import outline
 from centrosome.cpmorphology import triangle_areas, distance2_to_line, convex_hull_image
 from centrosome.cpmorphology import polygon_lines_to_mask
-from centrosome.cpmorphology import get_outline_pts, thicken, color_labels
+from centrosome.cpmorphology import get_outline_pts, color_labels
 from centrosome.index import Indexes
 from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
 from cellprofiler.gui.cpfigure import CPNavigationToolbar

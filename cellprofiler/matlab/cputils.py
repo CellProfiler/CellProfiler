@@ -1,11 +1,7 @@
 """Utils.py - utility functions for manipulating the Matlab blackboard
 """
 
-import os
-import tempfile
-
 import numpy
-import scipy.io.matlab.mio
 
 
 def new_string_cell_array(shape):

@@ -31,7 +31,6 @@ See also: <b>ReassignObjectNumbers</b>, <b>MaskObjects</b>.
 '''
 
 import re
-import sys
 
 import numpy as np
 import scipy.ndimage as scind
@@ -45,8 +44,7 @@ import cellprofiler.settings as cps
 from cellprofiler.modules.identify import C_PARENT, C_CHILDREN, R_PARENT, R_CHILD
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
 from cellprofiler.modules.identify import \
-    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
-from cellprofiler.settings import YES, NO
+    M_NUMBER_OBJECT_NUMBER
 
 D_NONE = "None"
 D_CENTROID = "Centroid"

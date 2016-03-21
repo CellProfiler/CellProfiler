@@ -2,15 +2,12 @@
 '''
 
 import base64
-import cPickle
 import os
 import sys
 import tempfile
 import unittest
 import zlib
 from StringIO import StringIO
-
-import numpy as np
 
 from cellprofiler.preferences import set_headless
 
@@ -21,9 +18,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-import cellprofiler.preferences as cpprefs
 
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.createbatchfiles as C

@@ -34,11 +34,8 @@ import urllib
 
 import cellprofiler.cpimage  as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT, \
+from cellprofiler.preferences import DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
     URL_FOLDER_NAME
 

@@ -26,7 +26,6 @@ modules upon which the flags are based.
 
 import logging
 import os
-import sys
 
 import numpy as np
 
@@ -35,9 +34,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.utilities.rules as cprules
 import cellprofiler.workspace as cpw
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.settings import YES, NO
+from cellprofiler.gui.help import USING_METADATA_HELP_REF
 
 logger = logging.getLogger(__name__)
 C_ANY = "Flag if any fail"

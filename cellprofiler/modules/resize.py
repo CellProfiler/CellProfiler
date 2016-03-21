@@ -7,7 +7,6 @@ method to use.
 """
 
 import logging
-import traceback
 
 import numpy as np
 from scipy.ndimage import affine_transform, map_coordinates

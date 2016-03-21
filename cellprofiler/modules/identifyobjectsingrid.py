@@ -39,17 +39,14 @@ according to the arrangement order specified by the user.</li>
 '''
 
 import numpy as np
-from centrosome.cpmorphology import centers_of_labels, relabel
+from centrosome.cpmorphology import centers_of_labels
 from centrosome.outline import outline
 
 import cellprofiler.cpgridinfo as cpg
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns

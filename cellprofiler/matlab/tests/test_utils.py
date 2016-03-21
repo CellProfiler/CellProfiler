@@ -1,12 +1,10 @@
 """test_Utils - unit tests of CellProfiler.Matlab.Utils
 """
 
-import os
 import unittest
 
 import numpy
 
-import cellprofiler.matlab
 import cellprofiler.matlab.cputils as u
 
 

@@ -1,6 +1,3 @@
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, GROUPS_DISPLAY_TABLE
-
 __doc__ = """
 The <b>Groups</b> module organizes sets of images into groups.
 <hr>
@@ -94,12 +91,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 import numpy as np
-import os
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 
 

@@ -3,17 +3,17 @@
 
 import base64
 import gc
-import numpy as np
 import os
-import PIL.Image as PILImage
-import scipy.ndimage
-from StringIO import StringIO
+import socket
 import tempfile
 import traceback
 import unittest
 import uuid
 import zlib
-import socket
+from StringIO import StringIO
+
+import PIL.Image as PILImage
+import numpy as np
 
 if hasattr(unittest, "SkipTest"):
     SkipTestException = unittest.SkipTest
@@ -34,7 +34,6 @@ import cellprofiler.measurements as cpmeas
 
 import cellprofiler.modules.exporttodatabase as E
 import cellprofiler.modules.identify as I
-import cellprofiler.modules.loadimages as LI
 
 np.random.seed(9804)
 

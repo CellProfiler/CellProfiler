@@ -1,5 +1,4 @@
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 __doc__ = '''
 <b>Identify Primary Objects</b> identifies biological components of interest in grayscale images
@@ -176,10 +175,7 @@ import scipy.stats
 import identify as cpmi
 import cellprofiler.cpmodule
 import cellprofiler.cpimage as cpi
-import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.preferences as cpp
 from centrosome.otsu import otsu
 from centrosome.cpmorphology import fill_labeled_holes, strel_disk
 from centrosome.cpmorphology import binary_shrink, relabel
@@ -187,15 +183,11 @@ from centrosome.cpmorphology import is_local_maximum
 from centrosome.filter import stretch, laplacian_of_gaussian
 from centrosome.watershed import watershed
 from centrosome.propagate import propagate
-from centrosome.smooth import smooth_with_noise
 import centrosome.outline
 import cellprofiler.objects
-from cellprofiler.settings import AUTOMATIC
 import centrosome.threshold as cpthresh
 from identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
-from identify import draw_outline
 from identify import FI_IMAGE_SIZE
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 #################################################
 #

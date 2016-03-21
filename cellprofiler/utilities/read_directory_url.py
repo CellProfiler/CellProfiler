@@ -1,7 +1,6 @@
 '''read_directory_url.py - get a directory listing from a URL
 '''
 
-import os
 import urllib
 import urllib2
 import xml.dom.minidom as dom

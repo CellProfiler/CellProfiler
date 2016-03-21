@@ -8,10 +8,8 @@ import logging
 import h5py
 
 logger = logging.getLogger(__name__)
-import numpy as np
 import re
 from scipy.io.matlab import loadmat
-from itertools import repeat
 import cellprofiler.preferences as cpprefs
 from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
 from cellprofiler.utilities.hdf5_dict import VERSION, HDFCSV, VStringArray
@@ -22,7 +20,6 @@ import numpy as np
 import warnings
 import os
 import os.path
-import mmap
 import urllib
 import sys
 

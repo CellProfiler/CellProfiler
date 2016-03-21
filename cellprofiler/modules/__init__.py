@@ -6,8 +6,6 @@ import logging
 logger = logging.getLogger(__name__)
 import re
 import sys
-import os.path
-import glob
 import cellprofiler.cpmodule as cpm
 from cellprofiler.modules.plugins import plugin_list
 from cellprofiler.preferences import get_plugin_directory

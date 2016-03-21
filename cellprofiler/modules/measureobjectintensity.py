@@ -61,7 +61,6 @@ import centrosome.outline as cpmo
 import numpy as np
 import scipy.ndimage as nd
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.filter import stretch
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas

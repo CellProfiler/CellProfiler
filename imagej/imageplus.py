@@ -1,6 +1,5 @@
 # imagej.imageplus.py - wrapper for imageplus class
 
-import bioformats
 import javabridge as J
 
 

@@ -1,5 +1,3 @@
-from cellprofiler.gui.help import LOADING_IMAGE_SEQ_HELP_REF
-
 __doc__ = '''
 <b>Make Projection</b> combines several two-dimensional images of
 the same field of view together, either by performing a mathematical operation
@@ -31,8 +29,8 @@ See also the help for the <b>Input</b> modules.
 
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
+import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 
 P_AVERAGE = 'Average'

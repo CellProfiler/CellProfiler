@@ -6,7 +6,6 @@ import logging
 logger = logging.getLogger(__name__)
 import csv
 import javabridge
-import numpy as np
 import os
 import sys
 import uuid
@@ -19,7 +18,7 @@ import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
+from cellprofiler.preferences import get_next_cpfigure_position, reset_cpfigure_position
 from scipy.sparse import coo_matrix
 from scipy.ndimage import distance_transform_edt, label
 import functools
@@ -27,7 +26,7 @@ import functools
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
 import cellprofiler.preferences as cpprefs
-from cpfigure_tools import figure_to_image, only_display_image, renumber_labels_for_display
+from cpfigure_tools import renumber_labels_for_display
 import cellprofiler.gui.cpartists
 import centrosome.outline
 from centrosome.cpmorphology import get_outline_pts

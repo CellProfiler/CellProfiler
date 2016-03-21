@@ -22,37 +22,19 @@ class TestCPMath(unittest.TestCase):
         count = [0]
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            import cellprofiler.cpmath
             self.check_warning(w, count)
-            from cellprofiler.cpmath.bg_compensate \
-                import bg_compensate, MODE_AUTO
             self.check_warning(w, count)
-            from cellprofiler.cpmath.cpmorphology import binary_shrink
             self.check_warning(w, count)
-            from cellprofiler.cpmath.filter import canny
             self.check_warning(w, count)
-            from cellprofiler.cpmath.haralick import Haralick
             self.check_warning(w, count)
-            from cellprofiler.cpmath.index import Indexes
             self.check_warning(w, count)
-            from cellprofiler.cpmath.lapjv import lapjv
             self.check_warning(w, count)
-            from cellprofiler.cpmath.otsu import otsu, otsu3
             self.check_warning(w, count)
-            from cellprofiler.cpmath.outline import outline
             self.check_warning(w, count)
-            from cellprofiler.cpmath.princomp import princomp
             self.check_warning(w, count)
-            from cellprofiler.cpmath.propagate import propagate
             self.check_warning(w, count)
-            from cellprofiler.cpmath.radial_power_spectrum import rps
             self.check_warning(w, count)
-            from cellprofiler.cpmath.rankorder import rank_order
             self.check_warning(w, count)
-            from cellprofiler.cpmath.smooth import fit_polynomial
             self.check_warning(w, count)
-            from cellprofiler.cpmath.threshold import get_threshold
             self.check_warning(w, count)
-            from cellprofiler.cpmath.watershed import watershed
             self.check_warning(w, count)
-            from cellprofiler.cpmath.zernike import zernike

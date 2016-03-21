@@ -5,8 +5,6 @@ import re
 
 import numpy as np
 
-import cellprofiler.measurements as cpmeas
-
 
 class Rules(object):
     '''Represents a set of CPA rules'''

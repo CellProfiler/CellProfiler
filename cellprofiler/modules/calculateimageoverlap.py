@@ -1,6 +1,3 @@
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON
-
 __doc__ = '''
 <b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
 <hr>
@@ -63,21 +60,19 @@ Research</i>, 23, 231-242 <a href="http://dx.doi.org/10.1207/s15327906mbr2302_6"
 </ul>
 '''
 
+import centrosome.cpmorphology as morph
 import numpy as np
-
+from centrosome.fastemd import emd_hat_int32
+from centrosome.filter import poisson_equation
+from centrosome.index import Indexes
+from centrosome.propagate import propagate
 from scipy.ndimage import label, distance_transform_edt
 from scipy.sparse import coo_matrix
 
-import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
-import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
+import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-import centrosome.cpmorphology as morph
-from centrosome.index import Indexes
-from centrosome.fastemd import emd_hat_int32
-from centrosome.propagate import propagate
-from centrosome.filter import poisson_equation
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"

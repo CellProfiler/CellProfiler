@@ -15,7 +15,6 @@ from scipy.ndimage import distance_transform_edt
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"
@@ -227,8 +226,7 @@ class OverlayOutlines(cpm.CPModule):
 
     def display(self, workspace, figure):
         from cellprofiler.gui.cpfigure import CPLD_LABELS, CPLD_NAME, \
-            CPLD_OUTLINE_COLOR, CPLD_MODE, CPLDM_OUTLINES, CPLDM_ALPHA, \
-            CPLDM_NONE, CPLD_LINE_WIDTH, CPLD_ALPHA_COLORMAP, CPLD_ALPHA_VALUE
+            CPLD_OUTLINE_COLOR, CPLD_MODE, CPLDM_OUTLINES, CPLD_LINE_WIDTH
 
         figure.set_subplots((1, 1))
 

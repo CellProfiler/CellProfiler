@@ -14,14 +14,13 @@ display purposes, so additional rescaling may be needed. Please see the
 See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
 '''
 
+import inflect
 import numpy as np
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import inflect
 
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"

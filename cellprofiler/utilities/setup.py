@@ -4,9 +4,7 @@ __test__ = False
 
 import logging
 import os
-import subprocess
 import sys
-import traceback
 
 logger = logging.getLogger(__name__)
 is_win = sys.platform.startswith("win")
@@ -16,7 +14,6 @@ is_mingw = (is_win and not is_msvc)
 
 if not hasattr(sys, 'frozen'):
     from distutils.core import setup, Extension
-    from distutils.sysconfig import get_config_var
 
     try:
         from Cython.Distutils import build_ext

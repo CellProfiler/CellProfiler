@@ -1,5 +1,3 @@
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF
-
 __doc__ = '''
 <b>Export To Spreadsheet</b> exports measurements into one or more files that can be
 opened in Excel or other spreadsheet programs.
@@ -46,25 +44,19 @@ import logging
 logger = logging.getLogger(__name__)
 import base64
 import csv
-import errno
 import numpy as np
 import os
-import sys
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 from cellprofiler.measurements import IMAGE, EXPERIMENT
-from cellprofiler.preferences import get_absolute_path, get_output_file_name
-from cellprofiler.preferences import ABSPATH_OUTPUT, ABSPATH_IMAGE, get_headless
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF, MEASUREMENT_NAMING_HELP
+from cellprofiler.preferences import get_headless
 from cellprofiler.preferences import \
-    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
+    DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536

@@ -18,9 +18,7 @@ See also <b>NamesAndTypes</b>, <b>ConserveMemory</b>.
 
 import logging
 import os
-import re
 import sys
-import traceback
 
 import matplotlib
 import numpy as np
@@ -31,22 +29,15 @@ logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpp
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.preferences import \
-    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
-    DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
-    DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT, \
-    get_default_image_directory
+    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import \
     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
 from cellprofiler.modules.loadimages import pathname2url
 from centrosome.cpmorphology import distance_color_labels
-from cellprofiler.utilities.version import get_version
 from bioformats.formatwriter import write_image
 import bioformats.omexml as ome
 

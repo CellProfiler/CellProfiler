@@ -6,7 +6,6 @@ import os
 import stat
 import threading
 import time
-import traceback
 import uuid
 
 

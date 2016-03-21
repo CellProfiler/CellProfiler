@@ -5,8 +5,6 @@ import matplotlib
 import numpy as np
 import wx
 from wx.lib.colourselect import ColourSelect, EVT_COLOURSELECT
-from wx.lib.intctrl import IntCtrl, EVT_INT
-from wx.lib.resizewidget import ResizeWidget
 from wx.lib.scrolledpanel import ScrolledPanel
 
 import cellprofiler.measurements as cpmeas
@@ -17,7 +15,7 @@ from cellprofiler.gui.cpartists import \
     NORMALIZE_LINEAR, NORMALIZE_LOG, NORMALIZE_RAW, \
     INTERPOLATION_BICUBIC, INTERPOLATION_BILINEAR, INTERPOLATION_NEAREST
 from cellprofiler.gui.cpfigure import \
-    CPFigureFrame, get_matplotlib_interpolation_preference
+    CPFigureFrame
 from cellprofiler.gui.help import WV_FIGURE_HELP, WORKSPACE_VIEWER_HELP
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y

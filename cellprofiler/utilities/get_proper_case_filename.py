@@ -6,12 +6,6 @@ import sys
 
 if sys.platform.startswith("win"):
     import _get_proper_case_filename
-    from _get_proper_case_filename \
-        import get_file_attributes, set_file_attributes, \
-        FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_HIDDEN, \
-        FILE_ATTRIBUTE_NOT_CONTENT_INDEXED, FILE_ATTRIBUTE_OFFLINE, \
-        FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM, \
-        FILE_ATTRIBUTE_TEMPORARY
 
 
     def get_proper_case_filename(path):

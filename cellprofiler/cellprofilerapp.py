@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
 
-import cStringIO
 import sys
 
 import wx
 
 import cellprofiler.preferences as cpp
 from cellprofiler.gui.errordialog import display_error_dialog
-from cellprofiler.icons import get_builtin_image
 # Make sure sys.excepthook is called for any uncaught exceptions, even in threads.
 import cellprofiler.utilities.thread_excepthook
 
@@ -69,7 +67,6 @@ class CellProfilerApp(wx.App):
     def new_version_check(self, force=False):
         if cpp.get_check_new_versions() or force:
             import cellprofiler.utilities.check_for_updates as cfu
-            import platform
             import cellprofiler.utilities.version
 
             version_string = cellprofiler.utilities.version.version_string

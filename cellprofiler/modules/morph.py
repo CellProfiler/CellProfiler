@@ -386,7 +386,6 @@ in <b>Morph</b> to achieve the same result.</td>
 '''
 
 import logging
-import sys
 
 import numpy as np
 import scipy.ndimage as scind
@@ -395,7 +394,6 @@ logger = logging.getLogger(__name__)
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.cpimage as cpi
 import centrosome.cpmorphology as morph
 from centrosome.filter import poisson_equation

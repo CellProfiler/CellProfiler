@@ -1,12 +1,9 @@
 '''test_run_imagej.py - test the run_imagej module'''
 
-import os
-import sys
 import unittest
 from StringIO import StringIO
 
 import numpy as np
-from scipy.ndimage import grey_erosion
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpm
@@ -15,7 +12,6 @@ import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-import imagej.imagej2 as ij2
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"

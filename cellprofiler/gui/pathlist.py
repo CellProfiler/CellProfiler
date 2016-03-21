@@ -7,8 +7,6 @@ import bisect
 import numpy as np
 import wx
 import wx.lib.scrolledpanel
-import os
-import sys
 import urllib
 import urllib2
 import uuid

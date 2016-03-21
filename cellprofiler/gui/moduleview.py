@@ -1,14 +1,12 @@
 """ModuleView.py - implements a view on a module
 """
 import Queue
-import cStringIO
 import logging
 import os
 import stat
 import sys
 import threading
 import time
-import traceback
 import uuid
 import weakref
 
@@ -32,8 +30,6 @@ from treecheckboxdialog import TreeCheckboxDialog
 from metadatactrl import MetadataControl
 from namesubscriber import NameSubscriberComboBox
 from cornerbuttonmixin import CornerButtonMixin
-import cellprofiler.utilities.walk_in_background as W
-import cellprofiler.gui.pathlist as PL
 
 WARNING_COLOR = wx.Colour(224, 224, 0, 255)
 RANGE_TEXT_WIDTH = 40  # number of pixels in a range text box TO_DO - calculate it

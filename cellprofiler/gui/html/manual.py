@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 from glob import glob
 from shutil import copy
 

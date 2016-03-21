@@ -6,7 +6,6 @@ public license.
 """
 
 import StringIO
-import math
 
 import wx
 

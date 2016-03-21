@@ -6,8 +6,6 @@ Author: AJ Pretorius
 """
 
 import os
-import sys
-import time
 import traceback
 
 import numpy as np

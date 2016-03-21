@@ -5,7 +5,6 @@ from __future__ import with_statement
 import Queue
 import cStringIO as StringIO
 import collections
-import gc
 import logging
 import multiprocessing
 import os
@@ -16,7 +15,6 @@ import tempfile
 import threading
 import uuid
 
-import h5py
 import numpy as np
 import zmq
 
@@ -25,9 +23,9 @@ import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
-from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
+from cellprofiler.utilities.zmqrequest import AnalysisRequest, Reply, UpstreamExit
 from cellprofiler.utilities.zmqrequest import get_announcer_address
-from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
+from cellprofiler.utilities.zmqrequest import register_analysis
 
 logger = logging.getLogger(__name__)
 
@@ -1047,7 +1045,6 @@ if sys.platform == "darwin":
                 pass
 
 if __name__ == '__main__':
-    import time
     import cellprofiler.pipeline
     import cellprofiler.preferences
     import cellprofiler.utilities.thread_excepthook

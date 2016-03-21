@@ -3,11 +3,13 @@ import glob
 import importlib
 import os
 import shlex
+import sys
+
 import setuptools
 import setuptools.command.build_py
 import setuptools.command.sdist
 import setuptools.dist
-import sys
+
 import cellprofiler.utilities.version
 
 # Recipe needed to get real distutils if virtualenv.

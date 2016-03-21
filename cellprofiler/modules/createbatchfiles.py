@@ -1,5 +1,3 @@
-from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
-
 __doc__ = '''
 <b>Create Batch Files</b> produces files that allow individual batches of images to be processed
 separately on a cluster of computers.
@@ -34,16 +32,14 @@ import sys
 import urllib
 import zlib
 
-import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 
-from cellprofiler.measurements import F_BATCH_DATA, F_BATCH_DATA_H5
+from cellprofiler.measurements import F_BATCH_DATA_H5
 
 '''# of settings aside from the mappings'''
 S_FIXED_COUNT = 9

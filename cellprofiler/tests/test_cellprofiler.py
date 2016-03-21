@@ -13,9 +13,6 @@ from cStringIO import StringIO
 
 import dateutil.parser
 
-from cellprofiler.modules.tests import \
-    example_images_directory, maybe_download_example_images
-
 if hasattr(sys, 'frozen'):
     ARGLIST_START = [sys.executable]
 else:

@@ -11,8 +11,6 @@ the output file is automatically updated with each image set.
 
 import gc
 
-import numpy as np
-
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 

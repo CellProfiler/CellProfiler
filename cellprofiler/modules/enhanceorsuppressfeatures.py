@@ -7,7 +7,6 @@ to the rest of the image, by applying image processing filters to the image. It
 produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
 '''
 
-import numpy as np
 from centrosome.cpmorphology import opening, closing, white_tophat
 from centrosome.filter import enhance_dark_holes, circular_hough
 from centrosome.filter import hessian, median_filter
@@ -17,7 +16,6 @@ from scipy.ndimage import gaussian_filter
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, PROTIP_AVOID_ICON
 
 ENHANCE = 'Enhance'
 SUPPRESS = 'Suppress'

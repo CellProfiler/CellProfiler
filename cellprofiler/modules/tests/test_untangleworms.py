@@ -2,17 +2,17 @@
 
 import StringIO
 import base64
-import bioformats
 import gc
 import os
 import tempfile
 import unittest
 import zlib
-import PIL.Image
+
+import bioformats
 import numpy as np
 from centrosome.outline import outline
-from matplotlib.image import pil_to_array
 from scipy.ndimage import binary_dilation
+
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.untangleworms as U

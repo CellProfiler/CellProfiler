@@ -2,13 +2,11 @@
 '''
 
 import base64
-import os
 import unittest
 import zlib
 from StringIO import StringIO
 
 import numpy as np
-import scipy.ndimage
 
 from cellprofiler.preferences import set_headless
 
@@ -16,15 +14,12 @@ set_headless()
 
 from cellprofiler.modules.tests import read_example_image
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.align as A
-
-from cellprofiler.modules.loadimages import pathname2url
 
 
 class TestAlign(unittest.TestCase):

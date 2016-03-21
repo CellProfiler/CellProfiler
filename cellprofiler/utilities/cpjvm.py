@@ -1,8 +1,5 @@
 """cpjvm.py - CellProfiler-specific JVM utilities"""
 
-import javabridge
-import bioformats
-import glob
 import logging
 import os
 import sys

@@ -1,8 +1,6 @@
 '''metadatadlg.py - dialog for editing an expression that might contain metadata
 '''
 
-import re
-
 import wx
 import wx.lib.masked
 

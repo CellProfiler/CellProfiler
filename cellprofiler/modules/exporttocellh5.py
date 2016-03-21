@@ -11,6 +11,8 @@ if you move them to a new folder.
 import os
 import tempfile
 
+import cellh5
+import cellh5.cellh5write
 import h5py
 import numpy as np
 import scipy.ndimage
@@ -18,17 +20,7 @@ import scipy.ndimage
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-from cellprofiler.gui.help import \
-    USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 from cellprofiler.modules.identify import R_PARENT
-from cellprofiler.preferences import \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.settings import YES, NO
-from cellprofiler.gui.help import \
-    USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-import cellh5
-import cellh5.cellh5write
-import numpy as np
 
 OFF_OBJECTS_COUNT = 0
 OFF_IMAGES_COUNT = 1

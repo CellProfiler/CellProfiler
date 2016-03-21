@@ -165,7 +165,6 @@ class MergeOutputFiles(cpm.CPModule):
 
     @staticmethod
     def on_help(event, list_control):
-        import cellprofiler.modules
         from cellprofiler.gui.htmldialog import HTMLDialog
         dlg = HTMLDialog(
                 list_control, 'Help on module,"%s"' % MergeOutputFiles.module_name, __doc__)
@@ -389,7 +388,6 @@ class MergeOutputFiles(cpm.CPModule):
 
 
 if __name__ == "__main__":
-    import cellprofiler.modules
     import wx
 
     app = wx.PySimpleApp(False)

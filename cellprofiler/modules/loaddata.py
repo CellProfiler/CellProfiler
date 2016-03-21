@@ -151,10 +151,8 @@ See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics<
 '''
 
 import csv
-import hashlib
 import logging
 import os
-import sys
 
 import numpy as np
 
@@ -169,7 +167,6 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
 import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
@@ -184,9 +181,8 @@ from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH
 from cellprofiler.modules.loadimages import bad_sizes_warning
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.modules.loadimages import pathname2url, url2pathname
-from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler.preferences import DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
+    ABSOLUTE_FOLDER_NAME
 
 IMAGE_CATEGORIES = (C_URL, C_FILE_NAME, C_PATH_NAME)
 OBJECTS_CATEGORIES = (C_OBJECTS_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME)

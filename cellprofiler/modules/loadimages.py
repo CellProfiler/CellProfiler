@@ -39,16 +39,12 @@ filename, if requested.</li>
 See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
 '''
 
-import cgi
 import hashlib
-import httplib
 import logging
 import os
 import re
-import stat
 import sys
 import tempfile
-import traceback
 import urllib
 import urlparse
 
@@ -58,27 +54,22 @@ logger = logging.getLogger(__name__)
 cached_file_lists = {}
 
 import scipy.io.matlab.mio
-import uuid
 
 import cellprofiler.objects as cpo
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
 import cellprofiler.measurements as cpmeas
-from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import centrosome.outline
 import identify as I
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.preferences import \
-    standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
+    DEFAULT_INPUT_FOLDER_NAME, \
     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, \
     get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
     get_headless
-from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, REGEXP_HELP_REF
 from cellprofiler.gui.errordialog import show_warning
 
 from cellprofiler.measurements import \

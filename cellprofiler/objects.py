@@ -2,9 +2,9 @@
 """
 
 import numpy
-from centrosome.index import Indexes, all_pairs
-from centrosome.outline import outline
-from scipy.sparse import coo_matrix
+import centrosome.index
+import centrosome.outline
+import scipy.sparse
 import decorator
 
 OBJECT_TYPE_NAME = "objects"
@@ -244,7 +244,7 @@ class Objects(object):
         # the most similar colors in the color space for objects that
         # don't overlap.
         #
-        all_labels = [(outline(label), indexes) for label, indexes in self.get_labels()]
+        all_labels = [(centrosome.outline.outline(label), indexes) for label, indexes in self.get_labels()]
         image = numpy.zeros(list(all_labels[0][0].shape) + [3], numpy.float32)
         #
         # Find out how many unique labels in each
@@ -351,10 +351,10 @@ class Objects(object):
         # each row (axis = 0) is a parent
         # each column (axis = 1) is a child
         #
-        return coo_matrix((numpy.ones((not_zero_count,)),
-                           (parent_labels[not_zero],
+        return scipy.sparse.coo_matrix((numpy.ones((not_zero_count,)),
+                                        (parent_labels[not_zero],
                             child_labels[not_zero])),
-                          shape=(parent_count + 1, child_count + 1)).toarray()
+                                       shape=(parent_count + 1, child_count + 1)).toarray()
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):
@@ -382,12 +382,12 @@ class Objects(object):
         child_linear_ij = child_ijv[:, 0] + \
                           dim_i * child_ijv[:, 1].astype(numpy.uint64)
 
-        parent_matrix = coo_matrix((numpy.ones((parent_ijv.shape[0],)),
-                                    (parent_ijv[:, 2], parent_linear_ij)),
-                                   shape=(parent_count + 1, dim_i * dim_j))
-        child_matrix = coo_matrix((numpy.ones((child_ijv.shape[0],)),
-                                   (child_linear_ij, child_ijv[:, 2])),
-                                  shape=(dim_i * dim_j, child_count + 1))
+        parent_matrix = scipy.sparse.coo_matrix((numpy.ones((parent_ijv.shape[0],)),
+                                                 (parent_ijv[:, 2], parent_linear_ij)),
+                                                shape=(parent_count + 1, dim_i * dim_j))
+        child_matrix = scipy.sparse.coo_matrix((numpy.ones((child_ijv.shape[0],)),
+                                                (child_linear_ij, child_ijv[:, 2])),
+                                               shape=(dim_i * dim_j, child_count + 1))
         # I surely do not understand the sparse code.  Converting both
         # arrays to csc gives the best peformance... Why not p.csr and
         # c.csc?
@@ -722,7 +722,7 @@ class Segmentation(object):
         breaks = numpy.hstack(([0], numpy.where(mask)[0] + 1, [len(labels)]))
         firsts = breaks[:-1]
         counts = breaks[1:] - firsts
-        indexer = Indexes(counts)
+        indexer = centrosome.index.Indexes(counts)
         #
         # Eliminate the locations that are singly labeled
         #
@@ -737,7 +737,7 @@ class Segmentation(object):
         # There are n * n-1 pairs for each coordinate (n = # labels)
         # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs
         #
-        pairs = all_pairs(numpy.max(counts))
+        pairs = centrosome.index.all_pairs(numpy.max(counts))
         pair_counts = counts * (counts - 1)
         #
         # Create an indexer for the inputs (indexes) and for the outputs
@@ -746,8 +746,8 @@ class Segmentation(object):
         # Remember idx points into sort_order which points into labels
         # to get the nth label, grouped into consecutive positions.
         #
-        input_indexer = Indexes(counts)
-        output_indexer = Indexes(pair_counts)
+        input_indexer = centrosome.index.Indexes(counts)
+        output_indexer = centrosome.index.Indexes(pair_counts)
         #
         # The start of the run of overlaps and the offsets
         #

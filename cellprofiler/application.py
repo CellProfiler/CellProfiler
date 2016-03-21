@@ -4,7 +4,7 @@
 import sys
 import wx
 import cellprofiler.preferences
-from cellprofiler.gui.errordialog import display_error_dialog
+import cellprofiler.gui.errordialog
 import cellprofiler.utilities.thread_excepthook
 
 cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
@@ -40,8 +40,8 @@ class Application(wx.App):
         def show_errordialog(type, exc, tb):
             def doit():
                 cellprofiler.preferences.cancel_progress()
-                display_error_dialog(self.frame, exc, None, tb=tb, continue_only=True,
-                                     message="Exception in CellProfiler core processing")
+
+                cellprofiler.gui.errordialog.display_error_dialog(self.frame, exc, None, tb=tb, continue_only=True, message="Exception in CellProfiler core processing")
                 # continue is really the only choice
 
             wx.CallAfter(doit)
@@ -99,8 +99,6 @@ class Application(wx.App):
 
         wx.CallAfter(cb2)
 
-
-# end of class CellProfilerApp
 
 if __name__ == "__main__":
     CellProfilerApp = Application(0)

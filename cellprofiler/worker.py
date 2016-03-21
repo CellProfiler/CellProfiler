@@ -128,14 +128,8 @@ import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
-from cellprofiler.analysis import \
-    PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
-    NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
-    DisplayPostGroupRequest, AnalysisCancelRequest, \
-    ExceptionReport, DebugWaiting, DebugComplete, \
-    ImageSetSuccess, ImageSetSuccessWithDictionary, \
-    SharedDictionaryRequest, UpstreamExit, \
-    OmeroLoginRequest
+from cellprofiler.utilities.zmqrequest import UpstreamExit
+from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, DisplayPostGroupRequest, AnalysisCancelRequest, ExceptionReport, DebugWaiting, DebugComplete, ImageSetSuccess, ImageSetSuccessWithDictionary, SharedDictionaryRequest, OmeroLoginRequest
 import javabridge
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 import numpy

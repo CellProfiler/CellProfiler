@@ -12,7 +12,6 @@ import cPickle
 import struct
 import zlib
 import numpy
-from numpy import fromstring, uint8, uint16
 
 logger = logging.getLogger(__name__)
 
@@ -960,5 +959,5 @@ def readc01(fname):
     # skip 12 bytes
     g.seek(12, 1)
 
-    data = fromstring(g.read(), uint16 if nbits == 16 else uint8, x * y)
+    data = numpy.fromstring(g.read(), numpy.uint16 if nbits == 16 else numpy.uint8, x * y)
     return data.reshape(x, y).T

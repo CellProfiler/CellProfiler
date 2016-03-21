@@ -27,7 +27,6 @@ if sys.platform.startswith('win'):
         libzmq = os.path.join(here, 'libzmq.dll')
         if os.path.exists(libzmq):
             ctypes.cdll.LoadLibrary(libzmq)
-import zmq
 
 #
 # CellProfiler expects NaN as a result during calculation

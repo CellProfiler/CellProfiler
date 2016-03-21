@@ -52,10 +52,11 @@ def html_color(rgb):
     '''Return an HTML color for a given stain'''
     rgb = np.exp(-np.array(rgb)) * 255
     rgb = rgb.astype(int)
-    color = hex((rgb[0] * 256 + rgb[1])*256 + rgb[2])
+    color = hex((rgb[0] * 256 + rgb[1]) * 256 + rgb[2])
     if color.endswith("L"):
         color = color[:-1]
-    return "#"+color[2:]
+    return "#" + color[2:]
+
 
 CHOICE_HEMATOXYLIN = "Hematoxylin"
 ST_HEMATOXYLIN = (0.644, 0.717, 0.267)
@@ -86,44 +87,44 @@ ST_METHYL_GREEN = (0.980, 0.144, 0.133)
 COLOR_METHYL_GREEN = html_color(ST_METHYL_GREEN)
 
 CHOICE_AEC = "AEC"
-ST_AEC = ( 0.274, 0.679, 0.680)
+ST_AEC = (0.274, 0.679, 0.680)
 COLOR_AEC = html_color(ST_AEC)
 
 CHOICE_ANILINE_BLUE = "Aniline blue"
-ST_ANILINE_BLUE = ( 0.853, 0.509, 0.113)
+ST_ANILINE_BLUE = (0.853, 0.509, 0.113)
 COLOR_ANILINE_BLUE = html_color(ST_ANILINE_BLUE)
 
 CHOICE_AZOCARMINE = "Azocarmine"
-ST_AZOCARMINE = ( 0.071, 0.977, 0.198)
+ST_AZOCARMINE = (0.071, 0.977, 0.198)
 COLOR_AZOCARMINE = html_color(ST_AZOCARMINE)
 
 CHOICE_ALICAN_BLUE = "Alican blue"
-ST_ALICAN_BLUE = ( 0.875, 0.458, 0.158)
+ST_ALICAN_BLUE = (0.875, 0.458, 0.158)
 COLOR_ALICAN_BLUE = html_color(ST_ALICAN_BLUE)
 
 CHOICE_PAS = "PAS"
-ST_PAS = ( 0.175, 0.972, 0.155)
+ST_PAS = (0.175, 0.972, 0.155)
 COLOR_PAS = html_color(ST_PAS)
 
 CHOICE_HEMATOXYLIN_AND_PAS = "Hematoxylin and PAS"
-ST_HEMATOXYLIN_AND_PAS = ( 0.553, 0.754, 0.354)
+ST_HEMATOXYLIN_AND_PAS = (0.553, 0.754, 0.354)
 COLOR_HEMATOXYLIN_AND_PAS = html_color(ST_HEMATOXYLIN_AND_PAS)
 
 CHOICE_FEULGEN = "Feulgen"
-ST_FEULGEN = ( 0.464, 0.830, 0.308)
+ST_FEULGEN = (0.464, 0.830, 0.308)
 COLOR_FEULGEN = html_color(ST_FEULGEN)
 
 CHOICE_METHYLENE_BLUE = "Methylene blue"
-ST_METHYLENE_BLUE  = ( 0.553, 0.754, 0.354)
-COLOR_METHYLENE_BLUE  = html_color(ST_METHYLENE_BLUE)
+ST_METHYLENE_BLUE = (0.553, 0.754, 0.354)
+COLOR_METHYLENE_BLUE = html_color(ST_METHYLENE_BLUE)
 
 CHOICE_ORANGE_G = "Orange-G"
-ST_ORANGE_G  = ( 0.107, 0.368, 0.923)
-COLOR_ORANGE_G  = html_color(ST_ORANGE_G)
+ST_ORANGE_G = (0.107, 0.368, 0.923)
+COLOR_ORANGE_G = html_color(ST_ORANGE_G)
 
 CHOICE_PONCEAU_FUCHSIN = "Ponceau-fuchsin"
-ST_PONCEAU_FUCHSIN  = ( 0.100,  0.737,  0.668)
-COLOR_PONCEAU_FUCHSIN  = html_color(ST_PONCEAU_FUCHSIN)
+ST_PONCEAU_FUCHSIN = (0.100, 0.737, 0.668)
+COLOR_PONCEAU_FUCHSIN = html_color(ST_PONCEAU_FUCHSIN)
 
 CHOICE_CUSTOM = "Custom"
 
@@ -142,7 +143,7 @@ STAIN_DICTIONARY = {
     CHOICE_METHYL_BLUE: ST_METHYL_BLUE,
     CHOICE_METHYLENE_BLUE: ST_METHYLENE_BLUE,
     CHOICE_METHYL_GREEN: ST_METHYL_GREEN,
-    CHOICE_ORANGE_G : ST_ORANGE_G,
+    CHOICE_ORANGE_G: ST_ORANGE_G,
     CHOICE_PAS: ST_PAS,
     CHOICE_PONCEAU_FUCHSIN: ST_PONCEAU_FUCHSIN}
 
@@ -157,6 +158,7 @@ STAINS_BY_POPULARITY = (
 FIXED_SETTING_COUNT = 2
 VARIABLE_SETTING_COUNT = 5
 
+
 class UnmixColors(cpm.CPModule):
     module_name = "UnmixColors"
     category = "Image Processing"
@@ -167,38 +169,38 @@ class UnmixColors(cpm.CPModule):
         self.stain_count = cps.HiddenCount(self.outputs, "Stain count")
 
         self.input_image_name = cps.ImageNameSubscriber(
-            "Select the input color image", cps.NONE, doc = """
+                "Select the input color image", cps.NONE, doc="""
             Choose the name of the histologically stained color image
             loaded or created by some prior module.""")
 
         self.add_image(False)
 
         self.add_image_button = cps.DoSomething(
-            "", "Add another stain", self.add_image,doc = """
+                "", "Add another stain", self.add_image, doc="""
             Press this button to add another stain to the list.
             You will be able to name the image produced and to either pick
             the stain from a list of precalibrated stains or to enter
             custom values for the stain's red, green and blue absorbance.""")
 
-    def add_image(self, can_remove = True):
+    def add_image(self, can_remove=True):
         group = cps.SettingsGroup()
         group.can_remove = can_remove
         if can_remove:
             group.append("divider", cps.Divider())
         idx = len(self.outputs)
         default_name = STAINS_BY_POPULARITY[idx % len(STAINS_BY_POPULARITY)]
-        default_name = default_name.replace(" ","")
+        default_name = default_name.replace(" ", "")
 
         group.append("image_name", cps.ImageNameProvider(
-            "Name the output name", default_name,doc = """
+                "Name the output name", default_name, doc="""
             Use this setting to name one of the images produced by the
             module for a particular stain. The image can be used in
             subsequent modules in the pipeline."""))
 
-        choices = list(sorted(STAIN_DICTIONARY.keys())) + [ CHOICE_CUSTOM ]
+        choices = list(sorted(STAIN_DICTIONARY.keys())) + [CHOICE_CUSTOM]
 
         group.append("stain_choice", cps.Choice(
-            "Stain", choices = choices,doc = """
+                "Stain", choices=choices, doc="""
             Use this setting to choose the absorbance values for a
             particular stain. The stains are:
             <br>
@@ -232,31 +234,31 @@ class UnmixColors(cpm.CPModule):
             """ % globals()))
 
         group.append("red_absorbance", cps.Float(
-            "Red absorbance", 0.5, 0, 1,doc = """
+                "Red absorbance", 0.5, 0, 1, doc="""
             <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
             The red absorbance setting estimates the dye's
             absorbance of light in the red channel.You should enter a value
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
-            value automatically."""%globals()))
+            value automatically.""" % globals()))
 
         group.append("green_absorbance", cps.Float(
-            "Green absorbance", 0.5, 0, 1,doc = """
+                "Green absorbance", 0.5, 0, 1, doc="""
             <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
             The green absorbance setting estimates the dye's
             absorbance of light in the green channel. You should enter a value
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
-            value automatically."""%globals()))
+            value automatically.""" % globals()))
 
         group.append("blue_absorbance", cps.Float(
-            "Blue absorbance", 0.5, 0, 1,doc = """
+                "Blue absorbance", 0.5, 0, 1, doc="""
             <i>(Used only if %(CHOICE_CUSTOM)s is selected for the stain)</i><br>
             The blue absorbance setting estimates the dye's
             absorbance of light in the blue channel. You should enter a value
             between 0 and 1 where 0 is no absorbance and 1 is complete
             absorbance. You can use the estimator to calculate this
-            value automatically."""%globals()))
+            value automatically.""" % globals()))
 
         def on_estimate():
             result = self.estimate_absorbance()
@@ -266,8 +268,8 @@ class UnmixColors(cpm.CPModule):
                  group.blue_absorbance.value) = result
 
         group.append("estimator_button", cps.DoSomething(
-            "Estimate absorbance from image",
-            "Estimate", on_estimate,doc = """
+                "Estimate absorbance from image",
+                "Estimate", on_estimate, doc="""
             Press this button to load an image of a sample stained
             only with the dye of interest. <b>UnmixColors</b> will estimate
             appropriate red, green and blue absorbance values from the
@@ -275,12 +277,12 @@ class UnmixColors(cpm.CPModule):
 
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(
-                "", "Remove this image", self.outputs, group))
+                    "", "Remove this image", self.outputs, group))
         self.outputs.append(group)
 
     def settings(self):
         '''The settings as saved to or loaded from the pipeline'''
-        result = [ self.stain_count, self.input_image_name]
+        result = [self.stain_count, self.input_image_name]
         for output in self.outputs:
             result += [output.image_name, output.stain_choice,
                        output.red_absorbance, output.green_absorbance,
@@ -289,14 +291,14 @@ class UnmixColors(cpm.CPModule):
 
     def visible_settings(self):
         '''The settings visible to the user'''
-        result = [ self.input_image_name ]
+        result = [self.input_image_name]
         for output in self.outputs:
             if output.can_remove:
                 result += [output.divider]
             result += [output.image_name, output.stain_choice]
             if output.stain_choice == CHOICE_CUSTOM:
-                result += [ output.red_absorbance, output.green_absorbance,
-                            output.blue_absorbance, output.estimator_button]
+                result += [output.red_absorbance, output.green_absorbance,
+                           output.blue_absorbance, output.estimator_button]
             if output.can_remove:
                 result += [output.remover]
         result += [self.add_image_button]
@@ -306,7 +308,7 @@ class UnmixColors(cpm.CPModule):
         '''Unmix the colors on an image in the image set'''
         input_image_name = self.input_image_name.value
         input_image = workspace.image_set.get_image(input_image_name,
-                                                    must_be_rgb = True)
+                                                    must_be_rgb=True)
         input_pixels = input_image.pixel_data
         if self.show_window:
             workspace.display_data.input_image = input_pixels
@@ -345,37 +347,37 @@ class UnmixColors(cpm.CPModule):
         image[image > 1] = 1
         image = 1 - image
         image_name = output.image_name.value
-        output_image = cpi.Image(image, parent_image = input_image)
+        output_image = cpi.Image(image, parent_image=input_image)
         workspace.image_set.add(image_name, output_image)
         if self.show_window:
             workspace.display_data.outputs[image_name] = image
 
     def display(self, workspace, figure):
         '''Display all of the images in a figure'''
-        figure.set_subplots((len(self.outputs)+1, 1))
+        figure.set_subplots((len(self.outputs) + 1, 1))
         input_image = workspace.display_data.input_image
-        figure.subplot_imshow_color(0,0, input_image,
-                                    title = self.input_image_name.value)
-        ax = figure.subplot(0,0)
+        figure.subplot_imshow_color(0, 0, input_image,
+                                    title=self.input_image_name.value)
+        ax = figure.subplot(0, 0)
         for i, output in enumerate(self.outputs):
             image_name = output.image_name.value
             pixel_data = workspace.display_data.outputs[image_name]
-            figure.subplot_imshow_grayscale(i+1, 0, pixel_data,
-                                            title = image_name,
-                                            sharexy = ax)
+            figure.subplot_imshow_grayscale(i + 1, 0, pixel_data,
+                                            title=image_name,
+                                            sharexy=ax)
 
     def get_absorbances(self, output):
         '''Given one of the outputs, return the red, green and blue absorbance'''
 
         if output.stain_choice == CHOICE_CUSTOM:
             result = np.array(
-                (output.red_absorbance.value,
-                 output.green_absorbance.value,
-                 output.blue_absorbance.value))
+                    (output.red_absorbance.value,
+                     output.green_absorbance.value,
+                     output.blue_absorbance.value))
         else:
             result = STAIN_DICTIONARY[output.stain_choice.value]
         result = np.array(result)
-        result = result / np.sqrt(np.sum(result**2))
+        result = result / np.sqrt(np.sum(result ** 2))
         return result
 
     def get_inverse_absorbances(self, output):
@@ -390,7 +392,7 @@ class UnmixColors(cpm.CPModule):
         absorbance_array = np.array([self.get_absorbances(o)
                                      for o in self.outputs])
         absorbance_matrix = np.matrix(absorbance_array)
-        return np.array(absorbance_matrix.I[:,idx]).flatten()
+        return np.array(absorbance_matrix.I[:, idx]).flatten()
 
     def estimate_absorbance(self):
         '''Load an image and use it to estimate the absorbance of a stain
@@ -402,12 +404,12 @@ class UnmixColors(cpm.CPModule):
         import wx
 
         dlg = wx.FileDialog(
-            None, "Choose reference image",
-            cpprefs.get_default_image_directory())
+                None, "Choose reference image",
+                cpprefs.get_default_image_directory())
         dlg.Wildcard = ("Image file (*.tif, *.tiff, *.bmp, *.png, *.gif, *.jpg)|"
                         "*.tif;*.tiff;*.bmp;*.png;*.gif;*.jpg")
         if dlg.ShowModal() == wx.ID_OK:
-            lip = LoadImagesImageProvider("dummy","", dlg.Path)
+            lip = LoadImagesImageProvider("dummy", "", dlg.Path)
             image = lip.provide_image(None).pixel_data
             if image.ndim < 3:
                 wx.MessageBox("You must calibrate the absorbance using a color image",
@@ -419,7 +421,7 @@ class UnmixColors(cpm.CPModule):
             #
             eps = 1.0 / 256.0 / 2.0
             log_image = np.log(image + eps)
-            data = [- log_image[:,:,i].flatten() for i in range(3)]
+            data = [- log_image[:, :, i].flatten() for i in range(3)]
             #
             # Order channels by strength
             #
@@ -431,7 +433,7 @@ class UnmixColors(cpm.CPModule):
             # is each in turn.
             #
             strongest = data[order[-1]][:, np.newaxis]
-            absorbances = [ lstsq(strongest, d)[0][0] for d in data ]
+            absorbances = [lstsq(strongest, d)[0][0] for d in data]
             #
             # Normalize
             #
@@ -447,19 +449,19 @@ class UnmixColors(cpm.CPModule):
             self.add_image()
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
-        if from_matlab and variable_revision_number == 0: # If coming from DifferentiateStains, no variable revision number
+        if from_matlab and variable_revision_number == 0:  # If coming from DifferentiateStains, no variable revision number
             setting_values = list(setting_values)
-            stain1_absorbance = str.split(setting_values[5],',')
-            stain2_absorbance = str.split(setting_values[6],',')
-            new_setting_values = ['2', # Stain count
-                                  setting_values[0],     # Input image
-                                  setting_values[1],     # Output image name1
-                                  CHOICE_CUSTOM,         # Output stain1 choice for stain1
+            stain1_absorbance = str.split(setting_values[5], ',')
+            stain2_absorbance = str.split(setting_values[6], ',')
+            new_setting_values = ['2',  # Stain count
+                                  setting_values[0],  # Input image
+                                  setting_values[1],  # Output image name1
+                                  CHOICE_CUSTOM,  # Output stain1 choice for stain1
                                   str(float(stain1_absorbance[0])),  # Red absorbance for stain1
                                   str(float(stain1_absorbance[1])),  # Green absorbance for stain1
                                   str(float(stain1_absorbance[2])),  # Blue absorbance for stain1
-                                  setting_values[2],     # Output image name2
-                                  CHOICE_CUSTOM,         # Output stain1 choice for stain2
+                                  setting_values[2],  # Output image name2
+                                  CHOICE_CUSTOM,  # Output stain1 choice for stain2
                                   str(float(stain2_absorbance[0])),  # Red absorbance for stain2
                                   str(float(stain2_absorbance[1])),  # Green absorbance for stain2
                                   str(float(stain2_absorbance[2]))]  # Blue absorbance for stain2

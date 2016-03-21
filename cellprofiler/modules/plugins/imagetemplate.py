@@ -46,6 +46,7 @@ GRADIENT_MAGNITUDE = "Gradient magnitude"
 GRADIENT_DIRECTION_X = "Gradient direction - X"
 GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 
+
 ###################################
 #
 # The module class
@@ -88,11 +89,11 @@ class ImageTemplate(cpm.CPModule):
         # which can then be used as inputs in your module.
         #
         self.input_image_name = cps.ImageNameSubscriber(
-            # The text to the left of the edit box
-            "Input image name:",
-            # HTML help that gets displayed when the user presses the
-            # help button to the right of the edit box
-            doc = """This is the image that the module operates on. You can
+                # The text to the left of the edit box
+                "Input image name:",
+                # HTML help that gets displayed when the user presses the
+                # help button to the right of the edit box
+                doc="""This is the image that the module operates on. You can
             choose any image that is made available by a prior module.
             <br>
             <b>ImageTemplate</b> will do something to this image.
@@ -102,30 +103,30 @@ class ImageTemplate(cpm.CPModule):
         # modules.
         #
         self.output_image_name = cps.ImageNameProvider(
-            "Output image name:",
-            # The second parameter holds a suggested name for the image.
-            "OutputImage",
-            doc = """This is the image resulting from the operation.""")
+                "Output image name:",
+                # The second parameter holds a suggested name for the image.
+                "OutputImage",
+                doc="""This is the image resulting from the operation.""")
         #
         # Here's a choice box - the user gets a drop-down list of what
         # can be done.
         #
         self.gradient_choice = cps.Choice(
-            "Gradient choice:",
-            # The choice takes a list of possibilities. The first one
-            # is the default - the one the user will typically choose.
-            [ GRADIENT_MAGNITUDE, GRADIENT_DIRECTION_X, GRADIENT_DIRECTION_Y],
-            #
-            # Here, in the documentation, we do a little trick so that
-            # we use the actual text that's displayed in the documentation.
-            #
-            # %(GRADIENT_MAGNITUDE)s will get changed into "Gradient magnitude"
-            # etc. Python will look in globals() for the "GRADIENT_" names
-            # and paste them in where it sees %(GRADIENT_...)s
-            #
-            # The <ul> and <li> tags make a neat bullet-point list in the docs
-            #
-            doc = """Choose what to calculate:
+                "Gradient choice:",
+                # The choice takes a list of possibilities. The first one
+                # is the default - the one the user will typically choose.
+                [GRADIENT_MAGNITUDE, GRADIENT_DIRECTION_X, GRADIENT_DIRECTION_Y],
+                #
+                # Here, in the documentation, we do a little trick so that
+                # we use the actual text that's displayed in the documentation.
+                #
+                # %(GRADIENT_MAGNITUDE)s will get changed into "Gradient magnitude"
+                # etc. Python will look in globals() for the "GRADIENT_" names
+                # and paste them in where it sees %(GRADIENT_...)s
+                #
+                # The <ul> and <li> tags make a neat bullet-point list in the docs
+                #
+                doc="""Choose what to calculate:
             <ul>
             <li><i>%(GRADIENT_MAGNITUDE)s</i> to calculate the
             magnitude of the gradient at each pixel.</li>
@@ -142,10 +143,10 @@ class ImageTemplate(cpm.CPModule):
         # A binary setting displays a checkbox.
         #
         self.automatic_smoothing = cps.Binary(
-            "Automatically choose the smoothing scale?",
-            # The default value is to choose automatically
-            True,
-            doc = """The module will automatically choose a
+                "Automatically choose the smoothing scale?",
+                # The default value is to choose automatically
+                True,
+                doc="""The module will automatically choose a
             smoothing scale for you if you leave this checked.""")
         #
         # We do a little smoothing which supplies a scale to the gradient.
@@ -155,14 +156,14 @@ class ImageTemplate(cpm.CPModule):
         # an invalid scale.
         #
         self.scale = cps.Float(
-            "Scale:",
-            # The default value is 1 - a short-range scale
-            1,
-            # We don't let the user type in really small values
-            minval = .1,
-            # or large values
-            maxval = 100,
-            doc = """This is a scaling factor that supplies the sigma for
+                "Scale:",
+                # The default value is 1 - a short-range scale
+                1,
+                # We don't let the user type in really small values
+                minval=.1,
+                # or large values
+                maxval=100,
+                doc="""This is a scaling factor that supplies the sigma for
             a gaussian that's used to smooth the image. The gradient is
             calculated on the smoothed image, so large scales will give
             you long-range gradients and small scales will give you
@@ -188,8 +189,8 @@ class ImageTemplate(cpm.CPModule):
     # for display.
     #
     def visible_settings(self):
-        result =  [self.input_image_name, self.output_image_name,
-                   self.gradient_choice, self.automatic_smoothing]
+        result = [self.input_image_name, self.output_image_name,
+                  self.gradient_choice, self.automatic_smoothing]
         #
         # Show the user the scale only if self.wants_smoothing is checked
         #
@@ -219,7 +220,7 @@ class ImageTemplate(cpm.CPModule):
         # and warn the user.
         #
         input_image = image_set.get_image(input_image_name,
-                                          must_be_grayscale = True)
+                                          must_be_grayscale=True)
         #
         # Get the pixels - these are a 2-d Numpy array.
         #
@@ -234,7 +235,7 @@ class ImageTemplate(cpm.CPModule):
             fft = np.fft.fft2(pixels)
             power2 = np.sqrt((fft * fft.conjugate()).real)
             mode = np.argwhere(power2 == power2.max())[0]
-            scale = np.sqrt(np.sum((mode+.5)**2))
+            scale = np.sqrt(np.sum((mode + .5) ** 2))
         else:
             scale = self.scale.value
         g = gaussian_gradient_magnitude(pixels, scale)
@@ -245,7 +246,7 @@ class ImageTemplate(cpm.CPModule):
             # and the y axis is 0
             x = correlate1d(g, [-1, 0, 1], 1)
             y = correlate1d(g, [-1, 0, 1], 0)
-            norm = np.sqrt(x**2+y**2)
+            norm = np.sqrt(x ** 2 + y ** 2)
             if self.gradient_choice == GRADIENT_DIRECTION_X:
                 output_pixels = .5 + x / norm / 2
             else:
@@ -255,7 +256,7 @@ class ImageTemplate(cpm.CPModule):
         # about the parent image - the child inherits the parent's
         # cropping and masking, but it's not absolutely necessary
         #
-        output_image = cpi.Image(output_pixels, parent_image = input_image)
+        output_image = cpi.Image(output_pixels, parent_image=input_image)
         image_set.add(output_image_name, output_image)
         #
         # Save intermediate results for display if the window frame is on
@@ -274,29 +275,29 @@ class ImageTemplate(cpm.CPModule):
         # use figure.subplot or figure.subplot_imshow to get axes to draw on
         # so we pretty much ignore the figure.
         #
-        figure = workspace.create_or_find_figure(subplots=(3,1))
+        figure = workspace.create_or_find_figure(subplots=(3, 1))
         #
         # Show the user the input image
         #
         figure.subplot_imshow_grayscale(
-            0, 0, # show the image in the first row and column
-            workspace.display_data.input_pixels,
-            title = self.input_image_name.value)
-        lead_subplot = figure.subplot(0,0)
+                0, 0,  # show the image in the first row and column
+                workspace.display_data.input_pixels,
+                title=self.input_image_name.value)
+        lead_subplot = figure.subplot(0, 0)
         #
         # Show the user the gradient image, linking it to the first
         # so that they zoom and pan together
         #
         figure.subplot_imshow_grayscale(
-            1, 0, # show the image in the first row and second column
-            workspace.display_data.gradient,
-            title = "Gradient",
-            sharex = lead_subplot, sharey = lead_subplot)
+                1, 0,  # show the image in the first row and second column
+                workspace.display_data.gradient,
+                title="Gradient",
+                sharex=lead_subplot, sharey=lead_subplot)
         #
         # Show the user the final image
         #
         figure.subplot_imshow_grayscale(
-            2, 0, # show the image in the first row and last column
-            workspace.display_data.output_pixels,
-            title = self.output_image_name.value,
-            sharex = lead_subplot, sharey = lead_subplot)
+                2, 0,  # show the image in the first row and last column
+                workspace.display_data.output_pixels,
+                title=self.output_image_name.value,
+                sharex=lead_subplot, sharey=lead_subplot)

@@ -1,6 +1,6 @@
 """cellprofiler.utilities.setup - compiling files in the utilities module
 """
-__test__=False
+__test__ = False
 
 import logging
 import os
@@ -15,15 +15,17 @@ is_msvc = (is_win and sys.version_info[0] >= 2 and sys.version_info[1] >= 6)
 is_mingw = (is_win and not is_msvc)
 
 if not hasattr(sys, 'frozen'):
-    from distutils.core import setup,Extension
+    from distutils.core import setup, Extension
     from distutils.sysconfig import get_config_var
 
     try:
         from Cython.Distutils import build_ext
     except ImportError:
         import site
+
         site.addsitedir('../../site-packages')
         from Cython.Distutils import build_ext
+
 
     def configuration():
         extensions = []
@@ -35,12 +37,12 @@ if not hasattr(sys, 'frozen'):
                                      libraries=["shlwapi", "shell32", "ole32"],
                                      extra_link_args=extra_link_args)]
 
-        dict = { "name":"utilities",
-                 "description":"utility module for CellProfiler",
-                 "maintainer":"Lee Kamentsky",
-                 "maintainer_email":"leek@broad.mit.edu",
-                 "cmdclass": {'build_ext': build_ext},
-                 "ext_modules": extensions
+        dict = {"name": "utilities",
+                "description": "utility module for CellProfiler",
+                "maintainer": "Lee Kamentsky",
+                "maintainer_email": "leek@broad.mit.edu",
+                "cmdclass": {'build_ext': build_ext},
+                "ext_modules": extensions
                 }
         return dict
 

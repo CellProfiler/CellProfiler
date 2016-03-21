@@ -5,6 +5,7 @@ turning off new version checking.
 import wx
 import wx.html
 
+
 class NewVersionDialog(wx.Dialog):
     def __init__(self, parent, title, contents, url, check_pref, check_pref_callback, skip_callback):
         super(NewVersionDialog, self).__init__(parent, -1, title,
@@ -34,7 +35,7 @@ class NewVersionDialog(wx.Dialog):
         sizer.Add(html, 1, wx.EXPAND | wx.ALL, 5)
         sizer.Add(check_pref_later, 0, wx.ALIGN_RIGHT)
         sizer.AddSpacer(5)
-        sizer.Add(buttons_sizer, flag=wx.ALIGN_RIGHT|wx.EXPAND)
+        sizer.Add(buttons_sizer, flag=wx.ALIGN_RIGHT | wx.EXPAND)
 
         border = wx.BoxSizer()
         border.Add(sizer, 1, wx.EXPAND | wx.ALL, 5)
@@ -62,15 +63,17 @@ class NewVersionDialog(wx.Dialog):
 
     def go_to_url(self, evt):
         if not wx.LaunchDefaultBrowser(self.url):
-            wx.MessageBox("Could not open default browser (%s)"%(self.url), "Can't open browser", wx.ICON_EXCLAMATION)
+            wx.MessageBox("Could not open default browser (%s)" % (self.url), "Can't open browser", wx.ICON_EXCLAMATION)
 
 
 if __name__ == "__main__":
     def cb(new_pref):
         print "Pref changed to", new_pref
 
+
     def sk():
         print "skip this version"
+
 
     app = wx.PySimpleApp()
     dialog = NewVersionDialog(None, "New version available",

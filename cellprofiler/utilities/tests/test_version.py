@@ -5,6 +5,7 @@ import unittest
 
 import cellprofiler.utilities.version
 
+
 class TestVersion(unittest.TestCase):
     def test_01_01_test_version_number(self):
         '''Check that the version number is well-formed.'''

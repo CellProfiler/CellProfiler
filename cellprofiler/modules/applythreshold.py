@@ -32,8 +32,8 @@ TH_ABOVE_THRESHOLD = "Above threshold"
 '''# of non-threshold settings in current revision'''
 N_SETTINGS = 6
 
-class ApplyThreshold(Identify):
 
+class ApplyThreshold(Identify):
     module_name = "ApplyThreshold"
     variable_revision_number = 7
     category = "Image Processing"
@@ -43,16 +43,16 @@ class ApplyThreshold(Identify):
                              if method != TM_BINARY_IMAGE]
 
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image",doc = '''
+                "Select the input image", doc='''
             Choose the image to be thresholded.''')
 
         self.thresholded_image_name = cps.ImageNameProvider(
-            "Name the output image",
-            "ThreshBlue", doc = '''
+                "Name the output image",
+                "ThreshBlue", doc='''
             Enter a name for the thresholded image.''')
 
         self.binary = cps.Choice(
-            "Select the output image type", [GRAYSCALE, BINARY], doc = '''
+                "Select the output image type", [GRAYSCALE, BINARY], doc='''
             Two types of output images can be produced:<br>
             <ul>
             <li><i>%(GRAYSCALE)s:</i> The pixels that are retained after some pixels
@@ -62,12 +62,12 @@ class ApplyThreshold(Identify):
             <li><i>%(BINARY)s:</i> The pixels that are retained after some pixels are
             set to zero (based on your selections for thresholding options) will be
             white and all other pixels will be black (zeroes).</li>
-            </ul>'''%globals())
+            </ul>''' % globals())
 
         # if not binary:
         self.low_or_high = cps.Choice(
-            "Set pixels below or above the threshold to zero?",
-            [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD], doc="""
+                "Set pixels below or above the threshold to zero?",
+                [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD], doc="""
             <i>(Used only when "%(GRAYSCALE)s" thresholding is selected)</i><br>
             This option adjusts how pixels above or below the threshold are handled:
             <ul>
@@ -76,20 +76,20 @@ class ApplyThreshold(Identify):
             <li><i>%(TH_ABOVE_THRESHOLD)s:</i> Set the bright pixels above the
             threshold to zero.</li>
             </ul>
-            """%globals())
+            """ % globals())
 
         # if not binary and below threshold
 
         self.shift = cps.Binary(
-            "Subtract the threshold value from the remaining pixel intensities?", False, doc ='''
+                "Subtract the threshold value from the remaining pixel intensities?", False, doc='''
             <i>(Used only if the output image is %(GRAYSCALE)s and pixels below a given intensity are to be set to zero)</i><br>
-            Select <i>%(YES)s</i> to shift the value of the dim pixels by the threshold value.'''%globals())
+            Select <i>%(YES)s</i> to shift the value of the dim pixels by the threshold value.''' % globals())
 
         # if not binary and above threshold
 
         self.dilation = cps.Float(
-            "Number of pixels by which to expand the thresholding around those excluded bright pixels",
-            0.0, doc = '''
+                "Number of pixels by which to expand the thresholding around those excluded bright pixels",
+                0.0, doc='''
             <i>(Used only if the output image is grayscale and pixels above a given intensity are to be set to zero)</i><br>
             This setting is useful when attempting to exclude bright artifactual objects:
             first, set the threshold to exclude these bright objects; it may also be desirable to expand the
@@ -97,7 +97,6 @@ class ApplyThreshold(Identify):
 
         self.create_threshold_settings(threshold_methods)
         self.threshold_smoothing_choice.value = TSM_NONE
-
 
     def visible_settings(self):
         vv = [self.image_name, self.thresholded_image_name, self.binary]
@@ -119,10 +118,10 @@ class ApplyThreshold(Identify):
         """Return all settings in a consistent order"""
         return [self.image_name, self.thresholded_image_name,
                 self.binary, self.low_or_high,
-                self.shift, self.dilation] +\
+                self.shift, self.dilation] + \
                self.get_threshold_help_settings()
 
-    def run(self,workspace):
+    def run(self, workspace):
         """Run the module
 
         workspace    - the workspace contains:
@@ -136,7 +135,7 @@ class ApplyThreshold(Identify):
                                               must_be_grayscale=True)
         pixels = input.pixel_data.copy()
         binary_image, local_thresh = self.threshold_image(
-            self.image_name.value, workspace, wants_local_threshold=True)
+                self.image_name.value, workspace, wants_local_threshold=True)
         if self.binary != 'Grayscale':
             pixels = binary_image & input.mask
         else:
@@ -145,7 +144,7 @@ class ApplyThreshold(Identify):
                 if self.shift.value:
                     pixels[input.mask & binary_image] -= \
                         local_thresh if self.threshold_modifier == TM_GLOBAL \
-                        else local_thresh[input.mask & binary_image]
+                            else local_thresh[input.mask & binary_image]
             elif self.low_or_high == TH_ABOVE_THRESHOLD:
                 undilated = input.mask & binary_image
                 dilated = binary_dilation(undilated,
@@ -154,9 +153,9 @@ class ApplyThreshold(Identify):
                 pixels[dilated] = 0
             else:
                 raise NotImplementedError(
-                    """Threshold setting, "%s" is not "%s" or "%s".""" %
-                    (self.low_or_high.value, TH_BELOW_THRESHOLD,
-                     TH_ABOVE_THRESHOLD))
+                        """Threshold setting, "%s" is not "%s" or "%s".""" %
+                        (self.low_or_high.value, TH_BELOW_THRESHOLD,
+                         TH_ABOVE_THRESHOLD))
         output = cpimage.Image(pixels, parent_image=input)
         workspace.image_set.add(self.thresholded_image_name.value, output)
         if self.show_window:
@@ -172,17 +171,17 @@ class ApplyThreshold(Identify):
     def display(self, workspace, figure):
         figure.set_subplots((3, 1))
 
-        figure.subplot_imshow_grayscale(0,0, workspace.display_data.input_pixel_data,
-                              title = "Original image: %s" %
-                              self.image_name.value)
+        figure.subplot_imshow_grayscale(0, 0, workspace.display_data.input_pixel_data,
+                                        title="Original image: %s" %
+                                              self.image_name.value)
 
-        figure.subplot_imshow_grayscale(1,0, workspace.display_data.output_pixel_data,
-                              title = "Thresholded image: %s" %
-                              self.thresholded_image_name.value,
-                              sharexy = figure.subplot(0,0))
+        figure.subplot_imshow_grayscale(1, 0, workspace.display_data.output_pixel_data,
+                                        title="Thresholded image: %s" %
+                                              self.thresholded_image_name.value,
+                                        sharexy=figure.subplot(0, 0))
         figure.subplot_table(
-            2, 0, workspace.display_data.statistics,
-            workspace.display_data.col_labels)
+                2, 0, workspace.display_data.statistics,
+                workspace.display_data.col_labels)
 
     def get_measurement_objects_name(self):
         '''Return the name of the "objects" used to name thresholding measurements
@@ -203,7 +202,8 @@ class ApplyThreshold(Identify):
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         return self.get_threshold_measurement_objects(
-            pipeline, object_name, category, measurement)
+                pipeline, object_name, category, measurement)
+
     def upgrade_settings(self, setting_values,
                          variable_revision_number, module_name,
                          from_matlab):
@@ -211,34 +211,34 @@ class ApplyThreshold(Identify):
             raise NotImplementedError, ("TODO: Handle Matlab CP pipelines for "
                                         "ApplyThreshold with revision < 4")
         if from_matlab and variable_revision_number == 4:
-            setting_values = [ setting_values[0],  # ImageName
-                                setting_values[1],  # ThresholdedImageName
-                                None,
-                                None,
-                                None,
-                                setting_values[2],  # LowThreshold
-                                setting_values[3],  # Shift
-                                setting_values[4],  # HighThreshold
-                                setting_values[5],  # DilationValue
-                                TM_MANUAL,          # Manual thresholding
-                                setting_values[6],  # BinaryChoice
-                                "0,1",              # Threshold range
-                                "1",                # Threshold correction factor
-                                ".2",               # Object fraction
-                                cps.NONE              # Enclosing objects name
-                                ]
+            setting_values = [setting_values[0],  # ImageName
+                              setting_values[1],  # ThresholdedImageName
+                              None,
+                              None,
+                              None,
+                              setting_values[2],  # LowThreshold
+                              setting_values[3],  # Shift
+                              setting_values[4],  # HighThreshold
+                              setting_values[5],  # DilationValue
+                              TM_MANUAL,  # Manual thresholding
+                              setting_values[6],  # BinaryChoice
+                              "0,1",  # Threshold range
+                              "1",  # Threshold correction factor
+                              ".2",  # Object fraction
+                              cps.NONE  # Enclosing objects name
+                              ]
             setting_values[2] = (BINARY if float(setting_values[10]) > 0
-                                 else GRAYSCALE) # binary flag
+                                 else GRAYSCALE)  # binary flag
             setting_values[3] = (cps.YES if float(setting_values[5]) > 0
-                                 else cps.NO) # low threshold set
+                                 else cps.NO)  # low threshold set
             setting_values[4] = (cps.YES if float(setting_values[7]) > 0
-                                 else cps.NO) # high threshold set
+                                 else cps.NO)  # high threshold set
             variable_revision_number = 2
             from_matlab = False
         if (not from_matlab) and variable_revision_number == 1:
             setting_values = (setting_values[:9] +
                               [TM_MANUAL, setting_values[9], "O,1", "1",
-                               ".2",cps.NONE])
+                               ".2", cps.NONE])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
             # Added Otsu options
@@ -269,7 +269,7 @@ class ApplyThreshold(Identify):
                               setting_values[2],  # binary or gray
                               th,
                               setting_values[6],  # shift
-                              ] +setting_values[8:]
+                              ] + setting_values[8:]
             variable_revision_number = 4
 
         if (not from_matlab) and variable_revision_number == 4:
@@ -284,15 +284,15 @@ class ApplyThreshold(Identify):
 
         if (not from_matlab) and variable_revision_number == 6:
             image_name, thresholded_image_name, binary, low_or_high, \
-                shift, dilation, threshold_method, manual_threshold, \
-                threshold_range, threshold_correction_factor, \
-                object_fraction, enclosing_objects_name, \
-                two_class_otsu, use_weighted_variance, \
-                assign_middle_to_foreground, thresholding_measurement = \
+            shift, dilation, threshold_method, manual_threshold, \
+            threshold_range, threshold_correction_factor, \
+            object_fraction, enclosing_objects_name, \
+            two_class_otsu, use_weighted_variance, \
+            assign_middle_to_foreground, thresholding_measurement = \
                 setting_values[:16]
             setting_values = [
-                image_name, thresholded_image_name, binary, low_or_high,
-                shift, dilation ] + self.upgrade_legacy_threshold_settings(
+                                 image_name, thresholded_image_name, binary, low_or_high,
+                                 shift, dilation] + self.upgrade_legacy_threshold_settings(
                     threshold_method, TSM_NONE, threshold_correction_factor,
                     threshold_range, object_fraction, manual_threshold,
                     thresholding_measurement, cps.NONE, two_class_otsu,
@@ -303,5 +303,5 @@ class ApplyThreshold(Identify):
         # Upgrade the threshold settings
         #
         setting_values = setting_values[:N_SETTINGS] + \
-            self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
+                         self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
         return setting_values, variable_revision_number, from_matlab

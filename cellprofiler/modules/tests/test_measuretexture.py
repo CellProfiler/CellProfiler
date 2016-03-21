@@ -25,14 +25,15 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.tests import \
-     example_images_directory, maybe_download_example_image, \
-     maybe_download_sbs, github_url
+    example_images_directory, maybe_download_example_image, \
+    maybe_download_sbs, github_url
 
 INPUT_IMAGE_NAME = 'Cytoplasm'
 INPUT_OBJECTS_NAME = 'inputobjects'
-class TestMeasureTexture(unittest.TestCase):
 
-    def make_workspace(self, image, labels, convert = True, mask = None):
+
+class TestMeasureTexture(unittest.TestCase):
+    def make_workspace(self, image, labels, convert=True, mask=None):
         '''Make a workspace for testing MeasureTexture'''
         module = M.MeasureTexture()
         module.image_groups[0].image_name.value = INPUT_IMAGE_NAME
@@ -48,7 +49,7 @@ class TestMeasureTexture(unittest.TestCase):
                                   cpmeas.Measurements(),
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, convert=convert,
-                                                  mask = mask))
+                                                  mask=mask))
         objects = cpo.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, INPUT_OBJECTS_NAME)
@@ -78,14 +79,14 @@ class TestMeasureTexture(unittest.TestCase):
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()),3)
+        self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         #
         # image_name = OrigBlue
         # object_name = Nuclei
         # scale = 3,4,5
         #
-        self.assertTrue(isinstance(module,M.MeasureTexture))
+        self.assertTrue(isinstance(module, M.MeasureTexture))
         self.assertEqual(module.image_count.value, 1)
         self.assertEqual(module.image_groups[0].image_name.value, "OrigBlue")
 
@@ -94,7 +95,7 @@ class TestMeasureTexture(unittest.TestCase):
 
         self.assertEqual(module.scale_count.value, 3)
         for scale, expected in zip([x.scale.value
-                                    for x in module.scale_groups],[3,4,5]):
+                                    for x in module.scale_groups], [3, 4, 5]):
             self.assertEqual(scale, expected)
         self.assertEqual(module.gabor_angles, 4)
 
@@ -123,14 +124,14 @@ class TestMeasureTexture(unittest.TestCase):
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
         pipeline.load(fd)
-        self.assertEqual(len(pipeline.modules()),3)
+        self.assertEqual(len(pipeline.modules()), 3)
         module = pipeline.modules()[2]
         #
         # image_name = DNA, Cytoplasm
         # object_name = Nuclei
         # scale = 3,4,5
         #
-        self.assertTrue(isinstance(module,M.MeasureTexture))
+        self.assertTrue(isinstance(module, M.MeasureTexture))
         self.assertEqual(module.image_count.value, 1)
         self.assertEqual(module.image_groups[0].image_name.value, "OrigBlue")
 
@@ -139,7 +140,7 @@ class TestMeasureTexture(unittest.TestCase):
 
         self.assertEqual(module.scale_count.value, 3)
         for scale, expected in zip([x.scale.value
-                                    for x in module.scale_groups],[3,4,5]):
+                                    for x in module.scale_groups], [3, 4, 5]):
             self.assertEqual(scale, expected)
         self.assertEqual(module.gabor_angles.value, 3)
         self.assertTrue(module.wants_gabor)
@@ -176,11 +177,13 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
     Number of angles to compute for Gabor:6
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()),2)
+        self.assertEqual(len(pipeline.modules()), 2)
         for i, wants_gabor in enumerate((True, False)):
             module = pipeline.modules()[i]
             self.assertTrue(isinstance(module, M.MeasureTexture))
@@ -192,10 +195,10 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
             self.assertEqual(module.object_groups[1].object_name, "Nuclei")
             self.assertEqual(len(module.scale_groups), 2)
             self.assertEqual(module.scale_groups[0].scale, 3)
-            self.assertEqual(len(module.scale_groups[0].angles.get_selections()),1)
+            self.assertEqual(len(module.scale_groups[0].angles.get_selections()), 1)
             self.assertEqual(module.scale_groups[0].angles.get_selections()[0], M.H_HORIZONTAL)
             self.assertEqual(module.scale_groups[1].scale, 5)
-            self.assertEqual(len(module.scale_groups[1].angles.get_selections()),1)
+            self.assertEqual(len(module.scale_groups[1].angles.get_selections()), 1)
             self.assertEqual(module.scale_groups[1].angles.get_selections()[0], M.H_HORIZONTAL)
             self.assertEqual(module.wants_gabor, wants_gabor)
             self.assertEqual(module.gabor_angles, 6)
@@ -236,11 +239,13 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
     Number of angles to compute for Gabor:6
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()),2)
+        self.assertEqual(len(pipeline.modules()), 2)
         for i, wants_gabor in enumerate((True, False)):
             module = pipeline.modules()[i]
             self.assertTrue(isinstance(module, M.MeasureTexture))
@@ -253,12 +258,12 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
             self.assertEqual(len(module.scale_groups), 2)
             self.assertEqual(module.scale_groups[0].scale, 3)
             angles = module.scale_groups[0].angles.get_selections()
-            self.assertEqual(len(angles),2)
+            self.assertEqual(len(angles), 2)
             self.assertTrue(M.H_HORIZONTAL in angles)
             self.assertTrue(M.H_VERTICAL in angles)
 
             angles = module.scale_groups[1].angles.get_selections()
-            self.assertEqual(len(angles),2)
+            self.assertEqual(len(angles), 2)
             self.assertTrue(M.H_DIAGONAL in angles)
             self.assertTrue(M.H_ANTIDIAGONAL in angles)
 
@@ -324,15 +329,17 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
     Measure images or objects?:Both
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
-        self.assertEqual(len(pipeline.modules()),3)
+        self.assertEqual(len(pipeline.modules()), 3)
         for i, (wants_gabor, io_choice) in enumerate(
-            ((True, M.IO_IMAGES),
-             (False, M.IO_OBJECTS),
-             (False, M.IO_BOTH))):
+                ((True, M.IO_IMAGES),
+                 (False, M.IO_OBJECTS),
+                 (False, M.IO_BOTH))):
             module = pipeline.modules()[i]
             self.assertTrue(isinstance(module, M.MeasureTexture))
             self.assertEqual(len(module.image_groups), 2)
@@ -344,12 +351,12 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
             self.assertEqual(len(module.scale_groups), 2)
             self.assertEqual(module.scale_groups[0].scale, 3)
             angles = module.scale_groups[0].angles.get_selections()
-            self.assertEqual(len(angles),2)
+            self.assertEqual(len(angles), 2)
             self.assertTrue(M.H_HORIZONTAL in angles)
             self.assertTrue(M.H_VERTICAL in angles)
 
             angles = module.scale_groups[1].angles.get_selections()
-            self.assertEqual(len(angles),2)
+            self.assertEqual(len(angles), 2)
             self.assertTrue(M.H_DIAGONAL in angles)
             self.assertTrue(M.H_ANTIDIAGONAL in angles)
 
@@ -360,9 +367,9 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
     def test_02_02_many_objects(self):
         '''Regression test for IMG-775'''
         np.random.seed(22)
-        image=np.random.uniform(size=(100,100))
-        i,j = np.mgrid[0:100,0:100]
-        labels = (i/10).astype(int) + (j/10).astype(int) * 10 + 1
+        image = np.random.uniform(size=(100, 100))
+        i, j = np.mgrid[0:100, 0:100]
+        labels = (i / 10).astype(int) + (j / 10).astype(int) * 10 + 1
         workspace, module = self.make_workspace(image, labels)
         self.assertTrue(isinstance(module, M.MeasureTexture))
         module.scale_groups[0].scale.value = 2
@@ -370,7 +377,7 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         module.run(workspace)
         m = workspace.measurements
         all_measurements = module.get_measurements(
-            workspace.pipeline, INPUT_OBJECTS_NAME, M.TEXTURE)
+                workspace.pipeline, INPUT_OBJECTS_NAME, M.TEXTURE)
         all_columns = module.get_measurement_columns(workspace.pipeline)
         self.assertTrue(all([oname in (INPUT_OBJECTS_NAME, cpmeas.IMAGE)
                              for oname, feature, coltype in all_columns]))
@@ -383,13 +390,13 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         for measurement in M.F_HARALICK:
             self.assertTrue(measurement in all_measurements)
             self.assertTrue(
-                INPUT_IMAGE_NAME in module.get_measurement_images(
-                    workspace.pipeline, INPUT_OBJECTS_NAME, M.TEXTURE, measurement))
+                    INPUT_IMAGE_NAME in module.get_measurement_images(
+                            workspace.pipeline, INPUT_OBJECTS_NAME, M.TEXTURE, measurement))
             all_scales = module.get_measurement_scales(
-                workspace.pipeline, INPUT_OBJECTS_NAME, M.TEXTURE,
-                measurement, INPUT_IMAGE_NAME)
+                    workspace.pipeline, INPUT_OBJECTS_NAME, M.TEXTURE,
+                    measurement, INPUT_IMAGE_NAME)
             for angle in M.H_ALL:
-                mname = '%s_%s_%s_%d_%s'%(
+                mname = '%s_%s_%s_%d_%s' % (
                     M.TEXTURE, measurement, INPUT_IMAGE_NAME, 2, M.H_TO_A[angle])
                 self.assertTrue(mname in all_column_features)
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
@@ -398,12 +405,12 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
 
     def test_03_01_gabor_null(self):
         '''Test for no score on a uniform image'''
-        image = np.ones((10,10))*.5
-        labels = np.ones((10,10),int)
+        image = np.ones((10, 10)) * .5
+        labels = np.ones((10, 10), int)
         workspace, module = self.make_workspace(image, labels)
         module.scale_groups[0].scale.value = 2
         module.run(workspace)
-        mname = '%s_%s_%s_%d'%(M.TEXTURE, M.F_GABOR, INPUT_IMAGE_NAME, 2)
+        mname = '%s_%s_%s_%d' % (M.TEXTURE, M.F_GABOR, INPUT_IMAGE_NAME, 2)
         m = workspace.measurements.get_current_measurement(INPUT_OBJECTS_NAME,
                                                            mname)
         self.assertEqual(len(m), 1)
@@ -411,32 +418,34 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
 
     def test_03_02_gabor_horizontal(self):
         '''Compare the Gabor score on the horizontal with the one on the diagonal'''
-        i,j = np.mgrid[0:10,0:10]
-        labels = np.ones((10,10),int)
-        himage = np.cos(np.pi*i)*.5 + .5
-        dimage = np.cos(np.pi*(i-j)/np.sqrt(2)) * .5 + .5
+        i, j = np.mgrid[0:10, 0:10]
+        labels = np.ones((10, 10), int)
+        himage = np.cos(np.pi * i) * .5 + .5
+        dimage = np.cos(np.pi * (i - j) / np.sqrt(2)) * .5 + .5
+
         def run_me(image, angles):
             workspace, module = self.make_workspace(image, labels)
             module.scale_groups[0].scale.value = 2
             module.gabor_angles.value = angles
             module.run(workspace)
-            mname = '%s_%s_%s_%d'%(M.TEXTURE, M.F_GABOR, INPUT_IMAGE_NAME, 2)
+            mname = '%s_%s_%s_%d' % (M.TEXTURE, M.F_GABOR, INPUT_IMAGE_NAME, 2)
             m = workspace.measurements.get_current_measurement(INPUT_OBJECTS_NAME,
                                                                mname)
             self.assertEqual(len(m), 1)
             return m[0]
+
         himage_2, himage_4, dimage_2, dimage_4 = [run_me(image, angles)
                                                   for image, angles in
-                                                  ((himage, 2),(himage,4),
-                                                   (dimage, 2),(dimage,4))]
+                                                  ((himage, 2), (himage, 4),
+                                                   (dimage, 2), (dimage, 4))]
         self.assertAlmostEqual(himage_2, himage_4)
         self.assertAlmostEqual(dimage_2, 0)
-        self.assertNotAlmostEqual(dimage_4,0)
+        self.assertNotAlmostEqual(dimage_4, 0)
 
     def test_03_02_01_gabor_off(self):
         '''Make sure we can run MeasureTexture without gabor feature'''
-        workspace, module = self.make_workspace(np.zeros((10,10)),
-                                                np.zeros((10,10),int))
+        workspace, module = self.make_workspace(np.zeros((10, 10)),
+                                                np.zeros((10, 10), int))
         self.assertTrue(isinstance(module, M.MeasureTexture))
         module.wants_gabor.value = False
         module.run(workspace)
@@ -467,8 +476,8 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
     #                 assert (obname, m, 'float') in module.get_measurement_columns(pipeline), 'no entry matching %s in get_measurement_columns.'%((obname, m, 'float'))
 
     def test_03_04_measurement_columns_with_and_without_gabor(self):
-        workspace, module = self.make_workspace(np.zeros((10,10)),
-                                                np.zeros((10,10),int))
+        workspace, module = self.make_workspace(np.zeros((10, 10)),
+                                                np.zeros((10, 10), int))
         self.assertTrue(isinstance(module, M.MeasureTexture))
         module.wants_gabor.value = True
         columns = module.get_measurement_columns(None)
@@ -480,8 +489,8 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         self.assertEqual(ngabor, 0)
 
     def test_03_05_categories(self):
-        workspace, module = self.make_workspace(np.zeros((10,10)),
-                                                np.zeros((10,10),int))
+        workspace, module = self.make_workspace(np.zeros((10, 10)),
+                                                np.zeros((10, 10), int))
         self.assertTrue(isinstance(module, M.MeasureTexture))
         for has_category, object_name in ((True, cpmeas.IMAGE),
                                           (True, INPUT_OBJECTS_NAME),
@@ -496,19 +505,18 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
         self.assertEqual(len(categories), 1)
         categories = module.get_categories(
-            workspace.pipeline, INPUT_OBJECTS_NAME)
+                workspace.pipeline, INPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 0)
         module.images_or_objects.value = M.IO_OBJECTS
         categories = module.get_categories(workspace.pipeline, cpmeas.IMAGE)
         self.assertEqual(len(categories), 0)
         categories = module.get_categories(
-            workspace.pipeline, INPUT_OBJECTS_NAME)
+                workspace.pipeline, INPUT_OBJECTS_NAME)
         self.assertEqual(len(categories), 1)
 
-
     def test_03_06_measuremements(self):
-        workspace, module = self.make_workspace(np.zeros((10,10)),
-                                                np.zeros((10,10),int))
+        workspace, module = self.make_workspace(np.zeros((10, 10)),
+                                                np.zeros((10, 10), int))
         self.assertTrue(isinstance(module, M.MeasureTexture))
         for wants_gabor in (False, True):
             module.wants_gabor.value = wants_gabor
@@ -525,25 +533,25 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
 
     def test_04_01_zeros(self):
         '''Make sure the module can run on an empty labels matrix'''
-        workspace, module = self.make_workspace(np.zeros((10,10)),
-                                                np.zeros((10,10),int))
+        workspace, module = self.make_workspace(np.zeros((10, 10)),
+                                                np.zeros((10, 10), int))
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for f in m.get_feature_names(INPUT_OBJECTS_NAME):
             if f.startswith(M.TEXTURE):
                 values = m.get_current_measurement(INPUT_OBJECTS_NAME, f)
-                self.assertEqual(len(values),0)
+                self.assertEqual(len(values), 0)
 
     def test_04_02_wrong_size(self):
         '''Regression test for IMG-961: objects & image different size'''
         np.random.seed(42)
-        image = np.random.uniform(size=(10,30))
-        labels = np.ones((20,20), int)
+        image = np.random.uniform(size=(10, 30))
+        labels = np.ones((20, 20), int)
         workspace, module = self.make_workspace(image, labels)
         module.run(workspace)
         m = workspace.measurements
-        workspace, module = self.make_workspace(image[:,:20], labels[:10,:])
+        workspace, module = self.make_workspace(image[:, :20], labels[:10, :])
         module.run(workspace)
         me = workspace.measurements
         for f in m.get_feature_names(INPUT_OBJECTS_NAME):
@@ -554,14 +562,14 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
 
     def test_04_03_mask(self):
         np.random.seed(42)
-        image = np.random.uniform(size=(10,30))
+        image = np.random.uniform(size=(10, 30))
         mask = np.zeros(image.shape, bool)
-        mask[:,:20] = True
-        labels = np.ones((10,30), int)
-        workspace, module = self.make_workspace(image, labels, mask = mask)
+        mask[:, :20] = True
+        labels = np.ones((10, 30), int)
+        workspace, module = self.make_workspace(image, labels, mask=mask)
         module.run(workspace)
         m = workspace.measurements
-        workspace, module = self.make_workspace(image[:,:20], labels[:,:20])
+        workspace, module = self.make_workspace(image[:, :20], labels[:, :20])
         module.run(workspace)
         me = workspace.measurements
         for f in m.get_feature_names(INPUT_OBJECTS_NAME):
@@ -571,8 +579,8 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
                 self.assertEqual(values, expected)
 
     def test_04_04_no_image_measurements(self):
-        image = np.ones((10,10))*.5
-        labels = np.ones((10,10),int)
+        image = np.ones((10, 10)) * .5
+        labels = np.ones((10, 10), int)
         workspace, module = self.make_workspace(image, labels)
         assert isinstance(module, M.MeasureTexture)
         module.images_or_objects.value = M.IO_OBJECTS
@@ -580,17 +588,17 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         module.run(workspace)
         m = workspace.measurements
         self.assertFalse(
-            m.has_feature(
-                cpmeas.IMAGE,
-                "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
+                m.has_feature(
+                        cpmeas.IMAGE,
+                        "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
         self.assertTrue(
-            m.has_feature(
-                INPUT_OBJECTS_NAME,
-                "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
+                m.has_feature(
+                        INPUT_OBJECTS_NAME,
+                        "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
 
     def test_04_05_no_object_measurements(self):
-        image = np.ones((10,10))*.5
-        labels = np.ones((10,10),int)
+        image = np.ones((10, 10)) * .5
+        labels = np.ones((10, 10), int)
         workspace, module = self.make_workspace(image, labels)
         assert isinstance(module, M.MeasureTexture)
         module.images_or_objects.value = M.IO_IMAGES
@@ -598,10 +606,10 @@ MeasureTexture:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(
-            m.has_feature(
-                cpmeas.IMAGE,
-                "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
+                m.has_feature(
+                        cpmeas.IMAGE,
+                        "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
         self.assertFalse(
-            m.has_feature(
-                INPUT_OBJECTS_NAME,
-                "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))
+                m.has_feature(
+                        INPUT_OBJECTS_NAME,
+                        "Texture_AngularSecondMoment_%s_2_0" % INPUT_IMAGE_NAME))

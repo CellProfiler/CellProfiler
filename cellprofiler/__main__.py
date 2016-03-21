@@ -6,7 +6,7 @@ import sys
 import os
 import numpy
 import tempfile
-import cStringIO
+import StringIO
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -891,7 +891,7 @@ def run_pipeline_headless(options, args):
             initial_measurements.get_experiment_measurement(
                     M_PIPELINE)
         pipeline_text = pipeline_text.encode('us-ascii')
-        pipeline.load(cStringIO.StringIO(pipeline_text))
+        pipeline.load(StringIO.StringIO(pipeline_text))
         if not pipeline.in_batch_mode():
             #
             # Need file list in order to call prepare_run

@@ -19,7 +19,7 @@ except:
     has_mat_read_error = False
 
 import os
-import StringIO  # XXX - replace with cStringIO?
+import StringIO
 import sys
 import tempfile
 import datetime

@@ -8,7 +8,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-import cStringIO
+import StringIO
 import json
 import javabridge
 import numpy
@@ -163,7 +163,7 @@ class KnimeBridgeServer(threading.Thread):
         pipeline_txt = message.pop(0).bytes
         pipeline = cellprofiler.pipeline.Pipeline()
         try:
-            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
+            pipeline.loadtxt(StringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -189,7 +189,7 @@ class KnimeBridgeServer(threading.Thread):
         module_names = json.loads(message.pop(0).bytes)
         pipeline = cellprofiler.pipeline.Pipeline()
         try:
-            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
+            pipeline.loadtxt(StringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -202,7 +202,7 @@ class KnimeBridgeServer(threading.Thread):
                 to_remove.insert(0, module)
         for module in to_remove:
             pipeline.remove_module(module.module_num)
-        pipeline_fd = cStringIO.StringIO()
+        pipeline_fd = StringIO.StringIO()
         pipeline.savetxt(pipeline_fd, save_image_plane_details=False)
         msg_out = [
             zmq.Frame(session_id),
@@ -346,7 +346,7 @@ class KnimeBridgeServer(threading.Thread):
                     session_id, e.message)
             return None, None, None
         try:
-            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
+            pipeline.loadtxt(StringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -511,7 +511,7 @@ class KnimeBridgeServer(threading.Thread):
                     session_id, e.message)
             return None, None, None
         try:
-            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
+            pipeline.loadtxt(StringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",

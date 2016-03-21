@@ -2,7 +2,7 @@
 """
 
 import Queue
-import cStringIO
+import StringIO
 import collections
 import logging
 import multiprocessing
@@ -667,7 +667,7 @@ class AnalysisRunner(object):
             self.interface_work_cv.notify()
 
     def pipeline_as_string(self):
-        s = cStringIO.StringIO()
+        s = StringIO.StringIO()
         self.pipeline.savetxt(s)
         return s.getvalue()
 

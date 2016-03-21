@@ -2,13 +2,12 @@
 """
 
 import logging
-
-logger = logging.getLogger(__name__)
-
-import cStringIO
+import StringIO
 import h5py
 import os
-from cellprofiler.utilities.hdf5_dict import HDF5FileList, HDF5Dict
+import cellprofiler.utilities.hdf5_dict
+
+logger = logging.getLogger(__name__)
 
 '''Continue to run the pipeline
 
@@ -38,9 +37,9 @@ def is_workspace_file(path):
         return False
     h5file = h5py.File(path, mode="r")
     try:
-        if not HDF5FileList.has_file_list(h5file):
+        if not cellprofiler.utilities.hdf5_dict.HDF5FileList.has_file_list(h5file):
             return False
-        return HDF5Dict.has_hdf5_dict(h5file)
+        return cellprofiler.utilities.hdf5_dict.HDF5Dict.has_hdf5_dict(h5file)
     finally:
         h5file.close()
 
@@ -59,7 +58,7 @@ class Workspace(object):
                  image_set_list,
                  frame=None,
                  create_new_window=False,
-                 outlines={}):
+                 outlines=None):
         """Workspace constructor
 
         pipeline          - the pipeline of modules being run
@@ -72,6 +71,9 @@ class Workspace(object):
         create_new_window - True to create another frame, even if one is open
                             False to reuse the current frame.
         """
+        if outlines is None:
+            outlines = {}
+
         self.__pipeline = pipeline
         self.__module = module
         self.__image_set = image_set
@@ -91,7 +93,7 @@ class Workspace(object):
         self.__file_list = None
         self.__loading = False
         if measurements is not None:
-            self.set_file_list(HDF5FileList(measurements.hdf5_dict.hdf5_file))
+            self.set_file_list(cellprofiler.utilities.hdf5_dict.HDF5FileList(measurements.hdf5_dict.hdf5_file))
         self.__notification_callbacks = []
 
         self.interaction_handler = None
@@ -453,17 +455,17 @@ class Workspace(object):
             if self.__file_list is not None:
                 self.__file_list.remove_notification_callback(
                         self.__on_file_list_changed)
-            self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+            self.__file_list = cellprofiler.utilities.hdf5_dict.HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
             self.__file_list.add_notification_callback(self.__on_file_list_changed)
             if load_pipeline and self.__measurements.has_feature(
                     cpmeas.EXPERIMENT, M_PIPELINE):
                 pipeline_txt = self.__measurements.get_experiment_measurement(
                         M_PIPELINE).encode("utf-8")
-                self.pipeline.load(cStringIO.StringIO(pipeline_txt))
+                self.pipeline.load(StringIO.StringIO(pipeline_txt))
             elif load_pipeline:
                 self.pipeline.clear()
             else:
-                fd = cStringIO.StringIO()
+                fd = StringIO.StringIO()
                 self.pipeline.savetxt(fd, save_image_plane_details=False)
                 self.__measurements.add_experiment_measurement(
                         M_PIPELINE, fd.getvalue())
@@ -498,7 +500,7 @@ class Workspace(object):
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(
                     self.__on_file_list_changed)
-        self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+        self.__file_list = cellprofiler.utilities.hdf5_dict.HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
         self.__file_list.add_notification_callback(self.__on_file_list_changed)
         self.notify(self.WorkspaceCreatedEvent(self))
 
@@ -539,7 +541,7 @@ class Workspace(object):
 
     def save_pipeline_to_measurements(self):
         from cellprofiler.pipeline import M_PIPELINE
-        fd = cStringIO.StringIO()
+        fd = StringIO.StringIO()
         self.pipeline.savetxt(fd, save_image_plane_details=False)
         self.measurements.add_experiment_measurement(M_PIPELINE, fd.getvalue())
         self.measurements.flush()

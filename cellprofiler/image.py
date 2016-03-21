@@ -8,7 +8,7 @@ import logging
 import math
 import sys
 import StringIO
-import cPickle
+import pickle
 import struct
 import zlib
 import numpy
@@ -866,13 +866,13 @@ class ImageSetList(object):
         have image providers before this call.
         '''
         f = StringIO.StringIO()
-        cPickle.dump(self.count(), f)
+        pickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            cPickle.dump(image_set.keys, f)
-        cPickle.dump(self.legacy_fields, f)
+            pickle.dump(image_set.keys, f)
+        pickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
     def load_state(self, state):
@@ -882,7 +882,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = cPickle.Unpickler(StringIO.StringIO(state))
+        p = pickle.Unpickler(StringIO.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)

@@ -120,7 +120,7 @@ import time
 import threading
 import random
 import zmq
-import cStringIO
+import StringIO
 import gc
 import traceback
 import weakref
@@ -346,7 +346,7 @@ class Worker(object):
                 logger.debug("Loading pipeline")
                 pipeline_blob = rep.pipeline_blob.tostring()
                 current_pipeline = cpp.Pipeline()
-                current_pipeline.loadtxt(cStringIO.StringIO(pipeline_blob),
+                current_pipeline.loadtxt(StringIO.StringIO(pipeline_blob),
                                          raise_on_error=True)
                 logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(

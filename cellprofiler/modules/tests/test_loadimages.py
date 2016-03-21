@@ -1349,54 +1349,54 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
             #         scale = m.get_all_measurements(measurements.IMAGE, 'Scaling_Orig')
             #         self.assertEqual(scale[0], 255)
 
-    def test_05_04_load_JPG(self):
-        """Test loading of a .JPG file
-
-        """
-        data = base64.b64decode(T.jpg_8_1)
-        (matfd, matpath) = tempfile.mkstemp('.jpg')
-        matfh = os.fdopen(matfd, 'wb')
-        matfh.write(data)
-        matfh.flush()
-        path, filename = os.path.split(matpath)
-        load_images = LI.LoadImages()
-        load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = LI.MS_EXACT_MATCH
-        load_images.images[0].common_text.value = filename
-        load_images.images[0].channels[0].image_name.value = 'Orig'
-        load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-        load_images.location.custom_path = path
-        load_images.module_num = 1
-        outer_self = self
-
-        class CheckImage(CPM.CPModule):
-            variable_revision_number = 1
-            module_name = "CheckImage"
-
-            def settings(self):
-                return []
-
-            def run(self, workspace):
-                image = workspace.image_set.get_image('Orig',
-                                                      must_be_grayscale=True)
-                pixel_data = image.pixel_data
-                matfh.close()
-                pixel_data = (pixel_data * 255).astype(np.uint8)
-                check_data = base64.b64decode(T.raw_8_1)
-                check_image = np.fromstring(check_data, np.uint8).reshape(T.raw_8_1_shape)
-                # JPEG is lossy, apparently even when you ask for no compression
-                epsilon = 1
-                outer_self.assertTrue(np.all(np.abs(pixel_data.astype(int)
-                                                    - check_image.astype(int) <=
-                                                    epsilon)))
-
-        check_image = CheckImage()
-        check_image.module_num = 2
-        pipeline = P.Pipeline()
-        pipeline.add_listener(self.error_callback)
-        pipeline.add_module(load_images)
-        pipeline.add_module(check_image)
-        pipeline.run()
+    # def test_05_04_load_JPG(self):
+    #     """Test loading of a .JPG file
+    #
+    #     """
+    #     data = base64.b64decode(T.jpg_8_1)
+    #     (matfd, matpath) = tempfile.mkstemp('.jpg')
+    #     matfh = os.fdopen(matfd, 'wb')
+    #     matfh.write(data)
+    #     matfh.flush()
+    #     path, filename = os.path.split(matpath)
+    #     load_images = LI.LoadImages()
+    #     load_images.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+    #     load_images.match_method.value = LI.MS_EXACT_MATCH
+    #     load_images.images[0].common_text.value = filename
+    #     load_images.images[0].channels[0].image_name.value = 'Orig'
+    #     load_images.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+    #     load_images.location.custom_path = path
+    #     load_images.module_num = 1
+    #     outer_self = self
+    #
+    #     class CheckImage(CPM.CPModule):
+    #         variable_revision_number = 1
+    #         module_name = "CheckImage"
+    #
+    #         def settings(self):
+    #             return []
+    #
+    #         def run(self, workspace):
+    #             image = workspace.image_set.get_image('Orig',
+    #                                                   must_be_grayscale=True)
+    #             pixel_data = image.pixel_data
+    #             matfh.close()
+    #             pixel_data = (pixel_data * 255).astype(np.uint8)
+    #             check_data = base64.b64decode(T.raw_8_1)
+    #             check_image = np.fromstring(check_data, np.uint8).reshape(T.raw_8_1_shape)
+    #             # JPEG is lossy, apparently even when you ask for no compression
+    #             epsilon = 1
+    #             outer_self.assertTrue(np.all(np.abs(pixel_data.astype(int)
+    #                                                 - check_image.astype(int) <=
+    #                                                 epsilon)))
+    #
+    #     check_image = CheckImage()
+    #     check_image.module_num = 2
+    #     pipeline = P.Pipeline()
+    #     pipeline.add_listener(self.error_callback)
+    #     pipeline.add_module(load_images)
+    #     pipeline.add_module(check_image)
+    #     pipeline.run()
 
     def test_05_05_load_url(self):
         lip = LI.LoadImagesImageProvider(
@@ -2765,54 +2765,54 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                  tuple(green_image.pixel_data.shape))
                 m.next_image_set()
 
-    def test_10_01_load_unscaled(self):
-        '''Load a image with and without rescaling'''
-        make_12_bit_image('ExampleSpecklesImages', '1-162hrh2ax2.tif', (21, 31))
-        path = os.path.join(example_images_directory(),
-                            "ExampleSpecklesImages")
-        module = LI.LoadImages()
-        module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
-        module.images[0].common_text.value = '1-162hrh2ax2'
-        module.images[0].channels[0].image_name.value = 'MyImage'
-        module.images[0].channels[0].rescale.value = False
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-        module.location.custom_path = path
-        module.module_num = 1
-        pipeline = P.Pipeline()
-        pipeline.add_module(module)
-        pipeline.add_listener(self.error_callback)
-        image_set_list = I.ImageSetList()
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
-        module.prepare_run(workspace)
-        module.prepare_group(workspace, (), [1])
-        image_set = image_set_list.get_image_set(0)
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
-        module.run(workspace)
-        scales = m.get_all_measurements(measurements.IMAGE,
-                                        LI.C_SCALING + "_MyImage")
-        self.assertEqual(len(scales), 1)
-        self.assertEqual(scales[0], 4095)
-        image = image_set.get_image("MyImage")
-        self.assertTrue(np.all(image.pixel_data <= 1.0 / 16.0))
-        pixel_data = image.pixel_data
-        module.images[0].channels[0].rescale.value = True
-        image_set_list = I.ImageSetList()
-        workspace = W.Workspace(pipeline, module, None, None, m,
-                                image_set_list)
-        module.prepare_run(workspace)
-        module.prepare_group(workspace, (), [1])
-        image_set = image_set_list.get_image_set(0)
-        workspace = W.Workspace(pipeline, module, image_set,
-                                cpo.ObjectSet(), m,
-                                image_set_list)
-        module.run(workspace)
-        image = image_set.get_image("MyImage")
-        np.testing.assert_almost_equal(pixel_data * 65535.0 / 4095.0,
-                                       image.pixel_data)
+    # def test_10_01_load_unscaled(self):
+    #     '''Load a image with and without rescaling'''
+    #     make_12_bit_image('ExampleSpecklesImages', '1-162hrh2ax2.tif', (21, 31))
+    #     path = os.path.join(example_images_directory(),
+    #                         "ExampleSpecklesImages")
+    #     module = LI.LoadImages()
+    #     module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
+    #     module.images[0].common_text.value = '1-162hrh2ax2'
+    #     module.images[0].channels[0].image_name.value = 'MyImage'
+    #     module.images[0].channels[0].rescale.value = False
+    #     module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+    #     module.location.custom_path = path
+    #     module.module_num = 1
+    #     pipeline = P.Pipeline()
+    #     pipeline.add_module(module)
+    #     pipeline.add_listener(self.error_callback)
+    #     image_set_list = I.ImageSetList()
+    #     m = measurements.Measurements()
+    #     workspace = W.Workspace(pipeline, module, None, None, m,
+    #                             image_set_list)
+    #     module.prepare_run(workspace)
+    #     module.prepare_group(workspace, (), [1])
+    #     image_set = image_set_list.get_image_set(0)
+    #     workspace = W.Workspace(pipeline, module, image_set,
+    #                             cpo.ObjectSet(), m,
+    #                             image_set_list)
+    #     module.run(workspace)
+    #     scales = m.get_all_measurements(measurements.IMAGE,
+    #                                     LI.C_SCALING + "_MyImage")
+    #     self.assertEqual(len(scales), 1)
+    #     self.assertEqual(scales[0], 4095)
+    #     image = image_set.get_image("MyImage")
+    #     self.assertTrue(np.all(image.pixel_data <= 1.0 / 16.0))
+    #     pixel_data = image.pixel_data
+    #     module.images[0].channels[0].rescale.value = True
+    #     image_set_list = I.ImageSetList()
+    #     workspace = W.Workspace(pipeline, module, None, None, m,
+    #                             image_set_list)
+    #     module.prepare_run(workspace)
+    #     module.prepare_group(workspace, (), [1])
+    #     image_set = image_set_list.get_image_set(0)
+    #     workspace = W.Workspace(pipeline, module, image_set,
+    #                             cpo.ObjectSet(), m,
+    #                             image_set_list)
+    #     module.run(workspace)
+    #     image = image_set.get_image("MyImage")
+    #     np.testing.assert_almost_equal(pixel_data * 65535.0 / 4095.0,
+    #                                    image.pixel_data)
 
     def make_objects_workspace(self, image, mode="L", filename="myfile.tif"):
         directory = tempfile.mkdtemp()
@@ -3113,56 +3113,56 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                         measurements.IMAGE, LI.C_SERIES + "_" + IMAGE_NAME,
                         image_number), i)
 
-    def test_14_01_load_unicode(self):
-        '''Load an image from a unicode - encoded location'''
-        self.directory = tempfile.mkdtemp()
-        directory = os.path.join(self.directory, u"\u2211a")
-        os.mkdir(directory)
-        filename = u"\u03b1\u00b2.jpg"
-        path = os.path.join(directory, filename)
-        data = base64.b64decode(T.jpg_8_1)
-        fd = open(path, 'wb')
-        fd.write(data)
-        fd.close()
-        module = LI.LoadImages()
-        module.module_num = 1
-        module.match_method.value = LI.MS_EXACT_MATCH
-        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
-        module.location.custom_path = directory
-        module.images[0].common_text.value = ".jpg"
-        module.images[0].channels[0].image_name.value = IMAGE_NAME
-        image_set_list = I.ImageSetList()
-        pipeline = cpp.Pipeline()
-
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
-
-        pipeline.add_listener(callback)
-        pipeline.add_module(module)
-        m = measurements.Measurements()
-        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
-        self.assertTrue(module.prepare_run(workspace))
-        self.assertEqual(len(m.get_image_numbers()), 1)
-        key_names, group_list = pipeline.get_groupings(workspace)
-        self.assertEqual(len(group_list), 1)
-        group_keys, image_numbers = group_list[0]
-        self.assertEqual(len(image_numbers), 1)
-        module.prepare_group(workspace, group_keys, image_numbers)
-        image_set = image_set_list.get_image_set(image_numbers[0] - 1)
-        workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                m, image_set_list)
-        module.run(workspace)
-        image_provider = image_set.get_image_provider(IMAGE_NAME)
-        self.assertEqual(image_provider.get_filename(), filename)
-        pixel_data = image_set.get_image(IMAGE_NAME).pixel_data
-        self.assertEqual(tuple(pixel_data.shape[:2]), tuple(T.raw_8_1_shape))
-        file_feature = '_'.join((LI.C_FILE_NAME, IMAGE_NAME))
-        file_measurement = m.get_current_image_measurement(file_feature)
-        self.assertEqual(file_measurement, filename)
-        path_feature = '_'.join((LI.C_PATH_NAME, IMAGE_NAME))
-        path_measurement = m.get_current_image_measurement(path_feature)
-        self.assertEqual(os.path.split(directory)[1],
-                         os.path.split(path_measurement)[1])
+    # def test_14_01_load_unicode(self):
+    #     '''Load an image from a unicode - encoded location'''
+    #     self.directory = tempfile.mkdtemp()
+    #     directory = os.path.join(self.directory, u"\u2211a")
+    #     os.mkdir(directory)
+    #     filename = u"\u03b1\u00b2.jpg"
+    #     path = os.path.join(directory, filename)
+    #     data = base64.b64decode(T.jpg_8_1)
+    #     fd = open(path, 'wb')
+    #     fd.write(data)
+    #     fd.close()
+    #     module = LI.LoadImages()
+    #     module.module_num = 1
+    #     module.match_method.value = LI.MS_EXACT_MATCH
+    #     module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+    #     module.location.custom_path = directory
+    #     module.images[0].common_text.value = ".jpg"
+    #     module.images[0].channels[0].image_name.value = IMAGE_NAME
+    #     image_set_list = I.ImageSetList()
+    #     pipeline = cpp.Pipeline()
+    #
+    #     def callback(caller, event):
+    #         self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+    #
+    #     pipeline.add_listener(callback)
+    #     pipeline.add_module(module)
+    #     m = measurements.Measurements()
+    #     workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+    #     self.assertTrue(module.prepare_run(workspace))
+    #     self.assertEqual(len(m.get_image_numbers()), 1)
+    #     key_names, group_list = pipeline.get_groupings(workspace)
+    #     self.assertEqual(len(group_list), 1)
+    #     group_keys, image_numbers = group_list[0]
+    #     self.assertEqual(len(image_numbers), 1)
+    #     module.prepare_group(workspace, group_keys, image_numbers)
+    #     image_set = image_set_list.get_image_set(image_numbers[0] - 1)
+    #     workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
+    #                             m, image_set_list)
+    #     module.run(workspace)
+    #     image_provider = image_set.get_image_provider(IMAGE_NAME)
+    #     self.assertEqual(image_provider.get_filename(), filename)
+    #     pixel_data = image_set.get_image(IMAGE_NAME).pixel_data
+    #     self.assertEqual(tuple(pixel_data.shape[:2]), tuple(T.raw_8_1_shape))
+    #     file_feature = '_'.join((LI.C_FILE_NAME, IMAGE_NAME))
+    #     file_measurement = m.get_current_image_measurement(file_feature)
+    #     self.assertEqual(file_measurement, filename)
+    #     path_feature = '_'.join((LI.C_PATH_NAME, IMAGE_NAME))
+    #     path_measurement = m.get_current_image_measurement(path_feature)
+    #     self.assertEqual(os.path.split(directory)[1],
+    #                      os.path.split(path_measurement)[1])
 
     def make_prepare_run_workspace(self, file_names):
         '''Make a workspace and image files for prepare_run

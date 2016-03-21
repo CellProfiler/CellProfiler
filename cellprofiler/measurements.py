@@ -1572,7 +1572,7 @@ class Measurements(object):
                       discard alpha channel.
         """
         from .modules.loadimages import LoadImagesImageProviderURL
-        from .cpimage import GrayscaleImage, RGBImage
+        from .image import GrayscaleImage, RGBImage
         name = str(name)
         if self.__images.has_key(name):
             image = self.__images[name]
@@ -1711,7 +1711,7 @@ class Measurements(object):
     names = property(get_names)
 
     def add(self, name, image):
-        from .cpimage import VanillaImageProvider
+        from .image import VanillaImageProvider
         old_providers = [provider for provider in self.providers
                          if provider.name == name]
         if len(old_providers) > 0:
@@ -1816,9 +1816,7 @@ def load_measurements_from_buffer(buf):
         os.unlink(filename)
 
 
-def load_measurements(filename, dest_file=None, can_overwrite=False,
-                      run_name=None,
-                      image_numbers=None):
+def load_measurements(filename, dest_file=None, can_overwrite=False, run_name=None, image_numbers=None):
     '''Load measurements from an HDF5 file
 
     filename - path to file containing the measurements or file-like object

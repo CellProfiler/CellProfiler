@@ -9,8 +9,8 @@ can save to a file using <b>SaveImages</b>.
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
@@ -32,7 +32,7 @@ CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
 
-class DisplayDataOnImage(cpm.CPModule):
+class DisplayDataOnImage(cpm.Module):
     module_name = 'DisplayDataOnImage'
     category = 'Data Tools'
     variable_revision_number = 6

@@ -81,9 +81,9 @@ from scipy.io import loadmat
 from scipy.sparse import coo
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -184,7 +184,7 @@ complexity_limits = {
 }
 
 
-class UntangleWorms(cpm.CPModule):
+class UntangleWorms(cpm.Module):
     variable_revision_number = 2
     category = ["Object Processing", "Worm Toolbox"]
     module_name = "UntangleWorms"

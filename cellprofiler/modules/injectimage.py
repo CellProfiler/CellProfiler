@@ -5,14 +5,14 @@ import hashlib
 
 import numpy as np
 
-import cellprofiler.cpimage
-import cellprofiler.cpmodule
+import cellprofiler.image
+import cellprofiler.module
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
 import cellprofiler.settings
 
 
-class InjectImage(cellprofiler.cpmodule.CPModule):
+class InjectImage(cellprofiler.module.Module):
     """This module is intended for testing. It injects an image into the
     image set.
     """
@@ -87,7 +87,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
             mask = self.__mask[workspace.image_set.image_number - 1]
         else:
             mask = self.__mask
-        image = cellprofiler.cpimage.Image(image, mask)
+        image = cellprofiler.image.Image(image, mask)
         workspace.image_set.add(self.__image_name, image)
 
     def post_run(self, workspace):
@@ -121,7 +121,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         return []
 
 
-class InjectObjects(cellprofiler.cpmodule.CPModule):
+class InjectObjects(cellprofiler.module.Module):
     """Inject objects with labels into the pipeline"""
 
     module_name = "InjectObjects"

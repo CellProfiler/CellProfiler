@@ -30,7 +30,7 @@ import sys
 
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.utilities.rules as cprules
@@ -61,7 +61,7 @@ N_SETTINGS_PER_MEASUREMENT_V3 = 9
 N_SETTINGS_PER_MEASUREMENT = 10
 
 
-class FlagImage(cpm.CPModule):
+class FlagImage(cpm.Module):
     category = "Data Tools"
     variable_revision_number = 4
     module_name = "FlagImage"

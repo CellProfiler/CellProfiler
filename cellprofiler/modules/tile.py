@@ -42,8 +42,8 @@ import numpy as np
 import scipy.ndimage as scind
 
 logger = logging.getLogger(__name__)
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
@@ -74,7 +74,7 @@ TILE_HEIGHT = "TileHeight"
 FIXED_SETTING_COUNT = 10
 
 
-class Tile(cpm.CPModule):
+class Tile(cpm.Module):
     module_name = "Tile"
     category = 'Image Processing'
     variable_revision_number = 1

@@ -13,9 +13,9 @@ from cellprofiler.preferences import set_headless
 set_headless()
 
 import cellprofiler.workspace as cpw
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.grid as cpg
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
@@ -146,7 +146,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         return (workspace, module)
 
     def make_rectangular_grid(self, gridding):
-        self.assertTrue(isinstance(gridding, cpg.CPGridInfo))
+        self.assertTrue(isinstance(gridding, cpg.Grid))
         i0 = gridding.y_location_of_lowest_y_spot
         j0 = gridding.x_location_of_lowest_x_spot
         di = gridding.y_spacing

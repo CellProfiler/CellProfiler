@@ -17,7 +17,7 @@ from centrosome.threshold import TM_PER_OBJECT, TM_OTSU, TM_MOG, TM_MCT, TM_BACK
 from centrosome.threshold import mad, binned_mode
 from centrosome.threshold import weighted_variance, sum_of_entropies
 
-import cellprofiler.cpmodule
+import cellprofiler.module
 import cellprofiler.icons
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
@@ -155,7 +155,7 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 
-class Identify(cellprofiler.cpmodule.CPModule):
+class Identify(cellprofiler.module.Module):
     threshold_setting_version = 2
 
     def create_threshold_settings(self, methods=TM_METHODS):

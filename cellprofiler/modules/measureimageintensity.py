@@ -38,7 +38,7 @@ See also <b>MeasureObjectIntensity</b>, <b>MaskImage</b>.
 
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -82,7 +82,7 @@ ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "StdIntensity", "MADInten
                     "LowerQuartileIntensity", "UpperQuartileIntensity"]
 
 
-class MeasureImageIntensity(cpm.CPModule):
+class MeasureImageIntensity(cpm.Module):
     module_name = 'MeasureImageIntensity'
     category = "Measurement"
     variable_revision_number = 2

@@ -25,9 +25,9 @@ if not hasattr(zmq, "Frame"):
 
     zmq.Frame = ZmqFrame
 
-import cellprofiler.cpmodule
+import cellprofiler.module
 import cellprofiler.measurements
-import cellprofiler.cpimage
+import cellprofiler.image
 import cellprofiler.objects
 import cellprofiler.pipeline
 import cellprofiler.settings
@@ -374,7 +374,7 @@ class KnimeBridgeServer(threading.Thread):
             for channel_name in channel_names:
                 dataset = image_group[channel_name]
                 pixel_data = dataset[image_index]
-                m.add(channel_name, cellprofiler.cpimage.Image(pixel_data))
+                m.add(channel_name, cellprofiler.image.Image(pixel_data))
 
             for module in other_modules:
                 workspace = cellprofiler.workspace.Workspace(
@@ -504,7 +504,7 @@ class KnimeBridgeServer(threading.Thread):
                 pixel_data = self.decode_image(
                         channel_metadata, message.pop(0).bytes,
                         grouping_allowed=grouping_allowed)
-                m.add(channel_name, cellprofiler.cpimage.Image(pixel_data))
+                m.add(channel_name, cellprofiler.image.Image(pixel_data))
         except Exception, e:
             logger.warn("Failed to decode message", exc_info=1)
             self.raise_cellprofiler_exception(
@@ -583,7 +583,7 @@ class KnimeBridgeServer(threading.Thread):
         jtypes = ["java.lang.Integer"]
         features = {}
         for module in modules:
-            assert isinstance(module, cellprofiler.cpmodule.CPModule)
+            assert isinstance(module, cellprofiler.module.Module)
             for column in module.get_measurement_columns(pipeline):
                 objects, name, dbtype = column[:3]
                 qualifiers = {} if len(column) < 4 else column[3]

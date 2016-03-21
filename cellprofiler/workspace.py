@@ -334,7 +334,7 @@ class Workspace(object):
                       workers.
         '''
         # See also:
-        # main().interaction_handler() in analysis_worker.py
+        # main().interaction_handler() in worker.py
         # PipelineController.module_interaction_request() in pipelinecontroller.py
         import cellprofiler.preferences as cpprefs
         if "headless_ok" in kwargs:
@@ -587,7 +587,7 @@ class Workspace(object):
             # TODO: Get rid of image_set_list
             no_image_set_list = self.image_set_list is None
             if no_image_set_list:
-                from cellprofiler.cpimage import ImageSetList
+                from cellprofiler.image import ImageSetList
                 self.__image_set_list = ImageSetList()
             try:
                 result = self.pipeline.prepare_run(self, stop_module)

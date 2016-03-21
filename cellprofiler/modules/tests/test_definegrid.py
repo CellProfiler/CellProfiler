@@ -13,9 +13,9 @@ from cellprofiler.preferences import set_headless
 set_headless()
 
 import cellprofiler.workspace as cpw
-import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.grid as cpg
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
@@ -194,7 +194,7 @@ class TestDefineGrid(unittest.TestCase):
         module.wants_image.value = True
         module.run(workspace)
         gridding = workspace.get_grid(GRID_NAME)
-        self.assertTrue(isinstance(gridding, cpg.CPGridInfo))
+        self.assertTrue(isinstance(gridding, cpg.Grid))
         self.assertEqual(gridding.rows, rows)
         self.assertEqual(gridding.columns, columns)
         self.assertEqual(gridding.x_spacing, spacing_x)
@@ -262,7 +262,7 @@ class TestDefineGrid(unittest.TestCase):
         module.wants_image.value = True
         module.run(workspace)
         gridding = workspace.get_grid(GRID_NAME)
-        self.assertTrue(isinstance(gridding, cpg.CPGridInfo))
+        self.assertTrue(isinstance(gridding, cpg.Grid))
         self.assertEqual(gridding.rows, rows)
         self.assertEqual(gridding.columns, columns)
         self.assertEqual(gridding.x_spacing, spacing_x)

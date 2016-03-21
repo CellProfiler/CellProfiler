@@ -11,7 +11,7 @@ import uuid
 import zmq
 import Queue
 import numpy as np
-import cellprofiler.cpgridinfo as cpg
+import cellprofiler.grid as cpg
 
 NOTIFY_SOCKET_ADDR = 'inproc://BoundaryNotifications'
 SD_KEY_DICT = "__keydict__"
@@ -46,7 +46,7 @@ def make_CP_encoder(buffers):
         if isinstance(data, np.generic):
             # http://docs.scipy.org/doc/numpy/reference/arrays.scalars.html
             return data.astype(object)
-        if isinstance(data, cpg.CPGridInfo):
+        if isinstance(data, cpg.Grid):
             d = data.serialize()
             d['__CPGridInfo__'] = True
             return d
@@ -73,7 +73,7 @@ def make_CP_decoder(buffers):
         if '__buffer__' in dct:
             return buffer(buffers[dct['idx']])
         if '__CPGridInfo__' in dct:
-            grid = cpg.CPGridInfo()
+            grid = cpg.Grid()
             grid.deserialize(dct)
             return grid
         return dct

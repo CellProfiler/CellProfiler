@@ -16,8 +16,8 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>,
 
 import numpy as np
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.gui.help import USING_METADATA_HELP_REF
@@ -33,7 +33,7 @@ WF_NAME = 'Well name'
 WF_ROWCOL = 'Row & Column'
 
 
-class DisplayPlatemap(cpm.CPModule):
+class DisplayPlatemap(cpm.Module):
     module_name = "DisplayPlatemap"
     category = "Data Tools"
     variable_revision_number = 2

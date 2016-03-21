@@ -14,7 +14,7 @@ from cStringIO import StringIO
 import h5py
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 
 OBJECT_NAME = "myobjects"

@@ -46,8 +46,8 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
@@ -78,7 +78,7 @@ S_EXPANDED = 'Expanded'
 S_ADJACENT = 'Adjacent'
 
 
-class MeasureObjectNeighbors(cpm.CPModule):
+class MeasureObjectNeighbors(cpm.Module):
     module_name = 'MeasureObjectNeighbors'
     category = "Measurement"
     variable_revision_number = 2

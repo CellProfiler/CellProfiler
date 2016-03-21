@@ -16,7 +16,7 @@ import uuid
 import numpy
 import zmq
 import cellprofiler
-import cellprofiler.cpimage
+import cellprofiler.image
 import cellprofiler.measurements
 import cellprofiler.preferences
 import cellprofiler.workspace
@@ -335,7 +335,7 @@ class AnalysisRunner(object):
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = cellprofiler.workspace.Workspace(self.pipeline, None, None, None,
-                                                         measurements, cellprofiler.cpimage.ImageSetList())
+                                                         measurements, cellprofiler.image.ImageSetList())
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]
@@ -689,8 +689,8 @@ class AnalysisRunner(object):
         if 'CP_DEBUG_WORKER' in os.environ:
             if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
                 return
-            from cellprofiler.analysis_worker import \
-                AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
+            from cellprofiler.worker import \
+                Worker, NOTIFY_ADDR, NOTIFY_STOP
             from cellprofiler.pipeline import CancelledException
 
             class WorkerRunner(threading.Thread):
@@ -701,7 +701,7 @@ class AnalysisRunner(object):
                     self.notify_socket.bind(NOTIFY_ADDR)
 
                 def run(self):
-                    with AnalysisWorker(self.work_announce_address) as aw:
+                    with Worker(self.work_announce_address) as aw:
                         try:
                             aw.run()
                         except CancelledException:
@@ -737,7 +737,7 @@ class AnalysisRunner(object):
                     args = ([executable] + aw_args)
                 elif sys.platform.startswith('linux'):
                     aw_path = os.path.join(os.path.dirname(__file__),
-                                           "analysis_worker.py")
+                                           "worker.py")
                     args = [sys.executable, aw_path] + aw_args
                 else:
                     args = [sys.executable] + aw_args
@@ -832,7 +832,7 @@ def find_worker_env(idx):
 def find_analysis_worker_source():
     # import here to break circular dependency.
     import cellprofiler.analysis  # used to get the path to the code
-    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "analysis_worker.py")
+    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "worker.py")
 
 
 def start_daemon_thread(target=None, args=(), kwargs=None, name=None):

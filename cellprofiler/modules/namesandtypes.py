@@ -89,9 +89,9 @@ import os
 import re
 import traceback
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
@@ -268,7 +268,7 @@ M_IMAGE_SET_ZIP_DICTIONARY = "ImageSet_Zip_Dictionary"
 M_IMAGE_SET = "ImageSet_ImageSet"
 
 
-class NamesAndTypes(cpm.CPModule):
+class NamesAndTypes(cpm.Module):
     variable_revision_number = 6
     module_name = "NamesAndTypes"
     category = "File Processing"

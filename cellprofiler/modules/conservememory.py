@@ -13,7 +13,7 @@ import gc
 
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.settings as cps
 
 C_REMOVE_OLD = "Remove"
@@ -27,7 +27,7 @@ S_NUMBER_OF_PER_MODULE_SETTINGS = 1
 S_NUMBER_OF_SETTINGS_PER_IMAGE = 1
 
 
-class ConserveMemory(cpm.CPModule):
+class ConserveMemory(cpm.Module):
     module_name = "ConserveMemory"
     category = 'Other'
     variable_revision_number = 1

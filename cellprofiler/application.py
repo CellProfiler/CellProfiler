@@ -10,7 +10,7 @@ import cellprofiler.utilities.thread_excepthook
 cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
 
 
-class CellProfilerApp(wx.App):
+class Application(wx.App):
     def __init__(self, *args, **kwargs):
         # allow suppression of version checking (primarily for nosetests).
         self.check_for_new_version = kwargs.pop('check_for_new_version', False)
@@ -103,5 +103,5 @@ class CellProfilerApp(wx.App):
 # end of class CellProfilerApp
 
 if __name__ == "__main__":
-    CellProfilerApp = CellProfilerApp(0)
+    CellProfilerApp = Application(0)
     CellProfilerApp.MainLoop()

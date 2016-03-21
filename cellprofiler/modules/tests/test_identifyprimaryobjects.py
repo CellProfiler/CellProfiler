@@ -11,7 +11,7 @@ import centrosome.threshold as T
 import numpy as np
 import scipy.ndimage
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.identify as I
 import cellprofiler.modules.identifyprimaryobjects as ID

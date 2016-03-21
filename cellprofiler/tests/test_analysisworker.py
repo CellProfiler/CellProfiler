@@ -16,7 +16,7 @@ import numpy as np
 import zmq
 
 import cellprofiler.analysis as cpanalysis
-import cellprofiler.analysis_worker as cpaw
+import cellprofiler.worker as cpaw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
@@ -114,8 +114,8 @@ class TestAnalysisWorker(unittest.TestCase):
         def run(self):
             up_queue_send_socket = cpaw.the_zmq_context.socket(zmq.PUB)
             up_queue_send_socket.connect(self.notify_addr)
-            with cpaw.AnalysisWorker(self.announce_addr,
-                                     with_stop_run_loop=False) as aw:
+            with cpaw.Worker(self.announce_addr,
+                             with_stop_run_loop=False) as aw:
                 aw.enter_thread()
                 self.aw = aw
                 self.up_queue.put("OK")

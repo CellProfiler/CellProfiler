@@ -79,9 +79,9 @@ def main(args=None):
             if arg == "--ij-plugins-directory" and len(args) > i + 1:
                 cpprefs.set_ij_plugin_directory(args[i + 1])
                 break
-        import cellprofiler.analysis_worker
-        cellprofiler.analysis_worker.aw_parse_args()
-        cellprofiler.analysis_worker.main()
+        import cellprofiler.worker
+        cellprofiler.worker.aw_parse_args()
+        cellprofiler.worker.main()
         sys.exit(0)
 
     options, args = parse_args(args)
@@ -208,7 +208,7 @@ def main(args=None):
         if options.show_gui:
             import wx
             wx.Log.EnableLogging(False)
-            from cellprofiler.cellprofilerapp import CellProfilerApp
+            from cellprofiler.application import CellProfilerApp
             from cellprofiler.workspace import is_workspace_file
 
             if options.pipeline_filename:

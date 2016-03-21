@@ -7,7 +7,7 @@ import sys
 
 import wx
 
-import cellprofiler.cpmodule
+import cellprofiler.module
 import cellprofiler.modules
 import cellprofiler.preferences
 import cpframe

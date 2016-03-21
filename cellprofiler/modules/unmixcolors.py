@@ -42,8 +42,8 @@ See also <b>ColorToGray</b>.
 import numpy as np
 from scipy.linalg import lstsq
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 
@@ -159,7 +159,7 @@ FIXED_SETTING_COUNT = 2
 VARIABLE_SETTING_COUNT = 5
 
 
-class UnmixColors(cpm.CPModule):
+class UnmixColors(cpm.Module):
     module_name = "UnmixColors"
     category = "Image Processing"
     variable_revision_number = 2

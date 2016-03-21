@@ -10,7 +10,7 @@ import cellprofiler.settings
 import pipeline
 
 
-class CPModule(object):
+class Module(object):
     """ Derive from the abstract module class to create your own module in Python
 
     You need to implement the following in the derived class:

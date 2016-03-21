@@ -9,8 +9,8 @@
 import numpy as np
 import scipy.ndimage as scind
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -43,7 +43,7 @@ M_ROTATION_CATEGORY = "Rotation"
 M_ROTATION_F = "%s_%%s" % M_ROTATION_CATEGORY
 
 
-class FlipAndRotate(cpm.CPModule):
+class FlipAndRotate(cpm.Module):
     category = 'Image Processing'
     variable_revision_number = 2
     module_name = 'FlipAndRotate'

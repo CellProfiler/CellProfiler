@@ -7,7 +7,7 @@ import unittest
 import uuid
 import zmq
 
-from cellprofiler.analysis_worker import NOTIFY_STOP
+from cellprofiler.worker import NOTIFY_STOP
 from cellprofiler.knime_bridge import KnimeBridgeServer, \
     CONNECT_REQ_1, CONNECT_REPLY_1, \
     PIPELINE_INFO_REQ_1, PIPELINE_INFO_REPLY_1, PIPELINE_EXCEPTION_1, \

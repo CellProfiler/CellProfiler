@@ -18,11 +18,11 @@ image set at the end.</p>
 See also <b>RunImageJ</b>
 '''
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.settings as cps
 
 
-class OutputExternal(cpm.CPModule):
+class OutputExternal(cpm.Module):
     variable_revision_number = 1
     module_name = 'OutputExternal'
     category = 'Other'

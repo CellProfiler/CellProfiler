@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 
 import cellprofiler.preferences
-import cellprofiler.cpimage
+import cellprofiler.image
 import cellprofiler.measurements
 import cellprofiler.objects
 import cellprofiler.workspace
@@ -1610,11 +1610,11 @@ class Pipeline(object):
             assert name in image_dict, 'Image named "%s" was not provided in the input dictionary' % (name)
 
         # Create image set from provided dict
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
-            image_set.add(image_name, cellprofiler.cpimage.Image(input_pixels))
+            image_set.add(image_name, cellprofiler.image.Image(input_pixels))
         object_set = cellprofiler.objects.ObjectSet()
         measurements = cellprofiler.measurements.Measurements()
 
@@ -1740,7 +1740,7 @@ class Pipeline(object):
         else:
             measurements = initial_measurements
 
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image_set_list = cellprofiler.image.ImageSetList()
         workspace = cellprofiler.workspace.Workspace(self, None, None, None,
                                                      measurements, image_set_list, frame)
 
@@ -2223,7 +2223,7 @@ class Pipeline(object):
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
         """
-        from cellprofiler.cpmodule import CPModule
+        from cellprofiler.module import Module
         if len(args) == 3:
             measurements, image_set_list, frame = args
             workspace = cellprofiler.workspace.Workspace(self,
@@ -2248,7 +2248,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return "Failure"
             if module.show_window and \
-                            module.__class__.display_post_run != CPModule.display_post_run:
+                            module.__class__.display_post_run != Module.display_post_run:
                 try:
                     workspace.post_run_display(module)
                 except Exception, instance:
@@ -2377,7 +2377,7 @@ class Pipeline(object):
 
         workspace - the last workspace run
         '''
-        from cellprofiler.cpmodule import CPModule
+        from cellprofiler.module import Module
         for module in self.modules():
             try:
                 module.post_group(workspace, grouping)
@@ -2390,7 +2390,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return False
             if module.show_window and \
-                            module.__class__.display_post_group != CPModule.display_post_group:
+                            module.__class__.display_post_group != Module.display_post_group:
                 try:
                     workspace.post_group_display(module)
                 except:
@@ -2869,7 +2869,7 @@ class Pipeline(object):
         try:
             new_workspace = cellprofiler.workspace.Workspace(
                     pipeline, None, None, None,
-                    temp_measurements, cellprofiler.cpimage.ImageSetList())
+                    temp_measurements, cellprofiler.image.ImageSetList())
             new_workspace.set_file_list(workspace.file_list)
             pipeline.prepare_run(new_workspace, end_module)
 

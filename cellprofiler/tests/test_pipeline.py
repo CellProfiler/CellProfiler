@@ -3,33 +3,28 @@
 import base64
 import cProfile
 import cStringIO
-import csv
 import os
 import pstats
-import re
 import sys
 import tempfile
 import traceback
 import unittest
 import zlib
-from urllib2 import urlopen
 
 import numpy as np
-import numpy.lib.index_tricks
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules
 import cellprofiler.modules.loadimages as LI
-import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.modules.tests import \
-    example_images_directory, maybe_download_fly, maybe_download_sbs
+    example_images_directory
 
 IMAGE_NAME = "myimage"
 ALT_IMAGE_NAME = "altimage"

@@ -69,7 +69,6 @@ import os
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 
 A_RENUMBER = "Renumber"
 A_DELETE = "Delete"

@@ -1,5 +1,3 @@
-from cellprofiler.gui.help import USING_METADATA_HELP_REF, USING_METADATA_GROUPING_HELP_REF, LOADING_IMAGE_SEQ_HELP_REF
-
 TM_OVERLAP = 'Overlap'
 TM_DISTANCE = 'Distance'
 TM_MEASUREMENTS = 'Measurements'
@@ -25,9 +23,6 @@ M_BOTH = "Both"
 RADIUS_STD_SETTING_TEXT = 'Number of standard deviations for search radius'
 RADIUS_LIMIT_SETTING_TEXT = 'Search radius limit, in pixel units (Min,Max)'
 ONLY_IF_2ND_PHASE_LAP_TEXT = '''<i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i>''' % globals()
-
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 
 __doc__ = """
 <b>Track Objects</b> allows tracking objects throughout sequential
@@ -178,7 +173,6 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from centrosome.lapjv import lapjv
@@ -189,7 +183,6 @@ from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
 from identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
 DT_COLOR_AND_NUMBER = 'Color and Number'
 DT_COLOR_ONLY = 'Color Only'

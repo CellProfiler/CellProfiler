@@ -8,8 +8,6 @@ import pdb
 import socket
 import sys
 
-import readline  # otherwise, pdb.Pdb.__init__ hangs
-
 
 class Rpdb(pdb.Pdb):
     '''A remote python debugger.

@@ -2,7 +2,6 @@
 """
 
 import base64
-import gc
 import glob
 import hashlib
 import os
@@ -33,9 +32,8 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as W
 from cellprofiler.modules.namesandtypes import M_IMAGE_SET
 from cellprofiler.modules.tests import \
-    example_images_directory, maybe_download_example_images, \
-    maybe_download_sbs, maybe_download_tesst_image, maybe_download_fly, \
-    example_images_url, make_12_bit_image, \
+    example_images_directory, maybe_download_sbs, maybe_download_tesst_image, maybe_download_fly, \
+    make_12_bit_image, \
     cp_logo_url_folder, cp_logo_url_filename, cp_logo_url_shape
 
 IMAGE_NAME = "image"

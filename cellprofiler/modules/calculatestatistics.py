@@ -118,13 +118,7 @@ import scipy.optimize
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
-from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
-    IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
-from cellprofiler.settings import YES, NO
 
 '''# of settings aside from the dose measurements'''
 FIXED_SETTING_COUNT = 1

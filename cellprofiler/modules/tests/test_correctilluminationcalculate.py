@@ -2,7 +2,6 @@
 """
 
 import base64
-import sys
 import unittest
 import zlib
 from StringIO import StringIO

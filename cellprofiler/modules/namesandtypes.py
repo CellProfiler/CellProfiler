@@ -1,7 +1,3 @@
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, NAMESANDTYPES_DISPLAY_TABLE, \
-    EXAMPLE_DAPI_PIC, EXAMPLE_GFP_PIC
-
 __doc__ = """
 The <b>NamesAndTypes</b> module gives images and/or channels a meaningful name to a particular image or channel,
 as well as defining the relationships between images to create an image set.
@@ -83,11 +79,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-import hashlib
 import numpy as np
-import os
 import re
-import traceback
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
@@ -103,7 +96,6 @@ from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from bioformats import get_omexml_metadata, load_image
 import bioformats.omexml as OME
@@ -1676,8 +1668,7 @@ class NamesAndTypes(cpm.CPModule):
             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
         from cellprofiler.measurements import \
             C_OBJECTS_SERIES, C_OBJECTS_FRAME
-        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
-            C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, \
+        from cellprofiler.modules.identify import C_COUNT, \
             get_object_measurement_columns
 
         image_names = self.get_image_names()

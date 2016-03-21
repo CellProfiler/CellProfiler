@@ -1,6 +1,3 @@
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
-
 __doc__ = '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using
 objects identified by another module (e.g., nuclei) as a starting point.
 <hr>
@@ -123,30 +120,22 @@ neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;
 <p>See also the other <b>Identify</b> modules.</p>
 ''' % globals()
 
+import centrosome.threshold as cpthresh
 import numpy as np
-import os
 import scipy.ndimage as scind
-import scipy.misc as scimisc
+from centrosome.cpmorphology import fill_labeled_holes
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.outline import outline
+from centrosome.propagate import propagate
+from centrosome.watershed import watershed
 
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
+import cellprofiler.workspace as cpw
 import identify as cpmi
 from identify import FI_IMAGE_SIZE
-import centrosome.threshold as cpthresh
-import centrosome.otsu
-from centrosome.propagate import propagate
-from centrosome.cpmorphology import fill_labeled_holes
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.watershed import watershed
-from centrosome.filter import stretch
-from centrosome.outline import outline
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 M_PROPAGATION = "Propagation"
 M_WATERSHED_G = "Watershed - Gradient"

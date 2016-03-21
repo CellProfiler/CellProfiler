@@ -33,8 +33,6 @@ of the moment and the ZernikePhase feature gives the moment's orientation.</li>
 See also <b>MeasureObjectIntensity</b>.
 """
 
-import sys
-
 import centrosome.zernike as cpmz
 import matplotlib.cm
 import numpy as np
@@ -56,7 +54,6 @@ import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.settings import YES, NO
 
 C_SELF = 'These objects'
 C_CENTERS_OF_OTHER_V2 = 'Other objects'

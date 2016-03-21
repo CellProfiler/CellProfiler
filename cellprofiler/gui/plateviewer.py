@@ -576,7 +576,6 @@ class PlateViewer(object):
 if __name__ == "__main__":
     import os
     import re
-    import bioformats
     import javabridge
     from cellprofiler.utilities.cpjvm import cp_start_vm
 

@@ -4,17 +4,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 import base64
-from bioformats.formatwriter import write_image, convert_pixels_to_buffer
+from bioformats.formatwriter import write_image
 from bioformats import PT_UINT8, PT_UINT16
-from bioformats import OMEXML
-from bioformats.omexml import DO_XYCZT, OM_SAMPLES_PER_PIXEL, OM_BITS_PER_SAMPLE
 import hashlib
-import javabridge
 import numpy as np
 import os
 import unittest
-from urllib import urlretrieve, URLopener
-from urllib2 import HTTPError
+from urllib import URLopener
 import tempfile
 
 import scipy.io.matlab.mio

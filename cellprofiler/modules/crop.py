@@ -25,7 +25,6 @@ module help for more information on saving cropping shapes.
 
 import logging
 import math
-import sys
 
 import numpy as np
 from centrosome.filter import stretch
@@ -35,7 +34,6 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 
 logger = logging.getLogger(__name__)
 

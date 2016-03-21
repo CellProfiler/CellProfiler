@@ -8,9 +8,7 @@ import unittest
 import zlib
 from StringIO import StringIO
 
-import PIL.Image as PILImage
 import numpy as np
-import scipy.ndimage
 
 from cellprofiler.preferences import set_headless
 

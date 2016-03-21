@@ -1,15 +1,16 @@
 '''test_loaddata - Test the LoadData (formerly LoadText) module'''
 
-from bioformats import load_image, write_image, PT_UINT8
 import base64
-import numpy as np
+import hashlib
 import os
 import re
-from StringIO import StringIO
 import tempfile
 import unittest
 import zlib
-import hashlib
+from StringIO import StringIO
+
+import numpy as np
+from bioformats import write_image, PT_UINT8
 
 from cellprofiler.preferences import set_headless
 
@@ -20,7 +21,6 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
-import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L

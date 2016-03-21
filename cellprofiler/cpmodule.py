@@ -3,16 +3,11 @@
     TO-DO: capture and save module revision #s in the handles
 """
 
-import os
-import re
 import sys
 import uuid
 
 import numpy as np
 
-import cellprofiler.cpimage
-import cellprofiler.measurements
-import cellprofiler.objects
 import cellprofiler.settings as cps
 import pipeline as cpp
 

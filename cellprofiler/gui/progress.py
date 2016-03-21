@@ -1,4 +1,3 @@
-import cStringIO
 import sys
 import time
 
@@ -7,7 +6,7 @@ import wx
 
 import cellprofiler
 import cellprofiler.utilities.version as version
-from cellprofiler.gui import get_cp_icon, get_cp_bitmap
+from cellprofiler.gui import get_cp_icon
 from cellprofiler.icons import get_builtin_image
 
 

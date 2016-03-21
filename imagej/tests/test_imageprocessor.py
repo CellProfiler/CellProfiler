@@ -2,7 +2,6 @@
 
 __version__ = "$Revision$"
 
-import os
 import unittest
 
 import javabridge as J

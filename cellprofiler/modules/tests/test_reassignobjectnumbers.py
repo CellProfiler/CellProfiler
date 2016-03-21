@@ -1,20 +1,17 @@
 '''test_relabelobjects.py - test the RelabelObjects module'''
 
 import base64
-import os
 import unittest
 import zlib
 from StringIO import StringIO
 
 import numpy as np
-import scipy.ndimage
 
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo

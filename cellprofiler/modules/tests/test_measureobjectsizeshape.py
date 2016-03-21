@@ -13,7 +13,6 @@ set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.measureobjectsizeshape as cpmoas
-import cellprofiler.modules.injectimage as ii
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo

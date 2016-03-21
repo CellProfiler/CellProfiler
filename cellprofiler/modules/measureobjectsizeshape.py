@@ -1,6 +1,3 @@
-import cellprofiler.icons
-from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
-
 __doc__ = '''
 <b>Measure Object Size Shape </b> measures several area and shape
 features of identified objects.
@@ -110,25 +107,24 @@ vol 3, p. 30 </li>
 See also <b>MeasureImageAreaOccupied</b>.
 ''' % globals()
 
+import centrosome.zernike as cpmz
 import numpy as np
 import scipy.ndimage as scind
+from centrosome.cpmorphology import calculate_extents
+from centrosome.cpmorphology import calculate_perimeters
+from centrosome.cpmorphology import calculate_solidity
+from centrosome.cpmorphology import convex_hull_ijv
+from centrosome.cpmorphology import distance_to_edge
+from centrosome.cpmorphology import ellipse_from_second_moments_ijv
+from centrosome.cpmorphology import euler_number
+from centrosome.cpmorphology import feret_diameter
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import maximum_position_of_labels
+from centrosome.cpmorphology import median_of_labels
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import centrosome.zernike as cpmz
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import ellipse_from_second_moments_ijv
-from centrosome.cpmorphology import calculate_extents
-from centrosome.cpmorphology import calculate_perimeters
-from centrosome.cpmorphology import calculate_solidity
-from centrosome.cpmorphology import euler_number
-from centrosome.cpmorphology import distance_to_edge
-from centrosome.cpmorphology import maximum_position_of_labels
-from centrosome.cpmorphology import median_of_labels
-from centrosome.cpmorphology import feret_diameter
-from centrosome.cpmorphology import convex_hull_ijv
 from cellprofiler.measurements import COLTYPE_FLOAT
 
 """The category of the per-object measurements made by this module"""

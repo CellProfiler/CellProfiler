@@ -32,7 +32,7 @@ the expanded/shrunken objects.</li>
 <p>See also <b>Identify</b> modules.</p>'''
 
 import numpy as np
-from centrosome.cpmorphology import binary_shrink, thin
+from centrosome.cpmorphology import binary_shrink
 from centrosome.cpmorphology import fill_labeled_holes, adjacent
 from centrosome.cpmorphology import skeletonize_labels, spur
 from centrosome.outline import outline
@@ -43,11 +43,9 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from cellprofiler.modules.identify import add_object_count_measurements
 from cellprofiler.modules.identify import add_object_location_measurements
 from cellprofiler.modules.identify import get_object_measurement_columns
-from cellprofiler.settings import YES, NO
 
 O_SHRINK_INF = 'Shrink objects to a point'
 O_EXPAND_INF = 'Expand objects until touching'

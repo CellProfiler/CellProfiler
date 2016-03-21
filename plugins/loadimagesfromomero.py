@@ -57,7 +57,6 @@ OMERO_VERSION4_PREHCS = ['Beta-4.0.1', 'Beta-4.0.2']
 # but that version identified itself with 'Beta-4.0.2'
 if omero_version in OMERO_VERSION4_PREHCS:
     # This import is required because of an issue with forward-declarations in Ice
-    import omero_api_Gateway_ice
 
     DEFAULT_OMERO_PORT = 4063
     INT_8 = "int8"

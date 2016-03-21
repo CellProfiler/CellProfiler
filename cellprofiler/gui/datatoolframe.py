@@ -2,10 +2,8 @@
 '''
 
 import h5py
-import numpy as np
 import wx
 import wx.lib.scrolledpanel
-from scipy.io.matlab.mio import loadmat
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.gui.cpfigure as cpf

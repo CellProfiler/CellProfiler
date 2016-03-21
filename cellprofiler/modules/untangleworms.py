@@ -69,7 +69,6 @@ as video tutorials.</p>
 
 import logging
 import os
-import sys
 import urllib2
 import xml.dom.minidom as DOM
 
@@ -86,17 +85,12 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import centrosome.cpmorphology as morph
 import cellprofiler.preferences as cpprefs
 import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
-from cellprofiler.preferences import standardize_default_folder_names, \
-    DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
-    ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
-from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
-from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+from cellprofiler.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 
 OO_WITH_OVERLAP = "With overlap"
 OO_WITHOUT_OVERLAP = "Without overlap"
@@ -953,8 +947,6 @@ class UntangleWorms(cpm.CPModule):
                 figure.subplot_imshow_grayscale(
                         0, 0, image, title=title, cplabels=cplabels)
         else:
-            from matplotlib.path import Path
-            from matplotlib.patches import PathPatch
             figure.set_subplots((1, 1))
             figure.subplot_imshow_bw(0, 0, workspace.display_data.input_image,
                                      title=self.image_name.value)

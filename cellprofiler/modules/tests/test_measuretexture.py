@@ -2,31 +2,18 @@
 '''
 
 import base64
-import os
-import shutil
-import tempfile
 import unittest
-import urllib2
 import zlib
 from StringIO import StringIO
 
 import numpy as np
-import scipy.ndimage as scind
-from bioformats import load_image
-from bioformats.formatreader import load_using_bioformats_url
-from scipy.io.matlab import loadmat
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.measuretexture as M
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
-import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
-from cellprofiler.modules.tests import \
-    example_images_directory, maybe_download_example_image, \
-    maybe_download_sbs, github_url
 
 INPUT_IMAGE_NAME = 'Cytoplasm'
 INPUT_OBJECTS_NAME = 'inputobjects'

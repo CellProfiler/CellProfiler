@@ -1,7 +1,3 @@
-import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, \
-    IMAGES_FILELIST_FILLED, MODULE_ADD_BUTTON, METADATA_DISPLAY_TABLE
-
 __doc__ = """
 The <b>Metadata</b> module connects information about the images (i.e., metadata)
 to your list of images for processing in CellProfiler.
@@ -95,30 +91,24 @@ module for more details.</p>
 </ul>
 """ % globals()
 
-import numpy as np
 import logging
 
 logger = logging.getLogger(__name__)
-import csv
 import re
 import os
 import time
 import urllib
-import urlparse
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 import javabridge as J
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
-from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import \
-    well_metadata_tokens, urlfilename, urlpathname
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
+    urlfilename, urlpathname
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
@@ -842,8 +832,6 @@ class Metadata(cpm.CPModule):
 
         import wx
         from bioformats.formatreader import get_omexml_metadata
-        from bioformats.omexml import OMEXML
-        from cellprofiler.modules.loadimages import url2pathname
         with wx.ProgressDialog("Updating metadata",
                                msg(list(urls)[0]),
                                len(urls),

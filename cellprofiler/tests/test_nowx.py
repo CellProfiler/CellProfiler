@@ -1,7 +1,6 @@
 """test_nowx.py - ensure that there's no dependency on wx when headless
 """
 import __builtin__
-import os
 import sys
 import tempfile
 import traceback
@@ -9,7 +8,7 @@ import unittest
 from urllib2 import urlopen
 
 from cellprofiler.modules.tests import \
-    example_images_directory, maybe_download_sbs, maybe_download_fly
+    example_images_directory
 
 
 def import_all_but_wx(name,
@@ -43,13 +42,12 @@ class TestNoWX(unittest.TestCase):
 
     def test_01_02_throws_on_wx_import(self):
         def import_wx():
-            import wx
+            pass
 
         self.assertRaises(ImportError, import_wx)
 
     def test_01_03_import_modules(self):
         '''Import cellprofiler.modules and make sure it doesn't import wx'''
-        import cellprofiler.modules
 
     def test_01_04_instantiate_all(self):
         '''Instantiate each module and make sure none import wx'''
@@ -65,7 +63,6 @@ class TestNoWX(unittest.TestCase):
 
     def test_01_05_load_pipeline(self):
         import cellprofiler.pipeline as cpp
-        import os
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
 

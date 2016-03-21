@@ -118,7 +118,6 @@ if __name__ == "__main__":
 
 import time
 import threading
-import thread
 import random
 import zmq
 import cStringIO as StringIO
@@ -134,10 +133,8 @@ from cellprofiler.analysis import \
     PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
     NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
     DisplayPostGroupRequest, AnalysisCancelRequest, \
-    ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
-    ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
-    SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
-    OmeroLoginRequest, OmeroLoginReply
+    ExceptionReport, DebugWaiting, DebugComplete, ImageSetSuccess, ImageSetSuccessWithDictionary, \
+    SharedDictionaryRequest, UpstreamExit, OmeroLoginRequest
 import javabridge as J
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 #

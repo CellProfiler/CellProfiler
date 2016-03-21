@@ -1,6 +1,5 @@
 '''test_straightenworms - test the StraightenWorms module'''
 
-import itertools
 import unittest
 from StringIO import StringIO
 

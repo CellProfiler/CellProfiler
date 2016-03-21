@@ -5,26 +5,21 @@ import base64
 import os
 import tempfile
 import unittest
-import urllib
 import zlib
 from StringIO import StringIO
 
 import numpy as np
-from scipy.io.matlab import loadmat
 
 from cellprofiler.preferences import set_headless
 
 set_headless()
 
-import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 import cellprofiler.cpimage as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-import cellprofiler.preferences as cpprefs
-from cellprofiler.modules.tests import github_url
 
 import cellprofiler.modules.calculatestatistics as C
 

@@ -10,7 +10,7 @@
 import sys as _sys
 
 if _sys.version_info[0] > 2 or _sys.version_info[1] >= 6:
-    from itertools import product
+    pass
 else:
     def product(*args):
         '''The cartesian product of the arguments

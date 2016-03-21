@@ -2,7 +2,6 @@ import logging
 
 logger = logging.getLogger(__package__)
 import os.path
-import glob
 import weakref
 import sys
 

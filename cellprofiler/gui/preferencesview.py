@@ -13,7 +13,6 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import \
     DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, USING_THE_OUTPUT_FILE_HELP
 from cellprofiler.gui.htmldialog import HTMLDialog
-from cellprofiler.icons import get_builtin_image
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
 

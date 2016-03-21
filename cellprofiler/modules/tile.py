@@ -36,17 +36,13 @@ Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama
 '''
 
 import logging
-import sys
 
 import numpy as np
-import scipy.ndimage as scind
 
 logger = logging.getLogger(__name__)
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
-import cellprofiler.measurements as cpmeas
 
 T_WITHIN_CYCLES = 'Within cycles'
 T_ACROSS_CYCLES = 'Across cycles'

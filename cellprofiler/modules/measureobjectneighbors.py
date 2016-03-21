@@ -53,7 +53,6 @@ import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-from cellprofiler.settings import YES, NO
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND = 'Expand until adjacent'

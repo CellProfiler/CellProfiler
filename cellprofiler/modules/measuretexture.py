@@ -127,7 +127,6 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
-from cellprofiler.settings import YES, NO
 
 """The category of the per-object measurements made by this module"""
 TEXTURE = 'Texture'

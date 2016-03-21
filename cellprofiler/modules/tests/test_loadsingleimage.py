@@ -13,7 +13,6 @@ import PIL.Image
 import numpy as np
 
 import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.loadimages as LI
 import cellprofiler.modules.loadsingleimage as L
@@ -24,8 +23,7 @@ import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.tests import \
-    example_images_directory, maybe_download_example_image, \
-    maybe_download_example_images, maybe_download_sbs, make_12_bit_image
+    example_images_directory, maybe_download_sbs, make_12_bit_image
 from cellprofiler.modules.tests.test_loadimages import ConvtesterMixin
 
 OBJECTS_NAME = "myobjects"

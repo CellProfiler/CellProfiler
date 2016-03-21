@@ -8,15 +8,12 @@ Note that smoothing can be a time-consuming process.
 import numpy as np
 import scipy.ndimage as scind
 from centrosome.filter import median_filter, bilateral_filter, circular_average_filter
-from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
-from cellprofiler.settings import YES, NO
 
 FIT_POLYNOMIAL = 'Fit Polynomial'
 MEDIAN_FILTER = 'Median Filter'

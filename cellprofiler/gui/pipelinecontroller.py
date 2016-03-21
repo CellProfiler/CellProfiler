@@ -7,11 +7,9 @@ import datetime
 import exceptions
 import hashlib
 import logging
-import math
 import os
 import random
 import re
-import shutil
 import string
 import sys
 import threading
@@ -24,7 +22,6 @@ import wx
 from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
 
 import cellprofiler.analysis as cpanalysis
-import cellprofiler.analysis as cpanalysis
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.gui.moduleview
@@ -34,15 +31,12 @@ import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.utilities.version as version
-import cellprofiler.utilities.walk_in_background as W
 import cellprofiler.workspace as cpw
 import cpframe
-from cellprofiler.gui import get_cp_bitmap
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
 from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
-from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED, PLATEVIEWER_HELP
+from cellprofiler.gui.help import PLATEVIEWER_HELP
 from cellprofiler.gui.htmldialog import HTMLDialog
-from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 from cellprofiler.gui.omerologin import OmeroLoginDlg
 from cellprofiler.gui.pathlist import EVT_PLC_SELECTION_CHANGED
 from cellprofiler.gui.viewworkspace import \
@@ -50,7 +44,7 @@ from cellprofiler.gui.viewworkspace import \
 from cellprofiler.icons import get_builtin_image
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 from cellprofiler.modules.loadimages import pathname2url
-from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
+from errordialog import display_error_dialog, ED_STOP, ED_SKIP
 from errordialog import display_error_message
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 
@@ -743,7 +737,6 @@ class PipelineController:
                                  "ExampleSBSImages/ExampleSBS.cppipe",
                                  "Load pipeline via URL")
         if dlg.ShowModal() == wx.ID_OK:
-            import urllib2
             filename, headers = urllib.urlretrieve(dlg.Value)
             try:
                 self.do_load_pipeline(filename)

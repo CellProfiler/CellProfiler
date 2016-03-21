@@ -2,8 +2,6 @@
 '''
 
 import base64
-import os
-import tempfile
 import unittest
 import zlib
 from StringIO import StringIO
@@ -16,7 +14,6 @@ from cellprofiler.preferences import set_headless
 set_headless()
 
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo

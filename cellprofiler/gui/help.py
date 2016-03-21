@@ -22,7 +22,6 @@ import os
 import sys
 
 import cellprofiler.icons
-from cellprofiler.settings import YES, NO
 from cellprofiler.utilities.relpath import relpath
 
 # from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
@@ -139,8 +138,6 @@ navigate the cursor to just before the tag and either:
 
 USING_METADATA_GROUPING_HELP_REF = """Please see the <b>Groups</b> module for more details on the
 proper use of metadata for grouping"""
-
-from cellprofiler.settings import YES, NO
 
 RETAINING_OUTLINES_HELP = """Select <i>%(YES)s</i> to retain the outlines of the new objects
 for later use in the pipeline. For example, a common use is for quality control purposes by

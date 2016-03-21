@@ -4,13 +4,11 @@
 import logging
 
 logger = logging.getLogger(__name__)
-from cStringIO import StringIO
-import numpy as np
+
+import cStringIO
 import h5py
 import os
-
-from cellprofiler.cpgridinfo import CPGridInfo
-from .utilities.hdf5_dict import HDF5FileList, HDF5Dict
+from cellprofiler.utilities.hdf5_dict import HDF5FileList, HDF5Dict
 
 '''Continue to run the pipeline
 
@@ -461,11 +459,11 @@ class Workspace(object):
                     cpmeas.EXPERIMENT, M_PIPELINE):
                 pipeline_txt = self.__measurements.get_experiment_measurement(
                         M_PIPELINE).encode("utf-8")
-                self.pipeline.load(StringIO(pipeline_txt))
+                self.pipeline.load(cStringIO.StringIO(pipeline_txt))
             elif load_pipeline:
                 self.pipeline.clear()
             else:
-                fd = StringIO()
+                fd = cStringIO.StringIO()
                 self.pipeline.savetxt(fd, save_image_plane_details=False)
                 self.__measurements.add_experiment_measurement(
                         M_PIPELINE, fd.getvalue())
@@ -541,7 +539,7 @@ class Workspace(object):
 
     def save_pipeline_to_measurements(self):
         from cellprofiler.pipeline import M_PIPELINE
-        fd = StringIO()
+        fd = cStringIO.StringIO()
         self.pipeline.savetxt(fd, save_image_plane_details=False)
         self.measurements.add_experiment_measurement(M_PIPELINE, fd.getvalue())
         self.measurements.flush()

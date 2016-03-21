@@ -4,14 +4,13 @@
 import logging
 
 logger = logging.getLogger(__name__)
+
 import json
 import matplotlib.cm
-import numpy as np
 import os
 import sys
 import re
 import uuid
-
 from cellprofiler.preferences import \
     DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, \
     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
@@ -19,7 +18,6 @@ from cellprofiler.preferences import \
     get_default_image_directory, get_default_output_directory, \
     standardize_default_folder_names
 import cellprofiler.measurements
-
 from cellprofiler.utilities.utf16encode import utf16encode
 
 '''Matlab CellProfiler uses this string for settings to be excluded'''

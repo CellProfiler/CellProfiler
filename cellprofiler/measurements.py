@@ -1,28 +1,21 @@
 """Measurements.py - storage for image and object measurements
 """
-from __future__ import with_statement
 
 import json
 import logging
-
 import h5py
 
 logger = logging.getLogger(__name__)
-import numpy as np
+
 import re
-from scipy.io.matlab import loadmat
-from itertools import repeat
-import cellprofiler.preferences as cpprefs
-from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
-from cellprofiler.utilities.hdf5_dict import VERSION, HDFCSV, VStringArray
-from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
-from cellprofiler.utilities.hdf5_dict import NullLock
+import scipy.io.matlab
+import cellprofiler.preferences
+from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group, VERSION, HDFCSV, VStringArray, HDF5ObjectSet, NullLock
 import tempfile
-import numpy as np
+import numpy
 import warnings
 import os
 import os.path
-import mmap
 import urllib
 import sys
 
@@ -215,7 +208,7 @@ def make_temporary_file():
     returns a file descriptor (that should be closed when done) and a
     file name.
     '''
-    dir = cpprefs.get_temporary_directory()
+    dir = cellprofiler.preferences.get_temporary_directory()
     if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
         dir = None
     return tempfile.mkstemp(
@@ -400,10 +393,10 @@ class Measurements(object):
 
         def fix_type(t):
             if t == 'integer':
-                return np.int
+                return numpy.int
             if t.startswith('varchar'):
                 len = t.split('(')[1][:-1]
-                return np.dtype('a' + len)
+                return numpy.dtype('a' + len)
             return t
 
         for object_name, feature, coltype in measurement_columns:
@@ -464,7 +457,7 @@ class Measurements(object):
 
     def load(self, measurements_file_name):
         '''Load measurements from a matlab file'''
-        handles = loadmat(measurements_file_name, struct_as_record=True)
+        handles = scipy.io.matlab.loadmat(measurements_file_name, struct_as_record=True)
         self.create_from_handles(handles)
 
     def create_from_handles(self, handles):
@@ -472,7 +465,7 @@ class Measurements(object):
         m = handles["handles"][0, 0][MEASUREMENTS_GROUP_NAME][0, 0]
         for object_name in m.dtype.fields.keys():
             omeas = m[object_name][0, 0]
-            object_counts = np.zeros(0, int)
+            object_counts = numpy.zeros(0, int)
             for feature_name in omeas.dtype.fields.keys():
                 if object_name == IMAGE:
                     values = [None if len(x) == 0 else x.flatten()[0]
@@ -488,12 +481,12 @@ class Measurements(object):
                     # Keep track of # of objects
                     #
                     if len(object_counts) < len(values):
-                        temp, object_counts = object_counts, np.zeros(len(values), int)
+                        temp, object_counts = object_counts, numpy.zeros(len(values), int)
                         if len(temp) > 0:
                             object_counts[:len(temp)] = temp
-                    object_counts[:len(values)] = np.maximum(
+                    object_counts[:len(values)] = numpy.maximum(
                             object_counts[:len(values)],
-                            np.array([len(x) for x in values]))
+                            numpy.array([len(x) for x in values]))
                 self.add_all_measurements(object_name,
                                           feature_name,
                                           values)
@@ -501,7 +494,7 @@ class Measurements(object):
                     object_name, OBJECT_NUMBER):
                 self.add_all_measurements(
                         object_name, OBJECT_NUMBER,
-                        [np.arange(1, x + 1) for x in object_counts])
+                        [numpy.arange(1, x + 1) for x in object_counts])
         #
         # Set the image set number to beyond the last in the handles
         #
@@ -680,22 +673,22 @@ class Measurements(object):
         '''
         features = (R_FIRST_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
                     R_SECOND_IMAGE_NUMBER, R_SECOND_OBJECT_NUMBER)
-        dt = np.dtype([(feature, np.int32, 1) for feature in features])
+        dt = numpy.dtype([(feature, numpy.int32, 1) for feature in features])
         if not (module_number, relationship, object_name1, object_name2) \
                 in self.__relationships:
-            return np.zeros(0, dt).view(np.recarray)
+            return numpy.zeros(0, dt).view(numpy.recarray)
         with self.hdf5_dict.lock:
             grp = self.get_relationship_hdf5_group(
                     module_number, relationship, object_name1, object_name2)
             n_records = grp[R_FIRST_IMAGE_NUMBER].shape[0]
             if n_records == 0:
-                return np.zeros(0, dt).view(np.recarray)
+                return numpy.zeros(0, dt).view(numpy.recarray)
             if image_numbers is None:
-                temp = np.zeros(n_records, dt)
+                temp = numpy.zeros(n_records, dt)
                 for feature in features:
                     temp[feature] = grp[feature]
             else:
-                image_numbers = np.atleast_1d(image_numbers)
+                image_numbers = numpy.atleast_1d(image_numbers)
                 k = (module_number, relationship, object_name1, object_name2)
                 d = self.__image_number_relationships.get(k, None)
                 if d is None:
@@ -712,16 +705,16 @@ class Measurements(object):
                     t_min = min(i_min, t_min)
                     t_max = max(i_max + 1, t_max)
                 if t_min >= t_max:
-                    return np.zeros(0, dt).view(np.recarray)
+                    return numpy.zeros(0, dt).view(numpy.recarray)
                 #
                 # Construct a mask, offset by the minimum index to be addressed
                 # of the image numbers to keep in the slice
                 #
-                in_min = np.min(image_numbers)
-                in_max = np.max(image_numbers)
-                to_keep = np.zeros(in_max - in_min + 1, bool)
+                in_min = numpy.min(image_numbers)
+                in_max = numpy.max(image_numbers)
+                to_keep = numpy.zeros(in_max - in_min + 1, bool)
                 to_keep[image_numbers - in_min] = True
-                mask = np.zeros(t_max - t_min, bool)
+                mask = numpy.zeros(t_max - t_min, bool)
                 for a in grp[R_FIRST_IMAGE_NUMBER][t_min:t_max], \
                          grp[R_SECOND_IMAGE_NUMBER][t_min:t_max]:
                     m1 = (a >= in_min) & (a <= in_max)
@@ -729,11 +722,11 @@ class Measurements(object):
                 #
                 # Apply the mask to slices for all of the features
                 #
-                n_records = np.sum(mask)
-                temp = np.zeros(n_records, dt)
+                n_records = numpy.sum(mask)
+                temp = numpy.zeros(n_records, dt)
                 for feature in features:
                     temp[feature] = grp[feature][t_min:t_max][mask]
-            return temp.view(np.recarray)
+            return temp.view(numpy.recarray)
 
     @staticmethod
     def init_image_number_relationships(grp):
@@ -766,12 +759,12 @@ class Measurements(object):
         d - the dictionary to update
         '''
 
-        offsets = offset + np.arange(len(imgnums))
-        order = np.lexsort((offsets, imgnums))
+        offsets = offset + numpy.arange(len(imgnums))
+        order = numpy.lexsort((offsets, imgnums))
         imgnums = imgnums[order]
         offsets = offsets[order]
-        firsts = np.hstack(([True], imgnums[:-1] != imgnums[1:]))
-        lasts = np.hstack((firsts[1:], [True]))
+        firsts = numpy.hstack(([True], imgnums[:-1] != imgnums[1:]))
+        lasts = numpy.hstack((firsts[1:], [True]))
         for i, f, l in zip(
                 imgnums[firsts], offsets[firsts], offsets[lasts]):
             old_f, old_l = d.get(i, (sys.maxint, 0))
@@ -815,18 +808,18 @@ class Measurements(object):
             return
 
         if object_name == EXPERIMENT:
-            if not np.isscalar(data) and data is not None and data_type is None:
+            if not numpy.isscalar(data) and data is not None and data_type is None:
                 data = data[0]
             if data is None:
                 data = []
             self.hdf5_dict[EXPERIMENT, feature_name, 0, data_type] = \
                 Measurements.wrap_string(data)
         elif object_name == IMAGE:
-            if np.isscalar(image_set_number):
+            if numpy.isscalar(image_set_number):
                 image_set_number = [image_set_number]
                 data = [data]
-            data = [d if d is None or d is np.NaN
-                    else Measurements.wrap_string(d) if np.isscalar(d)
+            data = [d if d is None or d is numpy.NaN
+                    else Measurements.wrap_string(d) if numpy.isscalar(d)
             else Measurements.wrap_string(d[0]) if data_type is None
             else d
                     for d in data]
@@ -837,7 +830,7 @@ class Measurements(object):
         else:
             self.hdf5_dict[
                 object_name, feature_name, image_set_number, data_type] = data
-            for n, d in (((image_set_number, data),) if np.isscalar(image_set_number)
+            for n, d in (((image_set_number, data),) if numpy.isscalar(image_set_number)
                          else zip(image_set_number, data)):
                 if not self.hdf5_dict.has_data(IMAGE, IMAGE_NUMBER, n):
                     self.hdf5_dict[IMAGE, IMAGE_NUMBER, n] = n
@@ -846,7 +839,7 @@ class Measurements(object):
                         (d is not None)):
                     self.hdf5_dict[object_name, IMAGE_NUMBER, n] = [n] * len(d)
                 self.hdf5_dict[object_name, OBJECT_NUMBER, n] = \
-                    np.arange(1, len(d) + 1)
+                    numpy.arange(1, len(d) + 1)
 
     def remove_measurement(self, object_name, feature_name, image_number=None):
         '''Remove the measurement for the given image number
@@ -881,7 +874,7 @@ class Measurements(object):
 
     def get_image_numbers(self):
         '''Return the image numbers from the Image table'''
-        image_numbers = np.array(
+        image_numbers = numpy.array(
                 self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER).keys(), int)
         image_numbers.sort()
         return image_numbers
@@ -963,7 +956,7 @@ class Measurements(object):
             image_set_number = self.image_set_number
         vals = self.hdf5_dict[object_name, feature_name, image_set_number]
         if object_name == IMAGE:
-            if np.isscalar(image_set_number):
+            if numpy.isscalar(image_set_number):
                 if vals is None or len(vals) == 0:
                     return None
                 if len(vals) == 1:
@@ -976,7 +969,7 @@ class Measurements(object):
                     result = [Measurements.unwrap_string(v[0])
                               if v is not None else None
                               for v in vals]
-                elif measurement_dtype == np.uint8:
+                elif measurement_dtype == numpy.uint8:
                     #
                     # Blobs - just pass them through as an array.
                     #
@@ -988,14 +981,14 @@ class Measurements(object):
                     # A missing result is assumed to be "unable to calculate
                     # in this case and we substitute NaN for it.
                     #
-                    result = np.array(
-                            [np.NaN if v is None or len(v) == 0
+                    result = numpy.array(
+                            [numpy.NaN if v is None or len(v) == 0
                              else v[0] if len(v) == 1
                             else v for v in vals])
                 return result
-        if np.isscalar(image_set_number):
-            return np.array([]) if vals is None else vals.flatten()
-        return [np.array([]) if v is None else v.flatten() for v in vals]
+        if numpy.isscalar(image_set_number):
+            return numpy.array([]) if vals is None else vals.flatten()
+        return [numpy.array([]) if v is None else v.flatten() for v in vals]
 
     def get_measurement_columns(self):
         '''Return the measurement columns for the current measurements
@@ -1014,7 +1007,7 @@ class Measurements(object):
                 dtype = self.hdf5_dict.get_feature_dtype(object_name, feature_name)
                 if dtype.kind in ['O', 'S', 'U']:
                     result.append((object_name, feature_name, COLTYPE_VARCHAR))
-                elif np.issubdtype(dtype, float):
+                elif numpy.issubdtype(dtype, float):
                     result.append((object_name, feature_name, COLTYPE_FLOAT))
                 else:
                     result.append((object_name, feature_name, COLTYPE_INTEGER))
@@ -1044,12 +1037,12 @@ class Measurements(object):
         values - list of either values or arrays of values
         '''
         values = [[] if value is None
-                  else [Measurements.wrap_string(value)] if np.isscalar(value)
+                  else [Measurements.wrap_string(value)] if numpy.isscalar(value)
         else value
                   for value in values]
         if ((not self.hdf5_dict.has_feature(IMAGE, IMAGE_NUMBER)) or
-                (np.max(self.get_image_numbers()) < len(values))):
-            image_numbers = np.arange(1, len(values) + 1)
+                (numpy.max(self.get_image_numbers()) < len(values))):
+            image_numbers = numpy.arange(1, len(values) + 1)
             self.hdf5_dict.add_all(
                     IMAGE, IMAGE_NUMBER, image_numbers)
         else:
@@ -1132,7 +1125,7 @@ class Measurements(object):
                 group_numbers = self.get_measurement(
                         IMAGE, GROUP_NUMBER,
                         image_set_number=image_numbers)
-                return len(np.unique(group_numbers)) > 1
+                return len(numpy.unique(group_numbers)) > 1
         return False
 
     def group_by_metadata(self, tags):
@@ -1287,24 +1280,24 @@ class Measurements(object):
                 values = self.get_measurement(object_name, feature,
                                               image_set_number)
                 if values is not None:
-                    values = values[np.isfinite(values)]
+                    values = values[numpy.isfinite(values)]
                 #
                 # Compute the mean and standard deviation
                 #
                 if AGG_MEAN in aggs:
                     mean_feature_name = get_agg_measurement_name(
                             AGG_MEAN, object_name, feature)
-                    mean = values.mean() if values is not None else np.NaN
+                    mean = values.mean() if values is not None else numpy.NaN
                     d[mean_feature_name] = mean
                 if AGG_MEDIAN in aggs:
                     median_feature_name = get_agg_measurement_name(
                             AGG_MEDIAN, object_name, feature)
-                    median = np.median(values) if values is not None else np.NaN
+                    median = numpy.median(values) if values is not None else numpy.NaN
                     d[median_feature_name] = median
                 if AGG_STD_DEV in aggs:
                     stdev_feature_name = get_agg_measurement_name(
                             AGG_STD_DEV, object_name, feature)
-                    stdev = values.std() if values is not None else np.NaN
+                    stdev = values.std() if values is not None else numpy.NaN
                     d[stdev_feature_name] = stdev
         return d
 
@@ -1326,7 +1319,7 @@ class Measurements(object):
         reader = csv.reader(fd_or_file)
         header = [x.decode('utf-8') for x in reader.next()]
         columns = [[] for _ in range(len(header))]
-        column_is_all_none = np.ones(len(header), bool)
+        column_is_all_none = numpy.ones(len(header), bool)
         last_image_number = 0
         for i, fields in enumerate(reader):
             fields = [x.decode('utf-8') for x in fields]
@@ -1353,14 +1346,14 @@ class Measurements(object):
         for feature, column, all_none in zip(header, columns, column_is_all_none):
             if not all_none:
                 # try to convert to an integer, then float, then leave as string
-                column = np.array(column, object)
+                column = numpy.array(column, object)
                 try:
                     column = column.astype(int)
                 except:
                     try:
                         column = column.astype(float)
                     except:
-                        column = np.array(
+                        column = numpy.array(
                                 [Measurements.wrap_string(x) for x in column],
                                 object)
                 self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
@@ -1405,7 +1398,7 @@ class Measurements(object):
         for i, image_number in enumerate(image_numbers):
             for j, column in enumerate(columns):
                 field = column[i]
-                if field is np.NaN or field is None:
+                if field is numpy.NaN or field is None:
                     field = ""
                 if isinstance(field, basestring):
                     if isinstance(field, unicode):
@@ -1623,7 +1616,7 @@ class Measurements(object):
                 self.__images[name] = image
         if must_be_binary and image.pixel_data.ndim == 3:
             raise ValueError("Image must be binary, but it was color")
-        if must_be_binary and image.pixel_data.dtype != np.bool:
+        if must_be_binary and image.pixel_data.dtype != numpy.bool:
             raise ValueError("Image was not binary")
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
@@ -1631,8 +1624,8 @@ class Measurements(object):
                 (image.pixel_data.ndim != 2)):
             pd = image.pixel_data
             if pd.shape[2] >= 3 and \
-                    np.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    np.all(pd[:, :, 0] == pd[:, :, 2]):
+                    numpy.all(pd[:, :, 0] == pd[:, :, 1]) and \
+                    numpy.all(pd[:, :, 0] == pd[:, :, 2]):
                 return GrayscaleImage(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
@@ -1683,7 +1676,7 @@ class Measurements(object):
 
     def __ensure_cache_file(self):
         if self.__image_cache_file is None:
-            path = cpprefs.get_temporary_directory()
+            path = cellprofiler.preferences.get_temporary_directory()
             if (path is None) or (not os.path.exists(path)) or \
                     (not os.access(path, os.W_OK)):
                 path = None
@@ -1807,7 +1800,7 @@ class Measurements(object):
 
 
 def load_measurements_from_buffer(buf):
-    dir = cpprefs.get_default_output_directory()
+    dir = cellprofiler.preferences.get_default_output_directory()
     if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
         dir = None
     fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
@@ -2177,8 +2170,8 @@ class ImageSetCache(object):
             self.error_row_and_column_dataset = \
                 self.image_set_cache_group.create_dataset(
                         self.ERROR_ROW_AND_COLUMN_DATASET,
-                        dtype=np.dtype([(self.ROW_INDEX, np.uint32, 1),
-                                        (self.IO_INDEX, np.uint8, 1)]),
+                        dtype=numpy.dtype([(self.ROW_INDEX, numpy.uint32, 1),
+                                           (self.IO_INDEX, numpy.uint8, 1)]),
                         shape=(len(errors),),
                         chunks=(256,),
                         maxshape=(None,))
@@ -2200,8 +2193,8 @@ class ImageSetCache(object):
         Precondition: some image set must be cached.
         '''
         if self.error_row_and_column_dataset.shape[0] == 0:
-            return np.zeros(0, int)
-        return np.unique(
+            return numpy.zeros(0, int)
+        return numpy.unique(
                 self.error_row_and_column_dataset[self.ROW_INDEX])
 
     def get_errors(self, idx):
@@ -2215,7 +2208,7 @@ class ImageSetCache(object):
         '''
         if self.error_row_and_column_dataset.shape[0] == 0:
             return []
-        errors = np.where(
+        errors = numpy.where(
                 self.error_row_and_column_dataset[self.ROW_INDEX] == idx)
         idxs = self.error_row_and_column_dataset[self.IO_INDEX][:]
         return [(idxs[i],

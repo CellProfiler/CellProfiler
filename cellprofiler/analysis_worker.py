@@ -118,14 +118,12 @@ if __name__ == "__main__":
 
 import time
 import threading
-import thread
 import random
 import zmq
-import cStringIO as StringIO
+import cStringIO
 import gc
 import traceback
-from weakref import WeakSet
-
+import weakref
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -134,22 +132,19 @@ from cellprofiler.analysis import \
     PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
     NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
     DisplayPostGroupRequest, AnalysisCancelRequest, \
-    ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
-    ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
-    SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE, \
-    OmeroLoginRequest, OmeroLoginReply
-import javabridge as J
+    ExceptionReport, DebugWaiting, DebugComplete, \
+    ImageSetSuccess, ImageSetSuccessWithDictionary, \
+    SharedDictionaryRequest, UpstreamExit, \
+    OmeroLoginRequest
+import javabridge
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
-#
-# CellProfiler expects NaN as a result during calculation
-#
-import numpy as np
+import numpy
 
-np.seterr(all='ignore')
+numpy.seterr(all='ignore')
 
 # to guarantee closing of measurements, we store all of them in a WeakSet, and
 # close them on exit.
-all_measurements = WeakSet()
+all_measurements = weakref.WeakSet()
 
 DEADMAN_START_ADDR = "inproc://deadmanstart"
 DEADMAN_START_MSG = "STARTED"
@@ -288,9 +283,9 @@ class AnalysisWorker(object):
             self.worker.exit_thread()
 
     def enter_thread(self):
-        J.attach()
+        javabridge.attach()
         if not cpprefs.get_awt_headless():
-            J.activate_awt()
+            javabridge.activate_awt()
         self.notify_socket = the_zmq_context.socket(zmq.SUB)
         self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
         self.notify_socket.connect(NOTIFY_ADDR)
@@ -299,7 +294,7 @@ class AnalysisWorker(object):
         from bioformats.formatreader import clear_image_reader_cache
         self.notify_socket.close()
         clear_image_reader_cache()
-        J.detach()
+        javabridge.detach()
         if self.with_stop_run_loop:
             stop_run_loop()
 
@@ -357,7 +352,7 @@ class AnalysisWorker(object):
                 logger.debug("Loading pipeline")
                 pipeline_blob = rep.pipeline_blob.tostring()
                 current_pipeline = cpp.Pipeline()
-                current_pipeline.loadtxt(StringIO.StringIO(pipeline_blob),
+                current_pipeline.loadtxt(cStringIO.StringIO(pipeline_blob),
                                          raise_on_error=True)
                 logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(

@@ -8,10 +8,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from cStringIO import StringIO
+import cStringIO
 import json
 import javabridge
-import numpy as np
+import numpy
 import threading
 import uuid
 import zmq
@@ -25,13 +25,13 @@ if not hasattr(zmq, "Frame"):
 
     zmq.Frame = ZmqFrame
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
-import cellprofiler.objects as cpo
-import cellprofiler.pipeline as cpp
-import cellprofiler.settings as cps
-import cellprofiler.workspace as cpw
+import cellprofiler.cpmodule
+import cellprofiler.measurements
+import cellprofiler.cpimage
+import cellprofiler.objects
+import cellprofiler.pipeline
+import cellprofiler.settings
+import cellprofiler.workspace
 
 CONNECT_REQ_1 = "connect-request-1"
 CONNECT_REPLY_1 = "connect-reply-1"
@@ -161,9 +161,9 @@ class KnimeBridgeServer(threading.Thread):
         '''Handle the pipeline info message'''
         logger.info("Handling pipeline info request")
         pipeline_txt = message.pop(0).bytes
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         try:
-            pipeline.loadtxt(StringIO(pipeline_txt))
+            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -187,9 +187,9 @@ class KnimeBridgeServer(threading.Thread):
         logger.info("Handling clean pipeline request")
         pipeline_txt = message.pop(0).bytes
         module_names = json.loads(message.pop(0).bytes)
-        pipeline = cpp.Pipeline()
+        pipeline = cellprofiler.pipeline.Pipeline()
         try:
-            pipeline.loadtxt(StringIO(pipeline_txt))
+            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -202,7 +202,7 @@ class KnimeBridgeServer(threading.Thread):
                 to_remove.insert(0, module)
         for module in to_remove:
             pipeline.remove_module(module.module_num)
-        pipeline_fd = StringIO()
+        pipeline_fd = cStringIO.StringIO()
         pipeline.savetxt(pipeline_fd, save_image_plane_details=False)
         msg_out = [
             zmq.Frame(session_id),
@@ -216,14 +216,14 @@ class KnimeBridgeServer(threading.Thread):
         pipeline, m, object_set = self.prepare_run(message, session_id)
         if pipeline is None:
             return
-        m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER] = 1
-        m[cpmeas.IMAGE, cpmeas.GROUP_INDEX] = 1
+        m[cellprofiler.measurements.IMAGE, cellprofiler.measurements.GROUP_NUMBER] = 1
+        m[cellprofiler.measurements.IMAGE, cellprofiler.measurements.GROUP_INDEX] = 1
         input_modules, other_modules = self.split_pipeline(pipeline)
         for module in other_modules:
-            workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+            workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
             module.prepare_run(workspace)
         for module in other_modules:
-            workspace = cpw.Workspace(
+            workspace = cellprofiler.workspace.Workspace(
                     pipeline, module, m, object_set, m, None)
             try:
                 logger.info(
@@ -231,7 +231,7 @@ class KnimeBridgeServer(threading.Thread):
                         (module.module_num, module.module_name))
                 pipeline.run_module(module, workspace)
                 if workspace.disposition in \
-                        (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
+                        (cellprofiler.workspace.DISPOSITION_SKIP, cellprofiler.workspace.DISPOSITION_CANCEL):
                     break
             except Exception, e:
                 msg = "Encountered error while running module, \"%s\": %s" % (
@@ -268,7 +268,7 @@ class KnimeBridgeServer(threading.Thread):
                 if not m.has_feature(object_name, feature):
                     data = no_data
                 else:
-                    data = np.atleast_1d(m[object_name, feature])
+                    data = numpy.atleast_1d(m[object_name, feature])
                 if type_names[data_type] == 'java.lang.Double':
                     df.append((feature, len(data)))
                     if len(data) > 0:
@@ -290,11 +290,11 @@ class KnimeBridgeServer(threading.Thread):
                             s = s.encode("utf-8")
                         else:
                             s = str(s)
-                        string_data.append(np.frombuffer(s, np.uint8))
-        data = np.hstack([
-                             np.frombuffer(np.hstack(ditem).data, np.uint8)
-                             for ditem in double_data, float_data, int_data, string_data
-                             if len(ditem) > 0])
+                        string_data.append(numpy.frombuffer(s, numpy.uint8))
+        data = numpy.hstack([
+                                numpy.frombuffer(numpy.hstack(ditem).data, numpy.uint8)
+                                for ditem in double_data, float_data, int_data, string_data
+                                if len(ditem) > 0])
         self.socket.send_multipart(
                 [zmq.Frame(session_id),
                  zmq.Frame(),
@@ -304,8 +304,8 @@ class KnimeBridgeServer(threading.Thread):
 
     def run_group_request(self, session_id, message_type, message):
         '''Handle a run-group request message'''
-        pipeline = cpp.Pipeline()
-        m = cpmeas.Measurements()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        m = cellprofiler.measurements.Measurements()
         image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
         if len(message) < 2:
             self.raise_cellprofiler_exception(
@@ -346,7 +346,7 @@ class KnimeBridgeServer(threading.Thread):
                     session_id, e.message)
             return None, None, None
         try:
-            pipeline.loadtxt(StringIO(pipeline_txt))
+            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -354,12 +354,12 @@ class KnimeBridgeServer(threading.Thread):
             self.raise_pipeline_exception(session_id, str(e))
             return
 
-        image_numbers = np.arange(1, n_image_sets + 1)
+        image_numbers = numpy.arange(1, n_image_sets + 1)
         for image_number in image_numbers:
-            m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number] = 1
-            m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_number] = image_number
+            m[cellprofiler.measurements.IMAGE, cellprofiler.measurements.GROUP_NUMBER, image_number] = 1
+            m[cellprofiler.measurements.IMAGE, cellprofiler.measurements.GROUP_INDEX, image_number] = image_number
         input_modules, other_modules = self.split_pipeline(pipeline)
-        workspace = cpw.Workspace(
+        workspace = cellprofiler.workspace.Workspace(
                 pipeline, None, m, None, m, None)
         logger.info("Preparing group")
         for module in other_modules:
@@ -369,15 +369,15 @@ class KnimeBridgeServer(threading.Thread):
                     image_numbers)
 
         for image_index in range(n_image_sets):
-            object_set = cpo.ObjectSet()
+            object_set = cellprofiler.objects.ObjectSet()
             m.next_image_set(image_index + 1)
             for channel_name in channel_names:
                 dataset = image_group[channel_name]
                 pixel_data = dataset[image_index]
-                m.add(channel_name, cpi.Image(pixel_data))
+                m.add(channel_name, cellprofiler.cpimage.Image(pixel_data))
 
             for module in other_modules:
-                workspace = cpw.Workspace(
+                workspace = cellprofiler.workspace.Workspace(
                         pipeline, module, m, object_set, m, None)
                 try:
                     logger.info(
@@ -385,7 +385,7 @@ class KnimeBridgeServer(threading.Thread):
                             (module.module_num, module.module_name))
                     pipeline.run_module(module, workspace)
                     if workspace.disposition in \
-                            (cpw.DISPOSITION_SKIP, cpw.DISPOSITION_CANCEL):
+                            (cellprofiler.workspace.DISPOSITION_SKIP, cellprofiler.workspace.DISPOSITION_CANCEL):
                         break
                 except Exception, e:
                     msg = "Encountered error while running module, \"%s\": %s" % (
@@ -395,7 +395,7 @@ class KnimeBridgeServer(threading.Thread):
                     return
             else:
                 continue
-            if workspace.disposition == cpw.DISPOSITION_CANCEL:
+            if workspace.disposition == cellprofiler.workspace.DISPOSITION_CANCEL:
                 break
         for module in other_modules:
             module.post_group(
@@ -426,32 +426,32 @@ class KnimeBridgeServer(threading.Thread):
             int_features.append((object_name, intf))
             sf = []
             string_features.append((object_name, sf))
-            if object_name == cpmeas.IMAGE:
+            if object_name == cellprofiler.measurements.IMAGE:
                 object_counts = [] * n_image_sets
             else:
-                object_numbers = m[object_name, cpmeas.OBJECT_NUMBER,
+                object_numbers = m[object_name, cellprofiler.measurements.OBJECT_NUMBER,
                                    image_numbers]
                 object_counts = [len(x) for x in object_numbers]
             for feature, data_type in features:
                 if data_type == 'java.lang.String':
                     continue
                 if not m.has_feature(object_name, feature):
-                    data = np.zeros(np.sum(object_counts))
+                    data = numpy.zeros(numpy.sum(object_counts))
                 else:
                     data = m[object_name, feature, image_numbers]
                 temp = []
                 for i, (di, count) in enumerate(zip(data, object_counts)):
                     if count == 0:
                         continue
-                    di = np.atleast_1d(di)
+                    di = numpy.atleast_1d(di)
                     if len(di) > count:
                         di = di[:count]
                     elif len(di) == count:
                         temp.append(di)
                     else:
-                        temp += [di + np.zeros(len(di) - count)]
+                        temp += [di + numpy.zeros(len(di) - count)]
                 if len(temp) > 0:
-                    data = np.hstack(temp)
+                    data = numpy.hstack(temp)
 
                 if type_names[data_type] == 'java.lang.Double':
                     df.append((feature, len(data)))
@@ -465,11 +465,11 @@ class KnimeBridgeServer(threading.Thread):
                     intf.append((feature, len(data)))
                     if len(data) > 0:
                         int_data.append(data.astype('<i4'))
-        data = np.hstack([
-                             np.frombuffer(np.ascontiguousarray(np.hstack(ditem)).data, np.uint8)
-                             for ditem in double_data, float_data, int_data
-                             if len(ditem) > 0])
-        data = np.ascontiguousarray(data)
+        data = numpy.hstack([
+                                numpy.frombuffer(numpy.ascontiguousarray(numpy.hstack(ditem)).data, numpy.uint8)
+                                for ditem in double_data, float_data, int_data
+                                if len(ditem) > 0])
+        data = numpy.ascontiguousarray(data)
         self.socket.send_multipart(
                 [zmq.Frame(session_id),
                  zmq.Frame(),
@@ -484,9 +484,9 @@ class KnimeBridgeServer(threading.Thread):
         session_id - the session ID for the session
         grouping_allowed - true to allow grouped images
         '''
-        pipeline = cpp.Pipeline()
-        m = cpmeas.Measurements()
-        object_set = cpo.ObjectSet()
+        pipeline = cellprofiler.pipeline.Pipeline()
+        m = cellprofiler.measurements.Measurements()
+        object_set = cellprofiler.objects.ObjectSet()
         if len(message) < 2:
             self.raise_cellprofiler_exception(
                     session_id, "Missing run request sections")
@@ -504,14 +504,14 @@ class KnimeBridgeServer(threading.Thread):
                 pixel_data = self.decode_image(
                         channel_metadata, message.pop(0).bytes,
                         grouping_allowed=grouping_allowed)
-                m.add(channel_name, cpi.Image(pixel_data))
+                m.add(channel_name, cellprofiler.cpimage.Image(pixel_data))
         except Exception, e:
             logger.warn("Failed to decode message", exc_info=1)
             self.raise_cellprofiler_exception(
                     session_id, e.message)
             return None, None, None
         try:
-            pipeline.loadtxt(StringIO(pipeline_txt))
+            pipeline.loadtxt(cStringIO.StringIO(pipeline_txt))
         except Exception, e:
             logger.warning(
                     "Failed to load pipeline: sending pipeline exception",
@@ -564,7 +564,7 @@ class KnimeBridgeServer(threading.Thread):
         channels = []
         for module in input_modules:
             for setting in module.visible_settings():
-                if isinstance(setting, cps.ImageNameProvider):
+                if isinstance(setting, cellprofiler.settings.ImageNameProvider):
                     channels.append(setting.value)
         return channels
 
@@ -583,18 +583,18 @@ class KnimeBridgeServer(threading.Thread):
         jtypes = ["java.lang.Integer"]
         features = {}
         for module in modules:
-            assert isinstance(module, cpm.CPModule)
+            assert isinstance(module, cellprofiler.cpmodule.CPModule)
             for column in module.get_measurement_columns(pipeline):
                 objects, name, dbtype = column[:3]
                 qualifiers = {} if len(column) < 4 else column[3]
-                if objects == cpmeas.EXPERIMENT and \
-                                qualifiers.get(cpmeas.MCA_AVAILABLE_POST_RUN, False) == True:
+                if objects == cellprofiler.measurements.EXPERIMENT and \
+                                qualifiers.get(cellprofiler.measurements.MCA_AVAILABLE_POST_RUN, False) == True:
                     continue
-                if dbtype == cpmeas.COLTYPE_FLOAT:
+                if dbtype == cellprofiler.measurements.COLTYPE_FLOAT:
                     jtype = "java.lang.Double"
-                elif dbtype == cpmeas.COLTYPE_INTEGER:
+                elif dbtype == cellprofiler.measurements.COLTYPE_INTEGER:
                     jtype = "java.lang.Integer"
-                elif dbtype.startswith(cpmeas.COLTYPE_VARCHAR):
+                elif dbtype.startswith(cellprofiler.measurements.COLTYPE_VARCHAR):
                     jtype = "java.lang.String"
                 else:
                     continue
@@ -610,7 +610,7 @@ class KnimeBridgeServer(threading.Thread):
                 if name not in ofeatures:
                     ofeatures[name] = type_idx
         for key in features:
-            features[key][cpmeas.IMAGE_NUMBER] = 0
+            features[key][cellprofiler.measurements.IMAGE_NUMBER] = 0
         features_out = dict([(k, v.items()) for k, v in features.items()])
         return jtypes, features_out
 
@@ -623,7 +623,7 @@ class KnimeBridgeServer(threading.Thread):
 
         returns numpy array in y, x indexing format.
         '''
-        pixel_data = np.frombuffer(buf, "<f8")
+        pixel_data = numpy.frombuffer(buf, "<f8")
         strides_out = [None] * len(channel_metadata)
         dimensions_out = [None] * len(channel_metadata)
         grouping = False

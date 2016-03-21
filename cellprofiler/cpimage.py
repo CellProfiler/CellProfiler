@@ -7,12 +7,11 @@ ImageSetList - Represents the list of image filenames that make up a pipeline ru
 import logging
 import math
 import sys
-from StringIO import StringIO
-from cPickle import dump, Unpickler
-from struct import unpack
-from zlib import decompress
-
-import numpy as np
+import StringIO
+import cPickle
+import struct
+import zlib
+import numpy
 from numpy import fromstring, uint8, uint16
 
 logger = logging.getLogger(__name__)
@@ -102,50 +101,50 @@ class Image(object):
         * int8/16/32/64: scale min to max to 0 to 1
         * logical: save as is (and get if must_be_binary)
         """
-        img = np.asanyarray(image)
+        img = numpy.asanyarray(image)
         if img.dtype.name == "bool" or not convert:
             self.__image = ImageCache(img)
             return
         mval = 0.
         scale = 1.
         fix_range = False
-        if issubclass(img.dtype.type, np.floating):
+        if issubclass(img.dtype.type, numpy.floating):
             pass
-        elif img.dtype.type is np.uint8:
+        elif img.dtype.type is numpy.uint8:
             scale = math.pow(2.0, 8.0) - 1
-        elif img.dtype.type is np.uint16:
+        elif img.dtype.type is numpy.uint16:
             scale = math.pow(2.0, 16.0) - 1
-        elif img.dtype.type is np.uint32:
+        elif img.dtype.type is numpy.uint32:
             scale = math.pow(2.0, 32.0) - 1
-        elif img.dtype.type is np.uint64:
+        elif img.dtype.type is numpy.uint64:
             scale = math.pow(2.0, 64.0) - 1
-        elif img.dtype.type is np.int8:
+        elif img.dtype.type is numpy.int8:
             scale = math.pow(2.0, 8.0)
             mval = -scale / 2.0
             scale -= 1
             fix_range = True
-        elif img.dtype.type is np.int16:
+        elif img.dtype.type is numpy.int16:
             scale = math.pow(2.0, 16.0)
             mval = -scale / 2.0
             scale -= 1
             fix_range = True
-        elif img.dtype.type is np.int32:
+        elif img.dtype.type is numpy.int32:
             scale = math.pow(2.0, 32.0)
             mval = -scale / 2.0
             scale -= 1
             fix_range = True
-        elif img.dtype.type is np.int64:
+        elif img.dtype.type is numpy.int64:
             scale = math.pow(2.0, 64.0)
             mval = -scale / 2.0
             scale -= 1
             fix_range = True
         # Avoid temporaries by doing the shift/scale in place.
-        img = img.astype(np.float32)
+        img = img.astype(numpy.float32)
         img -= mval
         img /= scale
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
-            np.clip(img, 0, 1, out=img)
+            numpy.clip(img, 0, 1, out=img)
         check_consistency(img, self.__mask)
         self.__image = ImageCache(img)
 
@@ -221,7 +220,7 @@ class Image(object):
             shape = image.shape[:2]
         else:
             shape = image.shape[1:]
-        return np.ones(shape, dtype=np.bool)
+        return numpy.ones(shape, dtype=numpy.bool)
 
     def set_mask(self, mask):
         """Set the mask (pixels to be considered) for the primary image
@@ -229,8 +228,8 @@ class Image(object):
         Convert the input into a numpy array. If the input is numeric,
         we convert it to boolean by testing each element for non-zero.
         """
-        m = np.array(mask)
-        if not (m.dtype.type is np.bool):
+        m = numpy.array(mask)
+        if not (m.dtype.type is numpy.bool):
             m = (m != 0)
         check_consistency(self.image, m)
         self.__mask = ImageCache(m)
@@ -440,18 +439,18 @@ class ImageCache(object):
 def crop_image(image, crop_mask, crop_internal=False):
     """Crop an image to the size of the nonzero portion of a crop mask"""
     i_histogram = crop_mask.sum(axis=1)
-    i_cumsum = np.cumsum(i_histogram != 0)
+    i_cumsum = numpy.cumsum(i_histogram != 0)
     j_histogram = crop_mask.sum(axis=0)
-    j_cumsum = np.cumsum(j_histogram != 0)
+    j_cumsum = numpy.cumsum(j_histogram != 0)
     if i_cumsum[-1] == 0:
         # The whole image is cropped away
-        return np.zeros((0, 0), dtype=image.dtype)
+        return numpy.zeros((0, 0), dtype=image.dtype)
     if crop_internal:
         #
         # Make up sequences of rows and columns to keep
         #
-        i_keep = np.argwhere(i_histogram > 0)
-        j_keep = np.argwhere(j_histogram > 0)
+        i_keep = numpy.argwhere(i_histogram > 0)
+        j_keep = numpy.argwhere(j_histogram > 0)
         #
         # Then slice the array by I, then by J to get what's not blank
         #
@@ -462,11 +461,11 @@ def crop_image(image, crop_mask, crop_internal=False):
         # The last are at the first where the cumsum is it's max (meaning
         # what came after was all zeros and added nothing)
         #
-        i_first = np.argwhere(i_cumsum == 1)[0]
-        i_last = np.argwhere(i_cumsum == i_cumsum.max())[0]
+        i_first = numpy.argwhere(i_cumsum == 1)[0]
+        i_last = numpy.argwhere(i_cumsum == i_cumsum.max())[0]
         i_end = i_last + 1
-        j_first = np.argwhere(j_cumsum == 1)[0]
-        j_last = np.argwhere(j_cumsum == j_cumsum.max())[0]
+        j_first = numpy.argwhere(j_cumsum == 1)[0]
+        j_last = numpy.argwhere(j_cumsum == j_cumsum.max())[0]
         j_end = j_last + 1
         if image.ndim == 3:
             return image[i_first:i_end, j_first:j_end, :].copy()
@@ -489,7 +488,7 @@ class GrayscaleImage(object):
     def get_pixel_data(self):
         """One 2-d channel of the color image as a numpy array"""
         if self.__image.pixel_data.dtype.kind == 'b':
-            return self.__image.pixel_data.astype(np.float64)
+            return self.__image.pixel_data.astype(numpy.float64)
         return self.__image.pixel_data[:, :, 0]
 
     pixel_data = property(get_pixel_data)
@@ -520,7 +519,7 @@ def check_consistency(image, mask):
     assert (image is None) or (len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
     assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
     assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-    assert (mask is None) or (mask.dtype.type is np.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
+    assert (mask is None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was %s" % (repr(mask.dtype.type))
 
 
 class AbstractImageProvider(object):
@@ -653,7 +652,7 @@ class ImageSet(object):
             image = self.__images[name]
         if must_be_binary and image.pixel_data.ndim == 3:
             raise ValueError("Image must be binary, but it was color")
-        if must_be_binary and image.pixel_data.dtype != np.bool:
+        if must_be_binary and image.pixel_data.dtype != numpy.bool:
             raise ValueError("Image was not binary")
         if must_be_color and image.pixel_data.ndim != 3:
             raise ValueError("Image must be color, but it was grayscale")
@@ -661,8 +660,8 @@ class ImageSet(object):
                 (image.pixel_data.ndim != 2)):
             pd = image.pixel_data
             if pd.shape[2] >= 3 and \
-                    np.all(pd[:, :, 0] == pd[:, :, 1]) and \
-                    np.all(pd[:, :, 0] == pd[:, :, 2]):
+                    numpy.all(pd[:, :, 0] == pd[:, :, 1]) and \
+                    numpy.all(pd[:, :, 0] == pd[:, :, 2]):
                 return GrayscaleImage(image)
             raise ValueError("Image must be grayscale, but it was color")
         if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
@@ -867,14 +866,14 @@ class ImageSetList(object):
         load_state will restore the image set list's state. No image_set can
         have image providers before this call.
         '''
-        f = StringIO()
-        dump(self.count(), f)
+        f = StringIO.StringIO()
+        cPickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
             assert isinstance(image_set, ImageSet)
             assert len(image_set.providers) == 0, "An image set cannot have providers while saving its state"
-            dump(image_set.keys, f)
-        dump(self.legacy_fields, f)
+            cPickle.dump(image_set.keys, f)
+        cPickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
     def load_state(self, state):
@@ -884,7 +883,7 @@ class ImageSetList(object):
         self.__image_sets_by_key = {}
 
         # Make a safe unpickler
-        p = Unpickler(StringIO(state))
+        p = cPickle.Unpickler(StringIO.StringIO(state))
 
         def find_global(module_name, class_name):
             logger.debug("Pickler wants %s:%s", module_name, class_name)
@@ -925,10 +924,10 @@ def readc01(fname):
     '''
 
     def readint(f):
-        return unpack("<l", f.read(4))[0]
+        return struct.unpack("<l", f.read(4))[0]
 
     def readshort(f):
-        return unpack("<h", f.read(2))[0]
+        return struct.unpack("<h", f.read(2))[0]
 
     f = open(fname, "rb")
 
@@ -936,7 +935,7 @@ def readc01(fname):
     assert readint(f) == 16 << 24
 
     # decompress
-    g = StringIO(decompress(f.read()))
+    g = StringIO.StringIO(zlib.decompress(f.read()))
 
     # skip four bytes
     g.seek(4, 1)

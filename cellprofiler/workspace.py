@@ -1,11 +1,11 @@
 """workspace.py - the workspace for an imageset
 """
 
-import logging
-import StringIO
-import h5py
-import os
 import cellprofiler.utilities.hdf5_dict
+import h5py
+import logging
+import os
+import StringIO
 
 logger = logging.getLogger(__name__)
 

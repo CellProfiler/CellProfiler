@@ -31,7 +31,7 @@ class TestImageProcessor(unittest.TestCase):
 
     def test_01_02_make_image_processor(self):
         np.random.seed(102)
-        image = np.random.uniform(size=(30,50)).astype(np.float32)
+        image = np.random.uniform(size=(30, 50)).astype(np.float32)
         image_processor = IP.make_image_processor(image)
         result = IP.get_image(image_processor)
         self.assertEqual(image.shape[0], result.shape[0])

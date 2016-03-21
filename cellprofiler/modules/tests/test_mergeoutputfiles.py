@@ -27,7 +27,7 @@ class TestMergeOutputFiles(unittest.TestCase):
             pipeline.save_measurements(input_file, m)
             input_files.append((input_fd, input_file))
 
-        M.MergeOutputFiles.merge_files(output_file, [ x[1] for x in input_files])
+        M.MergeOutputFiles.merge_files(output_file, [x[1] for x in input_files])
         m = cpmeas.load_measurements(output_file)
         gc.collect()
         os.close(output_fd)
@@ -41,15 +41,15 @@ class TestMergeOutputFiles(unittest.TestCase):
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for i in range(image_count):
             if i > 0:
-                m.next_image_set(i+1)
+                m.next_image_set(i + 1)
             m.add_image_measurement(feature, np.random.uniform())
 
     def write_object_measurements(self, m, object_name, feature, object_counts):
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         for i, count in enumerate(object_counts):
-            object_measurements = np.random.uniform(size = i)
+            object_measurements = np.random.uniform(size=i)
             m.add_measurement(object_name, feature, object_measurements,
-                              image_set_number = i+1)
+                              image_set_number=i + 1)
 
     def write_experiment_measurement(self, m, feature):
         self.assertTrue(isinstance(m, cpmeas.Measurements))
@@ -73,8 +73,8 @@ class TestMergeOutputFiles(unittest.TestCase):
         mo = m.get_all_measurements("myobjects", "bar")
         for i in range(5):
             self.assertAlmostEqual(
-                result.get_all_measurements(cpmeas.IMAGE, "foo")[i],
-                m.get_all_measurements(cpmeas.IMAGE, "foo")[i])
+                    result.get_all_measurements(cpmeas.IMAGE, "foo")[i],
+                    m.get_all_measurements(cpmeas.IMAGE, "foo")[i])
             self.assertEqual(len(ro[i]), len(mo[i]))
             np.testing.assert_almost_equal(ro[i], mo[i])
 
@@ -95,10 +95,10 @@ class TestMergeOutputFiles(unittest.TestCase):
         for i in range(5):
             for j in range(2):
                 np.testing.assert_almost_equal(
-                    ro[i+j*5],
-                    moo[j][i])
-            self.assertEqual(len(ro[i+j*5]), len(moo[j][i]))
-            np.testing.assert_almost_equal(ro[i+j*5], moo[j][i])
+                        ro[i + j * 5],
+                        moo[j][i])
+            self.assertEqual(len(ro[i + j * 5]), len(moo[j][i]))
+            np.testing.assert_almost_equal(ro[i + j * 5], moo[j][i])
 
     def test_01_03_different_measurements(self):
         np.random.seed(13)

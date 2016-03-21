@@ -32,6 +32,7 @@ import cellprofiler.settings as cps
 O_ROW = "Row"
 O_COLUMN = "Column"
 
+
 class LabelImages(cpm.CPModule):
     module_name = "LabelImages"
     category = "Other"
@@ -39,19 +40,19 @@ class LabelImages(cpm.CPModule):
 
     def create_settings(self):
         self.site_count = cps.Integer(
-            "Number of image sites per well", 1, minval=1,doc = """
+                "Number of image sites per well", 1, minval=1, doc="""
             This setting controls the number of image sets for each well""")
 
         self.column_count = cps.Integer(
-            "Number of columns per plate", 12, minval=1,doc = """
+                "Number of columns per plate", 12, minval=1, doc="""
             Enter the number of columns per plate""")
 
         self.row_count = cps.Integer(
-            "Number of rows per plate", 8, minval=1,doc = """
+                "Number of rows per plate", 8, minval=1, doc="""
             The number of rows per plate""")
 
         self.order = cps.Choice(
-            "Order of image data", [O_ROW, O_COLUMN],doc = """
+                "Order of image data", [O_ROW, O_COLUMN], doc="""
             This setting specifies how the input data is ordered (assuming
             that sites within a well are ordered consecutively):
             <ul>
@@ -93,18 +94,18 @@ class LabelImages(cpm.CPModule):
 
         row_text_indexes = [
             x % 26 for x in reversed(
-                [int(row_index / (26 ** i)) for i in range(self.row_digits)])]
+                    [int(row_index / (26 ** i)) for i in range(self.row_digits)])]
 
         row_text = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ'[x] for x in row_text_indexes]
-        row_text = reduce(lambda x,y: x+y, row_text)
+        row_text = reduce(lambda x, y: x + y, row_text)
         well_template = "%s%0" + str(self.column_digits) + "d"
-        well = well_template % (row_text, column_index+1)
+        well = well_template % (row_text, column_index + 1)
 
         statistics = [(cpmeas.M_SITE, site_index + 1),
-                       (cpmeas.M_ROW, row_text),
-                       (cpmeas.M_COLUMN, column_index + 1),
-                       (cpmeas.M_WELL, well),
-                       (cpmeas.M_PLATE, plate_index + 1)]
+                      (cpmeas.M_ROW, row_text),
+                      (cpmeas.M_COLUMN, column_index + 1),
+                      (cpmeas.M_WELL, well),
+                      (cpmeas.M_PLATE, plate_index + 1)]
         for feature, value in statistics:
             m.add_image_measurement(feature, value)
         workspace.display_data.col_labels = ("Metadata", "Value")
@@ -139,7 +140,7 @@ class LabelImages(cpm.CPModule):
 
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [ cpmeas.C_METADATA ]
+            return [cpmeas.C_METADATA]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
@@ -153,7 +154,7 @@ class LabelImages(cpm.CPModule):
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0,
                              workspace.display_data.statistics,
-                             col_labels = workspace.display_data.col_labels)
+                             col_labels=workspace.display_data.col_labels)
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
@@ -166,14 +167,14 @@ class LabelImages(cpm.CPModule):
         '''
         if from_matlab and variable_revision_number == 1:
             label_name, rows_cols, row_or_column, image_cycles_per_well = \
-                      setting_values
+                setting_values
             row_count, column_count = rows_cols.split(',')
             if rows_cols == 'A02':
                 order = O_ROW
             else:
                 order = O_COLUMN
-            setting_values = [ image_cycles_per_well, column_count, row_count,
-                               order]
+            setting_values = [image_cycles_per_well, column_count, row_count,
+                              order]
             variable_revision_number = 1
             from_matlab = False
         return setting_values, variable_revision_number, from_matlab

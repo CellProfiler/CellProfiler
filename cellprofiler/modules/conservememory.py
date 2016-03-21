@@ -26,29 +26,28 @@ S_NUMBER_OF_PER_MODULE_SETTINGS = 1
 '''# of settings per image in the pipeline'''
 S_NUMBER_OF_SETTINGS_PER_IMAGE = 1
 
-class ConserveMemory(cpm.CPModule):
 
+class ConserveMemory(cpm.CPModule):
     module_name = "ConserveMemory"
     category = 'Other'
     variable_revision_number = 1
 
     def create_settings(self):
         self.how_to_remove = cps.Choice(
-            "Specify which images?",
-            [C_REMOVE, C_KEEP], doc="""
+                "Specify which images?",
+                [C_REMOVE, C_KEEP], doc="""
             You can select from the following options:
             <ul>
             <li><i>%(C_REMOVE)s:</i> Remove some images from memory and keep the rest.</li>
             <li><i>%(C_KEEP)s:</i> Keep some images and remove the rest.</li>
-            </ul>"""%globals())
+            </ul>""" % globals())
 
         self.spacer_top = cps.Divider(line=False)
         self.image_names = []
-        self.add_image(can_remove = False)
+        self.add_image(can_remove=False)
         self.spacer_bottom = cps.Divider(line=False)
         self.add_image_button = cps.DoSomething("", "Add another image",
                                                 self.add_image)
-
 
     def query(self):
         if self.how_to_remove == C_REMOVE:
@@ -56,7 +55,7 @@ class ConserveMemory(cpm.CPModule):
         else:
             return "Select image to keep"
 
-    def add_image(self, can_remove = True):
+    def add_image(self, can_remove=True):
         '''Add an image to the list of image names
 
         can_remove - set this to False to keep from showing the "remove"
@@ -68,9 +67,9 @@ class ConserveMemory(cpm.CPModule):
         group.append("image_name", cps.ImageNameSubscriber(self.query(), cps.NONE))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("",
-                                                        "Remove this image",
-                                                        self.image_names,
-                                                        group))
+                                                            "Remove this image",
+                                                            self.image_names,
+                                                            group))
         self.image_names.append(group)
 
     def settings(self):
@@ -103,11 +102,11 @@ class ConserveMemory(cpm.CPModule):
             for name in set(all_names) - set(image_names):
                 image_set.clear_image(name)
             for name in image_names:
-                workspace.display_data.statistics.append(["Kept %s"%name])
+                workspace.display_data.statistics.append(["Kept %s" % name])
         else:
             for name in image_names:
                 image_set.clear_image(name)
-                workspace.display_data.statistics.append(["Removed %s"%name])
+                workspace.display_data.statistics.append(["Removed %s" % name])
         gc.collect()
 
     def display(self, workspace, figure):
@@ -117,7 +116,7 @@ class ConserveMemory(cpm.CPModule):
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 5:
-            new_setting_values = [ C_REMOVE ]
+            new_setting_values = [C_REMOVE]
             for image_name in setting_values[2:]:
                 if image_name.lower() != cps.DO_NOT_USE.lower():
                     new_setting_values.append(image_name)
@@ -128,14 +127,15 @@ class ConserveMemory(cpm.CPModule):
             # There was some skew in the capitalization of the first
             # setting.  We rewrite it, but we leave the revision
             # number at 1.
-            remap = {'remove' : C_REMOVE,
+            remap = {'remove': C_REMOVE,
                      C_REMOVE_OLD: C_REMOVE,
-                     'keep' : C_KEEP,
+                     'keep': C_KEEP,
                      C_KEEP_OLD: C_KEEP
                      }
             if setting_values[0] in remap:
                 setting_values[0] = remap[setting_values[0]]
 
         return setting_values, variable_revision_number, from_matlab
+
 
 SpeedUpCellProfiler = ConserveMemory

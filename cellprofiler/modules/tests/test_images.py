@@ -24,7 +24,7 @@ class TestImages(unittest.TestCase):
         #
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
         self.measurements = cpmeas.Measurements(
-            filename = self.temp_filename)
+                filename=self.temp_filename)
         os.close(self.temp_fd)
 
     def tearDown(self):
@@ -45,8 +45,10 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
     Filter:or (directory does startwith "foo") (file does contain "bar")
 """
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(data))
         self.assertEqual(len(pipeline.modules()), 1)
@@ -71,8 +73,10 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                            (I.FILTER_CHOICE_IMAGES, "Images only"),
                            (I.FILTER_CHOICE_NONE, "No filtering")):
             pipeline = cpp.Pipeline()
+
             def callback(caller, event):
                 self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
             pipeline.add_listener(callback)
             pipeline.load(StringIO(data % fctext))
             self.assertEqual(len(pipeline.modules()), 1)
@@ -85,14 +89,14 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module = I.Images()
         module.filter_choice.value = I.FILTER_CHOICE_CUSTOM
         for url, filter_value, expected in (
-            ("file:/TestImages/NikonTIF.tif",
-             'and (file does startwith "Nikon") (extension does istif)', True),
-            ("file:/TestImages/NikonTIF.tif",
-             'or (file doesnot startwith "Nikon") (extension doesnot istif)', False),
-            ("file:/TestImages/003002000.flex",
-             'and (directory does endwith "ges") (directory doesnot contain "foo")', True),
-            ("file:/TestImages/003002000.flex",
-             'or (directory doesnot endwith "ges") (directory does contain "foo")', False)):
+                ("file:/TestImages/NikonTIF.tif",
+                 'and (file does startwith "Nikon") (extension does istif)', True),
+                ("file:/TestImages/NikonTIF.tif",
+                 'or (file doesnot startwith "Nikon") (extension doesnot istif)', False),
+                ("file:/TestImages/003002000.flex",
+                 'and (directory does endwith "ges") (directory doesnot contain "foo")', True),
+                ("file:/TestImages/003002000.flex",
+                 'or (directory doesnot endwith "ges") (directory does contain "foo")', False)):
             module.filter.value = filter_value
             self.check(module, url, expected)
 
@@ -115,7 +119,7 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module = I.Images()
         module.filter_choice.value = I.FILTER_CHOICE_IMAGES
         for url, expected in (
-            ("file:/TestImages/NikonTIF.tif", True),
-            ("file:/foo/.bar/baz.tif", False),
-            ("file:/TestImages/foo.bar", False)):
+                ("file:/TestImages/NikonTIF.tif", True),
+                ("file:/foo/.bar/baz.tif", False),
+                ("file:/TestImages/foo.bar", False)):
             self.check(module, url, expected)

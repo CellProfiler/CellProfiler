@@ -11,14 +11,15 @@ from cellprofiler.gui.help import MAIN_HELP
 from cellprofiler.modules import get_module_names, instantiate_module
 from cellprofiler.utilities.relpath import relpath
 
-LOCATION_COVERPAGE = os.path.join('images','CPCoverPage.png')
-LOCATION_WHITEHEADLOGO = os.path.join('images','WhiteheadInstituteLogo.png')
-LOCATION_CSAILLOGO = os.path.join('images','CSAIL_Logo.png')
-LOCATION_IMAGINGPLATFORMBANNER  = os.path.join('images','BroadPlusImagingPlusBanner.png')
+LOCATION_COVERPAGE = os.path.join('images', 'CPCoverPage.png')
+LOCATION_WHITEHEADLOGO = os.path.join('images', 'WhiteheadInstituteLogo.png')
+LOCATION_CSAILLOGO = os.path.join('images', 'CSAIL_Logo.png')
+LOCATION_IMAGINGPLATFORMBANNER = os.path.join('images', 'BroadPlusImagingPlusBanner.png')
 VERSION = version.version_string
 VERSION_NUMBER = version.version_number
 
-def generate_html(webpage_path = None):
+
+def generate_html(webpage_path=None):
     if webpage_path is None:
         webpage_path = os.path.join('.', 'CellProfiler_Manual_' + str(VERSION_NUMBER))
 
@@ -28,18 +29,18 @@ def generate_html(webpage_path = None):
     # Copy the png images to a new 'images' directory under the html folder
     webpage_images_path = os.path.join(webpage_path, 'images')
     if not (os.path.exists(webpage_images_path) and os.path.isdir(webpage_images_path)):
-            os.mkdir(webpage_images_path)
+        os.mkdir(webpage_images_path)
 
     # Write the individual topic files
-    module_help_text  = output_module_html(webpage_path)
+    module_help_text = output_module_html(webpage_path)
     nonmodule_help_text = output_gui_html(webpage_path)
 
-    index_fd = open(os.path.join(webpage_path,'index.html'), 'w')
+    index_fd = open(os.path.join(webpage_path, 'index.html'), 'w')
 
     icons_path = cellprofiler.icons.__path__[0]
     all_pngs = glob(os.path.join(icons_path, "*.png"))
     for f in all_pngs:
-        copy(f,webpage_images_path)
+        copy(f, webpage_images_path)
 
     intro_text = """
 <html style="font-family:arial">
@@ -82,7 +83,7 @@ improve and support it.</p>
 <b>This manual accompanies version %(VERSION)s of CellProfiler. The most
 recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanual/index.html">here</a>.</b>
 
-<h1><a name="table_of_contents">Table of contents</a></h1>"""%globals()
+<h1><a name="table_of_contents">Table of contents</a></h1>""" % globals()
 
     index_fd.write(intro_text)
     index_fd.write(nonmodule_help_text)
@@ -92,6 +93,7 @@ recent manual is available <a href="http://d1zymp9ayga15t.cloudfront.net/CPmanua
     index_fd.close()
 
     print "Wrote CellProfiler Manual to", webpage_path
+
 
 def output_gui_html(webpage_path):
     '''Output an HTML page for each non-module help item'''
@@ -105,24 +107,24 @@ def output_gui_html(webpage_path):
         for key, value in h:
             help_text += "<li>"
             if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):
-                help_text += "<b>%s</b>"%key
-                help_text = write_menu(prefix+"_"+key, value, help_text)
+                help_text += "<b>%s</b>" % key
+                help_text = write_menu(prefix + "_" + key, value, help_text)
             else:
-                 # Replace special characters with blanks
-                cleaned_up_key = re.sub("[/\\\?%\*:\|\"<>\.\+]","",key)
+                # Replace special characters with blanks
+                cleaned_up_key = re.sub("[/\\\?%\*:\|\"<>\.\+]", "", key)
                 # Replace spaces with underscores
-                cleaned_up_key = re.sub(" ","_",cleaned_up_key)
+                cleaned_up_key = re.sub(" ", "_", cleaned_up_key)
                 file_name = "%s_%s.html" % (prefix, cleaned_up_key)
 
-                fd = open(os.path.join(webpage_path, file_name),"w")
+                fd = open(os.path.join(webpage_path, file_name), "w")
                 fd.write("<html style=""font-family:arial""><head><title>%s</title></head>\n" % key)
                 fd.write("<body><h1>%s</h1>\n<div>\n" % key)
 
                 # Replace the relative paths to the icons with the relative path to the image dir
-                value = value.replace(icons_relpath,'images')
+                value = value.replace(icons_relpath, 'images')
                 # Replace refs to icons in memory with the relative path to the image dir
                 #  Slashes need to be escaped: http://stackoverflow.com/questions/4427174/python-re-bogus-escape-error
-                value = re.sub("memory:",os.path.join("images","").encode('string-escape'),value)
+                value = re.sub("memory:", os.path.join("images", "").encode('string-escape'), value)
 
                 fd.write(value)
                 fd.write("</div></body>\n")
@@ -136,6 +138,7 @@ def output_gui_html(webpage_path):
     help_text += "\n"
 
     return help_text
+
 
 def output_module_html(webpage_path):
     '''Output an HTML page for each module'''
@@ -158,10 +161,10 @@ def output_module_html(webpage_path):
     for module_name in sorted(get_module_names()):
         module = instantiate_module(module_name)
         location = os.path.split(
-            module.create_settings.im_func.func_code.co_filename)[0]
+                module.create_settings.im_func.func_code.co_filename)[0]
         if location == cpprefs.get_plugin_directory():
             continue
-        if isinstance(module.category, (str,unicode)):
+        if isinstance(module.category, (str, unicode)):
             module.category = [module.category]
         for category in module.category:
             if not d.has_key(category):
@@ -170,33 +173,34 @@ def output_module_html(webpage_path):
         result = module.get_help()
         if result is None:
             continue
-        result = result.replace('<body><h1>','<body><h1>Module: ')
+        result = result.replace('<body><h1>', '<body><h1>Module: ')
 
         # Replace refs to icons in memory with the relative path to the image dir (see above)
-        result = re.sub("memory:",os.path.join("images","").encode('string-escape'),result)
+        result = re.sub("memory:", os.path.join("images", "").encode('string-escape'), result)
 
         # Check if a corresponding image exists for the module
         if module_name in icon_names:
             # Strip out end html tags so I can add more stuff
-            result = result.replace('</body>','').replace('</html>','')
+            result = result.replace('</body>', '').replace('</html>', '')
 
             # Include images specific to the module, relative to html files ('images' dir)
-            LOCATION_MODULE_IMAGES = os.path.join('images','%s.png'%(module_name))
-            result += '\n\n<div><p><img src="%s", width="50%%"></p></div>\n'%LOCATION_MODULE_IMAGES
+            LOCATION_MODULE_IMAGES = os.path.join('images', '%s.png' % (module_name))
+            result += '\n\n<div><p><img src="%s", width="50%%"></p></div>\n' % LOCATION_MODULE_IMAGES
 
             # Now end the help text
             result += '</body></html>'
-        fd = open(os.path.join(module_path,"%s.html" % module_name), "w")
+        fd = open(os.path.join(module_path, "%s.html" % module_name), "w")
         fd.write(result)
         fd.close()
     for category in sorted(d.keys()):
         sub_d = d[category]
-        help_text += "<li><b>%s</b><br><ul>\n"%category
+        help_text += "<li><b>%s</b><br><ul>\n" % category
         for module_name in sorted(sub_d.keys()):
             help_text += "<li><a href='%s.html'>%s</a></li>\n" % (module_name, module_name)
         help_text += "</ul></li>\n"
     help_text += "</ul>\n"
     return help_text
+
 
 def search_module_help(text):
     '''Search the help for a string
@@ -209,13 +213,13 @@ def search_module_help(text):
     matching_help = []
     for item in MAIN_HELP:
         matching_help += __search_menu_helper(
-            item, lambda x:__search_fn(x, text))
+                item, lambda x: __search_fn(x, text))
     count = sum([len(x[2]) for x in matching_help])
 
     for module_name in get_module_names():
         module = instantiate_module(module_name)
         location = os.path.split(
-            module.create_settings.im_func.func_code.co_filename)[0]
+                module.create_settings.im_func.func_code.co_filename)[0]
         if location == cpprefs.get_plugin_directory():
             continue
         help_text = module.get_help()
@@ -266,6 +270,7 @@ def search_module_help(text):
     result = "%s</ul><br>\n%s</body></html>" % (top, body)
     return result
 
+
 def __search_fn(html, text):
     '''Find begin-end coordinates of case-insensitive matches in html
 
@@ -298,9 +303,10 @@ def __search_fn(html, text):
         #
         escaped_text = escaped_text.replace("\\ ", "\\s+")
     pattern = "(<[^>]*?>|%s)" % escaped_text
-    return [(x.start()+start, x.end()+start)
+    return [(x.start() + start, x.end() + start)
             for x in re.finditer(pattern, html[start:end], re.IGNORECASE)
             if x.group(1)[0] != '<']
+
 
 def __search_menu_helper(menu, search_fn):
     '''Search a help menu for text
@@ -320,11 +326,13 @@ def __search_menu_helper(menu, search_fn):
         if len(matches) > 0:
             return [(menu[0], menu[1], matches)]
         return []
-    return sum(map(lambda x:__search_menu_helper(x, search_fn), menu[1]), [])
+    return sum(map(lambda x: __search_menu_helper(x, search_fn), menu[1]), [])
+
 
 if __name__ == "__main__":
     import wx
     import wx.html
+
     app = wx.PySimpleApp(True)
     frame = wx.Frame(None, title="Search the help")
     frame.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -341,12 +349,16 @@ if __name__ == "__main__":
     htmlwindow = wx.html.HtmlWindow(frame)
     frame.Sizer.Add(htmlwindow, 1, wx.EXPAND)
 
+
     def do_search(event):
         search_text = text.Value
         html = search_module_help(search_text)
         if html is None:
-            html = "<html><header><title>%s not found</title><header><body>So sorry, %s not found</body></html>" % (search_text, search_text)
+            html = "<html><header><title>%s not found</title><header><body>So sorry, %s not found</body></html>" % (
+                search_text, search_text)
         htmlwindow.SetPage(html)
+
+
     button.Bind(wx.EVT_BUTTON, do_search)
     frame.Layout()
     frame.Show()

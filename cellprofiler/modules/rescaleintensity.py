@@ -31,7 +31,6 @@ M_ALL = [M_STRETCH, M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE,
          M_DIVIDE_BY_VALUE, M_DIVIDE_BY_MEASUREMENT,
          M_SCALE_BY_IMAGE_MAXIMUM, M_CONVERT_TO_8_BIT]
 
-
 R_SCALE = 'Scale similarly to others'
 R_MASK = 'Mask pixels'
 R_SET_TO_ZERO = 'Set to zero'
@@ -41,31 +40,31 @@ R_SET_TO_ONE = 'Set to one'
 LOW_ALL_IMAGES = 'Minimum of all images'
 LOW_EACH_IMAGE = 'Minimum for each image'
 CUSTOM_VALUE = 'Custom'
-LOW_ALL = [CUSTOM_VALUE, LOW_EACH_IMAGE, LOW_ALL_IMAGES ]
+LOW_ALL = [CUSTOM_VALUE, LOW_EACH_IMAGE, LOW_ALL_IMAGES]
 
 HIGH_ALL_IMAGES = 'Maximum of all images'
 HIGH_EACH_IMAGE = 'Maximum for each image'
 
 HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 
-class RescaleIntensity(cpm.CPModule):
 
+class RescaleIntensity(cpm.CPModule):
     module_name = "RescaleIntensity"
-    category="Image Processing"
+    category = "Image Processing"
     variable_revision_number = 2
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image",cps.NONE, doc =
-            '''Select the image to be rescaled.''')
+                "Select the input image", cps.NONE, doc=
+                '''Select the image to be rescaled.''')
 
         self.rescaled_image_name = cps.ImageNameProvider(
-            "Name the output image","RescaledBlue", doc =
-            '''Enter the name of output rescaled image.''')
+                "Name the output image", "RescaledBlue", doc=
+                '''Enter the name of output rescaled image.''')
 
         self.rescale_method = cps.Choice(
-            'Rescaling method',
-            choices=M_ALL, doc='''
+                'Rescaling method',
+                choices=M_ALL, doc='''
             There are a number of options for rescaling the input image:
             <ul>
             <li><i>%(M_STRETCH)s:</i> Find the minimum and maximum values within the unmasked part of the image
@@ -100,11 +99,11 @@ class RescaleIntensity(cpm.CPModule):
             CellProfiler modules require the incoming image to be in the standard 0
             to 1 range, so this conversion may cause downstream modules to behave
             in unexpected ways.</li>
-            </ul>'''%globals())
+            </ul>''' % globals())
 
         self.wants_automatic_low = cps.Choice(
-            'Method to calculate the minimum intensity',
-            LOW_ALL, doc = """
+                'Method to calculate the minimum intensity',
+                LOW_ALL, doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
             This setting controls how the minimum intensity is determined.
             <ul>
@@ -122,8 +121,8 @@ class RescaleIntensity(cpm.CPModule):
             """ % globals())
 
         self.wants_automatic_high = cps.Choice(
-            'Method to calculate the maximum intensity',
-            HIGH_ALL, doc = """
+                'Method to calculate the maximum intensity',
+                HIGH_ALL, doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
             This setting controls how the maximum intensity is determined.
             <ul>
@@ -140,17 +139,17 @@ class RescaleIntensity(cpm.CPModule):
             </ul>
             """ % globals())
 
-        self.source_low = cps.Float('Lower intensity limit for the input image',0)
+        self.source_low = cps.Float('Lower intensity limit for the input image', 0)
 
-        self.source_high = cps.Float('Upper intensity limit for the input image',1)
+        self.source_high = cps.Float('Upper intensity limit for the input image', 1)
 
-        self.source_scale = cps.FloatRange('Intensity range for the input image',(0,1))
+        self.source_scale = cps.FloatRange('Intensity range for the input image', (0, 1))
 
-        self.dest_scale = cps.FloatRange('Intensity range for the output image', (0,1))
+        self.dest_scale = cps.FloatRange('Intensity range for the output image', (0, 1))
 
         self.low_truncation_choice = cps.Choice(
-            'Method to rescale pixels below the lower limit',
-            [R_MASK, R_SET_TO_ZERO, R_SET_TO_CUSTOM, R_SCALE], doc = '''
+                'Method to rescale pixels below the lower limit',
+                [R_MASK, R_SET_TO_ZERO, R_SET_TO_CUSTOM, R_SCALE], doc='''
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
             There are several ways to handle values less than the lower limit of the intensity range:
             <ul>
@@ -162,41 +161,41 @@ class RescaleIntensity(cpm.CPModule):
             <li><i>%(R_SCALE)s:</i> Scales pixels with values below the lower limit
             using the same offset and divisor as other pixels. The results
             will be less than zero.</li>
-            </ul>'''%globals())
+            </ul>''' % globals())
 
         self.custom_low_truncation = cps.Float(
-            "Custom value for pixels below lower limit",0, doc = """
+                "Custom value for pixels below lower limit", 0, doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" and "%(R_SET_TO_CUSTOM)s are selected)</i><br>
-            enter the custom value to be assigned to pixels with values below the lower limit."""%globals())
+            enter the custom value to be assigned to pixels with values below the lower limit.""" % globals())
 
         self.high_truncation_choice = cps.Choice(
-            'Method to rescale pixels above the upper limit',
-            [R_MASK, R_SET_TO_ONE, R_SET_TO_CUSTOM, R_SCALE], doc = """
+                'Method to rescale pixels above the upper limit',
+                [R_MASK, R_SET_TO_ONE, R_SET_TO_CUSTOM, R_SCALE], doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" is selected)</i><br>
             There are several ways to handle values greater than the upper limit of the intensity range;
-            Options are described in the Help for the equivalent lower limit question."""%globals())
+            Options are described in the Help for the equivalent lower limit question.""" % globals())
 
         self.custom_high_truncation = cps.Float(
-            "Custom value for pixels above upper limit",0, doc = """
+                "Custom value for pixels above upper limit", 0, doc="""
             <i>(Used only if "%(M_MANUAL_IO_RANGE)s" and "%(R_SET_TO_CUSTOM)s are selected)</i><br>
-            Enter the custom value to be assigned to pixels with values above the upper limit."""%globals())
+            Enter the custom value to be assigned to pixels with values above the upper limit.""" % globals())
 
         self.matching_image_name = cps.ImageNameSubscriber(
-            "Select image to match in maximum intensity", cps.NONE,doc = """
+                "Select image to match in maximum intensity", cps.NONE, doc="""
             <i>(Used only if "%(M_SCALE_BY_IMAGE_MAXIMUM)s" is selected)</i><br>
-            Select the image whose maximum you want the rescaled image to match."""%globals())
+            Select the image whose maximum you want the rescaled image to match.""" % globals())
 
         self.divisor_value = cps.Float(
-            "Divisor value",
-            1,minval=np.finfo(float).eps, doc = """
+                "Divisor value",
+                1, minval=np.finfo(float).eps, doc="""
             <i>(Used only if "%(M_DIVIDE_BY_VALUE)s" is selected)</i><br>
-            Enter the value to use as the divisor for the final image."""%globals())
+            Enter the value to use as the divisor for the final image.""" % globals())
 
         self.divisor_measurement = cps.Measurement(
-            "Divisor measurement",
-            lambda : cpmeas.IMAGE, doc = """
+                "Divisor measurement",
+                lambda: cpmeas.IMAGE, doc="""
             <i>(Used only if "%(M_DIVIDE_BY_MEASUREMENT)s" is selected)</i><br>
-            Select the measurement value to use as the divisor for the final image."""%globals())
+            Select the measurement value to use as the divisor for the final image.""" % globals())
 
     def settings(self):
         return [self.image_name, self.rescaled_image_name, self.rescale_method,
@@ -208,8 +207,8 @@ class RescaleIntensity(cpm.CPModule):
                 self.divisor_value, self.divisor_measurement]
 
     def visible_settings(self):
-        result =  [self.image_name, self.rescaled_image_name,
-                   self.rescale_method]
+        result = [self.image_name, self.rescaled_image_name,
+                  self.rescale_method]
         if self.rescale_method in (M_MANUAL_INPUT_RANGE, M_MANUAL_IO_RANGE):
             result += [self.wants_automatic_low]
             if self.wants_automatic_low.value == CUSTOM_VALUE:
@@ -271,21 +270,21 @@ class RescaleIntensity(cpm.CPModule):
         "wants_automatic_[low,high]".
         '''
         if (self.wants_automatic_high != HIGH_ALL_IMAGES and
-            self.wants_automatic_low != LOW_ALL_IMAGES):
+                    self.wants_automatic_low != LOW_ALL_IMAGES):
             return True
 
-        title = "#%d: RescaleIntensity for %s"%(
+        title = "#%d: RescaleIntensity for %s" % (
             self.module_num, self.image_name.value)
         message = ("RescaleIntensity will process %d images while "
                    "preparing for run" % (len(image_numbers)))
         min_value = None
         max_value = None
         for w in workspace.pipeline.run_group_with_yield(
-            workspace, grouping, image_numbers, self, title, message):
+                workspace, grouping, image_numbers, self, title, message):
             image_set = w.image_set
-            image     = image_set.get_image(self.image_name.value,
-                                            must_be_grayscale=True,
-                                            cache = False)
+            image = image_set.get_image(self.image_name.value,
+                                        must_be_grayscale=True,
+                                        cache=False)
             if self.wants_automatic_high == HIGH_ALL_IMAGES:
                 if image.has_mask:
                     vmax = np.max(image.pixel_data[image.mask])
@@ -333,13 +332,13 @@ class RescaleIntensity(cpm.CPModule):
             output_image = self.convert_to_8_bit(input_image)
         if output_mask is not None:
             rescaled_image = cpi.Image(output_image,
-                                       mask = output_mask,
-                                       parent_image = input_image,
-                                       convert = False)
+                                       mask=output_mask,
+                                       parent_image=input_image,
+                                       convert=False)
         else:
             rescaled_image = cpi.Image(output_image,
-                                       parent_image = input_image,
-                                       convert = False)
+                                       parent_image=input_image,
+                                       convert=False)
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
         if self.show_window:
             workspace.display_data.image_data = [input_image.pixel_data,
@@ -350,18 +349,18 @@ class RescaleIntensity(cpm.CPModule):
         figure.set_subplots((2, 1))
 
         for image_name, i, j in ((self.image_name, 0, 0),
-                                (self.rescaled_image_name, 1, 0)):
+                                 (self.rescaled_image_name, 1, 0)):
             image_name = image_name.value
             pixel_data = workspace.display_data.image_data[i]
             if pixel_data.ndim == 2:
                 figure.subplot_imshow_grayscale(i, j, pixel_data,
-                                                title = image_name,
-                                                vmin = 0, vmax = 1,
-                                                sharexy = figure.subplot(0, 0))
+                                                title=image_name,
+                                                vmin=0, vmax=1,
+                                                sharexy=figure.subplot(0, 0))
             else:
                 figure.subplot_imshow(i, j, pixel_data, title=image_name,
                                       normalize=False,
-                                      sharexy = figure.subplot(0, 0))
+                                      sharexy=figure.subplot(0, 0))
 
     def stretch(self, input_image):
         '''Stretch the input image to the range 0:1'''
@@ -386,7 +385,7 @@ class RescaleIntensity(cpm.CPModule):
                           (src_max - src_min))
         dest_min = self.dest_scale.min
         dest_max = self.dest_scale.max
-        rescaled_image = rescaled_image * (dest_max-dest_min) + dest_min
+        rescaled_image = rescaled_image * (dest_max - dest_min) + dest_min
         return self.truncate_values(input_image,
                                     rescaled_image,
                                     dest_min, dest_max)
@@ -451,11 +450,11 @@ class RescaleIntensity(cpm.CPModule):
     def get_source_range(self, input_image, workspace):
         '''Get the source range, accounting for automatically computed values'''
         if (self.wants_automatic_high == CUSTOM_VALUE and
-            self.wants_automatic_low == CUSTOM_VALUE):
+                    self.wants_automatic_low == CUSTOM_VALUE):
             return self.source_scale.min, self.source_scale.max
 
         if (self.wants_automatic_low == LOW_EACH_IMAGE or
-            self.wants_automatic_high == HIGH_EACH_IMAGE):
+                    self.wants_automatic_high == HIGH_EACH_IMAGE):
             input_pixels = input_image.pixel_data
             if input_image.has_mask:
                 input_pixels = input_pixels[input_image.mask]
@@ -487,11 +486,11 @@ class RescaleIntensity(cpm.CPModule):
         '''
 
         if (self.low_truncation_choice == R_MASK or
-            self.high_truncation_choice == R_MASK):
+                    self.high_truncation_choice == R_MASK):
             if input_image.has_mask:
                 mask = input_image.mask.copy()
             else:
-                mask = np.ones(rescaled_image.shape,bool)
+                mask = np.ones(rescaled_image.shape, bool)
             if self.low_truncation_choice == R_MASK:
                 mask[rescaled_image < target_min] = False
             if self.high_truncation_choice == R_MASK:
@@ -501,18 +500,18 @@ class RescaleIntensity(cpm.CPModule):
         if self.low_truncation_choice == R_SET_TO_ZERO:
             rescaled_image[rescaled_image < target_min] = 0
         elif self.low_truncation_choice == R_SET_TO_CUSTOM:
-            rescaled_image[rescaled_image < target_min] =\
+            rescaled_image[rescaled_image < target_min] = \
                 self.custom_low_truncation.value
 
         if self.high_truncation_choice == R_SET_TO_ONE:
             rescaled_image[rescaled_image > target_max] = 1
         elif self.high_truncation_choice == R_SET_TO_CUSTOM:
-            rescaled_image[rescaled_image > target_max] =\
+            rescaled_image[rescaled_image > target_max] = \
                 self.custom_high_truncation.value
         if mask is not None and mask.ndim == 3:
             # Color image -> 3-d mask. Collapse the 3rd dimension
             # so any point is masked if any color fails
-            mask = np.all(mask,2)
+            mask = np.all(mask, 2)
         return rescaled_image, mask
 
     def upgrade_settings(self, setting_values, variable_revision_number,
@@ -521,7 +520,7 @@ class RescaleIntensity(cpm.CPModule):
             #
             # Added custom_low_truncation and custom_high_truncation
             #
-            setting_values = (setting_values[:7] + ["0","1"] +
+            setting_values = (setting_values[:7] + ["0", "1"] +
                               setting_values[7:])
             variable_revision_number = 3
         if from_matlab and variable_revision_number == 3:
@@ -532,20 +531,20 @@ class RescaleIntensity(cpm.CPModule):
             variable_revision_number = 4
         if from_matlab and variable_revision_number == 4:
             new_setting_values = (setting_values[:2] +
-                                  [M_STRETCH, # 2: rescale_method,
-                                   cps.NO,    # 3: wants_automatic_low
-                                   cps.NO,    # 4: wants_automatic_high
-                                   "0",       # 5: source_low
-                                   "1",       # 6: source_high
-                                   "0,1",     # 7: source_scale
-                                   "0,1",     # 8: dest_scale
-                                   R_MASK,    # 9: low_truncation_choice
-                                   "0",       # 10: custom_low_truncation
-                                   R_MASK,    # 11: high_truncation_choice
-                                   "1",       # 12: custom_high_truncation
-                                   cps.NONE,    # 13: matching_image_name
-                                   "1",       # 14: divisor_value
-                                   cps.NONE     # 15: divisor_measurement
+                                  [M_STRETCH,  # 2: rescale_method,
+                                   cps.NO,  # 3: wants_automatic_low
+                                   cps.NO,  # 4: wants_automatic_high
+                                   "0",  # 5: source_low
+                                   "1",  # 6: source_high
+                                   "0,1",  # 7: source_scale
+                                   "0,1",  # 8: dest_scale
+                                   R_MASK,  # 9: low_truncation_choice
+                                   "0",  # 10: custom_low_truncation
+                                   R_MASK,  # 11: high_truncation_choice
+                                   "1",  # 12: custom_high_truncation
+                                   cps.NONE,  # 13: matching_image_name
+                                   "1",  # 14: divisor_value
+                                   cps.NONE  # 15: divisor_measurement
                                    ])
             code = setting_values[2][0]
             if code.upper() == 'S':
@@ -569,7 +568,7 @@ class RescaleIntensity(cpm.CPModule):
                 else:
                     new_setting_values[4] = CUSTOM_VALUE
                     new_setting_values[6] = setting_values[4]
-                if all([x.upper() not in ("AA","AE")
+                if all([x.upper() not in ("AA", "AE")
                         for x in setting_values[3:4]]):
                     # Both are manual, put them in the range variable
                     new_setting_values[7] = ",".join(setting_values[3:5])

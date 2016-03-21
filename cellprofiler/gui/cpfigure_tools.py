@@ -19,7 +19,7 @@ def figure_to_image(figure, *args, **kwargs):
     figure.savefig(fd, *args, **kwargs)
     fd.seek(0)
     image = scipy.misc.imread(fd)
-    return image[:,:,:3]
+    return image[:, :, :3]
 
 
 def only_display_image(figure, shape):
@@ -39,11 +39,11 @@ def only_display_image(figure, shape):
     figure.set_figheight(height)
     figure.set_figwidth(width)
     bbox = matplotlib.transforms.Bbox(
-        np.array([[0.0, 0.0], [width, height]]))
+            np.array([[0.0, 0.0], [width, height]]))
     transform = matplotlib.transforms.Affine2D(
-        np.array([[dpi, 0, 0],
-                  [0, dpi, 0],
-                  [0,   0, 1]]))
+            np.array([[dpi, 0, 0],
+                      [0, dpi, 0],
+                      [0, 0, 1]]))
     figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
 
 

@@ -10,8 +10,10 @@ import cellprofiler.measurements as cpmeas
 
 class Rules(object):
     '''Represents a set of CPA rules'''
+
     class Rule(object):
         '''Represents a single rule'''
+
         def __init__(self, object_name, feature, comparitor, threshold, weights):
             '''Create a rule
 
@@ -46,9 +48,9 @@ class Rules(object):
                                                           self.feature)
             if values is None:
                 values = np.array([np.NaN])
-            elif  np.isscalar(values):
+            elif np.isscalar(values):
                 values = np.array([values])
-            score = np.zeros((len(values),self.weights.shape[1]),float)
+            score = np.zeros((len(values), self.weights.shape[1]), float)
             if len(values) == 0:
                 return score
             mask = ~(np.isnan(values) | np.isinf(values))
@@ -61,9 +63,9 @@ class Rules(object):
             elif self.comparitor == ">=":
                 hits = values[mask] >= self.threshold
             else:
-                raise NotImplementedError('Unknown comparitor, "%s".'%self.comparitor)
-            score[mask,:] = self.weights[1-hits.astype(int),:]
-            score[~mask,:] = self.weights[np.newaxis, 1]
+                raise NotImplementedError('Unknown comparitor, "%s".' % self.comparitor)
+            score[mask, :] = self.weights[1 - hits.astype(int), :]
+            score[~mask, :] = self.weights[np.newaxis, 1]
             return score
 
     def __init__(self):
@@ -100,8 +102,8 @@ class Rules(object):
                 if match is not None:
                     d = match.groupdict()
                     weights = np.array(
-                        [[float(w.strip()) for w in d[key].split(",")]
-                         for key in ("true", "false")])
+                            [[float(w.strip()) for w in d[key].split(",")]
+                             for key in ("true", "false")])
                     rule = self.Rule(d["object_name"],
                                      d["feature"],
                                      d["comparitor"],
@@ -109,7 +111,7 @@ class Rules(object):
                                      weights)
                     self.rules.append(rule)
             if len(self.rules) == 0:
-                raise ValueError("No rules found in %s"%str(fd_or_file))
+                raise ValueError("No rules found in %s" % str(fd_or_file))
         finally:
             if needs_close:
                 fd.close()
@@ -126,7 +128,7 @@ class Rules(object):
                 score = partial_score
                 partial_score = temp
             score_len = partial_score.shape[0]
-            score[:score_len,:] += partial_score[:score_len,:]
+            score[:score_len, :] += partial_score[:score_len, :]
             if score.shape[0] > partial_score.shape[0]:
-                score[score_len:,:] = np.NAN
+                score[score_len:, :] = np.NAN
         return score

@@ -26,6 +26,7 @@ MEASUREMENT_NAME_1 = "Measurement1"
 MEASUREMENT_NAME_2 = "Measurement2"
 IMAGE_NAME = "image"
 
+
 class TestClassifyObjects(unittest.TestCase):
     def test_01_01_load_matlab_classify_objects(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
@@ -50,8 +51,10 @@ class TestClassifyObjects(unittest.TestCase):
                 'Xqu//jyq8/39kteh76eKf/kvp7bXy+Bf1d/fv/rV98tp/7VXuGlZVXX0T+Du'
                 'dZ//M3WZT9YGAF3qrqE=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
         module = pipeline.modules()[-1]
@@ -93,11 +96,13 @@ class TestClassifyObjects(unittest.TestCase):
                 '6fv0za/+y8jqPd+63+5P4Y/XJ782HvnPdvHb1cvSv/xP7/r2n7ns6/KJAHF9'
                 'smE=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()),4)
+        self.assertEqual(len(pipeline.modules()), 4)
         module = pipeline.modules()[-1]
         self.assertTrue(isinstance(module, C.ClassifyObjects))
         self.assertEqual(module.contrast_choice, C.BY_TWO_MEASUREMENTS)
@@ -144,11 +149,13 @@ class TestClassifyObjects(unittest.TestCase):
                 'X9jfSn769Q8rm9+D58cZAKP+Hfj959+S8pbLJUkCT8fpqxg80/EleHowO2+k'
                 '6cbbT2B8+UGbl6l8kn6S2AFm1zfgKw/rNuBZhvL/A/z19oA=')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()),5)
+        self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[-2]
         self.assertTrue(isinstance(module, C.ClassifyObjects))
         self.assertEqual(module.contrast_choice.value, C.BY_SINGLE_MEASUREMENT)
@@ -165,7 +172,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertTrue(group.wants_high_bin)
         self.assertTrue(group.wants_custom_names)
         for name, expected in zip(group.bin_names.value.split(','),
-                                  ('First','Second','Third','Fourth','Fifth')):
+                                  ('First', 'Second', 'Third', 'Fourth', 'Fifth')):
             self.assertEqual(name, expected)
         self.assertTrue(group.wants_images)
         self.assertEqual(group.image_name, "ClassifiedNuclei")
@@ -223,11 +230,13 @@ class TestClassifyObjects(unittest.TestCase):
                 '+3fg+XEGwGx8e3H/8Gdcv6XSVrEIno7T1yE80/EVeHpjdt4WFhtvv4L5x7t9'
                 '3qTj45ynAruB5fX1/JUe2+b62YTj/wfn4gog')
         pipeline = cpp.Pipeline()
-        def callback(caller,event):
+
+        def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.load(StringIO(zlib.decompress(base64.b64decode(data))))
-        self.assertEqual(len(pipeline.modules()),5)
+        self.assertEqual(len(pipeline.modules()), 5)
         module = pipeline.modules()[-2]
         self.assertTrue(isinstance(module, C.ClassifyObjects))
         self.assertEqual(module.contrast_choice.value, C.BY_SINGLE_MEASUREMENT)
@@ -244,7 +253,7 @@ class TestClassifyObjects(unittest.TestCase):
         self.assertTrue(group.wants_high_bin)
         self.assertTrue(group.wants_custom_names)
         for name, expected in zip(group.bin_names.value.split(','),
-                                  ('First','Second','Third','Fourth','Fifth')):
+                                  ('First', 'Second', 'Third', 'Fourth', 'Fifth')):
             self.assertEqual(name, expected)
         self.assertTrue(group.wants_images)
         self.assertEqual(group.image_name, "ClassifiedNuclei")
@@ -303,8 +312,10 @@ class TestClassifyObjects(unittest.TestCase):
             module.second_measurement.value = MEASUREMENT_NAME_2
         module.module_num = 1
         pipeline = cpp.Pipeline()
+
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set,
@@ -315,25 +326,24 @@ class TestClassifyObjects(unittest.TestCase):
     def test_02_01_classify_single_none(self):
         '''Make sure the single measurement mode can handle no objects'''
         workspace, module = self.make_workspace(
-            np.zeros((10,10),int),
-            C.BY_SINGLE_MEASUREMENT,
-            np.zeros((0,), float))
+                np.zeros((10, 10), int),
+                C.BY_SINGLE_MEASUREMENT,
+                np.zeros((0,), float))
         module.run(workspace)
         for m_name in ("Classify_Measurement1_Bin_1",
                        "Classify_Measurement1_Bin_2",
-                        "Classify_Measurement1_Bin_3"):
-
+                       "Classify_Measurement1_Bin_3"):
             m = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                m_name)
             self.assertEqual(len(m), 0)
 
     def test_02_02_classify_single_even(self):
-        m = np.array((.5,0,1,.1))
-        labels = np.zeros((20,10),int)
-        labels[2:5,3:7] = 1
-        labels[12:15,1:4] = 2
-        labels[6:11,5:9] = 3
-        labels[16:19,5:9] = 4
+        m = np.array((.5, 0, 1, .1))
+        labels = np.zeros((20, 10), int)
+        labels[2:5, 3:7] = 1
+        labels[12:15, 1:4] = 2
+        labels[6:11, 5:9] = 3
+        labels[16:19, 5:9] = 4
         workspace, module = self.make_workspace(labels,
                                                 C.BY_SINGLE_MEASUREMENT, m)
         module.single_measurements[0].bin_choice.value = C.BC_EVEN
@@ -344,15 +354,15 @@ class TestClassifyObjects(unittest.TestCase):
         module.single_measurements[0].wants_high_bin.value = True
         module.single_measurements[0].wants_images.value = True
 
-        expected_obj = dict(Classify_Measurement1_Bin_1 = (0,1,0,1),
-                        Classify_Measurement1_Bin_2 = (1,0,0,0),
-                        Classify_Measurement1_Bin_3 = (0,0,1,0))
-        expected_img = dict(Classify_Measurement1_Bin_1_NumObjectsPerBin = 2,
-                        Classify_Measurement1_Bin_2_NumObjectsPerBin = 1,
-                        Classify_Measurement1_Bin_3_NumObjectsPerBin = 1,
-                        Classify_Measurement1_Bin_1_PctObjectsPerBin = 50.0,
-                        Classify_Measurement1_Bin_2_PctObjectsPerBin = 25.0,
-                        Classify_Measurement1_Bin_3_PctObjectsPerBin = 25.0)
+        expected_obj = dict(Classify_Measurement1_Bin_1=(0, 1, 0, 1),
+                            Classify_Measurement1_Bin_2=(1, 0, 0, 0),
+                            Classify_Measurement1_Bin_3=(0, 0, 1, 0))
+        expected_img = dict(Classify_Measurement1_Bin_1_NumObjectsPerBin=2,
+                            Classify_Measurement1_Bin_2_NumObjectsPerBin=1,
+                            Classify_Measurement1_Bin_3_NumObjectsPerBin=1,
+                            Classify_Measurement1_Bin_1_PctObjectsPerBin=50.0,
+                            Classify_Measurement1_Bin_2_PctObjectsPerBin=25.0,
+                            Classify_Measurement1_Bin_3_PctObjectsPerBin=25.0)
         module.run(workspace)
         for measurement, expected_values in expected_obj.iteritems():
             values = workspace.measurements.get_current_measurement(OBJECTS_NAME,
@@ -366,19 +376,20 @@ class TestClassifyObjects(unittest.TestCase):
 
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertTrue(np.all(pixel_data[labels==0,:] == 0))
-        colors = [pixel_data[x,y,:] for x,y in ((2,3),(12,1),(6,5))]
-        for i,color in enumerate(colors + [colors[1]]):
-            self.assertTrue(np.all(pixel_data[labels==i+1,:] == color))
+        self.assertTrue(np.all(pixel_data[labels == 0, :] == 0))
+        colors = [pixel_data[x, y, :] for x, y in ((2, 3), (12, 1), (6, 5))]
+        for i, color in enumerate(colors + [colors[1]]):
+            self.assertTrue(np.all(pixel_data[labels == i + 1, :] == color))
 
         columns = module.get_measurement_columns(None)
         self.assertEqual(len(columns), 9)
-        self.assertEqual(len(set([column[1] for column in columns])), 9) # no duplicates
+        self.assertEqual(len(set([column[1] for column in columns])), 9)  # no duplicates
         for column in columns:
-            if column[0] != OBJECTS_NAME: # Must be image
+            if column[0] != OBJECTS_NAME:  # Must be image
                 self.assertEqual(column[0], cpmeas.IMAGE)
                 self.assertTrue(column[1] in expected_img.keys())
-                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
+                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(
+                        C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
             else:
                 self.assertEqual(column[0], OBJECTS_NAME)
                 self.assertTrue(column[1] in expected_obj.keys())
@@ -408,32 +419,32 @@ class TestClassifyObjects(unittest.TestCase):
                              for name in names]))
 
     def test_02_03_classify_single_custom(self):
-        m = np.array((.5,0,1,.1))
-        labels = np.zeros((20,10),int)
-        labels[2:5,3:7] = 1
-        labels[12:15,1:4] = 2
-        labels[6:11,5:9] = 3
-        labels[16:19,5:9] = 4
+        m = np.array((.5, 0, 1, .1))
+        labels = np.zeros((20, 10), int)
+        labels[2:5, 3:7] = 1
+        labels[12:15, 1:4] = 2
+        labels[6:11, 5:9] = 3
+        labels[16:19, 5:9] = 4
         workspace, module = self.make_workspace(labels,
                                                 C.BY_SINGLE_MEASUREMENT, m)
         module.single_measurements[0].bin_choice.value = C.BC_CUSTOM
         module.single_measurements[0].custom_thresholds.value = ".2,.7"
-        module.single_measurements[0].bin_count.value = 14 # should ignore
+        module.single_measurements[0].bin_count.value = 14  # should ignore
         module.single_measurements[0].wants_custom_names.value = True
         module.single_measurements[0].wants_low_bin.value = True
         module.single_measurements[0].wants_high_bin.value = True
         module.single_measurements[0].bin_names.value = "Three,Blind,Mice"
         module.single_measurements[0].wants_images.value = True
 
-        expected_img = dict(Classify_Three_NumObjectsPerBin = 2,
-                            Classify_Three_PctObjectsPerBin = 50.0,
-                            Classify_Blind_NumObjectsPerBin = 1,
-                            Classify_Blind_PctObjectsPerBin = 25.0,
-                            Classify_Mice_NumObjectsPerBin = 1,
-                            Classify_Mice_PctObjectsPerBin = 25.0)
-        expected_obj = dict(Classify_Three = (0,1,0,1),
-                        Classify_Blind = (1,0,0,0),
-                        Classify_Mice = (0,0,1,0))
+        expected_img = dict(Classify_Three_NumObjectsPerBin=2,
+                            Classify_Three_PctObjectsPerBin=50.0,
+                            Classify_Blind_NumObjectsPerBin=1,
+                            Classify_Blind_PctObjectsPerBin=25.0,
+                            Classify_Mice_NumObjectsPerBin=1,
+                            Classify_Mice_PctObjectsPerBin=25.0)
+        expected_obj = dict(Classify_Three=(0, 1, 0, 1),
+                            Classify_Blind=(1, 0, 0, 0),
+                            Classify_Mice=(0, 0, 1, 0))
         module.run(workspace)
         for measurement, expected_values in expected_obj.iteritems():
             values = workspace.measurements.get_current_measurement(OBJECTS_NAME,
@@ -446,19 +457,20 @@ class TestClassifyObjects(unittest.TestCase):
             self.assertTrue(values == expected_values)
         image = workspace.image_set.get_image(IMAGE_NAME)
         pixel_data = image.pixel_data
-        self.assertTrue(np.all(pixel_data[labels==0,:] == 0))
-        colors = [pixel_data[x,y,:] for x,y in ((2,3),(12,1),(6,5))]
-        for i,color in enumerate(colors + [colors[1]]):
-            self.assertTrue(np.all(pixel_data[labels==i+1,:] == color))
+        self.assertTrue(np.all(pixel_data[labels == 0, :] == 0))
+        colors = [pixel_data[x, y, :] for x, y in ((2, 3), (12, 1), (6, 5))]
+        for i, color in enumerate(colors + [colors[1]]):
+            self.assertTrue(np.all(pixel_data[labels == i + 1, :] == color))
 
         columns = module.get_measurement_columns(None)
         self.assertEqual(len(columns), 9)
-        self.assertEqual(len(set([column[1] for column in columns])), 9) # no duplicates
+        self.assertEqual(len(set([column[1] for column in columns])), 9)  # no duplicates
         for column in columns:
-            if column[0] != OBJECTS_NAME: # Must be image
+            if column[0] != OBJECTS_NAME:  # Must be image
                 self.assertEqual(column[0], cpmeas.IMAGE)
                 self.assertTrue(column[1] in expected_img.keys())
-                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
+                self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(
+                        C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
             else:
                 self.assertEqual(column[0], OBJECTS_NAME)
                 self.assertTrue(column[1] in expected_obj.keys())
@@ -492,75 +504,75 @@ class TestClassifyObjects(unittest.TestCase):
         # if showing the figure and last object has a measurement of NaN
         #
         for leave_last_out in (False, True):
-            m = np.array((.5 , 0, 1, np.NaN))
+            m = np.array((.5, 0, 1, np.NaN))
             if leave_last_out:
-                m=m[:-1]
-            labels = np.zeros((20,10),int)
-            labels[2:5,3:7] = 1
-            labels[12:15,1:4] = 2
-            labels[6:11,5:9] = 3
-            labels[16:19,5:9] = 4
+                m = m[:-1]
+            labels = np.zeros((20, 10), int)
+            labels[2:5, 3:7] = 1
+            labels[12:15, 1:4] = 2
+            labels[6:11, 5:9] = 3
+            labels[16:19, 5:9] = 4
             workspace, module = self.make_workspace(
-                labels, C.BY_SINGLE_MEASUREMENT, m)
+                    labels, C.BY_SINGLE_MEASUREMENT, m)
             module.single_measurements[0].bin_choice.value = C.BC_CUSTOM
             module.single_measurements[0].custom_thresholds.value = ".2,.7"
-            module.single_measurements[0].bin_count.value = 14 # should ignore
+            module.single_measurements[0].bin_count.value = 14  # should ignore
             module.single_measurements[0].wants_custom_names.value = True
             module.single_measurements[0].wants_low_bin.value = True
             module.single_measurements[0].wants_high_bin.value = True
             module.single_measurements[0].bin_names.value = "Three,Blind,Mice"
             module.single_measurements[0].wants_images.value = True
 
-            expected_img = dict(Classify_Three_NumObjectsPerBin = 1,
-                                Classify_Three_PctObjectsPerBin = 25.0,
-                                Classify_Blind_NumObjectsPerBin = 1,
-                                Classify_Blind_PctObjectsPerBin = 25.0,
-                                Classify_Mice_NumObjectsPerBin = 1,
-                                Classify_Mice_PctObjectsPerBin = 25.0)
-            expected_obj = dict(Classify_Three = (0, 1, 0, 0),
-                                Classify_Blind = (1, 0, 0, 0),
-                                Classify_Mice = (0, 0, 1, 0))
+            expected_img = dict(Classify_Three_NumObjectsPerBin=1,
+                                Classify_Three_PctObjectsPerBin=25.0,
+                                Classify_Blind_NumObjectsPerBin=1,
+                                Classify_Blind_PctObjectsPerBin=25.0,
+                                Classify_Mice_NumObjectsPerBin=1,
+                                Classify_Mice_PctObjectsPerBin=25.0)
+            expected_obj = dict(Classify_Three=(0, 1, 0, 0),
+                                Classify_Blind=(1, 0, 0, 0),
+                                Classify_Mice=(0, 0, 1, 0))
             module.run(workspace)
             for measurement, expected_values in expected_obj.iteritems():
                 values = workspace.measurements.get_current_measurement(
-                    OBJECTS_NAME, measurement)
+                        OBJECTS_NAME, measurement)
                 self.assertEqual(len(values), 4)
                 self.assertTrue(np.all(values == np.array(expected_values)))
             for measurement, expected_values in expected_img.iteritems():
                 values = workspace.measurements.get_current_measurement(
-                    cpmeas.IMAGE, measurement)
+                        cpmeas.IMAGE, measurement)
                 self.assertTrue(values == expected_values)
             image = workspace.image_set.get_image(IMAGE_NAME)
             pixel_data = image.pixel_data
-            self.assertTrue(np.all(pixel_data[labels==0,:] == 0))
-            colors = [pixel_data[x,y,:] for x,y in
+            self.assertTrue(np.all(pixel_data[labels == 0, :] == 0))
+            colors = [pixel_data[x, y, :] for x, y in
                       ((2, 3), (12, 1), (6, 5), (16, 5))]
-            for i,color in enumerate(colors + [colors[1]]):
-                self.assertTrue(np.all(pixel_data[labels==i+1,:] == color))
+            for i, color in enumerate(colors + [colors[1]]):
+                self.assertTrue(np.all(pixel_data[labels == i + 1, :] == color))
 
     def test_03_01_two_none(self):
         workspace, module = self.make_workspace(
-            np.zeros((10,10),int),
-            C.BY_TWO_MEASUREMENTS,
-            np.zeros((0,), float),np.zeros((0,), float))
+                np.zeros((10, 10), int),
+                C.BY_TWO_MEASUREMENTS,
+                np.zeros((0,), float), np.zeros((0,), float))
         module.run(workspace)
-        for lh1 in ("low","high"):
-            for lh2 in ("low","high"):
+        for lh1 in ("low", "high"):
+            for lh2 in ("low", "high"):
                 m_name = ("Classify_Measurement1_%s_Measurement2_%s" %
-                          (lh1,lh2))
+                          (lh1, lh2))
                 m = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                    m_name)
                 self.assertEqual(len(m), 0)
 
     def test_03_02_two(self):
         np.random.seed(0)
-        labels = np.zeros((10,20), int)
+        labels = np.zeros((10, 20), int)
         index = 1
-        for i_min,i_max in ((1,4),(6,9)):
-            for j_min, j_max in ((2,6),(8,11),(13,18)):
-                labels[i_min:i_max,j_min:j_max] = index
+        for i_min, i_max in ((1, 4), (6, 9)):
+            for j_min, j_max in ((2, 6), (8, 11), (13, 18)):
+                labels[i_min:i_max, j_min:j_max] = index
                 index += 1
-        num_labels = index-1
+        num_labels = index - 1
         exps = np.exp(np.arange(np.max(labels)))
         m1 = np.random.permutation(exps)
         m2 = np.random.permutation(exps)
@@ -576,6 +588,7 @@ class TestClassifyObjects(unittest.TestCase):
                     module.second_threshold_method.value = tm2
                     module.second_threshold.value = 70
                     module.wants_image.value = True
+
                     def cutoff(method, custom_cutoff):
                         if method == C.TM_MEAN:
                             return np.mean(exps)
@@ -583,12 +596,13 @@ class TestClassifyObjects(unittest.TestCase):
                             return np.median(exps)
                         else:
                             return custom_cutoff
+
                     c1 = cutoff(tm1, module.first_threshold.value)
                     c2 = cutoff(tm2, module.second_threshold.value)
                     m1_over = m1 >= c1
                     m2_over = m2 >= c2
                     if wants_custom_names:
-                        f_names = ("TL","TR","BL","BR")
+                        f_names = ("TL", "TR", "BL", "BR")
                         module.wants_custom_names.value = True
                         module.low_low_custom_name.value = f_names[0]
                         module.low_high_custom_name.value = f_names[1]
@@ -605,15 +619,16 @@ class TestClassifyObjects(unittest.TestCase):
                     module.run(workspace)
                     columns = module.get_measurement_columns(None)
                     for column in columns:
-                        if column[0] != OBJECTS_NAME: # Must be image
+                        if column[0] != OBJECTS_NAME:  # Must be image
                             self.assertEqual(column[0], cpmeas.IMAGE)
-                            self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
+                            self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER if column[1].endswith(
+                                    C.F_NUM_PER_BIN) else cpmeas.COLTYPE_FLOAT)
                         else:
                             self.assertEqual(column[0], OBJECTS_NAME)
                             self.assertTrue(column[2] == cpmeas.COLTYPE_INTEGER)
 
                     self.assertEqual(len(columns), 12)
-                    self.assertEqual(len(set([column[1] for column in columns])), 12) # no duplicates
+                    self.assertEqual(len(set([column[1] for column in columns])), 12)  # no duplicates
 
                     categories = module.get_categories(None, cpmeas.IMAGE)
                     self.assertEqual(len(categories), 1)
@@ -633,22 +648,22 @@ class TestClassifyObjects(unittest.TestCase):
                                                  m1_over & ~m2_over,
                                                  m1_over & m2_over)):
                         m = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
-                                                                           '_'.join((m_name,C.F_NUM_PER_BIN)))
-                        self.assertTrue(m==expected.astype(int).sum())
+                                                                           '_'.join((m_name, C.F_NUM_PER_BIN)))
+                        self.assertTrue(m == expected.astype(int).sum())
                         m = workspace.measurements.get_current_measurement(cpmeas.IMAGE,
-                                                                           '_'.join((m_name,C.F_PCT_PER_BIN)))
-                        self.assertTrue(m==100.0*float(expected.astype(int).sum())/num_labels)
+                                                                           '_'.join((m_name, C.F_PCT_PER_BIN)))
+                        self.assertTrue(m == 100.0 * float(expected.astype(int).sum()) / num_labels)
                         m = workspace.measurements.get_current_measurement(OBJECTS_NAME,
                                                                            m_name)
-                        self.assertTrue(np.all(m==expected.astype(int)))
+                        self.assertTrue(np.all(m == expected.astype(int)))
                         self.assertTrue(m_name in [column[1] for column in columns])
                         self.assertTrue(m_name in ["_".join((C.M_CATEGORY, name))
                                                    for name in names])
                     image = workspace.image_set.get_image(IMAGE_NAME).pixel_data
-                    self.assertTrue(np.all(image[labels==0,:] == 0))
-                    colors = image[(labels > 0) & (m[labels-1] == 1),:]
+                    self.assertTrue(np.all(image[labels == 0, :] == 0))
+                    colors = image[(labels > 0) & (m[labels - 1] == 1), :]
                     if colors.shape[0] > 0:
-                        self.assertTrue(all([np.all(colors[:,i]==colors[0,i])
+                        self.assertTrue(all([np.all(colors[:, i] == colors[0, i])
                                              for i in range(3)]))
 
     def test_03_04_nans(self):
@@ -666,9 +681,9 @@ class TestClassifyObjects(unittest.TestCase):
         for leave_last_out in (False, True):
             end = np.max(labels) - 1 if leave_last_out else np.max(labels)
             workspace, module = self.make_workspace(
-                labels,
-                C.BY_TWO_MEASUREMENTS,
-                m1[:end], m2[:end])
+                    labels,
+                    C.BY_TWO_MEASUREMENTS,
+                    m1[:end], m2[:end])
             self.assertTrue(isinstance(module, C.ClassifyObjects))
             module.first_threshold_method.value = C.TM_MEAN
             module.first_threshold.value = 2
@@ -685,11 +700,11 @@ class TestClassifyObjects(unittest.TestCase):
                        for name in f_names]
             m = workspace.measurements
             for m_name, expected in zip(
-                m_names,
-                [np.array((1, 0, 0, 0, 0)),
-                 np.array((0, 0, 0, 0, 0)),
-                 np.array((0, 0, 0, 0, 0)),
-                 np.array((0, 1, 0, 0, 0))]):
+                    m_names,
+                    [np.array((1, 0, 0, 0, 0)),
+                     np.array((0, 0, 0, 0, 0)),
+                     np.array((0, 0, 0, 0, 0)),
+                     np.array((0, 1, 0, 0, 0))]):
                 values = m[OBJECTS_NAME, m_name]
                 np.testing.assert_array_equal(values, expected)
 
@@ -702,9 +717,9 @@ class TestClassifyObjects(unittest.TestCase):
         m1 = np.array((4, np.NaN))
         m2 = np.array((4, 4))
         workspace, module = self.make_workspace(
-            labels,
-            C.BY_TWO_MEASUREMENTS,
-            m1, m2)
+                labels,
+                C.BY_TWO_MEASUREMENTS,
+                m1, m2)
         self.assertTrue(isinstance(module, C.ClassifyObjects))
         module.first_threshold_method.value = C.TM_MEAN
         module.first_threshold.value = 2

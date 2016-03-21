@@ -79,7 +79,8 @@ class Objects(object):
 
         # Clear all cached results.
         if getattr(self, "memoize_method_dictionary", False):
-            self.memoize_method_dictionary = {}
+            pass
+            # self.memoize_method_dictionary = {}
 
     segmented = property(get_segmented, set_segmented)
 
@@ -419,14 +420,14 @@ class Objects(object):
 
     areas = property(get_areas)
 
-    @memoize_method
-    def fn_of_label(self, function):
-        """Call a function taking just a label matrix
-
-        function - should have a signature like
-            labels - label_matrix
-    """
-        return function(self.segmented)
+    # @memoize_method
+    # def fn_of_label(self, function):
+    #     """Call a function taking just a label matrix
+    #
+    #     function - should have a signature like
+    #         labels - label_matrix
+    # """
+    #     return function(self.segmented)
 
     @memoize_method
     def fn_of_label_and_index(self, function):
@@ -456,19 +457,19 @@ class Objects(object):
                         self.segmented,
                         self.indices)
 
-    @memoize_method
-    def fn_of_image_label_and_index(self, function, image):
-        """Call a function taking an image, a label matrix and an index
-
-        function - should have signature like
-                   image  - image with same dimensions as labels
-                   labels - label matrix
-                   index  - sequence of label indices documenting which
-                            label indices are of interest
-        """
-        return function(image,
-                        self.segmented,
-                        self.indices)
+    # @memoize_method
+    # def fn_of_image_label_and_index(self, function, image):
+    #     """Call a function taking an image, a label matrix and an index
+    #
+    #     function - should have signature like
+    #                image  - image with same dimensions as labels
+    #                labels - label matrix
+    #                index  - sequence of label indices documenting which
+    #                         label indices are of interest
+    #     """
+    #     return function(image,
+    #                     self.segmented,
+    #                     self.indices)
 
 
 class Segmentation(object):
@@ -746,7 +747,7 @@ class Segmentation(object):
         # Remember idx points into sort_order which points into labels
         # to get the nth label, grouped into consecutive positions.
         #
-        input_indexer = centrosome.index.Indexes(counts)
+        # input_indexer = centrosome.index.Indexes(counts)
         output_indexer = centrosome.index.Indexes(pair_counts)
         #
         # The start of the run of overlaps and the offsets
@@ -896,29 +897,29 @@ class ObjectSet(object):
 
     all_objects = property(get_all_objects)
 
-    def get_types(self):
-        '''Get then names of types of per-image set "things"
+    # def get_types(self):
+    #     '''Get then names of types of per-image set "things"
+    #
+    #     The object set can store arbitrary types of things other than objects,
+    #     for instance ImageJ data tables. This function returns the thing types
+    #     defined in the object set at this stage of the pipeline.
+    #     '''
+    #     return self.__types_and_instances.keys()
 
-        The object set can store arbitrary types of things other than objects,
-        for instance ImageJ data tables. This function returns the thing types
-        defined in the object set at this stage of the pipeline.
-        '''
-        return self.__types_and_instances.keys()
-
-    def add_type_instance(self, type_name, instance_name, instance):
-        '''Add a named instance of a type
-
-        A thing of a given type can be stored in the object set so that
-        it can be retrieved by name later in the pipeline. This function adds
-        an instance of a type to the object set.
-
-        type_name - the name of the instance's type
-        instance_name - the name of the instance
-        instance - the instance itself
-        '''
-        if type_name not in self.__types_and_instances:
-            self.__types_and_instances[type_name] = {}
-        self.__types_and_instances[type_name][instance_name] = instance
+    # def add_type_instance(self, type_name, instance_name, instance):
+    #     '''Add a named instance of a type
+    #
+    #     A thing of a given type can be stored in the object set so that
+    #     it can be retrieved by name later in the pipeline. This function adds
+    #     an instance of a type to the object set.
+    #
+    #     type_name - the name of the instance's type
+    #     instance_name - the name of the instance
+    #     instance - the instance itself
+    #     '''
+    #     if type_name not in self.__types_and_instances:
+    #         self.__types_and_instances[type_name] = {}
+    #     self.__types_and_instances[type_name][instance_name] = instance
 
     def get_type_instance(self, type_name, instance_name):
         '''Get an named instance of a type

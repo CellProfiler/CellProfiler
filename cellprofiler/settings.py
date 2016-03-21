@@ -167,7 +167,7 @@ class Setting(object):
         """Return true if the setting's value is Do not use"""
         return self.value == DO_NOT_USE
 
-    is_do_not_use = property(get_is_do_not_use)
+    # is_do_not_use = property(get_is_do_not_use)
 
     def test_valid(self, pipeline):
         """Throw a ValidationError if the value of this setting is inappropriate for the context"""
@@ -227,9 +227,9 @@ class HiddenCount(Setting):
     def get_value(self):
         return len(self.__sequence)
 
-    def set_sequence(self, sequence):
-        '''Set the sequence used to maintain the count'''
-        self.__sequence = sequence
+    # def set_sequence(self, sequence):
+    #     '''Set the sequence used to maintain the count'''
+    #     self.__sequence = sequence
 
     def __str__(self):
         return str(len(self.__sequence))
@@ -245,7 +245,7 @@ class Text(Setting):
 
     def __init__(self, text, value, *args, **kwargs):
         kwargs = kwargs.copy()
-        self.multiline_display = kwargs.pop("multiline", False)
+        # self.multiline_display = kwargs.pop("multiline", False)
         self.metadata_display = kwargs.pop(METADATA_ATTRIBUTE, False)
         super(Text, self).__init__(text, value, *args, **kwargs)
 
@@ -494,7 +494,7 @@ class FilenameText(Text):
     """
     MODE_OPEN = "Open"
     MODE_APPEND = "Append"
-    MODE_OVERWRITE = "Overwrite"
+    # MODE_OVERWRITE = "Overwrite"
 
     def __init__(self, text, value, *args, **kwargs):
         kwargs = kwargs.copy()
@@ -1957,33 +1957,33 @@ class TreeChoice(Setting):
         '''Return the setting value for a list of menu path parts'''
         return "|".join([x.replace("|", "||") for x in value])
 
-    def get_leaves(self, path=[]):
-        '''Get all leaf nodes of a given parent node
+    # def get_leaves(self, path=[]):
+    #     '''Get all leaf nodes of a given parent node
+    #
+    #     path - the names of nodes traversing the path down the tree
+    #     '''
+    #     current = self.get_tree()
+    #     while len(path) > 0:
+    #         idx = current.index(path[0])
+    #         if idx == -1 or current[idx][1] is None or len(current[idx][1]) == 0:
+    #             return []
+    #         current = current[idx][1]
+    #         path = path[1:]
+    #     return [x[0] for x in current if x[1] is None or len(x[1] == 0)]
 
-        path - the names of nodes traversing the path down the tree
-        '''
-        current = self.get_tree()
-        while len(path) > 0:
-            idx = current.index(path[0])
-            if idx == -1 or current[idx][1] is None or len(current[idx][1]) == 0:
-                return []
-            current = current[idx][1]
-            path = path[1:]
-        return [x[0] for x in current if x[1] is None or len(x[1] == 0)]
-
-    def get_subnodes(self, path=[]):
-        '''Get all child nodes that are not leaves for a  given parent
-
-        path - the names of nodes traversing the path down the tree
-        '''
-        current = self.get_tree()
-        while len(path) > 0:
-            idx = current.index(path[0])
-            if idx == -1 or current[idx][1] is None:
-                return []
-            current = current[idx][1]
-            path = path[1:]
-        return [x[0] for x in current if x[1] is not None]
+    # def get_subnodes(self, path=[]):
+    #     '''Get all child nodes that are not leaves for a  given parent
+    #
+    #     path - the names of nodes traversing the path down the tree
+    #     '''
+    #     current = self.get_tree()
+    #     while len(path) > 0:
+    #         idx = current.index(path[0])
+    #         if idx == -1 or current[idx][1] is None:
+    #             return []
+    #         current = current[idx][1]
+    #         path = path[1:]
+    #     return [x[0] for x in current if x[1] is not None]
 
     def get_selected_leaf(self):
         '''Get the leaf node of the tree for the current setting value'''
@@ -3023,11 +3023,11 @@ class FileCollectionDisplay(Setting):
     NODE_IMAGE_PLANE = "imageplane"
     NODE_MOVIE = "movie"
     NODE_FILE = "file"
-    NODE_CSV = "csv"
+    # NODE_CSV = "csv"
     BKGND_PAUSE = "pause"
     BKGND_RESUME = "resume"
     BKGND_STOP = "stop"
-    BKGND_GET_STATE = "getstate"
+    # BKGND_GET_STATE = "getstate"
 
     class DeleteMenuItem(object):
         '''A placeholder in the context menu for the delete command
@@ -3120,10 +3120,10 @@ class FileCollectionDisplay(Setting):
         '''Set the function that will be called when the file_tree is updated'''
         self.fn_update = fn_update
 
-    def initialize_tree(self, mods):
-        '''Remove all nodes in the file tree'''
-        self.file_tree = {}
-        self.add_subtree(mods, self.file_tree)
+    # def initialize_tree(self, mods):
+    #     '''Remove all nodes in the file tree'''
+    #     self.file_tree = {}
+    #     self.add_subtree(mods, self.file_tree)
 
     def add(self, mods):
         '''Add nodes to the file tree
@@ -3133,12 +3133,12 @@ class FileCollectionDisplay(Setting):
         self.add_subtree(mods, self.file_tree)
         self.update_ui(self.ADD, mods)
 
-    def modify(self, mods):
-        '''Indicate a minor modification such as metadtaa change
-
-        mods - modification structure. See class documentation for its form.
-        '''
-        self.update_ui(self.METADATA, mods)
+    # def modify(self, mods):
+    #     '''Indicate a minor modification such as metadtaa change
+    #
+    #     mods - modification structure. See class documentation for its form.
+    #     '''
+    #     self.update_ui(self.METADATA, mods)
 
     @classmethod
     def is_leaf(cls, mod):
@@ -3415,18 +3415,18 @@ class Table(Setting):
             self.data.append([None if index is None else row[index]
                               for index in indices])
 
-    def sort_rows(self, columns):
-        '''Sort rows based on values in columns'''
-        indices = [self.column_names.index(c) for c in columns]
-
-        def compare_fn(row1, row2):
-            for index in indices:
-                x = cmp(row1[index], row2[index])
-                if x != 0:
-                    return x
-            return 0
-
-        self.data.sort(compare_fn)
+    # def sort_rows(self, columns):
+    #     '''Sort rows based on values in columns'''
+    #     indices = [self.column_names.index(c) for c in columns]
+    #
+    #     def compare_fn(row1, row2):
+    #         for index in indices:
+    #             x = cmp(row1[index], row2[index])
+    #             if x != 0:
+    #                 return x
+    #         return 0
+    #
+    #     self.data.sort(compare_fn)
 
     def clear_rows(self):
         self.data = []
@@ -3450,26 +3450,26 @@ class Table(Setting):
             row_index = slice(row_index, row_index + 1)
         return [[row[ci] for ci in column_indices] for row in self.data[row_index]]
 
-    def set_row_attribute(self, row_index, attribute, set_attribute=True):
-        '''Set an attribute on a row
-
-        row_index - index of row in question
-
-        attribute - one of the ATTR_ values, for instance ATTR_ERROR
-
-        set_attribute - True to set, False to clear
-        '''
-        if set_attribute:
-            if self.row_attributes.has_key(row_index):
-                self.row_attributes[row_index].add(attribute)
-            else:
-                self.row_attributes[row_index] = set([attribute])
-        else:
-            if self.row_attributes.has_key(row_index):
-                s = self.row_attributes[row_index]
-                s.remove(attribute)
-                if len(s) == 0:
-                    del self.row_attributes[row_index]
+    # def set_row_attribute(self, row_index, attribute, set_attribute=True):
+    #     '''Set an attribute on a row
+    #
+    #     row_index - index of row in question
+    #
+    #     attribute - one of the ATTR_ values, for instance ATTR_ERROR
+    #
+    #     set_attribute - True to set, False to clear
+    #     '''
+    #     if set_attribute:
+    #         if self.row_attributes.has_key(row_index):
+    #             self.row_attributes[row_index].add(attribute)
+    #         else:
+    #             self.row_attributes[row_index] = set([attribute])
+    #     else:
+    #         if self.row_attributes.has_key(row_index):
+    #             s = self.row_attributes[row_index]
+    #             s.remove(attribute)
+    #             if len(s) == 0:
+    #                 del self.row_attributes[row_index]
 
     def get_row_attributes(self, row_index):
         '''Get the set of attributes on a row
@@ -3480,30 +3480,30 @@ class Table(Setting):
         '''
         return self.row_attributes.get(row_index, None)
 
-    def set_cell_attribute(self, row_index, column_name,
-                           attribute, set_attribute=True):
-        '''Set an attribute on a cell
-
-        row_index - index of row in question
-
-        column_name - name of the cell's column
-
-        attribute - one of the ATTR_ values, for instance ATTR_ERROR
-
-        set_attribute - True to set, False to clear
-        '''
-        key = (row_index, self.column_names.index(column_name))
-        if set_attribute:
-            if self.cell_attributes.has_key(key):
-                self.cell_attributes[key].add(attribute)
-            else:
-                self.cell_attributes[key] = set([attribute])
-        else:
-            if self.cell_attributes.has_key(key):
-                s = self.cell_attributes[key]
-                s.remove(attribute)
-                if len(s) == 0:
-                    del self.cell_attributes[key]
+    # def set_cell_attribute(self, row_index, column_name,
+    #                        attribute, set_attribute=True):
+    #     '''Set an attribute on a cell
+    #
+    #     row_index - index of row in question
+    #
+    #     column_name - name of the cell's column
+    #
+    #     attribute - one of the ATTR_ values, for instance ATTR_ERROR
+    #
+    #     set_attribute - True to set, False to clear
+    #     '''
+    #     key = (row_index, self.column_names.index(column_name))
+    #     if set_attribute:
+    #         if self.cell_attributes.has_key(key):
+    #             self.cell_attributes[key].add(attribute)
+    #         else:
+    #             self.cell_attributes[key] = set([attribute])
+    #     else:
+    #         if self.cell_attributes.has_key(key):
+    #             s = self.cell_attributes[key]
+    #             s.remove(attribute)
+    #             if len(s) == 0:
+    #                 del self.cell_attributes[key]
 
     def get_cell_attributes(self, row_index, column_name):
         '''Get the set of attributes on a row
@@ -3758,41 +3758,41 @@ class ChangeSettingEvent(object):
     new_value = property(get_new_value)
 
 
-class BeforeChangeSettingEvent(ChangeSettingEvent):
-    """Indicates that a setting is about to change, allows a listener to cancel the change
-
-    """
-
-    def __init__(self, old_value, new_value):
-        ChangeSettingEvent.__init__(self, old_value, new_value)
-        self.__allow_change = True
-        self.__cancel_reason = None
-
-    def cancel_change(self, reason=None):
-        self.__allow_change = False
-        self.__cancel_reason = reason
-
-    def allow_change(self):
-        return self.__allow_change
-
-    def get_cancel_reason(self):
-        return self.__cancel_reason
-
-    cancel_reason = property(get_cancel_reason)
-
-
-class AfterChangeSettingEvent(ChangeSettingEvent):
-    """Indicates that a setting has changed its value
-
-    """
-
-    def __init__(self, old_value, new_value):
-        ChangeSettingEvent.__init__(self, old_value, new_value)
+# class BeforeChangeSettingEvent(ChangeSettingEvent):
+#     """Indicates that a setting is about to change, allows a listener to cancel the change
+#
+#     """
+#
+#     def __init__(self, old_value, new_value):
+#         ChangeSettingEvent.__init__(self, old_value, new_value)
+#         self.__allow_change = True
+#         self.__cancel_reason = None
+#
+#     def cancel_change(self, reason=None):
+#         self.__allow_change = False
+#         self.__cancel_reason = reason
+#
+#     def allow_change(self):
+#         return self.__allow_change
+#
+#     def get_cancel_reason(self):
+#         return self.__cancel_reason
+#
+#     cancel_reason = property(get_cancel_reason)
 
 
-class DeleteSettingEvent():
-    def __init__(self):
-        pass
+# class AfterChangeSettingEvent(ChangeSettingEvent):
+#     """Indicates that a setting has changed its value
+#
+#     """
+#
+#     def __init__(self, old_value, new_value):
+#         ChangeSettingEvent.__init__(self, old_value, new_value)
+
+#
+# class DeleteSettingEvent():
+#     def __init__(self):
+#         pass
 
 
 class ValidationError(ValueError):

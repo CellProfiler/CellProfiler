@@ -2,12 +2,12 @@
 # -*- coding: iso-8859-15 -*-
 
 import cellprofiler.gui.errordialog
-import cellprofiler.preferences
-import cellprofiler.utilities
+import preferences
+import utilities.thread_excepthook
 import sys
 import wx
 
-cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
+utilities.thread_excepthook.install_thread_sys_excepthook()
 
 
 class Application(wx.App):
@@ -17,7 +17,7 @@ class Application(wx.App):
         self.workspace_path = kwargs.pop('workspace_path', None)
         self.pipeline_path = kwargs.pop('pipeline_path', None)
         self.abort_initialization = False
-        super(CellProfilerApp, self).__init__(*args, **kwargs)
+        super(Application, self).__init__(*args, **kwargs)
 
     def OnInit(self):
         # The wx.StandardPaths aren't available until this is set.
@@ -62,9 +62,8 @@ class Application(wx.App):
         sys.excepthook = self.orig_excepthook
 
     def new_version_check(self, force=False):
-        if cellprofiler.preferences.get_check_new_versions() or force:
+        if preferences.get_check_new_versions() or force:
             import cellprofiler.utilities.check_for_updates as cfu
-            import platform
             import cellprofiler.utilities.version
 
             version_string = cellprofiler.utilities.version.version_string

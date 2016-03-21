@@ -182,7 +182,7 @@ def config_read(key):
         # Keeps popup box from appearing during testing I hope
         #
         import wx
-        shutup = wx.LogNull()
+        # shutup = wx.LogNull()
     if __cached_values.has_key(key):
         return __cached_values[key]
     if get_config().Exists(key):
@@ -245,17 +245,17 @@ def cell_profiler_root_directory():
     return '..'
 
 
-def python_root_directory():
-    return __python_root
+# def python_root_directory():
+#     return __python_root
 
 
-def resources_root_directory():
-    if hasattr(sys, 'frozen'):
-        # On Mac, the application runs in CellProfiler2.0.app/Contents/Resources.
-        # Not sure where this should be on PC.
-        return '.'
-    else:
-        return __python_root
+# def resources_root_directory():
+#     if hasattr(sys, 'frozen'):
+#         # On Mac, the application runs in CellProfiler2.0.app/Contents/Resources.
+#         # Not sure where this should be on PC.
+#         return '.'
+#     else:
+#         return __python_root
 
 
 DEFAULT_INPUT_FOLDER_NAME = 'Default Input Folder'
@@ -371,10 +371,10 @@ INTENSITY_MODE_RAW = "raw"
 INTENSITY_MODE_NORMAL = "normalized"
 INTENSITY_MODE_LOG = "log"
 
-WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
-WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
-WC_CREATE_NEW_WORKSPACE = "CreateNewWorkspace"
-WC_OPEN_OLD_WORKSPACE = "OpenOldWorkspace"
+# WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
+# WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
+# WC_CREATE_NEW_WORKSPACE = "CreateNewWorkspace"
+# WC_OPEN_OLD_WORKSPACE = "OpenOldWorkspace"
 
 '''The preference key for selecting the correct version of ImageJ'''
 IJ_VERSION = "ImageJVersion"
@@ -439,12 +439,12 @@ def module_directory():
     return str(config_read(MODULEDIRECTORY))
 
 
-def set_module_directory(value):
-    config_write(MODULEDIRECTORY, value)
+# def set_module_directory(value):
+#     config_write(MODULEDIRECTORY, value)
 
 
-def module_extension():
-    return '.m'
+# def module_extension():
+#     return '.m'
 
 
 __default_image_directory = None
@@ -510,7 +510,8 @@ def remove_image_directory_listener(listener):
 
 class PreferenceChangedEvent:
     def __init__(self, new_value):
-        self.new_value = new_value
+        pass
+        # self.new_value = new_value
 
 
 __default_output_directory = None
@@ -1066,10 +1067,10 @@ def set_report_jvm_error(should_report):
     config_write(JVM_ERROR, "True" if should_report else "False")
 
 
-def set_has_reported_jvm_error():
-    '''Call this to remember that we showed the user the JVM error'''
-    global __has_reported_jvm_error
-    __has_reported_jvm_error = True
+# def set_has_reported_jvm_error():
+#     '''Call this to remember that we showed the user the JVM error'''
+#     global __has_reported_jvm_error
+#     __has_reported_jvm_error = True
 
 
 __allow_output_file_overwrite = None
@@ -1238,47 +1239,47 @@ def set_use_more_figure_space(value):
 __ij_version = None
 
 
-def get_ij_version():
-    '''Return an indicator of which version of ImageJ to use
+# def get_ij_version():
+#     '''Return an indicator of which version of ImageJ to use
+#
+#     returns one of IJ_1 or IJ_2.
+#
+#     This determines whether to use the ImageJ 1.44 version, enhanced
+#     with the @parameter decoration or to use the new and experimental
+#     ImageJ 2.0 codebase.
+#     '''
+#     global __ij_version
+#     if __ij_version is not None:
+#         return __ij_version
+#     if not config_exists(IJ_VERSION):
+#         return IJ_1
+#     result = config_read(IJ_VERSION)
+#     return IJ_1 if result not in (IJ_1, IJ_2) else result
 
-    returns one of IJ_1 or IJ_2.
 
-    This determines whether to use the ImageJ 1.44 version, enhanced
-    with the @parameter decoration or to use the new and experimental
-    ImageJ 2.0 codebase.
-    '''
-    global __ij_version
-    if __ij_version is not None:
-        return __ij_version
-    if not config_exists(IJ_VERSION):
-        return IJ_1
-    result = config_read(IJ_VERSION)
-    return IJ_1 if result not in (IJ_1, IJ_2) else result
-
-
-def set_ij_version(value):
-    '''Set the ImageJ version to use
-
-    value: one of IJ_1 or IJ_2
-    '''
-    global __ij_version
-    assert value in (IJ_1, IJ_2)
-    __ij_version = value
-    config_write(IJ_VERSION, value)
+# def set_ij_version(value):
+#     '''Set the ImageJ version to use
+#
+#     value: one of IJ_1 or IJ_2
+#     '''
+#     global __ij_version
+#     assert value in (IJ_1, IJ_2)
+#     __ij_version = value
+#     config_write(IJ_VERSION, value)
 
 
 __workspace_file = None
 
 
-def get_workspace_file():
-    '''Return the path to the workspace file'''
-    global __workspace_file
-    if __workspace_file is not None:
-        return __workspace_file
-    if not config_exists(WORKSPACE_FILE):
-        return None
-    __workspace_file = config_read(WORKSPACE_FILE)
-    return __workspace_file
+# def get_workspace_file():
+#     '''Return the path to the workspace file'''
+#     global __workspace_file
+#     if __workspace_file is not None:
+#         return __workspace_file
+#     if not config_exists(WORKSPACE_FILE):
+#         return None
+#     __workspace_file = config_read(WORKSPACE_FILE)
+#     return __workspace_file
 
 
 def set_workspace_file(path, permanently=True):
@@ -1376,12 +1377,12 @@ def get_omero_session_id():
     return __omero_session_id
 
 
-def set_omero_session_id(omero_session_id, globally=True):
-    '''Set the Omero session ID'''
-    global __omero_session_id
-    __omero_session_id = omero_session_id
-    if globally:
-        config_write(OMERO_SESSION_ID, omero_session_id)
+# def set_omero_session_id(omero_session_id, globally=True):
+#     '''Set the Omero session ID'''
+#     global __omero_session_id
+#     __omero_session_id = omero_session_id
+#     if globally:
+#         config_write(OMERO_SESSION_ID, omero_session_id)
 
 
 def default_max_workers():
@@ -1443,7 +1444,7 @@ def set_temporary_directory(tempdir, globally=False):
     if globally:
         config_write(TEMP_DIR, tempdir)
     __temp_dir = tempdir
-    tempfile.tempdir = tempdir
+    # tempfile.tempdir = tempdir
 
 
 __progress_data = threading.local()
@@ -1780,32 +1781,32 @@ def report_progress(operation_id, progress, message):
         __progress_data.last_report = time.time()
 
 
-def map_report_progress(fn_map, fn_report, sequence, freq=None):
-    '''Apply a mapping function to a sequence, reporting progress
-
-    fn_map - function that maps members of the sequence to members of the output
-
-    fn_report - function that takes a sequence member and generates an
-                informative string
-
-    freq - report on mapping every N items. Default is to report 100 or less
-           times.
-    '''
-    n_items = len(sequence)
-    if n_items == 0:
-        return []
-    if freq is None:
-        if n_items < 100:
-            freq = 1
-        else:
-            freq = (n_items + 99) / 100
-    output = []
-    uid = uuid.uuid4()
-    for i in range(0, n_items, freq):
-        report_progress(uuid, float(i) / n_items, fn_report(sequence[i]))
-        output += map(fn_map, sequence[i:i + freq])
-    report_progress(uuid, 1, "Done")
-    return output
+# def map_report_progress(fn_map, fn_report, sequence, freq=None):
+#     '''Apply a mapping function to a sequence, reporting progress
+#
+#     fn_map - function that maps members of the sequence to members of the output
+#
+#     fn_report - function that takes a sequence member and generates an
+#                 informative string
+#
+#     freq - report on mapping every N items. Default is to report 100 or less
+#            times.
+#     '''
+#     n_items = len(sequence)
+#     if n_items == 0:
+#         return []
+#     if freq is None:
+#         if n_items < 100:
+#             freq = 1
+#         else:
+#             freq = (n_items + 99) / 100
+#     output = []
+#     uid = uuid.uuid4()
+#     for i in range(0, n_items, freq):
+#         report_progress(uuid, float(i) / n_items, fn_report(sequence[i]))
+#         output += map(fn_map, sequence[i:i + freq])
+#     report_progress(uuid, 1, "Done")
+#     return output
 
 
 def cancel_progress():

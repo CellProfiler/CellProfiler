@@ -27,7 +27,6 @@ logger = logging.getLogger(__name__)
 use_analysis = True
 
 DEBUG = 'DEBUG'
-ANNOUNCE_DONE = "DONE"
 
 
 class Analysis(object):
@@ -69,7 +68,6 @@ class Analysis(object):
         self.initial_measurements_buf = initial_measurements.file_contents()
         initial_measurements.close()
         self.output_path = measurements_filename
-        self.debug_mode = False
         self.analysis_in_progress = False
         self.runner = None
 
@@ -160,7 +158,6 @@ class AnalysisRunner(object):
     STATUS_IN_PROCESS = "InProcess"
     STATUS_FINISHED_WAITING = "FinishedWaitingMeasurements"
     STATUS_DONE = "Done"
-    STATUSES = [STATUS_UNPROCESSED, STATUS_IN_PROCESS, STATUS_FINISHED_WAITING, STATUS_DONE]
 
     def __init__(self, analysis_id, pipeline,
                  initial_measurements_buf,
@@ -645,9 +642,6 @@ class AnalysisRunner(object):
         # stop the ZMQ-boundary thread - will also deal with any requests waiting on replies
         boundary.cancel(analysis_id)
 
-    def queue_job(self, image_set_number):
-        self.work_queue.put(image_set_number)
-
     def queue_dispatched_job(self, job):
         self.in_process_queue.put(job)
         # notify interface thread
@@ -889,10 +883,6 @@ class ImageSetSuccessWithDictionary(ImageSetSuccess):
         ImageSetSuccess.__init__(self, analysis_id,
                                  image_set_number=image_set_number)
         self.shared_dicts = shared_dicts
-
-
-class DictionaryReqRep(cellprofiler.utilities.zmqrequest.Reply):
-    pass
 
 
 class MeasurementsReport(cellprofiler.utilities.zmqrequest.AnalysisRequest):

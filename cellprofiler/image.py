@@ -71,7 +71,7 @@ class Image(object):
         self.__crop_mask = None
         if crop_mask is not None:
             self.set_crop_mask(crop_mask)
-            self.__has_crop_mask = True
+            # self.__has_crop_mask = True
         else:
             self.__has_crop_mask = False
         self.__masking_objects = masking_objects
@@ -341,10 +341,10 @@ class Image(object):
 
     channel_names = property(get_channel_names, set_channel_names)
 
-    @property
-    def has_channel_names(self):
-        '''True if there are channel names on this image'''
-        return self.__channel_names is not None
+    # @property
+    # def has_channel_names(self):
+    #     '''True if there are channel names on this image'''
+    #     return self.__channel_names is not None
 
     def get_scale(self):
         '''The scale at acquisition
@@ -692,13 +692,13 @@ class ImageSet(object):
         assert len(providers) == 1, "More than one provider of the %s image" % (name)
         return providers[0]
 
-    def remove_image_provider(self, name):
-        """Remove a named image provider
-
-        name - the name of the provider to remove
-        """
-        self.__image_providers = filter(lambda x: x.name != name,
-                                        self.__image_providers)
+    # def remove_image_provider(self, name):
+    #     """Remove a named image provider
+    #
+    #     name - the name of the provider to remove
+    #     """
+    #     self.__image_providers = filter(lambda x: x.name != name,
+    #                                     self.__image_providers)
 
     def clear_image(self, name):
         '''Remove the image memory associated with a provider
@@ -750,7 +750,7 @@ class ImageSetList(object):
         self.__legacy_fields = {}
         self.__associating_by_key = None
         self.__test_mode = test_mode
-        self.combine_path_and_file = False
+        # self.combine_path_and_file = False
 
     @property
     def test_mode(self):
@@ -806,13 +806,13 @@ class ImageSetList(object):
         self.__image_sets[number] = None
         self.__image_sets_by_key[repr(keys)] = None
 
-    def add_provider_to_all_image_sets(self, provider):
-        """Provide an image to every image set
-
-        provider - an instance of AbstractImageProvider
-        """
-        for image_set in self.__image_sets:
-            image_set.providers.append(provider)
+    # def add_provider_to_all_image_sets(self, provider):
+    #     """Provide an image to every image set
+    #
+    #     provider - an instance of AbstractImageProvider
+    #     """
+    #     for image_set in self.__image_sets:
+    #         image_set.providers.append(provider)
 
     def count(self):
         return len(self.__image_sets)
@@ -897,7 +897,7 @@ class ImageSetList(object):
             mod = sys.modules[module_name]
             return getattr(mod, class_name)
 
-        p.find_global = find_global
+        # p.find_global = find_global
 
         count = p.load()
         all_keys = [p.load() for i in range(count)]
@@ -916,48 +916,48 @@ def make_dictionary_key(key):
                        for x in sorted(key.iteritems())])
 
 
-def readc01(fname):
-    '''Read a Cellomics file into an array
-
-    fname - the name of the file
-    '''
-
-    def readint(f):
-        return struct.unpack("<l", f.read(4))[0]
-
-    def readshort(f):
-        return struct.unpack("<h", f.read(2))[0]
-
-    f = open(fname, "rb")
-
-    # verify it's a c01 format, and skip the first four bytes
-    assert readint(f) == 16 << 24
-
-    # decompress
-    g = StringIO.StringIO(zlib.decompress(f.read()))
-
-    # skip four bytes
-    g.seek(4, 1)
-
-    x = readint(g)
-    y = readint(g)
-
-    nplanes = readshort(g)
-    nbits = readshort(g)
-
-    compression = readint(g)
-    assert compression == 0, "can't read compressed pixel data"
-
-    # skip 4 bytes
-    g.seek(4, 1)
-
-    pixelwidth = readint(g)
-    pixelheight = readint(g)
-    colors = readint(g)
-    colors_important = readint(g)
-
-    # skip 12 bytes
-    g.seek(12, 1)
-
-    data = numpy.fromstring(g.read(), numpy.uint16 if nbits == 16 else numpy.uint8, x * y)
-    return data.reshape(x, y).T
+# def readc01(fname):
+#     '''Read a Cellomics file into an array
+#
+#     fname - the name of the file
+#     '''
+#
+#     def readint(f):
+#         return struct.unpack("<l", f.read(4))[0]
+#
+#     def readshort(f):
+#         return struct.unpack("<h", f.read(2))[0]
+#
+#     f = open(fname, "rb")
+#
+#     # verify it's a c01 format, and skip the first four bytes
+#     assert readint(f) == 16 << 24
+#
+#     # decompress
+#     g = StringIO.StringIO(zlib.decompress(f.read()))
+#
+#     # skip four bytes
+#     g.seek(4, 1)
+#
+#     x = readint(g)
+#     y = readint(g)
+#
+#     nplanes = readshort(g)
+#     nbits = readshort(g)
+#
+#     compression = readint(g)
+#     assert compression == 0, "can't read compressed pixel data"
+#
+#     # skip 4 bytes
+#     g.seek(4, 1)
+#
+#     pixelwidth = readint(g)
+#     pixelheight = readint(g)
+#     colors = readint(g)
+#     colors_important = readint(g)
+#
+#     # skip 12 bytes
+#     g.seek(12, 1)
+#
+#     data = numpy.fromstring(g.read(), numpy.uint16 if nbits == 16 else numpy.uint8, x * y)
+#     return data.reshape(x, y).T

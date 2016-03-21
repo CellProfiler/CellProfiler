@@ -71,7 +71,7 @@ STRIP_PIPELINE = 'StripPipeline'
 DISPLAY_MODE_VALUE = 'DisplayModeValue'
 DISPLAY_WINDOWS = 'DisplayWindows'
 FONT_SIZE = 'FontSize'
-IMAGES = 'Images'
+# IMAGES = 'Images'
 MEASUREMENTS = 'Measurements'
 PIPELINE = 'Pipeline'
 SETTINGS = 'Settings'
@@ -83,7 +83,7 @@ NUMBERS_OF_VARIABLES = 'NumbersOfVariables'
 VARIABLE_REVISION_NUMBERS = 'VariableRevisionNumbers'
 MODULE_REVISION_NUMBERS = 'ModuleRevisionNumbers'
 MODULE_NOTES = 'ModuleNotes'
-CURRENT_MODULE_NUMBER = 'CurrentModuleNumber'
+# CURRENT_MODULE_NUMBER = 'CurrentModuleNumber'
 SHOW_WINDOW = 'ShowFrame'
 BATCH_STATE = 'BatchState'
 EXIT_STATUS = 'Exit_Status'
@@ -193,31 +193,31 @@ M_DEFAULT_INPUT_FOLDER = "Default_InputFolder"
 M_DEFAULT_OUTPUT_FOLDER = "Default_OutputFolder"
 
 
-def add_all_images(handles, image_set, object_set):
-    """ Add all images to the handles structure passed
-
-    Add images to the handles structure, for example in the Python sandwich.
-    """
-    images = {}
-    for provider in image_set.providers:
-        name = provider.name()
-        image = image_set.get_image(name)
-        images[name] = image.image
-        if image.has_mask:
-            images['CropMask' + name] = image.mask
-
-    for object_name in object_set.object_names:
-        objects = object_set.get_objects(object_name)
-        images['Segmented' + object_name] = objects.segmented
-        if objects.has_unedited_segmented():
-            images['UneditedSegmented' + object_name] = objects.unedited_segmented
-        if objects.has_small_removed_segmented():
-            images['SmallRemovedSegmented' + object_name] = objects.small_removed_segmented
-
-    npy_images = numpy.ndarray((1, 1), dtype=make_cell_struct_dtype(images.keys()))
-    for key, image in images.iteritems():
-        npy_images[key][0, 0] = image
-    handles[PIPELINE] = npy_images
+# def add_all_images(handles, image_set, object_set):
+#     """ Add all images to the handles structure passed
+#
+#     Add images to the handles structure, for example in the Python sandwich.
+#     """
+#     images = {}
+#     for provider in image_set.providers:
+#         name = provider.name()
+#         image = image_set.get_image(name)
+#         images[name] = image.image
+#         if image.has_mask:
+#             images['CropMask' + name] = image.mask
+#
+#     for object_name in object_set.object_names:
+#         objects = object_set.get_objects(object_name)
+#         images['Segmented' + object_name] = objects.segmented
+#         if objects.has_unedited_segmented():
+#             images['UneditedSegmented' + object_name] = objects.unedited_segmented
+#         if objects.has_small_removed_segmented():
+#             images['SmallRemovedSegmented' + object_name] = objects.small_removed_segmented
+#
+#     npy_images = numpy.ndarray((1, 1), dtype=make_cell_struct_dtype(images.keys()))
+#     for key, image in images.iteritems():
+#         npy_images[key][0, 0] = image
+#     handles[PIPELINE] = npy_images
 
 
 def map_feature_names(feature_names, max_size=63):
@@ -339,10 +339,10 @@ def evt_modulerunner_event_type():
     return _evt_modulerunner_eventtype
 
 
-def evt_modulerunner_done(win, func):
-    done_id = evt_modulerunner_done_id()
-    event_type = evt_modulerunner_event_type()
-    win.Connect(done_id, done_id, event_type, func)
+# def evt_modulerunner_done(win, func):
+#     done_id = evt_modulerunner_done_id()
+#     event_type = evt_modulerunner_event_type()
+#     win.Connect(done_id, done_id, event_type, func)
 
 
 class ModuleRunner(threading.Thread):
@@ -407,9 +407,9 @@ def post_module_runner_done_event(window):
             self.SetEventType(evt_modulerunner_event_type())
             self.SetId(evt_modulerunner_done_id())
 
-        def RequestMore(self):
-            "For now, make this work with code written for IdleEvent."
-            pass
+        # def RequestMore(self):
+        #     "For now, make this work with code written for IdleEvent."
+        #     pass
 
     wx.PostEvent(window, ModuleRunnerDoneEvent())
 
@@ -1161,7 +1161,7 @@ class Pipeline(object):
             self.clear_urls(add_undo=False)
             self.__file_list = read_file_list(fd)
             self.__filtered_file_list_images_settings = None
-            self.__filtered_image_plane_details_metadata_settings = None
+            # self.__filtered_image_plane_details_metadata_settings = None
 
         self.__modules = new_modules
         self.__settings = [self.capture_module_settings(module)
@@ -1267,7 +1267,7 @@ class Pipeline(object):
         attributes = (
             'module_num', 'svn_version', 'variable_revision_number',
             'show_window', 'notes', 'batch_state', 'enabled', 'wants_pause')
-        notes_idx = 4
+        # notes_idx = 4
         for module in self.__modules:
             if ((modules_to_save is not None) and
                         module.module_num not in modules_to_save):
@@ -1801,8 +1801,8 @@ class Pipeline(object):
                     is_first_image_set = False
                 measurements.group_number = group_number
                 measurements.group_index = group_index
-                numberof_windows = 0;
-                slot_number = 0
+                # numberof_windows = 0;
+                # slot_number = 0
                 object_set = cellprofiler.objects.ObjectSet()
                 image_set = measurements
                 outlines = {}
@@ -1849,7 +1849,7 @@ class Pipeline(object):
                         yield measurements
                     else:
                         # Turn on checks for calls to create_or_find_figure() in workspace.
-                        workspace.in_background = True
+                        # workspace.in_background = True
                         worker = ModuleRunner(module, workspace, frame)
                         worker.start()
                         yield measurements
@@ -2652,9 +2652,9 @@ class Pipeline(object):
         self.clear_urls()
         self.add_urls(urls)
         self.stop_undoable_action(name="Load file list")
-        self.__filtered_image_plane_details_images_settings = tuple()
+        # self.__filtered_image_plane_details_images_settings = tuple()
         self.__filtered_image_plane_details_metadata_settings = tuple()
-        self.__image_plane_details_generation = file_list.generation
+        # self.__image_plane_details_generation = file_list.generation
 
     def read_file_list(self, path_or_fd, add_undo=True):
         '''Read a file of one file or URL per line into the file list
@@ -2759,7 +2759,7 @@ class Pipeline(object):
         '''
         if self.has_cached_image_plane_details():
             return self.__image_plane_details
-        self.__available_metadata_keys = set()
+        # self.__available_metadata_keys = set()
         self.__prepare_run_module("Metadata", workspace)
         return self.__image_plane_details
 
@@ -2935,11 +2935,11 @@ class Pipeline(object):
             finally:
                 self.__undo_stack = real_undo_stack
 
-    def undo_action(self):
-        '''A user-interpretable string telling the user what the action was'''
-        if len(self.__undo_stack) == 0:
-            return "Nothing to undo"
-        return self.__undo_stack[-1][1]
+    # def undo_action(self):
+    #     '''A user-interpretable string telling the user what the action was'''
+    #     if len(self.__undo_stack) == 0:
+    #         return "Nothing to undo"
+    #     return self.__undo_stack[-1][1]
 
     def undoable_action(self, name="Composite edit"):
         '''Return an object that starts and stops an undoable action
@@ -3086,30 +3086,30 @@ class Pipeline(object):
     def file_list(self):
         return self.__file_list
 
-    @property
-    def image_plane_details(self):
-        return self.__image_plane_details
+    # @property
+    # def image_plane_details(self):
+    #     return self.__image_plane_details
 
-    def walk_paths(self, pathnames):
-        if self.file_walker.get_state() == THREAD_STOP:
-            self.notify_listeners(FileWalkStartedEvent())
-        files = []
-        for pathname in pathnames:
-            if os.path.isdir(pathname):
-                self.file_walker.walk_in_background(
-                        pathname, self.wp_add_files, self.wp_add_image_metadata)
-            else:
-                files.append(pathname)
-        if len(files) > 0:
-            ipds = []
-            for pathname in files:
-                url = "file:" + urllib.pathname2url(pathname)
-                ipd = ImagePlaneDetails(url, None, None, None)
-                ipds.append(ipd)
-            self.add_image_plane_details(ipds)
-
-            self.file_walker.get_metadata_in_background(
-                    files, self.wp_add_image_metadata)
+    # def walk_paths(self, pathnames):
+    #     if self.file_walker.get_state() == THREAD_STOP:
+    #         self.notify_listeners(FileWalkStartedEvent())
+    #     files = []
+    #     for pathname in pathnames:
+    #         if os.path.isdir(pathname):
+    #             self.file_walker.walk_in_background(
+    #                     pathname, self.wp_add_files, self.wp_add_image_metadata)
+    #         else:
+    #             files.append(pathname)
+    #     if len(files) > 0:
+    #         ipds = []
+    #         for pathname in files:
+    #             url = "file:" + urllib.pathname2url(pathname)
+    #             ipd = ImagePlaneDetails(url, None, None, None)
+    #             ipds.append(ipd)
+    #         self.add_image_plane_details(ipds)
+    #
+    #         self.file_walker.get_metadata_in_background(
+    #                 files, self.wp_add_image_metadata)
 
     def on_walk_completed(self):
         self.notify_listeners(FileWalkEndedEvent())
@@ -3169,7 +3169,7 @@ class Pipeline(object):
             pixels = metadata.image(series).Pixels
             if pixels.plane_count > 0:
                 for index in range(pixels.plane_count):
-                    addr = (series, index, None)
+                    # addr = (series, index, None)
                     m = {}
                     plane = pixels.Plane(index)
                     c = plane.TheC
@@ -3529,19 +3529,19 @@ class Pipeline(object):
                          (", Image (optional) = %s" % image) +
                          (", Scale (optional) = %s" % scale))
 
-    def loaders_settings_hash(self):
-        '''Return a hash for the settings that control image loading, or None
-        for legacy pipelines (which can't be hashed)
-        '''
-
-        # legacy pipelines can't be cached, because they can load from the
-        # Default Image or Output directories.  We could fix this by including
-        # them in the hash we use for naming the cache.
-        if self.has_legacy_loaders():
-            return None
-
-        assert "Groups" in [m.module_name for m in self.modules()]
-        return self.settings_hash(until_module="Groups", as_string=True)
+    # def loaders_settings_hash(self):
+    #     '''Return a hash for the settings that control image loading, or None
+    #     for legacy pipelines (which can't be hashed)
+    #     '''
+    #
+    #     # legacy pipelines can't be cached, because they can load from the
+    #     # Default Image or Output directories.  We could fix this by including
+    #     # them in the hash we use for naming the cache.
+    #     if self.has_legacy_loaders():
+    #         return None
+    #
+    #     assert "Groups" in [m.module_name for m in self.modules()]
+    #     return self.settings_hash(until_module="Groups", as_string=True)
 
 
 def find_image_plane_details(exemplar, ipds):

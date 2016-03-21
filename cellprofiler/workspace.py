@@ -113,9 +113,6 @@ class Workspace(object):
         for window in self.__windows_used:
             window.figure.canvas.draw()
 
-    def get_windows_used(self):
-        return self.__windows_used
-
     def get_pipeline(self):
         """Get the pipeline being run"""
         return self.__pipeline
@@ -388,11 +385,6 @@ class Workspace(object):
                     self.measurements.image_set_count + 1,
                     self.frame)
             module.display_post_run(self, figure)
-
-    @property
-    def is_last_image_set(self):
-        return (self.measurements.image_set_number ==
-                self.image_set_list.count() - 1)
 
     def get_disposition(self):
         '''How to proceed with the pipeline

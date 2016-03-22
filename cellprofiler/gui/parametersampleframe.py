@@ -554,7 +554,7 @@ class ParameterSampleFrame(wx.Frame):
         """
         self.__measurements = cpm.Measurements(can_overwrite=True)
         self.__object_set = cpo.ObjectSet(can_overwrite=True)
-        self.__image_set_list = cpi.ImageSetList()
+        self.__image_set_list = cpi.List()
         workspace = cpw.Workspace(self.__pipeline, None, None, None,
                                   self.__measurements, self.__image_set_list,
                                   self.__frame)
@@ -695,7 +695,7 @@ class ParameterSampleFrame(wx.Frame):
         """TODO: add comments"""
 
         import PIL.Image as PILImage
-        pixels = image.pixel_data
+        pixels = image.data
         if np.max(pixels) > 1 or np.min(pixels) < 0:
             pixels = pixels.copy()
             pixels[pixels < 0] = 0

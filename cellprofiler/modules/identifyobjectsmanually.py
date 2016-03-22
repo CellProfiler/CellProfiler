@@ -77,7 +77,7 @@ class IdentifyObjectsManually(I.Identify):
         objects_name = self.objects_name.value
         outlines_name = self.outlines_name.value
         image = workspace.image_set.get_image(image_name)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
 
         labels = workspace.interaction_request(
                 self, pixel_data, workspace.measurements.image_set_number)
@@ -113,12 +113,12 @@ class IdentifyObjectsManually(I.Identify):
             workspace.image_set.add(outlines_name, outlines_image)
 
         workspace.display_data.labels = labels
-        workspace.display_data.pixel_data = pixel_data
+        workspace.display_data.data = pixel_data
 
     def display(self, workspace, figure):
         objects_name = self.objects_name.value
         labels = workspace.display_data.labels
-        pixel_data = workspace.display_data.pixel_data
+        pixel_data = workspace.display_data.data
         figure.set_subplots((1, 1))
         cplabels = [
             dict(name=objects_name, labels=[labels])]

@@ -496,7 +496,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
         workspace.display_data.statistics = []
-        img = image.pixel_data
+        img = image.data
         mask = image.mask
         objects = workspace.object_set.get_objects(self.primary_objects.value)
         global_threshold = None

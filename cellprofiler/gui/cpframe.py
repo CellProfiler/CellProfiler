@@ -1248,7 +1248,7 @@ class CPFrame(wx.Frame):
             from cellprofiler.modules.loadimages import LoadImagesImageProvider
             from cellprofiler.gui.cpfigure import CPFigureFrame
             lip = LoadImagesImageProvider("dummy", "", dlg.Path)
-            image = lip.provide_image(None).pixel_data
+            image = lip.source(None).data
             frame = CPFigureFrame(self, title=dlg.Path, subplots=(1, 1))
             if image.ndim == 3:
                 frame.subplot_imshow_color(0, 0, image, title=dlg.Path)

@@ -504,7 +504,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.add_module(module)
         m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, module, m, None, m,
-                                  cpi.ImageSetList)
+                                  cpi.List)
         workspace.post_group_display_handler = post_group_display_handler
         workspace.post_run_display_handler = post_run_display_handler
         self.assertTrue(pipeline.prepare_run(workspace))
@@ -559,7 +559,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.add_module(module)
         workspace = cpw.Workspace(
                 pipeline, None, None, None, cpmeas.Measurements(),
-                cpi.ImageSetList())
+                cpi.List())
         self.assertFalse(pipeline.prepare_run(workspace))
         self.assertEqual(workspace.measurements.image_set_count, 0)
 

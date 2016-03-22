@@ -343,7 +343,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline, module,
                                   image_set_list.get_image_set(0),
                                   cpo.ObjectSet(), cpmeas.Measurements(),
@@ -393,7 +393,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         module.file_settings[1].rescale.value = True
         module.prepare_run(workspace)
         module.run(workspace)
-        unscaled, scaled = [workspace.image_set.get_image(self.get_image_name(i)).pixel_data
+        unscaled, scaled = [workspace.image_set.get_image(self.get_image_name(i)).data
                             for i in range(2)]
         np.testing.assert_almost_equal(unscaled * 65535. / 4095., scaled)
 
@@ -424,7 +424,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         li.images[0].common_text.value = "Channel2-"
         m = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, lsi, m, cpo.ObjectSet(), m,
-                                  cpi.ImageSetList())
+                                  cpi.List())
         self.assertTrue(pipeline.prepare_run(workspace))
         self.assertGreater(m.image_set_count, 1)
         pipeline.prepare_group(workspace, {}, m.get_image_numbers())
@@ -441,7 +441,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         #
         # Can we retrieve the image?
         #
-        pixel_data = m.get_image(self.get_image_name(0)).pixel_data
+        pixel_data = m.get_image(self.get_image_name(0)).data
         self.assertFalse(np.isscalar(pixel_data))
 
     def test_03_01_measurement_columns(self):
@@ -565,7 +565,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             pipeline.add_module(module)
             m = cpmeas.Measurements()
             object_set = cpo.ObjectSet()
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.List()
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                     pipeline, module, image_set, object_set, m, image_set_list)
@@ -620,7 +620,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             pipeline.add_module(module)
             m = cpmeas.Measurements()
             object_set = cpo.ObjectSet()
-            image_set_list = cpi.ImageSetList()
+            image_set_list = cpi.List()
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                     pipeline, module, image_set, object_set, m, image_set_list)
@@ -628,7 +628,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             module.run(workspace)
 
             outlines = image_set.get_image(OUTLINES_NAME)
-            np.testing.assert_equal(outlines.pixel_data, expected_outlines)
+            np.testing.assert_equal(outlines.data, expected_outlines)
         finally:
             try:
                 os.remove(os.path.join(directory, filename))

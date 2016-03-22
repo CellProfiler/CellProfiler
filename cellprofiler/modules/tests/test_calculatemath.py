@@ -235,7 +235,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
             operand.operand_measurement.value = measurement
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
         pipeline = cpp.Pipeline()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set_list.get_image_set(0),

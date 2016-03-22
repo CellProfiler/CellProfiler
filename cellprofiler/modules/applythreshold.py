@@ -133,7 +133,7 @@ class ApplyThreshold(Identify):
         """
         input = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)
-        pixels = input.pixel_data.copy()
+        pixels = input.data.copy()
         binary_image, local_thresh = self.threshold_image(
                 self.image_name.value, workspace, wants_local_threshold=True)
         if self.binary != 'Grayscale':
@@ -159,8 +159,8 @@ class ApplyThreshold(Identify):
         output = cpimage.Image(pixels, parent_image=input)
         workspace.image_set.add(self.thresholded_image_name.value, output)
         if self.show_window:
-            workspace.display_data.input_pixel_data = input.pixel_data
-            workspace.display_data.output_pixel_data = output.pixel_data
+            workspace.display_data.input_pixel_data = input.data
+            workspace.display_data.output_pixel_data = output.data
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
 

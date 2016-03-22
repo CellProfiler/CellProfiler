@@ -257,13 +257,13 @@ class CalculateImageOverlap(cpm.CPModule):
                                                  must_be_binary=True)
         test_image = image_set.get_image(self.test_img.value,
                                          must_be_binary=True)
-        ground_truth_pixels = ground_truth_image.pixel_data
+        ground_truth_pixels = ground_truth_image.data
         ground_truth_pixels = test_image.crop_image_similarly(ground_truth_pixels)
         mask = ground_truth_image.mask
         mask = test_image.crop_image_similarly(mask)
         if test_image.has_mask:
             mask = mask & test_image.mask
-        test_pixels = test_image.pixel_data
+        test_pixels = test_image.data
 
         false_positives = test_pixels & ~ ground_truth_pixels
         false_positives[~ mask] = False
@@ -863,7 +863,7 @@ class CalculateImageOverlap(cpm.CPModule):
 
     def get_labels_mask(self, obj):
         labels_mask = np.zeros(obj.shape, bool)
-        for labels, indexes in obj.get_labels():
+        for labels, indexes in obj.labels():
             labels_mask = labels_mask | labels > 0
         return labels_mask
 
@@ -872,7 +872,7 @@ class CalculateImageOverlap(cpm.CPModule):
         ii = []
         jj = []
         total_skel = np.zeros(obj.shape, bool)
-        for labels, indexes in obj.get_labels():
+        for labels, indexes in obj.labels():
             colors = morph.color_labels(labels)
             for color in range(1, np.max(colors) + 1):
                 labels_mask = colors == color

@@ -614,7 +614,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.module_num = 1
         pipeline.add_module(module)
         img = cpi.Image(image)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, img)
         module.training_set_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
@@ -2807,7 +2807,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         object_set = workspace.object_set
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         worms = object_set.get_objects(NON_OVERLAPPING_OBJECTS_NAME).segmented
-        outlines = workspace.image_set.get_image(NON_OVERLAPPING_OUTLINES_NAME).pixel_data
+        outlines = workspace.image_set.get_image(NON_OVERLAPPING_OUTLINES_NAME).data
         expected = outline(worms) > 0
         self.assertTrue(np.all(outlines == expected))
 
@@ -2825,7 +2825,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         object_set = workspace.object_set
         self.assertTrue(isinstance(object_set, cpo.ObjectSet))
         worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
-        outlines = workspace.image_set.get_image(OVERLAPPING_OUTLINES_NAME).pixel_data
+        outlines = workspace.image_set.get_image(OVERLAPPING_OUTLINES_NAME).data
         outlines = np.sum(outlines, 2) > 0  # crunch color dimension
         i, j, v = worms.ijv.transpose()
         expected = np.zeros(outlines.shape, bool)

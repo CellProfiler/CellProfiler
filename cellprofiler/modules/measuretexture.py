@@ -532,7 +532,7 @@ class MeasureTexture(cpm.CPModule):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
         objects = workspace.get_objects(object_name)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         if image.has_mask:
             mask = image.mask
         else:
@@ -585,7 +585,7 @@ class MeasureTexture(cpm.CPModule):
         statistics = []
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         image_labels = np.ones(pixel_data.shape, int)
         if image.has_mask:
             image_labels[~ image.mask] = 0
@@ -606,7 +606,7 @@ class MeasureTexture(cpm.CPModule):
         if object_count > 0:
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
-            pixel_data = image.pixel_data
+            pixel_data = image.data
             labels = objects.segmented
             if image.has_mask:
                 mask = image.mask
@@ -648,7 +648,7 @@ class MeasureTexture(cpm.CPModule):
     def run_image_gabor(self, image_name, scale, workspace):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         labels = np.ones(pixel_data.shape, int)
         if image.has_mask:
             labels[~image.mask] = 0

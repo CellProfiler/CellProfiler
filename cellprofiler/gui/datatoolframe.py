@@ -206,7 +206,7 @@ class DataToolFrame(wx.Frame):
         self.measurements.next_image_set(1)
 
     def on_run(self, event):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(self.pipeline,
                                   self.module,

@@ -195,9 +195,9 @@ class IlastikPixelClassification(cpm.CPModule):
         image = workspace.image_set.get_image(self.image_name.value, must_be_color=False)
 
         # recover raw image domain
-        image_ = image.pixel_data
-        if image.get_scale() is not None:
-            image_ = image_ * image.get_scale()
+        image_ = image.data
+        if image.scale() is not None:
+            image_ = image_ * image.scale()
         else:
             # Best guess for derived images
             image_ = image_ * 255.0
@@ -214,7 +214,7 @@ class IlastikPixelClassification(cpm.CPModule):
 
         probMaps = self._classify_with_ilastik(image_)
 
-        workspace.display_data.source_image = image.pixel_data
+        workspace.display_data.source_image = image.data
         workspace.display_data.dest_images = []
         for group in self.probability_maps:
             # Produce output image and select the probability map

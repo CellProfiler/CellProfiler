@@ -283,7 +283,7 @@ class MeasureNeurons(cpm.CPModule):
 
         skeleton_image = workspace.image_set.get_image(
                 skeleton_name, must_be_binary=True)
-        skeleton = skeleton_image.pixel_data
+        skeleton = skeleton_image.data
         if skeleton_image.has_mask:
             skeleton = skeleton & skeleton_image.mask
         try:
@@ -439,7 +439,7 @@ class MeasureNeurons(cpm.CPModule):
                     trunk_mask,
                     branch_points & ~trunk_mask,
                     end_points,
-                    intensity_image.pixel_data)
+                    intensity_image.data)
 
             image_number = workspace.measurements.image_set_number
 
@@ -451,7 +451,7 @@ class MeasureNeurons(cpm.CPModule):
             if self.show_window:
                 workspace.display_data.edge_graph = edge_graph
                 workspace.display_data.vertex_graph = vertex_graph
-                workspace.display_data.intensity_image = intensity_image.pixel_data
+                workspace.display_data.intensity_image = intensity_image.data
         #
         # Make the display image
         #

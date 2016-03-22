@@ -102,7 +102,7 @@ class ConvertObjectsToImage(cpm.CPModule):
         else:
             pixel_data = np.zeros((objects.shape[0], objects.shape[1], 3))
         convert = True
-        for labels, indices in objects.get_labels():
+        for labels, indices in objects.labels():
             mask = labels != 0
             if np.all(~ mask):
                 continue
@@ -153,14 +153,14 @@ class ConvertObjectsToImage(cpm.CPModule):
         workspace.image_set.add(self.image_name.value, image)
         if self.show_window:
             workspace.display_data.ijv = objects.ijv
-            workspace.display_data.pixel_data = pixel_data
+            workspace.display_data.data = pixel_data
 
     def display(self, workspace, figure):
-        pixel_data = workspace.display_data.pixel_data
+        pixel_data = workspace.display_data.data
         figure.set_subplots((2, 1))
         figure.subplot_imshow_ijv(
                 0, 0, workspace.display_data.ijv,
-                shape=workspace.display_data.pixel_data.shape[:2],
+                shape=workspace.display_data.data.shape[:2],
                 title="Original: %s" % self.object_name.value)
         if self.image_mode == IM_BINARY:
             figure.subplot_imshow_bw(1, 0, pixel_data,

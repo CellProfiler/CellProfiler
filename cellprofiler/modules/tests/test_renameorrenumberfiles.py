@@ -190,7 +190,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         m.add_image_measurement("PathName_%s" % IMAGE_NAME,
                                 self.path)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
 
         workspace = cpw.Workspace(pipeline, module, image_set,

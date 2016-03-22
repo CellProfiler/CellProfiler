@@ -28,7 +28,7 @@ class testInjectImage(unittest.TestCase):
         measurements = cpmeas.Measurements()
         workspace = cpw.Workspace(pipeline, ii, measurements, None,
                                   measurements,
-                                  cellprofiler.cpimage.ImageSetList())
+                                  cellprofiler.cpimage.List())
         ii.prepare_run(workspace)
         ii.prepare_group(workspace, {}, [1])
         ii.run(workspace)

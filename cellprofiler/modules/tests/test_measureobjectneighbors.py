@@ -35,7 +35,7 @@ class TestMeasureObjectNeighbors(unittest.TestCase):
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         measurements = cpmeas.Measurements()
         measurements.group_index = 1
@@ -482,7 +482,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         module.count_image_name.value = 'my_image'
         module.count_colormap.value = 'jet'
         module.run(workspace)
-        image = workspace.image_set.get_image('my_image').pixel_data
+        image = workspace.image_set.get_image('my_image').data
         self.assertEqual(tuple(image.shape), (10, 10, 3))
         # Everything off of the images should be black
         self.assertTrue(np.all(image[labels[labels == 0], :] == 0))
@@ -504,7 +504,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         module.touching_image_name.value = 'my_image'
         module.touching_colormap.value = 'jet'
         module.run(workspace)
-        image = workspace.image_set.get_image('my_image').pixel_data
+        image = workspace.image_set.get_image('my_image').data
         self.assertEqual(tuple(image.shape), (10, 10, 3))
         # Everything off of the images should be black
         self.assertTrue(np.all(image[labels[labels == 0], :] == 0))

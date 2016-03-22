@@ -224,7 +224,7 @@ class TestImagej2(unittest.TestCase):
         result = svc.create1(np.array([10, 15]),
                              "MyDataset", [ij2.Axes().Y, ij2.Axes().X],
                              8, False, False)
-        pixel_data = result.get_pixel_data()
+        pixel_data = result.data()
         self.assertSequenceEqual(pixel_data.shape, [10, 15])
 
     def test_05_05_get_dataset_pixel_data_axes(self):
@@ -232,7 +232,7 @@ class TestImagej2(unittest.TestCase):
         result = svc.create1(np.array([10, 15]),
                              "MyDataset", [ij2.Axes().Y, ij2.Axes().X],
                              8, False, False)
-        pixel_data = result.get_pixel_data(axes=[ij2.Axes().X, ij2.Axes().Y])
+        pixel_data = result.data(axes=[ij2.Axes().X, ij2.Axes().Y])
         self.assertSequenceEqual(pixel_data.shape, [15, 10])
 
     def test_05_06_create_dataset(self):
@@ -443,7 +443,7 @@ class TestImagej2(unittest.TestCase):
                          outputs)
         display_out = ij2.wrap_display(outputs["display"])
         dataset = ij2.wrap_dataset(display_out.getActiveView().getData())
-        image_out = dataset.get_pixel_data()
+        image_out = dataset.data()
         self.assertSequenceEqual(image_out.shape, list(reversed(image.shape)))
         np.testing.assert_array_equal(np.rot90(image), image_out)
 
@@ -463,7 +463,7 @@ class TestImagej2(unittest.TestCase):
         self.run_command("net.imagej.plugins.commands.imglib.CropImage",
                          dict(display=display), {})
         dataset = ij2.wrap_dataset(display.getActiveView().getData())
-        image_out = dataset.get_pixel_data()
+        image_out = dataset.data()
         self.assertSequenceEqual(image_out.shape, [7, 5])
         np.testing.assert_array_equal(image[2:-2, 3:-5], image_out)
 

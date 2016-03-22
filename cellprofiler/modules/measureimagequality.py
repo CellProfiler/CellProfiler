@@ -797,8 +797,8 @@ class MeasureImageQuality(cpm.CPModule):
 
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
-            pixel_data = image.pixel_data
-            shape = image.pixel_data.shape
+            pixel_data = image.data
+            shape = image.data.shape
             if image.has_mask:
                 pixel_data = pixel_data[image.mask]
 
@@ -828,8 +828,8 @@ class MeasureImageQuality(cpm.CPModule):
                 #
                 # Do the math per label
                 #
-                local_means = fix(scind.mean(image.pixel_data, grid, grid_range))
-                local_squared_normalized_image = (image.pixel_data -
+                local_means = fix(scind.mean(image.data, grid, grid_range))
+                local_squared_normalized_image = (image.data -
                                                   local_means[grid]) ** 2
                 #
                 # Compute the sum of local_squared_normalized_image values for each
@@ -881,7 +881,7 @@ class MeasureImageQuality(cpm.CPModule):
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
-            pixel_data = image.pixel_data
+            pixel_data = image.data
 
             # Compute Haralick's correlation texture for the given scales
             image_labels = np.ones(pixel_data.shape, int)
@@ -907,7 +907,7 @@ class MeasureImageQuality(cpm.CPModule):
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
-            pixel_data = image.pixel_data
+            pixel_data = image.data
             if image.has_mask:
                 pixel_data = pixel_data[image.mask]
             pixel_count = np.product(pixel_data.shape)
@@ -945,7 +945,7 @@ class MeasureImageQuality(cpm.CPModule):
     def run_intensity_measurement(self, image_name, workspace):
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
-        pixels = image.pixel_data
+        pixels = image.data
         if image.has_mask:
             pixels = pixels[image.mask]
 
@@ -997,7 +997,7 @@ class MeasureImageQuality(cpm.CPModule):
             image = workspace.image_set.get_image(image_name,
                                                   must_be_grayscale=True)
 
-            pixel_data = image.pixel_data
+            pixel_data = image.data
 
             if image.has_mask:
                 pixel_data = np.array(pixel_data)  # make a copy
@@ -1048,7 +1048,7 @@ class MeasureImageQuality(cpm.CPModule):
                 (local_threshold, global_threshold) = \
                     (cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            image.data,
                                             mask=image.mask,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
@@ -1058,7 +1058,7 @@ class MeasureImageQuality(cpm.CPModule):
                      else
                      cpthresh.get_threshold(threshold_method,
                                             cpthresh.TM_GLOBAL,
-                                            image.pixel_data,
+                                            image.data,
                                             object_fraction=object_fraction,
                                             two_class_otsu=two_class_otsu,
                                             use_weighted_variance=use_weighted_variance,

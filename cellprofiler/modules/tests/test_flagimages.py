@@ -535,7 +535,7 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   measurements, image_set_list)

@@ -235,7 +235,7 @@ class MaskObjects(I.Identify):
         if self.mask_choice == MC_IMAGE:
             mask = workspace.image_set.get_image(self.masking_image.value,
                                                  must_be_binary=True)
-            mask = mask.pixel_data
+            mask = mask.data
         else:
             masking_objects = workspace.object_set.get_objects(
                     self.masking_objects.value)

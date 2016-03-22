@@ -131,7 +131,7 @@ class DirectoryView(object):
 
     def __display_image(self, filename):
         lip = LoadImagesImageProvider("dummy", "", filename, True)
-        image = lip.provide_image(None).pixel_data
+        image = lip.source(None).data
         frame = FIG.CPFigureFrame(self.__list_box.GetTopLevelParent(),
                                   title=filename,
                                   subplots=(1, 1))

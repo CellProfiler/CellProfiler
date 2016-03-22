@@ -531,7 +531,7 @@ class SaveImages(cpm.CPModule):
             return
 
         image = workspace.image_set.get_image(self.image_name.value)
-        pixels = image.pixel_data
+        pixels = image.data
         pixels = pixels * 255
         frames = d['N_FRAMES']
         current_frame = d["CURRENT_FRAME"]
@@ -562,7 +562,7 @@ class SaveImages(cpm.CPModule):
         if filename is None:  # failed overwrite check
             return
 
-        labels = [l for l, c in objects.get_labels()]
+        labels = [l for l, c in objects.labels()]
         if self.get_file_format() == FF_MAT:
             pixels = objects.segmented
             scipy.io.matlab.mio.savemat(filename, {"Image": pixels}, format='5')
@@ -644,7 +644,7 @@ class SaveImages(cpm.CPModule):
             workspace.display_data.wrote_image = False
         image = workspace.image_set.get_image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
-            pixels = image.pixel_data
+            pixels = image.data
             u16hack = (self.get_bit_depth() == BIT_DEPTH_16 and
                        pixels.dtype.kind in ('u', 'i'))
             if self.file_format != FF_MAT:

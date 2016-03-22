@@ -318,7 +318,7 @@ class ColorToGray(cpm.CPModule):
     def run_combine(self, workspace, image):
         """Combine images to make a grayscale one
         """
-        input_image = image.pixel_data
+        input_image = image.data
         channels, contributions = zip(*self.channels_and_contributions())
         denominator = sum(contributions)
         channels = np.array(channels, int)
@@ -348,7 +348,7 @@ class ColorToGray(cpm.CPModule):
     def run_split(self, workspace, image):
         """Split image into individual components
         """
-        input_image = image.pixel_data
+        input_image = image.data
         disp_collection = []
         if self.rgb_or_channels in (CH_RGB, CH_CHANNELS):
             for index, name, title in self.channels_and_image_names():

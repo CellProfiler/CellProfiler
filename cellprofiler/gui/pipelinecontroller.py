@@ -2772,7 +2772,7 @@ class PipelineController:
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cpp.Pipeline)
-        self.__debug_image_set_list = cpi.ImageSetList(True)
+        self.__debug_image_set_list = cpi.List(True)
         workspace = cpw.Workspace(self.__pipeline, None, None, None,
                                   self.__debug_measurements,
                                   self.__debug_image_set_list,

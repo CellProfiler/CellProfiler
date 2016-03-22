@@ -571,7 +571,7 @@ class OmeroLoadImages(cpm.CPModule):
                 image_name, channel_number = channel.cpimage_name.value, channel.channel_number.value
                 image_set = workspace.image_set
                 i, j = 0, int(channel_number)
-                pixel_data = image_set.get_image(image_name).pixel_data
+                pixel_data = image_set.get_image(image_name).data
                 if pixel_data.ndim == 2:
                     figure.subplot_imshow_grayscale(i, j, pixel_data,
                                                     title=image_name,
@@ -625,7 +625,7 @@ class OmeroLoadImages(cpm.CPModule):
 
 # TODO: add exception handling
 # TODO: reconnect when gateway has been disconnected?
-class OmeroImageProvider(cpimage.AbstractImageProvider):
+class OmeroImageProvider(cpimage.Abstract):
     '''Provide a single image based on omero pixels id'''
 
     def __init__(self, name, gateway, pixels_id, z=0, c=0, t=0):
@@ -652,7 +652,7 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
         self.__omero_image_name = self.__gateway.getImage(
                 self.__image_id).getName().getValue()
 
-    def provide_image(self, image_set):
+    def source(self, images):
         '''load an image plane from an omero server
         and return a 2-d grayscale image
         '''
@@ -746,7 +746,7 @@ class OmeroImageProvider(cpimage.AbstractImageProvider):
         '''return the omero image name of this image'''
         return self.__omero_image_name
 
-    def release_memory(self):
+    def free(self):
         '''Release whatever memory is associated with the image'''
         self.__cpimage_data = None
         self.__is_cached = False

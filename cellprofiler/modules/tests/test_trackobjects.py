@@ -485,7 +485,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                           range(1, len(labels_list) + 1))
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
 
         if fn:
             fn(module, None, 0)
@@ -1160,7 +1160,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                     lost_objects, True, i + 1)
         m.image_set_number = nimages
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         for i in range(nimages):
             image_set = image_set_list.get_image_set(i)
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
@@ -1867,7 +1867,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         measurements.add_image_measurement(cpp.GROUP_INDEX, 1)
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
 
         module.prepare_run(cpw.Workspace(
                 pipeline, module, None, None, measurements, image_set_list))
@@ -1882,7 +1882,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
                                   object_set, measurements, image_set_list)
         module.run(workspace)
         image = workspace.image_set.get_image(module.image_name.value)
-        shape = image.pixel_data.shape
+        shape = image.data.shape
         self.assertEqual(shape[0], 640)
         self.assertEqual(shape[1], 480)
 

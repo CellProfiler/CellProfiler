@@ -485,7 +485,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
 
         pipeline.add_listener(callback)
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         measurements = cpmeas.Measurements()
         module_number = 1
@@ -541,7 +541,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         workspace, module = self.make_workspace(expected / 2 + .1)
         module.rescale_method.value = R.M_STRETCH
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_03_02_stretch_mask(self):
@@ -555,7 +555,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         workspace, module = self.make_workspace(expected / 2 + .1, mask)
         module.rescale_method.value = R.M_STRETCH
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_04_01_manual_input_range(self):
@@ -568,7 +568,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.source_scale.min = .1
         module.source_scale.max = .6
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_04_02_00_manual_input_range_auto_low(self):
@@ -582,7 +582,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.source_high.value = .6
         self.assertFalse(module.is_aggregation_module())
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_04_02_01_manual_input_range_auto_low_all(self):
@@ -599,7 +599,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertTrue(module.is_aggregation_module())
         module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_04_03_00_manual_input_range_auto_high(self):
@@ -613,7 +613,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.source_low.value = .1
         self.assertFalse(module.is_aggregation_module())
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_04_03_01_manual_input_range_auto_high_all(self):
@@ -632,7 +632,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         self.assertTrue(module.is_aggregation_module())
         module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_04_03_02_manual_input_range_auto_low_and_high(self):
@@ -645,7 +645,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.wants_automatic_low.value = R.LOW_EACH_IMAGE
         module.wants_automatic_high.value = R.HIGH_EACH_IMAGE
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_04_04_manual_input_range_mask(self):
@@ -661,7 +661,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.wants_automatic_high.value = R.HIGH_EACH_IMAGE
         module.source_low.value = .1
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_04_05_manual_input_range_truncate(self):
@@ -690,7 +690,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                 module.custom_high_truncation.value = 2
                 module.run(workspace)
                 image = workspace.image_set.get_image(OUTPUT_NAME)
-                pixels = image.pixel_data
+                pixels = image.data
                 np.testing.assert_almost_equal(pixels[mask], expected[mask])
                 if low_truncate_method == R.R_MASK:
                     self.assertTrue(image.has_mask)
@@ -753,7 +753,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.dest_scale.min = .05
         module.dest_scale.max = .80
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_06_01_divide_by_image_minimum(self):
@@ -765,7 +765,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         workspace, module = self.make_workspace(image)
         module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MINIMUM
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_06_02_divide_by_image_minimum_masked(self):
@@ -780,7 +780,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         workspace, module = self.make_workspace(image, mask)
         module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MINIMUM
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_07_01_divide_by_image_maximum(self):
@@ -792,7 +792,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         workspace, module = self.make_workspace(image)
         module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MAXIMUM
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_07_02_divide_by_image_minimum_masked(self):
@@ -807,7 +807,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         workspace, module = self.make_workspace(image, mask)
         module.rescale_method.value = R.M_DIVIDE_BY_IMAGE_MAXIMUM
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_08_01_divide_by_value(self):
@@ -820,7 +820,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.rescale_method.value = R.M_DIVIDE_BY_VALUE
         module.divisor_value.value = value
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_09_01_divide_by_measurement(self):
@@ -832,7 +832,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         workspace, module = self.make_workspace(image, measurement=value)
         module.rescale_method.value = R.M_DIVIDE_BY_MEASUREMENT
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_10_01_scale_by_image_maximum(self):
@@ -847,7 +847,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                                                 reference_image=reference)
         module.rescale_method.value = R.M_SCALE_BY_IMAGE_MAXIMUM
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)
 
     def test_10_02_scale_by_image_maximum_mask(self):
@@ -870,7 +870,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
                                                 reference_mask=rmask)
         module.rescale_method.value = R.M_SCALE_BY_IMAGE_MAXIMUM
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels[mask], expected[mask])
 
     def test_11_01_convert_to_8_bit(self):
@@ -880,5 +880,5 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         workspace, module = self.make_workspace(image)
         module.rescale_method.value = R.M_CONVERT_TO_8_BIT
         module.run(workspace)
-        pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
+        pixels = workspace.image_set.get_image(OUTPUT_NAME).data
         np.testing.assert_almost_equal(pixels, expected)

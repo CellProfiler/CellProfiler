@@ -153,7 +153,7 @@ class FlipAndRotate(cpm.CPModule):
     def run(self, workspace):
         image_set = workspace.image_set
         image = image_set.get_image(self.image_name.value)
-        pixel_data = image.pixel_data.copy()
+        pixel_data = image.data.copy()
         mask = image.mask
 
         if self.flip_choice != FLIP_NONE:
@@ -257,12 +257,12 @@ class FlipAndRotate(cpm.CPModule):
         workspace.measurements.add_image_measurement(
                 M_ROTATION_F % self.output_name.value, angle)
 
-        vmin = min(np.min(image.pixel_data),
-                   np.min(output_image.pixel_data[output_image.mask]))
-        vmax = max(np.max(image.pixel_data),
-                   np.max(output_image.pixel_data[output_image.mask]))
-        workspace.display_data.image_pixel_data = image.pixel_data
-        workspace.display_data.output_image_pixel_data = output_image.pixel_data
+        vmin = min(np.min(image.data),
+                   np.min(output_image.data[output_image.mask]))
+        vmax = max(np.max(image.data),
+                   np.max(output_image.data[output_image.mask]))
+        workspace.display_data.image_pixel_data = image.data
+        workspace.display_data.output_image_pixel_data = output_image.data
         workspace.display_data.vmin = vmin
         workspace.display_data.vmax = vmax
 

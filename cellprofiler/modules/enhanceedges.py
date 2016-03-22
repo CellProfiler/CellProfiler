@@ -157,7 +157,7 @@ class EnhanceEdges(cpm.CPModule):
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)
-        orig_pixels = image.pixel_data
+        orig_pixels = image.data
         if image.has_mask:
             mask = image.mask
         else:

@@ -119,21 +119,21 @@ class MaskImage(cpm.CPModule):
             objects = None
             try:
                 mask = image_set.get_image(self.masking_image_name.value,
-                                           must_be_binary=True).pixel_data
+                                           must_be_binary=True).data
             except ValueError:
                 mask = image_set.get_image(self.masking_image_name.value,
-                                           must_be_grayscale=True).pixel_data
+                                           must_be_grayscale=True).data
                 mask = mask > .5
             if self.invert_mask.value:
                 mask = mask == 0
         orig_image = image_set.get_image(self.image_name.value)
-        if tuple(mask.shape) != tuple(orig_image.pixel_data.shape[:2]):
-            tmp = np.zeros(orig_image.pixel_data.shape[:2], mask.dtype)
+        if tuple(mask.shape) != tuple(orig_image.data.shape[:2]):
+            tmp = np.zeros(orig_image.data.shape[:2], mask.dtype)
             tmp[mask] = True
             mask = tmp
         if orig_image.has_mask:
             mask = np.logical_and(mask, orig_image.mask)
-        masked_pixels = orig_image.pixel_data.copy()
+        masked_pixels = orig_image.data.copy()
         masked_pixels[np.logical_not(mask)] = 0
         masked_image = cpi.Image(masked_pixels, mask=mask,
                                  parent_image=orig_image,
@@ -142,7 +142,7 @@ class MaskImage(cpm.CPModule):
         image_set.add(self.masked_image_name.value, masked_image)
 
         if self.show_window:
-            workspace.display_data.orig_image_pixel_data = orig_image.pixel_data
+            workspace.display_data.orig_image_pixel_data = orig_image.data
             workspace.display_data.masked_pixels = masked_pixels
 
     def display(self, workspace, figure):

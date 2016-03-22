@@ -118,7 +118,7 @@ class TestInvertForPrinting(unittest.TestCase):
 
         Returns a dictionary of the pixel data of the images in the image set
         '''
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         module = I.InvertForPrinting()
         module.module_num = 1
@@ -156,7 +156,7 @@ class TestInvertForPrinting(unittest.TestCase):
         module.run(workspace)
         result = {}
         for provider in image_set.providers:
-            result[provider.get_name()] = provider.provide_image(image_set).pixel_data
+            result[provider.get_name()] = provider.source(image_set).data
         return result
 
     def test_02_01_color_to_color(self):

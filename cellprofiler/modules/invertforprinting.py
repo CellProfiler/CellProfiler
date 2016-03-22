@@ -158,21 +158,21 @@ class InvertForPrinting(cpm.CPModule):
             if self.wants_red_input.value:
                 red_image = image_set.get_image(
                         self.red_input_image.value,
-                        must_be_grayscale=True).pixel_data
+                        must_be_grayscale=True).data
                 shape = red_image.shape
             else:
                 red_image = 0
             if self.wants_green_input.value:
                 green_image = image_set.get_image(
                         self.green_input_image.value,
-                        must_be_grayscale=True).pixel_data
+                        must_be_grayscale=True).data
                 shape = green_image.shape
             else:
                 green_image = 0
             if self.wants_blue_input.value:
                 blue_image = image_set.get_image(
                         self.blue_input_image.value,
-                        must_be_grayscale=True).pixel_data
+                        must_be_grayscale=True).data
                 shape = blue_image.shape
             else:
                 blue_image = 0
@@ -186,7 +186,7 @@ class InvertForPrinting(cpm.CPModule):
         elif self.input_color_choice == CC_COLOR:
             color_image = image_set.get_image(
                     self.color_input_image.value,
-                    must_be_color=True).pixel_data
+                    must_be_color=True).data
             red_image = color_image[:, :, 0]
             green_image = color_image[:, :, 1]
             blue_image = color_image[:, :, 2]

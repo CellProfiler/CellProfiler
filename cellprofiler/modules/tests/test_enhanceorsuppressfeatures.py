@@ -30,7 +30,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         module = E.EnhanceOrSuppressSpeckles()
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
@@ -50,7 +50,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        self.assertTrue(np.all(result.pixel_data == 0))
+        self.assertTrue(np.all(result.data == 0))
 
     def test_00_01_suppress_zero(self):
         '''Test suppress of an image of all zeros'''
@@ -59,7 +59,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        self.assertTrue(np.all(result.pixel_data == 0))
+        self.assertTrue(np.all(result.data == 0))
 
     def test_01_00_check_version(self):
         '''Make sure the test covers the latest revision number'''
@@ -361,7 +361,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        self.assertTrue(np.all(result.pixel_data == expected))
+        self.assertTrue(np.all(result.data == expected))
 
     def test_02_02_suppress(self):
         '''Suppress a speckle in an image composed of two circles'''
@@ -378,7 +378,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        self.assertTrue(np.all(result.pixel_data == expected))
+        self.assertTrue(np.all(result.data == expected))
 
     def test_03_01_enhancemask(self):
         '''Enhance a speckles image, masking a portion'''
@@ -404,7 +404,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
             module.object_size.value = 7
             module.run(workspace)
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(np.all(result.pixel_data == image))
+            self.assertTrue(np.all(result.data == image))
             #
             # rescue the point with the mask
             #
@@ -416,7 +416,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
             module.run(workspace)
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
             self.assertFalse(result is None)
-            self.assertTrue(np.all(result.pixel_data == 0))
+            self.assertTrue(np.all(result.data == 0))
 
     def test_03_02_suppressmask(self):
         '''Suppress a speckles image, masking a portion'''
@@ -437,7 +437,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.object_size.value = 7
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(result.pixel_data == 0))
+        self.assertTrue(np.all(result.data == 0))
         #
         # rescue the point with the mask
         #
@@ -447,7 +447,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
-        self.assertTrue(np.all(result.pixel_data == image))
+        self.assertTrue(np.all(result.data == image))
 
     def test_04_01_enhance_neurites(self):
         '''Check enhance neurites against Matlab'''
@@ -2325,7 +2325,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.object_size.value = 8
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(np.abs(result.pixel_data - expected) < .002))
+        self.assertTrue(np.all(np.abs(result.data - expected) < .002))
 
     def test_04_02_enhance_neurites_tubeness_positive(self):
         image = np.zeros((20, 30))
@@ -2337,7 +2337,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.smoothing.value = 1.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = result.pixel_data
+        pixel_data = result.data
         self.assertTrue(np.all(pixel_data[image > 0] > 0))
 
     def test_04_03_enhance_neurites_tubeness_negative(self):
@@ -2350,7 +2350,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.smoothing.value = 1.0
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        pixel_data = result.pixel_data
+        pixel_data = result.data
         np.testing.assert_array_almost_equal(pixel_data, 0)
 
     def test_05_01_enhance_dark_holes(self):
@@ -2371,7 +2371,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
             module.hole_size.max = j * 2
             module.run(workspace)
             result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            self.assertTrue(np.all(result.pixel_data == expected))
+            self.assertTrue(np.all(result.data == expected))
 
     def test_06_01_enhance_circles(self):
         i, j = np.mgrid[-15:16, -15:16]
@@ -2381,7 +2381,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.enhance_method.value = E.E_CIRCLES
         module.object_size.value = 12
         module.run(workspace)
-        img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
         self.assertEqual(img[15, 15], 1)
         self.assertTrue(np.all(img[np.abs(np.sqrt(i * i + j * j) - 6) < 1.5] < .25))
 
@@ -2400,7 +2400,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.enhance_method.value = E.E_CIRCLES
         module.object_size.value = 12
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
         self.assertEqual(result[15, 15], 1)
         self.assertEqual(result[15, 15 + 31], 0)
 
@@ -2416,7 +2416,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.decay.value = 1
         module.smoothing.value = 0
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
         expected = np.zeros(img.shape)
         expected[5:15, 10] = .5
         expected[5:15, 11:15] = 1
@@ -2425,12 +2425,12 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
 
         module.decay.value = .9
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
         self.assertTrue(np.all(result[5:15, 12:14] < 1))
 
         module.decay.value = 1
         module.smoothing.value = 1
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
         self.assertTrue(np.all(result[4, 11:15] > .1))
 
     def test_08_01_enhance_variance(self):
@@ -2445,7 +2445,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.smoothing.value = sigma
         module.run(workspace)
         expected = E.variance_transform(img, sigma)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
         np.testing.assert_almost_equal(result, expected)
 
     def test_08_02_enhance_variance_masked(self):
@@ -2461,5 +2461,5 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         module.smoothing.value = sigma
         module.run(workspace)
         expected = E.variance_transform(img, sigma, mask)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
         np.testing.assert_almost_equal(result[mask], expected[mask])

@@ -197,7 +197,7 @@ class MeasurementTemplate(cpm.CPModule):
         #
         # Get the pixels - these are a 2-d Numpy array.
         #
-        pixels = input_image.pixel_data
+        pixels = input_image.data
         #
         ###############################################################
         #

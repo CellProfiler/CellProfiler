@@ -624,18 +624,18 @@ class UntangleWorms(cpm.CPModule):
         image = image_set.get_image(image_name,
                                     must_be_binary=True)
         num_control_points = self.ncontrol_points()
-        labels, count = scind.label(image.pixel_data, morph.eight_connect)
-        skeleton = morph.skeletonize(image.pixel_data)
-        distances = scind.distance_transform_edt(image.pixel_data)
+        labels, count = scind.label(image.data, morph.eight_connect)
+        skeleton = morph.skeletonize(image.data)
+        distances = scind.distance_transform_edt(image.data)
         worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
         areas = np.bincount(labels.ravel())
         if self.show_window:
             dworms = workspace.display_data.worms = []
-            workspace.display_data.input_image = image.pixel_data
+            workspace.display_data.input_image = image.data
         for i in range(1, count + 1):
             mask = labels == i
             graph = self.get_graph_from_binary(
-                    image.pixel_data & mask, skeleton & mask)
+                    image.data & mask, skeleton & mask)
             path_coords, path = self.get_longest_path_coords(
                     graph, np.iinfo(int).max)
             if len(path_coords) == 0:
@@ -792,7 +792,7 @@ class UntangleWorms(cpm.CPModule):
         image_set = workspace.image_set
         image = image_set.get_image(image_name,
                                     must_be_binary=True)
-        labels, count = scind.label(image.pixel_data, morph.eight_connect)
+        labels, count = scind.label(image.data, morph.eight_connect)
         #
         # Skeletonize once, then remove any points in the skeleton
         # that are adjacent to the edge of the image, then skeletonize again.
@@ -803,8 +803,8 @@ class UntangleWorms(cpm.CPModule):
         #      *   *   *
         #    * * * * * * * *
         #
-        skeleton = morph.skeletonize(image.pixel_data)
-        eroded = scind.binary_erosion(image.pixel_data, morph.eight_connect)
+        skeleton = morph.skeletonize(image.data)
+        eroded = scind.binary_erosion(image.data, morph.eight_connect)
         skeleton = morph.skeletonize(skeleton & eroded)
         #
         # The path skeletons
@@ -845,7 +845,7 @@ class UntangleWorms(cpm.CPModule):
             self.worm_descriptor_building(all_path_coords, params,
                                           labels.shape)
         if self.show_window:
-            workspace.display_data.input_image = image.pixel_data
+            workspace.display_data.input_image = image.data
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
         measurements = workspace.measurements
@@ -882,7 +882,7 @@ class UntangleWorms(cpm.CPModule):
                 if colormap == cps.DEFAULT:
                     colormap = cpprefs.get_default_colormap()
                 if len(ijv) == 0:
-                    ishape = image.pixel_data.shape
+                    ishape = image.data.shape
                     outline_pixels = np.zeros((ishape[0], ishape[1], 3))
                 else:
                     my_map = ScalarMappable(cmap=colormap)
@@ -898,7 +898,7 @@ class UntangleWorms(cpm.CPModule):
             #
             overlap_hits = coo.coo_matrix(
                     (np.ones(len(ijv)), (ijv[:, 0], ijv[:, 1])),
-                    image.pixel_data.shape)
+                    image.data.shape)
             overlap_hits = overlap_hits.toarray()
             mask = overlap_hits == 1
             labels = coo.coo_matrix((ijv[:, 2], (ijv[:, 0], ijv[:, 1])), mask.shape)

@@ -1080,7 +1080,7 @@ class LoadData(cpm.CPModule):
                 provider = self.fetch_provider(image_name, m)
                 image_set.get_providers().append(provider)
                 image = image_set.get_image(image_name)
-                pixel_data = image.pixel_data
+                pixel_data = image.data
                 m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),
                                         provider.get_md5_hash(m))
                 m.add_image_measurement("_".join((C_SCALING, image_name)),
@@ -1106,8 +1106,8 @@ class LoadData(cpm.CPModule):
             for objects_name in objects_names:
                 provider = self.fetch_provider(
                         objects_name, m, is_image_name=False)
-                image = provider.provide_image(workspace.image_set)
-                pixel_data = convert_image_to_objects(image.pixel_data)
+                image = provider.source(workspace.image_set)
+                pixel_data = convert_image_to_objects(image.data)
                 o = cpo.Objects()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)

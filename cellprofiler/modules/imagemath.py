@@ -280,7 +280,7 @@ class ImageMath(cpm.CPModule):
 
         images = [workspace.image_set.get_image(x)
                   for x in image_names]
-        pixel_data = [image.pixel_data for image in images]
+        pixel_data = [image.data for image in images]
         masks = [image.mask if image.has_mask else None for image in images]
         #
         # Crop all of the images similarly
@@ -420,13 +420,13 @@ class ImageMath(cpm.CPModule):
         # Display results
         #
         if self.show_window:
-            workspace.display_data.pixel_data = \
-                [image.pixel_data for image in images] + [output_pixel_data]
+            workspace.display_data.data = \
+                [image.data for image in images] + [output_pixel_data]
             workspace.display_data.display_names = \
                 image_names + [self.output_image_name.value]
 
     def display(self, workspace, figure):
-        pixel_data = workspace.display_data.pixel_data
+        pixel_data = workspace.display_data.data
         display_names = workspace.display_data.display_names
         columns = (len(pixel_data) + 1) / 2
         figure.set_subplots((columns, 2))

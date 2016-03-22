@@ -199,7 +199,7 @@ class MeasureImageIntensity(cpm.CPModule):
         '''
         image = workspace.image_set.get_image(im.image_name.value,
                                               must_be_grayscale=True)
-        pixels = image.pixel_data
+        pixels = image.data
 
         measurement_name = im.image_name.value
         if im.wants_objects.value:

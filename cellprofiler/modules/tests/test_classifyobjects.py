@@ -295,7 +295,7 @@ class TestClassifyObjects(unittest.TestCase):
                                          measurement2)
             module.add_single_measurement()
             m_names.append(MEASUREMENT_NAME_2)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
 
         module.contrast_choice.value = contrast_choice
@@ -375,7 +375,7 @@ class TestClassifyObjects(unittest.TestCase):
             self.assertTrue(values == expected_values)
 
         image = workspace.image_set.get_image(IMAGE_NAME)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         self.assertTrue(np.all(pixel_data[labels == 0, :] == 0))
         colors = [pixel_data[x, y, :] for x, y in ((2, 3), (12, 1), (6, 5))]
         for i, color in enumerate(colors + [colors[1]]):
@@ -456,7 +456,7 @@ class TestClassifyObjects(unittest.TestCase):
                                                                     measurement)
             self.assertTrue(values == expected_values)
         image = workspace.image_set.get_image(IMAGE_NAME)
-        pixel_data = image.pixel_data
+        pixel_data = image.data
         self.assertTrue(np.all(pixel_data[labels == 0, :] == 0))
         colors = [pixel_data[x, y, :] for x, y in ((2, 3), (12, 1), (6, 5))]
         for i, color in enumerate(colors + [colors[1]]):
@@ -543,7 +543,7 @@ class TestClassifyObjects(unittest.TestCase):
                         cpmeas.IMAGE, measurement)
                 self.assertTrue(values == expected_values)
             image = workspace.image_set.get_image(IMAGE_NAME)
-            pixel_data = image.pixel_data
+            pixel_data = image.data
             self.assertTrue(np.all(pixel_data[labels == 0, :] == 0))
             colors = [pixel_data[x, y, :] for x, y in
                       ((2, 3), (12, 1), (6, 5), (16, 5))]
@@ -659,7 +659,7 @@ class TestClassifyObjects(unittest.TestCase):
                         self.assertTrue(m_name in [column[1] for column in columns])
                         self.assertTrue(m_name in ["_".join((C.M_CATEGORY, name))
                                                    for name in names])
-                    image = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+                    image = workspace.image_set.get_image(IMAGE_NAME).data
                     self.assertTrue(np.all(image[labels == 0, :] == 0))
                     colors = image[(labels > 0) & (m[labels - 1] == 1), :]
                     if colors.shape[0] > 0:
@@ -728,7 +728,7 @@ class TestClassifyObjects(unittest.TestCase):
         module.wants_image.value = True
         module.wants_custom_names.value = False
         module.run(workspace)
-        image = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+        image = workspace.image_set.get_image(IMAGE_NAME).data
         colors = module.get_colors(4)
         reverse = np.zeros(image.shape[:2], int)
         for idx, color in enumerate(colors):

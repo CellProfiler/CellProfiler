@@ -440,7 +440,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
             module.functions[0].scale.value = scale
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         workspace = cpw.Workspace(pipeline,
                                   module,
@@ -451,7 +451,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, mask=mask))
         module.run(workspace)
         output = image_set.get_image(OUTPUT_IMAGE_NAME)
-        return output.pixel_data
+        return output.data
 
     def binary_tteesstt(self, function_name, function,
                         gray_out=False, scale=None, custom_repeats=None):

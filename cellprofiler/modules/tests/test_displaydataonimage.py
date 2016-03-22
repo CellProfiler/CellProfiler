@@ -308,7 +308,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
 
         pipeline.add_listener(callback)
         pipeline.add_module(module)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image))
 

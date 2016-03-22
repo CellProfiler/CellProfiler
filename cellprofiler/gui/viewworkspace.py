@@ -153,13 +153,13 @@ class VWImageRow(VWRow):
         self.last_mode = MODE_COLORIZE
 
     def get_names(self):
-        return self.vw.workspace.image_set.get_names()
+        return self.vw.workspace.image_set.names()
 
     def update_data(self, name):
         '''Update the image data from the workspace'''
         image_set = self.vw.workspace.image_set
         image = image_set.get_image(name)
-        self.data.pixel_data = image.pixel_data
+        self.data.pixel_data = image.data
 
 
 class VWObjectsRow(VWRow):
@@ -185,7 +185,7 @@ class VWObjectsRow(VWRow):
     def update_data(self, name):
         object_set = self.vw.workspace.object_set
         objects = object_set.get_objects(name)
-        self.data.labels = [l for l, i in objects.get_labels()]
+        self.data.labels = [l for l, i in objects.labels()]
 
 
 class VWMaskRow(VWRow):
@@ -207,7 +207,7 @@ class VWMaskRow(VWRow):
     def get_names(self):
         image_set = self.vw.workspace.image_set
         names = [
-            name for name in image_set.get_names()
+            name for name in image_set.names()
             if image_set.get_image(name).has_mask]
         return names
 
@@ -406,7 +406,7 @@ class ViewWorkspace(object):
             max_x = max_y = 0
             for image_row in self.image_rows:
                 if image_row.data.mode != MODE_HIDE:
-                    shape = image_row.data.pixel_data.shape
+                    shape = image_row.data.data.shape
                     max_x = max(shape[1], max_x)
                     max_y = max(shape[0], max_y)
             if max_x > 0 and max_y > 0:

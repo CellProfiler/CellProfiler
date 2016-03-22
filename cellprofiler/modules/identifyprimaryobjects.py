@@ -978,7 +978,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                        "%.1f" % (self.calc_smoothing_filter_size())])
                     statistics.append(["Maxima suppression size",
                                        "%.1f" % (maxima_suppression_size)])
-            workspace.display_data.image = image.pixel_data
+            workspace.display_data.image = image.data
             workspace.display_data.labeled_image = labeled_image
             workspace.display_data.size_excluded_labels = size_excluded_labeled_image
             workspace.display_data.border_excluded_labels = border_excluded_labeled_image
@@ -1098,7 +1098,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         cpimage = workspace.image_set.get_image(
                 self.image_name.value, must_be_grayscale=True)
-        image = cpimage.pixel_data
+        image = cpimage.data
         mask = cpimage.mask
 
         reported_LoG_filter_diameter = 5

@@ -89,7 +89,7 @@ IdentifyDeadWorms:[module_num:1|svn_version:\'Unknown\'|variable_revision_number
 
     def make_workspace(self, pixel_data, mask=None):
         image = cpi.Image(pixel_data, mask)
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
 
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, image)

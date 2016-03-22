@@ -189,7 +189,7 @@ class Resize(cpm.CPModule):
 
     def apply_resize(self, workspace, input_image_name, output_image_name):
         image = workspace.image_set.get_image(input_image_name)
-        image_pixels = image.pixel_data
+        image_pixels = image.data
         if self.size_method == R_BY_FACTOR:
             factor = self.resizing_factor.value
             shape = (np.array(image_pixels.shape[:2]) * factor + .5).astype(int)
@@ -199,7 +199,7 @@ class Resize(cpm.CPModule):
                                   self.specific_width.value])
             elif self.use_manual_or_image == C_IMAGE:
                 shape = np.array(workspace.image_set.get_image(
-                        self.specific_image.value).pixel_data.shape[:2]).astype(int)
+                        self.specific_image.value).data.shape[:2]).astype(int)
             factor = np.array(shape, float) / \
                      np.array(image_pixels.shape[:2], float)
         #
@@ -257,13 +257,13 @@ class Resize(cpm.CPModule):
 
         if self.show_window:
             if not hasattr(workspace.display_data, 'input_images'):
-                workspace.display_data.input_images = [image.pixel_data]
-                workspace.display_data.output_images = [output_image.pixel_data]
+                workspace.display_data.input_images = [image.data]
+                workspace.display_data.output_images = [output_image.data]
                 workspace.display_data.input_image_names = [input_image_name]
                 workspace.display_data.output_image_names = [output_image_name]
             else:
-                workspace.display_data.input_images += [image.pixel_data]
-                workspace.display_data.output_images += [output_image.pixel_data]
+                workspace.display_data.input_images += [image.data]
+                workspace.display_data.output_images += [output_image.data]
                 workspace.display_data.input_image_names += [input_image_name]
                 workspace.display_data.output_image_names += [output_image_name]
 

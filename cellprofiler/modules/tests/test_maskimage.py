@@ -163,7 +163,7 @@ class TestMaskImage(unittest.TestCase):
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
         pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
@@ -183,9 +183,9 @@ class TestMaskImage(unittest.TestCase):
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[labels > 0] ==
+        self.assertTrue(np.all(masked_image.data[labels > 0] ==
                                pixel_data[labels > 0]))
-        self.assertTrue(np.all(masked_image.pixel_data[labels == 0] == 0))
+        self.assertTrue(np.all(masked_image.data[labels == 0] == 0))
         self.assertTrue(np.all(masked_image.mask == (labels > 0)))
         self.assertTrue(np.all(masked_image.masking_objects.segmented == labels))
 
@@ -198,7 +198,7 @@ class TestMaskImage(unittest.TestCase):
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
         pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
@@ -218,9 +218,9 @@ class TestMaskImage(unittest.TestCase):
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[labels == 0] ==
+        self.assertTrue(np.all(masked_image.data[labels == 0] ==
                                pixel_data[labels == 0]))
-        self.assertTrue(np.all(masked_image.pixel_data[labels > 0] == 0))
+        self.assertTrue(np.all(masked_image.data[labels > 0] == 0))
         self.assertTrue(np.all(masked_image.mask == (labels == 0)))
         self.assertTrue(np.all(masked_image.masking_objects.segmented == labels))
 
@@ -233,7 +233,7 @@ class TestMaskImage(unittest.TestCase):
         objects.segmented = labels
         object_set.add_objects(objects, OBJECTS_NAME)
 
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
         pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
@@ -256,14 +256,14 @@ class TestMaskImage(unittest.TestCase):
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[expected_mask] ==
+        self.assertTrue(np.all(masked_image.data[expected_mask] ==
                                pixel_data[expected_mask]))
-        self.assertTrue(np.all(masked_image.pixel_data[~ expected_mask] == 0))
+        self.assertTrue(np.all(masked_image.data[~ expected_mask] == 0))
         self.assertTrue(np.all(masked_image.mask == expected_mask))
         self.assertTrue(np.all(masked_image.masking_objects.segmented == labels))
 
     def test_03_01_binary_mask(self):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
         pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
@@ -287,14 +287,14 @@ class TestMaskImage(unittest.TestCase):
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[masking_image] ==
+        self.assertTrue(np.all(masked_image.data[masking_image] ==
                                pixel_data[masking_image]))
-        self.assertTrue(np.all(masked_image.pixel_data[~masking_image] == 0))
+        self.assertTrue(np.all(masked_image.data[~masking_image] == 0))
         self.assertTrue(np.all(masked_image.mask == masking_image))
         self.assertFalse(masked_image.has_masking_objects)
 
     def test_03_02_gray_mask(self):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
         pixel_data = np.random.uniform(size=(10, 15)).astype(np.float32)
@@ -319,14 +319,14 @@ class TestMaskImage(unittest.TestCase):
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[masking_image] ==
+        self.assertTrue(np.all(masked_image.data[masking_image] ==
                                pixel_data[masking_image]))
-        self.assertTrue(np.all(masked_image.pixel_data[~masking_image] == 0))
+        self.assertTrue(np.all(masked_image.data[~masking_image] == 0))
         self.assertTrue(np.all(masked_image.mask == masking_image))
         self.assertFalse(masked_image.has_masking_objects)
 
     def test_03_03_color_mask(self):
-        image_set_list = cpi.ImageSetList()
+        image_set_list = cpi.List()
         image_set = image_set_list.get_image_set(0)
         np.random.seed(0)
         pixel_data = np.random.uniform(size=(10, 15, 3)).astype(np.float32)
@@ -352,8 +352,8 @@ class TestMaskImage(unittest.TestCase):
         module.run(workspace)
         masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
-        self.assertTrue(np.all(masked_image.pixel_data[expected_mask, :] ==
+        self.assertTrue(np.all(masked_image.data[expected_mask, :] ==
                                pixel_data[expected_mask, :]))
-        self.assertTrue(np.all(masked_image.pixel_data[~expected_mask, :] == 0))
+        self.assertTrue(np.all(masked_image.data[~expected_mask, :] == 0))
         self.assertTrue(np.all(masked_image.mask == expected_mask))
         self.assertFalse(masked_image.has_masking_objects)

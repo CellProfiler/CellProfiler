@@ -186,7 +186,7 @@ class EditObjectsManually(I.Identify):
 
         if self.wants_image_display:
             guide_image = workspace.image_set.get_image(self.image_name.value)
-            guide_image = guide_image.pixel_data
+            guide_image = guide_image.data
             if np.any(guide_image != np.min(guide_image)):
                 guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image) - np.min(guide_image))
         else:
@@ -333,8 +333,8 @@ class EditObjectsManually(I.Identify):
                     "InputObjects",
                     pathname2url(fullname),
                     None, None)
-            image = provider.provide_image(None)
-            pixel_data = image.pixel_data
+            image = provider.source(None)
+            pixel_data = image.data
             shape = pixel_data.shape[:2]
             labels = [pixel_data[:, :, i] for i in range(pixel_data.shape[2])]
         else:

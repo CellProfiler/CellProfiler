@@ -340,7 +340,7 @@ class AnalysisRunner(object):
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = cpw.Workspace(self.pipeline, None, None, None,
-                                      measurements, cpimage.ImageSetList())
+                                      measurements, cpimage.List())
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]

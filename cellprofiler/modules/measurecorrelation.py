@@ -238,10 +238,10 @@ class MeasureCorrelation(cpm.CPModule):
     def run_image_pair_images(self, workspace, first_image_name,
                               second_image_name):
         '''Calculate the correlation between the pixels of two images'''
-        first_image = workspace.image_set.get_image(first_image_name,
-                                                    must_be_grayscale=True)
-        second_image = workspace.image_set.get_image(second_image_name,
-                                                     must_be_grayscale=True)
+        first_image = workspace.image_set.image(first_image_name,
+                                                must_be_grayscale=True)
+        second_image = workspace.image_set.image(second_image_name,
+                                                 must_be_grayscale=True)
         first_pixel_data = first_image.data
         first_mask = first_image.mask
         first_pixel_count = np.product(first_pixel_data.shape)
@@ -425,10 +425,10 @@ class MeasureCorrelation(cpm.CPModule):
     def run_image_pair_objects(self, workspace, first_image_name,
                                second_image_name, object_name):
         '''Calculate per-object correlations between intensities in two images'''
-        first_image = workspace.image_set.get_image(first_image_name,
-                                                    must_be_grayscale=True)
-        second_image = workspace.image_set.get_image(second_image_name,
-                                                     must_be_grayscale=True)
+        first_image = workspace.image_set.image(first_image_name,
+                                                must_be_grayscale=True)
+        second_image = workspace.image_set.image(second_image_name,
+                                                 must_be_grayscale=True)
         objects = workspace.object_set.get_objects(object_name)
         #
         # Crop both images to the size of the labels matrix

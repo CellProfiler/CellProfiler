@@ -501,7 +501,7 @@ class OmeroLoadImages(cpm.CPModule):
         statistics_dict = {}
         ratio_dict = {}
         for channel in self.channels:
-            provider = workspace.image_set.get_image_provider(channel.cpimage_name.value)
+            provider = workspace.image_set.find_source_by(channel.cpimage_name.value)
             assert isinstance(provider, OmeroImageProvider)
 
             name = provider.get_name()
@@ -571,7 +571,7 @@ class OmeroLoadImages(cpm.CPModule):
                 image_name, channel_number = channel.cpimage_name.value, channel.channel_number.value
                 image_set = workspace.image_set
                 i, j = 0, int(channel_number)
-                pixel_data = image_set.get_image(image_name).data
+                pixel_data = image_set.image(image_name).data
                 if pixel_data.ndim == 2:
                     figure.subplot_imshow_grayscale(i, j, pixel_data,
                                                     title=image_name,

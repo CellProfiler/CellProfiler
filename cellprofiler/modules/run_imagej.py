@@ -669,8 +669,8 @@ class RunImageJ(cpm.CPModule):
         d = self.get_dictionary(workspace.image_set_list)
         if self.wants_to_set_current_image:
             input_image_name = self.current_input_image_name.value
-            img = image_set.get_image(input_image_name,
-                                      must_be_grayscale=True)
+            img = image_set.image(input_image_name,
+                                  must_be_grayscale=True)
             if self.show_window:
                 workspace.display_data.image_sent_to_ij = img.data
         else:
@@ -853,7 +853,7 @@ class RunImageJ(cpm.CPModule):
             elif field_type == ij2.FT_IMAGE:
                 data_class = J.call(module_item.o, "getType", "()Ljava/lang/Class;")
                 image_name = setting.value
-                image = workspace.image_set.get_image(image_name)
+                image = workspace.image_set.image(image_name)
                 pixel_data = image.data * IMAGEJ_SCALE
 
                 dataset = ij2.create_dataset(

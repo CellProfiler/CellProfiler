@@ -700,7 +700,7 @@ class Morph(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.image_name.value)
+        image = workspace.image_set.image(self.image_name.value)
         if image.has_mask:
             mask = image.mask
         else:

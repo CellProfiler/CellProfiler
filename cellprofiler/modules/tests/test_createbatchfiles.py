@@ -320,7 +320,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         self.assertTrue(isinstance(module, C.CreateBatchFiles))
         batch_data = zlib.decompress(module.batch_state)
         image_set_list = cpi.List()
-        image_set_list.load_state(batch_data)
+        image_set_list.read(batch_data)
         self.assertEqual(image_set_list.count(), 96)
         self.assertEqual(image_set_list.legacy_fields['PathnamerawDNA'],
                          '\\\\iodine\\imaging_analysis\\People\\Lee\\ExampleImages\\ExampleSBSImages')

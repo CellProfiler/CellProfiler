@@ -241,7 +241,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
 
     def measure_images(self, operand, workspace):
         '''Performs measurements on the requested images'''
-        image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary=True)
+        image = workspace.image_set.image(operand.binary_name.value, must_be_binary=True)
         area_occupied = np.sum(image.data > 0)
         perimeter = np.sum(outline(image.data) > 0)
         total_area = np.prod(np.shape(image.data))

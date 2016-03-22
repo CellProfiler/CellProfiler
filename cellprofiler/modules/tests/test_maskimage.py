@@ -181,7 +181,7 @@ class TestMaskImage(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
-        masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
+        masked_image = workspace.image_set.image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
         self.assertTrue(np.all(masked_image.data[labels > 0] ==
                                pixel_data[labels > 0]))
@@ -216,7 +216,7 @@ class TestMaskImage(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
-        masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
+        masked_image = workspace.image_set.image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
         self.assertTrue(np.all(masked_image.data[labels == 0] ==
                                pixel_data[labels == 0]))
@@ -254,7 +254,7 @@ class TestMaskImage(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
-        masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
+        masked_image = workspace.image_set.image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
         self.assertTrue(np.all(masked_image.data[expected_mask] ==
                                pixel_data[expected_mask]))
@@ -285,7 +285,7 @@ class TestMaskImage(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
-        masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
+        masked_image = workspace.image_set.image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
         self.assertTrue(np.all(masked_image.data[masking_image] ==
                                pixel_data[masking_image]))
@@ -317,7 +317,7 @@ class TestMaskImage(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
-        masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
+        masked_image = workspace.image_set.image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
         self.assertTrue(np.all(masked_image.data[masking_image] ==
                                pixel_data[masking_image]))
@@ -350,7 +350,7 @@ class TestMaskImage(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
-        masked_image = workspace.image_set.get_image(MASKED_IMAGE_NAME)
+        masked_image = workspace.image_set.image(MASKED_IMAGE_NAME)
         self.assertTrue(isinstance(masked_image, cpi.Image))
         self.assertTrue(np.all(masked_image.data[expected_mask, :] ==
                                pixel_data[expected_mask, :]))

@@ -208,7 +208,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             if i < image_count - 1 or run_last:
                 module.run(w)
         module.post_group(w, {})
-        image = w.image_set.get_image(PROJECTED_IMAGE_NAME)
+        image = w.image_set.image(PROJECTED_IMAGE_NAME)
         #
         # Make sure that the image provider is reset after prepare_group
         #
@@ -220,7 +220,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
                           m,
                           image_set_list)
         module.run(w)
-        image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)
+        image_provider = image_set.find_source_by(PROJECTED_IMAGE_NAME)
         self.assertEqual(np.max(image_provider.count), 1)
 
         return image

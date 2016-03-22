@@ -64,62 +64,6 @@ class Abstract:
         pass
 
 
-class Callback(Abstract):
-    def __init__(self, name, function):
-        Abstract.__init__(self)
-
-        self.__function__ = function
-
-        self.name = name
-
-    def source(self, images):
-        return self.__function__(images, self)
-
-    def free(self):
-        pass
-
-
-class Grayscale:
-    def __getattr__(self, name):
-        return getattr(self.__image__, name)
-
-    def __init__(self, image):
-        self.__image__ = image
-
-    @property
-    def data(self):
-        if self.__image__.data.dtype.kind == "b":
-            return self.__image__.data.astype(numpy.float64)
-
-        return self.__image__.data[:, :, 0]
-
-
-class RGB:
-    def __getattr__(self, name):
-        return getattr(self.__image__, name)
-
-    def __init__(self, image):
-        self.__image__ = image
-
-    def data(self):
-        return self.__image__.data[:, :, :3]
-
-
-class Vanilla(Abstract):
-    def __init__(self, name, image):
-        Abstract.__init__(self)
-
-        self.__image__ = image
-
-        self.name = name
-
-    def free(self):
-        self.__image__ = None
-
-    def source(self, images):
-        return self.__image__
-
-
 class Cache:
     def __init__(self, image):
         self.__store__ = None
@@ -148,7 +92,7 @@ class Cache:
 
         self.__name = name
 
-        self.__store__.set_image(self.__name, self.__image__)
+        self.__store__.image(self.__name, self.__image__)
 
         del self.__image__
 
@@ -157,7 +101,7 @@ class Cache:
 
     def get(self):
         if self.cached():
-            image = self.__store__.get_image(self.__name)
+            image = self.__store__.image(self.__name)
         else:
             image = self.__image__
 
@@ -167,17 +111,37 @@ class Cache:
             return image.reshape(image.shape[0], image.shape[3], image.shape[4]).transpose(1, 2, 0)
 
 
+class Callback(Abstract):
+    def __init__(self, name, function):
+        Abstract.__init__(self)
+
+        self.__function__ = function
+
+        self.name = name
+
+    def free(self):
+        pass
+
+    def source(self, images):
+        return self.__function__(images, self)
+
+
+class Grayscale:
+    def __getattr__(self, name):
+        return getattr(self.__image__, name)
+
+    def __init__(self, image):
+        self.__image__ = image
+
+    @property
+    def data(self):
+        if self.__image__.data.dtype.kind == "b":
+            return self.__image__.data.astype(numpy.float64)
+
+        return self.__image__.data[:, :, 0]
+
+
 class Image:
-    @staticmethod
-    def check_consistency(image, mask):
-        assert (image is None) or (len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
-
-        assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
-
-        assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
-
-        assert (mask is None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was {0:s}".format(repr(mask.dtype.type))
-
     def __init__(self, image=None, mask=None, crop_mask=None, parent_image=None, masking_objects=None, convert=True, pathname=None, filename=None, scale=None):
         self.__crop_mask__ = None
         self.__filename__ = filename
@@ -199,20 +163,22 @@ class Image:
         self.masking_objects = masking_objects
 
         if image is not None:
-            self.set_image(image, convert)
+            self.image(image, convert)
 
         if mask is not None:
             self.mask = mask
 
         self.__channel_names__ = None
 
-    def get_image(self):
+    @property
+    def image(self):
         if self.__image__ is None:
             return
 
         return self.__image__.get()
 
-    def set_image(self, image, convert=True):
+    @image.setter
+    def image(self, image, convert=True):
         img = numpy.asanyarray(image)
 
         if img.dtype.name == "bool" or not convert:
@@ -270,9 +236,7 @@ class Image:
 
         self.__image__ = Cache(img)
 
-    image = property(get_image, set_image)
-
-    data = property(get_image, set_image)
+    data = property(image.getter, image.setter)
 
     @property
     def has_parent_image(self):
@@ -360,23 +324,6 @@ class Image:
     def has_crop_mask(self):
         return self.__crop_mask__ is not None or self.has_masking_objects or (self.has_parent_image and self.parent_image.has_crop_mask)
 
-    def crop_image_similarly(self, image):
-        if image.shape[:2] == self.data.shape[:2]:
-            return image
-
-        if any([my_size > other_size for my_size, other_size in zip(self.data.shape, image.shape)]):
-            raise ValueError("Image to be cropped is smaller: {0:s} vs {1:s}".format(repr(image.shape), repr(self.data.shape)))
-
-        if not self.has_crop_mask:
-            raise RuntimeError("Images are of different size and no crop mask available.\n" "Use the Crop and Align modules to match images of different sizes.")
-
-        cropped_image = crop_image(image, self.crop_mask)
-
-        if cropped_image.shape[0:2] != self.data.shape[0:2]:
-            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" % (repr(cropped_image.shape), repr(self.data.shape)))
-
-        return cropped_image
-
     @property
     def filename(self):
         if self.__filename__ is not None:
@@ -425,6 +372,33 @@ class Image:
 
         if isinstance(self.__crop_mask__, Cache) and not self.__crop_mask__.cached():
             self.__crop_mask__.cache(name, HDF5ImageSet(hdf5_file, "CropMasks"))
+
+    def crop_image_similarly(self, image):
+        if image.shape[:2] == self.data.shape[:2]:
+            return image
+
+        if any([my_size > other_size for my_size, other_size in zip(self.data.shape, image.shape)]):
+            raise ValueError("Image to be cropped is smaller: {0:s} vs {1:s}".format(repr(image.shape), repr(self.data.shape)))
+
+        if not self.has_crop_mask:
+            raise RuntimeError("Images are of different size and no crop mask available.\n" "Use the Crop and Align modules to match images of different sizes.")
+
+        cropped_image = crop_image(image, self.crop_mask)
+
+        if cropped_image.shape[0:2] != self.data.shape[0:2]:
+            raise ValueError("Cropped image is not the same size as the reference image: %s vs %s" % (repr(cropped_image.shape), repr(self.data.shape)))
+
+        return cropped_image
+
+    @staticmethod
+    def check_consistency(image, mask):
+        assert (image is None) or (len(image.shape) in (2, 3)), "Image must have 2 or 3 dimensions"
+
+        assert (mask is None) or (len(mask.shape) == 2), "Mask must have 2 dimensions"
+
+        assert (image is None) or (mask is None) or (image.shape[:2] == mask.shape), "Image and mask sizes don't match"
+
+        assert (mask is None) or (mask.dtype.type is numpy.bool_), "Mask must be boolean, was {0:s}".format(repr(mask.dtype.type))
 
 
 class List:
@@ -515,7 +489,7 @@ class List:
             dictionary[key_values].append(i + 1)
         return keys, [(dict(zip(keys, k)), dictionary[k]) for k in sort_order]
 
-    def save_state(self):
+    def write(self):
         f = StringIO.StringIO()
         pickle.dump(self.count(), f)
         for i in range(self.count()):
@@ -526,7 +500,7 @@ class List:
         pickle.dump(self.legacy_fields, f)
         return f.getvalue()
 
-    def load_state(self, state):
+    def read(self, state):
         self.__image_sets__ = []
         self.__image_sets_by_key__ = {}
         p = pickle.Unpickler(StringIO.StringIO(state))
@@ -534,25 +508,28 @@ class List:
         def find_global(module_name, class_name):
             if module_name not in ("numpy", "numpy.core.multiarray"):
                 message = "Illegal attempt to unpickle class %s.%s"
-
                 raise ValueError(message, (module_name, class_name))
-
             __import__(module_name)
-
             mod = sys.modules[module_name]
-
             return getattr(mod, class_name)
 
         p.find_global = find_global
-
         count = p.load()
-
         all_keys = [p.load() for i in range(count)]
-
         self.__legacy_fields__ = p.load()
-
         for i in range(count):
             self.get_image_set(all_keys[i])
+
+
+class RGB:
+    def __getattr__(self, name):
+        return getattr(self.__image__, name)
+
+    def __init__(self, image):
+        self.__image__ = image
+
+    def data(self):
+        return self.__image__.data[:, :, :3]
 
 
 class Set:
@@ -577,33 +554,11 @@ class Set:
     def names(self):
         return [provider.name for provider in self.providers]
 
-    def add(self, name, image):
-        old_providers = [provider for provider in self.providers if provider.name == name]
-
-        if len(old_providers) > 0:
-            self.clear_image(name)
-
-        for provider in old_providers:
-            self.providers.remove(provider)
-
-        provider = Vanilla(name, image)
-
-        self.providers.append(provider)
-
-    def clear_cache(self):
-        self.__images__.clear()
-
-    def clear_image(self, name):
-        self.get_image_provider(name).free()
-
-        if name in self.__images__:
-            del self.__images__[name]
-
-    def get_image(self, name, must_be_binary=False, must_be_color=False, must_be_grayscale=False, must_be_rgb=False, cache=True):
+    def find_image_by(self, name, must_be_binary=False, must_be_color=False, must_be_grayscale=False, must_be_rgb=False, cache=True):
         name = str(name)
 
         if name not in self.__images__:
-            image = self.get_image_provider(name).source(self)
+            image = self.find_source_by(name).source(self)
 
             if cache:
                 self.__images__[name] = image
@@ -652,16 +607,51 @@ class Set:
 
         return image
 
-    def get_image_provider(self, name):
-        providers = filter(lambda x: x.name == name, self.__image_providers__)
+    def find_source_by(self, name):
+        sources = filter(lambda x: x.name == name, self.__image_providers__)
 
-        assert len(providers) > 0, u"No provider of the {0:s} image".format(name)
+        assert len(sources) > 0, u"No provider of the {0:s} image".format(name)
 
-        assert len(providers) == 1, u"More than one provider of the {0:s} image".format(name)
+        assert len(sources) == 1, u"More than one provider of the {0:s} image".format(name)
 
-        return providers[0]
+        return sources[0]
 
-    def remove_image_provider(self, name):
+    def add(self, name, image):
+        old_providers = [provider for provider in self.providers if provider.name == name]
+
+        if len(old_providers) > 0:
+            self.clear_image(name)
+
+        for provider in old_providers:
+            self.providers.remove(provider)
+
+        provider = Vanilla(name, image)
+
+        self.providers.append(provider)
+
+    def clear_cache(self):
+        self.__images__.clear()
+
+    def clear_image(self, name):
+        self.find_source_by(name).free()
+
+        if name in self.__images__:
+            del self.__images__[name]
+
+    def remove_source(self, name):
         self.__image_providers__ = filter(lambda x: x.name != name, self.__image_providers__)
 
 
+class Vanilla(Abstract):
+    def __init__(self, name, image):
+        Abstract.__init__(self)
+
+        self.__image__ = image
+
+        self.name = name
+
+    def free(self):
+        self.__image__ = None
+
+    def source(self, images):
+        return self.__image__

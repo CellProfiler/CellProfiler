@@ -185,7 +185,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
-        output_image = workspace.image_set.get_image("OutputImage")
+        output_image = workspace.image_set.image("OutputImage")
         self.assertTrue(np.all(output_image.data == expected))
 
     def test_01_02_subtract(self):
@@ -232,7 +232,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
-        output_image = workspace.image_set.get_image("OutputImage")
+        output_image = workspace.image_set.image("OutputImage")
         self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_01_color_by_bw(self):
@@ -279,7 +279,7 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
-        output_image = workspace.image_set.get_image("OutputImage")
+        output_image = workspace.image_set.image("OutputImage")
         self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_02_color_by_color(self):
@@ -326,5 +326,5 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         input_module.run(workspace)
         illum_module.run(workspace)
         module.run(workspace)
-        output_image = workspace.image_set.get_image("OutputImage")
+        output_image = workspace.image_set.image("OutputImage")
         self.assertTrue(np.all(output_image.data == expected))

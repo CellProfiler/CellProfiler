@@ -1514,7 +1514,7 @@ class NamesAndTypes(cpm.CPModule):
         name = provider.get_name()
         if name in m.names():
             # Get the image with cacheing.
-            img = m.get_image(name)
+            img = m.image(name)
         else:
             img = provider.source(m)
         m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + name] = \

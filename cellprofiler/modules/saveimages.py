@@ -530,7 +530,7 @@ class SaveImages(cpm.CPModule):
         elif d["CURRENT_FRAME"] == "Ignore":
             return
 
-        image = workspace.image_set.get_image(self.image_name.value)
+        image = workspace.image_set.image(self.image_name.value)
         pixels = image.data
         pixels = pixels * 255
         frames = d['N_FRAMES']
@@ -642,7 +642,7 @@ class SaveImages(cpm.CPModule):
     def save_image(self, workspace):
         if self.show_window:
             workspace.display_data.wrote_image = False
-        image = workspace.image_set.get_image(self.image_name.value)
+        image = workspace.image_set.image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
             pixels = image.data
             u16hack = (self.get_bit_depth() == BIT_DEPTH_16 and
@@ -798,7 +798,7 @@ class SaveImages(cpm.CPModule):
             return workspace.measurements.get_current_image_measurement(path_feature)
 
         # ... otherwise, chase the cpimage hierarchy looking for an image with a path
-        cur_image = workspace.image_set.get_image(self.image_name.value)
+        cur_image = workspace.image_set.image(self.image_name.value)
         while cur_image.path_name is None:
             cur_image = cur_image.parent_image
             assert cur_image is not None, "Could not determine source path for image %s' % (self.image_name.value)"

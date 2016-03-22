@@ -173,7 +173,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_SOBEL
         module.direction.value = F.E_HORIZONTAL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.data == FIL.hsobel(image)))
 
     def test_02_02_sobel_vertical(self):
@@ -184,7 +184,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_SOBEL
         module.direction.value = F.E_VERTICAL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.data == FIL.vsobel(image)))
 
     def test_02_03_sobel_all(self):
@@ -195,7 +195,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_SOBEL
         module.direction.value = F.E_ALL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.data == FIL.sobel(image)))
 
     def test_03_01_prewitt_horizontal(self):
@@ -206,7 +206,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_PREWITT
         module.direction.value = F.E_HORIZONTAL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.data == FIL.hprewitt(image)))
 
     def test_03_02_prewitt_vertical(self):
@@ -217,7 +217,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_PREWITT
         module.direction.value = F.E_VERTICAL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.data == FIL.vprewitt(image)))
 
     def test_03_03_prewitt_all(self):
@@ -228,7 +228,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.method.value = F.M_PREWITT
         module.direction.value = F.E_ALL
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.data == FIL.prewitt(image)))
 
     def test_04_01_roberts(self):
@@ -238,7 +238,7 @@ class TestEnhanceEdges(unittest.TestCase):
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_ROBERTS
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.data == FIL.roberts(image)))
 
     def test_05_01_log_automatic(self):
@@ -250,7 +250,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.sigma.value = 20
         module.wants_automatic_sigma.value = True
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         sigma = 2.0
         expected = FIL.laplacian_of_gaussian(image,
                                              np.ones(image.shape, bool),
@@ -268,7 +268,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.sigma.value = 4
         module.wants_automatic_sigma.value = False
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         sigma = 4.0
         expected = FIL.laplacian_of_gaussian(image,
                                              np.ones(image.shape, bool),
@@ -290,7 +290,7 @@ class TestEnhanceEdges(unittest.TestCase):
         module.wants_automatic_low_threshold.value = True
         module.wants_automatic_sigma.value = True
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         t1, t2 = otsu3(FIL.sobel(image))
         result = FIL.canny(image, np.ones(image.shape, bool), 1.0, t1, t2)
         self.assertTrue(np.all(output.data == result))
@@ -303,6 +303,6 @@ class TestEnhanceEdges(unittest.TestCase):
         workspace, module = self.make_workspace(image)
         module.method.value = F.M_KIRSCH
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         result = kirsch(image)
         np.testing.assert_almost_equal(output.data, result, decimal=4)

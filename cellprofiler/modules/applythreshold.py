@@ -131,8 +131,8 @@ class ApplyThreshold(Identify):
             measurements - the measurements for this run
             frame        - display within this frame (or None to not display)
         """
-        input = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
+        input = workspace.image_set.image(self.image_name.value,
+                                          must_be_grayscale=True)
         pixels = input.data.copy()
         binary_image, local_thresh = self.threshold_image(
                 self.image_name.value, workspace, wants_local_threshold=True)

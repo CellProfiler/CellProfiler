@@ -155,8 +155,8 @@ class IdentifyDeadWorms(cpm.CPModule):
         # Get the image as a binary image
         #
         image_set = workspace.image_set
-        image = image_set.get_image(self.image_name.value,
-                                    must_be_binary=True)
+        image = image_set.image(self.image_name.value,
+                                must_be_binary=True)
         mask = image.data
         if image.has_mask:
             mask = mask & image.mask

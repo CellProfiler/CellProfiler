@@ -479,7 +479,7 @@ class StraightenWorms(cpm.CPModule):
                 ixs = ix[islice, jslice]
                 jxs = jx[islice, jslice]
                 image_name = self.flip_image.value
-                image = image_set.get_image(image_name, must_be_grayscale=True)
+                image = image_set.image(image_name, must_be_grayscale=True)
                 simage = map_coordinates(image.data, [ixs, jxs])
                 halfway = int(len(ci)) / 2
                 smask = map_coordinates(orig_labels == i + 1, [ixs, jxs])
@@ -511,7 +511,7 @@ class StraightenWorms(cpm.CPModule):
         for group in self.images:
             image_name = group.image_name.value
             straightened_image_name = group.straightened_image_name.value
-            image = image_set.get_image(image_name)
+            image = image_set.image(image_name)
             if image.data.ndim == 2:
                 straightened_pixel_data = map_coordinates(
                         image.data, [ix, jx])
@@ -882,7 +882,7 @@ class StraightenWorms(cpm.CPModule):
         nbins = len(scales)
         for group in self.images:
             image_name = group.straightened_image_name.value
-            straightened_image = image_set.get_image(image_name).data
+            straightened_image = image_set.image(image_name).data
             if straightened_image.ndim == 3:
                 straightened_image = np.mean(straightened_image, 2)
             straightened_image = straightened_image[i_src, j_src]

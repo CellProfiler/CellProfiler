@@ -1079,7 +1079,7 @@ class LoadData(cpm.CPModule):
             for image_name in self.other_providers('imagegroup'):
                 provider = self.fetch_provider(image_name, m)
                 image_set.get_providers().append(provider)
-                image = image_set.get_image(image_name)
+                image = image_set.image(image_name)
                 pixel_data = image.data
                 m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),
                                         provider.get_md5_hash(m))

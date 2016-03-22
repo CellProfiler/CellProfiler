@@ -377,7 +377,7 @@ class ExportToCellH5(cpm.CPModule):
             max_i = 1
             max_j = 1
             for image_group in self.images_to_export:
-                image = m.get_image(image_group.image_name.value)
+                image = m.image(image_group.image_name.value)
                 pixel_data = image.data
                 if pixel_data.ndim == 3:
                     n_channels += min(pixel_data.shape[2], 3)
@@ -401,8 +401,8 @@ class ExportToCellH5(cpm.CPModule):
             ch_idx = 0
             for image_group in self.images_to_export:
                 image_name = image_group.image_name.value
-                image = m.get_image(image_name).data
-                scale = m.get_image(image_name).scale()
+                image = m.image(image_name).data
+                scale = m.image(image_name).scale()
                 if not np.issubdtype(image.dtype, np.dtype(bool).type):
                     if scale == 1:
                         scale = max_scale

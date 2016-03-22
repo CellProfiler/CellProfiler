@@ -571,8 +571,8 @@ class ReassignObjectNumbers(cpm.CPModule):
     def get_image(self, workspace):
         '''Get the image for image-directed merging'''
         objects = workspace.object_set.get_objects(self.objects_name.value)
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(self.image_name.value,
+                                          must_be_grayscale=True)
         image = objects.crop_image_similarly(image.data)
         return image
 

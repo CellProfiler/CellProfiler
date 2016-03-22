@@ -281,7 +281,7 @@ class MeasureNeurons(cpm.CPModule):
         labels_count = np.max(labels)
         label_range = np.arange(labels_count, dtype=np.int32) + 1
 
-        skeleton_image = workspace.image_set.get_image(
+        skeleton_image = workspace.image_set.image(
                 skeleton_name, must_be_binary=True)
         skeleton = skeleton_image.data
         if skeleton_image.has_mask:
@@ -432,7 +432,7 @@ class MeasureNeurons(cpm.CPModule):
         #
         if self.wants_neuron_graph:
             trunk_mask = (branching_counts > 0) & (nearby_labels != 0)
-            intensity_image = workspace.image_set.get_image(
+            intensity_image = workspace.image_set.image(
                     self.intensity_image_name.value)
             edge_graph, vertex_graph = self.make_neuron_graph(
                     combined_skel, dlabels,

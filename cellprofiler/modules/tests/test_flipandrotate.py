@@ -276,7 +276,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
         self.assertTrue(feature in
                         measurements.get_feature_names(cpmeas.IMAGE))
         angle = measurements.get_current_image_measurement(feature)
-        output_image = image_set.get_image(OUTPUT_IMAGE)
+        output_image = image_set.image(OUTPUT_IMAGE)
         return (output_image, angle)
 
     def test_02_01_flip_left_to_right(self):

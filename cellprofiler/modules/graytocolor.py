@@ -296,8 +296,8 @@ class GrayToColor(cpm.CPModule):
                 image_name = color_scheme_setting.image_name.value
                 input_image_names.append(image_name)
                 channel_names.append(image_name)
-                image = imgset.get_image(image_name,
-                                         must_be_grayscale=True)
+                image = imgset.image(image_name,
+                                     must_be_grayscale=True)
                 multiplier = (color_scheme_setting.intensities *
                               color_scheme_setting.adjustment_factor.value)
                 pixel_data = image.data
@@ -316,9 +316,9 @@ class GrayToColor(cpm.CPModule):
         else:
             input_image_names = [sc.image_name.value for sc in self.stack_channels]
             channel_names = input_image_names
-            source_channels = [imgset.get_image(name, must_be_grayscale=True).data
+            source_channels = [imgset.image(name, must_be_grayscale=True).data
                                for name in input_image_names]
-            parent_image = imgset.get_image(input_image_names[0])
+            parent_image = imgset.image(input_image_names[0])
             for idx, pd in enumerate(source_channels):
                 if pd.shape != source_channels[0].shape:
                     raise ValueError("The %s image and %s image have different sizes (%s vs %s)" %
@@ -355,7 +355,7 @@ class GrayToColor(cpm.CPModule):
             workspace.display_data.input_image_names = input_image_names
             workspace.display_data.rgb_pixel_data = rgb_pixel_data
             workspace.display_data.images = \
-                [imgset.get_image(name, must_be_grayscale=True).data
+                [imgset.image(name, must_be_grayscale=True).data
                  for name in input_image_names]
 
     def display(self, workspace, figure):

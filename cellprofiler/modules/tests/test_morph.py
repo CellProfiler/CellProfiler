@@ -450,7 +450,7 @@ Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_wind
                                   image_set_list)
         image_set.add(INPUT_IMAGE_NAME, cpi.Image(image, mask=mask))
         module.run(workspace)
-        output = image_set.get_image(OUTPUT_IMAGE_NAME)
+        output = image_set.image(OUTPUT_IMAGE_NAME)
         return output.data
 
     def binary_tteesstt(self, function_name, function,

@@ -282,9 +282,9 @@ class RescaleIntensity(cpm.CPModule):
         for w in workspace.pipeline.run_group_with_yield(
                 workspace, grouping, image_numbers, self, title, message):
             image_set = w.image_set
-            image = image_set.get_image(self.image_name.value,
-                                        must_be_grayscale=True,
-                                        cache=False)
+            image = image_set.image(self.image_name.value,
+                                    must_be_grayscale=True,
+                                    cache=False)
             if self.wants_automatic_high == HIGH_ALL_IMAGES:
                 if image.has_mask:
                     vmax = np.max(image.data[image.mask])
@@ -310,7 +310,7 @@ class RescaleIntensity(cpm.CPModule):
                 (self.wants_automatic_low == LOW_ALL_IMAGES))
 
     def run(self, workspace):
-        input_image = workspace.image_set.get_image(self.image_name.value)
+        input_image = workspace.image_set.image(self.image_name.value)
         output_mask = None
         if self.rescale_method == M_STRETCH:
             output_image = self.stretch(input_image)
@@ -430,7 +430,7 @@ class RescaleIntensity(cpm.CPModule):
         by the input maximum to scale the input image to the same
         range as the reference image
         '''
-        reference_image = workspace.image_set.get_image(self.matching_image_name.value)
+        reference_image = workspace.image_set.image(self.matching_image_name.value)
         reference_pixels = reference_image.data
         if reference_image.has_mask:
             reference_pixels = reference_pixels[reference_image.mask]

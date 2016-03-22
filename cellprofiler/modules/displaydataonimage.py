@@ -226,7 +226,7 @@ class DisplayDataOnImage(cpm.CPModule):
         #
         # Get the image
         #
-        image = workspace.image_set.get_image(self.image_name.value)
+        image = workspace.image_set.image(self.image_name.value)
         if self.wants_image:
             pixel_data = image.data
         else:

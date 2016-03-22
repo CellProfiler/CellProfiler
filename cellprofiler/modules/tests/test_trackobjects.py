@@ -1881,7 +1881,7 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   object_set, measurements, image_set_list)
         module.run(workspace)
-        image = workspace.image_set.get_image(module.image_name.value)
+        image = workspace.image_set.image(module.image_name.value)
         shape = image.data.shape
         self.assertEqual(shape[0], 640)
         self.assertEqual(shape[1], 480)

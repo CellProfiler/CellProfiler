@@ -2511,8 +2511,8 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'Unknown\'|variable_revision_n
         else:
             unedited_segmented = np.array([0, 2, 1])[my_objects.unedited_segmented]
         self.assertTrue(np.all(unedited_segmented[mask] == expected[mask]))
-        outlines = workspace.image_set.get_image("outlines",
-                                                 must_be_binary=True)
+        outlines = workspace.image_set.image("outlines",
+                                             must_be_binary=True)
         self.assertTrue(np.all(my_objects.segmented[outlines.data] > 0))
 
     def test_17_02_regression_holes(self):

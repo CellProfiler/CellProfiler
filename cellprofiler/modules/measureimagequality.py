@@ -782,7 +782,7 @@ class MeasureImageQuality(cpm.CPModule):
         result = []
         for image_name in self.images_to_process(image_group, workspace):
             feature = "%s_%s_%s" % (C_IMAGE_QUALITY, C_SCALING, image_name)
-            value = workspace.image_set.get_image(image_name).scale
+            value = workspace.image_set.image(image_name).scale
             if not value:  # Set to NaN if not defined, such as for derived images
                 value = np.NaN
             workspace.add_measurement(cpmeas.IMAGE, feature, value)
@@ -795,8 +795,8 @@ class MeasureImageQuality(cpm.CPModule):
         result = []
         for image_name in self.images_to_process(image_group, workspace):
 
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
             pixel_data = image.data
             shape = image.data.shape
             if image.has_mask:
@@ -879,8 +879,8 @@ class MeasureImageQuality(cpm.CPModule):
         '''Calculate a correlation measure from the Harlick feature set'''
         result = []
         for image_name in self.images_to_process(image_group, workspace):
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
             pixel_data = image.data
 
             # Compute Haralick's correlation texture for the given scales
@@ -905,8 +905,8 @@ class MeasureImageQuality(cpm.CPModule):
 
         result = []
         for image_name in self.images_to_process(image_group, workspace):
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
             pixel_data = image.data
             if image.has_mask:
                 pixel_data = pixel_data[image.mask]
@@ -943,8 +943,8 @@ class MeasureImageQuality(cpm.CPModule):
         return result
 
     def run_intensity_measurement(self, image_name, workspace):
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(image_name,
+                                          must_be_grayscale=True)
         pixels = image.data
         if image.has_mask:
             pixels = pixels[image.mask]
@@ -994,8 +994,8 @@ class MeasureImageQuality(cpm.CPModule):
     def calculate_power_spectrum(self, image_group, workspace):
         result = []
         for image_name in self.images_to_process(image_group, workspace):
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
 
             pixel_data = image.data
 
@@ -1036,8 +1036,8 @@ class MeasureImageQuality(cpm.CPModule):
         all_threshold_groups = self.get_all_threshold_groups(image_group)
 
         for image_name in self.images_to_process(image_group, workspace):
-            image = workspace.image_set.get_image(image_name,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.image(image_name,
+                                              must_be_grayscale=True)
 
             for threshold_group in all_threshold_groups:
                 threshold_method = threshold_group.threshold_algorithm

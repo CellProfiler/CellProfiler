@@ -79,7 +79,7 @@ class TestCrop(unittest.TestCase):
         module.shape.value = cpmc.SH_IMAGE
         module.remove_rows_and_columns.value = cpmc.RM_NO
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == 0))
         self.assertTrue(np.all(output_image.mask == output_image.data))
         self.assertTrue(np.all(output_image.crop_mask == output_image.data))
@@ -107,7 +107,7 @@ class TestCrop(unittest.TestCase):
         module.shape.value = cpmc.SH_IMAGE
         module.remove_rows_and_columns.value = cpmc.RM_ALL
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertEqual(np.product(output_image.data.shape), 0)
 
     def test_01_01_crop_edges_with_image(self):
@@ -125,7 +125,7 @@ class TestCrop(unittest.TestCase):
         module.shape.value = cpmc.SH_IMAGE
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_01_02_crop_all_with_image(self):
@@ -143,7 +143,7 @@ class TestCrop(unittest.TestCase):
         module.shape.value = cpmc.SH_IMAGE
         module.remove_rows_and_columns.value = cpmc.RM_ALL
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_02_01_crop_edges_with_cropping(self):
@@ -161,7 +161,7 @@ class TestCrop(unittest.TestCase):
         module.shape.value = cpmc.SH_CROPPING
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_03_01_crop_with_ellipse_x_major(self):
@@ -181,7 +181,7 @@ class TestCrop(unittest.TestCase):
             expected_image[i, -j - 1] = 0
             expected_image[-i - 1, -j - 1] = 0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_03_02_crop_with_ellipse_y_major(self):
@@ -200,7 +200,7 @@ class TestCrop(unittest.TestCase):
             expected_image[i, -j - 1] = 0
             expected_image[-i - 1, -j - 1] = 0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_04_01_crop_with_rectangle(self):
@@ -213,7 +213,7 @@ class TestCrop(unittest.TestCase):
         module.vertical_limits.set_value((2, 8))
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_04_02_crop_with_rectangle_unbounded_xmin(self):
@@ -226,7 +226,7 @@ class TestCrop(unittest.TestCase):
         module.vertical_limits.set_value((2, 8))
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_04_03_crop_with_rectangle_unbounded_xmax(self):
@@ -239,7 +239,7 @@ class TestCrop(unittest.TestCase):
         module.vertical_limits.set_value((2, 8))
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_04_04_crop_with_rectangle_unbounded_ymin(self):
@@ -252,7 +252,7 @@ class TestCrop(unittest.TestCase):
         module.vertical_limits.set_value((0, 8))
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_04_05_crop_with_rectangle_unbounded_ymax(self):
@@ -265,7 +265,7 @@ class TestCrop(unittest.TestCase):
         module.vertical_limits.set_value((2, "end"))
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_04_06_crop_color_with_rectangle(self):
@@ -279,7 +279,7 @@ class TestCrop(unittest.TestCase):
         module.vertical_limits.set_value((2, 8))
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_05_01_crop_image_plate_fixup(self):
@@ -297,7 +297,7 @@ class TestCrop(unittest.TestCase):
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.use_plate_fix.value = True;
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_05_02_crop_image_plate_fixup_with_rectangle(self):
@@ -314,7 +314,7 @@ class TestCrop(unittest.TestCase):
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.use_plate_fix.value = True;
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_05_03_crop_color_image_plate_fixup(self):
@@ -332,7 +332,7 @@ class TestCrop(unittest.TestCase):
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.use_plate_fix.value = True;
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(np.all(output_image.data == expected_image))
 
     def test_06_01_mask_with_objects(self):
@@ -348,7 +348,7 @@ class TestCrop(unittest.TestCase):
         module.use_plate_fix.value = False
         module.remove_rows_and_columns.value = cpmc.RM_NO
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(output_image.has_masking_objects)
         self.assertTrue(np.all(input_objects == output_image.labels))
         self.assertTrue(np.all(output_image.mask == (input_objects > 0)))
@@ -366,7 +366,7 @@ class TestCrop(unittest.TestCase):
         module.remove_rows_and_columns.value = cpmc.RM_EDGES
         module.use_plate_fix.value = False
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE)
         self.assertTrue(output_image.has_masking_objects)
         self.assertTrue(np.all(input_objects[2:17, 3:8] == output_image.labels))
         self.assertTrue(np.all(output_image.mask == (input_objects[2:17, 3:8] > 0)))

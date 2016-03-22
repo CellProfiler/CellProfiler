@@ -197,8 +197,8 @@ class MeasureImageIntensity(cpm.CPModule):
         im - image measurement info (see ImageMeasurement class above)
         workspace - has all the details for current image set
         '''
-        image = workspace.image_set.get_image(im.image_name.value,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(im.image_name.value,
+                                          must_be_grayscale=True)
         pixels = image.data
 
         measurement_name = im.image_name.value

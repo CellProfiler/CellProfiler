@@ -188,7 +188,7 @@ class Resize(cpm.CPModule):
             self.apply_resize(workspace, additional.input_image_name.value, additional.output_image_name.value)
 
     def apply_resize(self, workspace, input_image_name, output_image_name):
-        image = workspace.image_set.get_image(input_image_name)
+        image = workspace.image_set.image(input_image_name)
         image_pixels = image.data
         if self.size_method == R_BY_FACTOR:
             factor = self.resizing_factor.value
@@ -198,7 +198,7 @@ class Resize(cpm.CPModule):
                 shape = np.array([self.specific_height.value,
                                   self.specific_width.value])
             elif self.use_manual_or_image == C_IMAGE:
-                shape = np.array(workspace.image_set.get_image(
+                shape = np.array(workspace.image_set.image(
                         self.specific_image.value).data.shape[:2]).astype(int)
             factor = np.array(shape, float) / \
                      np.array(image_pixels.shape[:2], float)

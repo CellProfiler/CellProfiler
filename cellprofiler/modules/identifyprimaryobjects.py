@@ -886,7 +886,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             measurements - the measurements for this run
         """
         image_name = self.image_name.value
-        image = workspace.image_set.get_image(image_name)
+        image = workspace.image_set.image(image_name)
         workspace.display_data.statistics = []
         binary_image = self.threshold_image(image_name, workspace)
 
@@ -1096,7 +1096,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
             return labeled_image, object_count, 7, 0.5, 5
 
-        cpimage = workspace.image_set.get_image(
+        cpimage = workspace.image_set.image(
                 self.image_name.value, must_be_grayscale=True)
         image = cpimage.data
         mask = cpimage.mask

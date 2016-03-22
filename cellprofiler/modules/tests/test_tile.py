@@ -190,7 +190,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
@@ -219,7 +219,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
@@ -248,7 +248,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
@@ -276,7 +276,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 9 * 20)
         self.assertEqual(pixel_data.shape[1], 11 * 10)
@@ -305,7 +305,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
@@ -335,7 +335,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
         module.post_group(workspace, None)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
@@ -366,7 +366,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
         module.post_group(workspace, None)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
@@ -397,7 +397,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
         module.post_group(workspace, None)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
@@ -428,7 +428,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
         module.post_group(workspace, None)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
@@ -460,7 +460,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
         module.post_group(workspace, None)
-        pixel_data = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
+        pixel_data = workspace.image_set.image(OUTPUT_IMAGE_NAME).data
         self.assertEqual(pixel_data.shape[0], 20)
         self.assertEqual(pixel_data.shape[1], 40)
         self.assertTrue(np.all(pixel_data[:, :10] == images[0]))
@@ -490,7 +490,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             module.run(workspace)
         workspace.set_image_set_for_testing_only(95)
         module.post_group(workspace, None)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
         self.assertEqual(pixel_data.shape[1], 16 * 10)
@@ -546,7 +546,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
             self.assertTrue(isinstance(workspace, cpw.Workspace))
 
             module.run(workspace)
-            image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
             pixel_data = image.data
             for j, p in enumerate(images):
                 jj = 10 * j
@@ -559,7 +559,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
                       for i in range(3)]
             workspace, module = self.make_place_workspace(images)
             module.run(workspace)
-            image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
             pixel_data = image.data
 
             for j, p in enumerate(images):
@@ -578,7 +578,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
                   np.random.uniform(size=(40, 20)).astype(np.float32)]
         workspace, module = self.make_place_workspace(images)
         module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = image.data
         self.assertEqual(pixel_data.shape[0], 40)
         self.assertEqual(pixel_data.shape[1], 80)

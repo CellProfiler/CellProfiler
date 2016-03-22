@@ -158,7 +158,7 @@ class VWImageRow(VWRow):
     def update_data(self, name):
         '''Update the image data from the workspace'''
         image_set = self.vw.workspace.image_set
-        image = image_set.get_image(name)
+        image = image_set.image(name)
         self.data.pixel_data = image.data
 
 
@@ -208,13 +208,13 @@ class VWMaskRow(VWRow):
         image_set = self.vw.workspace.image_set
         names = [
             name for name in image_set.names()
-            if image_set.get_image(name).has_mask]
+            if image_set.image(name).has_mask]
         return names
 
     def update_data(self, name):
         '''Update the image data from the workspace'''
         image_set = self.vw.workspace.image_set
-        image = image_set.get_image(name)
+        image = image_set.image(name)
         self.data.mask = image.mask
 
 

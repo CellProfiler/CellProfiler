@@ -304,7 +304,7 @@ class Crop(cpm.CPModule):
                 cpmeas.GROUP_INDEX) == 1
         image_set_list = workspace.image_set_list
         d = self.get_dictionary(image_set_list)
-        orig_image = workspace.image_set.get_image(self.image_name.value)
+        orig_image = workspace.image_set.image(self.image_name.value)
         recalculate_flag = (self.shape not in (SH_ELLIPSE, SH_RECTANGLE) or
                             self.individual_or_once == IO_INDIVIDUALLY or
                             first_image_set or
@@ -325,10 +325,10 @@ class Crop(cpm.CPModule):
             cropping = d[D_FIRST_CROPPING]
             mask = d[D_FIRST_CROPPING_MASK]
         elif self.shape == SH_CROPPING:
-            cropping_image = workspace.image_set.get_image(self.cropping_mask_source.value)
+            cropping_image = workspace.image_set.image(self.cropping_mask_source.value)
             cropping = cropping_image.crop_mask
         elif self.shape == SH_IMAGE:
-            source_image = workspace.image_set.get_image \
+            source_image = workspace.image_set.image \
                 (self.image_mask_source.value).data
             if self.use_plate_fix.value:
                 source_image = self.plate_fixup(source_image)

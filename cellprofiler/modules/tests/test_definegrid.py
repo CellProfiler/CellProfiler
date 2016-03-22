@@ -219,7 +219,7 @@ class TestDefineGrid(unittest.TestCase):
             self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
             self.assertEqual(m.get_current_image_measurement(measurement), value)
 
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(image is not None)
 
     def test_02_02_fail(self):
@@ -287,7 +287,7 @@ class TestDefineGrid(unittest.TestCase):
             self.assertTrue(m.has_feature(cpmeas.IMAGE, measurement))
             self.assertEqual(m.get_current_image_measurement(measurement), value)
 
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(image is not None)
         shape = image.data.shape
         self.assertEqual(shape[0], 50)

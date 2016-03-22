@@ -307,8 +307,8 @@ class MeasureObjectIntensity(cpm.CPModule):
                 "Image", "Object", "Feature", "Mean", "Median", "STD")
             workspace.display_data.statistics = statistics = []
         for image_name in [img.name for img in self.images]:
-            image = workspace.image_set.get_image(image_name.value,
-                                                  must_be_grayscale=True)
+            image = workspace.image_set.image(image_name.value,
+                                              must_be_grayscale=True)
             for object_name in [obj.name for obj in self.objects]:
                 # Need to refresh image after each iteration...
                 img = image.data

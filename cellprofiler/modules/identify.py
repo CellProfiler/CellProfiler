@@ -851,12 +851,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
         #
         # Retrieve the relevant image and mask
         #
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(image_name,
+                                          must_be_grayscale=True)
         img = image.data
         mask = image.mask
         if self.threshold_scope == TS_BINARY_IMAGE:
-            binary_image = workspace.image_set.get_image(
+            binary_image = workspace.image_set.image(
                     self.binary_image.value, must_be_binary=True).data
             self.add_fg_bg_measurements(
                     workspace.measurements, img, mask, binary_image)

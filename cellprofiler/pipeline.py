@@ -206,7 +206,7 @@ def add_all_images(handles, image_set, object_set):
     images = {}
     for provider in image_set.providers:
         name = provider.name()
-        image = image_set.get_image(name)
+        image = image_set.image(name)
         images[name] = image.image
         if image.has_mask:
             images['CropMask' + name] = image.mask
@@ -1428,7 +1428,7 @@ class Pipeline(object):
         images = {}
         if image_set:
             for provider in image_set.providers:
-                image = image_set.get_image(provider.name)
+                image = image_set.image(provider.name)
                 if image.image is not None:
                     images[provider.name] = image.image
                 if image.mask is not None:
@@ -1632,7 +1632,7 @@ class Pipeline(object):
         # Populate a dictionary for output with the images to be exported
         output_dict = {}
         for name in output_image_names:
-            output_dict[name] = image_set.get_image(name).data
+            output_dict[name] = image_set.image(name).data
 
         return output_dict
 

@@ -495,8 +495,8 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 for w in pipeline.run_group_with_yield(
                         workspace, grouping, image_numbers,
                         last_module, title, message):
-                    image = w.image_set.get_image(self.image_name.value,
-                                                  cache=False)
+                    image = w.image_set.image(self.image_name.value,
+                                              cache=False)
                     output_image_provider.add_image(image)
                     w.image_set.clear_cache()
             output_image_provider.serialize(d)
@@ -513,7 +513,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 # We are accumulating a pipeline image. Add this image set's
                 # image to the output image provider.
                 #
-                orig_image = workspace.image_set.get_image(self.image_name.value)
+                orig_image = workspace.image_set.image(self.image_name.value)
                 output_image_provider.add_image(orig_image)
                 output_image_provider.serialize(d)
 
@@ -527,7 +527,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             else:
                 workspace.image_set.providers.append(output_image_provider)
         else:
-            orig_image = workspace.image_set.get_image(self.image_name.value)
+            orig_image = workspace.image_set.image(self.image_name.value)
             pixels = orig_image.data
             avg_image = self.preprocess_image_for_averaging(orig_image)
             dilated_image = self.apply_dilation(avg_image, orig_image)

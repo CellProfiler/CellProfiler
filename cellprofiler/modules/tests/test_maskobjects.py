@@ -510,7 +510,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
                                                 masking_image=mask,
                                                 wants_outlines=True)
         module.run(workspace)
-        outlines = workspace.image_set.get_image(OUTPUT_OUTLINES)
+        outlines = workspace.image_set.image(OUTPUT_OUTLINES)
         self.assertTrue(np.all(outlines.data == expected))
 
     def test_03_07_mask_invert(self):

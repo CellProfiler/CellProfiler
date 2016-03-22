@@ -205,8 +205,8 @@ class MeasureGranularity(cpm.CPModule):
         assert isinstance(workspace, cpw.Workspace)
         image_set = workspace.image_set
         measurements = workspace.measurements
-        im = image_set.get_image(image.image_name.value,
-                                 must_be_grayscale=True)
+        im = image_set.image(image.image_name.value,
+                             must_be_grayscale=True)
         #
         # Downsample the image and mask
         #

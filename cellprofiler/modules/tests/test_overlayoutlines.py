@@ -240,7 +240,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_02_color_to_color_outlines(self):
@@ -266,7 +266,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_03_blank_to_color_outlines(self):
@@ -292,7 +292,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_04_wrong_size_gray_to_color(self):
@@ -318,7 +318,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.data == expected))
 
     def test_02_05_wrong_size_color_to_color(self):
@@ -344,7 +344,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.outlines[0].color.value = "Red"
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.data == expected))
 
     def test_03_01_blank_to_gray(self):
@@ -366,7 +366,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
             module.wants_color.value = O.WANTS_GRAYSCALE
             module.line_width.value = 0.0
             module.run(workspace)
-            output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
             self.assertTrue(np.all(output_image.data == expected))
 
     def test_03_02_gray_max_image(self):
@@ -383,7 +383,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.max_type.value = O.MAX_IMAGE
         module.line_width.value = 0.0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.data == expected))
 
     def test_03_02_gray_max_possible(self):
@@ -400,7 +400,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.max_type.value = O.MAX_POSSIBLE
         module.line_width.value = 0.0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.data == expected))
 
     def test_03_03_wrong_size_gray(self):
@@ -418,7 +418,7 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.max_type.value = O.MAX_POSSIBLE
         module.line_width.value = 0.0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.data == expected))
 
     def test_04_01_ijv(self):
@@ -447,5 +447,5 @@ OverlayOutlines:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3
         module.outlines[0].color.value = "Red"
         module.line_width.value = 0.0
         module.run(workspace)
-        output_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        output_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output_image.data == expected))

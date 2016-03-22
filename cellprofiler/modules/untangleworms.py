@@ -621,8 +621,8 @@ class UntangleWorms(cpm.CPModule):
 
         image_name = self.image_name.value
         image_set = workspace.image_set
-        image = image_set.get_image(image_name,
-                                    must_be_binary=True)
+        image = image_set.image(image_name,
+                                must_be_binary=True)
         num_control_points = self.ncontrol_points()
         labels, count = scind.label(image.data, morph.eight_connect)
         skeleton = morph.skeletonize(image.data)
@@ -790,8 +790,8 @@ class UntangleWorms(cpm.CPModule):
         params = self.read_params()
         image_name = self.image_name.value
         image_set = workspace.image_set
-        image = image_set.get_image(image_name,
-                                    must_be_binary=True)
+        image = image_set.image(image_name,
+                                must_be_binary=True)
         labels, count = scind.label(image.data, morph.eight_connect)
         #
         # Skeletonize once, then remove any points in the skeleton

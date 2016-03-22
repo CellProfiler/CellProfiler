@@ -1753,7 +1753,7 @@ class ExportToDatabase(cpm.CPModule):
                 # image and then save it as a PNG into a StringIO buffer.
                 # Finally read the raw data out of the buffer and add it as
                 # as measurement to be written as a blob.
-                pixels = image_set.get_image(name).data
+                pixels = image_set.image(name).data
 
                 if issubclass(pixels.dtype.type, np.floating) or pixels.dtype == np.bool:
                     factor = 255

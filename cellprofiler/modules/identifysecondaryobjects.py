@@ -493,8 +493,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
     def run(self, workspace):
         assert isinstance(workspace, cpw.Workspace)
         image_name = self.image_name.value
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(image_name,
+                                          must_be_grayscale=True)
         workspace.display_data.statistics = []
         img = image.data
         mask = image.mask
@@ -798,7 +798,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         else:
             segmented_labels_out = labels_out.copy()
         if self.wants_discard_edge:
-            image = workspace.image_set.get_image(self.image_name.value)
+            image = workspace.image_set.image(self.image_name.value)
             if image.has_mask:
                 mask_border = (image.mask & ~ scind.binary_erosion(image.mask))
                 edge_labels = segmented_labels_out[mask_border]

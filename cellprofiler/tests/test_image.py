@@ -41,9 +41,9 @@ class TestImage(unittest.TestCase):
                  (np.int8, -math.pow(2.0, 7.0), math.pow(2.0, 7.0) - 1)]
         for dtype, zval, oval in tests:
             x = cpi.Image()
-            x.set_image((one_target * zval).astype(dtype))
+            x.image((one_target * zval).astype(dtype))
             self.assertTrue((x.image == zero_target).all(), msg="Failed setting %s to min" % (repr(dtype)))
-            x.set_image((one_target * oval).astype(dtype))
+            x.image((one_target * oval).astype(dtype))
             y = (x.image == one_target)
             self.assertTrue((x.image == one_target).all(), msg="Failed setting %s to max" % (repr(dtype)))
 
@@ -119,77 +119,77 @@ class TestImageSet(unittest.TestCase):
     def test_01_02_get_image(self):
         x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20))))
-        image = x.get_image(IMAGE_NAME)
+        image = x.find_image_by(IMAGE_NAME)
         self.assertEqual(tuple(image.data.shape), (10, 20))
 
     def test_02_01_must_be_binary(self):
         x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20), bool)))
-        image = x.get_image(IMAGE_NAME, must_be_binary=True)
+        image = x.find_image_by(IMAGE_NAME, must_be_binary=True)
         self.assertEqual(tuple(image.data.shape), (10, 20))
 
     def test_02_02_must_be_binary_throws(self):
         x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20), float)))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
+        self.assertRaises(ValueError, x.find_image_by, IMAGE_NAME,
                           must_be_binary=True)
 
     def test_03_01_must_be_gray(self):
         x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20), float)))
-        image = x.get_image(IMAGE_NAME, must_be_grayscale=True)
+        image = x.find_image_by(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.data.shape), (10, 20))
 
     def test_03_02_must_be_gray_throws(self):
         x = cpi.Set(0, {}, {})
         np.random.seed(22)
         x.add(IMAGE_NAME, cpi.Image(np.random.uniform(size=(10, 20, 3))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
+        self.assertRaises(ValueError, x.find_image_by, IMAGE_NAME,
                           must_be_grayscale=True)
 
     def test_03_03_must_be_gray_color(self):
         x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20, 3), float)))
-        image = x.get_image(IMAGE_NAME, must_be_grayscale=True)
+        image = x.find_image_by(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.data.shape), (10, 20))
 
     def test_04_01_must_be_color(self):
         x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20, 3), float)))
-        image = x.get_image(IMAGE_NAME, must_be_color=True)
+        image = x.find_image_by(IMAGE_NAME, must_be_color=True)
         self.assertEqual(tuple(image.data.shape), (10, 20, 3))
 
     def test_04_02_must_be_color_throws(self):
         x = cpi.Set(0, {}, {})
         np.random.seed(22)
         x.add(IMAGE_NAME, cpi.Image(np.random.uniform(size=(10, 20))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
+        self.assertRaises(ValueError, x.find_image_by, IMAGE_NAME,
                           must_be_color=True)
 
     def test_05_01_must_be_rgb(self):
         x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20, 3), float)))
-        image = x.get_image(IMAGE_NAME, must_be_rgb=True)
+        image = x.find_image_by(IMAGE_NAME, must_be_rgb=True)
         self.assertEqual(tuple(image.data.shape), (10, 20, 3))
 
     def test_05_02_must_be_rgb_throws_gray(self):
         x = cpi.Set(0, {}, {})
         np.random.seed(22)
         x.add(IMAGE_NAME, cpi.Image(np.random.uniform(size=(10, 20))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
+        self.assertRaises(ValueError, x.find_image_by, IMAGE_NAME,
                           must_be_rgb=True)
 
     def test_05_03_must_be_rgb_throws_5_channel(self):
         x = cpi.Set(0, {}, {})
         np.random.seed(22)
         x.add(IMAGE_NAME, cpi.Image(np.random.uniform(size=(10, 20, 5))))
-        self.assertRaises(ValueError, x.get_image, IMAGE_NAME,
+        self.assertRaises(ValueError, x.find_image_by, IMAGE_NAME,
                           must_be_rgb=True)
 
     def test_05_04_must_be_rgb_alpha(self):
         x = cpi.Set(0, {}, {})
         x.add(IMAGE_NAME, cpi.Image(np.zeros((10, 20, 4), float)))
-        image = x.get_image(IMAGE_NAME, must_be_rgb=True)
+        image = x.find_image_by(IMAGE_NAME, must_be_rgb=True)
         self.assertEqual(tuple(image.data.shape), (10, 20, 3))
 
 
@@ -238,7 +238,7 @@ class TestImageSetList(unittest.TestCase):
 
         z = cpi.Callback("TestImageProvider", fn)
         y.providers.append(z)
-        self.assertEquals(img, y.get_image("TestImageProvider"))
+        self.assertEquals(img, y.image("TestImageProvider"))
 
     def test_02_02_add_two_image_providers(self):
         x = cpi.List()
@@ -257,18 +257,18 @@ class TestImageSetList(unittest.TestCase):
 
         y.providers.append(cpi.Callback("IP1", fn1))
         y.providers.append(cpi.Callback("IP2", fn2))
-        self.assertEquals(img1, y.get_image("IP1"), "Failed to get correct first image")
-        self.assertEquals(img2, y.get_image("IP2"), "Failed to get correct second image")
+        self.assertEquals(img1, y.image("IP1"), "Failed to get correct first image")
+        self.assertEquals(img2, y.image("IP2"), "Failed to get correct second image")
 
     def test_03_01_serialize_no_key(self):
         '''Serialize an image list with no keys in the image sets'''
         x = cpi.List()
         for i in range(5):
             x.get_image_set(i)
-        s = x.save_state()
+        s = x.write()
 
         y = cpi.List()
-        y.load_state(s)
+        y.read(s)
         self.assertEquals(y.count(), 5)
 
     def test_03_02_serialize_key(self):
@@ -277,10 +277,10 @@ class TestImageSetList(unittest.TestCase):
         for value1, value2 in values:
             d = {'K1': value1, 'K2': value2}
             x.get_image_set(d)
-        s = x.save_state()
+        s = x.write()
 
         y = cpi.List()
-        y.load_state(s)
+        y.read(s)
         self.assertEquals(y.count(), len(values))
         for i in range(len(values)):
             image_set = y.get_image_set(i)
@@ -295,10 +295,10 @@ class TestImageSetList(unittest.TestCase):
             x.get_image_set(i)
         d = {'foo': 'bar', 'test': 'suite'}
         x.legacy_fields['dictionary'] = d
-        s = x.save_state()
+        s = x.write()
 
         y = cpi.List()
-        y.load_state(s)
+        y.read(s)
         self.assertEquals(y.count(), 5)
         self.assertTrue(y.legacy_fields.has_key('dictionary'))
         for key in d.keys():

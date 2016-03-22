@@ -148,7 +148,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
             module.smoothing_method.value = S.FIT_POLYNOMIAL
             module.clip.value = clip
             module.run(workspace)
-            result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
             self.assertFalse(result is None)
             np.testing.assert_almost_equal(result.data, expected)
 
@@ -164,7 +164,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         workspace, module = self.make_workspace(image, mask)
         module.smoothing_method.value = S.GAUSSIAN_FILTER
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         np.testing.assert_almost_equal(result.data, expected)
 
@@ -179,7 +179,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         workspace, module = self.make_workspace(image, mask)
         module.smoothing_method.value = S.GAUSSIAN_FILTER
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         np.testing.assert_almost_equal(result.data, expected)
 
@@ -197,7 +197,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.wants_automatic_object_size.value = False
         module.object_size.value = 15.0
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         np.testing.assert_almost_equal(result.data, expected)
 
@@ -212,7 +212,7 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         workspace, module = self.make_workspace(image, mask)
         module.smoothing_method.value = S.MEDIAN_FILTER
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         np.testing.assert_almost_equal(result.data, expected)
 
@@ -231,6 +231,6 @@ Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         module.wants_automatic_object_size.value = False
         module.object_size.value = 16.0 * 2.35
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertFalse(result is None)
         np.testing.assert_almost_equal(result.data, expected)

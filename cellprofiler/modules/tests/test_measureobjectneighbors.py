@@ -482,7 +482,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         module.count_image_name.value = 'my_image'
         module.count_colormap.value = 'jet'
         module.run(workspace)
-        image = workspace.image_set.get_image('my_image').data
+        image = workspace.image_set.image('my_image').data
         self.assertEqual(tuple(image.shape), (10, 10, 3))
         # Everything off of the images should be black
         self.assertTrue(np.all(image[labels[labels == 0], :] == 0))
@@ -504,7 +504,7 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         module.touching_image_name.value = 'my_image'
         module.touching_colormap.value = 'jet'
         module.run(workspace)
-        image = workspace.image_set.get_image('my_image').data
+        image = workspace.image_set.image('my_image').data
         self.assertEqual(tuple(image.shape), (10, 10, 3))
         # Everything off of the images should be black
         self.assertTrue(np.all(image[labels[labels == 0], :] == 0))

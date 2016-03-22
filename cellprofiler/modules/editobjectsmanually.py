@@ -185,7 +185,7 @@ class EditObjectsManually(I.Identify):
         orig_labels = [l for l, c in orig_objects.get_labels()]
 
         if self.wants_image_display:
-            guide_image = workspace.image_set.get_image(self.image_name.value)
+            guide_image = workspace.image_set.image(self.image_name.value)
             guide_image = guide_image.data
             if np.any(guide_image != np.min(guide_image)):
                 guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image) - np.min(guide_image))

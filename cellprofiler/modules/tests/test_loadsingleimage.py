@@ -393,7 +393,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         module.file_settings[1].rescale.value = True
         module.prepare_run(workspace)
         module.run(workspace)
-        unscaled, scaled = [workspace.image_set.get_image(self.get_image_name(i)).data
+        unscaled, scaled = [workspace.image_set.image(self.get_image_name(i)).data
                             for i in range(2)]
         np.testing.assert_almost_equal(unscaled * 65535. / 4095., scaled)
 
@@ -627,7 +627,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             module.prepare_run(workspace)
             module.run(workspace)
 
-            outlines = image_set.get_image(OUTLINES_NAME)
+            outlines = image_set.image(OUTLINES_NAME)
             np.testing.assert_equal(outlines.data, expected_outlines)
         finally:
             try:

@@ -215,7 +215,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         #
         # Check the outlines
         #
-        outlines = workspace.image_set.get_image(OUTLINES_NAME)
+        outlines = workspace.image_set.image(OUTLINES_NAME)
         outlines = outlines.data
         expected_outlines = outline(expected)
         self.assertTrue(np.all(outlines == (expected_outlines[0:outlines.shape[0], 0:outlines.shape[1]] > 0)))

@@ -170,7 +170,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         workspace, module = self.make_workspace(np.zeros((10, 20, 3)),
                                                 [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
-        image = workspace.image_set.get_image(output_image_name(0))
+        image = workspace.image_set.image(output_image_name(0))
         #
         # All zeros in brightfield should be all 1 in stain
         #
@@ -181,7 +181,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         workspace, module = self.make_workspace(np.ones((10, 20, 3)),
                                                 [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
-        image = workspace.image_set.get_image(output_image_name(0))
+        image = workspace.image_set.image(output_image_name(0))
         #
         # All ones in brightfield should be no stain
         #
@@ -195,7 +195,7 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         image = self.make_image(expected, U.ST_HEMATOXYLIN)
         workspace, module = self.make_workspace(image, [U.CHOICE_HEMATOXYLIN])
         module.run(workspace)
-        image = workspace.image_set.get_image(output_image_name(0))
+        image = workspace.image_set.image(output_image_name(0))
         np.testing.assert_almost_equal(image.data, expected, 2)
 
     def test_02_04_two_stains(self):
@@ -212,9 +212,9 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
         workspace, module = self.make_workspace(image, [
             U.CHOICE_HEMATOXYLIN, U.CHOICE_EOSIN])
         module.run(workspace)
-        image_1 = workspace.image_set.get_image(output_image_name(0))
+        image_1 = workspace.image_set.image(output_image_name(0))
         np.testing.assert_almost_equal(image_1.data, expected_1, 2)
-        image_2 = workspace.image_set.get_image(output_image_name(1))
+        image_2 = workspace.image_set.image(output_image_name(1))
         np.testing.assert_almost_equal(image_2.data, expected_2, 2)
 
     def test_02_05_custom_stain(self):
@@ -228,5 +228,5 @@ UnmixColors:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|sho
          module.outputs[0].green_absorbance.value,
          module.outputs[0].blue_absorbance.value) = absorbance
         module.run(workspace)
-        image = workspace.image_set.get_image(output_image_name(0))
+        image = workspace.image_set.image(output_image_name(0))
         np.testing.assert_almost_equal(image.data, expected, 2)

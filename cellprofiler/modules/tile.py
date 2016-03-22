@@ -287,7 +287,7 @@ class Tile(cpm.CPModule):
         d = self.get_dictionary(workspace.image_set_list)
         rows, columns = self.get_grid_dimensions(d[IMAGE_COUNT])
         image_set = workspace.image_set
-        image = image_set.get_image(self.input_image)
+        image = image_set.image(self.input_image)
         pixels = image.data
         if d[TILED_IMAGE] is None:
             tile_width = pixels.shape[1]
@@ -341,7 +341,7 @@ class Tile(cpm.CPModule):
         image_names = ([self.input_image.value] +
                        [g.input_image_name.value
                         for g in self.additional_images])
-        pixel_data = [workspace.image_set.get_image(name).data
+        pixel_data = [workspace.image_set.image(name).data
                       for name in image_names]
         tile_width = 0
         tile_height = 0

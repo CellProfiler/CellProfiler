@@ -1025,8 +1025,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts, 1)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
-        outlines_out = workspace.image_set.get_image("my_outlines",
-                                                     must_be_binary=True).data
+        outlines_out = workspace.image_set.image("my_outlines",
+                                                 must_be_binary=True).data
         expected = np.zeros((10, 10), int)
         expected[2:7, 2:7] = 1
         outlines = expected == 1
@@ -1078,8 +1078,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts, 1)
         objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
-        outlines_out = workspace.image_set.get_image("newprimaryoutlines",
-                                                     must_be_binary=True)
+        outlines_out = workspace.image_set.image("newprimaryoutlines",
+                                                 must_be_binary=True)
         expected = np.zeros((10, 10), bool)
         expected[3:6, 3:6] = True
         expected[4, 4] = False

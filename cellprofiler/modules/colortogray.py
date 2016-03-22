@@ -302,8 +302,8 @@ class ColorToGray(cpm.CPModule):
             measurements - the measurements for this run
             frame        - display within this frame (or None to not display)
         """
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_color=True)
+        image = workspace.image_set.image(self.image_name.value,
+                                          must_be_color=True)
         if self.should_combine():
             self.run_combine(workspace, image)
         else:

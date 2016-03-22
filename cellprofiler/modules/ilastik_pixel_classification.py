@@ -192,7 +192,7 @@ class IlastikPixelClassification(cpm.CPModule):
         if not has_ilastik:
             raise ImportError("The Vigra and Ilastik packages are not available or installed on this platform")
         # get input image
-        image = workspace.image_set.get_image(self.image_name.value, must_be_color=False)
+        image = workspace.image_set.image(self.image_name.value, must_be_color=False)
 
         # recover raw image domain
         image_ = image.data

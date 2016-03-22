@@ -219,8 +219,8 @@ class ImageTemplate(cpm.CPModule):
         # The image set will convert a color image to a grayscale one
         # and warn the user.
         #
-        input_image = image_set.get_image(input_image_name,
-                                          must_be_grayscale=True)
+        input_image = image_set.image(input_image_name,
+                                      must_be_grayscale=True)
         #
         # Get the pixels - these are a 2-d Numpy array.
         #

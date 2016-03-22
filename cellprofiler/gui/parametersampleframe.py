@@ -638,7 +638,7 @@ class ParameterSampleFrame(wx.Frame):
                 if isinstance(setting, settings.ImageNameProvider):
                     # Save image
                     image = \
-                        self.__measurements.get_image(value_to_write)
+                        self.__measurements.image(value_to_write)
                     path = \
                         os.path.join(directory_path, value_to_write + '_' + str(sample_num))
                     self.save_image(image, path)

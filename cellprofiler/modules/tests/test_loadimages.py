@@ -1477,7 +1477,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                 m, image_set_list)
         module.run(workspace)
-        image = image_set.get_image(IMAGE_NAME)
+        image = image_set.image(IMAGE_NAME)
         pixels = image.data
         self.assertEqual(pixels.ndim, 3)
         self.assertEqual(tuple(pixels.shape), (64, 64, 5))
@@ -1547,9 +1547,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(), m,
                         image_set_list)
         load_images.run(w)
-        self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
+        self.assertEqual(image_set.find_source_by("Channel1").get_filename(),
                          filenames[0])
-        self.assertEqual(image_set.get_image_provider("Channel2").get_filename(),
+        self.assertEqual(image_set.find_source_by("Channel2").get_filename(),
                          filenames[1])
         self.assertEqual(m.get_current_measurement("Image", "Metadata_plate"),
                          "MMD-ControlSet-plateA-2008-08-06")
@@ -1566,9 +1566,9 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(), m,
                         image_set_list)
         load_images.run(w)
-        self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
+        self.assertEqual(image_set.find_source_by("Channel1").get_filename(),
                          filenames[2])
-        self.assertEqual(image_set.get_image_provider("Channel2").get_filename(),
+        self.assertEqual(image_set.find_source_by("Channel2").get_filename(),
                          filenames[3])
         self.assertEqual(m.get_current_measurement("Image", "Metadata_plate"),
                          "MMD-ControlSet-plateA-2008-08-06")
@@ -1837,7 +1837,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 image_set = image_set_list.get_image_set(d)
                 load_images.run(W.Workspace(pipeline, load_images, image_set,
                                             cpo.ObjectSet(), m, image_set_list))
-                image = image_set.get_image("Channel1")
+                image = image_set.image("Channel1")
                 self.assertEqual(image.file_name, filenames[chosen])
             finally:
                 clear_image_reader_cache()
@@ -1902,7 +1902,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 w = W.Workspace(pipeline, load_images, image_set,
                                 cpo.ObjectSet(), m, image_set_list)
                 load_images.run(w)
-                image = image_set.get_image("my_image")
+                image = image_set.image("my_image")
                 self.assertEqual(tuple(image.data.shape), (48, 32))
                 f = m.get_current_image_measurement("FileName_my_image")
                 self.assertEqual(f, file_name)
@@ -1976,7 +1976,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 w = W.Workspace(pipeline, load_images, image_set,
                                 cpo.ObjectSet(), m, image_set_list)
                 load_images.run(w)
-                image = image_set.get_image("my_image")
+                image = image_set.image("my_image")
                 self.assertEqual(tuple(image.data.shape), (48, 32))
                 f = m.get_current_image_measurement("FileName_my_image")
                 self.assertEqual(f, file_name)
@@ -2305,7 +2305,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                 m.next_image_set(image_number)
                 module.run(W.Workspace(pipeline, module, image_set,
                                        cpo.ObjectSet(), m, image_set_list))
-                provider = image_set.get_image_provider("MyImage")
+                provider = image_set.find_source_by("MyImage")
                 self.assertTrue(isinstance(provider, LI.LoadImagesImageProvider))
                 match = re.search(module.images[0].file_metadata.value,
                                   provider.get_filename())
@@ -2342,7 +2342,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.names())
-        image = image_set.get_image('MyImage')
+        image = image_set.image('MyImage')
         img1 = image.data
         self.assertEqual(tuple(img1.shape), (264, 542, 3))
         t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
@@ -2354,7 +2354,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.names())
-        image = image_set.get_image('MyImage')
+        image = image_set.image('MyImage')
         img2 = image.data
         self.assertEqual(tuple(img2.shape), (264, 542, 3))
         self.assertTrue(np.any(img1 != img2))
@@ -2394,7 +2394,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.names())
-        image = image_set.get_image('MyImage')
+        image = image_set.image('MyImage')
         img1 = image.data
         self.assertEqual(tuple(img1.shape), (1040, 1388))
         image_set = image_set_list.get_image_set(1)
@@ -2404,7 +2404,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('MyImage' in image_set.names())
-        image = image_set.get_image('MyImage')
+        image = image_set.image('MyImage')
         img2 = image.data
         self.assertEqual(tuple(img2.shape), (1040, 1388))
         self.assertTrue(np.any(img1 != img2))
@@ -2507,8 +2507,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                           ("Metadata_T", 0)):
                     value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
-                red_image = image_set.get_image("Red")
-                green_image = image_set.get_image("Green")
+                red_image = image_set.image("Red")
+                green_image = image_set.image("Green")
                 self.assertEqual(tuple(red_image.data.shape),
                                  tuple(green_image.data.shape))
                 m.next_image_set()
@@ -2556,13 +2556,13 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.names())
-        image = image_set.get_image('Channel01')
+        image = image_set.image('Channel01')
         img1 = image.data
         self.assertEqual(tuple(img1.shape), (264, 542, 3))
         self.assertAlmostEqual(np.mean(img1), .07897, 3)
         self.assertTrue('Channel03' in image_set.names())
         self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 2)
-        image = image_set.get_image('Channel03')
+        image = image_set.image('Channel03')
         img3 = image.data
         self.assertEqual(tuple(img3.shape), (264, 542, 3))
         self.assertAlmostEqual(np.mean(img3), .07781, 3)
@@ -2575,7 +2575,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.names())
-        image = image_set.get_image('Channel01')
+        image = image_set.image('Channel01')
         img2 = image.data
         self.assertEqual(tuple(img2.shape), (264, 542, 3))
         self.assertAlmostEqual(np.mean(img2), .07860, 3)
@@ -2625,12 +2625,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.names())
-        image = image_set.get_image('Channel01')
+        image = image_set.image('Channel01')
         img1 = image.data
         self.assertEqual(tuple(img1.shape), (264, 542, 3))
         self.assertAlmostEqual(np.mean(img1), .07897, 3)
         self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 26)
-        image = image_set.get_image('Channel03')
+        image = image_set.image('Channel03')
         img3 = image.data
         self.assertEqual(tuple(img3.shape), (264, 542, 3))
         self.assertAlmostEqual(np.mean(img3), .073312, 3)
@@ -2644,7 +2644,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.names())
         self.assertEqual(m.get_current_image_measurement("Frame_Channel01"), 1)
-        image = image_set.get_image('Channel01')
+        image = image_set.image('Channel01')
         img2 = image.data
         self.assertEqual(tuple(img2.shape), (264, 542, 3))
         self.assertAlmostEqual(np.mean(img2), .079923, 3)
@@ -2702,8 +2702,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
 
-                red_image = image_set.get_image("Red")
-                green_image = image_set.get_image("Green")
+                red_image = image_set.image("Red")
+                green_image = image_set.image("Green")
                 self.assertEqual(tuple(red_image.data.shape),
                                  tuple(green_image.data.shape))
                 m.next_image_set()
@@ -2759,8 +2759,8 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
                     value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
 
-                red_image = image_set.get_image("Red")
-                green_image = image_set.get_image("Green")
+                red_image = image_set.image("Red")
+                green_image = image_set.image("Green")
                 self.assertEqual(tuple(red_image.data.shape),
                                  tuple(green_image.data.shape))
                 m.next_image_set()
@@ -2923,7 +2923,7 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         expected_outlines = image != 0
         expected_outlines[11:14, 21:29] = False
         image_set = workspace.get_image_set()
-        outlines = image_set.get_image(OUTLINES_NAME)
+        outlines = image_set.image(OUTLINES_NAME)
         np.testing.assert_equal(outlines.data, expected_outlines)
 
     def test_12_06_overlapped_objects(self):
@@ -3274,12 +3274,12 @@ class testLoadImages(unittest.TestCase, ConvtesterMixin):
         image_set = image_set_list.get_image_set(0)
         module.run(W.Workspace(pipeline, module, image_set,
                                cpo.ObjectSet(), m, image_set_list))
-        image = image_set.get_image(IMAGE_NAME, must_be_grayscale=True)
+        image = image_set.image(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.data.shape), (1006, 1000))
         #
         # Make sure the file on disk goes away
         #
-        provider = image_set.get_image_provider(IMAGE_NAME)
+        provider = image_set.find_source_by(IMAGE_NAME)
         pathname = provider.get_full_name()
         self.assertTrue(os.path.exists(pathname))
         provider.free()

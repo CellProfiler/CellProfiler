@@ -401,7 +401,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
 
         def callback(workspace):
             imgset = workspace.image_set
-            image = imgset.get_image("DNA")
+            image = imgset.image("DNA")
             pixels = image.data
             self.assertEqual(pixels.shape[0], self.test_shape[0])
             c0_ran[0] = True
@@ -693,7 +693,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
                                           cpo.ObjectSet(), measurements,
                                           image_set_list)
                 module.run(workspace)
-                provider = image_set.get_image_provider("Cytoplasm")
+                provider = image_set.find_source_by("Cytoplasm")
                 match = re.search(pattern, provider.get_filename())
                 self.assertTrue(match)
                 self.assertEqual(row, match.group("ROW"))
@@ -716,7 +716,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 
         def callback(workspace):
             imgset = workspace.image_set
-            image = imgset.get_image("DAPI")
+            image = imgset.image("DAPI")
             pixels = image.data
             self.assertEqual(pixels.shape[0], self.test_shape[0])
             c0_ran[0] = True
@@ -756,7 +756,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
 
                 def callback(workspace):
                     imgset = workspace.image_set
-                    image = imgset.get_image("MyFile")
+                    image = imgset.image("MyFile")
                     pixels = image.data
                     c0_image.append(pixels.copy())
 
@@ -905,7 +905,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                 L.pathname2url(os.path.join(self.test_path, self.test_filename)))
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
-        img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
+        img = workspace.image_set.image("DNA", must_be_grayscale=True)
         self.assertEqual(tuple(img.data.shape), self.test_shape)
 
     def test_13_02_load_url(self):
@@ -934,7 +934,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
-        img = workspace.image_set.get_image("DNA", must_be_color=True)
+        img = workspace.image_set.image("DNA", must_be_color=True)
         self.assertEqual(tuple(img.data.shape), cp_logo_url_shape)
 
     def test_13_03_extra_fields(self):
@@ -964,7 +964,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         self.assertEqual(m[cpmeas.IMAGE, "PathName_DNA", 3], "")
         module.prepare_group(workspace, {}, [1])
         module.run(workspace)
-        img = workspace.image_set.get_image("DNA", must_be_color=True)
+        img = workspace.image_set.image("DNA", must_be_color=True)
         self.assertEqual(tuple(img.data.shape), cp_logo_url_shape)
 
     def test_13_04_extra_lines(self):
@@ -1048,7 +1048,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                     L.pathname2url(os.path.join(self.test_path, self.test_filename)))
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
+            img = workspace.image_set.image("DNA", must_be_grayscale=True)
             self.assertEqual(tuple(img.data.shape), self.test_shape)
         finally:
             os.remove(filename)

@@ -251,8 +251,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(self.image_name.value,
+                                          must_be_grayscale=True)
         #
         # Match against Matlab's strel('disk') operation.
         #

@@ -278,7 +278,7 @@ class ImageMath(cpm.CPModule):
             image_names = image_names[:1]
             image_factors = image_factors[:1]
 
-        images = [workspace.image_set.get_image(x)
+        images = [workspace.image_set.image(x)
                   for x in image_names]
         pixel_data = [image.data for image in images]
         masks = [image.mask if image.has_mask else None for image in images]

@@ -321,7 +321,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             workspace, module = self.make_workspace(0)
             module.saved_image_contents.value = display
             module.run(workspace)
-            image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
 
     def test_02_02_display_objects(self):
         labels = np.zeros((50, 120), int)
@@ -332,12 +332,12 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             workspace, module = self.make_workspace([0, 1, 2], labels)
             module.saved_image_contents.value = display
             module.run(workspace)
-            image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
 
     def test_02_03_display_no_objects(self):
         workspace, module = self.make_workspace([], np.zeros((50, 120)))
         module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
 
     def test_02_04_display_nan_objects(self):
         labels = np.zeros((50, 120), int)
@@ -347,7 +347,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         for measurements in (np.array([1.0, np.nan, 5.0]), np.array([np.nan] * 3)):
             workspace, module = self.make_workspace(measurements, labels)
             module.run(workspace)
-            image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
 
     def test_02_05_display_objects_wrong_size(self):
         labels = np.zeros((50, 120), int)
@@ -359,7 +359,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
             workspace, module = self.make_workspace([0, 1, 2], labels, input_image)
             module.saved_image_contents.value = display
             module.run(workspace)
-            image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
 
     def test_02_06_display_colors(self):
         labels = np.zeros((50, 120), int)
@@ -370,7 +370,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         assert isinstance(module, D.DisplayDataOnImage)
         module.color_or_text.value = D.CT_COLOR
         module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
 
     def test_02_07_display_colors_missing_measurement(self):
         #
@@ -384,7 +384,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         assert isinstance(module, D.DisplayDataOnImage)
         module.color_or_text.value = D.CT_COLOR
         module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
 
     def test_02_08_display_colors_nan_measurement(self):
         #
@@ -398,7 +398,7 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         assert isinstance(module, D.DisplayDataOnImage)
         module.color_or_text.value = D.CT_COLOR
         module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
 
     def test_02_09_display_colors_manual(self):
         #
@@ -415,4 +415,4 @@ DisplayDataOnImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_numbe
         module.color_map_scale.min = 2.0
         module.color_map_scale.max = 3.0
         module.run(workspace)
-        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        image = workspace.image_set.image(OUTPUT_IMAGE_NAME)

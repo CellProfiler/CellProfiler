@@ -185,11 +185,11 @@ class CorrectIlluminationApply(cpm.CPModule):
         #
         # Get images from the image set
         #
-        orig_image = workspace.image_set.get_image(image_name)
-        illum_function = workspace.image_set.get_image(illum_correct_name)
+        orig_image = workspace.image_set.image(image_name)
+        illum_function = workspace.image_set.image(illum_correct_name)
         illum_function_pixel_data = illum_function.data
         if orig_image.data.ndim == 2:
-            illum_function = workspace.image_set.get_image(
+            illum_function = workspace.image_set.image(
                     illum_correct_name, must_be_grayscale=True)
         else:
             if illum_function_pixel_data.ndim == 2:

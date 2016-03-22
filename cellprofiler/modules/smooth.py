@@ -136,8 +136,8 @@ class Smooth(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale=True)
+        image = workspace.image_set.image(self.image_name.value,
+                                          must_be_grayscale=True)
         pixel_data = image.data
         if self.wants_automatic_object_size.value:
             object_size = min(30, max(1, np.mean(pixel_data.shape) / 40))

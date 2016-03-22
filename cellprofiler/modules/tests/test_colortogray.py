@@ -64,7 +64,7 @@ class TestColorToGray(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         inj.run(Workspace(pipeline, inj, image_set, object_set, measurements, None))
         ctg.run(Workspace(pipeline, ctg, image_set, object_set, measurements, None))
-        grayscale = image_set.get_image("my_grayscale")
+        grayscale = image_set.image("my_grayscale")
         self.assertTrue(grayscale)
         img = grayscale.image
         self.assertAlmostEqual(img[0, 0], 1.0 / 6.0)
@@ -101,21 +101,21 @@ class TestColorToGray(unittest.TestCase):
         image_set = image_set_list.get_image_set(0)
         inj.run(Workspace(pipeline, inj, image_set, object_set, measurements, None))
         ctg.run(Workspace(pipeline, ctg, image_set, object_set, measurements, None))
-        red = image_set.get_image("my_red")
+        red = image_set.image("my_red")
         self.assertTrue(red)
         img = red.image
         self.assertAlmostEqual(img[0, 0], 1)
         self.assertAlmostEqual(img[0, 25], 0)
         self.assertAlmostEqual(img[25, 0], 0)
         self.assertAlmostEqual(img[25, 25], 0)
-        green = image_set.get_image("my_green")
+        green = image_set.image("my_green")
         self.assertTrue(green)
         img = green.image
         self.assertAlmostEqual(img[0, 0], 0)
         self.assertAlmostEqual(img[0, 25], 1)
         self.assertAlmostEqual(img[25, 0], 0)
         self.assertAlmostEqual(img[25, 25], 0)
-        blue = image_set.get_image("my_blue")
+        blue = image_set.image("my_blue")
         self.assertTrue(blue)
         img = blue.image
         self.assertAlmostEqual(img[0, 0], 0)
@@ -158,7 +158,7 @@ class TestColorToGray(unittest.TestCase):
         workspace = Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                               cpm.Measurements(), image_set_list)
         module.run(workspace)
-        pixels = image_set.get_image(module.grayscale_name.value).data
+        pixels = image_set.image(module.grayscale_name.value).data
         self.assertEqual(pixels.ndim, 2)
         self.assertEqual(tuple(pixels.shape), (20, 10))
         np.testing.assert_almost_equal(expected, pixels)
@@ -194,7 +194,7 @@ class TestColorToGray(unittest.TestCase):
                               cpm.Measurements(), image_set_list)
         module.run(workspace)
         for i, channel_index in enumerate(channel_indexes):
-            pixels = image_set.get_image(module.channels[i].image_name.value).data
+            pixels = image_set.image(module.channels[i].image_name.value).data
             self.assertEqual(pixels.ndim, 2)
             self.assertEqual(tuple(pixels.shape), (20, 10))
             np.testing.assert_almost_equal(image[:, :, channel_index], pixels)

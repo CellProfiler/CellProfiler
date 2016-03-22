@@ -486,7 +486,7 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   measurements, image_set_list)
         module.run(workspace)
-        return image_set.get_image('outputimage')
+        return image_set.image('outputimage')
 
     def check_expected(self, image, expected, mask=None, ignore=False):
         if mask is None and not image.has_crop_mask:

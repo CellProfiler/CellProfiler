@@ -546,7 +546,7 @@ class FilterObjects(cpm.CPModule):
                 else:
                     image = None
             else:
-                image = workspace.image_set.get_image(image_names[0]).data
+                image = workspace.image_set.image(image_names[0]).data
 
             workspace.display_data.src_objects_segmented = \
                 src_objects.segmented

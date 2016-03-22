@@ -197,12 +197,12 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                                 R.I_NEAREST_NEIGHBOR)
         module.resizing_factor.value = 3.0
         module.run(workspace)
-        result_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result_image = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         result = result_image.data
         self.assertTrue(np.all(np.abs(result - expected) <=
                                np.finfo(float).eps))
         self.assertTrue(result_image.parent_image is
-                        workspace.image_set.get_image(INPUT_IMAGE_NAME))
+                        workspace.image_set.image(INPUT_IMAGE_NAME))
 
     def test_02_02_rescale_triple_bw(self):
         i, j = np.mgrid[0:10, 0:10]
@@ -213,7 +213,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                                 R.I_NEAREST_NEIGHBOR)
         module.resizing_factor.value = 3.0
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME).data
         self.assertTrue(np.all(np.abs(result - expected) <=
                                np.finfo(float).eps))
 
@@ -225,7 +225,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                                 R.I_NEAREST_NEIGHBOR)
         module.resizing_factor.value = 1.0 / 3.0
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME).data
         self.assertTrue(np.all(np.abs(result - expected) <=
                                np.finfo(float).eps))
 
@@ -237,7 +237,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                                 R.I_BILINEAR)
         module.resizing_factor.value = 3.0
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME).data
         self.assertTrue(np.all(np.abs(result - expected) <=
                                np.sqrt(np.finfo(float).eps)))
 
@@ -256,7 +256,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                                 R.I_BICUBIC)
         module.resizing_factor.value = 19.0 / 10.0
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME).data
         #
         # Need to account for edge effects at the top - a row of zeros
         # is used there
@@ -277,7 +277,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.specific_width.value = 19
         module.specific_height.value = 19
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME).data
         self.assertTrue(np.all(np.abs(result - expected) <=
                                np.sqrt(np.finfo(float).eps)))
 
@@ -292,7 +292,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.specific_width.value = 10
         module.specific_height.value = 10
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME).data
         self.assertTrue(np.all(np.abs(result - expected) <=
                                np.sqrt(np.finfo(float).eps)))
 
@@ -307,7 +307,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.specific_width.value = 10
         module.specific_height.value = 19
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME).data
         self.assertTrue(np.all(np.abs(result - expected) <=
                                np.sqrt(np.finfo(float).eps)))
 
@@ -323,7 +323,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         module.specific_image.value = 'AnotherImage'
         workspace.image_set.add(module.specific_image.value, cpi.Image(expected))
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).data
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME).data
         self.assertTrue(expected.shape == result.shape)
 
     def test_05_01_resize_with_cropping(self):
@@ -341,7 +341,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         assert isinstance(module, R.Resize)
         module.resizing_factor.value = .5
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.mask.shape), (5, 10))
         self.assertEqual(tuple(result.crop_mask.shape), (15, 20))
         x = result.crop_image_similarly(np.zeros(result.crop_mask.shape))
@@ -362,7 +362,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         assert isinstance(module, R.Resize)
         module.resizing_factor.value = 2
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.mask.shape), (20, 40))
         self.assertEqual(tuple(result.crop_mask.shape), (60, 80))
         x = result.crop_image_similarly(np.zeros(result.crop_mask.shape))
@@ -376,7 +376,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         assert isinstance(module, R.Resize)
         module.resizing_factor.value = .5
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.data.shape), (10, 11, 3))
 
     def test_05_04_resize_color_bw(self):
@@ -391,7 +391,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         workspace.image_set.add(module.specific_image.value,
                                 cpi.Image(tgt_image))
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.data.shape), (5, 11, 3))
 
     def test_05_05_resize_color_color(self):
@@ -406,5 +406,5 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         workspace.image_set.add(module.specific_image.value,
                                 cpi.Image(tgt_image))
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = workspace.image_set.image(OUTPUT_IMAGE_NAME)
         self.assertEqual(tuple(result.data.shape), (10, 11, 3))

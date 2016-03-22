@@ -124,7 +124,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                                               image_set_list)
                                     inj_module.run(workspace)
                                     module.run(workspace)
-                                    image = image_set.get_image("OutputImage")
+                                    image = image_set.image("OutputImage")
                                     self.assertTrue(image is not None)
                                     self.assertTrue(np.all(image.data == 0),
                                                     """Failure case:
@@ -184,7 +184,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                                           image_set_list)
                                 inj_module.run(workspace)
                                 module.run(workspace)
-                                image = image_set.get_image("OutputImage")
+                                image = image_set.image("OutputImage")
                                 self.assertTrue(image is not None)
                                 self.assertTrue(np.all(np.std(image.data) < .00001),
                                                 """Failure case:
@@ -245,7 +245,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                                       image_set_list)
                             inj_module.run(workspace)
                             module.run(workspace)
-                            image = image_set.get_image("OutputImage")
+                            image = image_set.image("OutputImage")
                             self.assertTrue(image is not None)
                             self.assertTrue(np.all(abs(image.data[mask] - 1 < .00001)),
                                             """Failure case:
@@ -368,7 +368,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
+        image = image_set.image("OutputImage")
         self.assertTrue(np.all(image.data[:20, :20] == .25))
         self.assertTrue(np.all(image.data[:20, 20:] == .5))
         self.assertTrue(np.all(image.data[20:, :20] == .75))
@@ -410,7 +410,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
+        image = image_set.image("OutputImage")
         self.assertTrue(np.all(np.abs(image.data - input_image) < .001),
                         "Failed to fit polynomial to %s" % (image_name))
 
@@ -460,7 +460,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                       image_set_list)
             inj_module.run(workspace)
             module.run(workspace)
-            image = image_set.get_image("OutputImage")
+            image = image_set.image("OutputImage")
             self.assertTrue(np.all(np.abs(image.data - input_image) < .001),
                             "Failed to fit polynomial to %s" % (image_name))
 
@@ -505,7 +505,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
+        image = image_set.image("OutputImage")
         ipd = image.data[40:61, 40:61]
         expected_image = expected_image[40:61, 40:61]
         self.assertTrue(np.all(np.abs(ipd / ipd.mean() -
@@ -555,7 +555,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
+        image = image_set.image("OutputImage")
         self.assertTrue(np.all(image.data == expected_image))
 
     def test_03_04_smooth_to_average(self):
@@ -598,7 +598,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
+        image = image_set.image("OutputImage")
         np.testing.assert_almost_equal(image.data, expected_image)
 
     def test_03_05_splines(self):
@@ -658,7 +658,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.spline_rescale.value = 1
             module.prepare_group(workspaces[0], {}, [1])
             module.run(workspaces[0])
-            img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+            img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
             pixel_data = img.data
             diff = pixel_data - np.min(pixel_data) - bg
             if succeed:
@@ -695,7 +695,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.spline_rescale.value = 2
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         np.all(diff < .05)
@@ -731,7 +731,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.automatic_splines.value = True
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         self.assertTrue(np.all(diff < .05))
@@ -747,7 +747,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.automatic_splines.value = True
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         self.assertFalse(np.all(diff < .05))
@@ -784,7 +784,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.automatic_splines.value = True
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         self.assertTrue(np.all(diff < .05))
@@ -800,7 +800,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.automatic_splines.value = True
         module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
-        img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
+        img = workspaces[0].image_set.image(OUTPUT_IMAGE_NAME)
         pixel_data = img.data
         diff = pixel_data - np.min(pixel_data) - bg
         self.assertFalse(np.all(diff < .05))
@@ -843,16 +843,16 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             inj_module.run(workspace)
             module.run(workspace)
             if average_flag:
-                img = image_set.get_image("AverageImage")
+                img = image_set.image("AverageImage")
             else:
                 self.assertRaises(AssertionError,
-                                  image_set.get_image,
+                                  image_set.image,
                                   "AverageImage")
             if dilated_flag:
-                img = image_set.get_image("DilatedImage")
+                img = image_set.image("DilatedImage")
             else:
                 self.assertRaises(AssertionError,
-                                  image_set.get_image,
+                                  image_set.image,
                                   "DilatedImage")
 
     def test_05_01_rescale(self):
@@ -895,7 +895,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
+        image = image_set.image("OutputImage")
         self.assertTrue(np.all(image.data == expected_image))
 
     def test_05_02_rescale_outlier(self):
@@ -940,7 +940,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                   image_set_list)
         inj_module.run(workspace)
         module.run(workspace)
-        image = image_set.get_image("OutputImage")
+        image = image_set.image("OutputImage")
         self.assertTrue(np.all(image.data == expected_image))
 
     def test_06_01_load_matlab(self):

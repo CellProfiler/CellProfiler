@@ -233,8 +233,8 @@ class MaskObjects(I.Identify):
         original_objects = workspace.object_set.get_objects(object_name)
 
         if self.mask_choice == MC_IMAGE:
-            mask = workspace.image_set.get_image(self.masking_image.value,
-                                                 must_be_binary=True)
+            mask = workspace.image_set.image(self.masking_image.value,
+                                             must_be_binary=True)
             mask = mask.data
         else:
             masking_objects = workspace.object_set.get_objects(

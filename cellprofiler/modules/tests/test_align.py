@@ -274,7 +274,7 @@ Name the second output image:AlignedImage2
                         module.alignment_method.value = method
                         module.crop_mode.value = A.C_CROP
                         module.run(workspace)
-                        output = workspace.image_set.get_image('Aligned0')
+                        output = workspace.image_set.image('Aligned0')
                         m = workspace.measurements
                         self.assertTrue(isinstance(m, cpmeas.Measurements))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
@@ -305,7 +305,7 @@ Name the second output image:AlignedImage2
                             temp[i_slice, j_slice] = False
                             self.assertTrue(np.all(~ temp))
 
-                        output = workspace.image_set.get_image("Aligned1")
+                        output = workspace.image_set.image("Aligned1")
                         i_slice = self.single_slice_helper(-off_i1, out_shape[0])
                         j_slice = self.single_slice_helper(-off_j1, out_shape[1])
 
@@ -376,7 +376,7 @@ Name the second output image:AlignedImage2
                         module.alignment_method.value = method
                         module.crop_mode.value = A.C_PAD
                         module.run(workspace)
-                        output = workspace.image_set.get_image('Aligned0')
+                        output = workspace.image_set.image('Aligned0')
                         m = workspace.measurements
                         self.assertTrue(isinstance(m, cpmeas.Measurements))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
@@ -398,7 +398,7 @@ Name the second output image:AlignedImage2
                         temp[i_slice, j_slice] = False
                         self.assertTrue(np.all(~ temp))
 
-                        output = workspace.image_set.get_image("Aligned1")
+                        output = workspace.image_set.image("Aligned1")
                         i_slice = slice(off_i1, off_i1 + image2.shape[0])
                         j_slice = slice(off_j1, off_j1 + image2.shape[1])
                         np.testing.assert_almost_equal(
@@ -444,7 +444,7 @@ Name the second output image:AlignedImage2
                         module.alignment_method.value = method
                         module.crop_mode.value = A.C_SAME_SIZE
                         module.run(workspace)
-                        output = workspace.image_set.get_image('Aligned0')
+                        output = workspace.image_set.image('Aligned0')
                         m = workspace.measurements
                         self.assertTrue(isinstance(m, cpmeas.Measurements))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
@@ -466,7 +466,7 @@ Name the second output image:AlignedImage2
                         temp[si_out, sj_out] = False
                         self.assertTrue(np.all(~ temp))
 
-                        output = workspace.image_set.get_image("Aligned1")
+                        output = workspace.image_set.image("Aligned1")
                         si_in, si_out = self.slice_same(off_i1, shape[0])
                         sj_in, sj_out = self.slice_same(off_j1, shape[1])
                         np.testing.assert_almost_equal(
@@ -505,7 +505,7 @@ Name the second output image:AlignedImage2
             module.crop_mode.value = A.C_PAD
             module.additional_images[0].align_choice.value = A.A_SIMILARLY
             module.run(workspace)
-            output = workspace.image_set.get_image('Aligned2')
+            output = workspace.image_set.image('Aligned2')
             m = workspace.measurements
             columns = module.get_measurement_columns(workspace.pipeline)
             self.assertEqual(len(columns), 6)
@@ -559,7 +559,7 @@ Name the second output image:AlignedImage2
             self.assertEqual(off_j0 - off_j1, offset[1] + 5)
             self.assertEqual(off_i0 - off_i2, offset[0])
             self.assertEqual(off_j0 - off_j2, offset[1])
-            output = workspace.image_set.get_image('Aligned2')
+            output = workspace.image_set.image('Aligned2')
             i_slice = self.single_slice_helper(off_i2, shape[0])
             j_slice = self.single_slice_helper(off_j2, shape[1])
             np.testing.assert_almost_equal(output.data[i_slice, j_slice],
@@ -603,7 +603,7 @@ Name the second output image:AlignedImage2
                         module.alignment_method.value = method
                         module.crop_mode.value = A.C_SAME_SIZE
                         module.run(workspace)
-                        output = workspace.image_set.get_image('Aligned0')
+                        output = workspace.image_set.image('Aligned0')
                         m = workspace.measurements
                         self.assertTrue(isinstance(m, cpmeas.Measurements))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
@@ -625,7 +625,7 @@ Name the second output image:AlignedImage2
                         temp[si_out, sj_out] = False
                         self.assertTrue(np.all(~ temp))
 
-                        output = workspace.image_set.get_image("Aligned1")
+                        output = workspace.image_set.image("Aligned1")
                         si_in, si_out = self.slice_same(off_i1, shape[0])
                         sj_in, sj_out = self.slice_same(off_j1, shape[1])
                         np.testing.assert_almost_equal(
@@ -669,7 +669,7 @@ Name the second output image:AlignedImage2
                         module.alignment_method.value = method
                         module.crop_mode.value = A.C_SAME_SIZE
                         module.run(workspace)
-                        output = workspace.image_set.get_image('Aligned0')
+                        output = workspace.image_set.image('Aligned0')
                         m = workspace.measurements
                         self.assertTrue(isinstance(m, cpmeas.Measurements))
                         off_i0 = -m.get_current_image_measurement('Align_Yshift_Aligned0')
@@ -692,7 +692,7 @@ Name the second output image:AlignedImage2
                         temp[si_out, sj_out] = False
                         self.assertTrue(np.all(~ temp))
 
-                        output = workspace.image_set.get_image("Aligned1")
+                        output = workspace.image_set.image("Aligned1")
                         si_in, si_out = self.slice_same(off_i1, shape[0])
                         sj_in, sj_out = self.slice_same(off_j1, shape[1])
                         np.testing.assert_equal(
@@ -791,10 +791,10 @@ Name the second output image:AlignedImage2
                 module.alignment_method.value = method
                 module.crop_mode.value = A.C_CROP
                 module.run(workspace)
-                i1 = workspace.image_set.get_image(i1_name)
+                i1 = workspace.image_set.image(i1_name)
                 self.assertTrue(isinstance(i1, cpi.Image))
                 p1 = i1.data
-                i2 = workspace.image_set.get_image(i2_name)
+                i2 = workspace.image_set.image(i2_name)
                 p2 = i2.data
                 self.assertEqual(tuple(p1.shape), tuple(p2.shape))
                 self.assertTrue(np.all(p1 == p2))
@@ -819,10 +819,10 @@ Name the second output image:AlignedImage2
         self.assertTrue(isinstance(module, A.Align))
         module.crop_mode.value = A.C_PAD
         module.run(workspace)
-        i1 = workspace.image_set.get_image("Aligned0")
+        i1 = workspace.image_set.image("Aligned0")
         self.assertTrue(isinstance(i1, cpi.Image))
         p1 = i1.data
-        i2 = workspace.image_set.get_image("Aligned1")
+        i2 = workspace.image_set.image("Aligned1")
         p2 = i2.data
         self.assertEqual(tuple(p1.shape), tuple(p2.shape))
         self.assertTrue(np.all(p1[2:-2, 2:-2] == p2[2:-2, 2:-2]))

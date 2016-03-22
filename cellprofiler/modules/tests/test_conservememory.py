@@ -111,9 +111,9 @@ class TestConserveMemory(unittest.TestCase):
                                   cpo.ObjectSet(), cpmeas.Measurements(),
                                   image_set_list)
         module.run(workspace)
-        image = image_set.get_image("Image1")
+        image = image_set.image("Image1")
         self.assertFalse(isinstance(image, cpi.Image))
-        image = image_set.get_image("Image2")
+        image = image_set.image("Image2")
         self.assertTrue(isinstance(image, cpi.Image))
 
     def test_02_02_erase_keep(self):
@@ -135,7 +135,7 @@ class TestConserveMemory(unittest.TestCase):
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   cpmeas.Measurements(), image_set_list)
         module.run(workspace)
-        image = image_set.get_image("Image2")
+        image = image_set.image("Image2")
         self.assertFalse(isinstance(image, cpi.Image))
-        image = image_set.get_image("Image1")
+        image = image_set.image("Image1")
         self.assertTrue(isinstance(image, cpi.Image))

@@ -147,7 +147,7 @@ class MakeProjection(cpm.CPModule):
     def run(self, workspace):
         provider = ImageProvider.restore_from_state(self.get_dictionary())
         workspace.image_set.providers.append(provider)
-        image = workspace.image_set.get_image(self.image_name.value)
+        image = workspace.image_set.image(self.image_name.value)
         pixels = image.data
         if (not provider.has_image):
             provider.set_image(image)

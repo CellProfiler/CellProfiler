@@ -118,15 +118,15 @@ class MaskImage(cpm.CPModule):
         else:
             objects = None
             try:
-                mask = image_set.get_image(self.masking_image_name.value,
-                                           must_be_binary=True).data
+                mask = image_set.image(self.masking_image_name.value,
+                                       must_be_binary=True).data
             except ValueError:
-                mask = image_set.get_image(self.masking_image_name.value,
-                                           must_be_grayscale=True).data
+                mask = image_set.image(self.masking_image_name.value,
+                                       must_be_grayscale=True).data
                 mask = mask > .5
             if self.invert_mask.value:
                 mask = mask == 0
-        orig_image = image_set.get_image(self.image_name.value)
+        orig_image = image_set.image(self.image_name.value)
         if tuple(mask.shape) != tuple(orig_image.data.shape[:2]):
             tmp = np.zeros(orig_image.data.shape[:2], mask.dtype)
             tmp[mask] = True

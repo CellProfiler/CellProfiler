@@ -204,7 +204,7 @@ class OverlayOutlines(cpm.CPModule):
             output_image = cpi.Image(pixel_data)
             workspace.image_set.add(self.output_image_name.value, output_image)
         else:
-            image = workspace.image_set.get_image(self.image_name.value)
+            image = workspace.image_set.image(self.image_name.value)
             output_image = cpi.Image(pixel_data, parent_image=image)
             workspace.image_set.add(self.output_image_name.value, output_image)
             workspace.display_data.image_pixel_data = image.data
@@ -297,8 +297,8 @@ class OverlayOutlines(cpm.CPModule):
             pixel_data = np.zeros(shape)
             maximum = 1
         else:
-            image = image_set.get_image(self.image_name.value,
-                                        must_be_grayscale=True)
+            image = image_set.image(self.image_name.value,
+                                    must_be_grayscale=True)
             pixel_data = image.data
             maximum = 1 if self.max_type == MAX_POSSIBLE else np.max(pixel_data)
             pixel_data = pixel_data.copy()
@@ -316,7 +316,7 @@ class OverlayOutlines(cpm.CPModule):
             pixel_data = None
             pdmax = 1
         else:
-            image = image_set.get_image(self.image_name.value)
+            image = image_set.image(self.image_name.value)
             pixel_data = image.data
             if pixel_data.ndim == 2:
                 pixel_data = np.dstack((pixel_data, pixel_data, pixel_data))
@@ -353,7 +353,7 @@ class OverlayOutlines(cpm.CPModule):
         '''Get outline, with aliasing and taking widths into account'''
         if outline.outline_choice == FROM_IMAGES:
             name = outline.outline_name.value
-            pixel_data = workspace.image_set.get_image(name).data
+            pixel_data = workspace.image_set.image(name).data
         else:
             name = outline.objects_name.value
             objects = workspace.object_set.get_objects(name)

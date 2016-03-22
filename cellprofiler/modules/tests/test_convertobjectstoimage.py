@@ -118,7 +118,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         workspace, module = self.make_workspace()
         module.image_mode.value = C.IM_BINARY
         module.run(workspace)
-        pixel_data = workspace.image_set.get_image(IMAGE_NAME).data
+        pixel_data = workspace.image_set.image(IMAGE_NAME).data
         self.assertFalse(pixel_data[0, 0])
         i, j = np.mgrid[0:16, 0:16]
         self.assertTrue(np.all(pixel_data[i * j > 0]))
@@ -128,7 +128,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         workspace, module = self.make_workspace()
         module.image_mode.value = C.IM_GRAYSCALE
         module.run(workspace)
-        pixel_data = workspace.image_set.get_image(IMAGE_NAME).data
+        pixel_data = workspace.image_set.image(IMAGE_NAME).data
         expected = np.reshape(np.arange(256).astype(np.float32) / 255, (16, 16))
         self.assertTrue(np.all(pixel_data == expected))
 
@@ -139,14 +139,14 @@ class TestConvertObjectsToImage(unittest.TestCase):
             module.image_mode.value = C.IM_COLOR
             module.colormap.value = color
             module.run(workspace)
-            pixel_data = workspace.image_set.get_image(IMAGE_NAME).data
+            pixel_data = workspace.image_set.image(IMAGE_NAME).data
             self.assertEqual(np.product(pixel_data.shape), 256 * 3)
 
     def test_02_04_uint16(self):
         workspace, module = self.make_workspace()
         module.image_mode.value = C.IM_UINT16
         module.run(workspace)
-        pixel_data = workspace.image_set.get_image(IMAGE_NAME).data
+        pixel_data = workspace.image_set.image(IMAGE_NAME).data
         expected = np.reshape(np.arange(256), (16, 16))
         self.assertTrue(np.all(pixel_data == expected))
 
@@ -187,7 +187,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
         module.image_mode.value = C.IM_BINARY
         module.run(workspace)
-        pixel_data = workspace.image_set.get_image(IMAGE_NAME).data
+        pixel_data = workspace.image_set.image(IMAGE_NAME).data
         self.assertEqual(len(np.unique(ijv[:, 0] + ijv[:, 1] * pixel_data.shape[0])),
                          np.sum(pixel_data))
         self.assertTrue(np.all(pixel_data[ijv[:, 0], ijv[:, 1]]))
@@ -197,7 +197,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
         module.image_mode.value = C.IM_GRAYSCALE
         module.run(workspace)
-        pixel_data = workspace.image_set.get_image(IMAGE_NAME).data
+        pixel_data = workspace.image_set.image(IMAGE_NAME).data
 
         counts = coo_matrix((np.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))).toarray()
         self.assertTrue(np.all(pixel_data[counts == 0] == 0))
@@ -218,7 +218,7 @@ class TestConvertObjectsToImage(unittest.TestCase):
         self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
         module.image_mode.value = C.IM_COLOR
         module.run(workspace)
-        pixel_data = workspace.image_set.get_image(IMAGE_NAME).data
+        pixel_data = workspace.image_set.image(IMAGE_NAME).data
         #
         # convert the labels into individual bits (1, 2, 4, 8)
         # the labels matrix is a matrix of bits that are on

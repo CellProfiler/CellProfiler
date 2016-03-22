@@ -754,7 +754,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             area = (float(bin) * 2.0 - 1.0) / 16.0
             self.assertTrue(data[0] > area - .1)
             self.assertTrue(data[0] < area + .1)
-            heatmap = workspace.image_set.get_image(
+            heatmap = workspace.image_set.image(
                     HEAT_MAP_NAME + M.F_FRAC_AT_D).data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
@@ -762,7 +762,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_mean_frac(bin, 4))
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 1, 2)
-            heatmap = workspace.image_set.get_image(
+            heatmap = workspace.image_set.image(
                     HEAT_MAP_NAME + M.F_MEAN_FRAC).data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
@@ -770,7 +770,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
             self.assertAlmostEqual(data[0], 0, 2)
-            heatmap = workspace.image_set.get_image(
+            heatmap = workspace.image_set.image(
                     HEAT_MAP_NAME + M.F_RADIAL_CV).data
             data = data.astype(heatmap.dtype)
             self.assertEqual(mode(heatmap[bins == bin])[0][0], data[0])
@@ -984,7 +984,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
             bin_d = (float(bin) - .5) * 8 / 21
             self.assertLess(np.abs(data[0] - area), .1)
             self.assertLess(np.abs(data[1] - area * bin_d), .1)
-            heatmap = workspace.image_set.get_image(
+            heatmap = workspace.image_set.image(
                     HEAT_MAP_NAME + M.F_FRAC_AT_D).data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
@@ -994,7 +994,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_mean_frac(bin, 4))
             self.assertEqual(len(data), 2)
             self.assertAlmostEqual(data[0], 1, 2)
-            heatmap = workspace.image_set.get_image(
+            heatmap = workspace.image_set.image(
                     HEAT_MAP_NAME + M.F_MEAN_FRAC).data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:
@@ -1004,7 +1004,7 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 2)
             self.assertAlmostEqual(data[0], 0, 2)
-            heatmap = workspace.image_set.get_image(
+            heatmap = workspace.image_set.image(
                     HEAT_MAP_NAME + M.F_RADIAL_CV).data
             data = data.astype(heatmap.dtype)
             for label in 1, 2:

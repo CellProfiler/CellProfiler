@@ -253,10 +253,10 @@ class CalculateImageOverlap(cpm.CPModule):
         '''Add the image overlap measurements'''
 
         image_set = workspace.image_set
-        ground_truth_image = image_set.get_image(self.ground_truth.value,
-                                                 must_be_binary=True)
-        test_image = image_set.get_image(self.test_img.value,
-                                         must_be_binary=True)
+        ground_truth_image = image_set.image(self.ground_truth.value,
+                                             must_be_binary=True)
+        test_image = image_set.image(self.test_img.value,
+                                     must_be_binary=True)
         ground_truth_pixels = ground_truth_image.data
         ground_truth_pixels = test_image.crop_image_similarly(ground_truth_pixels)
         mask = ground_truth_image.mask

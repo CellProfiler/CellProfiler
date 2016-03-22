@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 import threading
+
 import cellprofiler.icons
-from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
-__doc__ = """<b>YeastSegmentation</b> identifies yeast (or other round) objects in the image. This module can be used 
+
+__doc__ = """<b>YeastSegmentation</b> identifies yeast (or other round) objects in the image. This module can be used
 with brightfield images (as well as fluorescent ones).
 
 <hr>
@@ -136,7 +137,7 @@ __revision__="$Id$"
 # Imports from useful Python libraries
 #
 #################################
-from os.path import expanduser, exists
+from os.path import expanduser
 from os.path import join as pj
 import logging
 logger = logging.getLogger(__name__)
@@ -789,55 +790,56 @@ class YeastCellSegmentation(cpmi.Identify):
         ### fitting params 
         # reading GT from dialog_box.labels[0] and image from self.pixel
         progressMax = self.autoadaptation_steps.value * 2  # every step consists of: snake params and ranking params fitting
-        dialog = wx.ProgressDialog("Fitting parameters..", "Iterations remaining", progressMax,
-        style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME )
-        keepGoing = True
 
-        self.param_fit_progress = 0
-        self.best_snake_score = 10
-        self.best_rank_score = 1000000000
-        aft_active = []
-        adaptations_stopped = False
-        cellstar = self.prepare_cell_star_object(min(11, self.segmentation_precision.value))
-        self.best_parameters = cellstar.parameters
-        self.autoadapted_params.value = cellstar.encode_auto_params()
+        with wx.ProgressDialog("Fitting parameters..", "Iterations remaining", progressMax,
+                               style=wx.PD_CAN_ABORT | wx.PD_ELAPSED_TIME | wx.PD_REMAINING_TIME) as dialog:
+            keepGoing = True
 
-        try:
-            while (keepGoing or not adaptations_stopped) and self.param_fit_progress < progressMax:
-                # here put one it. of fitting instead
-                wx.Sleep(0.5)
+            self.param_fit_progress = 0
+            self.best_snake_score = 10
+            self.best_rank_score = 1000000000
+            aft_active = []
+            adaptations_stopped = False
+            cellstar = self.prepare_cell_star_object(min(11, self.segmentation_precision.value))
+            self.best_parameters = cellstar.parameters
+            self.autoadapted_params.value = cellstar.encode_auto_params()
 
-                # Thread ended with exception so optimisation have to be stopped.
-                if any(aft_active) and aft_active[0].exception is not None:
-                    break
+            try:
+                while (keepGoing or not adaptations_stopped) and self.param_fit_progress < progressMax:
+                    # here put one it. of fitting instead
+                    wx.Sleep(0.5)
 
-                # Clean aft_active from dead threads.
-                while any(aft_active) and (not aft_active[0].is_alive() and aft_active[0].started):
-                    aft_active = aft_active[1:]
+                    # Thread ended with exception so optimisation have to be stopped.
+                    if any(aft_active) and aft_active[0].exception is not None:
+                        break
 
-                # If thread in line start first of them.
-                if any(aft_active) and not aft_active[0].started:
-                    # update parameters which may already be changed
-                    aft_active[0].update_params(self.best_parameters)
-                    aft_active[0].start()
+                    # Clean aft_active from dead threads.
+                    while any(aft_active) and (not aft_active[0].is_alive() and aft_active[0].started):
+                        aft_active = aft_active[1:]
 
-                adaptations_stopped = aft_active == []
+                    # If thread in line start first of them.
+                    if any(aft_active) and not aft_active[0].started:
+                        # update parameters which may already be changed
+                        aft_active[0].update_params(self.best_parameters)
+                        aft_active[0].start()
 
-                if adaptations_stopped and keepGoing and self.param_fit_progress < progressMax:
-                    aft_active.append(
-                        AutoFitterThread(run_pf, self.update_snake_params, image, labels, self.best_parameters,
-                                 self.segmentation_precision.value, self.average_cell_diameter.value))
+                    adaptations_stopped = aft_active == []
 
-                    aft_active.append(
-                        AutoFitterThread(run_rank_pf, self.update_rank_params, image, labels, self.best_parameters))
+                    if adaptations_stopped and keepGoing and self.param_fit_progress < progressMax:
+                        aft_active.append(
+                            AutoFitterThread(run_pf, self.update_snake_params, image, labels, self.best_parameters,
+                                     self.segmentation_precision.value, self.average_cell_diameter.value))
 
-                # here update params. in the GUI
-                keepGoingUpdate = dialog.Update(self.param_fit_progress)[0]
-                keepGoing = keepGoing and keepGoingUpdate
+                        aft_active.append(
+                            AutoFitterThread(run_rank_pf, self.update_rank_params, image, labels, self.best_parameters))
 
-        finally:
-            dialog.Update(progressMax)
-    
+                    # here update params. in the GUI
+                    keepGoingUpdate = dialog.Update(self.param_fit_progress)[0]
+                    keepGoing = keepGoing and keepGoingUpdate
+
+            finally:
+                dialog.Update(progressMax)
+
     #
     # Postprocess objects found by CellStar
     #
@@ -848,6 +850,7 @@ class YeastCellSegmentation(cpmi.Identify):
         if new_snake_score < self.best_snake_score:
             self.best_snake_score = new_snake_score
             self.best_parameters = new_parameters
+            self.best_rank_score = 1000000000  # clear best ranking params as it no longer valid for different snakes
             if self.autoadapted_params.value != Segmentation.encode_auto_params_from_all_params(new_parameters):
                 self.autoadapted_params.value = Segmentation.encode_auto_params_from_all_params(new_parameters)
                 logger.info("New auto parameters applied.")

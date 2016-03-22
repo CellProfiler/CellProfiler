@@ -1553,7 +1553,7 @@ class CPSizer(wx.PySizer):
             idx += 1
 
 
-cellprofiler_license = """
+cellprofiler_license = u"""
 The BSD 3-Clause License
 
 Copyright © 2003 - 2015 Broad Institute, Inc. All rights reserved.

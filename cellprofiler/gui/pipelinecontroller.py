@@ -25,7 +25,7 @@ from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
 
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.analysis as cpanalysis
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.parametersampleframe as psf

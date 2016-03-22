@@ -32,7 +32,7 @@ See also the help for the <b>Input</b> modules.
 import numpy as np
 
 import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.settings as cps
 
 P_AVERAGE = 'Average'

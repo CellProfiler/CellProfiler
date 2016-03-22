@@ -21,7 +21,7 @@ from bioformats.formatreader import clear_image_reader_cache
 from bioformats.formatwriter import write_image
 from bioformats.omexml import PT_UINT8
 
-import cellprofiler.cpimage as I
+import cellprofiler.image as I
 import cellprofiler.cpmodule as CPM
 import cellprofiler.measurements as measurements
 import cellprofiler.modules.loadimages as LI

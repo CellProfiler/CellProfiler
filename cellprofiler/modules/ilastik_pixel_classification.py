@@ -29,7 +29,7 @@ recommended for running ilastik.
 import logging
 import urllib
 
-import cellprofiler.cpimage  as cpi
+import cellprofiler.image  as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps

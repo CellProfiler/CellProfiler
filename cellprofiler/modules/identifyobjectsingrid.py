@@ -43,7 +43,7 @@ from centrosome.cpmorphology import centers_of_labels, relabel
 from centrosome.outline import outline
 
 import cellprofiler.cpgridinfo as cpg
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo

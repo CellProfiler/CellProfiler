@@ -14,7 +14,7 @@ import numpy as np
 import wx
 import wx.lib.agw.floatspin as fs
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule
 import cellprofiler.measurements as cpm
 import cellprofiler.objects as cpo

@@ -79,7 +79,7 @@ from scipy.ndimage import map_coordinates, extrema
 from scipy.ndimage import mean as nd_mean
 from scipy.ndimage import standard_deviation as nd_standard_deviation
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo

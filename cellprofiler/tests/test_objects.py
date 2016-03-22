@@ -9,7 +9,7 @@ import numpy as np
 import scipy.ndimage
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.objects as cpo
 from cellprofiler.utilities.hdf5_dict import HDF5ObjectSet
 

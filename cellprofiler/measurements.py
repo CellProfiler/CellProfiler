@@ -1579,7 +1579,7 @@ class Measurements(object):
                       discard alpha channel.
         """
         from .modules.loadimages import LoadImagesImageProviderURL
-        from .cpimage import Grayscale, RGB
+        from .image import Grayscale, RGB
         name = str(name)
         if self.__images.has_key(name):
             image = self.__images[name]
@@ -1718,7 +1718,7 @@ class Measurements(object):
     names = property(get_names)
 
     def add(self, name, image):
-        from .cpimage import Vanilla
+        from .image import Vanilla
         old_providers = [provider for provider in self.providers
                          if provider.name == name]
         if len(old_providers) > 0:

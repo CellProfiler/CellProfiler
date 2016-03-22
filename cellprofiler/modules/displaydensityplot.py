@@ -20,7 +20,7 @@ See also <b>DisplayScatterPlot</b>, <b>DisplayHistogram</b>.
 import matplotlib.cm
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 

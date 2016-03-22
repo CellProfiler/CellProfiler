@@ -30,7 +30,7 @@ import sys
 import numpy as np
 from centrosome.filter import stretch
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs

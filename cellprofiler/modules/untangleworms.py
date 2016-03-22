@@ -83,7 +83,7 @@ from scipy.sparse import coo
 logger = logging.getLogger(__name__)
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO

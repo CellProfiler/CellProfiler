@@ -40,7 +40,7 @@ from scipy.sparse import coo_matrix
 import traceback
 
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps

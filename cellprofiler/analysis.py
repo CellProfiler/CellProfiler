@@ -21,7 +21,7 @@ import numpy as np
 import zmq
 
 import cellprofiler
-import cellprofiler.cpimage as cpimage
+import cellprofiler.image as cpimage
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw

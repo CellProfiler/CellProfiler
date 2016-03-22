@@ -589,7 +589,7 @@ class Workspace(object):
             # TODO: Get rid of image_set_list
             no_image_set_list = self.image_set_list is None
             if no_image_set_list:
-                from cellprofiler.cpimage import List
+                from cellprofiler.image import List
                 self.__image_set_list = List()
             try:
                 result = self.pipeline.prepare_run(self, stop_module)

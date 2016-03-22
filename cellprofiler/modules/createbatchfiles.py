@@ -34,7 +34,7 @@ import sys
 import urllib
 import zlib
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp

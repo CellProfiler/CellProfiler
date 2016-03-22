@@ -17,7 +17,7 @@ from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
 from scipy.ndimage import convolve
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO

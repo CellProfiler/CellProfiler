@@ -9,7 +9,7 @@ from StringIO import StringIO
 import numpy as np
 import numpy as np
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas

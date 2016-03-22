@@ -29,7 +29,7 @@ from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
-import cellprofiler.cpimage  as cpi
+import cellprofiler.image  as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo

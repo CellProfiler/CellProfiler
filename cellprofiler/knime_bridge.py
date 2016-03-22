@@ -27,7 +27,7 @@ if not hasattr(zmq, "Frame"):
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps

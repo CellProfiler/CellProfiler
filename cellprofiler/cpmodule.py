@@ -10,7 +10,7 @@ import uuid
 
 import numpy as np
 
-import cellprofiler.cpimage
+import cellprofiler.image
 import cellprofiler.measurements
 import cellprofiler.objects
 import cellprofiler.settings as cps

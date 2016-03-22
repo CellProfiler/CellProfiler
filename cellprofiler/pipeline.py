@@ -38,7 +38,7 @@ import re
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler.preferences as cpprefs
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw

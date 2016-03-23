@@ -26,7 +26,6 @@ class TestImageProcessor(unittest.TestCase):
         fn = "CometTails.tif"
         file_name = maybe_download_example_image([folder], fn)
         imageplus_obj = I.load_imageplus(file_name)
-        pixels = IP.get_image(imageplus_obj.getProcessor())
         pass
 
     def test_01_02_make_image_processor(self):

@@ -658,11 +658,14 @@ class CPFigureFrame(wx.Frame):
             self.status_bar.SetFields(fields)
 
     def find_image_for_axes(self, axes):
+        value = None
+
         for i, sl in enumerate(self.subplots):
             for j, slax in enumerate(sl):
                 if axes == slax:
-                    return self.images.get((i, j), None)
-        return None
+                    value = self.images.get((i, j), None)
+
+        return value
 
     def on_button_release(self, event):
         if not hasattr(self, "subplots"):

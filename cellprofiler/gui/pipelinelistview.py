@@ -1160,7 +1160,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.Bind(wx.EVT_SET_FOCUS, self.on_focus_change)
 
     def on_focus_change(self, event):
-        self.Refresh(eraseBackground=False);
+        self.Refresh(eraseBackground=False)
 
     def HitTestSubItem(self, position):
         '''Mimic ListCtrl's HitTestSubItem

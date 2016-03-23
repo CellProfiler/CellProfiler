@@ -90,4 +90,4 @@ class TestPreferences_02(unittest.TestCase):
 
     def test_01_01_default_directory_none(self):
         print cpprefs.get_default_image_directory()
-        self.assertTrue(True);
+        self.assertTrue(True)

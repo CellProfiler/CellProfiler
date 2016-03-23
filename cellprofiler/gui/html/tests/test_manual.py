@@ -5,9 +5,8 @@ import re
 import tempfile
 import traceback
 import unittest
-
-import cellprofiler.gui.html.manual as M
-import cellprofiler.preferences as cpprefs
+import cellprofiler.gui.html.manual
+import cellprofiler.preferences
 
 
 class TestManual(unittest.TestCase):
@@ -45,7 +44,7 @@ class TestManual(unittest.TestCase):
 
     def test_01_01_output_module_html(self):
         from cellprofiler.modules import get_module_names, instantiate_module
-        M.output_module_html(self.temp_dir)
+        cellprofiler.gui.html.manual.output_module_html(self.temp_dir)
         for module_name in sorted(get_module_names()):
             fd = None
             try:
@@ -54,7 +53,7 @@ class TestManual(unittest.TestCase):
                 module = instantiate_module(module_name)
                 location = os.path.split(
                         module.create_settings.im_func.func_code.co_filename)[0]
-                if location == cpprefs.get_plugin_directory():
+                if location == cellprofiler.preferences.get_plugin_directory():
                     continue
                 traceback.print_exc()
                 self.assert_("Failed to open %s.html" % module_name)

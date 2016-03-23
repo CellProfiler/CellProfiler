@@ -1077,7 +1077,6 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         counts = m.get_current_measurement("Image", count_feature)
         self.assertEqual(np.product(counts.shape), 1)
         self.assertEqual(counts, 1)
-        objects_out = o_s.get_objects(OUTPUT_OBJECTS_NAME)
         outlines_out = workspace.image_set.get_image("newprimaryoutlines",
                                                      must_be_binary=True)
         expected = np.zeros((10, 10), bool)

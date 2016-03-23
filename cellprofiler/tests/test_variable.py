@@ -238,7 +238,6 @@ class TestDirectoryPath(unittest.TestCase):
         # Make three temporary directory structures
         #
         cpprefs.set_headless()
-        self.directories = [tempfile.mkdtemp() for i in range(3)]
         for directory in self.directories:
             for i in range(3):
                 os.mkdir(os.path.join(directory, str(i)))
@@ -272,7 +271,6 @@ class TestDirectoryPath(unittest.TestCase):
         gibberish = "aqwura[oijs|fd"
         for dir_choice in cps.DirectoryPath.DIR_ALL + [cps.NO_FOLDER_NAME]:
             s = cps.DirectoryPath("whatever")
-            value = s.join_parts(dir_choice, gibberish)
             out_dir_choice = s.dir_choice
             custom_path = s.custom_path
             self.assertEqual(dir_choice, out_dir_choice)

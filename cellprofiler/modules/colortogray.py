@@ -424,7 +424,6 @@ class ColorToGray(cpm.CPModule):
                 new_setting_values.append(use_it)
                 new_setting_values.append(vv)
             setting_values = new_setting_values
-            module_name = self.module_class()
             variable_revision_number = 1
             from_matlab = False
 

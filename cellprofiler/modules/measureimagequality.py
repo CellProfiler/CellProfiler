@@ -912,7 +912,6 @@ class MeasureImageQuality(cpm.CPModule):
                 pixel_data = pixel_data[image.mask]
             pixel_count = np.product(pixel_data.shape)
             if pixel_count == 0:
-                percent_saturation = 0
                 percent_maximal = 0
                 percent_minimal = 0
             else:
@@ -949,7 +948,6 @@ class MeasureImageQuality(cpm.CPModule):
         if image.has_mask:
             pixels = pixels[image.mask]
 
-        result = []
         pixel_count = np.product(pixels.shape)
         if pixel_count == 0:
             pixel_sum = 0
@@ -1012,7 +1010,6 @@ class MeasureImageQuality(cpm.CPModule):
             if sum(magnitude) > 0 and len(np.unique(pixel_data)) > 1:
                 valid = (magnitude > 0)
                 radii = radii[valid].reshape((-1, 1))
-                magnitude = magnitude[valid].reshape((-1, 1))
                 power = power[valid].reshape((-1, 1))
                 if radii.shape[0] > 1:
                     idx = np.isfinite(np.log(power))

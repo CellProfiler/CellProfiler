@@ -76,15 +76,6 @@ def get_version():
             pass
 
         # GIT
-        try:
-            with open(os.devnull, "r") as devnull:
-                timestamp, hash = subprocess.check_output(
-                        ['git', 'log', '--format=%ct %h', '-n', '1'],
-                        stdin=devnull,
-                        cwd=cellprofiler_basedir).strip().split(' ')
-            return '%s %s' % (datetime.datetime.utcfromtimestamp(float(timestamp)).isoformat('T'), hash)
-        except (OSError, subprocess.CalledProcessError, ValueError), e:
-            pass
 
         try:
             import cellprofiler.frozen_version

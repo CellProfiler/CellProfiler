@@ -399,7 +399,6 @@ class TestFilterSetting(unittest.TestCase):
 
     def test_02_05_build_escaped_symbol(self):
         ugly = '(\\")'
-        expected = '\\(\\\\\\"\\)'
         f1 = cps.Filter.FilterPredicate(ugly, "Foo", lambda a, b: a == b, [])
         f = cps.Filter("", [f1])
         f.build([f1])

@@ -434,8 +434,6 @@ class LoadSingleImage(cpm.CPModule):
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
         col_labels = workspace.display_data.col_labels
-        title = "Load single image: image cycle # %d" % (
-            workspace.measurements.image_set_number + 1)
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0, statistics, col_labels=col_labels)
 

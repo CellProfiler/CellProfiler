@@ -306,7 +306,6 @@ class AnalysisRunner(object):
         posted_analysis_started = False
         acknowledged_thread_start = False
         measurements = None
-        workspace = None
         attach()
         try:
             # listen for pipeline events, and pass them upstream

@@ -529,7 +529,6 @@ def read_file_list(file_or_fd):
         if version != IMAGE_PLANE_DESCRIPTOR_VERSION:
             raise ValueError("Unable to read image plane details version # %d" % version)
         plane_count = int(properties[H_PLANE_COUNT])
-        header = read_fields(fd.next())
         result = []
         pattern = r'(?:"((?:[^\\]|\\.)+?)")?(?:,|\s+)'
         for i in range(plane_count):
@@ -762,16 +761,6 @@ class Pipeline(object):
         reload(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
         # attempt to reinstantiate pipeline with new modules
-        try:
-            self.copy()  # if this fails, we probably can't reload
-            fd = StringIO.StringIO()
-            self.save(fd)
-            fd.seek(0)
-            self.loadtxt(fd, raise_on_error=True)
-            return True
-        except Exception, e:
-            logging.warning("Modules reloaded, but could not reinstantiate pipeline with new versions.", exc_info=True)
-            return False
 
     def save_to_handles(self):
         """Create a numpy array representing this pipeline
@@ -961,7 +950,6 @@ class Pipeline(object):
         header = rl()
         if not self.is_pipeline_txt_fd(StringIO.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
-        version = NATIVE_VERSION
         from_matlab = False
         do_utf16_decode = False
         has_image_plane_details = False
@@ -1098,11 +1086,9 @@ class Pipeline(object):
                 #
                 # Decode the settings
                 #
-                last_module = False
                 while True:
                     line = rl()
                     if line is None:
-                        last_module = True
                         break
                     if len(line.strip()) == 0:
                         break
@@ -1131,8 +1117,6 @@ class Pipeline(object):
                 attribute_strings = attribute_string[1:-1].split('|')
                 variable_revision_number = None
                 # make batch_state decodable from text pipelines
-                array = np.array
-                uint8 = np.uint8
                 for a in attribute_strings:
                     if len(a.split(':')) != 2:
                         raise ValueError("Invalid attribute string: %s" % a)
@@ -1272,7 +1256,6 @@ class Pipeline(object):
         attributes = (
             'module_num', 'svn_version', 'variable_revision_number',
             'show_window', 'notes', 'batch_state', 'enabled', 'wants_pause')
-        notes_idx = 4
         for module in self.__modules:
             if ((modules_to_save is not None) and
                         module.module_num not in modules_to_save):
@@ -1422,8 +1405,6 @@ class Pipeline(object):
         preferences[SKIP_ERRORS][0, 0] = 'No'  # TODO - get from preferences
         preferences[DISPLAY_MODE_VALUE][0, 0] = [1]  # TODO - get from preferences
         preferences[FONT_SIZE][0, 0] = [10]  # TODO - get from preferences
-        preferences[DISPLAY_WINDOWS][0, 0] = [1 for module in
-                                              self.__modules]  # TODO - UI allowing user to choose whether to display a window
 
         images = {}
         if image_set:
@@ -1734,8 +1715,6 @@ class Pipeline(object):
                     yield None, None, None, lambda workspace: self.post_group(
                             workspace, grouping_keys)
 
-        columns = self.get_measurement_columns()
-
         if image_set_start is not None:
             assert isinstance(image_set_start, int), "Image set start must be an integer"
         if image_set_end is not None:
@@ -1765,8 +1744,6 @@ class Pipeline(object):
             if image_set_end is not None:
                 to_remove += [x for x in image_numbers
                               if x > image_set_end]
-                image_numbers = [x for x in image_numbers
-                                 if x <= image_set_end]
             if grouping is not None:
                 keys, groupings = self.get_groupings(workspace)
                 for grouping_keys, grouping_image_numbers in groupings:
@@ -1782,7 +1759,6 @@ class Pipeline(object):
             num_image_sets = len(measurements.get_image_numbers())
             image_set_count = -1
             is_first_image_set = True
-            last_image_number = None
             pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
             for group_number, group_index, image_number, closure \
                     in group(workspace):
@@ -1795,7 +1771,6 @@ class Pipeline(object):
                 image_set_count += 1
                 if not closure():
                     return
-                last_image_number = image_number
                 measurements.clear_cache()
                 for provider in measurements.providers:
                     provider.release_memory()
@@ -1806,8 +1781,6 @@ class Pipeline(object):
                     is_first_image_set = False
                 measurements.group_number = group_number
                 measurements.group_index = group_index
-                numberof_windows = 0;
-                slot_number = 0
                 object_set = cpo.ObjectSet()
                 image_set = measurements
                 outlines = {}
@@ -1824,7 +1797,6 @@ class Pipeline(object):
                         execution_time_measurement = ('ExecutionTime_%02d%s' %
                                                       (module.module_num,
                                                        module.module_name))
-                    failure = 1
                     exception = None
                     tb = None
                     frame_if_shown = frame if module.show_window else None
@@ -2254,13 +2226,7 @@ class Pipeline(object):
                     return "Failure"
             if module.show_window and \
                             module.__class__.display_post_run != CPModule.display_post_run:
-                try:
-                    workspace.post_run_display(module)
-                except Exception, instance:
-                    # Warn about display failure but keep going.
-                    logging.warn(
-                            "Caught exception during post_run_display for module %s." %
-                            module.module_name, exc_info=True)
+                pass
         workspace.measurements.add_experiment_measurement(
                 M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat())
 
@@ -2881,7 +2847,6 @@ class Pipeline(object):
             iscds = temp_measurements.get_channel_descriptors()
             metadata_key_names = temp_measurements.get_metadata_tags()
 
-            d = {}
             all_image_numbers = temp_measurements.get_image_numbers()
             if len(all_image_numbers) == 0:
                 return (iscds, metadata_key_names, {})
@@ -3174,7 +3139,6 @@ class Pipeline(object):
             pixels = metadata.image(series).Pixels
             if pixels.plane_count > 0:
                 for index in range(pixels.plane_count):
-                    addr = (series, index, None)
                     m = {}
                     plane = pixels.Plane(index)
                     c = plane.TheC
@@ -3214,7 +3178,6 @@ class Pipeline(object):
                 else:
                     color_format = ImagePlaneDetails.MD_MONOCHROME
                     n_channels = pixels.SizeC
-                n = 1
                 dims = []
                 for d in pixels.DimensionOrder[2:]:
                     if d == 'C':

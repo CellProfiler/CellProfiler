@@ -4076,7 +4076,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             # Read the object data too
             #
-            object_table = module.table_prefix.value + "Per_Object"
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ImageNumber, ObjectNumber" %
                          (OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
@@ -4108,7 +4107,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             # Read the object data
             #
-            object_table = module.table_prefix.value + "Per_Object"
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ImageNumber, ObjectNumber" %
                          (OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
@@ -4166,7 +4164,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             # Read the object data too
             #
-            object_table = module.table_prefix.value + "Per_Object"
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ImageNumber, ObjectNumber" %
                          (OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
@@ -4202,7 +4199,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             # Read the object data
             #
-            object_table = module.table_prefix.value + "Per_Object"
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ImageNumber, ObjectNumber" %
                          (OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
@@ -4435,7 +4431,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 #
                 # Read the object data too
                 #
-                object_table = module.table_prefix.value + "Per_Object"
                 statement = ("select ImageNumber, ObjectNumber, %s_%s "
                              "from %sPer_Object order by ImageNumber, ObjectNumber" %
                              (OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
@@ -4468,7 +4463,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
                 #
                 # Read the object data
                 #
-                object_table = module.table_prefix.value + "Per_Object"
                 statement = ("select ImageNumber, ObjectNumber, %s_%s "
                              "from %sPer_Object order by ImageNumber, ObjectNumber" %
                              (OBJECT_NAME, GROUP_OBJ_MEASUREMENT,
@@ -4524,7 +4518,6 @@ ExportToDatabase:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:
             #
             # Read the object data too
             #
-            object_table = module.table_prefix.value + "Per_Object"
             statement = ("select ImageNumber, ObjectNumber, %s_%s "
                          "from %sPer_Object order by ImageNumber, ObjectNumber" %
                          (OBJECT_NAME, GROUP_OBJ_MEASUREMENT,

@@ -603,10 +603,8 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         '''Track an object that moves'''
 
         labels_list = []
-        distance = 0
         last_i, last_j = (0, 0)
         for i_off, j_off in ((0, 0), (2, 0), (2, 1), (0, 1)):
-            distance = i_off - last_i + j_off - last_j
             last_i, last_j = (i_off, j_off)
             labels = np.zeros((10, 10), int)
             labels[4 + i_off:7 + i_off, 4 + j_off:7 + j_off] = 1
@@ -1131,11 +1129,10 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         #
         # Figure out how many new and lost objects per image set
         #
-        label_sets = [set() for i in range(nimages)]
         for row in objs:
             label_sets[row[0]].add(row[1])
         if group_numbers is None:
-            group_numbers = np.ones(nimages, int)
+            pass
         if group_indexes is None:
             group_indexes = np.arange(nimages) + 1
         #
@@ -1872,7 +1869,6 @@ TrackObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|sh
         module.prepare_run(cpw.Workspace(
                 pipeline, module, None, None, measurements, image_set_list))
 
-        first = True
         object_set = cpo.ObjectSet()
         objects = cpo.Objects()
         objects.segmented = np.zeros((640, 480), int)

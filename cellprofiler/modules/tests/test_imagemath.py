@@ -568,8 +568,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(10, 10)).astype(np.float32)}
-                      for i in range(n)]
             expected = reduce(np.add, [x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
@@ -584,9 +582,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(50, 50)).astype(np.float32),
-                       'mask': (np.random.uniform(size=(50, 50)) > .1)}
-                      for i in range(n)]
             expected = reduce(np.add, [x['pixel_data'] for x in images])
             mask = reduce(np.logical_and, [x['mask'] for x in images])
             output = self.run_imagemath(images, fn)
@@ -599,9 +594,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(50, 50)).astype(np.float32),
-                       'mask': (np.random.uniform(size=(50, 50)) > .1)}
-                      for i in range(n)]
             expected = reduce(np.add, [x['pixel_data'] for x in images])
             expected[expected > 1] = 1
             mask = reduce(np.logical_and, [x['mask'] for x in images])
@@ -620,8 +612,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         crop_mask[5:15, 5:15] = True
         for n in range(2, 3):
             for m in range(n):
-                images = [{'pixel_data': np.random.uniform(size=(20, 20)).astype(np.float32)}
-                          for i in range(n)]
                 for i, img in enumerate(images):
                     img['cropped_data'] = img['pixel_data'][5:15, 5:15]
                     if m == i:
@@ -635,8 +625,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         '''Test adding with factors'''
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(10, 10)).astype(np.float32)}
-                      for i in range(n)]
             factors = np.random.uniform(size=n)
             expected = reduce(np.add, [x['pixel_data'] * factor
                                        for x, factor in zip(images, factors)])
@@ -660,9 +648,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(50, 50)).astype(np.float32),
-                       'mask': (np.random.uniform(size=(50, 50)) > .1)}
-                      for i in range(n)]
             expected = reduce(np.add, [x['pixel_data'] for x in images])
             mask = reduce(np.logical_and, [x['mask'] for x in images])
             output = self.run_imagemath(images, fn)
@@ -677,8 +662,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(10, 10)).astype(np.float32)}
-                      for i in range(n)]
             expected = reduce(np.subtract, [x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
@@ -692,8 +675,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(10, 10)).astype(np.float32)}
-                      for i in range(n)]
             expected = reduce(np.subtract, [x['pixel_data'] for x in images])
             expected[expected < 0] = 0
             output = self.run_imagemath(images, fn)
@@ -706,8 +687,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(10, 10)).astype(np.float32)}
-                      for i in range(n)]
             expected = reduce(np.multiply, [x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
@@ -723,8 +702,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         r = np.random.RandomState()
         r.seed(52)
-        images = [{'pixel_data': np.random.uniform(size=(10, 10)) > .5}
-                  for i in range(2)]
         output = self.run_imagemath(images, fn)
         self.assertTrue(output.pixel_data.dtype == np.bool)
 
@@ -735,8 +712,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(10, 10)).astype(np.float32)}
-                      for i in range(n)]
             expected = reduce(np.divide, [x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
@@ -748,8 +723,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(10, 10)).astype(np.float32)}
-                      for i in range(n)]
             expected = reduce(np.add, [x['pixel_data'] for x in images]) / n
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
@@ -758,8 +731,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
         '''Test averaging with factors'''
         np.random.seed(0)
         for n in range(2, 5):
-            images = [{'pixel_data': np.random.uniform(size=(10, 10)).astype(np.float32)}
-                      for i in range(n)]
             factors = np.random.uniform(size=n)
             expected = reduce(np.add, [x['pixel_data'] * factor
                                        for x, factor in zip(images, factors)])
@@ -902,9 +873,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(1201)
         for n in range(2, 5):
-            images = [
-                {'pixel_data': np.random.uniform(size=(10, 10)) > .5}
-                for i in range(n)]
             expected = reduce(np.logical_or, [x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)
@@ -929,9 +897,6 @@ ImageMath:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:4|show_
 
         np.random.seed(1301)
         for n in range(2, 5):
-            images = [
-                {'pixel_data': np.random.uniform(size=(10, 10)) > .5}
-                for i in range(n)]
             expected = reduce(np.logical_and, [x['pixel_data'] for x in images])
             output = self.run_imagemath(images, fn)
             self.check_expected(output, expected)

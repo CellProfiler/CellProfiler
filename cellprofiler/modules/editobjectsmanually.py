@@ -335,7 +335,6 @@ class EditObjectsManually(I.Identify):
                     None, None)
             image = provider.provide_image(None)
             pixel_data = image.pixel_data
-            shape = pixel_data.shape[:2]
             labels = [pixel_data[:, :, i] for i in range(pixel_data.shape[2])]
         else:
             labels = None
@@ -356,7 +355,6 @@ class EditObjectsManually(I.Identify):
             if result != wx.OK:
                 return
             labels = dialog_box.labels
-        n_frames = len(labels)
         with wx.FileDialog(None,
                            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
 
@@ -511,7 +509,6 @@ class EditObjectsManually(I.Identify):
                               wants_outlines, outlines_name, renumber_or_retain]
             variable_revision_number = 1
             from_matlab = False
-            module_name = self.module_name
 
         if (not from_matlab) and variable_revision_number == 1:
             # Added wants image + image

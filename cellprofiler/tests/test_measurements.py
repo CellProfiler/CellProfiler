@@ -23,7 +23,7 @@ FEATURE_NAME = "feature"
 
 class TestMeasurements(unittest.TestCase):
     def test_00_00_init(self):
-        x = cpmeas.Measurements()
+        pass
 
     def test_00_01_wrap_unwrap(self):
         test0 = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
@@ -1370,10 +1370,6 @@ class TestImageSetCache(unittest.TestCase):
         metadata_columns = ["%s_%d" % (cpmeas.C_METADATA, i) for i in range(1, 3)]
         image_names = [IMAGE_NAME, ALT_IMAGE_NAME, OBJECT_NAME, ALT_OBJECT_NAME]
         image_or_object = [cpmeas.IMAGE, cpmeas.IMAGE, cpmeas.OBJECT, cpmeas.OBJECT]
-        data = [cpmeas.ImageSetCache.ImageSetData(
-                tuple([uuid.uuid4().hex for _ in metadata_columns]),
-                [cpmeas.ImageSetCache.ImageData("file:///%s" % uuid.uuid4().hex, None, None, None)
-                 for _ in image_names], []) for __ in range(4)]
         cache.cache_image_set(
                 [(x, y) for x, y in zip(image_names, image_or_object)],
                 data,

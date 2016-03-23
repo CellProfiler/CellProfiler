@@ -573,7 +573,6 @@ class StraightenWorms(cpm.CPModule):
     def measure_worms(self, workspace, labels, nworms, width):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        object_name = self.straightened_objects_name.value
         input_object_name = self.objects_name.value
         nbins_vertical = self.number_of_segments.value
         nbins_horizontal = self.number_of_stripes.value
@@ -877,9 +876,7 @@ class StraightenWorms(cpm.CPModule):
         image_set = workspace.image_set
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        object_name = self.straightened_objects_name.value
         orig_name = self.objects_name.value
-        nbins = len(scales)
         for group in self.images:
             image_name = group.straightened_image_name.value
             straightened_image = image_set.get_image(image_name).pixel_data
@@ -1230,7 +1227,6 @@ class StraightenWorms(cpm.CPModule):
 
             def on_mouse_over(event):
                 object_number = active_worm[0]
-                new_object_number = None
                 if event.inaxes == axes:
                     new_object_number = labels[
                         max(0, min(labels.shape[0] - 1, int(event.ydata + .5))),

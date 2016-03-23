@@ -48,7 +48,7 @@ class BitmapLabelButton(GenBitmapTextButton):
 
         label = self.GetLabel()
         if not self.up:
-            dx = dy = self.labelDelta
+            pass
 
         # Left justify the text after a little padding
         # Center.

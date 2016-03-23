@@ -954,7 +954,6 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         d_from_center = d_from_center[good_mask]
         bins = (d_from_center / 2).astype(int)
         bins[bins > 4] = 4
-        bin_counts = np.bincount(bins)
         image_sums = np.bincount(bins, image[good_mask])
         frac_at_d = image_sums / np.sum(image_sums)
         for i in range(1, 6):
@@ -1077,13 +1076,10 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         np.random.seed(43)
         labels = np.ones((30, 40), int)
         image = np.random.uniform(size=(20, 50))
-        m = self.run_module(image, labels)
         centers = np.zeros(labels.shape)
         centers[15, 20] = 1
-        m = self.run_module(image, labels, centers)
         centers = np.zeros((35, 35), int)
         centers[15, 20] = 1
-        m = self.run_module(image, labels, centers)
 
     def test_05_01_more_labels_than_centers(self):
         '''Regression test of img-1463'''
@@ -1112,7 +1108,6 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         #
         # Crash here prior to fix
         #
-        m = self.run_module(image, labels, center_labels)
 
     def test_05_02_more_centers_than_labels(self):
         '''Regression test of img-1463'''
@@ -1141,4 +1136,4 @@ MeasureObjectIntensityDistribution:[module_num:1|svn_version:\'Unknown\'|variabl
         #
         # Crash here prior to fix
         #
-        m = self.run_module(image, labels, center_labels)
+

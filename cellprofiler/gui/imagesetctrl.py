@@ -486,7 +486,6 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
         bkgnd_brush.Destroy()
         if self.Table.GetNumberCols() == 0:
             return
-        selected_col, hit_code, pressed = self.pressed_button
         cols = self.CalcColLabelsExposed(
                 self.GridColLabelWindow.GetUpdateRegion())
         x, y = self.CalcUnscrolledPosition((0, 0))
@@ -495,7 +494,6 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
         for col in cols:
             rect = self.get_column_rect(col)
             self.col_label_renderer.Draw(self, dc, rect, col)
-        rect = self.get_add_button_rect()
 
     HIT_NOTHING = 0
     HIT_LABEL = 1
@@ -884,7 +882,6 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
 
     def on_drop_files(self, x, y, filenames):
         self.refresh_drop_location()
-        row, col = self.drop_location
         self.drop_location = None
         pass
 
@@ -928,12 +925,11 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
     def remove_selection(self):
         if self.Table.controller is None:
             return
-        to_remove = [[] for col in range(self.GetNumberCols())]
         for row, col in self.get_selected_cells():
             to_remove[col].append(row)
         for rows in to_remove:
             if len(rows) > 0:
-                image_sets = self.Table
+                pass
 
     def recompute(self):
         '''Recompute the layout after a change to the image set'''

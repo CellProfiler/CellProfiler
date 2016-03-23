@@ -212,7 +212,6 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.corrected_image_name.value = "OutputImage"
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
-        measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
         workspace = cpw.Workspace(pipeline, None, None, None,
@@ -259,7 +258,6 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.corrected_image_name.value = "OutputImage"
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
-        measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
         workspace = cpw.Workspace(pipeline, None, None, None,
@@ -306,7 +304,6 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.corrected_image_name.value = "OutputImage"
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
-        measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
         workspace = cpw.Workspace(pipeline, None, None, None,

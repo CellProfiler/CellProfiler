@@ -446,7 +446,7 @@ class DirectoryPath(Text):
         if custom_path.startswith("\g<") and sys.platform.startswith("win"):
             # So ugly, the "\" sets us up for the root directory during
             # os.path.join, so we need r".\\" at start to fake everyone out
-            custom_path = r".\\" + custom_path
+            pass
 
         if self.dir_choice == DEFAULT_INPUT_FOLDER_NAME:
             pass
@@ -702,7 +702,6 @@ class Number(Text):
                  **kwargs):
         if isinstance(value, basestring):
             text_value = value
-            value = self.str_to_value(value)
         else:
             text_value = self.value_to_str(value)
         super(Number, self).__init__(text, text_value, *args, **kwargs)

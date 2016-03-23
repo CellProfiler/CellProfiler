@@ -83,9 +83,6 @@ class TestAlign(unittest.TestCase):
         fd = StringIO(zlib.decompress(base64.b64decode(data)))
         pipeline = cpp.Pipeline()
 
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
         pipeline.load(fd)
         #
         # The pipeline has three modules and Align is the third. It has
@@ -491,9 +488,6 @@ Name the second output image:AlignedImage2
         for offset in ((3, 5), (-3, 5), (3, -5), (-3, -5)):
             image1 = np.random.randint(0, 10, size=shape).astype(float) / 10.0
             image1[np.sqrt(((i - shape[0] / 2) ** 2 + (j - shape[1] / 2) ** 2)) < 20] = .5
-            si1, si2 = self.slice_helper(offset[0], image1.shape[0])
-            sj1, sj2 = self.slice_helper(offset[1], image1.shape[1])
-            image2 = np.zeros(image1.shape)
             image2 = image1[(i + shape[0] - offset[0]) % shape[0],
                             (j + shape[1] - offset[1]) % shape[1]]
             image2 += (np.random.uniform(size=shape) - .5) * .1 * np.std(image2)

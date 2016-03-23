@@ -528,7 +528,6 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 workspace.image_set.providers.append(output_image_provider)
         else:
             orig_image = workspace.image_set.get_image(self.image_name.value)
-            pixels = orig_image.pixel_data
             avg_image = self.preprocess_image_for_averaging(orig_image)
             dilated_image = self.apply_dilation(avg_image, orig_image)
             smoothed_image = self.apply_smoothing(dilated_image, orig_image)
@@ -596,7 +595,6 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             return f(x, y, image, *args, **kwargs)
 
         imshow(0, 0, avg_image, "Averaged image")
-        pixel_data = output_image
         imshow(0, 1, output_image,
                "Final illumination function",
                sharexy=figure.subplot(0, 0))

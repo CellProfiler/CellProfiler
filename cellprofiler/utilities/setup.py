@@ -29,7 +29,6 @@ if not hasattr(sys, 'frozen'):
 
     def configuration():
         extensions = []
-        extra_link_args = None
         if is_win:
             extra_link_args = ['/MANIFEST']
             extensions += [Extension(name="_get_proper_case_filename",

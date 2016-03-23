@@ -181,7 +181,6 @@ class MetadataControl(wx.PyControl):
             self.Refresh()
         elif pos < self.padding:
             self.offset = rawpos
-            pos = self.padding
             self.Refresh()
         elif rawpos + self.GetTextExtent("M")[0] < xsize:
             self.offset = 0
@@ -443,7 +442,6 @@ class MetadataControl(wx.PyControl):
         event.Skip()
 
     def hit_test(self, pos):
-        text = self.get_text(0, len(self.__tokens))
         dc = wx.ClientDC(self)
         dc.Font = self.Font
         positions = self.get_positions(dc)
@@ -554,7 +552,6 @@ class MetadataControl(wx.PyControl):
                 dc.SetClippingRect((self.padding, self.padding,
                                     self.ClientSize[0] - 2 * self.padding,
                                     self.ClientSize[1] - 2 * self.padding))
-            text = self.get_text(0, len(self.__tokens))
             positions = self.get_positions(dc)
 
             last_state = "unknown"
@@ -630,10 +627,6 @@ if __name__ == "__main__":
             super(MetadataDialog, self).__init__(*args, **kwargs)
             self.value = ""
             columns = pipeline.get_measurement_columns(module)
-            choices = [feature[(len(cpmeas.C_METADATA) + 1):]
-                       for object_name, feature, coltype in columns
-                       if object_name == cpmeas.IMAGE and
-                       feature.startswith(cpmeas.C_METADATA)]
 
             sizer = wx.GridBagSizer(3, 2)
             self.SetSizer(sizer)

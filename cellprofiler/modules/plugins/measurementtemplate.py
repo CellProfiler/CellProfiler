@@ -443,7 +443,6 @@ class MeasurementTemplate(cpm.CPModule):
 
     def get_measurement_name(self, n, m):
         '''Return the whole measurement name'''
-        input_image_name = self.input_image_name.value
         return '_'.join([C_MEASUREMENT_TEMPLATE,
                          self.get_feature_name(n, m)])
 

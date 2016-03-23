@@ -174,7 +174,6 @@ class IdentifyDeadWorms(cpm.CPModule):
         a = np.zeros(0, int)
 
         ig, jg = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
-        this_idx = 0
         for angle_number in range(angle_count):
             angle = float(angle_number) * np.pi / float(angle_count)
             strel = self.get_diamond(angle)

@@ -697,7 +697,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 try:
                     # If it's a floating point number, then the user
                     # was trying to type in a manual threshold
-                    ignore = float(setting_values[THRESHOLD_METHOD_VAR])
                     new_setting_values[THRESHOLD_METHOD_VAR] = cpthresh.TM_MANUAL
                     # Set the manual threshold to be the contents of the
                     # old threshold method variable and ignore the binary mask
@@ -941,8 +940,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         # Make an outline image
         outline_image = centrosome.outline.outline(labeled_image)
-        outline_size_excluded_image = centrosome.outline.outline(size_excluded_labeled_image)
-        outline_border_excluded_image = centrosome.outline.outline(border_excluded_labeled_image)
 
         if self.show_window:
             statistics = workspace.display_data.statistics
@@ -1354,8 +1351,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             figure.set_subplots((2, 2))
 
             orig_axes = figure.subplot(0, 0)
-            label_axes = figure.subplot(1, 0, sharexy=orig_axes)
-            outlined_axes = figure.subplot(0, 1, sharexy=orig_axes)
 
             title = "Input image, cycle #%d" % (workspace.measurements.image_number,)
             image = workspace.display_data.image

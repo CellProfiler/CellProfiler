@@ -179,138 +179,6 @@ class HDF5Dict(object):
                                        backing_store=False)
         else:
             self.hdf5_file = h5py.File(self.filename, mode)
-        try:
-            if load_measurements:
-                if (VERSION not in self.hdf5_file.keys() or
-                            top_level_group_name not in self.hdf5_file):
-                    load_measurements = False
-                    run_group_name = default_run_group_name
-                else:
-                    mgroup = self.hdf5_file[top_level_group_name]
-                    if run_group_name is None:
-                        if len(mgroup.keys()) > 0:
-                            run_group_name = sorted(mgroup.keys())[-1]
-                        else:
-                            run_group_name = default_run_group_name
-                            mgroup.create_group(run_group_name)
-                    self.top_group = mgroup[run_group_name]
-
-                if mode == "r" and not load_measurements:
-                    raise IOError(
-                            "%s was opened read-only but contains no measurements" %
-                            hdf5_filename)
-            if not load_measurements:
-                if VERSION not in self.hdf5_file.keys():
-                    vdataset = self.hdf5_file.create_dataset(
-                            VERSION, data=np.array([version_number], int))
-                self.version = VERSION
-                mgroup = self.hdf5_file.create_group(top_level_group_name)
-                self.top_group = mgroup.create_group(run_group_name)
-                self.indices = {}  # nested indices for data slices, indexed by (object, feature) then by numerical index
-            else:
-                self.version = self.hdf5_file[VERSION][0]
-                self.indices = {}
-
-            self.lock = HDF5Lock()
-
-            self.chunksize = 1024
-            if copy is not None:
-                if image_numbers is None:
-                    for object_name in copy.keys():
-                        object_group = copy[object_name]
-                        self.top_group.copy(object_group, self.top_group)
-                        for feature_name in object_group.keys():
-                            # some measurement objects are written at a higher level, and don't
-                            # have an index (e.g. Relationship).
-                            if 'index' in object_group[feature_name].keys():
-                                hdf5_index = object_group[feature_name]['index'][:]
-                                self.__cache_index(object_name, feature_name,
-                                                   hdf5_index)
-                            else:
-                                self.indices[object_name, feature_name] = {}
-                else:
-                    image_numbers = np.array(image_numbers)
-                    mask = np.zeros(np.max(image_numbers) + 1, bool)
-                    mask[image_numbers] = True
-                    for object_name in copy.keys():
-                        src_object_group = copy[object_name]
-                        if object_name == 'Experiment':
-                            self.top_group.copy(src_object_group, self.top_group)
-                            for feature_name in src_object_group.keys():
-                                hdf5_index = src_object_group[feature_name]['index'][:]
-                                self.__cache_index(object_name, feature_name,
-                                                   hdf5_index)
-                            continue
-                        dest_object_group = self.top_group.require_group(object_name)
-                        for feature_name in src_object_group.keys():
-                            src_feature_group = src_object_group[feature_name]
-                            if 'index' not in src_object_group[feature_name]:
-                                dest_object_group.copy(src_feature_group, dest_object_group)
-                                continue
-                            src_index_dataset = src_feature_group['index'][:]
-                            src_image_numbers = src_index_dataset[:, 0]
-                            max_image_number = np.max(src_image_numbers)
-                            if max_image_number >= len(mask):
-                                tmp = np.zeros(max_image_number + 1, bool)
-                                tmp[:len(mask)] = mask
-                                mask = tmp
-                            src_dataset = src_feature_group['data']
-                            src_index_dataset = \
-                                src_index_dataset[mask[src_index_dataset[:, 0]], :]
-                            #
-                            # Almost always, the fast case should work. We can
-                            # copy a data chunk from one to the other without
-                            # having to restructure.
-                            #
-                            found_bad_case = False
-                            for (prev_num_idx, prev_start, prev_stop), \
-                                (next_num_idx, next_start, next_stop) in zip(
-                                    src_index_dataset[:-1], src_index_dataset[1:]):
-                                if prev_stop != next_start:
-                                    found_bad_case = True
-                                    break
-                            if found_bad_case:
-                                for num_idx, start, stop in src_index_dataset:
-                                    self[object_name, feature_name, num_idx] = \
-                                        src_dataset[start:stop]
-                            else:
-                                src_off = src_index_dataset[0, 1]
-                                src_stop = src_index_dataset[-1, 2]
-                                dest_index_dataset = src_index_dataset.copy()
-                                dest_index_dataset[:, 1:] -= src_off
-                                dest_feature_group = dest_object_group.require_group(feature_name)
-                                dest_feature_group.create_dataset(
-                                        'index', data=dest_index_dataset.astype(int),
-                                        compression=None, shuffle=True,
-                                        chunks=(self.chunksize, 3),
-                                        maxshape=(None, 3))
-                                src_chunk = src_dataset[src_off:src_stop]
-                                #
-                                # Special handling for strings: create the
-                                # dataset using the variable length string type
-                                # and then set the data
-                                #
-                                if h5py.check_dtype(vlen=src_dataset.dtype) is str:
-                                    ds = dest_feature_group.create_dataset(
-                                            'data',
-                                            dtype=h5py.special_dtype(vlen=str),
-                                            compression='gzip', shuffle=True,
-                                            chunks=(self.chunksize,),
-                                            shape=src_chunk.shape,
-                                            maxshape=(None,))
-                                    if len(src_chunk) > 0:
-                                        ds[:] = src_chunk
-                                else:
-                                    dest_feature_group.create_dataset(
-                                            'data', data=src_chunk,
-                                            compression='gzip', shuffle=True,
-                                            chunks=(self.chunksize,),
-                                            maxshape=(None,))
-            self.hdf5_file.flush()
-        except Exception, e:
-            logger.exception("Failed during initial processing of %s" % self.filename)
-            self.hdf5_file.close()
-            raise
 
     def __del__(self):
         logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)
@@ -322,13 +190,7 @@ class HDF5Dict(object):
             # if close is called twice.
             return
         if self.is_temporary:
-            try:
-                self.hdf5_file.flush()  # just in case unlink fails
-                self.hdf5_file.close()
-                os.unlink(self.filename)
-            except Exception, e:
-                logger.warn(
-                        "So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
+            pass
         else:
             self.hdf5_file.flush()
             self.hdf5_file.close()
@@ -380,7 +242,7 @@ class HDF5Dict(object):
             indices = self.get_indices(object_name, feature_name)
             dataset = self.get_dataset(object_name, feature_name)
             if dataset is None or dataset.shape[0] == 0:
-                return [np.array([]) for image_number in num_idx]
+                pass
             if (len(indices) / 2 < len(num_idx)):
                 #
                 # Optimize by fetching complete dataset
@@ -506,7 +368,6 @@ class HDF5Dict(object):
         if len(idxs) > 3 and idxs[3] is not None:
             hdf5_type = idxs[3]
             all_null = False
-            hdf5_type_is_int = False
             hdf5_type_is_float = False
             hdf5_type_is_string = False
         else:
@@ -664,7 +525,7 @@ class HDF5Dict(object):
 
     def add_object(self, object_name):
         with self.lock:
-            object_group = self.top_group.require_group(object_name)
+            pass
 
     def has_feature(self, object_name, feature_name):
         if (object_name, feature_name) in self.indices:
@@ -674,7 +535,6 @@ class HDF5Dict(object):
 
     def add_feature(self, object_name, feature_name):
         with self.lock:
-            feature_group = self.top_group[object_name].require_group(feature_name)
             self.indices.setdefault((object_name, feature_name), {})
 
     def get_feature_dtype(self, object_name, feature_name):
@@ -1086,7 +946,6 @@ class HDF5FileList(object):
                     metadata = VStringArray(metadata_group, self.lock)
                     dest = VStringArray(g, self.lock)
                     leaves = list(dest)
-                    old_len = len(leaves)
                     to_add = set(d[k]).difference(leaves)
                     if len(to_add) > 0:
                         leaves += to_add
@@ -1129,7 +988,6 @@ class HDF5FileList(object):
 
     def remove_files_from_filelist(self, urls):
         self.__generation = uuid.uuid4()
-        group = self.get_filelist_group()
         d = {}
         for url in urls:
             schema, parts = self.split_url(url)
@@ -1667,7 +1525,6 @@ class HDF5ObjectSet(object):
                data = np.array([(100, 200, 1)], dtype)
         '''
         segmentation_group = self.__ensure_group(objects_name, segmentation_name)
-        create = False
         if not self.SPARSE in segmentation_group:
             create = True
         else:
@@ -2224,7 +2081,6 @@ class VStringArray(object):
         while lo < hi:
             mid = int((lo + hi) / 2)
             i0, i1 = self.index[mid]
-            l = min(slen, i1 - i0)
             for s0, s1 in zip(s, self.data[i0:i1]):
                 if s0 != s1:
                     break

@@ -2349,7 +2349,6 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
                   (slice(2, -2), -2),
                   (-2, slice(-3, 1, -1)),
                   (slice(-3, 1, -1), 1))
-        ii, jj = np.array((2, 0), int)
         ii = np.hstack([i[islice, jslice].flatten() for islice, jslice in slices])
         jj = np.hstack([j[islice, jslice].flatten() for islice, jslice in slices])
         expected_order[ii, jj] = np.arange(len(ii))
@@ -2791,7 +2790,6 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         columns = module.get_measurement_columns(workspace.pipeline)
         for column in columns:
             oname, feature = column[:2]
-            v = m.get_current_measurement(oname, feature)
 
     def test_10_02_nonoverlapping_outlines(self):
         params = zlib.decompress(base64.b64decode(PARAMS))

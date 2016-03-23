@@ -203,7 +203,6 @@ class CreateBatchFiles(cpm.CPModule):
         '''Invoke the image_set_list pickling mechanism and save the pipeline'''
 
         pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
 
         if pipeline.test_mode or self.from_old_matlab:
             return True

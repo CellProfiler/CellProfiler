@@ -559,14 +559,12 @@ class CPImageArtist(matplotlib.artist.Artist):
                 shape[i] = max(shape[i], image.pixel_data.shape[i])
         if any([x == 0 for x in shape]):
             return
-        border = self.get_border_count()
 
         vl = self.axes.viewLim
         view_xmin = int(max(0, min(vl.x0, vl.x1) - self.filterrad))
         view_ymin = int(max(0, min(vl.y0, vl.y1) - self.filterrad))
         view_xmax = int(min(shape[1], max(vl.x0, vl.x1) + self.filterrad))
         view_ymax = int(min(shape[0], max(vl.y0, vl.y1) + self.filterrad))
-        flip_ud = vl.y0 > vl.y1
         flip_lr = vl.x0 > vl.x1
         if shape[1] <= view_xmin or shape[1] <= - view_xmin or view_xmax <= 0:
             return
@@ -660,7 +658,6 @@ class CPImageArtist(matplotlib.artist.Artist):
                                 oshape[0] <= abs(view_ymin):
                     continue
                 mask, target_view = get_tile_and_target(om.outlines)
-                oalpha = (mask.astype(float) * om.alpha)
                 ocolor = om.color3
             elif isinstance(om, ObjectsData) and om.mode == MODE_OVERLAY:
                 oshape = om.outlines.shape
@@ -951,10 +948,6 @@ class CPImageArtist(matplotlib.artist.Artist):
         item = sub_menu.Append(my_id, self.MI_ALPHA)
         window = self.__get_window_from_event(event)
 
-        def set_alpha(alpha, data=data):
-            data.alpha = alpha
-            self.refresh()
-
         def on_alpha(event, data=data, msg=msg):
             self.__on_alpha_dlg(event, msg, data)
 
@@ -1066,7 +1059,6 @@ class CPImageArtist(matplotlib.artist.Artist):
         import wx
         assert isinstance(data, ColorMixin)
         color_data = wx.ColourData()
-        orig_color = data.color
         r, g, b = [int(x * 255) for x in data.color]
         color_data.SetColour(wx.Colour(r, g, b))
         window = self.__get_window_from_event(event)

@@ -612,7 +612,6 @@ class TestApplyThreshold(unittest.TestCase):
         module.two_class_otsu.value = I.O_THREE_CLASS
         module.assign_middle_to_foreground.value = I.O_BACKGROUND
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         m = workspace.measurements
         m_threshold = m[cpmeas.IMAGE, I.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
         self.assertAlmostEqual(m_threshold, threshold)

@@ -975,7 +975,6 @@ class TrackObjects(cpm.CPModule):
             from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
 
             figure = matplotlib.figure.Figure()
-            canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
             ax = figure.add_subplot(1, 1, 1)
             self.draw(objects.segmented, ax,
                       self.get_saved_object_numbers(workspace))
@@ -1021,8 +1020,6 @@ class TrackObjects(cpm.CPModule):
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         cm.set_bad((0, 0, 0))
         norm = matplotlib.colors.BoundaryNorm(range(256), 256)
-        img = ax.imshow(numpy.ma.array(recolored_labels, mask=(labels == 0)),
-                        cmap=cm, norm=norm)
         if self.display_type == DT_COLOR_AND_NUMBER:
             i, j = centers_of_labels(labels)
             for n, x, y in zip(object_numbers, j, i):
@@ -1074,7 +1071,6 @@ class TrackObjects(cpm.CPModule):
 
     def run_lapdistance(self, workspace, objects):
         '''Track objects based on distance'''
-        m = workspace.measurements
 
         old_i, old_j = self.get_saved_coordinates(workspace)
         n_old = len(old_i)
@@ -1112,7 +1108,6 @@ class TrackObjects(cpm.CPModule):
             #
             minDist = np.ones((n_old, n_new)) * self.radius_limit.max
             d = np.ones((n_old, n_new)) * np.inf
-            sd = np.zeros((n_old, n_new))
             # The index of the Kalman filter used: -1 means not used
             kalman_used = -np.ones((n_old, n_new), int)
             for nkalman, kalman_state in enumerate(kalman_states):
@@ -1137,9 +1132,6 @@ class TrackObjects(cpm.CPModule):
             # Linear assignment setup
             #
             n = len(old_i) + len(new_i)
-            kk = np.zeros((n + 10) * (n + 10), np.int32)
-            first = np.zeros(n + 10, np.int32)
-            cc = np.zeros((n + 10) * (n + 10), np.float)
             t = np.argwhere((d < minDist))
             x = np.sqrt((old_i[t[0:t.size, 0]] - new_i[t[0:t.size, 1]]) ** 2 + (
                 old_j[t[0:t.size, 0]] - new_j[t[0:t.size, 1]]) ** 2)
@@ -1524,8 +1516,6 @@ class TrackObjects(cpm.CPModule):
         # L is the ends
         # P includes all cells
 
-        X = 0
-        Y = 1
         IIDX = 2
         OIIDX = 3
         ONIDX = 4
@@ -1624,7 +1614,6 @@ class TrackObjects(cpm.CPModule):
         #
         # The offsets and lengths of the start/end node ranges
         #
-        start_end_off = 0
         start_end_len = len(L)
         gap_off = start_end_end = start_end_len
         gap_end = gap_off + start_end_len
@@ -1815,8 +1804,6 @@ class TrackObjects(cpm.CPModule):
         MDRIDX = 1  # index of right daughter
         MPIDX = 2  # index of parent
         mitoses_parent_lidx = mitoses[:, MPIDX]
-        mitoses_left_child_findx = mitoses[:, MDLIDX]
-        mitoses_right_child_findx = mitoses[:, MDRIDX]
         #
         # Create the ranges for mitoses
         #
@@ -1886,19 +1873,6 @@ class TrackObjects(cpm.CPModule):
             return "n%d[label=\"%s\"]" % (
                 node, fmt % (image_numbers[int(fl[idx, IIDX])],
                              int(fl[idx, ONIDX])))
-
-        def write_graph(path, x, y):
-            '''Write a graphviz DOT file'''
-            with open(path, "w") as fd:
-                fd.write("digraph trackobjects {\n")
-                graph_idx = np.where(
-                        (x != np.arange(len(x))) & (y != np.arange(len(y))))[0]
-                for idx in graph_idx:
-                    fd.write(desc(idx) + ";\n")
-                for idx in graph_idx:
-                    fd.write("n%d -> n%d [label=%0.2f];\n" %
-                             (idx, x[idx], score_matrix[idx, x[idx]]))
-                fd.write("}\n")
 
         #
         # --------------------------------------------------------
@@ -1996,7 +1970,6 @@ class TrackObjects(cpm.CPModule):
         b = -np.ones(len(F) + 1, dtype="int32")
         c = -np.ones(len(F) + 1, dtype="int32")
         d = -np.ones(len(F) + 1, dtype="int32")
-        z = np.zeros(len(F) + 1, dtype="int32")
 
         # relationships is a list of parent-child relationships. Each element
         # is a two-tuple of parent and child and each parent/child is a
@@ -2425,7 +2398,6 @@ class TrackObjects(cpm.CPModule):
             return np.zeros((0, 3), np.int32), np.zeros(0, np.int32)
         center_x = (F[i, X] + F[j, X]) / 2
         center_y = (F[i, Y] + F[j, Y]) / 2
-        frame = F[i, IIDX]
 
         # Find all parent-daughter pairs where the parent
         # is in the frame previous to the daughters
@@ -2460,7 +2432,6 @@ class TrackObjects(cpm.CPModule):
         image_index = np.zeros(np.max(image_numbers) + 1, int)
         image_index[image_numbers] = np.arange(len(image_numbers))
         image_index[0] = -1
-        index_to_imgnum = np.array(image_numbers)
 
         parent_image_numbers, parent_object_numbers = [
             [m.get_measurement(
@@ -2502,8 +2473,6 @@ class TrackObjects(cpm.CPModule):
         # Blow these up to one per object for convenience
         #
         ancestral_index = ancestral_index[labels]
-        ancestral_image_index = ancestral_image_index[labels]
-        ancestral_object_index = ancestral_object_index[labels]
 
         def start(image_index):
             '''Return the start index in the array for the given image index'''
@@ -2681,10 +2650,8 @@ class TrackObjects(cpm.CPModule):
         if old_count > 0 and new_count > 0:
             mapping[old_of_new != 0] = \
                 old_object_numbers[old_of_new[old_of_new != 0] - 1]
-            miss_count = np.sum(old_of_new == 0)
             lost_object_count = np.sum(new_of_old == 0)
         else:
-            miss_count = new_count
             lost_object_count = old_count
         nunmapped = np.sum(mapping == 0)
         new_max_object_number = max_object_number + nunmapped
@@ -2804,7 +2771,6 @@ class TrackObjects(cpm.CPModule):
         '''Rerun the kalman filters to improve the motion models'''
         m = workspace.measurements
         object_name = self.object_name.value
-        object_number = m[object_name, cpmeas.OBJECT_NUMBER, image_numbers]
 
         # ########################
         #
@@ -2825,10 +2791,6 @@ class TrackObjects(cpm.CPModule):
         area = np.hstack(
                 m[object_name,
                   self.measurement_name(F_AREA),
-                  image_numbers])
-        parent_image_number = np.hstack(
-                m[object_name,
-                  self.measurement_name(F_PARENT_IMAGE_NUMBER),
                   image_numbers])
         parent_object_number = np.hstack(
                 m[object_name,

@@ -782,7 +782,6 @@ class MeasureObjectIntensityDistribution(cpm.CPModule):
                 mask = (ijv[:, 0] < pixels.shape[0]) & \
                        (ijv[:, 1] < pixels.shape[1])
                 mask[mask] = image.mask[ijv[mask, 0], ijv[mask, 1]]
-                yx_ = yx[mask, :]
                 l_ = l[mask]
                 z_ = z[mask, :]
                 if len(l_) == 0:

@@ -174,7 +174,6 @@ class TestDefineGrid(unittest.TestCase):
         # Make two circles at 10,11 and 40, 92
         #
         first_x, first_y = (11, 10)
-        second_x, second_y = (92, 40)
         rows = 4
         columns = 10
         spacing_y = 10

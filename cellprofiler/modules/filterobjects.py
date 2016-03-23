@@ -559,7 +559,6 @@ class FilterObjects(cpm.CPModule):
         src_name = self.object_name.value
         src_objects_segmented = workspace.display_data.src_objects_segmented
         image = workspace.display_data.image
-        image_names = workspace.display_data.image_names
         target_objects_segmented = workspace.display_data.target_objects_segmented
 
         target_name = self.target_name.value
@@ -640,7 +639,6 @@ class FilterObjects(cpm.CPModule):
                                                                 measurement)
         wants_max = self.filter_choice == FI_MAXIMAL_PER_OBJECT
         src_labels = src_objects.segmented
-        src_count = src_objects.count
         if self.per_object_assignment == PO_PARENT_WITH_MOST_OVERLAP:
             #
             # Find the number of overlapping pixels in enclosing
@@ -1044,7 +1042,6 @@ class FilterObjects(cpm.CPModule):
                               rules_path_name,
                               rules_file_name]
             variable_revision_number = 3
-            module_name = self.module_name
             from_matlab = False
 
         if (not from_matlab) and variable_revision_number == 1:

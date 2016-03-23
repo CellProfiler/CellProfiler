@@ -292,7 +292,6 @@ class ImageMath(cpm.CPModule):
             if masks[i] is not None:
                 masks[i] = smallest_image.crop_image_similarly(masks[i])
         # weave in the measurements
-        idx = 0
         measurements = workspace.measurements
         assert isinstance(measurements, cpmeas.Measurements)
         for i in range(self.operand_count):

@@ -194,7 +194,6 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         return result
 
     def run(self, workspace):
-        m = workspace.measurements
         statistics = []
         for op in self.operands:
             if op.operand_choice == O_OBJECTS:

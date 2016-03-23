@@ -166,7 +166,6 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                                  list(output_file_names))
 
     def test_02_01_group_on_one(self):
-        groups = G.Groups()
         groups, workspace = self.make_image_sets(
                 (("Plate", ("P-12345", "P-23456")),
                  ("Well", ("A01", "A02", "A03")),
@@ -222,7 +221,6 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         self.assertTrue(groups.prepare_run(workspace))
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        image_numbers = m.get_image_numbers()
 
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)

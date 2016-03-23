@@ -396,7 +396,6 @@ class TestMeasureImageQuality(unittest.TestCase):
 
         # Check threshold algorithms
         threshold_group = module.image_groups[0].threshold_groups[0]
-        threshold_algorithm = threshold_group.threshold_algorithm
         f_mean, f_median, f_std = [
             threshold_group.threshold_feature_name(image_name, agg)
             for agg in miq.AGG_MEAN, miq.AGG_MEDIAN, miq.AGG_STD]
@@ -437,7 +436,6 @@ class TestMeasureImageQuality(unittest.TestCase):
 
         # Check threshold algorithms
         threshold_group = module.image_groups[0].threshold_groups[0]
-        threshold_algorithm = threshold_group.threshold_algorithm
         image_name = module.image_groups[0].image_names.value
         f_mean, f_median, f_std = [
             threshold_group.threshold_feature_name(image_name, agg)

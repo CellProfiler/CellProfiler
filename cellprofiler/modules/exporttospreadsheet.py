@@ -1168,7 +1168,6 @@ Do you want to save it anyway?""" %
             setting_values.append(cps.NO)
             variable_revision_number = 2
         if variable_revision_number == 2 and from_matlab:
-            wants_subdirectories = (setting_values[8] == cps.YES)
             object_names = [x for x in setting_values[:-1]
                             if x != cps.DO_NOT_USE]
             setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO,

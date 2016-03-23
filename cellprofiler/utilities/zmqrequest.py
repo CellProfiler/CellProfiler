@@ -38,7 +38,6 @@ def make_CP_encoder(buffers):
                     data = data.astype(np.int32)
             idx = len(buffers)
             buffers.append(np.ascontiguousarray(data))
-            dtype = str(data.dtype)
             return {'__ndarray__': True,
                     'dtype': str(data.dtype),
                     'shape': data.shape,

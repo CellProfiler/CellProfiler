@@ -126,7 +126,6 @@ class KnimeBridgeServer(threading.Thread):
                             session_id_frame = msg.pop(0)
                             session_id = str(session_id_frame.bytes)
                             # should be None
-                            wrapper = msg.pop(0)
                             message_type = msg.pop(0).bytes
                             if message_type not in self.dispatch:
                                 self.raise_cellprofiler_exception(
@@ -413,7 +412,6 @@ class KnimeBridgeServer(threading.Thread):
         int_features = []
         int_data = []
         string_features = []
-        string_data = []
         metadata = [double_features, float_features,
                     int_features, string_features]
 
@@ -445,7 +443,7 @@ class KnimeBridgeServer(threading.Thread):
                         continue
                     di = np.atleast_1d(di)
                     if len(di) > count:
-                        di = di[:count]
+                        pass
                     elif len(di) == count:
                         temp.append(di)
                     else:

@@ -324,16 +324,12 @@ class MeasureCorrelation(cpm.CPModule):
             tot_si_thr = si[(si > thr_si)].sum()
 
             # Mander's Coefficient
-            M1 = 0
-            M2 = 0
             M1 = fi_thresh.sum() / tot_fi_thr
             M2 = si_thresh.sum() / tot_si_thr
             result += [[first_image_name, second_image_name, "-", "Mander's Coefficient", "%.3f" % M1],
                        [second_image_name, first_image_name, "-", "Mander's Coefficient", "%.3f" % M2]]
 
             # RWC Coefficient
-            RWC1 = 0
-            RWC2 = 0
             Rank1 = np.lexsort([fi])
             Rank2 = np.lexsort([si])
             Rank1_U = np.hstack([[False], fi[Rank1[:-1]] != fi[Rank1[1:]]])
@@ -355,15 +351,12 @@ class MeasureCorrelation(cpm.CPModule):
                        [second_image_name, first_image_name, "-", "RWC Coefficient", "%.3f" % RWC2]]
 
             # Costes' Automated Threshold
-            C1 = 0
-            C2 = 0
             C1 = fi_thresh_c.sum() / tot_fi_thr_c
             C2 = si_thresh_c.sum() / tot_si_thr_c
             result += [[first_image_name, second_image_name, "-", "Mander's Coefficient (Costes)", "%.3f" % C1],
                        [second_image_name, first_image_name, "-", "Mander's Coefficient (Costes)", "%.3f" % C2]]
 
             # Overlap Coefficient
-            overlap = 0
             overlap = (fi_thresh * si_thresh).sum() / np.sqrt((fi_thresh ** 2).sum() * (si_thresh ** 2).sum())
             K1 = (fi_thresh * si_thresh).sum() / (fi_thresh ** 2).sum()
             K2 = (fi_thresh * si_thresh).sum() / (si_thresh ** 2).sum()
@@ -504,7 +497,6 @@ class MeasureCorrelation(cpm.CPModule):
             #                         ((n-1) * std(x) *std(y)))
             #
             lrange = np.arange(n_objects, dtype=np.int32) + 1
-            area = fix(scind.sum(np.ones_like(labels), labels, lrange))
             mean1 = fix(scind.mean(first_pixels, labels, lrange))
             mean2 = fix(scind.mean(second_pixels, labels, lrange))
             #

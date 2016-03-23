@@ -239,7 +239,6 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module.use_outlines.value = True
         module.outlines_name.value = OUTLINES
         module.run(workspace)
-        measurements = workspace.measurements
         output_labels = workspace.object_set.get_objects(TERTIARY).segmented
         output_outlines = workspace.image_set.get_image(OUTLINES,
                                                         must_be_binary=True)
@@ -346,7 +345,6 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         module = workspace.module
         module.shrink_primary.value = False
         module.run(workspace)
-        measurements = workspace.measurements
 
         output_objects = workspace.object_set.get_objects(TERTIARY)
         self.assertTrue(np.all(output_objects.segmented == expected_labels))
@@ -412,7 +410,6 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             for missing_primary in False, True:
                 primary_labels = np.zeros((20, 20), int)
                 secondary_labels = np.zeros((20, 20), int)
-                expected_labels = np.zeros((20, 20), int)
                 centers = ((5, 5), (15, 5), (5, 15))
                 pidx = 1
                 sidx = 1

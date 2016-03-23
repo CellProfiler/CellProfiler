@@ -156,7 +156,6 @@ class MergeOutputFiles(cpm.CPModule):
         if dlg.ShowModal() == wx.ID_OK:
             sources = []
             for i in range(list_control.ItemCount):
-                item_id = list_control.GetItemData(i)
                 path = list_control.GetItem(i, 0).GetText()
                 filename = list_control.GetItem(i, 1).GetText()
                 sources.append(os.path.join(path, filename))
@@ -376,7 +375,6 @@ class MergeOutputFiles(cpm.CPModule):
                         mdest[object_name,
                               feature,
                               offset_source_image_numbers] = src_values
-                    destset = set(destfeatures)
             if not is_headless:
                 keep_going, skip = progress.Update(count + 1, "Saving to " + destination)
                 if not keep_going:

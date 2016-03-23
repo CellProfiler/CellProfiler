@@ -377,8 +377,6 @@ class CPFileSelector(wx.Frame):
         notebook.AddPage(wx.Panel(notebook, -1), "Grouping")
 
         # panels
-        self.location = location = notebook.GetPage(0)
-        self.names = names = notebook.GetPage(1)
 
         border = wx.BoxSizer()
         border.Add(notebook, 1, wx.EXPAND | wx.ALL, 5)

@@ -466,7 +466,6 @@ class CalculateStatistics(cpm.CPModule):
                          module_name, from_matlab):
 
         PC_DEFAULT = "Default output folder"
-        PC_WITH_IMAGE = "Same folder as image"
 
         if from_matlab and variable_revision_number == 3:
             data_name = setting_values[0]
@@ -818,12 +817,10 @@ def write_figures(prefix, directory, dose_name,
     if log_transform:
         dose_data = np.log(dose_data)
     for i, (object_name, feature_name) in enumerate(feature_set):
-        fdata = data[:, i]
         fcoeffs = ec50_coeffs[i, :]
         filename = "%s%s_%s.pdf" % (prefix, object_name, feature_name)
         pathname = os.path.join(directory, filename)
         f = Figure()
-        canvas = FigureCanvasPdf(f)
         ax = f.add_subplot(1, 1, 1)
         x = np.linspace(0, np.max(dose_data), num=100)
         y = sigmoid(fcoeffs, x)

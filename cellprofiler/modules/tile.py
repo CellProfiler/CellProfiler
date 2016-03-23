@@ -304,8 +304,6 @@ class Tile(cpm.CPModule):
             d[TILE_HEIGHT] = tile_height
         else:
             output_pixels = d[TILED_IMAGE]
-            tile_width = d[TILE_WIDTH]
-            tile_height = d[TILE_HEIGHT]
 
         image_index = d[IMAGE_NUMBER]
         d[IMAGE_NUMBER] = image_index + 1
@@ -511,6 +509,5 @@ class Tile(cpm.CPModule):
             setting_values += image_names[1:]
             variable_revision_number = 1
             from_matlab = False
-            module_name = self.module_name
 
         return setting_values, variable_revision_number, from_matlab

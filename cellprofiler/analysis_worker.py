@@ -461,7 +461,6 @@ class AnalysisWorker(object):
                             req = ImageSetSuccess(
                                     self.current_analysis_id,
                                     image_set_number=image_set_number)
-                        rep = self.send(req)
                     except cpp.CancelledException:
                         logging.info("Aborting job after cancellation")
                         abort = True
@@ -501,7 +500,6 @@ class AnalysisWorker(object):
             req = MeasurementsReport(self.current_analysis_id,
                                      buf=current_measurements.file_contents(),
                                      image_set_numbers=image_set_numbers)
-            rep = self.send(req)
 
         except cpp.CancelledException:
             # Main thread received shutdown signal
@@ -543,13 +541,11 @@ class AnalysisWorker(object):
                              module_num=module.module_num,
                              display_data_dict=display_data.__dict__,
                              image_set_number=image_set_number)
-        rep = self.send(req)
 
     def post_group_display_handler(self, module, display_data, image_set_number):
         req = DisplayPostGroupRequest(
                 self.current_analysis_id,
                 module.module_num, display_data.__dict__, image_set_number)
-        rep = self.send(req)
 
     def omero_login_handler(self):
         '''Handle requests for an Omero login'''

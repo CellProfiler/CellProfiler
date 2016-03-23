@@ -365,7 +365,6 @@ class TestHDF5FileList(unittest.TestCase):
         self.assertEqual(s, D(E(s)))
 
     def test_02_01_get_new_filelist_group(self):
-        g = self.filelist.get_filelist_group()
         self.assertIn(H5DICT.FILE_LIST_GROUP, self.hdf_file)
         self.assertIn(H5DICT.DEFAULT_GROUP,
                       self.hdf_file[H5DICT.FILE_LIST_GROUP])
@@ -911,7 +910,6 @@ class TestHDF5ImageSet(HDF5DictTessstBase):
 
     def test_01_02_reinit(self):
         image_set = H5DICT.HDF5ImageSet(self.hdf_file)
-        image_set = H5DICT.HDF5ImageSet(self.hdf_file)
         self.assertEqual(image_set.root.name, "/" + H5DICT.IMAGES_GROUP)
 
     def test_02_01_set_and_get(self):
@@ -965,7 +963,7 @@ class TestHDF5ObjectSet(HDF5DictTessstBase):
     ALT_SEGMENTATION_NAME = "altsegmentationname"
 
     def test_01_01_init(self):
-        object_set = H5DICT.HDF5ObjectSet(self.hdf_file)
+        pass
 
     def test_01_02_set_has_get_dense(self):
         # Test set_dense, has_dense, get_dense
@@ -1112,7 +1110,6 @@ class TestHDFCSV(HDF5DictTessstBase):
 
     def test_02_01_add_column_empty(self):
         csv = H5DICT.HDFCSV(self.hdf_file, "csv")
-        column = csv.add_column("kolumn")
         self.assertTrue("kolumn" in csv.top_level_group)
 
     def test_02_02_add_column_with_data(self):
@@ -1316,7 +1313,6 @@ class TestVStringArray(HDF5DictTessstBase):
             self.assertEqual(s0, s1)
 
     def test_08_01_reopen(self):
-        strings = ["foo", "bar"]
         a = H5DICT.VStringArray(self.hdf_file)
         strings = ["foo", "bar"]
         a.set_all(strings)
@@ -1374,7 +1370,6 @@ class TestVStringArray(HDF5DictTessstBase):
         self.assertEqual(a.bisect_left(None), 0)
 
     def test_11_01_bisect_left(self):
-        a = H5DICT.VStringArray(self.hdf_file)
         r = np.random.RandomState()
         r.seed(1100)
         lengths = r.randint(3, 10, 100)
@@ -1454,7 +1449,7 @@ class TestVStringArray(HDF5DictTessstBase):
 
 class TestStringReference(HDF5DictTessstBase):
     def test_01_01_init(self):
-        sr = H5DICT.StringReferencer(self.hdf_file.create_group("test"))
+        pass
 
     def test_01_02_insert_one(self):
         sr = H5DICT.StringReferencer(self.hdf_file.create_group("test"))
@@ -1507,7 +1502,6 @@ class TestStringReference(HDF5DictTessstBase):
         for i in range(100):
             sr = H5DICT.StringReferencer(
                     self.hdf_file.create_group("test%d" % i), 4)
-            strings = [chr(65 + r.randint(0, 26)) for j in range(10)]
             result = sr.get_string_refs([strings])
             self.assertEqual(len(result), 10)
             rstrings = sr.get_strings(result)
@@ -1519,8 +1513,6 @@ class TestStringReference(HDF5DictTessstBase):
         for i in range(100):
             sr = H5DICT.StringReferencer(
                     self.hdf_file.create_group("test%d" % i), 4)
-            strings = [chr(65 + r.randint(0, 26)) + chr(65 + r.randint(0, 26))
-                       for j in range(50)]
             result = sr.get_string_refs([strings])
             self.assertEqual(len(result), 50)
             rstrings = sr.get_strings(result)

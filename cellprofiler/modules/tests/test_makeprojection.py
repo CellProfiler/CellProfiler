@@ -154,9 +154,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 """
         pipeline = cpp.Pipeline()
 
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
-
         pipeline.load(StringIO(data))
         methods = (M.P_AVERAGE, M.P_MAXIMUM, M.P_MINIMUM, M.P_SUM, M.P_VARIANCE,
                    M.P_POWER, M.P_BRIGHTFIELD)
@@ -227,8 +224,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_02_01_average(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10)).astype(np.float32), None)
-                            for i in range(3)]
         expected = np.zeros((10, 10), np.float32)
         for image, mask in images_and_masks:
             expected += image
@@ -240,9 +235,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_02_02_average_mask(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(100, 100)).astype(np.float32),
-                             np.random.uniform(size=(100, 100)) > .3)
-                            for i in range(3)]
         expected = np.zeros((100, 100), np.float32)
         expected_count = np.zeros((100, 100), np.float32)
         expected_mask = np.zeros((100, 100), bool)
@@ -259,8 +251,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_02_03_average_color(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32), None)
-                            for i in range(3)]
         expected = np.zeros((10, 10, 3), np.float32)
         for image, mask in images_and_masks:
             expected += image
@@ -272,9 +262,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_02_04_average_masked_color(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32),
-                             np.random.uniform(size=(10, 10)) > .3)
-                            for i in range(3)]
         expected = np.zeros((10, 10, 3))
         expected_count = np.zeros((10, 10), np.float32)
         expected_mask = np.zeros((10, 10), bool)
@@ -291,8 +278,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_03_01_maximum(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10)).astype(np.float32), None)
-                            for i in range(3)]
         expected = np.zeros((10, 10), np.float32)
         for image, mask in images_and_masks:
             expected = np.maximum(expected, image)
@@ -303,9 +288,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_03_02_maximum_mask(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(100, 100)).astype(np.float32),
-                             np.random.uniform(size=(100, 100)) > .3)
-                            for i in range(3)]
         expected = np.zeros((100, 100), np.float32)
         expected_mask = np.zeros((100, 100), bool)
         for image, mask in images_and_masks:
@@ -320,8 +302,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_03_03_maximum_color(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32), None)
-                            for i in range(3)]
         expected = np.zeros((10, 10, 3), np.float32)
         for image, mask in images_and_masks:
             expected = np.maximum(expected, image)
@@ -332,8 +312,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_04_01_variance(self):
         np.random.seed(41)
-        images_and_masks = [(np.random.uniform(size=(20, 10)).astype(np.float32), None)
-                            for i in range(10)]
         image = self.run_image_set(M.P_VARIANCE, images_and_masks)
         images = np.array([x[0] for x in images_and_masks])
         x = np.sum(images, 0)
@@ -343,7 +321,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_05_01_power(self):
         image = np.ones((20, 10))
-        images_and_masks = [(image.copy(), None) for i in range(9)]
         for i, (img, _) in enumerate(images_and_masks):
             img[5, 5] *= np.sin(2 * np.pi * float(i) / 9.0)
         image_out = self.run_image_set(M.P_POWER, images_and_masks, frequency=9)
@@ -353,7 +330,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_06_01_brightfield(self):
         image = np.ones((20, 10))
-        images_and_masks = [(image.copy(), None) for i in range(9)]
         for i, (img, _) in enumerate(images_and_masks):
             if i < 5:
                 img[:5, :5] = 0
@@ -366,8 +342,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_07_01_minimum(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10)).astype(np.float32), None)
-                            for i in range(3)]
         expected = np.ones((10, 10), np.float32)
         for image, mask in images_and_masks:
             expected = np.minimum(expected, image)
@@ -378,9 +352,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_07_02_minimum_mask(self):
         np.random.seed(72)
-        images_and_masks = [(np.random.uniform(size=(100, 100)).astype(np.float32),
-                             np.random.uniform(size=(100, 100)) > .3)
-                            for i in range(3)]
         expected = np.ones((100, 100), np.float32)
         expected_mask = np.zeros((100, 100), bool)
         for image, mask in images_and_masks:
@@ -397,8 +368,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_07_03_minimum_color(self):
         np.random.seed(0)
-        images_and_masks = [(np.random.uniform(size=(10, 10, 3)).astype(np.float32), None)
-                            for i in range(3)]
         expected = np.ones((10, 10, 3), np.float32)
         for image, mask in images_and_masks:
             expected = np.minimum(expected, image)
@@ -409,8 +378,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_08_01_mask_unmasked(self):
         np.random.seed(81)
-        images_and_masks = [(np.random.uniform(size=(10, 10)), None)
-                            for i in range(3)]
         image = self.run_image_set(M.P_MASK, images_and_masks)
         self.assertEqual(tuple(image.pixel_data.shape), (10, 10))
         self.assertTrue(np.all(image.pixel_data == True))
@@ -418,9 +385,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
 
     def test_08_02_mask(self):
         np.random.seed(81)
-        images_and_masks = [(np.random.uniform(size=(10, 10)),
-                             np.random.uniform(size=(10, 10)) > .3)
-                            for i in range(3)]
         expected = np.ones((10, 10), bool)
         for _, mask in images_and_masks:
             expected = expected & mask
@@ -435,8 +399,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         from the image set.
         '''
         np.random.seed(81)
-        images_and_masks = [(np.random.uniform(size=(10, 10)), None)
-                            for i in range(3)]
         image = self.run_image_set(M.P_AVERAGE, images_and_masks,
                                    run_last=False)
         np.testing.assert_array_almost_equal(

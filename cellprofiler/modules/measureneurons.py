@@ -441,8 +441,6 @@ class MeasureNeurons(cpm.CPModule):
                     end_points,
                     intensity_image.pixel_data)
 
-            image_number = workspace.measurements.image_set_number
-
             edge_path, vertex_path = self.get_graph_file_paths(m, m.image_number)
             workspace.interaction_request(
                     self, m.image_number, edge_path, edge_graph,
@@ -517,7 +515,6 @@ class MeasureNeurons(cpm.CPModule):
             vertex_graph = workspace.display_data.vertex_graph
             i = vertex_graph["i"]
             j = vertex_graph["j"]
-            kind = vertex_graph["kind"]
             brightness = edge_graph["total_intensity"] / edge_graph["length"]
             brightness = ((brightness - np.min(brightness)) /
                           (np.max(brightness) - np.min(brightness) + .000001))
@@ -663,7 +660,6 @@ class MeasureNeurons(cpm.CPModule):
         # First, break the skeleton by removing the branchpoints, endpoints
         # and trunks
         #
-        broken_skeleton = skeleton & (~points_of_interest)
         #
         # Label the broken skeleton: this labels each edge differently
         #

@@ -3,9 +3,11 @@ import wx.lib.scrolledpanel as scrolledpanel
 
 
 class ScrollableText(scrolledpanel.ScrolledPanel):
-    def __init__(self, parent, id=-1, text=[[('black', 'adsf')]]):
+    def __init__(self, parent, id=-1, text=None):
         scrolledpanel.ScrolledPanel.__init__(self, parent, id)
 
+        if text is None:
+            text = [[('black', 'adsf')]]
         self.SetBackgroundColour('white')
         self.SetVirtualSize((1500, 1500))
         self.SetupScrolling(True, True)

@@ -437,19 +437,3 @@ def display_error_message(parent, message, title, buttons=None,
         button_sizer.Realize()
         dlg.Fit()
         return dlg.ShowModal()
-
-
-if __name__ == "__main__":
-    import wx
-    import cellprofiler.pipeline
-    import cellprofiler.modules.loadimages
-
-    try:
-        float("my boat")
-    except Exception, e:
-        app = wx.PySimpleApp()
-        pipeline = cellprofiler.pipeline.Pipeline()
-        module = cellprofiler.modules.loadimages.LoadImages()
-        module.module_num = 1
-        pipeline.add_module(module)
-        display_error_dialog(None, e, pipeline)

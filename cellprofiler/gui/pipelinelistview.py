@@ -18,10 +18,6 @@ import os
 import zlib
 import wx
 import sys
-
-if __name__ == "__main__":
-    app = wx.PySimpleApp(False)
-
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect

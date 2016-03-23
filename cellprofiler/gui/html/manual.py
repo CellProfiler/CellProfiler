@@ -327,39 +327,3 @@ def __search_menu_helper(menu, search_fn):
             return [(menu[0], menu[1], matches)]
         return []
     return sum(map(lambda x: __search_menu_helper(x, search_fn), menu[1]), [])
-
-
-if __name__ == "__main__":
-    import wx
-    import wx.html
-
-    app = wx.PySimpleApp(True)
-    frame = wx.Frame(None, title="Search the help")
-    frame.Sizer = wx.BoxSizer(wx.VERTICAL)
-    search_sizer = wx.BoxSizer(wx.HORIZONTAL)
-    frame.Sizer.Add(search_sizer, 0, wx.EXPAND | wx.ALL, 5)
-    search_sizer.Add(wx.StaticText(frame, label="Search:"), 0, wx.ALIGN_LEFT)
-    search_sizer.AddSpacer(2)
-    text = wx.TextCtrl(frame)
-    search_sizer.Add(text, 1, wx.EXPAND)
-    search_sizer.AddSpacer(2)
-    button = wx.Button(frame, label="Search")
-    search_sizer.Add(button, 0, wx.EXPAND)
-
-    htmlwindow = wx.html.HtmlWindow(frame)
-    frame.Sizer.Add(htmlwindow, 1, wx.EXPAND)
-
-
-    def do_search(event):
-        search_text = text.Value
-        html = search_module_help(search_text)
-        if html is None:
-            html = "<html><header><title>%s not found</title><header><body>So sorry, %s not found</body></html>" % (
-                search_text, search_text)
-        htmlwindow.SetPage(html)
-
-
-    button.Bind(wx.EVT_BUTTON, do_search)
-    frame.Layout()
-    frame.Show()
-    app.MainLoop()

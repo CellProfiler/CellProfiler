@@ -125,12 +125,3 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                     my_url = "file:" + urllib.pathname2url(full_path)
                 return my_url
         return wx.html.HTML_OPEN
-
-
-if __name__ == '__main__':
-    app = wx.App(0)
-    frame = wx.Frame(None, -1, 'foo', (500, 500))
-    htmlwin = HtmlClickableWindow(frame, wx.ID_ANY, style=wx.NO_BORDER)
-    frame.Show(True)
-    frame.Center()
-    app.MainLoop()

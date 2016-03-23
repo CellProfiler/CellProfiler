@@ -83,17 +83,3 @@ class ScrollableText(scrolledpanel.ScrolledPanel):
             mmax = max(max_line, mmax)
             ri.Next()
         self.draw_lines(DC, mmin, mmax, lineheight)
-
-
-if __name__ == '__main__':
-    class MainFrame(wx.Frame):
-        def __init__(self, parent):
-            wx.Frame.__init__(self, parent, -1)
-            t = [[('black', l[:len(l) / 2]), ('red', l[len(l) / 2:])] for l in open('scrollable_text.py')]
-            self.scrollable = ScrollableText(self, -1, t)
-
-
-    app = wx.PySimpleApp(None, -1)
-    frame = MainFrame(parent=None)
-    frame.Show()
-    app.MainLoop()

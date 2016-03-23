@@ -618,17 +618,3 @@ def parse(s, state):
         state.token_labels[state.open_expression_start] = STYLE_ERROR
         raise ValueError("Incomplete expression")
     return state
-
-
-if __name__ == "__main__":
-    import wx.lib.inspection
-
-
-    class MyApp(wx.App):
-        @staticmethod
-        def OnInit():
-            return True
-
-
-    app = MyApp(0)
-    edit_regexp(None, "(?P<foo>foo)", "Where is the food?")

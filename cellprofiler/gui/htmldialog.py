@@ -39,10 +39,3 @@ class HTMLDialog(wx.Dialog):
         self.SetSizer(sizer)
         html.SetFocus()
         # self.Layout()
-
-
-if __name__ == "__main__":
-    app = wx.PySimpleApp()
-    dialog = HTMLDialog(None, "Title", long_text)
-    choice = dialog.Show()
-    app.MainLoop()

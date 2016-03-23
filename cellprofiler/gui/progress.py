@@ -216,9 +216,3 @@ class ProgressFrame(wx.Frame):
             per_module_estimates[module_index:] *= self.num_image_sets - self.image_set_index
             per_module_estimates[module_index] -= current_module_so_far
             return per_module_estimates.sum()
-
-
-if __name__ == '__main__':
-    app = wx.PySimpleApp()
-    frame = ProgressFrame(None).Show()
-    app.MainLoop()

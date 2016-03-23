@@ -398,15 +398,3 @@ class PreferencesDlg(wx.Dialog):
         name, size = font.split(",")
         cpprefs.set_table_font_name(name)
         cpprefs.set_table_font_size(float(size))
-
-
-if __name__ == '__main__':
-    class MyApp(wx.App):
-        @staticmethod
-        def OnInit():
-            dlg = PreferencesDlg()
-            dlg.show_modal()
-            return 1
-
-
-    app = MyApp(0)

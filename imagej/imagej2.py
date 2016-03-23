@@ -6,8 +6,6 @@ logger = logging.getLogger(__name__)
 
 import numpy as np
 import os
-import sys
-import time
 
 import javabridge as J
 

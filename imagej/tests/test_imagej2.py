@@ -2,7 +2,6 @@
 
 import unittest
 
-import bioformats
 import javabridge as J
 import numpy as np
 

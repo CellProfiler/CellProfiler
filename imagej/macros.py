@@ -2,12 +2,8 @@
 
 __version__ = "$Revision$"
 
-import sys
-
-import bioformats
 import javabridge as J
 
-from cellprofiler.preferences import get_headless
 from imagej.imageplus import get_imageplus_wrapper
 
 

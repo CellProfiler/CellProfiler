@@ -49,8 +49,8 @@ from centrosome.propagate import propagate
 from numpy.ma import masked_array
 from scipy.sparse import coo_matrix
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
@@ -120,7 +120,7 @@ MEASUREMENT_ALIASES = {
     A_RADIAL_CV: MF_RADIAL_CV}
 
 
-class MeasureObjectIntensityDistribution(cpm.CPModule):
+class MeasureObjectIntensityDistribution(cpm.Module):
     module_name = "MeasureObjectIntensityDistribution"
     category = "Measurement"
     variable_revision_number = 5

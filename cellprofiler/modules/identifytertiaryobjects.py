@@ -58,8 +58,8 @@ import matplotlib.cm
 import numpy as np
 from centrosome.outline import outline
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
@@ -74,7 +74,7 @@ R_PARENT = "Parent"
 R_REMOVED = "Removed"
 
 
-class IdentifyTertiaryObjects(cpm.CPModule):
+class IdentifyTertiaryObjects(cpm.Module):
     module_name = "IdentifyTertiaryObjects"
     variable_revision_number = 2
     category = "Object Processing"

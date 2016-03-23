@@ -18,8 +18,8 @@ set_headless()
 
 import cellprofiler.workspace as cpw
 import cellprofiler.pipeline as cpp
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
@@ -409,7 +409,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         # First, make sure that a naked CPModule tests valid
         #
         pipeline = cpp.Pipeline()
-        module = cpm.CPModule()
+        module = cpm.Module()
         module.module_num = len(pipeline.modules()) + 1
         pipeline.add_module(module)
         pipeline.test_valid()
@@ -422,7 +422,7 @@ CreateBatchFiles:[module_num:19|svn_version:\'Unknown\'|variable_revision_number
         pipeline.add_module(module)
         pipeline.test_valid()
 
-        module = cpm.CPModule()
+        module = cpm.Module()
         module.module_num = len(pipeline.modules()) + 1
         pipeline.add_module(module)
         self.assertRaises(cps.ValidationError, pipeline.test_valid)

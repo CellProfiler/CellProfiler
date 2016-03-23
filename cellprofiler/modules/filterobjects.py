@@ -40,8 +40,8 @@ from scipy.sparse import coo_matrix
 import traceback
 
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -99,7 +99,7 @@ PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
 
-class FilterObjects(cpm.CPModule):
+class FilterObjects(cpm.Module):
     module_name = 'FilterObjects'
     category = "Object Processing"
     variable_revision_number = 7

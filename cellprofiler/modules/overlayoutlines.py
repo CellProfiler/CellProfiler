@@ -12,8 +12,8 @@ import centrosome.outline
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 
@@ -45,7 +45,7 @@ NUM_OUTLINE_SETTINGS_V3 = 4
 NUM_OUTLINE_SETTINGS = 4
 
 
-class OverlayOutlines(cpm.CPModule):
+class OverlayOutlines(cpm.Module):
     module_name = 'OverlayOutlines'
     variable_revision_number = 3
     category = "Image Processing"

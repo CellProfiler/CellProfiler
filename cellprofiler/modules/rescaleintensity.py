@@ -10,8 +10,8 @@ do not preserve the relative intensities from image to image.
 import numpy as np
 from centrosome.filter import stretch
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
@@ -48,7 +48,7 @@ HIGH_EACH_IMAGE = 'Maximum for each image'
 HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 
 
-class RescaleIntensity(cpm.CPModule):
+class RescaleIntensity(cpm.Module):
     module_name = "RescaleIntensity"
     category = "Image Processing"
     variable_revision_number = 2

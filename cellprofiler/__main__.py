@@ -1,12 +1,12 @@
 import h5py
 import logging
 import logging.config
-import re
-import sys
+import numpy
 import os
-import numpy as np
+import re
+import StringIO
+import sys
 import tempfile
-from cStringIO import StringIO
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"
@@ -27,12 +27,11 @@ if sys.platform.startswith('win'):
         libzmq = os.path.join(here, 'libzmq.dll')
         if os.path.exists(libzmq):
             ctypes.cdll.LoadLibrary(libzmq)
-import zmq
 
 #
 # CellProfiler expects NaN as a result during calculation
 #
-np.seterr(all='ignore')
+numpy.seterr(all='ignore')
 #
 # Defeat pyreadline which graciously sets its logging to DEBUG and it
 # appears when CP is frozen
@@ -79,9 +78,9 @@ def main(args=None):
             if arg == "--ij-plugins-directory" and len(args) > i + 1:
                 cpprefs.set_ij_plugin_directory(args[i + 1])
                 break
-        import cellprofiler.analysis_worker
-        cellprofiler.analysis_worker.aw_parse_args()
-        cellprofiler.analysis_worker.main()
+        import cellprofiler.worker
+        cellprofiler.worker.aw_parse_args()
+        cellprofiler.worker.main()
         sys.exit(0)
 
     options, args = parse_args(args)
@@ -208,7 +207,7 @@ def main(args=None):
         if options.show_gui:
             import wx
             wx.Log.EnableLogging(False)
-            from cellprofiler.cellprofilerapp import CellProfilerApp
+            from cellprofiler.application import Application
             from cellprofiler.workspace import is_workspace_file
 
             if options.pipeline_filename:
@@ -224,7 +223,7 @@ def main(args=None):
             else:
                 workspace_path = None
                 pipeline_path = None
-            App = CellProfilerApp(
+            App = Application(
                     0,
                     check_for_new_version=(options.pipeline_filename is None),
                     workspace_path=workspace_path,
@@ -711,7 +710,7 @@ def get_batch_commands(filename):
     if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
         group_numbers = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers]
         group_indexes = m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers]
-        if np.any(group_numbers != 1) and np.all(
+        if numpy.any(group_numbers != 1) and numpy.all(
                         (group_indexes[1:] == group_indexes[:-1] + 1) |
                         ((group_indexes[1:] == 1) &
                              (group_numbers[1:] == group_numbers[:-1] + 1))):
@@ -719,8 +718,8 @@ def get_batch_commands(filename):
             # Do -f and -l if more than one group and group numbers
             # and indices are properly constructed
             #
-            bins = np.bincount(group_numbers)
-            cumsums = np.cumsum(bins)
+            bins = numpy.bincount(group_numbers)
+            cumsums = numpy.cumsum(bins)
             prev = 0
             for i, off in enumerate(cumsums):
                 if off == prev:
@@ -778,62 +777,6 @@ def run_ilastik():
     imp.load_module('__main__', il_file, il_path, il_description)
 
 
-def build_extensions():
-    '''Compile C and Cython files as needed'''
-    import subprocess
-    import cellprofiler.utilities.setup
-    from distutils.dep_util import newer_group
-    #
-    # Check for dependencies and compile if necessary
-    #
-    compile_scripts = [(os.path.join('cellprofiler', 'utilities', 'mac_setup.py'), cellprofiler.utilities.setup)]
-    env = os.environ.copy()
-    old_pythonpath = os.getenv('PYTHONPATH', None)
-
-    # if we're using a local site_packages, the subprocesses will need
-    # to be able to find it.
-
-    if old_pythonpath:
-        env['PYTHONPATH'] = site_packages + os.pathsep + old_pythonpath
-    else:
-        env['PYTHONPATH'] = site_packages
-
-    use_mingw = (sys.platform == 'win32' and sys.version_info[0] <= 2 and
-                 sys.version_info[1] <= 5)
-    for key in list(env.keys()):
-        value = env[key]
-        if isinstance(key, unicode):
-            key = key.encode("utf-8")
-        if isinstance(value, unicode):
-            value = value.encode("utf-8")
-        env[key] = value
-    for compile_script, my_module in compile_scripts:
-        script_path, script_file = os.path.split(compile_script)
-        script_path = os.path.join(root, script_path)
-        configuration = my_module.configuration()
-        needs_build = False
-        for extension in configuration['ext_modules']:
-            target = extension.name + '.pyd'
-            if newer_group(extension.sources, target):
-                needs_build = True
-        if not needs_build:
-            continue
-        if use_mingw:
-            p = subprocess.Popen([sys.executable,
-                                  script_file,
-                                  "build_ext", "-i",
-                                  "--compiler=mingw32"],
-                                 cwd=script_path,
-                                 env=env)
-        else:
-            p = subprocess.Popen([sys.executable,
-                                  script_file,
-                                  "build_ext", "-i"],
-                                 cwd=script_path,
-                                 env=env)
-        p.communicate()
-
-
 def run_pipeline_headless(options, args):
     '''Run a CellProfiler pipeline in headless mode'''
     #
@@ -866,9 +809,9 @@ def run_pipeline_headless(options, args):
         else:
             image_set_end = int(options.last_image_set)
             if image_set_start is None:
-                image_set_numbers = np.arange(1, image_set_end + 1)
+                image_set_numbers = numpy.arange(1, image_set_end + 1)
             else:
-                image_set_numbers = np.arange(image_set_start, image_set_end + 1)
+                image_set_numbers = numpy.arange(image_set_start, image_set_end + 1)
     else:
         image_set_end = None
 
@@ -892,7 +835,7 @@ def run_pipeline_headless(options, args):
             initial_measurements.get_experiment_measurement(
                     M_PIPELINE)
         pipeline_text = pipeline_text.encode('us-ascii')
-        pipeline.load(StringIO(pipeline_text))
+        pipeline.load(StringIO.StringIO(pipeline_text))
         if not pipeline.in_batch_mode():
             #
             # Need file list in order to call prepare_run

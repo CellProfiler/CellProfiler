@@ -116,7 +116,7 @@ import os
 import numpy as np
 import scipy.optimize
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
@@ -133,7 +133,7 @@ VARIABLE_SETTING_COUNT = 5
 PC_CUSTOM = "Custom"
 
 
-class CalculateStatistics(cpm.CPModule):
+class CalculateStatistics(cpm.Module):
     module_name = "CalculateStatistics"
     category = "Data Tools"
     variable_revision_number = 2

@@ -3,21 +3,14 @@
     TO-DO: capture and save module revision #s in the handles
 """
 
-import os
-import re
 import sys
 import uuid
-
-import numpy as np
-
-import cellprofiler.cpimage
-import cellprofiler.measurements
-import cellprofiler.objects
-import cellprofiler.settings as cps
-import pipeline as cpp
+import numpy
+import cellprofiler.settings
+import pipeline
 
 
-class CPModule(object):
+class Module(object):
     """ Derive from the abstract module class to create your own module in Python
 
     You need to implement the following in the derived class:
@@ -72,7 +65,7 @@ class CPModule(object):
         self.__as_data_tool = False
         self.shared_state = {}  # used for maintaining state between modules, see get_dictionary()
         self.id = uuid.uuid4()
-        self.batch_state = np.zeros((0,), np.uint8)
+        self.batch_state = numpy.zeros((0,), numpy.uint8)
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
         # attribute in the class definition or by assigning to it in
@@ -82,8 +75,8 @@ class CPModule(object):
         self.create_settings()
 
     def __setattr__(self, slot, value):
-        if hasattr(self, slot) and isinstance(getattr(self, slot), cps.Setting):
-            assert isinstance(value, cps.Setting), \
+        if hasattr(self, slot) and isinstance(getattr(self, slot), cellprofiler.settings.Setting):
+            assert isinstance(value, cellprofiler.settings.Setting), \
                 ("Overwriting %s's %s existing Setting with value of type %s.\nUse __dict__['%s'] = ... to override." %
                  (self.module_name, slot, type(value), slot))
         object.__setattr__(self, slot, value)
@@ -111,32 +104,32 @@ class CPModule(object):
         """
         self.__module_num = module_num
         idx = module_num - 1
-        settings = handles[cpp.SETTINGS][0, 0]
+        settings = handles[pipeline.SETTINGS][0, 0]
         setting_values = []
         self.__notes = []
-        if (settings.dtype.fields.has_key(cpp.MODULE_NOTES) and
-                    settings[cpp.MODULE_NOTES].shape[1] > idx):
-            n = settings[cpp.MODULE_NOTES][0, idx].flatten()
+        if (settings.dtype.fields.has_key(pipeline.MODULE_NOTES) and
+                    settings[pipeline.MODULE_NOTES].shape[1] > idx):
+            n = settings[pipeline.MODULE_NOTES][0, idx].flatten()
             for x in n:
-                if isinstance(x, np.ndarray):
+                if isinstance(x, numpy.ndarray):
                     if len(x) == 0:
                         x = ''
                     else:
                         x = x[0]
                 self.__notes.append(x)
-        if settings.dtype.fields.has_key(cpp.SHOW_WINDOW):
-            self.__show_window = settings[cpp.SHOW_WINDOW][0, idx] != 0
-        if settings.dtype.fields.has_key(cpp.BATCH_STATE):
+        if settings.dtype.fields.has_key(pipeline.SHOW_WINDOW):
+            self.__show_window = settings[pipeline.SHOW_WINDOW][0, idx] != 0
+        if settings.dtype.fields.has_key(pipeline.BATCH_STATE):
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
-            self.batch_state = np.array(settings[cpp.BATCH_STATE][0, idx].tostring())
-        setting_count = settings[cpp.NUMBERS_OF_VARIABLES][0, idx]
-        variable_revision_number = settings[cpp.VARIABLE_REVISION_NUMBERS][0, idx]
-        module_name = settings[cpp.MODULE_NAMES][0, idx][0]
+            self.batch_state = numpy.array(settings[pipeline.BATCH_STATE][0, idx].tostring())
+        setting_count = settings[pipeline.NUMBERS_OF_VARIABLES][0, idx]
+        variable_revision_number = settings[pipeline.VARIABLE_REVISION_NUMBERS][0, idx]
+        module_name = settings[pipeline.MODULE_NAMES][0, idx][0]
         for i in range(0, setting_count):
-            value_cell = settings[cpp.VARIABLE_VALUES][idx, i]
-            if isinstance(value_cell, np.ndarray):
-                if np.product(value_cell.shape) == 0:
+            value_cell = settings[pipeline.VARIABLE_VALUES][idx, i]
+            if isinstance(value_cell, numpy.ndarray):
+                if numpy.product(value_cell.shape) == 0:
                     setting_values.append('')
                 else:
                     setting_values.append(str(value_cell[0]))
@@ -242,27 +235,27 @@ class CPModule(object):
 
     def save_to_handles(self, handles):
         module_idx = self.module_num - 1
-        setting = handles[cpp.SETTINGS][0, 0]
-        setting[cpp.MODULE_NAMES][0, module_idx] = unicode(self.module_class())
-        setting[cpp.MODULE_NOTES][0, module_idx] = np.ndarray(shape=(len(self.notes), 1), dtype='object')
+        setting = handles[pipeline.SETTINGS][0, 0]
+        setting[pipeline.MODULE_NAMES][0, module_idx] = unicode(self.module_class())
+        setting[pipeline.MODULE_NOTES][0, module_idx] = numpy.ndarray(shape=(len(self.notes), 1), dtype='object')
         for i in range(0, len(self.notes)):
-            setting[cpp.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
-        setting[cpp.NUMBERS_OF_VARIABLES][0, module_idx] = len(self.settings())
+            setting[pipeline.MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
+        setting[pipeline.NUMBERS_OF_VARIABLES][0, module_idx] = len(self.settings())
         for i in range(0, len(self.settings())):
             variable = self.settings()[i]
             if len(str(variable)) > 0:
-                setting[cpp.VARIABLE_VALUES][module_idx, i] = variable.get_unicode_value()
-            if isinstance(variable, cps.NameProvider):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode("%s indep" % (variable.group))
-            elif isinstance(variable, cps.NameSubscriber):
-                setting[cpp.VARIABLE_INFO_TYPES][module_idx, i] = unicode(variable.group)
-        setting[cpp.VARIABLE_REVISION_NUMBERS][0, module_idx] = self.variable_revision_number
-        setting[cpp.MODULE_REVISION_NUMBERS][0, module_idx] = 0
-        setting[cpp.SHOW_WINDOW][0, module_idx] = 1 if self.show_window else 0
+                setting[pipeline.VARIABLE_VALUES][module_idx, i] = variable.get_unicode_value()
+            if isinstance(variable, cellprofiler.settings.NameProvider):
+                setting[pipeline.VARIABLE_INFO_TYPES][module_idx, i] = unicode("%s indep" % (variable.group))
+            elif isinstance(variable, cellprofiler.settings.NameSubscriber):
+                setting[pipeline.VARIABLE_INFO_TYPES][module_idx, i] = unicode(variable.group)
+        setting[pipeline.VARIABLE_REVISION_NUMBERS][0, module_idx] = self.variable_revision_number
+        setting[pipeline.MODULE_REVISION_NUMBERS][0, module_idx] = 0
+        setting[pipeline.SHOW_WINDOW][0, module_idx] = 1 if self.show_window else 0
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[cpp.BATCH_STATE][0, module_idx] = np.fromstring(self.batch_state.tostring(), np.uint8)
+        setting[pipeline.BATCH_STATE][0, module_idx] = numpy.fromstring(self.batch_state.tostring(), numpy.uint8)
 
     def in_batch_mode(self):
         '''Return True if the module knows that the pipeline is in batch mode'''
@@ -300,11 +293,11 @@ class CPModule(object):
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
-        except cps.ValidationError, instance:
+        except cellprofiler.settings.ValidationError, instance:
             raise instance
         except Exception, e:
-            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
-                                      self.visible_settings()[0])
+            raise cellprofiler.settings.ValidationError("Exception in cpmodule.test_valid %s" % e,
+                                                        self.visible_settings()[0])
 
     def test_module_warnings(self, pipeline):
         """Test to see if there are any troublesome setting values in the module
@@ -317,11 +310,11 @@ class CPModule(object):
             for setting in self.visible_settings():
                 setting.test_setting_warnings(pipeline)
             self.validate_module_warnings(pipeline)
-        except cps.ValidationError, instance:
+        except cellprofiler.settings.ValidationError, instance:
             raise instance
         except Exception, e:
-            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e,
-                                      self.visible_settings()[0])
+            raise cellprofiler.settings.ValidationError("Exception in cpmodule.test_valid %s" % e,
+                                                        self.visible_settings()[0])
 
     def validate_module(self, pipeline):
         '''Implement this to validate module settings
@@ -819,7 +812,7 @@ class CPModule(object):
     def is_image_from_file(self, image_name):
         """Return True if this module loads this image name from a file."""
         for setting in self.settings():
-            if (isinstance(setting, cps.FileImageNameProvider) and
+            if (isinstance(setting, cellprofiler.settings.FileImageNameProvider) and
                         setting.value == image_name):
                 return True
         return False
@@ -845,7 +838,7 @@ class CPModule(object):
         that uses the DirectoryPath setting.
         '''
         for setting in self.visible_settings():
-            if isinstance(setting, cps.DirectoryPath):
+            if isinstance(setting, cellprofiler.settings.DirectoryPath):
                 return True
         return False
 

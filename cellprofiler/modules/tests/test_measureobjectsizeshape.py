@@ -17,7 +17,7 @@ import cellprofiler.modules.injectimage as ii
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 
 OBJECTS_NAME = "myobjects"
 

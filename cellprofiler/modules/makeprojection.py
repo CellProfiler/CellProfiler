@@ -31,8 +31,8 @@ See also the help for the <b>Input</b> modules.
 
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
 import cellprofiler.settings as cps
 
 P_AVERAGE = 'Average'
@@ -49,7 +49,7 @@ P_ALL = [P_AVERAGE, P_MAXIMUM, P_MINIMUM, P_SUM, P_VARIANCE, P_POWER,
 K_PROVIDER = "Provider"
 
 
-class MakeProjection(cpm.CPModule):
+class MakeProjection(cpm.Module):
     module_name = 'MakeProjection'
     category = 'Image Processing'
     variable_revision_number = 2

@@ -35,7 +35,7 @@ logger = logging.getLogger(__package__)
 
 import numpy as np
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -56,7 +56,7 @@ MC_ALL = [MC_IMAGE, MC_OBJECT]
 C_MATH = "Math"
 
 
-class CalculateMath(cpm.CPModule):
+class CalculateMath(cpm.Module):
     module_name = "CalculateMath"
     category = "Data Tools"
     variable_revision_number = 2

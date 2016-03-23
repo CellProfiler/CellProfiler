@@ -13,7 +13,7 @@ import zipfile
 from cStringIO import StringIO
 from urllib2 import urlopen
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
@@ -83,7 +83,7 @@ else:
         return '/'.join(rel_list)
 
 
-class CreateWebPage(cpm.CPModule):
+class CreateWebPage(cpm.Module):
     module_name = "CreateWebPage"
     category = "Other"
     variable_revision_number = 2

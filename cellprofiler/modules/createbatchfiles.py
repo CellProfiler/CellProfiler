@@ -34,8 +34,8 @@ import sys
 import urllib
 import zlib
 
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpm
+import cellprofiler.image as cpi
+import cellprofiler.module as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
@@ -51,7 +51,7 @@ S_FIXED_COUNT = 9
 S_PER_MAPPING = 2
 
 
-class CreateBatchFiles(cpm.CPModule):
+class CreateBatchFiles(cpm.Module):
     #
     # How it works:
     #

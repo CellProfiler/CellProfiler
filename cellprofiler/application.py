@@ -1,28 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
 
-import cStringIO
+import cellprofiler.gui.errordialog
+import preferences
+import utilities.thread_excepthook
 import sys
-
 import wx
 
-import cellprofiler.preferences as cpp
-from cellprofiler.gui.errordialog import display_error_dialog
-from cellprofiler.icons import get_builtin_image
-# Make sure sys.excepthook is called for any uncaught exceptions, even in threads.
-import cellprofiler.utilities.thread_excepthook
-
-cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
+utilities.thread_excepthook.install_thread_sys_excepthook()
 
 
-class CellProfilerApp(wx.App):
+class Application(wx.App):
     def __init__(self, *args, **kwargs):
         # allow suppression of version checking (primarily for nosetests).
         self.check_for_new_version = kwargs.pop('check_for_new_version', False)
         self.workspace_path = kwargs.pop('workspace_path', None)
         self.pipeline_path = kwargs.pop('pipeline_path', None)
         self.abort_initialization = False
-        super(CellProfilerApp, self).__init__(*args, **kwargs)
+        super(Application, self).__init__(*args, **kwargs)
 
     def OnInit(self):
         # The wx.StandardPaths aren't available until this is set.
@@ -44,9 +39,9 @@ class CellProfilerApp(wx.App):
         # set up error dialog for uncaught exceptions
         def show_errordialog(type, exc, tb):
             def doit():
-                cpp.cancel_progress()
-                display_error_dialog(self.frame, exc, None, tb=tb, continue_only=True,
-                                     message="Exception in CellProfiler core processing")
+                cellprofiler.preferences.cancel_progress()
+
+                cellprofiler.gui.errordialog.display_error_dialog(self.frame, exc, None, tb=tb, continue_only=True, message="Exception in CellProfiler core processing")
                 # continue is really the only choice
 
             wx.CallAfter(doit)
@@ -67,9 +62,8 @@ class CellProfilerApp(wx.App):
         sys.excepthook = self.orig_excepthook
 
     def new_version_check(self, force=False):
-        if cpp.get_check_new_versions() or force:
+        if preferences.get_check_new_versions() or force:
             import cellprofiler.utilities.check_for_updates as cfu
-            import platform
             import cellprofiler.utilities.version
 
             version_string = cellprofiler.utilities.version.version_string
@@ -77,7 +71,7 @@ class CellProfilerApp(wx.App):
             version_number = cellprofiler.utilities.version.version_number
             self.version = version_number
             cfu.check_for_updates('http://cellprofiler.org/CPupdate.html',
-                                  0 if force else max(version_number, cpp.get_skip_version()),
+                                  0 if force else max(version_number, cellprofiler.preferences.get_skip_version()),
                                   self.new_version_cb,
                                   user_agent='CellProfiler/%s %s' % (dotted_version, version_string))
 
@@ -85,10 +79,10 @@ class CellProfilerApp(wx.App):
         # called from a child thread, so use CallAfter to bump it to the gui thread
         def cb2():
             def set_check_pref(val):
-                cpp.set_check_new_versions(val)
+                cellprofiler.preferences.set_check_new_versions(val)
 
             def skip_this_version():
-                cpp.set_skip_version(new_version)
+                cellprofiler.preferences.set_skip_version(new_version)
 
             if new_version <= self.version:
                 # special case: force must have been set in new_version_check, so give feedback to the user.
@@ -98,15 +92,13 @@ class CellProfilerApp(wx.App):
             import cellprofiler.gui.newversiondialog as nvd
             dlg = nvd.NewVersionDialog(None, "CellProfiler update available (version %d)" % (new_version),
                                        new_version_info, 'http://cellprofiler.org/download.htm',
-                                       cpp.get_check_new_versions(), set_check_pref, skip_this_version)
+                                       cellprofiler.preferences.get_check_new_versions(), set_check_pref, skip_this_version)
             dlg.ShowModal()
             dlg.Destroy()
 
         wx.CallAfter(cb2)
 
 
-# end of class CellProfilerApp
-
 if __name__ == "__main__":
-    CellProfilerApp = CellProfilerApp(0)
+    CellProfilerApp = Application(0)
     CellProfilerApp.MainLoop()

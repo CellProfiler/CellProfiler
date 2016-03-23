@@ -7,7 +7,7 @@ import wx
 import wx.lib.scrolledpanel
 from scipy.io.matlab.mio import loadmat
 
-import cellprofiler.cpimage as cpi
+import cellprofiler.image as cpi
 import cellprofiler.gui.cpfigure as cpf
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo

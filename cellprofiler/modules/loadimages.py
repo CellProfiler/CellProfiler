@@ -61,8 +61,8 @@ import scipy.io.matlab.mio
 import uuid
 
 import cellprofiler.objects as cpo
-import cellprofiler.cpmodule as cpmodule
-import cellprofiler.cpimage as cpimage
+import cellprofiler.module as cpmodule
+import cellprofiler.image as cpimage
 import cellprofiler.measurements as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
@@ -227,7 +227,7 @@ def default_cpimage_name(index):
     return 'Channel%d' % (index + 1)
 
 
-class LoadImages(cpmodule.CPModule):
+class LoadImages(cpmodule.Module):
     module_name = "LoadImages"
     variable_revision_number = 11
     category = "File Processing"

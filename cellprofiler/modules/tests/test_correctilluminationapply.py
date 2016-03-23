@@ -17,8 +17,8 @@ set_headless()
 
 import cellprofiler.modules.correctilluminationapply as cpmcia
 import cellprofiler.modules.injectimage as inj
-import cellprofiler.cpmodule as cpm
-import cellprofiler.cpimage as cpi
+import cellprofiler.module as cpm
+import cellprofiler.image as cpi
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo

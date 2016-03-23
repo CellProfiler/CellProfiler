@@ -174,8 +174,8 @@ import re
 import scipy.stats
 
 import identify as cpmi
-import cellprofiler.cpmodule
-import cellprofiler.cpimage as cpi
+import cellprofiler.module
+import cellprofiler.image as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO

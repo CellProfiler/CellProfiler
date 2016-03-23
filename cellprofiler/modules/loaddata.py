@@ -165,7 +165,7 @@ except:
     from StringIO import StringIO
 import matplotlib.mlab
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
@@ -311,7 +311,7 @@ def make_objects_file_name_feature(objects_name):
     return C_OBJECTS_FILE_NAME + '_' + objects_name
 
 
-class LoadData(cpm.CPModule):
+class LoadData(cpm.Module):
     module_name = "LoadData"
     category = 'File Processing'
     variable_revision_number = 6

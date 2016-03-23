@@ -80,7 +80,7 @@ except:
     logger.warning("MySQL could not be loaded.", exc_info=True)
     HAS_MYSQL_DB = False
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
 import cellprofiler.preferences as cpprefs
@@ -341,7 +341,7 @@ class DBContext(object):
         self.connection.close()
 
 
-class ExportToDatabase(cpm.CPModule):
+class ExportToDatabase(cpm.Module):
     module_name = "ExportToDatabase"
     variable_revision_number = 27
     category = ["File Processing", "Data Tools"]

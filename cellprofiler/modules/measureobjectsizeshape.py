@@ -113,7 +113,7 @@ See also <b>MeasureImageAreaOccupied</b>.
 import numpy as np
 import scipy.ndimage as scind
 
-import cellprofiler.cpmodule as cpm
+import cellprofiler.module as cpm
 import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 from cellprofiler.settings import YES, NO
@@ -165,7 +165,7 @@ F_STANDARD = [F_AREA, F_ECCENTRICITY, F_SOLIDITY, F_EXTENT,
               F_MIN_FERET_DIAMETER, F_MAX_FERET_DIAMETER]
 
 
-class MeasureObjectSizeShape(cpm.CPModule):
+class MeasureObjectSizeShape(cpm.Module):
     module_name = "MeasureObjectSizeShape"
     variable_revision_number = 1
     category = 'Measurement'

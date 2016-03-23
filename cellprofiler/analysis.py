@@ -1,40 +1,32 @@
 """analysis.py - Run pipelines on imagesets to produce measurements.
 """
-from __future__ import with_statement
 
-import Queue
-import cStringIO as StringIO
+import cellprofiler
+import cellprofiler.image
+import cellprofiler.measurements
+import cellprofiler.preferences
+import cellprofiler.utilities.zmqrequest
+import cellprofiler.workspace
 import collections
-import gc
 import logging
 import multiprocessing
+import numpy
 import os
 import os.path
+import Queue
+import StringIO
 import subprocess
 import sys
 import tempfile
 import threading
 import uuid
-
-import h5py
-import numpy as np
 import zmq
-
-import cellprofiler
-import cellprofiler.cpimage as cpimage
-import cellprofiler.measurements as cpmeas
-import cellprofiler.preferences as cpprefs
-import cellprofiler.workspace as cpw
-from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
-from cellprofiler.utilities.zmqrequest import get_announcer_address
-from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
 
 logger = logging.getLogger(__name__)
 
 use_analysis = True
 
 DEBUG = 'DEBUG'
-ANNOUNCE_DONE = "DONE"
 
 
 class Analysis(object):
@@ -72,11 +64,10 @@ class Analysis(object):
         to measurements_filename, optionally starting with previous
         measurements.'''
         self.pipeline = pipeline
-        initial_measurements = cpmeas.Measurements(copy=initial_measurements)
+        initial_measurements = cellprofiler.measurements.Measurements(copy=initial_measurements)
         self.initial_measurements_buf = initial_measurements.file_contents()
         initial_measurements.close()
         self.output_path = measurements_filename
-        self.debug_mode = False
         self.analysis_in_progress = False
         self.runner = None
 
@@ -167,7 +158,6 @@ class AnalysisRunner(object):
     STATUS_IN_PROCESS = "InProcess"
     STATUS_FINISHED_WAITING = "FinishedWaitingMeasurements"
     STATUS_DONE = "Done"
-    STATUSES = [STATUS_UNPROCESSED, STATUS_IN_PROCESS, STATUS_FINISHED_WAITING, STATUS_DONE]
 
     def __init__(self, analysis_id, pipeline,
                  initial_measurements_buf,
@@ -316,14 +306,14 @@ class AnalysisRunner(object):
             if self.output_path is None:
                 # Caller wants a temporary measurements file.
                 fd, filename = tempfile.mkstemp(
-                        ".h5", dir=cpprefs.get_temporary_directory())
+                        ".h5", dir=cellprofiler.preferences.get_temporary_directory())
                 try:
                     fd = os.fdopen(fd, "wb")
                     fd.write(self.initial_measurements_buf)
                     fd.close()
-                    initial_measurements = cpmeas.Measurements(
+                    initial_measurements = cellprofiler.measurements.Measurements(
                             filename=filename, mode="r")
-                    measurements = cpmeas.Measurements(
+                    measurements = cellprofiler.measurements.Measurements(
                             image_set_start=None,
                             copy=initial_measurements,
                             mode="a")
@@ -334,13 +324,13 @@ class AnalysisRunner(object):
             else:
                 with open(self.output_path, "wb") as fd:
                     fd.write(self.initial_measurements_buf)
-                measurements = cpmeas.Measurements(image_set_start=None,
-                                                   filename=self.output_path,
-                                                   mode="a")
+                measurements = cellprofiler.measurements.Measurements(image_set_start=None,
+                                                                      filename=self.output_path,
+                                                                      mode="a")
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
-            workspace = cpw.Workspace(self.pipeline, None, None, None,
-                                      measurements, cpimage.ImageSetList())
+            workspace = cellprofiler.workspace.Workspace(self.pipeline, None, None, None,
+                                                         measurements, cellprofiler.image.ImageSetList())
 
             if image_set_end is None:
                 image_set_end = measurements.get_image_numbers()[-1]
@@ -356,14 +346,14 @@ class AnalysisRunner(object):
             if self.pipeline.requires_aggregation():
                 overwrite = True
             if has_groups and not overwrite:
-                if not measurements.has_feature(cpmeas.IMAGE, self.STATUS):
+                if not measurements.has_feature(cellprofiler.measurements.IMAGE, self.STATUS):
                     overwrite = True
                 else:
                     group_status = {}
                     for image_number in measurements.get_image_numbers():
                         group_number = measurements[
-                            cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number]
-                        status = measurements[cpmeas.IMAGE, self.STATUS,
+                            cellprofiler.measurements.IMAGE, cellprofiler.measurements.GROUP_NUMBER, image_number]
+                        status = measurements[cellprofiler.measurements.IMAGE, self.STATUS,
                                               image_number]
                         if status != self.STATUS_DONE:
                             group_status[group_number] = self.STATUS_UNPROCESSED
@@ -375,17 +365,17 @@ class AnalysisRunner(object):
                 needs_reset = False
                 if (overwrite or
                         (not measurements.has_measurements(
-                                cpmeas.IMAGE, self.STATUS, image_set_number)) or
-                        (measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
+                                cellprofiler.measurements.IMAGE, self.STATUS, image_set_number)) or
+                        (measurements[cellprofiler.measurements.IMAGE, self.STATUS, image_set_number]
                              != self.STATUS_DONE)):
                     needs_reset = True
                 elif has_groups:
                     group_number = measurements[
-                        cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
+                        cellprofiler.measurements.IMAGE, cellprofiler.measurements.GROUP_NUMBER, image_set_number]
                     if group_status[group_number] != self.STATUS_DONE:
                         needs_reset = True
                 if needs_reset:
-                    measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = \
+                    measurements[cellprofiler.measurements.IMAGE, self.STATUS, image_set_number] = \
                         self.STATUS_UNPROCESSED
                     new_image_sets_to_process.append(image_set_number)
             image_sets_to_process = new_image_sets_to_process
@@ -396,11 +386,11 @@ class AnalysisRunner(object):
                 worker_runs_post_group = True
                 job_groups = {}
                 for image_set_number in image_sets_to_process:
-                    group_number = measurements[cpmeas.IMAGE,
-                                                cpmeas.GROUP_NUMBER,
+                    group_number = measurements[cellprofiler.measurements.IMAGE,
+                                                cellprofiler.measurements.GROUP_NUMBER,
                                                 image_set_number]
-                    group_index = measurements[cpmeas.IMAGE,
-                                               cpmeas.GROUP_INDEX,
+                    group_index = measurements[cellprofiler.measurements.IMAGE,
+                                               cellprofiler.measurements.GROUP_INDEX,
                                                image_set_number]
                     job_groups[group_number] = job_groups.get(group_number, []) + [(group_index, image_set_number)]
                 job_groups = [[isn for _, isn in sorted(job_groups[group_number])]
@@ -437,7 +427,7 @@ class AnalysisRunner(object):
                 while not self.received_measurements_queue.empty():
                     image_numbers, buf = self.received_measurements_queue.get()
                     image_numbers = [int(i) for i in image_numbers]
-                    recd_measurements = cpmeas.load_measurements_from_buffer(buf)
+                    recd_measurements = cellprofiler.measurements.load_measurements_from_buffer(buf)
                     self.copy_recieved_measurements(recd_measurements, measurements, image_numbers)
                     recd_measurements.close()
                     del recd_measurements
@@ -446,13 +436,13 @@ class AnalysisRunner(object):
                 while not self.in_process_queue.empty():
                     image_set_numbers = self.in_process_queue.get()
                     for image_set_number in image_set_numbers:
-                        measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
+                        measurements[cellprofiler.measurements.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
 
                 # check for finished jobs that haven't returned measurements, yet
                 while not self.finished_queue.empty():
                     finished_req = self.finished_queue.get()
                     measurements[
-                        cpmeas.IMAGE, self.STATUS, int(finished_req.image_set_number)] = self.STATUS_FINISHED_WAITING
+                        cellprofiler.measurements.IMAGE, self.STATUS, int(finished_req.image_set_number)] = self.STATUS_FINISHED_WAITING
                     if waiting_for_first_imageset:
                         assert isinstance(finished_req,
                                           ImageSetSuccessWithDictionary)
@@ -466,7 +456,7 @@ class AnalysisRunner(object):
                     finished_req.reply(Ack())
 
                 # check progress and report
-                counts = collections.Counter(measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
+                counts = collections.Counter(measurements[cellprofiler.measurements.IMAGE, self.STATUS, image_set_number]
                                              for image_set_number in image_sets_to_process)
                 self.post_event(AnalysisProgress(counts))
 
@@ -477,9 +467,9 @@ class AnalysisRunner(object):
                     if not worker_runs_post_group:
                         self.pipeline.post_group(workspace, {})
 
-                    workspace = cpw.Workspace(self.pipeline,
-                                              None, None, None,
-                                              measurements, None, None)
+                    workspace = cellprofiler.workspace.Workspace(self.pipeline,
+                                                                 None, None, None,
+                                                                 measurements, None, None)
                     workspace.post_run_display_handler = \
                         self.post_run_display_handler
                     self.pipeline.post_run(workspace)
@@ -521,23 +511,23 @@ class AnalysisRunner(object):
         '''
         measurements.copy_relationships(recd_measurements)
         for o in recd_measurements.get_object_names():
-            if o == cpmeas.EXPERIMENT:
+            if o == cellprofiler.measurements.EXPERIMENT:
                 continue  # Written during prepare_run / post_run
-            elif o == cpmeas.IMAGE:
+            elif o == cellprofiler.measurements.IMAGE:
                 # Some have been previously written. It's worth the time
                 # to check values and only write changes
                 for feature in recd_measurements.get_feature_names(o):
-                    if not measurements.has_feature(cpmeas.IMAGE, feature):
+                    if not measurements.has_feature(cellprofiler.measurements.IMAGE, feature):
                         f_image_numbers = image_numbers
                     else:
                         local_values = measurements[
-                            cpmeas.IMAGE, feature, image_numbers]
+                            cellprofiler.measurements.IMAGE, feature, image_numbers]
                         remote_values = recd_measurements[
-                            cpmeas.IMAGE, feature, image_numbers]
+                            cellprofiler.measurements.IMAGE, feature, image_numbers]
                         f_image_numbers = [
                             i for i, lv, rv in zip(
                                     image_numbers, local_values, remote_values)
-                            if (np.any(rv != lv) if isinstance(lv, np.ndarray)
+                            if (numpy.any(rv != lv) if isinstance(lv, numpy.ndarray)
                                 else lv != rv)]
                     if len(f_image_numbers) > 0:
                         measurements[o, feature, f_image_numbers] \
@@ -547,7 +537,7 @@ class AnalysisRunner(object):
                     measurements[o, feature, image_numbers] \
                         = recd_measurements[o, feature, image_numbers]
         for image_set_number in image_numbers:
-            measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_DONE
+            measurements[cellprofiler.measurements.IMAGE, self.STATUS, image_set_number] = self.STATUS_DONE
 
     def jobserver(self, analysis_id, start_signal):
         # this server subthread should be very lightweight, as it has to handle
@@ -555,8 +545,8 @@ class AnalysisRunner(object):
 
         # start the zmqrequest Boundary
         request_queue = Queue.Queue()
-        boundary = register_analysis(analysis_id,
-                                     request_queue)
+        boundary = cellprofiler.utilities.zmqrequest.register_analysis(analysis_id,
+                                                                       request_queue)
         #
         # The boundary is announcing our analysis at this point. Workers
         # will get announcements if they connect.
@@ -590,12 +580,12 @@ class AnalysisRunner(object):
 
             if isinstance(req, PipelinePreferencesRequest):
                 logger.debug("Received pipeline preferences request")
-                req.reply(Reply(pipeline_blob=np.array(self.pipeline_as_string()),
-                                preferences=cpprefs.preferences_as_dict()))
+                req.reply(cellprofiler.utilities.zmqrequest.Reply(pipeline_blob=numpy.array(self.pipeline_as_string()),
+                                                                  preferences=cellprofiler.preferences.preferences_as_dict()))
                 logger.debug("Replied to pipeline preferences request")
             elif isinstance(req, InitialMeasurementsRequest):
                 logger.debug("Received initial measurements request")
-                req.reply(Reply(buf=self.initial_measurements_buf))
+                req.reply(cellprofiler.utilities.zmqrequest.Reply(buf=self.initial_measurements_buf))
                 logger.debug("Replied to initial measurements request")
             elif isinstance(req, WorkRequest):
                 if not self.work_queue.empty():
@@ -652,9 +642,6 @@ class AnalysisRunner(object):
         # stop the ZMQ-boundary thread - will also deal with any requests waiting on replies
         boundary.cancel(analysis_id)
 
-    def queue_job(self, image_set_number):
-        self.work_queue.put(image_set_number)
-
     def queue_dispatched_job(self, job):
         self.in_process_queue.put(job)
         # notify interface thread
@@ -689,13 +676,13 @@ class AnalysisRunner(object):
         except NotImplementedError:
             num = 4
 
-        cls.work_announce_address = get_announcer_address()
+        cls.work_announce_address = cellprofiler.utilities.zmqrequest.get_announcer_address()
         logger.info("Starting workers on address %s" % cls.work_announce_address)
         if 'CP_DEBUG_WORKER' in os.environ:
             if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
                 return
-            from cellprofiler.analysis_worker import \
-                AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP
+            from cellprofiler.worker import \
+                Worker, NOTIFY_ADDR, NOTIFY_STOP
             from cellprofiler.pipeline import CancelledException
 
             class WorkerRunner(threading.Thread):
@@ -706,7 +693,7 @@ class AnalysisRunner(object):
                     self.notify_socket.bind(NOTIFY_ADDR)
 
                 def run(self):
-                    with AnalysisWorker(self.work_announce_address) as aw:
+                    with Worker(self.work_announce_address) as aw:
                         try:
                             aw.run()
                         except CancelledException:
@@ -729,9 +716,9 @@ class AnalysisRunner(object):
                 close_all_on_exec()
 
             aw_args = ["--work-announce", cls.work_announce_address,
-                       "--plugins-directory", cpprefs.get_plugin_directory(),
-                       "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
-            jvm_arg = "%dm" % cpprefs.get_jvm_heap_mb()
+                       "--plugins-directory", cellprofiler.preferences.get_plugin_directory(),
+                       "--ij-plugins-directory", cellprofiler.preferences.get_ij_plugin_directory()]
+            jvm_arg = "%dm" % cellprofiler.preferences.get_jvm_heap_mb()
             aw_args.append("--jvm-heap-size=%s" % jvm_arg)
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
@@ -742,7 +729,7 @@ class AnalysisRunner(object):
                     args = ([executable] + aw_args)
                 elif sys.platform.startswith('linux'):
                     aw_path = os.path.join(os.path.dirname(__file__),
-                                           "analysis_worker.py")
+                                           "worker.py")
                     args = [sys.executable, aw_path] + aw_args
                 else:
                     args = [sys.executable] + aw_args
@@ -837,7 +824,7 @@ def find_worker_env(idx):
 def find_analysis_worker_source():
     # import here to break circular dependency.
     import cellprofiler.analysis  # used to get the path to the code
-    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "analysis_worker.py")
+    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "worker.py")
 
 
 def start_daemon_thread(target=None, args=(), kwargs=None, name=None):
@@ -873,22 +860,22 @@ class AnalysisFinished(object):
         self.cancelled = cancelled
 
 
-class PipelinePreferencesRequest(AnalysisRequest):
+class PipelinePreferencesRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class InitialMeasurementsRequest(AnalysisRequest):
+class InitialMeasurementsRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class WorkRequest(AnalysisRequest):
+class WorkRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class ImageSetSuccess(AnalysisRequest):
+class ImageSetSuccess(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id, image_set_number=None):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 image_set_number=image_set_number)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id,
+                                                                   image_set_number=image_set_number)
 
 
 class ImageSetSuccessWithDictionary(ImageSetSuccess):
@@ -898,26 +885,22 @@ class ImageSetSuccessWithDictionary(ImageSetSuccess):
         self.shared_dicts = shared_dicts
 
 
-class DictionaryReqRep(Reply):
-    pass
-
-
-class MeasurementsReport(AnalysisRequest):
+class MeasurementsReport(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id, buf, image_set_numbers=[]):
-        AnalysisRequest.__init__(self, analysis_id,
-                                 buf=buf,
-                                 image_set_numbers=image_set_numbers)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id,
+                                                                   buf=buf,
+                                                                   image_set_numbers=image_set_numbers)
 
 
-class InteractionRequest(AnalysisRequest):
+class InteractionRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class AnalysisCancelRequest(AnalysisRequest):
+class AnalysisCancelRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class DisplayRequest(AnalysisRequest):
+class DisplayRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
@@ -931,98 +914,98 @@ class DisplayPostRunRequest(object):
         self.display_data = display_data
 
 
-class DisplayPostGroupRequest(AnalysisRequest):
+class DisplayPostGroupRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     '''Request a post-group display
 
     This is a message sent to the UI from the analysis worker'''
 
     def __init__(self, analysis_id, module_num, display_data, image_set_number):
-        AnalysisRequest.__init__(
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(
                 self, analysis_id,
                 module_num=module_num,
                 image_set_number=image_set_number,
                 display_data=display_data)
 
 
-class SharedDictionaryRequest(AnalysisRequest):
+class SharedDictionaryRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id, module_num=-1):
-        AnalysisRequest.__init__(self, analysis_id, module_num=module_num)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self, analysis_id, module_num=module_num)
 
 
-class SharedDictionaryReply(Reply):
+class SharedDictionaryReply(cellprofiler.utilities.zmqrequest.Reply):
     def __init__(self, dictionaries=[{}]):
-        Reply.__init__(self, dictionaries=dictionaries)
+        cellprofiler.utilities.zmqrequest.Reply.__init__(self, dictionaries=dictionaries)
 
 
-class ExceptionReport(AnalysisRequest):
+class ExceptionReport(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     def __init__(self, analysis_id,
                  image_set_number, module_name,
                  exc_type, exc_message, exc_traceback,
                  filename, line_number):
-        AnalysisRequest.__init__(self,
-                                 analysis_id,
-                                 image_set_number=image_set_number,
-                                 module_name=module_name,
-                                 exc_type=exc_type,
-                                 exc_message=exc_message,
-                                 exc_traceback=exc_traceback,
-                                 filename=filename,
-                                 line_number=line_number)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self,
+                                                                   analysis_id,
+                                                                   image_set_number=image_set_number,
+                                                                   module_name=module_name,
+                                                                   exc_type=exc_type,
+                                                                   exc_message=exc_message,
+                                                                   exc_traceback=exc_traceback,
+                                                                   filename=filename,
+                                                                   line_number=line_number)
 
     def __str__(self):
         return "(Worker) %s: %s" % (self.exc_type, self.exc_message)
 
 
-class ExceptionPleaseDebugReply(Reply):
+class ExceptionPleaseDebugReply(cellprofiler.utilities.zmqrequest.Reply):
     def __init__(self, disposition, verification_hash=None):
-        Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)
+        cellprofiler.utilities.zmqrequest.Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)
 
 
-class DebugWaiting(AnalysisRequest):
+class DebugWaiting(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     '''Communicate the debug port to the server and wait for server OK to attach'''
 
     def __init__(self, analysis_id, port):
-        AnalysisRequest.__init__(self,
-                                 analysis_id=analysis_id,
-                                 port=port)
+        cellprofiler.utilities.zmqrequest.AnalysisRequest.__init__(self,
+                                                                   analysis_id=analysis_id,
+                                                                   port=port)
 
 
-class DebugCancel(Reply):
+class DebugCancel(cellprofiler.utilities.zmqrequest.Reply):
     '''If sent in response to DebugWaiting, the user has changed his/her mind'''
 
 
-class DebugComplete(AnalysisRequest):
+class DebugComplete(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class InteractionReply(Reply):
+class InteractionReply(cellprofiler.utilities.zmqrequest.Reply):
     pass
 
 
-class WorkReply(Reply):
+class WorkReply(cellprofiler.utilities.zmqrequest.Reply):
     pass
 
 
-class NoWorkReply(Reply):
+class NoWorkReply(cellprofiler.utilities.zmqrequest.Reply):
     pass
 
 
-class ServerExited(UpstreamExit):
+class ServerExited(cellprofiler.utilities.zmqrequest.UpstreamExit):
     pass
 
 
-class OmeroLoginRequest(AnalysisRequest):
+class OmeroLoginRequest(cellprofiler.utilities.zmqrequest.AnalysisRequest):
     pass
 
 
-class OmeroLoginReply(Reply):
+class OmeroLoginReply(cellprofiler.utilities.zmqrequest.Reply):
     def __init__(self, credentials):
-        Reply.__init__(self, credentials=credentials)
+        cellprofiler.utilities.zmqrequest.Reply.__init__(self, credentials=credentials)
 
 
-class Ack(Reply):
+class Ack(cellprofiler.utilities.zmqrequest.Reply):
     def __init__(self, message="THANKS"):
-        Reply.__init__(self, message=message)
+        cellprofiler.utilities.zmqrequest.Reply.__init__(self, message=message)
 
 
 if sys.platform == "darwin":

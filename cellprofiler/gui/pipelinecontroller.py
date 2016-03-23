@@ -25,8 +25,8 @@ from wx.lib.mixins.listctrl import ColumnSorterMixin, ListCtrlAutoWidthMixin
 
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.analysis as cpanalysis
-import cellprofiler.cpimage as cpi
-import cellprofiler.cpmodule as cpmodule
+import cellprofiler.image as cpi
+import cellprofiler.module as cpmodule
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.parametersampleframe as psf
 import cellprofiler.measurements as cpm
@@ -2457,7 +2457,7 @@ class PipelineController:
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display != cpmodule.CPModule.display:
+            if module.display != cpmodule.Module.display:
                 fig = self.__workspace.get_module_figure(module,
                                                          evt.image_set_number,
                                                          self.__frame)
@@ -2481,7 +2481,7 @@ class PipelineController:
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_run != cpmodule.CPModule.display_post_run:
+            if module.display_post_run != cpmodule.Module.display_post_run:
                 image_number = self.__workspace.measurements.image_set_count
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
@@ -2501,7 +2501,7 @@ class PipelineController:
         self.__workspace.display_data.__dict__.update(evt.display_data)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display_post_group != cpmodule.CPModule.display_post_group:
+            if module.display_post_group != cpmodule.Module.display_post_group:
                 image_number = evt.image_set_number
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
@@ -2522,7 +2522,7 @@ class PipelineController:
         '''
         module_num = evt.module_num
         # extract args and kwargs from the request.
-        # see main().interaction_handler() in analysis_worker.py
+        # see main().interaction_handler() in worker.py
         args = [evt.__dict__['arg_%d' % idx] for idx in range(evt.num_args)]
         kwargs = dict((name, evt.__dict__['kwarg_%s' % name]) for name in evt.kwargs_names)
         result = ""
